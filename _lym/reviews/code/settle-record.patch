@@ -1,0 +1,1217 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index ecc10b51..1d55e451 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -291,7 +291,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/agentconfig/         the hub-wide `agents.yaml` config: the skills each role lym starts loads, and the effort of its Claude sessions and their subagents by role and model, a leaf
+ ├── internal/agentname/           the sole former, parser and validator of agent names (`<shortname>:<slug>:<role>`), a stdlib-only leaf
+ ├── internal/beamcli/             the beam CLI command (`lym beam`, the making and starting of beams from board project entries, and the wiring of their dobby, the prime's carrying the hibernate request and bringing back the Slack relay)
+-├── internal/dobbyengine/         dobby, the daemon of a beam worktree: it starts released tasks, drives their batten runs in passes and spawns the board-tidy agent
++├── internal/dobbyengine/         dobby, the daemon of a beam worktree: it starts released tasks, drives their batten runs in passes and spawns the board-tidy agent; the prime's dobby also starts `lym gate testmap` every few landings
+ ├── internal/boardcli/            the board CLI command
+ ├── internal/boardengine/         the board domain kernel
+ ├── internal/hubissues/           the GitHub issues of the hub's own repository that `lym board intake` lists, reads, comments on and closes
+@@ -800,10 +800,11 @@ User-facing modules each get one `lym <module>` namespace:
+   Finalize then merges the beam into its parent, through the pull request the beam's landing record names when one is recorded, and keeps that pull request's text.
+   Land starts a short batten run over the `beam` recipe, after a refusal that stops it while members or forked pairs remain under the beam.
+   Start brings up a beam's dobby and orch, the one the acting worktree is or the one a slug names, or with `--all` the prime and every beam this machine owns, each part only when it is not live.
+-  Stop takes a beam's orch and dobby down.
++  Stop takes a beam's orch and dobby down; the prime's stop also ends its test-map refresh, whether or not its dobby is live.
+   Status prints, once, the dobby section a beam's window draws, for the prime and for each local beam:
+   alive or not, the runs it drives with their state, stage, time in stage and last pass, and each released task it has not started with what the task waits on, and the beam's orch: strand live, watcher live and the recorded session, then one adopt check item per subject, shown only when the hub holds a record of it: the subject, its state, the tier in flight, the tiers done and the paths of its log and output.
+   Dobby starts the beam's released tasks from an empty status, drives their batten runs in short passes, sends the nearest live orch its own notices and the `[dobby notice]` lines of a running child (a dead driver, an API-error stall, a usage limit, idle agents), and spawns the board-tidy agent every few landings.
++  The prime's dobby also starts `lym gate testmap --max <test_map_batch>` after every `test_map_every` landings, unless a refresh it registered as `runproc.RoleTestMap` still runs.
+   It logs to its `dobby.log` the changes it sees, such as a task start, a run changing state and a failing pass episode, plus a heartbeat line every ten minutes.
+   A front task, filed through `internal/fronttask`, is the one open task of its worktree that dobby starts first, past `max_runs`, while no other task of that worktree starts.
+   Its `on_land` action runs once it lands or its entry is removed by hand with `lym board remove`, from a closed action table and on the subject's owner machine only.
+diff --git a/internal/beamcli/dobby_test.go b/internal/beamcli/dobby_test.go
+index 27d600f1..a97a5048 100644
+--- a/internal/beamcli/dobby_test.go
++++ b/internal/beamcli/dobby_test.go
+@@ -75,6 +75,39 @@ func TestRegisterDobby(t *testing.T) {
+ 	}
+ }
+ 
++func TestTestMapRunning(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// owner and role name the one live record registered; an empty role registers none.
++		owner, role string
++		want        bool
++	}{
++		{"NoRecordReadsAsNotRunning", runproc.HubOwner, "", false},
++		{"AHubRecordOfAnotherRoleReadsAsNotRunning", runproc.HubOwner, runproc.RoleSlackRelay, false},
++		{"ATestMapRecordUnderARunsSlugReadsAsNotRunning", "payments", runproc.RoleTestMap, false},
++		{"ALiveTestMapRecordUnderTheHubOwnerReadsAsRunning", runproc.HubOwner, runproc.RoleTestMap, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			if tt.role != "" {
++				if err := runproc.Register(dir, tt.owner, runproc.SelfRecord(tt.role)); err != nil {
++					t.Fatalf("Register() = %v; want nil", err)
++				}
++			}
++
++			got, err := testMapRunning(dir)
++			if err != nil || got != tt.want {
++				t.Errorf("testMapRunning() = %v, %v; want %v, nil", got, err, tt.want)
++			}
++		})
++	}
++}
++
+ func TestPassErrorText(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 616614e5..31d22e09 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -1,7 +1,8 @@
+ // dobbydeps.go fills the seams of dobbyengine.Run over a hub.
+ // It covers the runs and tasks it reads, the pass it spawns, and the notices it sends.
+ // It also covers the owner pause and board tidy it sends.
+-// It also covers the hibernate request the prime's dobby carries, and the registration of the dobby process itself.
++// It also covers the hibernate request and the test-map refresh the prime's dobby carries,
++// and the registration of the dobby process itself.
+ 
+ package beamcli
+ 
+@@ -14,6 +15,7 @@ import (
+ 	"os"
+ 	"os/exec"
+ 	"slices"
++	"strconv"
+ 	"strings"
+ 	"sync"
+ 	"testing"
+@@ -212,6 +214,11 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 			return false, errors.Join(carrier.Tick(), ensureSlackRelay(prime, &relayEpisodes))
+ 		}
+ 		deps.CheckBinary = holdReexec(carrier.HoldsReexec, deps.CheckBinary)
++		runProcDir := fabricengine.RunProcDir(prime.HubPath)
++		deps.TestMapRunning = func() (bool, error) { return testMapRunning(runProcDir) }
++		deps.StartTestMap = func(maxPackages int) error {
++			return startTestMap(selfexec.LymBinary, geom.PrimeAnchor, runProcDir, maxPackages)
++		}
+ 	}
+ 	if geom.Slug != "" {
+ 		// The removed worktree's config is gone by the time this stops a strand, so the runner is built over the prime.
+@@ -543,6 +550,49 @@ func spawnPass(geom dobbyengine.Geometry, slug string, continuePass, noReopen bo
+ 	return exit, nil
+ }
+ 
++// testMapRunning reports whether a live process registered under the hub owner in runProcDir is the test-map refresh.
++func testMapRunning(runProcDir string) (bool, error) {
++	records, err := runproc.List(runProcDir, runproc.HubOwner)
++	if err != nil {
++		return false, err
++	}
++	return slices.ContainsFunc(records, func(record runproc.Record) bool { return record.Role == runproc.RoleTestMap }), nil
++}
++
++// startTestMap starts `<lym> gate testmap --max <maxPackages>` in primeAnchor, with the binary lookupLymBinary returns.
++// The process gets its own process group and its output is discarded.
++// It registers the process under the hub owner in runProcDir as the test-map refresh,
++// so a restarted dobby reads it live and the prime's stop ends it.
++// The dobby waits on it in the background and logs its exit.
++// A registration that fails is logged at Warn and is no error:
++// the unregistered refresh is left to end on its own, and the caller counts it as started.
++// A binary that does not resolve fails and starts nothing; in a test binary the lym binary does not resolve.
++func startTestMap(lookupLymBinary func() (string, error), primeAnchor, runProcDir string, maxPackages int) error {
++	executable, err := lookupLymBinary()
++	if err != nil {
++		return err
++	}
++	args := []string{"gate", "testmap", "--max", strconv.Itoa(maxPackages)}
++	cmd := exec.Command(executable, args...)
++	cmd.Dir = primeAnchor
++	proc.Detach(cmd)
++	if err := cmd.Start(); err != nil {
++		logger.Warn("beamcli: spawn the test-map refresh failed", "exe", executable, "args", args, "dir", primeAnchor, "error", err)
++		return err
++	}
++	pid := cmd.Process.Pid
++	logger.Info("beamcli: spawned the test-map refresh", "exe", executable, "args", args, "dir", primeAnchor, "pid", pid)
++	record := runproc.ChildRecord(pid, runproc.RoleTestMap, append([]string{executable}, args...))
++	go func() {
++		waitErr := cmd.Wait()
++		logger.Info("beamcli: the test-map refresh exited", "pid", pid, "code", cmd.ProcessState.ExitCode(), "error", waitErr)
++	}()
++	if err := runproc.Register(runProcDir, runproc.HubOwner, record); err != nil {
++		logger.Warn("beamcli: the test-map refresh is not registered and is left to end on its own", "pid", pid, "error", err)
++	}
++	return nil
++}
++
+ // tailBuffer keeps the last limit bytes written to it.
+ type tailBuffer struct {
+ 	mu    sync.Mutex
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index 99c6c660..fe764da2 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -75,6 +75,14 @@ func TestHubDobbyDeps_PrimeTidyShuttle(t *testing.T) {
+ 	if primeDeps.PrimeTidyShuttle != nil {
+ 		t.Errorf("prime PrimeTidyShuttle = %#v; want nil", primeDeps.PrimeTidyShuttle)
+ 	}
++
++	// Only the prime's dobby takes the test-map refresh step.
++	if primeDeps.TestMapRunning == nil || primeDeps.StartTestMap == nil {
++		t.Errorf("prime TestMapRunning, StartTestMap nil = %v, %v; want both filled", primeDeps.TestMapRunning == nil, primeDeps.StartTestMap == nil)
++	}
++	if beamDeps.TestMapRunning != nil || beamDeps.StartTestMap != nil {
++		t.Errorf("beam TestMapRunning, StartTestMap nil = %v, %v; want both nil", beamDeps.TestMapRunning == nil, beamDeps.StartTestMap == nil)
++	}
+ 	// The watch opens only a directory that exists, and a tick creates it as a side effect.
+ 	// So the check comes before any tick.
+ 	if info, err := os.Stat(filepath.Dir(hibernatecli.RequestPath(prime))); err != nil || !info.IsDir() {
+diff --git a/internal/beamcli/dobbytestmap_unix_integration_test.go b/internal/beamcli/dobbytestmap_unix_integration_test.go
+new file mode 100644
+index 00000000..a7877939
+--- /dev/null
++++ b/internal/beamcli/dobbytestmap_unix_integration_test.go
+@@ -0,0 +1,122 @@
++//go:build !windows
++
++// dobbytestmap_unix_integration_test.go pins startTestMap over a shell script that stands in for the lym binary.
++// The test binary cannot stand in: tmuxkit.Main refuses a binary started with a positional first argument.
++
++package beamcli
++
++import (
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// standInGateScript is the stand-in for the lym binary.
++// The test runs it as `sh gate testmap --max N`, so $0 is `gate` and the arguments after it are the verb's.
++// It records its command line and working directory, waits for the release file, and then records that it finished.
++// A child that was ended early never writes the finish record.
++const standInGateScript = `printf '%s\n%s\n' "$0 $*" "$(pwd -P)" > ran.tmp && mv ran.tmp ran.txt
++i=0
++while [ ! -e release ] && [ "$i" -lt 600 ]; do sleep 0.05; i=$((i+1)); done
++: > done.tmp && mv done.tmp done.txt
++`
++
++// standInPollTick and standInDeadline bound how long a test waits for the stand-in's record files.
++const (
++	standInPollTick = 10 * time.Millisecond
++	standInDeadline = 10 * time.Second
++)
++
++// awaitFile returns once a file exists at path, and fails the test when none does within standInDeadline.
++func awaitFile(t *testing.T, path string) {
++	t.Helper()
++	deadline := time.Now().Add(standInDeadline)
++	for {
++		if _, err := os.Stat(path); err == nil {
++			return
++		}
++		if time.Now().After(deadline) {
++			t.Fatalf("%s did not appear within %s", path, standInDeadline)
++		}
++		time.Sleep(standInPollTick)
++	}
++}
++
++func TestStartTestMap(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// unwritableRegistry puts the run-proc directory below a regular file, so registering the child fails.
++		unwritableRegistry bool
++	}{
++		{name: "the child runs gate testmap in the anchor and is registered as the test-map refresh"},
++		{name: "a registration that fails leaves the child running and returns no error", unwritableRegistry: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			anchor := t.TempDir()
++			runProcDir := filepath.Join(t.TempDir(), "runproc")
++			if tt.unwritableRegistry {
++				blocker := filepath.Join(t.TempDir(), "blocker")
++				if err := os.WriteFile(blocker, nil, 0o644); err != nil {
++					t.Fatal(err)
++				}
++				runProcDir = filepath.Join(blocker, "runproc")
++			}
++			if err := os.WriteFile(filepath.Join(anchor, "gate"), []byte(standInGateScript), 0o644); err != nil {
++				t.Fatal(err)
++			}
++			// The release runs before the anchor's removal, so the stand-in is not left waiting.
++			t.Cleanup(func() { _ = os.WriteFile(filepath.Join(anchor, "release"), nil, 0o644) })
++			lookup := func() (string, error) { return "/bin/sh", nil }
++
++			if err := startTestMap(lookup, anchor, runProcDir, 3); err != nil {
++				t.Fatalf("startTestMap() = %v; want nil", err)
++			}
++
++			awaitFile(t, filepath.Join(anchor, "ran.txt"))
++			ran, err := os.ReadFile(filepath.Join(anchor, "ran.txt"))
++			if err != nil {
++				t.Fatal(err)
++			}
++			wantDir, err := filepath.EvalSymlinks(anchor)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if want := "gate testmap --max 3\n" + wantDir + "\n"; string(ran) != want {
++				t.Errorf("the child recorded %q; want its command line and working directory %q", ran, want)
++			}
++			if tt.unwritableRegistry {
++				if records, err := runproc.List(runProcDir, runproc.HubOwner); err == nil && len(records) != 0 {
++					t.Fatalf("List() = %+v; want no record, since the registration failed", records)
++				}
++			} else {
++				records, err := runproc.List(runProcDir, runproc.HubOwner)
++				if err != nil {
++					t.Fatalf("List() = _, %v; want nil", err)
++				}
++				if len(records) != 1 || records[0].Role != runproc.RoleTestMap {
++					t.Fatalf("List() = %+v; want one record with role %q", records, runproc.RoleTestMap)
++				}
++				if want := []string{"/bin/sh", "gate", "testmap", "--max", "3"}; !slices.Equal(records[0].Argv, want) {
++					t.Errorf("registered argv = %q; want %q", strings.Join(records[0].Argv, " "), strings.Join(want, " "))
++				}
++			}
++
++			// A child that is still running after the start returned finishes once released.
++			if err := os.WriteFile(filepath.Join(anchor, "release"), nil, 0o644); err != nil {
++				t.Fatal(err)
++			}
++			awaitFile(t, filepath.Join(anchor, "done.txt"))
++		})
++	}
++}
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index c1682169..5be5f395 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -317,6 +317,8 @@
+ //
+ // `stop [slug]` resolves its target as `start` does and calls `orchcli.BeamDown`.
+ // That removes the orch strand and ends the beam's dobby through `runproc.EndRole`, each only when live.
++// For the prime it then ends the test-map refresh the dobby started, whether or not the dobby was live.
++// It does so through `runproc.EndRole` with `runproc.RoleTestMap`.
+ // It prints what it stopped and takes no `--all`.
+ //
+ // # status
+@@ -352,6 +354,13 @@
+ // `registerDobby` runs only once `Run` holds the lock, through `Deps.Locked`.
+ // It writes `runproc.SelfRecord(runproc.RoleDobby)` under the beam's slug, or `runproc.HubOwner` for the prime.
+ // That record lets the pair teardown of a landed beam end that beam's dobby.
++// For the prime, `hubDobbyDeps` also fills the test-map refresh seams.
++// `testMapRunning` reads whether a live `runproc.RoleTestMap` record stands under `runproc.HubOwner`.
++// `startTestMap` starts `lym gate testmap --max <n>` with the binary `selfexec.LymBinary` names.
++// The process runs in the prime's anchor and its own process group.
++// `startTestMap` registers it under `runproc.HubOwner` as `runproc.RoleTestMap`.
++// The dobby waits on it in the background.
++// A registration that fails is logged, and the refresh is left to end on its own.
+ // It prints `already_running` when the lock stays held past the lock wait, with nothing registered.
+ //
+ // `runDobbyWith` takes the wiring and the notice as seams, and each exit it takes before `Run` leaves a trace:
+diff --git a/internal/dobbyengine/config.go b/internal/dobbyengine/config.go
+index b7129c85..968294dd 100644
+--- a/internal/dobbyengine/config.go
++++ b/internal/dobbyengine/config.go
+@@ -37,6 +37,10 @@ type Config struct {
+ 	BoardTidyEvery int `yaml:"board_tidy_every"`
+ 	// BoardTidyTimeoutMin is the minutes the board-tidy agent may run.
+ 	BoardTidyTimeoutMin int `yaml:"board_tidy_timeout_min"`
++	// TestMapEvery is the landings between the prime dobby's test-map refreshes; 0 never refreshes.
++	TestMapEvery int `yaml:"test_map_every"`
++	// TestMapBatch is the most stale packages one test-map refresh builds a map for, its `--max`; at least 1.
++	TestMapBatch int `yaml:"test_map_batch"`
+ 	// TaskHeadroom is the fewest free tasks under the cgroup task limit for dobby to start a run; 0 never holds a start.
+ 	TaskHeadroom int `yaml:"task_headroom"`
+ 	// PullRequest is the pull-request mode: "on", "off", "required" or "merge" (squash-merged at once, no review).
+@@ -57,6 +61,8 @@ func ConfigSpec() configengine.Spec {
+ 			"max_runs":               configengine.CategoryNone,
+ 			"board_tidy_every":       configengine.CategoryNone,
+ 			"board_tidy_timeout_min": configengine.CategoryNone,
++			"test_map_every":         configengine.CategoryNone,
++			"test_map_batch":         configengine.CategoryNone,
+ 			"task_headroom":          configengine.CategoryNone,
+ 			"pull_request":           configengine.CategoryCrossPair,
+ 			"land_notice":            configengine.CategoryNone,
+@@ -66,7 +72,7 @@ func ConfigSpec() configengine.Spec {
+ }
+ 
+ // LoadConfig resolves beam.yaml strictly from the layer stack under dirs, since dobby only ever runs inside a hub.
+-// A negative value is refused, naming its key.
++// A negative value is refused, naming its key, and so is a test_map_batch below 1.
+ // A pull_request other than on, off, required or merge is refused too.
+ // So is a land_notice other than all, per-task or off.
+ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+@@ -85,6 +91,7 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 		{"max_runs", cfg.MaxRuns},
+ 		{"board_tidy_every", cfg.BoardTidyEvery},
+ 		{"board_tidy_timeout_min", cfg.BoardTidyTimeoutMin},
++		{"test_map_every", cfg.TestMapEvery},
+ 		{"task_headroom", cfg.TaskHeadroom},
+ 		{"adopt_fix_tries", cfg.AdoptFixTries},
+ 	} {
+@@ -92,6 +99,9 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 			return Config{}, configengine.MarkInvalid(fmt.Errorf("beam config key %q is %d: must not be negative; way forward: fix it with `lym config beam --set %s=<value>`", key.name, key.value, key.name))
+ 		}
+ 	}
++	if cfg.TestMapBatch < 1 {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("beam config key %q is %d: must be at least 1; way forward: fix it with `lym config beam --set test_map_batch=<value>`", "test_map_batch", cfg.TestMapBatch))
++	}
+ 	switch cfg.PullRequest {
+ 	case "on", "off", "required", "merge":
+ 	default:
+diff --git a/internal/dobbyengine/config_test.go b/internal/dobbyengine/config_test.go
+index 2050174e..4431c9b9 100644
+--- a/internal/dobbyengine/config_test.go
++++ b/internal/dobbyengine/config_test.go
+@@ -1,5 +1,5 @@
+ // config_test.go pins how beam.yaml loads.
+-// It covers the template defaults, a worktree layer's override, and the refusal of a negative value.
++// It covers the template defaults, a worktree layer's override, and the refusal of a value out of range.
+ 
+ package dobbyengine
+ 
+@@ -25,6 +25,16 @@ func writeBeamLayer(t *testing.T, baseDir, document string) {
+ 	}
+ }
+ 
++// defaultsWith returns the template's resolved defaults with change applied.
++func defaultsWith(change func(*Config)) Config {
++	cfg := Config{
++		MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TestMapEvery: 5, TestMapBatch: 5,
++		TaskHeadroom: 500, PullRequest: "on", LandNotice: "per-task", AdoptFixTries: 3,
++	}
++	change(&cfg)
++	return cfg
++}
++
+ func TestLoadConfig(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -35,19 +45,22 @@ func TestLoadConfig(t *testing.T) {
+ 		want     Config
+ 		wantErr  []string
+ 	}{
+-		{name: "the template defaults", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on", LandNotice: "per-task", AdoptFixTries: 3}},
+-		{name: "a worktree layer's max_runs of 0 starts none", worktree: "max_runs: 0\n", want: Config{MaxRuns: 0, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on", LandNotice: "per-task", AdoptFixTries: 3}},
+-		{name: "a worktree layer's pull_request of required resolves as set", worktree: "pull_request: required\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "required", LandNotice: "per-task", AdoptFixTries: 3}},
+-		{name: "a worktree layer's pull_request of off resolves as set", worktree: "pull_request: \"off\"\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "off", LandNotice: "per-task", AdoptFixTries: 3}},
+-		{name: "a worktree layer's pull_request of merge resolves as set", worktree: "pull_request: merge\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "merge", LandNotice: "per-task", AdoptFixTries: 3}},
++		{name: "the template defaults", want: defaultsWith(func(*Config) {})},
++		{name: "a worktree layer's max_runs of 0 starts none", worktree: "max_runs: 0\n", want: defaultsWith(func(c *Config) { c.MaxRuns = 0 })},
++		{name: "a worktree layer's pull_request of required resolves as set", worktree: "pull_request: required\n", want: defaultsWith(func(c *Config) { c.PullRequest = "required" })},
++		{name: "a worktree layer's pull_request of off resolves as set", worktree: "pull_request: \"off\"\n", want: defaultsWith(func(c *Config) { c.PullRequest = "off" })},
++		{name: "a worktree layer's pull_request of merge resolves as set", worktree: "pull_request: merge\n", want: defaultsWith(func(c *Config) { c.PullRequest = "merge" })},
+ 		{name: "an unknown pull_request is refused naming the key and the way forward", worktree: "pull_request: maybe\n", wantErr: []string{"pull_request", "must be on, off, required or merge", "lym config beam --set pull_request="}},
+-		{name: "a worktree layer's land_notice of all resolves as set", worktree: "land_notice: all\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on", LandNotice: "all", AdoptFixTries: 3}},
+-		{name: "a worktree layer's land_notice of off resolves as set", worktree: "land_notice: \"off\"\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on", LandNotice: "off", AdoptFixTries: 3}},
++		{name: "a worktree layer's land_notice of all resolves as set", worktree: "land_notice: all\n", want: defaultsWith(func(c *Config) { c.LandNotice = "all" })},
++		{name: "a worktree layer's land_notice of off resolves as set", worktree: "land_notice: \"off\"\n", want: defaultsWith(func(c *Config) { c.LandNotice = "off" })},
+ 		{name: "an unknown land_notice is refused naming the key and the way forward", worktree: "land_notice: some\n", wantErr: []string{"land_notice", "must be all, per-task or off", "lym config beam --set land_notice="}},
+ 		{name: "a negative board_tidy_every is refused naming the key", worktree: "board_tidy_every: -1\n", wantErr: []string{"board_tidy_every", "lym config beam --set"}},
+ 		{name: "a negative task_headroom is refused naming the key", worktree: "task_headroom: -1\n", wantErr: []string{"task_headroom", "lym config beam --set"}},
+-		{name: "a worktree layer's adopt_fix_tries resolves as set", worktree: "adopt_fix_tries: 1\n", want: Config{MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30, TaskHeadroom: 500, PullRequest: "on", LandNotice: "per-task", AdoptFixTries: 1}},
++		{name: "a worktree layer's adopt_fix_tries resolves as set", worktree: "adopt_fix_tries: 1\n", want: defaultsWith(func(c *Config) { c.AdoptFixTries = 1 })},
+ 		{name: "a negative adopt_fix_tries is refused naming the key", worktree: "adopt_fix_tries: -1\n", wantErr: []string{"adopt_fix_tries", "lym config beam --set"}},
++		{name: "a worktree layer's test_map_every of 0 and test_map_batch resolve as set", worktree: "test_map_every: 0\ntest_map_batch: 2\n", want: defaultsWith(func(c *Config) { c.TestMapEvery, c.TestMapBatch = 0, 2 })},
++		{name: "a negative test_map_every is refused naming the key", worktree: "test_map_every: -1\n", wantErr: []string{"test_map_every", "must not be negative", "lym config beam --set test_map_every="}},
++		{name: "a test_map_batch of 0 is refused naming the key", worktree: "test_map_batch: 0\n", wantErr: []string{"test_map_batch", "must be at least 1", "lym config beam --set test_map_batch="}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 975b6f64..4c8febe0 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -32,6 +32,8 @@
+ //     Its `land_notice` key, all, per-task or off, decides which runs get a landing notice.
+ //     Its `adopt_fix_tries` key is the adopt check's try limit, which dobby itself never reads.
+ //     It caps the fix tasks a failed adopt check files for the worktree's subject between two hand adopts.
++//     Its `test_map_every` and `test_map_batch` keys drive the prime dobby's test-map refresh;
++//     a `test_map_batch` below 1 is refused.
+ //   - Run is the daemon loop, with every seam it reads in Deps.
+ //   - `dobby.log` holds the dobby's own lines only.
+ //     AppendLog appends each line through its own open, which creates no directory.
+@@ -103,7 +105,7 @@
+ //     a cancelled context ends it after the tick in flight.
+ //   - Any existing path of Geometry.MoveRecords means an anchor change stands.
+ //     The change is on the dobby's own records worktree or the prime's.
+-//     While it stands, a tick spawns no pass, starts no task and runs no board-tidy step.
++//     While it stands, a tick spawns no pass, starts no task and runs no board-tidy or test-map step.
+ //     The tidy agent is a strand whose state sits at the anchor.
+ //     The state record's upkeep and the landing count go on.
+ //     A full pass the dobby owes stays owed, and the first tick of the episode logs the change once.
+@@ -445,6 +447,30 @@
+ //     and the next tidy may spawn while the old agent runs until its timeout.
+ //     A landing whose run records `lym batten cleanup --apply` removed before dobby read them is not counted.
+ //
++// The test-map refresh:
++//
++//   - Only the prime's dobby takes the step: the hub wiring fills Deps.TestMapRunning and Deps.StartTestMap for it alone.
++//   - The board tidy's landing count also adds each landing it counts to State.LandingsSinceTestMap.
++//     The first read of a record counts none, as for the tidy.
++//   - Once that count reaches `test_map_every`, 0 meaning never, a tick starts the refresh through Deps.StartTestMap.
++//     The refresh is `lym gate testmap --max <test_map_batch>`, and the count starts again from zero.
++//     While `test_map_every` is 0 the step zeroes the count, so enabling the key later counts only later landings.
++//     It builds the packages stale when it runs, at most `test_map_batch`;
++//     what the cap left unbuilt waits for the next refresh.
++//   - No refresh starts while Deps.TestMapRunning reads one live, so a restarted or re-exec'd dobby starts no second.
++//     The count stays, and the refresh starts at the first tick after the live one ended.
++//     A start that fails keeps the count and is tried at the next tick.
++//     The failure is logged once per episode and does not hold the rest of the tick.
++//   - The hub wiring registers the refresh under `runproc.HubOwner` as `runproc.RoleTestMap`,
++//     and `lym beam stop` of the prime ends it after the dobby, whether or not the dobby is live.
++//     A registration that fails leaves the refresh unregistered to end on its own, and the count starts again from zero.
++//   - Bound: while a board-tidy agent is in flight no landing is counted,
++//     so a refresh can start up to `board_tidy_timeout_min` late.
++//     A dobby that dies without a stop leaves the refresh running until the verb ends within its own timeouts.
++//   - Bound: an anchor move of the prime counts a running refresh as a pass in flight and waits for it,
++//     so the move can wait out a whole build-and-test run.
++//     The dobby starts no new refresh while the move stands.
++//
+ // The view:
+ //
+ //   - It carries beam.yaml's `max_runs` and `land_notice`.
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index 19cbc085..34d5a358 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -118,6 +118,13 @@ type Deps struct {
+ 	StencilsDir string
+ 	// NearestOrch returns the name of the nearest live orch the tidy agent's parent directive names; empty means none.
+ 	NearestOrch func() (string, error)
++	// TestMapRunning reports whether a live test-map refresh is registered for the hub.
++	// A nil TestMapRunning or StartTestMap, as on a beam's dobby, leaves the test-map refresh off.
++	TestMapRunning func() (bool, error)
++	// StartTestMap starts `lym gate testmap --max <maxPackages>` in the prime worktree and returns once it runs.
++	// The process is registered for the hub, so TestMapRunning reads it live, and this dobby waits on it.
++	// A registration that fails leaves the process unregistered to end on its own, and the start still succeeds.
++	StartTestMap func(maxPackages int) error
+ 	// RunNotices are the seams the run notices of the runs this dobby drives read; a nil RunNotices.ReadChild sends none.
+ 	RunNotices RunNoticeDeps
+ 	// WaitReminders are the seams the reminders of a child waiting on the operator read; nil WaitReminders.Post sends none.
+@@ -321,6 +328,8 @@ type daemon struct {
+ 	landNoticeBoard  logger.Episode
+ 	// landNoticePosts guards each owed landing notice's post by its slug.
+ 	landNoticePosts logger.EpisodeSet
++	// testMapFailures is the failure episode of the test-map refresh step, which never ends the tick.
++	testMapFailures logger.Episode
+ 	// listedRuns is the run listing of the tick's pass step, done runs included.
+ 	listedRuns []RunView
+ 
+@@ -585,10 +594,12 @@ func (d *daemon) standingMove() string {
+ // tick folds one awake reading into the sleep watch and runs the per-tick work, ending with the beam's landing step.
+ // It records the sleeps the watch saw and fills in the state record's pid when none is set.
+ // A sleep the watch sees, and a record found without a pid, owe every run a full pass until a tick returns nil.
+-// While an anchor-move record of the geometry exists, a tick spawns no pass, starts no task and runs no tidy step.
++// An anchor-move record of the geometry holds the scheduling.
++// While one exists, a tick spawns no pass, starts no task and runs no tidy or test-map step.
+ // It still owes what it owed before.
+ // That is logged once per episode,
+ // and the state record's upkeep and the landing count go on.
++// A test-map step that fails is logged once per episode and does not end the tick, since the refresh is optional.
+ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 	d.sleepWatch.Observe(now, d.deps.Awake())
+ 	seen := d.sleepWatch.Sleeps()
+@@ -638,6 +649,11 @@ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 		if err := d.tidyStep(ctx, now); err != nil {
+ 			return err
+ 		}
++		if err := d.testMapStep(now); err != nil {
++			d.testMapFailures.Fail("dobbyengine: the test-map refresh step failed; the tick goes on and the step is tried again", "worktree", d.geom.WorktreeName, "error", err)
++		} else {
++			d.testMapFailures.Recover("dobbyengine: the test-map refresh step works again", "worktree", d.geom.WorktreeName)
++		}
+ 	}
+ 	if err := d.landBeam(ctx); err != nil {
+ 		return err
+diff --git a/internal/dobbyengine/loop_move_test.go b/internal/dobbyengine/loop_move_test.go
+index 7e1e58c1..dfc8dc16 100644
+--- a/internal/dobbyengine/loop_move_test.go
++++ b/internal/dobbyengine/loop_move_test.go
+@@ -15,8 +15,8 @@ import (
+ )
+ 
+ // TestRun_NoPassWhileAMoveStands drives ticks with a move record present and then removed.
+-// While the record stands, no pass, task or tidy agent starts, though a landing is still counted.
+-// The next tick starts the due pass, the ready task and the tidy agent.
++// While the record stands, no pass, task, tidy agent or test-map refresh starts, though a landing is still counted.
++// The next tick starts the due pass, the ready task, the tidy agent and the refresh.
+ func TestRun_NoPassWhileAMoveStands(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -33,7 +33,7 @@ func TestRun_NoPassWhileAMoveStands(t *testing.T) {
+ 
+ 	passes, fullPasses := map[string]int{}, map[string]int{}
+ 	shuttle := &tidyShuttleFake{}
+-	landingReads := 0
++	landingReads, refreshes := 0, 0
+ 	h.deps.Runs = func() ([]RunView, error) { return []RunView{runningRun("due")}, nil }
+ 	h.deps.SpawnPass = func(slug string, continuePass, _ bool) (<-chan PassExit, error) {
+ 		passes[slug]++
+@@ -49,7 +49,14 @@ func TestRun_NoPassWhileAMoveStands(t *testing.T) {
+ 	h.deps.Tasks = func() ([]TaskView, error) {
+ 		return []TaskView{{Slug: "fresh", Kind: boardengine.KindTask, Parent: h.geom.WorktreeName}}, nil
+ 	}
+-	h.deps.LoadConfig = func() (Config, error) { return Config{MaxRuns: 5, BoardTidyEvery: 1, BoardTidyTimeoutMin: 30}, nil }
++	h.deps.LoadConfig = func() (Config, error) {
++		return Config{MaxRuns: 5, BoardTidyEvery: 1, BoardTidyTimeoutMin: 30, TestMapEvery: 1, TestMapBatch: testMapBatch}, nil
++	}
++	h.deps.TestMapRunning = func() (bool, error) { return false, nil }
++	h.deps.StartTestMap = func(int) error {
++		refreshes++
++		return nil
++	}
+ 	// The first read baselines the landings, so the one landing shows from the second tick on.
+ 	h.deps.Landings = func() ([]string, error) {
+ 		landingReads++
+@@ -66,8 +73,8 @@ func TestRun_NoPassWhileAMoveStands(t *testing.T) {
+ 	h.perTick = func(n int) error {
+ 		switch n {
+ 		case 1, 2:
+-			if len(passes) != 0 || len(shuttle.started) != 0 {
+-				t.Errorf("after tick %d with the record standing, passes = %v and tidy agents = %d; want none", n, passes, len(shuttle.started))
++			if len(passes) != 0 || len(shuttle.started) != 0 || refreshes != 0 {
++				t.Errorf("after tick %d with the record standing, passes = %v, tidy agents = %d and refreshes = %d; want none", n, passes, len(shuttle.started), refreshes)
+ 			}
+ 			if n == 2 {
+ 				if err := os.Remove(record); err != nil {
+@@ -75,8 +82,8 @@ func TestRun_NoPassWhileAMoveStands(t *testing.T) {
+ 				}
+ 			}
+ 		case 3:
+-			if passes["due"] != 1 || passes["fresh"] != 1 || len(shuttle.started) != 1 {
+-				t.Errorf("after tick 3 with the record gone, passes = %v and tidy agents = %d; want one pass of the due run, one first pass of the ready task and one tidy agent", passes, len(shuttle.started))
++			if passes["due"] != 1 || passes["fresh"] != 1 || len(shuttle.started) != 1 || refreshes != 1 {
++				t.Errorf("after tick 3 with the record gone, passes = %v, tidy agents = %d and refreshes = %d; want one pass of the due run, one first pass of the ready task, one tidy agent and one refresh", passes, len(shuttle.started), refreshes)
+ 			}
+ 		}
+ 		return nil
+diff --git a/internal/dobbyengine/state.go b/internal/dobbyengine/state.go
+index ab18e82c..1eee03b8 100644
+--- a/internal/dobbyengine/state.go
++++ b/internal/dobbyengine/state.go
+@@ -36,6 +36,8 @@ type State struct {
+ 	// LandingsMachineOnly reports whether LandedSinceTidy holds only this machine's landings.
+ 	// A record without the key decodes as false, and the next landing count empties its list once.
+ 	LandingsMachineOnly bool `json:"landings_machine_only,omitempty"`
++	// LandingsSinceTestMap counts the landings since the prime's dobby last started a test-map refresh.
++	LandingsSinceTestMap int `json:"landings_since_test_map,omitempty"`
+ 	// Tidy is the board-tidy agent in flight, nil when none is.
+ 	Tidy *TidyState `json:"tidy,omitempty"`
+ 	// LandNotices is the memory of the landing notices of the runs seen ahead of their Land row, keyed by slug.
+diff --git a/internal/dobbyengine/template.yaml b/internal/dobbyengine/template.yaml
+index 596b2096..60bfb282 100644
+--- a/internal/dobbyengine/template.yaml
++++ b/internal/dobbyengine/template.yaml
+@@ -1,6 +1,8 @@
+ max_runs: 3  # the most runs of this beam's tasks dobby drives at once; 0 starts none
+ board_tidy_every: 5  # dobby starts the board-tidy agent after this many landings; 0 never tidies
+ board_tidy_timeout_min: 30  # the minutes the board-tidy agent may run before dobby gives up on it
++test_map_every: 5  # the prime's dobby starts lym gate testmap after this many landings; 0 never refreshes the coverage maps
++test_map_batch: 5  # the most stale packages one refresh the prime's dobby starts builds a coverage map for (its --max); at least 1
+ task_headroom: 500  # the fewest free tasks under the cgroup task limit (pids.max) for dobby to start a run; 0 never holds a start
+ pull_request: "on"  # whether a landing into this worktree's branch goes through a GitHub pull request: on (unless the entry's pull_request field is off), off (only when the entry's field is on), required (always, whatever the field says) or merge (always, squash-merged on GitHub at once with no review, for a branch the remote takes only through a pull request)
+ land_notice: per-task  # which runs dobby posts a line to the orch for once they land or end without landing: all, per-task (only a task whose board entry carries notify_on_land) or off
+diff --git a/internal/dobbyengine/testmap.go b/internal/dobbyengine/testmap.go
+new file mode 100644
+index 00000000..025a85d7
+--- /dev/null
++++ b/internal/dobbyengine/testmap.go
+@@ -0,0 +1,60 @@
++// testmap.go implements the prime dobby's test-map refresh step, which starts `lym gate testmap` every few landings.
++
++package dobbyengine
++
++import (
++	"fmt"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// testMapStep starts a test-map refresh once test_map_every landings were counted since the last one, 0 meaning never.
++// The refresh builds at most test_map_batch stale packages, and the count starts again from zero.
++// While a refresh is live, one an earlier dobby started included, it starts none and keeps the count,
++// so the refresh starts on the first tick after the live one ended.
++// A start that fails keeps the count too, and the next tick tries again.
++// While test_map_every is 0 it zeroes the count.
++// Enabling the key later therefore starts no refresh on landings counted while it was off.
++func (d *daemon) testMapStep(now time.Time) error {
++	if d.deps.StartTestMap == nil || d.deps.TestMapRunning == nil {
++		return nil
++	}
++	cfg, err := d.deps.LoadConfig()
++	if err != nil {
++		return fmt.Errorf("load beam.yaml: %w", err)
++	}
++	current, _, err := ReadState(d.geom.StatePath)
++	if err != nil {
++		return err
++	}
++	landings := current.LandingsSinceTestMap
++	if cfg.TestMapEvery == 0 {
++		if landings == 0 {
++			return nil
++		}
++		return UpdateState(d.geom.StatePath, func(s *State) error {
++			s.LandingsSinceTestMap = 0
++			return nil
++		})
++	}
++	if landings < cfg.TestMapEvery {
++		return nil
++	}
++	running, err := d.deps.TestMapRunning()
++	if err != nil {
++		return fmt.Errorf("read whether a test-map refresh runs: %w", err)
++	}
++	if running {
++		return nil
++	}
++	if err := d.deps.StartTestMap(cfg.TestMapBatch); err != nil {
++		return fmt.Errorf("start the test-map refresh: %w", err)
++	}
++	logger.Info("dobbyengine: the test-map refresh started", "worktree", d.geom.WorktreeName, "landings", landings, "max", cfg.TestMapBatch)
++	d.logLine(now, fmt.Sprintf("test-map refresh started after %d landings, at most %d packages", landings, cfg.TestMapBatch))
++	return UpdateState(d.geom.StatePath, func(s *State) error {
++		s.LandingsSinceTestMap = 0
++		return nil
++	})
++}
+diff --git a/internal/dobbyengine/testmap_test.go b/internal/dobbyengine/testmap_test.go
+new file mode 100644
+index 00000000..18756446
+--- /dev/null
++++ b/internal/dobbyengine/testmap_test.go
+@@ -0,0 +1,289 @@
++// testmap_test.go pins the prime dobby's test-map refresh step over fake seams and a temp state record:
++// the landing count, the start every few landings, the hold while a refresh is live, a failed start or read,
++// and that a failing step leaves the rest of the tick running.
++
++package dobbyengine
++
++import (
++	"errors"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// testMapBatch is the test_map_batch the harness's config resolves.
++const testMapBatch = 3
++
++// testMapHarness drives a daemon's landing count and test-map step over fakes.
++type testMapHarness struct {
++	t      *testing.T
++	d      *daemon
++	landed []string
++	every  int
++	// running is what TestMapRunning reads; startErr is what StartTestMap returns.
++	running  bool
++	startErr error
++	// configErr and runningErr, when set, are what LoadConfig and TestMapRunning return.
++	configErr  error
++	runningErr error
++	// started holds the --max of each refresh started.
++	started []int
++	// logged holds the dobby log lines written, without their timestamps.
++	logged []string
++	now    time.Time
++}
++
++func newTestMapHarness(t *testing.T, every int) *testMapHarness {
++	t.Helper()
++	h := &testMapHarness{t: t, every: every, now: time.Date(2026, 11, 9, 12, 0, 0, 0, time.UTC)}
++	h.d = h.daemonOver(filepath.Join(t.TempDir(), StateFileName))
++	return h
++}
++
++// daemonOver builds a daemon over a state path, as a restarted dobby would build one over the same record.
++func (h *testMapHarness) daemonOver(statePath string) *daemon {
++	return &daemon{
++		geom: Geometry{WorktreeName: "prime", StatePath: statePath},
++		deps: Deps{
++			LoadConfig: func() (Config, error) {
++				if h.configErr != nil {
++					return Config{}, h.configErr
++				}
++				return Config{TestMapEvery: h.every, TestMapBatch: testMapBatch}, nil
++			},
++			Landings:       func() ([]string, error) { return slices.Clone(h.landed), nil },
++			TestMapRunning: func() (bool, error) { return h.running, h.runningErr },
++			StartTestMap: func(maxPackages int) error {
++				if h.startErr != nil {
++					return h.startErr
++				}
++				h.started = append(h.started, maxPackages)
++				return nil
++			},
++			Log: func(_, line string, _ bool) {
++				_, text, _ := strings.Cut(line, " ")
++				h.logged = append(h.logged, text)
++			},
++		},
++	}
++}
++
++// step runs the landing count and the test-map step at the harness's clock and returns the step's error.
++func (h *testMapHarness) step() error {
++	h.t.Helper()
++	if err := h.d.countLandings(h.now); err != nil {
++		h.t.Fatalf("countLandings() = %v; want nil", err)
++	}
++	return h.d.testMapStep(h.now)
++}
++
++// mustStep runs step and fails the test on its error.
++func (h *testMapHarness) mustStep() {
++	h.t.Helper()
++	if err := h.step(); err != nil {
++		h.t.Fatalf("testMapStep() = %v; want nil", err)
++	}
++}
++
++// setTidy records a board-tidy agent in flight in the state record, or clears it when tidy is nil.
++func (h *testMapHarness) setTidy(tidy *TidyState) {
++	h.t.Helper()
++	err := UpdateState(h.d.geom.StatePath, func(s *State) error {
++		s.Tidy = tidy
++		return nil
++	})
++	if err != nil {
++		h.t.Fatalf("UpdateState() = %v; want nil", err)
++	}
++}
++
++func (h *testMapHarness) count() int {
++	h.t.Helper()
++	current, _, err := ReadState(h.d.geom.StatePath)
++	if err != nil {
++		h.t.Fatalf("ReadState() = %v; want nil", err)
++	}
++	return current.LandingsSinceTestMap
++}
++
++func TestTestMapStep(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	t.Run("every test_map_every landings start one refresh capped at test_map_batch", func(t *testing.T) {
++		t.Parallel()
++		h := newTestMapHarness(t, 2)
++		h.landed = []string{"old"}
++		h.mustStep()
++		h.landed = []string{"old", "a"}
++		h.mustStep()
++		if len(h.started) != 0 || h.count() != 1 {
++			t.Fatalf("started, count = %v, %d after one landing; want none started and a count of 1", h.started, h.count())
++		}
++		h.landed = []string{"old", "a", "b"}
++		h.mustStep()
++		if !slices.Equal(h.started, []int{testMapBatch}) || h.count() != 0 {
++			t.Fatalf("started, count = %v, %d after two landings; want [%d] and the count reset", h.started, h.count(), testMapBatch)
++		}
++		if want := "test-map refresh started after 2 landings, at most 3 packages"; !slices.Equal(h.logged, []string{want}) {
++			t.Errorf("log lines = %q; want the one %q", h.logged, want)
++		}
++		h.landed = []string{"old", "a", "b", "c", "d"}
++		h.mustStep()
++		if !slices.Equal(h.started, []int{testMapBatch, testMapBatch}) {
++			t.Errorf("started = %v after two more landings; want a second refresh", h.started)
++		}
++	})
++
++	t.Run("test_map_every 0 starts none and keeps no count, so enabling it later starts none on old landings", func(t *testing.T) {
++		t.Parallel()
++		h := newTestMapHarness(t, 0)
++		h.mustStep()
++		h.landed = []string{"a", "b", "c"}
++		h.mustStep()
++		if len(h.started) != 0 || h.count() != 0 {
++			t.Fatalf("started, count = %v, %d with the key at 0; want none started and a count of 0", h.started, h.count())
++		}
++		h.every = 2
++		h.mustStep()
++		if len(h.started) != 0 {
++			t.Errorf("started = %v after the key was enabled; want none on the landings counted while it was off", h.started)
++		}
++	})
++
++	t.Run("a live refresh holds the start across a restart, and the next tick after it ended starts one", func(t *testing.T) {
++		t.Parallel()
++		h := newTestMapHarness(t, 2)
++		h.running = true
++		h.mustStep()
++		h.landed = []string{"a", "b"}
++		h.mustStep()
++		h.d = h.daemonOver(h.d.geom.StatePath)
++		h.mustStep()
++		if len(h.started) != 0 || h.count() != 2 {
++			t.Fatalf("started, count = %v, %d while a refresh is live; want none started and the count kept", h.started, h.count())
++		}
++		h.running = false
++		h.mustStep()
++		if !slices.Equal(h.started, []int{testMapBatch}) || h.count() != 0 {
++			t.Errorf("started, count = %v, %d once the refresh ended; want [%d] and the count reset", h.started, h.count(), testMapBatch)
++		}
++	})
++
++	t.Run("a start that fails keeps the count and the next tick starts it", func(t *testing.T) {
++		t.Parallel()
++		h := newTestMapHarness(t, 1)
++		h.mustStep()
++		h.landed = []string{"a"}
++		h.startErr = errors.New("no binary")
++		if err := h.step(); err == nil || !strings.Contains(err.Error(), "start the test-map refresh: no binary") {
++			t.Fatalf("testMapStep() = %v; want the start's error", err)
++		}
++		if h.count() != 1 || len(h.logged) != 0 {
++			t.Fatalf("count, log lines = %d, %q after a failed start; want the count kept and no line", h.count(), h.logged)
++		}
++		h.startErr = nil
++		h.mustStep()
++		if !slices.Equal(h.started, []int{testMapBatch}) {
++			t.Errorf("started = %v; want the retried refresh", h.started)
++		}
++	})
++
++	t.Run("a failing read returns its wrapped error, keeps the count and starts none", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name    string
++			arrange func(h *testMapHarness)
++			wantErr string
++		}{
++			{"the config does not load", func(h *testMapHarness) { h.configErr = errors.New("unreadable") }, "load beam.yaml: unreadable"},
++			{"the liveness read fails", func(h *testMapHarness) { h.runningErr = errors.New("unreadable") }, "read whether a test-map refresh runs: unreadable"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				h := newTestMapHarness(t, 1)
++				h.mustStep()
++				h.landed = []string{"a"}
++				tt.arrange(h)
++				if err := h.step(); err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Fatalf("testMapStep() = %v; want an error holding %q", err, tt.wantErr)
++				}
++				if len(h.started) != 0 || h.count() != 1 {
++					t.Errorf("started, count = %v, %d after the failed read; want none started and the count kept", h.started, h.count())
++				}
++			})
++		}
++	})
++
++	t.Run("a board-tidy agent in flight counts no landing for the refresh, and the landing counts once it ended", func(t *testing.T) {
++		t.Parallel()
++		h := newTestMapHarness(t, 5)
++		h.mustStep()
++		h.setTidy(&TidyState{StrandGUID: "agent"})
++		h.landed = []string{"a"}
++		h.mustStep()
++		if h.count() != 0 {
++			t.Fatalf("count = %d while a tidy agent is in flight; want 0", h.count())
++		}
++		h.setTidy(nil)
++		h.mustStep()
++		if h.count() != 1 {
++			t.Errorf("count = %d once the tidy agent ended; want the landing counted", h.count())
++		}
++	})
++
++	t.Run("a dobby without the refresh seams counts no landing for it and starts none", func(t *testing.T) {
++		t.Parallel()
++		h := newTestMapHarness(t, 1)
++		h.d.deps.StartTestMap, h.d.deps.TestMapRunning = nil, nil
++		h.mustStep()
++		h.landed = []string{"a", "b"}
++		h.mustStep()
++		if h.count() != 0 {
++			t.Errorf("count = %d; want 0 with the refresh off", h.count())
++		}
++	})
++}
++
++// TestRun_AFailingTestMapStartLeavesTheRestOfTheTick drives ticks whose test-map start fails.
++// The tick's later steps still run, shown by the Tick hook that ends it, and each tick tries the start again.
++func TestRun_AFailingTestMapStartLeavesTheRestOfTheTick(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	h := newLoopHarness(t, 3)
++	landingReads, starts := 0, 0
++	h.deps.LoadConfig = func() (Config, error) { return Config{TestMapEvery: 1, TestMapBatch: testMapBatch}, nil }
++	// The first read baselines the landings, so the one landing shows from the second tick on.
++	h.deps.Landings = func() ([]string, error) {
++		landingReads++
++		if landingReads == 1 {
++			return nil, nil
++		}
++		return []string{"landed"}, nil
++	}
++	h.deps.TestMapRunning = func() (bool, error) { return false, nil }
++	h.deps.StartTestMap = func(int) error {
++		starts++
++		// Ends the run once the start was tried twice, so a tick that returns early fails the test at once.
++		if starts == 2 {
++			h.cancel()
++		}
++		return errors.New("no binary")
++	}
++
++	if err := h.run(t); err != nil {
++		t.Fatalf("Run() = %v; want nil", err)
++	}
++	if len(h.ticks) != 3 {
++		t.Errorf("ticks that reached the Tick hook = %d; want 3", len(h.ticks))
++	}
++	if starts != 2 {
++		t.Errorf("starts tried = %d; want one on each tick after the landing was counted", starts)
++	}
++}
+diff --git a/internal/dobbyengine/tidy.go b/internal/dobbyengine/tidy.go
+index 5b73709d..34ae4cb0 100644
+--- a/internal/dobbyengine/tidy.go
++++ b/internal/dobbyengine/tidy.go
+@@ -106,6 +106,8 @@ func TidySpec(prompt, reportPath string, model shuttleengine.ModelChoice, timeou
+ // so the record's slugs since the last tidy are exactly the agent's.
+ // A baselined record not yet marked machine-only has its landed-since-tidy list emptied once, ahead of the count.
+ // The list may hold other machines' landings.
++// Where the test-map refresh is wired, each landing counted also adds one to the refresh's count.
++// The test-map step zeroes that count while test_map_every is 0.
+ func (d *daemon) countLandings(now time.Time) error {
+ 	if d.deps.Landings == nil {
+ 		return nil
+@@ -139,6 +141,9 @@ func (d *daemon) countLandings(now time.Time) error {
+ 			s.CountedLandings[slug] = true
+ 			s.LandedSinceTidy = append(s.LandedSinceTidy, slug)
+ 		}
++		if d.deps.StartTestMap != nil {
++			s.LandingsSinceTestMap += len(fresh)
++		}
+ 		return nil
+ 	})
+ }
+diff --git a/internal/fabriccli/doc.go b/internal/fabriccli/doc.go
+index 619e8c8d..76064f5f 100644
+--- a/internal/fabriccli/doc.go
++++ b/internal/fabriccli/doc.go
+@@ -162,6 +162,7 @@
+ //
+ // The engine then adds its own refusals, and an equal anchor is reported as a no-op with nothing ended.
+ // A move waits, printing what it waits on to stderr, until no dobby it will end has a pass in flight.
++// The prime's test-map refresh, a child of its dobby, counts as such a pass, so the move waits out a refresh in flight.
+ // It takes the parent lock of the worktree's branch.
+ // It ends the worktree's dobby when it is a beam.
+ // For the prime it ends every dobby of the machine, sparing the push and sync roles.
+diff --git a/internal/orchcli/beamdown_test.go b/internal/orchcli/beamdown_test.go
+index 6cfc32e5..0027386c 100644
+--- a/internal/orchcli/beamdown_test.go
++++ b/internal/orchcli/beamdown_test.go
+@@ -1,9 +1,13 @@
+-// beamdown_test.go pins that `lym beam stop` removes the orch strand first and then ends the dobby only when it is live, so a second call stops nothing.
++// beamdown_test.go pins the order of `lym beam stop`.
++// It removes the orch strand first and ends the dobby only when it is live.
++// It ends the prime's test-map refresh whether or not the dobby is live, so a second call stops nothing.
+ 
+ package orchcli
+ 
+ import (
++	"errors"
+ 	"slices"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
+@@ -20,14 +24,22 @@ func TestBeamDown_StopsOrchThenTheDobbyByRole(t *testing.T) {
+ 		// dobbyLive is whether the dobby holds its lock when beamDown reads it.
+ 		dobbyLive bool
+ 		// noStrand leaves reed tracking no orch strand.
+-		noStrand       bool
++		noStrand bool
++		// testMap wires the refresh end, as for the prime; testMapFails makes it fail.
++		testMap        bool
++		testMapFails   bool
+ 		wantCalls      []string
+ 		wantOrchGone   bool
+ 		wantDobbyEnded bool
++		// wantErr is the text the returned error holds, empty for none.
++		wantErr string
+ 	}{
+ 		{name: "the tracked orch is removed and then the live dobby ended", dobbyLive: true, wantCalls: []string{"remove", "end-dobby"}, wantOrchGone: true, wantDobbyEnded: true},
+ 		{name: "a dead dobby is not ended", wantCalls: []string{"remove"}, wantOrchGone: true},
+ 		{name: "a second call stops nothing", noStrand: true, wantCalls: nil},
++		{name: "the prime's refresh is ended after its live dobby", dobbyLive: true, testMap: true, wantCalls: []string{"remove", "end-dobby", "end-test-map"}, wantOrchGone: true, wantDobbyEnded: true},
++		{name: "the prime's refresh is ended though its dobby is dead", testMap: true, wantCalls: []string{"remove", "end-test-map"}, wantOrchGone: true},
++		{name: "a refresh end that fails is returned after the dobby ended", dobbyLive: true, testMap: true, testMapFails: true, wantCalls: []string{"remove", "end-dobby", "end-test-map"}, wantOrchGone: true, wantDobbyEnded: true, wantErr: "end the test-map refresh"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -46,12 +58,24 @@ func TestBeamDown_StopsOrchThenTheDobbyByRole(t *testing.T) {
+ 				h.calls = append(h.calls, "end-dobby")
+ 				return nil
+ 			}
++			if tt.testMap {
++				h.cli.endTestMap = func() error {
++					h.calls = append(h.calls, "end-test-map")
++					if tt.testMapFails {
++						return errors.New("survivors")
++					}
++					return nil
++				}
++			}
+ 
+ 			report, err := h.cli.beamDown()
+ 
+-			if err != nil {
++			if tt.wantErr == "" && err != nil {
+ 				t.Fatalf("beamDown() error = %v; want none", err)
+ 			}
++			if tt.wantErr != "" && (err == nil || !strings.Contains(err.Error(), tt.wantErr) || !strings.Contains(err.Error(), "survivors")) {
++				t.Fatalf("beamDown() error = %v; want one holding %q and the end's cause", err, tt.wantErr)
++			}
+ 			if !slices.Equal(h.calls, tt.wantCalls) {
+ 				t.Errorf("calls = %v; want %v", h.calls, tt.wantCalls)
+ 			}
+diff --git a/internal/orchcli/cli.go b/internal/orchcli/cli.go
+index 0800585f..6bef9bf5 100644
+--- a/internal/orchcli/cli.go
++++ b/internal/orchcli/cli.go
+@@ -122,6 +122,8 @@ type orchCLI struct {
+ 	dobbyLive func() (bool, error)
+ 	// endDobby ends this worktree's dobby and the processes below it, and no other process of the beam.
+ 	endDobby func() error
++	// endTestMap ends the test-map refresh the prime's dobby started, and no other process; nil, as for a beam, ends none.
++	endTestMap func() error
+ 	// reapInherited waits on the children a re-exec'd watcher inherited, which `watch` calls before it starts anything.
+ 	reapInherited func()
+ }
+@@ -268,14 +270,21 @@ func wireCLI(c *orchCLI, location *lymcwd.Location) error {
+ 		}
+ 		return dobbyengine.Live(geometry)
+ 	}
++	runProcDir := fabricengine.RunProcDir(location.HubPath)
+ 	owner := runproc.HubOwner
+ 	if beam {
+ 		owner = location.WorktreeName
+ 	}
+ 	c.endDobby = func() error {
+-		_, err := runproc.EndRole(fabricengine.RunProcDir(location.HubPath), owner, runproc.RoleDobby, os.Getpid())
++		_, err := runproc.EndRole(runProcDir, owner, runproc.RoleDobby, os.Getpid())
+ 		return err
+ 	}
++	if !beam {
++		c.endTestMap = func() error {
++			_, err := runproc.EndRole(runProcDir, runproc.HubOwner, runproc.RoleTestMap, os.Getpid())
++			return err
++		}
++	}
+ 	return nil
+ }
+ 
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index b643e01f..d14f2d20 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -40,6 +40,9 @@
+ // `BeamDown` removes the orch strand, after which the watcher exits on its own.
+ // It ends the worktree's dobby through `runproc.EndRole`, so no other process of the beam is signalled;
+ // each part stops only when live.
++// For the prime it then ends the test-map refresh the dobby started, whether or not the dobby is live.
++// The refresh is the `runproc.RoleTestMap` record under `runproc.HubOwner`.
++// That refresh has its own record and process group and so outlives the dobby's end.
+ // `OrchLive` is the liveness predicate other modules call:
+ // the worktree's orch state records a strand that reed tracks and reports live.
+ //
+diff --git a/internal/orchcli/stop.go b/internal/orchcli/stop.go
+index 6124b6ac..7d692487 100644
+--- a/internal/orchcli/stop.go
++++ b/internal/orchcli/stop.go
+@@ -34,6 +34,7 @@ type BeamDownReport struct {
+ // BeamDown takes the worktree at location down.
+ // It removes the orch strand, after which the watcher exits on its own,
+ // and it ends the worktree's dobby when one is live.
++// For the prime it also ends the test-map refresh the dobby started, whether or not the dobby is live.
+ // Each part stops only when live, so a second call stops nothing.
+ // It refuses a worktree that is neither the prime nor a beam.
+ func BeamDown(location *lymcwd.Location) (BeamDownReport, error) {
+@@ -46,6 +47,8 @@ func BeamDown(location *lymcwd.Location) (BeamDownReport, error) {
+ 
+ // beamDown runs the bring-down steps on a receiver that has already been wired.
+ // The dobby is ended through the receiver's role-scoped end, so no other process of the beam is signalled.
++// The prime's test-map refresh has its own record and process group, so the dobby's end leaves it running;
++// it is ended after the dobby, which then starts no refresh, and whether or not the dobby was live.
+ func (c *orchCLI) beamDown() (BeamDownReport, error) {
+ 	report := BeamDownReport{Worktree: c.location.WorktreeName}
+ 	removed, strand, err := c.stopOrch()
+@@ -53,20 +56,24 @@ func (c *orchCLI) beamDown() (BeamDownReport, error) {
+ 		return report, err
+ 	}
+ 	report.OrchRemoved, report.Strand = removed, strand
+-	if c.dobbyLive == nil {
+-		return report, nil
+-	}
+-	live, err := c.dobbyLive()
+-	if err != nil {
+-		return report, fmt.Errorf("orch: read whether the dobby of %s is live: %w", c.location.WorktreeName, err)
++	live := false
++	if c.dobbyLive != nil {
++		live, err = c.dobbyLive()
++		if err != nil {
++			return report, fmt.Errorf("orch: read whether the dobby of %s is live: %w", c.location.WorktreeName, err)
++		}
+ 	}
+-	if !live {
+-		return report, nil
++	if live {
++		if err := c.endDobby(); err != nil {
++			return report, fmt.Errorf("orch: end the dobby of %s: %w", c.location.WorktreeName, err)
++		}
++		report.DobbyEnded = true
+ 	}
+-	if err := c.endDobby(); err != nil {
+-		return report, fmt.Errorf("orch: end the dobby of %s: %w", c.location.WorktreeName, err)
++	if c.endTestMap != nil {
++		if err := c.endTestMap(); err != nil {
++			return report, fmt.Errorf("orch: end the test-map refresh of %s: %w", c.location.WorktreeName, err)
++		}
+ 	}
+-	report.DobbyEnded = true
+ 	return report, nil
+ }
+ 
+diff --git a/internal/runproc/record.go b/internal/runproc/record.go
+index c2e32fe8..e0226629 100644
+--- a/internal/runproc/record.go
++++ b/internal/runproc/record.go
+@@ -47,6 +47,8 @@ const (
+ 	RoleTeardown = "teardown"
+ 	// RoleSlackRelay is the hub's Slack relay, registered under HubOwner.
+ 	RoleSlackRelay = "slack-relay"
++	// RoleTestMap is the `lym gate testmap` refresh the prime's dobby starts, registered under HubOwner.
++	RoleTestMap = "test-map"
+ )
+ 
+ // Record is one registered process of a run.
