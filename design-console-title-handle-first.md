@@ -15,7 +15,7 @@ Put the leading handle first and set the hub and project apart in brackets:
 - A task: `T2 [ly:P1] adopt-worker-record`.
 - A task under root names root's project, `P0`: `T5 [ly:P0] machine-name-file`.
 - An orch leads with `ORCH` in place of a task handle:
-  the prime's orch is `ORCH [ly:P0]`, and a beam's orch is `ORCH [ly:P1] adopt-takeover`, naming its beam's project and slug.
+  the prime's orch is `ORCH [ly:P0] Prime`, and a beam's orch is `ORCH [ly:P1] adopt-takeover`, naming its beam's project and slug.
 
-Fixed by the operator: the handle comes first, brackets read better than a chain of colons, and root is project `P0`.
+Fixed by the operator: the handle comes first, brackets read better than a chain of colons, root is project `P0`, and the prime's orch is `ORCH [ly:P0] Prime`.
 Still open: the exact form of the bracket, and the title of the other windows that hold no task, such as the runs window, in the same style.
