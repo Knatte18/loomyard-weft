@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -209,6 +209,21 @@
       "output": "",
       "at": "2026-11-09T13:06:23Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/raddle-perch-mode/_lym/landing/summary.md",
+      "at": "2026-11-09T13:07:06Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-09T13:07:04.244180364Z",
+          "end": "2026-11-09T13:07:04.244238883Z"
+        }
+      ]
     }
   ],
   "product": {
