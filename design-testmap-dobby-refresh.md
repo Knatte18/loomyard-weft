@@ -1,6 +1,6 @@
 # The prime parent's dobby starts lym gate testmap after every test_map_every landings
 
-`testmap-dobby-refresh` · Task · feature, testkit, gate · running · Drift-Await
+`testmap-dobby-refresh` · Task · feature, testkit, gate · running · Drift-Expect
 
 Decision record: [Sketch](decision-testmap-dobby-refresh.md)
 
