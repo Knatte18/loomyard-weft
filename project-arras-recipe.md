@@ -1,6 +1,6 @@
 # P4 Arras: one recipe that runs Motif and raddle in a row, with a perch on the split
 
-Rendered 2026-11-09 12:01 UTC; every age below is as of then.
+Rendered 2026-11-09 12:03 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`arras-recipe`](design-arras-recipe.md) · Age 19h · Owner `osl-1046`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Releasing a project with lym board set-status releases its draft member tasks** | [`project-release-members`](design-project-release-members.md)<br>[Sketch](decision-project-release-members.md) | darn · light | Code-Burler-Review | osl-1046 | 19h<br>19h | shed, loom, burler, arbiter, board |
+| T4 | **Releasing a project with lym board set-status releases its draft member tasks** | [`project-release-members`](design-project-release-members.md)<br>[Sketch](decision-project-release-members.md) | darn · light | Code-Burler-Fix | osl-1046 | 19h<br>19h | shed, loom, burler, arbiter, board |
 | T5 | **Raddle's perch mode: recorded from the recipe's rows, with its outcome checks and refusals** | [`raddle-perch-mode`](design-raddle-perch-mode.md)<br>[Sketch](decision-raddle-perch-mode.md) | darn · solid | Darn-Write | osl-1046 | 19h<br>19h | shed, loom, burler, arbiter, board |
 
 ### Ready (0)

@@ -1,6 +1,6 @@
 # Releasing a project with lym board set-status releases its draft member tasks
 
-`project-release-members` · Task · feature, shed, loom, burler, arbiter, board · running · Code-Burler-Review
+`project-release-members` · Task · feature, shed, loom, burler, arbiter, board · running · Code-Burler-Fix
 
 Decision record: [Sketch](decision-project-release-members.md)
 
