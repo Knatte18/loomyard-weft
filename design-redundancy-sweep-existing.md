@@ -5,7 +5,7 @@
 ## Seen (orch, 2026-11-09)
 
 The coverage maps (`internal/testcover`, rebuilt by `lym gate testmap`) record, per package, the blocks each tier 0 and tier 1 test covers.
-The planned gate report judges only the new tests of a diff against the map; nothing yet uses the maps to find redundant tests that already exist.
+The gate report (the advisory redundancy step of `lym gate test`, landed as `7f21142e`) judges only the new tests of a diff against the map; nothing yet uses the maps to find redundant tests that already exist.
 The operator wants the existing ones cut, across the packages, not only kept from growing.
 
 ## Idea

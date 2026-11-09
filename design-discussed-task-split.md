@@ -73,7 +73,6 @@ A Sketch with no stored record is refused, naming `motif`.
   The perch's approval files the proposal in place of the operator's, and `raddle_auto_approve` is never read; `raddle-approve` refuses, naming the perch.
   Perch mode allows one task (shape `tapestry`, or shape `tasks` with one part) or one project (shape `project` whose slug is the run's own entry); shape `beam`, several task parts and a project under another slug fail the `perch-outcome` check.
   A perch-mode `lym loom decision add` is refused from Raddle-File on, with a way forward.
-  Filing a perch-mode project as the converted entry comes with `arras-family-filing`; here such a proposal only passes the checks.
 - Built (2026-11-09, `df15bb6a`): task `arras-recipe-perch`.
   The recipe `arras` runs the `Motif` block (Discussion), `Raddle-Write`, a split perch and `Raddle-File` in one run that lands no code, so a task goes from its Discussion to filed parts with the split reviewed before it is filed.
   The perch is the rows `Raddle-Bouncer`, `Raddle-Burler-Review` and `Raddle-Burler-Fix`; the rubric stencil `loom-rubric-raddle-review.md` judges the split against the whole record, and the loom keys `split_*` tune it.
@@ -81,6 +80,10 @@ A Sketch with no stored record is refused, naming `motif`.
   An arras run restarted after its Discussion approval skips Discussion and resumes at `Raddle-Write`.
   Not run end to end yet: an arras task through Discussion, the perch and `Raddle-File`, including one `Raddle-File` return.
   Open: a decision added after the perch's last approving round reaches every part's record but is not reviewed against the split's seams; accepted in the design.
+- Built (2026-11-09, `08c200ad`): task `arras-family-filing`.
+  A perch-mode family is filed under the run's own slug: Raddle-File's single board write turns the arras entry into a discussed `project` that keeps its slug, title and labels, with the parts as draft members listed in its `order` and the whole Sketch record stored on it.
+  Every other entry's `depends_on` on the arras slug moves onto the filed parts no other part depends on, so dependents wait for the filed work to land; a board refusal of that re-point halts the run for its parent instead of returning to Raddle-Write.
+  A filing mark under `shedrun.RunDir` makes loom's and batten's status writes skip the converted entry.
 - Raddle-File re-checks the board, then files every entry in one write, each with its part of the record stored and `discussed` set, creates the beam for shape `beam` and hands the Sketch slug and proposal to the beam's orch in Beam-Up.
   Built (2026-11-07, `731004c3`): filing releases nothing.
   Every filed task, project members included, stays `draft` until the operator releases it with `lym board set-status`; the earlier release step is removed.
@@ -120,7 +123,7 @@ Built as Raddle-Write above; what follows is the original design.
    Parts run with review off; one review covers the whole diff after the last lands.
    It is tried first as a hand-run test project with the projects and beams that exist, measured against tapestry runs of the same size (`docs/research/tokens/token-audit-2026-10-22`), and built only if it saves tokens.
    The risk: tapestry's build is cheap because Webster runs on Sonnet following an Opus plan, while parts under a coarse pre-plan likely need Opus writers.
-   Since 2026-11-09 the recipe `arras` covers Discussion and a reviewed split (filing a project comes with `arras-family-filing`), so `stitch` would add only the inner run that lands the whole family under one review.
+   Since 2026-11-09 the recipe `arras` covers Discussion and a reviewed split and files a family as a project under the run's own slug (`arras-family-filing`), so `stitch` would add only the inner run that lands the whole family under one review.
 
 ## Open
 
