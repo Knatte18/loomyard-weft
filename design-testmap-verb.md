@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-testmap-verb.md)
 
-Depends on: [`testcover-engine`](design-testcover-engine.md)
-
 Filed from the Sketch `redundant-test-finder`.
 
 Takes: testcover-engine's runner, block keys and map record

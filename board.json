@@ -580,30 +580,6 @@
       "discussed": true
     },
     {
-      "id": 1245,
-      "handle": "T1",
-      "slug": "testcover-engine",
-      "title": "internal/testcover: the coverage runner, content block keys and the map record, with testtiming's package-scoped verdict",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "testkit",
-        "gate"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: cmd/testtiming's runner, profile parsing, containment and greedy pass, spawn scan and keep scan\nDelivers: internal/testcover holding the moved runner, eligibility rules, spawn scan and keep scan, content block keys (D3), the per-package map record written and read through internal/state at a path internal/lymdirs names (D4); cmd/testtiming judging by the package view with a module-wide column, its flags and -pkg splice unchanged; cmd/lym guard tests re-pointed at the moved files\nExports: the engine's build, run-alone, profile parse, block key, verdict and greedy functions, the spawn and keep scans, and the map record type with its read and write\n\nThe part changes these packages:\n\n- internal/testcover (about 1300 changed lines)\n- cmd/testtiming (about 300 changed lines)\n- cmd/lym (about 10 changed lines)\n- internal/lymdirs (about 10 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-08T18:46:50Z",
-      "revised": "2026-11-08T18:46:50Z",
-      "profile": "solid",
-      "project": "redundancy-check",
-      "discussed": true
-    },
-    {
       "id": 1246,
       "handle": "T3",
       "slug": "testmap-verb",
@@ -616,9 +592,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "testcover-engine"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: testcover-engine's runner, block keys and map record\nDelivers: the `lym gate testmap [--max \u003cn\u003e] [\u003cpackage\u003e...]` cobra verb with staleness, dirty and lock skips, mid-package hash check, timeouts with process-group kill and grace, failed-build maps and the exit record; fabricengine.CodeDirAt and CodeFileAt on the warp checkout; gate config keys test_map_max_age_days, redundancy_build_timeout_min and redundancy_test_timeout_sec\nExports: fabricengine.CodeDirAt, fabricengine.CodeFileAt, the exit record type and its read, and the per-tier run-alone with timeout that the gate step reuses\n\nThe part changes these packages:\n\n- internal/gatecli (about 600 changed lines)\n- internal/gateslot (about 80 changed lines)\n- internal/fabricengine (about 80 changed lines)\n- internal/gitrepo (about 40 changed lines)\n- internal/lymdirs (about 10 changed lines)\n- internal/testcover (about 120 changed lines)\n",
