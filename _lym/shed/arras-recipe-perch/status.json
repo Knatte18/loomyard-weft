@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,39 @@
       "output": "",
       "at": "2026-11-09T14:23:47Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/arras-recipe-perch/_lym/landing/summary.md",
+      "at": "2026-11-09T18:50:00Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-09T18:39:02.010460744Z",
+          "end": "2026-11-09T18:39:02.02871072Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-09T18:39:02.116984948Z",
+          "end": "2026-11-09T18:49:32.159983342Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-09T18:49:32.216644422Z",
+          "end": "2026-11-09T18:49:32.394002253Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-09T18:49:32.433417984Z",
+          "end": "2026-11-09T18:49:32.433530024Z"
+        }
+      ]
     }
   ],
   "product": {
