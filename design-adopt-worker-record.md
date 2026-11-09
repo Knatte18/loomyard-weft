@@ -1,6 +1,6 @@
 # Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy
 
-`adopt-worker-record` · Task · bug, batten, tender, dobby, orch, fabric, shortcut · running · Drift-Baseline
+`adopt-worker-record` · Task · bug, batten, tender, dobby, orch, fabric, shortcut · running · Parts-Write
 
 Decision record: [Sketch](decision-adopt-worker-record.md)
 
