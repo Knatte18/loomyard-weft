@@ -1,6 +1,6 @@
 # Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy
 
-`adopt-worker-record` · Task · bug, batten, tender, dobby, orch, fabric, shortcut · running · Worktree-Create
+`adopt-worker-record` · Task · bug, batten, tender, dobby, orch, fabric, shortcut · running · Seed-Child
 
 Decision record: [Sketch](decision-adopt-worker-record.md)
 
