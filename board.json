@@ -1025,7 +1025,7 @@
       "id": 1269,
       "handle": "B9",
       "slug": "codex-bubblewrap-sandbox",
-      "title": "Codex keeps forcing its bubblewrap sandbox in lym runs",
+      "title": "Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046",
       "kind": "note",
       "labels": [
         "bug",
@@ -1036,29 +1036,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen\n\nOn 2026-11-09 the operator reported that Codex has so far been mostly trouble in lym: it insists on running under its bubblewrap sandbox, which gets in the way of the work lym gives it.\n\n## Idea\n\nFind what makes Codex choose bubblewrap in a lym session and settle the sandbox mode lym launches it with, so a Codex seat runs like a Claude one.\nThe details of each failure still need collecting from the runs that hit it.",
+      "body": "## Seen\n\nOn 2026-11-09 the operator reported that Codex has so far been mostly trouble in lym: it insists on running under its bubblewrap sandbox, which gets in the way of the work lym gives it.\nThe `astra` model (`gpt-6-astra` in `models.yaml`) fails on OSL-1046 for that reason.\n`testmap-verb`'s first Code-Review round recorded its astra assist only as `assist_ending: stopped`, with no error.\nThe operator then had astra removed from every task's `run_settings`.\n\n## Idea\n\nFind what makes Codex choose bubblewrap in a lym session and settle the sandbox mode lym launches it with, so a Codex seat runs on OSL-1046 like a Claude one.\nlym reports a Codex seat that cannot start, naming the cause, instead of ending it quietly as stopped.",
       "created": "2026-11-09T18:35:39Z",
-      "revised": "2026-11-09T18:35:39Z",
-      "project": "codex-engine-trial"
-    },
-    {
-      "id": 1270,
-      "handle": "B10",
-      "slug": "astra-fails-on-osl-1046",
-      "title": "The astra Codex model does not work on OSL-1046",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "codex",
-        "shuttle"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nOn 2026-11-09 the operator reported that the `astra` model (`gpt-6-astra` in `models.yaml`) does not work at all on OSL-1046, while it may work on Neve.\n`testmap-verb`'s first Code-Review round recorded its astra assist as `assist_ending: stopped`.\nThe operator then had astra removed from every task's `run_settings`.\n\n## Idea\n\nFind why astra fails on OSL-1046, by its launch and error on that machine, and make lym report a Codex seat that cannot start instead of ending it quietly as stopped.",
-      "created": "2026-11-09T18:35:39Z",
-      "revised": "2026-11-09T18:35:39Z",
+      "revised": "2026-11-09T18:36:10Z",
       "project": "codex-engine-trial"
     }
   ],

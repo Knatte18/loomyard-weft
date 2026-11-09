@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-09 18:35 UTC; every age below is as of then.
+Rendered 2026-11-09 18:36 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md) | motif | Discussion-Write | neve | 26m<br>16m | batten, tender, dobby, orch, fabric, shortcut |
+| T14 | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md) | motif | Discussion-Write | neve | 26m<br>17m | batten, tender, dobby, orch, fabric, shortcut |
 
 ### Ready (0)
 
