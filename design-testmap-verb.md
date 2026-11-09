@@ -1,6 +1,6 @@
 # lym gate testmap rebuilds stale coverage maps in the prime parent's worktree
 
-`testmap-verb` · Task · feature, testkit, gate · running · Seed-Child
+`testmap-verb` · Task · feature, testkit, gate · running · Seed-IDE
 
 Decision record: [Sketch](decision-testmap-verb.md)
 
