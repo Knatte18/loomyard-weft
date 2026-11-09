@@ -1,6 +1,6 @@
 # Tests that compare a measured time to a limit fail on a loaded machine
 
-`load-sensitive-timing-tests` · Task · bug, gate, testkit · running · Drift-Expect
+`load-sensitive-timing-tests` · Task · bug, gate, testkit · running · Darn-Write
 
 Depends on: [`gate-redundancy-report`](design-gate-redundancy-report.md)
 
