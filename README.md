@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-09 13:20 UTC; every age below is as of then.
+Rendered 2026-11-09 13:25 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -59,7 +59,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Make the eight longest serial internal/fabricengine tests parallel**<br>• Move their package-level test state into parameters so the serial phase of tier 1 shrinks | [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md) | darn · solid | T3 | 1h<br>41m | fabric, testkit |
+| T2 | **Make the eight longest serial internal/fabricengine tests parallel**<br>• Move their package-level test state into parameters so the serial phase of tier 1 shrinks | [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md) | darn · solid | T3 | 1h<br>45m | fabric, testkit |
 
 ### Notes (1)
 
@@ -164,7 +164,7 @@ Starts when every entry it names under After is done.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (17)
+## [P0 Root: entries under no project](project-root.md) (18)
 
 Owner `osl-1046`
 
@@ -178,7 +178,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (17)
+### Notes (18)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -195,12 +195,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 22h<br>22h | shed, friction |
 
-#### Enhancements (2)
+#### Enhancements (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 1d<br>1d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 1d<br>1d | shed, loom, darn |
+| E3 |  | **Terminal titles read hub: project: slug**<br>• Every terminal and IDE window title reads <hub shortname>: <project>: <slug>, with exceptions for the prime and beams. | [`terminal-titles-hub-project`](design-terminal-titles-hub-project.md) | 0m<br>0m | ide, reed |
 
 #### Features (12)
 
