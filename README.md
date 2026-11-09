@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-09 14:23 UTC; every age below is as of then.
+Rendered 2026-11-09 14:24 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -113,14 +113,6 @@ Starts when every entry it names under After is done.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T5 | **Raddle's perch mode: recorded from the recipe's rows, with its outcome checks and refusals** | [`raddle-perch-mode`](design-raddle-perch-mode.md)<br>[Sketch](decision-raddle-perch-mode.md) | 22h<br>22h | shed, loom, burler, arbiter, board |
-
 ## [P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review](project-redundancy-check.md) (4)
 
 [`redundancy-check`](design-redundancy-check.md) · Age 19h · Owner `osl-1046`
@@ -179,7 +171,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Terminal titles read hub: project: task: slug**<br>• Every console window title reads <hub>: <P#>: <T#>: <slug>, with prime, beam and orch forms. | [`terminal-titles-hub-project`](design-terminal-titles-hub-project.md) | darn · light | Code-Bouncer | osl-1046 | 56m<br>56m | ide, reed |
-| T4 | **Machine name from a machine-wide config, not only the hostname**<br>• internal/machinename has a fixed hostname rule and no override; a machine-wide config value would let the operator name a machine osl46. | [`machine-name-config`](design-machine-name-config.md) | motif | Discussion-Burler-Review | osl-1046 | 50m<br>32m | config, slack |
+| T4 | **Machine name from a machine-wide config, not only the hostname**<br>• internal/machinename has a fixed hostname rule and no override; a machine-wide config value would let the operator name a machine osl46. | [`machine-name-config`](design-machine-name-config.md) | motif | Discussion-Burler-Review | osl-1046 | 51m<br>32m | config, slack |
 
 #### Ready (0)
 
@@ -193,7 +185,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T4 | 30m<br>27m | slack, reed, creel |
+| T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T4 | 31m<br>28m | slack, reed, creel |
 
 ### Notes (17)
 

@@ -1,6 +1,6 @@
 # P4 Arras: one recipe that runs Motif and raddle in a row, with a perch on the split
 
-Rendered 2026-11-09 14:23 UTC; every age below is as of then.
+Rendered 2026-11-09 14:24 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`arras-recipe`](design-arras-recipe.md) · Age 22h · Owner `osl-1046`
@@ -47,11 +47,3 @@ Starts when every entry it names under After is done.
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T5 | **Raddle's perch mode: recorded from the recipe's rows, with its outcome checks and refusals** | [`raddle-perch-mode`](design-raddle-perch-mode.md)<br>[Sketch](decision-raddle-perch-mode.md) | 22h<br>22h | shed, loom, burler, arbiter, board |

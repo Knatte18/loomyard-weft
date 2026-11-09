@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-arras-recipe-perch.md)
 
-Depends on: [`raddle-perch-mode`](design-raddle-perch-mode.md)
-
 Filed from the Sketch `motif-raddle-recipe`.
 
 Takes: raddle-perch-mode's `perch` mode and outcome checks; the motif and raddle recipes and the generic Bouncer, BurlerReview and BurlerFix engines

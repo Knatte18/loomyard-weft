@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-arras-family-filing.md)
 
-Depends on: [`raddle-perch-mode`](design-raddle-perch-mode.md), [`arras-recipe-perch`](design-arras-recipe-perch.md)
+Depends on: [`arras-recipe-perch`](design-arras-recipe-perch.md)
 
 Filed from the Sketch `motif-raddle-recipe`.
 
