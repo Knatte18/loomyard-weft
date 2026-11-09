@@ -28,5 +28,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E3 |  | **Fewer serial top-level tests in internal/fabricengine**<br>• 46 of 400 top-level tests are not parallel and hold 59.5 percent of the one-process wall | [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md) | 23m<br>23m | fabric, testkit |
-| E4 |  | **Fewer git processes in the serial phase of internal/fabricengine tier 1**<br>• About 65 thousand git processes, each slower as more run at once | [`fabric-serial-git-spawns`](design-fabric-serial-git-spawns.md) | 23m<br>23m | fabric, git |
+| E3 |  | **Fewer serial top-level tests in internal/fabricengine**<br>• 46 of 400 top-level tests are not parallel and hold 59.5 percent of the one-process wall | [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md) | 24m<br>24m | fabric, testkit |
+| E4 |  | **Fewer git processes in the serial phase of internal/fabricengine tier 1**<br>• About 65 thousand git processes, each slower as more run at once | [`fabric-serial-git-spawns`](design-fabric-serial-git-spawns.md) | 24m<br>24m | fabric, git |
