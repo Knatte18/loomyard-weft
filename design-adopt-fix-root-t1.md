@@ -1,6 +1,6 @@
 # Fix the adopt check of root on osl-1046
 
-`adopt-fix-root-t1` · Task · bug, gate · running · PR-Review
+`adopt-fix-root-t1` · Task · bug, gate · running · Finalize
 
 The adopt check of root failed on this machine: tier2.
 
