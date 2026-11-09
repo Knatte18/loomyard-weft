@@ -1,0 +1,102 @@
+{
+  "sketch": "machine-name-config",
+  "shape": "tasks",
+  "board_checked": [
+    {"slug": "slack-per-orch-activation", "revised": "2026-11-09T14:40:15Z"},
+    {"slug": "terminal-titles-hub-project", "revised": "2026-11-09T13:27:47Z"}
+  ],
+  "parts": [
+    {
+      "slug": "machine-name-file",
+      "title": "machinename reads the machine name from machine.json before the hostname rule",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D7", "D8"],
+      "packages": [
+        {"path": "internal/standalonestate", "size": 100},
+        {"path": "internal/githubclient", "size": 15},
+        {"path": "internal/machinename", "size": 180},
+        {"path": "internal/battencli", "size": 30},
+        {"path": "internal/beamcli", "size": 50}
+      ],
+      "contract": {
+        "takes": "the decision record's D1-D4, D7 and D8 for internal/machinename's tests",
+        "delivers": "machinename.Name reading machine.json from the absolute per-user config directory before the hostname rule, with every name error naming its own way forward; githubclient.CredentialDir delegating to standalonestate.UserConfigDir; battencli.DobbyLandings counting landings under former names; the name-error wrappers in internal/battencli and internal/beamcli rid of their hostname fix",
+        "exports": "standalonestate.UserConfigDir, standalonestate.AbsoluteUserConfigDir, machinename.FilePath, machinename.ReadFile, machinename.Names, machinename.CheckName, battencli.DobbyLandings taking this machine's names"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "With no machine file, `machinename.Name` returns the hostname rule's name (D1, D3).",
+        "With a file holding the name `osl46`, `machinename.Name` returns `osl46` whatever the hostname (D1, D3).",
+        "A file that does not decode, or holds an empty or invalid name, makes `machinename.Name` return an error naming the file's path; it never returns the hostname name (D3, D4).",
+        "A file with an unknown key reads its name (D3).",
+        "`machinename.Names` (new) returns the file's name and every other non-empty entry of its `names`, one that fails D4 included (D3, D7).",
+        "A refusal for a bad machine file, a `lym batten run` refusal included, names the file's path and `lym machine name`, and no hostname fix (D3).",
+        "The name check accepts `osl46` and `neve` and refuses `OSL46`, `osl.46`, `osl:46`, `osl_46`, a leading or trailing hyphen and a 64-character name (D4).",
+        "`githubclient.CredentialDir` and `standalonestate.UserConfigDir` (new) return the same directory for the same environment, a relative `XDG_CONFIG_HOME` included, on Linux and on Windows's variables (D2).",
+        "`standalonestate.AbsoluteUserConfigDir` (new) returns `$HOME/.config/lym` for a relative `XDG_CONFIG_HOME`, and an error naming the variable for a relative `HOME` or `LOCALAPPDATA`, which `machinename.Name` returns instead of the hostname name (D2, D3).",
+        "`internal/machinename`'s import allowlist holds only the standard library and `internal/standalonestate` (D2).",
+        "`battencli.DobbyLandings` lists a run whose Land finished under a former name (D7).",
+        "`internal/machinename`'s tests read the machine file only at the path their seam hands in (D8).",
+        "Review: the doc of `internal/machinename` describes the machine file and its precedence over the hostname rule (D1, D3)."
+      ],
+      "pattern_changes": ["PATTERN-leaf-packages"],
+      "expected_cost_usd": null,
+      "cost_line": "darn/solid with a stored record reads too few runs (2 runs); darn's phases time at about 68 minutes over 15 runs, write 29, review 22, publish-finalize 17"
+    },
+    {
+      "slug": "machine-name-verb",
+      "title": "lym machine name shows and sets the machine name and sweeps owners across a rename",
+      "type": "feature",
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D5", "D6", "D8"],
+      "packages": [
+        {"path": "internal/boardengine", "size": 130},
+        {"path": "internal/machinecli", "size": 800},
+        {"path": "cmd/lym", "size": 10}
+      ],
+      "contract": {
+        "takes": "machine-name-file's machinename.FilePath, ReadFile, Names, CheckName and FromHostname; internal/state's WriteJSON; hubregistry.Live; fabricengine.Bolt Pull and HasUnpushed; boardengine.ReadOwners",
+        "delivers": "the module machine with lym machine name showing and setting the name, its collision check across every swept hub, the file write that keeps names, and the per-hub owner sweep with its recovery output; boardengine.OwnerRequest's replace-set field selecting owners after the write's own pull",
+        "exports": "machinecli.Command, the replace-set field of boardengine.OwnerRequest"
+      },
+      "depends_on": ["machine-name-file"],
+      "open_risks": ["None beyond the bounds the Decisions state."],
+      "criteria": [
+        "An empty `names` entry is neither a former name for D6's replace set nor a name D7 matches (D3, D6, D7).",
+        "`lym machine name` with no argument prints the name, its source, the file path and the former names, and writes nothing (D5).",
+        "`lym machine name osl46` on a machine named `osl-1046` writes the name `osl46` with `names` holding `osl-1046` then `osl46` (D5).",
+        "`lym machine name` refuses an invalid name and writes nothing (D4, D5).",
+        "`lym machine name neve` is refused when a swept board records `neve` as an owner that is not one of this machine's names, an owner only origin held before the verb's pull included, and writes nothing (D5).",
+        "`lym machine name osl46` over a file holding an invalid name keeps the file's non-empty `names` entries, adds the hostname rule's name when absent and writes the new name; over a file that does not decode it writes the new name with `names` holding the hostname rule's name then `osl46` (D5).",
+        "`lym machine name osl46` over a file whose `name` was hand-broken and whose `names` ends in `osl46` succeeds while swept boards record `osl46` as an owner (D5).",
+        "`lym machine name osl46` over a hand-written file holding only the name `osl46` records the hostname rule's name in `names` and sweeps owners recorded under it (D5, D6).",
+        "`lym machine name` over a file whose `names` holds an empty entry drops it from `names` and says so in its output (D5).",
+        "After a rename, every open beam project's owner and the prime owner equal to a former name on each swept hub reads the new name, an owner only origin held before the sweep included; a done entry and an owner recorded under another name are untouched (D6).",
+        "An owner write with the replace set and no `Takeover` rewrites every open beam project and the prime whose owner, read after its pull, is in the set, and leaves every other owner (D6).",
+        "A hub whose sweep fails is reported with the re-run as its way forward while the other hubs are swept, and a re-run with the same name sweeps it (D5, D6).",
+        "`lym machine name`'s tests write the machine file only at the path their seam hands in, and sweep only hubs under their temporary directory (D8).",
+        "Review: the verb's output after a rename names the recoveries D6's window bound lists and advises lifting a pause only after the hub's sweep reports done (D6)."
+      ],
+      "pattern_changes": ["PATTERN-owner-machine"],
+      "expected_cost_usd": null,
+      "cost_line": "report cost holds no tapestry cell, so tapestry/solid reads too few runs (0 runs); report timing holds no tapestry run either"
+    }
+  ],
+  "cost": {
+    "expected_usd": null,
+    "line": "one darn/solid part then one tapestry/solid part; darn/solid with a stored record reads too few runs (2) and tapestry/solid has no cell (0 runs), so no figure",
+    "next_best": {
+      "split": "one tapestry/solid part building D1-D8 across every package",
+      "expected_usd": null,
+      "line": "tapestry/solid has no cell in report cost (0 runs), so no figure; it pays tapestry's fixed start once instead of a darn start plus a tapestry start, but reviews about 1300 changed lines in one run"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "solid", "stored_record": true},
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
