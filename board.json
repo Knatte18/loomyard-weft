@@ -877,6 +877,26 @@
       "revised": "2026-11-09T14:52:44Z",
       "profile": "solid",
       "discussed": true
+    },
+    {
+      "id": 1261,
+      "handle": "B3",
+      "slug": "gate-stop-at-failing-tier",
+      "title": "The verify gate runs slower tiers after a tier already failed",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "darn"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A failed tier 0 still ran an 11-minute tier 1; stop at the first failing tier.",
+      "body": "## Seen (operator and orch, 2026-11-09)\n\nThe Darn-Write verify gate of `arras-recipe-perch` failed tier 0 at 15:43:27 with 56 failures, and the same gate started tier 1 at once and ran it for 11 minutes before it failed on two tests, then ran tier 2.\nThe first gate attempt took about 17 minutes; the tier 0 failure alone was known after 2.4 minutes.\n\n## Idea\n\nWhen a tier fails, stop the gate there and report that tier's failures, so the fixer works on them before a slower tier runs.\nCheck first whether running every tier after a failure is deliberate, for instance to hand the fixer every failure at once, and whether it differs between `lym gate test --upto` and the Darn-Write gate.\nIf a full report is wanted, make it a separate choice, and let the verify gate default to stopping at the first failing tier.\n",
+      "created": "2026-11-09T15:17:10Z",
+      "revised": "2026-11-09T15:17:10Z"
     }
   ],
   "prime_owner": "osl-1046",
