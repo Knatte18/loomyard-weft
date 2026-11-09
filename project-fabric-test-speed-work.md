@@ -23,11 +23,3 @@ _None._
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T1 | **Measure fabricengine tier 1 wall and git spawns before and after e19a2e86** | [`fabric-spawn-measure`](design-fabric-spawn-measure.md) | 8m<br>8m | fabric, git, gate |

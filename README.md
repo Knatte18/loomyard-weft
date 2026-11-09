@@ -112,14 +112,6 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T1 | **Measure fabricengine tier 1 wall and git spawns before and after e19a2e86** | [`fabric-spawn-measure`](design-fabric-spawn-measure.md) | 8m<br>8m | fabric, git, gate |
-
 </details>
 
 <details open>
@@ -159,7 +151,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 1h<br>0m | testkit, gate |
+| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 2h<br>0m | testkit, gate |
 | E5 |  | **Decide how the coverage maps are kept fresh: triggers, batch, staleness and sharing across machines** | [`testmap-upkeep`](design-testmap-upkeep.md) | 0m<br>0m | testkit, gate, dobby |
 
 </details>
@@ -235,14 +227,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>4d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 4d<br>2d | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 4d<br>4d | batten, board, fabric, workspaces |
-
-### Done (2)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| P4 | **[Arras: one recipe that runs Motif and raddle in a row, with a perch on the split](project-arras-recipe.md)** | [`arras-recipe`](design-arras-recipe.md)<br>[Sketch](decision-arras-recipe.md) | 1d<br>1d | shed, loom, burler, arbiter, board |
-| P5 | **[Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review](project-redundancy-check.md)** | [`redundancy-check`](design-redundancy-check.md)<br>[Sketch](decision-redundancy-check.md) | 1d<br>1d | testkit, gate |
 
 </details>

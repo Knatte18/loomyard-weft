@@ -74,12 +74,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>4d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 4d<br>2d | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 4d<br>4d | batten, board, fabric, workspaces |
-
-## Done (2)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| P4 | **[Arras: one recipe that runs Motif and raddle in a row, with a perch on the split](project-arras-recipe.md)** | [`arras-recipe`](design-arras-recipe.md)<br>[Sketch](decision-arras-recipe.md) | 1d<br>1d | shed, loom, burler, arbiter, board |
-| P5 | **[Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review](project-redundancy-check.md)** | [`redundancy-check`](design-redundancy-check.md)<br>[Sketch](decision-redundancy-check.md) | 1d<br>1d | testkit, gate |

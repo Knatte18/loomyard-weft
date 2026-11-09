@@ -421,51 +421,6 @@
       "revised": "2026-11-08T17:30:29Z"
     },
     {
-      "id": 1234,
-      "handle": "P4",
-      "slug": "arras-recipe",
-      "title": "Arras: one recipe that runs Motif and raddle in a row, with a perch on the split",
-      "kind": "project",
-      "labels": [
-        "feature",
-        "shed",
-        "loom",
-        "burler",
-        "arbiter",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Groups the entries filed from the Sketch `motif-raddle-recipe`: project-release-members, raddle-perch-mode, arras-recipe-perch, arras-family-filing, arras-shipped-text.\n",
-      "status": "done",
-      "created": "2026-11-08T16:15:45Z",
-      "revised": "2026-11-08T16:15:45Z",
-      "discussed": true
-    },
-    {
-      "id": 1244,
-      "handle": "P5",
-      "slug": "redundancy-check",
-      "title": "Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review",
-      "kind": "project",
-      "labels": [
-        "feature",
-        "testkit",
-        "gate"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Groups the entries filed from the Sketch `redundant-test-finder`: testcover-engine, testmap-verb, testmap-dobby-refresh, gate-redundancy-report, review-reads-redundancy.\n",
-      "status": "done",
-      "created": "2026-11-08T18:46:50Z",
-      "revised": "2026-11-08T18:46:50Z",
-      "discussed": true
-    },
-    {
       "id": 1250,
       "handle": "R2",
       "slug": "codex-support-levels",
@@ -864,30 +819,6 @@
       "profile": "light",
       "project": "adopt-takeover",
       "discussed": true
-    },
-    {
-      "id": 1278,
-      "handle": "T1",
-      "slug": "fabric-spawn-measure",
-      "title": "Measure fabricengine tier 1 wall and git spawns before and after e19a2e86",
-      "kind": "task",
-      "labels": [
-        "research",
-        "fabric",
-        "git",
-        "gate"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (orch, 2026-11-09)\n\n`fabric-serial-git-spawns` landed as `e19a2e86` (\"fabricengine: read committed files and HEAD without a git process\").\nIts landing note says the tier 1 wall and the git process count before and after were not recorded,\nso what it saved is unknown.\nIt names other frequent read-only git calls still spawned in the package, such as `diff --name-only` in `diffNames`.\nThe earlier shard measurement is `docs/research/speed/fabricengine-shards-2026-11-09/report.md`,\nwith its runner `docs/research/speed/fabricengine-shards-2026-11-09/shard-runner.sh`, which sets `GIT_TRACE2_EVENT`.\n\n## This task\n\nMeasure, on this machine, `internal/fabricengine` tier 1 at two commits: `e19a2e86^` (before) and `e19a2e86` (after).\nRun `lym gate test --tier 1 ./internal/fabricengine` with the shard runner's one-process form at each commit:\nexactly one run per commit, two runs in all.\nFor each run, record the tier 1 wall, the total git process count,\nand the count per git subcommand and per production call site in `internal/fabricengine`.\n\nWrite a short report beside the earlier one, under `docs/research/speed/`, holding:\n\n- the wall and the git process count before and after, and the difference;\n- the ten git subcommands and call sites started most often after the change, each marked read-only or writing,\n  as the input for a next task that serves more read-only calls from Go.\n\n## Limits\n\n- No code change: the task lands the report only.\n- Exactly two measured runs; a run that fails is reported as failed, not repeated.\n",
-      "status": "done",
-      "created": "2026-11-09T20:39:21Z",
-      "revised": "2026-11-09T20:39:21Z",
-      "profile": "docs",
-      "project": "fabric-test-speed-work"
     },
     {
       "id": 1279,
