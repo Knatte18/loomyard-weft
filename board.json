@@ -463,11 +463,6 @@
       "status": "running · Darn-Write",
       "created": "2026-11-08T16:15:45Z",
       "revised": "2026-11-08T16:15:45Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
       "profile": "solid",
       "notify_on_land": true,
       "project": "arras-recipe",
