@@ -1,6 +1,6 @@
 # Make the eight longest serial internal/fabricengine tests parallel
 
-`fabric-serial-phase-tests` · Task · enhancement, fabric, testkit · running · Seed-Child
+`fabric-serial-phase-tests` · Task · enhancement, fabric, testkit · running · Open-Window
 
 Depends on: [`testmap-verb`](design-testmap-verb.md)
 
