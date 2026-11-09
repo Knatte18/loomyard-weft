@@ -193,6 +193,14 @@ Rationale: Today's refusals carry the reconcile report, the mutation record and 
 
 ## Open risks
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - failing-step-part-fate-unstated (class decision, severity MEDIUM, open in rounds 2)
+  - reconcile-warnings-wrong-step (class design, severity MEDIUM, open in rounds 2)
+  - redundant-planned-tests (class consistency, severity MEDIUM, open in rounds 1, 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: `lym adopt` starts a detached worker and runs no step itself; the caller's exit, mid-adopt, leaves the worker running to its end.
