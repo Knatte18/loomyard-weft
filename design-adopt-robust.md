@@ -1,6 +1,6 @@
 # Adopt as one resumable algorithm that never starts work on its own
 
-`adopt-robust` · Task · bug, enhancement, batten, tender, dobby, orch, fabric, shortcut · running · Discussion-Bouncer
+`adopt-robust` · Note · sketch, batten, tender, dobby, orch, fabric, shortcut
 
 Decision record: [Sketch](decision-adopt-robust.md)
 

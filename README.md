@@ -161,17 +161,16 @@ Finished, awaiting `lym board prune --apply`.
 
 Owner `neve`
 
-### Tasks (12)
+### Tasks (11)
 
 Concrete and claimable; only a task can run.
 
-#### Running (2)
+#### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md)<br>[Sketch](decision-adopt-robust.md) | motif | Discussion-Bouncer | neve | 57m<br>47m | batten, tender, dobby, orch, fabric, shortcut |
 | T15 | **Bolt README: every project section can be collapsed** | [`readme-collapsible-projects`](design-readme-collapsible-projects.md) | darn · light | Code-Bouncer | neve | 13m<br>13m | board |
 
 #### Ready (0)
@@ -197,9 +196,15 @@ Not released; nothing starts it until its status is cleared.
 | T20 | `draft` **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | T6 | 1d<br>0m | shed, friction |
 | T21 | `draft` **lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape** | [`profiles-set-leaf-key`](design-profiles-set-leaf-key.md) | darn · light |  | 3h<br>0m | config, profiles |
 
-### Notes (18)
+### Notes (19)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+#### Sketches (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| S1 |  | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md)<br>[Sketch](decision-adopt-robust.md) | 57m<br>0m | batten, tender, dobby, orch, fabric, shortcut |
 
 #### Research (2)
 
