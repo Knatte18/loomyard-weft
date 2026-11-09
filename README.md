@@ -37,7 +37,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B9 |  | **Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | 37m<br>36m | codex, shuttle |
+| B9 |  | **Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | 37m<br>37m | codex, shuttle |
 
 #### Features (1)
 
@@ -73,7 +73,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Fewer git processes in the serial phase of internal/fabricengine tier 1**<br>• About 65 thousand git processes, each slower as more run at once | [`fabric-serial-git-spawns`](design-fabric-serial-git-spawns.md) | darn · solid | T2 | 7h<br>32m | fabric, git, gate |
+| T1 | **Fewer git processes in the serial phase of internal/fabricengine tier 1**<br>• About 65 thousand git processes, each slower as more run at once | [`fabric-serial-git-spawns`](design-fabric-serial-git-spawns.md) | darn · solid | T2 | 7h<br>33m | fabric, git, gate |
 
 ### Notes (0)
 
@@ -163,7 +163,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T15 | **Bolt README: every project section can be collapsed** | [`readme-collapsible-projects`](design-readme-collapsible-projects.md) | darn · light | Code-Burler-Fix | neve | 20m<br>20m | board |
+| T15 | **Bolt README: every project section can be collapsed** | [`readme-collapsible-projects`](design-readme-collapsible-projects.md) | darn · light | Code-Bouncer | neve | 20m<br>20m | board |
 
 #### Ready (0)
 
@@ -212,7 +212,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 2d<br>2d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 1d<br>4h | shed, loom, darn |
 | E3 |  | **One land notice: fold the beam-PR landing notice into notify_on_land** | [`one-land-notice`](design-one-land-notice.md) | 3h<br>3h | dobby, batten, workspaces |
-| E4 |  | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 25m<br>23m | testkit, gate |
+| E4 |  | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 26m<br>24m | testkit, gate |
 
 #### Features (12)
 
