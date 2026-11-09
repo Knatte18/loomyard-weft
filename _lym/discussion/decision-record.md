@@ -88,6 +88,15 @@ the age limit bounds how long such drift lasts.
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - build-timeout-grace-untested (class scope, severity MEDIUM, open in rounds 1)
+  - coverage-build-cwd-not-module-root (class design, severity MEDIUM, open in rounds 1)
+  - signal-recorded-as-build-failure (class design, severity MEDIUM, open in rounds 1)
+  - staleness-file-set-content-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D5: `lym gate testmap` with no arguments rebuilds only packages with no map, a changed set or content of Go files tracked at HEAD, or a map past the age limit, at most `--max` of them; packages skipped as dirty or locked do not count against `--max`.
