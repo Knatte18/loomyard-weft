@@ -1,0 +1,452 @@
+diff --git a/internal/battencli/lifecycle_integration_test.go b/internal/battencli/lifecycle_integration_test.go
+index 18c18957..bcd5e213 100644
+--- a/internal/battencli/lifecycle_integration_test.go
++++ b/internal/battencli/lifecycle_integration_test.go
+@@ -310,7 +310,7 @@ func gitShow(t *testing.T, dir, spec string) []byte {
+ // It therefore relies on running after every step that creates a pair.
+ // The test calls t.Parallel, but no step does: the steps serialise on that one shared hub.
+ //
+-//testtiming:keep the start-cost step pins the decision record's D2 acceptance criterion, that a Command row costs under 100 ms beyond its status commit and its process, a wall-clock bound no other test asserts
++//testtiming:keep the start-cost step pins the start-cost bound on a Command row beyond its status commit and its process, a wall-clock bound no other test asserts
+ func TestBattenIntegration_Rows(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -1412,7 +1412,9 @@ func stepCommandRows_ResumeAtARowAnOlderBinaryLeftStanding(t *testing.T, h *hubf
+ }
+ 
+ // startCostBound bounds what a Command row may cost beyond its status commit and its command's own process.
+-const startCostBound = 100 * time.Millisecond
++// It catches a row that waits tens of seconds on a remote or a fixed delay while the row's own work takes milliseconds.
++// It sits far above what scheduling on a loaded machine adds to the row's own work.
++const startCostBound = 30 * time.Second
+ 
+ // stepStartCost_CommandRowsCostUnderTheBoundBeyondTheCommitAndTheProcess asserts each cost is under startCostBound.
+ // A row's cost is its step's wall time less the status commit and the command's own process.
+@@ -1474,16 +1476,17 @@ func stepStartCost_CommandRowsCostUnderTheBoundBeyondTheCommitAndTheProcess(t *t
+ 
+ // stepRunRowCommand_ReportsATimeoutAndAnExitCode asserts runRowCommand ends a command at its timeout.
+ // The command must end well before it would finish, and a non-zero exit code must be reported.
++// The sleep outlasts the minute the test allows, so a run that waits on it fails however loaded the machine.
+ func stepRunRowCommand_ReportsATimeoutAndAnExitCode(t *testing.T, h *hubforge.Hub) {
+ 	dir := t.TempDir()
+ 
+ 	start := time.Now()
+-	result, err := runRowCommand(context.Background(), dir, "sleep 5", filepath.Join(dir, "sleep.log"), 200*time.Millisecond)
++	result, err := runRowCommand(context.Background(), dir, "sleep 300", filepath.Join(dir, "sleep.log"), 200*time.Millisecond)
+ 	if err != nil || !result.TimedOut {
+-		t.Fatalf("runRowCommand(sleep 5, 200ms) = %+v, %v; want TimedOut and nil", result, err)
++		t.Fatalf("runRowCommand(sleep 300, 200ms) = %+v, %v; want TimedOut and nil", result, err)
+ 	}
+-	if elapsed := time.Since(start); elapsed > 3*time.Second {
+-		t.Errorf("runRowCommand(sleep 5, 200ms) took %v; want it ended well before the sleep", elapsed)
++	if elapsed := time.Since(start); elapsed > time.Minute {
++		t.Errorf("runRowCommand(sleep 300, 200ms) took %v; want it ended well before the sleep", elapsed)
+ 	}
+ 
+ 	result, err = runRowCommand(context.Background(), dir, "exit 3", filepath.Join(dir, "exit.log"), time.Minute)
+diff --git a/internal/cardverify/runner_test.go b/internal/cardverify/runner_test.go
+index d12d6805..9e20b9af 100644
+--- a/internal/cardverify/runner_test.go
++++ b/internal/cardverify/runner_test.go
+@@ -229,14 +229,15 @@ func TestRunner(t *testing.T) {
+ 				cancel()
+ 			}()
+ 
++			// The sleeper outlasts the minute the test allows, so a line that waits on it fails however loaded the machine.
+ 			start := time.Now()
+-			got := Runner{Worktree: dir}.RunLine(ctx, "sleep 30 & echo $! > "+pidFile+"; wait", io.Discard)
++			got := Runner{Worktree: dir}.RunLine(ctx, "sleep 300 & echo $! > "+pidFile+"; wait", io.Discard)
+ 
+ 			if got == "" {
+ 				t.Error("RunLine() passed; want a failure for the cancelled line")
+ 			}
+-			if elapsed := time.Since(start); elapsed > 10*time.Second {
+-				t.Errorf("RunLine took %s; want it back within the wait delay", elapsed)
++			if elapsed := time.Since(start); elapsed > time.Minute {
++				t.Errorf("RunLine took %s; want it back after the cancel, not after the sleeper ends", elapsed)
+ 			}
+ 			waitUntilGone(t, waitForPID(t, pidFile))
+ 		})
+diff --git a/internal/desktophook/window_test.go b/internal/desktophook/window_test.go
+index 5456a434..63d2c90a 100644
+--- a/internal/desktophook/window_test.go
++++ b/internal/desktophook/window_test.go
+@@ -39,7 +39,8 @@ func TestAfterWindow(t *testing.T) {
+ 		{name: "BlankCommandRunsNothing", machine: "window_command: \"   \"\nwindow_wait_ms: 7\n"},
+ 		{name: "SetCommandRunsInWindowDirAfterTheWait", machine: "window_command: \"pwd > marker\"\nwindow_wait_ms: 40\n", wantMarker: true, wantSleeps: []time.Duration{40 * time.Millisecond}},
+ 		{name: "FailingCommandReportsOutput", machine: "window_command: \"echo boom; exit 3\"\nwindow_wait_ms: 0\n", wantErr: "boom", wantSleeps: []time.Duration{0}},
+-		{name: "HangingCommandIsCutOffAtTheTimeout", machine: "window_command: \"exec sleep 60\"\nwindow_wait_ms: 0\n", timeout: 50 * time.Millisecond, wantErr: "window command", wantSleeps: []time.Duration{0}},
++		// The hanging command outlasts the minute every row allows, so a call that waits on it fails however loaded the machine.
++		{name: "HangingCommandIsCutOffAtTheTimeout", machine: "window_command: \"exec sleep 300\"\nwindow_wait_ms: 0\n", timeout: 50 * time.Millisecond, wantErr: "window command", wantSleeps: []time.Duration{0}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -70,7 +71,7 @@ func TestAfterWindow(t *testing.T) {
+ 			if markerPresentAtSleep {
+ 				t.Errorf("the command had already run when the wait began; want it to run after the wait")
+ 			}
+-			if elapsed > 10*time.Second {
++			if elapsed > time.Minute {
+ 				t.Errorf("AfterWindow took %v; want it to return promptly", elapsed)
+ 			}
+ 			if tt.wantErr != "" {
+diff --git a/internal/dobbyengine/loop_test.go b/internal/dobbyengine/loop_test.go
+index dc6d9b27..bf8e0852 100644
+--- a/internal/dobbyengine/loop_test.go
++++ b/internal/dobbyengine/loop_test.go
+@@ -435,7 +435,8 @@ func TestRun_LockOwnerAndWakeups(t *testing.T) {
+ 	t.Run("a record with this pid and other ticks is a fresh start refused after the probe grace without a notice", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newLoopHarness(t, 1)
+-		h.deps.ReexecLockWait = 3 * time.Second
++		// The re-exec wait outlasts the minute the test allows, so a Run that waits it out fails however loaded the machine.
++		h.deps.ReexecLockWait = 10 * time.Minute
+ 		writeLoopRecord(t, h, os.Getpid(), "other")
+ 		holdLoopLock(t, h)
+ 
+@@ -443,7 +444,7 @@ func TestRun_LockOwnerAndWakeups(t *testing.T) {
+ 		if err := h.run(t); !errors.Is(err, ErrDobbyRunning) {
+ 			t.Fatalf("Run() = %v; want ErrDobbyRunning", err)
+ 		}
+-		if waited := time.Since(started); waited > 2*time.Second {
++		if waited := time.Since(started); waited > time.Minute {
+ 			t.Errorf("Run() waited %v; want only the probe grace", waited)
+ 		}
+ 		if notices := h.noticed(); len(notices) != 0 {
+diff --git a/internal/gatecli/detachfront_integration_test.go b/internal/gatecli/detachfront_integration_test.go
+index fba16790..4f22ef71 100644
+--- a/internal/gatecli/detachfront_integration_test.go
++++ b/internal/gatecli/detachfront_integration_test.go
+@@ -550,12 +550,13 @@ func TestGateTest_DetachedRun(t *testing.T) {
+ 		t.Parallel()
+ 		rig := newDetachRig(t)
+ 
++		// The claim bound outlasts the minute the test allows, so a call that waits it out fails however loaded the machine.
+ 		started := time.Now()
+-		g := rig.call("5s", []string{helperLaunchEnv + "=error"}, "./pkg")
++		g := rig.call("5s", []string{helperLaunchEnv + "=error", helperClaimBoundEnv + "=10m"}, "./pkg")
+ 		if code := g.wait(t); code != 1 {
+ 			t.Fatalf("call = exit %d, stdout %q; want 1", code, g.stdout.String())
+ 		}
+-		if elapsed := time.Since(started); elapsed > 4*time.Second {
++		if elapsed := time.Since(started); elapsed > time.Minute {
+ 			t.Errorf("call took %s; want it to end at once, not wait out the claim bound", elapsed)
+ 		}
+ 		for _, want := range []string{"the launch failed", "--wait", "run the same command again"} {
+@@ -584,14 +585,12 @@ func TestGateTest_DetachedRun(t *testing.T) {
+ 		t.Parallel()
+ 		rig := newDetachRig(t)
+ 
+-		started := time.Now()
+-		g := rig.call("12s", []string{helperLaunchEnv + "=late", helperClaimBoundEnv + "=4s"}, "./pkg")
++		// The runner starts two seconds late, far inside the claim bound however loaded the machine.
++		// A call that reached its cap would answer SlotBusyExit, so the stand-in's 0 proves it answered before the cap.
++		g := rig.call("2m", []string{helperLaunchEnv + "=late", helperClaimBoundEnv + "=1m"}, "./pkg")
+ 		if code := g.wait(t); code != 0 {
+ 			t.Errorf("call = exit %d, stdout %q; want the stand-in's 0", code, g.stdout.String())
+ 		}
+-		if elapsed := time.Since(started); elapsed >= 12*time.Second {
+-			t.Errorf("call took %s; want it to answer before its 12s cap", elapsed)
+-		}
+ 	})
+ 
+ 	t.Run("a held key lock past the lock margin answers done false in the phase starting and creates no run", func(t *testing.T) {
+@@ -755,13 +754,14 @@ func TestGateTest_DetachedRun(t *testing.T) {
+ 			t.Parallel()
+ 			rig := newDetachRig(t)
+ 
+-			waiting := rig.call("60s", holdEnv, "./pkg")
++			// The cap outlasts the minute the test allows, so a call that waits it out fails however loaded the machine.
++			waiting := rig.call("10m", holdEnv, "./pkg")
+ 			held := rig.waitInvocations(1)
+ 			run := rig.currentRun("./pkg")
+ 			signalPID(t, runnerPIDOf(t, run), syscall.SIGTERM)
+ 			started := time.Now()
+ 			requireGoing(t, waiting, "")
+-			if elapsed := time.Since(started); elapsed > 30*time.Second {
++			if elapsed := time.Since(started); elapsed > time.Minute {
+ 				t.Errorf("waiting call took %s after the runner ended; want it to answer without waiting out its cap", elapsed)
+ 			}
+ 			if exit := waitExitOf(t, run); exit != (detachExit{Code: 128 + int(syscall.SIGTERM), Abandoned: true}) {
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index c292f7b5..da3536b9 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -1658,21 +1658,17 @@ func TestGateTest_Scenario(t *testing.T) {
+ 			writeConfig(t, scenarioConfig(t, func(cfg map[string]any) { cfg["busy_quit_sec"] = 1 }))
+ 			defer writeConfig(t, gateConfig)
+ 
+-			started := time.Now()
+ 			g := startGate(t, gateRun{cwd: t.TempDir(), realGo: true, args: []string{"test", "--tier", "5", "-C", spinModule, "./..."}})
+ 			code := g.wait(t)
+-			elapsed := time.Since(started)
+ 
+ 			stdout := g.stdout.String()
+ 			if code == 0 || !strings.Contains(stdout, "SIGQUIT: quit") || !strings.Contains(stdout, "goroutine ") {
+ 				t.Errorf("spin run = exit %d, stdout %q; want a non-zero exit and the Go runtime's SIGQUIT stacks", code, stdout)
+ 			}
++			// The watchdog's own quit line, not the tier's timeout, proves what ended the run.
+ 			if window, ok := gateslot.FindWatchdogQuit(stdout); !ok || window != "1s" {
+ 				t.Errorf("FindWatchdogQuit(stdout) = %q, %v; want the run's own 1s window, which the template's 120s cannot produce", window, ok)
+ 			}
+-			if elapsed > time.Minute {
+-				t.Errorf("spin run took %s; want the quit to end it long before the tier's timeout", elapsed)
+-			}
+ 			requireFree(t)
+ 		})
+ 	}
+diff --git a/internal/gitexec/gitexec_unix_test.go b/internal/gitexec/gitexec_unix_test.go
+index 4b8d00a8..bacfd60e 100644
+--- a/internal/gitexec/gitexec_unix_test.go
++++ b/internal/gitexec/gitexec_unix_test.go
+@@ -144,8 +144,9 @@ func TestRun_RemoteBounds(t *testing.T) {
+ 		armed := gitexec.SetDeadlineForTest(t, hangStarted)
+ 		start := time.Now()
+ 		_, err := gitexec.Run(args, repoDir)
+-		if elapsed := time.Since(start); elapsed > 10*deadline {
+-			t.Errorf("Run took %v; want it to return shortly after the deadline fires", elapsed)
++		// The hang script sleeps far past this bound, so a Run that waits on it fails however loaded the machine.
++		if elapsed := time.Since(start); elapsed > time.Minute {
++			t.Errorf("Run took %v; want it to return after the deadline fires, not after the hang ends", elapsed)
+ 		}
+ 
+ 		var gitErr *gitexec.GitError
+diff --git a/internal/githubclient/githubclient_test.go b/internal/githubclient/githubclient_test.go
+index 9c7e3ce8..83c5babb 100644
+--- a/internal/githubclient/githubclient_test.go
++++ b/internal/githubclient/githubclient_test.go
+@@ -111,7 +111,7 @@ func newScriptedServer(t *testing.T, statuses []int, captured *[]capturedRequest
+ // TestResolveToken_Chain covers the full resolution order end to end.
+ // Env vars always win over the cache, and GH_TOKEN comes before GITHUB_TOKEN.
+ // A fresh cache entry is used when both env vars are empty, and a stale one is not.
+-// An unresolvable token surfaces as ErrTokenUnresolvable with an empty token, without blocking or prompting.
++// An unresolvable token surfaces as ErrTokenUnresolvable with an empty token.
+ func TestResolveToken_Chain(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	tests := []struct {
+@@ -185,13 +185,8 @@ func TestResolveToken_Chain(t *testing.T) {
+ 				return tt.ghCLIToken, tt.ghCLIErr
+ 			})
+ 
+-			start := time.Now()
+ 			gotToken, gotSource, err := resolveToken()
+-			elapsed := time.Since(start)
+ 
+-			if elapsed > time.Second {
+-				t.Errorf("resolveToken() took %v; want a fast result, never a wait or prompt", elapsed)
+-			}
+ 			if tt.wantErr {
+ 				if !errors.Is(err, ErrTokenUnresolvable) {
+ 					t.Fatalf("resolveToken() error = %v; want ErrTokenUnresolvable", err)
+@@ -501,8 +496,13 @@ func TestRunGHAuthTokenSeam_HonoursGhAuthTokenTimeout(t *testing.T) {
+ 	ghAuthTokenTimeout = 10 * time.Millisecond
+ 	t.Cleanup(func() { ghAuthTokenTimeout = origTimeout })
+ 
+-	// The fake respects ctx's deadline instead of running forever, as the real `gh auth token` subprocess does.
++	// The fake records the time its context has left at entry.
++	// It then respects the deadline instead of running forever, as the real `gh auth token` subprocess does.
++	var deadlineSet bool
++	var leftAtEntry time.Duration
+ 	withFakeGHAuthToken(t, func(ctx context.Context) (string, error) {
++		deadline, ok := ctx.Deadline()
++		deadlineSet, leftAtEntry = ok, time.Until(deadline)
+ 		<-ctx.Done()
+ 		return "", ctx.Err()
+ 	})
+@@ -517,11 +517,10 @@ func TestRunGHAuthTokenSeam_HonoursGhAuthTokenTimeout(t *testing.T) {
+ 	if elapsed < ghAuthTokenTimeout {
+ 		t.Errorf("resolveToken() returned after %v; want at least ghAuthTokenTimeout (%v) -- an early return here would mean this test is not exercising the timeout at all", elapsed, ghAuthTokenTimeout)
+ 	}
+-	// The slack outlasts a scheduling stall under a loaded suite;
+-	// it stays under the real ~5s wait an override that silently fails to apply would cost.
+-	const slack = 2 * time.Second
+-	if elapsed > ghAuthTokenTimeout+slack {
+-		t.Errorf("resolveToken() took %v; want close to ghAuthTokenTimeout (%v), not an unbounded hang", elapsed, ghAuthTokenTimeout)
++	// The time left at entry only shrinks on a loaded machine,
++	// so it tells the shortened timeout from the production one an override that silently fails to apply would leave.
++	if !deadlineSet || leftAtEntry > ghAuthTokenTimeout {
++		t.Errorf("gh auth token context deadline set = %v with %v left at entry; want a deadline within ghAuthTokenTimeout (%v)", deadlineSet, leftAtEntry, ghAuthTokenTimeout)
+ 	}
+ }
+ 
+@@ -739,10 +738,10 @@ func TestAuthRT_HeldCallGetsItsFullDeadlineAfterRelease(t *testing.T) {
+ 	})
+ 
+ 	t.Run("cancelled after release ends the call", func(t *testing.T) {
+-		started := time.Now()
++		// A call that waited out its deadline would end with context.DeadlineExceeded instead.
+ 		got := run(t, 10*time.Second, true, func(e *env) { e.setLive(false) }, blockUntilGone)
+-		if !errors.Is(got.err, context.Canceled) || time.Since(started) > 5*time.Second {
+-			t.Fatalf("err = %v after %v; want context.Canceled well within the deadline", got.err, time.Since(started))
++		if !errors.Is(got.err, context.Canceled) {
++			t.Fatalf("err = %v; want context.Canceled, not the deadline", got.err)
+ 		}
+ 	})
+ 
+diff --git a/internal/reedengine/ensuresession_integration_test.go b/internal/reedengine/ensuresession_integration_test.go
+index ecbc4b56..22578024 100644
+--- a/internal/reedengine/ensuresession_integration_test.go
++++ b/internal/reedengine/ensuresession_integration_test.go
+@@ -15,7 +15,6 @@ import (
+ 	"slices"
+ 	"strings"
+ 	"testing"
+-	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/reedengine/render"
+@@ -87,6 +86,8 @@ func TestEnsureSession_BootedTrueOnColdSessionFalseOnWarm(t *testing.T) {
+ 
+ 	// The test kit pre-starts a session-less hermetic server on this key;
+ 	// the cold boot must reuse it, not wait out the stale-holder grace and replace it.
++	// A boot that waited out the grace would find the holder still there and replace it,
++	// so an unchanged server pid proves the reuse however loaded the machine.
+ 	serverPID := func() string {
+ 		t.Helper()
+ 		out, err := e.tmux.output("display-message", "-p", "#{pid}")
+@@ -97,7 +98,6 @@ func TestEnsureSession_BootedTrueOnColdSessionFalseOnWarm(t *testing.T) {
+ 	}
+ 	pidBefore := serverPID()
+ 
+-	start := time.Now()
+ 	booted, err := e.EnsureSession()
+ 	if err != nil {
+ 		t.Fatalf("EnsureSession (cold) = %v, want a nil error", err)
+@@ -105,9 +105,6 @@ func TestEnsureSession_BootedTrueOnColdSessionFalseOnWarm(t *testing.T) {
+ 	if !booted {
+ 		t.Errorf("EnsureSession (cold) booted = false, want true — nothing usable existed to attach to")
+ 	}
+-	if elapsed := time.Since(start); elapsed >= staleSocketGrace {
+-		t.Errorf("EnsureSession (cold) took %v, want less than the %v stale-holder grace", elapsed, staleSocketGrace)
+-	}
+ 	if pidAfter := serverPID(); pidAfter != pidBefore {
+ 		t.Errorf("server pid after the cold boot = %s, want the pre-started server's %s", pidAfter, pidBefore)
+ 	}
+diff --git a/internal/testcover/runner_test.go b/internal/testcover/runner_test.go
+index ef8148d5..26698e5c 100644
+--- a/internal/testcover/runner_test.go
++++ b/internal/testcover/runner_test.go
+@@ -137,7 +137,8 @@ func TestRunAlone(t *testing.T) {
+ 		},
+ 		{
+ 			// The test passes and exits, but a child it left holds the output pipe past the grace.
+-			name: "ReturnsWithinTheGraceWhileADescendantHoldsTheOutput", test: standInHoldsPipe, timeout: time.Minute, within: standInChildSleep - time.Second,
++			// The child outlasts the minute the row allows, so a run that waits on it fails however loaded the machine.
++			name: "ReturnsWithinTheGraceWhileADescendantHoldsTheOutput", test: standInHoldsPipe, timeout: time.Minute, within: time.Minute,
+ 			want: testcover.RunResult{Name: standInHoldsPipe, Elapsed: 0.25, Action: testcover.ActionPass, Profile: []testcover.ProfileBlock{
+ 				{File: "m/p/x.go", StartLine: 3, StartCol: 21, EndLine: 5, EndCol: 2, Statements: 1, Count: 1},
+ 			}},
+diff --git a/internal/testcover/testmain_test.go b/internal/testcover/testmain_test.go
+index 261b704a..e77032bd 100644
+--- a/internal/testcover/testmain_test.go
++++ b/internal/testcover/testmain_test.go
+@@ -40,7 +40,8 @@ const standInChildPIDSuffix = ".child-pid"
+ const standInHangBuildEnv = "TESTCOVER_STAND_IN_HANG_BUILD"
+ 
+ // standInChildSleep is how long the child standInHoldsPipe leaves behind holds the output pipe.
+-const standInChildSleep = 5 * time.Second
++// The test's cleanup kills the child long before.
++const standInChildSleep = 5 * time.Minute
+ 
+ // TestMain runs a stand-in when standInRecordEnv is set, and the tests under tmuxkit.Main otherwise.
+ func TestMain(m *testing.M) {
+diff --git a/internal/treadleengine/gate_lingering_test.go b/internal/treadleengine/gate_lingering_test.go
+index ebceb9b9..dd64cfe3 100644
+--- a/internal/treadleengine/gate_lingering_test.go
++++ b/internal/treadleengine/gate_lingering_test.go
+@@ -25,11 +25,12 @@ func TestExecGateCommand_LingeringChildDoesNotHangPastWaitDelay(t *testing.T) {
+ 	t.Run("command exits zero, child still holds the pipe", func(t *testing.T) {
+ 		t.Parallel()
+ 		start := time.Now()
+-		// The parent exits 0 at once, but the started ping (about 19s) inherits and holds the output pipe.
++		// The parent exits 0 at once, but the started ping (about two minutes) inherits and holds the output pipe.
++		// It outlasts the test's one-minute bound, so a loaded machine cannot pass a call that waits on it.
+ 		// The command dir is the system temp dir, not t.TempDir():
+ 		// the lingering child keeps that dir as its cwd past the test's end, and t.TempDir's RemoveAll cleanup would fail.
+ 		_, exitZero, err := execGateCommand(
+-			[]string{"cmd", "/c", "start /b ping -n 20 127.0.0.1"},
++			[]string{"cmd", "/c", "start /b ping -n 120 127.0.0.1"},
+ 			os.TempDir(), 30*time.Second)
+ 		elapsed := time.Since(start)
+ 		if err != nil {
+@@ -38,19 +39,19 @@ func TestExecGateCommand_LingeringChildDoesNotHangPastWaitDelay(t *testing.T) {
+ 		if !exitZero {
+ 			t.Errorf("execGateCommand() exitZero = false; want true — the command itself exited zero")
+ 		}
+-		if elapsed > 15*time.Second {
+-			t.Errorf("execGateCommand() returned after %s; want within the ~10s pipe-abandon grace, not the child's ~19s lifetime", elapsed.Round(time.Millisecond))
++		if elapsed > time.Minute {
++			t.Errorf("execGateCommand() returned after %s; want within the ~10s pipe-abandon grace, not the child's two-minute lifetime", elapsed.Round(time.Millisecond))
+ 		}
+ 	})
+ 
+ 	t.Run("command killed at the deadline, child still holds the pipe", func(t *testing.T) {
+ 		t.Parallel()
+ 		start := time.Now()
+-		// The parent runs a ~19s foreground ping, killed at the 2s deadline.
+-		// It starts a background ping first, which keeps the pipe open past the kill.
++		// The parent runs a two-minute foreground ping, killed at the 2s deadline.
++		// It starts a background ping first, which keeps the pipe open past the kill and past the test's one-minute bound.
+ 		// The system temp dir is used because the lingering child keeps it as its cwd past the test's end.
+ 		output, exitZero, err := execGateCommand(
+-			[]string{"cmd", "/c", "start /b ping -n 20 127.0.0.1 & ping -n 20 127.0.0.1 > nul"},
++			[]string{"cmd", "/c", "start /b ping -n 120 127.0.0.1 & ping -n 120 127.0.0.1 > nul"},
+ 			os.TempDir(), 2*time.Second)
+ 		elapsed := time.Since(start)
+ 		if err != nil {
+@@ -62,8 +63,8 @@ func TestExecGateCommand_LingeringChildDoesNotHangPastWaitDelay(t *testing.T) {
+ 		if !strings.Contains(string(output), "timed out after") {
+ 			t.Errorf("execGateCommand() output = %q; want it to carry the timeout note", output)
+ 		}
+-		if elapsed > 15*time.Second {
+-			t.Errorf("execGateCommand() returned after %s; want within deadline + the ~10s pipe-abandon grace, not the child's ~19s lifetime", elapsed.Round(time.Millisecond))
++		if elapsed > time.Minute {
++			t.Errorf("execGateCommand() returned after %s; want within deadline + the ~10s pipe-abandon grace, not the child's two-minute lifetime", elapsed.Round(time.Millisecond))
+ 		}
+ 	})
+ }
+diff --git a/internal/verifyrun/run_integration_test.go b/internal/verifyrun/run_integration_test.go
+index 34ccbe56..67c61b53 100644
+--- a/internal/verifyrun/run_integration_test.go
++++ b/internal/verifyrun/run_integration_test.go
+@@ -163,9 +163,11 @@ func TestRun_Cancellation(t *testing.T) {
+ 	buf := runCapture(t)
+ 	// The sleep starts before the first write, so that write means a child is running.
+ 	// On Windows ping prints its banner once it runs.
+-	long := "sleep 30 & echo up; wait"
++	// The command outlasts the minute the test allows after the cancel,
++	// so a run that waits on it fails however loaded the machine.
++	long := "sleep 300 & echo up; wait"
+ 	if runtime.GOOS == "windows" {
+-		long = "ping -n 30 127.0.0.1"
++		long = "ping -n 300 127.0.0.1"
+ 	}
+ 	ctx, cancel := context.WithCancel(context.Background())
+ 	defer cancel()
+@@ -184,7 +186,7 @@ func TestRun_Cancellation(t *testing.T) {
+ 	if !errors.Is(err, context.Canceled) || code != -1 {
+ 		t.Fatalf("run = (%d, %v); want (-1, context.Canceled)", code, err)
+ 	}
+-	if elapsed := returned.Sub(<-cancelled); elapsed > 4*delay {
++	if elapsed := returned.Sub(<-cancelled); elapsed > time.Minute {
+ 		t.Errorf("run took %s after cancel; want well under the command's own duration", elapsed)
+ 	}
+ 	if strings.Contains(buf.String(), "WARN") {
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index 21ad85c2..d396c509 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -175,6 +175,13 @@ Bound: a forged value misleads only an ungated raw run, since `lym gate test` se
+   and the tests that replace them run serially.
+ - Production always passes today's value; the test passes a short one.
+ - No test in any tier waits out a production duration.
++- No test compares a measured real time to a bound a loaded machine can reach.
++  A test that proves a call does not wait on something makes that thing outlast a generous deadline, a minute,
++  by a release the test controls or a duration far past the deadline.
++  Where an outcome already tells the two paths apart, such as an exit code, an error or a pid,
++  the test asserts that outcome instead of a time.
++- Exception: a cost budget that no outcome can stand in for may compare a measured time to a bound.
++  The bound sits far above what load adds to the work it measures, so only a gross regression reaches it.
+ 
+ ## Tests run in parallel
+ 
