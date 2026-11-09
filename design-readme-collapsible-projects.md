@@ -1,6 +1,6 @@
 # Bolt README: every project section can be collapsed
 
-`readme-collapsible-projects` · Task · enhancement, board · running · Seed-Child
+`readme-collapsible-projects` · Task · enhancement, board · running · Open-Window
 
 ## This task
 
