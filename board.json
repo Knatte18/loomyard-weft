@@ -1079,7 +1079,6 @@
       "isolated": false,
       "brief": "",
       "body": "## This task\n\nIn Bolt's README.md, which `renderReadme` in `internal/boardengine/render.go` builds, wrap each project's section in `\u003cdetails open\u003e` with a `\u003csummary\u003e`, so the operator can collapse it.\nThat covers each top-level project and the root's own section; the per-project files stay as they are.\n\n- The summary carries what the section heading carries now: the handle and title linking to the project's file, and the open-member count. Since markdown does not render inside `\u003csummary\u003e`, the link is an HTML `\u003ca\u003e`.\n- A blank line follows `\u003csummary\u003e` and precedes `\u003c/details\u003e`, so the markdown inside renders.\n- Sections open by default.\n- It must render in VS Code's built-in Markdown Preview, which the operator reads the board in, and on GitHub.\n\n## Limits\n\nOnly the README's project sections change; the tables, the project files and the design files render as now.",
-      "status": "draft",
       "created": "2026-11-09T18:52:58Z",
       "revised": "2026-11-09T18:52:58Z",
       "profile": "light"
