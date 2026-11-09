@@ -783,6 +783,25 @@
       "created": "2026-11-09T12:09:36Z",
       "revised": "2026-11-09T12:09:36Z",
       "project": "fabric-test-speed-work"
+    },
+    {
+      "id": 1252,
+      "handle": "R3",
+      "slug": "cortex-cost-measure",
+      "title": "Measure what Cortex XDR costs the test suites on OSL-1046",
+      "kind": "note",
+      "labels": [
+        "research",
+        "gate",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split",
+      "body": "## Seen (operator, 2026-11-09)\n\nCortex XDR on OSL-1046 holds each new binary for about 10 s and scans each file a test creates, and fabricengine tests create many.\nThe shard report (`docs/research/speed/fabricengine-shards-2026-11-09/report.md`) put the 242 s one-process wall down to load, but the 2026-11-08 figure of 37 to 41 s was measured on another machine, so the gap is machine and Cortex, not load.\nThe package used 1.23 cores of 16 and `pmd` and `piud` were busy in nearly every sample.\n\n## Idea\n\nSeparate the Cortex cost from the rest: the time a freshly built test binary waits before it runs, the time file creation takes with and without a scanned folder, and the fabricengine tier 1 wall with the repository and temp folders excluded from the scan, if the operator can have that changed.\nThe result says whether to cut tests, cut file and binary creation, or ask for an exclusion.\n",
+      "created": "2026-11-09T12:09:36Z",
+      "revised": "2026-11-09T12:09:36Z"
     }
   ],
   "prime_owner": "osl-1046",
