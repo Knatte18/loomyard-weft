@@ -37,7 +37,7 @@ Not released; nothing starts it until its status is cleared.
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 4h<br>3h | slack, reed, creel |
 | T13 | `draft` **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 3h<br>3h | config, slack |
 
-## Notes (31)
+## Notes (32)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 6h<br>6h | gate, fabric |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>6h | loom, stencil |
 
-### Bugs (12)
+### Bugs (13)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -64,6 +64,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B10 |  | **lym tender pause on an adopt-held run adds no pause of its own** | [`tender-pause-reuses-adopt-hold`](design-tender-pause-reuses-adopt-hold.md) | 0m<br>0m | tender |
 | B11 |  | **An adopted run cannot be paused before adopt adds its pair** | [`adopt-pause-before-pair-exists`](design-adopt-pause-before-pair-exists.md) | 0m<br>0m | tender, fabric |
 | B12 |  | **The local dobby starts a pass on a run while adopt is taking it over** | [`adopt-old-dobby-starts-pass`](design-adopt-old-dobby-starts-pass.md) | 0m<br>0m | dobby, batten |
+| B13 |  | **A green adopt check starts adopted runs the operator paused** | [`adopt-check-overrides-pause`](design-adopt-check-overrides-pause.md) | 0m<br>0m | tender, dobby, batten |
 
 ### Enhancements (5)
 

@@ -1139,6 +1139,26 @@
       "body": "## Seen\n\nOn 2026-11-09 an adopt died in its deploy step: the owner was not written, the lym build was cut off and dobby was gone.\nNo command said which steps had run, and the operator had to run adopt again from a shell.\n\n## Idea\n\nAdopt records its progress per step, `lym beam status` or a status verb shows an unfinished adopt, and a second adopt resumes from the first step not done.",
       "created": "2026-11-09T18:13:00Z",
       "revised": "2026-11-09T18:13:00Z"
+    },
+    {
+      "id": 1274,
+      "handle": "B13",
+      "slug": "adopt-check-overrides-pause",
+      "title": "A green adopt check starts adopted runs the operator paused",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "tender",
+        "dobby",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-11-09, after `lym adopt root`, the orch set `lym batten pause` and `lym tender pause` on the three adopted runs before the adopt check ended.\nWhen the check went green, its holds lifted and dobby started all three runs anyway; the orch paused them again within a minute.\nThe same start happened on 2026-11-02 with no operator go-ahead.\n\n## Idea\n\nLifting the adopt hold must never override a pause set by anyone else.\nAdopted runs should stay paused after a green check until the operator resumes them.",
+      "created": "2026-11-09T18:13:04Z",
+      "revised": "2026-11-09T18:13:04Z"
     }
   ],
   "prime_owner": "neve",
