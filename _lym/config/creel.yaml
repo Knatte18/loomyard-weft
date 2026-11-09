@@ -1,1 +1,1 @@
-# This file holds the hub's tuned values over lym's template.
+trusted_hubs: [NORCE-DrillingAndWells/Models, NORCE-DrillingAndWells/DrillOpPlan, HenrikNORCE/AutoWellEngineering]
