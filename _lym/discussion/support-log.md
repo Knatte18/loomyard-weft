@@ -66,19 +66,25 @@ Six forks reviewed the record; every fork returned a report. Duplicates are merg
 - Make the adopt pause an `EXTERNAL` pause: rejected; the report and `tender` could no longer tell the adopt's pause apart, and an ordinary pause lets the dobby run continue passes, the finding of the dobby's `--continue-pass` during a takeover.
 - Detach and return at once: rejected; `lym s` must not start the beam before the adopt ends, and the caller wants the envelope.
 - Change `lym beam start` to adopt a foreign-owned worktree itself: rejected; it widens a verb many paths call, while a separate `adopt --here` argv keeps `beam start`'s refusal.
-- Decide `--here` from the local Bolt alone: rejected; a stale Bolt that reads this machine as owner would skip the adopt and leave `beam start` to refuse.
-- Archive branches on origin: rejected for tags; tags exist, the cleanup reads them, and a tag push moves no branch the owner rule reserves.
+- Decide `--here` from the local Bolt alone: rejected; a stale Bolt that reads this machine as owner would skip the adopt whenever origin answers.
+- Make `--here` refuse when origin is unreachable: rejected; every offline `lym s` on an owned-here worktree would stop, and `beam start` judges the local Bolt the same way.
+- Archive branches on origin: rejected for tags; a tag push moves no branch the owner rule reserves.
+- Reuse the `archive/` tag prefix and teach its readers to skip D11's tags: rejected for an `archive-owner/` prefix; every reader would need the rule, and `--archives` could not tell teardown archives apart.
+- Spare the adopt role in the anchor's dobby end: rejected; the anchor would then move the prime under a worker mid-step, while an interrupted worker resumes under D2.
 - Let `lym tender pause` accept a slug with no pair: rejected; adopt pauses every run itself and the record keeps the dobby idle before then.
 - Keep the resume of owner-halted children at the green end: rejected; it starts work. The run report names the hand step instead.
 - Read the old owner's archives in the adopt's own reconcile: rejected; the old owner archives only after the owner write reaches it.
 - Show the archives in `lym beam status`: rejected; it would reach origin on every status read.
-- One adopt record per subject: rejected; one adopt spans several subjects with one reconcile, and `--here` skipping the record when owned here removes the conflict that motivated it.
+- One adopt record per subject: rejected; one adopt spans several subjects with one reconcile, and `--here` taking up only a record that lists its own subject removes the conflict that motivated it.
 - Keep live-here runs unpaused: rejected; the dobby's owner lift would let such a run go on with no operator resume.
 - Archive before pausing on the old owner, as the board orders: rejected; the dobby could start a pass during a failing archive.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1, BLOCKING: `--here` now reads the record first and resumes an adopt that died after its owner write (D10);
+  D4 covers beams that read their owner from an adopted subject;
+  a resume before `owner` re-runs the reconcile (D2); `--discard` takes `adopt.lock`;
+  D11's tags take an `archive-owner/` prefix that D12 reads.
 
 ## Question ledger
 
@@ -88,8 +94,8 @@ _No rounds yet._
 - Q4 Which pause? Auto-pick: a new `adopt` caller lifted only by hand, `Held` semantics in the dobby (D5). Resolved.
 - Q5 Are unstarted released tasks paused too? Auto-pick: yes, as today's holds (D5). Resolved.
 - Q6 What does "run from an orch session" skip? Auto-pick: the orch start of every subject (D7). Resolved.
-- Q7 How does `lym s` adopt only when needed? Auto-pick: `adopt --here --no-orch` as the shortcut's first argv, judged after a Bolt pull; changed at the lens review from a full reconcile (D10). Resolved.
-- Q8 Archive branches or tags? Auto-pick: the existing archive tags (D11). Resolved.
+- Q7 How does `lym s` adopt only when needed? Auto-pick: `adopt --here --no-orch` as the shortcut's first argv, judged after a Bolt pull; changed at the lens review from a full reconcile, and at review round 1 to take up first an unfinished record that has not reached `check` for the worktree (D10). Resolved.
+- Q8 Archive branches or tags? Auto-pick: tags, under their own `archive-owner/` prefix, changed at review round 1 from the existing `archive/` tags (D11). Resolved.
 - Q9 Archive before or after stopping runs? Auto-pick: pause first, changed at the lens review so no pass starts during a failing archive (D11). Resolved.
 - Q10 Does a failed archive keep the dobby up? Auto-pick: yes, retrying at each probe with its runs owner-paused (D11). Resolved.
 - Q11 Should `lym tender pause` lose its pair refusal? Auto-pick: no; kept out of scope. Resolved.
