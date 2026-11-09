@@ -645,29 +645,6 @@
       "project": "codex-engine-trial"
     },
     {
-      "id": 1251,
-      "handle": "T2",
-      "slug": "fabric-serial-phase-tests",
-      "title": "Make the eight longest serial internal/fabricengine tests parallel",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "testkit"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Move their package-level test state into parameters so the serial phase of tier 1 shrinks",
-      "body": "## Seen (orch, 2026-11-09)\n\n`docs/research/speed/fabricengine-shards-2026-11-09/report.md`, measured on OSL-1046 under its normal load: 46 of the package's 400 top-level tests are not marked parallel, and the serial chain they form is 143 s, 59.5 percent of the 242 s one-process wall.\nThe eight longest of them take about 84 s of that chain.\nSeveral are serial because they set a package-level variable the production code reads: a push notifier (`installedPushNotifier`, `failedpush.go`), an origin call hook (`originCallHook`, `originreconcile.go`) and a gc threshold (`gcAutoThreshold`, `housekeeping.go`).\n`docs/research/speed/fabricengine-per-test-times-2026-11-07.md` names the reason for several of the others.\n\n## This task\n\nMake these eight top-level tests parallel, and only these:\n\n- `TestPushFailureClasses`\n- `TestAnchorChange`\n- `TestReconcileOrigin_Judge`\n- `TestStoreHousekeeping`\n- `TestWorktreeSeam_Events`\n- `TestReconcileOrigin_Ended`\n- `TestReconcileOrigin_Moves`\n- `TestReconcile_MigratesMarkerlessWefts`\n\nFirst read each one and name why it is serial: a package-level variable it sets, a process environment variable or working directory, or a shared path.\nWhere the cause is package-level state, the state moves into a parameter the test passes, such as a field of `SyncOptions` or of the options type the code path already takes, and the production path reads it from there.\nThe package-level variable goes away when no test needs it; one that stays must not be read by any path a parallel test reaches, or two parallel tests would see each other's value.\nEvery other test that sets the same variable moves with it in this task, so no test is left setting state a parallel test can read.\nA test whose cause cannot be removed without a larger change stays serial, and the task names it and the cause in its landing note instead of changing more.\n\n## Limits\n\n- Nothing outside `internal/fabricengine` and its tests changes, except a caller of a function whose signature the task changes.\n- No change to what any production path does; only where its inputs come from.\n- No test is dropped or loosened, and no test outside the eight changes, except the ones that set the same package-level state.\n- The tier 1 gate on `./internal/fabricengine` is green, run with `-race` if the gate offers it, since a missed shared state shows there.\n\n## Measuring\n\nThe task does not bench.\nA later run of `docs/research/speed/fabricengine-shards-2026-11-09/serial-share.sh` on the one-process run's events gives the new phase 1 against the 143 s above.\nThe figure is from OSL-1046, where Cortex XDR slows every new binary and file; another machine will show a smaller serial phase.\n",
-      "status": "done",
-      "created": "2026-11-09T12:09:36Z",
-      "revised": "2026-11-09T12:39:18Z",
-      "profile": "solid",
-      "project": "fabric-test-speed-work"
-    },
-    {
       "id": 1252,
       "handle": "R3",
       "slug": "cortex-cost-measure",
@@ -700,9 +677,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "fabric-serial-phase-tests"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "About 65 thousand git processes, each slower as more run at once",
       "body": "## Seen (orch, 2026-11-09)\n\n`docs/research/speed/fabricengine-shards-2026-11-09/report.md`: the package starts about 65 thousand git processes,\nand the mean one took 6.8 ms as one process, 8.0 ms with two shards and 10.6 ms with four, so more concurrency slowed each spawn.\nThe serial phase is 59.5 percent of the wall, and a spawn removed from a serial test shortens it by the spawn's whole latency.\nHub copies are about 3 percent of the spawns.\nOn OSL-1046 each spawn also pays for Cortex XDR's scan, so the saving there is larger than the spawn time alone.\n\n## This task\n\nIt runs after `fabric-serial-phase-tests` has made the longest serial tests parallel, and works on what is still serial then.\n\n1. Count: run the top-level tests of `internal/fabricengine` that are still not marked parallel with `GIT_TRACE2_EVENT` set,\n   and count the git processes each starts, per git subcommand and per production call site.\n2. Replace: serve the most frequent read-only git calls from Go instead of a git process,\n   as the `.git` worktree reader and the Go-side git config writer did before.\n   Keep every call that writes or that Go cannot answer the same way git does.\n3. Measure the package's tier 1 wall and its git process count before and after, on the same machine, and record both in the landing note.\n\n## Limits\n\n- No change to what any production path reads or decides: a Go read answers exactly what the git call it replaces answered.\n- Nothing outside `internal/fabricengine`, `internal/gitkit` and their tests changes, except a caller of a function whose signature the task changes.\n",
