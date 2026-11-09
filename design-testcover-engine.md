@@ -1,6 +1,6 @@
 # internal/testcover: the coverage runner, content block keys and the map record, with testtiming's package-scoped verdict
 
-`testcover-engine` · Task · feature, testkit, gate · running · Record-Write
+`testcover-engine` · Task · feature, testkit, gate · running · Drift-Baseline
 
 Decision record: [Sketch](decision-testcover-engine.md)
 
