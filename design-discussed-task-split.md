@@ -68,9 +68,19 @@ A Sketch with no stored record is refused, naming `motif`.
   It designs nothing; the Sketch has done that.
 - Interactive by default: the operator approves the proposal in the agent's pane (`lym loom raddle-approve`), may question it and have it revise first.
   The loom key `raddle_auto_approve` files with no operator input; it stays off until the splits are tuned well enough.
+- Built (2026-11-09, `2ad39d26`): task `raddle-perch-mode`.
+  A raddle run whose recipe rows hold a split perch (a Bouncer row whose `artifact_paths` name the raddle proposal) records a third mode, `perch`, decided by the rows and never by the recipe's name.
+  The perch's approval files the proposal in place of the operator's, and `raddle_auto_approve` is never read; `raddle-approve` refuses, naming the perch.
+  Perch mode allows one task (shape `tapestry`, or shape `tasks` with one part) or one project (shape `project` whose slug is the run's own entry); shape `beam`, several task parts and a project under another slug fail the `perch-outcome` check.
+  A perch-mode `lym loom decision add` is refused from Raddle-File on, with a way forward.
+  Filing a perch-mode project as the converted entry comes with `arras-family-filing`; here such a proposal only passes the checks.
+  Not run end to end against a real split-perch recipe yet.
 - Raddle-File re-checks the board, then files every entry in one write, each with its part of the record stored and `discussed` set, creates the beam for shape `beam` and hands the Sketch slug and proposal to the beam's orch in Beam-Up.
   Built (2026-11-07, `731004c3`): filing releases nothing.
   Every filed task, project members included, stays `draft` until the operator releases it with `lym board set-status`; the earlier release step is removed.
+  Built (2026-11-09, `8ce95432`): task `project-release-members`.
+  `lym board set-status` with a null status on a project whose own status is empty releases, in the same write, every direct member task of that project in `draft`, so one command releases a filed family; the envelope's `notice` names the released members.
+  Members already released, run-held or done, nested projects and their members stay as they are, and a null status on a project that holds a run status or `done` is refused.
   The proposal carries an optional `order_departures` list (`{parts, record_order, cost}`) naming each place its chain order departs from an order the Sketch states, and the interactive approval table shows a dependencies column, the departures and the draft notice.
   The stencil orders parts that share a package by the Sketch's own order first.
   The table, the departures and the draft notice are instructions to the agent, not enforced in code.
