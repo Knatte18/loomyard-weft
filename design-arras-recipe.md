@@ -1,6 +1,6 @@
 # Arras: one recipe that runs Motif and raddle in a row, with a perch on the split
 
-`arras-recipe` · Project · feature, shed, loom, burler, arbiter, board
+`arras-recipe` · Project · feature, shed, loom, burler, arbiter, board · done
 
 Decision record: [Sketch](decision-arras-recipe.md)
 
