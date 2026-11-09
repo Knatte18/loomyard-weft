@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-09 09:22 UTC; every age below is as of then.
+Rendered 2026-11-09 09:23 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `osl-1046`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T12 | **Fix the adopt check of root on osl-1046** | [`adopt-fix-root-t1`](design-adopt-fix-root-t1.md) | darn · light | Code-Bouncer | osl-1046 | 24m<br>24m | gate |
+| T12 | **Fix the adopt check of root on osl-1046** | [`adopt-fix-root-t1`](design-adopt-fix-root-t1.md) | darn · light | Code-Burler-Review | osl-1046 | 24m<br>24m | gate |
 
 ### Ready (0)
 
