@@ -129,7 +129,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **An arras family filing turns the run's entry into its project and re-points its dependents** | [`arras-family-filing`](design-arras-family-filing.md)<br>[Sketch](decision-arras-family-filing.md) | darn · solid | Code-Burler-Fix | neve | 1d<br>1d | shed, loom, burler, arbiter, board |
+| T7 | **An arras family filing turns the run's entry into its project and re-points its dependents** | [`arras-family-filing`](design-arras-family-filing.md)<br>[Sketch](decision-arras-family-filing.md) | darn · solid | Code-Bouncer | neve | 1d<br>1d | shed, loom, burler, arbiter, board |
 
 #### Ready (0)
 
