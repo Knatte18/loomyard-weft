@@ -1,6 +1,6 @@
 # An arras family filing turns the run's entry into its project and re-points its dependents
 
-`arras-family-filing` · Task · feature, shed, loom, burler, arbiter, board
+`arras-family-filing` · Task · feature, shed, loom, burler, arbiter, board · draft
 
 Decision record: [Sketch](decision-arras-family-filing.md)
 
