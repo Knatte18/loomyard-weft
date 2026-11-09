@@ -1,6 +1,6 @@
 # P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review
 
-Rendered 2026-11-09 14:30 UTC; every age below is as of then.
+Rendered 2026-11-09 14:32 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`redundancy-check`](design-redundancy-check.md) · Age 19h · Owner `osl-1046`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **lym gate testmap rebuilds stale coverage maps in the prime parent's worktree**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-verb`](design-testmap-verb.md)<br>[Sketch](decision-testmap-verb.md) | darn · solid | Darn-Write | osl-1046 | 19h<br>19h | testkit, gate |
+| T3 | **lym gate testmap rebuilds stale coverage maps in the prime parent's worktree**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-verb`](design-testmap-verb.md)<br>[Sketch](decision-testmap-verb.md) | darn · solid | Drift-Verify | osl-1046 | 19h<br>19h | testkit, gate |
 
 ### Ready (0)
 

@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-09 14:30 UTC; every age below is as of then.
+Rendered 2026-11-09 14:32 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `osl-1046`
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Terminal titles read hub: project: task: slug**<br>• Every console window title reads <hub>: <P#>: <T#>: <slug>, with prime, beam and orch forms. | [`terminal-titles-hub-project`](design-terminal-titles-hub-project.md) | darn · light | Code-Burler-Fix | osl-1046 | 1h<br>1h | ide, reed |
-| T4 | **Machine name from a machine-wide config, not only the hostname**<br>• internal/machinename has a fixed hostname rule and no override; a machine-wide config value would let the operator name a machine osl46. | [`machine-name-config`](design-machine-name-config.md) | motif | Discussion-Burler-Fix | osl-1046 | 57m<br>39m | config, slack |
+| T4 | **Machine name from a machine-wide config, not only the hostname**<br>• internal/machinename has a fixed hostname rule and no override; a machine-wide config value would let the operator name a machine osl46. | [`machine-name-config`](design-machine-name-config.md) | motif | Discussion-Burler-Fix | osl-1046 | 58m<br>40m | config, slack |
 
 ### Ready (0)
 
@@ -33,7 +33,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T4 | 37m<br>34m | slack, reed, creel |
+| T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T4 | 38m<br>36m | slack, reed, creel |
 
 ## Notes (19)
 
@@ -50,7 +50,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | 5m<br>5m | gate, testkit |
+| B1 |  | **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | 6m<br>6m | gate, testkit |
 | B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 23h<br>23h | shed, friction |
 
 ### Enhancements (3)
@@ -59,7 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 1d<br>1d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 1d<br>1d | shed, loom, darn |
-| E3 |  | **Darn-Write gate fix: rerun only the failed tests between attempts**<br>• Each failed verify attempt reruns the full computed scope; a fixer that gets only the failures and reruns only those would save about 10 minutes per attempt. | [`gate-fix-failures-only`](design-gate-fix-failures-only.md) | 0m<br>0m | gate, loom |
+| E3 |  | **Darn-Write gate fix: rerun only the failed tests between attempts**<br>• Each failed verify attempt reruns the full computed scope; a fixer that gets only the failures and reruns only those would save about 10 minutes per attempt. | [`gate-fix-failures-only`](design-gate-fix-failures-only.md) | 1m<br>1m | gate, loom |
 
 ### Features (12)
 
