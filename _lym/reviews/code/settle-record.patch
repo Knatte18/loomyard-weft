@@ -1,0 +1,1797 @@
+diff --git a/contracts/recipes/raddle-recipe.yaml b/contracts/recipes/raddle-recipe.yaml
+index 5fe10c0f..81091a81 100644
+--- a/contracts/recipes/raddle-recipe.yaml
++++ b/contracts/recipes/raddle-recipe.yaml
+@@ -1,7 +1,7 @@
+ # raddle-recipe.yaml is the recipe that splits a Sketch into the board entries the operator approves, and files them: Record-Write, Raddle-Write and Raddle-File.
+ # Record-Write writes the Sketch's stored decision record into the run, as the darn and pawl recipes do for their records.
+ # Raddle-Write is one agent session that proposes the split, the order, the recipes and the profiles, and ends on the operator's approval of the proposal, or on the finished proposal when the run is in auto mode.
+-# Raddle-File is a Go row with no agent: it checks the approved proposal once more, files the entries on the board in one write and ends the run's own entry, so a raddle run lands no code.
++# Raddle-File is a Go row with no agent: it checks the approved proposal once more, files the entries on the board in one write and ends the run's own entry unless a family filing turned it into the family's project, so a raddle run lands no code.
+ #
+ # contract: loom takes the loom contract's record-only form: one record row, Record-Write, and neither a build row nor a Finalize row, so it needs no verify_source.
+ # Neither new engine is a build or Finalize engine, so the loader accepts the recipe with no change to the contract.
+diff --git a/docs/overview.md b/docs/overview.md
+index 2d388508..eec1190e 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1300,6 +1300,7 @@ User-facing modules each get one `lym <module>` namespace:
+   A run with no `Finalize` row ends by closing its entry.
+   A motif run makes the entry a Sketch, a note of the built-in type `sketch` that never runs and waits for triage.
+   A raddle run ends the entry done in its own Raddle-File, never as a Sketch.
++  An arras family filing is the exception: it turns the entry into the family's project, and no status write of the run reaches it afterwards.
+   `Parent-Align` and `Finalize` each run the plan's verify command after a parent merge-in that changed the task tree.
+   A failure halts Stuck, with the command's output in the loom verify-output log.
+   A pending-verify marker keeps the gate armed across a resume until a verify passes.
+diff --git a/internal/battencli/cleanup.go b/internal/battencli/cleanup.go
+index 48126e04..0d5602e6 100644
+--- a/internal/battencli/cleanup.go
++++ b/internal/battencli/cleanup.go
+@@ -1,6 +1,7 @@
+ // cleanup.go implements `lym batten cleanup`, which removes finished runs' records and scratch from the prime worktree.
+ // Cleanup decides every slug's removal, so no caller removes more than Cleanup decides.
+-// The file also holds ClearMotifRun, which removes one slug's done motif run so the next run under that slug can start.
++// The file also holds ClearMotifRun, which removes one slug's done motif or arras run.
++// That lets the next run under the slug start.
+ 
+ package battencli
+ 
+@@ -102,14 +103,16 @@ func Cleanup(location *lymcwd.Location, apply bool) (CleanupReport, error) {
+ 	return cleanup(prime, apply, fabricCleanupDeps(prime))
+ }
+ 
+-// ClearMotifRun removes the records run directory and scratch contents of slug's run when it is a done motif run.
++// ClearMotifRun removes the run directory and scratch contents of slug's run when it is a done motif or arras run.
+ // It reports whether it removed them.
+ // A motif run is the planned first step of a project split or a raddle run;
+-// its done record must not block the next run under the same slug.
++// an arras run that filed a family left its slug to the family's project, which a beam's run takes next.
++// The done record of either must not block the next run under the same slug.
++// The removal takes the run's filing mark with it, so the next run's status writes reach the entry again.
+ // It runs from the prime worktree and from a beam, acting on the prime's location, and refuses elsewhere.
+ // A run is left alone with cleared false when its run lock is held or it is not done.
+ // A run whose child-recipe record names another recipe or none is left alone too.
+-// When a removal fails before its records commit lands, the status and child-recipe records are written back,
++// When a removal fails before its records commit, the status, child-recipe and filing-mark records are written back,
+ // and the error is returned, so a re-run finds the run again.
+ // A failed push spawn or scratch emptying only warns, since the done record is gone either way.
+ func ClearMotifRun(location *lymcwd.Location, slug string) (cleared bool, err error) {
+@@ -120,7 +123,7 @@ func ClearMotifRun(location *lymcwd.Location, slug string) (cleared bool, err er
+ 	return clearMotifRun(prime, slug, fabricCleanupDeps(prime))
+ }
+ 
+-// clearMotifRun removes slug's done motif run and reports whether it removed it.
++// clearMotifRun removes slug's done motif or arras run and reports whether it removed it.
+ // Its records calls and push spawn come from deps, so tests can stub them.
+ // It judges and removes while holding the slug's run lock and status lock, so a run started meanwhile is never removed.
+ func clearMotifRun(location *lymcwd.Location, slug string, deps cleanupDeps) (cleared bool, err error) {
+@@ -156,31 +159,36 @@ func clearMotifRun(location *lymcwd.Location, slug string, deps cleanupDeps) (cl
+ 	if err != nil {
+ 		return false, fmt.Errorf("battencli: read the child recipe of %s: %w", slug, err)
+ 	}
+-	if recipe != shedrun.RecipeMotif {
++	if recipe != shedrun.RecipeMotif && recipe != shedrun.RecipeArras {
+ 		return false, nil
+ 	}
++	filingMarked, err := shedrun.FilingMarked(location, slug)
++	if err != nil {
++		return false, fmt.Errorf("battencli: read the filing mark of %s: %w", slug, err)
++	}
+ 
+-	committed, err := removeRunRecords(location, slug, "batten: remove the done motif run of "+slug, deps)
++	committed, err := removeRunRecords(location, slug, "batten: remove the done "+recipe+" run of "+slug, deps)
+ 	var emptyErr scratchEmptyError
+ 	switch {
+ 	case errors.As(err, &emptyErr):
+-		logger.Warn("battencli: the done motif run's records are removed but its scratch is not emptied", "slug", slug, "error", err.Error())
++		logger.Warn("battencli: the done run's records are removed but its scratch is not emptied", "slug", slug, "recipe", recipe, "error", err.Error())
+ 	case err != nil:
+-		return false, errors.Join(err, restoreMotifRunRecords(location, slug, data, recipe))
++		return false, errors.Join(err, restoreMotifRunRecords(location, slug, data, recipe, filingMarked))
+ 	}
+ 	if committed {
+ 		if err := deps.Spawn(); err != nil {
+-			logger.Warn("battencli: the push of the motif run's removal did not spawn; the next records sync carries it", "slug", slug, "error", err.Error())
++			logger.Warn("battencli: the push of the done run's removal did not spawn; the next records sync carries it", "slug", slug, "recipe", recipe, "error", err.Error())
+ 		}
+ 	}
+ 	return true, nil
+ }
+ 
+-// restoreMotifRunRecords writes back the status and child-recipe records of slug's run.
++// restoreMotifRunRecords writes back the status and child-recipe records of slug's run,
++// and its filing mark when filingMarked reports that one stood.
+ // It runs when a removal fails before its records commit,
+-// so the run reads as a done motif run again and a re-run of the removal finishes it.
++// so the run reads as the same done run again and a re-run of the removal finishes it.
+ // The caller holds the slug's status lock.
+-func restoreMotifRunRecords(location *lymcwd.Location, slug string, status []byte, recipe string) error {
++func restoreMotifRunRecords(location *lymcwd.Location, slug string, status []byte, recipe string, filingMarked bool) error {
+ 	statusFile := shedrun.StatusFile(location, slug)
+ 	if err := os.MkdirAll(filepath.Dir(statusFile), 0o755); err != nil {
+ 		return fmt.Errorf("battencli: restore the status of %s: %w", slug, err)
+@@ -191,6 +199,11 @@ func restoreMotifRunRecords(location *lymcwd.Location, slug string, status []byt
+ 	if err := shedrun.WriteChildRecipe(location, slug, recipe); err != nil {
+ 		return fmt.Errorf("battencli: restore the child recipe of %s: %w", slug, err)
+ 	}
++	if filingMarked {
++		if err := shedrun.WriteFilingMark(location, slug); err != nil {
++			return fmt.Errorf("battencli: restore the filing mark of %s: %w", slug, err)
++		}
++	}
+ 	return nil
+ }
+ 
+diff --git a/internal/battencli/cleanup_test.go b/internal/battencli/cleanup_test.go
+index 91861930..a430a08d 100644
+--- a/internal/battencli/cleanup_test.go
++++ b/internal/battencli/cleanup_test.go
+@@ -545,7 +545,7 @@ func TestCleanup_HoldsTheStatusLockUntilTheCommitAndLeavesTheSlugRunnable(t *tes
+ 	}
+ }
+ 
+-func TestClearMotifRun_RemovesOnlyADoneMotifRun(t *testing.T) {
++func TestClearMotifRun_RemovesOnlyADoneMotifOrArrasRun(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+@@ -555,6 +555,8 @@ func TestClearMotifRun_RemovesOnlyADoneMotifRun(t *testing.T) {
+ 		runState string
+ 		// childRecipe is the child-recipe record; empty means none.
+ 		childRecipe string
++		// filingMark writes the run's filing mark, which a removal takes with the run.
++		filingMark  bool
+ 		holdRunLock bool
+ 		// commitErr is what the records commit fails with; the run then stays and the error is returned.
+ 		commitErr error
+@@ -571,6 +573,7 @@ func TestClearMotifRun_RemovesOnlyADoneMotifRun(t *testing.T) {
+ 		{name: "PushSpawnFailureStillClearsTheRun", runState: "done", childRecipe: shedrun.RecipeMotif, spawnErr: errors.New("remote refused"), wantCleared: true},
+ 		{name: "ScratchEmptyFailureStillClearsTheRun", runState: "done", childRecipe: shedrun.RecipeMotif, blockScratch: true, wantCleared: true},
+ 		{name: "DoneMotifRunTheRecordsHeadDoesNotTrackIsRemovedWithNoCommit", runState: "done", childRecipe: shedrun.RecipeMotif, untracked: true, wantCleared: true},
++		{name: "DoneArrasRunIsRemovedWithItsFilingMark", runState: "done", childRecipe: shedrun.RecipeArras, filingMark: true, wantCleared: true},
+ 		{name: "DoneDarnRunStays", runState: "done", childRecipe: shedrun.RecipeDarn},
+ 		{name: "DoneRunWithNoChildRecipeRecordStays", runState: "done"},
+ 		{name: "RunningMotifRunStays", runState: "running", childRecipe: shedrun.RecipeMotif},
+@@ -611,6 +614,11 @@ func TestClearMotifRun_RemovesOnlyADoneMotifRun(t *testing.T) {
+ 					t.Fatalf("write child recipe: %v", err)
+ 				}
+ 			}
++			if tt.filingMark {
++				if err := shedrun.WriteFilingMark(location, slug); err != nil {
++					t.Fatalf("write filing mark: %v", err)
++				}
++			}
+ 			if tt.holdRunLock {
+ 				writeCleanupFile(t, shedrun.RunLock(location, slug), nil)
+ 				held, err := lock.AcquireWriteLock(shedrun.RunLock(location, slug))
+@@ -658,15 +666,21 @@ func TestClearMotifRun_FinishesTheRemovalOfARunWhoseRecordsCommitFailed(t *testi
+ 	const slug = "codex-engine"
+ 	writeCleanupFile(t, shedrun.StatusFile(location, slug), statusJSON(t, "done"))
+ 	stubs.committed[shedrun.StatusRel(location, slug)] = statusJSON(t, "done")
+-	if err := shedrun.WriteChildRecipe(location, slug, shedrun.RecipeMotif); err != nil {
++	if err := shedrun.WriteChildRecipe(location, slug, shedrun.RecipeArras); err != nil {
+ 		t.Fatalf("write child recipe: %v", err)
+ 	}
++	if err := shedrun.WriteFilingMark(location, slug); err != nil {
++		t.Fatalf("write filing mark: %v", err)
++	}
+ 
+ 	stubs.commitErr = errors.New("records commit refused")
+ 	cleared, err := clearMotifRun(location, slug, stubs.deps())
+ 	if !errors.Is(err, stubs.commitErr) || cleared {
+ 		t.Fatalf("clearMotifRun() with a failing commit = (%v, %v); want false and an error wrapping %v", cleared, err, stubs.commitErr)
+ 	}
++	if marked, err := shedrun.FilingMarked(location, slug); err != nil || !marked {
++		t.Errorf("FilingMarked() after the failed removal = %t, %v; want the mark written back", marked, err)
++	}
+ 
+ 	stubs.commitErr = nil
+ 	cleared, err = clearMotifRun(location, slug, stubs.deps())
+diff --git a/internal/battencli/commitstatus.go b/internal/battencli/commitstatus.go
+index 0d9d9d2a..6a147454 100644
+--- a/internal/battencli/commitstatus.go
++++ b/internal/battencli/commitstatus.go
+@@ -52,6 +52,7 @@ type commitStatusDeps struct {
+ 	// Spawn starts the detached push of the fabric sibling worktree's unpushed commits.
+ 	Spawn func() error
+ 	// SetBoardStatus writes status onto the run's board entry, leaving an absent or already done entry untouched.
++	// It writes nothing once the run's filing mark stands.
+ 	// A nil SetBoardStatus writes nothing.
+ 	SetBoardStatus func(status string) error
+ }
+@@ -62,7 +63,7 @@ var spawnStatusPush = fabricengine.SpawnStatusPush
+ 
+ // battenRunCommitPaths returns the anchor-relative paths a commit of the run's records stages.
+ // It always stages the run's status file.
+-// It stages the seed, dobby's run notice marker, settle records and child-recipe record whenever each is on disk.
++// It stages the seed, dobby's notice marker, settle records, child-recipe record and filing mark when each is on disk.
+ // It stages the driver's drive-reports, tackler and arbiter directories whenever each holds a file.
+ //
+ // The status and the seed belong on the pair, since a run directory is durable, fabric-synced state.
+@@ -88,6 +89,9 @@ func battenRunCommitPaths(location *lymcwd.Location, runID string) []string {
+ 	if _, err := os.Stat(shedrun.ChildRecipeFile(location, runID)); err == nil {
+ 		paths = append(paths, shedrun.ChildRecipeRel(location, runID))
+ 	}
++	if _, err := os.Stat(shedrun.FilingMarkFile(location, runID)); err == nil {
++		paths = append(paths, shedrun.FilingMarkRel(location, runID))
++	}
+ 	return append(paths, shedrun.DriverRecordsRel(location, runID)...)
+ }
+ 
+@@ -117,6 +121,7 @@ func commitRunRecords(deps commitStatusDeps, slug string) error {
+ 
+ // battenCommitStatusDeps builds the commitStatusDeps that drive the fabric pair for location and runID.
+ // SetBoardStatus writes the hub board's entry runID names, a batten run's id being its task's slug.
++// It writes nothing once the run's filing mark stands, since a family filing made that entry the family's project.
+ // The spawned push runs from the prime, so it covers only the prime's records side,
+ // and it waits under the pair's pause entry with runID as its gate slug.
+ func battenCommitStatusDeps(location *lymcwd.Location, runID string) commitStatusDeps {
+@@ -133,6 +138,9 @@ func battenCommitStatusDeps(location *lymcwd.Location, runID string) commitStatu
+ 			return err
+ 		},
+ 		SetBoardStatus: func(status string) error {
++			if marked, err := shedrun.FilingMarked(location, runID); err != nil || marked {
++				return err
++			}
+ 			board, err := boardengine.OpenHub(location.HubPath)
+ 			if err != nil {
+ 				return err
+diff --git a/internal/battencli/commitstatus_test.go b/internal/battencli/commitstatus_test.go
+index d15e6a9a..497dff2d 100644
+--- a/internal/battencli/commitstatus_test.go
++++ b/internal/battencli/commitstatus_test.go
+@@ -162,7 +162,7 @@ func TestNewCommitStatusSeam_BoardWriteFailureDoesNotStopTheCommit(t *testing.T)
+ }
+ 
+ // TestBattenCommitStatusDeps_SetBoardStatusWritesTheRunsEntry pins that the real SetBoardStatus writes the status.
+-// The status lands on the board entry whose slug is the run id.
++// The status lands on the board entry whose slug is the run id, and no status does once the run's filing mark stands.
+ // The test sets the board skip variables, which are process-global, so it does not call t.Parallel.
+ func TestBattenCommitStatusDeps_SetBoardStatusWritesTheRunsEntry(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -192,6 +192,16 @@ func TestBattenCommitStatusDeps_SetBoardStatusWritesTheRunsEntry(t *testing.T) {
+ 	if task.Status == nil || *task.Status != status {
+ 		t.Errorf("board status = %v; want %q", task.Status, status)
+ 	}
++
++	if err := shedrun.WriteFilingMark(location, slug); err != nil {
++		t.Fatalf("WriteFilingMark() = %v; want nil", err)
++	}
++	if err := battenCommitStatusDeps(location, slug).SetBoardStatus(boardengine.RunStatus("running", "Preflight")); err != nil {
++		t.Fatalf("SetBoardStatus() under the filing mark = %v; want nil", err)
++	}
++	if task, _, err := board.GetTask(slug); err != nil || task.Status == nil || *task.Status != status {
++		t.Errorf("board status under the filing mark = %v, %v; want %q left as it was", task.Status, err, status)
++	}
+ }
+ 
+ // TestStatusPushSpawns_TellTheirLocationAndGateSlug pins what batten's two push spawns ask fabric for:
+@@ -287,6 +297,14 @@ func TestBattenRunCommitPaths(t *testing.T) {
+ 		t.Errorf("battenRunCommitPaths with a child-recipe record on disk = %v; want %v", got, want)
+ 	}
+ 
++	if err := shedrun.WriteFilingMark(loc, runID); err != nil {
++		t.Fatalf("write filing mark: %v", err)
++	}
++	got = battenRunCommitPaths(loc, runID)
++	if want = append(want, shedrun.FilingMarkRel(loc, runID)); !reflect.DeepEqual(got, want) {
++		t.Errorf("battenRunCommitPaths with a filing mark on disk = %v; want %v", got, want)
++	}
++
+ 	// A driver directory holding only an empty attempt directory is nothing to commit.
+ 	if err := os.MkdirAll(shedrun.TacklerAttemptDir(loc, runID, 1), 0o755); err != nil {
+ 		t.Fatalf("mkdir empty tackler attempt: %v", err)
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 3a0a5917..49d177de 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -152,6 +152,9 @@ var intentionallyNil = map[string]string{
+ 	"RaddleFile.Entry":                       "raddle-only seam, batten runs no raddle row",
+ 	"RaddleFile.StoreDone":                   "raddle-only seam, batten runs no raddle row",
+ 	"RaddleFile.AlreadyFiled":                "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.ClaimStatus":                 "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.MarkFiled":                   "raddle-only seam, batten runs no raddle row",
++	"RaddleFile.ClearStatus":                 "raddle-only seam, batten runs no raddle row",
+ 	"RaddleFile.File":                        "raddle-only seam, batten runs no raddle row",
+ 	"RaddleFile.CreateBeam":                  "raddle-only seam, batten runs no raddle row",
+ 	"RaddleFile.Notify":                      "raddle-only seam, batten runs no raddle row",
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index c1682169..311e1800 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -53,8 +53,8 @@
+ //     A run in flight, meaning a batten status file not done, is reported live and starts nothing.
+ //     A flagged beam with no run status, or a legacy beam with a marked pair and no pawl run, gets its pawl run.
+ //     A done run whose pair is gone is first passed to `battencli.ClearMotifRun`.
+-//     It removes the run when its child ran the motif recipe.
+-//     A project split after its motif run thus starts its pawl run under the same slug.
++//     It removes the run when its child ran the motif or arras recipe.
++//     A project split after its motif run, or filed by its arras run, thus starts its pawl run under the same slug.
+ //     The envelope says so with `motif_run_cleared`.
+ //     Any other done run stays, and the first pass refuses it naming `lym batten cleanup --apply`.
+ //     A first pass whose envelope is not ok, such as one a covering pause refused, leaves no run.
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 6c98ef4e..6064c5d6 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -427,6 +427,12 @@
+ // MakeSketch writes it, and a hand write making the same change passes too, as set-status does.
+ // A write that also changes the entry's title, body or any other scope field is refused.
+ // So is one that makes it a note without the sketch label.
++// A held task whose net change turns it into the project of a family the same write adds passes too.
++// That holds while its status names the Raddle-File producer, whatever its state.
++// The family's parts are the discussed draft tasks the write adds under the entry, each after the parts it depends on.
++// The entry must become exactly their project.
++// It has no status and the run fields cleared.
++// Its order and part list name the parts in their sequence, and the write makes no other scope change.
+ // set-status is itself unguarded, so a live run's status can be cleared by hand.
+ // Prune passes, since a held entry's dependency on a done entry that the same write removes is not a change;
+ // every other depends_on change is refused.
+@@ -627,9 +633,14 @@
+ // The parts are filed draft, so a release stays the operator's.
+ // The run's own entry stays open.
+ // A part's dependency on the run's entry, or on a slug no longer on the board, is dropped.
++// A family filing, whose project is the run's own entry, turns that entry into the project instead of adding one.
++// When the write fails, the entry's former decision record is written back.
++// Every filing moves each open entry's dependency on the run's entry onto the filed parts no other part depends on.
++// A refusal of that move is wrapped in ErrRaddleRepointRefused and names the refusing entry.
+ // EndRaddleEntry marks the run's entry done and clears its notify_on_land.
+ // The run lock admits both changes, since neither is scope.
+ // It writes nothing for an absent or done entry.
++// ClearProjectRunStatus clears a run status from a family's project and releases no member.
+ //
+ // # Siblings
+ //
+diff --git a/internal/boardengine/raddlefile.go b/internal/boardengine/raddlefile.go
+index 68f62147..bb6dadd8 100644
+--- a/internal/boardengine/raddlefile.go
++++ b/internal/boardengine/raddlefile.go
+@@ -1,13 +1,17 @@
+ // raddlefile.go holds the board writes of a raddle run.
+-// It files a Sketch's approved entries, its tasks as drafts, with the raddle store, and ends the run's entry.
++// It files a Sketch's approved entries, its tasks as drafts, with the raddle store, and can end the run's entry.
++// A family filing turns the run's entry into the family's project instead of ending it,
++// and every filing moves the dependencies on the run's entry onto the filed parts.
+ 
+ package boardengine
+ 
+ import (
+ 	"errors"
+ 	"fmt"
++	"io/fs"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"time"
+ 
+@@ -23,10 +27,20 @@ const (
+ 	raddleRecordFileName       = "decision-record.md"
+ )
+ 
++// RaddleFileProducer is the producer half of the run status the Raddle-File row writes on its run's entry.
++// The run lock admits a family filing's change of the entry into a project only while the entry's status names it.
++// The name is duplicated here, since this package imports no recipe package; loomshed's test pins it to its row.
++const RaddleFileProducer = "Raddle-File"
++
+ // ErrRaddleRecheck is the error a raddle filing wraps when its re-check refuses the write.
+ // A caller matches it with errors.Is to tell that refusal from a failed write.
+ var ErrRaddleRecheck = errors.New("the board moved since the raddle proposal was checked")
+ 
++// ErrRaddleRepointRefused is wrapped by a raddle filing that the board refused.
++// The refused part is moving an entry's dependency off the run's entry; the wrapped refusal names the entry.
++// A caller matches it with errors.Is to tell that refusal, which no new split settles, from a failed write.
++var ErrRaddleRepointRefused = errors.New("the board refuses to move an entry's dependency off the raddle run's entry")
++
+ // RaddleEntry is one entry a raddle run files: a task, or the project that groups the run's tasks.
+ type RaddleEntry struct {
+ 	Slug  string
+@@ -57,6 +71,8 @@ type RaddleFiling struct {
+ 	// RunEntry is the slug of the raddle run's own entry, which the filing leaves open and which no filed entry depends on.
+ 	RunEntry string
+ 	// ProjectEntry is the project the run files for the project and beam shapes, nil for the others; its parts are members of it.
++	// When its slug is RunEntry, the filing is a family filing:
++	// it turns the run's entry into the project, and only the entry's Record is read.
+ 	ProjectEntry *RaddleEntry
+ 	// Parts are the filed tasks, in dependency order: a part depends only on entries on the board or filed before it.
+ 	Parts []RaddleEntry
+@@ -77,11 +93,16 @@ type RaddleFiling struct {
+ // The write then only writes the store.
+ // Otherwise it runs f.Check, wrapping a refusal in ErrRaddleRecheck.
+ // It then adds the project and the parts as discussed entries.
++// A family filing turns the run's entry into the project instead, the change the run lock admits for it.
++// Every open entry that depends on the run's entry is moved onto the filed parts no other part depends on;
++// a refusal of that move, such as a run lock on the entry, is wrapped in ErrRaddleRepointRefused.
+ // Each entry's decision-<slug>.md is written before board.json is saved.
++// When the write fails, those record files are removed and the run's entry's former record is written back.
+ // After the save it writes the store directory, store.json last, so the write leaves its own done marker.
+ // The parts are filed draft, so a release stays the operator's; the run's entry stays open.
+ func (b *Board) FileRaddle(f RaddleFiling) error {
+ 	var recordFiles []string
++	formerRecords := map[string][]byte{}
+ 	var filed []string
+ 	saved := false
+ 	_, err := b.boardCriticalSection(func(store *Store) (any, error) {
+@@ -105,7 +126,12 @@ func (b *Board) FileRaddle(f RaddleFiling) error {
+ 
+ 		partProject := f.Project
+ 		if f.ProjectEntry != nil {
+-			if err := b.fileRaddleEntry(store, f, *f.ProjectEntry, f.Project, &recordFiles); err != nil {
++			if f.ProjectEntry.Slug == f.RunEntry {
++				err = b.convertRunEntry(store, f, formerRecords, &recordFiles)
++			} else {
++				err = b.fileRaddleEntry(store, f, *f.ProjectEntry, f.Project, &recordFiles)
++			}
++			if err != nil {
+ 				return nil, err
+ 			}
+ 			filed = append(filed, f.ProjectEntry.Slug)
+@@ -117,13 +143,17 @@ func (b *Board) FileRaddle(f RaddleFiling) error {
+ 			}
+ 			filed = append(filed, part.Slug)
+ 		}
+-		return nil, nil
++		return nil, repointDependents(store, f.RunEntry, raddleSinkParts(f.Parts))
+ 	}, func() error {
+ 		saved = true
+ 		return b.writeRaddleStore(f, filed)
+ 	})
+ 	if err != nil && !saved {
+ 		for _, path := range recordFiles {
++			if former, held := formerRecords[path]; held {
++				_ = fsx.AtomicWriteBytes(path, former)
++				continue
++			}
+ 			_ = os.Remove(path)
+ 		}
+ 	}
+@@ -167,6 +197,141 @@ func (b *Board) fileRaddleEntry(store *Store, f RaddleFiling, entry RaddleEntry,
+ 	return nil
+ }
+ 
++// convertRunEntry turns the run's entry in store into the project of f's family filing, in place.
++// It writes the project's decision record, appending the file's path to recordFiles.
++// The project's order and part list name f's parts in filed order.
++// The record file the entry held before is kept in formerRecords under its path, so a failed write restores it.
++func (b *Board) convertRunEntry(store *Store, f RaddleFiling, formerRecords map[string][]byte, recordFiles *[]string) error {
++	i, found := store.index(f.RunEntry)
++	if !found {
++		return fmt.Errorf("turn the run's entry %q into the family's project: the board holds no such entry", f.RunEntry)
++	}
++	parts := make([]string, len(f.Parts))
++	for j, part := range f.Parts {
++		parts[j] = part.Slug
++	}
++
++	name := DecisionFileName(f.RunEntry)
++	path := filepath.Join(b.boardPath, name)
++	former, err := os.ReadFile(path)
++	switch {
++	case err == nil:
++		formerRecords[path] = former
++	case !errors.Is(err, fs.ErrNotExist):
++		return fmt.Errorf("read decision record %s: %w", name, err)
++	}
++	if err := fsx.AtomicWrite(b.boardPath, name, string(f.ProjectEntry.Record)); err != nil {
++		return fmt.Errorf("write decision record %s: %w", name, err)
++	}
++	*recordFiles = append(*recordFiles, path)
++	store.tasks[i] = arrasProjectOf(store.tasks[i], parts)
++	return nil
++}
++
++// arrasProjectOf returns entry turned into the project of the family filed from it, whose parts are parts in filed order.
++// The project has no status and none of the fields a run, a landing or the dependency graph reads.
++// Its order lists the parts.
++// Its body opens with the raddle project body prefix and the part list, followed by its former body.
++// Every other field, the slug, title, labels and discussed flag included, stays.
++func arrasProjectOf(entry Task, parts []string) Task {
++	project := withoutRunFields(entry)
++	project.Kind = KindProject
++	project.Order = slices.Clone(parts)
++	project.Body = fmt.Sprintf("%s: %s.\n", RaddleProjectBodyPrefix(entry.Slug), strings.Join(parts, ", "))
++	if entry.Body != "" {
++		project.Body += "\n" + entry.Body
++	}
++	return project
++}
++
++// endsAsFamilyProject reports whether the change from before to now makes the project of a family filing.
++// That project is a raddle run's entry turned into the project of the parts the filing adds.
++// before must be a task whose run status has RaddleFileProducer as its producer half, whatever its state half.
++// The family's parts are the entries of after absent from loaded whose project is the entry, in their sequence in after;
++// each must be a discussed draft task that follows every part it depends on.
++// now must have no status, profile, run settings or notify_on_land, and the discussed flag of before,
++// and it must equal arrasProjectOf of before and the parts in every field the scope comparison reads.
++// A change to the title, labels, depends_on, body or any other scope field alongside it is therefore no such change.
++func endsAsFamilyProject(before, now Task, loadedSlugs map[string]bool, after []Task, removedDone map[string]bool) bool {
++	producer, _ := RunStatusProducer(before.Status)
++	if producer != RaddleFileProducer || before.Kind != KindTask || now.Status != nil || now.Discussed != before.Discussed ||
++		now.Profile != "" || len(now.RunSettings) > 0 || now.NotifyOnLand {
++		return false
++	}
++	family := map[string]bool{}
++	for _, task := range after {
++		if !loadedSlugs[task.Slug] && task.Project == before.Slug {
++			family[task.Slug] = true
++		}
++	}
++	var parts []string
++	for _, task := range after {
++		if !family[task.Slug] {
++			continue
++		}
++		if task.Kind != KindTask || !task.Discussed || !isDraft(task) {
++			return false
++		}
++		for _, dep := range task.DependsOn {
++			if family[dep] && !slices.Contains(parts, dep) {
++				return false
++			}
++		}
++		parts = append(parts, task.Slug)
++	}
++	return len(parts) > 0 && !scopeChanged(arrasProjectOf(before, parts), now, removedDone)
++}
++
++// raddleSinkParts returns, in filed order, the slug of every part no other part depends on.
++func raddleSinkParts(parts []RaddleEntry) []string {
++	var sinks []string
++	for _, part := range parts {
++		dependedOn := slices.ContainsFunc(parts, func(other RaddleEntry) bool { return slices.Contains(other.DependsOn, part.Slug) })
++		if !dependedOn {
++			sinks = append(sinks, part.Slug)
++		}
++	}
++	return sinks
++}
++
++// repointDependents moves every open entry's dependency on runEntry onto sinks, in place.
++// Each entry keeps its other dependencies in their order and names each slug once.
++// A dependent a run holds, or one the board refuses as written, refuses the move with ErrRaddleRepointRefused naming it.
++func repointDependents(store *Store, runEntry string, sinks []string) error {
++	for i, task := range store.tasks {
++		if task.Slug == runEntry || isDone(task) || !slices.Contains(task.DependsOn, runEntry) {
++			continue
++		}
++		if RunHolds(task) {
++			return fmt.Errorf("%w: %w", ErrRaddleRepointRefused, &RunLockedError{Slug: task.Slug, Status: *task.Status})
++		}
++		incoming := task
++		incoming.DependsOn = repointedDependencies(task.DependsOn, runEntry, sinks)
++		if err := store.validateWrite(store.tasks, incoming); err != nil {
++			return fmt.Errorf("%w: entry %q: %w", ErrRaddleRepointRefused, task.Slug, err)
++		}
++		store.tasks[i] = incoming
++	}
++	return nil
++}
++
++// repointedDependencies returns dependsOn with runEntry replaced, in its place, by sinks, naming each slug once.
++func repointedDependencies(dependsOn []string, runEntry string, sinks []string) []string {
++	var repointed []string
++	for _, dep := range dependsOn {
++		replacement := []string{dep}
++		if dep == runEntry {
++			replacement = sinks
++		}
++		for _, slug := range replacement {
++			if !slices.Contains(repointed, slug) {
++				repointed = append(repointed, slug)
++			}
++		}
++	}
++	return repointed
++}
++
+ // writeRaddleStore writes the staged files of f's store directory, then its store.json.
+ // store.json records the filed slugs and is the done marker.
+ func (b *Board) writeRaddleStore(f RaddleFiling, filed []string) error {
+@@ -275,3 +440,19 @@ func (b *Board) EndRaddleEntry(slug string) error {
+ 	}, nil)
+ 	return err
+ }
++
++// ClearProjectRunStatus clears the run status of the project slug under the write lock.
++// A raddle run's repair of its family filing writes it, so no status the run wrote stays on the family's project.
++// It writes nothing when the entry is absent, no project, or carries no run status.
++// The cleared status releases no member: only a release of the project itself does.
++func (b *Board) ClearProjectRunStatus(slug string) error {
++	_, err := b.boardCriticalSection(func(store *Store) (any, error) {
++		i, found := store.index(slug)
++		if !found || store.tasks[i].Kind != KindProject || !IsRunStatus(store.tasks[i].Status) {
++			return noWrite{}, nil
++		}
++		store.tasks[i].Status = nil
++		return nil, nil
++	}, nil)
++	return err
++}
+diff --git a/internal/boardengine/raddlefile_test.go b/internal/boardengine/raddlefile_test.go
+index 3c656a3a..e2abbe01 100644
+--- a/internal/boardengine/raddlefile_test.go
++++ b/internal/boardengine/raddlefile_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
++	"strings"
+ 	"testing"
+ 	"time"
+ 
+@@ -68,6 +69,27 @@ func raddleProject(slug string) *RaddleEntry {
+ 	return &RaddleEntry{Slug: slug, Title: slug, Kind: KindProject, Labels: []string{"enhancement", "board"}, Body: RaddleProjectBodyPrefix("plan") + ": body of " + slug + ".\n", Record: []byte("record of " + slug + "\n")}
+ }
+ 
++// startArrasRun puts an arras run's entry slug on b at its Raddle-File row:
++// a task with a run status, a body and a stored decision record.
++func startArrasRun(t *testing.T, b *Board, slug string) Task {
++	t.Helper()
++	upsertForRaddle(t, b, map[string]any{"slug": slug, "title": "Arras", "kind": "task", "labels": []string{"bug", "board"}, "body": "former body", "recipe": shedrun.RecipeArras, "status": RunStatus("running", RaddleFileProducer)})
++	if err := b.StoreDecisionRecord(slug, []byte("arras record\n")); err != nil {
++		t.Fatalf("StoreDecisionRecord() error = %v; want nil", err)
++	}
++	return entryForRaddle(t, b, slug)
++}
++
++// familyFiling returns the family filing of the arras run plan:
++// its project is the run's entry, and plan-b depends on plan-a.
++func familyFiling(run Task) RaddleFiling {
++	return RaddleFiling{
++		Sketch: "plan", Created: run.Created, Hash: "hash-1", RunEntry: "plan", ProjectEntry: raddleProject("plan"),
++		Parts:    []RaddleEntry{raddlePart("plan-a"), raddlePart("plan-b", "plan-a"), raddlePart("plan-c")},
++		Proposal: []byte("proposal\n"), ColdProposal: []byte("cold\n"), SketchRecord: []byte("sketch record\n"),
++	}
++}
++
+ // backdateBoardFile sets board.json's modification time an hour back and returns it, so a later write shows as a newer time.
+ func backdateBoardFile(t *testing.T, boardPath string) time.Time {
+ 	t.Helper()
+@@ -101,6 +123,8 @@ func TestFileRaddle(t *testing.T) {
+ 		// wantProjectOf maps each filed slug to the project it belongs to.
+ 		wantProjectOf map[string]string
+ 		wantDependsOn map[string][]string
++		// setup, when set, adds entries to the board once the run's entry stands.
++		setup func(t *testing.T, b *Board)
+ 	}{
+ 		{
+ 			name: "TapestryShapeFilesOneDraftTask", parts: []RaddleEntry{raddlePart("plan-t")},
+@@ -112,6 +136,21 @@ func TestFileRaddle(t *testing.T) {
+ 			wantProjectOf: map[string]string{"plan-a": "", "plan-b": ""},
+ 			wantDependsOn: map[string][]string{"plan-b": {"plan-a"}},
+ 		},
++		{
++			name:          "TasksShapeMovesOpenDependentsOntoTheSinkPartAndLeavesDoneOnes",
++			parts:         []RaddleEntry{raddlePart("plan-a"), raddlePart("plan-b", "plan-a")},
++			wantProjectOf: map[string]string{"plan-a": "", "plan-b": ""},
++			wantDependsOn: map[string][]string{"waiter": {"other", "plan-b"}, "finished": {"plan"}},
++			setup: func(t *testing.T, b *Board) {
++				upsertForRaddle(t, b, map[string]any{"slug": "other", "title": "Other", "kind": "task", "labels": []string{"bug"}})
++				upsertForRaddle(t, b, map[string]any{"slug": "waiter", "title": "Waiter", "kind": "task", "labels": []string{"bug"}, "depends_on": []string{"other", "plan"}})
++				upsertForRaddle(t, b, map[string]any{"slug": "finished", "title": "Finished", "kind": "task", "labels": []string{"bug"}, "depends_on": []string{"plan"}})
++				done := StatusDone
++				if err := b.SetStatus("finished", &done); err != nil {
++					t.Fatalf("SetStatus() error = %v; want nil", err)
++				}
++			},
++		},
+ 		{
+ 			name:          "ProjectShapeFilesTheProjectAndDraftParts",
+ 			projectEntry:  raddleProject("plan-proj"),
+@@ -140,6 +179,9 @@ func TestFileRaddle(t *testing.T) {
+ 				upsertForRaddle(t, b, map[string]any{"slug": tt.groupingProject, "title": "Grouping", "kind": "project", "labels": []string{"bug"}})
+ 			}
+ 			run := startRaddleRun(t, b, "plan", tt.groupingProject)
++			if tt.setup != nil {
++				tt.setup(t, b)
++			}
+ 			checks := 0
+ 			filing := RaddleFiling{
+ 				Sketch: "plan", Created: run.Created, Project: tt.groupingProject, Hash: "hash-1", RunEntry: "plan",
+@@ -326,6 +368,238 @@ func TestFileRaddle(t *testing.T) {
+ 			t.Errorf("Stat(decision record of plan-a) error = %v; want it absent", err)
+ 		}
+ 	})
++
++	t.Run("AFamilyFilingTurnsTheRunEntryIntoTheProjectAndRepointsItsDependents", func(t *testing.T) {
++		t.Parallel()
++		b, boardPath := newRaddleTestBoard(t)
++		run := startArrasRun(t, b, "plan")
++		upsertForRaddle(t, b, map[string]any{"slug": "other", "title": "Other", "kind": "task", "labels": []string{"bug"}})
++		upsertForRaddle(t, b, map[string]any{"slug": "waiter", "title": "Waiter", "kind": "task", "labels": []string{"bug"}, "depends_on": []string{"other", "plan"}})
++
++		if err := b.FileRaddle(familyFiling(run)); err != nil {
++			t.Fatalf("FileRaddle() error = %v; want nil", err)
++		}
++
++		parts := []string{"plan-a", "plan-b", "plan-c"}
++		project := entryForRaddle(t, b, "plan")
++		if project.Kind != KindProject || project.Status != nil || !project.Discussed || project.Recipe != "" || len(project.DependsOn) != 0 {
++			t.Errorf("run entry = %+v; want a discussed project with no status, recipe or depends_on", project)
++		}
++		if project.Title != run.Title || !slices.Equal(project.Labels, run.Labels) {
++			t.Errorf("run entry title, labels = %q, %v; want %q, %v kept", project.Title, project.Labels, run.Title, run.Labels)
++		}
++		wantBody := RaddleProjectBodyPrefix("plan") + ": plan-a, plan-b, plan-c.\n\nformer body"
++		if !slices.Equal(project.Order, parts) || project.Body != wantBody {
++			t.Errorf("run entry order, body = %v, %q; want %v, %q", project.Order, project.Body, parts, wantBody)
++		}
++		if record, held, err := b.DecisionRecord("plan"); err != nil || !held || string(record) != "record of plan\n" {
++			t.Errorf("DecisionRecord(plan) = %q, %t, %v; want the whole record the filing stored", record, held, err)
++		}
++		for _, slug := range parts {
++			if part := entryForRaddle(t, b, slug); part.Project != "plan" || part.Status == nil || *part.Status != StatusDraft {
++				t.Errorf("part %q project, status = %q, %v; want plan, draft", slug, part.Project, part.Status)
++			}
++		}
++		if got := entryForRaddle(t, b, "plan-b").DependsOn; !slices.Equal(got, []string{"plan-a"}) {
++			t.Errorf("plan-b depends_on = %v; want [plan-a]", got)
++		}
++		if got := entryForRaddle(t, b, "waiter").DependsOn; !slices.Equal(got, []string{"other", "plan-b", "plan-c"}) {
++			t.Errorf("waiter depends_on = %v; want [other plan-b plan-c], the family's last parts in place of plan", got)
++		}
++		store, err := ReadRaddleStore(boardPath)
++		if err != nil {
++			t.Fatalf("ReadRaddleStore() error = %v; want nil", err)
++		}
++		if held, isHeld := store.Holds("plan"); !isHeld || held.Project != "plan" || !slices.Contains(held.Filed, "plan") {
++			t.Errorf("store entry = %+v, held %t; want plan filed as the project", held, isHeld)
++		}
++		if held, err := b.HoldsRaddleFiling("plan", append([]string{"plan"}, parts...)); err != nil || !held {
++			t.Errorf("HoldsRaddleFiling(plan) = %t, %v; want true, so a retry finds the filing as its own", held, err)
++		}
++
++		// A run status the run wrote back onto the project is cleared by the repair.
++		if err := b.SetRunStatus("plan", RunStatus("running", RaddleFileProducer)); err != nil {
++			t.Fatalf("SetRunStatus() error = %v; want nil", err)
++		}
++		if err := b.ClearProjectRunStatus("plan"); err != nil {
++			t.Fatalf("ClearProjectRunStatus() error = %v; want nil", err)
++		}
++		if got := entryForRaddle(t, b, "plan"); got.Status != nil {
++			t.Errorf("project status = %q; want none", *got.Status)
++		}
++
++		// The clear writes nothing for an absent entry, a task that holds a run status and a project with none.
++		otherStatus := RunStatus("running", "Webster")
++		if err := b.SetRunStatus("other", otherStatus); err != nil {
++			t.Fatalf("SetRunStatus(other) error = %v; want nil", err)
++		}
++		old := backdateBoardFile(t, boardPath)
++		for _, slug := range []string{"gone", "other", "plan"} {
++			if err := b.ClearProjectRunStatus(slug); err != nil {
++				t.Errorf("ClearProjectRunStatus(%q) error = %v; want nil", slug, err)
++			}
++		}
++		if boardFileWritten(t, boardPath, old) {
++			t.Errorf("ClearProjectRunStatus of an absent entry, a task and a project with no status wrote board.json; want no write")
++		}
++		if other := entryForRaddle(t, b, "other"); other.Status == nil || *other.Status != otherStatus {
++			t.Errorf("task other status = %v; want %q left as it was", other.Status, otherStatus)
++		}
++
++		// A null status written over a run status on the project releases no member, whichever write carries it.
++		nullWrites := []struct {
++			name  string
++			write func() error
++		}{
++			{"SetStatus", func() error { return b.SetStatus("plan", nil) }},
++			{"Upsert", func() error { _, err := b.UpsertTask(map[string]any{"slug": "plan", "status": nil}); return err }},
++			{"Merge", func() error {
++				_, _, err := b.MergeTasks(nil, map[string]any{"slug": "plan"}, &MergeStatusUpdate{Selector: "plan", Status: nil})
++				return err
++			}},
++		}
++		for _, nullWrite := range nullWrites {
++			if err := b.SetRunStatus("plan", RunStatus("running", RaddleFileProducer)); err != nil {
++				t.Fatalf("%s: SetRunStatus() error = %v; want nil", nullWrite.name, err)
++			}
++			if err := nullWrite.write(); err != nil {
++				t.Fatalf("%s: null status write error = %v; want nil", nullWrite.name, err)
++			}
++			if got := entryForRaddle(t, b, "plan"); got.Status != nil {
++				t.Errorf("%s: project status = %q; want none", nullWrite.name, *got.Status)
++			}
++			for _, slug := range parts {
++				if part := entryForRaddle(t, b, slug); part.Status == nil || *part.Status != StatusDraft {
++					t.Errorf("%s: part %q status = %v; want draft, released by no write but the project's own release", nullWrite.name, slug, part.Status)
++				}
++			}
++		}
++	})
++
++	t.Run("ARepointTheBoardRefusesFilesNothingAndRestoresTheEntrysRecord", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name         string
++			formerRecord bool
++		}{
++			{"WithAFormerRecord", true},
++			{"WithNoFormerRecord", false},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				b, boardPath := newRaddleTestBoard(t)
++				run := startArrasRun(t, b, "plan")
++				if !tt.formerRecord {
++					if err := os.Remove(filepath.Join(boardPath, DecisionFileName("plan"))); err != nil {
++						t.Fatalf("Remove(decision record of plan) = %v; want nil", err)
++					}
++				}
++				upsertForRaddle(t, b, map[string]any{"slug": "waiter", "title": "Waiter", "kind": "task", "labels": []string{"bug"}, "depends_on": []string{"plan"}, "status": RunStatus("running", "Webster")})
++
++				err := b.FileRaddle(familyFiling(run))
++
++				if !errors.Is(err, ErrRaddleRepointRefused) || !errors.Is(err, ErrRunLocked) || !strings.Contains(err.Error(), `"waiter"`) {
++					t.Fatalf("FileRaddle() error = %v; want the run lock refusal of waiter wrapped in ErrRaddleRepointRefused", err)
++				}
++				record, held, err := b.DecisionRecord("plan")
++				if err != nil || held != tt.formerRecord || (held && string(record) != "arras record\n") {
++					t.Errorf("DecisionRecord(plan) = %q, %t, %v; want the former record restored exactly when the entry had one (%t)", record, held, err, tt.formerRecord)
++				}
++				if entry := entryForRaddle(t, b, "plan"); entry.Kind != KindTask || entry.Status == nil || *entry.Status != *run.Status {
++					t.Errorf("run entry = %+v; want the task as it was", entry)
++				}
++				if _, found, _ := b.GetTask("plan-a"); found {
++					t.Errorf("a refused filing left the entry plan-a on the board")
++				}
++				if _, err := os.Stat(filepath.Join(boardPath, DecisionFileName("plan-a"))); !errors.Is(err, os.ErrNotExist) {
++					t.Errorf("Stat(decision record of plan-a) error = %v; want it absent", err)
++				}
++			})
++		}
++	})
++
++	t.Run("ARepointOntoASinkTheBoardDoesNotHoldIsRefusedNamingTheEntry", func(t *testing.T) {
++		t.Parallel()
++		store := NewStore("")
++		store.tasks = []Task{
++			{Slug: "plan", Title: "Plan", Kind: KindTask, Labels: []string{"bug"}},
++			{Slug: "waiter", Title: "Waiter", Kind: KindTask, Labels: []string{"bug"}, DependsOn: []string{"plan"}},
++		}
++
++		err := repointDependents(store, "plan", []string{"gone"})
++
++		if !errors.Is(err, ErrRaddleRepointRefused) || !strings.Contains(err.Error(), `"waiter"`) {
++			t.Errorf("repointDependents() error = %v; want the board's refusal of waiter wrapped in ErrRaddleRepointRefused", err)
++		}
++		if got := store.tasks[1].DependsOn; !slices.Equal(got, []string{"plan"}) {
++			t.Errorf("waiter depends_on = %v; want [plan], left as it was", got)
++		}
++	})
++}
++
++// TestCheckRunLocks_FamilyProject pins the run lock's admission of a family filing's change of the run's entry.
++// The lock's judgement of a write's net change is no public verb, and only FileRaddle adds discussed parts,
++// so the refused shapes are built here as the entries before and after the write.
++func TestCheckRunLocks_FamilyProject(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	draft := StatusDraft
++	part := func(slug string, discussed bool, dependsOn ...string) Task {
++		return Task{Slug: slug, Title: slug, Kind: KindTask, Labels: []string{"bug"}, Project: "arras", DependsOn: dependsOn, Discussed: discussed, Status: &draft}
++	}
++	inOrder := []Task{part("p1", true), part("p2", true, "p1")}
++	ready := "ready"
++	released := part("p1", true)
++	released.Status = &ready
++	tests := []struct {
++		name     string
++		producer string
++		parts    []Task
++		// loadedParts are parts the board already held before the write.
++		loadedParts []Task
++		editNow     func(now *Task)
++		refused     bool
++	}{
++		{name: "TheDerivedProjectPasses", producer: RaddleFileProducer, parts: inOrder},
++		{name: "AChangedTitleIsRefused", producer: RaddleFileProducer, parts: inOrder, editNow: func(now *Task) { now.Title = "Renamed" }, refused: true},
++		{name: "AChangedDependsOnIsRefused", producer: RaddleFileProducer, parts: inOrder, editNow: func(now *Task) { now.DependsOn = []string{"dep"} }, refused: true},
++		{name: "AnotherProducersStatusIsRefused", producer: "Raddle-Write", parts: inOrder, refused: true},
++		{name: "PartsOutOfDependencyOrderAreRefused", producer: RaddleFileProducer, parts: []Task{part("p2", true, "p1"), part("p1", true)}, refused: true},
++		{name: "AnUndiscussedPartIsRefused", producer: RaddleFileProducer, parts: []Task{part("p1", false), part("p2", true, "p1")}, refused: true},
++		{name: "AReleasedPartIsRefused", producer: RaddleFileProducer, parts: []Task{released, part("p2", true, "p1")}, refused: true},
++		{name: "APartTheBoardAlreadyHeldIsRefused", producer: RaddleFileProducer, parts: inOrder, loadedParts: []Task{part("p1", true)}, refused: true},
++		{name: "NoAddedPartIsRefused", producer: RaddleFileProducer, refused: true},
++		{name: "AnOrderOtherThanThePartsIsRefused", producer: RaddleFileProducer, parts: inOrder, editNow: func(now *Task) { now.Order = []string{"p2", "p1"} }, refused: true},
++		{name: "AChangedBodyIsRefused", producer: RaddleFileProducer, parts: inOrder, editNow: func(now *Task) { now.Body = "another body" }, refused: true},
++		{name: "AKeptProfileIsRefused", producer: RaddleFileProducer, parts: inOrder, editNow: func(now *Task) { now.Profile = "fast" }, refused: true},
++		{name: "KeptRunSettingsAreRefused", producer: RaddleFileProducer, parts: inOrder, editNow: func(now *Task) { now.RunSettings = map[string]any{"key": "value"} }, refused: true},
++		{name: "AKeptNotifyOnLandIsRefused", producer: RaddleFileProducer, parts: inOrder, editNow: func(now *Task) { now.NotifyOnLand = true }, refused: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			status := RunStatus("running", tt.producer)
++			before := Task{Slug: "arras", Title: "Arras", Kind: KindTask, Labels: []string{"bug"}, Body: "former body", Recipe: shedrun.RecipeArras, DependsOn: []string{"dep"}, Discussed: true, Status: &status}
++			var slugs []string
++			for _, p := range tt.parts {
++				slugs = append(slugs, p.Slug)
++			}
++			now := arrasProjectOf(before, slugs)
++			if tt.editNow != nil {
++				tt.editNow(&now)
++			}
++			dep := Task{Slug: "dep", Title: "Dep", Kind: KindTask, Labels: []string{"bug"}}
++
++			loaded := append([]Task{dep, before}, tt.loadedParts...)
++			err := checkRunLocks(loaded, append([]Task{dep, now}, tt.parts...), Vocabulary{})
++
++			if got := errors.Is(err, ErrRunLocked); got != tt.refused {
++				t.Errorf("checkRunLocks() error = %v; want refused %t", err, tt.refused)
++			}
++		})
++	}
+ }
+ 
+ func TestHoldsRaddleFiling(t *testing.T) {
+diff --git a/internal/boardengine/runlock.go b/internal/boardengine/runlock.go
+index c1fd323c..a06014ef 100644
+--- a/internal/boardengine/runlock.go
++++ b/internal/boardengine/runlock.go
+@@ -143,6 +143,9 @@ func (e *ProjectRecordLockedError) Is(target error) bool {
+ // A held entry whose net change turns it into a Sketch, as the vocabulary's type labels judge it, passes.
+ // It passes only when its status is cleared and it makes no other scope change.
+ // That change ends its Discussion-only run; a title, body or other scope change alongside it is refused.
++// A held task whose net change turns it into the project of a family the same write adds passes too.
++// That holds while its status names RaddleFileProducer;
++// that change must be exactly the project the entry and the added parts derive, as endsAsFamilyProject judges it.
+ // A beam project whose run holds nothing is refused only when it is absent from after.
+ // It is refused with a BeamRunLockedError also when its project, kind, recipe or beam differs.
+ // Its body change is refused with a ProjectRecordLockedError once ProjectRecordHeld accepts it.
+@@ -153,6 +156,10 @@ func checkRunLocks(loaded, after []Task, vocab Vocabulary) error {
+ 	for _, task := range after {
+ 		afterBySlug[task.Slug] = task
+ 	}
++	loadedSlugs := make(map[string]bool, len(loaded))
++	for _, task := range loaded {
++		loadedSlugs[task.Slug] = true
++	}
+ 	removedDone := removedDoneSlugs(loaded, after)
+ 
+ 	for _, before := range loaded {
+@@ -161,7 +168,7 @@ func checkRunLocks(loaded, after []Task, vocab Vocabulary) error {
+ 		}
+ 		now, kept := afterBySlug[before.Slug]
+ 		if RunHolds(before) {
+-			if kept && endsAsSketch(before, now, vocab, removedDone) {
++			if kept && (endsAsSketch(before, now, vocab, removedDone) || endsAsFamilyProject(before, now, loadedSlugs, after, removedDone)) {
+ 				continue
+ 			}
+ 			if !kept || scopeChanged(before, now, removedDone) {
+diff --git a/internal/boardengine/sketch.go b/internal/boardengine/sketch.go
+index 38a0e217..6ff7100d 100644
+--- a/internal/boardengine/sketch.go
++++ b/internal/boardengine/sketch.go
+@@ -53,8 +53,14 @@ func sketchOf(t Task, vocab Vocabulary) Task {
+ 			labels = append(labels, label)
+ 		}
+ 	}
++	t = withoutRunFields(t)
+ 	t.Kind = KindNote
+ 	t.Labels = labels
++	return t
++}
++
++// withoutRunFields returns t with no status and with every field a run, a landing or the dependency graph reads cleared.
++func withoutRunFields(t Task) Task {
+ 	t.Status = nil
+ 	t.DependsOn = []string{}
+ 	t.Isolated = false
+diff --git a/internal/loomcli/commitstatus_integration_test.go b/internal/loomcli/commitstatus_integration_test.go
+index 8ec61e72..c0514b93 100644
+--- a/internal/loomcli/commitstatus_integration_test.go
++++ b/internal/loomcli/commitstatus_integration_test.go
+@@ -107,6 +107,69 @@ func TestWiredCommitStatus_FinishedRunEntry(t *testing.T) {
+ 	}
+ }
+ 
++// TestCommitStatusDeps_SkipsTheBoardStatusAfterAFilingMark drives the board status write of commitStatusDeps.
++// It runs against a real hub board.
++// A recipe with a Raddle-File row writes nothing once the run's filing mark stands in the prime.
++// A recipe with no such row writes whether or not a mark stands.
++// It is serial because it sets the board skip variable, which is process-global.
++func TestCommitStatusDeps_SkipsTheBoardStatusAfterAFilingMark(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Setenv("BOARD_SKIP_GIT", "1")
++	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++
++	before := boardengine.RunStatus("running", "Raddle-Write")
++	written := boardengine.RunStatus("running", "Raddle-File")
++	tests := []struct {
++		name       string
++		slug       string
++		recipe     string
++		marked     bool
++		wantStatus string
++	}{
++		{"ARaddleFileRecipeWithoutTheMarkWrites", "arrasopen", shedrun.RecipeArras, false, written},
++		{"ARaddleFileRecipeWithTheMarkWritesNothing", "arrasmarked", shedrun.RecipeArras, true, before},
++		{"ARecipeWithNoRaddleFileRowWritesDespiteTheMark", "tapestrymarked", shedrun.RecipeTapestry, true, written},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			hubforge.AddPair(t, hub, tt.slug)
++			location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(tt.slug))
++			if err != nil {
++				t.Fatalf("ResolveWorktree() error = %v; want nil", err)
++			}
++			board, err := boardengine.OpenHub(location.HubPath)
++			if err != nil {
++				t.Fatalf("OpenHub() error = %v; want nil", err)
++			}
++			if _, err := board.UpsertTask(map[string]any{"slug": tt.slug, "title": "Run", "kind": "task", "labels": []string{"bug"}}); err != nil {
++				t.Fatalf("UpsertTask() error = %v; want nil", err)
++			}
++			if err := board.SetRunStatus(tt.slug, before); err != nil {
++				t.Fatalf("SetRunStatus() error = %v; want nil", err)
++			}
++			if tt.marked {
++				prime, err := primeOfHub(location)
++				if err != nil {
++					t.Fatalf("primeOfHub() error = %v; want nil", err)
++				}
++				if err := shedrun.WriteFilingMark(prime, tt.slug); err != nil {
++					t.Fatalf("WriteFilingMark() error = %v; want nil", err)
++				}
++			}
++
++			c := &loomCLI{recipe: tt.recipe, runID: shedrun.SelfRunID}
++			if err := c.commitStatusDeps(location).SetBoardStatus(written); err != nil {
++				t.Fatalf("SetBoardStatus() error = %v; want nil", err)
++			}
++
++			task, found, err := board.GetTask(tt.slug)
++			if err != nil || !found || task.Status == nil || *task.Status != tt.wantStatus {
++				t.Errorf("board entry = %+v, found %t, error %v; want status %q", task, found, err, tt.wantStatus)
++			}
++		})
++	}
++}
++
+ // TestSketchFinish_TellsTheParentOnlyOfARefusedSketch drives a finished motif run's Finish against a real hub board.
+ // The finish posts one notice when the board refuses the Sketch, naming the dependent entry and both ways forward.
+ // It posts none when the board takes the Sketch.
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 68d338e9..b19e1315 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -63,7 +63,9 @@
+ // The entry thus names the first row while it runs.
+ // A finished run of a recipe with a Finalize row writes nothing, its landing having marked the entry done.
+ // A finished run of a recipe with a RaddleFile row, a raddle or arras run, writes nothing either.
+-// Its Raddle-File row ended the entry done instead of as a Sketch.
++// Its Raddle-File row ended the entry done instead of as a Sketch, or a family filing turned the entry into its project.
++// Such a filing writes the run's filing mark among the slug's run records in the prime.
++// From then on, no status write of the run reaches the entry.
+ // A finished run of a recipe with neither a Finalize row nor a RaddleFile row, a motif run, makes its entry a Sketch.
+ // A Sketch is a note of the built-in type `sketch`.
+ // It leaves its run lock, never runs and waits for the operator's triage with its record stored.
+diff --git a/internal/loomcli/raddlewiring.go b/internal/loomcli/raddlewiring.go
+index f20820dc..345f15d6 100644
+--- a/internal/loomcli/raddlewiring.go
++++ b/internal/loomcli/raddlewiring.go
+@@ -209,7 +209,8 @@ func raddleFileDeps(location *lymcwd.Location, slug string) loomshed.RaddleFileD
+ 				return loomshed.RaddleRunEntry{}, err
+ 			}
+ 			vocabulary := boardConfig.Vocabulary()
+-			entry := loomshed.RaddleRunEntry{Slug: task.Slug, Created: task.Created, Project: task.Project}
++			entry := loomshed.RaddleRunEntry{Slug: task.Slug, Created: task.Created, Project: task.Project, Kind: task.Kind, Order: task.Order}
++			entry.StatusProducer, _ = boardengine.RunStatusProducer(task.Status)
+ 			for _, label := range task.Labels {
+ 				if !vocabulary.IsType(label) {
+ 					entry.ModuleLabels = append(entry.ModuleLabels, label)
+@@ -253,6 +254,28 @@ func raddleFileDeps(location *lymcwd.Location, slug string) loomshed.RaddleFileD
+ 			return board.EndRaddleEntry(slug)
+ 		},
+ 		Commit: func() error { return commitRaddle(location, slug) },
++		ClaimStatus: func(status string) error {
++			board, err := openHubBoard(location)
++			if err != nil {
++				return err
++			}
++			return board.SetRunStatus(slug, status)
++		},
++		// The mark goes among the slug's run records in the prime, beside a batten run's status and child-recipe records.
++		MarkFiled: func() error {
++			prime, err := primeOfHub(location)
++			if err != nil {
++				return err
++			}
++			return shedrun.WriteFilingMark(prime, slug)
++		},
++		ClearStatus: func() error {
++			board, err := openHubBoard(location)
++			if err != nil {
++				return err
++			}
++			return board.ClearProjectRunStatus(slug)
++		},
+ 	}
+ }
+ 
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index c88202a3..2007899d 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -229,7 +229,7 @@ func commitStatusDepsGuardedBy(check prePushCheck, location *lymcwd.Location, ru
+ 
+ // finishesAsSketch reports whether a finished run of recipe makes its board entry a Sketch.
+ // A recipe with a Finalize row does not, since its landing marks the entry done.
+-// Neither does one with a Raddle-File row, which ends the entry done itself.
++// Neither does one with a Raddle-File row, which ends the entry done itself or turns it into a family's project.
+ // A recipe with neither lands nothing: its run ends at the Discussion approval with the decision record stored,
+ // so its entry becomes a Sketch, a note that leaves the run lock, never runs, and waits for the operator's triage.
+ func finishesAsSketch(recipe string) bool {
+@@ -238,6 +238,7 @@ func finishesAsSketch(recipe string) bool {
+ 
+ // commitStatusDeps returns the status-commit dependencies for the run at location.
+ // It sets Finish only for a recipe whose finished run leaves its board entry a Sketch.
++// For a recipe with a RaddleFile row, its board status write stops once the run's filing mark stands.
+ func (c *loomCLI) commitStatusDeps(location *lymcwd.Location) commitStatusDeps {
+ 	deps := loomCommitStatusDeps(location, c.runID)
+ 	if finishesAsSketch(c.recipe) {
+@@ -246,9 +247,34 @@ func (c *loomCLI) commitStatusDeps(location *lymcwd.Location) commitStatusDeps {
+ 			return err
+ 		})
+ 	}
++	if recipeHasEngine(c.recipe, raddleFileEngine) {
++		deps.SetBoardStatus = skipAfterFamilyFiling(func() (bool, error) { return raddleFilingMarked(location, c.runID) }, deps.SetBoardStatus)
++	}
+ 	return deps
+ }
+ 
++// skipAfterFamilyFiling wraps setBoardStatus so it writes nothing once marked reports the run's filing mark:
++// the run's family filing turned its entry into the family's project, which no status of the run may change.
++// A failed read of the mark writes nothing and returns the failure, so the seam's next transition retries.
++func skipAfterFamilyFiling(marked func() (bool, error), setBoardStatus func(status string) error) func(status string) error {
++	return func(status string) error {
++		filed, err := marked()
++		if err != nil || filed {
++			return err
++		}
++		return setBoardStatus(status)
++	}
++}
++
++// raddleFilingMarked reports whether the run at location has a filing mark among the slug's run records in the prime.
++func raddleFilingMarked(location *lymcwd.Location, runID string) (bool, error) {
++	prime, err := primeOfHub(location)
++	if err != nil {
++		return false, err
++	}
++	return shedrun.FilingMarked(prime, shedrun.ResolveRunID(location, runID))
++}
++
+ // sketchFinish returns the Finish that makes the board entry of the run at location a Sketch.
+ // The board refuses the Sketch while another entry depends on the entry.
+ // In that case it warns naming the refusal and leaves the entry draft instead,
+diff --git a/internal/loomcli/wiring_commitstatus_test.go b/internal/loomcli/wiring_commitstatus_test.go
+index f1b44a60..659cbefb 100644
+--- a/internal/loomcli/wiring_commitstatus_test.go
++++ b/internal/loomcli/wiring_commitstatus_test.go
+@@ -136,6 +136,44 @@ func TestNewCommitStatusSeam_BoardStatus(t *testing.T) {
+ 	}
+ }
+ 
++// TestSkipAfterFamilyFiling asserts a raddle run's board status write goes through only while its filing mark is absent.
++// A failed read of the mark writes nothing and returns the failure.
++func TestSkipAfterFamilyFiling(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	readFailure := errors.New("stat failed")
++	tests := []struct {
++		name        string
++		marked      bool
++		markErr     error
++		wantWritten []string
++	}{
++		{"UnmarkedWrites", false, nil, []string{"running · Raddle-File"}},
++		{"MarkedWritesNothing", true, nil, nil},
++		{"UnreadableMarkWritesNothing", false, readFailure, nil},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var written []string
++			set := skipAfterFamilyFiling(
++				func() (bool, error) { return tt.marked, tt.markErr },
++				func(status string) error { written = append(written, status); return nil },
++			)
++
++			err := set("running · Raddle-File")
++
++			if !errors.Is(err, tt.markErr) {
++				t.Errorf("SetBoardStatus() error = %v; want %v", err, tt.markErr)
++			}
++			if !reflect.DeepEqual(written, tt.wantWritten) {
++				t.Errorf("board writes = %q; want %q", written, tt.wantWritten)
++			}
++		})
++	}
++}
++
+ // TestNewCommitStatusSeam_Finish asserts a finished run calls the seam's Finish after the run status it last wrote.
+ // It retries a failed Finish at the next finished transition and calls it no more once it succeeded.
+ func TestNewCommitStatusSeam_Finish(t *testing.T) {
+diff --git a/internal/loomrecipe/doc.go b/internal/loomrecipe/doc.go
+index ceb64a24..0addb147 100644
+--- a/internal/loomrecipe/doc.go
++++ b/internal/loomrecipe/doc.go
+@@ -52,7 +52,9 @@
+ // It takes the loom contract's record-only form.
+ // Record-Write writes the Sketch's stored decision record.
+ // Raddle-Write is one agent session gated by the `raddle` check.
+-// Raddle-File, a Go row, files the approved proposal on the board and ends the run's entry, so the run lands no code.
++// Raddle-File, a Go row, files the approved proposal on the board and ends the run's entry.
++// A family filing turns that entry into the family's project instead.
++// The run lands no code.
+ // Raddle-File's Stuck returns to Raddle-Write,
+ // and a third failing gate attempt of Raddle-Write halts the run for its parent.
+ //
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 5169b4ec..f91d9262 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -263,6 +263,12 @@
+ // Every filed task is draft, so a release stays the operator's.
+ // A further step makes the project a beam for the beam shape.
+ // The last steps notify the parent once and end the run's entry.
++// A family filing, whose project is the run's own entry, turns that entry into the project instead:
++// it writes the run's filing mark once its board write landed and never ends the entry.
++// A call that finds that filing as its own first writes the mark and clears any run status from the project.
++// A call that finds the entry already a project it did not file halts naming `lym batten cancel`.
++// The filing moves the dependencies on the run's entry onto the filed parts;
++// a board refusal of that halts the run naming the refusing entry.
+ // A step whose outputs carry the hash of the proposal now approved is skipped,
+ // so a retry after a crash finishes the steps it missed.
+ // A failure after the filing is Stuck with Halt naming the resume.
+diff --git a/internal/loomshed/raddlefile.go b/internal/loomshed/raddlefile.go
+index 253b0ad1..9ebf9d06 100644
+--- a/internal/loomshed/raddlefile.go
++++ b/internal/loomshed/raddlefile.go
+@@ -1,6 +1,7 @@
+ // raddlefile.go implements the Raddle-File producer, the row that runs in Go without an agent.
+ // It checks an approved raddle proposal once more and stages its store files and part records.
+-// It files the entries on the board and ends the run's entry.
++// It files the entries on the board.
++// It then ends the run's entry, unless a family filing turned that entry into the family's project.
+ 
+ package loomshed
+ 
+@@ -44,12 +45,19 @@ const recordHashSuffix = ".hash"
+ 
+ // RaddleRunEntry is the raddle run's own board entry as Raddle-File reads it.
+ // It holds the slug, the created stamp, the labels that are not type labels, and the project field.
++// It also holds the kind, the order and the producer of the run status.
+ type RaddleRunEntry struct {
+ 	Slug         string
+ 	Created      time.Time
+ 	ModuleLabels []string
+ 	// Project is the project the Sketch belongs to, the level its entries are filed at; empty for the top level.
+ 	Project string
++	// Kind is the entry's kind; a project means a filing already turned the entry into a family's project.
++	Kind string
++	// Order is the entry's order, the parts filed under it when it is a project.
++	Order []string
++	// StatusProducer is the producer half of the entry's run status, empty when its status is no run status.
++	StatusProducer string
+ }
+ 
+ // RaddleFileDeps are the paths and seams the Raddle-File producer is built with.
+@@ -87,6 +95,12 @@ type RaddleFileDeps struct {
+ 	EndEntry func() error
+ 	// Commit commits the raddle directory.
+ 	Commit func() error
++	// ClaimStatus writes status, the row's own run status, on the run's board entry.
++	ClaimStatus func(status string) error
++	// MarkFiled writes the run's filing mark, after which the run's status writes leave its board entry alone.
++	MarkFiled func() error
++	// ClearStatus clears a run status from the run's board entry once a family filing made it a project.
++	ClearStatus func() error
+ }
+ 
+ // raddleFile is the Raddle-File producer.
+@@ -108,15 +122,22 @@ func NewRaddleFile(name string, deps RaddleFileDeps) shedengine.ShedProducer {
+ // In that state, with the stage still holding this proposal's hash, the checks and the approval match are skipped:
+ // the filed slugs would count as taken.
+ // Only the entries the re-check names as landed are read, and steps 1 to 3 run so the store is written.
++// A family filing found as its own by either test is repaired first:
++// the filing mark is written, then any run status is cleared from the project the filing made of the run's entry.
++// A run's entry that is already a project while neither test holds is a filing not made from the current proposal:
++// Call files nothing and is Stuck with Halt naming `lym batten cancel`.
+ // Otherwise Call runs the checks, the approval match in interactive mode and the board re-check;
+ // auto and perch mode file with no approval match.
+ // A failure of one sends the proposal back, deleting the stage and the part records.
+ // Step 1 stages the store files, step 2 writes the part records and commits, and step 3 files the entries.
++// A board refusal of step 3's move of the dependencies on the run's entry is Stuck with Halt naming the refusing entry.
++// A family filing writes the filing mark once step 3 landed.
+ // A step whose outputs carry the hash of the proposal now approved is skipped,
+ // so a retry after a crash finishes the steps it missed.
+ // Every filed task is draft, so a release stays the operator's.
+ // Step 4 makes the project a beam for the beam shape;
+ // step 5 notifies the parent once, and step 6 ends the run's entry, leaving the row Done.
++// A family filing skips step 6, since its entry is the family's project.
+ // A failure of steps 4 to 6 is Stuck with Halt naming the step and the resume that re-runs the row.
+ func (p *raddleFile) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	if err := entryErr(ctx, p.name); err != nil {
+@@ -150,6 +171,19 @@ func (p *raddleFile) Call(ctx context.Context) (shedengine.Outcome, shedengine.O
+ 		}
+ 	}
+ 
++	if !filed && !resumed && entry.Kind == boardengine.KindProject {
++		return p.haltOverProject(ctx, entry)
++	}
++	family := parseErr == nil && isFamilyOutcome(proposal, entry)
++	repaired := family && (filed || resumed)
++	if repaired {
++		if err := p.repairFamily(); err != nil {
++			return "", shedengine.OutputPointer{}, p.fail("repair the family filing", err)
++		}
++		// The repair cleared the status, so the store-only filing below must not claim one back onto the project.
++		entry.StatusProducer = ""
++	}
++
+ 	var landed []string
+ 	if resumed {
+ 		// The filed entries hold the slugs,
+@@ -175,14 +209,53 @@ func (p *raddleFile) Call(ctx context.Context) (shedengine.Outcome, shedengine.O
+ 	}
+ 	if !filed {
+ 		reason, err := p.stageAndFile(proposal, data, hash, entry)
++		if errors.Is(err, boardengine.ErrRaddleRepointRefused) {
++			return p.halt(ctx, "move the dependencies on "+entry.Slug+" onto the filed parts", err)
++		}
+ 		if err != nil {
+ 			return "", shedengine.OutputPointer{}, p.fail("file the proposal", err)
+ 		}
+ 		if reason != "" {
+ 			return p.sendBack(ctx, current, reason)
+ 		}
++		if family && !repaired {
++			if err := p.deps.MarkFiled(); err != nil {
++				return "", shedengine.OutputPointer{}, p.fail("write the filing mark", err)
++			}
++		}
+ 	}
+-	return p.finish(ctx, current, proposal, landed)
++	return p.finish(ctx, current, proposal, landed, family)
++}
++
++// isFamilyOutcome reports whether the proposal files its project under the run's own slug:
++// the family outcome, whose filing turns the run's entry into that project.
++func isFamilyOutcome(proposal raddleparser.Proposal, entry RaddleRunEntry) bool {
++	return proposal.Project != nil && proposal.Project.Slug == entry.Slug
++}
++
++// repairFamily writes the filing mark, then clears any run status from the family's project, the run's entry.
++// A crash or a failed store write after the board write lets the run's status hook write a status there on resume.
++func (p *raddleFile) repairFamily() error {
++	if err := p.deps.MarkFiled(); err != nil {
++		return fmt.Errorf("write the filing mark: %w", err)
++	}
++	if err := p.deps.ClearStatus(); err != nil {
++		return fmt.Errorf("clear the run status from the family's project: %w", err)
++	}
++	return nil
++}
++
++// haltOverProject is the Stuck verdict with Halt for a run whose entry is a project the current proposal did not file.
++// Another writer's filing made it one, or the run's own before a goto re-split the proposal.
++// Its reason names the project's order and the cancel that leaves that filing to the operator.
++func (p *raddleFile) haltOverProject(ctx context.Context, entry RaddleRunEntry) (shedengine.Outcome, shedengine.OutputPointer, error) {
++	if cancelled := cancelErr(ctx, p.name); cancelled != nil {
++		return "", shedengine.OutputPointer{}, cancelled
++	}
++	return shedengine.Stuck, shedengine.OutputPointer{
++		Reason: fmt.Sprintf("%s: the run's entry %s is already a project with order [%s], a filing not made from the current proposal, so nothing was filed; way forward: run lym batten cancel %s, which ends the run and leaves that filing for the operator to keep, edit or remove", p.name, entry.Slug, strings.Join(entry.Order, ", "), entry.Slug),
++		Halt:   true,
++	}, nil
+ }
+ 
+ // verify returns the reason the proposal is sent back, empty when it passes every check.
+@@ -220,6 +293,8 @@ func (p *raddleFile) verify(current RaddleState, hash string) (reason string, la
+ 
+ // stageAndFile runs steps 1 to 3.
+ // It stages the store files, writes the part records and commits them, and files the entries.
++// Before the filing it writes the row's own run status on the run's entry when that status names another producer,
++// so the run lock judges the filing against this row.
+ // It returns the reason the proposal is sent back when the board write's own re-check refuses.
+ // Any other failure is returned as an error.
+ func (p *raddleFile) stageAndFile(proposal raddleparser.Proposal, data []byte, hash string, entry RaddleRunEntry) (reason string, err error) {
+@@ -241,6 +316,11 @@ func (p *raddleFile) stageAndFile(proposal raddleparser.Proposal, data []byte, h
+ 	if err != nil {
+ 		return "", err
+ 	}
++	if entry.StatusProducer != "" && entry.StatusProducer != p.name {
++		if err := p.deps.ClaimStatus(boardengine.RunStatus(string(shedengine.StateRunning), p.name)); err != nil {
++			return "", fmt.Errorf("write the row's run status on the run's entry: %w", err)
++		}
++	}
+ 	if err := p.deps.File(filing); err != nil {
+ 		if errors.Is(err, boardengine.ErrRaddleRecheck) {
+ 			return "the board moved while the proposal was being filed: " + err.Error(), nil
+@@ -500,7 +580,8 @@ func dependencyOrder(parts []raddleparser.Part) []raddleparser.Part {
+ // Each is skipped when its result is there:
+ // the beam is an idempotent call, the notice is marked in the state,
+ // and the entry's end is the last write.
+-func (p *raddleFile) finish(ctx context.Context, current RaddleState, proposal raddleparser.Proposal, landed []string) (shedengine.Outcome, shedengine.OutputPointer, error) {
++// A family filing never ends the entry, which it made the family's project.
++func (p *raddleFile) finish(ctx context.Context, current RaddleState, proposal raddleparser.Proposal, landed []string, family bool) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	if proposal.Shape == raddleparser.ShapeBeam {
+ 		if err := p.deps.CreateBeam(proposal.Project.Slug); err != nil {
+ 			return p.halt(ctx, "make the project a beam", err)
+@@ -515,8 +596,10 @@ func (p *raddleFile) finish(ctx context.Context, current RaddleState, proposal r
+ 			return "", shedengine.OutputPointer{}, p.fail("record the notice", err)
+ 		}
+ 	}
+-	if err := p.deps.EndEntry(); err != nil {
+-		return p.halt(ctx, "end the run's board entry", err)
++	if !family {
++		if err := p.deps.EndEntry(); err != nil {
++			return p.halt(ctx, "end the run's board entry", err)
++		}
+ 	}
+ 	if err := cancelErr(ctx, p.name); err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+diff --git a/internal/loomshed/raddlefile_test.go b/internal/loomshed/raddlefile_test.go
+index a44dbc0e..d31a564a 100644
+--- a/internal/loomshed/raddlefile_test.go
++++ b/internal/loomshed/raddlefile_test.go
+@@ -46,6 +46,23 @@ func raddleFileProposal(shape string) raddleparser.Proposal {
+ 	return proposal
+ }
+ 
++// familyProposal returns the project-shape proposal whose project slug is the run's entry sketch-x: the family outcome.
++func familyProposal() raddleparser.Proposal {
++	proposal := raddleFileProposal(raddleparser.ShapeProject)
++	proposal.Project.Slug = "sketch-x"
++	return proposal
++}
++
++// stageFiling writes the stage a filing that crashed after its board write leaves:
++// every staged file, the proposal's hash last.
++func (f *raddleFileFixture) stageFiling() {
++	f.t.Helper()
++	f.write(filepath.Join(f.deps.StageDir, "proposal.yaml"), string(marshalRaddleProposal(f.t, f.proposal)))
++	f.write(filepath.Join(f.deps.StageDir, "cold-proposal.yaml"), "cold")
++	f.write(filepath.Join(f.deps.StageDir, "decision-record.md"), raddleFileRecord)
++	f.write(filepath.Join(f.deps.StageDir, "hash"), raddleparser.Hash(marshalRaddleProposal(f.t, f.proposal)))
++}
++
+ // raddleFileFixture is a Raddle-File producer over files in a temp directory and recording seams.
+ type raddleFileFixture struct {
+ 	t        *testing.T
+@@ -59,6 +76,10 @@ type raddleFileFixture struct {
+ 	recheck  raddleparser.Recheck
+ 	filings  []boardengine.RaddleFiling
+ 	notices  []string
++	claimed  []string
++
++	// entry is the run's board entry the Entry seam reads.
++	entry loomshed.RaddleRunEntry
+ 
+ 	stored     bool
+ 	storedHash string
+@@ -73,6 +94,7 @@ func newRaddleFileFixture(t *testing.T, proposal raddleparser.Proposal, mode loo
+ 	t.Helper()
+ 	dir := t.TempDir()
+ 	f := &raddleFileFixture{t: t, proposal: proposal, created: time.Date(2026, 11, 1, 9, 0, 0, 0, time.UTC), failing: map[string]error{}}
++	f.entry = loomshed.RaddleRunEntry{Slug: "sketch-x", Created: f.created, ModuleLabels: []string{"mod-a"}, Project: "grouping", Kind: boardengine.KindTask, StatusProducer: "Raddle-File"}
+ 	f.deps = loomshed.RaddleFileDeps{
+ 		ProposalPath:   filepath.Join(dir, "proposal.yaml"),
+ 		ColdPath:       filepath.Join(dir, "cold-proposal.yaml"),
+@@ -89,7 +111,7 @@ func newRaddleFileFixture(t *testing.T, proposal raddleparser.Proposal, mode loo
+ 			return f.recheck, f.seam("recheck")
+ 		},
+ 		Entry: func() (loomshed.RaddleRunEntry, error) {
+-			return loomshed.RaddleRunEntry{Slug: "sketch-x", Created: f.created, ModuleLabels: []string{"mod-a"}, Project: "grouping"}, nil
++			return f.entry, nil
+ 		},
+ 		StoreDone: func(created time.Time, hash string) (bool, error) {
+ 			return f.stored && created.Equal(f.created) && hash == f.storedHash, nil
+@@ -116,6 +138,12 @@ func newRaddleFileFixture(t *testing.T, proposal raddleparser.Proposal, mode loo
+ 		},
+ 		EndEntry: func() error { return f.seam("end_entry") },
+ 		Commit:   func() error { return f.seam("commit") },
++		ClaimStatus: func(status string) error {
++			f.claimed = append(f.claimed, status)
++			return f.seam("claim_status")
++		},
++		MarkFiled:   func() error { return f.seam("mark_filed") },
++		ClearStatus: func() error { return f.seam("clear_status") },
+ 	}
+ 
+ 	f.writeProposal(proposal)
+@@ -449,11 +477,7 @@ func TestRaddleFile(t *testing.T) {
+ 		t.Parallel()
+ 		f := newRaddleFileFixture(t, raddleFileProposal(raddleparser.ShapeTasks), loomengine.RaddleModeAuto, false)
+ 		f.alreadyFiled = true
+-		// The stage a filing that crashed after its board write leaves: every staged file, the proposal's hash last.
+-		f.write(filepath.Join(f.deps.StageDir, "proposal.yaml"), string(marshalRaddleProposal(t, f.proposal)))
+-		f.write(filepath.Join(f.deps.StageDir, "cold-proposal.yaml"), "cold")
+-		f.write(filepath.Join(f.deps.StageDir, "decision-record.md"), raddleFileRecord)
+-		f.write(filepath.Join(f.deps.StageDir, "hash"), raddleparser.Hash(marshalRaddleProposal(t, f.proposal)))
++		f.stageFiling()
+ 		f.recheck.Landed = []string{"gone"}
+ 		// The filed entries already hold the slugs, so a check or a re-check run over them would send the proposal back.
+ 		f.findings = []raddleparser.Finding{{Check: raddleparser.CheckSlugTaken, Detail: "filed parts now hold the slugs"}}
+@@ -566,6 +590,153 @@ func TestRaddleFile(t *testing.T) {
+ 			t.Errorf("notices = %q; want one naming the landed entry gone", f.notices)
+ 		}
+ 	})
++
++	t.Run("TheBoardsRaddleFileProducerIsTheRow", func(t *testing.T) {
++		t.Parallel()
++		if boardengine.RaddleFileProducer != loomshed.NameRaddleFile {
++			t.Errorf("boardengine.RaddleFileProducer = %q; want the row name %q", boardengine.RaddleFileProducer, loomshed.NameRaddleFile)
++		}
++	})
++
++	t.Run("AFamilyFilingMarksTheRunAndNeverEndsTheEntry", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name        string
++			producer    string
++			wantSteps   []string
++			wantClaimed []string
++		}{
++			{"UnderTheRowsOwnStatus", "Raddle-File", []string{"commit", "file", "mark_filed", "notify"}, nil},
++			{"UnderAnotherProducersStatus", "Raddle-Write", []string{"commit", "claim_status", "file", "mark_filed", "notify"}, []string{"running · Raddle-File"}},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				f := newRaddleFileFixture(t, familyProposal(), loomengine.RaddleModePerch, false)
++				f.entry.StatusProducer = tt.producer
++
++				outcome, _, err := f.call()
++				requireDone(t, outcome, err)
++
++				if got := f.steps(); !slices.Equal(got, tt.wantSteps) {
++					t.Errorf("steps = %v; want %v", got, tt.wantSteps)
++				}
++				if !slices.Equal(f.claimed, tt.wantClaimed) {
++					t.Errorf("claimed statuses = %q; want %q", f.claimed, tt.wantClaimed)
++				}
++				if project := f.filings[0].ProjectEntry; project == nil || project.Slug != "sketch-x" {
++					t.Errorf("project entry = %+v; want the run's entry sketch-x", project)
++				}
++			})
++		}
++	})
++
++	t.Run("AFamilyFilingFoundAsItsOwnIsRepairedAndNotFiledTwice", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name      string
++			setup     func(f *raddleFileFixture)
++			wantSteps []string
++		}{
++			{"WithTheStoreWritten", func(f *raddleFileFixture) {
++				f.stored, f.storedHash = true, raddleparser.Hash(marshalRaddleProposal(f.t, f.proposal))
++			}, []string{"mark_filed", "clear_status", "notify"}},
++			{"WithTheStoreWriteLost", func(f *raddleFileFixture) {
++				f.alreadyFiled = true
++				f.stageFiling()
++			}, []string{"mark_filed", "clear_status", "commit", "file", "notify"}},
++			{"WithTheStoreWriteLostAndAnotherProducersStatusOnTheEntry", func(f *raddleFileFixture) {
++				f.alreadyFiled = true
++				f.stageFiling()
++				f.entry.StatusProducer = "Raddle-Write"
++			}, []string{"mark_filed", "clear_status", "commit", "file", "notify"}},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				f := newRaddleFileFixture(t, familyProposal(), loomengine.RaddleModePerch, false)
++				f.entry.Kind, f.entry.Order = boardengine.KindProject, []string{"part-a", "part-b"}
++				f.entry.StatusProducer = "Raddle-File"
++				tt.setup(f)
++
++				outcome, _, err := f.call()
++				requireDone(t, outcome, err)
++
++				if got := f.steps(); !slices.Equal(got, tt.wantSteps) {
++					t.Errorf("steps = %v; want %v, the mark before the status clear and no end of the entry", got, tt.wantSteps)
++				}
++			})
++		}
++	})
++
++	t.Run("AFailingMarkOrStatusClearStopsTheRepairBeforeAnythingElseRuns", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			seam      string
++			wantSteps []string
++		}{
++			{"mark_filed", []string{"mark_filed"}},
++			{"clear_status", []string{"mark_filed", "clear_status"}},
++		}
++		for _, tt := range tests {
++			t.Run(tt.seam, func(t *testing.T) {
++				t.Parallel()
++				f := newRaddleFileFixture(t, familyProposal(), loomengine.RaddleModePerch, false)
++				f.entry.Kind, f.entry.Order = boardengine.KindProject, []string{"part-a", "part-b"}
++				f.stored, f.storedHash = true, raddleparser.Hash(marshalRaddleProposal(f.t, f.proposal))
++				f.failing[tt.seam] = errors.New("seam down")
++
++				outcome, _, err := f.call()
++
++				if outcome != "" || err == nil || !strings.Contains(err.Error(), "repair the family filing") || !strings.Contains(err.Error(), "seam down") {
++					t.Errorf("Call() = %q, %v; want the repair's error naming the seam's failure", outcome, err)
++				}
++				if got := f.steps(); !slices.Equal(got, tt.wantSteps) {
++					t.Errorf("steps = %v; want %v, nothing after the failing step", got, tt.wantSteps)
++				}
++			})
++		}
++	})
++
++	t.Run("AnEntryAlreadyAProjectNotFiledFromTheProposalHalts", func(t *testing.T) {
++		t.Parallel()
++		f := newRaddleFileFixture(t, familyProposal(), loomengine.RaddleModePerch, false)
++		f.entry.Kind, f.entry.Order = boardengine.KindProject, []string{"other-a", "other-b"}
++
++		outcome, pointer, err := f.call()
++
++		if err != nil || outcome != shedengine.Stuck || !pointer.Halt {
++			t.Fatalf("Call() = %q, %+v, %v; want Stuck with Halt", outcome, pointer, err)
++		}
++		for _, want := range []string{"other-a, other-b", "lym batten cancel sketch-x"} {
++			if !strings.Contains(pointer.Reason, want) {
++				t.Errorf("Reason = %q; want it to contain %q", pointer.Reason, want)
++			}
++		}
++		if len(f.calls) != 0 {
++			t.Errorf("calls = %v; want none, since nothing is checked or filed", f.calls)
++		}
++	})
++
++	t.Run("ARefusedMoveOfTheDependenciesHaltsNamingTheEntry", func(t *testing.T) {
++		t.Parallel()
++		f := newRaddleFileFixture(t, raddleFileProposal(raddleparser.ShapeTasks), loomengine.RaddleModeAuto, false)
++		f.failing["file"] = fmt.Errorf("%w: entry %q: held by a run", boardengine.ErrRaddleRepointRefused, "waiter")
++
++		outcome, pointer, err := f.call()
++
++		if err != nil || outcome != shedengine.Stuck || !pointer.Halt {
++			t.Fatalf("Call() = %q, %+v, %v; want Stuck with Halt", outcome, pointer, err)
++		}
++		for _, want := range []string{`"waiter"`, "lym loom resume"} {
++			if !strings.Contains(pointer.Reason, want) {
++				t.Errorf("Reason = %q; want it to contain %q", pointer.Reason, want)
++			}
++		}
++		if got := f.state(); got.Returns != 0 {
++			t.Errorf("returns = %d; want 0, since no new split settles the refusal", got.Returns)
++		}
++	})
+ }
+ 
+ // btoi returns 1 for true and 0 for false.
+diff --git a/internal/shedrun/doc.go b/internal/shedrun/doc.go
+index 22099afc..29419437 100644
+--- a/internal/shedrun/doc.go
++++ b/internal/shedrun/doc.go
+@@ -41,6 +41,9 @@
+ // ChildRecipeFile is the durable record under RunDir of the recipe a batten run seeded its task worktree's run with.
+ // WriteChildRecipe writes it and ReadChildRecipe reads it, empty when none is recorded.
+ // It outlives the task worktree's own seed, so a done run still tells which recipe its child ran.
++// FilingMarkFile is the durable mark under RunDir that a raddle filing writes.
++// The filing writes it once it turned the run's own board entry into the project of the family it filed.
++// WriteFilingMark writes it and FilingMarked reads it; while it stands, the run's status writes leave that entry alone.
+ // LandedCommitFile is the ephemeral file under ScratchDir holding the commit a run's landing put on the parent branch.
+ // WriteLandedCommit writes it and ReadLandedCommit reads it, empty when none is recorded.
+ // ParentNoticeFile is an ephemeral file under ScratchDir.
+diff --git a/internal/shedrun/filingmark.go b/internal/shedrun/filingmark.go
+new file mode 100644
+index 00000000..6e0ba3d7
+--- /dev/null
++++ b/internal/shedrun/filingmark.go
+@@ -0,0 +1,47 @@
++// filingmark.go declares the filing mark, the record a raddle filing leaves among a run's records.
++// A filing writes it once it turned the run's own board entry into the project of the family it filed.
++
++package shedrun
++
++import (
++	"errors"
++	"io/fs"
++	"os"
++	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++)
++
++// filingMarkFileName is the filename of the filing mark, whose path FilingMarkFile returns.
++const filingMarkFileName = "filing-mark"
++
++// FilingMarkFile returns the path of the durable filing mark of runID, under RunDir(l, runID).
++func FilingMarkFile(l *lymcwd.Location, runID string) string {
++	return filepath.Join(RunDir(l, runID), filingMarkFileName)
++}
++
++// FilingMarkRel returns the worktree-anchor-relative form of FilingMarkFile's path, for a records commit's pathspec.
++func FilingMarkRel(l *lymcwd.Location, runID string) string {
++	return filepath.Join(lymdirs.LymDirName, shedDirName, runSegment(l, runID), filingMarkFileName)
++}
++
++// WriteFilingMark records that runID's filing turned its board entry into the project of the family it filed.
++// While the mark stands, the run's status writes leave that entry alone.
++// Writing it again changes nothing.
++func WriteFilingMark(l *lymcwd.Location, runID string) error {
++	path := FilingMarkFile(l, runID)
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		return err
++	}
++	return os.WriteFile(path, nil, 0o644)
++}
++
++// FilingMarked reports whether runID's filing mark is on disk.
++func FilingMarked(l *lymcwd.Location, runID string) (bool, error) {
++	_, err := os.Stat(FilingMarkFile(l, runID))
++	if errors.Is(err, fs.ErrNotExist) {
++		return false, nil
++	}
++	return err == nil, err
++}
+diff --git a/internal/shedrun/filingmark_test.go b/internal/shedrun/filingmark_test.go
+new file mode 100644
+index 00000000..4b87adaa
+--- /dev/null
++++ b/internal/shedrun/filingmark_test.go
+@@ -0,0 +1,35 @@
++// filingmark_test.go pins the filing mark's place, its relative form and its round trip.
++
++package shedrun
++
++import (
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestFilingMark(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	l := syntheticLocation(t)
++
++	if want := filepath.Join(l.AnchorPath(), lymdirs.LymDirName, "shed", "slug", "filing-mark"); FilingMarkFile(l, "slug") != want {
++		t.Errorf("FilingMarkFile() = %q; want %q", FilingMarkFile(l, "slug"), want)
++	}
++	if want := filepath.Join(lymdirs.LymDirName, "shed", "slug", "filing-mark"); FilingMarkRel(l, "slug") != want {
++		t.Errorf("FilingMarkRel() = %q; want %q", FilingMarkRel(l, "slug"), want)
++	}
++	if marked, err := FilingMarked(l, "slug"); err != nil || marked {
++		t.Errorf("FilingMarked() before a write = %t, %v; want false and nil", marked, err)
++	}
++	for write := 1; write <= 2; write++ {
++		if err := WriteFilingMark(l, "slug"); err != nil {
++			t.Fatalf("WriteFilingMark() #%d = %v; want nil", write, err)
++		}
++		if marked, err := FilingMarked(l, "slug"); err != nil || !marked {
++			t.Errorf("FilingMarked() after write #%d = %t, %v; want true and nil", write, marked, err)
++		}
++	}
++}
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 6947cf4c..97baf2cb 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -363,6 +363,9 @@ func raddleFileDeps(dir string) loomshed.RaddleFileDeps {
+ 		Entry:          func() (loomshed.RaddleRunEntry, error) { return loomshed.RaddleRunEntry{Slug: "demo"}, nil },
+ 		StoreDone:      func(time.Time, string) (bool, error) { return false, nil },
+ 		AlreadyFiled:   func(string, []string) (bool, error) { return false, nil },
++		ClaimStatus:    func(string) error { return nil },
++		MarkFiled:      func() error { return nil },
++		ClearStatus:    func() error { return nil },
+ 		File:           func(boardengine.RaddleFiling) error { return nil },
+ 		CreateBeam:     func(string) error { return nil },
+ 		Notify:         func(string) error { return nil },
