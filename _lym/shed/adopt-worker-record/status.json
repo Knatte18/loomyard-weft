@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Write",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Write",
-    "last": "Parts-Plan-Write → skipped",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Write → done",
     "wait": ""
   },
   "history": [
@@ -42,6 +42,21 @@
       "output": "",
       "at": "2026-11-09T19:48:37Z",
       "reason": "tapestry.plan_split = false"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/adopt-worker-record/_lym/plan/00-overview.md",
+      "at": "2026-11-09T20:06:49Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-09T20:05:17.725872707Z",
+          "end": "2026-11-09T20:06:48.62787949Z"
+        }
+      ]
     }
   ],
   "product": {
