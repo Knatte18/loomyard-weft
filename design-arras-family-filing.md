@@ -1,6 +1,6 @@
 # An arras family filing turns the run's entry into its project and re-points its dependents
 
-`arras-family-filing` · Task · feature, shed, loom, burler, arbiter, board · running · Drift-Recheck
+`arras-family-filing` · Task · feature, shed, loom, burler, arbiter, board · running · Describe
 
 Decision record: [Sketch](decision-arras-family-filing.md)
 

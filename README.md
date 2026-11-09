@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-09 20:10 UTC; every age below is as of then.
+Rendered 2026-11-09 20:11 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -129,7 +129,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **An arras family filing turns the run's entry into its project and re-points its dependents** | [`arras-family-filing`](design-arras-family-filing.md)<br>[Sketch](decision-arras-family-filing.md) | darn · solid | Drift-Recheck | neve | 1d<br>1d | shed, loom, burler, arbiter, board |
+| T7 | **An arras family filing turns the run's entry into its project and re-points its dependents** | [`arras-family-filing`](design-arras-family-filing.md)<br>[Sketch](decision-arras-family-filing.md) | darn · solid | Describe | neve | 1d<br>1d | shed, loom, burler, arbiter, board |
 
 #### Ready (0)
 
