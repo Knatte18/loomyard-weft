@@ -1,0 +1,297 @@
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 07ea7058..3dbc5aa0 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -7,6 +7,8 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
++	"runtime"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -123,7 +125,9 @@ func TestModules_SeedOnlyAndHubWideFlags(t *testing.T) {
+ 
+ // TestModules_EveryTemplateKeyClassified pins that each module's Categories classify every template unit.
+ // It also pins that Categories name only paths the template holds.
+-// The derived LocalKeys and LocalDenied must match the record.
++// The derived LocalKeys, LocalDenied and MachineKeys must match the record.
++// It is the one test that pins each module's whole key set, so a key nobody classified fails here,
++// and each failure names the key and the list or function it goes in.
+ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -151,25 +155,26 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 		t.Run(m.Name, func(t *testing.T) {
+ 			t.Parallel()
+ 			spec := m.Spec()
++			specFunc := runtime.FuncForPC(reflect.ValueOf(m.Spec).Pointer()).Name()
+ 			units, err := yamlengine.LeafPaths([]byte(m.Template()), spec.OpenMaps, spec.WholeEntries)
+ 			if err != nil {
+ 				t.Fatalf("LeafPaths(%s template) error: %v", m.Name, err)
+ 			}
+ 			for _, unit := range units {
+ 				if !coveredByEntry(spec, unit) {
+-					t.Errorf("template unit %q of %s is not covered by a Categories entry; classify it", unit, m.Name)
++					t.Errorf("template unit %q of %s is not classified; add %q to the Categories map %s returns, as configengine.CategoryNone to open it to the local layer or as the category that bars it", unit, m.Name, unit, specFunc)
+ 				}
+ 			}
+ 			for entry := range spec.Categories {
+ 				if !holdsPath(units, entry) {
+-					t.Errorf("Categories entry %q of %s names no template path", entry, m.Name)
++					t.Errorf("Categories entry %q of %s names no template path; drop it from the Categories map %s returns, or add its line to the %s template", entry, m.Name, specFunc, m.Name)
+ 				}
+ 			}
+ 			if want := wantLocalKeys[m.Name]; m.HubWide && !slices.Equal(m.LocalKeys, want) {
+-				t.Errorf("%s LocalKeys = %v; want %v", m.Name, m.LocalKeys, want)
++				t.Errorf("%s LocalKeys = %v; want %v; %s", m.Name, m.LocalKeys, want, keyListWayForward(fmt.Sprintf("wantLocalKeys[%q]", m.Name), m.LocalKeys, want))
+ 			}
+ 			if want := wantLocalDenied[m.Name]; !m.HubWide && !slices.Equal(m.LocalDenied, want) {
+-				t.Errorf("%s LocalDenied = %v; want %v", m.Name, m.LocalDenied, want)
++				t.Errorf("%s LocalDenied = %v; want %v; %s", m.Name, m.LocalDenied, want, keyListWayForward(fmt.Sprintf("wantLocalDenied[%q]", m.Name), m.LocalDenied, want))
+ 			}
+ 			if m.HubWide && len(m.LocalDenied) != 0 || !m.HubWide && len(m.LocalKeys) != 0 {
+ 				t.Errorf("%s LocalKeys = %v, LocalDenied = %v; want only the list of its own kind", m.Name, m.LocalKeys, m.LocalDenied)
+@@ -188,12 +193,65 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 				wantMachineKeys = []string{"sandbox_mode"}
+ 			}
+ 			if got := configengine.MachineKeys(spec); !slices.Equal(got, wantMachineKeys) {
+-				t.Errorf("%s MachineKeys = %v; want %v, so no stray machine file is read by a registered loader", m.Name, got, wantMachineKeys)
++				t.Errorf("%s MachineKeys = %v; want %v, so no stray machine file is read by a registered loader; %s", m.Name, got, wantMachineKeys, keyListWayForward(fmt.Sprintf("the wantMachineKeys of %s", m.Name), got, wantMachineKeys))
+ 			}
+ 		})
+ 	}
+ }
+ 
++// keyListWayForward names the keys to add to and drop from the expected list called list in this test,
++// so that it matches got.
++// It is the way forward when the classification change behind the mismatch is meant.
++func keyListWayForward(list string, got, want []string) string {
++	var steps []string
++	if added := keysOutside(want, got); len(added) > 0 {
++		steps = append(steps, fmt.Sprintf("add %q to %s", added, list))
++	}
++	if dropped := keysOutside(got, want); len(dropped) > 0 {
++		steps = append(steps, fmt.Sprintf("drop %q from %s", dropped, list))
++	}
++	if len(steps) == 0 {
++		return fmt.Sprintf("sort %s in this test", list)
++	}
++	return "if the classification is meant, " + strings.Join(steps, " and ") + " in this test"
++}
++
++// TestKeyListWayForward pins the message that tells which keys to add to or drop from an expected list.
++func TestKeyListWayForward(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		got  []string
++		want []string
++		msg  string
++	}{
++		{"AddOnly", []string{"a", "b"}, []string{"a"}, `if the classification is meant, add ["b"] to wantList in this test`},
++		{"DropOnly", []string{"a"}, []string{"a", "b"}, `if the classification is meant, drop ["b"] from wantList in this test`},
++		{"AddAndDrop", []string{"a", "c"}, []string{"a", "b"}, `if the classification is meant, add ["c"] to wantList and drop ["b"] from wantList in this test`},
++		{"OrderOnly", []string{"b", "a"}, []string{"a", "b"}, "sort wantList in this test"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := keyListWayForward("wantList", tt.got, tt.want); got != tt.msg {
++				t.Errorf("keyListWayForward(%v, %v) = %q; want %q", tt.got, tt.want, got, tt.msg)
++			}
++		})
++	}
++}
++
++// keysOutside returns the keys that list does not hold, in their own order.
++func keysOutside(list, keys []string) []string {
++	var outside []string
++	for _, key := range keys {
++		if !slices.Contains(list, key) {
++			outside = append(outside, key)
++		}
++	}
++	return outside
++}
++
+ // coveredByEntry reports whether a Categories entry equals path or is an ancestor of it.
+ func coveredByEntry(spec configengine.Spec, path string) bool {
+ 	for entry := range spec.Categories {
+diff --git a/internal/loomengine/config_test.go b/internal/loomengine/config_test.go
+index 08902fa3..e112c13c 100644
+--- a/internal/loomengine/config_test.go
++++ b/internal/loomengine/config_test.go
+@@ -10,6 +10,7 @@ package loomengine
+ import (
+ 	"errors"
+ 	"fmt"
++	"maps"
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
+@@ -90,60 +91,90 @@ func writeLoomConfigWithKeys(t *testing.T, baseDir string, values map[string]str
+ 
+ func intPtr(v int) *int { return &v }
+ 
+-// templateConfig is the Config the shipped template's own values load to.
+-func templateConfig() Config {
+-	return Config{
+-		Discussion:                    "opus[medium]",
+-		DiscussionTimeoutMin:          480,
+-		DiscussionInteractive:         false,
+-		Raddle:                        "opus[high]",
+-		RaddleAutoApprove:             false,
+-		ReviewerModel:                 burlerengine.ModelSpecList{"opus[medium]"},
+-		FixerModel:                    burlerengine.ModelSpecList{"opus[medium]"},
+-		DiscussionLenses:              "twill-discussion",
+-		DiscussionGateFixer:           "sonnet[medium]",
+-		SubagentModel:                 "sonnet",
+-		DiscussionReviewerModel:       burlerengine.ModelSpecList{"opus[medium]", "opus[medium]", "sonnet[high]"},
+-		DiscussionFixerModel:          burlerengine.ModelSpecList{""},
+-		CodeReviewerModel:             burlerengine.ModelSpecList{"sonnet[medium]"},
+-		CodeFixerModel:                burlerengine.ModelSpecList{"sonnet[medium]"},
+-		SplitReviewerModel:            burlerengine.ModelSpecList{""},
+-		SplitFixerModel:               burlerengine.ModelSpecList{""},
+-		SplitReviewerFan:              lenses.FanList{""},
+-		SplitFixerFan:                 lenses.FanList{""},
+-		DiscussionReviewerFan:         lenses.FanList{"review-discussion", ""},
+-		CodeReviewerFan:               lenses.FanList{"review-code", ""},
+-		DiscussionFixerFan:            lenses.FanList{"fix-discussion"},
+-		CodeFixerFan:                  lenses.FanList{"fix-code"},
+-		DiscussionAssistReviewerModel: burlerengine.ModelSpecList{""},
+-		CodeAssistReviewerModel:       burlerengine.ModelSpecList{""},
+-		DiscussionAssistReviewerFan:   lenses.FanList{""},
+-		CodeAssistReviewerFan:         lenses.FanList{""},
+-		AssistReviewerTimeoutMin:      60,
+-		Judge:                         "sonnet[medium]",
+-		ReviewTimeoutMin:              240,
+-		Friction:                      "sonnet[medium]",
+-		FrictionTimeoutMin:            30,
+-		Driver:                        "haiku[medium]",
+-		StepIdleTimeoutMin:            60,
+-		ReviewCirclingCheckpoint:      3,
+-		ReviewMaxBounces:              3,
+-		ReviewHardMaxBounces:          4,
+-		ReviewAmendMaxBounces:         1,
+-		DiscussionMaxBounces:          intPtr(2),
+-		CodeMaxBounces:                intPtr(1),
+-		SplitMaxBounces:               intPtr(2),
+-		DiscussionAutoAccept:          false,
+-		CodeAutoAccept:                true,
++// templateDefaults maps a Config field name to the value the shipped template's own line for that key loads to.
++// It pins how the template's values parse; a key added to the template needs no entry here.
++var templateDefaults = map[string]any{
++	"Discussion":                    "opus[medium]",
++	"DiscussionTimeoutMin":          480,
++	"DiscussionInteractive":         false,
++	"Raddle":                        "opus[high]",
++	"RaddleAutoApprove":             false,
++	"ReviewerModel":                 burlerengine.ModelSpecList{"opus[medium]"},
++	"FixerModel":                    burlerengine.ModelSpecList{"opus[medium]"},
++	"DiscussionLenses":              "twill-discussion",
++	"DiscussionGateFixer":           "sonnet[medium]",
++	"SubagentModel":                 "sonnet",
++	"DiscussionReviewerModel":       burlerengine.ModelSpecList{"opus[medium]", "opus[medium]", "sonnet[high]"},
++	"DiscussionFixerModel":          burlerengine.ModelSpecList{""},
++	"CodeReviewerModel":             burlerengine.ModelSpecList{"sonnet[medium]"},
++	"CodeFixerModel":                burlerengine.ModelSpecList{"sonnet[medium]"},
++	"SplitReviewerModel":            burlerengine.ModelSpecList{""},
++	"SplitFixerModel":               burlerengine.ModelSpecList{""},
++	"SplitReviewerFan":              lenses.FanList{""},
++	"SplitFixerFan":                 lenses.FanList{""},
++	"DiscussionReviewerFan":         lenses.FanList{"review-discussion", ""},
++	"CodeReviewerFan":               lenses.FanList{"review-code", ""},
++	"DiscussionFixerFan":            lenses.FanList{"fix-discussion"},
++	"CodeFixerFan":                  lenses.FanList{"fix-code"},
++	"DiscussionAssistReviewerModel": burlerengine.ModelSpecList{""},
++	"CodeAssistReviewerModel":       burlerengine.ModelSpecList{""},
++	"DiscussionAssistReviewerFan":   lenses.FanList{""},
++	"CodeAssistReviewerFan":         lenses.FanList{""},
++	"AssistReviewerTimeoutMin":      60,
++	"Judge":                         "sonnet[medium]",
++	"ReviewTimeoutMin":              240,
++	"Friction":                      "sonnet[medium]",
++	"FrictionTimeoutMin":            30,
++	"Driver":                        "haiku[medium]",
++	"StepIdleTimeoutMin":            60,
++	"ReviewCirclingCheckpoint":      3,
++	"ReviewMaxBounces":              3,
++	"ReviewHardMaxBounces":          4,
++	"ReviewAmendMaxBounces":         1,
++	"DiscussionMaxBounces":          intPtr(2),
++	"CodeMaxBounces":                intPtr(1),
++	"SplitMaxBounces":               intPtr(2),
++	"DiscussionAutoAccept":          false,
++	"CodeAutoAccept":                true,
++}
++
++// loadTemplateConfig returns the Config the shipped template loads to, read from an anchor that holds only the template.
++func loadTemplateConfig(t *testing.T) Config {
++	t.Helper()
++	baseDir := t.TempDir()
++	seedLoomConfig(t, baseDir, ConfigTemplate())
++	config, err := LoadConfig(configengine.Dirs{Anchor: baseDir}, "loom")
++	if err != nil {
++		t.Fatalf("LoadConfig(template) = _, %v; want nil error", err)
+ 	}
++	return config
+ }
+ 
+-// TestLoadConfig_Loads verifies each loom.yaml shape that must load, against the whole Config it yields.
++// TestLoadConfig_Loads verifies each loom.yaml shape that must load.
++// Each case names only the fields its file changes, and every other field must equal the template's own load,
++// so a key added to the template leaves the table alone.
+ // Zero timeouts must load as zero, since shuttleengine.Spec reads zero as "defer to shuttle's run_timeout_min",
+ // so the negative guard must not sweep them up.
+ func TestLoadConfig_Loads(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
++	templateLoad := loadTemplateConfig(t)
++
++	t.Run("template defaults", func(t *testing.T) {
++		t.Parallel()
++		loaded := reflect.ValueOf(templateLoad)
++		for _, name := range slices.Sorted(maps.Keys(templateDefaults)) {
++			field := loaded.FieldByName(name)
++			if !field.IsValid() {
++				t.Errorf("Config has no field %q; rename or drop its templateDefaults entry", name)
++				continue
++			}
++			if got, want := field.Interface(), templateDefaults[name]; !reflect.DeepEqual(got, want) {
++				t.Errorf("LoadConfig(template).%s = %#v; want %#v", name, got, want)
++			}
++		}
++	})
++
+ 	// legacyContents is a file seeded before the friction, driver, judge, parent-review and review-budget keys existed.
+ 	const legacyContents = `discussion: opus[effort=high]
+ discussion_timeout_min: 480
+@@ -159,7 +190,6 @@ review_timeout_min: 240
+ 		mutate     func(*Config)
+ 		wantSoft   map[Perch]int
+ 	}{
+-		{name: "template defaults", mutate: func(*Config) {}},
+ 		{
+ 			name:       "empty fan keys never read a malformed lenses.yaml",
+ 			lensesYAML: malformedLensesYAML,
+@@ -431,7 +461,7 @@ review_timeout_min: 240
+ 				seedLensesConfig(t, baseDir, tt.lensesYAML)
+ 			}
+ 
+-			want := templateConfig()
++			want := templateLoad
+ 			tt.mutate(&want)
+ 
+ 			got, err := LoadConfig(configengine.Dirs{Anchor: baseDir}, "loom")
+@@ -504,7 +534,7 @@ review_timeout_min: 240
+ 					writeLocalLoomConfig(t, anchor, tt.local)
+ 				}
+ 
+-				want := templateConfig()
++				want := templateLoad
+ 				tt.mutate(&want)
+ 				got, err := LoadConfig(configengine.Dirs{Anchor: anchor, Board: board}, "loom")
+ 				if err != nil {
