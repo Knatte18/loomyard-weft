@@ -142,7 +142,7 @@ Not released; nothing starts it until its status is cleared.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (38)
+## [P0 Root: entries under no project](project-root.md) (39)
 
 Owner `neve`
 
@@ -175,7 +175,7 @@ Not released; nothing starts it until its status is cleared.
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 4h<br>3h | slack, reed, creel |
 | T13 | `draft` **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 3h<br>3h | config, slack |
 
-### Notes (33)
+### Notes (34)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -204,7 +204,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B12 |  | **The local dobby starts a pass on a run while adopt is taking it over** | [`adopt-old-dobby-starts-pass`](design-adopt-old-dobby-starts-pass.md) | 4m<br>4m | dobby, batten |
 | B13 |  | **A green adopt check starts adopted runs the operator paused** | [`adopt-check-overrides-pause`](design-adopt-check-overrides-pause.md) | 4m<br>4m | tender, dobby, batten |
 
-#### Enhancements (6)
+#### Enhancements (7)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -214,6 +214,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E5 |  | **lym adopt always starts the orch, with no way to skip it** | [`adopt-no-orch-option`](design-adopt-no-orch-option.md) | 4m<br>4m | orch, batten |
 | E6 |  | **An interrupted adopt leaves no account of what it did and what is left** | [`adopt-resume-after-break`](design-adopt-resume-after-break.md) | 4m<br>4m | batten, fabric |
 | E7 |  | **lym s in a worktree this machine does not own adopts it** | [`start-adopts-unowned-beam`](design-start-adopts-unowned-beam.md) | 1m<br>0m | shortcut, batten |
+| E8 |  | **The old owner pushes its unpushed tips to origin when another machine adopts** | [`old-owner-archives-local`](design-old-owner-archives-local.md) | 0m<br>0m | dobby, fabric |
 
 #### Features (12)
 
