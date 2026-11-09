@@ -1,0 +1,823 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 07b80af4..1976a9ba 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -51,5 +51,5 @@
+ 
+ ## Testing
+ 
+-- `PATTERN-test-speed` — Writing or running a test: via `lym gate test` by gate key; one `tiergate.Require` tier, lowest that fits; it pins behavior no test covers; skips, clocks, `t.Parallel`, `//lym:seam` and `//lym:watch` per the background. (test) — [background](pattern/PATTERN-test-speed.md)
++- `PATTERN-test-speed` — Writing or running a test: via `lym gate test` by gate key; one `tiergate.Require` tier, lowest that fits; it pins behavior no other test covers, which the gate's redundancy report checks; skips, clocks, `t.Parallel`, `//lym:seam` and `//lym:watch` per the background. (test) — [background](pattern/PATTERN-test-speed.md)
+ - `PATTERN-test-isolation` — Testing package: hermetic git and `tmuxkit.Main`; shared support in one `internal/testkit/<kit>/`; hub fixtures via `hubforge`. (test) — [background](pattern/PATTERN-test-isolation.md)
+diff --git a/contracts/stencils/loom/loom-rubric-code-review.md b/contracts/stencils/loom/loom-rubric-code-review.md
+index 94e2d3bb..fe6f988d 100644
+--- a/contracts/stencils/loom/loom-rubric-code-review.md
++++ b/contracts/stencils/loom/loom-rubric-code-review.md
+@@ -114,6 +114,20 @@ Do not flag any of the following as a finding:
+ 
+   A redundancy finding is raised only by naming the existing test that covers the behavior, so it cannot block on a vague suspicion.
+ 
++  Each test the redundancy report below lists as contained is a test-economy candidate.
++  Coverage blocks do not see assertions, so check the candidate's assertions against those of its covering tests before filing anything.
++  When the covering tests assert what it asserts, file a finding to fold it into one of them or delete it, naming the covering tests.
++  When it pins what coverage cannot see, such as an error message, an output shape, an ordering or a side effect the covering tests never check, accept it:
++  file a finding to mark it `//testtiming:keep <reason>` directly above its `func Test…` line, the reason naming what it pins.
++  A test the report lists as unique or not judged is no finding on that ground; judge it by the bullets above.
++
++## Redundancy report
++
++{{.redundancy_report}}
++
++The note above is the advisory report `lym gate test` writes on the diff's new and changed Go tests, read only when it still matches HEAD's tree.
++When it is `none`, or says no current report exists, judge test economy by the bullets above alone, and raise no finding about the report's absence.
++
+ ## Amendment
+ 
+ {{.amendment}}
+diff --git a/contracts/stencils/rubric_test.go b/contracts/stencils/rubric_test.go
+index 749524fe..659e0dce 100644
+--- a/contracts/stencils/rubric_test.go
++++ b/contracts/stencils/rubric_test.go
+@@ -17,11 +17,11 @@ import (
+ )
+ 
+ // rubricMarkerAllowlist is the complete set of top-level stencil markers a rubric may carry:
+-// only specs_dir, stencils_dir, webster_record, gate_tiers, amendment and review_base.
++// only specs_dir, stencils_dir, webster_record, gate_tiers, amendment, review_base and redundancy_report.
+ // internal/shedadapters.ReadRubric fills these markers as the rubric's own template at read time.
+ // A marker outside this set would sit inside the value the Bouncer and Burler prompts interpolate the rubric as.
+ // The fill's required-marker check cannot see such a marker, so this test must fail on it.
+-var rubricMarkerAllowlist = map[string]bool{"specs_dir": true, "stencils_dir": true, "webster_record": true, "gate_tiers": true, "amendment": true, "review_base": true}
++var rubricMarkerAllowlist = map[string]bool{"specs_dir": true, "stencils_dir": true, "webster_record": true, "gate_tiers": true, "amendment": true, "review_base": true, "redundancy_report": true}
+ 
+ // TestLoomRubrics asserts, for each stencil-sourced rubric:
+ //   - its top-level marker set is a subset of rubricMarkerAllowlist, the same allowed set for every rubric:
+@@ -80,7 +80,11 @@ func TestLoomRubrics(t *testing.T) {
+ 			const tier = "- tier1: the hub's first tier"
+ 			const amendment = "Review only the change since commit abc123."
+ 			const reviewBase = "0123abcd4567ef"
+-			got, err := shedadapters.ReadRubric(dir, tt.name, "/abs/specs/dir", shedadapters.RubricNotes{WebsterRecord: record, GateTiers: tier, Amendment: amendment, ReviewBase: reviewBase})
++			const redundancyReport = "No current redundancy report: none written."
++			got, err := shedadapters.ReadRubric(dir, tt.name, "/abs/specs/dir", shedadapters.RubricNotes{
++				WebsterRecord: record, GateTiers: tier, Amendment: amendment, ReviewBase: reviewBase,
++				RedundancyReport: func() string { return redundancyReport },
++			})
+ 			if err != nil {
+ 				t.Fatalf("shedadapters.ReadRubric(%q, %q) = _, %v; want nil error", dir, tt.name, err)
+ 			}
+@@ -96,6 +100,9 @@ func TestLoomRubrics(t *testing.T) {
+ 			if carriesBase := strings.Contains(got, "git diff "+reviewBase+"..HEAD"); carriesBase != (tt.name == "loom-rubric-code-review") {
+ 				t.Errorf("rendered %s carries the review range over the review base = %v; only the Code-Review rubric carries the marker", tt.name, carriesBase)
+ 			}
++			if carriesReport := strings.Contains(got, redundancyReport); carriesReport != (tt.name == "loom-rubric-code-review") {
++				t.Errorf("rendered %s carries the redundancy report note = %v; only the Code-Review rubric carries the marker", tt.name, carriesReport)
++			}
+ 			if carriesSpecs := strings.Contains(got, "/abs/specs/dir"); carriesSpecs != tt.namesSpecs {
+ 				t.Errorf("rendered %s carries the specs directory = %v; want %v", tt.name, carriesSpecs, tt.namesSpecs)
+ 			}
+diff --git a/docs/overview.md b/docs/overview.md
+index 552f9df4..2e4617cf 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -894,7 +894,8 @@ User-facing modules each get one `lym <module>` namespace:
+   so a tag-set compile break fails at the card;
+   a failing tier stops no later tier, vet or guard run;
+   the gate key's lint steps run after the tiers;
+-  a gate key's advisory `redundancy` report step runs last, judging the diff's new and changed Go tests against the coverage maps without changing the result;
++  a gate key's advisory `redundancy` report step runs last, judging the diff's new and changed Go tests against the coverage maps without changing the result,
++  and Code-Review's rubric reads its report while it matches the reviewed HEAD's tree;
+   a failure report lists every failure with its package, test and first lines, the files the change touches and each failed run's log;
+   a closing line names every failed run,
+   and the call exits with the first failing run's code.
+diff --git a/internal/gatecli/redundancy_integration_test.go b/internal/gatecli/redundancy_integration_test.go
+index b516f4f5..8162ebc6 100644
+--- a/internal/gatecli/redundancy_integration_test.go
++++ b/internal/gatecli/redundancy_integration_test.go
+@@ -326,9 +326,10 @@ func TestRedundancyStep(t *testing.T) {
+ 			}
+ 		}
+ 		wantMatch(t, true)
+-		plankit.WriteTree(t, pair, map[string]string{"notes.md": "note\n"})
+-		gitkit.Git(t, pair, "add", "notes.md")
+-		gitkit.Git(t, pair, "commit", "-q", "-m", "touch no Go file")
++		// The pair's _lym is a link that git cannot add through, so the record sits beside the packages.
++		plankit.WriteTree(t, pair, map[string]string{"records/notes.md": "note\n"})
++		gitkit.Git(t, pair, "add", "records/notes.md")
++		gitkit.Git(t, pair, "commit", "-q", "-m", "touch only run records")
+ 		wantMatch(t, true)
+ 		plankit.WriteTree(t, pair, map[string]string{"alpha/alpha.go": testMapSource("alpha") + "// edited\n"})
+ 		gitkit.Git(t, pair, "commit", "-q", "-am", "edit a Go file of a judged package")
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 68d338e9..3063e3e6 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -744,6 +744,12 @@
+ // It falls back to the merge base with the local parent branch when there is no merge record.
+ // A merge record that cannot be decoded is logged at Warn and treated the same way.
+ //
++// The Code-Review rubric's `redundancy_report` marker is filled from the worktree's redundancy report.
++// A `lym gate test` call with the `redundancy` report step writes that report.
++// The marker lists the report's tests when `gatecli.RedundancyReportMatches` matches the report against HEAD.
++// Otherwise it is one line saying no current report exists and why.
++// That line names the gate key of a report written on a red tier.
++//
+ // Every loom recipe builds its Describe session from one `landingshed.DescribeTable`.
+ // It lists the run records that exist.
+ // It renders `(none)` for a run that has none, as a darn run has no webster summary.
+diff --git a/internal/loomcli/redundancynote.go b/internal/loomcli/redundancynote.go
+new file mode 100644
+index 00000000..87082855
+--- /dev/null
++++ b/internal/loomcli/redundancynote.go
+@@ -0,0 +1,81 @@
++// redundancynote.go renders the gate's redundancy report as the note of a code review rubric's redundancy_report marker.
++
++package loomcli
++
++import (
++	"fmt"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gatecli"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++)
++
++// noCurrentRedundancyReport opens the note a review gets when no redundancy report holds for HEAD.
++const noCurrentRedundancyReport = "No current redundancy report"
++
++// redundancyReportNote returns the closure that reads the redundancy report of the worktree at location.
++// The closure reads it each time a review rubric carrying the marker is filled.
++// The note lists the report's tests when the report matches HEAD's tree.
++// Otherwise it says that no current report exists and why.
++func redundancyReportNote(location *lymcwd.Location) func() string {
++	return func() string {
++		report, found, err := gatecli.ReadRedundancyReport(location)
++		if err != nil {
++			return fmt.Sprintf("%s: the report could not be read: %v.", noCurrentRedundancyReport, err)
++		}
++		return renderRedundancyReportNote(report, found, func() (bool, error) {
++			fabric, err := fabricengine.Open(location)
++			if err != nil {
++				return false, err
++			}
++			head, err := fabric.HeadSHA()
++			if err != nil {
++				return false, err
++			}
++			return gatecli.RedundancyReportMatches(location, report, head)
++		})
++	}
++}
++
++// renderRedundancyReportNote renders report as a code review reads it.
++// found is whether a report exists, and matchesHead reports whether it holds for HEAD's tree;
++// it is called only for a report that judged.
++// A matching report renders one line per test and per error line.
++// Any other renders one line saying no current report exists and why.
++// That line names the gate key of a report written on a red tier.
++func renderRedundancyReportNote(report gatecli.RedundancyReport, found bool, matchesHead func() (bool, error)) string {
++	if !found {
++		return noCurrentRedundancyReport + ": no gate call of this worktree has written one."
++	}
++	call := fmt.Sprintf("the `%s` gate call of %s", report.GateKey, report.Written.UTC().Format(time.RFC3339))
++	switch {
++	case report.RedGate:
++		return fmt.Sprintf("%s: a tier of %s was red, so its report judged nothing.", noCurrentRedundancyReport, call)
++	case report.Note != "":
++		return fmt.Sprintf("%s: the report of %s judged nothing: %s.", noCurrentRedundancyReport, call, report.Note)
++	}
++	matched, err := matchesHead()
++	if err != nil {
++		return fmt.Sprintf("%s: the report of %s could not be matched against HEAD: %v.", noCurrentRedundancyReport, call, err)
++	}
++	if !matched {
++		return fmt.Sprintf("%s: the report of %s was written for a tree other than HEAD's.", noCurrentRedundancyReport, call)
++	}
++	lines := []string{fmt.Sprintf("The redundancy report of %s matches HEAD's tree.", call)}
++	for _, test := range report.Tests {
++		line := fmt.Sprintf("- `%s.%s` in `%s`: %s", test.Package, test.Name, test.File, test.Verdict)
++		switch {
++		case test.Verdict == gatecli.RedundancyContained:
++			line += ", covered by `" + strings.Join(test.Covering, "`, `") + "`"
++		case test.Reason != "":
++			line += ", " + test.Reason
++		}
++		lines = append(lines, line)
++	}
++	for _, failure := range report.Errors {
++		lines = append(lines, "- error: "+failure)
++	}
++	return strings.Join(lines, "\n")
++}
+diff --git a/internal/loomcli/redundancynote_integration_test.go b/internal/loomcli/redundancynote_integration_test.go
+new file mode 100644
+index 00000000..a2148046
+--- /dev/null
++++ b/internal/loomcli/redundancynote_integration_test.go
+@@ -0,0 +1,82 @@
++// redundancynote_integration_test.go drives the redundancy_report note closure over a real hub pair's report file.
++
++package loomcli
++
++import (
++	"encoding/json"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gatecli"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestRedundancyReportNote_ReadsTheWorktreeReport drives the closure over a real pair's report file.
++// A pair at the merge base of its parent branch holds a judged report that matches HEAD.
++// The rows share one hub and add their pairs one after another, so they are not parallel.
++func TestRedundancyReportNote_ReadsTheWorktreeReport(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	written := time.Date(2026, 11, 9, 20, 0, 0, 0, time.UTC)
++	judged, err := json.Marshal(gatecli.RedundancyReport{
++		Written: written,
++		GateKey: "darn-write",
++		Tests:   []gatecli.RedundancyTest{{Package: "alpha", Name: "TestAlphaOwn", File: "alpha/alpha_test.go", Verdict: gatecli.RedundancyUnique}},
++	})
++	if err != nil {
++		t.Fatalf("Marshal() error = %v; want nil", err)
++	}
++	tests := []struct {
++		name       string
++		slug       string
++		report     string
++		wantPrefix string
++		wantExact  string
++	}{
++		{
++			name:       "MalformedReportCouldNotBeRead",
++			slug:       "malformed",
++			report:     "{not json",
++			wantPrefix: "No current redundancy report: the report could not be read: ",
++		},
++		{
++			name:   "ReportOfHeadListsItsTests",
++			slug:   "matching",
++			report: string(judged),
++			wantExact: "The redundancy report of the `darn-write` gate call of 2026-11-09T20:00:00Z matches HEAD's tree.\n" +
++				"- `alpha.TestAlphaOwn` in `alpha/alpha_test.go`: unique",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			hubforge.AddPair(t, hub, tt.slug)
++			location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(tt.slug))
++			if err != nil {
++				t.Fatalf("ResolveWorktree() error = %v; want nil", err)
++			}
++			dir := gateslot.WaitDir(location.AnchorPath())
++			if err := os.MkdirAll(dir, 0o755); err != nil {
++				t.Fatalf("MkdirAll(%q) error = %v; want nil", dir, err)
++			}
++			path := filepath.Join(dir, "redundancy.json")
++			if err := os.WriteFile(path, []byte(tt.report), 0o644); err != nil {
++				t.Fatalf("WriteFile(%q) error = %v; want nil", path, err)
++			}
++
++			got := redundancyReportNote(location)()
++			if tt.wantExact != "" && got != tt.wantExact {
++				t.Errorf("redundancyReportNote()() = %q; want %q", got, tt.wantExact)
++			}
++			if tt.wantPrefix != "" && !strings.HasPrefix(got, tt.wantPrefix) {
++				t.Errorf("redundancyReportNote()() = %q; want it to start with %q", got, tt.wantPrefix)
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/redundancynote_test.go b/internal/loomcli/redundancynote_test.go
+new file mode 100644
+index 00000000..28fedd43
+--- /dev/null
++++ b/internal/loomcli/redundancynote_test.go
+@@ -0,0 +1,93 @@
++// redundancynote_test.go covers how a code review's redundancy_report note renders the gate's redundancy report.
++
++package loomcli
++
++import (
++	"errors"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gatecli"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestRenderRedundancyReportNote(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	written := time.Date(2026, 11, 9, 20, 0, 0, 0, time.UTC)
++	judged := gatecli.RedundancyReport{
++		Written: written,
++		GateKey: "darn-write",
++		Tests: []gatecli.RedundancyTest{
++			{Package: "alpha", Name: "TestAlphaNew", File: "alpha/alpha_test.go", Verdict: gatecli.RedundancyContained, Covering: []string{"TestAlphaBase", "TestAlphaOther"}},
++			{Package: "alpha", Name: "TestAlphaOwn", File: "alpha/alpha_test.go", Verdict: gatecli.RedundancyUnique},
++			{Package: "drops", Name: "TestDropsTier2", File: "drops/drops_test.go", Verdict: gatecli.RedundancyNotJudged, Reason: "a tier2 test, which no coverage map holds"},
++		},
++		Errors: []string{"beta: build failed"},
++	}
++	// unreached stands in for the HEAD match of a row whose report must be rendered without one.
++	unreached := func() (bool, error) {
++		t.Error("matchesHead was called; want no match for a missing report or one that judged nothing")
++		return false, nil
++	}
++	tests := []struct {
++		name        string
++		report      gatecli.RedundancyReport
++		found       bool
++		matchesHead func() (bool, error)
++		want        string
++	}{
++		{
++			name:        "NoReport",
++			matchesHead: unreached,
++			want:        "No current redundancy report: no gate call of this worktree has written one.",
++		},
++		{
++			name:        "RedGateNamesTheGateKey",
++			report:      gatecli.RedundancyReport{Written: written, GateKey: "code-burler-fix", RedGate: true, Note: "a tier of the call was red"},
++			found:       true,
++			matchesHead: unreached,
++			want:        "No current redundancy report: a tier of the `code-burler-fix` gate call of 2026-11-09T20:00:00Z was red, so its report judged nothing.",
++		},
++		{
++			name:        "JudgedNothing",
++			report:      gatecli.RedundancyReport{Written: written, GateKey: "darn-write", Note: "the worktree has no parent branch"},
++			found:       true,
++			matchesHead: unreached,
++			want:        "No current redundancy report: the report of the `darn-write` gate call of 2026-11-09T20:00:00Z judged nothing: the worktree has no parent branch.",
++		},
++		{
++			name:        "MatchFailed",
++			report:      judged,
++			found:       true,
++			matchesHead: func() (bool, error) { return false, errors.New("no merge base") },
++			want:        "No current redundancy report: the report of the `darn-write` gate call of 2026-11-09T20:00:00Z could not be matched against HEAD: no merge base.",
++		},
++		{
++			name:        "OtherTree",
++			report:      judged,
++			found:       true,
++			matchesHead: func() (bool, error) { return false, nil },
++			want:        "No current redundancy report: the report of the `darn-write` gate call of 2026-11-09T20:00:00Z was written for a tree other than HEAD's.",
++		},
++		{
++			name:        "MatchListsEveryTestAndError",
++			report:      judged,
++			found:       true,
++			matchesHead: func() (bool, error) { return true, nil },
++			want: "The redundancy report of the `darn-write` gate call of 2026-11-09T20:00:00Z matches HEAD's tree.\n" +
++				"- `alpha.TestAlphaNew` in `alpha/alpha_test.go`: contained, covered by `TestAlphaBase`, `TestAlphaOther`\n" +
++				"- `alpha.TestAlphaOwn` in `alpha/alpha_test.go`: unique\n" +
++				"- `drops.TestDropsTier2` in `drops/drops_test.go`: not judged, a tier2 test, which no coverage map holds\n" +
++				"- error: beta: build failed",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := renderRedundancyReportNote(tt.report, tt.found, tt.matchesHead); got != tt.want {
++				t.Errorf("renderRedundancyReportNote() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index c88202a3..0de00fb7 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -747,7 +747,9 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		// VerifyMergeBase and ReviewBase are nil for a standalone run, which records no parent branch.
+ 		VerifyMergeBase: verifyMergeBase,
+ 		ReviewBase:      verifyMergeBase,
+-		VerifyHold:      verifytree.NewPauseHold(pauseGeom, nil),
++		// RedundancyReport reads the gate's report at each fill of a rubric carrying the marker, never at wire time.
++		RedundancyReport: redundancyReportNote(location),
++		VerifyHold:       verifytree.NewPauseHold(pauseGeom, nil),
+ 		// GateFixer wraps the Darn-Write, Plan-Write and Discussion-Write gates of a pair run with a cold fixer.
+ 		// It reads every value here at wire time and opens nothing.
+ 		GateFixer: gateFixerSeam(gateFixerInputs{
+diff --git a/internal/loomcli/wiring_test.go b/internal/loomcli/wiring_test.go
+index a14f8012..0008be44 100644
+--- a/internal/loomcli/wiring_test.go
++++ b/internal/loomcli/wiring_test.go
+@@ -940,6 +940,11 @@ func TestWire_ReviewKeysReachTheEnv(t *testing.T) {
+ 	} else if got := c.env.WebsterRecord(); got != "none" {
+ 		t.Errorf("c.env.WebsterRecord() = %q; want none for an anchor with no webster run record", got)
+ 	}
++	if c.env.RedundancyReport == nil {
++		t.Error("c.env.RedundancyReport = nil; want the closure over the worktree's redundancy report")
++	} else if got, want := c.env.RedundancyReport(), "No current redundancy report: no gate call of this worktree has written one."; got != want {
++		t.Errorf("c.env.RedundancyReport() = %q; want %q for a worktree with no report", got, want)
++	}
+ 
+ 	// Each loom segment's entry joins the models, keys and Bouncer pair with its resolved budget and hard cap:
+ 	// plan_max_bounces, code_max_bounces and plan_hard_max_bounces name their own keys;
+diff --git a/internal/shedadapters/bouncer.go b/internal/shedadapters/bouncer.go
+index 13459708..d5e64cf9 100644
+--- a/internal/shedadapters/bouncer.go
++++ b/internal/shedadapters/bouncer.go
+@@ -88,6 +88,9 @@ type BouncerConfig struct {
+ 	// ReviewBase returns the commit the rubric's review_base marker is filled from.
+ 	// Nil, an error and an empty answer render `none`, which the Code-Review rubric reads as an undetermined review range.
+ 	ReviewBase func() (string, error)
++	// RedundancyReport returns the note the rubric's redundancy_report marker is filled from.
++	// It is called each time the seed or judge reads a rubric carrying the marker; nil renders `none`.
++	RedundancyReport func() string
+ 	// RubricStencil is the stencilstore name of the rubric this Bouncer's judge applies.
+ 	RubricStencil string
+ 	// Models holds the already-resolved seed and judge pairs, threaded verbatim into the shuttleengine.Spec of each pass.
+@@ -1651,7 +1654,7 @@ func (b *Bouncer) seedCall(ctx context.Context) (shedengine.Outcome, shedengine.
+ // rubricNotes gathers the notes that fill the rubric's markers.
+ // Each note is blank when no function is configured for it.
+ func (b *Bouncer) rubricNotes() RubricNotes {
+-	notes := RubricNotes{GateTiers: b.cfg.GateTiers, Amendment: AmendmentNote(b.cfg.RunDir)}
++	notes := RubricNotes{GateTiers: b.cfg.GateTiers, Amendment: AmendmentNote(b.cfg.RunDir), RedundancyReport: b.cfg.RedundancyReport}
+ 	if b.cfg.WebsterRecord != nil {
+ 		notes.WebsterRecord = b.cfg.WebsterRecord()
+ 	}
+diff --git a/internal/shedadapters/bouncerprompt_test.go b/internal/shedadapters/bouncerprompt_test.go
+index 0dee2a32..caf4fe8c 100644
+--- a/internal/shedadapters/bouncerprompt_test.go
++++ b/internal/shedadapters/bouncerprompt_test.go
+@@ -136,13 +136,14 @@ func TestBouncer_JudgePromptOffersCirclingOnlyFromTheCheckpoint(t *testing.T) {
+ 	}
+ }
+ 
+-// The rubric carries the webster_record marker.
++// The rubric carries the webster_record and redundancy_report markers.
+ //
+-//testtiming:keep pins that the exclude_lenses example line and rule reach the seed and judge prompts exactly when ClusterExcludes is set, and that the WebsterRecord note reaches the rubric in both
++//testtiming:keep pins that the exclude_lenses example line and rule reach the seed and judge prompts exactly when ClusterExcludes is set, and that the WebsterRecord and RedundancyReport notes reach the rubric in both
+ func TestBouncer_ClusterExcludesReachesSeedAndJudgePrompts(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	const websterRecord = "Webster has begun these batches."
+-	rubric := withStencilOverrides(map[string]string{bouncerFixtureRubricName: "Record: {{.webster_record}}\nTiers:\n{{.gate_tiers}}\n"})
++	const redundancyReport = "No current redundancy report: none written."
++	rubric := withStencilOverrides(map[string]string{bouncerFixtureRubricName: "Record: {{.webster_record}}\nTiers:\n{{.gate_tiers}}\nRedundancy: {{.redundancy_report}}\n"})
+ 	const gateTiers = "- tier1: build first\n- gate card: [1]"
+ 	for _, clusterExcludes := range []bool{false, true} {
+ 		t.Run(fmt.Sprintf("Seed_ClusterExcludes=%t", clusterExcludes), func(t *testing.T) {
+@@ -151,6 +152,7 @@ func TestBouncer_ClusterExcludesReachesSeedAndJudgePrompts(t *testing.T) {
+ 			cfg.Shuttle = shuttle
+ 			cfg.ClusterExcludes = clusterExcludes
+ 			cfg.WebsterRecord = func() string { return websterRecord }
++			cfg.RedundancyReport = func() string { return redundancyReport }
+ 			cfg.GateTiers = gateTiers
+ 			b, err := NewBouncer(cfg)
+ 			if err != nil {
+@@ -165,6 +167,9 @@ func TestBouncer_ClusterExcludesReachesSeedAndJudgePrompts(t *testing.T) {
+ 			if !strings.Contains(shuttle.GotSpec.Prompt, "Record: "+websterRecord) {
+ 				t.Errorf("seed prompt = %q; want the rubric to carry the WebsterRecord note", shuttle.GotSpec.Prompt)
+ 			}
++			if !strings.Contains(shuttle.GotSpec.Prompt, "Redundancy: "+redundancyReport) {
++				t.Errorf("seed prompt = %q; want the rubric to carry the RedundancyReport note", shuttle.GotSpec.Prompt)
++			}
+ 			if !strings.Contains(shuttle.GotSpec.Prompt, gateTiers) {
+ 				t.Errorf("seed prompt = %q; want the rubric to carry the gate tier lines", shuttle.GotSpec.Prompt)
+ 			}
+@@ -176,6 +181,7 @@ func TestBouncer_ClusterExcludesReachesSeedAndJudgePrompts(t *testing.T) {
+ 			cfg.Shuttle = shuttle
+ 			cfg.ClusterExcludes = clusterExcludes
+ 			cfg.WebsterRecord = func() string { return websterRecord }
++			cfg.RedundancyReport = func() string { return redundancyReport }
+ 			cfg.GateTiers = gateTiers
+ 			b, err := NewBouncer(cfg)
+ 			if err != nil {
+@@ -197,6 +203,9 @@ func TestBouncer_ClusterExcludesReachesSeedAndJudgePrompts(t *testing.T) {
+ 			if !strings.Contains(shuttle.GotSpec.Prompt, "Record: "+websterRecord) {
+ 				t.Errorf("judge prompt = %q; want the rubric to carry the WebsterRecord note", shuttle.GotSpec.Prompt)
+ 			}
++			if !strings.Contains(shuttle.GotSpec.Prompt, "Redundancy: "+redundancyReport) {
++				t.Errorf("judge prompt = %q; want the rubric to carry the RedundancyReport note", shuttle.GotSpec.Prompt)
++			}
+ 			if !strings.Contains(shuttle.GotSpec.Prompt, gateTiers) {
+ 				t.Errorf("judge prompt = %q; want the rubric to carry the gate tier lines", shuttle.GotSpec.Prompt)
+ 			}
+diff --git a/internal/shedadapters/rubric.go b/internal/shedadapters/rubric.go
+index 1bbc1625..af6067e1 100644
+--- a/internal/shedadapters/rubric.go
++++ b/internal/shedadapters/rubric.go
+@@ -4,15 +4,19 @@ package shedadapters
+ 
+ import (
+ 	"fmt"
++	"slices"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/stencil"
+ 	"github.com/Knatte18/loomyard/internal/stencilstore"
+ )
+ 
+-// noNote is what the webster_record, gate_tiers, amendment and review_base markers render when their note is blank.
++// noNote is what each optional rubric marker renders when its note is blank.
+ const noNote = "none"
+ 
++// redundancyReportMarker is the marker the Code-Review rubric carries for the gate's redundancy report.
++const redundancyReportMarker = "redundancy_report"
++
+ // RubricNotes are the optional notes a rubric's markers are filled from.
+ // A blank note fills its marker as `none`, and a rubric with no such marker ignores it.
+ type RubricNotes struct {
+@@ -24,6 +28,10 @@ type RubricNotes struct {
+ 	Amendment string
+ 	// ReviewBase fills review_base with the commit the Code-Review rubric's review range starts from.
+ 	ReviewBase string
++	// RedundancyReport returns the note redundancy_report is filled from, the gate's redundancy report as review reads it.
++	// It is called only for a rubric carrying the marker, since reading the report matches it against a commit's tree.
++	// Nil and a blank answer render `none`.
++	RedundancyReport func() string
+ }
+ 
+ // ReadRubric reads the rubric stencil name from stencilsDir and strips its stamp banner.
+@@ -47,13 +55,18 @@ func ReadRubric(stencilsDir, name, specsDir string, notes RubricNotes) (string,
+ 		return "", fmt.Errorf("shedadapters: read rubric %q: %w", name, err)
+ 	}
+ 	stripped := stencil.StripLeadingComment(string(raw))
++	redundancyReport, err := redundancyReportNote([]byte(stripped), notes.RedundancyReport)
++	if err != nil {
++		return "", fmt.Errorf("shedadapters: read rubric %q: %w", name, err)
++	}
+ 	filled, err := stencil.Fill([]byte(stripped), map[string]string{
+-		"specs_dir":      specsDir,
+-		"stencils_dir":   stencilsDir,
+-		"webster_record": noteOrNone(notes.WebsterRecord),
+-		"gate_tiers":     noteOrNone(notes.GateTiers),
+-		"amendment":      noteOrNone(notes.Amendment),
+-		"review_base":    noteOrNone(notes.ReviewBase),
++		"specs_dir":            specsDir,
++		"stencils_dir":         stencilsDir,
++		"webster_record":       noteOrNone(notes.WebsterRecord),
++		"gate_tiers":           noteOrNone(notes.GateTiers),
++		"amendment":            noteOrNone(notes.Amendment),
++		"review_base":          noteOrNone(notes.ReviewBase),
++		redundancyReportMarker: redundancyReport,
+ 	})
+ 	if err != nil {
+ 		return "", fmt.Errorf("shedadapters: read rubric %q: %w", name, err)
+@@ -61,6 +74,22 @@ func ReadRubric(stencilsDir, name, specsDir string, notes RubricNotes) (string,
+ 	return string(filled), nil
+ }
+ 
++// redundancyReportNote returns the redundancy_report value for rubric.
++// read is called only when rubric carries the marker.
++func redundancyReportNote(rubric []byte, read func() string) (string, error) {
++	if read == nil {
++		return noNote, nil
++	}
++	markers, err := stencil.TopLevelMarkers(rubric)
++	if err != nil {
++		return "", err
++	}
++	if !slices.Contains(markers, redundancyReportMarker) {
++		return noNote, nil
++	}
++	return noteOrNone(read()), nil
++}
++
+ // noteOrNone returns note, or `none` when it is blank.
+ func noteOrNone(note string) string {
+ 	if strings.TrimSpace(note) == "" {
+diff --git a/internal/shedadapters/rubric_test.go b/internal/shedadapters/rubric_test.go
+index f7845efd..f1519f9f 100644
+--- a/internal/shedadapters/rubric_test.go
++++ b/internal/shedadapters/rubric_test.go
+@@ -30,7 +30,7 @@ func writeStampedRubric(t *testing.T, dir, name, body string) {
+ // TestReadRubric covers the fill, the strip and the errors; "{dir}" in want stands for the
+ // stencils dir the row was read from. An exact want also pins the stamp banner stripped.
+ //
+-//testtiming:keep pins the rubric fill and strip: both markers substituted, the stamp banner removed, a markerless rubric unchanged, and the errors for an empty specs dir or an unreadable rubric
++//testtiming:keep pins the rubric fill and strip: both markers substituted, the stamp banner removed, a markerless rubric unchanged, the redundancy report read only for its marker, and the errors for an empty specs dir or an unreadable rubric
+ func TestReadRubric(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -47,9 +47,44 @@ func TestReadRubric(t *testing.T) {
+ 		reviewBase string
+ 		// gateTiers is the text ReadRubric fills the gate_tiers marker from.
+ 		gateTiers string
+-		want      string
+-		wantErr   string
++		// redundancyReport is the note ReadRubric fills the redundancy_report marker from.
++		redundancyReport func() string
++		want             string
++		wantErr          string
+ 	}{
++		{
++			name:             "renders the redundancy report note",
++			rubric:           "bouncer-rubric-test",
++			body:             "# Rubric\n\nRedundancy: {{.redundancy_report}}\n",
++			specsDir:         "/abs/specs",
++			redundancyReport: func() string { return "No current redundancy report." },
++			want:             "# Rubric\n\nRedundancy: No current redundancy report.\n",
++		},
++		{
++			name:     "no redundancy report renders none",
++			rubric:   "bouncer-rubric-test",
++			body:     "# Rubric\n\nRedundancy: {{.redundancy_report}}\n",
++			specsDir: "/abs/specs",
++			want:     "# Rubric\n\nRedundancy: none\n",
++		},
++		{
++			name:             "a blank redundancy report renders none",
++			rubric:           "bouncer-rubric-test",
++			body:             "# Rubric\n\nRedundancy: {{.redundancy_report}}\n",
++			specsDir:         "/abs/specs",
++			redundancyReport: func() string { return " " },
++			want:             "# Rubric\n\nRedundancy: none\n",
++		},
++		{
++			name:     "a rubric without the redundancy marker never reads the report",
++			rubric:   "bouncer-rubric-test",
++			body:     "# Rubric\n\nNo report here.\n",
++			specsDir: "/abs/specs",
++			redundancyReport: func() string {
++				panic("the redundancy report was read for a rubric without its marker")
++			},
++			want: "# Rubric\n\nNo report here.\n",
++		},
+ 		{
+ 			name:      "renders the gate tiers verbatim",
+ 			rubric:    "bouncer-rubric-test",
+@@ -167,7 +202,7 @@ func TestReadRubric(t *testing.T) {
+ 				writeStampedRubric(t, dir, tt.rubric, tt.body)
+ 			}
+ 
+-			got, err := ReadRubric(dir, tt.rubric, tt.specsDir, RubricNotes{WebsterRecord: tt.websterRecord, Amendment: tt.amendment, GateTiers: tt.gateTiers, ReviewBase: tt.reviewBase})
++			got, err := ReadRubric(dir, tt.rubric, tt.specsDir, RubricNotes{WebsterRecord: tt.websterRecord, Amendment: tt.amendment, GateTiers: tt.gateTiers, ReviewBase: tt.reviewBase, RedundancyReport: tt.redundancyReport})
+ 			if tt.wantErr != "" {
+ 				if err == nil {
+ 					t.Fatalf("ReadRubric() = nil error; want one containing %q", tt.wantErr)
+diff --git a/internal/shedrecipe/doc.go b/internal/shedrecipe/doc.go
+index afd37f5d..ed56b991 100644
+--- a/internal/shedrecipe/doc.go
++++ b/internal/shedrecipe/doc.go
+@@ -140,6 +140,8 @@
+ // A named seam the Env does not carry, and a value outside the two, are refused when the row is built;
+ // an absent key tells no subject.
+ // BurlerReview renders the amendment note of its run directory into the rubric's amendment marker.
++// BurlerReview and the Bouncer hand Env.RedundancyReport to the rubric's redundancy_report marker.
++// The rubric reads it only when it carries the marker.
+ //
+ // # The Drift rows
+ //
+diff --git a/internal/shedrecipe/entries_bouncer.go b/internal/shedrecipe/entries_bouncer.go
+index ccb7c67d..de78858f 100644
+--- a/internal/shedrecipe/entries_bouncer.go
++++ b/internal/shedrecipe/entries_bouncer.go
+@@ -293,6 +293,7 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 		SpecsDir:          env.SpecsDir,
+ 		WebsterRecord:     env.WebsterRecord,
+ 		ReviewBase:        env.ReviewBase,
++		RedundancyReport:  env.RedundancyReport,
+ 		GateTiers:         env.GateTiers,
+ 		RubricStencil:     rubricStencil,
+ 		Models:            segment.Bouncer,
+diff --git a/internal/shedrecipe/entries_bouncer_test.go b/internal/shedrecipe/entries_bouncer_test.go
+index b7f6a7dd..e6f38284 100644
+--- a/internal/shedrecipe/entries_bouncer_test.go
++++ b/internal/shedrecipe/entries_bouncer_test.go
+@@ -79,8 +79,10 @@ func TestBouncerEntry_HappyPath(t *testing.T) {
+ 	const note = "Webster has begun these batches."
+ 	env.WebsterRecord = func() string { return note }
+ 	env.GateTiers = "- tier1: build first\n- gate card: [1]"
++	const redundancyReport = "No current redundancy report: none written."
++	env.RedundancyReport = func() string { return redundancyReport }
+ 	writeStencil(t, env.StencilsDir, "bouncer-template-seed", "{{.rubric}}\n")
+-	writeStencil(t, env.StencilsDir, "bouncer-rubric", "Record: {{.webster_record}}\nTiers:\n{{.gate_tiers}}\n")
++	writeStencil(t, env.StencilsDir, "bouncer-rubric", "Record: {{.webster_record}}\nTiers:\n{{.gate_tiers}}\nRedundancy: {{.redundancy_report}}\n")
+ 	producer, err = bouncerEntry(reviewRow("review-bounce"), cfg, env)
+ 	if err != nil {
+ 		t.Fatalf("bouncerEntry() error = %v; want nil", err)
+@@ -95,6 +97,9 @@ func TestBouncerEntry_HappyPath(t *testing.T) {
+ 	if len(fake.Specs) != 1 || !strings.Contains(fake.Specs[0].Prompt, env.GateTiers) {
+ 		t.Errorf("seed specs = %+v; want one whose prompt carries the env's gate tier lines", fake.Specs)
+ 	}
++	if len(fake.Specs) != 1 || !strings.Contains(fake.Specs[0].Prompt, "Redundancy: "+redundancyReport) {
++		t.Errorf("seed specs = %+v; want one whose prompt carries the env's redundancy report note", fake.Specs)
++	}
+ }
+ 
+ func TestBouncerEntry_RunDirectory(t *testing.T) {
+diff --git a/internal/shedrecipe/entries_burler.go b/internal/shedrecipe/entries_burler.go
+index 963ad047..a5ace168 100644
+--- a/internal/shedrecipe/entries_burler.go
++++ b/internal/shedrecipe/entries_burler.go
+@@ -92,7 +92,7 @@ func burlerReviewEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedPro
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	notes := shedadapters.RubricNotes{GateTiers: env.GateTiers, Amendment: shedadapters.AmendmentNote(runDir)}
++	notes := shedadapters.RubricNotes{GateTiers: env.GateTiers, Amendment: shedadapters.AmendmentNote(runDir), RedundancyReport: env.RedundancyReport}
+ 	if env.WebsterRecord != nil {
+ 		notes.WebsterRecord = env.WebsterRecord()
+ 	}
+diff --git a/internal/shedrecipe/entries_burlerhalves_test.go b/internal/shedrecipe/entries_burlerhalves_test.go
+index 041163bb..101c8231 100644
+--- a/internal/shedrecipe/entries_burlerhalves_test.go
++++ b/internal/shedrecipe/entries_burlerhalves_test.go
+@@ -183,6 +183,17 @@ func TestBurlerReviewEntry_RubricStencil(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("FillsTheRedundancyReportNote", func(t *testing.T) {
++		env := newTestEnv(t)
++		env.RedundancyReport = func() string { return "No current redundancy report: none written." }
++		writeStencil(t, env.StencilsDir, "round-rubric", "Redundancy: {{.redundancy_report}}\n")
++
++		profile, _ := captureReview(t, "review-row", stencilCfg, env)
++		if profile.Rubric != "Redundancy: No current redundancy report: none written.\n" {
++			t.Errorf("profile.Rubric = %q; want the env's redundancy report note filled into the marker", profile.Rubric)
++		}
++	})
++
+ 	t.Run("FillsTheGateTiers", func(t *testing.T) {
+ 		env := newTestEnv(t)
+ 		env.GateTiers = "- tier1: build first\n- gate card: [1]"
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index 4ec34ad6..9c183394 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -280,6 +280,10 @@ type Env struct {
+ 	// Nil is legal and renders the marker as `none`.
+ 	// The Code-Review rubric reads `none` as an unknown range.
+ 	ReviewBase func() (string, error)
++	// RedundancyReport returns the gate's redundancy report as a code review reads it.
++	// It is filled into the redundancy_report marker.
++	// It is read only for a rubric carrying the marker; nil renders the marker as `none`.
++	RedundancyReport func() string
+ 	// ReflectFriction is the injected closure the FrictionReflect entry's producer calls once per Call.
+ 	// It returns the reflection's status string.
+ 	// It arrives as a closure because its dependencies are already resolved in internal/loomcli.
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 6947cf4c..6bf39d75 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -56,6 +56,7 @@ var nilLegal = map[string]bool{
+ 	"Now":                              true,
+ 	"VerifyMergeBase":                  true,
+ 	"ReviewBase":                       true,
++	"RedundancyReport":                 true,
+ 	"VerifyTreeScope":                  true,
+ 	"GateFixer":                        true,
+ 	"WebsterRecord":                    true,
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index 21ad85c2..68783244 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -210,6 +210,10 @@ so every run takes its slots, its timeout and its log.
+ 
+ - Tests run only through `lym gate test` over `gate.yaml`'s tiers.
+   Two things run outside it: a card `**Verify:**` line and `cmd/testtiming`'s runs in every mode.
++- Two coverage runs take a tier's `env` and a gate slot as a tier run does:
++  `lym gate testmap`, which rebuilds the per-package coverage maps from the hub's prime worktree,
++  and the `redundancy` report step a gate key's `reports` lists, which runs after the key's tiers released their slots.
++  Each runs every test alone under a coverage binary, since coverage counters are process-wide.
+ - A card `**Verify:**` line runs through the shared `internal/cardverify` runner,
+   and `cmd/testtiming` measures outside the gate because its modes measure what a tier run hides.
+ - A site or stencil names a gate key, never a tier list, scope form, test command or target list.
+@@ -270,3 +274,29 @@ this section keeps only what is project-specific or stricter here.
+   and a tier0 test is always judged.
+ - The scan does not see a hook, alias or helper a test installs so that git runs module code,
+   so the hand check before deleting a candidate also asks whether the candidate makes git run module code.
++
++### The coverage map and the gate's redundancy report
++
++- `lym gate testmap` keeps one coverage map per package under `internal/testcover`.
++  A map records, for each tier0 and tier1 test, its function hash and the blocks it covers of its own package's files,
++  and the hashes of the package's Go files at the commit it was built from.
++  It is rebuilt when those files change, when it outgrows `test_map_max_age_days` and after a failed build once HEAD moves.
++  The prime's dobby starts the verb every `test_map_every` landings.
++- A gate key whose `reports` lists `redundancy` runs the report step after its tiers and lints.
++  It takes the diff's new and changed top-level tests against the merge base with the parent branch,
++  leaving out tier2 and tier3 tests, tests marked `//testtiming:keep` and tests that may run module code in another process.
++  It judges each against its package's map, package-scoped like `cmd/testtiming`'s verdict,
++  and writes `redundancy.json` in the worktree's gate directory with each test contained, unique or not judged.
++- The step is advisory and bounded: it never changes the gate's result,
++  and `redundancy_max_tests` and `redundancy_budget_min` cap what it judges.
++  Bound: it lets a redundant test through when an edited block is uncovered or a test lies past the cap or the budget.
++  Bound: it can flag a test falsely, since a map test whose own text is unchanged counts as a cover
++  even when a helper or callee change stops it reaching a block.
++  Bound: a map rebuilt since the report can make a contained verdict stale.
++- Code-Review's rubric reads the report when it matches the reviewed HEAD's tree:
++  every judged package's Go files hash the same and the step's selection over HEAD gives the recorded tests with the recorded hashes.
++  A report written on a red tier never matches, and the rubric then reads a line naming that gate key.
++- A gate finding is evidence for Code-Review exactly as a report candidate is:
++  the reviewer checks a contained test's assertions against its covering tests,
++  then files a finding to fold or delete it, naming the covering tests,
++  or accepts it with a `//testtiming:keep <reason>` finding when it pins what coverage cannot see.
