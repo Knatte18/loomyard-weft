@@ -1,6 +1,6 @@
 # Measure fabricengine tier 1 wall and git spawns before and after e19a2e86
 
-`fabric-spawn-measure` · Task · research, fabric, git, gate
+`fabric-spawn-measure` · Task · research, fabric, git, gate · running · Worktree-Create
 
 ## Seen (orch, 2026-11-09)
 
