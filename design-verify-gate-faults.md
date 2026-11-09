@@ -2,6 +2,8 @@
 
 `verify-gate-faults` · Task · bug, gate, darn, loom · draft
 
+Depends on: [`gate-redundancy-report`](design-gate-redundancy-report.md)
+
 ## This task
 
 Three faults of the verify gate a darn run's Darn-Write step runs, fixed together since they share its code path.

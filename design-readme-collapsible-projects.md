@@ -1,6 +1,6 @@
 # Bolt README: every project section can be collapsed
 
-`readme-collapsible-projects` · Task · enhancement, board · running · Drift-Verify
+`readme-collapsible-projects` · Task · enhancement, board · running · Code-Bouncer
 
 ## This task
 

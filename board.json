@@ -388,13 +388,17 @@
         89,
         91
       ],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "arras-recipe-perch"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #88](https://github.com/Knatte18/loomyard/issues/88).\n\n## What happened\n\nA `lym shed step ... --until-stop` run halted as `failed` with anomaly `interrupted-stop` at step Darn-Write, the third step to run after Preflight and Record-Write had completed.\nThe halt note reads `loop-exited: loop \u003cid\u003e ended without an envelope` and `loop exit: not recorded`.\nThe only output is the loop log `.lym/shed/\u003crun\u003e/steps/loop.log`, which holds the envelopes of the earlier steps and nothing about Darn-Write.\nThe history held five entries (Preflight, Record-Write, Drift-Baseline, Drift-Await, Drift-Expect) while the loop log carried envelopes for only the first two, so the log and the history disagree.\n\n## Why it is abnormal\n\nThe loop ended with no envelope and no recorded exit code or signal, so neither the operator nor the reflection agent can tell whether the process crashed, was killed, or exited cleanly without emitting an envelope.\nThe halt note names `loop.trace_copy` and `loop.stderr_path` as the way forward, but the note's own `trace_file` points at `loop.log` rather than a per-step trace, so the diagnostic trail is thin.\n\n## What to do\n\nRecord the loop's exit status (code or signal) when the loop ends without an envelope.\nMake the halt note's `trace_file` point at the trace of the interrupted step, and include the `loop.stderr_path` content or location in the note.\nCheck why the loop log lacks envelopes for the Drift-* steps that the history lists.\n\nProvenance: task slug `darn-writer-anatomy`; notes: loom-halt.md\n\n## From issue #89\n\nImported from [issue #89](https://github.com/Knatte18/loomyard/issues/89).\n\n**What happened**\nA darn run reached its last step, Friction-Reflect, after Preflight through Finalize all completed.\nThe loom halted as `failed` with anomaly `interrupted-stop`: `loop-exited: loop ... ended without an envelope`.\nThe halt note reports `loop exit: not recorded`, and the status error is `shedverbs: step Friction-Reflect interrupted (loop-exited)`.\nThe only loop output captured was the earlier steps' JSON envelope lines from `.lym/shed/\u003crun\u003e/steps/loop.log`; nothing explains why the loop ended.\n\n**Why it is abnormal**\nThe loop produced no envelope and no exit status, so the halt cannot be told apart from a crash, a kill, or a normal end of the reflection session.\nA run whose every substantive step is done fails at its final bookkeeping step with no recorded cause.\n\n**What to do**\nRecord the loop's exit status (or signal) when a loop ends without an envelope, and include it in the halt note.\nCheck whether a Friction-Reflect session that ends normally, or is closed after filing, can be reported as an interrupted loop exit.\nIf it can, treat a reflection step ending after its report is written as done rather than `failed`.\n\nProvenance: task slug darn-writer-anatomy; notes: loom-halt-2.md\n\n## From issue #91\n\nImported from [issue #91](https://github.com/Knatte18/loomyard/issues/91).\n\nA `lym shed step` run halted as failed with anomaly `interrupted-stop`: the loop ended without an envelope and the halt reported `loop exit: not recorded`.\nIt happened twice at the same producer step (`Darn-Write`), the second time after a `goto` re-step.\nThe halt message points the operator at `loop.trace_copy`, `loop.stderr_path` and `loop.interrupt_policy`, but the note records no cause, so the loop's exit status and reason are lost.\nIn the first halt the loop log held only the earlier steps' envelopes, none for the interrupted step; the second halt did name the in-flight trace.\n\nThis is abnormal: a loop that dies should record its exit status and a reason, so the halt is diagnosable without reconstructing it from logs.\nRecord the loop process exit code or signal when the loop ends without an envelope, and include it in the halt note.\nAlso have the halt note name the in-flight trace in every case, as the second halt does.\n\nProvenance: task slug `slack-presence-auto`; notes `loom-halt.md`, `loom-halt-3.md`.",
       "status": "draft",
       "created": "2026-11-08T15:09:03Z",
-      "revised": "2026-11-09T15:20:26Z"
+      "revised": "2026-11-09T19:06:08Z",
+      "profile": "light"
     },
     {
       "id": 1232,
@@ -689,7 +693,7 @@
       "isolated": false,
       "brief": "Move their package-level test state into parameters so the serial phase of tier 1 shrinks",
       "body": "## Seen (orch, 2026-11-09)\n\n`docs/research/speed/fabricengine-shards-2026-11-09/report.md`, measured on OSL-1046 under its normal load: 46 of the package's 400 top-level tests are not marked parallel, and the serial chain they form is 143 s, 59.5 percent of the 242 s one-process wall.\nThe eight longest of them take about 84 s of that chain.\nSeveral are serial because they set a package-level variable the production code reads: a push notifier (`installedPushNotifier`, `failedpush.go`), an origin call hook (`originCallHook`, `originreconcile.go`) and a gc threshold (`gcAutoThreshold`, `housekeeping.go`).\n`docs/research/speed/fabricengine-per-test-times-2026-11-07.md` names the reason for several of the others.\n\n## This task\n\nMake these eight top-level tests parallel, and only these:\n\n- `TestPushFailureClasses`\n- `TestAnchorChange`\n- `TestReconcileOrigin_Judge`\n- `TestStoreHousekeeping`\n- `TestWorktreeSeam_Events`\n- `TestReconcileOrigin_Ended`\n- `TestReconcileOrigin_Moves`\n- `TestReconcile_MigratesMarkerlessWefts`\n\nFirst read each one and name why it is serial: a package-level variable it sets, a process environment variable or working directory, or a shared path.\nWhere the cause is package-level state, the state moves into a parameter the test passes, such as a field of `SyncOptions` or of the options type the code path already takes, and the production path reads it from there.\nThe package-level variable goes away when no test needs it; one that stays must not be read by any path a parallel test reaches, or two parallel tests would see each other's value.\nEvery other test that sets the same variable moves with it in this task, so no test is left setting state a parallel test can read.\nA test whose cause cannot be removed without a larger change stays serial, and the task names it and the cause in its landing note instead of changing more.\n\n## Limits\n\n- Nothing outside `internal/fabricengine` and its tests changes, except a caller of a function whose signature the task changes.\n- No change to what any production path does; only where its inputs come from.\n- No test is dropped or loosened, and no test outside the eight changes, except the ones that set the same package-level state.\n- The tier 1 gate on `./internal/fabricengine` is green, run with `-race` if the gate offers it, since a missed shared state shows there.\n\n## Measuring\n\nThe task does not bench.\nA later run of `docs/research/speed/fabricengine-shards-2026-11-09/serial-share.sh` on the one-process run's events gives the new phase 1 against the 143 s above.\nThe figure is from OSL-1046, where Cortex XDR slows every new binary and file; another machine will show a smaller serial phase.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-09T12:09:36Z",
       "revised": "2026-11-09T12:39:18Z",
       "profile": "solid",
@@ -776,13 +780,18 @@
         "testkit"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "arras-recipe-perch",
+        "gate-redundancy-report"
+      ],
       "isolated": false,
       "brief": "TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass.",
       "body": "## Seen (orch, 2026-11-09)\n\n`TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver` in `internal/loomcli` failed a tier 2 gate run of `testmap-verb`: `startLLMDriverArm took 6.18s; want well under the stub's own 5s settle delay`.\nThe test compares the measured time of a launch with the stub's 5 s delay, so a loaded machine can push the launch past it.\nThat run held one of three gate slots beside two other gates, the operator's own C# builds and Cortex XDR scanning, and the failure cost a whole second gate pass.\n\n## Idea\n\nTests that assert on elapsed time against a threshold fail when the machine is busy, not when the code is wrong.\nList them and make each load-proof: a test that proves \"does not wait on X\" should block X on a release the test controls, as the same test's own deadline branch already does, instead of comparing against a fixed duration.\nA loose search over `_test.go` files for elapsed-time comparisons names about twenty files, among them in `shuttleengine`, `creelengine`, `shedverbs`, `verifyrun`, `tenderengine`, `seatengine` and `reedengine`; most may only set a deadline, so the work starts by reading which ones compare a measured time to a limit.\n",
       "status": "draft",
       "created": "2026-11-09T14:25:07Z",
-      "revised": "2026-11-09T15:17:12Z"
+      "revised": "2026-11-09T19:06:08Z",
+      "profile": "solid"
     },
     {
       "id": 1258,
@@ -866,13 +875,15 @@
       ],
       "issues": [],
       "recipe": "motif",
-      "depends_on": [],
+      "depends_on": [
+        "testmap-dobby-refresh"
+      ],
       "isolated": false,
       "brief": "A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046.",
       "body": "## Seen (orch, 2026-11-09)\n\nThe Darn-Write verify gate scopes a run to nearly the whole suite, tier 0 to 2, whenever the diff touches a widely imported package such as `internal/loomengine` or `internal/configreg`.\n`testmap-verb` and `arras-recipe-perch` each spent 30 to 40 minutes in it on OSL-1046.\nScope today is by importing packages, so one small change to a leaf of the import graph reruns every package above it.\n\n## Idea\n\nScope a verify gate by the coverage map project `redundancy-check` builds: run the tests whose recorded blocks cover the changed code, plus the tests of the changed packages, and everything else only in the landing gate.\nRead first how the computed scope forms today and what the map holds per test, and decide what a map miss, such as a changed file with no recorded test, does: it must widen the scope, never narrow it.\n\n## Built so far\n\nThe map record has landed (`a8d2ae63`): `internal/testcover` writes one `map.json` per package under `\u003chub\u003e/.lym/testcover/\u003cpackage\u003e/`, holding the per-file content hashes, the block key table, and per judged test its tier, duration and covered block indexes.\nBlock keys survive line shifts, and an edit gives a new key no test covers, which reads as a map miss.\nThis work still waits on the map's verb, `testmap-verb`, which rebuilds stale maps.\n",
       "status": "draft",
       "created": "2026-11-09T15:17:11Z",
-      "revised": "2026-11-09T19:06:07Z"
+      "revised": "2026-11-09T19:06:08Z"
     },
     {
       "id": 1263,
@@ -887,13 +898,17 @@
         "testkit"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "arras-recipe-perch"
+      ],
       "isolated": false,
       "brief": "TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all.",
       "body": "## Seen (orch, 2026-11-09)\n\nAdding loom config keys in `arras-recipe-perch` failed 56 tests in the first tier 0 run, 47 of them cases of `TestLoadConfig_Loads` in `internal/loomengine`.\nEach case compares the whole loaded config struct, so one new key breaks every case; the rest were `TestLookup` and `TestModules_EveryTemplateKeyClassified` in `internal/configreg`, `TestWire_ReviewKeysReachTheEnv` in `internal/loomcli` and `TestRecipes_KeySet` in `internal/shedcli`, which pin the key set.\nThe fix of those tests, and the gate attempt it needs, cost the run most of an hour.\n\n## Idea\n\nMake each case of `TestLoadConfig_Loads` assert only the fields it is about, so a new key leaves the table alone.\nKeep one test that pins the whole key set, since the classification test is meant to fail for a key nobody classified, and make its failure message say which key to add where.\nCheck the other tests that compare a whole struct or a whole key list, and list those that fail for any added key.\n",
       "status": "draft",
       "created": "2026-11-09T15:17:11Z",
-      "revised": "2026-11-09T15:17:11Z"
+      "revised": "2026-11-09T19:06:08Z",
+      "profile": "light"
     },
     {
       "id": 1266,
@@ -931,13 +946,15 @@
       "issues": [
         94
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #94](https://github.com/Knatte18/loomyard/issues/94).\n\n## Seen\n\nIn the DrillOpPlan hub's prime, changing two values of the `docs` profile's darn loom block with `lym config profiles --layer default --set` took three tries.\n\n1. `--set docs.darn.loom.code_max_bounces=0 --set docs.darn.loom.code_hard_max_bounces=1` was refused:\n   `value for docs.darn.loom.code_max_bounces must be a JSON object such as {\"module\": {\"key\": 1}}, got \"0\"`.\n   The message names a value shape that fits a recipe block, not a leaf key.\n2. `--set 'docs.darn={\"darn\":{\"writer\":\"sonnet[medium]\"},\"drift\":{\"scope\":\"off\"},\"loom\":{...}}'`, which is the `{\"module\": {\"key\": 1}}` shape the first message asked for, was refused:\n   `profile \"docs.darn\": recipe \"darn\": module \"writer\" must be a mapping of keys`.\n   The value was read one level deeper than its key.\n3. `--set 'docs={\"darn\":{\"darn\":{\"writer\":\"sonnet[medium]\"},\"drift\":{\"scope\":\"off\"},\"loom\":{\"code_max_bounces\":0,\"code_hard_max_bounces\":1,\"code_reviewer_fan\":\"\"}}}'` worked.\n\n## Workaround\n\nSet the whole profile, keyed by the profile name alone, with every block it holds restated.\n\n## Expected\n\n`--set` reaches a leaf key of a profile, as it does in other modules (`lym config gate --set tiers.tier0.env.X=...`), so `docs.darn.loom.code_max_bounces=0` sets that one value.\nFailing that, the refusal names the key depth `--set` takes and a value shape that is accepted at that key.\n",
       "status": "draft",
       "created": "2026-11-09T15:20:33Z",
-      "revised": "2026-11-09T15:20:33Z"
+      "revised": "2026-11-09T19:06:07Z",
+      "profile": "light"
     },
     {
       "id": 1268,
@@ -1020,7 +1037,7 @@
       "isolated": false,
       "brief": "",
       "body": "## This task\n\nIn Bolt's README.md, which `renderReadme` in `internal/boardengine/render.go` builds, wrap each project's section in `\u003cdetails open\u003e` with a `\u003csummary\u003e`, so the operator can collapse it.\nThat covers each top-level project and the root's own section; the per-project files stay as they are.\n\n- The summary carries what the section heading carries now: the handle and title linking to the project's file, and the open-member count. Since markdown does not render inside `\u003csummary\u003e`, the link is an HTML `\u003ca\u003e`.\n- A blank line follows `\u003csummary\u003e` and precedes `\u003c/details\u003e`, so the markdown inside renders.\n- Sections open by default.\n- It must render in VS Code's built-in Markdown Preview, which the operator reads the board in, and on GitHub.\n\n## Limits\n\nOnly the README's project sections change; the tables, the project files and the design files render as now.",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-09T18:52:58Z",
       "revised": "2026-11-09T18:52:58Z",
       "profile": "light"
@@ -1041,13 +1058,15 @@
         92
       ],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "gate-redundancy-report"
+      ],
       "isolated": false,
       "brief": "",
       "body": "## This task\n\nThree faults of the verify gate a darn run's Darn-Write step runs, fixed together since they share its code path.\n\n### Stop at the first failing tier\n\nSeen (operator and orch, 2026-11-09): the Darn-Write verify gate of `arras-recipe-perch` failed tier 0 at 15:43:27 with 56 failures,\nand the same gate started tier 1 at once and ran it for 11 minutes before it failed on two tests, then ran tier 2.\nThe first gate attempt took about 17 minutes; the tier 0 failure alone was known after 2.4 minutes.\n\nWhen a tier fails, stop the gate there and report that tier's failures, so the fixer works on them before a slower tier runs.\nCheck first whether running every tier after a failure is deliberate, for instance to hand the fixer every failure at once,\nand whether it differs between `lym gate test --upto` and the Darn-Write gate.\nIf a full report is wanted, make it a separate choice, and let the verify gate default to stopping at the first failing tier.\n\n### A time budget\n\nSeen (operator, 2026-11-09): the Darn-Write verify gate of `arras-recipe-perch` stood at 35 minutes, and that of `testmap-verb` at about 33 to 40.\n`darn.verify_attempts` bounds the number of attempts, but each attempt is a full gate pass,\nand nothing bounds the time a verify gate may take or tells anyone it is long.\n\nGive the verify gate a time budget, and when it is spent, say so to the orch with the gate's failures to date,\nso the operator sees it before it passes half an hour.\nDecide whether a spent budget stops the attempts, hands the run to the orch, or only raises a notice.\nRead first what a long verify gate shows today and where a time bound would sit:\nin the recipe, in `darn.verify_attempts` beside it, or in the gate itself.\n\n### A halt that names zero attempts\n\nImported from [issue #92](https://github.com/Knatte18/loomyard/issues/92).\nA step halted as blocked with anomaly `escalation-to-human` and the message `gate did not pass after 0 attempts`,\npointing to a gate-findings file and `lym loom resume`.\nIt happened twice at the same producer step (`Darn-Write`), after the step was recorded `stuck` in the history.\nZero gate attempts means the gate never ran, yet the halt reads as a gate failure,\nso the operator is sent to a findings file for a gate that did not run.\n\nMake the halt message state why the step is stuck when no gate attempt ran,\nand make the attempt count reflect the attempts made.\nProvenance: task slug `slack-presence-auto`; notes `loom-halt-2.md`, `loom-halt-4.md`.\n",
       "status": "draft",
       "created": "2026-11-09T15:17:10Z",
-      "revised": "2026-11-09T19:05:59Z",
+      "revised": "2026-11-09T19:06:08Z",
       "profile": "solid"
     }
   ],

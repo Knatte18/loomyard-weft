@@ -2,6 +2,8 @@
 
 `loop-exit-not-recorded` · Task · bug, shed, friction · draft
 
+Depends on: [`arras-recipe-perch`](design-arras-recipe-perch.md)
+
 Imported from [issue #88](https://github.com/Knatte18/loomyard/issues/88).
 
 ## What happened
