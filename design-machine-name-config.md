@@ -1,6 +1,6 @@
 # Machine name from a machine-wide config, not only the hostname
 
-`machine-name-config` · Task · enhancement, config, slack · running · Open-IDE
+`machine-name-config` · Task · enhancement, config, slack · running · Discussion-Write
 
 ## Seen (operator, 2026-11-09)
 
