@@ -802,6 +802,26 @@
       "body": "## Seen (operator, 2026-11-09)\n\nCortex XDR on OSL-1046 holds each new binary for about 10 s and scans each file a test creates, and fabricengine tests create many.\nThe shard report (`docs/research/speed/fabricengine-shards-2026-11-09/report.md`) put the 242 s one-process wall down to load, but the 2026-11-08 figure of 37 to 41 s was measured on another machine, so the gap is machine and Cortex, not load.\nThe package used 1.23 cores of 16 and `pmd` and `piud` were busy in nearly every sample.\n\n## Idea\n\nSeparate the Cortex cost from the rest: the time a freshly built test binary waits before it runs, the time file creation takes with and without a scanned folder, and the fabricengine tier 1 wall with the repository and temp folders excluded from the scan, if the operator can have that changed.\nThe result says whether to cut tests, cut file and binary creation, or ask for an exclusion.\n",
       "created": "2026-11-09T12:09:36Z",
       "revised": "2026-11-09T12:09:36Z"
+    },
+    {
+      "id": 1253,
+      "handle": "E4",
+      "slug": "fabric-serial-git-spawns",
+      "title": "Fewer git processes in the serial phase of internal/fabricengine tier 1",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "git"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "About 65 thousand git processes, each slower as more run at once",
+      "body": "## Seen (orch, 2026-11-09)\n\n`docs/research/speed/fabricengine-shards-2026-11-09/report.md`: the package starts about 65 thousand git processes, and the mean one took 6.8 ms as one process, 8.0 ms with two shards and 10.6 ms with four, so more concurrency slowed each spawn.\nHub copies are about 3 percent of the spawns.\n\n## Idea\n\nCount git spawns per test in the serial phase and replace the ones a Go-side read can serve, as `dotgit-worktree-reader` and `git-config-from-go` did.\nOn OSL-1046 each spawn also pays for Cortex XDR's scan, so the saving there is larger than the spawn time alone.\n",
+      "created": "2026-11-09T12:09:41Z",
+      "revised": "2026-11-09T12:09:41Z",
+      "project": "fabric-test-speed-work"
     }
   ],
   "prime_owner": "osl-1046",
