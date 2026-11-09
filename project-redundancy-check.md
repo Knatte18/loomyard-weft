@@ -1,6 +1,6 @@
 # P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review
 
-Rendered 2026-11-09 12:09 UTC; every age below is as of then.
+Rendered 2026-11-09 12:10 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`redundancy-check`](design-redundancy-check.md) · Age 17h · Owner `osl-1046`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **internal/testcover: the coverage runner, content block keys and the map record, with testtiming's package-scoped verdict** | [`testcover-engine`](design-testcover-engine.md)<br>[Sketch](decision-testcover-engine.md) | darn · solid | Code-Burler-Review | osl-1046 | 17h<br>17h | testkit, gate |
+| T1 | **internal/testcover: the coverage runner, content block keys and the map record, with testtiming's package-scoped verdict** | [`testcover-engine`](design-testcover-engine.md)<br>[Sketch](decision-testcover-engine.md) | darn · solid | Code-Burler-Fix | osl-1046 | 17h<br>17h | testkit, gate |
 
 ### Ready (0)
 
