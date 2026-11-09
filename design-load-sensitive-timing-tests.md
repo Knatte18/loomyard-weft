@@ -1,6 +1,6 @@
 # Tests that compare a measured time to a limit fail on a loaded machine
 
-`load-sensitive-timing-tests` · Task · bug, gate, testkit · draft
+`load-sensitive-timing-tests` · Task · bug, gate, testkit
 
 Depends on: [`gate-redundancy-report`](design-gate-redundancy-report.md)
 
