@@ -1,12 +1,11 @@
-<!-- This is the Code-Review rubric. It is read by the Bouncer row and the review row of the Code-Review perch, in the tapestry, darn and sampler recipes alike:
-     the Code-Bouncer row interpolates it as bouncer-template-seed.md's and
-     bouncer-template-judge.md's rubric marker value, and the Code-Burler-Review row interpolates it
-     the same way into internal/burlerengine's own review prompt.
+<!-- This is the Code-Review rubric.
+     The Bouncer row and the review row of the Code-Review perch read it, in the tapestry, darn and sampler recipes alike.
+     The Code-Bouncer row interpolates it as the rubric marker value of bouncer-template-seed.md and bouncer-template-judge.md,
+     and the Code-Burler-Review row interpolates it the same way into internal/burlerengine's review prompt.
      Each recipe sets the perch's answer key through the rows' artifact_paths and fasit, never through this rubric.
-     It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
-     internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
-     sees it.
-lym-stencil: sha256=a76a7533dc943f26f63f43a8868f7e9a41fc24278cc63ea28aadaf5fcc852239 build=6e7a7d33364b792088e8c49fac97cb8c57ed3aa1 time=2026-11-05T05:49:41Z -->
+     It is a marker VALUE, never a template: it carries no top-level stencil markers,
+     and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
+lym-stencil: sha256=d204868af6c7cf090f7d1536bf8ac692d17a17e61fdce4ccffd4d95037765228 build=6f1aeba9d72537f8a4f266c7213eb45c11232323 time=2026-11-09T20:39:32Z -->
 
 # Code-Review rubric
 
@@ -115,6 +114,20 @@ Do not flag any of the following as a finding:
   - a behavior the diff adds with no coverage, naming the uncovered behavior; the static prose of a stencil, spec, doc or other text is exempt.
 
   A redundancy finding is raised only by naming the existing test that covers the behavior, so it cannot block on a vague suspicion.
+
+  Each test the redundancy report below lists as contained is a test-economy candidate.
+  Coverage blocks do not see assertions, so check the candidate's assertions against those of its covering tests before filing anything.
+  When the covering tests assert what it asserts, file a finding to fold it into one of them or delete it, naming the covering tests.
+  When it pins what coverage cannot see, such as an error message, an output shape, an ordering or a side effect the covering tests never check, accept it:
+  file a finding to mark it `//testtiming:keep <reason>` directly above its `func Test…` line, the reason naming what it pins.
+  A test the report lists as unique or not judged is no finding on that ground; judge it by the bullets above.
+
+## Redundancy report
+
+{{.redundancy_report}}
+
+The note above is the advisory report `lym gate test` writes on the diff's new and changed Go tests, read only when it still matches HEAD's tree.
+When it is `none`, or says no current report exists, judge test economy by the bullets above alone, and raise no finding about the report's absence.
 
 ## Amendment
 
