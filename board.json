@@ -273,28 +273,6 @@
       "project": "codex-engine-trial"
     },
     {
-      "id": 1203,
-      "handle": "P3",
-      "slug": "fabric-test-speed-work",
-      "title": "Take internal/fabricengine tier 1 time down: dotgit worktree list, hub templates, fewer git processes",
-      "kind": "project",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "testkit",
-        "git"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Groups the entries filed from the Sketch `fabric-test-speed`: hubforge-registered-templates, hubforge-slim-copy, git-config-from-go, dotgit-worktree-reader, hubreconcile-templates, loomcli-templates, battencli-templates, fabric-test-folds, fabric-anchor-origin-templates, fabric-livestate-merge-templates, copyhub-fixtures-and-hook, fabric-test-speed-remeasure.\n",
-      "status": "done",
-      "created": "2026-11-07T14:15:14Z",
-      "revised": "2026-11-07T14:15:14Z",
-      "discussed": true
-    },
-    {
       "id": 1206,
       "handle": "E1",
       "slug": "heddle-md-readability",
