@@ -1,6 +1,6 @@
 # Darn verify gate: stop at the first failing tier, rerun only failed tests, a time budget, and a truthful zero-attempt halt
 
-`verify-gate-faults` · Task · bug, enhancement, gate, darn, loom · draft
+`verify-gate-faults` · Task · bug, enhancement, gate, darn, loom
 
 Depends on: [`gate-redundancy-report`](design-gate-redundancy-report.md)
 
