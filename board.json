@@ -148,24 +148,6 @@
       "revised": "2026-11-07T16:54:10Z"
     },
     {
-      "id": 985,
-      "handle": "P1",
-      "slug": "turn-savings",
-      "title": "Fewer agent turns, fewer tokens",
-      "kind": "project",
-      "labels": [
-        "enhancement",
-        "shuttle"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Token savings by cutting agent turns, above all late turns at large context",
-      "body": "",
-      "created": "2026-11-01T18:17:27Z",
-      "revised": "2026-11-04T13:58:25Z"
-    },
-    {
       "id": 1002,
       "handle": "F12",
       "slug": "claude-account-weights",
