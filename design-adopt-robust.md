@@ -1,6 +1,6 @@
 # Adopt as one resumable algorithm that never starts work on its own
 
-`adopt-robust` · Task · sketch, batten, tender, dobby, orch, fabric, shortcut · running · Open-Window
+`adopt-robust` · Task · sketch, batten, tender, dobby, orch, fabric, shortcut · running · Raddle-Write
 
 Decision record: [Sketch](decision-adopt-robust.md)
 
