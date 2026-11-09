@@ -35,7 +35,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **The arras recipe and its split perch** | [`arras-recipe-perch`](design-arras-recipe-perch.md)<br>[Sketch](decision-arras-recipe-perch.md) | darn · solid | T5 | 19h<br>19h | shed, loom, burler, arbiter, board |
+| T6 | **The arras recipe and its split perch**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`arras-recipe-perch`](design-arras-recipe-perch.md)<br>[Sketch](decision-arras-recipe-perch.md) | darn · solid | T5 | 19h<br>19h | shed, loom, burler, arbiter, board |
 
 ### Layer B (1)
 
