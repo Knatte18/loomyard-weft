@@ -1,0 +1,321 @@
+diff --git a/internal/fabricengine/configchanges.go b/internal/fabricengine/configchanges.go
+index 7b3688e7..6307945a 100644
+--- a/internal/fabricengine/configchanges.go
++++ b/internal/fabricengine/configchanges.go
+@@ -3,6 +3,8 @@
+ package fabricengine
+ 
+ import (
++	"encoding/hex"
++	"errors"
+ 	"fmt"
+ 	"path/filepath"
+ 	"slices"
+@@ -109,21 +111,32 @@ func ReadConfigChanges(l *lymcwd.Location, taskBranch, parentBranch string, conf
+ }
+ 
+ // showFile returns the bytes of path at rev in the repo at dir, or nil when rev holds no such file.
++// rev is a full commit SHA or a name that resolves to a commit, such as HEAD or a full ref name.
++// It reads the object store in-process, with no git process, and returns the blob's bytes unchanged.
+ func showFile(dir, rev, path string) ([]byte, error) {
+-	listed, err := gitexec.Run([]string{"ls-tree", "--name-only", rev, "--", path}, dir)
+-	if err != nil {
+-		return nil, err
++	repo := gitrepo.New(dir)
++	sha := rev
++	if _, err := hex.DecodeString(rev); err != nil || (len(rev) != sha1HexLength && len(rev) != sha256HexLength) {
++		if sha, err = repo.ResolveSHA(rev); err != nil {
++			return nil, err
++		}
+ 	}
+-	if strings.TrimSpace(listed) == "" {
++	data, err := repo.FileAtRevision(sha, path)
++	if errors.Is(err, gitrepo.ErrPathNotAtRevision) {
+ 		return nil, nil
+ 	}
+-	out, err := gitexec.Run([]string{"show", rev + ":" + path}, dir)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	return []byte(out), nil
++	return data, nil
+ }
+ 
++// The lengths of a full object name in hex, for a SHA-1 and a SHA-256 repository.
++const (
++	sha1HexLength   = 40
++	sha256HexLength = 64
++)
++
+ // diffNames lists the sorted paths `git diff --name-only from to` reports in the repo at dir, limited by pathspec.
+ func diffNames(dir, from, to string, pathspec []string) ([]string, error) {
+ 	out, err := gitexec.Run(append([]string{"diff", "--name-only", from, to}, pathspec...), dir)
+diff --git a/internal/fabricengine/configchanges_integration_test.go b/internal/fabricengine/configchanges_integration_test.go
+index c6ed5ced..34975475 100644
+--- a/internal/fabricengine/configchanges_integration_test.go
++++ b/internal/fabricengine/configchanges_integration_test.go
+@@ -1,5 +1,6 @@
+ // configchanges_integration_test.go proves ReadConfigChanges reports a task's changes to per-worktree config files.
+ // ReadConfigChanges reads the files it is told about from the task's weft branch since its fork point.
++// It also pins the read of a file's bytes at a revision that ReadConfigChanges and the anchor reads share.
+ //
+ // It reuses hubforge.CopyHub and the mustRecordsRepoRoot helper from add_rollback_adopt_test.go.
+ // It shares the single TestMain in testmain_test.go.
+@@ -21,6 +22,53 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// TestShowFile_ReadsCommittedBytes reads files at several kinds of revision.
++// The revisions are HEAD, full and short commit SHAs, an annotated tag and a full ref name.
++// Each answer must be the bytes `git show <rev>:<path>` prints, nil for a path the revision lacks.
++func TestShowFile_ReadsCommittedBytes(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	repo := fabricengine.NewPlainWarpRepoForTest(t)
++	first := gitkit.CommitFile(t, repo, "a.txt", "first\n", "first a")
++	gitkit.CommitFile(t, repo, "a.txt", "second \n\n", "second a")
++	gitkit.CommitFile(t, repo, "dir/empty", "", "empty file")
++	gitkit.Git(t, repo, "branch", "side", first)
++	gitkit.Git(t, repo, "tag", "-a", "-m", "tag", "v1", first)
++
++	tests := []struct {
++		name    string
++		rev     string
++		path    string
++		want    []byte
++		wantErr bool
++	}{
++		{"HeadKeepsTrailingWhitespace", "HEAD", "a.txt", []byte("second \n\n"), false},
++		{"CommitSHA", first, "a.txt", []byte("first\n"), false},
++		{"FullRefName", "refs/heads/side", "a.txt", []byte("first\n"), false},
++		{"ShortSHA", first[:7], "a.txt", []byte("first\n"), false},
++		{"AnnotatedTag", "v1", "a.txt", []byte("first\n"), false},
++		{"DirectoryPathIsNil", "HEAD", "dir", nil, false},
++		{"NestedEmptyFileIsPresent", "HEAD", "dir/empty", []byte{}, false},
++		{"AbsentPathIsNil", "HEAD", "missing.txt", nil, false},
++		{"PathAddedLaterIsNilAtAnOlderCommit", first, "dir/empty", nil, false},
++		{"UnknownRefIsAnError", "refs/heads/missing", "a.txt", nil, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			got, err := fabricengine.ShowFileForTest(repo, tt.rev, tt.path)
++			if (err != nil) != tt.wantErr {
++				t.Fatalf("showFile(%s, %s) error = %v; want error: %t", tt.rev, tt.path, err, tt.wantErr)
++			}
++			if (got == nil) != (tt.want == nil) || !bytes.Equal(got, tt.want) {
++				t.Errorf("showFile(%s, %s) = %q (nil: %t); want %q (nil: %t)", tt.rev, tt.path, got, got == nil, tt.want, tt.want == nil)
++			}
++		})
++	}
++}
++
+ // TestReadConfigChanges forks a pair from the prime and commits on the pair's weft branch.
+ // The test then calls ReadConfigChanges against the prime's branch.
+ func TestReadConfigChanges(t *testing.T) {
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index f20556c6..b000fd50 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -1706,6 +1706,7 @@
+ //
+ // Geometry and ref lookups run in-process through `gitrepo`.
+ // They cover the git dir, common dir, branch existence, a ref's SHA, the current branch, a branch's upstream and a ref's tree.
++// A file's bytes at a revision are read through `gitrepo` too, so reading a committed file starts no git process.
+ // A `rev-parse` spawn survives only where git derives the answer from config or revision syntax:
+ //
+ //   - `InstallPostCheckoutHook` asks `--git-path hooks`, which honours `core.hooksPath`.
+diff --git a/internal/fabricengine/export_test.go b/internal/fabricengine/export_test.go
+index f197b4f4..166b5d6c 100644
+--- a/internal/fabricengine/export_test.go
++++ b/internal/fabricengine/export_test.go
+@@ -381,6 +381,9 @@ func swapPushRecorder(t *testing.T) *pushRecorder {
+ // A table test pins that rule through it.
+ var TreeAnchorForTest = treeAnchor
+ 
++// ShowFileForTest exposes showFile, the read of a file's bytes at a revision.
++var ShowFileForTest = showFile
++
+ // WriteWeftConfigContentForTest exposes writeWeftConfigContent to tests outside the package.
+ var WriteWeftConfigContentForTest = writeWeftConfigContent
+ 
+diff --git a/internal/gitkit/doc.go b/internal/gitkit/doc.go
+index ae784cda..43463da2 100644
+--- a/internal/gitkit/doc.go
++++ b/internal/gitkit/doc.go
+@@ -12,11 +12,13 @@
+ //
+ // Git is the one spawning primitive for queries.
+ // query.go builds the rev, branch, ancestry, ls-files and exclude queries and the commit helpers on it.
++// RevParse reads HEAD from the repository's files through internal/dotgit when they answer, and asks git otherwise.
+ // Every new spawn stays in gitkit.go, the file the spawn-observability guard allowlists.
+ // This package cannot import internal/logger.
+ //
+ // Leaf Invariant: internal/gitkit production code imports only the standard library and these packages.
+-// They are internal/lymcwd, internal/weftname, internal/configengine, internal/lymdirs, and internal/lymtemp.
++// They are internal/lymcwd, internal/weftname and internal/configengine.
++// They also include internal/lymdirs, internal/lymtemp and internal/dotgit.
+ // internal/configreg is excluded by construction.
+ // So is every feature package: the engine and cli pairs for board, fabric, ide and selfreport.
+ // Feature packages' own tests import gitkit, so a reverse import would close a test-build cycle.
+diff --git a/internal/gitkit/gitkit_test.go b/internal/gitkit/gitkit_test.go
+index d03670a4..9c4f4f5c 100644
+--- a/internal/gitkit/gitkit_test.go
++++ b/internal/gitkit/gitkit_test.go
+@@ -202,6 +202,63 @@ func TestCopiedRepoScenario(t *testing.T) {
+ 	})
+ }
+ 
++// TestRevParse_HeadReadFromFilesMatchesGit checks where RevParse answers HEAD from the repository's files.
++// In each worktree the files answer, the answer must equal `git rev-parse HEAD`;
++// an unborn branch and a bare repository leave the answer to git.
++func TestRevParse_HeadReadFromFilesMatchesGit(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	repo := CopyRepo(t).Repo
++	CommitFile(t, repo, "sub/f.txt", "x", "second")
++	linked := filepath.Join(t.TempDir(), "linked")
++	Git(t, repo, "worktree", "add", "-b", "linked", linked)
++	detached := filepath.Join(t.TempDir(), "detached")
++	Git(t, repo, "worktree", "add", "--detach", detached, "HEAD~1")
++	Git(t, repo, "pack-refs", "--all")
++	// The commit after pack-refs leaves a loose ref for linked beside its stale packed one.
++	CommitFile(t, linked, "g.txt", "y", "on linked")
++
++	symlinked := filepath.Join(t.TempDir(), "link")
++	if err := os.Symlink(repo, symlinked); err != nil {
++		t.Fatalf("Symlink: %v", err)
++	}
++
++	unborn := t.TempDir()
++	MustRun(t, unborn, "git", "init", "-b", "main")
++	bare := filepath.Join(t.TempDir(), "bare")
++	MustRun(t, filepath.Dir(bare), "git", "init", "--bare", bare)
++
++	tests := []struct {
++		name      string
++		dir       string
++		fromFiles bool
++	}{
++		{"PackedBranchInTheMainWorktree", repo, true},
++		{"Subdirectory", filepath.Join(repo, "sub"), true},
++		{"LooseRefShadowsPackedRef", linked, true},
++		{"DetachedHead", detached, true},
++		{"SymlinkedWorktree", symlinked, true},
++		{"UnbornBranch", unborn, false},
++		{"BareRepository", bare, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			if _, ok := headCommit(tt.dir); ok != tt.fromFiles {
++				t.Fatalf("headCommit(%s) ok = %t; want %t", tt.dir, ok, tt.fromFiles)
++			}
++			if !tt.fromFiles {
++				return
++			}
++			if got, want := RevParse(t, tt.dir, "HEAD"), Git(t, tt.dir, "rev-parse", "HEAD"); got != want {
++				t.Errorf("RevParse(%s, HEAD) = %q; want %q", tt.dir, got, want)
++			}
++		})
++	}
++}
++
+ // TestFixtureGitMarker_ReachesHelperChildren verifies that git spawned by Git carries the fixture marker.
+ // The marker is read back through git's trace2 env-var events.
+ // It sets process environment variables through t.Setenv, so it does not call t.Parallel.
+diff --git a/internal/gitkit/leaf_enforcement_test.go b/internal/gitkit/leaf_enforcement_test.go
+index a56f64de..e8dd2c95 100644
+--- a/internal/gitkit/leaf_enforcement_test.go
++++ b/internal/gitkit/leaf_enforcement_test.go
+@@ -15,6 +15,7 @@ import (
+ // allowedImports are the only non-stdlib import paths production code in this package may use.
+ var allowedImports = []string{
+ 	"github.com/Knatte18/loomyard/internal/configengine",
++	"github.com/Knatte18/loomyard/internal/dotgit",
+ 	"github.com/Knatte18/loomyard/internal/lymcwd",
+ 	"github.com/Knatte18/loomyard/internal/lymdirs",
+ 	"github.com/Knatte18/loomyard/internal/lymtemp",
+diff --git a/internal/gitkit/query.go b/internal/gitkit/query.go
+index eca03d83..bc5f6d48 100644
+--- a/internal/gitkit/query.go
++++ b/internal/gitkit/query.go
+@@ -9,15 +9,61 @@ import (
+ 	"strconv"
+ 	"strings"
+ 	"testing"
++
++	"github.com/Knatte18/loomyard/internal/dotgit"
+ )
+ 
+ // RevParse returns `git rev-parse <rev>` in dir.
+ // dir may be a bare repository.
++// HEAD in a worktree whose HEAD names a commit is read from the repository's files with no git process;
++// every other rev is answered by git.
+ func RevParse(tb testing.TB, dir, rev string) string {
+ 	tb.Helper()
++	if rev == "HEAD" {
++		if sha, ok := headCommit(dir); ok {
++			return sha
++		}
++	}
+ 	return Git(tb, dir, "rev-parse", rev)
+ }
+ 
++// headCommit returns the commit HEAD resolves to in the worktree holding dir, as `git rev-parse HEAD` prints it.
++// ok is false where the files cannot answer:
++// dir in no worktree, a bare repository, refs that are not files, and a HEAD that names no commit yet.
++func headCommit(dir string) (sha string, ok bool) {
++	abs, err := filepath.Abs(dir)
++	if err != nil {
++		return "", false
++	}
++	root, _, err := dotgit.FindRoot(abs)
++	if err != nil {
++		return "", false
++	}
++	worktrees, err := dotgit.ListWorktrees(abs)
++	if err != nil {
++		return "", false
++	}
++	want := resolvedPath(root)
++	for _, worktree := range worktrees {
++		if resolvedPath(worktree.Path) != want {
++			continue
++		}
++		if strings.Trim(worktree.Head, "0") == "" {
++			return "", false
++		}
++		return worktree.Head, true
++	}
++	return "", false
++}
++
++// resolvedPath returns path with its symlinks resolved, or cleaned when it cannot be resolved.
++func resolvedPath(path string) string {
++	if resolved, err := filepath.EvalSymlinks(path); err == nil {
++		return resolved
++	}
++	return filepath.Clean(path)
++}
++
+ // CurrentBranch returns the branch HEAD points at in dir.
+ func CurrentBranch(tb testing.TB, dir string) string {
+ 	tb.Helper()
+diff --git a/pattern/PATTERN-leaf-packages.md b/pattern/PATTERN-leaf-packages.md
+index e849b6d7..3733ea34 100644
+--- a/pattern/PATTERN-leaf-packages.md
++++ b/pattern/PATTERN-leaf-packages.md
+@@ -4,7 +4,7 @@ Each package below imports a closed set and never a feature package; a reverse i
+ 
+ ## `internal/gitkit`
+ 
+-Imports only the standard library, `lymcwd`, `weftname`, `configengine`, `lymdirs` and `lymtemp`.
++Imports only the standard library, `lymcwd`, `weftname`, `configengine`, `lymdirs`, `lymtemp` and `dotgit`.
+ It also reaches `gofrs/flock` through `lymtemp`.
+ - `gitkit.CopyRepo` is callable from `lymcwd` alone; everyone else takes a hub from `hubforge`.
+ - Test git plumbing lives in `gitkit`; a package-local `_test.go` helper that shells out to git is a review flag.
