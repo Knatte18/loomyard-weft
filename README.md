@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-09 18:15 UTC; every age below is as of then.
+Rendered 2026-11-09 18:17 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -198,11 +198,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B6 | H | **The Darn-Write verify gate has no time budget and no notice when it runs long**<br>• verify_attempts bounds attempts, not minutes; a gate stood 35 minutes unannounced. | [`verify-gate-wall-budget`](design-verify-gate-wall-budget.md) | 2h<br>2h | gate, darn |
 | B7 |  | **Gate escalation reports "did not pass after 0 attempts" and blocks the step as escalation-to-human** | [`gate-zero-attempts-halt`](design-gate-zero-attempts-halt.md) | 2h<br>2h | gate, loom, darn |
 | B8 |  | **lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape** | [`profiles-set-leaf-key`](design-profiles-set-leaf-key.md) | 2h<br>2h | config, profiles |
-| B9 |  | **lym adopt run from the orch is killed when the orch watcher sees the foreign owner** | [`adopt-kills-own-orch`](design-adopt-kills-own-orch.md) | 6m<br>6m | orch, fabric |
-| B10 |  | **lym tender pause on an adopt-held run adds no pause of its own** | [`tender-pause-reuses-adopt-hold`](design-tender-pause-reuses-adopt-hold.md) | 2m<br>2m | tender |
-| B11 |  | **An adopted run cannot be paused before adopt adds its pair** | [`adopt-pause-before-pair-exists`](design-adopt-pause-before-pair-exists.md) | 2m<br>2m | tender, fabric |
-| B12 |  | **The local dobby starts a pass on a run while adopt is taking it over** | [`adopt-old-dobby-starts-pass`](design-adopt-old-dobby-starts-pass.md) | 2m<br>2m | dobby, batten |
-| B13 |  | **A green adopt check starts adopted runs the operator paused** | [`adopt-check-overrides-pause`](design-adopt-check-overrides-pause.md) | 2m<br>2m | tender, dobby, batten |
+| B9 |  | **lym adopt run from the orch is killed when the orch watcher sees the foreign owner** | [`adopt-kills-own-orch`](design-adopt-kills-own-orch.md) | 7m<br>7m | orch, fabric |
+| B10 |  | **lym tender pause on an adopt-held run adds no pause of its own** | [`tender-pause-reuses-adopt-hold`](design-tender-pause-reuses-adopt-hold.md) | 4m<br>4m | tender |
+| B11 |  | **An adopted run cannot be paused before adopt adds its pair** | [`adopt-pause-before-pair-exists`](design-adopt-pause-before-pair-exists.md) | 4m<br>4m | tender, fabric |
+| B12 |  | **The local dobby starts a pass on a run while adopt is taking it over** | [`adopt-old-dobby-starts-pass`](design-adopt-old-dobby-starts-pass.md) | 4m<br>4m | dobby, batten |
+| B13 |  | **A green adopt check starts adopted runs the operator paused** | [`adopt-check-overrides-pause`](design-adopt-check-overrides-pause.md) | 4m<br>4m | tender, dobby, batten |
 
 #### Enhancements (6)
 
@@ -211,9 +211,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 2d<br>2d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 1d<br>3h | shed, loom, darn |
 | E3 |  | **One land notice: fold the beam-PR landing notice into notify_on_land** | [`one-land-notice`](design-one-land-notice.md) | 2h<br>2h | dobby, batten, workspaces |
-| E5 |  | **lym adopt always starts the orch, with no way to skip it** | [`adopt-no-orch-option`](design-adopt-no-orch-option.md) | 2m<br>2m | orch, batten |
-| E6 |  | **An interrupted adopt leaves no account of what it did and what is left** | [`adopt-resume-after-break`](design-adopt-resume-after-break.md) | 2m<br>2m | batten, fabric |
-| E7 |  | **lym s in a worktree this machine does not own adopts it** | [`start-adopts-unowned-beam`](design-start-adopts-unowned-beam.md) | 0m<br>0m | shortcut, batten |
+| E5 |  | **lym adopt always starts the orch, with no way to skip it** | [`adopt-no-orch-option`](design-adopt-no-orch-option.md) | 4m<br>4m | orch, batten |
+| E6 |  | **An interrupted adopt leaves no account of what it did and what is left** | [`adopt-resume-after-break`](design-adopt-resume-after-break.md) | 4m<br>4m | batten, fabric |
+| E7 |  | **lym s in a worktree this machine does not own adopts it** | [`start-adopts-unowned-beam`](design-start-adopts-unowned-beam.md) | 1m<br>0m | shortcut, batten |
 
 #### Features (12)
 

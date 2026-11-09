@@ -11,4 +11,5 @@ On 2026-11-09 the operator moved to Neve after working on osl-1046 and had to ru
 `lym s` (beam start, then reed attach) on a machine that does not own the worktree adopts it first: the beam in a beam, root in the prime.
 It then starts the beam and attaches.
 Adopt thus starts from a plain shell, never from the orch.
-When a pair holds local commits origin lacks, `lym s` stops with the keep-local and drop-local choices adopt gives today.
+When a pair on this machine holds local commits origin lacks, left from when this machine last owned it, `lym s` stops with the keep-local and drop-local choices adopt gives today.
+The adopting machine cannot see the old owner's local commits; those are the old owner's to keep.
