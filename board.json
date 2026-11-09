@@ -625,7 +625,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: cmd/testtiming's runner, profile parsing, containment and greedy pass, spawn scan and keep scan\nDelivers: internal/testcover holding the moved runner, eligibility rules, spawn scan and keep scan, content block keys (D3), the per-package map record written and read through internal/state at a path internal/lymdirs names (D4); cmd/testtiming judging by the package view with a module-wide column, its flags and -pkg splice unchanged; cmd/lym guard tests re-pointed at the moved files\nExports: the engine's build, run-alone, profile parse, block key, verdict and greedy functions, the spawn and keep scans, and the map record type with its read and write\n\nThe part changes these packages:\n\n- internal/testcover (about 1300 changed lines)\n- cmd/testtiming (about 300 changed lines)\n- cmd/lym (about 10 changed lines)\n- internal/lymdirs (about 10 changed lines)\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-08T18:46:50Z",
       "revised": "2026-11-08T18:46:50Z",
       "profile": "solid",
