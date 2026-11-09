@@ -26,3 +26,9 @@ Open: what part size a darn handles well, and how raddle is told (its stencil, i
 Built since (2026-11-09, `raddle-perch-mode`): raddle's perch mode exists.
 A raddle run whose recipe rows hold a split perch (a Bouncer row over the raddle proposal) files in place of the operator's approval, and the perch accepts only one task or one project, never a beam or several parts as tasks.
 The perch's review is therefore one place to tell raddle about size and concurrency, beside the stencil.
+
+Built since (2026-11-09, `arras-recipe-perch`): the recipe `arras` and its split perch exist.
+The perch is the rows `Raddle-Bouncer`, `Raddle-Burler-Review` and `Raddle-Burler-Fix`, reviewing the proposal against the decision record with the rubric stencil `loom-rubric-raddle-review.md`.
+That rubric already judges that recipe and profile fit each part and that one task or a family fits the scope, but it names no part size or concurrency rule; those are what this note would add to the rubric or the raddle stencil.
+The loom keys `split_*` (such as `split_max_bounces` and `split_reviewer_model`) tune the perch.
+No full arras run has been driven end to end yet, so the first families still give the figures.
