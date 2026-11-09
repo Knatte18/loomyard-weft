@@ -717,10 +717,10 @@
     },
     {
       "id": 1253,
-      "handle": "E4",
+      "handle": "T1",
       "slug": "fabric-serial-git-spawns",
       "title": "Fewer git processes in the serial phase of internal/fabricengine tier 1",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "fabric",
@@ -731,6 +731,7 @@
       "isolated": false,
       "brief": "About 65 thousand git processes, each slower as more run at once",
       "body": "## Seen (orch, 2026-11-09)\n\n`docs/research/speed/fabricengine-shards-2026-11-09/report.md`: the package starts about 65 thousand git processes, and the mean one took 6.8 ms as one process, 8.0 ms with two shards and 10.6 ms with four, so more concurrency slowed each spawn.\nHub copies are about 3 percent of the spawns.\n\n## Idea\n\nCount git spawns per test in the serial phase and replace the ones a Go-side read can serve, as `dotgit-worktree-reader` and `git-config-from-go` did.\nOn OSL-1046 each spawn also pays for Cortex XDR's scan, so the saving there is larger than the spawn time alone.\n",
+      "status": "draft",
       "created": "2026-11-09T12:09:41Z",
       "revised": "2026-11-09T12:09:41Z",
       "project": "fabric-test-speed-work"
