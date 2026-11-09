@@ -1020,6 +1020,26 @@
       "status": "running · Discussion-Write",
       "created": "2026-11-09T18:09:22Z",
       "revised": "2026-11-09T18:18:48Z"
+    },
+    {
+      "id": 1269,
+      "handle": "B9",
+      "slug": "codex-bubblewrap-sandbox",
+      "title": "Codex keeps forcing its bubblewrap sandbox in lym runs",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "codex",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-11-09 the operator reported that Codex has so far been mostly trouble in lym: it insists on running under its bubblewrap sandbox, which gets in the way of the work lym gives it.\n\n## Idea\n\nFind what makes Codex choose bubblewrap in a lym session and settle the sandbox mode lym launches it with, so a Codex seat runs like a Claude one.\nThe details of each failure still need collecting from the runs that hit it.",
+      "created": "2026-11-09T18:35:39Z",
+      "revised": "2026-11-09T18:35:39Z",
+      "project": "codex-engine-trial"
     }
   ],
   "prime_owner": "neve",
