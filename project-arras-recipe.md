@@ -1,9 +1,9 @@
 # P4 Arras: one recipe that runs Motif and raddle in a row, with a perch on the split
 
-Rendered 2026-11-09 15:20 UTC; every age below is as of then.
+Rendered 2026-11-09 18:08 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`arras-recipe`](design-arras-recipe.md) · Age 23h · Owner `osl-1046`
+[`arras-recipe`](design-arras-recipe.md) · Age 1d · Owner `neve`
 
 Groups the entries filed from the Sketch `motif-raddle-recipe`: project-release-members, raddle-perch-mode, arras-recipe-perch, arras-family-filing, arras-shipped-text.
 
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **The arras recipe and its split perch**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`arras-recipe-perch`](design-arras-recipe-perch.md)<br>[Sketch](decision-arras-recipe-perch.md) | darn · solid | Darn-Write | osl-1046 | 23h<br>23h | shed, loom, burler, arbiter, board |
+| T6 | **The arras recipe and its split perch**<br>• `loom: code_assist_reviewer_model astra[medium]` | [`arras-recipe-perch`](design-arras-recipe-perch.md)<br>[Sketch](decision-arras-recipe-perch.md) | darn · solid | Darn-Write | neve | 1d<br>1d | shed, loom, burler, arbiter, board |
 
 ### Ready (0)
 
@@ -34,8 +34,8 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | `draft` **An arras family filing turns the run's entry into its project and re-points its dependents** | [`arras-family-filing`](design-arras-family-filing.md)<br>[Sketch](decision-arras-family-filing.md) | darn · solid | T6 | 23h<br>23h | shed, loom, burler, arbiter, board |
-| T8 | `draft` **The shipped rule and docs name arras as the recipe for a tapestry-sized note** | [`arras-shipped-text`](design-arras-shipped-text.md)<br>[Sketch](decision-arras-shipped-text.md) | darn · docs | T6<br>T7 | 23h<br>23h | shed, loom, burler, arbiter, board |
+| T7 | `draft` **An arras family filing turns the run's entry into its project and re-points its dependents** | [`arras-family-filing`](design-arras-family-filing.md)<br>[Sketch](decision-arras-family-filing.md) | darn · solid | T6 | 1d<br>1d | shed, loom, burler, arbiter, board |
+| T8 | `draft` **The shipped rule and docs name arras as the recipe for a tapestry-sized note** | [`arras-shipped-text`](design-arras-shipped-text.md)<br>[Sketch](decision-arras-shipped-text.md) | darn · docs | T6<br>T7 | 1d<br>1d | shed, loom, burler, arbiter, board |
 
 ## Notes (0)
 
