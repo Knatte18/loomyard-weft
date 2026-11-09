@@ -1,6 +1,6 @@
 # P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review
 
-Rendered 2026-11-09 20:17 UTC; every age below is as of then.
+Rendered 2026-11-09 20:18 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`redundancy-check`](design-redundancy-check.md) · Age 1d · Owner `neve`
@@ -31,11 +31,3 @@ _None._
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T10 | **An advisory redundancy report step in lym gate test, judging a diff's new tests against the map** | [`gate-redundancy-report`](design-gate-redundancy-report.md)<br>[Sketch](decision-gate-redundancy-report.md) | 1d<br>1d | testkit, gate |

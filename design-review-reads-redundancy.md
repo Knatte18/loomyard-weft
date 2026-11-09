@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-review-reads-redundancy.md)
 
-Depends on: [`gate-redundancy-report`](design-gate-redundancy-report.md)
-
 Filed from the Sketch `redundant-test-finder`.
 
 Takes: gate-redundancy-report's report reader and HEAD tree match

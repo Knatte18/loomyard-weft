@@ -444,33 +444,6 @@
       "discussed": true
     },
     {
-      "id": 1238,
-      "handle": "T7",
-      "slug": "arras-family-filing",
-      "title": "An arras family filing turns the run's entry into its project and re-points its dependents",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "shed",
-        "loom",
-        "burler",
-        "arbiter",
-        "board"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `motif-raddle-recipe`.\n\nTakes: raddle-perch-mode's `perch` mode and its project outcome whose slug equals the run's entry; the arras recipe of arras-recipe-perch; project-release-members' project release; Board.FileRaddle, checkRunLocks, endsAsSketch and sketchOf, Raddle-File's Call and finish, Board.SetRunStatus and battencli.ClearMotifRun\nDelivers: Raddle-File's filing write turning the arras entry into a discussed project holding the whole record, with the part list body and `order`, admitted by the run lock only for that derived shape while the entry's status names Raddle-File; the restore of the entry's record on a failed write; the filing mark under shedrun.RunDir that makes loom's and batten's status writes skip the entry; the store-done and AlreadyFiled repair paths, the halt over a project not filed from the current proposal, and finish skipping EndEntry for a family; ClearMotifRun clearing a done arras run; every dependent's `depends_on` on the arras slug moved onto the filed parts no other part depends on, with a halt naming a refusing entry\nExports: the arras-project admission in boardengine's run lock, the filing mark and its reader in shedrun\n\nThe part changes these packages:\n\n- internal/boardengine (about 220 changed lines)\n- internal/loomshed (about 120 changed lines)\n- internal/loomcli (about 60 changed lines)\n- internal/battencli (about 80 changed lines)\n- internal/shedrun (about 30 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-08T16:15:45Z",
-      "revised": "2026-11-08T16:15:45Z",
-      "profile": "solid",
-      "project": "arras-recipe",
-      "discussed": true
-    },
-    {
       "id": 1239,
       "handle": "T8",
       "slug": "arras-shipped-text",
@@ -486,9 +459,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "arras-family-filing"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `motif-raddle-recipe`.\n\nTakes: the landed arras recipe, perch mode, family filing and project release; main's text of `plugins/ly/skills/board-policy/SKILL.md` after commit c8e43ac4\nDelivers: the board-policy skill and the orch role naming `arras` for a tapestry-sized note, `motif` alone for a split made later, and a project's release as one release; the orch role telling the orch that an operator decision on a running arras entry goes through `lym loom decision add --by operator`, never the entry body (D7's orch text); the board skill describing the arras run; the weaving glossary listing `arras` as the recipe and keeping `cartoon` reserved; `lym board` help naming `arras` among the recipes\nExports: nothing\n\nThe part changes these packages:\n\n- plugins/ly/skills/board-policy (about 30 changed lines)\n- plugins/ly/skills/board (about 30 changed lines)\n- contracts/orchrole (about 30 changed lines)\n- docs/reference (about 20 changed lines)\n- internal/boardcli (about 5 changed lines)\n",
@@ -520,30 +491,6 @@
       "discussed": true
     },
     {
-      "id": 1248,
-      "handle": "T10",
-      "slug": "gate-redundancy-report",
-      "title": "An advisory redundancy report step in lym gate test, judging a diff's new tests against the map",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "testkit",
-        "gate"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: testcover-engine's engine and map record; testmap-verb's CodeDirAt, CodeFileAt, timeouts and run-alone\nDelivers: the `reports` list on gate keys with its unknown-name refusal and template entries on webster, parent-align, darn-write and code-burler-fix; the step at the lints' site with merge-base test selection, drops, cap, slot, budget, map covers, greedy pass and the report with its file and test hashes; keys redundancy_max_tests and redundancy_budget_min\nExports: the report reader and the tree match D8 runs on HEAD: D7 step 1 over a revision and the judged packages' file hashes\n\nThe part changes these packages:\n\n- internal/gatecli (about 800 changed lines)\n- internal/gateslot (about 150 changed lines)\n- internal/configengine (about 30 changed lines)\n- internal/testcover (about 120 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-08T18:46:50Z",
-      "revised": "2026-11-08T18:46:50Z",
-      "profile": "solid",
-      "project": "redundancy-check",
-      "discussed": true
-    },
-    {
       "id": 1249,
       "handle": "T11",
       "slug": "review-reads-redundancy",
@@ -556,9 +503,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "gate-redundancy-report"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: gate-redundancy-report's report reader and HEAD tree match\nDelivers: a Go-filled rubric marker in loom-rubric-code-review, filled through shedadapters.ReadRubric for the Code-Burler-Review and Code-Bouncer call sites with the findings or the no-current-report line; the rubric's test-economy text on contained tests; PATTERN-test-speed's index line and its background's gate and test-economy sections\nExports: nothing new\n\nThe part changes these packages:\n\n- internal/shedadapters (about 60 changed lines)\n- internal/shedrecipe (about 60 changed lines)\n- internal/loomcli (about 40 changed lines)\n- contracts/stencils/loom (about 15 changed lines)\n- pattern (about 30 changed lines)\n",
@@ -646,9 +591,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "gate-redundancy-report"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass.",
       "body": "## Seen (orch, 2026-11-09)\n\n`TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver` in `internal/loomcli` failed a tier 2 gate run of `testmap-verb`: `startLLMDriverArm took 6.18s; want well under the stub's own 5s settle delay`.\nThe test compares the measured time of a launch with the stub's 5 s delay, so a loaded machine can push the launch past it.\nThat run held one of three gate slots beside two other gates, the operator's own C# builds and Cortex XDR scanning, and the failure cost a whole second gate pass.\n\n## Idea\n\nTests that assert on elapsed time against a threshold fail when the machine is busy, not when the code is wrong.\nList them and make each load-proof: a test that proves \"does not wait on X\" should block X on a release the test controls, as the same test's own deadline branch already does, instead of comparing against a fixed duration.\nA loose search over `_test.go` files for elapsed-time comparisons names about twenty files, among them in `shuttleengine`, `creelengine`, `shedverbs`, `verifyrun`, `tenderengine`, `seatengine` and `reedengine`; most may only set a deadline, so the work starts by reading which ones compare a measured time to a limit.\n",
@@ -741,9 +684,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "arras-family-filing"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all.",
       "body": "## Seen (orch, 2026-11-09)\n\nAdding loom config keys in `arras-recipe-perch` failed 56 tests in the first tier 0 run, 47 of them cases of `TestLoadConfig_Loads` in `internal/loomengine`.\nEach case compares the whole loaded config struct, so one new key breaks every case; the rest were `TestLookup` and `TestModules_EveryTemplateKeyClassified` in `internal/configreg`, `TestWire_ReviewKeysReachTheEnv` in `internal/loomcli` and `TestRecipes_KeySet` in `internal/shedcli`, which pin the key set.\nThe fix of those tests, and the gate attempt it needs, cost the run most of an hour.\n\n## Idea\n\nMake each case of `TestLoadConfig_Loads` assert only the fields it is about, so a new key leaves the table alone.\nKeep one test that pins the whole key set, since the classification test is meant to fail for a key nobody classified, and make its failure message say which key to add where.\nCheck the other tests that compare a whole struct or a whole key list, and list those that fail for any added key.\n",
@@ -853,9 +794,7 @@
         92
       ],
       "recipe": "darn",
-      "depends_on": [
-        "gate-redundancy-report"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## This task\n\nFour changes to the verify gate a darn run's Darn-Write step runs, made together since they share its code path.\n\n### Stop at the first failing tier\n\nSeen (operator and orch, 2026-11-09): the Darn-Write verify gate of `arras-recipe-perch` failed tier 0 at 15:43:27 with 56 failures,\nand the same gate started tier 1 at once and ran it for 11 minutes before it failed on two tests, then ran tier 2.\nThe first gate attempt took about 17 minutes; the tier 0 failure alone was known after 2.4 minutes.\n\nWhen a tier fails, stop the gate there and report that tier's failures, so the fixer works on them before a slower tier runs.\nCheck first whether running every tier after a failure is deliberate, for instance to hand the fixer every failure at once,\nand whether it differs between `lym gate test --upto` and the Darn-Write gate.\nIf a full report is wanted, make it a separate choice, and let the verify gate default to stopping at the first failing tier.\n\n### Rerun only the failed tests between attempts\n\nSeen (orch, 2026-11-09): the darn run of `testmap-verb` spent about 40 minutes in its Darn-Write verify gate.\nA first pass of 23 minutes ran over nearly the whole suite (tier 0 to 2) and two tests failed;\na second full pass took 9 minutes, and then the gate started a tier 1 rerun itself,\nwhen the second pass ended with `exit_code 1` and no failing test.\nThe computed scope was close to the whole suite because the diff touches widely imported packages,\nand no coverage map exists yet to narrow it.\n\nWhat exists today (`contracts/recipes/darn-recipe.yaml`, `Darn-Write`):\nthe verify gate re-prompts the live session up to `darn.verify_attempts` times,\nand a cold fixer of `darn.gate_fixer` clears a failing verify gate before the writer hears of it.\nEach attempt runs the gate over its full computed scope again.\nThe gate records each failure with its package, test and first line,\nand `lym gate test \u003cpackage\u003e -- -run \u003ctest\u003e` runs chosen tests alone.\n\nBetween fix attempts, rerun only the tests the last gate run recorded as failed, with `-run`,\nand hand the fixer only those failures.\nRun the full gate once, after the fixer's changes pass alone.\nThat saves the full pass each failed attempt costs today, about 10 minutes each on this machine.\nRead first what the fixer and the writer receive on a failed gate (the whole log or the failures),\nand whether a rerun of failed tests alone is already possible inside the gate.\nA failure with no failing test, such as a crashed runner or a build error, needs its own path, since there is no test to name.\n\n### A time budget\n\nSeen (operator, 2026-11-09): the Darn-Write verify gate of `arras-recipe-perch` stood at 35 minutes, and that of `testmap-verb` at about 33 to 40.\n`darn.verify_attempts` bounds the number of attempts, but each attempt is a full gate pass,\nand nothing bounds the time a verify gate may take or tells anyone it is long.\n\nGive the verify gate a time budget, and when it is spent, say so to the orch with the gate's failures to date,\nso the operator sees it before it passes half an hour.\nDecide whether a spent budget stops the attempts, hands the run to the orch, or only raises a notice.\nRead first what a long verify gate shows today and where a time bound would sit:\nin the recipe, in `darn.verify_attempts` beside it, or in the gate itself.\n\n### A halt that names zero attempts\n\nImported from [issue #92](https://github.com/Knatte18/loomyard/issues/92).\nA step halted as blocked with anomaly `escalation-to-human` and the message `gate did not pass after 0 attempts`,\npointing to a gate-findings file and `lym loom resume`.\nIt happened twice at the same producer step (`Darn-Write`), after the step was recorded `stuck` in the history.\nZero gate attempts means the gate never ran, yet the halt reads as a gate failure,\nso the operator is sent to a findings file for a gate that did not run.\n\nMake the halt message state why the step is stuck when no gate attempt ran,\nand make the attempt count reflect the attempts made.\nProvenance: task slug `slack-presence-auto`; notes `loom-halt-2.md`, `loom-halt-4.md`.\n",

@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-arras-shipped-text.md)
 
-Depends on: [`arras-family-filing`](design-arras-family-filing.md)
-
 Filed from the Sketch `motif-raddle-recipe`.
 
 Takes: the landed arras recipe, perch mode, family filing and project release; main's text of `plugins/ly/skills/board-policy/SKILL.md` after commit c8e43ac4

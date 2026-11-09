@@ -2,8 +2,6 @@
 
 `load-sensitive-timing-tests` · Task · bug, gate, testkit · running · Darn-Write
 
-Depends on: [`gate-redundancy-report`](design-gate-redundancy-report.md)
-
 ## Seen (orch, 2026-11-09)
 
 `TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver` in `internal/loomcli` failed a tier 2 gate run of `testmap-verb`: `startLLMDriverArm took 6.18s; want well under the stub's own 5s settle delay`.
