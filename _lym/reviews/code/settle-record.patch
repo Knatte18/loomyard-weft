@@ -1,0 +1,111 @@
+diff --git a/internal/reedengine/buttonclick.go b/internal/reedengine/buttonclick.go
+index f84597bd6..ee9b3034b 100644
+--- a/internal/reedengine/buttonclick.go
++++ b/internal/reedengine/buttonclick.go
+@@ -11,6 +11,7 @@ import (
+ 	"errors"
+ 	"os"
+ 	"os/exec"
++	"regexp"
+ 	"strconv"
+ 	"strings"
+ 
+@@ -47,6 +48,14 @@ type ButtonRequest struct {
+ // The answer travels through an option rather than the answered line because tmux can escape it for its own parser but not quote it for a shell.
+ const buttonAnswerOption = "@lym_button_answer"
+ 
++// buttonAnswerMarker leads the value an ask prompt stores, escaped the way tmux's %%% escapes the answer.
++// tmux escapes every $ of the answer as \$, and some tmux builds keep that backslash where a variable name follows,
++// so the stored marker shows whether this server kept it.
++const buttonAnswerMarker = "$A"
++
++// keptDollarEscape matches a backslash that tmux's parser kept before a $ starting a variable name.
++var keptDollarEscape = regexp.MustCompile(`\\\$([A-Za-z_{])`)
++
+ // buttonDeps holds the process-level calls of a button click, so a test can replace them.
+ type buttonDeps struct {
+ 	// run starts shellPath with flag and script in dir, waits for it, and returns its combined output and exit code.
+@@ -164,7 +173,7 @@ func runButtonVia(cmd TmuxCmd, req ButtonRequest, deps buttonDeps) {
+ 			// %%% is the first %% of the template, so tmux puts the answer there.
+ 			// The answer's quotes, backslashes, dollars, semicolons and tildes are escaped for the double-quoted string.
+ 			line := composeButtonReentryLine(deps.sh, exe, req, runDir, buttonStageAnswered, hash, values)
+-			template := "set-option -t " + tmuxString(exactSessionWindowTarget(req.Session)) + " " + buttonAnswerOption + ` "%%%" ; run-shell -b ` + tmuxQuote(line)
++			template := "set-option -t " + tmuxString(exactSessionWindowTarget(req.Session)) + " " + buttonAnswerOption + ` "\` + buttonAnswerMarker + `%%%" ; run-shell -b ` + tmuxQuote(line)
+ 			argv = []string{"command-prompt", "-t", req.Client, "-p", ask + " ", template}
+ 		} else {
+ 			line := composeButtonReentryLine(deps.sh, exe, req, runDir, buttonStageConfirmed, hash, values)
+@@ -246,7 +255,7 @@ func buttonStrand(cmd TmuxCmd, req ButtonRequest, entry buttonSpecEntry) (strand
+ 
+ // buttonAnswer returns the value that fills {answer} for an answered or confirmed click, or the message to show instead.
+ // A confirmed click carries the value.
+-// An answered click reads the session's buttonAnswerOption, trimmed of surrounding space,
++// An answered click reads the session's buttonAnswerOption, decoded and trimmed of surrounding space,
+ // and an empty answer takes the entry's ask default.
+ func buttonAnswer(cmd TmuxCmd, req ButtonRequest, entry buttonSpecEntry) (answer, problem string) {
+ 	if req.Confirmed {
+@@ -257,13 +266,24 @@ func buttonAnswer(cmd TmuxCmd, req ButtonRequest, entry buttonSpecEntry) (answer
+ 		logger.Warn("reed: could not read a button's answer", "label", entry.Label, "session", req.Session, "err", err)
+ 		return "", "lym: " + entry.Label + " could not read its answer; click again"
+ 	}
+-	answer = strings.TrimSpace(raw)
++	answer = strings.TrimSpace(decodeStoredAnswer(raw))
+ 	if answer == "" {
+ 		answer = entry.AskDefault
+ 	}
+ 	return answer, ""
+ }
+ 
++// decodeStoredAnswer returns the typed answer from the value an ask prompt stored behind buttonAnswerMarker.
++// A marker stored with its backslash shows a tmux that kept the backslash of every \$ before a variable name,
++// so each such kept backslash is dropped from the answer.
++// tmux escapes each backslash the answer holds as well, so a kept one always stands directly before the $.
++func decodeStoredAnswer(stored string) string {
++	if rest, ok := strings.CutPrefix(stored, `\`+buttonAnswerMarker); ok {
++		return keptDollarEscape.ReplaceAllString(rest, "$$${1}")
++	}
++	return strings.TrimPrefix(stored, buttonAnswerMarker)
++}
++
+ // runButtonScript starts shellPath with flag and script in dir and waits for it with no timeout.
+ // It returns the combined output and the exit code.
+ // The spawn and the end, with the exit code and the output, are logged at Info.
+diff --git a/internal/reedengine/buttonclick_test.go b/internal/reedengine/buttonclick_test.go
+index a05ffd01b..52d94a5f7 100644
+--- a/internal/reedengine/buttonclick_test.go
++++ b/internal/reedengine/buttonclick_test.go
+@@ -54,7 +54,7 @@ func TestRunButtonVia(t *testing.T) {
+ 	askFor := func(entry buttonSpecEntry, prompt string, values map[string]string) func(dir string) []string {
+ 		return func(dir string) []string {
+ 			line := composeButtonReentryLine(posix, exe, promptRequest, dir, buttonStageAnswered, buttonRunHash(entry.Run), values)
+-			return []string{"command-prompt", "-t", "c1", "-p", prompt, `set-option -t "=sess:" @lym_button_answer "%%%" ; run-shell -b ` + tmuxQuote(line)}
++			return []string{"command-prompt", "-t", "c1", "-p", prompt, `set-option -t "=sess:" @lym_button_answer "\$A%%%" ; run-shell -b ` + tmuxQuote(line)}
+ 		}
+ 	}
+ 
+@@ -112,8 +112,10 @@ func TestRunButtonVia(t *testing.T) {
+ 		{name: "AskEntryNamingStrandCarriesTheStrandInTheAnsweredLine", entry: strandedAsking, strandRead: strandName, wantPrompt: askFor(strandedAsking, "Say: ", map[string]string{"strand": strandName})},
+ 		{name: "AskAndConfirmEntryRaisesTheAnswerPromptFirst", entry: askingConfirming, wantPrompt: askFor(askingConfirming, "Name: ", nil)},
+ 		{name: "AskTextHoldingACommaFromAStrandValueRaisesNoPrompt", entry: strandNamingAsk, strandRead: "a,b", wantMessage: "lym: go: the ask text holds a ','"},
+-		{name: "AnsweredCallRunsWithTheStoredAnswerTrimmedAndQuoted", entry: asking, answered: true, hash: buttonRunHash(asking.Run), answerRead: " a b\n", wantRun: true, wantRunText: "open " + posix.Quote("a b")},
+-		{name: "AnsweredCallWithAnEmptyAnswerTakesTheAskDefault", entry: asking, answered: true, hash: buttonRunHash(asking.Run), answerRead: "\n", wantRun: true, wantRunText: "open " + posix.Quote("dflt")},
++		{name: "AnsweredCallRunsWithTheStoredAnswerTrimmedAndQuoted", entry: asking, answered: true, hash: buttonRunHash(asking.Run), answerRead: "$A a b\n", wantRun: true, wantRunText: "open " + posix.Quote("a b")},
++		{name: "AnsweredCallWithAnEmptyAnswerTakesTheAskDefault", entry: asking, answered: true, hash: buttonRunHash(asking.Run), answerRead: "$A\n", wantRun: true, wantRunText: "open " + posix.Quote("dflt")},
++		{name: "AnsweredCallFromATmuxThatUnescapesEveryDollarKeepsTheAnswersBackslashes", entry: asking, answered: true, hash: buttonRunHash(asking.Run), answerRead: `$A\$HOME $-` + "\n", wantRun: true, wantRunText: "open " + posix.Quote(`\$HOME $-`)},
++		{name: "AnsweredCallFromATmuxThatKeepsDollarEscapesDropsOnlyTheKeptBackslashes", entry: asking, answered: true, hash: buttonRunHash(asking.Run), answerRead: `\$A\\$HOME \$x_1 \${y} $- \$_z` + "\n", wantRun: true, wantRunText: "open " + posix.Quote(`\$HOME $x_1 ${y} $- $_z`)},
+ 		{name: "AnsweredCallWithAFailedAnswerReadRunsNothing", entry: asking, answered: true, hash: buttonRunHash(asking.Run), answerErr: errors.New("no server"), wantMessage: "lym: go could not read its answer; click again"},
+ 		{name: "AnsweredCallWithAnotherHashRunsNothing", entry: asking, answered: true, hash: "other", answerRead: "a", wantMessage: "lym: the buttons changed since go asked; click again"},
+ 		{name: "AnsweredStrandEntryRunsWithTheCarriedNameNotThePanes", entry: strandedAsking, answered: true, hash: buttonRunHash(strandedAsking.Run), strand: strandName, answerRead: "hi", wantRun: true, wantRunText: "tell " + posix.Quote(strandName) + " " + posix.Quote("hi")},
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index afec631ec..5dbeb7ed8 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -131,6 +131,9 @@
+ // and a lym verb refuses anywhere but its worktree's anchor.
+ // An entry with an ask text raises `command-prompt` on the clicking client.
+ // Its template stores the answer, escaped by tmux's `%%%`, in the session option @lym_button_answer.
++// An escaped `$A` marker leads the stored answer.
++// Some tmux builds keep the backslash of a `\$` before a variable name;
++// a stored marker that kept it tells the answered call to drop each such kept backslash from the answer.
+ // The template then runs a line (composeButtonReentryLine) that opens in that anchor.
+ // The line calls the verb again with `--answered`, the hash of the entry's run text and the strand name.
+ // The answered call reads the option and takes the entry's ask_default for an empty answer.
