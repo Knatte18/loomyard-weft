@@ -1,6 +1,6 @@
 # Machine name from a machine-wide config, not only the hostname
 
-`machine-name-config` · Task · sketch, config, slack · running · Seed-Child
+`machine-name-config` · Task · sketch, config, slack · running · Open-Window
 
 Decision record: [Sketch](decision-machine-name-config.md)
 
