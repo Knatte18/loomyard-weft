@@ -950,7 +950,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `adopt-robust`.\n\nTakes: today's adoptcli steps, holds.json hold and green end; testmap-dobby-refresh's landed changes to dobbyengine, beamcli, orchcli and runproc\nDelivers: lym adopt as a hidden detached worker the caller follows; the adopt record adopt.json and adopt.lock under fabricengine.AdoptScratchDir with resume and --discard; the D3 step order with the owner write before the deploy; the adopt pause entry replacing the hold and holds.json; --no-orch and its orch-session default; a green check that only reports; the adopt section of lym beam status\nExports: internal/adoptrecord (the record type, its path and a lock-free read, which neither engine import of adoptcli needs), pauserecord.AdoptCaller, the orch-skip field of orchcli.BeamUpOptions, a runproc adopt role\n\nThe part changes these packages:\n\n- internal/adoptcli (about 1500 changed lines)\n- internal/adoptrecord (about 250 changed lines)\n- internal/pauserecord (about 60 changed lines)\n- internal/tenderengine (about 20 changed lines)\n- internal/orchcli (about 40 changed lines)\n- internal/dobbyengine (about 60 changed lines)\n- internal/beamcli (about 200 changed lines)\n- internal/runproc (about 10 changed lines)\n- pattern (about 30 changed lines)\n",
-      "status": "running · Preflight",
+      "status": "running · Motif",
       "created": "2026-11-09T19:45:19Z",
       "revised": "2026-11-09T19:45:19Z",
       "profile": "solid",
