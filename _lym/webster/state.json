@@ -1,0 +1,305 @@
+{
+  "runGuid": "a17e180ee5565acb1b826be7c9b48919",
+  "planFingerprint": "955cc28a4bc20c68759820d6f2d1b50c06f178f58c181feb74466fd50405a8cc",
+  "planFileHashes": {
+    "00-overview.md": "9c6f1024a57d761c6e6ff06de080abe308d87bc1ad7abe8f3d28027b76c7f66e",
+    "01-adopt-pause-caller.md": "8e7d13fcfed269ae74a6815b3ff41f3385350816470d90c07d611fbedb003b3d",
+    "02-beam-up-skip-orch.md": "efc29e7c717ff376e995fab2139435e9afc6ab2693ec98230bc185f4f8562d25",
+    "03-adopt-record.md": "18d468c0d7ba666586d44767fc6a42a3f34ef0277ad3eb8c21ae70f42c52bd9e",
+    "04-green-end-reports.md": "d4429ea563d4ce64a93d2da5981291c98a6329748cc00c12169bab860eae0f18",
+    "05-run-report-paused-by-adopt.md": "ef1dfa601d1945edfc33dc6c2e3501548ba42975e8d8616930127985b6d346fe",
+    "06-adopt-step-order.md": "2adf2534653b0a3698ad34e35868463e780a3e8769893964bf05f7dfdb40ff95",
+    "07-adopt-worker.md": "e560993ab26db5c21124888042b3901a126cfab23465f8710f5dd3d355d110bb",
+    "08-adopt-caller-follow.md": "eff1b04f4faf0eeab100a12a2da9d6e81c9a121c91c82cc201086e267201dc49",
+    "09-beam-status-adopt.md": "f9ec02bb35cf8601c5d56b0bf1c4460d9655ae0b39a9373422e41b701c714570",
+    "10-adopt-docs-and-pattern.md": "e3fa7afe54096501f495a97b54c8f26eb553b8f3cdc31a2e458b35e3bd6939ec"
+  },
+  "planOverviewFrameHash": "df92abe6d573a9d7f417297deaa2f43c5d5df9be4b51ba44bd032a0eaa03b678",
+  "partition": [
+    {
+      "cards": [
+        "01-adopt-pause-caller",
+        "02-beam-up-skip-orch",
+        "03-adopt-record"
+      ],
+      "profile": "wide",
+      "estimate": 280200,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54388,
+        "read_union": 75152,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 516,
+            "reads": {
+              "file:internal/dobbyengine/doc.go": 5964,
+              "file:internal/pauserecord/doc.go": 1068,
+              "file:internal/tenderengine/doc.go": 2172,
+              "package:internal/dobbyengine": 2000,
+              "package:internal/hibernateengine": 2000,
+              "package:internal/pauserecord": 2000,
+              "package:internal/tenderengine": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:internal/hibernateengine": 2000,
+              "tests:internal/pauserecord": 2000,
+              "tests:internal/tenderengine": 2000
+            },
+            "messages": 83.5,
+            "written": 25566
+          },
+          {
+            "card": 2,
+            "card_text": 312,
+            "reads": {
+              "file:internal/orchcli/doc.go": 3456,
+              "package:internal/orchcli": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 35,
+            "written": 10812
+          },
+          {
+            "card": 3,
+            "card_text": 1332,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 28200,
+              "file:internal/lymdirs/doc.go": 132,
+              "package:internal/adoptrecord": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/lymdirs": 2000,
+              "tests:internal/adoptrecord": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/lymdirs": 2000
+            },
+            "messages": 376.5,
+            "written": 114282
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-green-end-reports",
+        "05-run-report-paused-by-adopt"
+      ],
+      "profile": "wide",
+      "estimate": 237086,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61388,
+        "read_union": 67548,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 720,
+            "reads": {
+              "file:docs/overview.md": 23724,
+              "file:internal/battenshed/doc.go": 5088,
+              "file:internal/beamcli/doc.go": 5532,
+              "file:internal/landingshed/doc.go": 7704,
+              "package:docs": 2000,
+              "package:internal/adoptcli": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:docs": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 212,
+            "written": 64320
+          },
+          {
+            "card": 5,
+            "card_text": 780,
+            "reads": {
+              "package:internal/adoptcli": 2000,
+              "tests:internal/adoptcli": 2000
+            },
+            "messages": 143.5,
+            "written": 43830
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-adopt-step-order"
+      ],
+      "profile": "wide",
+      "estimate": 178534,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68388,
+        "read_union": 6148,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 2148,
+            "reads": {
+              "package:internal/adoptcli": 2000,
+              "tests:internal/adoptcli": 2000
+            },
+            "messages": 339.5,
+            "written": 103998
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-adopt-worker",
+        "08-adopt-caller-follow",
+        "09-beam-status-adopt",
+        "10-adopt-docs-and-pattern"
+      ],
+      "profile": "wide",
+      "estimate": 292760,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75388,
+        "read_union": 70564,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 1440,
+            "reads": {
+              "package:internal/adoptcli": 2000,
+              "tests:internal/adoptcli": 2000
+            },
+            "messages": 171.5,
+            "written": 52890
+          },
+          {
+            "card": 8,
+            "card_text": 1632,
+            "reads": {
+              "file:internal/runproc/doc.go": 660,
+              "file:pattern/PATTERN-daemon-wakeups.md": 1548,
+              "package:cmd/lym": 2000,
+              "package:internal/adoptcli": 2000,
+              "package:internal/runproc": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/runproc": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 206,
+            "written": 63432
+          },
+          {
+            "card": 9,
+            "card_text": 684,
+            "reads": {
+              "file:internal/beamcli/doc.go": 5532,
+              "package:internal/beamcli": 2000,
+              "tests:internal/beamcli": 2000
+            },
+            "messages": 66,
+            "written": 20484
+          },
+          {
+            "card": 10,
+            "card_text": 552,
+            "reads": {
+              "file:PATTERN.md": 660,
+              "file:docs/overview.md": 23724,
+              "file:internal/adoptcli/doc.go": 5904,
+              "file:pattern/PATTERN-dobby-runs.md": 228,
+              "package:.": 2000,
+              "package:docs": 2000,
+              "package:internal/adoptcli": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:docs": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 31.5,
+            "written": 10002
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "636f3f6da5eb07ee8c6fb49922ae67ab",
+  "masterSessionId": "74c8f9ca-77cd-49f5-8245-828a4fcd52c7",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "adopt-pause-caller",
+      "cards": [
+        "01-adopt-pause-caller",
+        "02-beam-up-skip-orch",
+        "03-adopt-record"
+      ],
+      "cardHashes": {
+        "01-adopt-pause-caller": "8e7d13fcfed269ae74a6815b3ff41f3385350816470d90c07d611fbedb003b3d",
+        "02-beam-up-skip-orch": "efc29e7c717ff376e995fab2139435e9afc6ab2693ec98230bc185f4f8562d25",
+        "03-adopt-record": "18d468c0d7ba666586d44767fc6a42a3f34ef0277ad3eb8c21ae70f42c52bd9e"
+      },
+      "startSha": "f4ed575ec9364d3eb94c8d2568f8f7e567c2c638",
+      "kind": "fork",
+      "spawnedAt": "2026-11-09T20:48:11Z",
+      "sessionId": "74c8f9ca-77cd-49f5-8245-828a4fcd52c7",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
