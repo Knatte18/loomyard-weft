@@ -1063,6 +1063,82 @@
       "body": "## Seen\n\nOn 2026-11-09, `lym tender pause \u003cslug\u003e` on a run under an adopt hold answered `already_paused: true` and recorded nothing new.\nThe run started as soon as the adopt check lifted the hold.\n\n## Idea\n\nA pause from another caller records its own entry, so lifting the adopt hold leaves the run paused.",
       "created": "2026-11-09T18:13:00Z",
       "revised": "2026-11-09T18:13:00Z"
+    },
+    {
+      "id": 1270,
+      "handle": "B11",
+      "slug": "adopt-pause-before-pair-exists",
+      "title": "An adopted run cannot be paused before adopt adds its pair",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "tender",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-11-09, before `lym adopt`, `lym tender pause` on the runs owned by osl-1046 failed with `has no pair in this hub`.\nThe pairs exist only after adopt adds them, so the operator cannot hold a run before taking it over.\n\n## Idea\n\nAdopt takes an option to leave every adopted run paused, or the pause verb records a pause by slug for a run whose pair is not here yet.",
+      "created": "2026-11-09T18:13:00Z",
+      "revised": "2026-11-09T18:13:00Z"
+    },
+    {
+      "id": 1271,
+      "handle": "B12",
+      "slug": "adopt-old-dobby-starts-pass",
+      "title": "The local dobby starts a pass on a run while adopt is taking it over",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "dobby",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-11-09 the first `lym adopt --all` held two runs, but dobby started `batten run terminal-titles-hub-project --continue-pass` during the adopt, before the owner was written.\n\n## Idea\n\nAdopt holds every run under its subjects before its reconcile pulls them, and dobby starts no pass on a run whose adopt is in progress.",
+      "created": "2026-11-09T18:13:00Z",
+      "revised": "2026-11-09T18:13:00Z"
+    },
+    {
+      "id": 1272,
+      "handle": "E5",
+      "slug": "adopt-no-orch-option",
+      "title": "lym adopt always starts the orch, with no way to skip it",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-11-09 the operator wanted to adopt root without starting the orch, to resume the orch session by hand with `claude -c`; adopt has no such option.\n\n## Idea\n\nAn adopt flag that skips the orch start in its beam steps, leaving dobby to start as now.",
+      "created": "2026-11-09T18:13:00Z",
+      "revised": "2026-11-09T18:13:00Z"
+    },
+    {
+      "id": 1273,
+      "handle": "E6",
+      "slug": "adopt-resume-after-break",
+      "title": "An interrupted adopt leaves no account of what it did and what is left",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "batten",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-11-09 an adopt died in its deploy step: the owner was not written, the lym build was cut off and dobby was gone.\nNo command said which steps had run, and the operator had to run adopt again from a shell.\n\n## Idea\n\nAdopt records its progress per step, `lym beam status` or a status verb shows an unfinished adopt, and a second adopt resumes from the first step not done.",
+      "created": "2026-11-09T18:13:00Z",
+      "revised": "2026-11-09T18:13:00Z"
     }
   ],
   "prime_owner": "neve",

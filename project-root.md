@@ -37,7 +37,7 @@ Not released; nothing starts it until its status is cleared.
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 4h<br>3h | slack, reed, creel |
 | T13 | `draft` **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 3h<br>3h | config, slack |
 
-## Notes (27)
+## Notes (31)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 6h<br>6h | gate, fabric |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>6h | loom, stencil |
 
-### Bugs (10)
+### Bugs (12)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -62,14 +62,18 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B8 |  | **lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape** | [`profiles-set-leaf-key`](design-profiles-set-leaf-key.md) | 2h<br>2h | config, profiles |
 | B9 |  | **lym adopt run from the orch is killed when the orch watcher sees the foreign owner** | [`adopt-kills-own-orch`](design-adopt-kills-own-orch.md) | 3m<br>3m | orch, fabric |
 | B10 |  | **lym tender pause on an adopt-held run adds no pause of its own** | [`tender-pause-reuses-adopt-hold`](design-tender-pause-reuses-adopt-hold.md) | 0m<br>0m | tender |
+| B11 |  | **An adopted run cannot be paused before adopt adds its pair** | [`adopt-pause-before-pair-exists`](design-adopt-pause-before-pair-exists.md) | 0m<br>0m | tender, fabric |
+| B12 |  | **The local dobby starts a pass on a run while adopt is taking it over** | [`adopt-old-dobby-starts-pass`](design-adopt-old-dobby-starts-pass.md) | 0m<br>0m | dobby, batten |
 
-### Enhancements (3)
+### Enhancements (5)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 2d<br>2d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 1d<br>3h | shed, loom, darn |
 | E3 |  | **One land notice: fold the beam-PR landing notice into notify_on_land** | [`one-land-notice`](design-one-land-notice.md) | 2h<br>2h | dobby, batten, workspaces |
+| E5 |  | **lym adopt always starts the orch, with no way to skip it** | [`adopt-no-orch-option`](design-adopt-no-orch-option.md) | 0m<br>0m | orch, batten |
+| E6 |  | **An interrupted adopt leaves no account of what it did and what is left** | [`adopt-resume-after-break`](design-adopt-resume-after-break.md) | 0m<br>0m | batten, fabric |
 
 ### Features (12)
 
