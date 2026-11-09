@@ -20,13 +20,13 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (1)
+### Layer B (1)
 
-Not released; nothing starts it until its status is cleared.
+Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Make the eight longest serial internal/fabricengine tests parallel**<br>• Move their package-level test state into parameters so the serial phase of tier 1 shrinks | [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md) | darn · solid | T3 | 29m<br>0m | fabric, testkit |
+| T2 | **Make the eight longest serial internal/fabricengine tests parallel**<br>• Move their package-level test state into parameters so the serial phase of tier 1 shrinks | [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md) | darn · solid | T3 | 29m<br>0m | fabric, testkit |
 
 ## Notes (1)
 
