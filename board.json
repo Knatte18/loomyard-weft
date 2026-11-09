@@ -567,11 +567,6 @@
       "status": "running · Code-Burler-Fix",
       "created": "2026-11-08T18:46:50Z",
       "revised": "2026-11-08T18:46:50Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
       "profile": "solid",
       "notify_on_land": true,
       "project": "redundancy-check",
