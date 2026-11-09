@@ -51,11 +51,18 @@ Task `assist-fan-seat-work-alone` (`77e7a9c7`) fixed run 3's conflict: a fanned 
 A done fanned seat that returned no lens report is named in the log, and `round-<n>-usage.yaml` records `assist_ending` and `assist_lenses_missing` beside `assist_fan`, so a silent solo seat can no longer pass as a fanned one.
 The fix is built but unproved: no real fanned seat has run since, so a real composed fanned seat, with every lens started and returned, is still wanted.
 
-## Plan (operator, 2026-11-08)
-
-Test it on coming darn tasks: the orch sets `{"loom":{"code_assist_reviewer_model":"astra[medium]"}}` in the `run_settings` of the next two or three darn tasks the operator releases, with the `review-code` fan, so a real composed fanned seat runs; then a darn docs task reads those rounds and reports what Codex added, its false findings and its time.
-
 ## Built since (tidy, 2026-11-08)
 
 Task `codex-sandbox-mode` (`539525a0`) added the `sandbox_mode` key to `codex.yaml`, `workspace-write` by default and `danger-full-access` as the one other value, set per machine with `lym config codex --layer machine`.
 It is the machine-level answer to a Codex seat whose sandbox cannot run shell commands (`bwrap: setting up uid map: Permission denied`); a seat that only could not take the gate lock (run 1) is a different fault, and the key is checked by hand only, not yet on a real Codex run.
+
+## Seen (operator, 2026-11-09)
+
+On OSL-1046 a Codex assist seat read nothing: every command failed with `bwrap: setting up uid map: Permission denied`, and the Chair of `testmap-verb`'s Code-Review waited 19 minutes for the seat's end marker that never came.
+The operator says this happens all the time with Codex.
+
+## Plan (operator, 2026-11-09)
+
+No task sets `code_assist_reviewer_model` from now on, so no Codex assist seat runs until Codex works.
+The settings on `testmap-verb`, `arras-recipe-perch` and `gate-redundancy-report` were removed.
+The trial resumes after Codex's sandbox is fixed on the machine, with the plan of 2026-11-08: the orch sets the setting in the `run_settings` of the next two or three darn tasks the operator releases, with the `review-code` fan, and a darn docs task then reads those rounds.
