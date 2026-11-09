@@ -1,6 +1,6 @@
 # Tests that compare a measured time to a limit fail on a loaded machine
 
-`load-sensitive-timing-tests` · Task · bug, gate, testkit · running · Darn-Write
+`load-sensitive-timing-tests` · Task · bug, gate, testkit · running · Drift-Verify
 
 ## Seen (orch, 2026-11-09)
 
