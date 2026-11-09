@@ -78,19 +78,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Measure whether running fabricengine tier 1 as several shards cuts its wall** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | darn · docs |  | 19h<br>0m | gate, fabric |
+| T2 | **Measure whether running fabricengine tier 1 as several shards cuts its wall** | [`gate-shard-slow-package`](design-gate-shard-slow-package.md) | darn · docs |  | 19h<br>0m | gate, fabric |
 
 ### Notes (0)
 
