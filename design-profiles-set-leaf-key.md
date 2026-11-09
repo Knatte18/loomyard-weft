@@ -1,6 +1,6 @@
 # lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape
 
-`profiles-set-leaf-key` · Task · bug, config, profiles · running · Code-Bouncer
+`profiles-set-leaf-key` · Task · bug, config, profiles · running · Drift-Recheck
 
 Imported from [issue #94](https://github.com/Knatte18/loomyard/issues/94).
 
