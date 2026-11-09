@@ -108,7 +108,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Measure fabricengine tier 1 wall and git spawns before and after e19a2e86** | [`fabric-spawn-measure`](design-fabric-spawn-measure.md) | darn · docs | Drift-Await | neve | 0m<br>0m | fabric, git, gate |
+| T1 | **Measure fabricengine tier 1 wall and git spawns before and after e19a2e86** | [`fabric-spawn-measure`](design-fabric-spawn-measure.md) | darn · docs | Drift-Expect | neve | 0m<br>0m | fabric, git, gate |
 
 #### Ready (0)
 
@@ -189,7 +189,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T16 | **Darn verify gate: stop at the first failing tier, rerun only failed tests, a time budget, and a truthful zero-attempt halt** | [`verify-gate-faults`](design-verify-gate-faults.md) | darn · solid | Code-Burler-Fix | neve | 6h<br>1h | gate, darn, loom |
 | T18 | **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | darn · solid | Finalize | neve | 6h<br>1h | gate, testkit |
-| T19 | **One new loom config key fails dozens of tests that pin the whole struct**<br>• TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all. | [`config-struct-test-per-key`](design-config-struct-test-per-key.md) | darn · light | Finalize | neve | 5h<br>46m | loom, config, testkit |
+| T19 | **One new loom config key fails dozens of tests that pin the whole struct**<br>• TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all. | [`config-struct-test-per-key`](design-config-struct-test-per-key.md) | darn · light | Finalize | neve | 5h<br>47m | loom, config, testkit |
 
 #### Ready (0)
 
