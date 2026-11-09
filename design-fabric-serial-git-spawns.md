@@ -2,6 +2,8 @@
 
 `fabric-serial-git-spawns` · Task · enhancement, fabric, git, gate · draft
 
+Depends on: [`fabric-serial-phase-tests`](design-fabric-serial-phase-tests.md)
+
 ## Seen (orch, 2026-11-09)
 
 `docs/research/speed/fabricengine-shards-2026-11-09/report.md`: the package starts about 65 thousand git processes,
