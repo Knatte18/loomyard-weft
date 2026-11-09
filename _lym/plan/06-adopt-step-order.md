@@ -60,12 +60,12 @@
 - `internal/adoptcli_test#TestAdoptIntegration_SecondCloneTakesOver`
 
 **Uses:**
-- `plan:internal/adoptrecord#Record`
-- `plan:internal/adoptrecord#Inputs`
-- `plan:internal/adoptrecord#Steps`
-- `plan:internal/adoptrecord#StateStopped`
-- `plan:internal/adoptrecord#Request.Command`
-- `plan:internal/pauserecord#AdoptCaller`
+- `internal/adoptrecord#Record`
+- `internal/adoptrecord#Inputs`
+- `internal/adoptrecord#Steps`
+- `internal/adoptrecord#StateStopped`
+- `internal/adoptrecord#Request.Command`
+- `internal/pauserecord#AdoptCaller`
 - `internal/orchcli#BeamUpOptions`
 
 **Intent:**

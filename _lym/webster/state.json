@@ -1,17 +1,17 @@
 {
   "runGuid": "a17e180ee5565acb1b826be7c9b48919",
-  "planFingerprint": "955cc28a4bc20c68759820d6f2d1b50c06f178f58c181feb74466fd50405a8cc",
+  "planFingerprint": "6d47c46892e98b2283022713a47729bcddb7d87a5619cdd8582cdcfb42417b25",
   "planFileHashes": {
     "00-overview.md": "9c6f1024a57d761c6e6ff06de080abe308d87bc1ad7abe8f3d28027b76c7f66e",
-    "01-adopt-pause-caller.md": "8e7d13fcfed269ae74a6815b3ff41f3385350816470d90c07d611fbedb003b3d",
+    "01-adopt-pause-caller.md": "3d37528e4b4345d943e0d27e7aaefa085bf8722fa3828fffab032e14be6b74f9",
     "02-beam-up-skip-orch.md": "efc29e7c717ff376e995fab2139435e9afc6ab2693ec98230bc185f4f8562d25",
-    "03-adopt-record.md": "18d468c0d7ba666586d44767fc6a42a3f34ef0277ad3eb8c21ae70f42c52bd9e",
+    "03-adopt-record.md": "da2d80a6a2c2fb9e41810defa090a07e350fb4fab3fc4a44f0293d0ec1c38af5",
     "04-green-end-reports.md": "d4429ea563d4ce64a93d2da5981291c98a6329748cc00c12169bab860eae0f18",
-    "05-run-report-paused-by-adopt.md": "ef1dfa601d1945edfc33dc6c2e3501548ba42975e8d8616930127985b6d346fe",
-    "06-adopt-step-order.md": "2adf2534653b0a3698ad34e35868463e780a3e8769893964bf05f7dfdb40ff95",
-    "07-adopt-worker.md": "e560993ab26db5c21124888042b3901a126cfab23465f8710f5dd3d355d110bb",
-    "08-adopt-caller-follow.md": "eff1b04f4faf0eeab100a12a2da9d6e81c9a121c91c82cc201086e267201dc49",
-    "09-beam-status-adopt.md": "f9ec02bb35cf8601c5d56b0bf1c4460d9655ae0b39a9373422e41b701c714570",
+    "05-run-report-paused-by-adopt.md": "7829b1f21b2a36c9a212a9f8c6db2ee54e4861ec5206cba4a5fdcbf40c9fc789",
+    "06-adopt-step-order.md": "2dac080a8a052f1ac6ce109c6e0a273b52553a7cc51d0038839449f7245331ee",
+    "07-adopt-worker.md": "c533cf753fbb1437818f5b79e57c11dc720236f738835f0b331933ff2c76a26a",
+    "08-adopt-caller-follow.md": "47a9d69858e7ea61dcadaaad941c9782a1ba03da7f32695d9cda10987143ffbb",
+    "09-beam-status-adopt.md": "f19727c5d209c7b23d3410042616c7503d7233869ece80302d5981c54fe26af3",
     "10-adopt-docs-and-pattern.md": "e3fa7afe54096501f495a97b54c8f26eb553b8f3cdc31a2e458b35e3bd6939ec"
   },
   "planOverviewFrameHash": "df92abe6d573a9d7f417297deaa2f43c5d5df9be4b51ba44bd032a0eaa03b678",
@@ -276,7 +276,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "636f3f6da5eb07ee8c6fb49922ae67ab",
   "masterSessionId": "74c8f9ca-77cd-49f5-8245-828a4fcd52c7",
   "masterEngine": "claude",
@@ -289,17 +289,34 @@
         "03-adopt-record"
       ],
       "cardHashes": {
-        "01-adopt-pause-caller": "8e7d13fcfed269ae74a6815b3ff41f3385350816470d90c07d611fbedb003b3d",
+        "01-adopt-pause-caller": "3d37528e4b4345d943e0d27e7aaefa085bf8722fa3828fffab032e14be6b74f9",
         "02-beam-up-skip-orch": "efc29e7c717ff376e995fab2139435e9afc6ab2693ec98230bc185f4f8562d25",
-        "03-adopt-record": "18d468c0d7ba666586d44767fc6a42a3f34ef0277ad3eb8c21ae70f42c52bd9e"
+        "03-adopt-record": "da2d80a6a2c2fb9e41810defa090a07e350fb4fab3fc4a44f0293d0ec1c38af5"
       },
       "startSha": "f4ed575ec9364d3eb94c8d2568f8f7e567c2c638",
       "kind": "fork",
       "spawnedAt": "2026-11-09T20:48:11Z",
       "sessionId": "74c8f9ca-77cd-49f5-8245-828a4fcd52c7",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-adopt-pause-caller",
+        "status": "done",
+        "head_sha": "345a8f3af45988f810e75cad51376a13f6dce805"
+      },
+      "cardShas": [
+        "345a8f3af45988f810e75cad51376a13f6dce805"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-worker-record/74c8f9ca-77cd-49f5-8245-828a4fcd52c7/subagents/agent-ad228120fb6f9dd58.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-worker-record/74c8f9ca-77cd-49f5-8245-828a4fcd52c7/subagents/agent-ad228120fb6f9dd58.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-worker-record/74c8f9ca-77cd-49f5-8245-828a4fcd52c7/subagents/agent-ad228120fb6f9dd58.jsonl"
+  ]
 }

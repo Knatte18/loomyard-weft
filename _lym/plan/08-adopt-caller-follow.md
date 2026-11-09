@@ -36,13 +36,13 @@
 - `plan:internal/adoptcli#validateRequest`
 - `plan:internal/adoptcli#judgeStanding`
 - `plan:internal/adoptcli#workerCmd`
-- `plan:internal/adoptrecord#Read`
-- `plan:internal/adoptrecord#Remove`
-- `plan:internal/adoptrecord#ErrDecode`
-- `plan:internal/adoptrecord#LockPath`
-- `plan:internal/adoptrecord#Record.ReadState`
-- `plan:internal/adoptrecord#Request.Command`
-- `plan:internal/adoptrecord#WorkerAlive`
+- `internal/adoptrecord#Read`
+- `internal/adoptrecord#Remove`
+- `internal/adoptrecord#ErrDecode`
+- `internal/adoptrecord#LockPath`
+- `internal/adoptrecord#Record.ReadState`
+- `internal/adoptrecord#Request.Command`
+- `internal/adoptrecord#WorkerAlive`
 - `internal/fabricengine#RunProcDir`
 
 **Intent:**

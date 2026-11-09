@@ -5,43 +5,43 @@
 - `internal/adoptrecord/record.go`
 - `internal/adoptrecord/record_test.go`
 - `internal/adoptrecord/testmain_test.go`
-- `plan:internal/adoptrecord#FileName` -> `const FileName = "adopt.json"`
-- `plan:internal/adoptrecord#LockName` -> `const LockName = "adopt.lock"`
-- `plan:internal/adoptrecord#StepReconcile` -> `const StepReconcile = "reconcile"`
-- `plan:internal/adoptrecord#StepPairs` -> `const StepPairs = "pairs"`
-- `plan:internal/adoptrecord#StepPause` -> `const StepPause = "pause"`
-- `plan:internal/adoptrecord#StepOwner` -> `const StepOwner = "owner"`
-- `plan:internal/adoptrecord#StepDeploy` -> `const StepDeploy = "deploy"`
-- `plan:internal/adoptrecord#StepBeam` -> `const StepBeam = "beam"`
-- `plan:internal/adoptrecord#StepCheck` -> `const StepCheck = "check"`
-- `plan:internal/adoptrecord#StepDone` -> `const StepDone = "done"`
-- `plan:internal/adoptrecord#Steps` -> `var Steps = []string{StepReconcile, StepPairs, StepPause, StepOwner, StepDeploy, StepBeam, StepCheck, StepDone}`
-- `plan:internal/adoptrecord#StateRunning` -> `const StateRunning = "running"`
-- `plan:internal/adoptrecord#StateStopped` -> `const StateStopped = "stopped"`
-- `plan:internal/adoptrecord#StateDone` -> `const StateDone = "done"`
-- `plan:internal/adoptrecord#StateInterrupted` -> `const StateInterrupted = "interrupted"`
-- `plan:internal/adoptrecord#Request` -> `type Request struct`
-- `plan:internal/adoptrecord#Request.SameSubjects` -> `func (q Request) SameSubjects(other Request) bool`
-- `plan:internal/adoptrecord#Request.Command` -> `func (q Request) Command() string`
-- `plan:internal/adoptrecord#StepRecord` -> `type StepRecord struct`
-- `plan:internal/adoptrecord#Inputs` -> `type Inputs struct`
-- `plan:internal/adoptrecord#Record` -> `type Record struct`
-- `plan:internal/adoptrecord#Record.Done` -> `func (r Record) Done(step string) bool`
-- `plan:internal/adoptrecord#Record.ResumeStep` -> `func (r Record) ResumeStep() string`
-- `plan:internal/adoptrecord#Record.ReadState` -> `func (r Record) ReadState(alive func(pid int, startTicks string) bool) string`
-- `plan:internal/adoptrecord#Record.Unfinished` -> `func (r Record) Unfinished() bool`
-- `plan:internal/adoptrecord#Path` -> `func Path(hubPath string) string`
-- `plan:internal/adoptrecord#LockPath` -> `func LockPath(hubPath string) string`
-- `plan:internal/adoptrecord#Read` -> `func Read(hubPath string) (Record, bool, error)`
-- `plan:internal/adoptrecord#Write` -> `func Write(hubPath string, record Record) error`
-- `plan:internal/adoptrecord#Remove` -> `func Remove(hubPath string) error`
-- `plan:internal/adoptrecord#WorkerAlive` -> `func WorkerAlive(pid int, startTicks string) bool`
-- `plan:internal/adoptrecord#ErrDecode` -> `var ErrDecode = errors.New("the adopt record does not decode")`
-- `plan:internal/adoptrecord#TestRead` -> `func TestRead(t *testing.T)`
-- `plan:internal/adoptrecord#TestRecordReadState` -> `func TestRecordReadState(t *testing.T)`
-- `plan:internal/adoptrecord#TestRecordResumeStep` -> `func TestRecordResumeStep(t *testing.T)`
-- `plan:internal/adoptrecord#TestRequestSameSubjects` -> `func TestRequestSameSubjects(t *testing.T)`
-- `plan:internal/adoptrecord#TestRequestCommand` -> `func TestRequestCommand(t *testing.T)`
+- `internal/adoptrecord#FileName`
+- `internal/adoptrecord#LockName`
+- `internal/adoptrecord#StepReconcile`
+- `internal/adoptrecord#StepPairs`
+- `internal/adoptrecord#StepPause`
+- `internal/adoptrecord#StepOwner`
+- `internal/adoptrecord#StepDeploy`
+- `internal/adoptrecord#StepBeam`
+- `internal/adoptrecord#StepCheck`
+- `internal/adoptrecord#StepDone`
+- `internal/adoptrecord#Steps`
+- `internal/adoptrecord#StateRunning`
+- `internal/adoptrecord#StateStopped`
+- `internal/adoptrecord#StateDone`
+- `internal/adoptrecord#StateInterrupted`
+- `internal/adoptrecord#Request`
+- `internal/adoptrecord#Request.SameSubjects`
+- `internal/adoptrecord#Request.Command`
+- `internal/adoptrecord#StepRecord`
+- `internal/adoptrecord#Inputs`
+- `internal/adoptrecord#Record`
+- `internal/adoptrecord#Record.Done`
+- `internal/adoptrecord#Record.ResumeStep`
+- `internal/adoptrecord#Record.ReadState`
+- `internal/adoptrecord#Record.Unfinished`
+- `internal/adoptrecord#Path`
+- `internal/adoptrecord#LockPath`
+- `internal/adoptrecord#Read`
+- `internal/adoptrecord#Write`
+- `internal/adoptrecord#Remove`
+- `internal/adoptrecord#WorkerAlive`
+- `internal/adoptrecord#ErrDecode`
+- `internal/adoptrecord_test#TestRead`
+- `internal/adoptrecord_test#TestRecordReadState`
+- `internal/adoptrecord_test#TestRecordResumeStep`
+- `internal/adoptrecord_test#TestRequestSameSubjects`
+- `internal/adoptrecord_test#TestRequestCommand`
 
 **Edit:**
 - `internal/fabricengine#AdoptScratchDir`

@@ -1,7 +1,7 @@
 # Card 1 — adopt-pause-caller
 
 **Create:**
-- `plan:internal/pauserecord#AdoptCaller` -> `const AdoptCaller = "adopt"`
+- `internal/pauserecord#AdoptCaller`
 
 **Edit:**
 - `internal/pauserecord#Record.CoverageOf`

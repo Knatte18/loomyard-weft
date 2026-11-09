@@ -15,10 +15,10 @@
 - `internal/beamcli/doc.go`
 
 **Uses:**
-- `plan:internal/adoptrecord#Read`
-- `plan:internal/adoptrecord#Record.ReadState`
-- `plan:internal/adoptrecord#Request.Command`
-- `plan:internal/adoptrecord#WorkerAlive`
+- `internal/adoptrecord#Read`
+- `internal/adoptrecord#Record.ReadState`
+- `internal/adoptrecord#Request.Command`
+- `internal/adoptrecord#WorkerAlive`
 
 **Intent:**
 D9: `lym beam status` shows an unfinished adopt.

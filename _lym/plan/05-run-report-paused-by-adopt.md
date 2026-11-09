@@ -29,7 +29,7 @@
 - `internal/adoptcli#TestAdoptFields`
 
 **Uses:**
-- `plan:internal/pauserecord#AdoptCaller`
+- `internal/pauserecord#AdoptCaller`
 - `internal/pauserecord#HoldCaller`
 
 **Intent:**

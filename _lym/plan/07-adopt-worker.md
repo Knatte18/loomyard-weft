@@ -33,14 +33,14 @@
 **Uses:**
 - `plan:internal/adoptcli#stepRun`
 - `plan:internal/adoptcli#runSteps`
-- `plan:internal/adoptrecord#Read`
-- `plan:internal/adoptrecord#Write`
-- `plan:internal/adoptrecord#LockPath`
-- `plan:internal/adoptrecord#Record.ResumeStep`
-- `plan:internal/adoptrecord#Record.ReadState`
-- `plan:internal/adoptrecord#Request.SameSubjects`
-- `plan:internal/adoptrecord#Request.Command`
-- `plan:internal/adoptrecord#WorkerAlive`
+- `internal/adoptrecord#Read`
+- `internal/adoptrecord#Write`
+- `internal/adoptrecord#LockPath`
+- `internal/adoptrecord#Record.ResumeStep`
+- `internal/adoptrecord#Record.ReadState`
+- `internal/adoptrecord#Request.SameSubjects`
+- `internal/adoptrecord#Request.Command`
+- `internal/adoptrecord#WorkerAlive`
 
 **Intent:**
 D1's worker and D2's record and resume.
