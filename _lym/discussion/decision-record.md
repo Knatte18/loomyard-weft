@@ -30,6 +30,12 @@ It runs after `fabric-serial-phase-tests` has made the longest serial tests para
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-09): Measurement runs allowed for this task
+
+Decision: The writer may run lym gate test --wait --tier 1 ./internal/fabricengine with the shard-runner.sh exec for the task's count and before/after measurements. Cap: one counting run with GIT_TRACE2_EVENT, one before run and one after run; no other gate runs beyond Darn-Write's own verify gate. Record the numbers in the change description.
+
+Rationale: The board entry asks for the count and the before/after measurement; a static pick without them cannot show the saving. A fixed cap bounds the time.
+
 ## Constraints
 
 ## Auto-mode assumptions
