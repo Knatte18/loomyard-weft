@@ -1,6 +1,6 @@
 # One new loom config key fails dozens of tests that pin the whole struct
 
-`config-struct-test-per-key` · Task · bug, loom, config, testkit · draft
+`config-struct-test-per-key` · Task · bug, loom, config, testkit
 
 Depends on: [`arras-family-filing`](design-arras-family-filing.md)
 

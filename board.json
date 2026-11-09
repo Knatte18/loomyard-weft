@@ -770,7 +770,6 @@
       "isolated": false,
       "brief": "TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all.",
       "body": "## Seen (orch, 2026-11-09)\n\nAdding loom config keys in `arras-recipe-perch` failed 56 tests in the first tier 0 run, 47 of them cases of `TestLoadConfig_Loads` in `internal/loomengine`.\nEach case compares the whole loaded config struct, so one new key breaks every case; the rest were `TestLookup` and `TestModules_EveryTemplateKeyClassified` in `internal/configreg`, `TestWire_ReviewKeysReachTheEnv` in `internal/loomcli` and `TestRecipes_KeySet` in `internal/shedcli`, which pin the key set.\nThe fix of those tests, and the gate attempt it needs, cost the run most of an hour.\n\n## Idea\n\nMake each case of `TestLoadConfig_Loads` assert only the fields it is about, so a new key leaves the table alone.\nKeep one test that pins the whole key set, since the classification test is meant to fail for a key nobody classified, and make its failure message say which key to add where.\nCheck the other tests that compare a whole struct or a whole key list, and list those that fail for any added key.\n",
-      "status": "draft",
       "created": "2026-11-09T15:17:11Z",
       "revised": "2026-11-09T19:53:10Z",
       "profile": "light"
@@ -816,7 +815,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #94](https://github.com/Knatte18/loomyard/issues/94).\n\n## Seen\n\nIn the DrillOpPlan hub's prime, changing two values of the `docs` profile's darn loom block with `lym config profiles --layer default --set` took three tries.\n\n1. `--set docs.darn.loom.code_max_bounces=0 --set docs.darn.loom.code_hard_max_bounces=1` was refused:\n   `value for docs.darn.loom.code_max_bounces must be a JSON object such as {\"module\": {\"key\": 1}}, got \"0\"`.\n   The message names a value shape that fits a recipe block, not a leaf key.\n2. `--set 'docs.darn={\"darn\":{\"writer\":\"sonnet[medium]\"},\"drift\":{\"scope\":\"off\"},\"loom\":{...}}'`, which is the `{\"module\": {\"key\": 1}}` shape the first message asked for, was refused:\n   `profile \"docs.darn\": recipe \"darn\": module \"writer\" must be a mapping of keys`.\n   The value was read one level deeper than its key.\n3. `--set 'docs={\"darn\":{\"darn\":{\"writer\":\"sonnet[medium]\"},\"drift\":{\"scope\":\"off\"},\"loom\":{\"code_max_bounces\":0,\"code_hard_max_bounces\":1,\"code_reviewer_fan\":\"\"}}}'` worked.\n\n## Workaround\n\nSet the whole profile, keyed by the profile name alone, with every block it holds restated.\n\n## Expected\n\n`--set` reaches a leaf key of a profile, as it does in other modules (`lym config gate --set tiers.tier0.env.X=...`), so `docs.darn.loom.code_max_bounces=0` sets that one value.\nFailing that, the refusal names the key depth `--set` takes and a value shape that is accepted at that key.\n",
-      "status": "draft",
+      "status": "running · Worktree-Create",
       "created": "2026-11-09T15:20:33Z",
       "revised": "2026-11-09T19:06:07Z",
       "profile": "light"
