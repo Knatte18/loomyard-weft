@@ -33,7 +33,7 @@ Since 2026-11-05 an entry that holds a motif run's record is also a Sketch on th
   Tapestry defines Discussion once, in `motif-recipe.yaml`, and runs it through a block row named `Motif`.
   The block's gate `undiscussed` passes the block over when the entry is flagged discussed: the stored record is seeded as the run's decision record and the run goes on at Drift-Baseline, so Plan-Write and the reviews read it as they read an approved one.
   Approval inside the block stores the record.
-  The trial recipe `arras` is removed.
+  The trial recipe `arras` of that time was removed; the name now belongs to the recipe built on 2026-11-09, see below.
 - Built (2026-11-05): task `raddle-recipe` (`257ab79a`).
   Record-Write copies a discussed entry's stored record into the run's decision record for every recipe with that row, so a darn entry flagged `discussed` now builds from its stored record.
   That closes the former open point that darn take the stored record as final.
@@ -74,7 +74,13 @@ A Sketch with no stored record is refused, naming `motif`.
   Perch mode allows one task (shape `tapestry`, or shape `tasks` with one part) or one project (shape `project` whose slug is the run's own entry); shape `beam`, several task parts and a project under another slug fail the `perch-outcome` check.
   A perch-mode `lym loom decision add` is refused from Raddle-File on, with a way forward.
   Filing a perch-mode project as the converted entry comes with `arras-family-filing`; here such a proposal only passes the checks.
-  Not run end to end against a real split-perch recipe yet.
+- Built (2026-11-09, `df15bb6a`): task `arras-recipe-perch`.
+  The recipe `arras` runs the `Motif` block (Discussion), `Raddle-Write`, a split perch and `Raddle-File` in one run that lands no code, so a task goes from its Discussion to filed parts with the split reviewed before it is filed.
+  The perch is the rows `Raddle-Bouncer`, `Raddle-Burler-Review` and `Raddle-Burler-Fix`; the rubric stencil `loom-rubric-raddle-review.md` judges the split against the whole record, and the loom keys `split_*` tune it.
+  `Raddle-File`'s `on_stuck` returns to `Raddle-Write`, and a fresh entry there re-arms a settled perch for a new cycle with the full budget.
+  An arras run restarted after its Discussion approval skips Discussion and resumes at `Raddle-Write`.
+  Not run end to end yet: an arras task through Discussion, the perch and `Raddle-File`, including one `Raddle-File` return.
+  Open: a decision added after the perch's last approving round reaches every part's record but is not reviewed against the split's seams; accepted in the design.
 - Raddle-File re-checks the board, then files every entry in one write, each with its part of the record stored and `discussed` set, creates the beam for shape `beam` and hands the Sketch slug and proposal to the beam's orch in Beam-Up.
   Built (2026-11-07, `731004c3`): filing releases nothing.
   Every filed task, project members included, stays `draft` until the operator releases it with `lym board set-status`; the earlier release step is removed.
@@ -114,10 +120,10 @@ Built as Raddle-Write above; what follows is the original design.
    Parts run with review off; one review covers the whole diff after the last lands.
    It is tried first as a hand-run test project with the projects and beams that exist, measured against tapestry runs of the same size (`docs/research/tokens/token-audit-2026-10-22`), and built only if it saves tokens.
    The risk: tapestry's build is cheap because Webster runs on Sonnet following an Opus plan, while parts under a coarse pre-plan likely need Opus writers.
+   Since 2026-11-09 the recipe `arras` covers Discussion and a reviewed split (filing a project comes with `arras-family-filing`), so `stitch` would add only the inner run that lands the whole family under one review.
 
 ## Open
 
 - A split record's format: each part must still pass the discussion check.
 - Whether the old run's commits, if any, are kept when a run is cancelled for a split.
 - `stitch`: contract precision, how large the whole-task review's fixes may be, and how often the choice between `stitch` and tapestry before the run is right.
-- Settled (2026-11-03): the records live in a file of their own beside `board.json`, not in it.
