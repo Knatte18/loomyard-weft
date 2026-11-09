@@ -62,7 +62,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (4)
+## Notes (5)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -73,11 +73,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 3d<br>3h | codex, shuttle |
 | R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 7h<br>7h | codex, shuttle |
 
-### Bugs (1)
+### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B9 |  | **Codex keeps forcing its bubblewrap sandbox in lym runs** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | 0m<br>0m | codex, shuttle |
+| B10 |  | **The astra Codex model does not work on OSL-1046** | [`astra-fails-on-osl-1046`](design-astra-fails-on-osl-1046.md) | 0m<br>0m | codex, shuttle |
 
 ### Features (1)
 

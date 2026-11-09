@@ -1040,6 +1040,26 @@
       "created": "2026-11-09T18:35:39Z",
       "revised": "2026-11-09T18:35:39Z",
       "project": "codex-engine-trial"
+    },
+    {
+      "id": 1270,
+      "handle": "B10",
+      "slug": "astra-fails-on-osl-1046",
+      "title": "The astra Codex model does not work on OSL-1046",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "codex",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-11-09 the operator reported that the `astra` model (`gpt-6-astra` in `models.yaml`) does not work at all on OSL-1046, while it may work on Neve.\n`testmap-verb`'s first Code-Review round recorded its astra assist as `assist_ending: stopped`.\nThe operator then had astra removed from every task's `run_settings`.\n\n## Idea\n\nFind why astra fails on OSL-1046, by its launch and error on that machine, and make lym report a Codex seat that cannot start instead of ending it quietly as stopped.",
+      "created": "2026-11-09T18:35:39Z",
+      "revised": "2026-11-09T18:35:39Z",
+      "project": "codex-engine-trial"
     }
   ],
   "prime_owner": "neve",
