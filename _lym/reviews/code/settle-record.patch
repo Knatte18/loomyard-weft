@@ -1,0 +1,2563 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 5d65611a..0495f131 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -299,7 +299,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/cleanupcli/          the cleanup CLI command (`lym cleanup`, the routine cleanups of the hub prime's leftover state, a dry run by default)
+ ├── internal/fabriccli/           the fabric CLI command (git coordination of code and records)
+ ├── internal/fabricengine/        the fabric domain kernel
+-├── internal/gatecli/             the gate CLI command (`lym gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged; `lym gate status`, the holders of the hub's gate slots; `lym gate report`, the machine's run records totalled per slug and gate key)
++├── internal/gatecli/             the gate CLI command (`lym gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged; `lym gate status`, the holders of the hub's gate slots; `lym gate report`, the machine's run records totalled per slug and gate key; `lym gate testmap`, the per-package coverage maps rebuilt from the hub's prime worktree)
+ ├── internal/helpcli/             the help CLI command (`lym help [<command>...]`, `lym help index`)
+ ├── internal/shortcutcli/         the top-level operator shortcuts (`lym a`, `lym s`, `lym p`, `lym r`) from one embedded file
+ ├── internal/idecli/              the ide CLI command
+@@ -897,6 +897,9 @@ User-facing modules each get one `lym <module>` namespace:
+   `--gate <key>` runs the tiers and scope `gate.yaml`'s gate key names,
+   and with `--guards` the verb also runs every `//lym:guard` test of the module under the command of the tier its file belongs to).
+   `lym gate card-verify <card id>` runs a plan card's `**Verify:**` line through the shared `internal/cardverify` runner and exits with the line's code.
++  `lym gate testmap [--max <n>] [<package>...]` rebuilds the stale per-package coverage maps of `internal/testcover` from the hub's prime worktree:
++  each tier0 and tier1 test runs alone under a coverage binary inside one gate slot, bounded by `redundancy_build_timeout_min` and `redundancy_test_timeout_sec`,
++  and a package with a modified or untracked Go file, or whose map another call is building, is skipped.
+   A run inside a slot an enclosing gate run holds takes no second one,
+   and a git worktree outside every hub runs unslotted under its own `gate.yaml`.
+   A Go test binary that keeps a core busy past `busy_quit_sec` gets one SIGQUIT,
+diff --git a/internal/fabricengine/codereads.go b/internal/fabricengine/codereads.go
+new file mode 100644
+index 00000000..22c92ad4
+--- /dev/null
++++ b/internal/fabricengine/codereads.go
+@@ -0,0 +1,36 @@
++// codereads.go reads the code checkout's tracked files as stored in a commit, unaffected by the working tree.
++
++package fabricengine
++
++import (
++	"errors"
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/gitrepo"
++)
++
++// CodeDirAt returns the names of the regular files directly in dir of the code checkout's commit rev, sorted.
++// dir is slash-separated and relative to the checkout's root; "" or "." names the root.
++// A directory absent at rev gives an empty list and no error.
++// rev is a hex commit name, such as the one HeadSHA returns.
++func (f *Fabric) CodeDirAt(rev, dir string) ([]string, error) {
++	names, err := f.code.FilesInDirAtRevision(rev, dir)
++	if err != nil {
++		return nil, fmt.Errorf("fabricengine: list %s at %s: %w", dir, rev, err)
++	}
++	return names, nil
++}
++
++// CodeFileAt returns rel as stored in the code checkout's commit rev, unaffected by any later change to the file.
++// rel is slash-separated and relative to the checkout's root, and rev is a hex commit name.
++// found is false with a nil error when rel is absent at rev.
++func (f *Fabric) CodeFileAt(rev, rel string) (data []byte, found bool, err error) {
++	data, err = f.code.FileAtRevision(rev, rel)
++	if errors.Is(err, gitrepo.ErrPathNotAtRevision) {
++		return nil, false, nil
++	}
++	if err != nil {
++		return nil, false, fmt.Errorf("fabricengine: read %s at %s: %w", rel, rev, err)
++	}
++	return data, true, nil
++}
+diff --git a/internal/fabricengine/codereads_integration_test.go b/internal/fabricengine/codereads_integration_test.go
+new file mode 100644
+index 00000000..8a3135d8
+--- /dev/null
++++ b/internal/fabricengine/codereads_integration_test.go
+@@ -0,0 +1,82 @@
++// codereads_integration_test.go covers Fabric.CodeDirAt and Fabric.CodeFileAt over a wired hub's code checkout.
++//
++// Package fabricengine_test; shares the single TestMain in testmain_test.go.
++
++package fabricengine_test
++
++import (
++	"os"
++	"path/filepath"
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestCodeReadsAtCommit reads a commit's directories and files.
++// The working tree holds an edit and an untracked file meanwhile.
++// Its subtests share the hub's one commit and run in sequence, so none is parallel.
++func TestCodeReadsAtCommit(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	root := h.PrimeWorktree()
++	gitkit.CommitFile(t, root, "pkg/sub/c.go", "package sub\n", "add c")
++	gitkit.CommitFile(t, root, "pkg/b.txt", "b\n", "add b")
++	head := gitkit.CommitFile(t, root, "pkg/a.go", "package pkg\n", "add a")
++	if err := os.WriteFile(filepath.Join(root, "pkg", "a.go"), []byte("package pkg // edited\n"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(filepath.Join(root, "pkg", "new.go"), []byte("package pkg\n"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	f, err := fabricengine.Open(h.Location)
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	t.Run("CodeDirAtListsTheCommitsFiles", func(t *testing.T) {
++		tests := []struct {
++			dir  string
++			want []string
++		}{
++			{"pkg", []string{"a.go", "b.txt"}},
++			{"pkg/sub", []string{"c.go"}},
++			{"absent", nil},
++		}
++		for _, tt := range tests {
++			got, err := f.CodeDirAt(head, tt.dir)
++			if err != nil {
++				t.Fatalf("CodeDirAt(%q) error = %v", tt.dir, err)
++			}
++			if !slices.Equal(got, tt.want) {
++				t.Errorf("CodeDirAt(%q) = %q; want %q", tt.dir, got, tt.want)
++			}
++		}
++	})
++
++	t.Run("CodeFileAtReadsTheCommit", func(t *testing.T) {
++		tests := []struct {
++			rel       string
++			wantFound bool
++			want      string
++		}{
++			{"pkg/a.go", true, "package pkg\n"},
++			{"pkg/new.go", false, ""},
++			{"pkg/absent.go", false, ""},
++		}
++		for _, tt := range tests {
++			data, found, err := f.CodeFileAt(head, tt.rel)
++			if err != nil {
++				t.Fatalf("CodeFileAt(%q) error = %v", tt.rel, err)
++			}
++			if found != tt.wantFound || string(data) != tt.want {
++				t.Errorf("CodeFileAt(%q) = (%q, %v); want (%q, %v)", tt.rel, data, found, tt.want, tt.wantFound)
++			}
++		}
++	})
++}
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 1f25db5f..214e8cd0 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -131,6 +131,7 @@ Examples:
+ 	cmd.AddCommand(statusCmd())
+ 	cmd.AddCommand(reportCmd())
+ 	cmd.AddCommand(cardVerifyCmd(seams))
++	cmd.AddCommand(testMapCmd(goBinary, timeoutUnit, pipeWaitDelay))
+ 	cmd.AddCommand(runnerCmd(func() *cobra.Command {
+ 		return newCommand(goBinary, samplePeriod, preTierCeiling, timeoutUnit, rerunDelay, pipeWaitDelay, seams)
+ 	}, seams))
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 39f017de..311ae335 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -2,6 +2,7 @@
+ // Its verb `test` is the sanctioned route for running the hub's test tiers.
+ // Its verb `status` shows who holds the hub's gate slots, and its verb `report` totals the run records per gate key.
+ // Its verb `card-verify` runs a plan card's `**Verify:**` line.
++// Its verb `testmap` rebuilds the per-package coverage maps from the hub's prime worktree.
+ //
+ // The module is not standalone-capable and does not go through internal/cliwire.
+ // It has no target directory, state, plan or stencils to wire, and it resolves hub membership itself.
+@@ -888,6 +889,51 @@
+ // Bound: the key is the card's id,
+ // so a call after an edit of the card's `**Verify:**` line joins the run of the old line while its lease holds.
+ //
++// # Coverage maps
++//
++// `lym gate testmap [--max <n>] [<package>...]` rebuilds the `internal/testcover` map of each named package.
++// With none named, it rebuilds every stale package.
++// It builds at most `--max` (default 5) per call, in package path order.
++// The module root is the dir of the lowest declared of tier0 and tier1, and its go.mod names the import path.
++// A package is a directory relative to that root holding a Go file, found as `go list ./...` finds one:
++// testdata, a directory whose name opens with a dot or an underscore, and a nested module are left out.
++// A map is stale when it is missing or unreadable;
++// when the Go files its directory tracks at HEAD differ from the map's, as a set or in content;
++// when it is older than `test_map_max_age_days`; and when it records a build failure and HEAD differs from its commit.
++// A change to a dependency or to a non-Go file of the directory leaves it fresh; the age limit bounds that drift.
++// The verb runs only in the hub's prime worktree, told by `hubgeom.IsPrime`.
++// Elsewhere it refuses, naming the prime worktree.
++// It reads HEAD and the tracked files through `Fabric.HeadSHA`, `Fabric.CodeDirAt` and `Fabric.CodeFileAt`,
++// and the uncommitted and untracked files once, through `Fabric.Status`.
++// A package with an uncommitted or untracked Go file is skipped naming the file, since a map records HEAD;
++// so is a package whose build lock, beside its map, another call holds.
++// So is a package named on the command line that tracks no Go file at HEAD.
++// All are skipped before any build and none counts against `--max`; a package past the cap counts as unbuilt.
++//
++// A package's build reads HEAD and its file hashes first, and the map records that HEAD as its commit.
++// Its tests are the top-level Test functions whose `tiergate.Require` names a tier0 or tier1 the hub declares.
++// A package with none gets a map of its file hashes and no tests, with no build.
++// For any other the call takes one gate slot, held to its end, unless it runs inside an enclosing gate run's slot.
++// It builds the package's coverage binary over the package alone, under the slot's `gateslot.HolderEnv`.
++// It runs each test alone in the package directory, under its tier's env, through `testcover.Toolchain.RunAlone`.
++// A tier with `prebuilt_lym` gets the `lym` the call builds once into the pool's prebuilt store, as a tier run does.
++// Each build is bounded by `redundancy_build_timeout_min` and each test by `redundancy_test_timeout_sec`.
++// Past its bound the process group is killed.
++// The wait for its exit and output then lasts at most the pipe wait the gate already uses.
++// A failed or timed-out build gives a map of the file hashes with no tests and the failure, listed as failed.
++// Such a map is rebuilt once HEAD moves and never twice at one HEAD.
++// A timed-out test is listed and left out of the map, and so is, unlisted, a test that failed or skipped.
++// A passing test that covers a block of the package's own files enters the map.
++// Its entry holds the tier, function hash, duration and blocks.
++// Once the tests ended the call reads HEAD and the hashes again.
++// When a hash differs, as when a landing changed the package's files, it discards the map.
++// It then reports the package skipped, and the package counts against `--max`.
++//
++// The call prints `built`, `skipped` with each cause, `failed` with each failure, `timed_out` and `unbuilt`.
++// `unbuilt` is the count the cap left.
++// As it exits, a call that got past the prime check writes `testcover.ExitRecord`: its pid and that count, zero included.
++// It exits 0 once it walked its packages, and 1 for a refusal or a read, slot or write failure that ends the walk.
++//
+ // # In-process run
+ //
+ // `RunGate(ctx, dir, gate, out, stderr, observer)` runs the gate key `gate` in `dir`.
+diff --git a/internal/gatecli/prebuild.go b/internal/gatecli/prebuild.go
+index 0b58c87c..03894193 100644
+--- a/internal/gatecli/prebuild.go
++++ b/internal/gatecli/prebuild.go
+@@ -1,4 +1,5 @@
+-// prebuild.go builds `lym` once for a tagged `lym gate test` run, so every package of the run shares one binary.
++// prebuild.go builds `lym` once for a tagged `lym gate test` run or a `lym gate testmap` call.
++// Every package of that run or call shares the one binary.
+ // Every package reaches it through gateslot.PrebuiltLymEnv.
+ // Inside a hub, the binary is kept in the hub's content-addressed store.
+ 
+@@ -21,6 +22,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymtemp"
++	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
+ // prebuiltRetention is how long a stored binary stays after its last use before a later prebuild prunes it.
+@@ -47,7 +49,10 @@ func buildRoot(location *lymcwd.Location, dir string) string {
+ // With storeDir empty the returned path is the build directory's, which the cleanup removes.
+ // A root without `cmd/lym` builds nothing and returns an empty path and a cleanup that does nothing.
+ // A build failure returns an error carrying the build's output.
+-func prebuildLym(ctx context.Context, goBinary, root string, parallel int, storeDir string) (bin string, cleanup func(), err error) {
++// A cancelled ctx kills the build's whole process group.
++// Once the build ended or was killed, its output is still read for at most pipeWait.
++// A non-nil env is the build's whole environment; nil leaves it the process's.
++func prebuildLym(ctx context.Context, goBinary, root string, parallel int, storeDir string, pipeWait time.Duration, env []string) (bin string, cleanup func(), err error) {
+ 	if info, statErr := os.Stat(filepath.Join(root, "cmd", "lym")); statErr != nil || !info.IsDir() {
+ 		return "", func() {}, nil
+ 	}
+@@ -59,8 +64,16 @@ func prebuildLym(ctx context.Context, goBinary, root string, parallel int, store
+ 
+ 	bin = filepath.Join(dir, "lym")
+ 	cmd := exec.CommandContext(ctx, goBinary, "build", "-C", root, "-p", strconv.Itoa(parallel), "-trimpath", "-o", bin, "./cmd/lym")
++	proc.ConfigureGroupKill(cmd, func(pid int, groupErr error) {
++		logger.Info("gate test: killed the process group of the go build of lym", "pid", pid, "error", groupErr)
++	})
++	cmd.WaitDelay = pipeWait
++	cmd.Env = env
+ 	logger.Info("gate test: spawning go build of lym", "binary", goBinary, "args", strings.Join(cmd.Args[1:], " "))
+ 	out, buildErr := cmd.CombinedOutput()
++	if errors.Is(buildErr, exec.ErrWaitDelay) {
++		buildErr = nil
++	}
+ 	logger.Info("gate test: go build of lym ended", "error", buildErr)
+ 	if buildErr != nil {
+ 		cleanup()
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 1f8a3e81..21397a8b 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -132,18 +132,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 
+ 	exe.green = green
+ 
+-	// The tiers run without the strand name, so a test driving `lym fabric` never meets a role guard that reads it.
+-	// They also run without this process's trace id.
+-	// That id is new at every run, and it would change the test cache key of every package that reads it.
+-	env := slices.DeleteFunc(os.Environ(), func(entry string) bool {
+-		return strings.HasPrefix(entry, agentname.StrandNameEnv+"=") || strings.HasPrefix(entry, logger.TraceIDEnv+"=")
+-	})
+-	env = gateslot.StripPrebuilt(env)
+-	// The env module's variables replace inherited ones of the same name.
+-	// A tier's or the build's own env, appended later, replaces them.
+-	env = append(env, hubEnv.Entries()...)
+-	// The build-server switches come after the module's entries, so a variable of the module never undoes them.
+-	env = withBuildServerOff(env)
++	env := gateEnv(os.Environ(), hubEnv)
+ 	watching, reason := watchdogApplies(request.busyQuit, request.args, os.Getenv(enclosingGateEnv), proc.IsAncestor)
+ 	logger.Info("gate test: CPU watchdog decision", "applies", watching, "reason", reason)
+ 	exe.request.watching = watching
+@@ -745,6 +734,23 @@ func tierExitCodeOf(runErr error) int {
+ 	return exitCodeOf(runErr)
+ }
+ 
++// gateEnv returns the environment a gate call's children start from.
++// It is base without the strand name, this process's trace id and an inherited prebuilt `lym`.
++// The hub env module's variables follow, then the build-server switches.
++// Without the strand name a test driving `lym fabric` never meets a role guard that reads it.
++// The trace id is new at every run, and it would change the test cache key of every package that reads it.
++// The module's variables replace inherited ones of the same name.
++// A tier's or a build's own env, appended later, replaces them.
++// The build-server switches come last, so a variable of the module never undoes them.
++func gateEnv(base []string, hubEnv envconfig.Config) []string {
++	env := slices.DeleteFunc(slices.Clone(base), func(entry string) bool {
++		return strings.HasPrefix(entry, agentname.StrandNameEnv+"=") || strings.HasPrefix(entry, logger.TraceIDEnv+"=")
++	})
++	env = gateslot.StripPrebuilt(env)
++	env = append(env, hubEnv.Entries()...)
++	return withBuildServerOff(env)
++}
++
+ // withBuildServerOff returns env with every proc.BuildServerOffEnv variable set to its value.
+ // It replaces any inherited value of the same name.
+ // This keeps any .NET build a run starts from leaving MSBuild servers behind.
+diff --git a/internal/gatecli/testmap.go b/internal/gatecli/testmap.go
+new file mode 100644
+index 00000000..a205742b
+--- /dev/null
++++ b/internal/gatecli/testmap.go
+@@ -0,0 +1,492 @@
++// testmap.go holds `lym gate testmap`, which rebuilds the stale per-package coverage maps from the hub's prime worktree.
++// It refuses a call outside the prime, picks the packages, skips the dirty and the locked, and caps the builds.
++// It prints what it built, skipped and failed, and writes its exit record as it exits.
++
++package gatecli
++
++import (
++	"context"
++	"fmt"
++	"io"
++	"io/fs"
++	"maps"
++	"os"
++	"path"
++	"path/filepath"
++	"slices"
++	"strings"
++	"time"
++
++	"github.com/spf13/cobra"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/envconfig"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/testcover"
++)
++
++// testMapSite labels the slot holder record of a `lym gate testmap` call.
++const testMapSite = "lym gate testmap"
++
++// defaultTestMapMax caps the packages a `lym gate testmap` call without --max builds.
++const defaultTestMapMax = 5
++
++// testMapBuildLockSuffix ends the name of the lock a call holds on a package's map while it builds the map.
++const testMapBuildLockSuffix = ".build.lock"
++
++// mappedTiers are the tiers whose tests a coverage map holds, lowest first.
++var mappedTiers = []int{0, 1}
++
++// testMapRequest is one `lym gate testmap` invocation after flag parsing.
++type testMapRequest struct {
++	// goBinary is the go command the builds run.
++	goBinary string
++	// maxPackages caps the packages the call builds.
++	maxPackages int
++	// packages are the package directories named on the command line, relative to the module root;
++	// empty picks every stale package.
++	packages []string
++	// environ is the environment the call's children start from: the process's own in production.
++	environ []string
++	// secondUnit is the length of one `redundancy_test_timeout_sec` second.
++	// minuteUnit is the length of one `redundancy_build_timeout_min` minute.
++	secondUnit, minuteUnit time.Duration
++	// grace bounds the wait for a timed-out build's or test's exit and output once its process group is killed.
++	grace time.Duration
++}
++
++// testMapCmd builds `lym gate testmap`.
++// goBinary is the go command its builds run.
++// minuteUnit is the length of one `redundancy_build_timeout_min` minute.
++// grace is the wait for a killed build's or test's exit and output.
++func testMapCmd(goBinary string, minuteUnit, grace time.Duration) *cobra.Command {
++	var maxPackages int
++	cmd := &cobra.Command{
++		Use:         "testmap [<package>...]",
++		Short:       "rebuild the stale per-package coverage maps from the hub's prime worktree",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Long: `testmap rebuilds the coverage map of each named package, or of every stale package when none is named, at most --max per call, in package path order.
++A map records, for each tier0 and tier1 test of the package run alone under a coverage binary, the blocks of the package's own files it covers.
++A map is stale when it is missing, when the package's Go files at HEAD differ from it, when it is older than test_map_max_age_days, or when it records a failed build at another HEAD.
++It runs only in the hub's prime worktree and holds one gate slot from its first build to its end.
++A package with a modified or untracked Go file, or whose map another call is building, is skipped and does not count against --max, as is a named package that tracks no Go file at HEAD.
++It prints the packages it built, skipped and failed, the timed-out tests and the count of stale packages --max left unbuilt.
++
++Examples:
++
++  lym gate testmap
++  lym gate testmap --max 2
++  lym gate testmap internal/foo`,
++		Args: cobra.ArbitraryArgs,
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			clihelp.SetExit(cmd.Context(), runTestMap(cmd.Context(), cmd.OutOrStdout(), testMapRequest{
++				goBinary: goBinary, maxPackages: maxPackages, packages: args, environ: os.Environ(),
++				secondUnit: time.Second, minuteUnit: minuteUnit, grace: grace,
++			}))
++			return nil
++		},
++	}
++	cmd.Flags().IntVar(&maxPackages, "max", defaultTestMapMax, "the most packages the call builds a map for")
++	return cmd
++}
++
++// testMapSkip is a package the call left without a new map, with the cause.
++type testMapSkip struct {
++	Package string `json:"package"`
++	Cause   string `json:"cause"`
++}
++
++// testMapFailure is a package whose new map records a failed build, with the failure.
++type testMapFailure struct {
++	Package string `json:"package"`
++	Failure string `json:"failure"`
++}
++
++// testMapRun is one `lym gate testmap` call's state as it walks its packages.
++type testMapRun struct {
++	ctx      context.Context
++	request  testMapRequest
++	location *lymcwd.Location
++	fabric   *fabricengine.Fabric
++	pool     *gateslot.Pool
++	// tiers holds each mapped tier the hub declares, by number.
++	tiers map[int]gateslot.Tier
++	// mapsDir is the hub's coverage map directory.
++	mapsDir string
++	// moduleDir is the module root, moduleRel its worktree-relative slash path and modulePath its import path.
++	moduleDir, moduleRel, modulePath string
++	// maxAge is the age past which a map is stale.
++	maxAge time.Duration
++	// buildTimeout bounds each build, and testTimeout each test.
++	buildTimeout, testTimeout time.Duration
++	// env is the environment the call's children start from, before the slot's Go flags.
++	env []string
++	// dirty holds the worktree-relative slash paths of the uncommitted and untracked files, sorted.
++	dirty []string
++
++	// The fields below fill as the call goes.
++
++	// lease is the held slot; it stays nil before the first build and inside an enclosing gate run's slot.
++	lease *gateslot.Lease
++	// holderEnv is env with the slot's Go flags, nil until the call holds its slot.
++	holderEnv []string
++	// parallel is the `-p` of the `lym` build, read with the slot.
++	parallel int
++	// tmp holds the coverage binaries and profiles, empty until the call holds its slot.
++	tmp string
++	// lymBuilt is set once the call built `lym`; lymBin is the binary, and lymErr the build's failure.
++	lymBuilt bool
++	lymBin   string
++	lymErr   error
++
++	built    []string
++	skipped  []testMapSkip
++	failed   []testMapFailure
++	timedOut []string
++	unbuilt  int
++}
++
++// runTestMap runs one `lym gate testmap` call and returns its exit code.
++// The code is 0 once it walked its packages.
++// It is 1 for a refusal or a failure that ends the call.
++// It is 128 plus the signal number after a terminating signal.
++func runTestMap(ctx context.Context, out io.Writer, request testMapRequest) int {
++	if request.maxPackages < 1 {
++		return output.Err(out, fmt.Sprintf("gate testmap: --max %d; way forward: pass --max 1 or more", request.maxPackages))
++	}
++	cwd, err := lymcwd.CwdFrom(ctx)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate testmap: cannot read the working directory: %v; way forward: re-run the same command", err))
++	}
++	location, refusal := testMapLocation(cwd)
++	if refusal != "" {
++		return output.Err(out, refusal)
++	}
++
++	runCtx, caught, stop := catchTerminatingSignals(ctx)
++	defer stop()
++	run := &testMapRun{
++		ctx: runCtx, request: request, location: location,
++		mapsDir: testcover.Dir(fabricengine.BoltDir(location.HubPath)),
++		built:   []string{}, skipped: []testMapSkip{}, failed: []testMapFailure{}, timedOut: []string{},
++	}
++	defer run.close()
++	if refusal := run.prepare(); refusal != "" {
++		return output.Err(out, refusal)
++	}
++	packages, named, refusal := run.packages()
++	if refusal != "" {
++		return output.Err(out, refusal)
++	}
++	if err := run.mapPackages(packages, named); err != nil {
++		if runCtx.Err() != nil {
++			output.Err(out, "gate testmap: the call was cancelled; way forward: re-run the same command")
++			return exitAfterSignal(caught, 1)
++		}
++		return output.Err(out, fmt.Sprintf("gate testmap: %v; way forward: re-run the same command", err))
++	}
++	return output.Ok(out, map[string]any{
++		"built":     run.built,
++		"skipped":   run.skipped,
++		"failed":    run.failed,
++		"timed_out": run.timedOut,
++		"unbuilt":   run.unbuilt,
++	})
++}
++
++// testMapLocation resolves the hub worktree cwd lies in, and refuses one outside every hub or other than the hub's prime.
++func testMapLocation(cwd string) (*lymcwd.Location, string) {
++	location, inHub, err := resolveHub(cwd)
++	if err != nil {
++		return nil, fmt.Sprintf("gate testmap: %v; way forward: re-run the same command", err)
++	}
++	if !inHub {
++		return nil, fmt.Sprintf("gate testmap: %s is in no hub, and the coverage maps live in a hub; way forward: run lym gate testmap from a hub's prime worktree", cwd)
++	}
++	prime, err := hubgeom.IsPrime(location)
++	if err != nil {
++		return nil, fmt.Sprintf("gate testmap: %v; way forward: re-run the same command", err)
++	}
++	if prime {
++		return location, ""
++	}
++	primePath, err := hubgeom.PrimeWorktreePath(location)
++	if err != nil {
++		primePath = "the hub's prime worktree"
++	}
++	return nil, fmt.Sprintf("gate testmap: %s is not the hub's prime worktree, and a coverage map records the prime branch; way forward: run lym gate testmap from %s", location.WorktreePath(), primePath)
++}
++
++// prepare loads the hub's gate and env config, finds the Go module and reads the uncommitted and untracked files.
++// It returns a refusal when one of them cannot be read, or when the hub declares no mapped tier.
++func (r *testMapRun) prepare() string {
++	dirs := fabricengine.ConfigDirs(r.location)
++	cfg, err := gateslot.LoadConfig(dirs)
++	if err != nil {
++		return fmt.Sprintf("gate testmap: cannot read the hub's gate config: %v; way forward: take the step it names, then re-run the same command", err)
++	}
++	hubEnv, err := envconfig.LoadConfig(dirs)
++	if err != nil {
++		return fmt.Sprintf("gate testmap: cannot read the env config: %v; way forward: take the step it names, then re-run the same command", err)
++	}
++	cfg = cfg.WithDefaultDir(r.location.AnchorRel)
++	root := r.location.WorktreePath()
++	r.tiers = map[int]gateslot.Tier{}
++	for _, number := range mappedTiers {
++		tier, err := cfg.Tier(number)
++		if err != nil {
++			continue
++		}
++		if len(r.tiers) == 0 {
++			r.moduleDir = resolveRunDir(root, tier.Dir)
++		}
++		r.tiers[number] = tier
++	}
++	if len(r.tiers) == 0 {
++		return "gate testmap: the hub declares neither tier0 nor tier1, so no test of a package can be mapped; way forward: declare them with lym config gate from the prime, then re-run the same command"
++	}
++	rel, err := filepath.Rel(root, r.moduleDir)
++	if r.modulePath = modulePathOf(r.moduleDir); r.modulePath == "" || err != nil || !filepath.IsLocal(rel) {
++		return fmt.Sprintf("gate testmap: %s holds no go.mod naming a module inside the worktree; way forward: set the dir of the lowest of tier0 and tier1 to the Go module's root with lym config gate from the prime, then re-run the same command", r.moduleDir)
++	}
++	r.moduleRel = filepath.ToSlash(rel)
++	r.maxAge = time.Duration(cfg.TestMapMaxAgeDays) * 24 * time.Hour
++	r.buildTimeout = time.Duration(cfg.RedundancyBuildTimeoutMin) * r.request.minuteUnit
++	r.testTimeout = time.Duration(cfg.RedundancyTestTimeoutSec) * r.request.secondUnit
++	r.env = gateEnv(r.request.environ, hubEnv)
++
++	if r.fabric, err = fabricengine.Open(r.location); err != nil {
++		return fmt.Sprintf("gate testmap: %v; way forward: re-run the same command", err)
++	}
++	entries, err := r.fabric.Status()
++	if err != nil {
++		return fmt.Sprintf("gate testmap: %v; way forward: re-run the same command", err)
++	}
++	for _, entry := range entries {
++		r.dirty = append(r.dirty, entry.Path)
++	}
++	slices.Sort(r.dirty)
++	r.pool = hubgeom.GateSlots(r.location)
++	return ""
++}
++
++// packages returns the packages the call walks, in package path order, and whether the command line named them.
++// A named package is a directory relative to the module root that holds a Go file; any other name is a refusal.
++func (r *testMapRun) packages() ([]string, bool, string) {
++	if len(r.request.packages) == 0 {
++		found, err := modulePackages(r.moduleDir)
++		if err != nil {
++			return nil, false, fmt.Sprintf("gate testmap: cannot list the packages of %s: %v; way forward: make the module readable, then re-run the same command", r.moduleDir, err)
++		}
++		return found, false, ""
++	}
++	var named []string
++	for _, arg := range r.request.packages {
++		pkg := path.Clean(filepath.ToSlash(arg))
++		if !filepath.IsLocal(filepath.FromSlash(pkg)) || !holdsGoFile(filepath.Join(r.moduleDir, filepath.FromSlash(pkg))) {
++			return nil, true, fmt.Sprintf("gate testmap: %q names no package directory of the module at %s; way forward: name a package by its directory relative to the module root, such as internal/foo", arg, r.moduleDir)
++		}
++		named = append(named, pkg)
++	}
++	slices.Sort(named)
++	return slices.Compact(named), true, ""
++}
++
++// modulePackages returns the slash path, relative to moduleDir, of every package of the module rooted there, sorted.
++// A package is a directory holding a Go file, found as `go list ./...` finds one:
++// testdata, a directory whose name opens with a dot or an underscore, and a nested module are left out.
++func modulePackages(moduleDir string) ([]string, error) {
++	var packages []string
++	err := filepath.WalkDir(moduleDir, func(dir string, entry fs.DirEntry, err error) error {
++		if err != nil {
++			return err
++		}
++		if !entry.IsDir() {
++			return nil
++		}
++		if dir != moduleDir {
++			name := entry.Name()
++			if name == "testdata" || strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") {
++				return filepath.SkipDir
++			}
++			if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
++				return filepath.SkipDir
++			}
++		}
++		if !holdsGoFile(dir) {
++			return nil
++		}
++		rel, err := filepath.Rel(moduleDir, dir)
++		if err != nil {
++			return err
++		}
++		packages = append(packages, filepath.ToSlash(rel))
++		return nil
++	})
++	slices.Sort(packages)
++	return packages, err
++}
++
++// holdsGoFile reports whether the directory dir holds a Go file directly; an unreadable directory holds none.
++func holdsGoFile(dir string) bool {
++	entries, err := os.ReadDir(dir)
++	if err != nil {
++		return false
++	}
++	return slices.ContainsFunc(entries, func(entry fs.DirEntry) bool {
++		return !entry.IsDir() && strings.HasSuffix(entry.Name(), ".go")
++	})
++}
++
++// mapPackages builds the map of each package that needs one, in order, until maxPackages maps are built.
++// A named package needs one whatever its map holds; any other only when its map is stale.
++// A package with an uncommitted or untracked Go file, or whose build lock another call holds, is skipped and not counted.
++// So is a named package that tracks no Go file at HEAD.
++// Each package past the cap that needs a map counts as unbuilt.
++// The error reports a read, slot or write failure, or a cancelled call, that ends the walk.
++func (r *testMapRun) mapPackages(packages []string, named bool) error {
++	built := 0
++	for _, pkg := range packages {
++		if err := r.ctx.Err(); err != nil {
++			return err
++		}
++		dir := path.Join(r.moduleRel, pkg)
++		if file := r.dirtyGoFile(dir); file != "" {
++			r.skip(pkg, "modified or untracked file "+file)
++			continue
++		}
++		head, err := r.fabric.HeadSHA()
++		if err != nil {
++			return fmt.Errorf("read HEAD: %w", err)
++		}
++		files, err := r.fileHashes(head, dir)
++		if err != nil {
++			return err
++		}
++		if len(files) == 0 {
++			if named {
++				r.skip(pkg, "no Go file tracked at HEAD")
++			}
++			continue
++		}
++		if !named && !r.stale(pkg, head, files) {
++			continue
++		}
++		buildLock, held, err := r.lockPackage(pkg)
++		if err != nil {
++			return err
++		}
++		if !held {
++			r.skip(pkg, "another call holds its map build lock")
++			continue
++		}
++		if built >= r.request.maxPackages {
++			r.unbuilt++
++			releaseBuildLock(buildLock, pkg)
++			continue
++		}
++		built++
++		err = r.mapPackage(pkg, dir, head, files)
++		releaseBuildLock(buildLock, pkg)
++		if err != nil {
++			return err
++		}
++	}
++	return nil
++}
++
++// releaseBuildLock releases the build lock of the map of pkg, logging a failure.
++func releaseBuildLock(buildLock *lock.FileLock, pkg string) {
++	if err := buildLock.Release(); err != nil {
++		logger.Warn("gate testmap: could not release a map build lock", "package", pkg, "cause", err)
++	}
++}
++
++// dirtyGoFile returns the first uncommitted or untracked Go file directly in the worktree-relative directory dir, or "".
++func (r *testMapRun) dirtyGoFile(dir string) string {
++	for _, file := range r.dirty {
++		if path.Dir(file) == dir && strings.HasSuffix(file, ".go") {
++			return file
++		}
++	}
++	return ""
++}
++
++// fileHashes returns the ContentHash of each Go file, by name, that the directory dir tracks at the commit head.
++// The directory is relative to the worktree.
++func (r *testMapRun) fileHashes(head, dir string) (map[string]string, error) {
++	names, err := r.fabric.CodeDirAt(head, dir)
++	if err != nil {
++		return nil, err
++	}
++	hashes := map[string]string{}
++	for _, name := range names {
++		if !strings.HasSuffix(name, ".go") {
++			continue
++		}
++		data, found, err := r.fabric.CodeFileAt(head, path.Join(dir, name))
++		if err != nil {
++			return nil, err
++		}
++		if found {
++			hashes[name] = testcover.ContentHash(data)
++		}
++	}
++	return hashes, nil
++}
++
++// stale reports whether the map of pkg needs a rebuild at the commit head, whose Go files hash to files.
++// A missing or unreadable map is stale.
++// So is one whose files differ, one past the age limit, or one recording a build failure at another commit.
++func (r *testMapRun) stale(pkg, head string, files map[string]string) bool {
++	m, found, err := testcover.ReadMap(r.mapsDir, pkg)
++	if err != nil {
++		logger.Warn("gate testmap: an unreadable coverage map is rebuilt", "package", pkg, "cause", err)
++		return true
++	}
++	return !found || !maps.Equal(m.Files, files) || time.Since(m.BuiltAt) > r.maxAge || (m.BuildFailure != "" && m.Commit != head)
++}
++
++// testMapBuildLockPath returns the path of the lock a call holds on the map of pkg while it builds it.
++// The path lies beside the map under the maps directory mapsDir.
++func testMapBuildLockPath(mapsDir, pkg string) string {
++	return lock.TrackedFileLockPath(testcover.MapPath(mapsDir, pkg), testMapBuildLockSuffix)
++}
++
++// lockPackage takes the build lock of the map of pkg without waiting, and reports whether it got it.
++func (r *testMapRun) lockPackage(pkg string) (*lock.FileLock, bool, error) {
++	lockPath := testMapBuildLockPath(r.mapsDir, pkg)
++	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
++		return nil, false, fmt.Errorf("create the map directory of %s: %w", pkg, err)
++	}
++	return lock.TryAcquireWriteLock(lockPath)
++}
++
++// skip reports pkg skipped for cause.
++func (r *testMapRun) skip(pkg, cause string) {
++	r.skipped = append(r.skipped, testMapSkip{Package: pkg, Cause: cause})
++}
++
++// close writes the call's exit record and releases its slot and its temporary directory.
++// A failed write is logged.
++func (r *testMapRun) close() {
++	record := testcover.ExitRecord{PID: os.Getpid(), Unbuilt: r.unbuilt}
++	if err := testcover.WriteExitRecord(r.mapsDir, record); err != nil {
++		logger.Warn("gate testmap: could not write the exit record", "dir", r.mapsDir, "cause", err)
++	}
++	if r.lease != nil {
++		releaseSlot(r.lease, r.location.WorktreePath())
++	}
++	if r.tmp != "" {
++		os.RemoveAll(r.tmp)
++	}
++}
+diff --git a/internal/gatecli/testmap_integration_test.go b/internal/gatecli/testmap_integration_test.go
+new file mode 100644
+index 00000000..469c6e0d
+--- /dev/null
++++ b/internal/gatecli/testmap_integration_test.go
+@@ -0,0 +1,590 @@
++// testmap_integration_test.go drives `lym gate testmap` over a hubforge hub whose prime holds a small Go module.
++// The test binary, re-executed in the helper role helperRoleTestMapGo, stands in for `go`.
++// It also stands in for the coverage binaries `go` builds, so no test builds a real binary.
++// It is Tier 1: it builds a real hub and spawns git and the stand-ins.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"encoding/json"
++	"fmt"
++	"maps"
++	"os"
++	"os/exec"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/google/go-cmp/cmp"
++	"github.com/google/go-cmp/cmp/cmpopts"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/plankit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// helperRoleTestMapGo makes the test binary the stand-in `go` of a `lym gate testmap` call.
++// The same role runs as the coverage binary the stand-in builds.
++const helperRoleTestMapGo = "testmap-go"
++
++// The variables the testmap stand-in reads name the module's import path.
++// They also name the import path whose coverage build fails, and the one whose coverage build never ends.
++// testMapLymBuildsEnv names the file the stand-in appends a line to for each `lym` build it acts as.
++// testMapLymSeenEnv names the file a coverage run appends the prebuilt `lym` path it was given to, empty when none.
++const (
++	testMapModuleEnv    = "GATECLI_TESTMAP_MODULE"
++	testMapFailBuildEnv = "GATECLI_TESTMAP_FAIL_BUILD"
++	testMapHangBuildEnv = "GATECLI_TESTMAP_HANG_BUILD"
++	testMapLymBuildsEnv = "GATECLI_TESTMAP_LYM_BUILDS"
++	testMapLymSeenEnv   = "GATECLI_TESTMAP_LYM_SEEN"
++)
++
++func init() {
++	helperRoles[helperRoleTestMapGo] = runTestMapStandIn
++}
++
++// testMapSource is the Go file `<pkg>.go` of each fixture package: two one-line functions, each one coverage block.
++func testMapSource(pkg string) string {
++	return "package " + pkg + "\n\nfunc One() int { return 1 }\n\nfunc Two() int { return 2 }\n"
++}
++
++// testMapTestFile returns a fixture test file of pkg declaring each test of tiers.
++// Each test opens with tiergate.Require for its tier.
++// A negative tier declares the test with no Require.
++func testMapTestFile(pkg string, tiers map[string]int) string {
++	var b strings.Builder
++	fmt.Fprintf(&b, "package %s\n\nimport (\n\t\"testing\"\n\n\t\"github.com/Knatte18/loomyard/internal/testkit/tiergate\"\n)\n", pkg)
++	for _, name := range slices.Sorted(maps.Keys(tiers)) {
++		if tiers[name] < 0 {
++			fmt.Fprintf(&b, "\nfunc %s(t *testing.T) {}\n", name)
++			continue
++		}
++		fmt.Fprintf(&b, "\nfunc %s(t *testing.T) {\n\ttiergate.Require(t, %d)\n}\n", name, tiers[name])
++	}
++	return b.String()
++}
++
++// runTestMapStandIn acts on its arguments and returns the process exit code.
++// As `go test -c` it runs runTestMapStandInBuild, and as `go build` of `lym` it runs runTestMapStandInLymBuild.
++// As a coverage binary run in a package directory, it reports the test `-test.run` names as passing.
++// Its profile covers the first function of the package's `<package>.go`.
++// A test ending in Two covers the second function too.
++// A test ending in Hangs never ends.
++// One ending in Moves first commits a change to the package's file.
++// One ending in Lands first commits a change to a file outside the package.
++// A test run without LYM_TEST_TIER fails, so a map entry proves its tier's env reached it.
++// A run records the prebuilt `lym` path it was given in the file testMapLymSeenEnv names.
++func runTestMapStandIn() int {
++	args := os.Args[1:]
++	if len(args) > 0 && args[0] == "test" {
++		return runTestMapStandInBuild(args)
++	}
++	if len(args) > 0 && args[0] == "build" {
++		return runTestMapStandInLymBuild(args)
++	}
++	var name, profile string
++	for _, arg := range args {
++		if pattern, ok := strings.CutPrefix(arg, "-test.run="); ok {
++			name = strings.TrimSuffix(strings.TrimPrefix(pattern, "^"), "$")
++		}
++		if path, ok := strings.CutPrefix(arg, "-test.coverprofile="); ok {
++			profile = path
++		}
++	}
++	if seen := os.Getenv(testMapLymSeenEnv); seen != "" {
++		if appendLine(seen, os.Getenv(gateslot.PrebuiltLymEnv)) != nil {
++			return 1
++		}
++	}
++	dir, err := os.Getwd()
++	if err != nil {
++		return 1
++	}
++	pkg := filepath.Base(dir)
++	switch {
++	case os.Getenv(tiergate.EnvVar) == "":
++		fmt.Printf("--- FAIL: %s (0.00s)\n", name)
++		return 1
++	case strings.HasSuffix(name, "Hangs"):
++		time.Sleep(time.Hour)
++	case strings.HasSuffix(name, "Moves"):
++		if appendAndCommit(dir, pkg+".go") != nil {
++			return 1
++		}
++	case strings.HasSuffix(name, "Lands"):
++		if appendAndCommit(filepath.Dir(dir), "landed.txt") != nil {
++			return 1
++		}
++	}
++	second := 0
++	if strings.HasSuffix(name, "Two") {
++		second = 1
++	}
++	file := os.Getenv(testMapModuleEnv) + "/" + pkg + "/" + pkg + ".go"
++	lines := fmt.Sprintf("mode: set\n%s:3.16,3.28 1 1\n%s:5.16,5.28 1 %d\n", file, file, second)
++	if err := os.WriteFile(profile, []byte(lines), 0o644); err != nil {
++		return 1
++	}
++	fmt.Printf("--- PASS: %s (0.01s)\n", name)
++	return 0
++}
++
++// runTestMapStandInBuild acts as `go test -c ... <import path>`.
++// It fails when its working directory holds no go.mod, as the go command does outside a module.
++// It fails for the import path testMapFailBuildEnv names, and never ends for the one testMapHangBuildEnv names.
++// Otherwise it copies the test binary to the `-o` path, so the copy runs as the package's coverage binary.
++func runTestMapStandInBuild(args []string) int {
++	if _, err := os.Stat("go.mod"); err != nil {
++		fmt.Fprintln(os.Stderr, "stand-in: the go command ran outside the module root")
++		return 1
++	}
++	importPath := args[len(args)-1]
++	if importPath == os.Getenv(testMapFailBuildEnv) {
++		fmt.Fprintln(os.Stderr, "stand-in: the coverage build failed")
++		return 1
++	}
++	if importPath == os.Getenv(testMapHangBuildEnv) {
++		time.Sleep(time.Hour)
++	}
++	return copyTestBinary(args[slices.Index(args, "-o")+1])
++}
++
++// runTestMapStandInLymBuild acts as `go build ... -o <path> ./cmd/lym`.
++// It records the build in the file testMapLymBuildsEnv names, then copies the test binary to the `-o` path.
++func runTestMapStandInLymBuild(args []string) int {
++	if builds := os.Getenv(testMapLymBuildsEnv); builds != "" {
++		if appendLine(builds, "built") != nil {
++			return 1
++		}
++	}
++	return copyTestBinary(args[slices.Index(args, "-o")+1])
++}
++
++// copyTestBinary copies the running test binary to the executable file dst and returns the process exit code.
++func copyTestBinary(dst string) int {
++	self, err := os.Executable()
++	if err != nil {
++		return 1
++	}
++	data, err := os.ReadFile(self)
++	if err != nil {
++		return 1
++	}
++	if err := os.WriteFile(dst, data, 0o755); err != nil {
++		return 1
++	}
++	return 0
++}
++
++// appendLine appends line and a newline to the file, creating it.
++func appendLine(file, line string) error {
++	f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
++	if err != nil {
++		return err
++	}
++	if _, err := f.WriteString(line + "\n"); err != nil {
++		f.Close()
++		return err
++	}
++	return f.Close()
++}
++
++// appendAndCommit appends a line to the file rel under dir and commits it alone, moving HEAD as a landing does.
++func appendAndCommit(dir, rel string) error {
++	file, err := os.OpenFile(filepath.Join(dir, rel), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
++	if err != nil {
++		return err
++	}
++	if _, err := file.WriteString("// landed\n"); err != nil {
++		file.Close()
++		return err
++	}
++	if err := file.Close(); err != nil {
++		return err
++	}
++	for _, args := range [][]string{{"add", "--", rel}, {"commit", "-q", "-m", "land " + rel, "--", rel}} {
++		if err := exec.Command("git", append([]string{"-C", dir}, args...)...).Run(); err != nil {
++			return err
++		}
++	}
++	return nil
++}
++
++// testMapOutcome is the envelope of a `lym gate testmap` call that walked its packages.
++type testMapOutcome struct {
++	Built    []string         `json:"built"`
++	Skipped  []testMapSkip    `json:"skipped"`
++	Failed   []testMapFailure `json:"failed"`
++	TimedOut []string         `json:"timed_out"`
++	Unbuilt  int              `json:"unbuilt"`
++}
++
++// TestGateTestMap runs `lym gate testmap` calls in order over one hub.
++// Each call builds on the maps and HEAD the last one left.
++// Its subtests share that state and run in sequence, so none is parallel.
++func TestGateTestMap(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{hubforge.TemplatePairSlug}})
++	prime, pair := h.PrimeWorktree(), h.PairCodeWorktree(hubforge.TemplatePairSlug)
++	const module = "example.com/mapped"
++	// A test past 20 seconds of 150 milliseconds each times out: 3 seconds, long enough for a stand-in to start under load.
++	// tierFields adds fields to the flow mapping of tier0 and tier1.
++	gateYAML := func(tierFields string) string {
++		return "slots: 1\nredundancy_build_timeout_min: 1\nredundancy_test_timeout_sec: 20\ntiers:\n" +
++			"  tier0: {command: x, timeout_min: 1, counter: go-json, " + tierFields + "env: {LYM_TEST_TIER: \"0\"}}\n" +
++			"  tier1: {command: x, timeout_min: 1, counter: go-json, " + tierFields + "env: {LYM_TEST_TIER: \"1\"}}\n" +
++			"  tier2: {command: x, timeout_min: 1, counter: go-json, env: {LYM_TEST_TIER: \"2\"}}\n"
++	}
++	writeGate := func(t *testing.T, content string) {
++		t.Helper()
++		if err := os.WriteFile(configengine.ConfigFile(h.BoardDir(), "gate"), []byte(content), 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++	writeGate(t, gateYAML(""))
++
++	packageTests := map[string]map[string]int{
++		"alpha":   {"TestAlphaOne": 0, "TestAlphaTwo": 1, "TestAlphaHangs": 1, "TestAlphaTier2": 2, "TestAlphaUntiered": -1},
++		"broken":  {"TestBrokenOne": 0},
++		"dirty":   nil,
++		"locked":  {"TestLockedOne": 0},
++		"moved":   {"TestMovedMoves": 0},
++		"notests": nil,
++		"steady":  {"TestSteadyLands": 0},
++	}
++	files := map[string]string{"go.mod": "module " + module + "\n\ngo 1.21\n"}
++	for pkg, tiers := range packageTests {
++		files[pkg+"/"+pkg+".go"] = testMapSource(pkg)
++		if tiers != nil {
++			files[pkg+"/"+pkg+"_test.go"] = testMapTestFile(pkg, tiers)
++		}
++	}
++	// The module also holds directories no package walk may enter: testdata, a dot directory and a nested module.
++	// The "ignored" package is on disk but untracked and excluded, so HEAD tracks no Go file of it.
++	files["testdata/testdata.go"] = "package testdata\n"
++	files[".dot/dot.go"] = "package dot\n"
++	files["nested/go.mod"] = "module example.com/nested\n\ngo 1.21\n"
++	files["nested/nested.go"] = "package nested\n"
++	files["ignored/ignored.go"] = testMapSource("ignored")
++	plankit.WriteTree(t, prime, files)
++	excludeOut, err := exec.Command("git", "-C", prime, "rev-parse", "--git-path", "info/exclude").Output()
++	if err != nil {
++		t.Fatal(err)
++	}
++	excludePath := strings.TrimSpace(string(excludeOut))
++	if !filepath.IsAbs(excludePath) {
++		excludePath = filepath.Join(prime, excludePath)
++	}
++	if err := os.MkdirAll(filepath.Dir(excludePath), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(excludePath, []byte("ignored/\n"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	gitkit.Git(t, prime, append([]string{"add", "go.mod", "testdata", ".dot", "nested"}, slices.Sorted(maps.Keys(packageTests))...)...)
++	gitkit.Git(t, prime, "commit", "-q", "-m", "seed the mapped module")
++	if err := os.WriteFile(filepath.Join(prime, "dirty", "extra.go"), []byte("package dirty\n"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++
++	mapsDir := testcover.Dir(fabricengine.BoltDir(h.Location.HubPath))
++	lockPath := testMapBuildLockPath(mapsDir, "locked")
++	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	held, err := lock.AcquireWriteLock(lockPath)
++	if err != nil {
++		t.Fatal(err)
++	}
++	t.Cleanup(func() { held.Release() })
++
++	standIn, err := os.Executable()
++	if err != nil {
++		t.Fatal(err)
++	}
++	environ := append(os.Environ(), helperEnv+"="+helperRoleTestMapGo, testMapModuleEnv+"="+module, testMapFailBuildEnv+"="+module+"/broken")
++	// callWith runs the verb over the prime under the environment env, with one build minute lasting minuteUnit.
++	callWith := func(t *testing.T, env []string, minuteUnit time.Duration, maxPackages int, packages ...string) testMapOutcome {
++		t.Helper()
++		var out bytes.Buffer
++		code := runTestMap(lymcwd.WithCwd(context.Background(), prime), &out, testMapRequest{
++			goBinary: standIn, maxPackages: maxPackages, packages: packages, environ: env,
++			secondUnit: 150 * time.Millisecond, minuteUnit: minuteUnit, grace: time.Second,
++		})
++		if code != 0 {
++			t.Fatalf("runTestMap exit = %d; want 0; output %s", code, out.String())
++		}
++		var got testMapOutcome
++		if err := json.Unmarshal(out.Bytes(), &got); err != nil {
++			t.Fatalf("unmarshal %q: %v", out.String(), err)
++		}
++		return got
++	}
++	call := func(t *testing.T, maxPackages int, packages ...string) testMapOutcome {
++		t.Helper()
++		return callWith(t, environ, time.Minute, maxPackages, packages...)
++	}
++	readMap := func(t *testing.T, pkg string) testcover.Map {
++		t.Helper()
++		m, found, err := testcover.ReadMap(mapsDir, pkg)
++		if err != nil || !found {
++			t.Fatalf("ReadMap(%s) = found %v, err %v; want a map", pkg, found, err)
++		}
++		return m
++	}
++	wantExitRecord := func(t *testing.T, unbuilt int) {
++		t.Helper()
++		record, found, err := testcover.ReadExitRecord(mapsDir)
++		if want := (testcover.ExitRecord{PID: os.Getpid(), Unbuilt: unbuilt}); err != nil || !found || record != want {
++			t.Errorf("ReadExitRecord() = %+v, found %v, err %v; want %+v", record, found, err, want)
++		}
++	}
++	// wantOutcome compares an outcome but its failures, which wantBrokenFailed checks.
++	wantOutcome := func(t *testing.T, got, want testMapOutcome) {
++		t.Helper()
++		if diff := cmp.Diff(want, got, cmpopts.EquateEmpty(), cmpopts.IgnoreFields(testMapOutcome{}, "Failed")); diff != "" {
++			t.Errorf("runTestMap() mismatch (-want +got):\n%s", diff)
++		}
++	}
++	wantBrokenFailed := func(t *testing.T, got testMapOutcome) {
++		t.Helper()
++		if len(got.Failed) != 1 || got.Failed[0].Package != "broken" || !strings.Contains(got.Failed[0].Failure, "the coverage build failed") {
++			t.Errorf("runTestMap() failed = %+v; want broken alone, naming its build failure", got.Failed)
++		}
++	}
++	dirtySkip := testMapSkip{Package: "dirty", Cause: "modified or untracked file dirty/extra.go"}
++	lockedSkip := testMapSkip{Package: "locked", Cause: "another call holds its map build lock"}
++	movedSkip := testMapSkip{Package: "moved", Cause: "files changed under its tests: moved.go"}
++	ignoreRunFields := cmpopts.IgnoreFields(testcover.MapTest{}, "FuncHash", "Seconds")
++	outsideHub := t.TempDir()
++
++	t.Run("Refusals", func(t *testing.T) {
++		tests := []struct {
++			name string
++			dir  string
++			args []string
++			want string
++			// setup, when set, changes the hub's gate config for the row.
++			setup func(t *testing.T)
++			// writesRecord marks a refusal after the call's state exists, which still writes the exit record.
++			writesRecord bool
++		}{
++			{
++				name: "OutsideThePrime", dir: pair, args: []string{"testmap"},
++				want: "gate testmap: " + pair + " is not the hub's prime worktree, and a coverage map records the prime branch; way forward: run lym gate testmap from " + prime,
++			},
++			{
++				name: "OutsideEveryHub", dir: outsideHub, args: []string{"testmap"},
++				want: "gate testmap: " + outsideHub + " is in no hub, and the coverage maps live in a hub; way forward: run lym gate testmap from a hub's prime worktree",
++			},
++			{name: "MaxBelowOne", dir: prime, args: []string{"testmap", "--max", "0"}, want: "gate testmap: --max 0; way forward: pass --max 1 or more"},
++			{
++				name: "NoMappedTier", dir: prime, args: []string{"testmap"}, writesRecord: true,
++				want: "gate testmap: the hub declares neither tier0 nor tier1, so no test of a package can be mapped; way forward: declare them with lym config gate from the prime, then re-run the same command",
++				setup: func(t *testing.T) {
++					writeGate(t, "slots: 1\ntiers:\n  tier2: {command: x, timeout_min: 1, counter: go-json, env: {LYM_TEST_TIER: \"2\"}}\n")
++					t.Cleanup(func() { writeGate(t, gateYAML("")) })
++				},
++			},
++			{
++				name: "UnknownPackage", dir: prime, args: []string{"testmap", "nosuch"}, writesRecord: true,
++				want: "gate testmap: \"nosuch\" names no package directory of the module at " + prime + "; way forward: name a package by its directory relative to the module root, such as internal/foo",
++			},
++		}
++		wantRecord := false
++		for _, tt := range tests {
++			wantRecord = wantRecord || tt.writesRecord
++			t.Run(tt.name, func(t *testing.T) {
++				if tt.setup != nil {
++					tt.setup(t)
++				}
++				var out bytes.Buffer
++				code := RunCLIIn(tt.dir, &out, tt.args)
++				var envelope struct {
++					Error string `json:"error"`
++				}
++				if err := json.Unmarshal(out.Bytes(), &envelope); err != nil {
++					t.Fatalf("unmarshal %q: %v", out.String(), err)
++				}
++				if code != 1 || envelope.Error != tt.want {
++					t.Errorf("lym gate %q = exit %d, error %q; want exit 1, error %q", tt.args, code, envelope.Error, tt.want)
++				}
++			})
++		}
++		if _, found, err := testcover.ReadExitRecord(mapsDir); err != nil || found != wantRecord {
++			t.Errorf("ReadExitRecord after the refusals = found %v, err %v; want found %v, written only by a refusal after the call's state exists", found, err, wantRecord)
++		}
++	})
++
++	t.Run("CapLeavesStalePackagesUnbuilt", func(t *testing.T) {
++		head := gitkit.RevParse(t, prime, "HEAD")
++		got := call(t, 2)
++		wantOutcome(t, got, testMapOutcome{
++			Built: []string{"alpha"}, Skipped: []testMapSkip{dirtySkip, lockedSkip}, TimedOut: []string{"alpha.TestAlphaHangs"}, Unbuilt: 3,
++		})
++		wantBrokenFailed(t, got)
++
++		alpha := readMap(t, "alpha")
++		wantTests := []testcover.MapTest{{Name: "TestAlphaOne", Tier: 0, Blocks: []int{0}}, {Name: "TestAlphaTwo", Tier: 1, Blocks: []int{0, 1}}}
++		if diff := cmp.Diff(wantTests, alpha.Tests, ignoreRunFields); diff != "" {
++			t.Errorf("alpha map tests mismatch (-want +got):\n%s", diff)
++		}
++		wantFiles := map[string]string{
++			"alpha.go":      testcover.ContentHash([]byte(files["alpha/alpha.go"])),
++			"alpha_test.go": testcover.ContentHash([]byte(files["alpha/alpha_test.go"])),
++		}
++		if alpha.Commit != head || len(alpha.Blocks) != 2 || !maps.Equal(alpha.Files, wantFiles) {
++			t.Errorf("alpha map = commit %s, %d blocks, files %v; want commit %s, 2 blocks, files %v", alpha.Commit, len(alpha.Blocks), alpha.Files, head, wantFiles)
++		}
++		if broken := readMap(t, "broken"); broken.Commit != head || len(broken.Tests) != 0 || !strings.Contains(broken.BuildFailure, "the coverage build failed") {
++			t.Errorf("broken map = commit %s, tests %v, failure %q; want commit %s, no test, the build failure", broken.Commit, broken.Tests, broken.BuildFailure, head)
++		}
++		wantExitRecord(t, 3)
++	})
++
++	t.Run("SecondCallMapsTheRestAndKeepsAFailureAtOneHead", func(t *testing.T) {
++		alphaBefore := readMap(t, "alpha")
++		got := call(t, 10)
++		wantOutcome(t, got, testMapOutcome{Built: []string{"notests", "steady"}, Skipped: []testMapSkip{dirtySkip, lockedSkip, movedSkip}})
++		if len(got.Failed) != 0 {
++			t.Errorf("runTestMap() failed = %+v; want broken not rebuilt at the HEAD of its failure", got.Failed)
++		}
++		steady := readMap(t, "steady")
++		if diff := cmp.Diff([]testcover.MapTest{{Name: "TestSteadyLands", Blocks: []int{0}}}, steady.Tests, ignoreRunFields); diff != "" {
++			t.Errorf("steady map tests mismatch (-want +got):\n%s", diff)
++		}
++		if before := gitkit.RevParse(t, prime, "HEAD~1"); steady.Commit != before {
++			t.Errorf("steady map commit = %s; want %s, the HEAD read before its tests landed a commit outside it", steady.Commit, before)
++		}
++		if notests := readMap(t, "notests"); len(notests.Tests) != 0 || notests.BuildFailure != "" {
++			t.Errorf("notests map = tests %v, failure %q; want no test and no failure", notests.Tests, notests.BuildFailure)
++		}
++		if alpha := readMap(t, "alpha"); !alpha.BuiltAt.Equal(alphaBefore.BuiltAt) {
++			t.Errorf("alpha map built at %v; want it left from %v", alpha.BuiltAt, alphaBefore.BuiltAt)
++		}
++		if _, found, err := testcover.ReadMap(mapsDir, "moved"); err != nil || found {
++			t.Errorf("ReadMap(moved) = found %v, err %v; want no map for a package whose files changed under its tests", found, err)
++		}
++		wantExitRecord(t, 0)
++	})
++
++	t.Run("HeadMoveRetriesTheFailedBuildAndAgeRebuilds", func(t *testing.T) {
++		aged := readMap(t, "notests")
++		aged.BuiltAt = time.Now().Add(-8 * 24 * time.Hour)
++		if err := testcover.WriteMap(mapsDir, "notests", aged); err != nil {
++			t.Fatal(err)
++		}
++		got := call(t, 10)
++		wantOutcome(t, got, testMapOutcome{Built: []string{"notests"}, Skipped: []testMapSkip{dirtySkip, lockedSkip, movedSkip}})
++		wantBrokenFailed(t, got)
++	})
++
++	t.Run("NamedPackageIsRebuiltWhenFresh", func(t *testing.T) {
++		before := readMap(t, "alpha")
++		got := call(t, 1, "./alpha")
++		wantOutcome(t, got, testMapOutcome{Built: []string{"alpha"}, TimedOut: []string{"alpha.TestAlphaHangs"}})
++		if after := readMap(t, "alpha"); !after.BuiltAt.After(before.BuiltAt) {
++			t.Errorf("alpha map built at %v; want after %v", after.BuiltAt, before.BuiltAt)
++		}
++	})
++
++	t.Run("ChangedFileContentAndFileSetRebuild", func(t *testing.T) {
++		edited := files["alpha/alpha.go"] + "// edited\n"
++		if err := os.WriteFile(filepath.Join(prime, "alpha", "alpha.go"), []byte(edited), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		if err := os.WriteFile(filepath.Join(prime, "steady", "extra.go"), []byte("package steady\n"), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		gitkit.Git(t, prime, "add", "alpha/alpha.go", "steady/extra.go")
++		gitkit.Git(t, prime, "commit", "-q", "-m", "edit alpha and add a file to steady")
++
++		got := call(t, 10)
++		wantOutcome(t, got, testMapOutcome{
++			Built: []string{"alpha", "steady"}, Skipped: []testMapSkip{dirtySkip, lockedSkip, movedSkip}, TimedOut: []string{"alpha.TestAlphaHangs"},
++		})
++		wantBrokenFailed(t, got)
++		if alpha := readMap(t, "alpha"); alpha.Files["alpha.go"] != testcover.ContentHash([]byte(edited)) {
++			t.Errorf("alpha map files = %v; want alpha.go hashed from the edited content", alpha.Files)
++		}
++		if steady := readMap(t, "steady"); steady.Files["extra.go"] != testcover.ContentHash([]byte("package steady\n")) {
++			t.Errorf("steady map files = %v; want the added extra.go", steady.Files)
++		}
++	})
++
++	t.Run("SkippedPackageCountsAgainstMax", func(t *testing.T) {
++		aged := readMap(t, "notests")
++		aged.BuiltAt = time.Now().Add(-8 * 24 * time.Hour)
++		if err := testcover.WriteMap(mapsDir, "notests", aged); err != nil {
++			t.Fatal(err)
++		}
++		got := call(t, 2)
++		wantOutcome(t, got, testMapOutcome{Skipped: []testMapSkip{dirtySkip, lockedSkip, movedSkip}, Unbuilt: 1})
++		wantBrokenFailed(t, got)
++		wantExitRecord(t, 1)
++	})
++
++	t.Run("NamedPackageWithNoTrackedGoFileIsSkipped", func(t *testing.T) {
++		got := call(t, 1, "ignored")
++		wantOutcome(t, got, testMapOutcome{Skipped: []testMapSkip{{Package: "ignored", Cause: "no Go file tracked at HEAD"}}})
++	})
++
++	t.Run("BuildPastItsTimeoutFailsThePackage", func(t *testing.T) {
++		hangEnviron := append(slices.Clone(environ), testMapHangBuildEnv+"="+module+"/steady")
++		got := callWith(t, hangEnviron, 2*time.Second, 1, "steady")
++		wantOutcome(t, got, testMapOutcome{})
++		if len(got.Failed) != 1 || got.Failed[0].Package != "steady" || !strings.Contains(got.Failed[0].Failure, "timed out after 2s") {
++			t.Errorf("runTestMap() failed = %+v; want steady alone, naming the build timeout", got.Failed)
++		}
++	})
++
++	t.Run("PrebuiltLymIsBuiltOncePerCall", func(t *testing.T) {
++		if err := os.MkdirAll(filepath.Join(prime, "cmd", "lym"), 0o755); err != nil {
++			t.Fatal(err)
++		}
++		if err := os.WriteFile(filepath.Join(prime, "cmd", "lym", "main.go"), []byte("package main\n\nfunc main() {}\n"), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		gitkit.Git(t, prime, "add", "cmd")
++		gitkit.Git(t, prime, "commit", "-q", "-m", "add the lym command")
++		writeGate(t, gateYAML("prebuilt_lym: true, "))
++
++		records := t.TempDir()
++		builds, seen := filepath.Join(records, "builds"), filepath.Join(records, "seen")
++		lymEnviron := append(slices.Clone(environ), testMapLymBuildsEnv+"="+builds, testMapLymSeenEnv+"="+seen)
++		got := callWith(t, lymEnviron, time.Minute, 10, "alpha", "steady")
++		wantOutcome(t, got, testMapOutcome{Built: []string{"alpha", "steady"}, TimedOut: []string{"alpha.TestAlphaHangs"}})
++		if len(got.Failed) != 0 {
++			t.Errorf("runTestMap() failed = %+v; want none", got.Failed)
++		}
++
++		built, err := os.ReadFile(builds)
++		if err != nil {
++			t.Fatal(err)
++		}
++		if lines := strings.Fields(string(built)); len(lines) != 1 {
++			t.Errorf("lym builds = %d; want 1 for the two packages", len(lines))
++		}
++		seenData, err := os.ReadFile(seen)
++		if err != nil {
++			t.Fatal(err)
++		}
++		paths := strings.Split(strings.TrimSpace(string(seenData)), "\n")
++		if distinct := slices.Compact(slices.Sorted(slices.Values(paths))); len(paths) < 2 || len(distinct) != 1 || distinct[0] == "" {
++			t.Errorf("prebuilt lym paths the tests saw = %q; want one non-empty path for every run of both packages", paths)
++		}
++	})
++}
+diff --git a/internal/gatecli/testmappackage.go b/internal/gatecli/testmappackage.go
+new file mode 100644
+index 00000000..aeb3a63f
+--- /dev/null
++++ b/internal/gatecli/testmappackage.go
+@@ -0,0 +1,291 @@
++// testmappackage.go builds one package's coverage map for `lym gate testmap`.
++// It runs each of the package's mapped tests alone under a coverage binary inside the call's slot.
++// It keys the blocks they cover, and discards the map when the package's files changed under its tests.
++
++package gatecli
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"runtime"
++	"slices"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymtemp"
++	"github.com/Knatte18/loomyard/internal/testcover"
++)
++
++// mappedRun is one mapped test that passed alone, with the function it ran.
++type mappedRun struct {
++	fn     testcover.TestFunc
++	result testcover.RunResult
++}
++
++// mapPackage builds and writes the coverage map of pkg, whose worktree-relative directory is dir.
++// It builds from the commit head, whose Go files hash to before.
++// A package with no mapped test gets a map of its file hashes and no tests, with no build;
++// one whose build failed gets the same, naming the failure.
++// A package whose Go files differ at HEAD once its tests ended gets no map and is reported skipped.
++// The error reports a slot, read or write failure, or a cancelled call, that ends the call.
++func (r *testMapRun) mapPackage(pkg, dir, head string, before map[string]string) error {
++	pkgDir := filepath.Join(r.location.WorktreePath(), filepath.FromSlash(dir))
++	importPath := r.importPath(pkg)
++	m := testcover.Map{Commit: head, Files: before}
++	funcs, err := testcover.ScanTestFuncs(pkgDir)
++	if err != nil {
++		return r.writeFailed(pkg, m, err)
++	}
++	var mapped []testcover.TestFunc
++	for _, fn := range funcs {
++		if _, declared := r.tiers[fn.Tier]; fn.Tiered && declared {
++			mapped = append(mapped, fn)
++		}
++	}
++	if len(mapped) == 0 {
++		return r.write(pkg, m)
++	}
++
++	if err := r.holdSlot(); err != nil {
++		return err
++	}
++	bin := filepath.Join(r.tmp, "pkg.test")
++	defer os.Remove(bin)
++	builder := testcover.Toolchain{
++		Go: r.request.goBinary, Env: r.holderEnv, Dir: r.moduleDir, Ctx: r.ctx, BuildTimeout: r.buildTimeout, Grace: r.request.grace,
++	}
++	if err := builder.BuildBinary(importPath, importPath, "", bin); err != nil {
++		// A terminating signal ends the build for a cause outside the package, so no failure map records it.
++		if cancelled := r.ctx.Err(); cancelled != nil {
++			return cancelled
++		}
++		return r.writeFailed(pkg, m, err)
++	}
++	if slices.ContainsFunc(mapped, func(fn testcover.TestFunc) bool { return r.tiers[fn.Tier].PrebuiltLym }) {
++		if err := r.buildLym(); err != nil {
++			if cancelled := r.ctx.Err(); cancelled != nil {
++				return cancelled
++			}
++			return r.writeFailed(pkg, m, err)
++		}
++	}
++	var passed []mappedRun
++	for _, fn := range mapped {
++		if err := r.ctx.Err(); err != nil {
++			return err
++		}
++		if result, ok := r.runTest(pkg, pkgDir, bin, fn); ok {
++			passed = append(passed, mappedRun{fn: fn, result: result})
++		}
++	}
++	// A signal during the last test leaves that test out of passed, so the map would miss it.
++	if err := r.ctx.Err(); err != nil {
++		return err
++	}
++
++	changed, err := r.changedFiles(dir, before)
++	if err != nil {
++		return err
++	}
++	if len(changed) > 0 {
++		r.skip(pkg, "files changed under its tests: "+strings.Join(changed, ", "))
++		return nil
++	}
++	if err := fillMapTests(&m, pkgDir, importPath, passed); err != nil {
++		return r.writeFailed(pkg, m, err)
++	}
++	return r.write(pkg, m)
++}
++
++// importPath returns the import path of the module-relative package directory pkg.
++func (r *testMapRun) importPath(pkg string) string {
++	if pkg == "." {
++		return r.modulePath
++	}
++	return r.modulePath + "/" + pkg
++}
++
++// holdSlot takes one slot of the hub's pool for the rest of the call.
++// It takes none when it holds one already or runs inside the slot an enclosing gate run holds.
++// It fills the slot holder's Go flags into the call's environment and creates the call's temporary directory.
++// Its wait has no bound but the call's context.
++func (r *testMapRun) holdSlot() error {
++	if r.holderEnv != nil {
++		return nil
++	}
++	limits, err := r.pool.Limits()
++	if err != nil {
++		return fmt.Errorf("read the hub's gate limits: %w", err)
++	}
++	if inherited := envValue(r.request.environ, gateslot.InheritEnv); inherited == "" || !r.pool.Inherited(inherited) {
++		if r.lease, err = r.pool.Acquire(r.ctx, gateslot.Holder{Worktree: r.location.WorktreePath(), Site: testMapSite}); err != nil {
++			return fmt.Errorf("acquire a gate slot: %w", err)
++		}
++	}
++	if r.tmp, err = lymtemp.MkdirTemp("testmap-"); err != nil {
++		return fmt.Errorf("create the coverage binary directory: %w", err)
++	}
++	r.parallel = limits.Tier0Parallel
++	if r.parallel < 1 {
++		r.parallel = runtime.NumCPU()
++	}
++	r.holderEnv = gateslot.HolderEnv(r.env, r.lease, limits.Tier0Parallel)
++	return nil
++}
++
++// envValue returns the value of the last entry of env named key, or "".
++func envValue(env []string, key string) string {
++	value := ""
++	for _, entry := range env {
++		if name, rest, found := strings.Cut(entry, "="); found && name == key {
++			value = rest
++		}
++	}
++	return value
++}
++
++// buildLym builds `lym` from the worktree into the pool's prebuilt store, once per call, bounded by the build timeout.
++// A failed build is kept, so every later package that needs it fails the same way without building again.
++// A build ended by a terminating signal is not kept and returns the call context's error.
++func (r *testMapRun) buildLym() error {
++	if r.lymBuilt {
++		return r.lymErr
++	}
++	r.lymBuilt = true
++	ctx, cancel := context.WithTimeout(r.ctx, r.buildTimeout)
++	defer cancel()
++	// The store keeps the binary, so the cleanup prebuildLym returns for it removes nothing.
++	bin, _, err := prebuildLym(ctx, r.request.goBinary, r.location.WorktreePath(), r.parallel, r.pool.PrebuiltDir(), r.request.grace, r.holderEnv)
++	if cancelled := r.ctx.Err(); cancelled != nil {
++		r.lymBuilt = false
++		return cancelled
++	}
++	switch {
++	case err != nil && errors.Is(ctx.Err(), context.DeadlineExceeded):
++		r.lymErr = fmt.Errorf("lym build: timed out after %s", r.buildTimeout)
++	case err != nil:
++		r.lymErr = fmt.Errorf("lym build: %w", err)
++	}
++	r.lymBin = bin
++	return r.lymErr
++}
++
++// runTest runs the mapped test fn of pkg alone under the coverage binary bin in the package directory pkgDir.
++// It runs with its tier's env and, for a tier with prebuilt_lym, the call's `lym` build.
++// It returns the result and true for a test that passed.
++// A test that timed out is listed on the call's report; one that failed, skipped or wrote no profile is left out.
++func (r *testMapRun) runTest(pkg, pkgDir, bin string, fn testcover.TestFunc) (testcover.RunResult, bool) {
++	tier := r.tiers[fn.Tier]
++	env := slices.Concat(r.holderEnv, renderTierEnv(tier))
++	if tier.PrebuiltLym && r.lymBin != "" {
++		env = append(env, gateslot.PrebuiltLymEnv+"="+r.lymBin)
++	}
++	runner := testcover.Toolchain{Env: env, Ctx: r.ctx, TestTimeout: r.testTimeout, Grace: r.request.grace}
++	result, err := runner.RunAlone(bin, pkgDir, filepath.Join(r.tmp, "cover.out"), fn.Name)
++	switch {
++	case err != nil:
++		logger.Warn("gate testmap: a test is left out of the map", "package", pkg, "test", fn.Name, "cause", err)
++		return result, false
++	case result.TimedOut:
++		r.timedOut = append(r.timedOut, pkg+"."+fn.Name)
++		return result, false
++	}
++	return result, result.Action == testcover.ActionPass
++}
++
++// changedFiles returns the sorted names of the Go files whose hash at the current HEAD differs from before.
++// The files are those of the worktree-relative directory dir.
++// A file added or removed since counts as changed.
++func (r *testMapRun) changedFiles(dir string, before map[string]string) ([]string, error) {
++	head, err := r.fabric.HeadSHA()
++	if err != nil {
++		return nil, fmt.Errorf("read HEAD: %w", err)
++	}
++	after, err := r.fileHashes(head, dir)
++	if err != nil {
++		return nil, err
++	}
++	var changed []string
++	for name, hash := range before {
++		if after[name] != hash {
++			changed = append(changed, name)
++		}
++	}
++	for name := range after {
++		if _, found := before[name]; !found {
++			changed = append(changed, name)
++		}
++	}
++	slices.Sort(changed)
++	return changed, nil
++}
++
++// fillMapTests fills m's block key table from the blocks of the package at importPath.
++// It reads the blocks from the package directory pkgDir, and adds one test per run that covers one of them.
++// Every run's profile holds every block of the package, covered or not, so the first run's profile gives the table.
++func fillMapTests(m *testcover.Map, pkgDir, importPath string, runs []mappedRun) error {
++	if len(runs) == 0 {
++		return nil
++	}
++	var blocks []testcover.ProfileBlock
++	index := map[string]int{}
++	for _, block := range testcover.PackageBlocks(runs[0].result.Profile, importPath) {
++		if _, seen := index[block.Position()]; !seen {
++			index[block.Position()] = len(blocks)
++			blocks = append(blocks, block)
++		}
++	}
++	keys, err := testcover.KeyBlocks(pkgDir, blocks)
++	if err != nil {
++		return fmt.Errorf("key the covered blocks: %w", err)
++	}
++	m.Blocks = keys
++	for _, run := range runs {
++		var covered []int
++		for position := range testcover.CoveredPositions(testcover.PackageBlocks(run.result.Profile, importPath)) {
++			if i, found := index[position]; found {
++				covered = append(covered, i)
++			}
++		}
++		if len(covered) == 0 {
++			continue
++		}
++		slices.Sort(covered)
++		m.Tests = append(m.Tests, testcover.MapTest{Name: run.fn.Name, Tier: run.fn.Tier, FuncHash: run.fn.Hash, Seconds: run.result.Elapsed, Blocks: covered})
++	}
++	return nil
++}
++
++// write stamps m with the build time, writes it as the map of pkg and reports pkg built.
++func (r *testMapRun) write(pkg string, m testcover.Map) error {
++	if err := r.writeMap(pkg, m); err != nil {
++		return err
++	}
++	r.built = append(r.built, pkg)
++	return nil
++}
++
++// writeFailed writes the map of pkg with no tests and failure as its build failure, and reports pkg failed.
++func (r *testMapRun) writeFailed(pkg string, m testcover.Map, failure error) error {
++	m.BuildFailure = failure.Error()
++	m.Blocks, m.Tests = nil, nil
++	if err := r.writeMap(pkg, m); err != nil {
++		return err
++	}
++	r.failed = append(r.failed, testMapFailure{Package: pkg, Failure: m.BuildFailure})
++	return nil
++}
++
++// writeMap stamps m with the build time and writes it as the map of pkg.
++func (r *testMapRun) writeMap(pkg string, m testcover.Map) error {
++	m.BuiltAt = time.Now()
++	if err := testcover.WriteMap(r.mapsDir, pkg, m); err != nil {
++		return fmt.Errorf("write the coverage map of %s: %w", pkg, err)
++	}
++	return nil
++}
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index c5049aed..24559900 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -273,7 +273,7 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 		return 0, nil, "", ""
+ 	}
+ 	if run.tier.PrebuiltLym {
+-		bin, cleanup, err := prebuildLym(ctx, request.goBinary, request.root, run.tier.Parallel, request.prebuiltStore)
++		bin, cleanup, err := prebuildLym(ctx, request.goBinary, request.root, run.tier.Parallel, request.prebuiltStore, request.pipeWaitDelay, nil)
+ 		if err != nil {
+ 			if ctx.Err() != nil {
+ 				return 1, nil, "", ""
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index f05a5341..24133cf3 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -34,6 +34,12 @@ type Config struct {
+ 	BusyQuitSec int `yaml:"busy_quit_sec"`
+ 	// FixerTimeoutMin is the minutes a cold gate fixer may run before its caller stops waiting for it.
+ 	FixerTimeoutMin int `yaml:"fixer_timeout_min"`
++	// TestMapMaxAgeDays is the days after which a coverage map is rebuilt whatever changed.
++	TestMapMaxAgeDays int `yaml:"test_map_max_age_days"`
++	// RedundancyBuildTimeoutMin is the minutes each build of a coverage map run may take.
++	RedundancyBuildTimeoutMin int `yaml:"redundancy_build_timeout_min"`
++	// RedundancyTestTimeoutSec is the seconds each test a coverage map run runs alone may take.
++	RedundancyTestTimeoutSec int `yaml:"redundancy_test_timeout_sec"`
+ 	// Tiers are the declared test tiers keyed tier0, tier1, and so on.
+ 	Tiers map[string]Tier `yaml:"tiers"`
+ 	// Gates maps a gate key to the tiers and scope that site runs.
+@@ -77,16 +83,19 @@ type buildFile struct {
+ // A tier_parallel entry is a node because a scalar --set writes it as a string.
+ // A gates entry is a node so decodeGates names the key a bad entry sits under.
+ type configFile struct {
+-	Slots           int                  `yaml:"slots"`
+-	BusyQuitSec     int                  `yaml:"busy_quit_sec"`
+-	FixerTimeoutMin int                  `yaml:"fixer_timeout_min"`
+-	Tiers           map[string]tierFile  `yaml:"tiers"`
+-	Gates           map[string]yaml.Node `yaml:"gates"`
+-	Scoper          string               `yaml:"scoper"`
+-	RefuseRaw       []string             `yaml:"refuse_raw"`
+-	TierParallel    map[string]yaml.Node `yaml:"tier_parallel"`
+-	Build           buildFile            `yaml:"build"`
+-	InertPaths      []string             `yaml:"inert_paths"`
++	Slots                     int                  `yaml:"slots"`
++	BusyQuitSec               int                  `yaml:"busy_quit_sec"`
++	FixerTimeoutMin           int                  `yaml:"fixer_timeout_min"`
++	TestMapMaxAgeDays         int                  `yaml:"test_map_max_age_days"`
++	RedundancyBuildTimeoutMin int                  `yaml:"redundancy_build_timeout_min"`
++	RedundancyTestTimeoutSec  int                  `yaml:"redundancy_test_timeout_sec"`
++	Tiers                     map[string]tierFile  `yaml:"tiers"`
++	Gates                     map[string]yaml.Node `yaml:"gates"`
++	Scoper                    string               `yaml:"scoper"`
++	RefuseRaw                 []string             `yaml:"refuse_raw"`
++	TierParallel              map[string]yaml.Node `yaml:"tier_parallel"`
++	Build                     buildFile            `yaml:"build"`
++	InertPaths                []string             `yaml:"inert_paths"`
+ }
+ 
+ // ErrConfigAbsent is LoadConfig's error for a layer stack whose hub gate.yaml is missing.
+@@ -109,6 +118,7 @@ func ConfigPerNameMaps() []string {
+ // ConfigSpec returns gate's layered-load spec.
+ // `slots` and `tier_parallel` take a machine override, and every key stays closed to the local layer.
+ // `fixer_timeout_min` is cross-pair like `busy_quit_sec`; a gate key's `fixer` sits inside `gates`, a guard key.
++// The coverage map keys are cross-pair too, since every worktree of the hub reads the maps they bound.
+ // `tiers` and `build` run any shell command in a task worktree, so they are executable.
+ // The gate lists, the scoper, the refused commands and the inert paths switch off or hollow a guard.
+ // `cli_wait_sec`, `go_parallel` and `guard_tier` are retired;
+@@ -128,16 +138,19 @@ func ConfigSpec() configengine.Spec {
+ 		PerNameMaps: ConfigPerNameMaps(),
+ 		HubWide:     true,
+ 		Categories: map[string]configengine.Category{
+-			"slots":             configengine.CategoryMachine,
+-			"tier_parallel":     configengine.CategoryMachine,
+-			"busy_quit_sec":     configengine.CategoryCrossPair,
+-			"fixer_timeout_min": configengine.CategoryCrossPair,
+-			"tiers":             configengine.CategoryExecutable,
+-			"gates":             configengine.CategoryGuard,
+-			"scoper":            configengine.CategoryGuard,
+-			"refuse_raw":        configengine.CategoryGuard,
+-			"build":             configengine.CategoryExecutable,
+-			"inert_paths":       configengine.CategoryGuard,
++			"slots":                        configengine.CategoryMachine,
++			"tier_parallel":                configengine.CategoryMachine,
++			"busy_quit_sec":                configengine.CategoryCrossPair,
++			"fixer_timeout_min":            configengine.CategoryCrossPair,
++			"test_map_max_age_days":        configengine.CategoryCrossPair,
++			"redundancy_build_timeout_min": configengine.CategoryCrossPair,
++			"redundancy_test_timeout_sec":  configengine.CategoryCrossPair,
++			"tiers":                        configengine.CategoryExecutable,
++			"gates":                        configengine.CategoryGuard,
++			"scoper":                       configengine.CategoryGuard,
++			"refuse_raw":                   configengine.CategoryGuard,
++			"build":                        configengine.CategoryExecutable,
++			"inert_paths":                  configengine.CategoryGuard,
+ 		},
+ 		RetiredKeys: map[string]configengine.Category{
+ 			"cli_wait_sec": configengine.CategoryCrossPair,
+@@ -258,8 +271,18 @@ func decodeConfig(data []byte, machineLayerApplies bool) (Config, error) {
+ 	if file.BusyQuitSec < 0 {
+ 		return Config{}, fmt.Errorf("gate config key %q: %d; want at least 0", "busy_quit_sec", file.BusyQuitSec)
+ 	}
+-	if file.FixerTimeoutMin < 1 {
+-		return Config{}, fmt.Errorf("gate config key %q: %d; want at least 1", "fixer_timeout_min", file.FixerTimeoutMin)
++	for _, bound := range []struct {
++		key   string
++		value int
++	}{
++		{"fixer_timeout_min", file.FixerTimeoutMin},
++		{"test_map_max_age_days", file.TestMapMaxAgeDays},
++		{"redundancy_build_timeout_min", file.RedundancyBuildTimeoutMin},
++		{"redundancy_test_timeout_sec", file.RedundancyTestTimeoutSec},
++	} {
++		if bound.value < 1 {
++			return Config{}, fmt.Errorf("gate config key %q: %d; want at least 1", bound.key, bound.value)
++		}
+ 	}
+ 	tiers, err := decodeTiers(file.Tiers)
+ 	if err != nil {
+@@ -289,16 +312,19 @@ func decodeConfig(data []byte, machineLayerApplies bool) (Config, error) {
+ 		return Config{}, err
+ 	}
+ 	return Config{
+-		Slots:           file.Slots,
+-		BusyQuitSec:     file.BusyQuitSec,
+-		FixerTimeoutMin: file.FixerTimeoutMin,
+-		Tiers:           tiers,
+-		Gates:           gates,
+-		Scoper:          file.Scoper,
+-		RefuseRaw:       file.RefuseRaw,
+-		TierParallel:    tierParallel,
+-		Build:           build,
+-		InertPaths:      file.InertPaths,
++		Slots:                     file.Slots,
++		BusyQuitSec:               file.BusyQuitSec,
++		FixerTimeoutMin:           file.FixerTimeoutMin,
++		TestMapMaxAgeDays:         file.TestMapMaxAgeDays,
++		RedundancyBuildTimeoutMin: file.RedundancyBuildTimeoutMin,
++		RedundancyTestTimeoutSec:  file.RedundancyTestTimeoutSec,
++		Tiers:                     tiers,
++		Gates:                     gates,
++		Scoper:                    file.Scoper,
++		RefuseRaw:                 file.RefuseRaw,
++		TierParallel:              tierParallel,
++		Build:                     build,
++		InertPaths:                file.InertPaths,
+ 	}, nil
+ }
+ 
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index 6dd19469..8679d5d9 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -69,6 +69,7 @@ func TestConfigSpec_SetNestedKeys(t *testing.T) {
+ 
+ var templateDefaults = Config{
+ 	Slots: 2, BusyQuitSec: 120, FixerTimeoutMin: 30,
++	TestMapMaxAgeDays: 7, RedundancyBuildTimeoutMin: 10, RedundancyTestTimeoutSec: 120,
+ 	Gates: map[string]GateKey{
+ 		"card":            {Tiers: []int{0}, Scope: "card", Lints: []string{"comments", "pattern"}, Fixer: "sonnet[medium]"},
+ 		"batch":           {Tiers: []int{0}, Scope: "card"},
+@@ -284,6 +285,9 @@ func TestLoadConfig(t *testing.T) {
+ 		},
+ 		{"an unparsable fixer on the card key", baseKeys + "gates:\n  card: {fixer: \"???\"}\n", Config{}, unparsableFixerRefusal("???")},
+ 		{"fixer_timeout_min zero", baseKeys + "fixer_timeout_min: 0\n", Config{}, `gate config key "fixer_timeout_min": 0; want at least 1` + fixIt},
++		{"test_map_max_age_days zero", baseKeys + "test_map_max_age_days: 0\n", Config{}, `gate config key "test_map_max_age_days": 0; want at least 1` + fixIt},
++		{"redundancy_build_timeout_min zero", baseKeys + "redundancy_build_timeout_min: 0\n", Config{}, `gate config key "redundancy_build_timeout_min": 0; want at least 1` + fixIt},
++		{"redundancy_test_timeout_sec zero", baseKeys + "redundancy_test_timeout_sec: 0\n", Config{}, `gate config key "redundancy_test_timeout_sec": 0; want at least 1` + fixIt},
+ 		{"scope card on a key but card and batch", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: card}\n", Config{}, `gate config key "gates.parent-align": scope card is only for the card and batch keys` + fixIt},
+ 		{"an unknown scope", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: some}\n", Config{}, `gate config key "gates.parent-align": scope "some"; want card, diff or all` + fixIt},
+ 		{"an unknown lint", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: all, lints: [spelling]}\n", Config{}, `gate config key "gates.parent-align": lint "spelling"; want comments or pattern` + fixIt},
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 69b5651a..4c8b5281 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -62,6 +62,7 @@
+ // The non-tier holders hold one slot and set their own Go flags through HolderEnv.
+ // Each passes the `-p` value it reads from the pool's Limits at its acquire,
+ // so a hub that declares `tier0` bounds them by its parallel and a hub that declares none adds no `-p`.
++// `lym gate testmap` is one: it holds one slot from its first build to its end.
+ //
+ // # Prebuilt store
+ //
+@@ -156,6 +157,11 @@
+ // Only the `card` key may hold one; the template sets `sonnet[medium]` there, and an empty value turns the fixer off.
+ // `fixer_timeout_min` bounds how long the callers of a cold gate fixer wait for it.
+ // LoadConfig refuses a value below 1, and Config.FixerTimeout returns it as a duration.
++// `lym gate testmap` builds coverage maps under three bounds.
++// `test_map_max_age_days` is the age past which a map is rebuilt whatever changed.
++// `redundancy_build_timeout_min` bounds each build in minutes.
++// `redundancy_test_timeout_sec` bounds each test in seconds.
++// They are cross-pair keys, since every worktree of the hub reads the maps, and LoadConfig refuses a value below 1.
+ // LoadConfig refuses a `fixer` on any key but `card`, and a `fixer` that `modelspec.Parse` rejects.
+ // Each refusal names the key and its way forward.
+ // A `gates` entry still in the retired list shape, such as `card: [0]`, is refused naming `lym fabric reconcile`.
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index fc46fb38..99fff5bc 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -1,6 +1,9 @@
+ slots: 2  # how many gate builds and test runs the hub executes at once; a lowered count takes effect on the next acquire while a running holder finishes
+ busy_quit_sec: 120  # seconds a Go test binary under lym gate test may keep a CPU core at least 90 percent busy before it gets one SIGQUIT and dumps its goroutine stacks; 0 turns the watchdog off; raise it for a package that is CPU-bound but healthy
+ fixer_timeout_min: 30  # minutes a cold gate fixer may run before the call that spawned it stops waiting; it bounds the card gate's fixer and the row gate fixers, and webster's fix-verify keeps its own recovery_timeout_min
++test_map_max_age_days: 7  # days after which lym gate testmap rebuilds a package's coverage map even when no Go file of the package changed, so a change to a dependency or a non-Go file of the package lasts at most this long unmapped
++redundancy_build_timeout_min: 10  # minutes each coverage build and lym build of a coverage map run may take before its process group is killed and the build counts as failed
++redundancy_test_timeout_sec: 120  # seconds each test a coverage map run runs alone may take before its process group is killed and the test is left out of the map
+ 
+ # The hub's test tiers, keyed tier0, tier1, and so on; the template declares none.
+ # A tier is written whole with one flow mapping: lym config gate --set 'tiers.tier0={command: "go test -json {targets} {args}", all_targets: ./..., timeout_min: 60, counter: go-json}'
+diff --git a/internal/hubgeom/hubgeom.go b/internal/hubgeom/hubgeom.go
+index c2f6cf9f..16fd915b 100644
+--- a/internal/hubgeom/hubgeom.go
++++ b/internal/hubgeom/hubgeom.go
+@@ -50,6 +50,26 @@ func ReedGeometry(l *lymcwd.Location) (reedengine.Geometry, error) {
+ 	return reedGeometry(l, prime), nil
+ }
+ 
++// IsPrime reports whether l is its hub's prime worktree, the one carrying the hub's prime parent branch.
++// It reads the worktree's .git entry and spawns nothing; an entry it cannot read is an error.
++func IsPrime(l *lymcwd.Location) (bool, error) {
++	return isPrimeWorktree(l.WorktreePath())
++}
++
++// PrimeWorktreePath returns the root of the prime worktree of l's hub.
++// The error reports a hub whose prime worktree cannot be found.
++func PrimeWorktreePath(l *lymcwd.Location) (string, error) {
++	name, err := fabricengine.PrimeName(l)
++	if err != nil {
++		return "", err
++	}
++	prime, err := lymcwd.NamedWorktree(l.HubPath, name)
++	if err != nil {
++		return "", err
++	}
++	return prime.WorktreePath(), nil
++}
++
+ // gitEntryName is the entry at every git worktree's root.
+ const gitEntryName = ".git"
+ 
+diff --git a/internal/lymdirs/dirs.go b/internal/lymdirs/dirs.go
+index d0665209..ba66ba50 100644
+--- a/internal/lymdirs/dirs.go
++++ b/internal/lymdirs/dirs.go
+@@ -53,6 +53,10 @@ const DriftJudgeDirName = "drift-judge"
+ // Every worktree of the hub on the machine shares them.
+ const TestCoverDirName = "testcover"
+ 
++// TestMapExitFileName is the file under TestCoverDirName that `lym gate testmap` writes as it exits.
++// It holds the call's process ID and the count of stale packages its package cap left unbuilt.
++const TestMapExitFileName = "testmap-exit.json"
++
+ // BeamDirName is the directory under a worktree's `.lym` that holds dobby's lock, state record and markers.
+ const BeamDirName = "beam"
+ 
+diff --git a/internal/testcover/coveragemap.go b/internal/testcover/coveragemap.go
+index 83eab60b..47681086 100644
+--- a/internal/testcover/coveragemap.go
++++ b/internal/testcover/coveragemap.go
+@@ -7,12 +7,19 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/state"
+ )
+ 
+ // mapFileName is the file name of a package's coverage map within its directory.
+ const mapFileName = "map.json"
+ 
++// Dir returns the directory under the board directory boardDir that holds the coverage maps and the exit record.
++// Every worktree of the hub on the machine shares it.
++func Dir(boardDir string) string {
++	return filepath.Join(boardDir, lymdirs.DotLymDirName, lymdirs.TestCoverDirName)
++}
++
+ // Map is one package's coverage map.
+ // It records which blocks of the package's own files each judged test covers, and the tree it was built from.
+ type Map struct {
+diff --git a/internal/testcover/coveragemap_test.go b/internal/testcover/coveragemap_test.go
+index 8a3747a6..14fb85cc 100644
+--- a/internal/testcover/coveragemap_test.go
++++ b/internal/testcover/coveragemap_test.go
+@@ -3,6 +3,7 @@ package testcover_test
+ import (
+ 	"encoding/json"
+ 	"os"
++	"path/filepath"
+ 	"reflect"
+ 	"testing"
+ 	"time"
+@@ -11,6 +12,25 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++func TestWriteExitRecordReadExitRecord(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	dir := filepath.Join(t.TempDir(), "testcover")
++	if _, found, err := testcover.ReadExitRecord(dir); err != nil || found {
++		t.Fatalf("ReadExitRecord before any write = found %v, err %v; want not found and no error", found, err)
++	}
++	for _, written := range []testcover.ExitRecord{{PID: 4321}, {PID: 4322, Unbuilt: 3}} {
++		if err := testcover.WriteExitRecord(dir, written); err != nil {
++			t.Fatal(err)
++		}
++		read, found, err := testcover.ReadExitRecord(dir)
++		if err != nil || !found || read != written {
++			t.Errorf("ReadExitRecord after writing %+v = %+v, found %v, err %v; want the written record", written, read, found, err)
++		}
++	}
++}
++
+ func TestWriteMapReadMap(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index 28a3dbda..bd5a3545 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -7,6 +7,13 @@
+ // Per-test coverage needs a process per test.
+ // Coverage counters are process-wide, so tests that run in parallel in one process mix their counts.
+ // The runner takes no gate slot; its caller holds one.
++// A Toolchain bounds each go command by BuildTimeout and each test by TestTimeout when it sets them.
++// It runs each go command in Dir, and ends every command once its Ctx is done.
++// A bounded command runs in its own process group, which the bound kills whole.
++// The wait for its exit and output then lasts at most Grace, so a descendant holding the output pipe cannot stall it.
++// A test past its bound comes back marked TimedOut, never as an error.
++// ScanTestFuncs reads a package's top-level Test functions.
++// Each comes with the tier its `tiergate.Require` names and the hash of its source text.
+ //
+ // Judge marks a test contained when another judged test of the same run covers each of its covered blocks.
+ // It picks the removable set greedily among the contained tests, slowest first.
+@@ -23,4 +30,7 @@
+ //
+ // The coverage map is one JSON record per package, read and written through internal/state.
+ // It keeps the block key table and, for each judged test, the indexes of the blocks it covers.
++// The maps live under Dir, one directory per package, shared by every worktree of the hub on the machine.
++// Beside them, the exit record holds the process ID of the last refresh.
++// It also holds the count of stale packages the refresh's cap left unbuilt.
+ package testcover
+diff --git a/internal/testcover/exitrecord.go b/internal/testcover/exitrecord.go
+new file mode 100644
+index 00000000..a2dae331
+--- /dev/null
++++ b/internal/testcover/exitrecord.go
+@@ -0,0 +1,39 @@
++// exitrecord.go declares the record a coverage map refresh writes as it exits.
++// It reads and writes the record through internal/state.
++
++package testcover
++
++import (
++	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++// ExitRecord is what one coverage map refresh leaves as it exits.
++// Its process ID tells a reader the refresh it waited on from any other.
++type ExitRecord struct {
++	PID int `json:"pid"`
++	// Unbuilt counts the stale packages the refresh's package cap left unbuilt.
++	Unbuilt int `json:"unbuilt"`
++}
++
++// ExitRecordPath returns the path of the exit record under the maps directory dir.
++func ExitRecordPath(dir string) string {
++	return filepath.Join(dir, lymdirs.TestMapExitFileName)
++}
++
++// WriteExitRecord replaces the exit record under the maps directory dir with r, atomically.
++// It keeps each key of the replaced record that ExitRecord does not declare.
++func WriteExitRecord(dir string, r ExitRecord) error {
++	path := ExitRecordPath(dir)
++	return state.WriteJSON(path, lock.TrackedFileLockPath(path, ".lock"), r)
++}
++
++// ReadExitRecord reads the exit record under the maps directory dir, and reports whether one exists.
++// A key the record does not declare is ignored, never refused.
++func ReadExitRecord(dir string) (ExitRecord, bool, error) {
++	path := ExitRecordPath(dir)
++	return state.ReadJSON[ExitRecord](path, lock.TrackedFileLockPath(path, ".lock"))
++}
+diff --git a/internal/testcover/runner.go b/internal/testcover/runner.go
+index 32a8620d..749df580 100644
+--- a/internal/testcover/runner.go
++++ b/internal/testcover/runner.go
+@@ -1,10 +1,11 @@
+ // runner.go builds a package's coverage test binary and lists its top-level tests.
+-// It runs each test alone with its own profile.
++// It runs each test alone with its own profile, each command under its own bound when the toolchain sets one.
+ 
+ package testcover
+ 
+ import (
+ 	"bytes"
++	"context"
+ 	"errors"
+ 	"fmt"
+ 	"os"
+@@ -13,8 +14,10 @@ import (
+ 	"slices"
+ 	"strconv"
+ 	"strings"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
+ // Outcomes a test run reads from the coverage binary's verbose output.
+@@ -30,6 +33,16 @@ type Toolchain struct {
+ 	Go string
+ 	// Env is the whole environment every command runs under.
+ 	Env []string
++	// Dir is the working directory of each go command; empty runs it in the process's.
++	Dir string
++	// Ctx ends every command it runs once it is done, killing the command's process group; nil never ends one.
++	Ctx context.Context
++	// BuildTimeout bounds each go command; zero leaves it unbounded.
++	BuildTimeout time.Duration
++	// TestTimeout bounds each test run alone; zero leaves it unbounded.
++	TestTimeout time.Duration
++	// Grace bounds the wait for a bounded command's exit and output once it ended or was killed; zero waits for both.
++	Grace time.Duration
+ }
+ 
+ // RunResult is one top-level test run alone under a coverage binary.
+@@ -41,11 +54,13 @@ type RunResult struct {
+ 	Action string
+ 	// Profile holds every block of the run's profile, covered or not; it is nil for a failed run.
+ 	Profile []ProfileBlock
++	// TimedOut marks a run killed at TestTimeout; its Action is ActionFail.
++	TimedOut bool
+ }
+ 
+ // BuildBinary builds the coverage test binary of the package at importPath into out.
+ // The binary counts blocks in set mode over the packages coverpkg names, comma-separated, under the build tags tags.
+-// The error carries the go command's stderr.
++// The error carries the go command's stderr, or says the build timed out.
+ func (tc Toolchain) BuildBinary(importPath, coverpkg, tags, out string) error {
+ 	args := appendTags([]string{"test", "-c", "-o", out, "-cover", "-covermode=set", "-coverpkg=" + coverpkg}, tags)
+ 	if _, err := tc.goOutput(append(args, importPath), "CGO_ENABLED=1"); err != nil {
+@@ -76,13 +91,14 @@ var testResultLine = regexp.MustCompile(`(?m)^--- (PASS|FAIL|SKIP): (\S+) \(([0-
+ // RunAlone runs the top-level test name alone under the coverage binary bin in dir, writing its profile to profile.
+ // It reads the test's outcome and elapsed time from the binary's verbose output,
+ // and the profile's blocks for a test that passed, or skipped after writing one.
+-// A failing test is returned as such, never as an error.
++// A failing test is returned as such, never as an error, and so is a test killed at TestTimeout, marked TimedOut.
+ // The error reports a binary that did not start, or a passing test whose profile is missing or malformed.
+ func (tc Toolchain) RunAlone(bin, dir, profile, name string) (RunResult, error) {
+ 	if err := os.Remove(profile); err != nil && !errors.Is(err, os.ErrNotExist) {
+ 		return RunResult{}, fmt.Errorf("remove the previous profile: %w", err)
+ 	}
+-	cmd := exec.Command(bin, runAloneArgs(name, profile)...)
++	cmd, ctx, cancel := tc.command(tc.TestTimeout, bin, runAloneArgs(name, profile)...)
++	defer cancel()
+ 	cmd.Dir = dir
+ 	cmd.Env = tc.Env
+ 	var out bytes.Buffer
+@@ -90,6 +106,12 @@ func (tc Toolchain) RunAlone(bin, dir, profile, name string) (RunResult, error)
+ 	logger.Info("testcover: spawning a coverage binary for one test", "binary", bin, "test", name)
+ 	err := cmd.Run()
+ 	logger.Info("testcover: coverage binary ended", "test", name, "error", err)
++	if err != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
++		return RunResult{Name: name, Action: ActionFail, TimedOut: true}, nil
++	}
++	if errors.Is(err, exec.ErrWaitDelay) {
++		err = nil
++	}
+ 	var exitErr *exec.ExitError
+ 	if err != nil && !errors.As(err, &exitErr) {
+ 		return RunResult{}, fmt.Errorf("run %s: %w", name, err)
+@@ -140,17 +162,53 @@ func appendTags(args []string, tags string) []string {
+ }
+ 
+ // goOutput runs the go command with args under the toolchain's environment plus extraEnv, and returns its stdout.
+-// The error carries stderr.
++// The error carries stderr, or says the command passed BuildTimeout.
+ func (tc Toolchain) goOutput(args []string, extraEnv ...string) (string, error) {
+-	cmd := exec.Command(tc.Go, args...)
++	cmd, ctx, cancel := tc.command(tc.BuildTimeout, tc.Go, args...)
++	defer cancel()
++	cmd.Dir = tc.Dir
+ 	cmd.Env = append(slices.Clone(tc.Env), extraEnv...)
+ 	var stdout, stderr bytes.Buffer
+ 	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+ 	logger.Info("testcover: spawning go", "binary", tc.Go, "args", args)
+ 	err := cmd.Run()
+ 	logger.Info("testcover: go ended", "args", args, "error", err)
++	if err != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
++		return "", fmt.Errorf("%s %s: timed out after %s", tc.Go, strings.Join(args, " "), tc.BuildTimeout)
++	}
++	if errors.Is(err, exec.ErrWaitDelay) {
++		err = nil
++	}
+ 	if err != nil {
+ 		return "", fmt.Errorf("%s %s: %w: %s", tc.Go, strings.Join(args, " "), err, strings.TrimSpace(stderr.String()))
+ 	}
+ 	return stdout.String(), nil
+ }
++
++// command returns the command running name with args, and the context that bounds it.
++// A timeout above zero, or a Ctx, runs the command in its own process group.
++// The group is killed whole once the timeout passes or Ctx is done, so no descendant outlives it.
++// The wait for the command's exit and output then lasts at most Grace.
++// The returned cancel releases the bound once the command ended.
++func (tc Toolchain) command(timeout time.Duration, name string, args ...string) (*exec.Cmd, context.Context, context.CancelFunc) {
++	if timeout <= 0 && tc.Ctx == nil {
++		return exec.Command(name, args...), context.Background(), func() {}
++	}
++	parent := tc.Ctx
++	if parent == nil {
++		parent = context.Background()
++	}
++	var ctx context.Context
++	var cancel context.CancelFunc
++	if timeout > 0 {
++		ctx, cancel = context.WithTimeout(parent, timeout)
++	} else {
++		ctx, cancel = context.WithCancel(parent)
++	}
++	cmd := exec.CommandContext(ctx, name, args...)
++	proc.ConfigureGroupKill(cmd, func(pid int, groupErr error) {
++		logger.Info("testcover: killed a timed-out process group", "pid", pid, "error", groupErr)
++	})
++	cmd.WaitDelay = tc.Grace
++	return cmd, ctx, cancel
++}
+diff --git a/internal/testcover/runner_test.go b/internal/testcover/runner_test.go
+index 68868384..2dd3f8fe 100644
+--- a/internal/testcover/runner_test.go
++++ b/internal/testcover/runner_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"reflect"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testcover"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -64,13 +65,30 @@ func TestBuildBinaryAndListTests(t *testing.T) {
+ 	}
+ }
+ 
++func TestBuildBinaryTimesOut(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tc, _ := standIn(t)
++	tc.Env = append(tc.Env, standInHangBuildEnv+"=1")
++	tc.BuildTimeout, tc.Grace = 2*time.Second, time.Second
++	err := tc.BuildBinary("m/p", "m/p", "", filepath.Join(t.TempDir(), "pkg.test"))
++	if err == nil || !strings.Contains(err.Error(), "timed out after 2s") {
++		t.Errorf("BuildBinary error = %v; want one saying the build timed out after 2s", err)
++	}
++}
++
+ func TestRunAlone(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+ 	tests := []struct {
+-		name    string
+-		test    string
++		name string
++		test string
++		// timeout is the run's TestTimeout; zero leaves it unbounded.
++		timeout time.Duration
++		// within, when above zero, is the longest the run may take.
++		within  time.Duration
+ 		want    testcover.RunResult
+ 		wantErr string
+ 	}{
+@@ -91,13 +109,36 @@ func TestRunAlone(t *testing.T) {
+ 			}},
+ 		},
+ 		{name: "PassWithoutProfile", test: standInNoProfile, wantErr: "wrote no coverage profile"},
++		{
++			name: "PassWithinTheTimeout", test: standInPass, timeout: time.Minute,
++			want: testcover.RunResult{Name: standInPass, Elapsed: 0.25, Action: testcover.ActionPass, Profile: []testcover.ProfileBlock{
++				{File: "m/p/x.go", StartLine: 3, StartCol: 21, EndLine: 5, EndCol: 2, Statements: 1, Count: 1},
++			}},
++		},
++		{
++			// The timeout leaves the stand-in time to start and record its arguments before the kill, even on a loaded machine.
++			name: "TimedOut", test: standInHang, timeout: 3 * time.Second,
++			want: testcover.RunResult{Name: standInHang, Action: testcover.ActionFail, TimedOut: true},
++		},
++		{
++			// The test passes and exits, but a child it left holds the output pipe past the grace.
++			name: "ReturnsWithinTheGraceWhileADescendantHoldsTheOutput", test: standInHoldsPipe, timeout: time.Minute, within: standInChildSleep - time.Second,
++			want: testcover.RunResult{Name: standInHoldsPipe, Elapsed: 0.25, Action: testcover.ActionPass, Profile: []testcover.ProfileBlock{
++				{File: "m/p/x.go", StartLine: 3, StartCol: 21, EndLine: 5, EndCol: 2, Statements: 1, Count: 1},
++			}},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			tc, record := standIn(t)
++			tc.TestTimeout, tc.Grace = tt.timeout, time.Second
+ 			profile := filepath.Join(t.TempDir(), "cover.out")
++			started := time.Now()
+ 			got, err := tc.RunAlone(tc.Go, t.TempDir(), profile, tt.test)
++			if elapsed := time.Since(started); tt.within > 0 && elapsed > tt.within {
++				t.Errorf("RunAlone(%s) took %s; want at most %s, the grace bounding the wait for the output", tt.test, elapsed, tt.within)
++			}
+ 			if tt.wantErr != "" {
+ 				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+ 					t.Fatalf("RunAlone(%s) error = %v; want one holding %q", tt.test, err, tt.wantErr)
+diff --git a/internal/testcover/testfuncs.go b/internal/testcover/testfuncs.go
+new file mode 100644
+index 00000000..0a355a05
+--- /dev/null
++++ b/internal/testcover/testfuncs.go
+@@ -0,0 +1,78 @@
++// testfuncs.go reads the top-level Test functions of a package directory's test files.
++// Each comes with the tier its opening tiergate.Require names and the hash of its source text.
++
++package testcover
++
++import (
++	"fmt"
++	"go/ast"
++	"go/parser"
++	"go/token"
++	"os"
++	"path/filepath"
++	"sort"
++	"strings"
++	"unicode"
++	"unicode/utf8"
++
++	"github.com/Knatte18/loomyard/internal/impactset"
++)
++
++// TestFunc is one top-level Test function of a package's test files.
++type TestFunc struct {
++	Name string
++	// Tier is the tier the function's opening tiergate.Require names; Tiered is false, and Tier 0, when it opens with none.
++	Tier   int
++	Tiered bool
++	// Hash is the ContentHash of the function's source text, from `func` to its closing brace.
++	Hash string
++}
++
++// ScanTestFuncs returns the top-level Test functions of the `_test.go` files directly in dir, sorted by name.
++// A Test function is one `go test` runs as a test; TestMain and methods are not.
++// Build constraints are not read, so a file only another platform compiles still counts.
++// A test file that cannot be read or parsed is an error naming it.
++func ScanTestFuncs(dir string) ([]TestFunc, error) {
++	entries, err := os.ReadDir(dir)
++	if err != nil {
++		return nil, err
++	}
++	var funcs []TestFunc
++	for _, entry := range entries {
++		if entry.IsDir() || !strings.HasSuffix(entry.Name(), "_test.go") {
++			continue
++		}
++		path := filepath.Join(dir, entry.Name())
++		src, err := os.ReadFile(path)
++		if err != nil {
++			return nil, err
++		}
++		fset := token.NewFileSet()
++		file, err := parser.ParseFile(fset, path, src, parser.SkipObjectResolution)
++		if err != nil {
++			return nil, fmt.Errorf("parse %s: %w", path, err)
++		}
++		for _, decl := range file.Decls {
++			fn, ok := decl.(*ast.FuncDecl)
++			if !ok || fn.Recv != nil || !isTestFuncName(fn.Name.Name) {
++				continue
++			}
++			tier, tiered := impactset.RequiredTier(file, fn)
++			start, end := fset.Position(fn.Pos()).Offset, fset.Position(fn.End()).Offset
++			funcs = append(funcs, TestFunc{Name: fn.Name.Name, Tier: tier, Tiered: tiered, Hash: ContentHash(src[start:end])})
++		}
++	}
++	sort.Slice(funcs, func(i, j int) bool { return funcs[i].Name < funcs[j].Name })
++	return funcs, nil
++}
++
++// isTestFuncName reports whether name is that of a function `go test` runs as a test:
++// Test followed by nothing or by no lowercase letter, TestMain apart.
++func isTestFuncName(name string) bool {
++	rest, found := strings.CutPrefix(name, "Test")
++	if !found || name == "TestMain" {
++		return false
++	}
++	first, _ := utf8.DecodeRuneInString(rest)
++	return rest == "" || !unicode.IsLower(first)
++}
+diff --git a/internal/testcover/testfuncs_test.go b/internal/testcover/testfuncs_test.go
+new file mode 100644
+index 00000000..558cf803
+--- /dev/null
++++ b/internal/testcover/testfuncs_test.go
+@@ -0,0 +1,65 @@
++package testcover_test
++
++import (
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestScanTestFuncs(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const tiered = "func TestTiered(t *testing.T) {\n\ttiergate.Require(t, 1)\n}"
++	const untiered = "func TestUntiered(t *testing.T) {}"
++	tests := []struct {
++		name    string
++		files   map[string]string
++		want    []testcover.TestFunc
++		wantErr string
++	}{
++		{
++			name: "TestFunctionsOfTestFiles",
++			files: map[string]string{
++				"a_test.go": "package p\n\nimport (\n\t\"testing\"\n\n\t\"github.com/Knatte18/loomyard/internal/testkit/tiergate\"\n)\n\n" +
++					tiered + "\n\nfunc TestMain(m *testing.M) {}\n\nfunc Testlower(t *testing.T) {}\n\nfunc helper() {}\n",
++				"b_test.go": "package p\n\nimport \"testing\"\n\ntype suite struct{}\n\nfunc (suite) TestMethod(t *testing.T) {}\n\n" + untiered + "\n",
++				"c.go":      "package p\n\nfunc TestInAFileThatIsNoTestFile() {}\n",
++			},
++			want: []testcover.TestFunc{
++				{Name: "TestTiered", Tier: 1, Tiered: true, Hash: testcover.ContentHash([]byte(tiered))},
++				{Name: "TestUntiered", Hash: testcover.ContentHash([]byte(untiered))},
++			},
++		},
++		{name: "UnparsableTestFile", files: map[string]string{"x_test.go": "package p\n\nfunc {"}, wantErr: "x_test.go"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			for name, content := range tt.files {
++				if err := os.WriteFile(filepath.Join(dir, name), []byte(content), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			got, err := testcover.ScanTestFuncs(dir)
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Fatalf("ScanTestFuncs() error = %v; want one naming %q", err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatal(err)
++			}
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("ScanTestFuncs() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/testcover/testmain_test.go b/internal/testcover/testmain_test.go
+index d48164f0..409b3aba 100644
+--- a/internal/testcover/testmain_test.go
++++ b/internal/testcover/testmain_test.go
+@@ -6,9 +6,11 @@ package testcover_test
+ import (
+ 	"fmt"
+ 	"os"
++	"os/exec"
+ 	"slices"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
+ )
+@@ -24,9 +26,18 @@ const (
+ 	standInSkip        = "TestStandInSkip"
+ 	standInSkipProfile = "TestStandInSkipWithProfile"
+ 	standInNoProfile   = "TestStandInNoProfile"
++	standInHang        = "TestStandInHangs"
++	standInHoldsPipe   = "TestStandInHoldsPipe"
++	standInSleeps      = "TestStandInSleeps"
+ 	standInProfileLine = "m/p/x.go:3.21,5.2 1 1"
+ )
+ 
++// standInHangBuildEnv makes the stand-in `go test -c` never end.
++const standInHangBuildEnv = "TESTCOVER_STAND_IN_HANG_BUILD"
++
++// standInChildSleep is how long the child standInHoldsPipe leaves behind holds the output pipe.
++const standInChildSleep = 5 * time.Second
++
+ // TestMain runs a stand-in when standInRecordEnv is set, and the tests under tmuxkit.Main otherwise.
+ func TestMain(m *testing.M) {
+ 	if record := os.Getenv(standInRecordEnv); record != "" {
+@@ -39,6 +50,8 @@ func TestMain(m *testing.M) {
+ // As `go test -list`, it prints two test names; as `go test -c`, it creates the empty file `-o` names.
+ // As a coverage binary, it reports the outcome of the one test its `-test.run` names.
+ // It writes a profile for a passing test, and for a skipped one that standInSkipProfile names.
++// The test standInHang never ends on its own.
++// The test standInHoldsPipe passes and exits, leaving a child that holds the output pipe for standInChildSleep.
+ func runStandIn(record string, args []string) int {
+ 	if err := os.WriteFile(record, []byte(strings.Join(args, "\n")), 0o644); err != nil {
+ 		return 1
+@@ -48,6 +61,9 @@ func runStandIn(record string, args []string) int {
+ 		fmt.Println("TestAlpha\nExampleBeta\nok  \tm/p\t0.01s")
+ 		return 0
+ 	case slices.Contains(args, "-c"):
++		if os.Getenv(standInHangBuildEnv) != "" {
++			time.Sleep(time.Hour)
++		}
+ 		if i := slices.Index(args, "-o"); i >= 0 && i+1 < len(args) {
+ 			if err := os.WriteFile(args[i+1], nil, 0o755); err != nil {
+ 				return 1
+@@ -79,6 +95,21 @@ func runStandIn(record string, args []string) int {
+ 		fmt.Printf("--- PASS: %s (0.25s)\n", name)
+ 	case standInSkip:
+ 		fmt.Printf("--- SKIP: %s (0.00s)\n", name)
++	case standInHoldsPipe:
++		if err := os.WriteFile(profile, []byte("mode: set\n"+standInProfileLine+"\n"), 0o644); err != nil {
++			return 1
++		}
++		fmt.Printf("--- PASS: %s (0.25s)\n", name)
++		child := exec.Command(os.Args[0], "-test.run=^"+standInSleeps+"$")
++		child.Env = append(os.Environ(), standInRecordEnv+"="+record+".child")
++		child.Stdout, child.Stderr = os.Stdout, os.Stderr
++		if err := child.Start(); err != nil {
++			return 1
++		}
++	case standInSleeps:
++		time.Sleep(standInChildSleep)
++	case standInHang:
++		time.Sleep(time.Hour)
+ 	default:
+ 		fmt.Printf("--- FAIL: %s (0.10s)\n", name)
+ 		return 1
