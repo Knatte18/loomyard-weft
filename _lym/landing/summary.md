@@ -1,63 +1,48 @@
-# The prime's dobby starts `lym gate testmap` every few landings
+# Prime dobby starts lym gate testmap every test_map_every landings
 
-The coverage maps `lym gate testmap` builds go stale as landings change packages.
-Until now, someone had to run the verb by hand.
-With this change the prime's dobby refreshes them on its own, at a cadence counted in landings.
+The prime parent's dobby now keeps the per-test coverage maps fresh.
+After every `test_map_every` landings it starts `lym gate testmap --max <test_map_batch>` on the packages stale at that moment.
+What the cap leaves unbuilt waits for the next refresh.
 
 ## What changes
 
-- **The refresh step (`internal/dobbyengine/testmap.go`).**
-  The board tidy's landing count now also adds each landing it counts to a new state field, `LandingsSinceTestMap`.
-  When that count reaches `test_map_every`, a tick starts `lym gate testmap --max <test_map_batch>` and resets the count to zero.
-  The verb builds the packages that are stale when it runs, at most `test_map_batch` of them;
-  the next refresh picks up whatever the cap left unbuilt.
-  The step runs after the board-tidy step, and like it, never while an anchor change stands.
-- **One refresh at a time.**
-  No refresh starts while a live `test-map` record exists.
-  This holds for a restarted or re-exec'd dobby too, since it reads the same record.
-  The count stays at or past the threshold, so the refresh starts on the first tick after the live one ended.
-  A start that fails keeps the count and is tried again on the next tick.
-- **Prime only.**
-  Only the prime's wiring fills the two new seams, `Deps.TestMapRunning` and `Deps.StartTestMap`.
-  A beam's dobby leaves them nil, so it counts nothing toward a refresh and starts none.
-- **Spawn and registration (`internal/beamcli/dobbydeps.go`).**
-  `startTestMap` starts the verb in the prime's anchor, using the binary `selfexec.LymBinary` names.
-  The child gets its own process group and its output is discarded.
-  It is registered under `runproc.HubOwner` with the new role `runproc.RoleTestMap` (`test-map`), and the dobby waits on it in the background and logs its exit.
-  If the registration fails, the child is ended again through `runproc.EndProcess`, so no unregistered refresh is left running.
-  `testMapRunning` reads `runproc.List` for a live `test-map` record under the hub owner.
-- **Stop (`internal/orchcli/stop.go`).**
-  `lym beam stop` of the prime ends the dobby, then the refresh, through `runproc.EndRole` with `runproc.RoleTestMap`.
-  The refresh needs its own end: it has its own record, which `EndRole(RoleDobby)` spares along with the processes below it, and its own process group.
-  The dobby is ended first so that it cannot start a new refresh after this end has run.
-  A beam's stop is unchanged.
-- **Config (`beam.yaml`).**
-  Two new keys, both with defaults and loaded through `configengine`:
-  `test_map_every` (default 5; 0 never refreshes; a negative value is refused)
-  and `test_map_batch` (default 5; a value below 1 is refused, since the verb refuses `--max 0`).
-  No existing key changes meaning, and there is no on/off key: `test_map_every: 0` turns the refresh off.
+- `internal/dobbyengine`: a new tick step, `testMapStep`, in `testmap.go`.
+  `countLandings` counts landings as the board tidy does, into a new `State.LandingsSinceTestMap`.
+  Once the count reaches `test_map_every` the step starts the refresh through `Deps.StartTestMap` and zeroes the count.
+- Two beam config keys, both in `template.yaml`:
+  - `test_map_every` (default 5, next to `board_tidy_every`): 0 never refreshes, and a negative value is refused.
+  - `test_map_batch` (default 5): the `--max` of each refresh; a value below 1 is refused.
+- `internal/beamcli`: `hubDobbyDeps` fills the two seams for the prime's dobby only.
+  `startTestMap` starts the refresh with the binary `selfexec.LymBinary` names, in the prime's anchor and its own process group.
+  It registers the process under `runproc.HubOwner` as the new `runproc.RoleTestMap` (`test-map`), and the dobby waits on it in the background.
+  `testMapRunning` reads that record.
+- `internal/runproc`: the new `RoleTestMap` constant.
+- `internal/orchcli`: `BeamDown` of the prime ends the refresh through `runproc.EndRole` after the dobby, whether or not the dobby was live.
+- Docs: `docs/overview.md` and the package docs of `dobbyengine`, `beamcli`, `orchcli` and `fabriccli`.
 
 ## Design decisions
 
-- The trigger follows the operator's decision recorded in the Goal, which replaces D6's trigger:
-  the dobby counts landings as the board tidy does.
-  There is no prime-HEAD record and no trigger from the verb's exit record, so nothing reads that record's leftover count.
-- The count reuses the board tidy's landing count instead of keeping a second set of seen slugs.
-  The bound: while a board-tidy agent is in flight no landing is counted, so a refresh can start up to `board_tidy_timeout_min` late.
-- The stop lives in `internal/orchcli`'s `endDobby` wiring, the path `lym beam stop` takes, rather than in the dobby's own shutdown.
-  On a SIGTERM the dobby gets only `runproc`'s grace before SIGKILL, so an end run from the dobby itself might not complete.
-  This puts a small change in `internal/orchcli`, a package outside the record's scope list.
-- A dobby that dies without a stop leaves the refresh running.
-  The refresh ends on its own within the verb's build and test timeouts.
-- While the refresh runs it is a live child of the prime's dobby, so an anchor move of the prime reads it as a pass in flight and waits for it.
+- The trigger is the landing count, not a prime-HEAD record or the refresh's exit record.
+  No on/off key exists; `test_map_every: 0` is the off switch, and the step zeroes the count while it is 0.
+  Enabling the key later therefore counts only later landings.
+- No refresh starts while a live `test-map` record exists, so a restarted or re-exec'd dobby starts no second one.
+  The count is kept and the refresh starts on the first tick after the live one ended.
+- A failing start keeps the count and is retried on the next tick.
+  A failing step is logged once per episode and does not end the tick, since the refresh is optional.
+- A registration that fails is logged and leaves the refresh unregistered to end on its own; the start still counts as made.
+- An anchor move of the prime waits for a running refresh, as it does for a pass in flight, so a move can wait out a whole build-and-test run.
+  The dobby starts no refresh while the move stands.
+- Bounds:
+  - While a board-tidy agent is in flight no landing is counted, so a refresh can start up to `board_tidy_timeout_min` late.
+  - A dobby that dies without a stop leaves the refresh running until the verb ends within its own timeouts.
 
-## Tests
+## To check by hand
 
-- `TestTestMapStep` (`internal/dobbyengine/testmap_test.go`): a start every `test_map_every` landings with `test_map_batch` as the cap, and none at `test_map_every: 0`.
-  It also covers the hold while a refresh is live, across a restarted daemon, followed by a start once it ended;
-  a failed start that keeps the count and is retried;
-  and no counting when the seams are nil.
-- `TestLoadConfig` covers the new defaults, a `test_map_every` of 0, the refusal of a negative `test_map_every`, and the refusal of a `test_map_batch` of 0.
-  The expected configs are now built from one defaults value, so a new key no longer means editing every row.
-- `TestTestMapRunning` (`internal/beamcli`) reads live records against a temp run-process directory.
-- `TestEndDobbyRoles` (`internal/orchcli`) checks that the prime's stop ends the dobby and then the refresh, that a beam's stop ends only the dobby, and that a failed dobby end does not go on to end the refresh.
+Nothing here was run against a real hub; the tests use stand-ins and launch no test binary.
+
+- `lym beam stop` on the prime with the dobby already dead: `beamdown_test.go` pins that the refresh ends then.
+  Check that a real refresh started by a live dobby is ended and leaves no `test-map` record.
+- `startTestMap` registers the child after `cmd.Start`, so a crash between the two leaves an unregistered refresh.
+  Check that this window is acceptable; it is logged and the refresh ends on its own.
+- `starttestmap` tests in `internal/beamcli` cover the registration and the unregistered-start path;
+  check that they hold on the platforms you run (the integration test is Unix-only).
