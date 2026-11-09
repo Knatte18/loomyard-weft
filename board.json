@@ -1062,6 +1062,27 @@
       "body": "## Seen (orch, 2026-11-09)\n\nThe coverage maps (`internal/testcover`, rebuilt by `lym gate testmap`) record, per package, the blocks each tier 0 and tier 1 test covers.\nThe planned gate report judges only the new tests of a diff against the map; nothing yet uses the maps to find redundant tests that already exist.\nThe operator wants the existing ones cut, across the packages, not only kept from growing.\n\n## Idea\n\n1. A candidate list per package: every test whose covered blocks the package's other tests already cover, with its run time, using the same judgment as the gate report.\n   Tests marked `//testtiming:keep` are left out.\n2. Cut tasks on that list, slowest packages first, each run delegating the per-test reading to subagents:\n   a candidate is cut or folded into another test only when its assertions add nothing the covering tests check, since equal coverage does not mean equal checks.\n3. `internal/fabricengine` was swept by hand on 2026-11-08 and is being reworked by its serial-phase tasks, so it comes last or not at all.",
       "created": "2026-11-09T18:47:33Z",
       "revised": "2026-11-09T18:49:20Z"
+    },
+    {
+      "id": 1271,
+      "handle": "T15",
+      "slug": "readme-collapsible-projects",
+      "title": "Bolt README: every project section can be collapsed",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## This task\n\nIn Bolt's README.md, which `renderReadme` in `internal/boardengine/render.go` builds, wrap each project's section in `\u003cdetails open\u003e` with a `\u003csummary\u003e`, so the operator can collapse it.\nThat covers each top-level project and the root's own section; the per-project files stay as they are.\n\n- The summary carries what the section heading carries now: the handle and title linking to the project's file, and the open-member count. Since markdown does not render inside `\u003csummary\u003e`, the link is an HTML `\u003ca\u003e`.\n- A blank line follows `\u003csummary\u003e` and precedes `\u003c/details\u003e`, so the markdown inside renders.\n- Sections open by default.\n- It must render in VS Code's built-in Markdown Preview, which the operator reads the board in, and on GitHub.\n\n## Limits\n\nOnly the README's project sections change; the tables, the project files and the design files render as now.",
+      "status": "draft",
+      "created": "2026-11-09T18:52:58Z",
+      "revised": "2026-11-09T18:52:58Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
