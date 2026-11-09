@@ -768,7 +768,7 @@
       "id": 1251,
       "handle": "T2",
       "slug": "fabric-serial-phase-tests",
-      "title": "Fewer serial top-level tests in internal/fabricengine",
+      "title": "Make the eight longest serial internal/fabricengine tests parallel",
       "kind": "task",
       "labels": [
         "enhancement",
@@ -776,13 +776,17 @@
         "testkit"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "testmap-verb"
+      ],
       "isolated": false,
-      "brief": "46 of 400 top-level tests are not parallel and hold 59.5 percent of the one-process wall",
-      "body": "## Seen (orch, 2026-11-09)\n\n`docs/research/speed/fabricengine-shards-2026-11-09/report.md`, measured on OSL-1046 under its normal load, once per case: 46 of the package's 400 top-level tests are not marked parallel, and the serial chain they form is 143 s, 59.5 percent of the 242 s one-process wall.\nInside that phase the package keeps about one core busy while the machine is two-thirds idle, and shards did not move the wall.\n\n## Idea\n\nFind why each of the 46 is serial (environment variables, a shared hub, a missing `t.Parallel()`) and make as many parallel as their cause allows.\nThe report gives an upper bound of about half the wall.\nThe wall figure is from OSL-1046, where Cortex XDR slows every new binary and file; it may not hold on another machine.\n",
+      "brief": "Move their package-level test state into parameters so the serial phase of tier 1 shrinks",
+      "body": "## Seen (orch, 2026-11-09)\n\n`docs/research/speed/fabricengine-shards-2026-11-09/report.md`, measured on OSL-1046 under its normal load: 46 of the package's 400 top-level tests are not marked parallel, and the serial chain they form is 143 s, 59.5 percent of the 242 s one-process wall.\nThe eight longest of them take about 84 s of that chain.\nSeveral are serial because they set a package-level variable the production code reads: a push notifier (`installedPushNotifier`, `failedpush.go`), an origin call hook (`originCallHook`, `originreconcile.go`) and a gc threshold (`gcAutoThreshold`, `housekeeping.go`).\n`docs/research/speed/fabricengine-per-test-times-2026-11-07.md` names the reason for several of the others.\n\n## This task\n\nMake these eight top-level tests parallel, and only these:\n\n- `TestPushFailureClasses`\n- `TestAnchorChange`\n- `TestReconcileOrigin_Judge`\n- `TestStoreHousekeeping`\n- `TestWorktreeSeam_Events`\n- `TestReconcileOrigin_Ended`\n- `TestReconcileOrigin_Moves`\n- `TestReconcile_MigratesMarkerlessWefts`\n\nFirst read each one and name why it is serial: a package-level variable it sets, a process environment variable or working directory, or a shared path.\nWhere the cause is package-level state, the state moves into a parameter the test passes, such as a field of `SyncOptions` or of the options type the code path already takes, and the production path reads it from there.\nThe package-level variable goes away when no test needs it; one that stays must not be read by any path a parallel test reaches, or two parallel tests would see each other's value.\nEvery other test that sets the same variable moves with it in this task, so no test is left setting state a parallel test can read.\nA test whose cause cannot be removed without a larger change stays serial, and the task names it and the cause in its landing note instead of changing more.\n\n## Limits\n\n- Nothing outside `internal/fabricengine` and its tests changes, except a caller of a function whose signature the task changes.\n- No change to what any production path does; only where its inputs come from.\n- No test is dropped or loosened, and no test outside the eight changes, except the ones that set the same package-level state.\n- The tier 1 gate on `./internal/fabricengine` is green, run with `-race` if the gate offers it, since a missed shared state shows there.\n\n## Measuring\n\nThe task does not bench.\nA later run of `docs/research/speed/fabricengine-shards-2026-11-09/serial-share.sh` on the one-process run's events gives the new phase 1 against the 143 s above.\nThe figure is from OSL-1046, where Cortex XDR slows every new binary and file; another machine will show a smaller serial phase.\n",
       "status": "draft",
       "created": "2026-11-09T12:09:36Z",
-      "revised": "2026-11-09T12:09:36Z",
+      "revised": "2026-11-09T12:39:18Z",
+      "profile": "solid",
       "project": "fabric-test-speed-work"
     },
     {
