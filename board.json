@@ -616,7 +616,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: testcover-engine's engine and map record; testmap-verb's CodeDirAt, CodeFileAt, timeouts and run-alone\nDelivers: the `reports` list on gate keys with its unknown-name refusal and template entries on webster, parent-align, darn-write and code-burler-fix; the step at the lints' site with merge-base test selection, drops, cap, slot, budget, map covers, greedy pass and the report with its file and test hashes; keys redundancy_max_tests and redundancy_budget_min\nExports: the report reader and the tree match D8 runs on HEAD: D7 step 1 over a revision and the judged packages' file hashes\n\nThe part changes these packages:\n\n- internal/gatecli (about 800 changed lines)\n- internal/gateslot (about 150 changed lines)\n- internal/configengine (about 30 changed lines)\n- internal/testcover (about 120 changed lines)\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Seed-Child",
       "created": "2026-11-08T18:46:50Z",
       "revised": "2026-11-08T18:46:50Z",
       "profile": "solid",

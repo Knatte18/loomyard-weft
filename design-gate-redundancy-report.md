@@ -1,6 +1,6 @@
 # An advisory redundancy report step in lym gate test, judging a diff's new tests against the map
 
-`gate-redundancy-report` · Task · feature, testkit, gate · running · Worktree-Create
+`gate-redundancy-report` · Task · feature, testkit, gate · running · Seed-Child
 
 Decision record: [Sketch](decision-gate-redundancy-report.md)
 
