@@ -15,6 +15,7 @@ defaults:
   motif: solid
   pawl: light
   raddle: light
+  arras: solid
 speed:
   tapestry: {loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 0, plan_hard_max_bounces: 1, code_reviewer_fan: ""}, tapestry: {plan_max_bounces: 0, plan_hard_max_bounces: 1}}
   darn: {loom: {code_max_bounces: 0, code_hard_max_bounces: 1}}
@@ -26,6 +27,8 @@ speed:
     loom: {code_max_bounces: 0, code_hard_max_bounces: 1}
   raddle:
     loom: {raddle_auto_approve: false}
+  arras:
+    loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, split_max_bounces: 0, split_hard_max_bounces: 1}
 light:
   tapestry: {loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 1, plan_hard_max_bounces: 2}, tapestry: {plan_max_bounces: 1, plan_hard_max_bounces: 2}}
   darn: {loom: {code_max_bounces: 1, code_hard_max_bounces: 2}}
@@ -38,6 +41,8 @@ light:
     sampler: {code_review: true}
   raddle:
     loom: {raddle_auto_approve: false}
+  arras:
+    loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, split_max_bounces: 1, split_hard_max_bounces: 2}
 solid:
   tapestry: {loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 2, plan_hard_max_bounces: 3}, tapestry: {plan_max_bounces: 2, plan_hard_max_bounces: 3}}
   darn: {loom: {code_max_bounces: 2, code_hard_max_bounces: 3}}
@@ -50,6 +55,8 @@ solid:
     sampler: {code_review: true}
   raddle:
     loom: {raddle_auto_approve: false}
+  arras:
+    loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, split_max_bounces: 2, split_hard_max_bounces: 3}
 wide:
   tapestry: {loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 2, plan_hard_max_bounces: 3}, tapestry: {plan_max_bounces: 2, plan_hard_max_bounces: 3}}
   darn: {loom: {code_max_bounces: 3, code_hard_max_bounces: 4}}
@@ -62,5 +69,7 @@ wide:
     sampler: {code_review: true}
   raddle:
     loom: {raddle_auto_approve: false}
+  arras:
+    loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4, split_max_bounces: 3, split_hard_max_bounces: 4}
 docs:
   darn: {darn: {writer: 'sonnet[medium]'}, loom: {code_max_bounces: 0, code_hard_max_bounces: 1, code_reviewer_fan: ""}, drift: {scope: "off"}}
