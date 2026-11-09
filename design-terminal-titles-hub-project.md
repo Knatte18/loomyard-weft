@@ -1,6 +1,6 @@
 # Terminal titles read hub: project: task: slug
 
-`terminal-titles-hub-project` · Task · enhancement, ide, reed · running · Drift-Recheck
+`terminal-titles-hub-project` · Task · enhancement, ide, reed · running · Describe
 
 ## Seen (orch, 2026-11-09)
 

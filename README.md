@@ -156,7 +156,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Terminal titles read hub: project: task: slug**<br>• Every console window title reads <hub>: <P#>: <T#>: <slug>, with prime, beam and orch forms. | [`terminal-titles-hub-project`](design-terminal-titles-hub-project.md) | darn · light | Drift-Recheck | osl-1046 | 1h<br>1h | ide, reed |
+| T1 | **Terminal titles read hub: project: task: slug**<br>• Every console window title reads <hub>: <P#>: <T#>: <slug>, with prime, beam and orch forms. | [`terminal-titles-hub-project`](design-terminal-titles-hub-project.md) | darn · light | Describe | osl-1046 | 1h<br>1h | ide, reed |
 
 #### Ready (0)
 
@@ -170,7 +170,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Darn-Write gate fix: rerun only the failed tests between attempts**<br>• Each failed verify attempt reruns the full computed scope; a fixer that gets only the failures and reruns only those would save about 10 minutes per attempt. | [`gate-fix-failures-only`](design-gate-fix-failures-only.md) | darn |  | 36m<br>36m | gate, loom |
+| T4 | `draft` **Darn-Write gate fix: rerun only the failed tests between attempts**<br>• Each failed verify attempt reruns the full computed scope; a fixer that gets only the failures and reruns only those would save about 10 minutes per attempt. | [`gate-fix-failures-only`](design-gate-fix-failures-only.md) | darn |  | 37m<br>37m | gate, loom |
 | T5 | `draft` **machinename reads the machine name from machine.json before the hostname rule** | [`machine-name-file`](design-machine-name-file.md)<br>[Sketch](decision-machine-name-file.md) | darn · solid |  | 14m<br>14m | config, slack |
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1h<br>14m | slack, reed, creel |
 | T13 | `draft` **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 14m<br>14m | config, slack |
