@@ -860,9 +860,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen (operator, 2026-11-09)\n\nSince `7bccde26` every console window is titled `\u003chub\u003e: \u003cP#\u003e: \u003cT#\u003e: \u003cslug\u003e`, such as `ly: P1: T2: adopt-worker-record`.\nThe operator finds it hard to read: the task handle, which they look for first, sits third, behind two colon-separated prefixes.\n\n## Idea\n\nPut the task handle first and set the hub and project apart in brackets, for instance:\n\n`T2 [ly:P1] adopt-worker-record`\n\nHow the hub and project are shown is still open; the operator only fixed that the handle comes first and that brackets read better than a chain of colons.\nDecide the form for the windows that have no task (a hub's prime, a beam, the runs window) and for a task under no project, in the same style.\n",
+      "body": "## Seen (operator, 2026-11-09)\n\nSince `7bccde26` every console window is titled `\u003chub\u003e: \u003cP#\u003e: \u003cT#\u003e: \u003cslug\u003e`, such as `ly: P1: T2: adopt-worker-record`.\nThe operator finds it hard to read: the task handle, which they look for first, sits third, behind two colon-separated prefixes.\nA task under root shows no project today.\n\n## Idea\n\nPut the leading handle first and set the hub and project apart in brackets:\n\n- A task: `T2 [ly:P1] adopt-worker-record`.\n- A task under root names root's project, `P0`: `T5 [ly:P0] machine-name-file`.\n- An orch leads with `ORCH` in place of a task handle:\n  the prime's orch is `ORCH [ly:P0]`, and a beam's orch is `ORCH [ly:P1] adopt-takeover`, naming its beam's project and slug.\n\nFixed by the operator: the handle comes first, brackets read better than a chain of colons, and root is project `P0`.\nStill open: the exact form of the bracket, and the title of the other windows that hold no task, such as the runs window, in the same style.\n",
       "created": "2026-11-09T20:49:59Z",
-      "revised": "2026-11-09T20:49:59Z"
+      "revised": "2026-11-09T20:51:20Z"
     }
   ],
   "prime_owner": "neve",
