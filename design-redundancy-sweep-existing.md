@@ -15,3 +15,8 @@ The operator wants the existing ones cut, across the packages, not only kept fro
 2. Cut tasks on that list, slowest packages first, each run delegating the per-test reading to subagents:
    a candidate is cut or folded into another test only when its assertions add nothing the covering tests check, since equal coverage does not mean equal checks.
 3. `internal/fabricengine` was swept by hand on 2026-11-08 and is being reworked by its serial-phase tasks, so it comes last or not at all.
+
+## Before it becomes a task
+
+It needs a full set of coverage maps, one per package; on 2026-11-09 none was built yet.
+Note `testmap-backlog-drain` is about the prime dobby building them only a few per batch of landings.
