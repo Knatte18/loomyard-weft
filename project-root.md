@@ -18,7 +18,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (18)
+## Notes (17)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -35,13 +35,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 22h<br>22h | shed, friction |
 
-### Enhancements (3)
+### Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 1d<br>1d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 1d<br>1d | shed, loom, darn |
-| E3 |  | **Terminal titles read hub: project: slug**<br>• Every terminal and IDE window title reads <hub shortname>: <project>: <slug>, with exceptions for the prime and beams. | [`terminal-titles-hub-project`](design-terminal-titles-hub-project.md) | 0m<br>0m | ide, reed |
 
 ### Features (12)
 

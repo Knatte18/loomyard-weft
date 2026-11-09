@@ -772,25 +772,6 @@
       "created": "2026-11-09T12:09:41Z",
       "revised": "2026-11-09T12:09:41Z",
       "project": "fabric-test-speed-work"
-    },
-    {
-      "id": 1254,
-      "handle": "E3",
-      "slug": "terminal-titles-hub-project",
-      "title": "Terminal titles read hub: project: slug",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "ide",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Every terminal and IDE window title reads \u003chub shortname\u003e: \u003cproject\u003e: \u003cslug\u003e, with exceptions for the prime and beams.",
-      "body": "## Seen (orch, 2026-11-09)\n\nThe operator runs several hubs at once on one machine and cannot tell at a glance which terminal belongs to which hub and project.\nToday the VS Code `window.title` of a worktree is the upper-cased hub shortname, a colon and the slug (`docs/overview.md`, the `lym ide` paragraph); a project is not in it.\nThe tmux windows reed opens carry names of their own (`shell`, `overview`, `beam: prime`, `\u003chandle\u003e: beam: \u003cslug\u003e`), with no hub shortname.\n\n## Idea\n\nEvery terminal and IDE window title reads `\u003chub shortname\u003e: \u003cproject\u003e: \u003cslug\u003e`, with the project left out when the entry has none.\n\nExceptions proposed:\n\n- The prime has no project and no slug: `\u003chub shortname\u003e: prime`.\n- A beam is a project and its own worktree: `\u003chub shortname\u003e: \u003cbeam slug\u003e: beam`.\n  A task under a beam reads `\u003chub shortname\u003e: \u003cbeam slug\u003e: \u003cslug\u003e`, so the project slot names the beam.\n- Strands that are not a task keep their role as the last part: `\u003chub shortname\u003e: orch`, `\u003chub shortname\u003e: runs`, `\u003chub shortname\u003e: shell`.\n- A workspace file's title keeps its `workspace` suffix after the hub shortname.\n\n## Task shape\n\nDarn, profile `light`.\nIt reads the project from the task's board entry (`project` field), once, when the title is written; a task whose project changes later keeps the title until the next spawn.\nIt changes only where the title string is formed and the tests that pin it; no title is read back by another part of lym.\n\n## Open\n\n- Which windows count: the VS Code window title, the tmux window names, or both.\n  The proposal assumes both, from one shared formatter.\n- Whether the hub shortname stays upper-case as in the IDE title today.\n",
-      "created": "2026-11-09T13:25:14Z",
-      "revised": "2026-11-09T13:25:14Z"
     }
   ],
   "prime_owner": "osl-1046",
