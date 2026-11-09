@@ -803,12 +803,13 @@
         "testkit"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass.",
       "body": "## Seen (orch, 2026-11-09)\n\n`TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver` in `internal/loomcli` failed a tier 2 gate run of `testmap-verb`: `startLLMDriverArm took 6.18s; want well under the stub's own 5s settle delay`.\nThe test compares the measured time of a launch with the stub's 5 s delay, so a loaded machine can push the launch past it.\nThat run held one of three gate slots beside two other gates, the operator's own C# builds and Cortex XDR scanning, and the failure cost a whole second gate pass.\n\n## Idea\n\nTests that assert on elapsed time against a threshold fail when the machine is busy, not when the code is wrong.\nList them and make each load-proof: a test that proves \"does not wait on X\" should block X on a release the test controls, as the same test's own deadline branch already does, instead of comparing against a fixed duration.\nA loose search over `_test.go` files for elapsed-time comparisons names about twenty files, among them in `shuttleengine`, `creelengine`, `shedverbs`, `verifyrun`, `tenderengine`, `seatengine` and `reedengine`; most may only set a deadline, so the work starts by reading which ones compare a measured time to a limit.\n",
       "created": "2026-11-09T14:25:07Z",
-      "revised": "2026-11-09T14:25:07Z"
+      "revised": "2026-11-09T15:17:12Z"
     },
     {
       "id": 1258,
@@ -897,6 +898,68 @@
       "body": "## Seen (operator and orch, 2026-11-09)\n\nThe Darn-Write verify gate of `arras-recipe-perch` failed tier 0 at 15:43:27 with 56 failures, and the same gate started tier 1 at once and ran it for 11 minutes before it failed on two tests, then ran tier 2.\nThe first gate attempt took about 17 minutes; the tier 0 failure alone was known after 2.4 minutes.\n\n## Idea\n\nWhen a tier fails, stop the gate there and report that tier's failures, so the fixer works on them before a slower tier runs.\nCheck first whether running every tier after a failure is deliberate, for instance to hand the fixer every failure at once, and whether it differs between `lym gate test --upto` and the Darn-Write gate.\nIf a full report is wanted, make it a separate choice, and let the verify gate default to stopping at the first failing tier.\n",
       "created": "2026-11-09T15:17:10Z",
       "revised": "2026-11-09T15:17:10Z"
+    },
+    {
+      "id": 1262,
+      "handle": "B4",
+      "slug": "gate-scope-by-coverage-map",
+      "title": "A verify gate scopes to nearly the whole suite; scope it by the coverage map",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "testkit",
+        "darn"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046.",
+      "body": "## Seen (orch, 2026-11-09)\n\nThe Darn-Write verify gate scopes a run to nearly the whole suite, tier 0 to 2, whenever the diff touches a widely imported package such as `internal/loomengine` or `internal/configreg`.\n`testmap-verb` and `arras-recipe-perch` each spent 30 to 40 minutes in it on OSL-1046.\nScope today is by importing packages, so one small change to a leaf of the import graph reruns every package above it.\n\n## Idea\n\nScope a verify gate by the coverage map project `redundancy-check` builds: run the tests whose recorded blocks cover the changed code, plus the tests of the changed packages, and everything else only in the landing gate.\nRead first how the computed scope forms today and what the map holds per test, and decide what a map miss, such as a changed file with no recorded test, does: it must widen the scope, never narrow it.\nThis work waits on the map's verb and records landing.\n",
+      "created": "2026-11-09T15:17:11Z",
+      "revised": "2026-11-09T15:17:11Z"
+    },
+    {
+      "id": 1263,
+      "handle": "B5",
+      "slug": "config-struct-test-per-key",
+      "title": "One new loom config key fails dozens of tests that pin the whole struct",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "config",
+        "testkit"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all.",
+      "body": "## Seen (orch, 2026-11-09)\n\nAdding loom config keys in `arras-recipe-perch` failed 56 tests in the first tier 0 run, 47 of them cases of `TestLoadConfig_Loads` in `internal/loomengine`.\nEach case compares the whole loaded config struct, so one new key breaks every case; the rest were `TestLookup` and `TestModules_EveryTemplateKeyClassified` in `internal/configreg`, `TestWire_ReviewKeysReachTheEnv` in `internal/loomcli` and `TestRecipes_KeySet` in `internal/shedcli`, which pin the key set.\nThe fix of those tests, and the gate attempt it needs, cost the run most of an hour.\n\n## Idea\n\nMake each case of `TestLoadConfig_Loads` assert only the fields it is about, so a new key leaves the table alone.\nKeep one test that pins the whole key set, since the classification test is meant to fail for a key nobody classified, and make its failure message say which key to add where.\nCheck the other tests that compare a whole struct or a whole key list, and list those that fail for any added key.\n",
+      "created": "2026-11-09T15:17:11Z",
+      "revised": "2026-11-09T15:17:11Z"
+    },
+    {
+      "id": 1264,
+      "handle": "B6",
+      "slug": "verify-gate-wall-budget",
+      "title": "The Darn-Write verify gate has no time budget and no notice when it runs long",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "darn"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "verify_attempts bounds attempts, not minutes; a gate stood 35 minutes unannounced.",
+      "body": "## Seen (operator, 2026-11-09)\n\nThe Darn-Write verify gate of `arras-recipe-perch` stood at 35 minutes, and that of `testmap-verb` at about 33 to 40.\n`darn.verify_attempts` bounds the number of attempts, but each attempt is a full gate pass, and nothing bounds the time a verify gate may take or tells anyone it is long.\n\n## Idea\n\nGive the verify gate a time budget, and when it is spent, say so to the orch with the gate's failures to date, so the operator sees it before it passes half an hour.\nDecide whether a spent budget stops the attempts, hands the run to the orch, or only raises a notice.\nRead first what a long verify gate shows today and where a time bound would sit: in the recipe, in `darn.verify_attempts` beside it, or in the gate itself.\n",
+      "created": "2026-11-09T15:17:11Z",
+      "revised": "2026-11-09T15:17:11Z"
     }
   ],
   "prime_owner": "osl-1046",

@@ -142,7 +142,7 @@ Not released; nothing starts it until its status is cleared.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (24)
+## [P0 Root: entries under no project](project-root.md) (27)
 
 Owner `osl-1046`
 
@@ -175,7 +175,7 @@ Not released; nothing starts it until its status is cleared.
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1h<br>24m | slack, reed, creel |
 | T13 | `draft` **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 24m<br>24m | config, slack |
 
-### Notes (19)
+### Notes (22)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -186,13 +186,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 3h<br>3h | gate, fabric |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>3h | loom, stencil |
 
-#### Bugs (3)
+#### Bugs (6)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | 52m<br>52m | gate, testkit |
+| B1 | H | **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | 52m<br>0m | gate, testkit |
 | B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 1d<br>1d | shed, friction |
 | B3 | H | **The verify gate runs slower tiers after a tier already failed**<br>• A failed tier 0 still ran an 11-minute tier 1; stop at the first failing tier. | [`gate-stop-at-failing-tier`](design-gate-stop-at-failing-tier.md) | 0m<br>0m | gate, darn |
+| B4 | H | **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md) | 0m<br>0m | gate, testkit, darn |
+| B5 | H | **One new loom config key fails dozens of tests that pin the whole struct**<br>• TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all. | [`config-struct-test-per-key`](design-config-struct-test-per-key.md) | 0m<br>0m | loom, config, testkit |
+| B6 | H | **The Darn-Write verify gate has no time budget and no notice when it runs long**<br>• verify_attempts bounds attempts, not minutes; a gate stood 35 minutes unannounced. | [`verify-gate-wall-budget`](design-verify-gate-wall-budget.md) | 0m<br>0m | gate, darn |
 
 #### Enhancements (2)
 
