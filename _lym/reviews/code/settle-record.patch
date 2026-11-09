@@ -1,0 +1,333 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 72a7ac07..cad9642c 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -524,7 +524,8 @@ User-facing modules each get one `lym <module>` namespace:
+   Seed-Child writes the profile's block for the task's recipe under the task's `run_settings`.
+   A task naming no profile takes its recipe's default profile.
+   The starting profiles are the ladder `speed`, `light`, `solid` and `wide`, plus the darn-only `docs`.
+-  `lym config profiles --set <name>='<json object>'` adds or replaces one whole profile.
++  `lym config profiles --set <name>='<json object>'` adds or replaces one whole profile,
++  and a dotted key such as `docs.darn.loom.code_max_bounces=0` sets one value inside it.
+   See [internal/runprofile](../internal/runprofile/doc.go). ✅ Implemented.
+ - **fabric** — the sole git-coordination module over the code and its records (`internal/fabriccli` + `internal/fabricengine`).
+   It unifies two `internal/gitrepo.Repo` instances in one command tree.
+diff --git a/internal/configcli/configcli_test.go b/internal/configcli/configcli_test.go
+index 8fbe7c04..c7c03a8b 100644
+--- a/internal/configcli/configcli_test.go
++++ b/internal/configcli/configcli_test.go
+@@ -1232,6 +1232,18 @@ func TestDispatchSetProfiles(t *testing.T) {
+ 			wantFile: seeded,
+ 			wantErr:  `run profile "odd", recipe "tapestry"`,
+ 		},
++		{
++			name:     "a dotted key changes one value and keeps the rest of the profile",
++			setFlag:  `light.loom.loom.plan_max_bounces=2`,
++			wantFile: "# operator notes\nlight:\n    loom:\n        loom: {plan_max_bounces: 2}\n",
++		},
++		{
++			name:     "a dotted key leaving the profile in a wrong shape is refused and the file restored",
++			setFlag:  `light.loom.loom.no_such_key=1`,
++			wantCode: 1,
++			wantFile: seeded,
++			wantErr:  `run profile "light"`,
++		},
+ 	}
+ 	for _, row := range rows {
+ 		t.Run(row.name, func(t *testing.T) {
+diff --git a/internal/configcli/doc.go b/internal/configcli/doc.go
+index 2921491c..e68663ea 100644
+--- a/internal/configcli/doc.go
++++ b/internal/configcli/doc.go
+@@ -129,7 +129,13 @@
+ // A spec that sets `configengine.Spec.JSONEntries`, as `profiles` does, takes a top-level name and a JSON object.
+ // An example is `lym config profiles --set wide='{"tapestry":{"loom":{"code_max_bounces":2}}}'`.
+ // The object replaces that entry whole or is appended as a new one, and the other entries stay as they are.
+-// A value that is not a JSON object is refused.
++// A value for a top-level name that is not a JSON object is refused, and the refusal names the dotted form.
++// Such a spec also takes a dotted key.
++// It sets the one value below the entry it names and leaves the rest of the entry as it is.
++// An example is `lym config profiles --set docs.darn.loom.code_max_bounces=0`.
++// A value starting with `{` or `[` is a flow mapping or list, and an empty value is an empty string.
++// Any other value is a scalar under the type its text spells, so `0` is a number and `sonnet[medium]` a string.
++// A dot in a key always separates levels, so a top-level name holding a dot cannot be set by `--set`.
+ // An absent hub file starts from the template.
+ // A module with a template overlay picks its layer through a selector key that only the base file may hold.
+ // A hub worktree write that picks a layer the base does not pick is refused.
+diff --git a/internal/configengine/doc.go b/internal/configengine/doc.go
+index 4feebb17..ed8b5dbf 100644
+--- a/internal/configengine/doc.go
++++ b/internal/configengine/doc.go
+@@ -24,7 +24,8 @@
+ //
+ // [Set] writes dotted key=value pairs into a module's file with no editor and no validation loop.
+ // It scaffolds an absent standalone or seed-only base from the template and writes a hub's base sparse.
+-// For a spec with `JSONEntries`, it writes each pair as one whole top-level entry from a JSON object.
++// For a spec with `JSONEntries`, it writes a pair with an undotted key as one whole top-level entry from a JSON object,
++// and a pair with a dotted key as the one value below an entry that the key names.
+ // That path makes no template key check.
+ // [Edit] is the interactive counterpart.
+ // An editor that leaves the file empty or whitespace-only aborts the edit with [ErrAborted] before the YAML parse:
+diff --git a/internal/configengine/layers.go b/internal/configengine/layers.go
+index 5de9578e..f1bbb88a 100644
+--- a/internal/configengine/layers.go
++++ b/internal/configengine/layers.go
+@@ -75,7 +75,8 @@ const (
+ // a layer adds to or overrides each entry by name.
+ // HubWide marks a module whose file lives at the hub only;
+ // WholeEntries makes each top-level key one unit, open to the local layer.
+-// JSONEntries makes a set write each pair as one whole top-level entry from a JSON object, with no template key check.
++// JSONEntries makes a set write a pair with an undotted key as one whole top-level entry from a JSON object,
++// and a pair with a dotted key as the one value below an entry, with no template key check.
+ // Categories classifies the template by dotted path: an entry covers its own path and every path under it.
+ // RetiredKeys maps each dotted key the module has retired to the category it held as a template key;
+ // they stay out of Categories and OpenMaps; the local and machine layers admit them by that category,
+diff --git a/internal/configengine/set.go b/internal/configengine/set.go
+index efbb1824..adb05163 100644
+--- a/internal/configengine/set.go
++++ b/internal/configengine/set.go
+@@ -45,7 +45,8 @@ func layerPath(dirs Dirs, spec Spec, layer Layer) (path, owner string, err error
+ // the one the written base document picks, or for a layer above the base the one the base file picks.
+ // An unknown selector value fails before anything is written,
+ // and a hub worktree write that leaves the selector with a value other than the default file's is refused.
+-// A spec with JSONEntries writes each pair as one whole top-level entry on every layer:
++// A spec with JSONEntries writes a pair with an undotted key as one whole top-level entry on every layer,
++// and a pair with a dotted key as the one value below an entry that the key names;
+ // an absent base layer is scaffolded from the template first.
+ // Returns the sorted list of pre-existing keys not in the template that were preserved verbatim;
+ // nil on any error.
+@@ -105,7 +106,8 @@ func Set(dirs Dirs, spec Spec, layer Layer, pairs []yamlengine.KV) ([]string, er
+ 	return result.Preserved, nil
+ }
+ 
+-// setEntries writes each pair as a whole top-level entry into the layer file at path.
++// setEntries writes each pair into the layer file at path:
++// an undotted key as a whole top-level entry, a dotted key as the one value below an entry it names.
+ // An absent base file starts from the template and any other absent file from nothing;
+ // a local or machine write is checked against its layer's rule first, and a refused write leaves the file as it was.
+ func setEntries(spec Spec, layer Layer, path string, base bool, pairs []yamlengine.KV) error {
+diff --git a/internal/runprofile/doc.go b/internal/runprofile/doc.go
+index 34571d69..7e2f925d 100644
+--- a/internal/runprofile/doc.go
++++ b/internal/runprofile/doc.go
+@@ -44,8 +44,9 @@
+ // Seed-Child refuses a profile or `defaults` that holds a recipe only under its former name.
+ // The refusal names that reconcile as the way forward.
+ // Each profile, like `defaults`, is one whole entry,
+-// and `lym config profiles --set <name>='<json object>'` adds or replaces one whole entry;
+-// renaming one is adding it under the new name and removing the old block in the editor, `lym config profiles`.
++// and `lym config profiles --set <name>='<json object>'` adds or replaces one whole entry.
++// A dotted key sets one value inside a profile and keeps the rest, as in `--set docs.darn.loom.code_max_bounces=0`.
++// Renaming a profile is adding it under the new name and removing the old block in the editor, `lym config profiles`.
+ // No key is open to the local layer.
+ //
+ // `Load` decodes the stacked file without filling it from the template,
+diff --git a/internal/runprofile/runprofile.go b/internal/runprofile/runprofile.go
+index 597180a6..89bd59b6 100644
+--- a/internal/runprofile/runprofile.go
++++ b/internal/runprofile/runprofile.go
+@@ -35,7 +35,9 @@ func ConfigTemplate() string {
+ }
+ 
+ // ConfigSpec returns the module's layered-load spec.
+-// It is hub-wide, and each profile, like the defaults entry, is one whole entry set from a JSON object.
++// It is hub-wide.
++// Each profile, like the defaults entry, is one whole entry set from a JSON object.
++// A dotted key sets one value below an entry instead.
+ // No entry is open to the local layer:
+ // each template entry is classified cross-pair, since every pair naming it reads it,
+ // and a hub-wide module refuses an unclassified one.
+diff --git a/internal/yamlengine/doc.go b/internal/yamlengine/doc.go
+index 61865a84..490c3631 100644
+--- a/internal/yamlengine/doc.go
++++ b/internal/yamlengine/doc.go
+@@ -10,7 +10,7 @@
+ // [MissingKeys] reports the template leaf paths the file lacks.
+ // It treats a template list as a default, not a minimum length.
+ // [SetValues] applies dotted key=value pairs to the template-shaped tree and refuses a key the template does not know.
+-// [SetEntries] sets whole top-level entries from JSON objects.
++// [SetEntries] sets whole top-level entries from JSON objects, or one value below an entry by a dotted key.
+ // It serves a module whose top-level keys are names the operator owns.
+ // [RaiseIntFloor] raises one top-level integer key to a floor, for a module's migration hook.
+ // It carries every other key and comment through unchanged.
+diff --git a/internal/yamlengine/set.go b/internal/yamlengine/set.go
+index 41cd5bea..092fcb46 100644
+--- a/internal/yamlengine/set.go
++++ b/internal/yamlengine/set.go
+@@ -835,10 +835,18 @@ func rootMappingNode(node *yaml.Node) *yaml.Node {
+ 	return node
+ }
+ 
+-// SetEntries sets each pair's key, a top-level key, to the JSON object its value spells.
+-// It replaces the key's value whole or appends the key, and returns the new document.
+-// The other keys keep their order and comments, and the set entry keeps its key's comments.
+-// A value that is not a JSON object, or an empty key, is an error naming the pair, and nothing is returned.
++// SetEntries sets each pair's key in existing and returns the new document.
++// A key with no dot names a top-level entry;
++// its value must be a JSON object, which replaces the entry whole or is appended as a new one.
++// A dotted key names one value below an entry and sets that value alone, creating every missing mapping on the way.
++// Its value is written as a flow mapping or list when its first non-blank character is { or [.
++// Any other value is a scalar under the tag its own text resolves to, so a number decodes as a number,
++// and an empty value is an empty string.
++// The other keys keep their order and comments, and a set key keeps its comments.
++// A dot in a key always separates levels, so a top-level name holding a dot cannot be set.
++// A top-level value that is not a JSON object is an error naming the dotted form;
++// so is a key with an empty segment, or a dotted key through a value that is neither a mapping nor null.
++// On an error nothing is returned.
+ func SetEntries(existing []byte, pairs []KV) ([]byte, error) {
+ 	doc, root, err := parseMappingRoot(existing, "existing")
+ 	if err != nil {
+@@ -849,12 +857,18 @@ func SetEntries(existing []byte, pairs []KV) ([]byte, error) {
+ 		doc = &yaml.Node{Kind: yaml.DocumentNode, Content: []*yaml.Node{root}}
+ 	}
+ 	for _, pair := range pairs {
+-		if pair.Key == "" {
+-			return nil, fmt.Errorf("an entry name must not be empty, got %q", pair.Key+"="+pair.Value)
++		if slices.Contains(strings.Split(pair.Key, "."), "") {
++			return nil, fmt.Errorf("config key %q holds an empty segment: an entry name and each key below it must not be empty", pair.Key)
++		}
++		if strings.Contains(pair.Key, ".") {
++			if err := setEntryValue(root, pair); err != nil {
++				return nil, err
++			}
++			continue
+ 		}
+ 		var object map[string]any
+ 		if err := json.Unmarshal([]byte(pair.Value), &object); err != nil || object == nil {
+-			return nil, fmt.Errorf("value for %s must be a JSON object such as {\"module\": {\"key\": 1}}, got %q", pair.Key, pair.Value)
++			return nil, fmt.Errorf("value for %s must be a JSON object, since %s names a whole entry, got %q: set one value below it with a dotted key instead, such as %s.<key>.<key>=1", pair.Key, pair.Key, pair.Value, pair.Key)
+ 		}
+ 		var parsed yaml.Node
+ 		if err := yaml.Unmarshal([]byte(pair.Value), &parsed); err != nil {
+@@ -868,6 +882,36 @@ func SetEntries(existing []byte, pairs []KV) ([]byte, error) {
+ 	return yaml.Marshal(doc)
+ }
+ 
++// setEntryValue sets the one value that pair's dotted key names in the mapping tree under root.
++// It creates every missing mapping on the way.
++// A value whose first non-blank character is { or [ is a flow mapping or list.
++// An empty value is an empty string, and any other value a scalar under the tag its own text resolves to.
++// A value on the way that is neither a mapping nor null is an error naming its path and the key.
++func setEntryValue(root *yaml.Node, pair KV) error {
++	var value *yaml.Node
++	trimmed := strings.TrimSpace(pair.Value)
++	switch {
++	case strings.HasPrefix(trimmed, "{"), strings.HasPrefix(trimmed, "["):
++		entry, err := openMapEntryNode(pair)
++		if err != nil {
++			return err
++		}
++		plainScalars(entry)
++		value = entry
++	case pair.Value == "":
++		value = stringNode("")
++	default:
++		// A null leaf tag makes scalarSetTag resolve the tag from the value's own text.
++		value = &yaml.Node{Kind: yaml.ScalarNode, Tag: scalarSetTag("!!null", pair.Value), Value: pair.Value}
++	}
++	parent, name, err := parentMappingOf(root, pair.Key)
++	if err != nil {
++		return fmt.Errorf("%w: set it whole, or rewrite it as a map, to set %s", err, pair.Key)
++	}
++	setEntry(parent, name, value)
++	return nil
++}
++
+ // plainScalars clears the quoting style of every scalar under node,
+ // so a JSON-spelled value is written in plain YAML and quoted only where its text needs it.
+ func plainScalars(node *yaml.Node) {
+diff --git a/internal/yamlengine/set_test.go b/internal/yamlengine/set_test.go
+index 4185729f..585a40e9 100644
+--- a/internal/yamlengine/set_test.go
++++ b/internal/yamlengine/set_test.go
+@@ -831,11 +831,12 @@ func assertMergedKeyValue(t *testing.T, result SetResult, key, want string) {
+ 	}
+ }
+ 
+-// TestSetEntries pins whole-entry sets:
++// TestSetEntries pins entry sets:
+ // a new entry is appended;
+ // an existing one is replaced whole with its key's comment kept;
++// a dotted key sets one value below an entry, creating the mappings it lacks;
+ // the other entries and comments are untouched;
+-// and a value that is not a JSON object or an empty name is refused.
++// and a top-level value that is not a JSON object, an empty segment or a key through a scalar is refused.
+ func TestSetEntries(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -873,7 +874,7 @@ func TestSetEntries(t *testing.T) {
+ 			name:     "a value that is not a JSON object is refused",
+ 			existing: existing,
+ 			pairs:    []KV{{Key: "light", Value: `[1]`}},
+-			wantErr:  []string{"light", "JSON object"},
++			wantErr:  []string{"light", "JSON object", "light.<key>.<key>=1"},
+ 		},
+ 		{
+ 			name:     "an empty name is refused",
+@@ -881,6 +882,66 @@ func TestSetEntries(t *testing.T) {
+ 			pairs:    []KV{{Key: "", Value: `{}`}},
+ 			wantErr:  []string{"entry name"},
+ 		},
++		{
++			name:     "a dotted key sets one value inside an entry and keeps the rest",
++			existing: existing,
++			pairs:    []KV{{Key: "docs.darn.writer", Value: "opus"}},
++			want:     "# head\nlight:\n    loom: {plan_max_bounces: 1}\n# about docs\ndocs:\n    darn: {writer: opus}\n",
++		},
++		{
++			name:  "a dotted key creates the mappings it lacks and writes a number as a number",
++			pairs: []KV{{Key: "docs.darn.loom.code_max_bounces", Value: "0"}},
++			want:  "docs:\n    darn:\n        loom:\n            code_max_bounces: 0\n",
++		},
++		{
++			name:  "a dotted value that is no number stays a string, and an empty value is an empty string",
++			pairs: []KV{{Key: "docs.darn.writer", Value: "sonnet[medium]"}, {Key: "docs.darn.fan", Value: ""}},
++			want:  "docs:\n    darn:\n        writer: sonnet[medium]\n        fan: \"\"\n",
++		},
++		{
++			name:  "a dotted value starting with a brace is a mapping at the key's own depth",
++			pairs: []KV{{Key: "docs.darn", Value: `{"loom":{"code_max_bounces":0}}`}},
++			want:  "docs:\n    darn:\n        loom: {code_max_bounces: 0}\n",
++		},
++		{
++			name:  "a dotted value starting with a bracket is a flow list",
++			pairs: []KV{{Key: "docs.darn.fan", Value: "[a, b]"}},
++			want:  "docs:\n    darn:\n        fan: [a, b]\n",
++		},
++		{
++			name:    "a dotted value with a malformed flow mapping is refused",
++			pairs:   []KV{{Key: "docs.darn", Value: "{a: 1"}},
++			wantErr: []string{"docs.darn", "double-quote"},
++		},
++		{
++			name:  "a dotted boolean and null keep their own tags",
++			pairs: []KV{{Key: "docs.darn.on", Value: "true"}, {Key: "docs.darn.x", Value: "null"}},
++			want:  "docs:\n    darn:\n        on: true\n        x: null\n",
++		},
++		{
++			name:     "a dotted key over a null entry creates the mapping",
++			existing: "docs:\n  darn:\n",
++			pairs:    []KV{{Key: "docs.darn.writer", Value: "opus"}},
++			want:     "docs:\n    darn:\n        writer: opus\n",
++		},
++		{
++			name:     "a dotted key over a leaf keeps the leaf's line comment",
++			existing: "docs:\n  darn:\n    writer: sonnet # the writer\n",
++			pairs:    []KV{{Key: "docs.darn.writer", Value: "opus"}},
++			want:     "docs:\n    darn:\n        writer: opus # the writer\n",
++		},
++		{
++			name:     "a dotted key through a scalar is refused",
++			existing: "docs:\n  darn: sonnet\n",
++			pairs:    []KV{{Key: "docs.darn.writer", Value: "opus"}},
++			wantErr:  []string{"docs.darn", "not a map", "docs.darn.writer"},
++		},
++		{
++			name:     "a dotted key with an empty segment is refused",
++			existing: existing,
++			pairs:    []KV{{Key: "docs..writer", Value: "opus"}},
++			wantErr:  []string{"docs..writer", "empty segment"},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
