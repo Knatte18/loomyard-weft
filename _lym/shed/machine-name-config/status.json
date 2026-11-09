@@ -1,11 +1,11 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
+  "state": "done",
   "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -130,6 +130,12 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/machine-name-config/_lym/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-11-09T14:35:51Z"
     }
   ],
   "product": {
