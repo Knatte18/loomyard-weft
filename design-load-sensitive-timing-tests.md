@@ -2,7 +2,7 @@
 
 `load-sensitive-timing-tests` · Task · bug, gate, testkit · draft
 
-Depends on: [`arras-recipe-perch`](design-arras-recipe-perch.md), [`gate-redundancy-report`](design-gate-redundancy-report.md)
+Depends on: [`gate-redundancy-report`](design-gate-redundancy-report.md)
 
 ## Seen (orch, 2026-11-09)
 

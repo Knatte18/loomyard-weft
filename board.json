@@ -389,9 +389,7 @@
         91
       ],
       "recipe": "darn",
-      "depends_on": [
-        "arras-recipe-perch"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #88](https://github.com/Knatte18/loomyard/issues/88).\n\n## What happened\n\nA `lym shed step ... --until-stop` run halted as `failed` with anomaly `interrupted-stop` at step Darn-Write, the third step to run after Preflight and Record-Write had completed.\nThe halt note reads `loop-exited: loop \u003cid\u003e ended without an envelope` and `loop exit: not recorded`.\nThe only output is the loop log `.lym/shed/\u003crun\u003e/steps/loop.log`, which holds the envelopes of the earlier steps and nothing about Darn-Write.\nThe history held five entries (Preflight, Record-Write, Drift-Baseline, Drift-Await, Drift-Expect) while the loop log carried envelopes for only the first two, so the log and the history disagree.\n\n## Why it is abnormal\n\nThe loop ended with no envelope and no recorded exit code or signal, so neither the operator nor the reflection agent can tell whether the process crashed, was killed, or exited cleanly without emitting an envelope.\nThe halt note names `loop.trace_copy` and `loop.stderr_path` as the way forward, but the note's own `trace_file` points at `loop.log` rather than a per-step trace, so the diagnostic trail is thin.\n\n## What to do\n\nRecord the loop's exit status (code or signal) when the loop ends without an envelope.\nMake the halt note's `trace_file` point at the trace of the interrupted step, and include the `loop.stderr_path` content or location in the note.\nCheck why the loop log lacks envelopes for the Drift-* steps that the history lists.\n\nProvenance: task slug `darn-writer-anatomy`; notes: loom-halt.md\n\n## From issue #89\n\nImported from [issue #89](https://github.com/Knatte18/loomyard/issues/89).\n\n**What happened**\nA darn run reached its last step, Friction-Reflect, after Preflight through Finalize all completed.\nThe loom halted as `failed` with anomaly `interrupted-stop`: `loop-exited: loop ... ended without an envelope`.\nThe halt note reports `loop exit: not recorded`, and the status error is `shedverbs: step Friction-Reflect interrupted (loop-exited)`.\nThe only loop output captured was the earlier steps' JSON envelope lines from `.lym/shed/\u003crun\u003e/steps/loop.log`; nothing explains why the loop ended.\n\n**Why it is abnormal**\nThe loop produced no envelope and no exit status, so the halt cannot be told apart from a crash, a kill, or a normal end of the reflection session.\nA run whose every substantive step is done fails at its final bookkeeping step with no recorded cause.\n\n**What to do**\nRecord the loop's exit status (or signal) when a loop ends without an envelope, and include it in the halt note.\nCheck whether a Friction-Reflect session that ends normally, or is closed after filing, can be reported as an interrupted loop exit.\nIf it can, treat a reflection step ending after its report is written as done rather than `failed`.\n\nProvenance: task slug darn-writer-anatomy; notes: loom-halt-2.md\n\n## From issue #91\n\nImported from [issue #91](https://github.com/Knatte18/loomyard/issues/91).\n\nA `lym shed step` run halted as failed with anomaly `interrupted-stop`: the loop ended without an envelope and the halt reported `loop exit: not recorded`.\nIt happened twice at the same producer step (`Darn-Write`), the second time after a `goto` re-step.\nThe halt message points the operator at `loop.trace_copy`, `loop.stderr_path` and `loop.interrupt_policy`, but the note records no cause, so the loop's exit status and reason are lost.\nIn the first halt the loop log held only the earlier steps' envelopes, none for the interrupted step; the second halt did name the in-flight trace.\n\nThis is abnormal: a loop that dies should record its exit status and a reason, so the halt is diagnosable without reconstructing it from logs.\nRecord the loop process exit code or signal when the loop ends without an envelope, and include it in the halt note.\nAlso have the halt note name the in-flight trace in every case, as the second halt does.\n\nProvenance: task slug `slack-presence-auto`; notes `loom-halt.md`, `loom-halt-3.md`.",
@@ -446,33 +444,6 @@
       "discussed": true
     },
     {
-      "id": 1237,
-      "handle": "T6",
-      "slug": "arras-recipe-perch",
-      "title": "The arras recipe and its split perch",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "shed",
-        "loom",
-        "burler",
-        "arbiter",
-        "board"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `motif-raddle-recipe`.\n\nTakes: raddle-perch-mode's `perch` mode and outcome checks; the motif and raddle recipes and the generic Bouncer, BurlerReview and BurlerFix engines\nDelivers: `contracts/recipes/arras-recipe.yaml` registered wherever motif and raddle are, with its profile blocks and the test pinning `arras` as a former name reversed; the split perch segment with its loom keys, guard-category auto-accept key and the new rubric stencil `loom-rubric-raddle-review.md`; the perch re-arm on a fresh entry into Raddle-Write over a settled verdict; the run-level tests of an arras run through Discussion, the split perch and Raddle-File\nExports: the `arras` recipe name in shedrun, the split perch's loom keys\n\nThe part changes these packages:\n\n- contracts/recipes (about 140 changed lines)\n- contracts/stencils (about 120 changed lines)\n- internal/shedrun (about 15 changed lines)\n- internal/loomrecipe (about 90 changed lines)\n- internal/loomengine (about 150 changed lines)\n- internal/loomcli (about 150 changed lines)\n- internal/loomshed (about 40 changed lines)\n- internal/shedrecipe (about 30 changed lines)\n- internal/shedcli (about 20 changed lines)\n- internal/battencli (about 40 changed lines)\n- internal/runprofile (about 30 changed lines)\n- internal/configsync (about 20 changed lines)\n- internal/reviewbudget (about 20 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-08T16:15:45Z",
-      "revised": "2026-11-08T16:15:45Z",
-      "profile": "solid",
-      "project": "arras-recipe",
-      "discussed": true
-    },
-    {
       "id": 1238,
       "handle": "T7",
       "slug": "arras-family-filing",
@@ -488,9 +459,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "arras-recipe-perch"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `motif-raddle-recipe`.\n\nTakes: raddle-perch-mode's `perch` mode and its project outcome whose slug equals the run's entry; the arras recipe of arras-recipe-perch; project-release-members' project release; Board.FileRaddle, checkRunLocks, endsAsSketch and sketchOf, Raddle-File's Call and finish, Board.SetRunStatus and battencli.ClearMotifRun\nDelivers: Raddle-File's filing write turning the arras entry into a discussed project holding the whole record, with the part list body and `order`, admitted by the run lock only for that derived shape while the entry's status names Raddle-File; the restore of the entry's record on a failed write; the filing mark under shedrun.RunDir that makes loom's and batten's status writes skip the entry; the store-done and AlreadyFiled repair paths, the halt over a project not filed from the current proposal, and finish skipping EndEntry for a family; ClearMotifRun clearing a done arras run; every dependent's `depends_on` on the arras slug moved onto the filed parts no other part depends on, with a halt naming a refusing entry\nExports: the arras-project admission in boardengine's run lock, the filing mark and its reader in shedrun\n\nThe part changes these packages:\n\n- internal/boardengine (about 220 changed lines)\n- internal/loomshed (about 120 changed lines)\n- internal/loomcli (about 60 changed lines)\n- internal/battencli (about 80 changed lines)\n- internal/shedrun (about 30 changed lines)\n",
@@ -518,7 +487,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "arras-recipe-perch",
         "arras-family-filing"
       ],
       "isolated": false,
@@ -548,30 +516,6 @@
       "body": "Groups the entries filed from the Sketch `redundant-test-finder`: testcover-engine, testmap-verb, testmap-dobby-refresh, gate-redundancy-report, review-reads-redundancy.\n",
       "created": "2026-11-08T18:46:50Z",
       "revised": "2026-11-08T18:46:50Z",
-      "discussed": true
-    },
-    {
-      "id": 1247,
-      "handle": "T9",
-      "slug": "testmap-dobby-refresh",
-      "title": "The prime parent's dobby starts lym gate testmap after every test_map_every landings",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "testkit",
-        "gate"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `redundant-test-finder`.\n\nTakes: testmap-verb's verb\nDelivers: per the operator's decision after the Motif (2026-11-08, in the Sketch's board body), which replaces D6's trigger and supersedes the trigger clauses of the first carried criterion: a dobby tick step on the prime dobby that counts landings as the board tidy does and, after every test_map_every landings, starts `lym gate testmap --max \u003ctest_map_batch\u003e` on the packages stale then, leaving what the cap left unbuilt for the next refresh; no prime-HEAD record and no exit-record trigger; started through a spawn dep registered as runproc.RoleTestMap under runproc.HubOwner, none while a live test-map record exists, a restarted dobby included; the child ended on stop through runproc.EndRole; dobby config keys test_map_every beside board_tidy_every, where 0 never refreshes, and test_map_batch; no test_map on/off key\nExports: runproc.RoleTestMap\n\nThe part changes these packages:\n\n- internal/dobbyengine (about 200 changed lines)\n- internal/beamcli (about 80 changed lines)\n- internal/runproc (about 10 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-08T18:46:50Z",
-      "revised": "2026-11-08T18:46:50Z",
-      "profile": "light",
-      "project": "redundancy-check",
       "discussed": true
     },
     {
@@ -726,7 +670,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "arras-recipe-perch",
         "gate-redundancy-report"
       ],
       "isolated": false,
@@ -799,9 +742,7 @@
       ],
       "issues": [],
       "recipe": "motif",
-      "depends_on": [
-        "testmap-dobby-refresh"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046.",
       "body": "## Seen (orch, 2026-11-09)\n\nThe Darn-Write verify gate scopes a run to nearly the whole suite, tier 0 to 2, whenever the diff touches a widely imported package such as `internal/loomengine` or `internal/configreg`.\n`testmap-verb` and `arras-recipe-perch` each spent 30 to 40 minutes in it on OSL-1046.\nScope today is by importing packages, so one small change to a leaf of the import graph reruns every package above it.\n\n## Idea\n\nScope a verify gate by the coverage map project `redundancy-check` builds: run the tests whose recorded blocks cover the changed code, plus the tests of the changed packages, and everything else only in the landing gate.\nRead first how the computed scope forms today and what the map holds per test, and decide what a map miss, such as a changed file with no recorded test, does: it must widen the scope, never narrow it.\n\n## Built so far\n\nThe map record has landed (`a8d2ae63`): `internal/testcover` writes one `map.json` per package under `\u003chub\u003e/.lym/testcover/\u003cpackage\u003e/`, holding the per-file content hashes, the block key table, and per judged test its tier, duration and covered block indexes.\nBlock keys survive line shifts, and an edit gives a new key no test covers, which reads as a map miss.\nThis work still waits on the map's verb, `testmap-verb`, which rebuilds stale maps.\n",
@@ -823,9 +764,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "arras-recipe-perch"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all.",
       "body": "## Seen (orch, 2026-11-09)\n\nAdding loom config keys in `arras-recipe-perch` failed 56 tests in the first tier 0 run, 47 of them cases of `TestLoadConfig_Loads` in `internal/loomengine`.\nEach case compares the whole loaded config struct, so one new key breaks every case; the rest were `TestLookup` and `TestModules_EveryTemplateKeyClassified` in `internal/configreg`, `TestWire_ReviewKeysReachTheEnv` in `internal/loomcli` and `TestRecipes_KeySet` in `internal/shedcli`, which pin the key set.\nThe fix of those tests, and the gate attempt it needs, cost the run most of an hour.\n\n## Idea\n\nMake each case of `TestLoadConfig_Loads` assert only the fields it is about, so a new key leaves the table alone.\nKeep one test that pins the whole key set, since the classification test is meant to fail for a key nobody classified, and make its failure message say which key to add where.\nCheck the other tests that compare a whole struct or a whole key list, and list those that fail for any added key.\n",

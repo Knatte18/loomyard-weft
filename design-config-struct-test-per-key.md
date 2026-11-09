@@ -2,8 +2,6 @@
 
 `config-struct-test-per-key` · Task · bug, loom, config, testkit · draft
 
-Depends on: [`arras-recipe-perch`](design-arras-recipe-perch.md)
-
 ## Seen (orch, 2026-11-09)
 
 Adding loom config keys in `arras-recipe-perch` failed 56 tests in the first tier 0 run, 47 of them cases of `TestLoadConfig_Loads` in `internal/loomengine`.

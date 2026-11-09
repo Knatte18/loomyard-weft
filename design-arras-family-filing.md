@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-arras-family-filing.md)
 
-Depends on: [`arras-recipe-perch`](design-arras-recipe-perch.md)
-
 Filed from the Sketch `motif-raddle-recipe`.
 
 Takes: raddle-perch-mode's `perch` mode and its project outcome whose slug equals the run's entry; the arras recipe of arras-recipe-perch; project-release-members' project release; Board.FileRaddle, checkRunLocks, endsAsSketch and sketchOf, Raddle-File's Call and finish, Board.SetRunStatus and battencli.ClearMotifRun

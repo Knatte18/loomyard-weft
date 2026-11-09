@@ -2,8 +2,6 @@
 
 `gate-scope-by-coverage-map` · Task · bug, gate, testkit, darn · draft
 
-Depends on: [`testmap-dobby-refresh`](design-testmap-dobby-refresh.md)
-
 ## Seen (orch, 2026-11-09)
 
 The Darn-Write verify gate scopes a run to nearly the whole suite, tier 0 to 2, whenever the diff touches a widely imported package such as `internal/loomengine` or `internal/configreg`.
