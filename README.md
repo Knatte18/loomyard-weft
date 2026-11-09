@@ -144,21 +144,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-redundancy-check.md">P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review</a> (1)</strong></summary>
+<summary><strong><a href="project-redundancy-check.md">P5 Redundant tests found mechanically: a coverage engine, a map per package, a gate report and its review</a> (0)</strong></summary>
 
 [`redundancy-check`](design-redundancy-check.md) · Age 1d · Owner `neve`
 
-### Tasks (1)
+### Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **Code review reads the gate's redundancy report, and PATTERN-test-speed names the map, verb and step** | [`review-reads-redundancy`](design-review-reads-redundancy.md)<br>[Sketch](decision-review-reads-redundancy.md) | darn · light | Finalize | neve | 1d<br>1d | testkit, gate |
 
 #### Ready (0)
 
@@ -169,6 +161,14 @@ _None._
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T11 | **Code review reads the gate's redundancy report, and PATTERN-test-speed names the map, verb and step** | [`review-reads-redundancy`](design-review-reads-redundancy.md)<br>[Sketch](decision-review-reads-redundancy.md) | 1d<br>1d | testkit, gate |
 
 </details>
 
