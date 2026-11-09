@@ -1,0 +1,99 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index e6041d6d..bd11231d 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -41,7 +41,9 @@ Files beside this one hold what a rarer event needs; read the one that fits befo
+    so you never start, stop or clean up a batten run on your own.
+    The run opens the operator's terminal window on its worktree, so never open one yourself.
+    The batten run creates the task pair and drives the run inside it.
+-   That inner run is a tapestry, motif, darn or sampler, as the entry's `recipe` says.
++   That inner run is a tapestry, arras, motif, darn or sampler, as the entry's `recipe` says.
++   An arras run is the recipe for a tapestry-sized note; `motif` alone serves a design decided now and split later.
++   A project's release is one release of its draft members.
+    The batten run tears the pair down after the inner run ends.
+    A darn run has no Discussion review.
+    Its Code-Review perch, the one tapestry runs, reviews the writer's diff before Describe.
+@@ -259,6 +261,7 @@ An operator decision made in chat is recorded in the same turn:
+ - On an entry no run holds, write it into that entry's body through `lym board`.
+ - On a task a run holds, record it with `lym loom decision add <slug> --by parent`;
+   the board's run lock means a held task's entry is never edited.
++  An operator decision on a running arras entry goes the same way, with `--by operator`, never into the entry body.
+   - Several decisions taken together go in one call with `--from <file>`, a JSON array of entries,
+     so they land in one commit and one notice.
+   - Once the plan is approved, also pass `--amends-plan`.
+diff --git a/docs/reference/weaving-glossary.md b/docs/reference/weaving-glossary.md
+index d387fa1c..3712aaeb 100644
+--- a/docs/reference/weaving-glossary.md
++++ b/docs/reference/weaving-glossary.md
+@@ -133,7 +133,7 @@ Agent nouns name the one who does the work.
+ | pile | flor †, polvarp (pile warp) | sv lugg; fr velours; de Flor | raised loops or cut ends on the surface | state | – |
+ | terry | frotté | fr éponge; de Frottee | pile of uncut loops | state | – |
+ | tapestry | billedvev, gobelenger (pl.) | sv gobelängvävnad; fr tapisserie; de Gobelin | weft-faced pictorial weave | recipe, artifact | Taken: `tapestry`, the full task recipe: Discussion, Plan, Webster, Code review, Describe and Finalize, each review step followed by its own fix step. |
+-| arras | – | fr arras | a tapestry hung as a wall covering | recipe | Taken: `arras`, the recipe that discusses a task and splits its decision record into board entries under the split perch's review. |
++| arras | – | fr arras | a tapestry hung as a wall covering | recipe | Taken: `arras`, the recipe a board task names for a tapestry-sized note. It discusses the task and splits its decision record into board entries under the split perch's review, and the entry becomes the family's project. |
+ | overshot | – † | sv opphämta †; de Überschuss | pattern from long weft floats on a plain ground | state | – |
+ | rep, ribbed weave | rips † | fr reps; de Rips | weave with fine crosswise ribs | state | – |
+ | double cloth | dobbeltvev | fr double étoffe; de Doppelgewebe | two layers woven at once | state, recipe | – |
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 0016cd2d..341be57d 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -532,15 +532,15 @@ Required field:
+   "slug"       string — unique task identifier
+ 
+ Optional fields:
+-  "title"      string — human-readable title
++  "title"      string — display title
+   "brief"      string — one-line summary
+-  "body"       string — full markdown body
++  "body"       string — markdown body
+   "depends_on" array  — slugs this task depends on
+   "isolated"   bool   — no dependencies by design
+   "status"     string — lifecycle status
+   "kind"       string — "task", "note" or "project", default "note"
+   "labels"     array  — replaces the list; a task needs a type label, a note exactly one
+-  "recipe"    string — "darn", "tapestry" or "motif", or default_recipe
++  "recipe"    string — "darn", "tapestry", "arras" or "motif", or default_recipe
+   "priority"   string — a note's "high", "normal" or "low"; "normal" clears it
+   "short_name" string — display label; falls back to the slug
+   "issues"     array  — hub issue numbers
+diff --git a/plugins/ly/skills/board-policy/SKILL.md b/plugins/ly/skills/board-policy/SKILL.md
+index db0c494b..29adadc3 100644
+--- a/plugins/ly/skills/board-policy/SKILL.md
++++ b/plugins/ly/skills/board-policy/SKILL.md
+@@ -41,11 +41,15 @@ The commands that read and write the board are in the `ly:board` skill.
+ - Never propose one note alone as a loom task: a loom run has a fixed cost of about half its spend whatever its size.
+   Fold related notes into one loom task, or propose darn for a small change and let the operator name darn.
+   A part of a darn task that looks large raises the darn's profile; it never becomes a loom run of its own.
+-- A note or bundle weighed for a tapestry run is proposed as a `motif` task, never as a tapestry task straight from the board.
+-  Its Motif stores the approved decision record and makes the entry a Sketch;
+-  promoting the Sketch runs raddle, which splits it into tasks.
++- A note or bundle weighed for a tapestry run is proposed as an `arras` task, never as a tapestry task straight from the board.
++  Its run discusses the entry, stores the approved decision record and splits it into tasks under a review of the split,
++  and the entry becomes the project that holds them.
++  A project's release is one release: it releases its draft members at once, and the project keeps the whole record.
+   Raddle chooses each part's recipe, tapestry included, and that choice stands:
+   never change, on your own judgment, the recipe of a task raddle filed; the operator may still name darn for it.
++- A design decided now but split later, on code that is still changing, is proposed as a `motif` task instead.
++  Its Motif stores the approved decision record and makes the entry a Sketch;
++  promoting the Sketch runs raddle, which splits it into tasks.
+ - Every task runs through loom, bug fixes included.
+   Never set `recipe: darn` on a board entry yourself; a task runs darn only when the operator names darn for that task.
+ - A rename is a task of its own: mechanical, done by script, with nothing else in it.
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index be91cf41..001c1927 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -60,8 +60,11 @@ Beside its type label, every entry carries a label for each lym module it touche
+ an entry that spans the whole tool takes the modules its work would change first.
+ A label in neither map is refused.
+ Add it with `lym config board --set labels.<name>=<description>`, or edit the maps in the `lym config board` editor.
+-A recipe name goes in `recipe`, never in a label: `tapestry`, `darn` or `motif`.
++A recipe name goes in `recipe`, never in a label: `tapestry`, `darn`, `arras` or `motif`.
+ An empty `recipe` means the hub's `default_recipe` in `board.yaml`, which is `darn` unless the hub changed it.
++An `arras` task discusses the entry and splits its decision record into board entries in one run, and lands no code.
++A review of the split, the split perch, approves the proposal in place of the operator.
++The family filing turns the entry into the family's project and re-points the entries that depended on it to the new tasks.
+ A `motif` task runs Discussion alone:
+ it stores the approved decision record on the entry, flags it `discussed`, lands no code and makes the entry a Sketch.
+ A Sketch is a note of the built-in type `sketch` (handle `S`) that keeps its module labels and never runs;
