@@ -1,6 +1,6 @@
 # Measure whether running fabricengine tier 1 as several shards cuts its wall
 
-`gate-shard-slow-package` · Task · research, gate, fabric · running · Drift-Baseline
+`gate-shard-slow-package` · Task · research, gate, fabric · running · Drift-Await
 
 ## Seen (orch, 2026-11-08)
 
