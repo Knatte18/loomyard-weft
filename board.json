@@ -1029,174 +1029,29 @@
     },
     {
       "id": 1268,
-      "handle": "B9",
-      "slug": "adopt-kills-own-orch",
-      "title": "lym adopt run from the orch is killed when the orch watcher sees the foreign owner",
-      "kind": "note",
+      "handle": "T14",
+      "slug": "adopt-robust",
+      "title": "Adopt as one resumable algorithm that never starts work on its own",
+      "kind": "task",
       "labels": [
         "bug",
-        "orch",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nOn 2026-11-09 the orch on Neve ran `lym adopt --all` from inside its own session, to take the hub back from osl-1046.\nStep 1's origin reconcile pulled the owner record naming osl-1046 as the prime's owner.\nThe orch watcher on Neve saw the prime owned elsewhere and exited, with `watcher_exit: owned by machine osl-1046`.\nIt took the orch session and its reed window down with it.\nThe adopt command was a child of that session, so it died with SIGKILL during step 5's deploy, in the lym build,\nbefore step 6 wrote this machine as the owner.\nThe prime stayed owned by osl-1046, with no orch and no dobby running on Neve.\nThe operator recovered by running `lym adopt root` from a plain shell.\n\n## Idea\n\nAn adopt in progress must not trip the orch watcher's owner check:\nthe watcher could skip its exit while an adopt of its subject runs on this machine,\nor adopt could write the owner before anything that lets the watcher read a foreign owner.\nUntil then, the orch rules should say to run `lym adopt` from a shell outside the orch session.\n",
-      "created": "2026-11-09T18:09:22Z",
-      "revised": "2026-11-09T18:09:22Z"
-    },
-    {
-      "id": 1269,
-      "handle": "B10",
-      "slug": "tender-pause-reuses-adopt-hold",
-      "title": "lym tender pause on an adopt-held run adds no pause of its own",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "tender"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nOn 2026-11-09, `lym tender pause \u003cslug\u003e` on a run under an adopt hold answered `already_paused: true` and recorded nothing new.\nThe run started as soon as the adopt check lifted the hold.\n\n## Idea\n\nA pause from another caller records its own entry, so lifting the adopt hold leaves the run paused.",
-      "created": "2026-11-09T18:13:00Z",
-      "revised": "2026-11-09T18:13:00Z"
-    },
-    {
-      "id": 1270,
-      "handle": "B11",
-      "slug": "adopt-pause-before-pair-exists",
-      "title": "An adopted run cannot be paused before adopt adds its pair",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "tender",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nOn 2026-11-09, before `lym adopt`, `lym tender pause` on the runs owned by osl-1046 failed with `has no pair in this hub`.\nThe pairs exist only after adopt adds them, so the operator cannot hold a run before taking it over.\n\n## Idea\n\nAdopt takes an option to leave every adopted run paused, or the pause verb records a pause by slug for a run whose pair is not here yet.",
-      "created": "2026-11-09T18:13:00Z",
-      "revised": "2026-11-09T18:13:00Z"
-    },
-    {
-      "id": 1271,
-      "handle": "B12",
-      "slug": "adopt-old-dobby-starts-pass",
-      "title": "The local dobby starts a pass on a run while adopt is taking it over",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "dobby",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nOn 2026-11-09 the first `lym adopt --all` held two runs, but dobby started `batten run terminal-titles-hub-project --continue-pass` during the adopt, before the owner was written.\n\n## Idea\n\nAdopt holds every run under its subjects before its reconcile pulls them, and dobby starts no pass on a run whose adopt is in progress.",
-      "created": "2026-11-09T18:13:00Z",
-      "revised": "2026-11-09T18:13:00Z"
-    },
-    {
-      "id": 1272,
-      "handle": "E5",
-      "slug": "adopt-no-orch-option",
-      "title": "lym adopt always starts the orch, with no way to skip it",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "orch",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nOn 2026-11-09 the operator wanted to adopt root without starting the orch, to resume the orch session by hand with `claude -c`; adopt has no such option.\n\n## Idea\n\nAn adopt flag that skips the orch start in its beam steps, leaving dobby to start as now.",
-      "created": "2026-11-09T18:13:00Z",
-      "revised": "2026-11-09T18:13:00Z"
-    },
-    {
-      "id": 1273,
-      "handle": "E6",
-      "slug": "adopt-resume-after-break",
-      "title": "An interrupted adopt leaves no account of what it did and what is left",
-      "kind": "note",
-      "labels": [
         "enhancement",
         "batten",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nOn 2026-11-09 an adopt died in its deploy step: the owner was not written, the lym build was cut off and dobby was gone.\nNo command said which steps had run, and the operator had to run adopt again from a shell.\n\n## Idea\n\nAdopt records its progress per step, `lym beam status` or a status verb shows an unfinished adopt, and a second adopt resumes from the first step not done.",
-      "created": "2026-11-09T18:13:00Z",
-      "revised": "2026-11-09T18:13:00Z"
-    },
-    {
-      "id": 1274,
-      "handle": "B13",
-      "slug": "adopt-check-overrides-pause",
-      "title": "A green adopt check starts adopted runs the operator paused",
-      "kind": "note",
-      "labels": [
-        "bug",
         "tender",
         "dobby",
-        "batten"
+        "orch",
+        "fabric",
+        "shortcut"
       ],
       "issues": [],
+      "recipe": "motif",
       "depends_on": [],
       "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nOn 2026-11-09, after `lym adopt root`, the orch set `lym batten pause` and `lym tender pause` on the three adopted runs before the adopt check ended.\nWhen the check went green, its holds lifted and dobby started all three runs anyway; the orch paused them again within a minute.\nThe same start happened on 2026-11-02 with no operator go-ahead.\n\n## Idea\n\nLifting the adopt hold must never override a pause set by anyone else.\nAdopted runs should stay paused after a green check until the operator resumes them.",
-      "created": "2026-11-09T18:13:04Z",
-      "revised": "2026-11-09T18:13:04Z"
-    },
-    {
-      "id": 1275,
-      "handle": "E7",
-      "slug": "start-adopts-unowned-beam",
-      "title": "lym s in a worktree this machine does not own adopts it",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shortcut",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nOn 2026-11-09 the operator moved to Neve after working on osl-1046 and had to run `lym adopt` by hand; run from the orch session, it killed itself.\n\n## Idea\n\n`lym s` (beam start, then reed attach) on a machine that does not own the worktree adopts it first: the beam in a beam, root in the prime.\nIt then starts the beam and attaches.\nAdopt thus starts from a plain shell, never from the orch.\nWhen a pair on this machine holds local commits origin lacks, left from when this machine last owned it, `lym s` stops with the keep-local and drop-local choices adopt gives today.\nThe adopting machine cannot see the old owner's local commits; those are the old owner's to keep.",
-      "created": "2026-11-09T18:15:49Z",
-      "revised": "2026-11-09T18:17:06Z"
-    },
-    {
-      "id": 1276,
-      "handle": "E8",
-      "slug": "old-owner-archives-local",
-      "title": "The old owner pushes its unpushed tips to origin when another machine adopts",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "dobby",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nOn 2026-11-09 the operator noted that the adopting machine cannot know what the old owner holds locally: commits the old owner never pushed are invisible to adopt and lost to the new owner.\n\n## Idea\n\nWhen the old owner sees that another machine owns a beam or root, its dobby pushes every local tip origin lacks, under that subject, to an archive branch on origin, then stops its runs there.\nThe new owner sees the archive branches and decides what to bring in.",
-      "created": "2026-11-09T18:17:07Z",
-      "revised": "2026-11-09T18:17:07Z"
+      "brief": "Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s",
+      "body": "## Goal\n\nTaking a hub or beam over from another machine is one predictable algorithm that never starts work on its own,\nsurvives the session that started it, and resumes after a break.\n\n## Findings (2026-11-02 and 2026-11-09)\n\n- `lym adopt` run from the orch session died with it:\n  the reconcile pulled the owner record naming the other machine,\n  the orch watcher on this machine exited with `watcher_exit: owned by machine \u003cother\u003e`,\n  and took the session and adopt with it, mid-deploy and before the owner write.\n- A green adopt check lifted its holds and dobby started every adopted run,\n  even after the orch set `lym batten pause` and `lym tender pause` on them; it happened on both dates.\n- `lym tender pause` on an adopt-held run answered `already_paused: true` and recorded no pause of its own.\n- An adopted run cannot be paused before adopt adds its pair: the pause verb refuses with `has no pair in this hub`.\n- The local dobby started `batten run \u003cslug\u003e --continue-pass` on a run while adopt was taking it over.\n- Adopt always starts the orch; the operator wanted to resume the orch session by hand.\n- An interrupted adopt leaves no account of which steps ran; the operator had to run it again from a shell.\n- The adopting machine cannot see the old owner's unpushed local commits.\n\n## Proposed algorithm\n\nPrinciples:\n\n- Adopt never starts work: every adopted run stays paused until the operator resumes it, and only the operator lifts that pause.\n- Adopt lives apart from the session that started it.\n- Each step is recorded when done, and a second adopt resumes at the first step not done.\n\nSteps:\n\n1. Detach and record: adopt re-runs itself as a detached process and writes a local in-progress record naming its subjects.\n   While it exists, the orch watcher does not exit on a foreign owner, and dobby starts no pass on a run under the subjects.\n2. Reconcile from origin and check this machine's local commits origin lacks, as today, with keep-local and drop-local.\n3. Add the pairs this machine lacks.\n4. Pause every adopted run with an ordinary operator pause, never a hold that lifts by itself.\n5. Write this machine as the owner, before the deploy, so the window in which the watcher sees a foreign owner is short.\n6. Deploy when lym is behind.\n7. Start dobby; start the orch only when asked: a `--no-orch` flag, and no orch start when adopt was run from an orch session.\n8. Run the adopt check: green only reports and lifts no pause; red files a fix task as today.\n9. Mark the adopt done; `lym beam status` shows an unfinished adopt and the step it stopped at.\n10. The operator resumes the runs with `lym tender resume`.\n\nEntry point:\n\n- `lym s` (beam start, then reed attach) on a machine that does not own the worktree adopts it first:\n  the beam in a beam, root in the prime, then starts and attaches.\n  So adopt normally starts from a plain shell, never from the orch.\n\nThe old owner:\n\n- When the old owner's dobby sees that another machine owns a beam or root,\n  it pushes every local tip under that subject that origin lacks to an archive branch on origin, then stops its runs there.\n  The new owner sees the archive branches and decides what to bring in.\n",
+      "status": "draft",
+      "created": "2026-11-09T18:09:22Z",
+      "revised": "2026-11-09T18:18:48Z"
     }
   ],
   "prime_owner": "neve",

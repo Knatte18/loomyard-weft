@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-09 18:17 UTC; every age below is as of then.
+Rendered 2026-11-09 18:18 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -142,11 +142,11 @@ Not released; nothing starts it until its status is cleared.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-## [P0 Root: entries under no project](project-root.md) (39)
+## [P0 Root: entries under no project](project-root.md) (31)
 
 Owner `neve`
 
-### Tasks (5)
+### Tasks (6)
 
 Concrete and claimable; only a task can run.
 
@@ -164,7 +164,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (4)
+#### Draft (5)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -174,8 +174,9 @@ Not released; nothing starts it until its status is cleared.
 | T5 | `draft` **machinename reads the machine name from machine.json before the hostname rule** | [`machine-name-file`](design-machine-name-file.md)<br>[Sketch](decision-machine-name-file.md) | darn · solid |  | 3h<br>3h | config, slack |
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 4h<br>3h | slack, reed, creel |
 | T13 | `draft` **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 3h<br>3h | config, slack |
+| T14 | `draft` **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md) | motif |  | 9m<br>0m | batten, tender, dobby, orch, fabric, shortcut |
 
-### Notes (34)
+### Notes (25)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -186,35 +187,26 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 6h<br>6h | gate, fabric |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>6h | loom, stencil |
 
-#### Bugs (13)
+#### Bugs (8)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 | H | **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | 3h<br>2h | gate, testkit |
+| B1 | H | **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | 3h<br>3h | gate, testkit |
 | B2 |  | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 1d<br>2h | shed, friction |
-| B3 | H | **The verify gate runs slower tiers after a tier already failed**<br>• A failed tier 0 still ran an 11-minute tier 1; stop at the first failing tier. | [`gate-stop-at-failing-tier`](design-gate-stop-at-failing-tier.md) | 2h<br>2h | gate, darn |
-| B4 | H | **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md) | 2h<br>2h | gate, testkit, darn |
-| B5 | H | **One new loom config key fails dozens of tests that pin the whole struct**<br>• TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all. | [`config-struct-test-per-key`](design-config-struct-test-per-key.md) | 2h<br>2h | loom, config, testkit |
-| B6 | H | **The Darn-Write verify gate has no time budget and no notice when it runs long**<br>• verify_attempts bounds attempts, not minutes; a gate stood 35 minutes unannounced. | [`verify-gate-wall-budget`](design-verify-gate-wall-budget.md) | 2h<br>2h | gate, darn |
+| B3 | H | **The verify gate runs slower tiers after a tier already failed**<br>• A failed tier 0 still ran an 11-minute tier 1; stop at the first failing tier. | [`gate-stop-at-failing-tier`](design-gate-stop-at-failing-tier.md) | 3h<br>3h | gate, darn |
+| B4 | H | **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md) | 3h<br>3h | gate, testkit, darn |
+| B5 | H | **One new loom config key fails dozens of tests that pin the whole struct**<br>• TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all. | [`config-struct-test-per-key`](design-config-struct-test-per-key.md) | 3h<br>3h | loom, config, testkit |
+| B6 | H | **The Darn-Write verify gate has no time budget and no notice when it runs long**<br>• verify_attempts bounds attempts, not minutes; a gate stood 35 minutes unannounced. | [`verify-gate-wall-budget`](design-verify-gate-wall-budget.md) | 3h<br>3h | gate, darn |
 | B7 |  | **Gate escalation reports "did not pass after 0 attempts" and blocks the step as escalation-to-human** | [`gate-zero-attempts-halt`](design-gate-zero-attempts-halt.md) | 2h<br>2h | gate, loom, darn |
 | B8 |  | **lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape** | [`profiles-set-leaf-key`](design-profiles-set-leaf-key.md) | 2h<br>2h | config, profiles |
-| B9 |  | **lym adopt run from the orch is killed when the orch watcher sees the foreign owner** | [`adopt-kills-own-orch`](design-adopt-kills-own-orch.md) | 7m<br>7m | orch, fabric |
-| B10 |  | **lym tender pause on an adopt-held run adds no pause of its own** | [`tender-pause-reuses-adopt-hold`](design-tender-pause-reuses-adopt-hold.md) | 4m<br>4m | tender |
-| B11 |  | **An adopted run cannot be paused before adopt adds its pair** | [`adopt-pause-before-pair-exists`](design-adopt-pause-before-pair-exists.md) | 4m<br>4m | tender, fabric |
-| B12 |  | **The local dobby starts a pass on a run while adopt is taking it over** | [`adopt-old-dobby-starts-pass`](design-adopt-old-dobby-starts-pass.md) | 4m<br>4m | dobby, batten |
-| B13 |  | **A green adopt check starts adopted runs the operator paused** | [`adopt-check-overrides-pause`](design-adopt-check-overrides-pause.md) | 4m<br>4m | tender, dobby, batten |
 
-#### Enhancements (7)
+#### Enhancements (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 2d<br>2d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 1d<br>3h | shed, loom, darn |
 | E3 |  | **One land notice: fold the beam-PR landing notice into notify_on_land** | [`one-land-notice`](design-one-land-notice.md) | 2h<br>2h | dobby, batten, workspaces |
-| E5 |  | **lym adopt always starts the orch, with no way to skip it** | [`adopt-no-orch-option`](design-adopt-no-orch-option.md) | 4m<br>4m | orch, batten |
-| E6 |  | **An interrupted adopt leaves no account of what it did and what is left** | [`adopt-resume-after-break`](design-adopt-resume-after-break.md) | 4m<br>4m | batten, fabric |
-| E7 |  | **lym s in a worktree this machine does not own adopts it** | [`start-adopts-unowned-beam`](design-start-adopts-unowned-beam.md) | 1m<br>0m | shortcut, batten |
-| E8 |  | **The old owner pushes its unpushed tips to origin when another machine adopts** | [`old-owner-archives-local`](design-old-owner-archives-local.md) | 0m<br>0m | dobby, fabric |
 
 #### Features (12)
 
