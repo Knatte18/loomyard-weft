@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-09 19:19 UTC; every age below is as of then.
+Rendered 2026-11-09 19:21 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,15 +8,17 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (9)
+## Tasks (10)
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md)<br>[Sketch](decision-adopt-robust.md) | raddle |  | 1h<br>0m | batten, tender, dobby, orch, fabric, shortcut |
 
 ### Layer A (1)
 
@@ -24,7 +26,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T16 | **Darn verify gate: stop at the first failing tier, rerun only failed tests, a time budget, and a truthful zero-attempt halt** | [`verify-gate-faults`](design-verify-gate-faults.md) | darn · solid | T10 | 4h<br>2m | gate, darn, loom |
+| T16 | **Darn verify gate: stop at the first failing tier, rerun only failed tests, a time budget, and a truthful zero-attempt halt** | [`verify-gate-faults`](design-verify-gate-faults.md) | darn · solid | T10 | 4h<br>4m | gate, darn, loom |
 
 ### Draft (8)
 
@@ -35,21 +37,15 @@ Not released; nothing starts it until its status is cleared.
 | T5 | `draft` **machinename reads the machine name from machine.json before the hostname rule** | [`machine-name-file`](design-machine-name-file.md)<br>[Sketch](decision-machine-name-file.md) | darn · light |  | 4h<br>4h | config, slack |
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 5h<br>4h | slack, reed, creel |
 | T13 | `draft` **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 4h<br>4h | config, slack |
-| T17 | `draft` **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md) | motif | T9 | 4h<br>13m | gate, testkit, darn |
-| T18 | `draft` **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | darn · solid | T6<br>T10 | 4h<br>13m | gate, testkit |
-| T19 | `draft` **One new loom config key fails dozens of tests that pin the whole struct**<br>• TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all. | [`config-struct-test-per-key`](design-config-struct-test-per-key.md) | darn · light | T6 | 4h<br>13m | loom, config, testkit |
-| T20 | `draft` **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | T6 | 1d<br>13m | shed, friction |
-| T21 | `draft` **lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape** | [`profiles-set-leaf-key`](design-profiles-set-leaf-key.md) | darn · light |  | 3h<br>13m | config, profiles |
+| T17 | `draft` **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md) | motif | T9 | 4h<br>15m | gate, testkit, darn |
+| T18 | `draft` **Tests that compare a measured time to a limit fail on a loaded machine**<br>• TestIntegrationDriverBootstrap_ReturnsWithoutWaitingOnTheDriver took 6.18 s against a 5 s stub delay under load and cost a full gate pass. | [`load-sensitive-timing-tests`](design-load-sensitive-timing-tests.md) | darn · solid | T6<br>T10 | 4h<br>15m | gate, testkit |
+| T19 | `draft` **One new loom config key fails dozens of tests that pin the whole struct**<br>• TestLoadConfig_Loads compares the whole struct in every case, so each added key breaks them all. | [`config-struct-test-per-key`](design-config-struct-test-per-key.md) | darn · light | T6 | 4h<br>15m | loom, config, testkit |
+| T20 | `draft` **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | T6 | 1d<br>15m | shed, friction |
+| T21 | `draft` **lym config profiles --set cannot reach a profile's leaf key, and its refusal names the wrong value shape** | [`profiles-set-leaf-key`](design-profiles-set-leaf-key.md) | darn · light |  | 4h<br>15m | config, profiles |
 
-## Notes (19)
+## Notes (18)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Sketches (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| S1 |  | **Adopt as one resumable algorithm that never starts work on its own**<br>• Detached, step-recorded adopt that pauses every adopted run, writes the owner early, can skip the orch, and is entered through lym s | [`adopt-robust`](design-adopt-robust.md)<br>[Sketch](decision-adopt-robust.md) | 1h<br>13m | batten, tender, dobby, orch, fabric, shortcut |
 
 ### Research (2)
 
@@ -64,8 +60,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 2d<br>2d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 1d<br>4h | shed, loom, darn |
-| E3 |  | **One land notice: fold the beam-PR landing notice into notify_on_land** | [`one-land-notice`](design-one-land-notice.md) | 3h<br>3h | dobby, batten, workspaces |
-| E4 |  | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 32m<br>30m | testkit, gate |
+| E3 |  | **One land notice: fold the beam-PR landing notice into notify_on_land** | [`one-land-notice`](design-one-land-notice.md) | 4h<br>4h | dobby, batten, workspaces |
+| E4 |  | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 34m<br>32m | testkit, gate |
 
 ### Features (12)
 
