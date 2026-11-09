@@ -149,14 +149,6 @@ Waits only on Running, Ready or Draft entries.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T3 | **lym gate testmap rebuilds stale coverage maps in the prime parent's worktree** | [`testmap-verb`](design-testmap-verb.md)<br>[Sketch](decision-testmap-verb.md) | 1d<br>1d | testkit, gate |
-
 ## [P0 Root: entries under no project](project-root.md) (30)
 
 Owner `neve`

@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-gate-redundancy-report.md)
 
-Depends on: [`testmap-verb`](design-testmap-verb.md)
-
 Filed from the Sketch `redundant-test-finder`.
 
 Takes: testcover-engine's engine and map record; testmap-verb's CodeDirAt, CodeFileAt, timeouts and run-alone

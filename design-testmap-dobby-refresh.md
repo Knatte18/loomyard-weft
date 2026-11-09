@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-testmap-dobby-refresh.md)
 
-Depends on: [`testmap-verb`](design-testmap-verb.md)
-
 Filed from the Sketch `redundant-test-finder`.
 
 Takes: testmap-verb's verb

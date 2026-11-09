@@ -2,8 +2,6 @@
 
 `fabric-serial-phase-tests` · Task · enhancement, fabric, testkit · running · Code-Burler-Fix
 
-Depends on: [`testmap-verb`](design-testmap-verb.md)
-
 ## Seen (orch, 2026-11-09)
 
 `docs/research/speed/fabricengine-shards-2026-11-09/report.md`, measured on OSL-1046 under its normal load: 46 of the package's 400 top-level tests are not marked parallel, and the serial chain they form is 143 s, 59.5 percent of the 242 s one-process wall.
