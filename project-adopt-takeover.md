@@ -1,6 +1,6 @@
 # P1 Adopt as one resumable algorithm that never starts work on its own
 
-Rendered 2026-11-09 20:07 UTC; every age below is as of then.
+Rendered 2026-11-09 20:08 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`adopt-takeover`](design-adopt-takeover.md) · Age 22m · Owner `neve`
