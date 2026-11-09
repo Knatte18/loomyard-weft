@@ -1,0 +1,14 @@
+{
+  "session_id": "9d6a90b9-40f9-48f2-b0cd-4ceabe0a5725",
+  "row": "Darn-Write",
+  "role": "tackler",
+  "model": "claude-haiku-5-5",
+  "engine": "claude",
+  "input_tokens": 10,
+  "cache_write_tokens": 18145,
+  "cache_read_tokens": 187335,
+  "output_tokens": 2202,
+  "cost_usd": 0.005243475,
+  "started": "2026-11-09T11:59:42Z",
+  "ended": "2026-11-09T12:00:01Z"
+}
