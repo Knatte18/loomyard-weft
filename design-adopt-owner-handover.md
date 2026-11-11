@@ -1,6 +1,6 @@
 # The adopting machine's orch and dobby stay up and idle, and the old owner pauses, archives its unpushed tips and exits
 
-`adopt-owner-handover` · Task · enhancement, batten, tender, dobby, orch, fabric, shortcut · running · Code-Bouncer
+`adopt-owner-handover` · Task · enhancement, batten, tender, dobby, orch, fabric, shortcut · running · Code-Burler-Review
 
 Decision record: [Sketch](decision-adopt-owner-handover.md)
 
