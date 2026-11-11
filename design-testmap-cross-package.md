@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-testmap-cross-package.md)
 
-Depends on: [`testmap-upkeep`](design-testmap-upkeep.md)
-
 Filed from the Sketch `gate-scope-by-coverage-map`.
 
 Takes: testmap and the redundancy report as they stand once testmap-upkeep's design has landed
