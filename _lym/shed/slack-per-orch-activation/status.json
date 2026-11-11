@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Drift-Recheck",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
+    "now": "Drift-Recheck",
+    "last": "Code-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -199,6 +199,13 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Bouncer"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/slack-per-orch-activation/_lym/reviews/code/round-2-bouncer-ledger.md",
+      "at": "2026-11-11T15:29:37Z",
+      "started_at": "2026-11-11T15:29:18Z"
     }
   ],
   "product": {
