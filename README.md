@@ -61,7 +61,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 4d<br>1d | codex, shuttle |
-| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 1d<br>52m | codex, shuttle |
+| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 1d<br>53m | codex, shuttle |
 
 #### Features (1)
 
@@ -92,7 +92,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Decide how the coverage maps are kept fresh: triggers, batch, staleness and sharing across machines** | [`testmap-upkeep`](design-testmap-upkeep.md) | darn |  | 1d<br>52m | testkit, gate, dobby |
+| T3 | `draft` **Decide how the coverage maps are kept fresh: triggers, batch, staleness and sharing across machines** | [`testmap-upkeep`](design-testmap-upkeep.md) | darn |  | 1d<br>53m | testkit, gate, dobby |
 | T4 | `draft` **testmap records each test's coverage across every in-module package its binary links** | [`testmap-cross-package`](design-testmap-cross-package.md)<br>[Sketch](decision-testmap-cross-package.md) | darn · solid | T3 | 4m<br>4m | gate, testkit, darn |
 | T14 | `draft` **Select an importing package's tests from its coverage map, or name the miss that runs it whole** | [`coverage-test-select`](design-coverage-test-select.md)<br>[Sketch](decision-coverage-test-select.md) | darn · solid | T4 | 4m<br>4m | gate, testkit, darn |
 | T15 | `draft` **A coverage gate scope runs changed packages whole and importing packages' selected tests** | [`gate-scope-coverage`](design-gate-scope-coverage.md)<br>[Sketch](decision-gate-scope-coverage.md) | darn · solid | T14 | 4m<br>4m | gate, testkit, darn |
@@ -125,9 +125,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **machinename reads the machine name from machine.json before the hostname rule** | [`machine-name-file`](design-machine-name-file.md)<br>[Sketch](decision-machine-name-file.md) | darn · light | Open-IDE | neve | 1d<br>1h | config, slack |
+| T5 | **machinename reads the machine name from machine.json before the hostname rule** | [`machine-name-file`](design-machine-name-file.md)<br>[Sketch](decision-machine-name-file.md) | darn · light | Drift-Baseline | neve | 1d<br>1h | config, slack |
 | T7 | **A landed run left failed before teardown holds a max_runs slot until a hand cleanup** | [`landed-run-holds-slot`](design-landed-run-holds-slot.md) | darn · light | Darn-Write | neve | 1h<br>41m | dobby, batten, cleanup |
-| T9 | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | darn · light | Open-Window | neve | 2h<br>1h | fabric |
+| T9 | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | darn · light | Record-Write | neve | 2h<br>1h | fabric |
 | T20 | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | Code-Burler-Fix | neve | 2d<br>2h | shed, friction, shuttle |
 
 #### Ready (0)
