@@ -1,6 +1,6 @@
 # machinename reads the machine name from machine.json before the hostname rule
 
-`machine-name-file` · Task · feature, config, slack · running · Drift-Recheck
+`machine-name-file` · Task · feature, config, slack · running · Describe
 
 Decision record: [Sketch](decision-machine-name-file.md)
 
