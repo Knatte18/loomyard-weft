@@ -1,6 +1,6 @@
 # The coverage selector takes its target, compares own files by function, and misses on a changed environment stamp
 
-`testmap-selector-upkeep-rules` · Task · feature, testkit, gate, dobby · running · Seed-Child
+`testmap-selector-upkeep-rules` · Task · feature, testkit, gate, dobby · running · Open-Window
 
 Decision record: [Sketch](decision-testmap-selector-upkeep-rules.md)
 
