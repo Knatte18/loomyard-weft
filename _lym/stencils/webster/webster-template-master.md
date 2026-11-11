@@ -1,9 +1,22 @@
-<!-- This is the webster Master session prompt (plan-format, the flat card
-     list).
-     It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the plan's overview and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
+<!-- This is the webster Master session prompt for the plan format, a flat card list.
+     The engine fills it via internal/stencil and hands it to the shuttle as the Master session's entire
+     instruction set for one whole plan run.
+     The Master is the long-lived session that reads the plan's overview and the repo's rules once, never the code,
+     then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
-     stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lym/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. parent_decisions is every added-decision entry of the task's decision record, verbatim, or the literal `none`. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=66393b74df566b1fd55db3c2d82ae92f1681103b1062053ce18e07076d9bc33c build=b93a0a52b204b178bc6306a1480ff2bced4c4a7a time=2026-11-06T11:37:39Z -->
+     stencil.FillOptional requires every marker but pattern_directive, friction_directive and parent_directive
+     to be non-empty.
+     The file has no {{if}}/{{range}} conditionals:
+     a required marker inside a conditional branch would render silently blank when present but empty
+     (see internal/stencil/stencil.go).
+     plan_dir renders hub-relative ("_lym/plan") in hub mode, and as the absolute plan directory of the derived state
+     directory in standalone mode.
+     verify_fix_prompt_path is the rendered prompt file of the verify-gate fixer fork.
+     parent_decisions is every added-decision entry of the task's decision record, verbatim, or the literal `none`.
+     pattern_directive and friction_directive each render as nothing when their own tier is inactive.
+     parent_directive is rendered by internal/parentdirective and is optional too.
+     edit_directive is required and is rendered unconditionally by internal/editdirective.
+lym-stencil: sha256=b8b22c9858a9cf6661f621e36e66d67826e9f55de62741539d26cc449ca41260 build=17f374e9efe9df3194cd2ca894eff9da0a6ed194 time=2026-11-11T08:33:54Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -178,9 +191,14 @@ You message your parent only on the `waiting` rung below and under "A parent dec
   A dead batch with `recovery_retry: false` ends the run: write `outcome: stuck` naming the batch, as the dead rungs above do.
   A refusal carrying `{"recovery_exhausted": true}` ends the run stuck naming the batch, as the recover-batch rung does, and its reset steps are the operator's.
   Then continue the loop from the next batch.
+- Any verb refuses with `{"run_ended": true}` → no `lym webster run` owns this session any more, so your run is over.
+  End your turn with no tool call and write no file: your parent re-enters the run, which starts a fresh session.
 - Any verb refuses with `{"config_invalid": true}` → a config file under `_lym/config` has broken content, and the operator's fix is not Master's to make.
   Write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop without calling another verb.
   A refusal that says a config file could not be read carries no `config_invalid` and is transient: re-run the verb.
+- A bracket verb refuses with the message "could not tell whether a live `lym webster run` owns this state" and no flag → the refusal is transient.
+  Re-run the verb once.
+  When the second call refuses the same way, write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop.
 
 ## After every batch: the verify gate
 
@@ -228,6 +246,8 @@ You read no decision record for it, and you edit no source, so the decision reac
 - While your own fork, fixer fork, backgrounded `recover-batch`, backgrounded `fix-verify` or backgrounded `fix-plan` runs, end your turn with no tool call; the decision reaches the next fork you spawn.
 - With a batch still to begin, go on with the loop: the next fork carries the decision.
 - With no batch left to begin and nothing of yours running, tell your parent with `lym creel post --parent "<text>"` that every batch is recorded, so the decision reaches the code only through a gate fixer or a plan amendment, then end your turn.
+- After you wrote `outcome: stuck`, your run is over: a notice or any other message that reaches you then starts no work.
+  End your turn with no tool call; the fresh session your parent's re-entry starts carries the decision.
 
 The decisions your parent recorded for this run before this session started are below, `none` when there is none.
 They are answers your parent already gave, often to an earlier stop of this run: follow each like a decision notice, so every fork you spawn inherits it, and never raise a question one of them answers.
