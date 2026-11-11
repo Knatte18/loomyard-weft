@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-gate-scope-coverage.md)
 
-Depends on: [`coverage-test-select`](design-coverage-test-select.md)
-
 Filed from the Sketch `gate-scope-by-coverage-map`.
 
 Takes: coverage-test-select's selector and the diff scope as impactset.DeriveTargets and computeScope derive it
