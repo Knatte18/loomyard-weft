@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (12)
+## Tasks (13)
 
 Concrete and claimable; only a task can run.
 
@@ -37,7 +37,7 @@ Waits only on Running, Ready or Draft entries.
 | T11 | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | T10 | 7h<br>6h | fabric, cleanup |
 | T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 2d<br>6h | slack, reed, creel |
 
-### Draft (7)
+### Draft (8)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -50,8 +50,9 @@ Not released; nothing starts it until its status is cleared.
 | T8 | `draft` **The adopt-check tab closes after the check; reed attach refuses a directory that is no worktree** | [`reed-tab-and-attach-fixes`](design-reed-tab-and-attach-fixes.md) | darn · light | T12 | 3h<br>0m | reed |
 | T9 | `draft` **beam merge-parent reuses the slug of a completed merge-in run** | [`merge-parent-slug-reuse`](design-merge-parent-slug-reuse.md) | darn · light | T6 | 1m<br>0m | workspaces, dobby |
 | T16 | `draft` **lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor** | [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md) | darn · light | T1<br>T3 | 1m<br>0m | shuttle, fabric |
+| T17 | `draft` **A Sketch or decision record can be edited or replaced, and raddle follows the newer design** | [`decision-record-replace`](design-decision-record-replace.md) | motif |  | 1m<br>0m | shed, loom, board |
 
-## Notes (31)
+## Notes (29)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -63,13 +64,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 7h<br>5h | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
 
-### Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B9 |  | **raddle splits a Sketch from its stored record and refuses a split that follows the body** | [`raddle-stale-sketch-record`](design-raddle-stale-sketch-record.md) | 1m<br>1m | shed, loom, board |
-
-### Enhancements (13)
+### Enhancements (12)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -85,7 +80,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E11 |  | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | 6h<br>6h | fabric, ide |
 | E13 |  | **Calls of the lym verb directory lack tests in an anchored hub** | [`verbdir-calls-untested`](design-verbdir-calls-untested.md) | 2m<br>2m | fabric |
 | E14 |  | **Unconverted lym steps: weft-dirty stop and upstream anchor stop have no tests** | [`anchor-stops-untested`](design-anchor-stops-untested.md) | 2m<br>2m | fabric |
-| E15 |  | **Decision records should allow editing a decision, not only appending** | [`decision-record-edit`](design-decision-record-edit.md) | 1m<br>1m | loom, board |
 
 ### Features (14)
 

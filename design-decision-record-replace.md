@@ -1,6 +1,19 @@
-# Decision records should allow editing a decision, not only appending
+# A Sketch or decision record can be edited or replaced, and raddle follows the newer design
 
-`decision-record-edit` · Note · enhancement, loom, board
+`decision-record-replace` · Task · bug, shed, loom, board · draft
+
+Design: a verb that replaces a Sketch's stored decision record, or raddle validating against the newer body. Both notes below describe the same gap.
+
+## From note raddle-stale-sketch-record
+
+Imported from [issue #116](https://github.com/Knatte18/loomyard/issues/116).
+
+Seen: a Sketch whose body was rewritten after its motif run (the body folds in later reviews and operator decisions, and supersedes the stored record) was promoted to raddle. raddle built its proposal from the stored decision record, which the run copies to _lym/discussion/decision-record.md, and so split by the superseded design. Told to follow the body, raddle rewrote the proposal from it, but raddle-propose validates criteria, risks, PATTERN changes and decision ids against decision-record.md and refuses it (criterion-uncarried/unknown, risk-uncarried/unknown, pattern-uncarried, criteria-miss-decision). raddle may write only proposal.yaml, and no verb replaces the record: 'lym loom decision add' only appends, and 'decision store' copies the run's record the other way. Related: #114 (no verb replaces a Sketch's record).
+
+Workaround: none inside lym; the run is held while the operator chooses between re-running a motif from the body or replacing the record file in the run worktree by hand.
+
+Expected: a verb that replaces a Sketch's stored record (from a file, by the operator or parent orch), which raddle then reads; or raddle validating against the body when the entry's body is newer than its record.
+## From note decision-record-edit
 
 Imported from [issue #117](https://github.com/Knatte18/loomyard/issues/117).
 
@@ -30,3 +43,4 @@ Workaround used: the full current design, rewritten as one document with every d
 
 - A decision added after Discussion is folded into the record's main decisions by the fixer, and its appended entry is removed once folded, so the record holds the current design only.
 - A verb to replace a Sketch's (or any discussed entry's) stored decision record from a file, such as `lym board upsert ... --record-file <file>`, refused while a run holds the entry.
+
