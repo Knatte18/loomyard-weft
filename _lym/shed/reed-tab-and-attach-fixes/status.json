@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-11T15:33:40Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/reed-tab-and-attach-fixes/_lym/landing/summary.md",
+      "at": "2026-11-11T15:46:50Z",
+      "started_at": "2026-11-11T15:33:41Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T15:38:35.077663391Z",
+          "end": "2026-11-11T15:38:35.091342731Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T15:45:03.087748257Z",
+          "end": "2026-11-11T15:45:03.096782708Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T15:38:35.138562313Z",
+          "end": "2026-11-11T15:44:45.448059236Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-11T15:44:45.988399734Z",
+          "end": "2026-11-11T15:45:03.052764248Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T15:45:03.152470944Z",
+          "end": "2026-11-11T15:46:16.070238334Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T15:46:16.129643755Z",
+          "end": "2026-11-11T15:46:16.344874232Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T15:46:16.39213466Z",
+          "end": "2026-11-11T15:46:16.3923328Z"
+        }
+      ]
     }
   ],
   "product": {
