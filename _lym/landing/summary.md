@@ -1,42 +1,33 @@
-# The hub workspace file lists every pair, named with its project's handle
+# Hub workspace file lists every pair, named by project handle
 
-The hub workspace file `<hub>/<RepoName>.code-workspace` used to list the prime, `Bolt` and only the pairs whose parent is the prime.
-A pair under a beam appeared only in that beam's own file, so opening the hub file left a beam's tasks out of the window.
-Every folder was named by its slug alone, so nothing showed which project a pair belonged to.
+The hub workspace file `<hub>/<repo>.code-workspace` now lists every pair of the hub, including the pairs under beams at any depth.
+Before, it listed only pairs whose parent is the prime, so a beam's tasks showed up only in the beam's own file.
+One VS Code window now shows all of a repository's code, and the machine restart launcher, which opens only the hub file, relies on that.
 
-## What changes
-
-- `RegenerateHubWorkspace` lists every pair of the hub in the hub file, sorted by slug, the pairs under each beam included at any depth.
-  The machine restart launcher opens only this file, so it now reaches every pair.
-- A pair's folder in the hub file takes the name the process's installed `PairFolderNamer` gives its slug, and its slug otherwise.
-  `fabricengine.InstallPairFolderNamer` installs one, mirroring `InstallWorktreeSeam`.
-- `boardengine.WorkspaceFolderNames` names each entry that belongs to a project `<P#>: <slug>`, such as `P1: adopt-worker-record`.
-  An entry with no project, or whose project the board does not hold with a handle, keeps its slug.
-  An unreadable board logs a Warn and names nothing.
-- The lym root pre-run installs `boardengine.WorkspaceFolderNames` as the namer, beside the worktree seam.
-  The names are read at every regeneration, so a regeneration after a board change brings them current.
-- Beam workspace files are unchanged: the same folders, each named by its slug.
+A pair whose board entry belongs to a project is named `P1: adopt-worker-record` in that file, the project's handle leading the slug.
+A pair with no project, or whose project the board holds with no handle, keeps its slug alone.
+The handle is read from the board at each regeneration, so a regeneration after a board change brings the names current.
+Beam workspace files are unchanged.
 
 ## Design decisions
 
-- **A general seam instead of a board read in fabric.**
-  PATTERN-fabric-boundary forbids fabric learning anything new of the board.
-  Fabric hands the namer the hub path and gets back names keyed by slug; it knows nothing of what the namer reads.
-- **The names are read before the hub workspace lock is taken.**
-  That lock is a leaf lock, and the board's read takes the board's swap lock.
-  The namer therefore returns names for every entry rather than for the listed slugs, since the listing happens under the lock.
-- **"Belongs to a project" is the entry's `project` field.**
-  A task in a project nested under a beam takes the nested project's handle, not the beam's.
-  The console window title's nearest-beam rule was not reused: the folder names the entry's own project.
+- `fabricengine` gets a general seam, `PairFolderNamer` with `InstallPairFolderNamer`, mapping pair slug to folder name for a hub path.
+  Fabric knows nothing of the board; with no namer installed every pair is named by its slug.
+  This keeps fabric from importing `boardengine`.
+- `boardengine.WorkspaceFolderNames` is the namer lym installs in the root `PersistentPreRunE` in `cmd/lym/main.go`.
+  An unreadable board is logged at Warn and yields no names, so regeneration never fails over a folder name.
+- `regenerateHubWorkspace` reads the names before it takes the hub workspace lock.
+  The namer reads the board under locks of its own, and the hub workspace lock is a leaf lock.
+- Beam files name their pairs by slug only; the handle prefix is a hub-file feature.
+- `docs/overview.md` and the `fabricengine` and `boardengine` package docs describe the new behaviour.
 
 ## Tests
 
-- `TestRegenerateHubWorkspace` gains a sequential case installing a fake namer.
-  It checks the namer gets the hub path, the hub file takes its names, an empty name keeps the slug, and the beam file keeps slugs.
-  The beam and sub-beam cases now expect the beams' members in the hub file too.
-- `TestWorkspaceFolderNames` in `boardengine` covers entries in a project, a nested project, no project, a missing project, and an unreadable or absent board.
-- `TestPersistentPreRunE_InstallsSeams` requires the root pre-run to install the pair folder namer.
+- `TestWorkspaceFolderNames` covers nested projects, entries without a project, a project the board lacks, and an unreadable or missing board.
+- `TestRegenerateHubWorkspace` gains a naming case and updated expectations: the hub file holds beam members and sub-beam pairs.
+- `TestPersistentPreRunE_InstallsSeams` requires the root pre-run to call `fabricengine.InstallPairFolderNamer`.
 
-## Docs
+## To check by hand
 
-The `fabricengine` and `boardengine` package docs and `docs/overview.md` describe the new listing and naming.
+- Run `lym ide spawn` on the prime in a hub with a beam holding tasks, and confirm the hub window shows those tasks named `<P#>: <slug>`.
+  The root pre-run install is skipped under `testing.Testing()`, so no automated test runs the board-backed namer end to end.
