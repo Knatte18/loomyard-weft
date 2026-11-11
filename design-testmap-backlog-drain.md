@@ -21,10 +21,18 @@ While the last refresh reported stale packages left unbuilt, start the next refr
 in batches of `test_map_batch`, so a backlog drains on its own and each refresh still holds the gate slot for at most one batch.
 Keep the landing count as the trigger once nothing is left.
 
+## Answered by the Sketch `testmap-upkeep-design` (board tidy, 2026-11-11)
+
+The decision record of Sketch `testmap-upkeep-design` (approved) answers this note in its D8:
+the prime dobby starts an upkeep pass (`lym gate testmap --upkeep`) when no exit record exists, the prime's HEAD moved, or the last exit record names queued work,
+so a backlog drains on its own.
+`test_map_batch`, `test_map_every` and the dobby's landing count are retired; a new dobby key `test_map_upkeep` (true by default) switches passes off,
+and a migration reads `test_map_every: 0` as `test_map_upkeep: false`.
+D9 makes a pass take a slot only while another stays free, and yield to a gate.
+The idea above is therefore superseded; the note closes when the build tasks filed from that Sketch land D8.
+Do not build the batch-by-batch drain described under Idea.
+
 ## Related research (board tidy, 2026-11-11)
 
 The research report of `testmap-upkeep` (landed as `da34600e`, under `docs/research/speed/testmap-upkeep-2026-11-11/report.md`)
-compares three proposals for keeping the maps fresh.
-All three make the test the unit of staleness, drop the age rebuild, and never make a gate wait.
-It decides nothing, and its open questions go to a later design task.
-Read it before building this drain, since a design from it may change how and when a refresh starts.
+compared three proposals for keeping the maps fresh; the Sketch above decided among them.
