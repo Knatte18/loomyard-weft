@@ -1,6 +1,6 @@
 # testmap records each test's coverage across every in-module package its binary links
 
-`testmap-cross-package` · Task · feature, gate, testkit, darn · running · Drift-Verify
+`testmap-cross-package` · Task · feature, gate, testkit, darn · running · Code-Bouncer
 
 Decision record: [Sketch](decision-testmap-cross-package.md)
 
