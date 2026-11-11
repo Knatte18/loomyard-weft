@@ -1,6 +1,6 @@
 # Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy
 
-`adopt-worker-record` · Task · bug, batten, tender, dobby, orch, fabric, shortcut · running · Code-Burler-Review
+`adopt-worker-record` · Task · bug, batten, tender, dobby, orch, fabric, shortcut · running · Code-Burler-Fix
 
 Decision record: [Sketch](decision-adopt-worker-record.md)
 
