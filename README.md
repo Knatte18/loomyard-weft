@@ -110,7 +110,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | motif | Discussion-Burler-Review | neve | 9d<br>25m | claude, shuttle, config |
-| T2 | **Tune the darn writer prompt for an Opus advisor on one landed darn task** | [`advisor-model-trial`](design-advisor-model-trial.md) | darn · docs | Preflight | neve | 12h<br>0m | darn, loom, shuttle, claude |
+| T2 | **Tune the darn writer prompt for an Opus advisor on one landed darn task** | [`advisor-model-trial`](design-advisor-model-trial.md) | darn · docs | Record-Write | neve | 12h<br>0m | darn, loom, shuttle, claude |
 
 #### Ready (0)
 
@@ -126,7 +126,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Optional extra review of the Discussion record by the parent orch or a named agent** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md)<br>[Sketch](decision-parent-reviews-decision-record.md) | 3d<br>7m | loom, orch, config, burler |
+| S1 |  | **Optional extra review of the Discussion record by the parent orch or a named agent** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md)<br>[Sketch](decision-parent-reviews-decision-record.md) | 3d<br>8m | loom, orch, config, burler |
 
 #### Research (3)
 
