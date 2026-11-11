@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-11 13:26 UTC; every age below is as of then.
+Rendered 2026-11-11 13:29 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -89,7 +89,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (36)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (37)</strong></summary>
 
 Owner `osl-1046`
 
@@ -123,7 +123,7 @@ Not released; nothing starts it until its status is cleared.
 | T11 | `draft` **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | T10 | 7h<br>5h | fabric, cleanup |
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1d<br>5h | slack, reed, creel |
 
-### Notes (30)
+### Notes (31)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -135,7 +135,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 7h<br>4h | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
 
-#### Bugs (6)
+#### Bugs (7)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -144,7 +144,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **Creel repeats the same notice many times for an unchanged state**<br>• Dobby and fabric sent identical notices about 25 times during an outage | [`creel-repeat-notices`](design-creel-repeat-notices.md) | 3h<br>3h | creel, dobby, fabric |
 | B4 |  | **Creel hands the orch mail about runs and pairs that no longer exist**<br>• A day-old queue of notices about torn-down pairs reached the orch as live mail | [`creel-stale-mail-delivery`](design-creel-stale-mail-delivery.md) | 3h<br>3h | creel, orch |
 | B5 |  | **The adopt-check tab stays open and takes space after the check ends**<br>• The tab of a finished adopt check is not closed or shrunk | [`adopt-check-tab-stays`](design-adopt-check-tab-stays.md) | 3h<br>3h | reed |
-| B6 |  | **lym adopt hangs silently behind a hub-wide pause**<br>• Adopt network calls wait on a hub pause with no word; reconcile stops on a busy weft push lock | [`adopt-held-by-pause`](design-adopt-held-by-pause.md) | 0m<br>0m | tender, fabric |
+| B6 |  | **lym adopt hangs silently behind a hub-wide pause**<br>• Adopt network calls wait on a hub pause with no word; reconcile stops on a busy weft push lock | [`adopt-held-by-pause`](design-adopt-held-by-pause.md) | 2m<br>2m | tender, fabric |
+| B7 |  | **adopt --drop-local fails on an untracked lym file in the weft**<br>• reset --keep refuses over an untracked generation-record.json; the adopt ends partial | [`drop-local-untracked-weft`](design-drop-local-untracked-weft.md) | 0m<br>0m | fabric |
 
 #### Enhancements (8)
 

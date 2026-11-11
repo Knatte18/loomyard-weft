@@ -1006,6 +1006,24 @@
       "body": "## Seen (2026-11-11, Neve)\n\nA hub-wide `lym tender pause` set before the operator moved to another machine was still live when they came back.\n`lym adopt root` then hung: its worker's first network call logged \"held by a hub-wide pause\" and waited with no word to the operator, whose terminal showed nothing.\nLifting the hub entry alone (`lym tender resume hub`) let it go on; the deferred records push that lift spawned then held the weft push lock,\nand the adopt's origin reconcile stopped on `main-weft (busy)` after it had already set aside two pairs.\n\n## Idea\n\nAn adopt is the operator's own takeover and should pass a pause: its network calls are exempt, or the adopt call refuses at once naming the pause and `lym tender resume hub`.\nThe reconcile should wait for a short-lived weft push lock instead of stopping on it.\n",
       "created": "2026-11-11T13:26:56Z",
       "revised": "2026-11-11T13:26:56Z"
+    },
+    {
+      "id": 1312,
+      "handle": "B7",
+      "slug": "drop-local-untracked-weft",
+      "title": "adopt --drop-local fails on an untracked lym file in the weft",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "reset --keep refuses over an untracked generation-record.json; the adopt ends partial",
+      "body": "## Seen (2026-11-11, Neve)\n\n`lym adopt root --drop-local` archived the local tip of `push-notice-anchor-dir-weft` as `archive/push-notice-anchor-dir/5e8b95669e68`,\nthen failed to move the branch to origin's tip: `git reset --keep` refused because the untracked `_lym/reviews/code/generation-record.json` would be overwritten.\nThe file is one lym writes in the weft, so the operator has no clean way forward, and the adopt ended partial, holding back every other run under root.\n\n## Idea\n\nOnce the tip is archived, drop-local moves the weft with a reset that also clears untracked lym files the target commit tracks, since the archive tag keeps the old state.\n",
+      "created": "2026-11-11T13:29:40Z",
+      "revised": "2026-11-11T13:29:40Z"
     }
   ],
   "prime_owner": "osl-1046",
