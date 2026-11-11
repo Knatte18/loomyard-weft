@@ -1,75 +1,53 @@
-# Record a dead step loop's exit status and name its in-flight step
+# shedverbs: record how an `--until-stop` loop's process ended
 
-A `loop-exited` halt now records the loop's exit status, or the signal that killed it, even when the process that spawned the loop is gone.
-It also names the interrupted step's trace, stderr and trace copy after that step moved the status file itself.
-Before, these halts read `loop exit: not recorded`, and their `trace_file` often pointed at `loop.log` (issues #88, #89, #91 and #102).
+A `lym shed step --until-stop` loop that ended without an envelope halted with `loop exit: not recorded`.
+Nothing told a crash, a kill and a clean exit apart, and the halt note did not always name the step that was in flight.
+After this change the halt note carries the loop process's exit status or terminating signal, and names the in-flight step, its trace and its stderr.
 
-## Why the exit went unrecorded
-
-Only the waiter that spawned a loop wrote the loop's exit mark, from a goroutine reaping the loop process.
-The waiter of a Go-driven run runs inside the driver process.
-When the driver handed over to a successor or was restarted while the loop ran, no process was left to reap the loop.
-The loop's later death then left no exit status, and the dead-loop stop could only report `loop exit: not recorded`.
+Closes #88
+Closes #89
+Closes #91
 
 ## What changes
 
-- **Loop keeper** (`internal/shedverbs/loopkeeper.go`).
-  The waiter now spawns a keeper, `step --until-stop --loop-keeper=<id>`, in place of the loop.
-  The keeper starts the loop process with `--loop-detached=<id>` in a session of its own and waits on it.
-  When the loop process ends, the keeper writes `lym shed: loop <id> process <pid> exited: <status>` to the loop log, through the log file it already holds open.
-  The status is either the exit status or the signal, such as `signal: killed`.
-  The keeper catches SIGINT, SIGTERM and SIGHUP and keeps waiting, so it lives exactly as long as the loop.
-  `LoopSpec.OnStart` also runs in the keeper, so loom and batten register it under the run's slug with the role `loop`, and `runproc.End` waits for it.
-- The waiter's own reap now marks `keeper process <pid> exited: ...`.
-  The start handshake is otherwise unchanged: the waiter treats the loop as starting until its spawn, now the keeper, exits.
-- `shedverbs.DetachedLoopID` reads the loop id from either hidden flag.
-  `shedcli` and `loomcli` use it in `reportArmFailure`, so an arming refusal in the keeper's pre-run still reaches the waiter as the loop's envelope.
-- **In-flight step after a moved status** (`deadLoopStop`, `loopExitStop`).
-  A child step that skips gated rows appends history and moves `current_producer` before it runs the next row.
-  The dead-loop stop used to treat any moved status file as "no child in flight", so it dropped the trace, the stderr excerpt, `loop.stderr_path` and `loop.trace_copy`.
-  It then handed the loop log to the halt note as its trace file.
-  The stop now treats the pid file's child record as in flight, since the loop clears that record once a child exits.
-  The detail reads `step A was in flight under trace T, and the status file now reads B` when the status moved.
-  `loop.status_moved` keeps its meaning.
-- Package docs (`shedverbs/doc.go`, `loomcli/doc.go`), the batten loop-spec comment, `shedrun.LoopLog`'s doc and `PATTERN-shed-driver`'s file list describe the keeper.
-
-## Findings on the issues' other questions
-
-- **Missing envelopes for the Drift-\* rows (#88).**
-  A child step's stdout reaches the loop log only after that child exits.
-  The child that died had skipped the gated Drift rows within its one step and was then running Darn-Write.
-  So the history listed those rows while the loop log held no envelope for them, and the stale `trace_file` came from the moved-status rule fixed above.
-- **Friction-Reflect ending normally (#89).**
-  A reflection session that ends, or is closed after filing, ends its child step, which the loop reports as a step result or as an `exited` interrupt.
-  A `loop-exited` stop needs the loop process itself to die, so a normally ending reflection cannot produce one.
-  No change to Friction-Reflect's outcome handling was made.
+- The waiter no longer spawns the loop process directly.
+  It spawns a keeper, started through the new hidden `--loop-keeper=<id>` flag on `step`.
+  The keeper starts the loop process (`--loop-detached=<id>`) in a session of its own, waits for it, and writes a mark to the loop log with the process's pid and exit status or signal.
+  The keeper catches the terminating signals and keeps waiting, so a signal that ends the run's processes ends the keeper only through the loop's end.
+  A loop process that does not start gets a mark naming the start error.
+  See `internal/shedverbs/loopkeeper.go`.
+- The waiter's own mark now names the keeper's exit (`keeper process N exited: ...`).
+  The mark of the loop process is the one `loopExitEvidence` reads.
+- The dead-loop stop waits a bounded time (`keeperMarkLooks` looks, `keeperMarkPoll` apart) for the keeper's mark.
+  The keeper writes it after the loop has released its lock, so a waiter that sees the free lock can look first.
+  After the last look it reports the exit as not recorded.
+- The dead-loop stop names the in-flight step, its trace and its stderr whenever the pid file records a child.
+  Before, it did so only while the status file still read that step.
+  When the status file has moved to another producer, the detail says so.
+  A child moves the status file itself when it skips gated rows.
+- The halt note's `trace_file` points at the in-flight child's first trace file, and falls back to the loop log only when no child was in flight or it has no trace file.
+- `LoopSpec.OnStart` also runs once in the keeper after it has started the loop process, so the loop is registered in the hub's owner record under both processes.
+  `DetachedLoopID` makes an arming refusal in the keeper or in the loop process reach the waiter as the loop's envelope.
+- The doc comments in `shedverbs`, `shedrun`, `loomcli`, `shedcli`, `battencli` and `pattern/PATTERN-shed-driver.md` follow the keeper.
 
 ## Design decisions
 
-- The keeper is a second process per loop, not a mark the loop writes itself.
-  A SIGKILL, an OOM kill or a runtime crash outside the stepping leaves the dying loop no chance to write, and only a parent can read its exit status.
-  The keeper is registered through `OnStart` and catches the terminating signals.
-  A teardown therefore ends it through the loop's end, and its mark is written before `runproc.End` returns.
-  The mark goes through the inherited log descriptor, so a removed worktree is never recreated.
-- `loop exit: not recorded` remains the text when no mark exists.
-  With a keeper this now means the keeper died with the loop, as on a machine restart, or the loop came from a build that predates the keeper.
-- Two asks of #102 are left out:
-  a bound on the shuttle load-turn retry after `server_error`, and the idle time between a stuck step and the next step in `lym loom status`.
-  Both belong to other subsystems (shuttle's load turn, loom status), and neither affects whether a loop's exit is recorded.
-  With the exit status now recorded, the next such halt names its cause, and each can be its own board entry.
-
-## Tests
-
-- `TestLoopIntegration_ProcessExitsAreMarked` replaces the spawn-only exit-mark test with a table:
-  the waiter's spawn marks its keeper's exit, the keeper marks the loop's exit status, and the keeper marks `signal: killed` for a SIGKILLed loop.
-  The keeper rows also check that `OnStart` runs once.
-- `TestLoopIntegration_ChildTreeDiesWithLoop` kills the real waiter, then SIGTERMs the real loop.
-  It now waits for the keeper's `process <pid> exited: signal: terminated` mark and checks that the dead-loop stop's detail carries it after the signal mark.
-- The dead-loop table in `loopwait_test.go` gains a row where the in-flight child moved the status: trace file, trace copy, stderr path and stderr excerpt are all named.
-  A row whose child had exited still names none of them.
-- The waiter fakes in `loopwait_test.go` and the helper roles in `loop_integration_test.go` map the keeper flag to the loop they stand in for.
+- Recording the status in a keeper, rather than in the waiter, keeps the mark written when the waiter is already gone.
+  The waiter is not always there to reap the loop: it can be ended or time out while the loop runs on.
+- The keeper outlives the loop process by design, so its exit is a separate mark from the loop process's exit.
+- Scope: issue #102 also asks for a bounded load-turn retry on `server_error` and for idle time in `lym loom` status.
+  Neither is in this change; both are board task `load-turn-retry-cap`, which waits on this one.
+  Issue #102 is therefore not closed here.
 
 ## To check by hand
 
-- Run a Go-driven loom run, rebuild and deploy lym while a step is in flight so the driver hands over, then kill the loop with `kill -9`.
-  The next `lym loom resume` halt should read `loop exit: lym shed: loop <id> process <pid> exited: signal: killed`.
+- Issue #89 asks whether a Friction-Reflect session that ends normally, or is closed after filing, can be reported as an interrupted loop exit, and if so to treat the step as done.
+  The diff does not change that handling, so the question stays open.
+- Issue #88 asks why the loop log lacked envelopes for the Drift-* steps that the history listed.
+  The diff does not investigate it.
+- Issue #102's ask for the reason a loop stopped (retry cap, signal, crash) is met only for the exit status and signal, as the first design decision above says.
+  The unrecorded-asks decision was left open by the review, and the scope decision above is what records it.
+- Starting the loop through a keeper is covered by the arming and keeper tests in `internal/shedverbs`.
+  The keeper's refusal to arm with the keeper flag set is not tested: `keeper-flag-arming-refusal-untested`, in `internal/shedverbs/loop_arming_integration_test.go` and `loopkeeper.go`.
+- The keeper surviving a terminating signal sent to the run's processes is not tested end to end: `keeper-signal-survival-untested`, in `internal/shedverbs/loop_unix_integration_test.go` and `loopkeeper.go`.
+- Windows behaviour of the keeper's detached start, and of the keeper's breakaway retry in `spawnLoop`, was not run.
