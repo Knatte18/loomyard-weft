@@ -94,6 +94,12 @@ Provenance: task slug `models-backend`; notes `loom-halt.md`.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-11): Bounded load-turn retry and idle time in loom status are left out of this run
+
+Decision: This run does not make the bounded load-turn retry on server_error or the idle time in lym loom status that issue #102 asks for. Its scope is the exit-status recording, the in-flight trace and the stderr location. The two left-out asks are board task load-turn-retry-cap, which waits on this run.
+
+Rationale: The two asks touch other code than the loop keeper, and the operator and orch filed them as their own task that depends on this one, so leaving them out is a recorded scope decision and no gap.
+
 ## Constraints
 
 ## Auto-mode assumptions
