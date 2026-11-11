@@ -1022,6 +1022,27 @@
       "body": "Imported from [issue #106](https://github.com/Knatte18/loomyard/issues/106).\n\n## What happened\n\n`lym loom` halted blocked at the Webster row with anomaly `escalation-to-human` and the reason:\n\n`verify gate failed after 4 attempt(s) of 3: none named`\n\n## Why it is abnormal\n\n- The message counts 4 attempts against a limit of 3, which reads as an off-by-one in the retry counter or its wording.\n- \"none named\" gives no failing test, project or gate output, so the operator cannot tell what failed or whether the gate itself errored.\n- The halt note offers no way forward and names only the trace file.\n\n## What to do\n\n- Make the attempt count and the limit agree, or state that the limit counts retries after the first attempt.\n- Include the failing gate, target and the tail of its output in the halt reason, and say explicitly when the gate produced no failure to name.\n- Add a way-forward line, as other halt reasons have.\n\nProvenance: task `trip-history-transfer`; note `loom-halt.md`.\n",
       "created": "2026-11-11T06:23:05Z",
       "revised": "2026-11-11T06:23:05Z"
+    },
+    {
+      "id": 1293,
+      "handle": "B8",
+      "slug": "dobby-raddle-ignores-deps",
+      "title": "Dobby starts a released raddle task whose depends_on has not landed",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "dobby",
+        "board"
+      ],
+      "issues": [
+        107
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #107](https://github.com/Knatte18/loomyard/issues/107).\n\n## What happened\n\nIn a beam, the orch promoted a Sketch with `lym board promote S1`, which made it a task with recipe `raddle`.\nIt then ran `lym board set-deps '{\"slug\":\"\u003cslug\u003e\",\"depends_on\":[\"\u003cother\u003e\"]}'`, where `\u003cother\u003e` was a task of the same beam still `running · PR-Review`, and only after that released the task with `lym board set-status '{\"slug\":\"\u003cslug\u003e\",\"status\":null}'`.\n`lym board get` showed `depends_on` set and the status already `running · Seed-Child` moments later: the beam's dobby started the raddle task although its dependency had not landed.\n\n## Workaround\n\n`lym batten pause \u003cslug\u003e` holds the run; the orch resumes it with `lym batten run \u003cslug\u003e` once the dependency lands.\n\n## Expected\n\nDobby starts a released task only when every entry in its `depends_on` is done or gone, whatever its recipe, `raddle` included.\n",
+      "created": "2026-11-11T06:23:07Z",
+      "revised": "2026-11-11T06:23:07Z"
     }
   ],
   "prime_owner": "neve",
