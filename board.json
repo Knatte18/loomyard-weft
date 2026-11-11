@@ -964,6 +964,25 @@
       "body": "## Seen (board tidy, 2026-11-11)\n\n`finalize-flaky-rerun` landed as `dea07060` with findings its review left open under \"To check by hand\":\n\n- No test covers that `NewFinalize` wires the gate's flaky sink to the Finalize it returns (`internal/landingshed/finalize.go`, `NewFinalize` and `assembleFinalize`).\n- The guards that skip a rerun and the rerun's outcomes lack test rows each (`internal/landingshed/verifygate.go`, `rerunTestFailure`).\n- Nothing ran beyond the unit tests: no real landing has had a tier0 test fail once and land with the `## Flaky test failures` section,\n  and no real .NET gate run has shown a VSTest failure's test name and error message in the report.\n\n## Idea\n\nAdd the missing test rows for the sink wiring and for each rerun guard and outcome.\nThe two real-run checks are left to the next landing that meets a flaky test, in this hub or a .NET hub; the orch reads its landing commit then.\n",
       "created": "2026-11-11T08:49:24Z",
       "revised": "2026-11-11T08:49:24Z"
+    },
+    {
+      "id": 1302,
+      "handle": "E6",
+      "slug": "raddle-table-recipe-profile",
+      "title": "Raddle shows each part's recipe and profile as table columns",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "stencil",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Raddle names recipe and profile only in free text; put them in the proposal table",
+      "body": "## Seen (2026-11-11, raddle of gate-scope-by-coverage-map)\n\nRaddle shows its proposed parts to the operator in a table, but states each part's recipe and profile only in the free text around it.\nThe operator has to read the prose to learn what each part will run as.\n\n## Idea\n\nGive the proposal table one column for the recipe and one for the profile of each part, such as `darn` and `solid`.\nThe prose keeps only the reasons for the choice and the alternatives set aside.\n",
+      "created": "2026-11-11T09:05:00Z",
+      "revised": "2026-11-11T09:05:00Z"
     }
   ],
   "prime_owner": "neve",
