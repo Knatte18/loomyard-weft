@@ -11,8 +11,6 @@
 - `plan:internal/machinecli#sweepHub` -> `func sweepHub(d deps, hub, name string, replace []string) hubOutcome`
 - `plan:internal/machinecli#recoveries` -> `var recoveries []string`
 - `plan:internal/machinecli#fakeHubs` -> `type fakeHubs struct`
-- `plan:internal/machinecli#TestNextFile` -> `func TestNextFile(t *testing.T)`
-- `plan:internal/machinecli#TestHubOfDir` -> `func TestHubOfDir(t *testing.T)`
 - `plan:internal/machinecli#TestName_Set` -> `func TestName_Set(t *testing.T)`
 - `plan:internal/machinecli#TestName_SweepsHubs` -> `func TestName_SweepsHubs(t *testing.T)`
 
@@ -55,7 +53,6 @@
 - `internal/hubforge#CloneSecond`
 - `internal/hubforge#Hub.BoardDir`
 - `internal/testkit/boardkit#InstallReplay`
-- `internal/gitkit#Git`
 
 **Intent:**
 `lym machine name <name>` sets the name and sweeps owners (D5, D6).
@@ -82,7 +79,9 @@ A failed registry read refuses before any write with that error.
    A locate error (a relative variable) is refused with it; no directory is refused naming `LOCALAPPDATA` on Windows and `XDG_CONFIG_HOME` or `HOME` elsewhere, with "set it to an absolute path" as the way forward.
    A read error that is not a decode error (the file exists but does not read) is refused naming the file's path, with the way forward: remove the file or fix its permissions, then re-run `lym machine name <name>`.
 3. This machine's names: the valid current name, every non-empty `names` entry of a decoded file and the hostname rule's name when `hostName` yields one, a bad file included.
-4. `hubsToSweep`. For each hub: read `unpushed` (kept for step 7), then `pull`; an error or a non-empty skip marks the hub `checked locally only`, with its detail, and the check goes on against its local Bolt.
+4. `hubsToSweep`. For each hub: read `unpushed` (kept for step 7);
+   an `unpushed` error is recorded in that hub's unpushed-read note, apart from its checked-locally detail, and reads as not ahead, so the hub is still checked and swept, and a hub that records nothing reports `nothing to sweep` with that note.
+   Then `pull`; an error or a non-empty skip marks the hub `checked locally only`, with its detail, and the check goes on against its local Bolt.
    `readOwners` the board; a read error refuses the whole verb before any write, naming the hub and the error, with the way forward: repair that hub's board as the error says, then re-run `lym machine name <name>`.
    An unreadable board is refused rather than passed, since after a write the name is this machine's own and a re-run could never check that board again.
    When the prime owner or any entry's recorded owner equals `name` and `name` is not one of this machine's names, refuse naming the hub, the slug (or `prime`) and the owner: that name belongs to another machine.
@@ -95,11 +94,11 @@ A failed registry read refuses before any write with that error.
    The output says how many empty entries were dropped, whether an invalid `name` was dropped, and, for a file that did not decode, that its names were lost.
 6. The replace set is the written `names` without `name`; empty entries are already gone.
 7. `sweepHub` for each hub calls `setOwners(BoardDir(hub), OwnerRequest{Machine: name, Replace: replace})`, with no slug, prime, claim or `Takeover`, and reports one `hubOutcome`:
-   an error is `failed` with its text, and its way forward is the error's own way forward when the error names one (as a dirty or diverged Bolt's or a deferred push's does), then the re-run `lym machine name <name>`; the other hubs go on;
+   an error is `failed`, the outcome carries the error's text, which names its own way forward where `SetOwners` gives one, and its way forward field is the re-run `lym machine name <name>`; the other hubs go on;
    entries in `OwnerWrite.Lost` are reported each with the owner that stands and the re-run as its way forward, adding that `lym adopt` takes back an entry whose standing owner is another name;
    `Recorded` non-empty is `swept` with the slugs; nothing recorded is `pushed` when step 4 read the Bolt ahead of origin and `nothing to sweep` otherwise.
 
-The result, `setResult` under `machine`, carries `name`, `file`, `names`, `written`, the dropped-entry and repair notes, each `hubOutcome` (hub path, checked-locally detail, outcome, slugs, lost entries, error, way forward), and `recoveries`.
+The result, `setResult` under `machine`, carries `name`, `file`, `names`, `written`, the dropped-entry and repair notes, each `hubOutcome` (hub path, checked-locally detail, unpushed-read note, outcome, slugs, lost entries, error, way forward), and `recoveries`.
 `recoveries` holds D6's recovery lines as constant text: the owner pause the dobby's probe lifts after the sweep, `lym tender resume <slug>` for one it does not, the unpushed-commit case whose recovery is the re-run, `lym loom resume` in the pair for a halted Finalize, `lym beam start <slug>` or `lym beam start root` for a skipped or refused worktree, and lifting any pause with `lym tender resume` only after that hub's sweep reports done.
 A failed or lost hub makes the verb exit non-zero through `output.ErrFields` with the same fields, its message naming the re-run; otherwise `output.Ok`.
 
@@ -111,21 +110,27 @@ D6's bound on a hub neither in the registry nor holding the working directory st
 `docs/overview.md`'s **machine** bullet becomes `lym machine name [<name>]`: show, or set and sweep owners on every live hub and the hub of the working directory.
 
 Tests:
-- tier 0, `TestNextFile`, rows: `NoFileTakesTheHostnameNameAsOld` (host `osl-1046`, `osl46` gives `["osl-1046","osl46"]`), `AlreadySetChangesNothing`, `InvalidNameKeepsNamesAndAddsTheHost` (`{"name":"OSL!","names":["neve","osl46"]}`, host `box` gives `["neve","box","osl46"]`), `UndecodableKeepsOnlyTheHost` (`["box","osl46"]`), `EmptyEntryIsDroppedAndCounted`, `HandWrittenNameOnlyRecordsTheHost` (`{"name":"osl46"}`, host `box` gives `["box","osl46"]`), `NoHostnameAddsNone`, `NewNameMovesToTheEnd`.
-- tier 0, `TestHubOfDir`, rows: `ContainerDirectoryIsItsOwnHub` (a directory whose `BoltDir` holds a shortname record written with `fabricengine.WriteShortname`, no git), `PlainDirectoryIsNoHub`.
-  The worktree-subdirectory case needs a real hub and is `TestName_SweepsHubs`' cwd.
-- tier 0, `TestName_Set`, through `runName` with a `fakeHubs` per hub (`fakeHubs` keys the five per-hub seams by board directory, records each `setOwners` request, and returns a set skip, pull error, owners, read error, write error or `OwnerWrite`; its `cwdHub` returns a set hub or none), rows:
+- tier 0, `TestName_Set`, through `runName` with a `fakeHubs` per hub (`fakeHubs` keys the per-hub seams `pull`, `unpushed`, `readOwners` and `setOwners` by board directory, records each `setOwners` request, and returns a set skip, pull error, unpushed error, owners, read error, write error or `OwnerWrite`; its `cwdHub` returns a set hub or none, or is `hubOfDir` itself), rows:
   `InvalidNameIsRefusedAndWritesNothing`, `NoDirectoryIsRefusedNamingTheVariables`, `RelativeVariableIsRefused`, `UnreadableFileIsRefusedNamingItsPath` (a directory at the file's path),
   `RegistryReadFailureIsRefusedBeforeAnyWrite` (`hubs` errors: no file written, no `setOwners` call),
   `UnreadableBoardIsRefusedBeforeAnyWrite` (one hub's `readOwners` errors: refusal names that hub, no file written, no `setOwners` call on any hub),
   `CollisionIsRefusedNamingHubAndOwner` (no file written, no `setOwners` call; the way forward names the hand write and `lym adopt`),
-  `OwnFormerNamePassesTheCollisionCheck` (`{"name":"BAD","names":["neve","osl46"]}` while a board records `osl46`; the output says the invalid name was dropped),
+  `NoFileTakesTheHostnameNameAsOld` (no file, host `osl-1046`: `osl46` writes `{"name":"osl46","names":["osl-1046","osl46"]}`),
+  `AlreadySetWritesNothing` (the file's bytes are unchanged and the result's `written` is false),
+  `NoHostnameAddsNone`,
+  `SetNameOutOfOrderMovesToTheEnd` (`{"name":"osl46","names":["osl46","neve"]}`, host `osl46`: `osl46` writes `names` `["neve","osl46"]`, since a re-run writes the file when the rewrite changes `names`),
+  `OwnFormerNamePassesTheCollisionCheck` (`{"name":"BAD","names":["neve","osl46"]}`, host `box`, while a board records `osl46`: file `names` `["neve","box","osl46"]`; the output says the invalid name was dropped),
   `UndecodableFileLosesItsNamesAndSaysSo` (`not json`, host `box`: file `{"name":"osl46","names":["box","osl46"]}`, the output says the names were lost),
   `HandWrittenNameSweepsTheHostnameName` (`{"name":"osl46"}`, host `box`: file `names` `["box","osl46"]`, request `Replace` `["box"]`),
   `HostnameNamePassesTheCollisionCheck`, `PullSkipOrErrorIsCheckedLocally` (one hub's `pull` returns a skip, another's an error; both marked checked locally, both swept),
-  `FailedHubIsReportedAndOthersSweep` (exit non-zero; a write error naming its own way forward reports it before the re-run), `LostEntryIsReportedPerEntry`, `UnpushedBeforeReportsPushed`, `NothingRecordedReportsNothingToSweep`, `EmptyEntryDropIsReported`,
-  `CwdHubInTheRegistryIsSweptOnce`, `CwdHubOutsideTheRegistryIsSweptLast`;
-  each successful row asserts the request: `Machine` the new name, `Replace` the former names, `Takeover` false, and that the output carries a non-empty `recoveries` list, never its text.
+  `UnpushedReadErrorIsNotedAndSwept` (one hub's `unpushed` errors and its `pull` succeeds: the hub is swept, its unpushed-read note carries the error, and it is not marked checked locally),
+  `FailedHubIsReportedAndOthersSweep` (exit non-zero; the outcome carries the write error's text and the re-run as its way forward; a second run with the same `fakeHubs`, the failing hub's `setOwners` now succeeding, sends that hub a request with the same `Machine` and `Replace` and leaves the machine file's bytes unchanged), `LostEntryIsReportedPerEntry`, `UnpushedBeforeReportsPushed`, `NothingRecordedReportsNothingToSweep`,
+  `EmptyEntryDropIsReported` (`{"name":"box","names":["","box"]}`, host `box`: `osl46` writes `names` `["box","osl46"]` and the output says one empty entry was dropped),
+  `CwdHubInTheRegistryIsSweptOnce`, `CwdHubOutsideTheRegistryIsSweptLast`,
+  `CwdContainerDirectoryIsSwept` (`cwdHub` is `hubOfDir`; the cwd is a `t.TempDir()` whose `fabricengine.BoltDir` holds a shortname written with `fabricengine.WriteShortname`, no git: the request reaches that hub),
+  `PlainCwdAddsNoHub` (`cwdHub` is `hubOfDir`; the cwd is a bare `t.TempDir()`: no hub is added);
+  each row that writes the file asserts the written file's `names`, and each successful row asserts the request: `Machine` the new name, `Replace` the former names, `Takeover` false, and that the output carries a non-empty `recoveries` list, never its text.
+  The worktree-subdirectory cwd needs a real hub and is `TestName_SweepsHubs`' cwd.
 - tier 1, `TestName_SweepsHubs`, against real hubs; each subtest builds its own hubs, registry and file directory, so none starts from another's state.
   Setup per subtest: `boardkit.InstallReplay`; hub A from `hubforge.CopyHub`, its shortname rewritten with `fabricengine.WriteShortname` and recorded with `hubregistry.Record` in a registry under `t.TempDir()`; hub B from `hubforge.CopyHub`, not recorded, whose prime worktree's subdirectory is the cwd.
   The seed upserts beam projects through `boardengine.LoadConfig`, `boardengine.New` and `Board.UpsertTask`, then records their owners and the prime through `boardengine.SetOwners` with `Beam`, `Prime` and `Takeover`:
@@ -133,8 +138,7 @@ Tests:
   `deps` uses the real hub seams, `liveHubs` over the temporary registry, a file path under `t.TempDir()` with no file, and `hostName` returning `osl-1046`.
   Each subtest asserts only what the tier-0 rows cannot: real Bolts, origin and the cwd resolution.
   Subtests: `CollisionWithAnOriginOnlyOwnerIsRefused` (`neve`, held only by origin before the verb ran: no file written);
-  `RenameSweepsEveryHub` (`osl46`: origin holds `osl46` for both open `osl-1046` beams, the one only origin held before the verb ran included, and both primes, B's reached through the cwd subdirectory, and keeps the done beam's and `far`'s owners);
-  `FailedHubIsSweptByTheReRun` (B's origin set to an unreachable URL with `gitkit.Git`: B is not swept and A is; the URL restored, the same command sweeps B and leaves the file's bytes unchanged).
+  `RenameSweepsEveryHub` (`osl46`: origin holds `osl46` for both open `osl-1046` beams, the one only origin held before the verb ran included, and both primes, B's reached through the cwd subdirectory, and keeps the done beam's and `far`'s owners).
   `TestSetOwners`' `ReplaceSetSelectsAfterThePull` (card 1) pins the selection after the write's own pull; these subtests pin the verb's sweep end to end.
 
 **ImpactSummary:** confined to the new `internal/machinecli` package and its doc lines in `docs/overview.md`; it calls card 1's replace set and no existing caller changes.

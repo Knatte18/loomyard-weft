@@ -33,6 +33,11 @@ The selection compares the recorded owner, never the effective one, and skips th
 It writes no other owner: a done entry, an unowned beam, an owner recorded under any name outside the set, a task and a grouping project keep what they hold.
 An empty entry in `Replace` selects nothing, so an unowned beam (`OwnerMachine` "") and an unrecorded prime are never taken (acceptance criterion on empty entries).
 The re-read after the push judges each selected slug as it judges a named one, so a competing origin write that kept an entry reports it in `OwnerWrite.Lost`.
+`TestSetOwners`' `CompetingWriteLosesToOrigins` pins the Lost report on that shared re-read, and `ReplaceSetSelectsAfterThePull` pins that replace-selected slugs enter it.
+Three docs that say an entry owned elsewhere is left alone without `Takeover` gain the replace set's exception, scoped so a replace write is not read as reporting every entry owned elsewhere in `Lost`:
+the `OwnerRequest.Takeover` field doc becomes "Takeover writes over an owner that reads as another machine; without it such an entry the request names is left alone and reported in OwnerWrite.Lost. Replace takes only entries whose recorded owner it names.";
+the `SetOwners` doc sentence "Without req.Takeover, an entry whose effective owner is another machine is neither written nor claimed, and it is reported in Lost" becomes "Without req.Takeover, a named entry whose effective owner is another machine is neither written nor claimed, and it is reported in Lost; req.Replace selects only entries whose recorded owner it names";
+and `internal/boardengine/doc.go`'s "Without Takeover, SetOwners leaves an entry whose effective owner is another machine untouched" gains "unless Replace names its recorded owner".
 The `writeOwners` doc comment names the replace selection beside "the owners req asks for".
 `OwnerWrite.Recorded`'s field doc names the slugs and `OwnerWritePrime` the replace set selected, beside those the request named.
 
@@ -45,8 +50,7 @@ Tests, tier 1, in `TestSetOwners`:
 - a subtest `ReplaceSetSelectsAfterThePull`: fixture with prime owner `box`;
   `pushFromOther` appends, at origin only, a beam project `oldbeam` owned by `box`, a beam project `farbeam` owned by `far` and a done beam project `shipped` owned by `box` (status `StatusDone`), and leaves `beamer` an open beam with no owner;
   `SetOwners(Machine "neve", Replace {"box", "", "old"}, Sleep failOnSleep)` records `prime`, `boxed` and `oldbeam` (compared sorted), loses none;
-  origin then holds `neve` for `boxed`, `oldbeam` and the prime, `far` for `farbeam`, `box` for `shipped`, `""` for `beamer`, and the head subject `board: owner neve replacing box, old`;
-- a subtest `ReplaceSetLosesToACompetingOriginWrite`: fixture with prime owner `neve`; `SetOwners(Machine "neve", Replace {"box"})` with a `BeforePush` that `pushFromOther`s `setOwnerOnOther("boxed", "far")`; the result records nothing and loses `boxed` to `far`, and origin holds `far` for `boxed`.
+  origin then holds `neve` for `boxed`, `oldbeam` and the prime, `far` for `farbeam`, `box` for `shipped`, `""` for `beamer`, and the head subject `board: owner neve replacing box, old`.
 
 `internal/boardengine/doc.go`'s owner-write paragraph changes its commit line to name both subjects, `"board: owner <machine> for <slugs>"` and, with a replace set, `"board: owner <machine> replacing <names>"`.
 It gains the replace set: what it selects, after the pull, over which owners, that it goes with no slug, prime, claim or takeover, and that only `lym machine name` passes it, beside "Only `lym adopt` passes Takeover".
