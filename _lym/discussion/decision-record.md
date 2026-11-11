@@ -59,16 +59,18 @@ the package itself included, and records each test's covered blocks across all o
 testmap skips a package, as it does today for a dirty file of its own directory,
 when a modified or untracked file belongs to any linked package by the rule above,
 and its check for files changed while the tests ran covers every linked package's files.
-After a package's tests end, testmap repeats its dirty check over every linked package's files.
-When one is dirty, it writes no map for that package, as it does when files changed at HEAD.
-A map's recorded hashes are therefore the content at its `Commit`.
-testmap counts a map stale, besides today's rules, when it lacks the marker or when a linked package's recorded file set or hashes differ at HEAD,
-whether or not a test covered a block of that package.
+Both dirty checks of a package are fresh reads of the worktree status, each over every linked package's files:
+the first taken immediately before the package's build, the second after its last test;
+neither reuses the list testmap read before its walk.
+When the second finds a dirty file, testmap writes no map for that package, as it does when files changed at HEAD.
+A map's recorded hashes are the content at its `Commit`; the Bound below names the one window in which the measured blocks can differ.
 The redundancy report keeps its fresh builds on an own-package coverpkg and judges against kept tests' own-package blocks only, so its verdicts do not change;
 `mapDrift` keeps comparing own-package files only.
 
-Rationale: a map that holds only its own package's blocks cannot tell which test of an importing package reaches a changed package,
-and a map whose dependency drift testmap never repairs would select from an ever older `Commit` until the age limit.
+Rationale: a map that holds only its own package's blocks cannot tell which test of an importing package reaches a changed package.
+Bound: an edit to a linked file made after the first dirty read and reverted before the second goes undetected;
+the map then holds blocks measured on the edited code under the committed hashes,
+and only the landing gate catches a test that this wrongly leaves out.
 
 ### D3 — Changed packages run whole; importing packages run selected tests
 
@@ -83,7 +85,9 @@ A package in the `diff` set only because it imports a changed package runs, per 
 - every `//lym:guard` test of the tier the package declares;
 - the whole package on any miss of D5.
 
-The union holds only tests of the tier and drops the package's tests the diff's watch skip names.
+The union holds only tests of the tier declared in a test file of the package that build constraints admit on the gate's host,
+admitted as `holdsTierTest` in `internal/gatecli/tierrun.go` admits one, through `go/build` `Context.MatchFile` with the tier's tag;
+it drops the package's tests the diff's watch skip names.
 A package whose union is then empty, with no miss, counts as `none selected` and runs nothing for that tier;
 D6's selected invocation leaves it out.
 
@@ -135,17 +139,22 @@ Each case below runs the importing package whole for the tier, with the reason i
 - A changed file of a linked package changes its method set: it adds a method the map's `Commit` lacks, removes one,
   or changes a method's receiver or signature.
 - A changed file of a linked package holds more `init` functions than it did at the map's `Commit`.
+- A changed file of a linked package adds a top-level declaration, a function included, whose name is a predeclared identifier
+  of the universe scope, such as `max`, `min`, `clear`, `new`, `len`, `error` or `string`.
 - A changed file of a linked package does not parse with `go/parser` at the map's `Commit` or in the working tree.
 - A file of a linked package's recorded set other than a Go file, other than one `inert_paths` matches,
   differs in the working tree from the map's record, or the working tree holds such a file, not ignored by git, that the record lacks.
+  The `inert_paths` exemption never covers a file that a `go:embed` pattern in the linked package's Go files names;
+  the scope reads those patterns with `go/parser` from the recorded Go files, and a directory pattern names every file below it.
 
 Rationale: a map tells which tests reached code at the content it hashed; every case above is code or state the map cannot speak for.
-A new plain function, a const outside such a group, a var with no initializer or a type with no methods is reached only through changed code,
-which selects through D4 or misses here.
+A new plain function, a const outside such a group, a var with no initializer or a type with no methods,
+under a name that is no predeclared identifier, is reached only through changed code, which selects through D4 or misses here.
 Bound: a test that reaches a function of a linked package it did not reach when the map was built, through code unchanged since, is not selected,
-nor is a test that relies on the `init` of a standard-library package a changed file newly imports,
-nor one whose unchanged code dot-imports a linked package and resolves a predeclared name to a declaration added there;
+nor is a test that relies on the `init` of a standard-library package a changed file newly imports;
 only the landing gate catches these.
+A dependency-drift miss lasts until testmap rebuilds the map by its present rules:
+the package's own files changed at HEAD, the age limit, a failed build at another HEAD, or a testmap call naming the package.
 A checkout whose `core.autocrlf` converts line endings rehashes every importing package's own files, so every importing package misses.
 
 ### D6 — Running and recording selected tests
@@ -155,6 +164,8 @@ and its selected packages as a second invocation with an anchored `-run` pattern
 A name selected in one package also runs in another selected package that declares it; that only adds tests.
 A pattern too long for the command budget runs the selected packages whole instead.
 The selected invocation's green entry carries its `-run` arguments, so it never serves as a later gate's base and never stands in for a whole run.
+The selected invocation's `-run` arguments sit in the run's own args, not the call's,
+because a filter among the call's args exempts the whole tier run from the empty-tier check.
 `--stop-on-fail`, the failed-test rerun and the verify budget act on both invocations as on one tier run today.
 
 Bound: a tier whose command builds or vets first does so in both invocations; the build cache serves the second.
@@ -187,6 +198,12 @@ Decision: The record builds on the verify gate as commit 1b6e3fca left it: the s
 
 Rationale: 1b6e3fca landed after this run's Discussion started; the board tidy flagged that the record may predate it.
 
+### Added after Discussion (arbiter, 2026-11-11): Round-3 hard-cap findings are answered by the fixes in place
+
+Decision: The Discussion review ends at round 3 with no further edit. The round-3 fixes in place answer each open finding: F1 by the parent's two Added after Discussion entries now applied to D2, D5's Bound, Auto-mode assumptions, Open risks and the support log; F2 by D3's host-admission rule for the whole union (holdsTierTest, go/build Context.MatchFile with the tier's tag), D6's -run in the run's own args, and the other-GOOS D3 criterion; F3 by D2's two fresh dirty reads, its reverted-edit Bound and its criterion; F4 by D5's go:embed carve-out from the inert_paths exemption and its criterion; F5 by D5's predeclared-name miss, the cut dot-import Bound clause and the max criterion.
+
+Rationale: Hard-cap rule: accept when the fix in place already answers each open design-wrong finding. The round-3 fixer report and the current decision record show every proposed fix applied; internal/gatecli/tierrun.go confirms holdsTierTest and emptyTierFailure behave as the F2 fix relies on.
+
 ## Constraints
 
 - Go 1.26 (`go.mod`, toolchain go1.26.8): `go test -c -cover -coverpkg=<list>` instruments every listed package, and the set-mode profile lists blocks of each by file.
@@ -210,19 +227,18 @@ Rationale: 1b6e3fca landed after this run's Discussion started; the board tidy f
 
 ## Auto-mode assumptions
 
-- A larger coverage binary per package, and testmap rebuilding maps whose linked dependencies drifted, are acceptable testmap costs.
+- A larger coverage binary per package is an acceptable testmap cost.
 
 ## Open risks
 
-- Question for the parent: D2 changes testmap's staleness rule and build cost, over every linked package, covered or not,
-  and note `testmap-upkeep` says it owns the whole staleness policy, dependency drift included.
-  May D2 change that policy now, or should it wait for that note?
-- Every existing map lacks D2's marker, so every package needs one rebuild before any selection;
+- Every existing map lacks D2's marker, so every package needs one rebuild before any selection.
+  testmap makes it by its present rules, which leave a map without the marker fresh,
+  so at the latest at the age limit, or at once through a testmap call naming the package;
   that also delays the full map set `redundancy-sweep-existing` waits on, at the pace note `testmap-backlog-drain` governs.
-- Question for the parent: by the measured rate under Constraints, landings to `internal/fabricengine` still miss about twice a day.
-  A package linking it narrows only while its map is younger than the last such landing,
-  so `coverage` stays close to `diff` unless testmap rebuilds a map soon after each landing, a cadence note `testmap-upkeep` governs.
-  Should this task land before that note sets the cadence, or wait for it?
+- Coverage narrows only while a map is fresh.
+  By the measured rate under Constraints, landings to `internal/fabricengine` still miss about twice a day,
+  so the share of fresh maps is set by the cadence note `testmap-upkeep` governs.
+  The tasks raddle files from this record must be ordered after the task that builds `testmap-upkeep`'s design.
 
 ## Acceptance criteria
 
@@ -236,9 +252,10 @@ Rationale: 1b6e3fca landed after this run's Discussion started; the board tidy f
   A's files and hashes in their own field, an embedded file in a subdirectory of A included,
   and the format marker holding the map's `Commit` and `BuiltAt`.
 - D2: testmap records a test the spawn scan marks out-of-process as such.
-- D2: testmap counts a map stale when the marker is missing or a linked package's recorded file changed at HEAD,
-  a linked package no test covered a block of included, and not stale when only a package B's test binary does not link changed.
+- D2: testmap leaves a map as fresh when only a linked package's file changed at HEAD and the map's own files and age are unchanged.
 - D2: testmap leaves package B's map as it was while linked package A holds a modified or untracked file.
+- D2: a linked package's file dirtied after the walk started and still dirty after a package's tests
+  makes testmap write no new map for that package and leave any earlier one as it was.
 - D2: the redundancy report's verdict for a fixture test is the same whether the map holds cross-package blocks or not, and `mapDrift` reports no other package's file.
 - D3: a changed package runs every test of the tier; an importing package runs at least the D3 union
   and nothing outside it but D6's same-name overlap and D6's over-budget whole run.
@@ -246,6 +263,8 @@ Rationale: 1b6e3fca landed after this run's Discussion started; the board tidy f
   run even when D4 selects nothing.
 - D3: an importing package with no test in the D3 union and no miss runs no test.
 - D3: an importing package whose only union member is an unwatched watch-marked guard test runs no test, and the gate passes.
+- D3: an importing package whose only unrecorded declared test sits in a test file constrained to another GOOS runs no test,
+  and the gate passes.
 - D4: an edit inside function F of A selects B's tests that covered a block of F and no B test that covered only other functions.
 - D4: changing the parameter types of a plain function F of A, its body unchanged, selects B's tests that covered a block of F.
 - D4: deleting a file of A selects every B test that covered a block of it.
@@ -258,8 +277,9 @@ Rationale: 1b6e3fca landed after this run's Discussion started; the board tidy f
   a method of A whose receiver changed from value to pointer with the same body, a changed file of A that does not parse,
   and a marker whose `Commit` and `BuiltAt` differ from the map's.
 - D5: an edit to a comment, a reordered import block, an added const in A, or an added import of a standard-library or linked package is no miss;
-  a removed import, an added import of any other package, a const added to an `iota` group of A,
+  a removed import, an added import of any other package, a const added to an `iota` group of A, an added function named `max` in A,
   or an added, removed or changed `//go:` directive line is a miss.
+- D5: an edit to an embedded file of A that `inert_paths` matches is a miss.
 - D6: a selected-test pass leaves a green entry carrying its `-run` arguments, which a later gate never reads as the package passed or the tier whole.
 - D6: an over-budget selected pattern runs the selected packages whole.
 - D6: a failing selected test is rerun by the failed-test rerun and stops the gate under `--stop-on-fail`.

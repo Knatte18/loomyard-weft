@@ -29,6 +29,7 @@ Every fork returned a report.
 - bound-breaker 2 and walkthrough 1 (BLOCKING, merged): no source of block boundaries without a build. Fixed: D4 matches at function level from `go/parser`, with the block keys' enclosing function.
 - existing-paths 1 (BLOCKING): dependency hashes in `Files` would make testmap rebuild every map. Fixed: D2 puts them in a field of their own; `stale` and `mapDrift` keep own-package `Files`.
 - interactions 2 and existing-paths 2 (merged): dependency drift stays a miss until the age limit. Fixed: D2 adds covered-package drift to testmap's staleness; the cost is a question to the parent in Open risks.
+  Reversed in round 3 by the parent's ruling.
 - bound-breaker 3 and walkthrough 2 (merged): cross-package keys and hashes carry no package. Fixed in D2.
 - walkthrough 3: a new file in a covered package passes the hash check. Fixed: D2 records the file set, D5 compares it.
 - interactions 1: guard tests lost in narrowed packages. Fixed: D3 always runs a narrowed package's guard tests.
@@ -44,7 +45,7 @@ Every fork returned a report.
 - bound-breaker 7 and walkthrough 7 (merged): torn reads cannot occur and `ReadMap` takes a lock. Fixed: D8 reads through `ReadMap`, a failed read is a miss.
 - bound-breaker 4: drift in a package no test covered. Fixed: D5's bound reworded to the precise case.
 - interactions 3: "exactly" against D6's overlap. Fixed in the D3 criterion.
-- board-scope 1 (decision): D2 ahead of `testmap-upkeep`. Kept as a question for the parent in Open risks.
+- board-scope 1 (decision): D2 ahead of `testmap-upkeep`. Kept as a question for the parent in Open risks; the parent answered it in round 3 (Q10).
 - board-scope 2 (decision): this hub's `gate.yaml`. Kept as a question for the parent in Open risks; moved to Scope Out in round 1.
 - board-scope 3: sweep delayed by the rebuild. Fixed: one clause in Open risks.
 - leanness 1 to 7: fixed: the `pr-review` assumption cut, the tier-2 assumption trimmed, the Scope Out bullet made bare,
@@ -59,7 +60,7 @@ Every fork returned a report.
 - Let the gate rebuild a stale map before scoping: holds slots and duplicates `testmap-upkeep`'s scope.
 - Treat every new function as a miss: widens on nearly every diff, while a plain function is reached only through a changed caller.
 - Block-level selection keyed at gate time: needs a coverage build or a re-implementation of cmd/cover's block splitting; function level needs neither.
-- Leave testmap's staleness at own-package files: a dependency-drift miss would last until the age limit.
+- Raise testmap's staleness for dependency drift in this task: the parent put the staleness policy with note `testmap-upkeep`.
 - Check map freshness against the tier's base: maps are built at main's HEAD,
   so a base that predates a landing to a widely imported package, or a base on a branch commit, misses for every such package.
 - Hash the working tree through git's clean filter: needs a git call beside the fabric's readers (PATTERN-fabric-boundary);
@@ -94,7 +95,16 @@ Every fork returned a report.
   an unparsable changed file is a miss.
 - F9: D5's bound names line-ending conversion. F10: testmap repeats its dirty check after each package's tests.
   F11: the gate-slot constraint corrected.
-- F4 (decision): with the parent.
+- F4 (decision): with the parent; answered and applied in round 3.
+
+### Round 3
+
+- F1: the parent's rulings applied: D2's staleness rule and its rationale cut, D5's Bound states how long a dependency-drift miss lasts,
+  and Open risks state the cadence dependency and order this record's build tasks after `testmap-upkeep`'s design.
+- F2: D3's union holds only tests of test files the gate's host compiles; D6 puts the selected `-run` in the run's own args.
+- F3: D2's dirty checks are fresh status reads, with a Bound for an edit reverted between them.
+- F4: `inert_paths` never exempts a `go:embed` target of a linked package.
+- F5: an added top-level declaration named as a predeclared identifier is a D5 miss.
 
 ## Question ledger
 
@@ -107,10 +117,13 @@ Every fork returned a report.
 - Q6 (auto-pick): non-body changes and new declarations? Non-body change other than comments, formatting and a reordered import block widens,
   as does an added or removed import other than an added standard-library or linked-package one, and any `//go:` directive change;
   a method-set change or an added `init` widens;
-  a new plain function, a const outside an `iota` group, a var with no initializer or a type with no methods does not.
+  a new plain function, a const outside an `iota` group, a var with no initializer or a type with no methods does not,
+  unless its name is a predeclared identifier.
 - Q7 (auto-pick): redundancy judgment with cross-package maps? Unchanged, own-package blocks only.
 - Q8 (auto-pick): the hub's own `gate.yaml` switch?
   The operator switches the three keys to `coverage` with `lym config gate` from the prime after landing; the run edits no hub config.
 - Q9 (auto-pick): selection granularity? Function level from `go/parser` (D4), after the lens review found no gate-time source of block boundaries.
-- Q10 (open, for the parent): may D2 raise testmap's cost ahead of note `testmap-upkeep`? Recorded in Open risks.
-- Q11 (open, for the parent): land before note `testmap-upkeep` sets a rebuild cadence, or wait for it? Recorded in Open risks.
+- Q10 (resolved by the parent): may D2 raise testmap's cost ahead of note `testmap-upkeep`?
+  No: D2 leaves testmap's staleness rule as it is, and dependency drift goes to that note.
+- Q11 (resolved by the parent): land before note `testmap-upkeep` sets a rebuild cadence, or wait for it?
+  Land now; Open risks orders this record's build tasks after the task that builds that note's design.
