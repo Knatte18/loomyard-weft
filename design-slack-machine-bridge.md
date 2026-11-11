@@ -8,6 +8,8 @@ The operator wants the orchs on two machines (neve and OSL-1046) to be able to t
 The Slack relay rebuild (`slack-push-channels`, built from the Sketch `slack-v2`) keeps one app per machine, never lets two apps write to one channel, and treats every inbound Slack message as the operator's.
 Creel today carries mail between the hubs of one machine only: a name `<hub>:<strand>` resolves through the machine record, and the receiving daemon confirms the sender by asking the sending daemon, which cannot work across machines.
 
+The operator judged on 2026-11-11 that this is more useful than the relay's phone use alone, and that it should need no setup beyond Slack itself.
+
 ## Idea
 
 - One bridge channel per pair of orchs that talk, such as `ly-bridge-neve-prime--osl-prime`, made by the machine that sends first; the other machine's bot joins it itself (`channels:join`) and the operator is invited, so the operator sees the exchange.
