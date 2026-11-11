@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Expect → skipped",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -159,6 +159,27 @@
       "output": "",
       "at": "2026-11-11T11:32:55Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/machine-name-verb/_lym/webster/summary.md",
+      "at": "2026-11-11T13:01:44Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T12:20:16.346934928Z",
+          "end": "2026-11-11T12:20:16.818117053Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T12:20:17.463898867Z",
+          "end": "2026-11-11T13:01:42.244393369Z"
+        }
+      ]
     }
   ],
   "product": {
