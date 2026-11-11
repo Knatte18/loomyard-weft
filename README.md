@@ -57,7 +57,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **The prime dobby starts an upkeep pass on remaining work, and an anchor move ends it** | [`testmap-upkeep-dobby`](design-testmap-upkeep-dobby.md)<br>[Sketch](decision-testmap-upkeep-dobby.md) | darn · solid | Drift-Baseline | neve | 3h<br>3h | testkit, gate, dobby |
+| T5 | **The prime dobby starts an upkeep pass on remaining work, and an anchor move ends it** | [`testmap-upkeep-dobby`](design-testmap-upkeep-dobby.md)<br>[Sketch](decision-testmap-upkeep-dobby.md) | darn · solid | Drift-Await | neve | 3h<br>3h | testkit, gate, dobby |
 
 #### Ready (0)
 
