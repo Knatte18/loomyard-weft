@@ -31,8 +31,8 @@
 - `internal/adoptcli_test#TestAdoptIntegration_SecondCloneTakesOver`
 
 **Uses:**
-- `plan:internal/adoptcli#stepRun`
-- `plan:internal/adoptcli#runSteps`
+- `internal/adoptcli#stepRun`
+- `internal/adoptcli#runSteps`
 - `internal/adoptrecord#Read`
 - `internal/adoptrecord#Write`
 - `internal/adoptrecord#LockPath`

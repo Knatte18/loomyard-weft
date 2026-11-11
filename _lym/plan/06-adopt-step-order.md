@@ -1,21 +1,21 @@
 # Card 6 — adopt-step-order
 
 **Create:**
-- `plan:internal/adoptcli#stepRun` -> `type stepRun struct`
-- `plan:internal/adoptcli#runSteps` -> `func runSteps(run *stepRun, from string) error`
-- `plan:internal/adoptcli#stepReconcile` -> `func stepReconcile(run *stepRun) error`
-- `plan:internal/adoptcli#stepPairs` -> `func stepPairs(run *stepRun) error`
-- `plan:internal/adoptcli#stepPause` -> `func stepPause(run *stepRun) error`
-- `plan:internal/adoptcli#stepOwner` -> `func stepOwner(run *stepRun) error`
-- `plan:internal/adoptcli#stepDeploy` -> `func stepDeploy(run *stepRun) error`
-- `plan:internal/adoptcli#stepBeam` -> `func stepBeam(run *stepRun) error`
-- `plan:internal/adoptcli#stepCheck` -> `func stepCheck(run *stepRun) error`
-- `plan:internal/adoptcli#stepDone` -> `func stepDone(run *stepRun) error`
-- `plan:internal/adoptcli#pausedRun` -> `const pausedRun = "paused by adopt"`
-- `plan:internal/adoptcli#pauseTargets` -> `func pauseTargets(deps adoptDeps, here string, reconciled boardengine.Owners, tasks []boardengine.Task, runs, writing []string, rootGoing bool, outcomes map[string]*slugOutcome) ([]string, error)`
-- `plan:internal/adoptcli#pauseSubject` -> `func pauseSubject(deps adoptDeps, reconciled boardengine.Owners, here, slug string, writing []string, rootGoing bool) (bool, error)`
-- `plan:internal/adoptcli#pauseEntries` -> `func pauseEntries(record *pauserecord.Record, slugs, beams, listed []string, now time.Time) (paused []string, other map[string]string)`
-- `plan:internal/adoptcli#TestTriesStore` -> `func TestTriesStore(t *testing.T)`
+- `internal/adoptcli#stepRun`
+- `internal/adoptcli#runSteps`
+- `internal/adoptcli#stepReconcile`
+- `internal/adoptcli#stepPairs`
+- `internal/adoptcli#stepPause`
+- `internal/adoptcli#stepOwner`
+- `internal/adoptcli#stepDeploy`
+- `internal/adoptcli#stepBeam`
+- `internal/adoptcli#stepCheck`
+- `internal/adoptcli#stepDone`
+- `internal/adoptcli#pausedRun`
+- `internal/adoptcli#pauseTargets`
+- `internal/adoptcli#pauseSubject`
+- `internal/adoptcli#pauseEntries`
+- `internal/adoptcli#TestTriesStore`
 
 **Delete:**
 - `internal/adoptcli#holdStore`
