@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-decision-record-replace-verb.md)
 
-Depends on: [`record-file-upsert`](design-record-file-upsert.md)
-
 Filed from the Sketch `decision-record-replace`.
 
 Takes: lym board upsert --record-file from record-file-upsert, named by D3's filed refusal and by D6's parent directive; add's guards, refusals and notice in decision.go; CommitAnchoredPathsWithTrailers, FindTrailerCommit and commitEmptySnapshot in fabricengine; Board.HoldsRaddleFiling and raddleRunFiling
