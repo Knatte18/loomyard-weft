@@ -1,0 +1,2185 @@
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index 6a3bb4ef..c5664e42 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -117,6 +117,10 @@ producers:
+       # and lints the comments from the merge base on every attempt; gate_key names another key of
+       # the hub's gate.yaml. The verify gate's attempts here is a
+       # placeholder: the builder stamps darn.yaml's verify_attempts at every build.
++      # The verify call stops at its first failed tier. After a run whose failures are all named
++      # tests, the next attempt runs those tests alone first and the full call once they pass.
++      # darn.yaml's verify_budget_min sends the parent one notice once the gate has run past it,
++      # and the attempts go on.
+       # The decision record is no gate: Go checks it once the session returns and halts the run
+       # when the writer left it invalid. The clean gate goes first, so a writer that left an
+       # uncommitted or untracked file commits or deletes it before its session ends.
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 3a0a5917..e6959af5 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -211,6 +211,7 @@ var intentionallyNil = map[string]string{
+ //lym:seam internal/loomshed#RecordWriteDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
++//lym:seam internal/loomshed#VerifyBudget
+ //lym:seam internal/pawlengine#Deps
+ //lym:seam internal/pawlengine#Paths
+ //lym:seam internal/shedadapters#CommandDeps
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 07ea7058..e5459c70 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -129,7 +129,7 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 	t.Parallel()
+ 	wantLocalKeys := map[string][]string{
+ 		"agents":  {"efforts"},
+-		"darn":    {"gate_fixer", "verify_attempts", "writer", "writer_timeout_min"},
++		"darn":    {"gate_fixer", "verify_attempts", "verify_budget_min", "writer", "writer_timeout_min"},
+ 		"drift":   {"enabled", "expect_model", "judge_interactive", "judge_model", "scope"},
+ 		"ide":     {"open_files", "render_markdown"},
+ 		"landing": {"conflict", "conflict_timeout_min", "describe", "describe_timeout_min", "fixer", "fixer_timeout_min", "pr_reviewer"},
+diff --git a/internal/darnengine/config.go b/internal/darnengine/config.go
+index 82bbd09c..391078d2 100644
+--- a/internal/darnengine/config.go
++++ b/internal/darnengine/config.go
+@@ -38,6 +38,9 @@ type Config struct {
+ 	WriterTimeoutMin int `yaml:"writer_timeout_min"`
+ 	// VerifyAttempts caps the re-prompts of a verify gate, the writer's or a Code-Review fix round's, before the run halts.
+ 	VerifyAttempts int `yaml:"verify_attempts"`
++	// VerifyBudgetMin is how many minutes a verify gate may run from its first check before the run's parent gets a notice.
++	// 0 turns the notice off.
++	VerifyBudgetMin int `yaml:"verify_budget_min"`
+ 	// GateFixer is the model-spec of the cold fixer of Darn-Write's verify gate; empty turns the fixer off.
+ 	GateFixer string `yaml:"gate_fixer"`
+ 	// TreeScope maps each worktree-relative tree path, without a trailing slash, to its test target at a tree-scoped site.
+@@ -62,6 +65,7 @@ func ConfigSpec() configengine.Spec {
+ 		"writer":             configengine.CategoryNone,
+ 		"writer_timeout_min": configengine.CategoryNone,
+ 		"verify_attempts":    configengine.CategoryNone,
++		"verify_budget_min":  configengine.CategoryNone,
+ 		"gate_fixer":         configengine.CategoryNone,
+ 		"tree_scope":         configengine.CategoryGuard,
+ 	}
+diff --git a/internal/darnengine/config_test.go b/internal/darnengine/config_test.go
+index a662ce7d..ac2e83b5 100644
+--- a/internal/darnengine/config_test.go
++++ b/internal/darnengine/config_test.go
+@@ -34,7 +34,7 @@ func seedDarnConfig(t *testing.T, baseDir, contents string) {
+ // templateConfig returns the Config the embedded template loads as, changed by mutate.
+ func templateConfig(mutate func(*Config)) Config {
+ 	cfg := Config{
+-		Writer: "opus[medium]", WriterTimeoutMin: 180, VerifyAttempts: 3, GateFixer: "sonnet[medium]",
++		Writer: "opus[medium]", WriterTimeoutMin: 180, VerifyAttempts: 3, VerifyBudgetMin: 30, GateFixer: "sonnet[medium]",
+ 		TreeScope: map[string]string{},
+ 	}
+ 	mutate(&cfg)
+diff --git a/internal/darnengine/doc.go b/internal/darnengine/doc.go
+index 7a3ae44c..549b1d76 100644
+--- a/internal/darnengine/doc.go
++++ b/internal/darnengine/doc.go
+@@ -7,6 +7,8 @@
+ // `tree_scope`, described in the tree scope paragraph below;
+ // `verify_attempts`, how many times a verify gate re-prompts its session before it halts the run for the parent.
+ // A verify gate is the writer's or a Code-Review fix round's.
++// `verify_budget_min` is how long, in minutes, a verify gate runs before the run's parent gets one notice.
++// The attempts go on, and 0 turns the notice off.
+ // The darn recipe's Code-Review perch takes its models, fans, budgets and auto-accept flag from `loom.yaml`.
+ // darn.yaml holds none of them.
+ // A `verify` key in the hub file is dropped at load and pruned by `lym config reconcile`;
+diff --git a/internal/darnengine/template.yaml b/internal/darnengine/template.yaml
+index ed4682a2..5faa3107 100644
+--- a/internal/darnengine/template.yaml
++++ b/internal/darnengine/template.yaml
+@@ -1,5 +1,6 @@
+ writer: opus[medium]  # model-spec for the darn writer's session, which reads the board entry, edits, tests and commits (see contracts/specs/llm-model-spec.md)
+ writer_timeout_min: 180  # minutes the darn writer's shuttle run is allowed to run
+ verify_attempts: 3  # how many times a verify gate, the writer's or a Code-Review fix round's, re-prompts its session with the failing findings before it halts the run for the parent
++verify_budget_min: 30  # minutes a verify gate, the writer's or a Code-Review fix round's, may run from its first check before the run's parent gets one notice naming its failures so far; the attempts go on, and 0 turns the notice off
+ gate_fixer: sonnet[medium]  # model-spec for the cold fixer of Darn-Write's verify gate, which clears a failing gate's mechanical findings before the writer hears of them; empty turns the fixer off
+ tree_scope: {}  # maps a tree path to the target string the tree contributes, an empty target meaning the tree has no tests of its own; a diff wholly under these trees runs each darn verify site's own gate key over the touched trees' targets, and a docs-only or empty diff with no target runs nothing; tree scope is on exactly when a tree is listed; write it with lym config darn --set tree_scope.<tree>=<target>, remove a tree only in lym config darn's editor; a tree path holding ".", such as .github, is written in the editor
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index b5a89123..d2360c90 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -62,12 +62,12 @@ func newCommand(goBinary string, samplePeriod, preTierCeiling, timeoutUnit, reru
+ 	var tiers []int
+ 	var upto int
+ 	var cards []string
+-	var all, guards, wait, mainPackages bool
++	var all, guards, wait, mainPackages, stopOnFail bool
+ 	testCmd := &cobra.Command{
+ 		Use:         "test [<targets>...]",
+ 		Short:       "run the hub's test tiers once their gate slots are free",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+-		Long: `test runs the tiers the hub declares in gate.yaml, in ascending tier number, going on past a failed one.
++		Long: `test runs the tiers the hub declares in gate.yaml, in ascending tier number, going on past a failed one unless --stop-on-fail ends the call there.
+ --gate K runs the tiers and the scope the gate key K of gate.yaml names, and goes with none of --tier, --upto, --all and --base.
+ A key of scope card needs --card <id> per card, scope all runs every tier whole, and scope diff runs the diff from the merge base with the pair's parent branch.
+ Explicit <targets> beside --gate replace the key's scope.
+@@ -83,7 +83,6 @@ The exit code is the first failing run's own, or 0.
+ Without --gate the scope is the explicit <targets>, --all, --card <id>, --base <rev>, or the diff from the merge base with the pair's parent branch.
+ Arguments after "--" fill each tier's {args}.
+ --guards, and a narrower scope under the go scoper, also run the //lym:guard tests outside the scope.
+--C names the run directory, with explicit targets only.
+ 
+ Examples:
+ 
+@@ -102,7 +101,7 @@ Examples:
+ 			request := testRequest{
+ 				goBinary: goBinary, samplePeriod: samplePeriod, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit, secondUnit: time.Second, rerunDelay: rerunDelay, pipeWaitDelay: pipeWaitDelay,
+ 				stderr: cmd.ErrOrStderr(), dir: dir, tags: tags, gate: gate, tiers: tiers, cards: cards, mainPackages: mainPackages, base: base, all: all, guards: guards, targets: args,
+-				upto: upto, uptoGiven: cmd.Flags().Changed("upto"),
++				upto: upto, uptoGiven: cmd.Flags().Changed("upto"), stopOnFail: stopOnFail,
+ 				phase: phaseFrom(cmd.Context()),
+ 			}
+ 			if dash := cmd.ArgsLenAtDash(); dash >= 0 {
+@@ -126,6 +125,7 @@ Examples:
+ 	testCmd.Flags().StringVar(&base, "base", "", "revision whose diff to the working tree is the scope")
+ 	testCmd.Flags().BoolVar(&all, "all", false, "run every tier over its all_targets")
+ 	testCmd.Flags().BoolVar(&guards, "guards", false, "after the listed tiers, run every //lym:guard test of the module under the tier its file belongs to")
++	testCmd.Flags().BoolVar(&stopOnFail, gateslot.StopOnFailFlag, false, "end the call at its first failed run, so no later tier, vet or guard run starts")
+ 	testCmd.Flags().BoolVar(&wait, "wait", false, "run the tiers in this process and block until they end, instead of in the detached runner an agent call starts or joins")
+ 	cmd.AddCommand(testCmd)
+ 	cmd.AddCommand(statusCmd())
+@@ -193,6 +193,8 @@ type testRequest struct {
+ 	all bool
+ 	// guards is the --guards flag: run the guard step after the listed tiers.
+ 	guards bool
++	// stopOnFail is the --stop-on-fail flag: the call ends at its first failed run, bar a crashed test runner.
++	stopOnFail bool
+ 	// targets are the arguments before `--`.
+ 	targets []string
+ 	// args are the arguments after `--`, which fill each tier's {args}.
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index e0108db2..83f1523a 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -9,11 +9,16 @@
+ //
+ // # Verb
+ //
+-// The form is `lym gate test [-C <dir>] [--gate <key>] [--tier N]... [--upto N] [--card <id>]... [--main-packages] [--base <rev>] [--all] [--guards] [--wait] [<targets>...] [-- <args>]`.
++// The form is `lym gate test [-C <dir>] [--gate <key>] [--tier N]... [--upto N] [--card <id>]... [--main-packages] [--base <rev>] [--all] [--guards] [--stop-on-fail] [--wait] [<targets>...] [-- <args>]`.
+ // It runs the tiers the hub declares in gate.yaml in ascending tier number.
+ // It then runs the vet step and the guard step below when they are planned.
+ // A run that fails does not stop the call: every later tier, vet and guard run still runs.
+ // A failure the change under test did not cause, such as one present at the base, therefore hides no later check.
++// `--stop-on-fail` ends the call at its first failed run instead, a tier the build blocked included.
++// No later tier, vet or guard run starts, and a stderr line names the failed run and every run it skipped.
++// A run that crashed its test runner in its run and its rerun judged no code, so it stops nothing.
++// The key's lint and report steps still run, and the failure report and closing line follow as for any failed call.
++// Darn-Write's verify gate adds the flag, so its fixer hears of a failed tier before a slower tier runs.
+ // When a run failed, the verb closes with one stderr line naming each failed run.
+ // The line follows the failure report the Failure report section describes.
+ // It names a vet run as `vet tierN`, a guard run as `guard tierN` and a lint step as `lint <name>`.
+diff --git a/internal/gatecli/failurereport.go b/internal/gatecli/failurereport.go
+index d207aa2e..f97d4a21 100644
+--- a/internal/gatecli/failurereport.go
++++ b/internal/gatecli/failurereport.go
+@@ -25,7 +25,7 @@ import (
+ 
+ const (
+ 	// failureReportHeader opens the failure report.
+-	failureReportHeader = "gate test: failure report, every failure of this call:"
++	failureReportHeader = gateslot.FailureReportHeader
+ 	// failureReportLines caps the lines below the header; the closing line of a cut report says where the rest is.
+ 	failureReportLines = 80
+ 	// failureReportLineBytes caps one report line so a long panic or diff line cannot crowd out later failures.
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 7ba4294f..774d721b 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -139,7 +139,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	// A nested `lym gate test` reads the variable to learn this run's watchdog already sees its test binaries.
+ 	exe.env = append(slices.DeleteFunc(env, func(entry string) bool { return strings.HasPrefix(entry, enclosingGateEnv+"=") }), enclosingGateEnv+"="+strconv.Itoa(os.Getpid()))
+ 
+-	// A failed run does not stop the call, so every later tier and guard run stays checked.
++	// Without --stop-on-fail a failed run does not stop the call, so every later tier and guard run stays checked.
+ 	// That holds even when the change under test did not cause the failure.
+ 	var failures []string
+ 	code, firstFailed := 0, ""
+@@ -149,7 +149,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	// The call closes with the runner crash line only when no failure judged the code.
+ 	var crashed []string
+ 	judged := false
+-	for _, run := range plan {
++	for i, run := range plan {
+ 		var end runEnd
+ 		if run.guardStep {
+ 			end = exe.runGuard(run)
+@@ -186,6 +186,14 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 			printFailedRuns(request.stderr, failures, firstFailed, true)
+ 			return exitAfterSignal(caught, haltExitCode(end, code))
+ 		}
++		if request.stopOnFail && stopsCall(end) && i+1 < len(plan) {
++			failed := runLabel(run)
++			if end.blocked {
++				failed = "build"
++			}
++			printLine(request.stderr, stopOnFailLine(failed, plan[i+1:]))
++			break
++		}
+ 	}
+ 	// The lint steps run after the tiers, so a call that fails both reports the two in one go.
+ 	if request.gate != "" && runCtx.Err() == nil {
+@@ -241,6 +249,23 @@ func printFailedRuns(stderr io.Writer, failures []string, firstFailed string, ha
+ 	printLine(stderr, fmt.Sprintf("%s%s; the exit code is %s's%s", gateslot.FailedRunsPrefix, strings.Join(failures, ", "), firstFailed, suffix))
+ }
+ 
++// stopsCall reports whether a run that ended so stops a --stop-on-fail call.
++// A failed or blocked run does.
++// A run that crashed its test runner in its run and its rerun judged no code, so it does not.
++func stopsCall(end runEnd) bool {
++	return end.blocked || (end.ran && end.code != 0 && end.crash == "")
++}
++
++// stopOnFailLine returns the stderr line a --stop-on-fail call prints when the failed run stops it.
++// The line names the failed run and every run of skipped.
++func stopOnFailLine(failed string, skipped []tierRun) string {
++	labels := make([]string, len(skipped))
++	for i, run := range skipped {
++		labels[i] = runLabel(run)
++	}
++	return fmt.Sprintf("gate test: --%s ended the call after %s failed, so %s did not run", gateslot.StopOnFailFlag, failed, strings.Join(labels, ", "))
++}
++
+ // notRunSuffix closes the line a passing card-scope call prints naming the declared tiers it did not run.
+ const notRunSuffix = " did not run, so this pass is not green for them"
+ 
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index c292f7b5..438b7b66 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -1724,6 +1724,69 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		requireFree(t)
+ 	})
+ 
++	t.Run("--stop-on-fail ends the call at the first failing tier and names the tier it skipped", func(t *testing.T) {
++		writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
++			cfg["tiers"].(map[string]any)["tier6"].(map[string]any)["command"] = "exit 9"
++		}))
++		defer writeConfig(t, gateConfig)
++
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--stop-on-fail", "--tier", "0", "--tier", "6", "./pkg"}, env: []string{helperExitEnv + "=7"}})
++		if code := g.wait(t); code != 7 {
++			t.Errorf("exit code = %d, stdout %q; want tier0's 7", code, g.stdout.String())
++		}
++		for _, want := range []string{
++			"gate test: --stop-on-fail ended the call after tier0 failed, so tier6 did not run\n",
++			"gate test: failed runs: tier0 (exit 7); the exit code is tier0's\n",
++		} {
++			if !strings.Contains(g.stdout.String(), want) {
++				t.Errorf("stdout = %q; want the line %q", g.stdout.String(), want)
++			}
++		}
++		if strings.Contains(g.stdout.String(), "gate test: tier6 ") {
++			t.Errorf("stdout = %q; want no tier6 summary line, since tier6 never ran", g.stdout.String())
++		}
++		requireFree(t)
++	})
++
++	t.Run("--stop-on-fail ends the call at a tier the build blocked and names the build as the failure", func(t *testing.T) {
++		writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
++			withSharedBuild(buildDir)(cfg)
++			cfg["gates"] = map[string]any{"built": map[string]any{"tiers": []int{0, 2}, "scope": "all"}}
++		}))
++		defer writeConfig(t, gateConfig)
++
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--stop-on-fail", "--gate", "built"}, env: []string{helperBuildExitEnv + "=3"}})
++		g.wait(t)
++		if want := "gate test: --stop-on-fail ended the call after build failed, so tier2 did not run\n"; !strings.Contains(g.stdout.String(), want) {
++			t.Errorf("stdout = %q; want the line %q", g.stdout.String(), want)
++		}
++		if strings.Contains(g.stdout.String(), "gate test: tier2 ") {
++			t.Errorf("stdout = %q; want no tier2 summary line, since tier2 never ran", g.stdout.String())
++		}
++		requireFree(t)
++	})
++
++	t.Run("--stop-on-fail does not stop the call at a tier that crashed its test runner twice", func(t *testing.T) {
++		writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
++			cfg["tiers"].(map[string]any)["tier7"] = map[string]any{"command": "exit 1", "all_targets": "./pkg", "timeout_min": 1, "counter": "go-json"}
++			cfg["gates"] = map[string]any{"mixed": map[string]any{"tiers": []int{6, 7}, "scope": "all"}}
++		}))
++		defer writeConfig(t, gateConfig)
++
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--stop-on-fail", "--gate", "mixed"}, env: crashEnv})
++		g.wait(t)
++		if strings.Contains(g.stdout.String(), "--stop-on-fail ended the call") {
++			t.Errorf("stdout = %q; want no stop, since a crashed runner judged no code", g.stdout.String())
++		}
++		closing := closingOf(g.stdout.String())
++		for _, want := range []string{"tier6 (exit 134, a runner crash, SIGABRT", "tier7 (exit 1)"} {
++			if !strings.Contains(closing, want) {
++				t.Errorf("closing line = %q; want it to name %q", closing, want)
++			}
++		}
++		requireFree(t)
++	})
++
+ 	t.Run("a refusal after a failed tier ends the call with the closing line and the refusal's code", func(t *testing.T) {
+ 		if err := os.MkdirAll(filepath.Join(prime, "cmd", "lym"), 0o755); err != nil {
+ 			t.Fatal(err)
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index f89ef857..66aaf9a1 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -190,6 +190,9 @@
+ // Its `--wait` form is for a call Go runs.
+ // Config.AgentGateCall renders the same call without `--wait`, the form for a call an agent runs.
+ // Config.AgentGateCallWithMainPackages renders the agent call with `--main-packages` last.
++// StopOnFailCall adds `--stop-on-fail` to a call, which ends it at its first failed run.
++// FailedTestsCall renders the command that runs a failure report's failed tests alone:
++// one `--wait` call per tier, joined by `&&`, each over the tier's packages with a `-run` pattern of its test names.
+ // An agent strand's capped front answers it with `done: false` and exit 75 when its keep-warm cap passes.
+ // MigrateConfig prunes the retired `gates.publish` list and `guard_tier` key from a gate.yaml document.
+ // It also migrates the retired lists, so reconcile rewrites the hub file:
+@@ -243,6 +246,9 @@
+ // RunnerCrashLine renders the line a gate call closes with when every failed run crashed its test runner.
+ // That covers the run and its one rerun.
+ // FindRunnerCrash finds the line and returns the runs it names, so a site tells a runtime's crash from a failing test.
++// FailureReportHeader opens the failure report a failing call prints.
++// FailedTests reads the report's failed tests, each with the tier of the run that failed it.
++// It reports false unless every failure of the report is a named test of a tier or guard run.
+ //
+ // # Run log
+ //
+diff --git a/internal/gateslot/failedtests_test.go b/internal/gateslot/failedtests_test.go
+new file mode 100644
+index 00000000..d6e3c2e1
+--- /dev/null
++++ b/internal/gateslot/failedtests_test.go
+@@ -0,0 +1,134 @@
++// failedtests_test.go covers the read of a failure report's failed tests and the call that runs them alone.
++
++package gateslot
++
++import (
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestFailedTests pins which failure reports name their failed tests: only one whose every failure is a named test.
++func TestFailedTests(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	report := func(lines ...string) string {
++		return "=== RUN   TestA\nFAIL\n" + FailureReportHeader + "\n" + strings.Join(lines, "\n") + "\n" +
++			FailedRunsPrefix + "tier0 (exit 1); the exit code is tier0's\n"
++	}
++	tests := []struct {
++		name   string
++		log    string
++		want   []FailedTest
++		wantOK bool
++	}{
++		{
++			name: "tests of a tier and a guard run each keep their run's tier, a subtest folded into its test once",
++			log: report(
++				"tier0 (exit 1), log /runs/a.log:",
++				"  example.com/m/a TestA/sub:",
++				"    a_test.go:3: got 1; want 2",
++				"  example.com/m/a TestA/other:",
++				"  example.com/m/b TestB:",
++				"guard tier1 (exit 1), log /runs/g.log:",
++				"  example.com/m/g TestGuard:",
++				"gate test: the change touches a/a.go",
++			),
++			want:   []FailedTest{{Tier: 0, Package: "example.com/m/a", Test: "TestA"}, {Tier: 0, Package: "example.com/m/b", Test: "TestB"}, {Tier: 1, Package: "example.com/m/g", Test: "TestGuard"}},
++			wantOK: true,
++		},
++		{
++			name: "a log with no report names none",
++			log:  "--- FAIL: TestA (0.00s)\nFAIL\texample.com/m/a\t0.1s\n",
++		},
++		{
++			name: "a failure outside any test names none",
++			log:  report("tier0 (exit 1), log /runs/a.log:", "  example.com/m/a TestA:", "  example.com/m/b, failed outside any test:", "    b.go:3: undefined: x"),
++		},
++		{
++			name: "a build step names none",
++			log:  report("build (exit 2), log /runs/b.log:", "  its output:", "    main.go:1: syntax error"),
++		},
++		{
++			name: "a vet run names none",
++			log:  report("vet tier1 (exit 1), log /runs/v.log:", "  example.com/m/a TestA:"),
++		},
++		{
++			name: "a timed-out run's cause line names none",
++			log:  report("tier1 (timed out), log /runs/a.log:", "  lym gate test: tier timeout: tier1 exceeded timeout_min 30m0s; find the hang"),
++		},
++		{
++			name: "a run that names no failed test beside one that does names none",
++			log:  report("tier0 (exit 1), log /runs/a.log:", "  no failing test or error line was read from its output; its log holds the cause", "tier1 (exit 1), log /runs/b.log:", "  example.com/m/a TestA:"),
++		},
++		{
++			name: "a cut report names none",
++			log:  report("tier0 (exit 1), log /runs/a.log:", "  example.com/m/a TestA:", "... 12 more lines cut (tier0: 12); the logs named above hold the cut lines of a run with a log"),
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, ok := FailedTests(tt.log)
++			if ok != tt.wantOK || !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("FailedTests() = %+v, %v; want %+v, %v", got, ok, tt.want, tt.wantOK)
++			}
++		})
++	}
++}
++
++// TestFailedTestsCall pins the command that runs failed tests alone: one call per tier in tier order, quoted per shell.
++func TestFailedTestsCall(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		goos    string
++		failed  []FailedTest
++		want    string
++		wantErr bool
++	}{
++		{
++			name: "one call per tier in tier order, each package and name once",
++			goos: "linux",
++			failed: []FailedTest{
++				{Tier: 1, Package: "example.com/m/b", Test: "TestB"},
++				{Tier: 0, Package: "example.com/m/c", Test: "TestA"},
++				{Tier: 0, Package: "example.com/m/a", Test: "TestC"},
++				{Tier: 0, Package: "example.com/m/a", Test: "TestA"},
++			},
++			want: "lym gate test --wait --stop-on-fail --tier 0 'example.com/m/a' 'example.com/m/c' -- -run '^(TestA|TestC)$'" +
++				" && lym gate test --wait --stop-on-fail --tier 1 'example.com/m/b' -- -run '^(TestB)$'",
++		},
++		{
++			name:   "cmd quoting on windows",
++			goos:   "windows",
++			failed: []FailedTest{{Tier: 0, Package: "example.com/m/a", Test: "TestA"}},
++			want:   `lym gate test --wait --stop-on-fail --tier 0 "example.com/m/a" -- -run "^(TestA)$"`,
++		},
++		{
++			name:    "no failed test is refused",
++			goos:    "linux",
++			wantErr: true,
++		},
++		{
++			name:    "a package cmd cannot quote is refused",
++			goos:    "windows",
++			failed:  []FailedTest{{Tier: 0, Package: "example.com/m/100%", Test: "TestA"}},
++			wantErr: true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := FailedTestsCall(tt.goos, tt.failed)
++			if (err != nil) != tt.wantErr || got != tt.want {
++				t.Errorf("FailedTestsCall(%q, %+v) = %q, %v; want %q, error %v", tt.goos, tt.failed, got, err, tt.want, tt.wantErr)
++			}
++		})
++	}
++}
+diff --git a/internal/gateslot/runlog.go b/internal/gateslot/runlog.go
+index 9a4906bc..4b0976e1 100644
+--- a/internal/gateslot/runlog.go
++++ b/internal/gateslot/runlog.go
+@@ -10,6 +10,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"regexp"
++	"slices"
+ 	"strconv"
+ 	"strings"
+ 	"time"
+@@ -264,6 +265,90 @@ func FindRunnerCrash(log string) (runs string, ok bool) {
+ // A reader of the call's output finds the failed runs by it.
+ const FailedRunsPrefix = "gate test: failed runs: "
+ 
++// FailureReportHeader opens the failure report a failing `lym gate test` call prints before its closing line.
++const FailureReportHeader = "gate test: failure report, every failure of this call:"
++
++// failureReportEnd opens each line the gate prints after the failure report's runs, such as the closing line.
++const failureReportEnd = "gate test: "
++
++// FailedTest is one failed test a failure report names.
++type FailedTest struct {
++	// Tier is the number of the tier or guard run that failed the test.
++	Tier int
++	// Package is the test's import path.
++	Package string
++	// Test is the top-level test, so a failed subtest names the test that holds it.
++	Test string
++}
++
++// FailedTests returns the failed tests the first failure report in log names, each once, in report order.
++// ok is false unless every failure of the report is a named test of a tier or guard run.
++// So a build, vet or lint step, a run that names no failed test and a failure outside any test give false.
++// So do a cause line such as a timeout, output no test event carried, a cut report and a log with no report.
++func FailedTests(log string) (failed []FailedTest, ok bool) {
++	lines := strings.Split(strings.ReplaceAll(log, "\r\n", "\n"), "\n")
++	start := slices.Index(lines, FailureReportHeader)
++	if start < 0 {
++		return nil, false
++	}
++	tier, named := -1, 0
++	for _, line := range lines[start+1:] {
++		if line == "" || strings.HasPrefix(line, failureReportEnd) {
++			break
++		}
++		switch {
++		case strings.HasPrefix(line, "    "):
++			// A failure's own output.
++		case strings.HasPrefix(line, "  "):
++			test, isTest := reportTestLine(line)
++			if !isTest || tier < 0 {
++				return nil, false
++			}
++			test.Tier = tier
++			named++
++			if !slices.Contains(failed, test) {
++				failed = append(failed, test)
++			}
++		default:
++			number, isRun := reportRunTier(line)
++			if !isRun || (tier >= 0 && named == 0) {
++				return nil, false
++			}
++			tier, named = number, 0
++		}
++	}
++	if named == 0 {
++		return nil, false
++	}
++	return failed, true
++}
++
++// reportRunTier returns the tier of a failure report's run header, such as `tier1 (exit 1), log <path>:`.
++// A guard run's header names its tier too; any other run, such as a build, vet or lint step, names none.
++func reportRunTier(line string) (int, bool) {
++	label, _, found := strings.Cut(line, " (")
++	digits, isTier := strings.CutPrefix(strings.TrimPrefix(label, "guard "), "tier")
++	if !found || !isTier {
++		return 0, false
++	}
++	number, err := strconv.Atoi(digits)
++	return number, err == nil && number >= 0
++}
++
++// reportTestLine returns the failed test a failure report's `  <package> <test>:` line names.
++// Any other line under a run, such as a failure outside any test or a cause, names none.
++func reportTestLine(line string) (FailedTest, bool) {
++	fields := strings.Fields(line)
++	if len(fields) != 2 || !strings.HasSuffix(fields[1], ":") {
++		return FailedTest{}, false
++	}
++	top, _, _ := strings.Cut(strings.TrimSuffix(fields[1], ":"), "/")
++	if !strings.HasPrefix(top, "Test") {
++		return FailedTest{}, false
++	}
++	return FailedTest{Package: fields[0], Test: top}, true
++}
++
+ // TierSummaryLine renders the one stderr line the gate prints after each tier run.
+ // A carried tier is marked with `carried` after its scope form.
+ func TierSummaryLine(record RunRecord, logPath string) string {
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index 2a4f7a21..a1a83078 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -13,6 +13,7 @@ import (
+ 	"gopkg.in/yaml.v3"
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/verifyrun"
+ )
+ 
+ // Tier is one test tier the hub declares in gate.yaml: its command, bounds and how its output is counted.
+@@ -397,6 +398,61 @@ func (c Config) AgentGateCallWithMainPackages(key string, cards ...string) (stri
+ 	return call + " --" + MainPackagesFlag, nil
+ }
+ 
++// StopOnFailFlag is the `lym gate test` flag, without its dashes, that ends a call at its first failed run.
++const StopOnFailFlag = "stop-on-fail"
++
++// StopOnFailCall returns call, a `lym gate test` call that holds no `--`, with StopOnFailFlag added last.
++func StopOnFailCall(call string) string {
++	return call + " --" + StopOnFailFlag
++}
++
++// FailedTestsCall renders the command that runs failed alone, quoted for the shell of goos.
++// It holds one `lym gate test --wait` call per tier of failed, in ascending tier order, joined by `&&`,
++// so a tier whose tests fail again stops the command before the next tier.
++// Each call carries StopOnFailFlag, `--tier` and the tier's packages as explicit targets.
++// After `--` it carries a `-run` pattern that matches exactly the tier's test names.
++// A name failed in one package of a tier also runs in the tier's other listed packages.
++// It refuses an empty failed, and a package or pattern the shell of goos cannot quote.
++func FailedTestsCall(goos string, failed []FailedTest) (string, error) {
++	if len(failed) == 0 {
++		return "", fmt.Errorf("gateslot: no failed test to run")
++	}
++	packages, tests := map[int][]string{}, map[int][]string{}
++	for _, test := range failed {
++		packages[test.Tier] = append(packages[test.Tier], test.Package)
++		tests[test.Tier] = append(tests[test.Tier], test.Test)
++	}
++	tiers := make([]int, 0, len(packages))
++	for tier := range packages {
++		tiers = append(tiers, tier)
++	}
++	slices.Sort(tiers)
++	calls := make([]string, 0, len(tiers))
++	for _, tier := range tiers {
++		words := []string{"lym", "gate", "test", "--wait", "--" + StopOnFailFlag, "--tier", strconv.Itoa(tier)}
++		for _, pkg := range uniqueSorted(packages[tier]) {
++			quoted, err := verifyrun.QuoteArg(goos, pkg)
++			if err != nil {
++				return "", fmt.Errorf("gateslot: quote the package %q: %w", pkg, err)
++			}
++			words = append(words, quoted)
++		}
++		pattern, err := verifyrun.QuoteArg(goos, "^("+strings.Join(uniqueSorted(tests[tier]), "|")+")$")
++		if err != nil {
++			return "", fmt.Errorf("gateslot: quote the -run pattern of %s: %w", tierKey(tier), err)
++		}
++		calls = append(calls, strings.Join(append(words, "--", "-run", pattern), " "))
++	}
++	return strings.Join(calls, " && "), nil
++}
++
++// uniqueSorted returns values sorted, with each value once.
++func uniqueSorted(values []string) []string {
++	sorted := slices.Clone(values)
++	slices.Sort(sorted)
++	return slices.Compact(sorted)
++}
++
+ // renderGateCall renders the gate call for key over cards, with `--wait` when wait is set.
+ func (c Config) renderGateCall(key string, wait bool, cards []string) (string, error) {
+ 	if _, err := c.Gate(key); err != nil {
+diff --git a/internal/loomcli/darntreescope_integration_test.go b/internal/loomcli/darntreescope_integration_test.go
+index 9bc21a6a..36558bdf 100644
+--- a/internal/loomcli/darntreescope_integration_test.go
++++ b/internal/loomcli/darntreescope_integration_test.go
+@@ -115,6 +115,17 @@ func TestDarnTreeScope_ClassifiesAtEachCall(t *testing.T) {
+ 		}
+ 	}
+ 
++	// wired is the pair's wiring of the verify seams.
++	// Its tree scope reader adds `--stop-on-fail` to the darn-write key alone.
++	wired := func(t *testing.T, slug string) *loomCLI {
++		t.Helper()
++		c := &loomCLI{}
++		if err := c.wireTreeScope(resolve(t, slug)); err != nil {
++			t.Fatalf("wireTreeScope() = %v; want nil", err)
++		}
++		return c
++	}
++
+ 	const slug = "scoped"
+ 	hubforge.AddPair(t, hub, slug)
+ 	worktree := hub.PairCodeWorktree(slug)
+@@ -132,6 +143,9 @@ func TestDarnTreeScope_ClassifiesAtEachCall(t *testing.T) {
+ 		gitkit.CommitFile(t, worktree, "docs/ä.md", "docs\n", "docs change")
+ 		assertAnswer(t, seam, "", true)
+ 		assertLanding(t, deps, "")
++		if command, scoped, err := wired(t, slug).env.VerifyTreeScope("darn-write"); err != nil || !scoped || command != "" {
++			t.Errorf("wired VerifyTreeScope(darn-write) = %q, %v, %v; want an empty command left empty, true, nil", command, scoped, err)
++		}
+ 	}) {
+ 		return
+ 	}
+@@ -145,6 +159,17 @@ func TestDarnTreeScope_ClassifiesAtEachCall(t *testing.T) {
+ 			}
+ 		}
+ 		assertLanding(t, deps, scopedCall("finalize", "./tools/..."))
++
++		c := wired(t, slug)
++		for _, tt := range []struct{ gateKey, want string }{
++			{"darn-write", scopedCall("darn-write", "./tools/...") + " --stop-on-fail"},
++			{"code-burler-fix", scopedCall("code-burler-fix", "./tools/...")},
++			{"finalize", scopedCall("finalize", "./tools/...")},
++		} {
++			if command, scoped, err := c.env.VerifyTreeScope(tt.gateKey); err != nil || !scoped || command != tt.want {
++				t.Errorf("wired VerifyTreeScope(%s) = %q, %v, %v; want %q, true, nil", tt.gateKey, command, scoped, err, tt.want)
++			}
++		}
+ 	}) {
+ 		return
+ 	}
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index 4557b223..354d3b6e 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -11,15 +11,18 @@ import (
+ 	"io/fs"
+ 	"os"
+ 	"strings"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/darnengine"
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
++	"github.com/Knatte18/loomyard/internal/orchcli"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -216,6 +219,10 @@ func (c *loomCLI) renameRetiredRows(renames map[string]string) error {
+ // The start, run, step and resume verbs therefore refuse an absent or malformed file before any row builds.
+ // A malformed tree_scope key gets the editor way forward instead of the hub reconcile one.
+ // The reason is that `--set` cannot remove a key the hub file holds.
++// The Darn-Write key's told and tree-scoped commands carry `--stop-on-fail`.
++// Its verify therefore stops at its first failed tier.
++// Every other key keeps its whole call, the landing call included.
++// The verify budget is darn.yaml's verify_budget_min, and its notice goes to the run's parent orch.
+ func (c *loomCLI) wireTreeScope(location *lymcwd.Location) error {
+ 	dirs := fabricengine.ConfigDirs(location)
+ 	cfg, err := darnengine.LoadConfig(dirs, "darn")
+@@ -228,10 +235,34 @@ func (c *loomCLI) wireTreeScope(location *lymcwd.Location) error {
+ 
+ 	// Each gate row's told command is the call of its own gate key;
+ 	// the tree-scoped command reaches the gate through `VerifyTreeScope`, never through this source.
+-	c.env.VerifyCommand = gateCallSource(dirs)
++	call := gateCallSource(dirs)
++	c.env.VerifyCommand = func(key string) (string, error) {
++		command, err := call(key)
++		if err != nil {
++			return "", err
++		}
++		if key != darnWriteGateKey {
++			return command, nil
++		}
++		return gateslot.StopOnFailCall(command), nil
++	}
+ 	c.env.VerifyMergeBase = taskMergeBase(location)
+-	c.env.VerifyTreeScope = darnTreeScope(location)
++	scope := darnTreeScope(location)
++	c.env.VerifyTreeScope = func(key string) (string, bool, error) {
++		command, scoped, err := scope(key)
++		if err != nil || command == "" || key != darnWriteGateKey {
++			return command, scoped, err
++		}
++		return gateslot.StopOnFailCall(command), scoped, nil
++	}
+ 	c.env.DarnVerifyAttempts = cfg.VerifyAttempts
++	c.env.VerifyBudget = loomshed.VerifyBudget{
++		Limit: time.Duration(cfg.VerifyBudgetMin) * time.Minute,
++		Notify: func(line string) error {
++			_, err := orchcli.NotifyParent(location, loomProgram, line)
++			return err
++		},
++	}
+ 
+ 	return nil
+ }
+diff --git a/internal/loomcli/wiring_beam_test.go b/internal/loomcli/wiring_beam_test.go
+index 9a36173d..36c9c8ac 100644
+--- a/internal/loomcli/wiring_beam_test.go
++++ b/internal/loomcli/wiring_beam_test.go
+@@ -45,6 +45,7 @@ import (
+ //lym:seam internal/loomshed#RecordWriteDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
++//lym:seam internal/loomshed#VerifyBudget
+ //lym:seam internal/pawlengine#Deps
+ //lym:seam internal/pawlengine#Paths
+ //lym:seam internal/shedadapters#CommandDeps
+diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
+index efe5fff7..49010ab6 100644
+--- a/internal/loomcli/wiring_darn_test.go
++++ b/internal/loomcli/wiring_darn_test.go
+@@ -13,6 +13,7 @@ import (
+ 	"path/filepath"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/driftengine"
+@@ -35,6 +36,9 @@ import (
+ // wantDarnLandingCall is the landing call the two-tier gate config renders for the `finalize` key.
+ const wantDarnLandingCall = "lym gate test --wait --gate finalize"
+ 
++// wantDarnWriteCall is the call of the `darn-write` key, which alone carries `--stop-on-fail`.
++const wantDarnWriteCall = "lym gate test --wait --gate darn-write --stop-on-fail"
++
+ //lym:seam internal/agentconfig#Config
+ //lym:seam internal/battenshed#InnerRunDeps
+ //lym:seam internal/battenshed#LandDeps
+@@ -56,6 +60,7 @@ const wantDarnLandingCall = "lym gate test --wait --gate finalize"
+ //lym:seam internal/loomshed#RecordWriteDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
++//lym:seam internal/loomshed#VerifyBudget
+ //lym:seam internal/pawlengine#Deps
+ //lym:seam internal/pawlengine#Paths
+ //lym:seam internal/shedadapters#CommandDeps
+@@ -80,7 +85,7 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 				t.Fatalf("Remove(tapestry.yaml in %q) = %v; want nil", dir, err)
+ 			}
+ 		}
+-		seedDarnHubConfig(t, loc.HubPath, "5")
++		seedDarnHubConfig(t, loc.HubPath, "5", "verify_budget_min: 30", "verify_budget_min: 45")
+ 		writeHubGateConfig(t, loc.HubPath, gateConfigWithTwoTiers())
+ 		driftConfig := filepath.Join(fabricengine.BoardDir(loc.HubPath), "_lym", "config", "drift.yaml")
+ 		if err := os.WriteFile(driftConfig, []byte(driftengine.ConfigTemplate()), 0o644); err != nil {
+@@ -173,6 +178,14 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 		if command, err := c.env.VerifyCommand("finalize"); err != nil || command != wantDarnLandingCall {
+ 			t.Errorf("c.env.VerifyCommand(finalize) = %q, %v; want the landing call %q, nil", command, err, wantDarnLandingCall)
+ 		}
++		for key, want := range map[string]string{"darn-write": wantDarnWriteCall, "code-burler-fix": "lym gate test --wait --gate code-burler-fix"} {
++			if command, err := c.env.VerifyCommand(key); err != nil || command != want {
++				t.Errorf("c.env.VerifyCommand(%s) = %q, %v; want %q, nil", key, command, err, want)
++			}
++		}
++		if budget := c.env.VerifyBudget; budget.Limit != 45*time.Minute || budget.Notify == nil {
++			t.Errorf("c.env.VerifyBudget = limit %v, Notify nil %v; want darn.yaml's 45 minutes and a Notify", budget.Limit, budget.Notify == nil)
++		}
+ 	})
+ 
+ 	wireDarnHub := func(t *testing.T) *loomCLI {
+diff --git a/internal/loomcli/wiring_seams_test.go b/internal/loomcli/wiring_seams_test.go
+index eb29888d..dc67513e 100644
+--- a/internal/loomcli/wiring_seams_test.go
++++ b/internal/loomcli/wiring_seams_test.go
+@@ -158,6 +158,7 @@ var intentionallyNil = map[string]string{
+ //lym:seam internal/loomshed#RecordWriteDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
++//lym:seam internal/loomshed#VerifyBudget
+ //lym:seam internal/pawlengine#Deps
+ //lym:seam internal/pawlengine#Paths
+ //lym:seam internal/shedadapters#CommandDeps
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 5169b4ec..05ad2f4a 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -146,6 +146,17 @@
+ // An empty told command is the gate's returned error, and so is a read error of the command, merge base or tree scope.
+ // An impact-scoped pass lets through a break only the whole module shows;
+ // Parent-Align's whole run catches it for every diff touching production code.
++// The darn wiring adds `--stop-on-fail` to the `darn-write` key's told and tree-scoped command.
++// Darn-Write's run therefore stops at its first failed tier.
++// In the darn form a failed run whose failure report names failed tests alone keeps them for the next arrival.
++// That arrival first runs them alone through verifytree.Verify, the command gateslot.FailedTestsCall renders.
++// Tests that fail again fail the arrival with their findings alone, so the fixer and the writer get only those.
++// A run of them that passes, or fails naming no failed test, leaves the arrival to the full command.
++// A timed-out run, a runner crash and a failure outside any test keep nothing, so the next arrival runs the full command.
++// A told VerifyBudget notices the run's parent once the gate has run past its limit from its first arrival.
++// The notice goes out at an arrival or while a verify command runs.
++// It names the attempt and the failed runs so far, and it stops nothing: the attempts go on.
++// Bound: the kept tests and the budget's clock live in the gate, so a restarted driver starts both afresh.
+ //
+ // The Plan-Write rotation archives the prior plan.
+ // It appends a prior-plan block naming that archive to the respawned session's prompt.
+diff --git a/internal/loomshed/verifybudget.go b/internal/loomshed/verifybudget.go
+new file mode 100644
+index 00000000..9e406136
+--- /dev/null
++++ b/internal/loomshed/verifybudget.go
+@@ -0,0 +1,148 @@
++// verifybudget.go holds the time budget of a verify gate and the clock that notices the run's parent once it is spent.
++
++package loomshed
++
++import (
++	"fmt"
++	"os"
++	"slices"
++	"strings"
++	"sync"
++	"time"
++	"unicode/utf8"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/verifytree"
++)
++
++// verifyNoticeBytes caps the notice a spent budget sends, so it stays one short creel line.
++const verifyNoticeBytes = 1000
++
++// VerifyBudget is how long a verify gate may run before the run's parent hears of it.
++// Its zero value is off.
++type VerifyBudget struct {
++	// Limit is the wall-clock time from the gate's first arrival after which the notice goes out; 0 turns the budget off.
++	Limit time.Duration
++	// Notify sends one line to the run's parent; nil turns the budget off.
++	Notify func(line string) error
++	// now reads the clock; nil reads the real one.
++	now func() time.Time
++	// after runs f once d has passed and returns the function that cancels it; nil uses time.AfterFunc.
++	after func(d time.Duration, f func()) (cancel func())
++}
++
++// budgetClock counts one verify gate's time against its budget and sends the notice once.
++// It is safe for concurrent use: its timer sends the notice while the gate's own call runs a verify command.
++type budgetClock struct {
++	budget VerifyBudget
++	site   string
++
++	mu      sync.Mutex
++	start   time.Time
++	attempt int
++	// failures names each failed verify run so far, oldest first.
++	failures []string
++	noticed  bool
++}
++
++func (c *budgetClock) on() bool {
++	return c.budget.Limit > 0 && c.budget.Notify != nil
++}
++
++func (c *budgetClock) now() time.Time {
++	if c.budget.now != nil {
++		return c.budget.now()
++	}
++	return time.Now()
++}
++
++// arrive starts the clock at the gate's first arrival and counts attempt as the current one.
++// It sends the notice when the budget is already spent.
++func (c *budgetClock) arrive(attempt int) {
++	if !c.on() {
++		return
++	}
++	c.mu.Lock()
++	if c.start.IsZero() {
++		c.start = c.now()
++	}
++	c.attempt = attempt
++	c.mu.Unlock()
++	c.noticeIfSpent()
++}
++
++// arm schedules the notice for the moment the budget runs out, and returns the function that cancels it.
++// The gate arms it around each verify command and cancels it once the command returns,
++// so no notice goes out after the gate stopped running.
++func (c *budgetClock) arm() (disarm func()) {
++	if !c.on() {
++		return func() {}
++	}
++	c.mu.Lock()
++	left := c.budget.Limit - c.now().Sub(c.start)
++	c.mu.Unlock()
++	if left <= 0 {
++		return func() {}
++	}
++	if c.budget.after != nil {
++		return c.budget.after(left, c.noticeIfSpent)
++	}
++	timer := time.AfterFunc(left, c.noticeIfSpent)
++	return func() { timer.Stop() }
++}
++
++// failed keeps res, the failed verify run of attempt, among the failures the notice names.
++// It names the runs the log's closing line names, or the exit code when the log holds no such line.
++func (c *budgetClock) failed(attempt int, res verifytree.Result) {
++	if !c.on() {
++		return
++	}
++	runs := fmt.Sprintf("exit code %d", res.ExitCode)
++	if log, err := os.ReadFile(res.Log); err == nil {
++		if line := failedRunsLine(log); line != "" {
++			runs = strings.TrimPrefix(line, gateslot.FailedRunsPrefix)
++		}
++	}
++	c.mu.Lock()
++	c.failures = append(c.failures, fmt.Sprintf("attempt %d, %s, log %s", attempt, runs, res.Log))
++	c.mu.Unlock()
++}
++
++// noticeIfSpent sends the notice once the budget is spent, and only once.
++// A notice that cannot be sent is logged and not retried.
++func (c *budgetClock) noticeIfSpent() {
++	c.mu.Lock()
++	if c.noticed || c.now().Sub(c.start) < c.budget.Limit {
++		c.mu.Unlock()
++		return
++	}
++	c.noticed = true
++	line := verifyBudgetNotice(c.site, c.budget.Limit, c.attempt, c.failures)
++	c.mu.Unlock()
++	if err := c.budget.Notify(line); err != nil {
++		logger.Warn("loomshed: the verify gate's spent budget could not be noticed to the run's parent", "gate", c.site, "error", err)
++	}
++}
++
++// verifyBudgetNotice renders the one line a spent budget sends.
++// It names the gate, its budget, the current attempt and every failed run so far, the latest first.
++// It is cut to verifyNoticeBytes, so the earliest failures are the ones a long list loses.
++func verifyBudgetNotice(site string, limit time.Duration, attempt int, failures []string) string {
++	failed := "no verify run has failed yet"
++	if len(failures) > 0 {
++		latestFirst := slices.Clone(failures)
++		slices.Reverse(latestFirst)
++		failed = "failed runs so far, latest first: " + strings.Join(latestFirst, "; ")
++	}
++	text := fmt.Sprintf("%s: the verify gate has run past its %s budget and is at attempt %d; it goes on until its attempts are spent; %s", site, limit, attempt, failed)
++	line := strings.Join(strings.Fields(text), " ")
++	if len(line) <= verifyNoticeBytes {
++		return line
++	}
++	cut := verifyNoticeBytes
++	for cut > 0 && !utf8.RuneStart(line[cut]) {
++		cut--
++	}
++	return line[:cut] + "..."
++}
+diff --git a/internal/loomshed/verifybudget_test.go b/internal/loomshed/verifybudget_test.go
+new file mode 100644
+index 00000000..2d98d025
+--- /dev/null
++++ b/internal/loomshed/verifybudget_test.go
+@@ -0,0 +1,157 @@
++// verifybudget_test.go covers when a verify gate's spent time budget notices the run's parent.
++
++package loomshed
++
++import (
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++	"time"
++	"unicode/utf8"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/verifytree"
++)
++
++// budgetRig is a budget clock over a told clock, a recording Notify and a timer the test fires by hand.
++type budgetRig struct {
++	now       time.Time
++	notices   []string
++	delay     time.Duration
++	fire      func()
++	cancelled bool
++	clock     *budgetClock
++}
++
++func newBudgetRig(limit time.Duration) *budgetRig {
++	r := &budgetRig{now: time.Date(2026, 11, 9, 12, 0, 0, 0, time.UTC)}
++	r.clock = &budgetClock{site: "Darn-Write gate", budget: VerifyBudget{
++		Limit:  limit,
++		Notify: func(line string) error { r.notices = append(r.notices, line); return nil },
++		now:    func() time.Time { return r.now },
++		after: func(d time.Duration, f func()) func() {
++			r.delay, r.fire = d, f
++			return func() { r.cancelled = true }
++		},
++	}}
++	return r
++}
++
++// TestVerifyBudget pins when a spent budget notices the run's parent.
++// The notice goes once, at an arrival past the limit or when a run's armed timer fires.
++// It names the attempt and every failed run so far, the latest first, and is cut to its byte cap on a rune boundary.
++// A cancelled timer and a budget that is off send none.
++func TestVerifyBudget(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	t.Run("an arrival past the limit sends one notice naming the attempt and every failed run, the latest first", func(t *testing.T) {
++		t.Parallel()
++		r := newBudgetRig(30 * time.Minute)
++		dir := t.TempDir()
++		logPath := filepath.Join(dir, "verify-1.log")
++		if err := os.WriteFile(logPath, []byte("FAIL\n"+gateslot.FailedRunsPrefix+"tier0 (exit 1); the exit code is tier0's\n"), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		absentLog := filepath.Join(dir, "verify-2.log")
++
++		r.clock.arrive(1)
++		r.clock.failed(1, verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1, Log: logPath})
++		r.clock.arrive(2)
++		r.clock.failed(2, verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 3, Log: absentLog})
++		r.now = r.now.Add(31 * time.Minute)
++		r.clock.arrive(3)
++		r.clock.arrive(4)
++
++		if len(r.notices) != 1 {
++			t.Fatalf("notices = %q; want exactly one", r.notices)
++		}
++		notice := r.notices[0]
++		// A log that names no failed runs falls back to the exit code.
++		for _, want := range []string{"Darn-Write gate:", "30m0s budget", "attempt 3;", "attempt 1, tier0 (exit 1)", logPath, "attempt 2, exit code 3", absentLog} {
++			if !strings.Contains(notice, want) {
++				t.Errorf("notice = %q; want it to hold %q", notice, want)
++			}
++		}
++		if second, first := strings.Index(notice, "attempt 2, exit code 3"), strings.Index(notice, "attempt 1, tier0 (exit 1)"); second > first {
++			t.Errorf("notice = %q; want the latest failure, attempt 2, before attempt 1", notice)
++		}
++	})
++
++	t.Run("a notice past the byte cap is cut on a rune boundary", func(t *testing.T) {
++		t.Parallel()
++		// The two pads shift the multibyte log path by a byte, so one of them puts the cut inside a rune.
++		for _, pad := range []string{"", "x"} {
++			r := newBudgetRig(time.Minute)
++			r.clock.arrive(1)
++			r.clock.failed(1, verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 2, Log: pad + strings.Repeat("é", verifyNoticeBytes)})
++			r.now = r.now.Add(2 * time.Minute)
++			r.clock.arrive(2)
++
++			if len(r.notices) != 1 {
++				t.Fatalf("pad %q: notices = %q; want exactly one", pad, r.notices)
++			}
++			notice := r.notices[0]
++			if !utf8.ValidString(notice) || !strings.HasSuffix(notice, "...") || len(notice) > verifyNoticeBytes+len("...") {
++				t.Errorf("pad %q: notice of %d bytes = %q; want valid UTF-8 cut to %d bytes and ending in an ellipsis", pad, len(notice), notice, verifyNoticeBytes)
++			}
++			if !strings.Contains(notice, "attempt 1, exit code 2") {
++				t.Errorf("pad %q: notice = %q; want the latest failure kept ahead of the cut", pad, notice)
++			}
++		}
++	})
++
++	t.Run("a run armed before the limit sends the notice when its timer fires", func(t *testing.T) {
++		t.Parallel()
++		r := newBudgetRig(30 * time.Minute)
++
++		r.clock.arrive(1)
++		r.now = r.now.Add(10 * time.Minute)
++		disarm := r.clock.arm()
++		if r.delay != 20*time.Minute || r.fire == nil {
++			t.Fatalf("armed delay = %v; want the 20m0s the budget has left", r.delay)
++		}
++		r.now = r.now.Add(20 * time.Minute)
++		r.fire()
++		disarm()
++
++		if len(r.notices) != 1 || !strings.Contains(r.notices[0], "no verify run has failed yet") {
++			t.Errorf("notices = %q; want one saying no verify run has failed yet", r.notices)
++		}
++		if !r.cancelled {
++			t.Error("the timer was not cancelled once the run returned")
++		}
++	})
++
++	t.Run("arrivals within the limit and a cancelled timer send nothing", func(t *testing.T) {
++		t.Parallel()
++		r := newBudgetRig(30 * time.Minute)
++
++		r.clock.arrive(1)
++		r.now = r.now.Add(29 * time.Minute)
++		r.clock.arrive(2)
++		r.clock.arm()()
++
++		if len(r.notices) != 0 || !r.cancelled {
++			t.Errorf("notices = %q, cancelled = %v; want none and the timer cancelled", r.notices, r.cancelled)
++		}
++	})
++
++	t.Run("a zero limit or a nil Notify turns the budget off", func(t *testing.T) {
++		t.Parallel()
++		for _, r := range []*budgetRig{newBudgetRig(0), newBudgetRig(time.Minute)} {
++			if r.clock.budget.Limit != 0 {
++				r.clock.budget.Notify = nil
++			}
++			r.clock.arrive(1)
++			r.now = r.now.Add(2 * time.Hour)
++			r.clock.arrive(2)
++			r.clock.arm()()
++			if r.fire != nil || len(r.notices) != 0 {
++				t.Errorf("limit %v: notices = %q, timer armed = %v; want neither", r.clock.budget.Limit, r.notices, r.fire != nil)
++			}
++		}
++	})
++}
+diff --git a/internal/loomshed/verifygate.go b/internal/loomshed/verifygate.go
+index cdb59b28..4632a40c 100644
+--- a/internal/loomshed/verifygate.go
++++ b/internal/loomshed/verifygate.go
+@@ -1,7 +1,8 @@
+ // verifygate.go implements NewVerifyGate, the must-pass gate that holds a handoff.
+ // It holds the handoff until the headroom lint, the comment lint and the told verify command pass on the committed tree.
+ // The told command is the site's own gate call.
+-// In the darn form it is the diff's tree-scoped command when the diff is wholly under the configured trees.
++// In the darn form it is the diff's tree-scoped command when the diff is wholly under the configured trees,
++// and the last run's failed tests run alone before it.
+ 
+ package loomshed
+ 
+@@ -10,6 +11,7 @@ import (
+ 	"context"
+ 	"fmt"
+ 	"os"
++	"runtime"
+ 	"strings"
+ 	"unicode/utf8"
+ 
+@@ -34,6 +36,10 @@ const verifyFailuresBytes = 8192
+ // verifyFailureTruncated ends a failure cut to verifyFailuresBytes.
+ const verifyFailureTruncated = "\n[truncated]"
+ 
++// failedAloneNote opens the findings of failed tests that failed again when run alone.
++const failedAloneNote = "The tests that failed the last verify run were run alone first, and they fail again, " +
++	"so the full verify command did not run; it runs once they pass.\n\n"
++
+ // NewVerifyGate returns a must-pass shuttleengine.Gate.
+ // At each arrival the gate reads the told verify command and lints the comments the work added.
+ // It then runs the command through verifytree.Verify over worktreeRoot.
+@@ -44,6 +50,9 @@ const verifyFailureTruncated = "\n[truncated]"
+ // A pass keeps its record entry, so a later arrival on the same tree skips.
+ // hold is the told pause hold of the worktree's scope.
+ // A non-nil hold holds the verify under a pause covering the worktree, and nil holds nothing.
++// budget is the told time budget, counted from the gate's first arrival; a zero Limit or a nil Notify turns it off.
++// Once it is spent, Notify gets one line naming the attempt and the failed runs so far, and the attempts go on.
++// The line goes out at an arrival or while a verify command runs, never after the gate stopped running.
+ //
+ // With treeScope nil the gate takes the round form.
+ // The comment lint runs before any test, from its own base.
+@@ -64,6 +73,11 @@ const verifyFailureTruncated = "\n[truncated]"
+ // Any other diff runs the told command.
+ // The form has no skip path.
+ // An empty told command is an error naming the source, never a pass, and so is a nil mergeBase.
++// A failed run whose log's failure report names failed tests alone keeps them for the next arrival.
++// That arrival first runs them alone through verifytree.Verify, the command gateslot.FailedTestsCall renders.
++// Tests that fail again fail the arrival with their findings alone and are kept for the arrival after.
++// A run of them that passes, or fails naming no failed test, leaves the arrival to the full command.
++// A timed-out run, a runner crash and a failure outside any test keep nothing, so the next arrival runs the full command.
+ //
+ // `StatusPassed` and `StatusSkipped` pass.
+ // `StatusDirty` fails with the dirty paths.
+@@ -78,12 +92,16 @@ const verifyFailureTruncated = "\n[truncated]"
+ // A command, merge base or tree scope read error is a returned error.
+ // So is a failure to read git, a lint run error or a cancelled verify.
+ // None is a defect the writer can fix.
+-func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase func() (string, error), treeScope func() (string, bool, error), hold *verifytree.PauseHold) shuttleengine.Gate {
++func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase func() (string, error), treeScope func() (string, bool, error), hold *verifytree.PauseHold, budget VerifyBudget) shuttleengine.Gate {
+ 	attempt := 0
+ 	darnForm := treeScope != nil
+ 	paths := verifytree.NewPaths(worktreeRoot, verifyDir)
++	clock := &budgetClock{budget: budget, site: siteLabel}
++	// failedBefore holds the failed tests of the darn form's latest failed run, nil when it named none.
++	var failedBefore []gateslot.FailedTest
+ 	return func() (shuttleengine.GateResult, error) {
+ 		attempt++
++		clock.arrive(attempt)
+ 		told, err := command()
+ 		if err != nil {
+ 			return shuttleengine.GateResult{}, fmt.Errorf("loomshed: verify gate: read the verify command: %w", err)
+@@ -149,7 +167,21 @@ func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase
+ 		}
+ 
+ 		site := verifytree.Site{Label: siteLabel, Attempt: attempt, BaseCommand: told, Hold: hold}
++		if darnForm && len(failedBefore) > 0 {
++			rerun := failedBefore
++			failedBefore = nil
++			result, stillFailed, decided, err := runFailedTestsAlone(paths, site, rerun, clock)
++			if err != nil {
++				return shuttleengine.GateResult{}, err
++			}
++			if decided {
++				failedBefore = stillFailed
++				return result, nil
++			}
++		}
++		disarm := clock.arm()
+ 		res, err := verifytree.Verify(context.Background(), paths, site, runCommand)
++		disarm()
+ 		if err != nil {
+ 			return shuttleengine.GateResult{}, fmt.Errorf("loomshed: verify gate: %w", err)
+ 		}
+@@ -157,10 +189,12 @@ func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase
+ 		case verifytree.StatusPassed, verifytree.StatusSkipped:
+ 			return shuttleengine.GateResult{Passed: true}, nil
+ 		case verifytree.StatusDirty:
+-			findings := fmt.Sprintf("The worktree has uncommitted changes, so the verify command did not run: %s. Commit or discard them.", strings.Join(res.Dirty, ", "))
+-			logger.Warn("loomshed: verify gate found a dirty tree", "gate", siteLabel, "attempt", attempt, "paths", strings.Join(res.Dirty, ", "))
+-			return shuttleengine.GateResult{Passed: false, Findings: findings}, nil
++			return dirtyResult(res, siteLabel, attempt), nil
+ 		default:
++			clock.failed(attempt, res)
++			if darnForm {
++				failedBefore, _ = namedFailures(res)
++			}
+ 			findings := verifyFailureFindings(res, res.Log)
+ 			logger.Warn("loomshed: verify gate failed", "gate", siteLabel, "attempt", attempt, "exitCode", res.ExitCode, "runnerCrash", res.RunnerCrash, "log", res.Log)
+ 			return shuttleengine.GateResult{Passed: false, Findings: findings, Terminal: res.RunnerCrash}, nil
+@@ -168,6 +202,59 @@ func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase
+ 	}
+ }
+ 
++// runFailedTestsAlone runs failed alone through verifytree.Verify before the full command.
++// It reports whether that run settles the arrival.
++// A dirty tree settles it with the dirty paths and keeps failed for the next arrival.
++// Tests that fail again settle it with their findings alone, and stillFailed holds them.
++// A run that passes, fails naming no failed test or cannot be rendered leaves the arrival to the full command.
++func runFailedTestsAlone(paths verifytree.Paths, site verifytree.Site, failed []gateslot.FailedTest, clock *budgetClock) (result shuttleengine.GateResult, stillFailed []gateslot.FailedTest, decided bool, err error) {
++	call, err := gateslot.FailedTestsCall(runtime.GOOS, failed)
++	if err != nil {
++		logger.Warn("loomshed: verify gate cannot render the run of the failed tests alone; it runs the full command", "gate", site.Label, "attempt", site.Attempt, "error", err)
++		return shuttleengine.GateResult{}, nil, false, nil
++	}
++	disarm := clock.arm()
++	res, err := verifytree.Verify(context.Background(), paths, site, call)
++	disarm()
++	if err != nil {
++		return shuttleengine.GateResult{}, nil, false, fmt.Errorf("loomshed: verify gate: run the failed tests alone: %w", err)
++	}
++	switch res.Status {
++	case verifytree.StatusDirty:
++		return dirtyResult(res, site.Label, site.Attempt), failed, true, nil
++	case verifytree.StatusFailed:
++		if again, ok := namedFailures(res); ok {
++			clock.failed(site.Attempt, res)
++			logger.Warn("loomshed: verify gate's failed tests fail again alone", "gate", site.Label, "attempt", site.Attempt, "tests", len(again), "log", res.Log)
++			return shuttleengine.GateResult{Passed: false, Findings: failedAloneNote + verifyFailureFindings(res, res.Log)}, again, true, nil
++		}
++		logger.Info("loomshed: verify gate's run of the failed tests alone named no failed test; it runs the full command", "gate", site.Label, "attempt", site.Attempt, "log", res.Log)
++	default:
++		logger.Info("loomshed: verify gate's failed tests pass alone; it runs the full command", "gate", site.Label, "attempt", site.Attempt)
++	}
++	return shuttleengine.GateResult{}, nil, false, nil
++}
++
++// namedFailures returns the failed tests res's log names, when its failure report names failed tests alone.
++// A timed-out run and a runner crash name none.
++func namedFailures(res verifytree.Result) ([]gateslot.FailedTest, bool) {
++	if res.TimedOut || res.RunnerCrash || res.Log == "" {
++		return nil, false
++	}
++	log, err := os.ReadFile(res.Log)
++	if err != nil {
++		return nil, false
++	}
++	return gateslot.FailedTests(string(log))
++}
++
++// dirtyResult is the failing verdict of a verify that found the worktree dirty and ran nothing.
++func dirtyResult(res verifytree.Result, siteLabel string, attempt int) shuttleengine.GateResult {
++	findings := fmt.Sprintf("The worktree has uncommitted changes, so the verify command did not run: %s. Commit or discard them.", strings.Join(res.Dirty, ", "))
++	logger.Warn("loomshed: verify gate found a dirty tree", "gate", siteLabel, "attempt", attempt, "paths", strings.Join(res.Dirty, ", "))
++	return shuttleengine.GateResult{Passed: false, Findings: findings}
++}
++
+ // isAncestorOfHead reports whether commit is an ancestor of HEAD in worktreeRoot;
+ // any git refusal reads as not an ancestor.
+ func isAncestorOfHead(worktreeRoot, commit string) bool {
+diff --git a/internal/loomshed/verifygate_budget_integration_test.go b/internal/loomshed/verifygate_budget_integration_test.go
+new file mode 100644
+index 00000000..28f2d6ae
+--- /dev/null
++++ b/internal/loomshed/verifygate_budget_integration_test.go
+@@ -0,0 +1,71 @@
++//go:build !windows
++
++// verifygate_budget_integration_test.go drives NewVerifyGate with a told time budget over a real scratch repo and shell.
++// It pins that the gate feeds its budget clock at each arrival, around each verify command and at each failure.
++
++package loomshed
++
++import (
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestVerifyGate_NoticesTheParentOnceItsBudgetIsSpent runs a failing verify command through three arrivals.
++// The first arrival arms the notice timer for the whole budget and cancels it once the command returns.
++// The arrival past the limit sends one notice naming the attempt and the failed run, and a later arrival sends none.
++func TestVerifyGate_NoticesTheParentOnceItsBudgetIsSpent(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	worktree, verifyDir := t.TempDir(), t.TempDir()
++	gitkit.Git(t, worktree, "init", "-b", "main")
++	gitkit.Git(t, worktree, "config", "user.email", "test@test.com")
++	gitkit.Git(t, worktree, "config", "user.name", "Test")
++	gitkit.CommitFile(t, worktree, "a.txt", "a\n", "init")
++
++	now := time.Date(2026, 11, 9, 12, 0, 0, 0, time.UTC)
++	var notices []string
++	var delays []time.Duration
++	cancelled := 0
++	budget := VerifyBudget{
++		Limit:  30 * time.Minute,
++		Notify: func(line string) error { notices = append(notices, line); return nil },
++		now:    func() time.Time { return now },
++		after: func(d time.Duration, _ func()) func() {
++			delays = append(delays, d)
++			return func() { cancelled++ }
++		},
++	}
++	gate := NewVerifyGate(worktree, verifyDir, "Darn-Write gate", func() (string, error) { return "exit 1", nil }, nil, nil, nil, budget)
++	requireFailure := func(t *testing.T) {
++		t.Helper()
++		if got, err := gate(); err != nil || got.Passed {
++			t.Fatalf("gate() = %+v, %v; want a failure", got, err)
++		}
++	}
++
++	requireFailure(t)
++	if len(delays) != 1 || delays[0] != 30*time.Minute || cancelled != 1 || len(notices) != 0 {
++		t.Fatalf("after the first arrival: timers armed for %v, %d cancelled, notices %q; want one timer for 30m0s, cancelled, no notice", delays, cancelled, notices)
++	}
++
++	now = now.Add(31 * time.Minute)
++	requireFailure(t)
++	if len(notices) != 1 {
++		t.Fatalf("after the arrival past the limit: notices = %q; want exactly one", notices)
++	}
++	for _, want := range []string{"Darn-Write gate:", "30m0s budget", "attempt 2;", "attempt 1, exit code 1"} {
++		if !strings.Contains(notices[0], want) {
++			t.Errorf("notice = %q; want it to hold %q", notices[0], want)
++		}
++	}
++
++	requireFailure(t)
++	if len(notices) != 1 {
++		t.Errorf("after a later arrival: notices = %q; want still the one", notices)
++	}
++}
+diff --git a/internal/loomshed/verifygate_crash_integration_test.go b/internal/loomshed/verifygate_crash_integration_test.go
+index 13a47931..28cb9cca 100644
+--- a/internal/loomshed/verifygate_crash_integration_test.go
++++ b/internal/loomshed/verifygate_crash_integration_test.go
+@@ -41,7 +41,7 @@ func TestVerifyGate_TerminalOnlyForARunnerCrash(t *testing.T) {
+ 			}
+ 			command := "cat '" + logSource + "'; exit " + tt.exit
+ 
+-			got, err := NewVerifyGate(worktree, verifyDir, "Webster-Burler gate", func() (string, error) { return command, nil }, nil, nil, nil)()
++			got, err := NewVerifyGate(worktree, verifyDir, "Webster-Burler gate", func() (string, error) { return command, nil }, nil, nil, nil, VerifyBudget{})()
+ 
+ 			if err != nil {
+ 				t.Fatalf("gate() error = %v; want nil", err)
+diff --git a/internal/loomshed/verifygate_integration_test.go b/internal/loomshed/verifygate_integration_test.go
+index 65d4b4ae..14b2cfd0 100644
+--- a/internal/loomshed/verifygate_integration_test.go
++++ b/internal/loomshed/verifygate_integration_test.go
+@@ -51,7 +51,7 @@ func TestVerifyGate_Scenario(t *testing.T) {
+ 	}
+ 	runGate := func(t *testing.T) (passed bool, findings string) {
+ 		t.Helper()
+-		got, err := NewVerifyGate(worktree, verifyDir, "Webster-Burler gate", func() (string, error) { return told, nil }, nil, nil, nil)()
++		got, err := NewVerifyGate(worktree, verifyDir, "Webster-Burler gate", func() (string, error) { return told, nil }, nil, nil, nil, VerifyBudget{})()
+ 		if err != nil {
+ 			t.Fatalf("gate() error = %v; want nil", err)
+ 		}
+@@ -182,7 +182,7 @@ func (f roundGateFixture) commitFiles(t *testing.T, files map[string]string) str
+ // runGate runs the round form of the gate once, told the fixture's command and the given merge base reader, which may be nil.
+ func (f roundGateFixture) runGate(t *testing.T, mergeBase func() (string, error)) (passed bool, findings string) {
+ 	t.Helper()
+-	got, err := NewVerifyGate(f.worktree, f.verifyDir, "Code-Burler-Fix gate", func() (string, error) { return f.command, nil }, mergeBase, nil, nil)()
++	got, err := NewVerifyGate(f.worktree, f.verifyDir, "Code-Burler-Fix gate", func() (string, error) { return f.command, nil }, mergeBase, nil, nil, VerifyBudget{})()
+ 	if err != nil {
+ 		t.Fatalf("gate() error = %v; want nil", err)
+ 	}
+@@ -191,7 +191,7 @@ func (f roundGateFixture) runGate(t *testing.T, mergeBase func() (string, error)
+ 
+ // diffGate runs the darn form of the gate once, told the given command source, merge base reader and tree scope reader.
+ func (f roundGateFixture) diffGate(command, mergeBase func() (string, error), treeScope func() (string, bool, error)) (shuttleengine.GateResult, error) {
+-	return NewVerifyGate(f.worktree, f.verifyDir, "Darn-Write gate", command, mergeBase, treeScope, nil)()
++	return NewVerifyGate(f.worktree, f.verifyDir, "Darn-Write gate", command, mergeBase, treeScope, nil, VerifyBudget{})()
+ }
+ 
+ // TestVerifyGate_RoundScenario drives NewVerifyGate over a repo holding a small Go module and its gate.yaml, through the told command, the lint and the refusals.
+@@ -364,7 +364,7 @@ func TestVerifyGate_RoundScenario(t *testing.T) {
+ 			{"TreeScopeError", toldCommand, baseOf(firstPass.Commit), func() (string, bool, error) { return "", false, errors.New("tree scope unreadable") }, "tree scope unreadable"},
+ 		}
+ 		for _, tt := range tests {
+-			got, err := NewVerifyGate(f.worktree, f.verifyDir, "Darn-Write gate", tt.command, tt.mergeBase, tt.treeScope, nil)()
++			got, err := NewVerifyGate(f.worktree, f.verifyDir, "Darn-Write gate", tt.command, tt.mergeBase, tt.treeScope, nil, VerifyBudget{})()
+ 			if err == nil || !strings.Contains(err.Error(), tt.want) {
+ 				t.Errorf("%s: gate() error = %v; want it to contain %q", tt.name, err, tt.want)
+ 			}
+diff --git a/internal/loomshed/verifygate_rerun_integration_test.go b/internal/loomshed/verifygate_rerun_integration_test.go
+new file mode 100644
+index 00000000..4f997020
+--- /dev/null
++++ b/internal/loomshed/verifygate_rerun_integration_test.go
+@@ -0,0 +1,217 @@
++//go:build !windows
++
++// verifygate_rerun_integration_test.go drives the darn form of NewVerifyGate past a failed run.
++// A stand-in `lym` on PATH records each call, over a real scratch repo and real shell processes.
++
++package loomshed
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestVerifyGate_DarnFormRunsTheFailedTestsAloneFirst pins the arrivals after a failed darn-form run.
++// After a run whose report names failed tests, the next arrival runs those tests alone first.
++// Tests that fail again end it with their findings, and the full command does not run.
++// Tests that pass alone hand it to the full command, and a run that names no failed test keeps nothing.
++// The steps share one gate closure and run in order.
++// It is not parallel: t.Setenv puts the stand-in `lym` first on PATH, which is process-global state.
++func TestVerifyGate_DarnFormRunsTheFailedTestsAloneFirst(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	worktree, verifyDir, bin := t.TempDir(), t.TempDir(), t.TempDir()
++	gitkit.Git(t, worktree, "init", "-b", "main")
++	gitkit.Git(t, worktree, "config", "user.email", "test@test.com")
++	gitkit.Git(t, worktree, "config", "user.name", "Test")
++	gitkit.CommitFile(t, worktree, "a.txt", "a\n", "init")
++	base := gitkit.Git(t, worktree, "rev-parse", "HEAD")
++
++	write := func(t *testing.T, path, content string) {
++		t.Helper()
++		if err := os.WriteFile(path, []byte(content), 0o755); err != nil {
++			t.Fatal(err)
++		}
++	}
++	lines := func(t *testing.T, path string) []string {
++		t.Helper()
++		data, err := os.ReadFile(path)
++		if os.IsNotExist(err) {
++			return nil
++		}
++		if err != nil {
++			t.Fatal(err)
++		}
++		return strings.Split(strings.TrimSpace(string(data)), "\n")
++	}
++
++	calls, aloneReport := filepath.Join(bin, "calls.log"), filepath.Join(bin, "alone-report.txt")
++	write(t, filepath.Join(bin, "lym"), "#!/bin/sh\necho \"$*\" >> '"+calls+"'\nif [ -f '"+aloneReport+"' ]; then cat '"+aloneReport+"'; exit 1; fi\n")
++	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
++
++	namesTestA := gateslot.FailureReportHeader + "\ntier1 (exit 1), log /runs/a.log:\n  example.com/m/a TestA/sub:\n    a_test.go:3: boom\n" +
++		gateslot.FailedRunsPrefix + "tier1 (exit 1); the exit code is tier1's\n"
++	fullRuns, fullReport := filepath.Join(bin, "full.log"), filepath.Join(bin, "full-report.txt")
++	fullExit := "1"
++	scoped := func() (string, bool, error) {
++		return "echo full >> '" + fullRuns + "'; cat '" + fullReport + "'; exit " + fullExit, true, nil
++	}
++	told := func() (string, error) { return "lym gate test --wait --gate darn-write --stop-on-fail", nil }
++	gate := NewVerifyGate(worktree, verifyDir, "Darn-Write gate", told, func() (string, error) { return base, nil }, scoped, nil, VerifyBudget{})
++	wantAlone := "gate test --wait --stop-on-fail --tier 1 example.com/m/a -- -run ^(TestA)$"
++
++	if !t.Run("a failed full run names its failed tests and runs nothing alone", func(t *testing.T) {
++		write(t, fullReport, namesTestA)
++		got, err := gate()
++		if err != nil || got.Passed || !strings.Contains(got.Findings, "TestA") {
++			t.Fatalf("gate() = %+v, %v; want a failure naming TestA", got, err)
++		}
++		if got := lines(t, calls); got != nil {
++			t.Errorf("lym calls = %q; want none on the first arrival", got)
++		}
++	}) {
++		return
++	}
++
++	if !t.Run("tests that fail again alone end the arrival with their findings and leave the full command unrun", func(t *testing.T) {
++		write(t, aloneReport, namesTestA)
++		got, err := gate()
++		if err != nil || got.Passed || !strings.HasPrefix(got.Findings, failedAloneNote) {
++			t.Fatalf("gate() = %+v, %v; want a failure opening with the note on the tests run alone", got, err)
++		}
++		if got := lines(t, calls); len(got) != 1 || got[0] != wantAlone {
++			t.Errorf("lym calls = %q; want the one call %q", got, wantAlone)
++		}
++		if runs := len(lines(t, fullRuns)); runs != 1 {
++			t.Errorf("the full command ran %d times; want once, on the first arrival", runs)
++		}
++	}) {
++		return
++	}
++
++	if !t.Run("tests that pass alone hand the arrival to the full command", func(t *testing.T) {
++		if err := os.Remove(aloneReport); err != nil {
++			t.Fatal(err)
++		}
++		fullExit = "0"
++		got, err := gate()
++		if err != nil || !got.Passed {
++			t.Fatalf("gate() = %+v, %v; want a pass", got, err)
++		}
++		if got := lines(t, calls); len(got) != 2 || got[1] != wantAlone {
++			t.Errorf("lym calls = %q; want a second call %q", got, wantAlone)
++		}
++		if runs := len(lines(t, fullRuns)); runs != 2 {
++			t.Errorf("the full command ran %d times; want twice", runs)
++		}
++	}) {
++		return
++	}
++
++	outsideAnyTest := gateslot.FailureReportHeader + "\ntier0 (exit 1), log /runs/a.log:\n  example.com/m/a, failed outside any test:\n    a.go:3: undefined: x\n"
++
++	if !t.Run("a failed run that names no failed test keeps nothing, so the next arrival runs the full command at once", func(t *testing.T) {
++		write(t, fullReport, outsideAnyTest)
++		fullExit = "2"
++		if got, err := gate(); err != nil || got.Passed {
++			t.Fatalf("gate() = %+v, %v; want a failure", got, err)
++		}
++		fullExit = "3"
++		if got, err := gate(); err != nil || got.Passed {
++			t.Fatalf("gate() = %+v, %v; want a failure", got, err)
++		}
++		if got := lines(t, calls); len(got) != 2 {
++			t.Errorf("lym calls = %q; want no further call", got)
++		}
++		if runs := len(lines(t, fullRuns)); runs != 4 {
++			t.Errorf("the full command ran %d times; want four", runs)
++		}
++	}) {
++		return
++	}
++
++	// keepTestA commits a new file, so no pass recorded on an earlier tree skips a run.
++	// It then fails the full command naming TestA.
++	// The next arrival then runs TestA alone first.
++	commits := 0
++	keepTestA := func(t *testing.T) {
++		t.Helper()
++		commits++
++		gitkit.CommitFile(t, worktree, fmt.Sprintf("kept-%d.txt", commits), "x\n", "a new tree")
++		write(t, fullReport, namesTestA)
++		fullExit = "1"
++		if got, err := gate(); err != nil || got.Passed {
++			t.Fatalf("gate() = %+v, %v; want a failure naming TestA", got, err)
++		}
++	}
++
++	for _, tt := range []struct{ name, aloneReport string }{
++		{"times out", gateslot.TierTimeoutLine("tier1", time.Minute) + "\n" + namesTestA},
++		{"crashes its test runner", gateslot.RunnerCrashLine("tier1 (exit 134, SIGABRT)") + "\n" + namesTestA},
++		{"fails naming no failed test", outsideAnyTest},
++	} {
++		if !t.Run("a rerun of the failed tests alone that "+tt.name+" hands the arrival to the full command and keeps nothing", func(t *testing.T) {
++			keepTestA(t)
++			callsBefore, fullsBefore := len(lines(t, calls)), len(lines(t, fullRuns))
++			write(t, aloneReport, tt.aloneReport)
++			t.Cleanup(func() { _ = os.Remove(aloneReport) })
++			write(t, fullReport, outsideAnyTest)
++			fullExit = "2"
++
++			if got, err := gate(); err != nil || got.Passed || strings.HasPrefix(got.Findings, failedAloneNote) {
++				t.Fatalf("gate() = %+v, %v; want a failure from the full command", got, err)
++			}
++			if got := len(lines(t, calls)); got != callsBefore+1 {
++				t.Errorf("lym calls = %d; want the one rerun on top of the %d before", got, callsBefore)
++			}
++			if got := len(lines(t, fullRuns)); got != fullsBefore+1 {
++				t.Errorf("the full command ran %d times; want once on top of the %d before", got, fullsBefore)
++			}
++
++			if got, err := gate(); err != nil || got.Passed {
++				t.Fatalf("gate() = %+v, %v; want a failure", got, err)
++			}
++			if got := len(lines(t, calls)); got != callsBefore+1 {
++				t.Errorf("lym calls = %d; want no rerun on the next arrival", got)
++			}
++			if got := len(lines(t, fullRuns)); got != fullsBefore+2 {
++				t.Errorf("the full command ran %d times; want the next arrival to run it at once", got)
++			}
++		}) {
++			return
++		}
++	}
++
++	t.Run("a rerun that finds the tree dirty ends the arrival with the dirty paths and keeps the tests for the next", func(t *testing.T) {
++		keepTestA(t)
++		callsBefore, fullsBefore := len(lines(t, calls)), len(lines(t, fullRuns))
++		dirty := filepath.Join(worktree, "dirty.txt")
++		write(t, dirty, "x\n")
++
++		got, err := gate()
++		if err != nil || got.Passed || !strings.Contains(got.Findings, "uncommitted changes") || !strings.Contains(got.Findings, "dirty.txt") {
++			t.Fatalf("gate() = %+v, %v; want a failure naming the uncommitted dirty.txt", got, err)
++		}
++		if gotCalls, gotFulls := len(lines(t, calls)), len(lines(t, fullRuns)); gotCalls != callsBefore || gotFulls != fullsBefore {
++			t.Errorf("lym calls %d and full runs %d; want %d and %d, since a dirty tree runs nothing", gotCalls, gotFulls, callsBefore, fullsBefore)
++		}
++
++		if err := os.Remove(dirty); err != nil {
++			t.Fatal(err)
++		}
++		fullExit = "0"
++		if got, err := gate(); err != nil || !got.Passed {
++			t.Fatalf("gate() = %+v, %v; want a pass", got, err)
++		}
++		if got := len(lines(t, calls)); got != callsBefore+1 {
++			t.Errorf("lym calls = %d; want the kept tests run alone once the tree is clean", got)
++		}
++	})
++}
+diff --git a/internal/loomshed/verifygate_test.go b/internal/loomshed/verifygate_test.go
+index 63c43ca3..cf4ae7f2 100644
+--- a/internal/loomshed/verifygate_test.go
++++ b/internal/loomshed/verifygate_test.go
+@@ -14,6 +14,20 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+ 
++// TestRunFailedTestsAlone_UnrenderableCallLeavesTheArrivalToTheFullCommand pins an arrival whose call cannot be rendered.
++// The call cannot be rendered, so nothing runs alone, and the arrival is left to the full command with no error.
++func TestRunFailedTestsAlone_UnrenderableCallLeavesTheArrivalToTheFullCommand(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	site := verifytree.Site{Label: "Darn-Write gate", Attempt: 2}
++	result, stillFailed, decided, err := runFailedTestsAlone(verifytree.Paths{}, site, nil, &budgetClock{})
++
++	if err != nil || decided || stillFailed != nil || result.Passed || result.Findings != "" {
++		t.Errorf("runFailedTestsAlone() = %+v, %v, %v, %v; want an undecided arrival with no findings and no error", result, stillFailed, decided, err)
++	}
++}
++
+ // TestVerifyFailureFindings pins how a failed verify result renders: the exit code, the could-not-start cause or the timeout sentence, then the full log path and either the failing tests the log names with the gate's closing line, or the log tail when it names none.
+ func TestVerifyFailureFindings(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/shedadapters/gateattempts.go b/internal/shedadapters/gateattempts.go
+index fe531612..136a6ab7 100644
+--- a/internal/shedadapters/gateattempts.go
++++ b/internal/shedadapters/gateattempts.go
+@@ -26,6 +26,7 @@ const gateFindingsReasonLimit = 400
+ // gateFailedReason is the one-line Stuck reason for a gate that did not pass.
+ // The gated producers share it so the wording never diverges.
+ // A terminal entry's own explanation (GateOutcome.Reason) replaces the generic text and writes no file.
++// A run that ended with re-prompts left says why, so a gate that failed its first check never reads as a spent budget.
+ // With a non-empty findingsPath it keeps gate.Findings there, overwriting an earlier file, and names that file;
+ // a failed write is logged and the reason carries the findings text, cut to one line, in place of the path.
+ // With an empty findingsPath the reason names gate.FindingsPath.
+@@ -34,7 +35,7 @@ func gateFailedReason(gate *shuttleengine.GateOutcome, findingsPath string) stri
+ 		return gate.Reason
+ 	}
+ 	if findingsPath == "" {
+-		return fmt.Sprintf("gate did not pass after %d attempts; findings: %s", gate.Attempts, gate.FindingsPath)
++		return fmt.Sprintf("%s; findings: %s", gateFailedLead(gate), gate.FindingsPath)
+ 	}
+ 	err := os.MkdirAll(filepath.Dir(findingsPath), 0o755)
+ 	if err == nil {
+@@ -48,7 +49,20 @@ func gateFailedReason(gate *shuttleengine.GateOutcome, findingsPath string) stri
+ 		}
+ 		return fmt.Sprintf("findings could not be kept at %s: %v; findings: %s", findingsPath, err, text)
+ 	}
+-	return fmt.Sprintf("gate did not pass after %d attempts; findings: %s", gate.Attempts, findingsPath)
++	return fmt.Sprintf("%s; findings: %s", gateFailedLead(gate), findingsPath)
++}
++
++// gateFailedLead opens the reason of a gate that did not pass with no terminal entry's explanation.
++// It counts the re-prompts sent, and when the run ended with re-prompts left it says why.
++func gateFailedLead(gate *shuttleengine.GateOutcome) string {
++	switch {
++	case gate.EndedEarly == "":
++		return fmt.Sprintf("gate did not pass after %d attempts", gate.Attempts)
++	case gate.Attempts == 0:
++		return fmt.Sprintf("gate failed its first check and the session was never re-prompted, since %s", gate.EndedEarly)
++	default:
++		return fmt.Sprintf("gate did not pass after %d attempts and the run ended with re-prompts left, since %s", gate.Attempts, gate.EndedEarly)
++	}
+ }
+ 
+ // clearGateFindings removes the gate findings file at path, so a call whose gate passed leaves none behind.
+diff --git a/internal/shedadapters/gateattempts_test.go b/internal/shedadapters/gateattempts_test.go
+index bbd1bea7..9a1fef35 100644
+--- a/internal/shedadapters/gateattempts_test.go
++++ b/internal/shedadapters/gateattempts_test.go
+@@ -41,6 +41,18 @@ func TestGateFailedReason_NamesAttemptsAndFindingsPath(t *testing.T) {
+ 			gate:       &shuttleengine.GateOutcome{Attempts: 3, FindingsPath: "/run/gate-findings.md", Findings: "ignored"},
+ 			wantReason: "gate did not pass after 3 attempts; findings: /run/gate-findings.md",
+ 		},
++		{
++			name:       "a gate that ended before any re-prompt says why instead of counting zero attempts",
++			gate:       &shuttleengine.GateOutcome{FindingsPath: "/run/gate-findings.md", EndedEarly: "its re-prompt could not be sent: pane gone"},
++			wantReason: "gate failed its first check and the session was never re-prompted, since its re-prompt could not be sent: pane gone; findings: /run/gate-findings.md",
++		},
++		{
++			name:       "a gate that ended with re-prompts left counts them and says why",
++			gate:       &shuttleengine.GateOutcome{Attempts: 1, Findings: "kept", EndedEarly: "the session ended"},
++			path:       func(dir string) string { return filepath.Join(dir, "row.md") },
++			wantReason: "gate did not pass after 1 attempts and the run ended with re-prompts left, since the session ended; findings: {path}",
++			wantFile:   "kept",
++		},
+ 		{
+ 			name:       "told path receives the findings and is named",
+ 			gate:       &shuttleengine.GateOutcome{Attempts: 3, FindingsPath: "/run/gate-findings.md", Findings: "first findings"},
+diff --git a/internal/shedrecipe/entries_gate.go b/internal/shedrecipe/entries_gate.go
+index 176cc346..c170f362 100644
+--- a/internal/shedrecipe/entries_gate.go
++++ b/internal/shedrecipe/entries_gate.go
+@@ -167,7 +167,7 @@ func planContextOf(env Env) loomshed.PlanContext {
+ // resolvePlainGateClosure resolves the validator names of the gate vocabulary.
+ // The "parts" gate requires the absolute env.AnchorPath and env.DecisionRecordPath and a non-nil env.Setting.
+ // It reads its cap from the tapestry.parts_max setting.
+-// The "verify" gate is told env.VerifyHold, which holds its verify under a pause.
++// The "verify" gate is told env.VerifyHold, which holds its verify under a pause, and env.VerifyBudget.
+ func resolvePlainGateClosure(entry, row, gateKey string, index int, name string, env Env) (shuttleengine.Gate, error) {
+ 	switch name {
+ 	case "clean":
+@@ -273,7 +273,7 @@ func resolvePlainGateClosure(entry, row, gateKey string, index int, name string,
+ 		if env.VerifyTreeScope != nil {
+ 			treeScope = func() (string, bool, error) { return env.VerifyTreeScope(gateKey) }
+ 		}
+-		return loomshed.NewVerifyGate(env.WorktreeRoot, env.VerifyDir, row+" gate", command, env.VerifyMergeBase, treeScope, env.VerifyHold), nil
++		return loomshed.NewVerifyGate(env.WorktreeRoot, env.VerifyDir, row+" gate", command, env.VerifyMergeBase, treeScope, env.VerifyHold, env.VerifyBudget), nil
+ 	case "drift":
+ 		d := env.Drift
+ 		err := requireDriftSeams(entry, driftSeams{
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index 4ec34ad6..c50b91c5 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -107,6 +107,9 @@ type Env struct {
+ 	// VerifyHold is the told pause hold of the worktree's verify sites, read by the gate resolver's "verify" gate.
+ 	// Nil holds nothing.
+ 	VerifyHold *verifytree.PauseHold
++	// VerifyBudget is the told time budget of the "verify" gate; its zero value turns the budget off.
++	// A darn run tells darn.yaml's verify_budget_min and a notice to the run's parent.
++	VerifyBudget loomshed.VerifyBudget
+ 	// GateFixer is the told wrap that hands a row's gate failure to a cold fixer; nil leaves every gate as written.
+ 	// The Darn-Write, Plan-Write and Discussion-Write entries read it for a gate with a "fixer" key.
+ 	// It receives the row's complete gate spec and returns the spec the row runs.
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 27bb2055..7877889d 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -710,6 +710,9 @@
+ // One held by a pane showing no input box maxNoInputBoxReprompts times in a row ends the loop.
+ // It ends with the attempts spent so far.
+ // So a picker shuttle cannot dismiss ends the wait instead of holding the run until its deadline.
++// A run that finalizes while its failing entry still has re-prompts left says why on GateOutcome.EndedEarly:
++// a re-prompt that could not be sent, a pane with no input box past the bound, an entry's wait that ran out,
++// or a session that ended or a deadline that passed before a re-prompt.
+ // A pending answer holds the run at a turn boundary without re-prompting or counting a failure:
+ // the wait loop sends the entry's carried text once and keeps polling;
+ // it re-evaluates with no new arrival while the writer is idle at most once per gateRecheckEvery.
+diff --git a/internal/shuttleengine/gate.go b/internal/shuttleengine/gate.go
+index 87f9ba3c..0e92ef53 100644
+--- a/internal/shuttleengine/gate.go
++++ b/internal/shuttleengine/gate.go
+@@ -174,6 +174,11 @@ type GateOutcome struct {
+ 	// It rides the outcome because finalize deletes the run directory and the findings file with it,
+ 	// so a terminal entry's explanation reaches the producer only here.
+ 	Reason string
++	// EndedEarly says why the run ended while its failing entry still had re-prompts left, and is empty otherwise:
++	// on a pass, on a terminal failure and on a failure whose entry spent its budget.
++	// The cause is a re-prompt that could not be sent, or a pane that showed no input box past the bound.
++	// It is also an entry whose wait ran out, or a session that ended or a deadline that passed before the re-prompt.
++	EndedEarly string
+ }
+ 
+ func (run *Run) endReworkSpans(at time.Time) {
+diff --git a/internal/shuttleengine/gate_test.go b/internal/shuttleengine/gate_test.go
+index 906d68ca..78916b9e 100644
+--- a/internal/shuttleengine/gate_test.go
++++ b/internal/shuttleengine/gate_test.go
+@@ -436,9 +436,18 @@ func TestGate_SendFailsMidLoop_EndsLoopWithAttemptsSoFar(t *testing.T) {
+ 		sendTextErr   error
+ 		reprompt      func(findingsPath string) string
+ 		wantSendCalls int
++		// wantEndedEarly is a text the gate's EndedEarly holds.
++		wantEndedEarly string
+ 	}{
+-		{name: "the pane swallows the input", sendTextErr: errors.New("pane swallowed input"), wantSendCalls: 1},
+-		{name: "an entry's renderer returns two lines", reprompt: func(findingsPath string) string { return "line one\nline two " + findingsPath }},
++		{
++			name: "the pane swallows the input", sendTextErr: errors.New("pane swallowed input"), wantSendCalls: 1,
++			wantEndedEarly: "pane swallowed input",
++		},
++		{
++			name:           "an entry's renderer returns two lines",
++			reprompt:       func(findingsPath string) string { return "line one\nline two " + findingsPath },
++			wantEndedEarly: "its re-prompt could not be sent",
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -481,6 +490,9 @@ func TestGate_SendFailsMidLoop_EndsLoopWithAttemptsSoFar(t *testing.T) {
+ 			if result.Gate != nil && result.Gate.Attempts != 0 {
+ 				t.Errorf("Attempts = %d, want 0 (the failed send charges no attempt)", result.Gate.Attempts)
+ 			}
++			if result.Gate != nil && !strings.Contains(result.Gate.EndedEarly, tt.wantEndedEarly) {
++				t.Errorf("EndedEarly = %q, want it to hold %q", result.Gate.EndedEarly, tt.wantEndedEarly)
++			}
+ 			if len(reed.SendTextCalls) != tt.wantSendCalls {
+ 				t.Errorf("SendText calls = %d, want %d (no retry after a failed send)", len(reed.SendTextCalls), tt.wantSendCalls)
+ 			}
+@@ -575,6 +587,9 @@ func TestGate_DeadlineExpiresBetweenAttempts(t *testing.T) {
+ 			if result.Gate.Attempts != 1 {
+ 				t.Errorf("Attempts = %d, want 1 (the one re-prompt sent before the run ended)", result.Gate.Attempts)
+ 			}
++			if want := "the session ended, or the run reached its deadline"; !strings.Contains(result.Gate.EndedEarly, want) {
++				t.Errorf("EndedEarly = %q, want it to hold %q", result.Gate.EndedEarly, want)
++			}
+ 			if gateCalls != 2 {
+ 				t.Errorf("gate closure invoked %d times, want 2 (the failed attempt, then once more on the run's own Done)", gateCalls)
+ 			}
+@@ -922,6 +937,8 @@ func TestGate_HoldsItsBoundaryWhileCovered(t *testing.T) {
+ 		wantAttempts int
+ 		// wantCachedSlug is the slug the run caches from reed's status, empty for none.
+ 		wantCachedSlug string
++		// wantEndedEarly is a text the gate's EndedEarly holds; empty leaves it unchecked.
++		wantEndedEarly string
+ 	}{
+ 		{
+ 			name: "a failing gate's arrival under a hub entry waits for the resume and re-prompts once", events: "STOP:turn1\n",
+@@ -981,7 +998,7 @@ func TestGate_HoldsItsBoundaryWhileCovered(t *testing.T) {
+ 				entry.Expired = func() (bool, error) { return true, nil }
+ 				return entry
+ 			},
+-			wantEvalsAtResume: -1, wantSendsAtResume: -1, wantAttempts: 0,
++			wantEvalsAtResume: -1, wantSendsAtResume: -1, wantAttempts: 0, wantEndedEarly: "entry's wait ran out",
+ 		},
+ 		{
+ 			name: "a gated arrival on the first uncovered tick evaluates the boundary once, not again for the arrival held while covered", events: "STOP:turn1\n",
+@@ -1074,6 +1091,9 @@ func TestGate_HoldsItsBoundaryWhileCovered(t *testing.T) {
+ 			if tt.wantAttempts >= 0 && (result.Gate == nil || result.Gate.Attempts != tt.wantAttempts) {
+ 				t.Errorf("Gate = %+v, want %d attempts spent", result.Gate, tt.wantAttempts)
+ 			}
++			if tt.wantEndedEarly != "" && (result.Gate == nil || !strings.Contains(result.Gate.EndedEarly, tt.wantEndedEarly)) {
++				t.Errorf("Gate = %+v, want EndedEarly to hold %q", result.Gate, tt.wantEndedEarly)
++			}
+ 			if rig.run.sessionSlugKnown != (tt.wantCachedSlug != "") || rig.run.sessionSlug != tt.wantCachedSlug {
+ 				t.Errorf("cached slug = %q (known %v), want %q", rig.run.sessionSlug, rig.run.sessionSlugKnown, tt.wantCachedSlug)
+ 			}
+@@ -1307,6 +1327,8 @@ func TestGate_RepromptOverPicker(t *testing.T) {
+ 		// wantEndAtLeast bounds the clock at the end from below, from the start; zero leaves it unchecked.
+ 		wantEndAtLeast time.Duration
+ 		wantBoundWarn  bool
++		// wantEndedEarly is a text the gate's EndedEarly holds; empty leaves it unchecked.
++		wantEndedEarly string
+ 	}{
+ 		{
+ 			name: "a known picker is dismissed and the re-prompt delivered", picker: "COMPACT-PICKER",
+@@ -1314,15 +1336,15 @@ func TestGate_RepromptOverPicker(t *testing.T) {
+ 		},
+ 		{
+ 			name: "a known picker its key does not close ends the loop after the bound", picker: "COMPACT-PICKER", sticky: true,
+-			wantEscapes: maxNoInputBoxReprompts, wantEndBefore: 30 * time.Second, wantBoundWarn: true,
++			wantEscapes: maxNoInputBoxReprompts, wantEndBefore: 30 * time.Second, wantBoundWarn: true, wantEndedEarly: "no input box",
+ 		},
+ 		{
+ 			name: "a known picker whose key cannot be sent ends the loop after the bound", picker: "COMPACT-PICKER", sticky: true, sendKeyErr: true,
+-			wantEscapes: maxNoInputBoxReprompts, wantEndBefore: 30 * time.Second, wantBoundWarn: true,
++			wantEscapes: maxNoInputBoxReprompts, wantEndBefore: 30 * time.Second, wantBoundWarn: true, wantEndedEarly: "no input box",
+ 		},
+ 		{
+ 			name: "an unknown picker ends the loop after the bound with no key", picker: "some menu", sticky: true,
+-			wantEndBefore: 30 * time.Second, wantBoundWarn: true,
++			wantEndBefore: 30 * time.Second, wantBoundWarn: true, wantEndedEarly: "no input box",
+ 		},
+ 		{
+ 			name: "an operator active over a known picker gets no key and holds until the deadline", picker: "COMPACT-PICKER", active: true,
+@@ -1351,6 +1373,9 @@ func TestGate_RepromptOverPicker(t *testing.T) {
+ 			if result.Gate == nil || result.Gate.Attempts != tt.wantAttempts {
+ 				t.Errorf("Gate = %+v, want %d attempts spent", result.Gate, tt.wantAttempts)
+ 			}
++			if tt.wantEndedEarly != "" && (result.Gate == nil || !strings.Contains(result.Gate.EndedEarly, tt.wantEndedEarly)) {
++				t.Errorf("Gate = %+v, want EndedEarly to hold %q", result.Gate, tt.wantEndedEarly)
++			}
+ 			escapes := 0
+ 			for _, call := range rig.reed.SendKeyCalls {
+ 				if call.Key == "Escape" {
+@@ -1402,3 +1427,45 @@ func TestAwaitIdleSession_FailedDismissalKeyHoldsAsNoInputBox(t *testing.T) {
+ 		t.Errorf("keys = %+v, want one Escape", keys)
+ 	}
+ }
++
++// TestGate_EndedEarlyStaysEmpty pins that GateOutcome.EndedEarly names no cause when the run did not end early.
++// A pass, a terminal failure and a failure whose entry spent its attempts all leave it empty.
++func TestGate_EndedEarlyStaysEmpty(t *testing.T) {
++	tiergate.Require(t, 0)
++	tests := []struct {
++		name         string
++		result       GateResult
++		attempts     int
++		wantAttempts int
++	}{
++		{name: "a passing gate", result: GateResult{Passed: true}, attempts: 3},
++		{name: "a terminal failure", result: GateResult{Findings: "bad", Terminal: true}, attempts: 3},
++		{name: "a failure whose entry spent its attempts", result: GateResult{Findings: "bad"}, attempts: 1, wantAttempts: 1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			entry := GateEntry{Attempts: tt.attempts, Gate: func() (GateResult, error) { return tt.result, nil }}
++			rig := newGateRig(t, Config{}, "STOP:turn1\n", withGateEntry(entry))
++			appended := false
++			rig.clock.onSleep = func(time.Time) {
++				if !appended && len(rig.reed.SendTextCalls) > 0 {
++					appended = true
++					appendEventsLine(t, rig.eventsPath, "STOP:turn2")
++				}
++			}
++
++			result, err := rig.run.Wait()
++			if err != nil {
++				t.Fatalf("Wait() error: %v", err)
++			}
++			if result.Gate == nil || result.Gate.Attempts != tt.wantAttempts {
++				t.Fatalf("Gate = %+v, want %d attempts spent", result.Gate, tt.wantAttempts)
++			}
++			if result.Gate.EndedEarly != "" {
++				t.Errorf("EndedEarly = %q, want it empty", result.Gate.EndedEarly)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index ea77de34..2dc90e92 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -456,6 +456,9 @@ type Run struct {
+ 	unsentReprompt bool
+ 	// noBoxReprompts counts consecutive re-prompts held by a pane with no input box; any other held send clears it.
+ 	noBoxReprompts int
++	// gateEndCause is why the loop finalized while the failing entry still had re-prompts left, empty when it did not.
++	// A finalize that no boundary step gave a cause reads as the session's end or the run's deadline.
++	gateEndCause string
+ 	// lastGateEvalAt is the run clock's time of the last boundary gate evaluation, zero before the first.
+ 	lastGateEvalAt time.Time
+ 
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index b8044658..9bdc7641 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -405,6 +405,7 @@ func (run *Run) Wait() (Result, error) {
+ 				run.lastGateEvalAt = run.clock.Now()
+ 				if name, expired := run.probeExpiry(); expired {
+ 					logger.Info("shuttle: gate: entry wait expired off the boundary, finalizing", "strandGUID", run.state.StrandGUID, "sessionID", run.state.SessionID, "gate", name)
++					run.gateEndCause = fmt.Sprintf("the %s entry's wait ran out", name)
+ 					run.gateVerdict = nil
+ 					return run.finalize(OutcomeDone)
+ 				}
+@@ -607,6 +608,7 @@ func (run *Run) handleGatedBoundary() (Result, bool, error) {
+ 			}
+ 			if run.noBoxReprompts >= maxNoInputBoxReprompts {
+ 				logger.Warn("shuttle: gate: re-prompt held by a pane with no input box past the bound, ending the loop with the attempts spent so far", "strandGUID", run.state.StrandGUID, "sessionID", run.state.SessionID, "gate", run.gate[failed].Name, "holds", run.noBoxReprompts, "error", serr)
++				run.gateEndCause = fmt.Sprintf("its pane showed no input box through %d re-prompt sends", run.noBoxReprompts)
+ 				result, ferr := run.finalize(OutcomeDone)
+ 				return result, true, ferr
+ 			}
+@@ -625,6 +627,7 @@ func (run *Run) handleGatedBoundary() (Result, bool, error) {
+ 			return Result{}, false, nil
+ 		}
+ 		logger.Warn("shuttle: gate: re-prompt send failed, ending the loop with the attempts spent so far", "strandGUID", run.state.StrandGUID, "sessionID", run.state.SessionID, "error", serr)
++		run.gateEndCause = fmt.Sprintf("its re-prompt could not be sent: %v", serr)
+ 		result, ferr := run.finalize(OutcomeDone)
+ 		return result, true, ferr
+ 	}
+@@ -1965,6 +1968,7 @@ func (run *Run) finalize(outcome Outcome) (Result, error) {
+ 		if gateOutcome != nil {
+ 			run.closeGateSpans(result.EndedAt)
+ 			gateOutcome = run.withGateSpans(gateOutcome)
++			gateOutcome.EndedEarly = run.gateEndedEarly(gateOutcome)
+ 		}
+ 		result.Gate = gateOutcome
+ 	}
+@@ -2047,6 +2051,20 @@ func (run *Run) finalize(outcome Outcome) (Result, error) {
+ // diedCaptureFileName names the run-directory file that holds an ended run's last pane capture.
+ const diedCaptureFileName = "died-capture.txt"
+ 
++// gateEndedEarly returns why the run ends while outcome's failing entry still has re-prompts left.
++// It returns "" on a pass, a terminal failure and a failure whose entry spent its budget.
++// A finalize that no boundary step gave a cause ends on the session's end or the run's deadline.
++func (run *Run) gateEndedEarly(outcome *GateOutcome) string {
++	failed := run.gateFailedAt
++	if outcome.Passed || failed < 0 || run.gateTerminal || run.gateFails[failed] >= run.gate[failed].Attempts {
++		return ""
++	}
++	if run.gateEndCause != "" {
++		return run.gateEndCause
++	}
++	return "the session ended, or the run reached its deadline, before the writer was re-prompted"
++}
++
+ // finalizeAndRemoveDiedWindow finalizes the run with outcome, then ends the window of a died run's own-window strand.
+ func (run *Run) finalizeAndRemoveDiedWindow(outcome Outcome) (Result, error) {
+ 	result, err := run.finalize(outcome)
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 6947cf4c..a3ba4057 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -57,6 +57,7 @@ var nilLegal = map[string]bool{
+ 	"VerifyMergeBase":                  true,
+ 	"ReviewBase":                       true,
+ 	"VerifyTreeScope":                  true,
++	"VerifyBudget.Notify":              true,
+ 	"GateFixer":                        true,
+ 	"WebsterRecord":                    true,
+ 	"PreflightBatcher":                 true,
+diff --git a/internal/testkit/envkit/envkit_test.go b/internal/testkit/envkit/envkit_test.go
+index efabf6ce..54c035e2 100644
+--- a/internal/testkit/envkit/envkit_test.go
++++ b/internal/testkit/envkit/envkit_test.go
+@@ -43,6 +43,7 @@ import (
+ //lym:seam internal/loomshed#RecordWriteDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
++//lym:seam internal/loomshed#VerifyBudget
+ //lym:seam internal/pawlengine#Deps
+ //lym:seam internal/pawlengine#Paths
+ //lym:seam internal/shedadapters#CommandDeps
+@@ -117,6 +118,7 @@ func TestFullEnv_FillsEverySeam(t *testing.T) {
+ //lym:seam internal/loomshed#RecordWriteDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
++//lym:seam internal/loomshed#VerifyBudget
+ //lym:seam internal/pawlengine#Deps
+ //lym:seam internal/pawlengine#Paths
+ //lym:seam internal/shedadapters#CommandDeps
+@@ -164,6 +166,7 @@ func TestNilSeams_ReportsExactPaths(t *testing.T) {
+ //lym:seam internal/loomshed#RecordWriteDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
++//lym:seam internal/loomshed#VerifyBudget
+ //lym:seam internal/pawlengine#Deps
+ //lym:seam internal/pawlengine#Paths
+ //lym:seam internal/shedadapters#CommandDeps
+@@ -184,6 +187,7 @@ func TestNilSeams_SkipsNilLegalPaths(t *testing.T) {
+ }
+ 
+ //lym:seam internal/loomshed#SamplerDeps
++//lym:seam internal/loomshed#VerifyBudget
+ //lym:seam internal/shedrecipe#Env
+ //lym:seam internal/shedrecipe#RaddleWriteEnv
+ func TestFullEnv_PathFieldsAbsoluteUnderOneRoot(t *testing.T) {
+diff --git a/internal/webstercli/verify_parity_integration_test.go b/internal/webstercli/verify_parity_integration_test.go
+index f8d20168..8db9de30 100644
+--- a/internal/webstercli/verify_parity_integration_test.go
++++ b/internal/webstercli/verify_parity_integration_test.go
+@@ -95,7 +95,7 @@ func TestGateParity_VerifyGate(t *testing.T) {
+ 			if got, err := finalCall(); err != nil || got != "lym gate test --wait --gate webster" {
+ 				t.Fatalf("webster verify call = (%q, %v); want (%q, nil)", got, err, "lym gate test --wait --gate webster")
+ 			}
+-			burler := gateVerdict(loomshed.NewVerifyGate(geom.WorktreeRoot, geom.VerifyDir, "Webster-Burler gate", finalCall, nil, nil, nil)())
++			burler := gateVerdict(loomshed.NewVerifyGate(geom.WorktreeRoot, geom.VerifyDir, "Webster-Burler gate", finalCall, nil, nil, nil, loomshed.VerifyBudget{})())
+ 
+ 			websterFx := prepare()
+ 			wgeom := websterFx.CLI.geom
+diff --git a/pattern/PATTERN-gate-slot.md b/pattern/PATTERN-gate-slot.md
+index 09e671fe..b24b456f 100644
+--- a/pattern/PATTERN-gate-slot.md
++++ b/pattern/PATTERN-gate-slot.md
+@@ -101,6 +101,9 @@ the `landing` gate's at Parent-Align, Finalize, Code-Burler-Fix and Darn-Write.
+   Darn-Write, and Code-Burler-Fix in a darn run, lint from the merge base on every attempt.
+   For a diff wholly under `darn.yaml`'s `tree_scope` they run their own key's call over the touched trees' targets;
+   otherwise they run their own key's call alone.
++  Darn-Write's call carries `--stop-on-fail`, so it ends at its first failed tier.
++  After a run whose failure report names failed tests alone, the next arrival first runs those tests alone through `Verify`.
++  `gateslot.FailedTestsCall` renders that call from the report, the one call a site spells with tiers and targets.
+ - PR-Review runs its own `pr-review` key's call through `Verify` over each clean head its agent commits,
+   and it shares no pass with another site.
+ - Parent-Align and Finalize run the `landing` call through `Verify` with `BaseCommand` set to the base command.
