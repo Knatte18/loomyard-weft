@@ -1,6 +1,6 @@
 # A verify gate scopes to nearly the whole suite; scope it by the coverage map
 
-`gate-scope-by-coverage-map` · Task · sketch, gate, testkit, darn · running · Raddle-File
+`gate-scope-by-coverage-map` · Task · sketch, gate, testkit, darn · done
 
 Decision record: [Sketch](decision-gate-scope-by-coverage-map.md)
 
