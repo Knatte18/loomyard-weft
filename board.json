@@ -502,30 +502,6 @@
       ]
     },
     {
-      "id": 1282,
-      "handle": "T11",
-      "slug": "remove-launchers-dir",
-      "title": "Remove the hub's _launchers directory: nothing in lym runs its scripts",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "cleanup"
-      ],
-      "issues": [
-        95
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #95](https://github.com/Knatte18/loomyard/issues/95).\n\nSeen (orch, 2026-11-10): internal/fabricengine writes \u003chub\u003e/_launchers/\u003canchor\u003e/\u003cslug\u003e/{ide.sh,run.sh,fabric-checkout.sh} for each pair, plus \u003chub\u003e/_launchers/ide-menu.sh, and removes them with the pair (addanchor.go, reconcile.go, anchorchange.go, destroy.go). A read of the non-test code finds no caller that runs, reads or documents those scripts; only the writer and the cleanup of them use the directory. The operator says terminals open through reed and the directory is no longer used. Leftovers of pairs that no longer exist stay behind, for example the pairs cold-gate-fixer and fabricengine-tier1-timeout-load of 2026-11-02. Idea: take the launcher scripts, ide-menu, the portal launcher test and the reserved _launchers name out of fabricengine in one rename-free removal, and make lym cleanup remove an existing _launchers directory once. Check first whether any desktop shortcut or VS Code task of an installed hub still points at one of the scripts.",
-      "status": "done",
-      "created": "2026-11-11T06:22:43Z",
-      "revised": "2026-11-11T07:34:45Z",
-      "profile": "light"
-    },
-    {
       "id": 1286,
       "handle": "F4",
       "slug": "per-machine-branch-prefix",
@@ -867,9 +843,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "remove-launchers-dir"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Fix the three adopt faults below in one run; each note's Idea is the starting point.\n\n## From note adopt-held-by-pause\n\n## Seen (2026-11-11, Neve)\n\nA hub-wide `lym tender pause` set before the operator moved to another machine was still live when they came back.\n`lym adopt root` then hung: its worker's first network call logged \"held by a hub-wide pause\" and waited with no word to the operator, whose terminal showed nothing.\nLifting the hub entry alone (`lym tender resume hub`) let it go on; the deferred records push that lift spawned then held the weft push lock,\nand the adopt's origin reconcile stopped on `main-weft (busy)` after it had already set aside two pairs.\n\n## Idea\n\nAn adopt is the operator's own takeover and should pass a pause: its network calls are exempt, or the adopt call refuses at once naming the pause and `lym tender resume hub`.\nThe reconcile should wait for a short-lived weft push lock instead of stopping on it.\n\n## From note drop-local-untracked-weft\n\n## Seen (2026-11-11, Neve)\n\n`lym adopt root --drop-local` archived the local tip of `push-notice-anchor-dir-weft` as `archive/push-notice-anchor-dir/5e8b95669e68`,\nthen failed to move the branch to origin's tip: `git reset --keep` refused because the untracked `_lym/reviews/code/generation-record.json` would be overwritten.\nThe file is one lym writes in the weft, so the operator has no clean way forward, and the adopt ended partial, holding back every other run under root.\n\n## Idea\n\nOnce the tip is archived, drop-local moves the weft with a reset that also clears untracked lym files the target commit tracks, since the archive tag keeps the old state.\n\n## From note adopt-stale-record-stops\n\n## Seen (2026-11-11, Neve)\n\nAfter a partial `lym adopt root --drop-local`, every later `lym adopt root` printed the same reconcile stops: pairs already removed with `lym fabric remove` and a run record cleared by `lym cleanup --apply` still showed as `gone` and `needs_replay`, and root stayed held back.\nThe call followed the unfinished adopt record instead of judging afresh.\n`lym adopt --discard`, then `lym adopt root`, went through at once.\n\n## Idea\n\nA new `lym adopt \u003csubject\u003e` call whose stops come from a finished, failed worker judges the hub again instead of replaying the old record,\nor names `lym adopt --discard` as the way forward when the stops no longer hold.\n\n",

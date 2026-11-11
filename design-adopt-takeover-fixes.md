@@ -2,8 +2,6 @@
 
 `adopt-takeover-fixes` · Task · bug, fabric, tender · running · Darn-Write
 
-Depends on: [`remove-launchers-dir`](design-remove-launchers-dir.md)
-
 Fix the three adopt faults below in one run; each note's Idea is the starting point.
 
 ## From note adopt-held-by-pause
