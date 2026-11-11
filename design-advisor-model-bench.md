@@ -7,6 +7,14 @@
 The bench that follows `advisor-model-trial`, which tunes the darn writer's advisor prompt.
 It is filed as a task only when the operator approves that tuned prompt.
 
+## State after the trial (board tidy, 2026-11-11)
+
+`advisor-model-trial` landed as a report only (`3671f3d4`, `docs/research/loom/advisor-model-trial-2026-11-11/report.md`).
+It ran no iteration and made no tuned prompt, so there is no prompt to approve and this bench is not ready to run.
+The blocker: no route sets Claude Code's advisor (`advisorModel` setting, `--advisor` flag) for one shuttle run.
+The operator decides the way forward: a per-run advisor option on `lym shuttle run`, or another route.
+The bench waits on that and on a tuned prompt.
+
 ## What it runs
 
 Rerun three landed darn tasks of different sizes from their base commits, with a Sonnet writer, an Opus advisor and the tuned prompt, identical in all three:

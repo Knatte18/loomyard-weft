@@ -17,6 +17,15 @@ and added declarations no unchanged code can reach (a const outside an `iota` or
 What still misses is the rest: a changed or removed declaration outside functions, an import added or removed other than a linked or standard-library package,
 a `//go:` line change, a changed method set, an added `init`, an added predeclared name and a file that does not parse.
 
+Commit `46c3f64b` (task `testmap-selector-upkeep-rules`) changed the selector's other rules, not this miss:
+`NewSelector` takes a `Target` (the working tree or a commit);
+a package's own non-test Go files are compared by function like a linked package's (`MissOwnFiles` is gone);
+a package's own test files are compared per top-level `Test` function, and any other change there is `MissTestFile`
+(a test file's import change is no miss when the test binary already links the import);
+a changed non-Go file under the package is a miss unless `inert_paths` exempts it;
+and a map whose `EnvironmentStamp` differs from the current one is `MissEnvironment`.
+The non-body rules above apply to a package's own files as well as to a linked package's.
+
 ## Idea
 
 Follow the names a changed declaration is referenced by, and select the tests that reach those references.
