@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-11 13:38 UTC; every age below is as of then.
+Rendered 2026-11-11 13:52 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -47,21 +47,21 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 2d<br>2d | gate, fabric |
-| R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 7h<br>4h | darn, loom, shuttle, claude |
+| R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 7h<br>5h | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
 
 ### Bugs (8)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | 4h<br>4h | dobby, fabric, tender |
+| B1 |  | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | 5h<br>5h | dobby, fabric, tender |
 | B2 |  | **raddle-propose passes a dependency on a note that Raddle-File refuses**<br>• Validate depends_on targets at raddle-propose, before approval; fix the truncated refusal text | [`raddle-propose-note-deps`](design-raddle-propose-note-deps.md) | 4h<br>4h | shed, board |
 | B3 |  | **Creel repeats the same notice many times for an unchanged state**<br>• Dobby and fabric sent identical notices about 25 times during an outage | [`creel-repeat-notices`](design-creel-repeat-notices.md) | 3h<br>3h | creel, dobby, fabric |
 | B4 |  | **Creel hands the orch mail about runs and pairs that no longer exist**<br>• A day-old queue of notices about torn-down pairs reached the orch as live mail | [`creel-stale-mail-delivery`](design-creel-stale-mail-delivery.md) | 3h<br>3h | creel, orch |
 | B5 |  | **The adopt-check tab stays open and takes space after the check ends**<br>• The tab of a finished adopt check is not closed or shrunk | [`adopt-check-tab-stays`](design-adopt-check-tab-stays.md) | 3h<br>3h | reed |
-| B6 |  | **lym adopt hangs silently behind a hub-wide pause**<br>• Adopt network calls wait on a hub pause with no word; reconcile stops on a busy weft push lock | [`adopt-held-by-pause`](design-adopt-held-by-pause.md) | 11m<br>11m | tender, fabric |
-| B7 |  | **adopt --drop-local fails on an untracked lym file in the weft**<br>• reset --keep refuses over an untracked generation-record.json; the adopt ends partial | [`drop-local-untracked-weft`](design-drop-local-untracked-weft.md) | 8m<br>8m | fabric |
-| B8 |  | **lym adopt replays a stale record's stops after the operator cleared them**<br>• A partial adopt record keeps reporting gone pairs; only --discard got past it | [`adopt-stale-record-stops`](design-adopt-stale-record-stops.md) | 0m<br>0m | fabric |
+| B6 |  | **lym adopt hangs silently behind a hub-wide pause**<br>• Adopt network calls wait on a hub pause with no word; reconcile stops on a busy weft push lock | [`adopt-held-by-pause`](design-adopt-held-by-pause.md) | 25m<br>25m | tender, fabric |
+| B7 |  | **adopt --drop-local fails on an untracked lym file in the weft**<br>• reset --keep refuses over an untracked generation-record.json; the adopt ends partial | [`drop-local-untracked-weft`](design-drop-local-untracked-weft.md) | 22m<br>22m | fabric |
+| B8 |  | **lym adopt replays a stale record's stops after the operator cleared them**<br>• A partial adopt record keeps reporting gone pairs; only --discard got past it | [`adopt-stale-record-stops`](design-adopt-stale-record-stops.md) | 14m<br>14m | fabric |
 
 ### Enhancements (8)
 
@@ -69,8 +69,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 3d<br>3d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 3d<br>1d | shed, loom, darn |
-| E3 |  | **Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome** | [`finalize-flaky-test-gaps`](design-finalize-flaky-test-gaps.md) | 4h<br>4h | landing, gate |
-| E5 |  | **Refresh the README: outdated parts, less wall of text, the dead Autoboard link and a shorter Lineage**<br>• The README is partly outdated, too long-winded, its Autoboard link is dead, and Lineage no longer fits LoomYard | [`readme-refresh`](design-readme-refresh.md) | 1h<br>1h | docs |
+| E3 |  | **Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome** | [`finalize-flaky-test-gaps`](design-finalize-flaky-test-gaps.md) | 5h<br>5h | landing, gate |
+| E5 |  | **Refresh the README: outdated parts, less wall of text, the dead Autoboard link and a shorter Lineage**<br>• The README is partly outdated, too long-winded, its Autoboard link is dead, and Lineage no longer fits LoomYard | [`readme-refresh`](design-readme-refresh.md) | 2h<br>1h | docs |
 | E6 |  | **Raddle shows each part's recipe and profile as table columns**<br>• Raddle names recipe and profile only in free text; put them in the proposal table | [`raddle-table-recipe-profile`](design-raddle-table-recipe-profile.md) | 4h<br>4h | stencil, shed |
 | E9 |  | **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | 7h<br>7h | heddle |
 | E10 |  | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | 7h<br>7h | heddle |
