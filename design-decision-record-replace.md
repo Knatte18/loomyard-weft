@@ -1,6 +1,6 @@
 # A Sketch or decision record can be edited or replaced, and raddle follows the newer design
 
-`decision-record-replace` · Task · bug, shed, loom, board · running · Discussion-Write
+`decision-record-replace` · Task · bug, shed, loom, board · running · Discussion-Bouncer
 
 Design: a verb that replaces a Sketch's stored decision record, or raddle validating against the newer body. Both notes below describe the same gap.
 
