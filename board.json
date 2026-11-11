@@ -477,9 +477,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "adopt-here-archives"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `machine-name-config`.\n\nTakes: the decision record's D1-D4, D7 and D8 for internal/machinename's tests\nDelivers: machinename.Name reading machine.json from the absolute per-user config directory before the hostname rule, with every name error naming its own way forward; githubclient.CredentialDir delegating to standalonestate.UserConfigDir; battencli.DobbyLandings counting landings under former names; the name-error wrappers in internal/battencli and internal/beamcli rid of their hostname fix\nExports: standalonestate.UserConfigDir, standalonestate.AbsoluteUserConfigDir, machinename.FilePath, machinename.ReadFile, machinename.Names, machinename.CheckName, battencli.DobbyLandings taking this machine's names\n\nThe part changes these packages:\n\n- internal/standalonestate (about 100 changed lines)\n- internal/githubclient (about 15 changed lines)\n- internal/machinename (about 180 changed lines)\n- internal/battencli (about 30 changed lines)\n- internal/beamcli (about 50 changed lines)\n",
@@ -606,34 +604,6 @@
       "discussed": true
     },
     {
-      "id": 1277,
-      "handle": "T6",
-      "slug": "adopt-here-archives",
-      "title": "lym adopt --here behind the lym s shortcut, and lym adopt --archives lists the old owner's archives",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "batten",
-        "tender",
-        "dobby",
-        "orch",
-        "fabric",
-        "shortcut"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `adopt-robust`.\n\nTakes: adopt-worker-record's worker, record, follow and resume; adopt-owner-handover's archive-owner tag name function\nDelivers: lym adopt --here with its owned_here outcome and record take-up; the s shortcut as adopt --here --no-orch, beam start, reed attach; lym adopt --archives over a fabric read of archive-owner tags against each repository's origin branch\nExports: the fabric archive-owner tag read\n\nThe part changes these packages:\n\n- internal/adoptcli (about 450 changed lines)\n- internal/shortcutcli (about 10 changed lines)\n- internal/fabricengine (about 150 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-09T19:45:19Z",
-      "revised": "2026-11-09T19:45:19Z",
-      "profile": "light",
-      "project": "adopt-takeover",
-      "discussed": true
-    },
-    {
       "id": 1279,
       "handle": "P6",
       "slug": "test-suite-trim",
@@ -719,9 +689,7 @@
         98
       ],
       "recipe": "darn",
-      "depends_on": [
-        "adopt-here-archives"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #98](https://github.com/Knatte18/loomyard/issues/98).\n\nIn a hub whose anchor is a subdirectory (Models, anchor src/csharp/NORCE.Models), the mo:FABRIC notice for a failed async push says: way forward: run `lym fabric push` in \u003chub\u003e/knut-rheology-merge-in. Running it there fails with: cwd is outside the recorded fabric anchor subtree: cwd \u003chub\u003e/knut-rheology-merge-in does not equal the anchored directory \u003chub\u003e/knut-rheology-merge-in/src/csharp/NORCE.Models (recorded by .lym-anchor).\n\nWorkaround: run `lym fabric push` in the anchored directory instead; it pushed.\n\nExpected: the way forward names the anchored directory (or uses env -C with it), so the command it gives works as written.",
