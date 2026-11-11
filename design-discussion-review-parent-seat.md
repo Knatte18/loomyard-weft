@@ -1,6 +1,6 @@
 # The Discussion-Review round asks the parent orch, and its chair keeps every parent finding
 
-`discussion-review-parent-seat` · Task · feature, loom, orch, config, burler · running · Seed-Child
+`discussion-review-parent-seat` · Task · feature, loom, orch, config, burler · running · Open-Window
 
 Decision record: [Sketch](decision-discussion-review-parent-seat.md)
 
