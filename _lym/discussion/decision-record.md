@@ -16,6 +16,12 @@ Decision: internal/loomcli TestSmokeBootstrapLifecycle/died_driver_proceeds_to_t
 
 Rationale: The failure is outside the task's scope. It is filed as the bug note smoke-died-driver-wording on the board.
 
+### Added after Discussion (parent, 2026-11-11): The _launchers name stays reserved in fabricengine
+
+Decision: Keep the reserved _launchers name in internal/fabricengine/junctionnames.go. Removing the writers and the cleanup of the scripts is the task; the reservation stays, so no pair or junction can take the name of a leftover _launchers directory that installed hubs still hold until lym cleanup has removed it once.
+
+Rationale: The board entry lists the reserved name only as an idea inside the removal; keeping it costs nothing and avoids a collision on hubs that still hold the directory. Review finding F1 of Code-Burler-Fix round 1 is refused as a correction.
+
 ## Constraints
 
 ## Auto-mode assumptions
