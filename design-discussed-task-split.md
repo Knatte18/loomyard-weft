@@ -21,6 +21,9 @@ Since 2026-11-05 an entry that holds a motif run's record is also a Sketch on th
 - Changing one's mind loses nothing: the run is cancelled, the record stays on the board, and it can be split into discussed tasks or made a project.
 - lym itself writes the record field, at Discussion's approval and at each `lym loom decision add`, so the field is exempt from the lock on a claimed entry.
   That lock exists only so the orch does not change a task's text after its agents have read it; a record written by lym is not that.
+- Built (2026-11-11, `690cd1c4`): task `record-file-upsert`.
+  `lym board upsert --record-file` replaces a Sketch's stored record in the same write, stamped with the body hash (`record_body_sha256`),
+  and `promote` of a Sketch warns when the body changed after the record was stored.
 - Built (2026-11-03): task `decision-record-on-board` stores the record and the flag.
   The record is the file `decision-<slug>.md` at the Bolt root beside `board.json`, which carries only a `discussed` boolean; `lym board get` shows the flag and `--record` prints the record; `lym loom decision store` re-copies it by hand.
   Runs already past Discussion are not backfilled.
