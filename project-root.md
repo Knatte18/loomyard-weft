@@ -8,17 +8,18 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Optional extra review of the Discussion record by the parent orch or a named agent** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md)<br>[Sketch](decision-parent-reviews-decision-record.md) | raddle | Worktree-Create | neve | 3d<br>0m | loom, orch, config, burler |
+| T2 | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md)<br>[Sketch](decision-claude-account-weights.md) | raddle | Worktree-Create | neve | 9d<br>0m | claude, shuttle, config |
 
 ### Ready (0)
 
@@ -26,15 +27,9 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (18)
+## Notes (17)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Sketches (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| S2 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md)<br>[Sketch](decision-claude-account-weights.md) | 9d<br>4m | claude, shuttle, config |
 
 ### Research (3)
 
