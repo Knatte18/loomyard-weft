@@ -923,7 +923,7 @@
       "isolated": false,
       "brief": "",
       "body": "Design: a verb that replaces a Sketch's stored decision record, or raddle validating against the newer body. Both notes below describe the same gap.\n\n## From note raddle-stale-sketch-record\n\nImported from [issue #116](https://github.com/Knatte18/loomyard/issues/116).\n\nSeen: a Sketch whose body was rewritten after its motif run (the body folds in later reviews and operator decisions, and supersedes the stored record) was promoted to raddle. raddle built its proposal from the stored decision record, which the run copies to _lym/discussion/decision-record.md, and so split by the superseded design. Told to follow the body, raddle rewrote the proposal from it, but raddle-propose validates criteria, risks, PATTERN changes and decision ids against decision-record.md and refuses it (criterion-uncarried/unknown, risk-uncarried/unknown, pattern-uncarried, criteria-miss-decision). raddle may write only proposal.yaml, and no verb replaces the record: 'lym loom decision add' only appends, and 'decision store' copies the run's record the other way. Related: #114 (no verb replaces a Sketch's record).\n\nWorkaround: none inside lym; the run is held while the operator chooses between re-running a motif from the body or replacing the record file in the run worktree by hand.\n\nExpected: a verb that replaces a Sketch's stored record (from a file, by the operator or parent orch), which raddle then reads; or raddle validating against the body when the entry's body is newer than its record.\n## From note decision-record-edit\n\nImported from [issue #117](https://github.com/Knatte18/loomyard/issues/117).\n\nSeen: 'lym loom decision add' only appends. When a later call changes an earlier decision, the record keeps both: the original D-entry and an 'Added after Discussion' entry that overrides it. In a design that went through several review rounds and operator calls (motif run, then two independent reviews), the record grew about 30 appended entries, several contradicting the D-entries above them, so the record stopped being a readable statement of the design. The operator keeps board bodies as the current design only, and wants records kept the same way.\n\nExpected: a verb to edit or replace a recorded decision in place (for example 'lym loom decision edit \u003cslug\u003e D7 --from \u003cfile\u003e', and 'decision remove'), committed and announced like 'add', with git history keeping the old text. The same for a Sketch's stored record after its motif run, so a promoted Sketch's raddle reads the current design.\n\nRelated: #114 (no verb replaces a Sketch's record), #116 (raddle validates against the stale record and refuses a split that follows the body).\n\n## From issue #114\n\nImported from [issue #114](https://github.com/Knatte18/loomyard/issues/114).\n\n## Seen\n\n`lym loom decision add` appends each decision under an \"Added after Discussion\" heading at the end of the record's Decisions section.\nThe Discussion fixers then edit the main decisions to match, but the appended entries stay.\nA record that took many parent and arbiter decisions ends with dozens of appended entries after the main decisions, some overriding earlier appended ones (for example a corrected reference commit after the wrong one).\nThe stored record of the resulting Sketch therefore carries superseded design next to the current one, and a reader cannot tell which binds without reading every entry in order.\n\nOnce the motif run is done, there is also no verb to replace a Sketch's stored decision record.\n`lym board get --record` prints it, but nothing writes it, so further review findings on a Sketch cannot be folded into the record before the Sketch is promoted to raddle.\n\nWorkaround used: the full current design, rewritten as one document with every decision and later finding folded in, is written into the Sketch's body with `lym board upsert`; the stale stored record remains beside it.\n\n## Expected\n\n- A decision added after Discussion is folded into the record's main decisions by the fixer, and its appended entry is removed once folded, so the record holds the current design only.\n- A verb to replace a Sketch's (or any discussed entry's) stored decision record from a file, such as `lym board upsert ... --record-file \u003cfile\u003e`, refused while a run holds the entry.\n\n",
-      "status": "running · Raddle-File",
+      "status": "done",
       "created": "2026-11-11T14:02:25Z",
       "revised": "2026-11-11T15:28:22Z",
       "discussed": true
@@ -968,6 +968,56 @@
       "body": "## Seen (D13 of `testmap-upkeep-design`)\n\nThe selector runs a package whole when a change is not a function body (a non-body miss).\nThe design asks for a note that proposes narrowing this miss.\n\n## Idea\n\nFollow the names a changed declaration is referenced by, and select the tests that reach those references.\nMeasure with the miss counts that upkeep reports (D12) whether the narrowing pays before building it.\n",
       "created": "2026-11-11T15:28:17Z",
       "revised": "2026-11-11T15:28:17Z"
+    },
+    {
+      "id": 1333,
+      "handle": "T11",
+      "slug": "record-file-upsert",
+      "title": "lym board upsert --record-file replaces a Sketch's stored record, stamped with the body hash promote checks",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "shed",
+        "loom",
+        "board"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `decision-record-replace`.\n\nTakes: the board's stored record files and Board.StoreDecisionRecord, the run lock in runlock.go, the Add weft probe in remoteleftover.go, and the strand-name caller classification in boardcli\nDelivers: lym board upsert --record-file with its refusals and one-write landing, the record_body_sha256 stamp on every stored-record write, and promote's body-changed warning\nExports: a fabricengine function that reports whether a slug's weft branch is live, which Topology.Add also uses; a discussionparser record-only section check; the record_body_sha256 field on boardengine.Task\n\nThe part changes these packages:\n\n- internal/boardcli (about 250 changed lines)\n- internal/boardengine (about 250 changed lines)\n- internal/discussionparser (about 80 changed lines)\n- internal/fabricengine (about 120 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-11T15:32:42Z",
+      "revised": "2026-11-11T15:32:42Z",
+      "profile": "light",
+      "discussed": true
+    },
+    {
+      "id": 1334,
+      "handle": "T17",
+      "slug": "decision-record-replace-verb",
+      "title": "lym loom decision replace folds a run's record under a lock, cuts the history check at it, and refreshes every stored record",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "shed",
+        "loom",
+        "board"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "record-file-upsert"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `decision-record-replace`.\n\nTakes: lym board upsert --record-file from record-file-upsert, named by D3's filed refusal and by D6's parent directive; add's guards, refusals and notice in decision.go; CommitAnchoredPathsWithTrailers, FindTrailerCommit and commitEmptySnapshot in fabricengine; Board.HoldsRaddleFiling and raddleRunFiling\nDelivers: lym loom decision replace with its guards, base-hash check, carry-over and added-entry checks, trailer commit and notice; the per-run decision lock shared by add, replace, store and writeCarryOver; recordHistory cut at the newest Lym-Record-Replaced trailer; D3's board copy and filed refusal; the D6 spec, parent directive and overview text\nExports: fabricengine.CommitEmptyWithTrailers, a first-parent trailer-key commit list and an anchored file's first-parent history with commit SHAs and positions; a gitrepo.Repo method that commits one path allowing an empty commit; discussionparser checks for carry-over block equality and the added-entry subset\n\nThe part changes these packages:\n\n- internal/loomcli (about 900 changed lines)\n- internal/fabricengine (about 300 changed lines)\n- internal/gitrepo (about 80 changed lines)\n- internal/discussionparser (about 150 changed lines)\n- contracts/specs (about 15 changed lines)\n- contracts/stencils/parent (about 15 changed lines)\n- docs (about 10 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-11T15:32:42Z",
+      "revised": "2026-11-11T15:32:42Z",
+      "profile": "solid",
+      "discussed": true
     }
   ],
   "prime_owner": "neve",
