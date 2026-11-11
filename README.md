@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-11 18:07 UTC; every age below is as of then.
+Rendered 2026-11-11 18:08 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -117,8 +117,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Optional extra review of the Discussion record by the parent orch or a named agent** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md) | motif | Discussion-Burler-Review | neve | 3d<br>14m | loom, orch, config, burler |
-| T18 | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | darn · light | Code-Bouncer | neve | 10h<br>3h | fabric, ide |
+| T6 | **Optional extra review of the Discussion record by the parent orch or a named agent** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md) | motif | Discussion-Burler-Review | neve | 3d<br>15m | loom, orch, config, burler |
+| T18 | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | darn · light | Code-Burler-Review | neve | 10h<br>3h | fabric, ide |
 
 #### Ready (0)
 
