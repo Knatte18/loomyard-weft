@@ -1,0 +1,21 @@
+# Relevant files
+
+- `docs/research/speed/testmap-upkeep-2026-11-11/report.md` — the comparison this record decides from
+- `docs/research/speed/testmap-upkeep-2026-11-11/proposal-opus.md` — the roll-forward plan, outcomes and self-check D1 and D7 take
+- `docs/research/speed/testmap-upkeep-2026-11-11/proposal-fable-b.md` — carry with gaps, outcome entries and the yield rule D1, D4 and D9 take
+- `docs/research/speed/testmap-upkeep-2026-11-11/proposal-fable-a.md` — per-entry commits and the request protocol, rejected
+- `internal/gatecli/testmap.go` — today's staleness rule, slot hold and exit record write
+- `internal/gatecli/testmappackage.go` — the per-package job, failure write and discard D5 and D10 change
+- `internal/testcover/coveragemap.go` `MapTest`, `ReadMap`, `WriteMap`, `Dir` — the map record D3 and D4 extend
+- `internal/testcover/exitrecord.go` `ExitRecord` — the exit record D12 extends
+- `internal/testcover/spawnscan.go` `ScanSpawns` — the spawn verdict D4 skips by
+- `internal/gatecli/redundancy.go` — the redundancy step whose covers D4 narrows
+- `internal/dobbyengine/testmap.go` — the landing-count trigger D8 replaces
+- `internal/dobbyengine/template.yaml` — `test_map_every` and `test_map_batch`, retired by D8
+- `internal/gateslot/template.yaml` — `test_map_max_age_days`, retired by D7
+- `internal/gateslot/config.go` — the strict gate config loader and its retired keys
+- `internal/beamcli/dobbydeps.go` — starts and tracks the upkeep process
+- `internal/gateslot/pool.go` `Pool.Holders`, `Pool.Draining`, `Limits` — the pool D9's take and yield read
+- `internal/gateslot/runlog.go` `RunRecord`, `PackageLaunch` — the run records D10 orders by
+- `internal/runproc/end.go` `EndRole` — how D11 ends upkeep
+- `internal/fabricengine/codereads.go` `Fabric.CodeFileAt` — the file reader the plan step uses
