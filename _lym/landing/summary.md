@@ -1,46 +1,44 @@
-# Finalize reruns a test failure before a fixer; reports name VSTest tests
+# Finalize reruns failed gate tests once before spawning a fixer
 
-A beam's Finalize landing spawned the merge fixer on one tier0 failure.
-The failure came from a race between two tests, and a rerun would have passed.
-The gate's failure report also said that no failing test or error line was read, since the tier was a .NET one, so the fixer started without a named cause.
+Finalize's landing gate used to spawn a fixer on the first failing run.
+A test that failed on a race with another test therefore started a fixer for a fault the change did not cause.
+The gate's failure report also named no cause for a VSTest failure.
 
 Closes #100
 
 ## What changes
 
-- **Finalize reruns a test-run failure once on the same head.**
-  Finalize's landing gate now runs a failure once more before it judges it, when the failure report lists tier and guard runs alone.
-  The rerun runs the failed tests alone, through `gateslot.FailedTestsCall`, when the report names Go tests only.
-  Otherwise it runs the whole gate call again.
-  A rerun that passes takes the first run's failures as flaky: the gate passes and no fixer spawns.
-  The landing commit and the GitHub merge then list each such failure under `## Flaky test failures`, after the regression check.
-  A rerun that fails is the gate's failure, and the landing failure record and the fixer read the rerun's log.
-  A timeout, a runner crash, a shell that could not start and a build, vet or lint failure are not rerun.
-  The gate of the fixer's own turns reruns the same way.
-- **`gateslot.TierRunFailures`** reads a failure report's failures, each opened by its run's label, such as `tier0 example.com/m/a TestA`.
-  It reports false unless every run the report lists is a tier or guard run, which is what decides a rerun.
-- **The failure report names failed VSTest tests.**
-  The `vstest` counter now reads each `Failed <name> [<duration>]` block of the VSTest console output.
-  It keeps the test with the first lines of its block, which hold the error message and the first stack frames, without the section headings.
-  The report names such a test by its name alone, since VSTest prints no package, and the run record carries it in `failures`.
-- The final-summary spec names the new section among what Finalize appends.
+- `internal/landingshed`: when Finalize's gate fails, it runs the failure once more on the same head before it judges it.
+  - It reruns only when the failure report lists tier and guard runs alone.
+    A timeout, a runner crash, a build, vet or lint failure, and a package that failed outside any test are judged as before.
+  - The rerun runs the failed tests alone when the report names Go tests only, and the whole gate call otherwise.
+  - A rerun that passes makes the failure flaky: the gate passes and no fixer runs.
+  - A rerun that fails is the gate's failure, and the landing failure record names the rerun's log.
+  - The landing commit and the GitHub merge body list each flaky failure under a new `## Flaky test failures` section,
+    after the regression check.
+    The section is absent when there was none.
+    `contracts/specs/loom-final-summary-spec.md` records it.
+- `internal/gatecli`: the VSTest counter now reads each failed test's block.
+  The failure report names the test and keeps the first lines of its error message and stack trace,
+  instead of reporting that no failing test line was read.
+- `internal/gateslot`: `TierRunFailures` reads the failure report's failures for the rerun decision.
+  The report's fixed phrases are now exported constants shared by the producer and the parser.
 
 ## Design decisions
 
-- Parent-Align's gate runs no rerun.
-  The task asks for the rerun before Finalize's fixer, and Parent-Align lands nothing that could carry a flaky record.
-- The flaky record is a section of the landing commit and the GitHub merge, not a file in the worktree.
-  Finalize composes the landing texts after its gate, and a file written there would dirty the tree its clean-tree check reads.
-- The flaky failures live in the Finalize process.
-  A Finalize resumed after a flaky pass lists none that the earlier process found.
-- A failure that names no Go test, such as a VSTest one, reruns the whole gate call.
-  `FailedTestsCall` renders a Go `-run` pattern, which a VSTest tier cannot take.
-- A rerun that passes the failed tests alone records that call's pass, not the full gate call's.
-  A later Finalize pass on the same tree runs the full call again rather than skipping it.
+- The rerun is part of the gate's `check`, enabled by `onFlakyPass`, which Finalize alone sets.
+  The fixer turns' gate reruns the same way; Parent-Align's gate runs no rerun.
+- Flaky failures are held in the Finalize process.
+  A Finalize resumed after a flaky pass lists none found before the resume.
+- The decision to rerun reads the gate's failure report, not a runner's raw output,
+  so it cannot judge a failure the report does not name.
 
 ## To check by hand
 
-No regression check ran for this task, and none of the following was run against a live landing:
-
-- A Finalize whose landing gate fails one test that passes on its rerun lands with no fixer, and its landing commit carries `## Flaky test failures` naming the test.
-- A .NET tier's failing test shows in the gate's failure report with its exception message.
+- No regression check ran, and nothing was run beyond the unit tests: try a real landing whose tier0 has a test failing once.
+  It should pass with the `## Flaky test failures` section in the landing commit.
+- Check that a VSTest failure's report shows the test name and its error message on a real .NET gate run.
+- `newfinalize-flaky-sink-wiring-untested` (`internal/landingshed/finalize.go`, `NewFinalize` and `assembleFinalize`):
+  no test covers that `NewFinalize` wires the gate's flaky sink to the Finalize it returns.
+- `rerun-guards-and-outcomes-lack-rows` (`internal/landingshed/verifygate.go`, `rerunTestFailure`):
+  the guards that skip a rerun and the rerun's outcomes lack test rows each.
