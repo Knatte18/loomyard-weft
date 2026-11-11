@@ -45,8 +45,13 @@ The trial's report reads the seats result first, under `docs/research/`, and say
 - The trial runs against work that has already run: rerun one or two darn tasks that already landed, from their base commit, with a Sonnet writer and an Opus advisor.
   Compare each with its recorded Opus run: review findings, bounces, tokens, cost and time with sleep removed.
 - The test is the darn writer, Darn-Write, since a darn is the most realistic place to test an advisor; no fixer-first stage.
+- The tasks differ in size: three landed darn tasks, one run each, so three runs in all:
+  - large: `decision-record-replace-verb` (`6d58cad7`, about 2970 changed lines);
+  - middle: `adopt-takeover-fixes` (`6f8d4cff`, about 580 changed lines);
+  - small: `reed-tab-and-attach-fixes` (`aeea549d`, about 200 changed lines).
+  The run states each task's original recipe and profile from its usage record and compares against that.
 - The risk to watch: a weak writer that is sure and wrong does not ask its advisor, so the review bounces are the key measure.
-- Runs as darn `docs`; the task body states the exact number of runs, with one or two tasks unless the operator names more.
+- Runs as darn `docs`; the cap is exactly three runs, one per task above, and no repeats.
 
 ## Operator view (2026-11-11)
 
