@@ -1,0 +1,16 @@
+verdict: resume
+reason: |-
+  The stop is a review escalation at round 3 with cause hard-cap. The design-wrong findings F2 to F5 are open, and so is the consistency finding F1.
+  The round-3 fixer report says every proposed fix was applied. The current decision record holds each one:
+  - F1: the parent's Added after Discussion entries are applied. D2 has no staleness rule, D5's Bound says how long a dependency-drift miss lasts, Open risks asks no question the entries answer, and the support log marks Q10 and Q11 resolved.
+  - F2: the host-admission rule (record lines 88-92) applies to D3's whole union. D6 puts -run in the run's own args (lines 167-168), and there is an other-GOOS criterion (lines 260-261).
+    internal/gatecli/tierrun.go confirms that holdsTierTest admits files through build.Context.MatchFile with the tier tag, and that emptyTierFailure exempts only a filter among the call's args. So the fix rests on the code as it is.
+  - F3: D2 makes both dirty checks fresh status reads (lines 62-66), with a reverted-edit Bound (lines 71-73) and a criterion (lines 251-252).
+  - F4: D5 excludes go:embed targets from the inert_paths exemption (lines 147-148), with a criterion (line 276).
+  - F5: D5 has a predeclared-name miss (lines 142-143), the dot-import Bound clause is cut, and max is among the miss examples (line 274).
+  The fix in place answers every open finding, so by the hard-cap rule I accepted. I recorded the ruling as an arbiter decision first.
+verbs:
+  - |-
+    lym loom decision add gate-scope-by-coverage-map --by arbiter --title "Round-3 hard-cap findings are answered by the fixes in place" --decision "..." --rationale "..."
+  - |-
+    lym loom circling accept gate-scope-by-coverage-map
