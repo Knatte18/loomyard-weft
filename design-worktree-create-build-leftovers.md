@@ -2,8 +2,6 @@
 
 `worktree-create-build-leftovers` · Task · bug, batten, fabric · running · Darn-Write
 
-Depends on: [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md)
-
 Imported from [issue #108](https://github.com/Knatte18/loomyard/issues/108).
 
 Seen: `lym beam merge-parent support-for-dop` halted its batten run at Worktree-Create because the directory `<hub>/support-for-dop-merge-in` already existed and was not a worktree.
