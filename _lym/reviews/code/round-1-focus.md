@@ -1,0 +1,14 @@
+---
+round: 1
+focus:
+  - "internal/shuttleengine/loadturn.go: does the cap check (`watch.pending && watch.errors >= loadHoldMaxAPIErrors`) fire on the eighth API-error turn end exactly, after the model-rejected check and before `noticeLoadHold`? Settle whether `watch.errors` counts a turn end once, and whether the count resets across holds or revives so the cap bounds one hold as documented."
+  - "internal/shuttleengine/loadturn.go `abandonLoad`: does a capped hold reach OutcomeAPIError with Result.APIError set and the start error naming the cap? Check the all-outputs-exist branch, which returns the run instead, and whether the capped path leaves the pane, strand and deadline extension in the same state as the model-rejected path."
+  - "The decision record's Goal asks that the halt note name the cap so a halt reads as an API outage rather than only `loop-exited`. Settle whether any shed or loom halt note or reason carries the cap text after an api-error start, or whether only the start error and Result.APIError do, and judge that against the Goal."
+  - "internal/shedverbs/status.go `idleGapsOf`: check the gap bounds. Settle how it treats a folded entry (LastAt, kept StartedAt), a goto or skipped entry, a reroute entry, an older entry with no StartedAt, entries with out-of-order times, and a gap at the run's tail after the last entry, which the loop never reports."
+  - "The Goal asks to show the idle time between a stuck step and the next step in `lym loom status`. Settle whether the five-minute floor, the `idle_gaps` envelope field and the `idle` human line meet that, and whether the JSON field names and the human line format match what `internal/shedverbs/doc.go` and `docs/overview.md` now say."
+  - "internal/shedengine/run.go and reroute.go: is `startedAt` taken before the producer call and passed to every history entry a producer call writes (done, stuck, reroute, reroute-capped, budget and block paths)? Settle whether any entry-writing path in `stepLocked` or its helpers still omits StartedAt."
+  - "Test economy: `TestStartup_LoadTurnAPIError` gains a capped-hold row and a `wantErrText` check, and `TestStatusCmd_FoundEnvelope_GenericCore`, `TestIdleGapsOf` and `TestRenderStatusHuman` gain cases. Settle whether any new case duplicates an existing one, and whether each added behavior (cap notice text, idle gaps, StartedAt) has coverage. No coverage map exists for these packages, so judge by reading the assertions."
+  - "Commit message claims: the shuttleengine commit says the hold's eighth API-error turn end ends the start and the parent notice names the cap; the shed commit says `started_at` is recorded on each producer-call entry. Check each claim against the diff."
+---
+
+Seed focus only; the diff is `da34600e..HEAD` across the shuttle load-hold cap and the shed idle-gap status.
