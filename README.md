@@ -136,7 +136,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (26)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (27)</strong></summary>
 
 Owner `neve`
 
@@ -161,7 +161,7 @@ Not released; nothing starts it until its status is cleared.
 | T13 | `draft` **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 1d<br>1d | config, slack |
 | T20 | `draft` **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light |  | 2d<br>0m | shed, friction |
 
-### Notes (22)
+### Notes (23)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -190,13 +190,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E6 |  | **Console window titles put the task handle first, with hub and project in brackets** | [`console-title-handle-first`](design-console-title-handle-first.md) | 1d<br>1d | termwindow |
 | E7 |  | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | 0m<br>0m | fabric, cleanup |
 
-#### Features (12)
+#### Features (13)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 5w<br>2w | burler |
 | F2 |  | **One desktop shortcut brings every lym session of the machine back after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | 2d<br>2d | orch, reed, termwindow, shortcut |
 | F3 |  | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | 2d<br>2d | slack, creel, orch |
+| F4 |  | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | 0m<br>0m | config, fabric |
 | F5 |  | **Let the parent orch review the Discussion decision record before Plan** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md) | 2d<br>2d | loom, orch, config |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 11d<br>5d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 5w<br>6d | board, ide, orch |

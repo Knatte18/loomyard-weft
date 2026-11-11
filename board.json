@@ -876,6 +876,27 @@
       "body": "Imported from [issue #98](https://github.com/Knatte18/loomyard/issues/98).\n\nIn a hub whose anchor is a subdirectory (Models, anchor src/csharp/NORCE.Models), the mo:FABRIC notice for a failed async push says: way forward: run `lym fabric push` in \u003chub\u003e/knut-rheology-merge-in. Running it there fails with: cwd is outside the recorded fabric anchor subtree: cwd \u003chub\u003e/knut-rheology-merge-in does not equal the anchored directory \u003chub\u003e/knut-rheology-merge-in/src/csharp/NORCE.Models (recorded by .lym-anchor).\n\nWorkaround: run `lym fabric push` in the anchored directory instead; it pushed.\n\nExpected: the way forward names the anchored directory (or uses env -C with it), so the command it gives works as written.",
       "created": "2026-11-11T06:22:50Z",
       "revised": "2026-11-11T06:22:50Z"
+    },
+    {
+      "id": 1286,
+      "handle": "F4",
+      "slug": "per-machine-branch-prefix",
+      "title": "config: per-machine or per-user branch_prefix, and a review of other per-user keys",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "config",
+        "fabric"
+      ],
+      "issues": [
+        99
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #99](https://github.com/Knatte18/loomyard/issues/99).\n\n## What was seen\n\n`fabric.branch_prefix` can be set only on the hub's default layer, which is committed in the board repository and applies to every machine and user of the hub.\n`lym config fabric --layer machine --set branch_prefix=x/` is refused with \"fabric has no machine key\",\nand `--layer local` is refused with \"key branch_prefix is cross-pair and cannot be set in a local override\".\n\nA branch prefix usually names the person who owns the branches, such as `\u003cuser\u003e/\u003cslug\u003e`.\nOn a hub shared by several people, or one person on several machines with different conventions, one hub-wide value does not fit.\n\n## Idea\n\n- Let `branch_prefix` be set per machine, or per user, with the hub default as the fallback.\n  Since #59, teardown uses the recorded branch name, so a pair's branch no longer depends on the prefix in force later; a pair created on one machine keeps its name when adopted on another.\n- Review which other keys are personal rather than hub-wide and give them the same layer, for example:\n  the identity a pull request is opened under or assigned to, the Slack operator, the default model or effort a session opens with, and editor or window settings such as `batten.open_ide`.\n",
+      "created": "2026-11-11T06:22:52Z",
+      "revised": "2026-11-11T06:22:52Z"
     }
   ],
   "prime_owner": "neve",
