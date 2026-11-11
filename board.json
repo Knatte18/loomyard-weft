@@ -940,6 +940,26 @@
       "body": "Imported from [issue #101](https://github.com/Knatte18/loomyard/issues/101).\n\n## What happened\n\nA tapestry run's Webster paused on the parent's order: Webster wrote `outcome: stuck`, the loom row went to `blocked · Webster`, and the outer batten driver yielded.\nThe Webster session itself stayed open: its strand (`\u003chub\u003e:\u003ctask\u003e:webster`) was still live in `lym reed list`.\n\nLater the parent recorded a decision on the run with `lym loom decision add \u003cslug\u003e --by parent`.\nThat verb notified the live Webster strand (`\"notified\":[\"\u003chub\u003e:\u003ctask\u003e:webster\"]`).\nThe idle Webster session woke on that notice and went on working in the old session, outside any `lym webster run`:\nit forked the batch, merged, committed two cards, ran the verify gate and wrote `outcome.yaml` with `outcome: done`.\n`record-batch` warned that no live `lym webster run` owned the state, because the session was not started under the run's lock.\n\n## Result\n\n`lym webster status` showed every batch done, but the loom row stayed `blocked` at Webster with the old pause reason, and `lym batten status` showed `failed` with `battencli: cannot resume`.\n`lym batten run \u003cslug\u003e` yielded with the stale blocked error.\nThe overview page showed the tapestry as blocked although its work was done.\nRunning `lym loom resume` in the task worktree was needed to get the driver to re-run Webster and move on.\nMeanwhile the parent's own `lym webster run` would have started a second Webster beside the lockless one.\n\n## Expected\n\nA Webster that reports stuck ends its session, or a session that does not hold the run's lock refuses to act on mail and says so.\n`lym loom decision add` does not wake a producer strand whose run is halted, or warns the parent that it did.\n`record-batch` without the lock refuses rather than warns, so the work and the loom row cannot drift apart.\n",
       "created": "2026-11-11T06:22:56Z",
       "revised": "2026-11-11T06:22:56Z"
+    },
+    {
+      "id": 1289,
+      "handle": "E9",
+      "slug": "heddle-render-all-worktrees",
+      "title": "heddle set/remove should re-render file targets in every live worktree of the hub",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "heddle"
+      ],
+      "issues": [
+        103
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #103](https://github.com/Knatte18/loomyard/issues/103).\n\nlym heddle set and lym heddle remove save the entry and render HEDDLE.md, but leave every existing worktree's rendered files (CLAUDE.local.md, AGENTS.override.md, .claude/settings.local.json) stale until the worktree is made, taken in, or rendered by hand with lym heddle render.\n\nSeen: a new repository entry with target claude-file was set from a beam worktree. CLAUDE.local.md in that worktree, in the prime worktree and in a running task worktree all lacked the entry until lym heddle render was run in each one by hand.\n\nAn instruction entry usually exists because agents must follow it now (for example, a module that is out of scope), so agents in running task worktrees keep working without it, and nothing tells the caller which worktrees are stale.\n\nProposal: after a successful set or remove, render every file target into every live code worktree of the hub (prime, beams, task pairs), and report the rendered and failed worktrees in the verb's output. Running Claude sessions then take the change at their next compaction, as today; an optional flag to skip the fan-out could cover bulk edits.",
+      "created": "2026-11-11T06:22:58Z",
+      "revised": "2026-11-11T06:22:58Z"
     }
   ],
   "prime_owner": "neve",
