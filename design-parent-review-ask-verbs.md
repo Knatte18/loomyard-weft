@@ -1,6 +1,6 @@
 # The parent-review ask record, its deadline keys, and lym loom parent-review answer and await
 
-`parent-review-ask-verbs` · Task · feature, loom, orch, config, burler · running · Worktree-Create
+`parent-review-ask-verbs` · Task · feature, loom, orch, config, burler · running · Open-Window
 
 Decision record: [Sketch](decision-parent-review-ask-verbs.md)
 
