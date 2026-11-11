@@ -18,6 +18,12 @@ Raddle's split is not tuned for fewer, larger darns.
 
 A large change runs as `arras`, then a project of darns (operator, 2026-11-08); the lean `satin` tapestry was weighed and dropped.
 
+The operator does not yet trust raddle's split enough to let it file unattended (2026-11-11):
+the proposals are often poor, and one made that day proposed six solid tapestries plus a solid darn, which was absurdly large and dear.
+It was merged into three tapestries and a darn, and on second thought the last part was split in two, so four tapestries and a darn, for a large and important change that did become extensive.
+So the operator keeps approving each proposal in the pane; `raddle_auto_approve` stays off, and `arras`, whose split perch approves in place of the operator, is not used until the splits are trusted.
+This note's tuning is what would earn that trust.
+
 ## Idea
 
 Tune raddle's split for concurrency only: cut parts so the `depends_on` chain is short and parts with no dependency between them touch different packages, so more darns run at the same time.

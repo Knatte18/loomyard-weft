@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-11 18:43 UTC; every age below is as of then.
+Rendered 2026-11-11 18:49 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 1d · Owner `neve`
@@ -53,5 +53,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 1d<br>3h | testkit, gate |
+| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 2d<br>3h | testkit, gate |
 | E12 |  | **The prime dobby leaves a coverage map backlog unbuilt until more landings come** | [`testmap-backlog-drain`](design-testmap-backlog-drain.md) | 1d<br>3h | dobby, gate, testkit |
