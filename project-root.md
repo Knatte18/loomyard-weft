@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-11 10:38 UTC; every age below is as of then.
+Rendered 2026-11-11 10:41 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `osl-1046`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **machinename reads the machine name from machine.json before the hostname rule** | [`machine-name-file`](design-machine-name-file.md)<br>[Sketch](decision-machine-name-file.md) | darn · light | Finalize | osl-1046 | 1d<br>3h | config, slack |
 | T8 | **One land notice: fold the beam-PR landing notice into notify_on_land** | [`one-land-notice`](design-one-land-notice.md) | darn · light | Darn-Write | osl-1046 | 1d<br>2h | dobby, batten, workspaces |
-| T9 | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | darn · light | Code-Burler-Review | osl-1046 | 4h<br>3h | fabric |
+| T9 | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | darn · light | Code-Burler-Fix | osl-1046 | 4h<br>3h | fabric |
 | T20 | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | Code-Burler-Fix | osl-1046 | 2d<br>4h | shed, friction, shuttle |
 
 ### Ready (0)
@@ -66,9 +66,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | 1h<br>1h | dobby, fabric, tender |
 | B2 |  | **raddle-propose passes a dependency on a note that Raddle-File refuses**<br>• Validate depends_on targets at raddle-propose, before approval; fix the truncated refusal text | [`raddle-propose-note-deps`](design-raddle-propose-note-deps.md) | 1h<br>1h | shed, board |
-| B3 |  | **Creel repeats the same notice many times for an unchanged state**<br>• Dobby and fabric sent identical notices about 25 times during an outage | [`creel-repeat-notices`](design-creel-repeat-notices.md) | 42m<br>42m | creel, dobby, fabric |
-| B4 |  | **Creel hands the orch mail about runs and pairs that no longer exist**<br>• A day-old queue of notices about torn-down pairs reached the orch as live mail | [`creel-stale-mail-delivery`](design-creel-stale-mail-delivery.md) | 42m<br>42m | creel, orch |
-| B5 |  | **The adopt-check tab stays open and takes space after the check ends**<br>• The tab of a finished adopt check is not closed or shrunk | [`adopt-check-tab-stays`](design-adopt-check-tab-stays.md) | 21m<br>21m | reed |
+| B3 |  | **Creel repeats the same notice many times for an unchanged state**<br>• Dobby and fabric sent identical notices about 25 times during an outage | [`creel-repeat-notices`](design-creel-repeat-notices.md) | 45m<br>45m | creel, dobby, fabric |
+| B4 |  | **Creel hands the orch mail about runs and pairs that no longer exist**<br>• A day-old queue of notices about torn-down pairs reached the orch as live mail | [`creel-stale-mail-delivery`](design-creel-stale-mail-delivery.md) | 45m<br>45m | creel, orch |
+| B5 |  | **The adopt-check tab stays open and takes space after the check ends**<br>• The tab of a finished adopt check is not closed or shrunk | [`adopt-check-tab-stays`](design-adopt-check-tab-stays.md) | 23m<br>23m | reed |
 
 ### Enhancements (7)
 
