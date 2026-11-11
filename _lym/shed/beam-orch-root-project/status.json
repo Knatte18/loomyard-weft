@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-11T17:48:28Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/beam-orch-root-project/_lym/landing/summary.md",
+      "at": "2026-11-11T17:57:12Z",
+      "started_at": "2026-11-11T17:48:30Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T17:51:07.307995288Z",
+          "end": "2026-11-11T17:51:07.316775701Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T17:54:14.330590396Z",
+          "end": "2026-11-11T17:54:14.340170134Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T17:51:07.363445014Z",
+          "end": "2026-11-11T17:53:58.845832559Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-11T17:53:59.248783658Z",
+          "end": "2026-11-11T17:54:14.297668587Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T17:54:14.385982153Z",
+          "end": "2026-11-11T17:56:25.432958002Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T17:56:25.550846335Z",
+          "end": "2026-11-11T17:56:25.85129543Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T17:56:25.955499328Z",
+          "end": "2026-11-11T17:56:26.025378152Z"
+        }
+      ]
     }
   ],
   "product": {
