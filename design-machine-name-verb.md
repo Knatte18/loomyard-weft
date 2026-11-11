@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-machine-name-verb.md)
 
-Depends on: [`machine-name-file`](design-machine-name-file.md)
-
 Filed from the Sketch `machine-name-config`.
 
 Takes: machine-name-file's machinename.FilePath, ReadFile, Names, CheckName and FromHostname; internal/state's WriteJSON; hubregistry.Live; fabricengine.Bolt Pull and HasUnpushed; boardengine.ReadOwners

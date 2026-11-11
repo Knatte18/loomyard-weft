@@ -465,29 +465,6 @@
       "profile": "solid"
     },
     {
-      "id": 1259,
-      "handle": "T5",
-      "slug": "machine-name-file",
-      "title": "machinename reads the machine name from machine.json before the hostname rule",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "config",
-        "slack"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `machine-name-config`.\n\nTakes: the decision record's D1-D4, D7 and D8 for internal/machinename's tests\nDelivers: machinename.Name reading machine.json from the absolute per-user config directory before the hostname rule, with every name error naming its own way forward; githubclient.CredentialDir delegating to standalonestate.UserConfigDir; battencli.DobbyLandings counting landings under former names; the name-error wrappers in internal/battencli and internal/beamcli rid of their hostname fix\nExports: standalonestate.UserConfigDir, standalonestate.AbsoluteUserConfigDir, machinename.FilePath, machinename.ReadFile, machinename.Names, machinename.CheckName, battencli.DobbyLandings taking this machine's names\n\nThe part changes these packages:\n\n- internal/standalonestate (about 100 changed lines)\n- internal/githubclient (about 15 changed lines)\n- internal/machinename (about 180 changed lines)\n- internal/battencli (about 30 changed lines)\n- internal/beamcli (about 50 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-09T14:52:44Z",
-      "revised": "2026-11-11T07:28:41Z",
-      "profile": "light",
-      "discussed": true
-    },
-    {
       "id": 1260,
       "handle": "T13",
       "slug": "machine-name-verb",
@@ -500,9 +477,7 @@
       ],
       "issues": [],
       "recipe": "tapestry",
-      "depends_on": [
-        "machine-name-file"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `machine-name-config`.\n\nTakes: machine-name-file's machinename.FilePath, ReadFile, Names, CheckName and FromHostname; internal/state's WriteJSON; hubregistry.Live; fabricengine.Bolt Pull and HasUnpushed; boardengine.ReadOwners\nDelivers: the module machine with lym machine name showing and setting the name, its collision check across every swept hub, the file write that keeps names, and the per-hub owner sweep with its recovery output; boardengine.OwnerRequest's replace-set field selecting owners after the write's own pull\nExports: machinecli.Command, the replace-set field of boardengine.OwnerRequest\n\nThe part changes these packages:\n\n- internal/boardengine (about 130 changed lines)\n- internal/machinecli (about 800 changed lines)\n- cmd/lym (about 10 changed lines)\n",
