@@ -1,6 +1,6 @@
 # heddle file targets: split claude-file and codex-file, add a shared target for both
 
-`heddle-split-file-targets` · Task · enhancement, heddle · running · Drift-Recheck
+`heddle-split-file-targets` · Task · enhancement, heddle · running · Describe
 
 Imported from [issue #104](https://github.com/Knatte18/loomyard/issues/104).
 
