@@ -1025,6 +1025,25 @@
       "body": "## Seen (orch, 2026-11-11)\n\nDuring a network outage on OSL-1046 (`Could not resolve host: github.com`, `EAI_AGAIN`), the orch's mail held about 25 dobby notices that read the same for `testmap-verb` and `arras-recipe-perch`: same state, same `since` time, same history length.\nFABRIC sent the same push failure for the same branch several times, for example the bolt branch `main` and the records branch of each pair.\n\n## Idea\n\nA notice whose text and run state have not changed since the last one sent to the same strand is not sent again, or is sent again only after a stated interval.\nRead first where dobby and fabric decide to send, and whether a repeat is deliberate, for instance as a reminder.\n",
       "created": "2026-11-11T09:56:17Z",
       "revised": "2026-11-11T09:56:17Z"
+    },
+    {
+      "id": 1308,
+      "handle": "B4",
+      "slug": "creel-stale-mail-delivery",
+      "title": "Creel hands the orch mail about runs and pairs that no longer exist",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A day-old queue of notices about torn-down pairs reached the orch as live mail",
+      "body": "## Seen (orch, 2026-11-11)\n\nThe orch received creel mail more than a day old, about pairs the orch had already torn down with `lym cleanup --apply`: `terminal-titles-hub-project`, `testmap-verb` and `arras-recipe-perch`.\nIt arrived under a tool result when the orch loaded skills, long after the orch's last turn, and the senders' runs no longer existed.\nOne line asked the orch to settle a stop of a run that was gone.\n\n## Idea\n\nMail addressed about a run or pair that no longer exists is dropped or marked stale rather than handed to the orch as live.\nRead first why the mail waited in the queue, whether the orch's session was down, and whether teardown can clear the strand's pending notices.\n",
+      "created": "2026-11-11T09:56:17Z",
+      "revised": "2026-11-11T09:56:17Z"
     }
   ],
   "prime_owner": "osl-1046",
