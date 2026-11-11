@@ -1,6 +1,6 @@
 # The adopt-check tab closes after the check; reed attach refuses a directory that is no worktree
 
-`reed-tab-and-attach-fixes` · Task · bug, reed · running · Drift-Recheck
+`reed-tab-and-attach-fixes` · Task · bug, reed · running · Describe
 
 Fix both reed faults in one run.
 
