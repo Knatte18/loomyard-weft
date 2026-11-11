@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-11T20:08:09Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/discussion-review-parent-seat/_lym/landing/summary.md",
+      "at": "2026-11-11T20:35:15Z",
+      "started_at": "2026-11-11T20:08:12Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T20:23:26.892393281Z",
+          "end": "2026-11-11T20:23:26.902593717Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T20:32:10.758252093Z",
+          "end": "2026-11-11T20:32:10.774277583Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T20:23:26.951898384Z",
+          "end": "2026-11-11T20:31:56.265189432Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-11T20:31:56.676445816Z",
+          "end": "2026-11-11T20:32:10.718861747Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T20:32:10.832484329Z",
+          "end": "2026-11-11T20:34:35.642983609Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T20:34:35.753125059Z",
+          "end": "2026-11-11T20:34:36.187963286Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T20:34:36.296528025Z",
+          "end": "2026-11-11T20:34:36.296805442Z"
+        }
+      ]
     }
   ],
   "product": {
