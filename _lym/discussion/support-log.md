@@ -51,7 +51,7 @@ Duplicates are merged: one line per finding, with its lens and its outcome.
 - interactions 4, board-scope 1 and 2: the fold path for a motif-made Sketch was unnamed, and the departure from #114's fixer fold was stated only in Out. Fixed: D6 names `--record-file` for a Sketch and states the departure with its reason.
 - existing-paths 4: a re-seed after a failed board copy. Fixed as an Open risk naming `decision store`; D3 names the same way forward.
 - bound-breaker 4: the base check and write were not atomic. Fixed: D1 adds a per-run decision lock over `add`, `replace` and `store`.
-- bound-breaker 5: a board replace in the window before a run holds the entry. Fixed: D4 also refuses an entry whose slug has a live batten run.
+- bound-breaker 5: a board replace in the window before a run holds the entry. Fixed: D4 also refuses an entry whose slug has a task worktree in the hub.
 - walkthrough 2: `Validate` needs a support log the board lacks. Fixed: D4 names a record-only section check.
 - leanness 1, 2, 3, 4, 5, 6, 7 and 8: Fixed.
   The D2 rationale no longer names a rejected alternative, and the Out bullets drop their reasons.
@@ -65,7 +65,15 @@ Duplicates are merged: one line per finding, with its lens and its outcome.
 - Raddle validating against the board body when the body is newer: the body is free markdown, not the record format, so criteria, risks, PATTERN changes and decision ids cannot be checked against it.
 - Separate `lym loom decision edit <slug> D<n>` and `remove` verbs: whole-record replace covers both. Removing a decision also needs its acceptance bullets changed, which a per-id verb cannot do cleanly.
 - Discussion-Burler-Fix folding added entries, with Go stripping them at approval: an entry added in the settling window after the last fixer round would be stripped unfolded and lost.
-- A content marker in the record to reset the history check: a writer could forge it. Only a lym verb writes a commit trailer.
+- A content marker in the record to reset the history check: any writer of the record could add it while editing the file, whereas a trailer needs a commit message, which a record writer does not author.
+- `gitrepo.Repo.CommitEmpty` for D1's empty trailer commit: it refuses while any content is staged, which no step of `replace` can clear.
+- D4 reading batten liveness: `internal/boardcli` imports nothing from batten, and batten liveness is read only from this machine's process records and marker files,
+  by `registeredBattenAlive` in `internal/pairteardown` and `liveBattenPID` in `internal/loomcli`.
+- Record-Write re-seeding the record from the board when a raddle run adopts the motif pair's live weft: Record-Write never overwrites a record file, so a resume keeps every added entry, and a re-seed would have to tell an adopted motif record from the run's own.
+  D4 refuses `--record-file` while the weft is live instead.
+  Batten's finish and cancel tear the pair down with `Remote: true` (`internal/battencli/wire.go`, `internal/battencli/cancel.go`).
+  That teardown, run by a detached child, tags the local weft tip under `archive/<slug>/`, deletes the local branch, pushes the tip and the tag to origin, and deletes origin's branch (`fabricengine.Topology.Remove`).
+  The branch stays live while the pair stands, while that teardown is in flight, and when its remote step failed.
 - A history reset keyed on the trailer commit touching the record's path: a sweep commit can land the bytes first, so the cut is keyed on the bytes' hash.
 - A new `lym board record` verb: `upsert --record-file` lets the body and the record change in one board write, matching `--body-file`.
 - A `revised` against `record_stored` time comparison for the promote warning: `revised` moves on the Sketch conversion, label edits and payload-set values, so it warned on every motif-made Sketch.
@@ -82,10 +90,10 @@ _No rounds yet._
 - Q1 (auto-pick): Should raddle follow the body or a replaced record? A replaced record (D1, D4), because raddle's checks need the record format.
 - Q2 (auto-pick): Per-decision verbs, or a whole-record replace? A whole-record replace (D1), because folding changes several entries at once.
 - Q3 (auto-pick): How is a replace made safe against a concurrent `add`? A required `--base-sha256`, checked under a per-run decision lock that `add`, `replace` and `store` share.
-- Q4 (auto-pick): When is replace admitted? Wherever `add` is, except before Discussion approval on a recipe with that row.
-- Q5 (auto-pick): How does the dropped-entry check stay valid after a replace? The trailer names the sha256 of the written bytes, and the history is cut at the newest version that matches it (D2).
-- Q6 (auto-pick): Should a raddle run's design call reach the Sketch's board record? Yes, for every run whose entry carries a stored record (D3).
-- Q7 (auto-pick): Which board surface? `upsert --record-file` (D4), refused while a run holds the entry or the slug has a live batten run, and refused for a run's task session.
+- Q4 (auto-pick): When is replace admitted? Wherever `add` is, except before Discussion approval on a recipe with that row, and from plan approval through the recipe's last Webster row.
+- Q5 (auto-pick): How does the dropped-entry check stay valid after a replace? The trailer names the sha256 of the written bytes, and the history is cut at the newest version that matches it and was committed at or before the trailer commit, ordered by first-parent position (D2).
+- Q6 (auto-pick): Should a raddle run's design call reach the Sketch's board record? Yes, for every run whose entry carries a stored record and whose recipe has no Discussion approval row, except a beam's project-record run (D3).
+- Q7 (auto-pick): Which board surface? `upsert --record-file` (D4), refused while a run holds the entry, the slug has a task worktree in the hub or the slug's weft branch is live, and refused for a run's task session.
 - Q8 (auto-pick): How does promote detect a stale record? It warns when the body's sha256 differs from `record_body_sha256` (D5), and never refuses.
 - Q9 (auto-pick): Who folds added entries? The parent, by `replace` on a run or by `--record-file` on a Sketch (D6). Fixers keep their hands off.
 - Q10 (auto-pick): Does `replace` amend an approved plan? No. A call that needs an amendment goes through `add --amends-plan` first and is folded later.
