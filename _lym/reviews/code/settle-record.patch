@@ -1,0 +1,360 @@
+diff --git a/internal/adoptcli/fixloop.go b/internal/adoptcli/fixloop.go
+index abe53563..b000b7a3 100644
+--- a/internal/adoptcli/fixloop.go
++++ b/internal/adoptcli/fixloop.go
+@@ -392,25 +392,10 @@ func hubFixDeps(prime *lymcwd.Location, subject string) (fixDeps, error) {
+ 			return readStatus(shedrun.StatusFile(prime, slug))
+ 		},
+ 		EscalationEligible: hubEscalationEligible(prime),
+-		RunRecordSlugs: func() ([]string, error) {
+-			entries, err := os.ReadDir(filepath.Dir(shedrun.RunDir(prime, "-")))
+-			if errors.Is(err, os.ErrNotExist) {
+-				return nil, nil
+-			}
+-			if err != nil {
+-				return nil, err
+-			}
+-			var slugs []string
+-			for _, entry := range entries {
+-				if entry.IsDir() {
+-					slugs = append(slugs, entry.Name())
+-				}
+-			}
+-			return slugs, nil
+-		},
+-		TaskBranchSlugs: func(prefix string) ([]string, error) { return fabricengine.TaskBranchSlugs(prime, prefix) },
+-		Known:           board.Vocabulary().Known,
+-		FrontDeps:       frontDeps,
++		RunRecordSlugs:     func() ([]string, error) { return shedrun.RunIDs(prime) },
++		TaskBranchSlugs:    func(prefix string) ([]string, error) { return fabricengine.TaskBranchSlugs(prime, prefix) },
++		Known:              board.Vocabulary().Known,
++		FrontDeps:          frontDeps,
+ 	}, nil
+ }
+ 
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index bdc03259..d8915248 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -274,8 +274,9 @@ beam's dobby starts it as any member, at any time. The orch runs it before
+ "lym beam ready", which refuses while the parent holds commits the beam lacks;
+ Finalize merges the parent in again at landing.
+ 
+-The task's slug is the beam's slug and "-merge-in", numbered from -2 when that slug
+-is taken, and it carries the beam's labels.
++The task's slug is the beam's slug and "-merge-in", numbered from -2 when a board
++entry, a batten run directory or a task branch holds that slug, and it carries the
++beam's labels.
+ 
+ It runs anywhere in the hub and refuses, each naming its way forward, an entry
+ that is not an open beam project with a pair here, a beam whose origin record
+diff --git a/internal/beamcli/deps.go b/internal/beamcli/deps.go
+index 750a7131..bfad47a4 100644
+--- a/internal/beamcli/deps.go
++++ b/internal/beamcli/deps.go
+@@ -239,6 +239,17 @@ func hubLandDeps(prime *lymcwd.Location) landDeps {
+ 			}
+ 			return nil
+ 		},
++		HeldSlugs: func() ([]string, error) {
++			runs, err := shedrun.RunIDs(prime)
++			if err != nil {
++				return nil, err
++			}
++			branches, err := fabricengine.TaskBranchSlugs(prime, "")
++			if err != nil {
++				return nil, err
++			}
++			return append(runs, branches...), nil
++		},
+ 		// The budget is the prime's loom config, the hub's own, which no run profile reaches.
+ 		CodeReviewCaps: func() (reviewbudget.Caps, error) {
+ 			cfg, err := loomengine.LoadConfig(fabricengine.ConfigDirs(prime), "loom")
+diff --git a/internal/beamcli/deps_integration_test.go b/internal/beamcli/deps_integration_test.go
+index 52cadcf3..1188d678 100644
+--- a/internal/beamcli/deps_integration_test.go
++++ b/internal/beamcli/deps_integration_test.go
+@@ -6,6 +6,7 @@ import (
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -18,6 +19,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/pawlengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
+ 	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -110,6 +112,34 @@ func TestHubLandDeps_ReadyReads(t *testing.T) {
+ 	}
+ }
+ 
++// TestHubLandDeps_HeldSlugs drives the HeldSlugs seam over a real hub pair.
++// A slug a run directory holds and a slug a task branch holds are both listed.
++func TestHubLandDeps_HeldSlugs(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	boardkit.InstallReplay(t)
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	prime, err := lymcwd.ResolveWorktree(h.PrimeWorktree())
++	if err != nil {
++		t.Fatalf("resolve the prime: %v", err)
++	}
++	if err := os.MkdirAll(shedrun.RunDir(prime, "held-run"), 0o755); err != nil {
++		t.Fatalf("create the run directory: %v", err)
++	}
++	gitkit.Git(t, h.PrimeWorktree(), "branch", "held-branch")
++
++	held, err := hubLandDeps(prime).HeldSlugs()
++	if err != nil {
++		t.Fatalf("HeldSlugs() error = %v; want nil", err)
++	}
++	for _, slug := range []string{"held-run", "held-branch"} {
++		if !slices.Contains(held, slug) {
++			t.Errorf("HeldSlugs() = %v; want it to hold %q", held, slug)
++		}
++	}
++}
++
+ // TestHubLandDeps_ParentUnmergedReadsTheUpstreamTip drives ParentUnmerged over a hub whose parent has an upstream.
+ // The push skip is unset, and the origin is a local bare repository.
+ // A commit another clone pushed to the origin is fetched and judged.
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 603af8ee..9333557f 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -262,7 +262,10 @@
+ // It refuses a beam that holds an open merge task.
+ // The refusal names `lym batten status` and `lym batten cancel --remove` of that task.
+ // A merge task is found by its project and its slug's `-merge-in` suffix, with an optional number.
+-// The new one takes the first free slug of that shape, the beam's slug cut to fit the board's slug length.
++// The new one takes the first slug of that shape that no board entry, batten run directory or task branch holds.
++// The beam's slug is cut to fit the board's slug length.
++// A completed merge task's run and its torn-down pair's branch outlive its board entry and refuse a start under its slug,
++// so a second merge of the parent skips them.
+ // It carries the beam's labels, so the board's type-label rule holds.
+ // Its body is the goal that the decision record carries for both the darn writer and the Code-Review perch.
+ // The writer runs `lym fabric merge-in`, settles the conflicts, makes the gate pass and changes nothing else.
+diff --git a/internal/beamcli/land.go b/internal/beamcli/land.go
+index 58b9294c..e9b2754e 100644
+--- a/internal/beamcli/land.go
++++ b/internal/beamcli/land.go
+@@ -32,7 +32,8 @@ import (
+ // Tasks reads the board's entries.
+ // FileTask creates the task its fields describe and releases it.
+ // CodeReviewCaps reads the hub's Code-Review budget.
+-// Only the `merge-parent` verb calls these three.
++// HeldSlugs lists the slugs a batten run directory or a task branch holds, local or origin remote-tracking.
++// Only the `merge-parent` verb calls these four.
+ // DraftDescription writes a starting point for the beam's change description and returns its path.
+ // It refuses when a description already stands.
+ // RecordDescription validates the change description the orch wrote and stamps the landing record's DescribedAt with at.
+@@ -74,6 +75,7 @@ type landDeps struct {
+ 	Tasks          func() ([]boardengine.Task, error)
+ 	FileTask       func(fields map[string]any) error
+ 	CodeReviewCaps func() (reviewbudget.Caps, error)
++	HeldSlugs      func() ([]string, error)
+ 
+ 	DraftDescription  func(slug string) (path string, err error)
+ 	RecordDescription func(slug string, at time.Time) (path string, err error)
+diff --git a/internal/beamcli/land_test.go b/internal/beamcli/land_test.go
+index 5d31b4ce..e38eed6a 100644
+--- a/internal/beamcli/land_test.go
++++ b/internal/beamcli/land_test.go
+@@ -48,6 +48,9 @@ type landWorld struct {
+ 	tasks []boardengine.Task
+ 	filed []map[string]any
+ 	caps  reviewbudget.Caps
++	// held and heldErr are what HeldSlugs answers: the slugs run directories and task branches hold.
++	held    []string
++	heldErr error
+ 	// drafted and recorded hold the slug of each DraftDescription and RecordDescription call;
+ 	// draftErr and recordErr are what those seams fail with.
+ 	drafted   []string
+@@ -165,6 +168,7 @@ func (w *landWorld) deps() landDeps {
+ 			return nil
+ 		},
+ 		CodeReviewCaps: func() (reviewbudget.Caps, error) { return w.caps, nil },
++		HeldSlugs:      func() ([]string, error) { return w.held, w.heldErr },
+ 		DraftDescription: func(slug string) (string, error) {
+ 			w.drafted = append(w.drafted, slug)
+ 			if w.draftErr != nil {
+diff --git a/internal/beamcli/mergeparent.go b/internal/beamcli/mergeparent.go
+index 7510501c..61947acc 100644
+--- a/internal/beamcli/mergeparent.go
++++ b/internal/beamcli/mergeparent.go
+@@ -63,7 +63,11 @@ func mergeParent(deps landDeps, slug string) (map[string]any, error) {
+ 	rounds := max(caps.Soft, mergeParentMinRounds)
+ 	perch := string(loomengine.PerchCode)
+ 
+-	taskSlug := freeMergeTaskSlug(tasks, slug)
++	held, err := deps.HeldSlugs()
++	if err != nil {
++		return nil, fmt.Errorf("%s: list the slugs the run directories and task branches hold: %w; way forward: fix the cause it names, then run `%s %s` again", verb, err, verb, slug)
++	}
++	taskSlug := freeMergeTaskSlug(tasks, held, slug)
+ 	fields := map[string]any{
+ 		"slug":         taskSlug,
+ 		"title":        fmt.Sprintf("Merge %s into the beam %s", origin.ParentBranch, slug),
+@@ -101,14 +105,19 @@ func openMergeTask(tasks []boardengine.Task, beam string) (string, bool) {
+ 	return "", false
+ }
+ 
+-// freeMergeTaskSlug returns the first merge task slug of beam that no board entry holds.
++// freeMergeTaskSlug returns the first merge task slug of beam that no board entry and no slug in held holds.
++// held names the slugs of run directories and task branches.
++// A completed run or a leftover task branch refuses a start under its slug after its board entry is gone.
+ // The candidates are the beam's slug with the merge task suffix, then the same with -2, -3 and so on.
+ // The beam's slug is cut so the whole fits the board's slug length.
+-func freeMergeTaskSlug(tasks []boardengine.Task, beam string) string {
+-	taken := make(map[string]bool, len(tasks))
++func freeMergeTaskSlug(tasks []boardengine.Task, held []string, beam string) string {
++	taken := make(map[string]bool, len(tasks)+len(held))
+ 	for _, task := range tasks {
+ 		taken[task.Slug] = true
+ 	}
++	for _, slug := range held {
++		taken[slug] = true
++	}
+ 	for number := 1; ; number++ {
+ 		tail := darnengine.MergeTaskSuffix
+ 		if number > 1 {
+diff --git a/internal/beamcli/mergeparent_test.go b/internal/beamcli/mergeparent_test.go
+index a26d2922..214bb47b 100644
+--- a/internal/beamcli/mergeparent_test.go
++++ b/internal/beamcli/mergeparent_test.go
+@@ -1,10 +1,11 @@
+ // mergeparent_test.go drives the merge-parent sequence over the fake hub of landWorld.
+ // It covers the entries that are not a beam and a beam with no parent branch or an open merge task.
+-// It also covers the darn task, filed with its perch on under the first free slug.
++// It also covers the darn task, filed with its perch on under the first slug no board entry, run or branch holds.
+ 
+ package beamcli
+ 
+ import (
++	"errors"
+ 	"reflect"
+ 	"strings"
+ 	"testing"
+@@ -61,6 +62,16 @@ func TestMergeParent(t *testing.T) {
+ 			},
+ 			wantTask: "b-merge-in-2", wantRounds: 1, wantHard: 2,
+ 		},
++		{
++			name: "CompletedRunAndLeftoverBranchSkipped", slug: "b",
++			setup:    func(w *landWorld) { w.held = []string{"b-merge-in", "b-merge-in-2"} },
++			wantTask: "b-merge-in-3", wantRounds: 1, wantHard: 2,
++		},
++		{
++			name: "UnreadableHeldSlugsRefused", slug: "b",
++			setup:   func(w *landWorld) { w.heldErr = errors.New("git refs unreadable") },
++			wantErr: []string{"list the slugs the run directories and task branches hold", "git refs unreadable", "lym beam merge-parent b"},
++		},
+ 		{
+ 			name: "LongBeamSlugCutToTheBoardsLength", slug: longBeam,
+ 			setup: func(w *landWorld) {
+diff --git a/internal/shedrun/paths.go b/internal/shedrun/paths.go
+index 6b7656bd..3da72a36 100644
+--- a/internal/shedrun/paths.go
++++ b/internal/shedrun/paths.go
+@@ -10,6 +10,7 @@ package shedrun
+ import (
+ 	"crypto/sha256"
+ 	"encoding/hex"
++	"errors"
+ 	"fmt"
+ 	"io/fs"
+ 	"os"
+@@ -144,6 +145,27 @@ func RunDir(l *lymcwd.Location, runID string) string {
+ 	return filepath.Join(l.AnchorPath(), lymdirs.LymDirName, shedDirName, runSegment(l, runID))
+ }
+ 
++// RunIDs lists the names of the durable run directories under l's anchor, in name order.
++// A completed run keeps its directory until cleanup removes it, and a start of its slug is refused meanwhile,
++// so a caller picking a new slug skips every name listed.
++// An anchor with no run directories lists none.
++func RunIDs(l *lymcwd.Location) ([]string, error) {
++	entries, err := os.ReadDir(filepath.Join(l.AnchorPath(), lymdirs.LymDirName, shedDirName))
++	if errors.Is(err, fs.ErrNotExist) {
++		return nil, nil
++	}
++	if err != nil {
++		return nil, err
++	}
++	var ids []string
++	for _, entry := range entries {
++		if entry.IsDir() {
++			ids = append(ids, entry.Name())
++		}
++	}
++	return ids, nil
++}
++
+ // StopMarkerFileName is the filename of a run's writer stop marker, whose path StopMarker returns.
+ const StopMarkerFileName = "stop-marker"
+ 
+diff --git a/internal/shedrun/paths_test.go b/internal/shedrun/paths_test.go
+index adabf07f..8818c397 100644
+--- a/internal/shedrun/paths_test.go
++++ b/internal/shedrun/paths_test.go
+@@ -3,6 +3,7 @@ package shedrun
+ import (
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 
+@@ -342,6 +343,46 @@ func TestHoldsFile(t *testing.T) {
+ 	}
+ }
+ 
++// TestRunIDs pins that RunIDs lists the run directories under the anchor in name order, skipping plain files.
++// It also pins that RunIDs lists none when the shed directory is absent.
++func TestRunIDs(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name  string
++		build func(t *testing.T, l *lymcwd.Location)
++		want  []string
++	}{
++		{"AbsentShedDirectory", func(*testing.T, *lymcwd.Location) {}, nil},
++		{"DirectoriesListedFilesSkipped", func(t *testing.T, l *lymcwd.Location) {
++			for _, id := range []string{"zeta", "alpha"} {
++				if err := os.MkdirAll(RunDir(l, id), 0o755); err != nil {
++					t.Fatal(err)
++				}
++			}
++			if err := os.WriteFile(filepath.Join(filepath.Dir(RunDir(l, "alpha")), "stray"), []byte("x"), 0o644); err != nil {
++				t.Fatal(err)
++			}
++		}, []string{"alpha", "zeta"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			l := syntheticLocation(t)
++			tt.build(t, l)
++
++			got, err := RunIDs(l)
++			if err != nil {
++				t.Fatalf("RunIDs() = %v; want nil", err)
++			}
++			if !slices.Equal(got, tt.want) {
++				t.Errorf("RunIDs() = %v; want %v", got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestLocksAreDistinct pins that a run's RunLock and StatusLock never share a file, which shedengine.Shed's own validation rejects outright (a shared file would hang on the first persist rather than fail), and that PrimeRunLock and LandLock are distinct hub-scoped locks from each other and from any single run-id's locks.
+ //
+ //testtiming:keep pins that RunLock, StatusLock, PrimeRunLock and LandLock never share a file, which its covering tests do not
