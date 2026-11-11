@@ -568,7 +568,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #98](https://github.com/Knatte18/loomyard/issues/98).\n\nIn a hub whose anchor is a subdirectory (Models, anchor src/csharp/NORCE.Models), the mo:FABRIC notice for a failed async push says: way forward: run `lym fabric push` in \u003chub\u003e/knut-rheology-merge-in. Running it there fails with: cwd is outside the recorded fabric anchor subtree: cwd \u003chub\u003e/knut-rheology-merge-in does not equal the anchored directory \u003chub\u003e/knut-rheology-merge-in/src/csharp/NORCE.Models (recorded by .lym-anchor).\n\nWorkaround: run `lym fabric push` in the anchored directory instead; it pushed.\n\nExpected: the way forward names the anchored directory (or uses env -C with it), so the command it gives works as written.",
-      "status": "running · Finalize",
+      "status": "done",
       "created": "2026-11-11T06:22:50Z",
       "revised": "2026-11-11T07:31:40Z",
       "profile": "light"
@@ -718,7 +718,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (issue #102, left out of loop-exit-not-recorded)\n\nA load turn that ends on an API `server_error` makes shuttle wait and retype (`load turn ended on an API error; the prompt waits until the load runs through`), with `apiErrors` rising each time and no cap.\nIn the reported run it rose 3, 4, 5 before the loop ended with no envelope, and the run history showed hours of idle time around the stuck step that no status line surfaced.\nThe run `loop-exit-not-recorded` made the loop record its exit status but left these two asks out.\n\n## Idea\n\n- Bound the load-turn retry on `server_error` and name the cap in the halt note, so a halt reads as an API outage rather than only `loop-exited`.\n- Show in `lym loom status` the idle time between a stuck step and the next step.",
-      "status": "running · Open-Window",
+      "status": "running · Record-Write",
       "created": "2026-11-11T08:09:18Z",
       "revised": "2026-11-11T08:30:13Z",
       "profile": "light"
@@ -818,7 +818,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `gate-scope-by-coverage-map`.\n\nTakes: testmap and the redundancy report as they stand once testmap-upkeep's design has landed\nDelivers: maps whose blocks span every linked in-module package, with per-linked-package file hashes (go:embed targets in subdirectories included), each test's spawn-scan verdict and a format marker holding Commit and BuiltAt; dirty checks over every linked package's files, read fresh before the build and after the last test; the redundancy report and mapDrift unchanged in verdict\nExports: testcover.Map's linked-package field, spawn verdict per test and format marker; BlockKey carrying an import path for another package's block\n\nThe part changes these packages:\n\n- internal/testcover (about 300 changed lines)\n- internal/gatecli (about 500 changed lines)\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Open-IDE",
       "created": "2026-11-11T09:07:11Z",
       "revised": "2026-11-11T09:07:11Z",
       "profile": "solid",
