@@ -578,11 +578,6 @@
       "run_settings": {
         "darn": {
           "writer": "fable[high]"
-        },
-        "loom": {
-          "code_hard_max_bounces": 0,
-          "code_max_bounces": 0,
-          "code_reviewer_fan": ""
         }
       },
       "profile": "docs",
