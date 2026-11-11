@@ -1,6 +1,6 @@
 # TestSmokeBootstrapLifecycle died_driver case still expects invalid state after d1535412
 
-`smoke-died-driver-wording` · Task · bug, loom, shed · draft
+`smoke-died-driver-wording` · Task · bug, loom, shed
 
 ## Seen (remove-launchers-dir, 2026-11-11)
 

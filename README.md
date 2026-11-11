@@ -118,11 +118,13 @@ Held by a run; its scope is locked until the run ends.
 | T11 | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | Code-Burler-Fix | neve | 8h<br>7h | fabric, cleanup |
 | T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | Code-Burler-Review | neve | 2d<br>7h | slack, reed, creel |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **TestSmokeBootstrapLifecycle died_driver case still expects invalid state after d1535412** | [`smoke-died-driver-wording`](design-smoke-died-driver-wording.md) | darn · light |  | 16m<br>0m | loom, shed |
 
 #### Layer A (2)
 
@@ -130,7 +132,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Adopt takes over without hanging behind a pause, failing on lym files or replaying stale stops** | [`adopt-takeover-fixes`](design-adopt-takeover-fixes.md) | darn · solid | T11 | 1h<br>1h | fabric, tender |
+| T3 | **Adopt takes over without hanging behind a pause, failing on lym files or replaying stale stops** | [`adopt-takeover-fixes`](design-adopt-takeover-fixes.md) | darn · solid | T11<br>T1 | 1h<br>0m | fabric, tender |
 | T8 | **The adopt-check tab closes after the check; reed attach refuses a directory that is no worktree** | [`reed-tab-and-attach-fixes`](design-reed-tab-and-attach-fixes.md) | darn · light | T12 | 4h<br>1h | reed |
 
 #### Layer B (1)
@@ -173,14 +175,6 @@ Starts when every entry it names under After is done.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T18 | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | darn · light | T13 | 7h<br>39m | fabric, ide |
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **TestSmokeBootstrapLifecycle died_driver case still expects invalid state after d1535412** | [`smoke-died-driver-wording`](design-smoke-died-driver-wording.md) | darn |  | 16m<br>16m | loom, shed |
 
 ### Notes (23)
 
