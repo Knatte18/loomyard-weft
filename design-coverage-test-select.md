@@ -1,6 +1,6 @@
 # Select an importing package's tests from its coverage map, or name the miss that runs it whole
 
-`coverage-test-select` · Task · feature, gate, testkit, darn · running · Drift-Await
+`coverage-test-select` · Task · feature, gate, testkit, darn · running · Drift-Expect
 
 Decision record: [Sketch](decision-coverage-test-select.md)
 
