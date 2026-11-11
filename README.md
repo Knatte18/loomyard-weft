@@ -133,7 +133,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Webster: no amend of a pushed card, no lockless work on a notice, and a gate halt that counts and names its failure** | [`webster-run-faults`](design-webster-run-faults.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>38m | webster, loom, creel, batten, git, gate |
 | T7 | **gate test: card gate and explicit target never reach a second test project when tier0 command lacks a targets placeholder** | [`gate-target-dropped-silently`](design-gate-target-dropped-silently.md) | darn · light | Finalize | neve | 1h<br>38m | gate, dotnet |
-| T8 | **creel post to a strand that is not running reports plain success** | [`creel-post-dead-recipient`](design-creel-post-dead-recipient.md) | darn · light | Drift-Recheck | neve | 1h<br>38m | creel |
+| T8 | **creel post to a strand that is not running reports plain success** | [`creel-post-dead-recipient`](design-creel-post-dead-recipient.md) | darn · light | Describe | neve | 1h<br>38m | creel |
 | T15 | **Console window titles put the task handle first, with hub and project in brackets** | [`console-title-handle-first`](design-console-title-handle-first.md) | darn · light | Darn-Write | neve | 1d<br>10m | termwindow |
 | T20 | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | Code-Burler-Fix | neve | 2d<br>1h | shed, friction, shuttle |
 
@@ -177,7 +177,7 @@ Starts when every entry it names under After is done.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T11 | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | T10 | 1h<br>35m | fabric, cleanup |
-| T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1d<br>11m | slack, reed, creel |
+| T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1d<br>12m | slack, reed, creel |
 
 ### Notes (23)
 
@@ -195,7 +195,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | 0m<br>0m | shuttle, loom |
+| B1 |  | **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | 1m<br>1m | shuttle, loom |
 
 #### Enhancements (6)
 
