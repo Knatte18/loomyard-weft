@@ -1,6 +1,6 @@
 # lym adopt --here behind the lym s shortcut, and lym adopt --archives lists the old owner's archives
 
-`adopt-here-archives` · Task · feature, batten, tender, dobby, orch, fabric, shortcut · running · Code-Burler-Review
+`adopt-here-archives` · Task · feature, batten, tender, dobby, orch, fabric, shortcut · running · Code-Burler-Fix
 
 Decision record: [Sketch](decision-adopt-here-archives.md)
 
