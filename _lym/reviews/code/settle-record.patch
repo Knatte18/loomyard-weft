@@ -1,0 +1,1075 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index a476c945..b00e4544 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -792,6 +792,9 @@ User-facing modules each get one `lym <module>` namespace:
+   `lym adopt --archives <subject>...` lists the `archive-owner/` tags the old owner pushed whose commit the slug's branch on origin lacks, and the adopt's end envelope names that call.
+   The steps run in order: the worker reconciles the hub against origin, stops a beam or a run under it whose pair holds local commits origin lacks or is live, and adds the missing pairs.
+   It pauses each moved run, and each unstarted released task of an adopted subject bar a front task, with an adopt pause entry.
++  An adopt passes every pause, so a pause the operator holds does not stop its own network calls.
++  Its reconcile waits up to a bound on a records branch's held push lock, so a deferred records push that is ending does not leave the branch busy.
++  A record stopped at `done` restarts at `reconcile`, so the stops it held back are judged afresh.
+   It then records this machine as the owner of the beams and of the prime in one pushed owner write, before anything else runs.
+   When the call records the prime's owner, the landing config deploys into the prime's branch and the prime's head is ahead of the running lym's build, the hub's landing deploy runs next,
+   and a failed deploy stops the record with the owner written and the runs still paused.
+diff --git a/internal/adoptcli/adopt_test.go b/internal/adoptcli/adopt_test.go
+index 1a650d9e..8cd163e7 100644
+--- a/internal/adoptcli/adopt_test.go
++++ b/internal/adoptcli/adopt_test.go
+@@ -253,6 +253,7 @@ var workerTime = time.Unix(2000, 0)
+ // workerDeps returns the worker's seams over the world: the fake step deps, with the record and lock in w.dir.
+ func (w *world) workerDeps() workerDeps {
+ 	return workerDeps{
++		ExemptPause: func() func() { return func() {} },
+ 		Steps:       w.deps(),
+ 		PID:         workerPID,
+ 		StartTicks:  workerTicks,
+diff --git a/internal/adoptcli/caller.go b/internal/adoptcli/caller.go
+index 46ecd169..97bf3725 100644
+--- a/internal/adoptcli/caller.go
++++ b/internal/adoptcli/caller.go
+@@ -22,6 +22,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/selfexec"
+@@ -41,20 +42,22 @@ const workerOutName = "adopt.out"
+ // Worktree is the name of the worktree the call runs in.
+ // PullBolt brings Bolt up to date with origin;
+ // a pull that cannot, an unreachable origin among them, leaves the local Bolt and returns the skip's detail.
++// ExemptPause lets every pause entry pass the process's network gate and returns the function that restores the gate.
+ type callerDeps struct {
+-	HubPath    string
+-	Strand     string
+-	Worktree   string
+-	PullBolt   func() (skipped string, err error)
+-	Steps      adoptDeps
+-	ReadRecord func() (adoptrecord.Record, bool, error)
+-	Alive      func(pid int, startTicks string) bool
+-	Now        func() time.Time
+-	Sleep      func(time.Duration)
+-	KeepWarm   func(strand string) time.Duration
+-	Discard    func() (removed bool, err error)
+-	Spawn      func(args []string) (pid int, exited <-chan struct{}, err error)
+-	Stderr     io.Writer
++	ExemptPause func() (restore func())
++	HubPath     string
++	Strand      string
++	Worktree    string
++	PullBolt    func() (skipped string, err error)
++	Steps       adoptDeps
++	ReadRecord  func() (adoptrecord.Record, bool, error)
++	Alive       func(pid int, startTicks string) bool
++	Now         func() time.Time
++	Sleep       func(time.Duration)
++	KeepWarm    func(strand string) time.Duration
++	Discard     func() (removed bool, err error)
++	Spawn       func(args []string) (pid int, exited <-chan struct{}, err error)
++	Stderr      io.Writer
+ }
+ 
+ // hubCallerDeps fills callerDeps over the hub the prime belongs to.
+@@ -66,17 +69,18 @@ func hubCallerDeps(prime *lymcwd.Location) (callerDeps, error) {
+ 	hubPath := prime.HubPath
+ 	dirs := fabricengine.ConfigDirs(prime)
+ 	return callerDeps{
+-		HubPath:    hubPath,
+-		Strand:     os.Getenv(agentname.StrandNameEnv),
+-		Steps:      steps,
+-		ReadRecord: func() (adoptrecord.Record, bool, error) { return adoptrecord.Read(hubPath) },
+-		Alive:      adoptrecord.WorkerAlive,
+-		Now:        time.Now,
+-		Sleep:      time.Sleep,
+-		KeepWarm:   func(strand string) time.Duration { return shuttleengines.KeepWarm(dirs, strand).Cap },
+-		Discard:    func() (bool, error) { return discard(hubPath) },
+-		Spawn:      func(args []string) (int, <-chan struct{}, error) { return spawnWorker(prime, args) },
+-		Stderr:     os.Stderr,
++		ExemptPause: pauserecord.SetGateExemptAll,
++		HubPath:     hubPath,
++		Strand:      os.Getenv(agentname.StrandNameEnv),
++		Steps:       steps,
++		ReadRecord:  func() (adoptrecord.Record, bool, error) { return adoptrecord.Read(hubPath) },
++		Alive:       adoptrecord.WorkerAlive,
++		Now:         time.Now,
++		Sleep:       time.Sleep,
++		KeepWarm:    func(strand string) time.Duration { return shuttleengines.KeepWarm(dirs, strand).Cap },
++		Discard:     func() (bool, error) { return discard(hubPath) },
++		Spawn:       func(args []string) (int, <-chan struct{}, error) { return spawnWorker(prime, args) },
++		Stderr:      os.Stderr,
+ 		PullBolt: func() (string, error) {
+ 			_, detail, err := fabricengine.NewBolt(fabricengine.BoardDir(hubPath)).Pull(fabricengine.EnvSyncOptions(), fabricengine.NewMutations(hubPath))
+ 			return detail, err
+@@ -99,12 +103,14 @@ func runsInOrch(strand string) bool {
+ }
+ 
+ // runAdopt runs a `lym adopt` call.
++// No pause holds its network calls, since an adopt is the operator's own takeover.
+ // It validates req and starts a worker unless one already runs the same adopt.
+ // It then follows the record to its end and prints the end envelope on out.
+ // With --discard it removes an unfinished record instead.
+ // With --here it first resolves the subject of the call's worktree, and may end without an adopt.
+ // It returns the exit code.
+ func runAdopt(deps callerDeps, req request, flags callFlags, out io.Writer) int {
++	defer deps.ExemptPause()()
+ 	if flags.Discard {
+ 		if len(req.Slugs) > 0 || req.Root || req.All || req.KeepLocal || req.DropLocal || req.NoOrch || flags.Here {
+ 			return output.Err(out, "lym adopt: --discard takes no subject and no other flag: run `lym adopt --discard` alone")
+diff --git a/internal/adoptcli/caller_test.go b/internal/adoptcli/caller_test.go
+index f65015d5..95df437b 100644
+--- a/internal/adoptcli/caller_test.go
++++ b/internal/adoptcli/caller_test.go
+@@ -20,10 +20,13 @@ import (
+ )
+ 
+ // callerFakes holds what the fake caller seams were asked.
++// exempted and restored count the pause-gate exemptions and their restores.
+ type callerFakes struct {
+-	spawned [][]string
+-	caps    []string
+-	pulls   int
++	spawned  [][]string
++	caps     []string
++	pulls    int
++	exempted int
++	restored int
+ }
+ 
+ // stepsThrough returns the step records of every adopt step up to and including last.
+@@ -289,10 +292,17 @@ func TestRunAdopt(t *testing.T) {
+ 			now := time.Unix(5000, 0)
+ 			wakes := 0
+ 			deps := callerDeps{
++				ExemptPause: func() func() {
++					fakes.exempted++
++					return func() { fakes.restored++ }
++				},
+ 				HubPath:  w.dir,
+ 				Strand:   tt.strand,
+ 				Worktree: tt.worktree,
+ 				PullBolt: func() (string, error) {
++					if fakes.exempted == 0 {
++						t.Errorf("Bolt pulled before the call passed every pause")
++					}
+ 					fakes.pulls++
+ 					return tt.pullSkip, tt.pullErr
+ 				},
+@@ -334,6 +344,9 @@ func TestRunAdopt(t *testing.T) {
+ 			if fakes.pulls != tt.wantPulls {
+ 				t.Errorf("runAdopt pulled Bolt %d times, want %d", fakes.pulls, tt.wantPulls)
+ 			}
++			if fakes.exempted != 1 || fakes.restored != 1 {
++				t.Errorf("runAdopt exempted the pause gate %d times and restored it %d times, want once each", fakes.exempted, fakes.restored)
++			}
+ 			if _, found, err := adoptrecord.Read(w.dir); tt.wantNoRecord && (found || err != nil) {
+ 				t.Errorf("adopt record after the call: found %v, error %v; want none", found, err)
+ 			}
+diff --git a/internal/adoptcli/deps.go b/internal/adoptcli/deps.go
+index 334a66b2..128ae0d5 100644
+--- a/internal/adoptcli/deps.go
++++ b/internal/adoptcli/deps.go
+@@ -30,6 +30,21 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ )
+ 
++// reconcilePushLockWait bounds how long the adopt's reconcile waits on a records branch's held push lock.
++// A push that ends within it, such as the deferred records push a lifted pause spawns, leaves the branch movable.
++const reconcilePushLockWait = 30 * time.Second
++
++// reconcileFunc is the origin reconcile the adopt runs: the engine's own, or a stand-in under test.
++type reconcileFunc func(*lymcwd.Location, fabricengine.ReconcileScope, fabricengine.OriginSeams, fabricengine.ReconcileOptions) (fabricengine.OriginReport, error)
++
++// reconcileSeam returns the adopt's hub-wide origin reconcile over prime, run through reconcile with seams.
++// It waits up to reconcilePushLockWait on a records branch's held push lock.
++func reconcileSeam(reconcile reconcileFunc, prime *lymcwd.Location, seams fabricengine.OriginSeams) func() (fabricengine.OriginReport, error) {
++	return func() (fabricengine.OriginReport, error) {
++		return reconcile(prime, fabricengine.ReconcileScope{}, seams, fabricengine.ReconcileOptions{PushLockWait: reconcilePushLockWait})
++	}
++}
++
+ // hubDepsAs fills adoptDeps over the hub the prime belongs to, with the machine's name read through machine,
+ // so a test can stand two clones of one host for two machines.
+ // The reconcile's live-pair reading treats a slug as paused only under a live hub-scope pause,
+@@ -61,9 +76,7 @@ func hubDepsAs(prime *lymcwd.Location, machine func() (string, error)) (adoptDep
+ 		ParentOf: func(slug string) (string, error) {
+ 			return hubgeom.ParentOf(prime, slug)
+ 		},
+-		Reconcile: func() (fabricengine.OriginReport, error) {
+-			return fabricengine.ReconcileOrigin(prime, fabricengine.ReconcileScope{}, seams, fabricengine.ReconcileOptions{})
+-		},
++		Reconcile: reconcileSeam(fabricengine.ReconcileOrigin, prime, seams),
+ 		LocalPair: func(slug string) bool {
+ 			info, err := os.Stat(fabricengine.WorktreePath(prime, slug))
+ 			return err == nil && info.IsDir()
+diff --git a/internal/adoptcli/deps_test.go b/internal/adoptcli/deps_test.go
+index 10c48d58..a6047be0 100644
+--- a/internal/adoptcli/deps_test.go
++++ b/internal/adoptcli/deps_test.go
+@@ -1,5 +1,6 @@
+ // deps_test.go covers the hub-only pause reading and the adopt check start's guard under go test.
+-// It also covers the start's alive skip, its liveness reading, and the adopt gate tiers it carries.
++// It also covers the start's alive skip, its liveness reading, and the adopt gate tiers it carries,
++// and the push-lock bound the adopt's reconcile runs with.
+ 
+ package adoptcli
+ 
+@@ -67,6 +68,25 @@ func TestHubOnlyPaused(t *testing.T) {
+ 	})
+ }
+ 
++func TestReconcileSeamWaitsOnAPushLock(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	var got fabricengine.ReconcileOptions
++	stand := func(_ *lymcwd.Location, _ fabricengine.ReconcileScope, _ fabricengine.OriginSeams, options fabricengine.ReconcileOptions) (fabricengine.OriginReport, error) {
++		got = options
++		return fabricengine.OriginReport{}, nil
++	}
++
++	if _, err := reconcileSeam(stand, &lymcwd.Location{}, fabricengine.OriginSeams{})(); err != nil {
++		t.Fatalf("reconcileSeam()() error = %v; want nil", err)
++	}
++
++	if got.PushLockWait != reconcilePushLockWait || got.PushLockWait <= 0 {
++		t.Errorf("the reconcile ran with PushLockWait %v; want the positive bound %v", got.PushLockWait, reconcilePushLockWait)
++	}
++}
++
+ func TestSpawnersStartNothingUnderTest(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/adoptcli/doc.go b/internal/adoptcli/doc.go
+index 6220f86f..17bf64e1 100644
+--- a/internal/adoptcli/doc.go
++++ b/internal/adoptcli/doc.go
+@@ -68,6 +68,11 @@
+ // The worker outlives the call: `proc.Detach` gives it a session of its own.
+ // A test binary starts nothing.
+ //
++// An adopt is the operator's own takeover, so no pause holds it.
++// `runAdopt` and `runWorker` each set `pauserecord.SetGateExemptAll` on their own process's network gate first.
++// They do it through the `ExemptPause` seam and restore the gate when they return.
++// A process the worker starts, a dobby or an adopt check among them, installs its own gate, which a pause still holds.
++//
+ // `follow` reads the record on each wake and prints `adopt: <step> done` on stderr for each step that ended.
+ // It returns the record of the followed worker once that reads `done` or `stopped`.
+ // An `interrupted` record, whose worker is gone, is an error naming the re-run and `lym adopt --discard`.
+@@ -164,9 +169,12 @@
+ //   - An unfinished record of the same subjects whose worker is gone or that stopped is resumed.
+ //     `mergeRequest` keeps the record's flags and adds the call's.
+ //     A call's `--keep-local` or `--drop-local` replaces the record's other one and restarts the adopt at `reconcile`.
++//     A record stopped at `done`, on a project a stop held back, restarts at `reconcile` too:
++//     its stop repeats only the branch states its reconcile judged, which may no longer hold.
++//     So `rejudges` judges the hub afresh.
+ //     The worker rewrites only its pid, start ticks, start and state, and runs from `Record.ResumeStep`.
+ //     It takes the subjects from the record, so a beam made since does not join an `--all` adopt.
+-//     It keeps the steps listed, each replaced as it runs again, unless the call restarted the adopt.
++//     It keeps the steps listed, each replaced as it runs again, unless the adopt restarted.
+ //   - An unfinished record of other subjects is refused, writing nothing.
+ //
+ // Steps up to `owner` run in one process.
+@@ -194,6 +202,8 @@
+ // # Step reconcile
+ //
+ // A moving hub-scope reconcile runs first.
++// It waits on a records branch's held push lock for up to `reconcilePushLockWait` before it reads the branch busy.
++// So a short push, such as the deferred records push a lifted pause spawns, does not stop the adopt.
+ // Its `pairteardown` seams take a `HubPaused` from `hubOnlyPaused`, which covers a slug only by a live hub entry.
+ // So a pair whose strands are alive under any slug-scope pause, an owner pause included, reads live.
+ // An unreachable origin stops the record naming a re-run once origin answers.
+@@ -233,6 +243,8 @@
+ // `--drop-local` refuses a live pair naming `--keep-local`.
+ // Otherwise it calls `fabricengine.DropLocal`, which records into adopt's mutation record.
+ // `DropLocal` keeps each local tip origin lacks under an `archive/<slug>/<tip>` tag before it moves the branch.
++// Before it moves a records branch, it removes each untracked file of its worktree that origin's tip tracks.
++// Such a file is one lym wrote, a review record for one, and `reset --keep` refuses to overwrite it.
+ //
+ // The step decides which beams are adoptable and whether the prime goes, and stores them as inputs.
+ //
+@@ -388,7 +400,7 @@
+ // The stop names the re-run that records the owner over the local state, `--keep-local`,
+ // and the one that keeps each local tip under an archive tag and moves the branches to origin's, `--drop-local`.
+ // Both are rendered by `adoptrecord.Request.Command` over the adopt's own request.
+-// Only the local-commit flag differs, so the standing record is resumed under either.
++// Either re-run restarts the standing record at `reconcile` with its steps cleared, so the stop is judged afresh.
+ // An adopt that held nothing back ends `done`.
+ //
+ // # The check verb
+diff --git a/internal/adoptcli/worker.go b/internal/adoptcli/worker.go
+index c41e6efa..2359549f 100644
+--- a/internal/adoptcli/worker.go
++++ b/internal/adoptcli/worker.go
+@@ -19,6 +19,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
+@@ -27,7 +28,9 @@ import (
+ // TryLock takes adopt.lock without blocking, and reports false when another process holds it;
+ // release gives it up.
+ // Alive reports whether the worker named by a pid and start ticks is running.
++// ExemptPause lets every pause entry pass the process's network gate and returns the function that restores the gate.
+ type workerDeps struct {
++	ExemptPause func() (restore func())
+ 	Steps       adoptDeps
+ 	PID         int
+ 	StartTicks  string
+@@ -49,6 +52,7 @@ func hubWorkerDeps(prime *lymcwd.Location, machine func() (string, error)) (work
+ 	pid := os.Getpid()
+ 	ticks, _ := proc.StartTime(pid)
+ 	return workerDeps{
++		ExemptPause: pauserecord.SetGateExemptAll,
+ 		Steps:       steps,
+ 		PID:         pid,
+ 		StartTicks:  ticks,
+@@ -164,12 +168,22 @@ func mergeRequest(recorded, call adoptrecord.Request) (merged adoptrecord.Reques
+ 	return merged, restart
+ }
+ 
++// rejudges reports whether a resumed record starts again at the reconcile with its steps cleared.
++// A record stopped at the done step repeats only the stops its reconcile judged, which may no longer hold,
++// so its re-run judges the hub afresh.
++func rejudges(record adoptrecord.Record) bool {
++	return record.State == adoptrecord.StateStopped && record.InFlight == adoptrecord.StepDone
++}
++
+ // runWorker runs the steps of an adopt for req under adopt.lock and records each in the adopt record.
++// No pause holds its network calls, since an adopt is the operator's own takeover.
+ // A refused request, a held lock and a record of other subjects, or one whose worker still runs, return before any step.
+ // An unfinished record of the same subjects is resumed from its first step not done, over the subjects it recorded.
+-// The resume keeps the steps already listed, unless the call changed how local commits are answered, which clears them.
++// The resume keeps the steps already listed, unless the call changed how local commits are answered,
++// or the record stopped at the done step; either clears them and starts again at the reconcile.
+ // It returns the end envelope, the final record, and the error of the step that stopped the adopt, if one did.
+ func runWorker(deps workerDeps, req request) (outcome, adoptrecord.Record, error) {
++	defer deps.ExemptPause()()
+ 	req = normalizedRequest(req)
+ 	if _, _, err := validateRequest(deps.Steps, req); err != nil {
+ 		return outcome{}, adoptrecord.Record{}, err
+@@ -200,6 +214,7 @@ func runWorker(deps workerDeps, req request) (outcome, adoptrecord.Record, error
+ 	if verdict == verdictResume {
+ 		var merged adoptrecord.Request
+ 		merged, restart = mergeRequest(record.Request, req.recorded())
++		restart = restart || rejudges(record)
+ 		req = requestOf(merged)
+ 		if next := record.ResumeStep(); !restart && next != "" {
+ 			from = next
+diff --git a/internal/adoptcli/worker_test.go b/internal/adoptcli/worker_test.go
+index ec666512..f14d4620 100644
+--- a/internal/adoptcli/worker_test.go
++++ b/internal/adoptcli/worker_test.go
+@@ -101,6 +101,85 @@ func TestRunWorker(t *testing.T) {
+ 				t.Errorf("first save = %+v after %d steps, want the running record at reconcile with the request and subjects before any step", first, stepsAtFirstSave)
+ 			}
+ 		}},
++		{"WorkerPassesEveryPauseFromBeforeItsFirstStepUntilItReturns", func(t *testing.T, w *world) {
++			deps := w.workerDeps()
++			restored := false
++			deps.ExemptPause = func() func() {
++				w.order = append(w.order, "exempt")
++				return func() { restored = true }
++			}
++			if _, _, err := runWorker(deps, alphaRequest); err != nil {
++				t.Fatalf("runWorker error = %v, want none", err)
++			}
++			if len(w.order) < 2 || w.order[0] != "exempt" || w.order[1] != "reconcile" || !restored {
++				t.Errorf("steps = %v, restored %v; want the exemption before the reconcile and restored at the end", w.order, restored)
++			}
++		}},
++		{"HeldBackRecordWhoseStopNoLongerHoldsIsJudgedAgainAndEndsDone", func(t *testing.T, w *world) {
++			w.live["alpha"] = true
++			if _, _, err := runWorker(w.workerDeps(), alphaRequest); err == nil {
++				t.Fatalf("first runWorker error = nil, want the held-back stop")
++			}
++			w.live["alpha"] = false
++
++			_, record, err := runWorker(w.workerDeps(), alphaRequest)
++			if err != nil {
++				t.Fatalf("second runWorker error = %v, want none", err)
++			}
++			reconciles := 0
++			for _, step := range w.order {
++				if step == "reconcile" {
++					reconciles++
++				}
++			}
++			if record.State != adoptrecord.StateDone || len(record.Inputs.HeldBack) != 0 || !slices.Equal(record.Inputs.OwnerStood, []string{"alpha"}) || reconciles != 2 {
++				t.Errorf("record = state %q, held back %v, owner stood %v after %d reconciles; want done with alpha's owner written after a second reconcile",
++					record.State, record.Inputs.HeldBack, record.Inputs.OwnerStood, reconciles)
++			}
++		}},
++		{"HeldBackRecordWhoseStopStillHoldsStopsAgainWithTheSameWayForward", func(t *testing.T, w *world) {
++			w.live["alpha"] = true
++			_, _, firstErr := runWorker(w.workerDeps(), alphaRequest)
++			if firstErr == nil {
++				t.Fatalf("first runWorker error = nil, want the held-back stop")
++			}
++			first := recordOf(t, w)
++
++			_, record, err := runWorker(w.workerDeps(), alphaRequest)
++			if err == nil || err.Error() != firstErr.Error() {
++				t.Fatalf("second runWorker error = %v, want the same stop as %v", err, firstErr)
++			}
++			reconciles := 0
++			for _, step := range w.order {
++				if step == "reconcile" {
++					reconciles++
++				}
++			}
++			if record.State != adoptrecord.StateStopped || !slices.Equal(record.Inputs.HeldBack, first.Inputs.HeldBack) || record.WayForward != first.WayForward || reconciles != 2 {
++				t.Errorf("record = state %q, held back %v, way forward %q after %d reconciles; want it stopped again as before after a second reconcile",
++					record.State, record.Inputs.HeldBack, record.WayForward, reconciles)
++			}
++		}},
++		{"HeldBackRecordRejudgedKeepsItsPausedSlugs", func(t *testing.T, w *world) {
++			w.live["alpha"] = true
++			if _, _, err := runWorker(w.workerDeps(), alphaRequest); err == nil {
++				t.Fatalf("first runWorker error = nil, want the held-back stop")
++			}
++			stopped := recordOf(t, w)
++			stopped.Inputs.Paused = []string{"alpha"}
++			if err := adoptrecord.Write(w.dir, stopped); err != nil {
++				t.Fatalf("Write(adopt record) = %v", err)
++			}
++			w.live["alpha"] = false
++
++			_, record, err := runWorker(w.workerDeps(), alphaRequest)
++			if err != nil {
++				t.Fatalf("second runWorker error = %v, want none", err)
++			}
++			if !slices.Equal(record.Inputs.Paused, []string{"alpha"}) || len(w.record.Live) != 0 {
++				t.Errorf("paused slugs = %v, live pause entries = %+v; want alpha kept as paused and not paused again", record.Inputs.Paused, w.record.Live)
++			}
++		}},
+ 		{"RecordThroughOwnerResumesAtDeployAndEndsDone", func(t *testing.T, w *world) {
+ 			seed(t, w, adoptrecord.StepOwner, nil)
+ 			_, record, err := runWorker(w.workerDeps(), alphaRequest)
+diff --git a/internal/fabricengine/destroy.go b/internal/fabricengine/destroy.go
+index 20c25647..b29f5c7e 100644
+--- a/internal/fabricengine/destroy.go
++++ b/internal/fabricengine/destroy.go
+@@ -244,6 +244,7 @@ const (
+ 	pathOwnershipPairWarpCheckout
+ 	pathOwnershipBoardWorktree
+ 	pathOwnershipMovePathspecs
++	pathOwnershipUntrackedTrackedAt
+ )
+ 
+ // pathOwnership declares which of the closed set of ownership kinds a pathRequest's target must satisfy.
+@@ -261,6 +262,8 @@ type pathOwnership struct {
+ 	parentBranch string
+ 	// pathspecs are used only by the move predicate, relative to root as the weft worktree.
+ 	pathspecs []string
++	// sha is used only by the untracked predicate: the commit that must track the target.
++	sha string
+ }
+ 
+ // ownedRegisteredLinkedWorktree declares target as owned when repoDir's worktree list registers it as a linked worktree.
+@@ -300,6 +303,13 @@ func ownedMovePathspecs(weftPath string, pathspecs []string) pathOwnership {
+ 	return pathOwnership{kind: pathOwnershipMovePathspecs, root: weftPath, pathspecs: pathspecs}
+ }
+ 
++// ownedUntrackedTrackedAt declares target as owned when it lies in the worktree at worktree.
++// Its index must not track the target, and the commit sha must.
++// It serves a move to sha that git refuses while such an untracked file stands where sha puts its own.
++func ownedUntrackedTrackedAt(worktree, sha string) pathOwnership {
++	return pathOwnership{kind: pathOwnershipUntrackedTrackedAt, root: worktree, sha: sha}
++}
++
+ // ownedFabricHub declares target as owned when it structurally looks like a fabric hub:
+ // the Bolt checkout entry, or at least one weft sibling, per looksLikeHub.
+ func ownedFabricHub() pathOwnership {
+@@ -566,6 +576,24 @@ func resolvePathOwnership(own pathOwnership, target string) (ok bool, reason str
+ 		}
+ 		return false, fmt.Sprintf("%s lies under none of the paths the anchor move rewrites", target)
+ 
++	case pathOwnershipUntrackedTrackedAt:
++		rel, err := filepath.Rel(filepath.Clean(own.root), filepath.Clean(target))
++		if err != nil {
++			return false, fmt.Sprintf("relate %s to the worktree %s: %v", target, own.root, err)
++		}
++		rel = filepath.ToSlash(rel)
++		tracked, err := PathTracked(own.root, rel)
++		if err != nil {
++			return false, err.Error()
++		}
++		if tracked {
++			return false, fmt.Sprintf("%s is tracked in %s", target, own.root)
++		}
++		if _, err := gitrepo.New(own.root).FileAtRevision(own.sha, rel); err != nil {
++			return false, fmt.Sprintf("%s is not tracked at %s: %v", rel, own.sha, err)
++		}
++		return true, ""
++
+ 	case pathOwnershipFabricHub:
+ 		if !looksLikeHub(target) {
+ 			return false, fmt.Sprintf("%s does not look like a fabric hub (no %s entry and no weft sibling)", target, BoltDirName)
+@@ -1949,12 +1977,14 @@ type DropLocalResult struct {
+ // dropLocalPlan describes one branch to move.
+ // It holds the gate request, the checkout, and the tip the branch leaves.
+ // It also holds the origin tip the branch moves to and the commits of that tip that origin lacks.
++// untracked lists the untracked files of a records checkout that the origin tip tracks, slash paths relative to it.
+ type dropLocalPlan struct {
+ 	req       pathRequest
+ 	repo      *gitrepo.Repo
+ 	tip       string
+ 	onto      string
+ 	localOnly []string
++	untracked []string
+ }
+ 
+ // DropLocal moves the code and records branches of the pair slug to the tips origin last held for them.
+@@ -1967,7 +1997,11 @@ type dropLocalPlan struct {
+ // It refuses one whose anchor differs from the anchor of the origin tip it would move to, ancestry ignored.
+ // The refusal wraps ErrAnchorChange and names the commands that settle it.
+ // Each move is a `reset --keep` in the branch's own worktree; nothing is fetched or pushed, and the tags stay local.
+-// It appends a tag_created entry per tag and a commits_dropped entry per moved branch.
++// Before a records branch moves, each untracked, unignored file of its worktree that the origin tip tracks is removed.
++// Such a file is one lym wrote in the weft, and `reset --keep` would refuse to overwrite it.
++// A code branch's untracked files are never removed.
++// It appends a tag_created entry per tag, a path_removed entry per removed file,
++// and a commits_dropped entry per moved branch.
+ // Each entry follows its effect, and the commits_dropped detail holds the dropped commits' SHAs.
+ // Entries go to rec and to the result.
+ func DropLocal(rec *Mutations, l *lymcwd.Location, slug string) (res DropLocalResult, err error) {
+@@ -2018,7 +2052,13 @@ func DropLocal(rec *Mutations, l *lymcwd.Location, slug string) (res DropLocalRe
+ 		if err := checkPathRequest(req); err != nil {
+ 			return res, err
+ 		}
+-		plans = append(plans, dropLocalPlan{req: req, repo: repo, tip: tip, onto: target.tracking, localOnly: localOnly})
++		plan := dropLocalPlan{req: req, repo: repo, tip: tip, onto: target.tracking, localOnly: localOnly}
++		if target.side == failedPushSideRecords {
++			if plan.untracked, err = untrackedOnPaths(target.worktree, touched); err != nil {
++				return res, err
++			}
++		}
++		plans = append(plans, plan)
+ 	}
+ 
+ 	for _, plan := range plans {
+@@ -2027,6 +2067,19 @@ func DropLocal(rec *Mutations, l *lymcwd.Location, slug string) (res DropLocalRe
+ 			return res, err
+ 		}
+ 		res.Tags = append(res.Tags, tag)
++		for _, rel := range plan.untracked {
++			removal := pathRequest{
++				what:      "remove an untracked weft file origin's tip tracks",
++				container: plan.req.target,
++				target:    filepath.Join(plan.req.target, filepath.FromSlash(rel)),
++				ownership: ownedUntrackedTrackedAt(plan.req.target, plan.onto),
++				dirtiness: dirtinessNA("the file is untracked, so git holds no change of it, and the origin tip the branch moves to carries its own copy"),
++				force:     false,
++			}
++			if err := removePath(own, removal); err != nil {
++				return res, fmt.Errorf("clear the way for %s to move to origin's tip %s: %w; the local tip is kept under the tag %s", plan.req.target, plan.onto, err, tag)
++			}
++		}
+ 		if err := plan.repo.ResetKeep(plan.onto); err != nil {
+ 			return res, fmt.Errorf("move %s to origin's tip %s: %w; the local tip is kept under the tag %s", plan.req.target, plan.onto, err, tag)
+ 		}
+@@ -2035,6 +2088,23 @@ func DropLocal(rec *Mutations, l *lymcwd.Location, slug string) (res DropLocalRe
+ 	return res, nil
+ }
+ 
++// untrackedOnPaths returns the untracked, unignored files of the checkout at worktree that paths names.
++// paths and the result are slash paths relative to worktree.
++// An ignored file is left out, since git overwrites one without refusing.
++func untrackedOnPaths(worktree string, paths []string) ([]string, error) {
++	out, err := gitexec.Run([]string{"ls-files", "--others", "--exclude-standard", "-z"}, worktree)
++	if err != nil {
++		return nil, fmt.Errorf("list the untracked files of %s: %w", worktree, err)
++	}
++	var found []string
++	for _, path := range strings.Split(out, "\x00") {
++		if path != "" && slices.Contains(paths, path) {
++			found = append(found, path)
++		}
++	}
++	return found, nil
++}
++
+ // keepArchiveTag puts the local tag `archive/<slug>/<first 12 hex of sha>` on sha in repo and returns its name.
+ // A tag already on sha is kept, and one on another commit is an error.
+ // It appends KindTagCreated once the tag exists.
+diff --git a/internal/fabricengine/destroy_landedwork_integration_test.go b/internal/fabricengine/destroy_landedwork_integration_test.go
+index 839b61ac..bd9e1910 100644
+--- a/internal/fabricengine/destroy_landedwork_integration_test.go
++++ b/internal/fabricengine/destroy_landedwork_integration_test.go
+@@ -1,4 +1,5 @@
+-// destroy_landedwork_integration_test.go drives the pair-warp ownership kind and the unlanded-work dirtiness kind.
++// destroy_landedwork_integration_test.go drives the pair-warp ownership kind.
++// It also drives the untracked-tracked-at ownership kind and the unlanded-work dirtiness kind.
+ // It runs them against real throwaway git repositories, with hermetic git from testmain_test.go.
+ // It uses an empty branch_prefix, so the warp branch is the bare slug.
+ // No hub is involved: the gate reads only the repository named by repoDir.
+@@ -6,6 +7,8 @@
+ package fabricengine
+ 
+ import (
++	"os"
++	"path/filepath"
+ 	"strings"
+ 	"testing"
+ 
+@@ -27,6 +30,42 @@ func landedWorkRepo(t *testing.T) (repo, remote string) {
+ 	return repo, remote
+ }
+ 
++func TestOwnedUntrackedTrackedAt_RefusesATargetTheIndexTracksOrTheCommitDoesNot(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	repo, _ := landedWorkRepo(t)
++	gitkit.CommitFile(t, repo, "indexed.txt", "indexed", "indexed")
++	gitkit.Git(t, repo, "switch", "-c", "other")
++	otherTip := gitkit.CommitFile(t, repo, "theirs.txt", "theirs", "theirs")
++	gitkit.Git(t, repo, "switch", "main")
++	for _, name := range []string{"theirs.txt", "stray.txt"} {
++		if err := os.WriteFile(filepath.Join(repo, name), []byte("local\n"), 0o644); err != nil {
++			t.Fatalf("write %s: %v", name, err)
++		}
++	}
++
++	tests := []struct {
++		name       string
++		target     string
++		wantOwned  bool
++		wantReason string
++	}{
++		{"UntrackedFileTheCommitTracksIsOwned", "theirs.txt", true, ""},
++		{"FileTheIndexTracksIsRefused", "indexed.txt", false, "is tracked in"},
++		{"UntrackedFileTheCommitDoesNotTrackIsRefused", "stray.txt", false, "is not tracked at"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			owned, reason := resolvePathOwnership(ownedUntrackedTrackedAt(repo, otherTip), filepath.Join(repo, tt.target))
++			if owned != tt.wantOwned || !strings.Contains(reason, tt.wantReason) {
++				t.Errorf("resolvePathOwnership(%s) = %v, %q; want %v with a reason containing %q", tt.target, owned, reason, tt.wantOwned, tt.wantReason)
++			}
++		})
++	}
++}
++
+ func landedWorkCheck(repo, branch string) error {
+ 	return checkBranchRequest(branchRequest{
+ 		what:      "test delete warp branch",
+diff --git a/internal/fabricengine/destroy_test.go b/internal/fabricengine/destroy_test.go
+index 35a994dd..7a3b0f6b 100644
+--- a/internal/fabricengine/destroy_test.go
++++ b/internal/fabricengine/destroy_test.go
+@@ -631,6 +631,7 @@ func TestGate_AbsentTargetIsNoOp(t *testing.T) {
+ 		ownedFreshlyCreatedWorktree(createdToken{path: absent, worktree: true}),
+ 		ownedWiredJunction([]string{absent}, "/somewhere"),
+ 		ownedDriftedWiredJunction([]string{absent}),
++		ownedUntrackedTrackedAt(container, "HEAD"),
+ 	}
+ 
+ 	for i, own := range kinds {
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 6f87b4f9..69bf011e 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -78,6 +78,8 @@
+ // `DropLocal` refuses an empty own marker of the records branch.
+ // It compares the branch's anchor with the origin tip it would reset to, using `weftAnchorStop` with `reset` set.
+ // A local re-anchor not yet pushed therefore differs from origin's tip as well.
++// Before it moves a records branch, `DropLocal` removes each untracked, unignored weft file that origin's tip tracks.
++// It declares `ownedUntrackedTrackedAt` for each, since `reset --keep` refuses to overwrite one.
+ // `Pull` never returns success with `WeftPulled` false for a moved origin.
+ // The call's result is `PullResult`, which reports what each side did and, after a reconcile, the re-anchor baseline.
+ // pull.go's doc comment holds the full flow and the `*PartialPullError` warp-side-failure contract.
+@@ -193,6 +195,8 @@
+ // It stops as dirty, naming the paths, when a tracked change sits on a path it touches.
+ // A records branch moves through `reconcileRecordsBranch`, under its write lock and then its push lock.
+ // Each lock is one try-acquire, and a held lock reads as busy.
++// While only the push lock is held, both are tried again once a second until `ReconcileOptions.PushLockWait` has passed,
++// so a push that ends within that bound leaves the branch movable; a zero bound reads the held push lock busy at once.
+ // The move fast-forwards or replays.
+ // A code branch is never rebased, so one both sides moved stays diverged.
+ // The prime's branches move only under the prime lock, which `tryPrimeLock` takes with no wait.
+@@ -1548,6 +1552,8 @@
+ // The two worktree-shaped kinds compare against git's own worktree registration.
+ // The two link-shaped kinds compare against `fslink.RawTarget`.
+ // Both authorities already carry resolved paths.
++// `ownedUntrackedTrackedAt` compares against git.
++// The worktree's index must not track the target, and the named commit must.
+ //
+ // **The gate's dirtiness check is not atomic with its act; that is a stated limit**.
+ // `checkPathDirtiness` runs `git status --porcelain` and returns; the executor then performs the primitive.
+diff --git a/internal/fabricengine/droplocal_integration_test.go b/internal/fabricengine/droplocal_integration_test.go
+index c34a0117..d0c1152d 100644
+--- a/internal/fabricengine/droplocal_integration_test.go
++++ b/internal/fabricengine/droplocal_integration_test.go
+@@ -8,6 +8,7 @@ package fabricengine_test
+ 
+ import (
+ 	"errors"
++	"os"
+ 	"path/filepath"
+ 	"slices"
+ 	"strings"
+@@ -21,6 +22,9 @@ import (
+ 
+ // TestDropLocal checks the branches ahead of origin:
+ // a records branch and a code branch are tagged and moved to origin's tips, with the mutations recorded.
++// An untracked weft file origin's tip tracks is removed before the move.
++// An ignored file git overwrites and a file origin's tip does not track are not removed.
++// A code branch file origin tracks is not removed either.
+ // A dirty tracked path refuses the drop with nothing tagged or moved.
+ func TestDropLocal(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -69,6 +73,112 @@ func TestDropLocal(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("An untracked weft file origin's tip tracks is removed and the weft moves to origin's tip", func(t *testing.T) {
++		t.Parallel()
++
++		pair := newMovesPair(t)
++		recordsOrigin := originCommitFile(t, pair.RecordsBare, pair.recordsName, "reviews/record.json", "origin\n")
++		gitkit.Git(t, pair.records, "fetch", "origin")
++		gitkit.CommitFile(t, pair.records, "notes/local.md", "records", "local records")
++		recordPath := filepath.Join(pair.records, "reviews", "record.json")
++		writeFile(t, recordPath, "local\n")
++
++		res, err := fabricengine.DropLocal(fabricengine.NewMutations(pair.Location.HubPath), pair.Location, "task")
++		if err != nil {
++			t.Fatalf("DropLocal() error = %v; want nil", err)
++		}
++
++		if got := gitkit.RevParse(t, pair.records, "HEAD"); got != recordsOrigin {
++			t.Errorf("records HEAD = %q; want origin's tip %q", got, recordsOrigin)
++		}
++		if got, err := os.ReadFile(recordPath); err != nil || string(got) != "origin\n" {
++			t.Errorf("reviews/record.json = %q, %v; want origin's content", got, err)
++		}
++		var kinds []fabricengine.Kind
++		for _, entry := range res.Mutated().Entries() {
++			kinds = append(kinds, entry.Kind)
++		}
++		if want := []fabricengine.Kind{fabricengine.KindTagCreated, fabricengine.KindPathRemoved, fabricengine.KindCommitsDropped}; !slices.Equal(kinds, want) {
++			t.Errorf("recorded kinds = %v; want %v", kinds, want)
++		}
++	})
++
++	t.Run("The drop removes neither an ignored weft file nor one origin's tip does not track", func(t *testing.T) {
++		t.Parallel()
++
++		tests := []struct {
++			name string
++			// arrange writes the file and returns its path and the content it must hold after the drop.
++			arrange func(t *testing.T, pair *movesPair) (path, want string)
++		}{
++			// Git overwrites an ignored file with origin's copy, so the drop has nothing to remove.
++			{"IgnoredFileOnAPathOriginTracksIsOverwrittenByGit", func(t *testing.T, pair *movesPair) (string, string) {
++				exclude := strings.TrimSpace(gitkit.Git(t, pair.records, "rev-parse", "--path-format=absolute", "--git-path", "info/exclude"))
++				writeFile(t, exclude, "reviews/record.json\n")
++				path := filepath.Join(pair.records, "reviews", "record.json")
++				writeFile(t, path, "local\n")
++				return path, "origin\n"
++			}},
++			{"WeftFileOriginDoesNotTrack", func(t *testing.T, pair *movesPair) (string, string) {
++				path := filepath.Join(pair.records, "notes", "scratch.md")
++				writeFile(t, path, "scratch\n")
++				return path, "scratch\n"
++			}},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++
++				pair := newMovesPair(t)
++				recordsOrigin := originCommitFile(t, pair.RecordsBare, pair.recordsName, "reviews/record.json", "origin\n")
++				gitkit.Git(t, pair.records, "fetch", "origin")
++				gitkit.CommitFile(t, pair.records, "notes/local.md", "records", "local records")
++				gitkit.CommitFile(t, pair.code, "local-code.txt", "code", "local code")
++				path, want := tt.arrange(t, pair)
++
++				res, err := fabricengine.DropLocal(fabricengine.NewMutations(pair.Location.HubPath), pair.Location, "task")
++				if err != nil {
++					t.Fatalf("DropLocal() error = %v; want nil", err)
++				}
++
++				if got := gitkit.RevParse(t, pair.records, "HEAD"); got != recordsOrigin {
++					t.Errorf("records HEAD = %q; want origin's tip %q", got, recordsOrigin)
++				}
++				if got, err := os.ReadFile(path); err != nil || string(got) != want {
++					t.Errorf("%s = %q, %v; want %q", path, got, err, want)
++				}
++				for _, entry := range res.Mutated().Entries() {
++					if entry.Kind == fabricengine.KindPathRemoved {
++						t.Errorf("recorded %+v; want no path removal", entry)
++					}
++				}
++			})
++		}
++	})
++
++	t.Run("An untracked code branch file origin's tip tracks is never removed, git refusing the move", func(t *testing.T) {
++		t.Parallel()
++
++		pair := newMovesPair(t)
++		originCommitFile(t, pair.CodeBare, pair.codeBranch, "scratch.txt", "origin\n")
++		gitkit.Git(t, pair.code, "fetch", "origin")
++		codeTip := gitkit.CommitFile(t, pair.code, "local-code.txt", "code", "local code")
++		path := filepath.Join(pair.code, "scratch.txt")
++		writeFile(t, path, "local\n")
++
++		_, err := fabricengine.DropLocal(fabricengine.NewMutations(pair.Location.HubPath), pair.Location, "task")
++
++		if err == nil {
++			t.Errorf("DropLocal() error = nil; want git's refusal to move over the untracked file")
++		}
++		if got, readErr := os.ReadFile(path); readErr != nil || string(got) != "local\n" {
++			t.Errorf("scratch.txt = %q, %v; want the local content kept", got, readErr)
++		}
++		if got := gitkit.RevParse(t, pair.code, "HEAD"); got != codeTip {
++			t.Errorf("code HEAD = %q; want %q, nothing moved", got, codeTip)
++		}
++	})
++
+ 	t.Run("A tracked change on a path the move rewrites refuses with nothing tagged or moved", func(t *testing.T) {
+ 		t.Parallel()
+ 
+diff --git a/internal/fabricengine/originreconcile.go b/internal/fabricengine/originreconcile.go
+index a7f3312c..9d2e313b 100644
+--- a/internal/fabricengine/originreconcile.go
++++ b/internal/fabricengine/originreconcile.go
+@@ -48,7 +48,10 @@ type ReconcileScope struct {
+ // The zero value makes one attempt under the default attempt deadline.
+ // RetryBound and RetryInterval together bound how often the ls-remote pair is retried after a transport failure.
+ // There is one retry per whole interval in the bound.
+-// AttemptDeadline bounds each remote call, and Sleep waits out one interval; nil sleeps for real.
++// AttemptDeadline bounds each remote call.
++// PushLockWait bounds how long a records branch move waits while only its push lock is held, polling once a second;
++// zero reads a held push lock as busy at once.
++// Sleep waits out one retry interval or one push-lock poll; nil sleeps for real.
+ // CallHook sees the arguments of every remote call just before it runs.
+ // VerdictHook runs just before each branch verdict.
+ // Both are nil in production.
+@@ -56,6 +59,7 @@ type ReconcileOptions struct {
+ 	RetryBound      time.Duration
+ 	RetryInterval   time.Duration
+ 	AttemptDeadline time.Duration
++	PushLockWait    time.Duration
+ 	Sleep           func(time.Duration)
+ 	CallHook        func(args []string)
+ 	VerdictHook     func()
+@@ -93,11 +97,16 @@ func (o ReconcileOptions) deadline() time.Duration {
+ 
+ // sleep waits out one retry interval.
+ func (o ReconcileOptions) sleep() {
++	o.sleepFor(o.RetryInterval)
++}
++
++// sleepFor waits out d through Sleep, or for real when Sleep is nil.
++func (o ReconcileOptions) sleepFor(d time.Duration) {
+ 	if o.Sleep != nil {
+-		o.Sleep(o.RetryInterval)
++		o.Sleep(d)
+ 		return
+ 	}
+-	time.Sleep(o.RetryInterval)
++	time.Sleep(d)
+ }
+ 
+ // EndedTeardown asks the teardown seam to remove the local pair of an entry origin has ended.
+@@ -765,7 +774,8 @@ func samePath(porcelain, built string) bool {
+ // Any other scope then moves each branch behind origin.
+ // A branch moves by a fast-forward of its checkout, or by a replay of a records branch's local commits.
+ // An entry owned elsewhere has its fast-forwards moved and its records branch left unreplayed.
+-// A branch a live pair, a held lock or a dirty path keeps from moving is reported as such and left where it was.
++// A branch a live pair, a held lock or a dirty path keeps from moving is reported as such and left where it was;
++// a held records push lock is first waited on for up to opts' PushLockWait.
+ // No branch is ever reset, rebased or pushed.
+ // A moving scope also clears the failed-push record of each branch that is absent locally.
+ // A transport failure that outlasts the retry bound sets the report's Unreachable.
+@@ -811,7 +821,7 @@ func ReconcileOrigin(l *lymcwd.Location, scope ReconcileScope, seams OriginSeams
+ 	res.Entries = nil
+ 
+ 	if !scope.JudgeOnly {
+-		mover := &originMover{rec: rec, l: l, scope: scope, seams: seams, ended: ended, targets: targets, outcomes: res.Branches, live: map[string]bool{}, ownedByEnded: endedLocalSlugs(endedEntries, scope.Run), owners: owners}
++		mover := &originMover{rec: rec, l: l, scope: scope, seams: seams, opts: opts, ended: ended, targets: targets, outcomes: res.Branches, live: map[string]bool{}, ownedByEnded: endedLocalSlugs(endedEntries, scope.Run), owners: owners}
+ 		if err := mover.moveAll(pairs); err != nil {
+ 			return res, err
+ 		}
+diff --git a/internal/fabricengine/originreconcilemoves.go b/internal/fabricengine/originreconcilemoves.go
+index 8bd386b9..d2fe28e7 100644
+--- a/internal/fabricengine/originreconcilemoves.go
++++ b/internal/fabricengine/originreconcilemoves.go
+@@ -1,7 +1,8 @@
+ // originreconcilemoves.go holds the origin reconcile's moving half.
+ // It fast-forwards or replays the local branches a judging pass found behind origin.
+-// Each move waits on no lock: the prime lock and a records branch's write and push locks are try-acquired,
+-// and the live-pair seam is asked once per pair.
++// The prime lock and a records branch's write lock are try-acquired, and a held one reads busy at once.
++// A records branch's push lock is try-acquired too, and retried for the bound the reconcile's options set.
++// The live-pair seam is asked once per pair.
+ // It also reads the ended set, the runs origin has ended, that every replay is told.
+ 
+ package fabricengine
+@@ -33,6 +34,9 @@ const (
+ 	busyBoardPushLock   = "board push"
+ )
+ 
++// pushLockPoll is the delay between two tries of a records branch's locks while only its push lock is held.
++const pushLockPoll = time.Second
++
+ // tryPrimeLock takes the hub's prime lock by one try-acquire, never waiting.
+ // held reports whether this call holds it; a lock another holder has returns held false with no error.
+ // The caller calls release once the prime's branches are moved.
+@@ -109,6 +113,23 @@ func tryRecordsLocks(worktree string, bolt bool) (release func(), busy string, p
+ 	}, "", false, nil
+ }
+ 
++// waitRecordsLocks takes a records branch's locks as tryRecordsLocks does.
++// While the write lock is free and the push lock is held, it tries both again every pushLockPoll.
++// It stops once opts' PushLockWait has passed in sleeps.
++// So a push that ends within that bound leaves the branch movable.
++// It holds no lock between two tries, so the push holding the lock can take the write lock meanwhile.
++func waitRecordsLocks(worktree string, bolt bool, opts ReconcileOptions) (release func(), busy string, pushHeld bool, err error) {
++	var waited time.Duration
++	for {
++		release, busy, pushHeld, err = tryRecordsLocks(worktree, bolt)
++		if err != nil || !pushHeld || waited >= opts.PushLockWait {
++			return release, busy, pushHeld, err
++		}
++		opts.sleepFor(pushLockPoll)
++		waited += pushLockPoll
++	}
++}
++
+ // relativeSlashPaths returns paths, absolute under dir, as slash paths relative to dir, sorted.
+ func relativeSlashPaths(dir string, paths []string) ([]string, error) {
+ 	relative := make([]string, 0, len(paths))
+@@ -176,18 +197,18 @@ func ffWorktree(rec *Mutations, worktree, originHead string) (state BranchState,
+ }
+ 
+ // reconcileRecordsBranch brings the records branch checked out at worktree up to originHead.
+-// It takes its write lock and then its push lock, each by one try-acquire.
++// It takes its write lock and then its push lock through waitRecordsLocks, which waits on the push lock for opts' bound.
+ // bolt names the board checkout, replayed by entry; any other records branch is a weft, replayed by commit.
+-// A held lock returns BranchBusy naming it, and nothing moves.
++// A lock still held returns BranchBusy naming it, and nothing moves.
+ // A branch behind origin is fast-forwarded.
+ // A branch both sides moved has its local commits replayed onto origin's, with ended told to the replay.
+ // A replay that stops on a conflict returns BranchDiverged naming the conflicting paths and the local commits.
+ // A replay that an uncommitted change blocks returns BranchDirty.
+ // A branch the locks found already level or ahead is returned as that, unmoved.
+ // A moved branch returns BranchLevel, or BranchAhead when replayed commits sit on origin's head, with Moved set.
+-func reconcileRecordsBranch(rec *Mutations, l *lymcwd.Location, worktree, originHead string, ended EndedSet, bolt bool) (BranchOutcome, error) {
++func reconcileRecordsBranch(rec *Mutations, l *lymcwd.Location, worktree, originHead string, ended EndedSet, bolt bool, opts ReconcileOptions) (BranchOutcome, error) {
+ 	var outcome BranchOutcome
+-	release, busy, pushHeld, err := tryRecordsLocks(worktree, bolt)
++	release, busy, pushHeld, err := waitRecordsLocks(worktree, bolt, opts)
+ 	if err != nil {
+ 		return outcome, err
+ 	}
+@@ -270,6 +291,7 @@ type originMover struct {
+ 	l        *lymcwd.Location
+ 	scope    ReconcileScope
+ 	seams    OriginSeams
++	opts     ReconcileOptions
+ 	ended    EndedSet
+ 	targets  []originTarget
+ 	outcomes []BranchOutcome
+@@ -460,7 +482,7 @@ func (m *originMover) move(i int, busy string) error {
+ 			return err
+ 		}
+ 	}
+-	moved, err := reconcileRecordsBranch(m.rec, location, target.worktree, outcome.OriginHead, m.ended, target.side == failedPushSideBolt)
++	moved, err := reconcileRecordsBranch(m.rec, location, target.worktree, outcome.OriginHead, m.ended, target.side == failedPushSideBolt, m.opts)
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/internal/fabricengine/originreconcilemoves_integration_test.go b/internal/fabricengine/originreconcilemoves_integration_test.go
+index dc3b5341..75a01bc8 100644
+--- a/internal/fabricengine/originreconcilemoves_integration_test.go
++++ b/internal/fabricengine/originreconcilemoves_integration_test.go
+@@ -13,6 +13,7 @@ import (
+ 	"slices"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+@@ -529,6 +530,71 @@ func TestReconcileOrigin_Moves(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("A held pair weft push lock is waited on up to the bound, the weft moving once it is released and busy while it stays held", func(t *testing.T) {
++		for _, row := range []struct {
++			name string
++			// releaseAt is the poll sleep at which the holder lets go of the lock; 0 holds it throughout.
++			releaseAt  int
++			wantState  fabricengine.BranchState
++			wantSleeps int
++		}{
++			{"released during the wait", 2, fabricengine.BranchLevel, 2},
++			{"held past the bound", 0, fabricengine.BranchBusy, 3},
++		} {
++			pair := newMovesPair(t)
++			originHead := originCommitFile(t, pair.RecordsBare, pair.recordsName, "notes/up.md", "up\n")
++			path := filepath.Join(fabricengine.RecordsLockDirPath(pair.records), weftPushLockName)
++			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++				t.Fatalf("mkdir for %s: %v", path, err)
++			}
++			held, err := lock.AcquireWriteLock(path)
++			if err != nil {
++				t.Fatalf("acquire %s: %v", path, err)
++			}
++			released := false
++			release := func() {
++				if !released {
++					released = true
++					_ = held.Release()
++				}
++			}
++			t.Cleanup(release)
++			sleeps := 0
++			opts := fabricengine.ReconcileOptions{PushLockWait: 3 * time.Second, Sleep: func(time.Duration) {
++				sleeps++
++				if sleeps == row.releaseAt {
++					release()
++				}
++			}}
++
++			report := moveReconcileWith(t, pair.originHub, fabricengine.ReconcileScope{}, fabricengine.OriginSeams{}, opts)
++
++			outcome := requireState(t, report, "records", pair.recordsName, row.wantState)
++			if sleeps != row.wantSleeps {
++				t.Errorf("%s: poll sleeps = %d; want %d", row.name, sleeps, row.wantSleeps)
++			}
++			moved := gitkit.RevParse(t, pair.records, "HEAD") == originHead
++			if wantMoved := row.wantState == fabricengine.BranchLevel; outcome.Moved != wantMoved || moved != wantMoved {
++				t.Errorf("%s: outcome = %+v, at origin's head %v; want moved %v", row.name, outcome, moved, wantMoved)
++			}
++		}
++	})
++
++	t.Run("A held pair weft write lock is busy at once, whatever the push-lock bound", func(t *testing.T) {
++		pair := newMovesPair(t)
++		originHead := originCommitFile(t, pair.RecordsBare, pair.recordsName, "notes/up.md", "up\n")
++		holdLock(t, filepath.Join(fabricengine.RecordsLockDirPath(pair.records), weftWriteLockName))
++		sleeps := 0
++		opts := fabricengine.ReconcileOptions{PushLockWait: 3 * time.Second, Sleep: func(time.Duration) { sleeps++ }}
++
++		report := moveReconcileWith(t, pair.originHub, fabricengine.ReconcileScope{}, fabricengine.OriginSeams{}, opts)
++
++		outcome := requireState(t, report, "records", pair.recordsName, fabricengine.BranchBusy)
++		if sleeps != 0 || outcome.BusyLock != "weft write" || outcome.Moved || gitkit.RevParse(t, pair.records, "HEAD") == originHead {
++			t.Errorf("outcome = %+v after %d poll sleeps; want busy on the weft write lock, unmoved and no wait", outcome, sleeps)
++		}
++	})
++
+ 	t.Run("A held Bolt push lock, prime weft write lock and run-scope own weft write lock are busy and stop nothing", func(t *testing.T) {
+ 		for _, row := range []struct {
+ 			name     string
