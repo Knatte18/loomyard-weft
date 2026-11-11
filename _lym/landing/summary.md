@@ -1,47 +1,35 @@
-# Cap the skill-load API-error hold; show idle gaps in loom status
+# Cap the skill-load API-error hold and report idle gaps in shed status
 
-A skill-load turn that the provider's API ended on an error, such as a `server_error`, made shuttle wait a back-off and type the load again, with no bound.
-In the reported run the count rose to five before the loop ended with no envelope, and hours of idle time around the stuck step showed nowhere.
-After this change the hold ends at a cap, and the step fails with an error that names the cap and reads as an API outage.
-`lym loom status` also shows each stretch of the run's history in which no step ran.
+A shuttle start whose skill-load turn ends on an API error such as `server_error` used to wait and retype with no bound.
+In the reported run `apiErrors` rose 3, 4, 5 until the loop ended with no envelope, and hours of idle time around the stuck step showed in no status line.
+This change bounds that hold and makes `lym loom status` show the idle stretches.
 
 Closes #102
 
 ## What changes
 
-- `internal/shuttleengine/loadturn.go`: the hold's `loadHoldMaxAPIErrors`-th (8th) API-error turn end ends the load with a new `loadAPIErrorCapError`.
-  Its text reads `the provider's API failed 8 skill-load turns, the cap on one start's hold of 8, so the start ends as an API outage: <error>`.
-  `abandonLoad` ends such a start `OutcomeAPIError`, as it does a rejected model, with `Result.APIError` naming the error.
-  The start's error wraps `ErrNotStarted` as before, so the cap text reaches the step's failure and the run's status `error`.
-  The parent's hold notice now says at how many API errors the start ends.
-- `internal/shedengine`: each history entry a producer call writes records the call's start in a new `started_at`, beside `at`.
-  This covers the reroute entries too.
-  A fold keeps the first call's `started_at`, as it keeps its `at`.
-  A status file without the field still decodes.
-- `internal/shedverbs`: the status envelope carries `idle_gaps`, and the human view prints one `idle` line per gap.
-  A gap is a stretch of at least `idleGapFloor` (five minutes) from one entry's end (`last_at` or `at`) to the next call's `started_at`.
-  For a goto or skip entry, which no call writes, the gap ends at that entry's own `at`.
-  The human line reads `idle 3h0m0s before Plan, after Plan stuck`.
-- Doc comments in `shuttleengine` and `shedverbs`, and the status section of `docs/overview.md`, follow both changes.
+- **Capped hold (`shuttleengine`).**
+  The hold now ends the start as `api-error` at its `loadHoldMaxAPIErrors`-th API error (8), with no load typed after it.
+  Its back-offs add up to about half an hour before the cap fires.
+  `Result.APIError` carries the newest error text, and the start's error names the cap, so a halt reads as an API outage rather than only `loop-exited`.
+  The parent's hold notice now states the cap.
+  A run whose output files all exist still returns as past its gates, as on the other load-turn endings.
+- **Idle gaps (`shedengine`, `shedverbs`).**
+  Each history entry a producer call writes records the call's start in the new `started_at` field beside `at`.
+  `lym shed status` reports `idle_gaps` in its envelope, and its human view prints one `idle` line per gap, oldest first.
+  A gap is a stretch of five minutes or more (`idleGapFloor`) from one entry's end to the start of the call that wrote the next.
+- **Docs.** `docs/overview.md` and the package docs of `shuttleengine`, `shedarbiter`, `sheddriver` and `shedverbs` describe both changes.
 
 ## Design decisions
 
-- The cap counts every API-error turn end of the hold, not only `server_error`.
-  The session signal carries no error kind, and the load hold already treats every API error alike.
-  A usage limit that outlasts the hold therefore also ends the start.
-- Eight errors keep the back-offs (30 s doubling to the 5 min ceiling) at about half an hour, besides the time the provider spends retrying inside each turn.
-  Past that, the outage is the parent's to judge.
-  The failure is classified `agent-start` transient, so one re-step can still clear it.
-- The idle time is derived from the history instead of being stored.
-  An idle stretch is only known once the next step starts, and `started_at` is enough to compute it at read time.
-  Entries an older binary wrote have no `started_at` and end no gap, so a gap is never overstated by a step's own run time.
-- A gap counts as idle whatever came before it: a stuck verdict, an awaiting hand-off or a step that died without recording a verdict.
-  In the reported case, the step that hung left no entry at all, so the gap shows before the entry its resumed call wrote.
+- The cap counts API errors of one hold, so the cap and its back-offs bound the total wait.
+  An outage past about half an hour is the parent's to judge, and the existing `api-error` hand-on carries it there.
+- For a goto or skip entry, which no producer call writes, a gap ends at the entry's own time.
+- Calls folded into one stuck entry count as one stretch, so the time between them is not reported.
+- An entry with no `started_at` (a status file an older binary wrote) or with unparsable times ends no gap, so old runs read without error.
 
-## Tests
+## To check by hand
 
-- `TestStartup_LoadTurnAPIError` gains a row in which every load turn fails.
-  The start ends `api-error` after the derived back-offs, with the load typed seven times, one parent notice and the cap named in the error.
-- `TestStep_DoneWithNonEmptyOnDone` checks that `started_at` is set and no later than `at`.
-- `TestIdleGapsOf` covers a gap at the floor, one under it, a folded entry, a goto, an entry with no start time and an unparseable time.
-- `TestRenderStatusHuman` gains an `idle` line row, and `TestStatusCmd_FoundEnvelope_GenericCore` pins `idle_gaps` as an empty list for entries with no times.
+- `startedat-pinned-only-on-done-path`: `StartedAt` is set on the done path in `shedengine/run.go` and on the reroute entries in `shedengine/reroute.go`.
+  Check that the tests pin it on each of those paths and not only on the done path.
+- No run exercised a real provider outage, so the 8-error cap has not been seen firing against a live API.
