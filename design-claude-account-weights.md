@@ -1,6 +1,6 @@
 # Two Claude accounts, each worktree on one of them by a configured weight
 
-`claude-account-weights` · Task · sketch, claude, shuttle, config · running · Seed-IDE
+`claude-account-weights` · Task · sketch, claude, shuttle, config · running · Open-IDE
 
 Decision record: [Sketch](decision-claude-account-weights.md)
 
