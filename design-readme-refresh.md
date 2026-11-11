@@ -1,6 +1,6 @@
 # Refresh the README: outdated parts, less wall of text, the dead Autoboard link and a shorter Lineage
 
-`readme-refresh` · Task · enhancement, docs · running · Code-Bouncer
+`readme-refresh` · Task · enhancement, docs · running · Drift-Recheck
 
 ## Seen (operator, 2026-11-11)
 
