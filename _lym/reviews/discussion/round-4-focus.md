@@ -1,0 +1,12 @@
+---
+round: 4
+focus:
+  - "D3's counter paragraph in `_lym/discussion/decision-record.md`: for an account that was not listed at the last pick, or whose weight differs from the stored one, does the rule give it its share from the next pick in every case - a re-added account whose stored count over weight sits above the other accounts' lowest, an account whose weight was lowered, a hub's first pick, and a list that replaced every account at once? Check the acceptance criterion for the re-added and reweighted account against the counter, in terms of count over weight."
+  - "D2's fresh-launch search in `_lym/discussion/decision-record.md`: does the source of session ids it collects cover every record under the worktree's anchor that stores a provider session id its owner later resumes, given that `internal/shuttleengine/run.go` `sweepOrphans` removes a shuttle run directory once its strand is gone? Check the sampler row's record (`internal/loomshed/samplersession.go`), the PR-Review session record (`internal/landingshed/prsession.go`), the gate fixer's record (`internal/gatefixer/record.go`), webster's state (`internal/websterengine/state.go`) and treadle's state (`internal/treadleengine/state.go`)."
+  - "D2 and D6 in `_lym/discussion/decision-record.md`: `internal/shuttleengine/claudeengine/resume.go` `CheckResume` stats the transcript and then reads the session registry to refuse a resume while a live process holds the session. Does the record say which directory's registry that read uses under a non-default account, and what bounds the guard once a second directory exists?"
+  - "D6's id-only liveness lookup in `_lym/discussion/decision-record.md`: `claudeengine` `processLiveness` returns unproven when `readRegistry` fails, and `internal/shuttleengine/wait.go` accepts a dead answer only when an earlier alive read backs it. Does the record define how the registries of the known directories combine into one answer, including a known directory with no sessions directory?"
+  - "D2 in `_lym/discussion/decision-record.md`: is a recorded directory that no longer exists handled by one rule whatever `claude.accounts` holds, for a resume launch and for a fresh launch, with a message that names the directory and the way forward where it refuses?"
+---
+
+Round 4 reviews the decision record fresh.
+The entries name the places where the design's claims meet code facts that were not yet settled.
