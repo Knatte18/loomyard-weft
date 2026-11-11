@@ -1,6 +1,6 @@
 # Creel sends an unchanged notice once and drops mail about runs that no longer exist
 
-`creel-notice-hygiene` · Task · bug, creel, dobby, fabric, orch · running · Seed-Child
+`creel-notice-hygiene` · Task · bug, creel, dobby, fabric, orch · running · Preflight
 
 Depends on: [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md)
 
