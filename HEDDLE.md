@@ -5,7 +5,7 @@ lym rewrites this file whole at every heddle write; change an entry with `lym he
 
 ## `claude-file`
 
-Rendered into `CLAUDE.local.md` at every worktree's anchor.
+Rendered into `CLAUDE.local.md` at every worktree's anchor. It also carries every entry aimed at `agents-file`.
 
 ### `lym-batching`
 
@@ -56,11 +56,21 @@ Rendered into `CLAUDE.local.md` at every worktree's anchor.
 - Never run the gate between the edits of one round.
 ```
 
+## `codex-file`
+
+Rendered into `AGENTS.override.md` at every worktree's anchor. It also carries every entry aimed at `agents-file`.
+
+No entry.
+
+## `agents-file`
+
+Rendered into `CLAUDE.local.md`, `AGENTS.override.md` at every worktree's anchor.
+
 ### `nicknames`
 
 - From: the hub's heddle.json
 - Order: 900
-- Targets: `claude-file`
+- Targets: `agents-file`
 
 ```markdown
 ## Nicknames
@@ -70,12 +80,6 @@ Rendered into `CLAUDE.local.md` at every worktree's anchor.
 - Use every nickname in this list freely with the operator.
 - Keep the formal names in code, files, verbs and specs.
 ```
-
-## `codex-file`
-
-Rendered into `AGENTS.override.md` at every worktree's anchor. It also carries every hub entry aimed at `claude-file`.
-
-No entry.
 
 ## `claude-settings`
 
