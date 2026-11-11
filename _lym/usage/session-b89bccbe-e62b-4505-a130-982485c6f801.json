@@ -1,0 +1,32 @@
+{
+  "session_id": "b89bccbe-e62b-4505-a130-982485c6f801",
+  "row": "Plan-Write",
+  "role": "plan",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 164,
+  "cache_write_tokens": 318766,
+  "cache_read_tokens": 6621592,
+  "output_tokens": 111111,
+  "cost_usd": 4.858212900000001,
+  "started": "2026-11-11T10:51:20Z",
+  "ended": "2026-11-11T11:05:22Z",
+  "models": [
+    {
+      "model": "claude-opus-5-5",
+      "input_tokens": 132,
+      "cache_write_tokens": 240251,
+      "cache_read_tokens": 6246018,
+      "output_tokens": 102465,
+      "cost_usd": 4.500286600000001
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "input_tokens": 32,
+      "cache_write_tokens": 78515,
+      "cache_read_tokens": 375574,
+      "output_tokens": 8646,
+      "cost_usd": 0.3579263
+    }
+  ]
+}
