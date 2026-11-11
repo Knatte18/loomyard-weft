@@ -1,0 +1,469 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index b472b000..028b7576 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -80,6 +80,8 @@ the module that constructs each of those owns it.
+ - `Resolve(cwd)` → `*Location` — resolves the current cwd into a legal worktree's coordinates, applying the strict cwd gate.
+ - `ResolveWorktree(root)` — the ungated variant.
+   It serves callers that hold a worktree root rather than an acting cwd; see `docs/shared-libs/lymcwd.md`.
++- `ResolveWithin(cwd)` — accepts a cwd anywhere under the anchored directory or in the records sibling.
++  It serves a read-only verb a session runs from wherever its harness moved the cwd.
+ - `NamedWorktree(hubPath, name)` → `*Location` — the coordinates of another worktree of the hub, at that worktree's own anchor.
+ 
+ `Location` carries `RepoName`, `HubPath`, `WorktreeName` and `AnchorRel`, plus the derived accessors `WorktreePath()` and `AnchorPath()`.
+diff --git a/docs/shared-libs/lymcwd.md b/docs/shared-libs/lymcwd.md
+index 36985258..b0097e30 100644
+--- a/docs/shared-libs/lymcwd.md
++++ b/docs/shared-libs/lymcwd.md
+@@ -84,6 +84,14 @@ It exists for callers holding a worktree root rather than an acting cwd, where t
+ The gate applies only to the entry-point cwd of `Resolve(cwd)`.
+ It never applies to internal sibling-layout construction above a subpath anchor.
+ 
++### `ResolveWithin(cwd string) (*Location, error)`
++
++Builds the `Location` of the worktree whose anchored directory or records sibling holds `cwd`.
++It accepts the anchored directory, any directory below it, and any directory in the worktree's records sibling;
++a cwd in a records sibling resolves to the `Location` of the worktree the sibling belongs to.
++It serves a read-only verb a session runs from wherever its harness moved the cwd, such as a directory in the records sibling.
++A cwd elsewhere in the worktree is `ErrCwdOutsideAnchor`, naming the anchored directory.
++
+ ### `Location` struct
+ 
+ ```go
+diff --git a/internal/lymcwd/anchor.go b/internal/lymcwd/anchor.go
+index e8c2d19e..0d6cbdf8 100644
+--- a/internal/lymcwd/anchor.go
++++ b/internal/lymcwd/anchor.go
+@@ -83,10 +83,11 @@ func ValidateAnchorRel(raw string) (string, error) {
+ 	return cleaned, nil
+ }
+ 
+-// ErrCwdOutsideAnchor is returned when cwd is not exactly the anchored directory.
++// ErrCwdOutsideAnchor is returned when cwd is not where the recorded anchor admits a lym invocation:
++// exactly the anchored directory for the strict gate, that directory or below it for the subtree check.
+ // A lym invocation from elsewhere in the worktree fails here at once.
+ // Without this check it would resolve the wrong anchor and fail later, downstream, with a confusing error.
+-var ErrCwdOutsideAnchor = errors.New("cwd is outside the recorded fabric anchor subtree")
++var ErrCwdOutsideAnchor = errors.New("cwd is not at the recorded fabric anchor")
+ 
+ // samePath reports whether a and b name the same filesystem location.
+ // Each side is normalized through filepath.EvalSymlinks and then filepath.Clean.
+@@ -126,6 +127,34 @@ func checkCwdAnchorGate(cwd, anchorRel, worktreePath string) error {
+ 		ErrCwdOutsideAnchor, cwd, anchorAbs, AnchorFileName)
+ }
+ 
++// checkCwdWithinAnchor returns nil when cwd lies at or below the anchored directory.
++// The anchored directory is worktreePath joined with anchorRel.
++// Otherwise it wraps ErrCwdOutsideAnchor in an error that names both paths and the marker file.
++func checkCwdWithinAnchor(cwd, anchorRel, worktreePath string) error {
++	anchorAbs := filepath.Join(worktreePath, anchorRel)
++	if pathWithin(cwd, anchorAbs) {
++		return nil
++	}
++	return fmt.Errorf("%w: cwd %s lies outside the anchored directory %s (recorded by %s); run it from that directory or below it",
++		ErrCwdOutsideAnchor, cwd, anchorAbs, AnchorFileName)
++}
++
++// pathWithin reports whether child names parent or a location below it.
++// Both sides are normalized and compared as samePath compares them.
++func pathWithin(child, parent string) bool {
++	normalizedChild := normalizePath(child)
++	normalizedParent := normalizePath(parent)
++	if runtime.GOOS == "windows" {
++		normalizedChild = strings.ToLower(normalizedChild)
++		normalizedParent = strings.ToLower(normalizedParent)
++	}
++	rel, err := filepath.Rel(normalizedParent, normalizedChild)
++	if err != nil {
++		return false
++	}
++	return rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
++}
++
+ // readRecordedAnchor reads the recorded lym-anchor subpath marker of the worktree named worktreeName in hub.
+ // It reports whether a usable anchor was found.
+ // It reads the worktree's own marker first, at the root of its records sibling.
+diff --git a/internal/lymcwd/lymcwd.go b/internal/lymcwd/lymcwd.go
+index 7d87ab3b..ca8d1745 100644
+--- a/internal/lymcwd/lymcwd.go
++++ b/internal/lymcwd/lymcwd.go
+@@ -26,6 +26,7 @@ import (
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/dotgit"
++	"github.com/Knatte18/loomyard/internal/weftname"
+ )
+ 
+ // Location and geometry constants name directories and files for lym configuration and fabric, board and hub geometry.
+@@ -98,14 +99,10 @@ func ResolveWorktree(worktreeRoot string) (*Location, error) {
+ // It applies no cwd gate, spawns no git, and needs neither the worktree nor its records sibling to exist.
+ // It is how code outside this package gets the Location of a worktree other than the acting one.
+ func NamedWorktree(hubPath, name string) (*Location, error) {
+-	anchorRel := "."
+-	anchor, found, err := readRecordedAnchor(hubPath, name)
++	anchorRel, err := anchorRelOrRoot(hubPath, name)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	if found {
+-		anchorRel = anchor
+-	}
+ 	return &Location{
+ 		RepoName:     strings.TrimSuffix(filepath.Base(hubPath), hubSuffix),
+ 		HubPath:      hubPath,
+@@ -127,20 +124,73 @@ func resolveCore(cwd string, applyGate bool) (*Location, error) {
+ 	}
+ 
+ 	hubPath := filepath.Dir(workTreeRoot)
++	anchorRel, err := anchorRelOrRoot(hubPath, filepath.Base(workTreeRoot))
++	if err != nil {
++		return nil, err
++	}
++
++	return buildLocation(cwd, workTreeRoot, hubPath, anchorRel, applyGate)
++}
+ 
+-	// AnchorRel falls back to "." rather than a path derived from cwd.
+-	// A cwd-dependent value would make Location lie.
+-	// _lym would resolve to a different place depending on where the user stood.
+-	anchorRel := "."
+-	anchor, found, err := readRecordedAnchor(hubPath, filepath.Base(workTreeRoot))
++// ResolveWithin builds the Location of the worktree whose anchored directory or records sibling holds cwd.
++// It serves a read-only verb that a session runs from wherever its harness has moved the working directory.
++// An example is a directory in the records sibling, where the strict cwd gate of Resolve refuses.
++// A cwd anywhere in a records sibling resolves to the Location of the worktree that sibling belongs to.
++//
++// It returns ErrNotAGitRepo when cwd is outside a git repo.
++// It returns ErrCwdOutsideAnchor when cwd lies in a worktree but outside its anchored directory.
++// That error names the anchored directory.
++func ResolveWithin(cwd string) (*Location, error) {
++	workTreeRoot, err := gitWorktreeRoot(cwd)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	if found {
+-		anchorRel = anchor
++
++	hubPath := filepath.Dir(workTreeRoot)
++	ownerName, inRecordsSibling := ownerOfRecordsSibling(hubPath, filepath.Base(workTreeRoot))
++	anchorRel, err := anchorRelOrRoot(hubPath, ownerName)
++	if err != nil {
++		return nil, err
+ 	}
+ 
+-	return buildLocation(cwd, workTreeRoot, hubPath, anchorRel, applyGate)
++	ownerRoot := filepath.Join(hubPath, ownerName)
++	if !inRecordsSibling {
++		if err := checkCwdWithinAnchor(filepath.Clean(cwd), anchorRel, ownerRoot); err != nil {
++			return nil, err
++		}
++	}
++	return buildLocation(cwd, ownerRoot, hubPath, anchorRel, false)
++}
++
++// ownerOfRecordsSibling returns the name of the worktree whose records sibling is the worktree called name in hubPath.
++// It also reports whether name is such a records sibling.
++// A name that ends in the records-sibling suffix with no worktree of the trimmed name beside it is not a records sibling.
++// Such a name comes back unchanged.
++func ownerOfRecordsSibling(hubPath, name string) (string, bool) {
++	owner, hasSuffix := strings.CutSuffix(name, weftname.Suffix)
++	if !hasSuffix || owner == "" {
++		return name, false
++	}
++	info, err := os.Stat(filepath.Join(hubPath, owner))
++	if err != nil || !info.IsDir() {
++		return name, false
++	}
++	return owner, true
++}
++
++// anchorRelOrRoot returns the recorded anchor of the worktree called name in hubPath, or "." when none is recorded.
++// The fallback is never a path derived from cwd:
++// a cwd-dependent value would make Location lie.
++// _lym would resolve to a different place depending on where the user stood.
++func anchorRelOrRoot(hubPath, name string) (string, error) {
++	anchor, found, err := readRecordedAnchor(hubPath, name)
++	if err != nil {
++		return "", err
++	}
++	if !found {
++		return ".", nil
++	}
++	return anchor, nil
+ }
+ 
+ // gitWorktreeRoot finds the worktree root at or above cwd in-process, as `git rev-parse --show-toplevel` does.
+diff --git a/internal/lymcwd/lymcwd_test.go b/internal/lymcwd/lymcwd_test.go
+index 8716b5a2..93dddc10 100644
+--- a/internal/lymcwd/lymcwd_test.go
++++ b/internal/lymcwd/lymcwd_test.go
+@@ -1,4 +1,10 @@
+-// lymcwd_test.go covers Location resolution against a real git checkout: Resolve's record-wins + strict cwd-equals-anchor gate, the marker-absent "." fallback, ResolveWorktree's gate-free counterpart used by internal callers that resolve geometry from a worktree root rather than an acting cwd, the stale-marker refusal, and the ErrNotAGitRepo path for directories outside a git repo.
++// lymcwd_test.go covers Location resolution against a real git checkout.
++// It covers Resolve's record-wins + strict cwd-equals-anchor gate and the marker-absent "." fallback.
++// It covers ResolveWorktree, the gate-free counterpart for callers holding a worktree root rather than an acting cwd.
++// It covers ResolveWithin's anchor-subtree and records-sibling acceptance and the stale-marker refusal.
++// It covers ResolveWithin's fallbacks for a suffixed name with no owner beside it.
++// It covers the same fallback for a checkout with no recorded marker.
++// It covers the ErrNotAGitRepo path for directories outside a git repo.
+ 
+ package lymcwd_test
+ 
+@@ -329,6 +335,124 @@ func TestResolve_AnchorScenario(t *testing.T) {
+ 	})
+ }
+ 
++// TestResolveWithin pins the subtree-tolerant resolver over a checkout with a records sibling recording a subpath anchor.
++// A cwd at or below the anchored directory resolves to the checkout's own Location.
++// So does a cwd anywhere in the records sibling or under the anchor's link into the records sibling.
++// A cwd elsewhere in the checkout is refused with an error naming the anchored directory.
++func TestResolveWithin(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	fix := gitkit.CopyRepo(t)
++	root := fix.Repo
++	siblingRoot := weftname.SiblingPath(filepath.Dir(root), filepath.Base(root))
++	gitkit.Git(t, root, "worktree", "add", "-b", "records", siblingRoot)
++	if err := os.WriteFile(filepath.Join(siblingRoot, lymcwd.AnchorFileName), []byte("backend\n"), 0o644); err != nil {
++		t.Fatalf("write own marker: %v", err)
++	}
++
++	backendDir := filepath.Join(root, "backend")
++	deeperDir := filepath.Join(backendDir, "deeper")
++	frontendDir := filepath.Join(root, "frontend")
++	siblingRecordsDir := filepath.Join(siblingRoot, "_lym")
++	siblingPlanDir := filepath.Join(siblingRecordsDir, "plan")
++	for _, dir := range []string{deeperDir, frontendDir, siblingPlanDir} {
++		if err := os.MkdirAll(dir, 0o755); err != nil {
++			t.Fatalf("mkdir %s: %v", dir, err)
++		}
++	}
++	recordsLink := filepath.Join(backendDir, "_lym")
++	if err := fslink.CreateDirLink(recordsLink, siblingRecordsDir); err != nil {
++		t.Fatalf("link %s -> %s: %v", recordsLink, siblingRecordsDir, err)
++	}
++
++	want, err := lymcwd.ResolveWorktree(root)
++	if err != nil {
++		t.Fatalf("ResolveWorktree(%q) error = %v; want nil", root, err)
++	}
++	if want.AnchorRel != "backend" {
++		t.Fatalf("ResolveWorktree(%q).AnchorRel = %q; want %q", root, want.AnchorRel, "backend")
++	}
++
++	tests := []struct {
++		name    string
++		cwd     string
++		wantErr bool
++	}{
++		{"AnchoredDirectory", backendDir, false},
++		{"BelowTheAnchoredDirectory", deeperDir, false},
++		{"SiblingRecordsDirectory", siblingPlanDir, false},
++		{"SiblingRoot", siblingRoot, false},
++		{"BelowTheAnchorsRecordsLink", filepath.Join(recordsLink, "plan"), false},
++		{"SiblingOfTheAnchor", frontendDir, true},
++		{"WorktreeRootAboveTheAnchor", root, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			got, err := lymcwd.ResolveWithin(tt.cwd)
++			if tt.wantErr {
++				if got != nil {
++					t.Errorf("ResolveWithin(%q) returned non-nil layout; want nil", tt.cwd)
++				}
++				if !errors.Is(err, lymcwd.ErrCwdOutsideAnchor) || !strings.Contains(err.Error(), want.AnchorPath()) {
++					t.Errorf("ResolveWithin(%q) error = %v; want wrapped ErrCwdOutsideAnchor naming %s", tt.cwd, err, want.AnchorPath())
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("ResolveWithin(%q) error = %v; want nil", tt.cwd, err)
++			}
++			if *got != *want {
++				t.Errorf("ResolveWithin(%q) = %+v; want %+v", tt.cwd, *got, *want)
++			}
++		})
++	}
++}
++
++// TestResolveWithin_NoOwnerOrNoMarker pins the two fallbacks of ResolveWithin from a subdirectory.
++// A checkout whose own name ends in the records-sibling suffix resolves as itself.
++// That holds when no worktree of the trimmed name sits beside it.
++// A checkout with no recorded marker resolves with AnchorRel ".".
++func TestResolveWithin_NoOwnerOrNoMarker(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	fix := gitkit.CopyRepo(t)
++	root := fix.Repo
++	lonePath := filepath.Join(filepath.Dir(root), "lone"+weftname.Suffix)
++	gitkit.Git(t, root, "worktree", "add", "-b", "lone", lonePath)
++
++	tests := []struct {
++		name          string
++		checkout      string
++		wantName      string
++		wantAnchorRel string
++	}{
++		{"SuffixedNameWithNoOwnerBesideIt", lonePath, filepath.Base(lonePath), "."},
++		{"CheckoutWithNoRecordedMarker", root, filepath.Base(root), "."},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			subDir := filepath.Join(tt.checkout, "sub", "nested")
++			if err := os.MkdirAll(subDir, 0o755); err != nil {
++				t.Fatalf("mkdir %s: %v", subDir, err)
++			}
++
++			got, err := lymcwd.ResolveWithin(subDir)
++			if err != nil {
++				t.Fatalf("ResolveWithin(%q) error = %v; want nil", subDir, err)
++			}
++			if got.WorktreeName != tt.wantName || got.AnchorRel != tt.wantAnchorRel {
++				t.Errorf("ResolveWithin(%q) = %+v; want WorktreeName %q and AnchorRel %q", subDir, *got, tt.wantName, tt.wantAnchorRel)
++			}
++		})
++	}
++}
++
+ // TestResolve_NotAGitRepo verifies that Resolve in a non-git temp directory returns ErrNotAGitRepo.
+ func TestResolve_NotAGitRepo(t *testing.T) {
+ 	tiergate.Require(t, 1)
+diff --git a/internal/shuttlecli/awaitforks.go b/internal/shuttlecli/awaitforks.go
+index bba6d5e6..7da6b7e2 100644
+--- a/internal/shuttlecli/awaitforks.go
++++ b/internal/shuttlecli/awaitforks.go
+@@ -16,6 +16,9 @@ import (
+ 	"github.com/spf13/cobra"
+ )
+ 
++// awaitForksVerb is the cobra name of the await-forks verb.
++const awaitForksVerb = "await-forks"
++
+ // awaitForksCmd builds `lym shuttle await-forks [--cap <duration>]`.
+ // It resolves the calling session's run from the strand name reed gave its pane.
+ // It prints ok with ready true once none of the session's forks is still running.
+@@ -24,7 +27,7 @@ import (
+ func (c *shuttleCLI) awaitForksCmd() *cobra.Command {
+ 	var awaitCap time.Duration
+ 	cmd := &cobra.Command{
+-		Use:         "await-forks",
++		Use:         awaitForksVerb,
+ 		Short:       "wait, capped, until every fork the calling session spawned has finished",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceRole},
+ 		Long: `await-forks waits until every fork the calling agent session spawned has
+@@ -38,7 +41,8 @@ a fork that never reports keeps it answering ready false, so the caller bounds i
+ Run it from the session that spawned the forks, in a message after the one
+ that spawned them, with a Bash tool timeout above --cap (300000 ms), and
+ re-run it in a turn that does nothing else, so the prompt cache stays warm
+-between calls. It is read-only.
++between calls. It runs from the anchored directory, any directory below it,
++or anywhere in the worktree's records sibling. It is read-only.
+ 
+ Example:
+   lym shuttle await-forks`,
+diff --git a/internal/shuttlecli/cli.go b/internal/shuttlecli/cli.go
+index 6d7d311b..551e8b63 100644
+--- a/internal/shuttlecli/cli.go
++++ b/internal/shuttlecli/cli.go
+@@ -7,6 +7,8 @@
+ // The verbs are run, open and the read-only state, which lists the session state of each running run.
+ // The read-only await, the capped wait on one or more files, is implemented in await.go.
+ // The read-only await-forks, the capped wait until the calling session's forks have finished, is implemented in awaitforks.go.
++// await-forks resolves its geometry from anywhere under the anchored directory or in the records sibling.
++// A session's harness can move its cwd there; every other verb takes the strict cwd gate.
+ // await is the verb that skips the resolution and needs no hub; it reads only the keep-warm config, and only inside a git worktree.
+ // The hidden hook-batching, which a session's after-tool-call hook runs, is implemented in hookbatching.go; it skips the resolution too and reads only its hook input and the state file it is told.
+ 
+@@ -82,7 +84,11 @@ provider specifics.`,
+ 				return nil
+ 			}
+ 
+-			layout, err := lymcwd.Resolve(cwd)
++			resolve := lymcwd.Resolve
++			if cmd.Name() == awaitForksVerb {
++				resolve = lymcwd.ResolveWithin
++			}
++			layout, err := resolve(cwd)
+ 			if err != nil {
+ 				// lymcwd.Resolve's error is already self-describing (it
+ 				// IS the "not a git repository" sentinel); pass it through
+diff --git a/internal/shuttlecli/resolve_verbs_test.go b/internal/shuttlecli/resolve_verbs_test.go
+new file mode 100644
+index 00000000..d11669b8
+--- /dev/null
++++ b/internal/shuttlecli/resolve_verbs_test.go
+@@ -0,0 +1,55 @@
++// resolve_verbs_test.go covers which resolver each shuttle verb takes in the parent's pre-run, over a real hub.
++// It runs from a records-sibling cwd, where await-forks resolves and a strict verb is refused.
++
++package shuttlecli
++
++import (
++	"bytes"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestRunCLI_AwaitForksResolvesFromTheRecordsSibling runs two verbs from a subdirectory of a pair's records sibling.
++// The hub is anchored at a subpath.
++// await-forks passes the resolution gate and reaches its own check of the calling strand.
++// state takes the strict cwd gate and is refused with the outside-anchor error.
++// It is not parallel: it sets the strand-name environment variable.
++func TestRunCLI_AwaitForksResolvesFromTheRecordsSibling(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	hub := hubforge.NewHub(t, "backend")
++	hubforge.AddPair(t, hub, "feat")
++	siblingDir := filepath.Join(hub.PairRecordsSibling("feat"), "plan")
++	if err := os.MkdirAll(siblingDir, 0o755); err != nil {
++		t.Fatalf("mkdir %s: %v", siblingDir, err)
++	}
++	t.Setenv(agentname.StrandNameEnv, "")
++
++	tests := []struct {
++		name    string
++		args    []string
++		wantErr string
++	}{
++		{"AwaitForksPassesTheResolutionGate", []string{"await-forks"}, "no shuttle strand"},
++		{"StateIsRefusedOutsideTheAnchor", []string{"state"}, lymcwd.ErrCwdOutsideAnchor.Error()},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			var out bytes.Buffer
++			if code := RunCLIIn(siblingDir, &out, tt.args); code != 1 {
++				t.Errorf("RunCLIIn(%v) = %d; want 1; output: %s", tt.args, code, out.String())
++			}
++			envelope := parseSingleEnvelope(t, out.Bytes())
++			if got, _ := envelope["error"].(string); envelope["ok"] != false || !strings.Contains(got, tt.wantErr) {
++				t.Errorf("envelope = %v; want ok false with an error containing %q", envelope, tt.wantErr)
++			}
++		})
++	}
++}
+diff --git a/pattern/PATTERN-cwd-resolution.md b/pattern/PATTERN-cwd-resolution.md
+index ac8c8fe5..1d19c3f6 100644
+--- a/pattern/PATTERN-cwd-resolution.md
++++ b/pattern/PATTERN-cwd-resolution.md
+@@ -4,6 +4,8 @@
+ 
+ - `root` is the worktree or repo root and `cwd` is the current working directory; the two are never conflated.
+ - `Resolve` requires cwd to be a git worktree root and to equal `Join(worktreeRoot, AnchorRel)`.
++- `ResolveWithin` accepts cwd at or below `Join(worktreeRoot, AnchorRel)` or anywhere in the records sibling.
++  Only a read-only verb a session runs from wherever its harness moved the cwd calls it.
+ - It exposes only `RepoName`, `HubPath`, `WorktreeName`, `AnchorRel`, `WorktreePath()` and `AnchorPath()`.
+ - Every cwd or worktree-root query goes through `lymcwd.Getwd()` or `Resolve()`;
+   raw `os.Getwd` and `git rev-parse --show-toplevel` are banned elsewhere.
