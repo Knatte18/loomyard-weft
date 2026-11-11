@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-coverage-test-select.md)
 
-Depends on: [`testmap-cross-package`](design-testmap-cross-package.md)
-
 Filed from the Sketch `gate-scope-by-coverage-map`.
 
 Takes: testmap-cross-package's map shape, the working tree and fabricengine.Fabric.CodeFileAt for file content at the map's Commit
