@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | darn · light | Record-Write | neve | 5h<br>5h | shuttle, loom |
+| T1 | **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | darn · light | Drift-Await | neve | 5h<br>5h | shuttle, loom |
 | T10 | **Worktree-Create halts on a reused slug path holding only obj/ leftovers** | [`worktree-create-build-leftovers`](design-worktree-create-build-leftovers.md) | darn · light | Worktree-Create | neve | 7h<br>6h | batten, fabric |
 | T13 | **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | Parent-Align | neve | 1d<br>1d | config, slack |
 
@@ -55,8 +55,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | 5h<br>5h | dobby, fabric, tender |
 | B2 |  | **raddle-propose passes a dependency on a note that Raddle-File refuses**<br>• Validate depends_on targets at raddle-propose, before approval; fix the truncated refusal text | [`raddle-propose-note-deps`](design-raddle-propose-note-deps.md) | 4h<br>4h | shed, board |
-| B3 |  | **Creel repeats the same notice many times for an unchanged state**<br>• Dobby and fabric sent identical notices about 25 times during an outage | [`creel-repeat-notices`](design-creel-repeat-notices.md) | 3h<br>3h | creel, dobby, fabric |
-| B4 |  | **Creel hands the orch mail about runs and pairs that no longer exist**<br>• A day-old queue of notices about torn-down pairs reached the orch as live mail | [`creel-stale-mail-delivery`](design-creel-stale-mail-delivery.md) | 3h<br>3h | creel, orch |
+| B3 |  | **Creel repeats the same notice many times for an unchanged state**<br>• Dobby and fabric sent identical notices about 25 times during an outage | [`creel-repeat-notices`](design-creel-repeat-notices.md) | 4h<br>4h | creel, dobby, fabric |
+| B4 |  | **Creel hands the orch mail about runs and pairs that no longer exist**<br>• A day-old queue of notices about torn-down pairs reached the orch as live mail | [`creel-stale-mail-delivery`](design-creel-stale-mail-delivery.md) | 4h<br>4h | creel, orch |
 | B5 |  | **The adopt-check tab stays open and takes space after the check ends**<br>• The tab of a finished adopt check is not closed or shrunk | [`adopt-check-tab-stays`](design-adopt-check-tab-stays.md) | 3h<br>3h | reed |
 | B6 |  | **lym adopt hangs silently behind a hub-wide pause**<br>• Adopt network calls wait on a hub pause with no word; reconcile stops on a busy weft push lock | [`adopt-held-by-pause`](design-adopt-held-by-pause.md) | 29m<br>29m | tender, fabric |
 | B7 |  | **adopt --drop-local fails on an untracked lym file in the weft**<br>• reset --keep refuses over an untracked generation-record.json; the adopt ends partial | [`drop-local-untracked-weft`](design-drop-local-untracked-weft.md) | 26m<br>26m | fabric |

@@ -719,7 +719,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (issue #102, left out of loop-exit-not-recorded)\n\nA load turn that ends on an API `server_error` makes shuttle wait and retype (`load turn ended on an API error; the prompt waits until the load runs through`), with `apiErrors` rising each time and no cap.\nIn the reported run it rose 3, 4, 5 before the loop ended with no envelope, and the run history showed hours of idle time around the stuck step that no status line surfaced.\nThe run `loop-exit-not-recorded` made the loop record its exit status but left these two asks out.\n\n## Idea\n\n- Bound the load-turn retry on `server_error` and name the cap in the halt note, so a halt reads as an API outage rather than only `loop-exited`.\n- Show in `lym loom status` the idle time between a stuck step and the next step.",
-      "status": "running · Record-Write",
+      "status": "running · Drift-Await",
       "created": "2026-11-11T08:09:18Z",
       "revised": "2026-11-11T08:30:13Z",
       "profile": "light"
@@ -819,7 +819,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `gate-scope-by-coverage-map`.\n\nTakes: testmap and the redundancy report as they stand once testmap-upkeep's design has landed\nDelivers: maps whose blocks span every linked in-module package, with per-linked-package file hashes (go:embed targets in subdirectories included), each test's spawn-scan verdict and a format marker holding Commit and BuiltAt; dirty checks over every linked package's files, read fresh before the build and after the last test; the redundancy report and mapDrift unchanged in verdict\nExports: testcover.Map's linked-package field, spawn verdict per test and format marker; BlockKey carrying an import path for another package's block\n\nThe part changes these packages:\n\n- internal/testcover (about 300 changed lines)\n- internal/gatecli (about 500 changed lines)\n",
-      "status": "running · Open-IDE",
+      "status": "running · Record-Write",
       "created": "2026-11-11T09:07:11Z",
       "revised": "2026-11-11T09:07:11Z",
       "profile": "solid",
