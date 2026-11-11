@@ -1,0 +1,15 @@
+verdict: hand-back
+reason: >-
+  The Raddle-File row failed with a producer error: file entry "testmap-cross-package"
+  depends on note "testmap-upkeep", and a note cannot be depended on (trace 2bf9d3c92a8353fd,
+  steps/2bf9d3c92a8353fd.trace.log line 10; drive-envelope-20261111-100516-1b53.json, error field).
+  The error text calls the fault transient and says to re-step, but the condition is deterministic:
+  the dependency stays in place until the board changes, so a plain re-launch or a goto to
+  Raddle-File or Raddle-Write would hit the same refusal. Clearing it needs a board change, and
+  the tackler may not run a lym verb that changes the run. Choosing between the two ways forward
+  (promote the note, or drop the dependency) is a scope/design choice for the run's parent.
+question: >-
+  Raddle-File refused file entry "testmap-cross-package" because it depends on note "testmap-upkeep",
+  and a note cannot be depended on. Should "testmap-upkeep" be promoted with `lym board promote`
+  so the dependency stands, or should the dependency be dropped with `lym board set-deps`?
+  Once one of these is done, the Raddle-File row can be re-stepped.

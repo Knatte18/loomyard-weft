@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Raddle-File",
+    "history_length": 2,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "b0e9f53536b4d39d2009e44a55875f8d7e29e993",
+    "branch": "gate-scope-by-coverage-map",
+    "dirty": {}
+  },
+  "spawned_at": "2026-11-11T10:05:17.037541151+01:00",
+  "deadline": "2026-11-11T10:15:17.037541151+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/gate-scope-by-coverage-map/_lym/shed/gate-scope-by-coverage-map/drive-reports/drive-envelope-20261111-100516-1b53.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/gate-scope-by-coverage-map/_lym/shed/gate-scope-by-coverage-map/drive-reports/drive-report-20261111-100516-ce03.md",
+  "strand_guid": "4d125456d8ff4f11c62c280ee2a40a49"
+}
