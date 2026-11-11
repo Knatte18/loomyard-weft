@@ -1,6 +1,6 @@
 # A coverage gate scope runs changed packages whole and importing packages' selected tests
 
-`gate-scope-coverage` · Task · feature, gate, testkit, darn · running · Preflight
+`gate-scope-coverage` · Task · feature, gate, testkit, darn · running · Record-Write
 
 Decision record: [Sketch](decision-gate-scope-coverage.md)
 
