@@ -26,9 +26,17 @@ with a few hard calls an advisor could take:
 
 Review judges, lenses and the arbiter stay out: their value is the judgment itself, which an advisor would only move.
 
-## Before it runs
+## How it runs (operator, 2026-11-11)
 
-A darn `docs` task first finds how `/advisor` works in a headless lym session:
-whether lym can turn it on per role through shuttle and the role's model setting, and how its calls show in the usage records.
-The trial then runs one or two real darn tasks with a Sonnet writer and an Opus advisor against their Opus-writer record,
-comparing time with sleep removed, tokens, cost and review bounces; the task body states the exact count.
+- The trial needs no lym config: it passes the advisor through the `--settings` document claudeengine already writes for every launch.
+  Claude Code's session transcripts carry an `advisorModel` field (lym's run sessions already read `claude-opus-5-5` there), so the setting exists;
+  the trial confirms its settings key, that it takes effect in a lym tmux session, and how advisor calls show in the usage records.
+- A lym config key for the advisor, beside each role's model and effort, comes only after the trial shows it pays.
+
+## Trial (orch's proposal)
+
+- Replay rather than new tasks: rerun one or two darn tasks that already landed, from their base commit, with a Sonnet writer and an Opus advisor.
+  Compare each with its recorded Opus run: review findings, bounces, tokens, cost and time with sleep removed.
+- Order: the Code-Review fixer first (low risk, it applies findings already named), then Darn-Write.
+- The risk to watch: a weak writer that is sure and wrong does not ask its advisor, so the review bounces are the key measure.
+- Runs as darn `docs`; the task body states the exact number of runs.
