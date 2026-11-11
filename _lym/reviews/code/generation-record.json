@@ -1,6 +1,11 @@
 {
   "number": 1,
   "judge_subject": {
-    "kind": ""
-  }
+    "kind": "code",
+    "merge_base": "2136b28b17a02852e5b5ca206a2892df220b7aca",
+    "head": "2136b28b17a02852e5b5ca206a2892df220b7aca",
+    "full_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "judge_base": "2136b28b17a02852e5b5ca206a2892df220b7aca",
+  "judge_at": "2026-11-11T15:18:36Z"
 }
