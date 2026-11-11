@@ -61,7 +61,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 4d<br>1d | codex, shuttle |
-| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 1d<br>46m | codex, shuttle |
+| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 1d<br>47m | codex, shuttle |
 
 #### Features (1)
 
@@ -86,7 +86,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md)<br>[Sketch](decision-gate-scope-by-coverage-map.md) | raddle | failed · Raddle-File | neve | 1d<br>20m | gate, testkit, darn |
+| T2 | **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md)<br>[Sketch](decision-gate-scope-by-coverage-map.md) | raddle | failed · Raddle-File | neve | 1d<br>21m | gate, testkit, darn |
 
 #### Ready (0)
 
@@ -103,13 +103,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 1d<br>1d | testkit, gate |
-| E5 |  | **Decide how the coverage maps are kept fresh: triggers, batch, staleness and sharing across machines** | [`testmap-upkeep`](design-testmap-upkeep.md) | 1d<br>46m | testkit, gate, dobby |
+| E5 |  | **Decide how the coverage maps are kept fresh: triggers, batch, staleness and sharing across machines** | [`testmap-upkeep`](design-testmap-upkeep.md) | 1d<br>47m | testkit, gate, dobby |
 | E12 |  | **The prime dobby leaves a coverage map backlog unbuilt until more landings come** | [`testmap-backlog-drain`](design-testmap-backlog-drain.md) | 1d<br>1h | dobby, gate, testkit |
 
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (34)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (35)</strong></summary>
 
 Owner `neve`
 
@@ -138,7 +138,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | darn · light | T20 | 55m<br>35m | shuttle, loom |
+| T1 | **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | darn · light | T20 | 56m<br>35m | shuttle, loom |
 | T5 | **machinename reads the machine name from machine.json before the hostname rule** | [`machine-name-file`](design-machine-name-file.md)<br>[Sketch](decision-machine-name-file.md) | darn · light | T6 | 1d<br>1h | config, slack |
 | T8 | **One land notice: fold the beam-PR landing notice into notify_on_land** | [`one-land-notice`](design-one-land-notice.md) | darn · light | T7 | 1d<br>35m | dobby, batten, workspaces |
 | T9 | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | darn · light | T6 | 2h<br>1h | fabric |
@@ -161,7 +161,7 @@ Starts when every entry it names under After is done.
 | T11 | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | T10 | 2h<br>1h | fabric, cleanup |
 | T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1d<br>1h | slack, reed, creel |
 
-### Notes (24)
+### Notes (25)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -170,14 +170,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 1d<br>1d | gate, fabric |
-| R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 2h<br>20m | darn, loom, shuttle, claude |
+| R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 2h<br>21m | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
 
-#### Bugs (1)
+#### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | 15m<br>15m | dobby, fabric, tender |
+| B1 |  | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | 16m<br>16m | dobby, fabric, tender |
+| B2 |  | **raddle-propose passes a dependency on a note that Raddle-File refuses**<br>• Validate depends_on targets at raddle-propose, before approval; fix the truncated refusal text | [`raddle-propose-note-deps`](design-raddle-propose-note-deps.md) | 0m<br>0m | shed, board |
 
 #### Enhancements (7)
 
@@ -185,7 +186,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 3d<br>3d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 2d<br>1d | shed, loom, darn |
-| E3 |  | **Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome** | [`finalize-flaky-test-gaps`](design-finalize-flaky-test-gaps.md) | 15m<br>15m | landing, gate |
+| E3 |  | **Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome** | [`finalize-flaky-test-gaps`](design-finalize-flaky-test-gaps.md) | 16m<br>16m | landing, gate |
 | E6 |  | **Raddle shows each part's recipe and profile as table columns**<br>• Raddle names recipe and profile only in free text; put them in the proposal table | [`raddle-table-recipe-profile`](design-raddle-table-recipe-profile.md) | 0m<br>0m | stencil, shed |
 | E9 |  | **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | 2h<br>2h | heddle |
 | E10 |  | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | 2h<br>2h | heddle |
