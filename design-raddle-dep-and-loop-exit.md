@@ -1,6 +1,6 @@
 # raddle-propose refuses a note dependency early; a loop exit without an envelope shows its log tail
 
-`raddle-dep-and-loop-exit` · Task · bug, shed, board, loom
+`raddle-dep-and-loop-exit` · Task · bug, shed, board, loom · running · Worktree-Create
 
 Depends on: [`load-turn-retry-cap`](design-load-turn-retry-cap.md)
 
