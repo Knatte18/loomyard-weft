@@ -1,12 +1,12 @@
 {
   "current_producer": "Land",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "pull failed: fabricengine: weft pull did not complete, warp fetch also failed: gitrepo: fetch in /home/knatte/Code/loomyard-LYMHUB/loomyard: git exited 128 (run `git -C /home/knatte/Code/loomyard-LYMHUB/loomyard fetch` for git's own diagnosis)",
   "pause_requested": false,
   "activity": {
     "now": "Land",
-    "last": "Run-Shed → done",
-    "wait": ""
+    "last": "Land → stuck",
+    "wait": "pull failed: fabricengine: weft pull did not complete, warp fetch also failed: gitrepo: fetch in /home/knatte/Code/loomyard-LYMHUB/loomyard: git exited 128 (run `git -C /home/knatte/Code/loomyard-LYMHUB/loomyard fetch` for git's own diagnosis)"
   },
   "history": [
     {
@@ -59,6 +59,14 @@
       "outcome": "done",
       "output": "",
       "at": "2026-11-11T07:24:27Z",
+      "machine": "neve"
+    },
+    {
+      "producer": "Land",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-11T07:24:44Z",
+      "budget_exempt": true,
       "machine": "neve"
     }
   ]
