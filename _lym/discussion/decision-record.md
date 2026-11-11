@@ -65,6 +65,13 @@ Rationale: the archives appear after the adopt that triggers them, so the new ow
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - records-tag-vs-records-branch-untested (class design, severity MEDIUM, open in rounds 1)
+  - teardown-archive-exclusion-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D10: `lym adopt --here` in a worktree its machine owns ends `owned_here` with no worker and no record, even beside another subject's unfinished record; in a foreign-owned prime it adopts `root`, and in a beam the beam.
