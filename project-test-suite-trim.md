@@ -57,4 +57,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T1 | **Decide how the coverage maps are kept fresh, from the upkeep research** | [`testmap-upkeep-design`](design-testmap-upkeep-design.md)<br>[Sketch](decision-testmap-upkeep-design.md) | 3h<br>21m | testkit, gate, dobby |
+| T1 | **Decide how the coverage maps are kept fresh, from the upkeep research** | [`testmap-upkeep-design`](design-testmap-upkeep-design.md)<br>[Sketch](decision-testmap-upkeep-design.md) | 3h<br>22m | testkit, gate, dobby |
