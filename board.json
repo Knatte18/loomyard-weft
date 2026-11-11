@@ -936,7 +936,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `decision-record-replace`.\n\nTakes: the board's stored record files and Board.StoreDecisionRecord, the run lock in runlock.go, the Add weft probe in remoteleftover.go, and the strand-name caller classification in boardcli\nDelivers: lym board upsert --record-file with its refusals and one-write landing, the record_body_sha256 stamp on every stored-record write, and promote's body-changed warning\nExports: a fabricengine function that reports whether a slug's weft branch is live, which Topology.Add also uses; a discussionparser record-only section check; the record_body_sha256 field on boardengine.Task\n\nThe part changes these packages:\n\n- internal/boardcli (about 250 changed lines)\n- internal/boardengine (about 250 changed lines)\n- internal/discussionparser (about 80 changed lines)\n- internal/fabricengine (about 120 changed lines)\n",
-      "status": "running · Drift-Expect",
+      "status": "running · Darn-Write",
       "created": "2026-11-11T15:32:42Z",
       "revised": "2026-11-11T15:32:42Z",
       "profile": "light",
