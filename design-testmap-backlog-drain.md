@@ -20,3 +20,11 @@ so a refresh that leaves packages unbuilt starts no next one.
 While the last refresh reported stale packages left unbuilt, start the next refresh on the first tick after it ends,
 in batches of `test_map_batch`, so a backlog drains on its own and each refresh still holds the gate slot for at most one batch.
 Keep the landing count as the trigger once nothing is left.
+
+## Related research (board tidy, 2026-11-11)
+
+The research report of `testmap-upkeep` (landed as `da34600e`, under `docs/research/speed/testmap-upkeep-2026-11-11/report.md`)
+compares three proposals for keeping the maps fresh.
+All three make the test the unit of staleness, drop the age rebuild, and never make a gate wait.
+It decides nothing, and its open questions go to a later design task.
+Read it before building this drain, since a design from it may change how and when a refresh starts.
