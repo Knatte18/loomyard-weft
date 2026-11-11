@@ -1,6 +1,6 @@
 # raddle-propose refuses a note dependency early; a loop exit without an envelope shows its log tail
 
-`raddle-dep-and-loop-exit` · Task · bug, shed, board, loom · running · Code-Bouncer
+`raddle-dep-and-loop-exit` · Task · bug, shed, board, loom · running · Code-Burler-Review
 
 First read what landing d1535412 (shedverbs: record how an --until-stop loop's process ended) already covers of the second note; do only what is left, and the first note whole.
 
