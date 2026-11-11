@@ -1044,6 +1044,24 @@
       "body": "## Seen (orch, 2026-11-11)\n\nThe orch received creel mail more than a day old, about pairs the orch had already torn down with `lym cleanup --apply`: `terminal-titles-hub-project`, `testmap-verb` and `arras-recipe-perch`.\nIt arrived under a tool result when the orch loaded skills, long after the orch's last turn, and the senders' runs no longer existed.\nOne line asked the orch to settle a stop of a run that was gone.\n\n## Idea\n\nMail addressed about a run or pair that no longer exists is dropped or marked stale rather than handed to the orch as live.\nRead first why the mail waited in the queue, whether the orch's session was down, and whether teardown can clear the strand's pending notices.\n",
       "created": "2026-11-11T09:56:17Z",
       "revised": "2026-11-11T09:56:17Z"
+    },
+    {
+      "id": 1309,
+      "handle": "B5",
+      "slug": "adopt-check-tab-stays",
+      "title": "The adopt-check tab stays open and takes space after the check ends",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The tab of a finished adopt check is not closed or shrunk",
+      "body": "## Seen (operator, 2026-11-11)\n\nAfter `lym adopt root` ran its check on OSL-1046, an `adopt-check` tab stayed open at the bottom of the terminal and took a lot of space.\nThe check had ended green in all three tiers, and the tab was still there.\n\n## Idea\n\nClose the check's pane or tab when the adopt check ends, or shrink it to one line, since its result is already in the adopt record and the creel mail.\nRead first which part of `lym adopt` opens the tab, whether a failed check should keep it open for the operator, and where the suite log stays readable after the close.\n",
+      "created": "2026-11-11T10:17:53Z",
+      "revised": "2026-11-11T10:17:53Z"
     }
   ],
   "prime_owner": "osl-1046",
