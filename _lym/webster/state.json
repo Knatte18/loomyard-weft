@@ -1,0 +1,131 @@
+{
+  "runGuid": "26e3bd5661dd4a4e4cc10e508f949b14",
+  "planFingerprint": "b887a8631a334833b38826fc1337cb98d73cfa6ecf740720a67de0f9622a0076",
+  "planFileHashes": {
+    "00-overview.md": "a931b4ef27327c8bc07f0e4f9c3874a46977fcd41261a6bb8eb8f5537fdc7676",
+    "01-owner-replace-set.md": "2458129308e955735349e13ba1f00a0d9120e526b1afc8bebfea209826c715c0",
+    "02-hostname-name.md": "b92d538ba8ff7aa281d83cfcf09fbb52249fb35d20a84f2b6ac7f27c52ef5125",
+    "03-machine-name-show.md": "1f846d900173a84acd0c6dbf9458ea12feb43cc80013dc55e0d02e7e8b6cb2a4",
+    "04-machine-name-set.md": "55e684726439d5bdcc20c12707b516980dbfcbe6facb156a645c8508024c505e"
+  },
+  "planOverviewFrameHash": "0d20aaf83992253aca086ea1fb8fd176433b2fde09ac63cb1b6224f3f88ad84d",
+  "partition": [
+    {
+      "cards": [
+        "01-owner-replace-set",
+        "02-hostname-name",
+        "03-machine-name-show",
+        "04-machine-name-set"
+      ],
+      "profile": "wide",
+      "estimate": 248564,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54496,
+        "read_union": 68248,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 816,
+            "reads": {
+              "file:PATTERN.md": 660,
+              "file:internal/boardengine/doc.go": 9024,
+              "file:pattern/PATTERN-owner-machine.md": 996,
+              "package:.": 2000,
+              "package:internal/boardengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 78,
+            "written": 24216
+          },
+          {
+            "card": 2,
+            "card_text": 288,
+            "reads": {
+              "file:internal/machinename/doc.go": 144,
+              "package:internal/machinename": 2000,
+              "tests:internal/machinename": 2000
+            },
+            "messages": 19,
+            "written": 5988
+          },
+          {
+            "card": 3,
+            "card_text": 864,
+            "reads": {
+              "file:cmd/lym/seamsignature_test.go": 924,
+              "file:docs/overview.md": 23892,
+              "file:pattern/PATTERN-cli-cobra.md": 888,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/machinecli": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/machinecli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 146,
+            "written": 44664
+          },
+          {
+            "card": 4,
+            "card_text": 1752,
+            "reads": {
+              "file:docs/overview.md": 23892,
+              "package:docs": 2000,
+              "package:internal/machinecli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/machinecli": 2000
+            },
+            "messages": 164,
+            "written": 50952
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "1f60f7d7713caa74658e9e4b47965ba7",
+  "masterSessionId": "f17d4143-94ca-45f8-bde2-4357843b9c1b",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "owner-replace-set",
+      "cards": [
+        "01-owner-replace-set",
+        "02-hostname-name",
+        "03-machine-name-show",
+        "04-machine-name-set"
+      ],
+      "cardHashes": {
+        "01-owner-replace-set": "2458129308e955735349e13ba1f00a0d9120e526b1afc8bebfea209826c715c0",
+        "02-hostname-name": "b92d538ba8ff7aa281d83cfcf09fbb52249fb35d20a84f2b6ac7f27c52ef5125",
+        "03-machine-name-show": "1f846d900173a84acd0c6dbf9458ea12feb43cc80013dc55e0d02e7e8b6cb2a4",
+        "04-machine-name-set": "55e684726439d5bdcc20c12707b516980dbfcbe6facb156a645c8508024c505e"
+      },
+      "startSha": "0604f2ea85b08f244ab8434e20cd7070dc5eff42",
+      "kind": "fork",
+      "spawnedAt": "2026-11-11T11:33:39Z",
+      "sessionId": "f17d4143-94ca-45f8-bde2-4357843b9c1b",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
