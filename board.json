@@ -564,6 +564,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #103](https://github.com/Knatte18/loomyard/issues/103).\n\nlym heddle set and lym heddle remove save the entry and render HEDDLE.md, but leave every existing worktree's rendered files (CLAUDE.local.md, AGENTS.override.md, .claude/settings.local.json) stale until the worktree is made, taken in, or rendered by hand with lym heddle render.\n\nSeen: a new repository entry with target claude-file was set from a beam worktree. CLAUDE.local.md in that worktree, in the prime worktree and in a running task worktree all lacked the entry until lym heddle render was run in each one by hand.\n\nAn instruction entry usually exists because agents must follow it now (for example, a module that is out of scope), so agents in running task worktrees keep working without it, and nothing tells the caller which worktrees are stale.\n\nProposal: after a successful set or remove, render every file target into every live code worktree of the hub (prime, beams, task pairs), and report the rendered and failed worktrees in the verb's output. Running Claude sessions then take the change at their next compaction, as today; an optional flag to skip the fan-out could cover bulk edits.",
+      "status": "running · Worktree-Create",
       "created": "2026-11-11T06:22:58Z",
       "revised": "2026-11-11T14:32:34Z",
       "profile": "light"
@@ -630,7 +631,6 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-11)\n\nThe hub workspace file `\u003chub\u003e/\u003crepo\u003e.code-workspace` lists the prime, Bolt and every pair whose parent is the prime, beams included,\nbut no pair under a beam: those are only in the beam's own `\u003crepo\u003e-\u003cbeam\u003e.code-workspace`.\nThe operator rarely opens VS Code, and when they do they want to see all of a repository's code in one window,\nso a beam's tasks missing from the hub file sends them to a second window.\nA folder is named by its slug alone, such as `adopt-worker-record`, so nothing shows which project it belongs to.\n\n## Idea\n\n- The hub workspace file lists every pair of the hub, the pairs under each beam included, at any depth.\n- Each pair's folder name leads with its project's handle, `P1: adopt-worker-record`, when its board entry belongs to a project;\n  a pair with no project keeps its slug alone.\n  The handle comes from the board at regeneration, so a regeneration after a board change brings it current.\n- The beam workspace files stay as they are.\n\nThe machine restart launcher (`machine-restart-shortcut`) opens only this hub file, so it relies on it listing every pair.\n",
-      "status": "draft",
       "created": "2026-11-11T07:22:39Z",
       "revised": "2026-11-11T14:32:39Z",
       "profile": "light"
@@ -676,7 +676,6 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (board tidy, 2026-11-11)\n\n`finalize-flaky-rerun` landed as `dea07060` with findings its review left open under \"To check by hand\":\n\n- No test covers that `NewFinalize` wires the gate's flaky sink to the Finalize it returns (`internal/landingshed/finalize.go`, `NewFinalize` and `assembleFinalize`).\n- The guards that skip a rerun and the rerun's outcomes lack test rows each (`internal/landingshed/verifygate.go`, `rerunTestFailure`).\n- Nothing ran beyond the unit tests: no real landing has had a tier0 test fail once and land with the `## Flaky test failures` section,\n  and no real .NET gate run has shown a VSTest failure's test name and error message in the report.\n\n## Idea\n\nAdd the missing test rows for the sink wiring and for each rerun guard and outcome.\nThe two real-run checks are left to the next landing that meets a flaky test, in this hub or a .NET hub; the orch reads its landing commit then.\n",
-      "status": "draft",
       "created": "2026-11-11T08:49:24Z",
       "revised": "2026-11-11T14:32:39Z",
       "profile": "light"
@@ -1032,7 +1031,6 @@
       "isolated": false,
       "brief": "",
       "body": "Add the missing tests below in one run.\n\n## From note verbdir-calls-untested\n\nSeen: the landing `push-notice-anchor-dir` lists this under \"To check by hand\".\nThe calls that resolve the lym verb directory have no test in an anchored hub.\nIdea: add an anchored-hub row for each call.\n\n## From note anchor-stops-untested\n\nSeen: the landing `push-notice-anchor-dir` lists this under \"To check by hand\".\nThe steps not yet converted to the anchored directory have no test for the weft-dirty stop or the upstream-anchor stop.\nIdea: add a test row for each stop.\n\n",
-      "status": "draft",
       "created": "2026-11-11T14:01:42Z",
       "revised": "2026-11-11T14:32:39Z",
       "profile": "light"
