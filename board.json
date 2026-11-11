@@ -517,7 +517,6 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #104](https://github.com/Knatte18/loomyard/issues/104).\n\nA heddle entry with target claude-file is rendered into both CLAUDE.local.md (Claude Code) and AGENTS.override.md (Codex). The name says Claude only, and there is no way to give an instruction to one agent family alone, although some instructions apply to Codex and not to Claude, or the other way round.\n\nProposal: three file targets.\n\n- claude-file renders into CLAUDE.local.md only.\n- codex-file renders into AGENTS.override.md only.\n- A new shared target (for example agents-file) renders into both.\n\nExisting claude-file entries keep today's behaviour by migrating to the shared target. lym heddle set --help, lym heddle list and HEDDLE.md state which files each file target renders to.",
-      "status": "draft",
       "created": "2026-11-11T06:23:00Z",
       "revised": "2026-11-11T15:17:46Z",
       "profile": "light"
@@ -706,7 +705,6 @@
       "isolated": false,
       "brief": "The README is partly outdated, too long-winded, its Autoboard link is dead, and Lineage no longer fits LoomYard",
       "body": "## Seen (operator, 2026-11-11)\n\nThe operator read the README and found it already somewhat out of date.\nIt also carries too much wall of text.\nThe Lineage list links `https://github.com/willietran/autoboard` (`README.md`, Lineage section), and that repository is gone: the GitHub API answers 404.\nAutoboard was the largest inspiration for Millhouse, so the credit should stay.\nLoomYard has also grown far beyond Millhouse, and the Lineage section no longer shows that.\n\n## Idea\n\nRefresh the README as one pass.\nRead it against the current `lym` verbs, `docs/overview.md` and `docs/getting-started.md`, and fix what no longer matches.\nCut the wall of text: short sections, lists and a table where they say it faster, and detail moved to `docs/` with a link.\n\nIn Lineage, keep Autoboard and Willie Tran as plain text without the dead link, with a note that the repository was removed.\nShorten Lineage to the origin and the credits, now that LoomYard stands on its own.\n\nSlack is left out until the machine-to-machine link exists; the README then names it as what it does for two machines.\n",
-      "status": "draft",
       "created": "2026-11-11T11:50:23Z",
       "revised": "2026-11-11T15:17:46Z",
       "profile": "docs"
@@ -935,7 +933,6 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `decision-record-replace`.\n\nTakes: the board's stored record files and Board.StoreDecisionRecord, the run lock in runlock.go, the Add weft probe in remoteleftover.go, and the strand-name caller classification in boardcli\nDelivers: lym board upsert --record-file with its refusals and one-write landing, the record_body_sha256 stamp on every stored-record write, and promote's body-changed warning\nExports: a fabricengine function that reports whether a slug's weft branch is live, which Topology.Add also uses; a discussionparser record-only section check; the record_body_sha256 field on boardengine.Task\n\nThe part changes these packages:\n\n- internal/boardcli (about 250 changed lines)\n- internal/boardengine (about 250 changed lines)\n- internal/discussionparser (about 80 changed lines)\n- internal/fabricengine (about 120 changed lines)\n",
-      "status": "draft",
       "created": "2026-11-11T15:32:42Z",
       "revised": "2026-11-11T15:32:42Z",
       "profile": "light",
@@ -961,7 +958,6 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `decision-record-replace`.\n\nTakes: lym board upsert --record-file from record-file-upsert, named by D3's filed refusal and by D6's parent directive; add's guards, refusals and notice in decision.go; CommitAnchoredPathsWithTrailers, FindTrailerCommit and commitEmptySnapshot in fabricengine; Board.HoldsRaddleFiling and raddleRunFiling\nDelivers: lym loom decision replace with its guards, base-hash check, carry-over and added-entry checks, trailer commit and notice; the per-run decision lock shared by add, replace, store and writeCarryOver; recordHistory cut at the newest Lym-Record-Replaced trailer; D3's board copy and filed refusal; the D6 spec, parent directive and overview text\nExports: fabricengine.CommitEmptyWithTrailers, a first-parent trailer-key commit list and an anchored file's first-parent history with commit SHAs and positions; a gitrepo.Repo method that commits one path allowing an empty commit; discussionparser checks for carry-over block equality and the added-entry subset\n\nThe part changes these packages:\n\n- internal/loomcli (about 900 changed lines)\n- internal/fabricengine (about 300 changed lines)\n- internal/gitrepo (about 80 changed lines)\n- internal/discussionparser (about 150 changed lines)\n- contracts/specs (about 15 changed lines)\n- contracts/stencils/parent (about 15 changed lines)\n- docs (about 10 changed lines)\n",
-      "status": "draft",
       "created": "2026-11-11T15:32:42Z",
       "revised": "2026-11-11T15:32:42Z",
       "profile": "solid",
