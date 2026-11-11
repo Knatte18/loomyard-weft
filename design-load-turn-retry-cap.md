@@ -1,6 +1,6 @@
 # A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step
 
-`load-turn-retry-cap` · Task · bug, shuttle, loom · running · PR-Review
+`load-turn-retry-cap` · Task · bug, shuttle, loom · running · Finalize
 
 ## Seen (issue #102, left out of loop-exit-not-recorded)
 
