@@ -59,3 +59,33 @@ Record the loop process exit code or signal when the loop ends without an envelo
 Also have the halt note name the in-flight trace in every case, as the second halt does.
 
 Provenance: task slug `slack-presence-auto`; notes `loom-halt.md`, `loom-halt-3.md`.
+
+## From issue #102
+
+Imported from [issue #102](https://github.com/Knatte18/loomyard/issues/102).
+
+## What happened
+
+`lym loom` halted as `failed` at step `Plan-Burler-Fix` with anomaly `interrupted-stop`.
+The halt reason was `loop-exited`: loop `b3a3e4ec1abe667b` ended without an envelope, and the note reports "loop exit: not recorded".
+The step was in flight under trace `991dcb68f02d2464`.
+
+Step stderr shows the shuttle warning `load turn ended on an API error; the prompt waits until the load runs through` three times, with `apiErrors` rising 3, 4, 5 (`error=server_error`) and each `retypeAt` a few minutes after the warning.
+Skills being loaded at the time: `scribe:prose`, `scribe:code-quality`, `scribe:testing`.
+After the third warning the loop ended with no envelope and no recorded exit status.
+
+The status error read: `shedverbs: step Plan-Burler-Fix interrupted (loop-exited)`, with the way forward to read `loop.trace_copy` and `loop.stderr_path`, apply the interrupted rule under `loop.interrupt_policy`, then re-run `lym shed step models-backend --until-stop`.
+
+## Why this is abnormal
+
+- A transient upstream `server_error` on a load turn should end in a bounded retry or a recorded failure reason, not a silent loop exit with no envelope.
+- The loop's exit is "not recorded", so the operator cannot tell whether the loop crashed, was killed, or gave up after the retry cap.
+- The run's history also shows long idle gaps around the same stretch (`Plan-Burler-Review` stuck at 15:18Z, the next history entry hours later), which suggests the retype wait or the stuck-step handling stalls the run for a long time without surfacing it.
+
+## What to do
+
+- Record the loop's exit status and the reason it stopped (retry cap reached, signal, crash) in the envelope or halt note whenever a loop ends without an envelope.
+- Bound the load-turn retry on `server_error` and report the cap in the halt note, so the halt names an API outage rather than only `loop-exited`.
+- Surface the idle time between a stuck step and the next step in `lym loom` status.
+
+Provenance: task slug `models-backend`; notes `loom-halt.md`.
