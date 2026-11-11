@@ -517,7 +517,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #104](https://github.com/Knatte18/loomyard/issues/104).\n\nA heddle entry with target claude-file is rendered into both CLAUDE.local.md (Claude Code) and AGENTS.override.md (Codex). The name says Claude only, and there is no way to give an instruction to one agent family alone, although some instructions apply to Codex and not to Claude, or the other way round.\n\nProposal: three file targets.\n\n- claude-file renders into CLAUDE.local.md only.\n- codex-file renders into AGENTS.override.md only.\n- A new shared target (for example agents-file) renders into both.\n\nExisting claude-file entries keep today's behaviour by migrating to the shared target. lym heddle set --help, lym heddle list and HEDDLE.md state which files each file target renders to.",
-      "status": "running · Describe",
+      "status": "running · PR-Review",
       "created": "2026-11-11T06:23:00Z",
       "revised": "2026-11-11T15:17:46Z",
       "profile": "light"
