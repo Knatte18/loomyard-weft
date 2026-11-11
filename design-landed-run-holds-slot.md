@@ -1,6 +1,6 @@
 # A landed run left failed before teardown holds a max_runs slot until a hand cleanup
 
-`landed-run-holds-slot` · Task · bug, dobby, batten, cleanup · running · Drift-Verify
+`landed-run-holds-slot` · Task · bug, dobby, batten, cleanup · running · Code-Bouncer
 
 ## Seen (orch, 2026-11-11)
 
