@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-11 20:05 UTC; every age below is as of then.
+Rendered 2026-11-11 20:07 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,31 +8,17 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (4)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **The parent-review ask record, its deadline keys, and lym loom parent-review answer and await** | [`parent-review-ask-verbs`](design-parent-review-ask-verbs.md)<br>[Sketch](decision-parent-review-ask-verbs.md) | darn · solid | Finalize | neve | 46m<br>46m | loom, orch, config, burler |
-
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Layer A (1)
-
-Waits only on Running, Ready or Draft entries.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **The Discussion-Review round asks the parent orch, and its chair keeps every parent finding** | [`discussion-review-parent-seat`](design-discussion-review-parent-seat.md)<br>[Sketch](decision-discussion-review-parent-seat.md) | darn · solid | T6 | 46m<br>46m | loom, orch, config, burler |
+| T7 | **The Discussion-Review round asks the parent orch, and its chair keeps every parent finding** | [`discussion-review-parent-seat`](design-discussion-review-parent-seat.md)<br>[Sketch](decision-discussion-review-parent-seat.md) | darn · solid |  | 48m<br>48m | loom, orch, config, burler |
 
 ### Draft (2)
 
@@ -40,8 +26,8 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 9d<br>35m | claude, shuttle, config |
-| T2 | `draft` **Build the full set of coverage maps and list, per package, the tests the others already cover**<br>• Use the maps: build them all and rank the redundant-test candidates per package; no test is cut | [`test-redundancy-candidates`](design-test-redundancy-candidates.md) | darn · light | T5 | 22m<br>22m | testkit, gate |
+| T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 9d<br>38m | claude, shuttle, config |
+| T2 | `draft` **Build the full set of coverage maps and list, per package, the tests the others already cover**<br>• Use the maps: build them all and rank the redundant-test candidates per package; no test is cut | [`test-redundancy-candidates`](design-test-redundancy-candidates.md) | darn · light | T5 | 24m<br>24m | testkit, gate |
 
 ## Notes (15)
 
@@ -76,3 +62,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 4w<br>6d | webster |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>6d | burler, shed, orch, quarry, report |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 6d<br>6d | batten, board, fabric, workspaces |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T6 | **The parent-review ask record, its deadline keys, and lym loom parent-review answer and await** | [`parent-review-ask-verbs`](design-parent-review-ask-verbs.md)<br>[Sketch](decision-parent-review-ask-verbs.md) | 48m<br>48m | loom, orch, config, burler |
