@@ -1,0 +1,871 @@
+diff --git a/internal/battencli/dobbyreading_test.go b/internal/battencli/dobbyreading_test.go
+index f5501982..4aace722 100644
+--- a/internal/battencli/dobbyreading_test.go
++++ b/internal/battencli/dobbyreading_test.go
+@@ -285,3 +285,29 @@ func TestRunTakesNoSlot(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestEntryEnded(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	done, running := boardengine.StatusDone, boardengine.RunStatus("running", "Run-Shed")
++	tests := []struct {
++		name    string
++		entry   boardengine.Task
++		onBoard bool
++		want    bool
++	}{
++		{"DoneEntry", boardengine.Task{Status: &done}, true, true},
++		{"EntryGoneFromTheBoard", boardengine.Task{}, false, true},
++		{"EntryAtARunStatus", boardengine.Task{Status: &running}, true, false},
++		{"EntryWithNoStatus", boardengine.Task{}, true, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := entryEnded(tt.entry, tt.onBoard); got != tt.want {
++				t.Errorf("entryEnded(%+v, %v) = %v; want %v", tt.entry, tt.onBoard, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/battencli/dobbyreads.go b/internal/battencli/dobbyreads.go
+index 34038f09..19aa5a46 100644
+--- a/internal/battencli/dobbyreads.go
++++ b/internal/battencli/dobbyreads.go
+@@ -135,6 +135,8 @@ var unreadableReachedParent logger.EpisodeSet
+ // A run's place against its Land row is read from its status,
+ // and a landed run carries the landing commit its landing recorded, empty when none is readable.
+ // Whether the run takes no slot is judged from its board entry on the local board at geom.BoardDir.
++// Whether that entry ended, done or gone from the board, is judged from the same board.
++// Whether its pair is present is read from its task worktree's path.
+ // A paused run also carries whether its work already reached its parent.
+ // That is read from the child's status in the task worktree,
+ // and a read that fails leaves the run unreached, with one Warn, so the run stays paused.
+@@ -160,13 +162,15 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ 	for _, run := range runs {
+ 		slug := run.slug
+ 		coverage := record.CoverageOf(slug, now)
++		entry, onBoard := entryOf[slug]
+ 		view := dobbyengine.RunView{
+-			Slug:     slug,
+-			State:    string(run.status.State),
+-			Producer: run.status.CurrentProducer,
+-			Covered:  coverage.Covered,
+-			Held:     coverage.Held,
+-			NoSlot:   runTakesNoSlot(entryOf[slug]),
++			Slug:       slug,
++			State:      string(run.status.State),
++			Producer:   run.status.CurrentProducer,
++			Covered:    coverage.Covered,
++			Held:       coverage.Held,
++			NoSlot:     runTakesNoSlot(entry),
++			EntryEnded: entryEnded(entry, onBoard),
+ 		}
+ 		outcome := battenrecipe.LandOutcomeOf(run.status)
+ 		view.PastLand, view.Landed = outcome != battenrecipe.LandOutcomeAhead, outcome == battenrecipe.LandOutcomeLanded
+@@ -183,6 +187,7 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ 			func() (err error) { view.CancelMarker, err = markerExists(shedrun.CancelMarker(prime, slug)); return },
+ 			func() (err error) { view.OriginOwed, err = markerExists(shedrun.OriginOwedMarker(prime, slug)); return },
+ 			func() (err error) { view.DriverLockHeld, err = lockHeld(shedrun.DriverLock(prime, slug)); return },
++			func() (err error) { view.PairPresent, err = markerExists(pair.WorktreePath()); return },
+ 			func() error {
+ 				if !view.Landed {
+ 					return nil
+@@ -228,6 +233,12 @@ func runTakesNoSlot(task boardengine.Task) bool {
+ 	return task.Kind == boardengine.KindProject && task.Beam && boardengine.IsRunStatus(task.Status) && !boardengine.RunHolds(task)
+ }
+ 
++// entryEnded reports whether a run's board entry ended:
++// entry is done, or onBoard is false because the board no longer holds it.
++func entryEnded(entry boardengine.Task, onBoard bool) bool {
++	return !onBoard || boardengine.IsDoneStatus(entry.Status)
++}
++
+ // modTimeOf returns the modification time of path, the zero time when it does not exist.
+ func modTimeOf(path string) (time.Time, error) {
+ 	info, err := os.Stat(path)
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index efe91616..f1a6db0e 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -1,6 +1,6 @@
+ // dobbydeps.go fills the seams of dobbyengine.Run over a hub.
+ // It covers the runs and tasks it reads, the pass it spawns, and the notices it sends.
+-// It also covers the owner pause and board tidy it sends.
++// It also covers the owner pause and board tidy it sends, and the teardown of an ended run's pair it starts.
+ // It also covers the hibernate request and the test-map refresh the prime's dobby carries,
+ // and the registration of the dobby process itself.
+ 
+@@ -40,6 +40,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/orchcli"
++	"github.com/Knatte18/loomyard/internal/pairteardown"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/pawlengine"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+@@ -149,6 +150,7 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 		SpawnPass: func(slug string, continuePass, noReopen bool) (<-chan dobbyengine.PassExit, error) {
+ 			return spawnPass(geom, slug, continuePass, noReopen)
+ 		},
++		TearDownEnded: func(slugs []string) <-chan map[string]error { return tearDownEnded(prime, slugs) },
+ 		Notice: func(_ context.Context, line string) error {
+ 			posted, err := orchcli.NotifyFromScoped(worktree, geom.Slug, dobbyProgram, line)
+ 			if err != nil {
+@@ -253,6 +255,62 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 	return deps, nil
+ }
+ 
++// tearDownEnded runs the hub-scope origin reconcile from prime in a goroutine of its own, as `lym cleanup --apply` does.
++// That reconcile tears down the local pair of every run origin has ended, and moves the hub's branches behind origin.
++// Each entry of its mutation record is logged at Info.
++// The channel delivers once.
++// It maps each of slugs to nil when the reconcile removed its pair, and to the reason otherwise.
++func tearDownEnded(prime *lymcwd.Location, slugs []string) <-chan map[string]error {
++	result := make(chan map[string]error, 1)
++	go func() {
++		teardown, err := pairteardown.New(prime)
++		if err != nil {
++			result <- endedTeardownResults(slugs, fabricengine.OriginReport{}, err)
++			return
++		}
++		report, err := fabricengine.ReconcileOrigin(prime, fabricengine.ReconcileScope{}, teardown.OriginSeams(pairteardown.HubSeamOptions(prime)), fabricengine.ReconcileOptions{})
++		for _, mutation := range report.Mutations.Entries() {
++			logger.Info("beamcli: origin reconcile mutation", "kind", string(mutation.Kind), "target", mutation.Target, "detail", mutation.Detail)
++		}
++		result <- endedTeardownResults(slugs, report, err)
++	}()
++	return result
++}
++
++// endedTeardownResults maps each of slugs to nil when report shows its pair removed, and to the reason otherwise.
++// reconcileErr is the error the reconcile behind report returned, which every slug then carries.
++func endedTeardownResults(slugs []string, report fabricengine.OriginReport, reconcileErr error) map[string]error {
++	results := make(map[string]error, len(slugs))
++	for _, slug := range slugs {
++		results[slug] = endedTeardownResult(slug, report, reconcileErr)
++	}
++	return results
++}
++
++// endedTeardownResult reads slug's ended entry in report: nil when its pair was removed, and the reason otherwise.
++func endedTeardownResult(slug string, report fabricengine.OriginReport, reconcileErr error) error {
++	switch {
++	case reconcileErr != nil:
++		return fmt.Errorf("the hub's origin reconcile failed: %w", reconcileErr)
++	case report.Unreachable:
++		return errors.New("origin was unreachable, so the reconcile judged no run ended")
++	}
++	for _, entry := range report.Entries {
++		if entry.Slug != slug || entry.State != fabricengine.EntryEnded {
++			continue
++		}
++		switch {
++		case entry.Removed:
++			return nil
++		case entry.Busy:
++			return fmt.Errorf("its pair is busy; %s", entry.WayForward)
++		case entry.Error != "":
++			return fmt.Errorf("its pair's teardown failed: %s", entry.Error)
++		}
++	}
++	return fmt.Errorf("origin's board does not show %s ended, so the reconcile left its pair; way forward: read lym batten status %s", slug, slug)
++}
++
+ // pullBolt brings the Bolt at boardDir, in the hub at hubRoot, up to date from origin.
+ // A pull that skips, as a dirty or diverged Bolt does, is an error carrying the skip's way forward.
+ func pullBolt(hubRoot, boardDir string) error {
+diff --git a/internal/beamcli/dobbydeps_test.go b/internal/beamcli/dobbydeps_test.go
+index 163f75a3..c8015761 100644
+--- a/internal/beamcli/dobbydeps_test.go
++++ b/internal/beamcli/dobbydeps_test.go
+@@ -1,16 +1,62 @@
+ // dobbydeps_test.go pins which pause entries the dobby's owner-pause lift removes.
++// It also pins how the dobby reads a hub reconcile's report on the ended runs it asked to tear down.
+ 
+ package beamcli
+ 
+ import (
++	"errors"
+ 	"path/filepath"
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++func TestEndedTeardownResults(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	ended := func(mutate func(entry *fabricengine.EntryOutcome)) fabricengine.OriginReport {
++		entry := fabricengine.EntryOutcome{Slug: "x", State: fabricengine.EntryEnded, How: "done", Local: true}
++		mutate(&entry)
++		return fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{entry}}
++	}
++	notEnded := "origin's board does not show x ended, so the reconcile left its pair; way forward: read lym batten status x"
++	tests := []struct {
++		name         string
++		report       fabricengine.OriginReport
++		reconcileErr error
++		want         string
++	}{
++		{"RemovedPairIsNoFailure", ended(func(e *fabricengine.EntryOutcome) { e.Removed = true }), nil, ""},
++		{"BusyPairNamesItsWayForward", ended(func(e *fabricengine.EntryOutcome) { e.Busy, e.WayForward = true, "wait for the driver" }), nil, "its pair is busy; wait for the driver"},
++		{"FailedTeardownNamesItsError", ended(func(e *fabricengine.EntryOutcome) { e.Error = "boom" }), nil, "its pair's teardown failed: boom"},
++		{"AnotherRunsRemovalLeavesThisOne", ended(func(e *fabricengine.EntryOutcome) { e.Slug, e.Removed = "y", true }), nil, notEnded},
++		{"ActiveEntryIsLeft", fabricengine.OriginReport{Entries: []fabricengine.EntryOutcome{{Slug: "x", State: fabricengine.EntryActive}}}, nil, notEnded},
++		{"UnreachableOriginJudgesNothing", fabricengine.OriginReport{Unreachable: true}, nil, "origin was unreachable, so the reconcile judged no run ended"},
++		{"ReconcileErrorFailsEveryRun", fabricengine.OriginReport{}, errors.New("ls-remote failed"), "the hub's origin reconcile failed: ls-remote failed"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			results := endedTeardownResults([]string{"x"}, tt.report, tt.reconcileErr)
++			got, reported := results["x"]
++			if !reported || len(results) != 1 {
++				t.Fatalf("endedTeardownResults() = %v; want one result for x", results)
++			}
++			gotText := ""
++			if got != nil {
++				gotText = got.Error()
++			}
++			if gotText != tt.want {
++				t.Errorf("endedTeardownResults()[x] = %q; want %q", gotText, tt.want)
++			}
++		})
++	}
++}
++
+ func TestLiftOwnerPause_LeavesAnAdoptOrHoldEntryStanding(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/beamcli/dobbypairanchor_test.go b/internal/beamcli/dobbypairanchor_test.go
+index af1bfcf2..06997cc0 100644
+--- a/internal/beamcli/dobbypairanchor_test.go
++++ b/internal/beamcli/dobbypairanchor_test.go
+@@ -1,5 +1,6 @@
+ // dobbypairanchor_test.go pins that dobby's two pair-reading callers place a task pair at the pair's own anchor.
+-// It also pins what DobbyRuns reads of a run's place against its Land row, over a hubforge hub.
++// It also pins, over a hubforge hub, what DobbyRuns reads of a run's place against its Land row.
++// It pins what DobbyRuns reads of the run's ended board entry and of its pair too.
+ 
+ package beamcli
+ 
+@@ -235,7 +236,7 @@ func TestDobbyRuns_ReadsWhetherAPausedRunsWorkReachedItsParent(t *testing.T) {
+ 	}
+ }
+ 
+-func TestDobbyRuns_ReadsTheLandOutcomeAndTheLandingCommit(t *testing.T) {
++func TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+@@ -246,6 +247,7 @@ func TestDobbyRuns_ReadsTheLandOutcomeAndTheLandingCommit(t *testing.T) {
+ 		"landed":     `{"state":"done","current_producer":"Worktree-Teardown","history":[{"producer":"Land","outcome":"done","output":"","at":"2026-10-31T10:00:00Z"}]}`,
+ 		"unlanded":   `{"state":"done","current_producer":"Worktree-Teardown"}`,
+ 		"unreadable": `{"state":"done","current_producer":"Worktree-Teardown","history":[{"producer":"Land","outcome":"done","output":"","at":"2026-10-31T10:00:00Z"}]}`,
++		"pairless":   `{"state":"done","current_producer":"Worktree-Teardown"}`,
+ 	}
+ 	for slug, status := range statuses {
+ 		hubforge.AddPair(t, h, slug)
+@@ -254,6 +256,22 @@ func TestDobbyRuns_ReadsTheLandOutcomeAndTheLandingCommit(t *testing.T) {
+ 			t.Fatalf("write the status of %s: %v", slug, err)
+ 		}
+ 	}
++	pairless, err := lymcwd.NamedWorktree(prime.HubPath, "pairless")
++	if err != nil {
++		t.Fatalf("NamedWorktree(pairless) = _, %v; want nil", err)
++	}
++	if err := os.RemoveAll(pairless.WorktreePath()); err != nil {
++		t.Fatalf("remove the pair of pairless: %v", err)
++	}
++
++	// "ahead" and "unreadable" stay open on the board, "landed" is done, and the others are gone from it.
++	board := `{"version":1,"entries":[` +
++		`{"id":1,"slug":"ahead","title":"Ahead","kind":"task","labels":["bug"]},` +
++		`{"id":2,"slug":"landed","title":"Landed","kind":"task","labels":["bug"],"status":"done"},` +
++		`{"id":3,"slug":"unreadable","title":"Unreadable","kind":"task","labels":["bug"]}]}`
++	if err := os.WriteFile(filepath.Join(h.BoardDir(), "board.json"), []byte(board), 0o644); err != nil {
++		t.Fatalf("write board.json: %v", err)
++	}
+ 	if err := shedrun.WriteLandedCommit(prime, "landed", "abc123"); err != nil {
+ 		t.Fatalf("WriteLandedCommit() = %v; want nil", err)
+ 	}
+@@ -263,19 +281,27 @@ func TestDobbyRuns_ReadsTheLandOutcomeAndTheLandingCommit(t *testing.T) {
+ 		t.Fatalf("make the landed-commit path a directory: %v", err)
+ 	}
+ 
+-	views, err := battencli.DobbyRuns(prime, dobbyengine.Geometry{}, battencli.NewDobbyParents(prime), filepath.Join(t.TempDir(), "pause.json"))
++	geom := dobbyengine.Geometry{BoardDir: h.BoardDir()}
++	views, err := battencli.DobbyRuns(prime, geom, battencli.NewDobbyParents(prime), filepath.Join(t.TempDir(), "pause.json"))
+ 	if err != nil {
+ 		t.Fatalf("DobbyRuns() = _, %v; want nil", err)
+ 	}
+ 	type landing struct {
+-		pastLand, landed bool
+-		commit           string
++		pastLand, landed        bool
++		commit                  string
++		entryEnded, pairPresent bool
+ 	}
+ 	got := map[string]landing{}
+ 	for _, view := range views {
+-		got[view.Slug] = landing{view.PastLand, view.Landed, view.LandingCommit}
++		got[view.Slug] = landing{view.PastLand, view.Landed, view.LandingCommit, view.EntryEnded, view.PairPresent}
++	}
++	want := map[string]landing{
++		"ahead":      {pairPresent: true},
++		"landed":     {true, true, "abc123", true, true},
++		"unlanded":   {pastLand: true, entryEnded: true, pairPresent: true},
++		"unreadable": {pastLand: true, landed: true, pairPresent: true},
++		"pairless":   {pastLand: true, entryEnded: true},
+ 	}
+-	want := map[string]landing{"ahead": {}, "landed": {true, true, "abc123"}, "unlanded": {pastLand: true}, "unreadable": {pastLand: true, landed: true}}
+ 	if !reflect.DeepEqual(got, want) {
+ 		t.Errorf("DobbyRuns() land readings = %+v; want %+v", got, want)
+ 	}
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 7628337e..fbfd2ea4 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -430,6 +430,14 @@
+ //     each run's parent comes through `hubgeom.ParentOf`;
+ //   - `battencli.DobbyRuns` also marks each run `NoSlot` through the run's board entry;
+ //     a pawl run without its landing hold thus takes no slot under `max_runs`;
++//     it marks the run `EntryEnded` when that entry is done or gone from the board, and reads whether its pair is on disk;
++//   - the teardown of an ended run's pair, `TearDownEnded`, for every dobby:
++//     `tearDownEnded` runs `fabricengine.ReconcileOrigin` over the hub scope from the prime in a goroutine of its own,
++//     with the seams `pairteardown` builds for the hub, as `lym cleanup --apply` does;
++//     that reconcile tears down every pair origin has ended and moves the hub's branches behind origin;
++//     each requested run reads as removed only when the report's ended entry for it says so;
++//     Bound: a teardown in flight when the dobby stops ends half done;
++//     the next attempt or `lym cleanup --apply` finishes it;
+ //   - `battencli.DobbyRuns` also reads each run's place against its Land row through `battenrecipe.LandOutcomeOf`;
+ //     it reads the landing commit through `shedrun.ReadLandedCommit`;
+ //     for a paused run, whether its work already reached its parent, by the judgment `lym batten cancel` refuses on;
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index def70057..8fa73744 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -111,6 +111,7 @@
+ //     The second stop removes a strand only while reed still tracks it.
+ //     It logs a failed stop when reed's status probe fails.
+ //   - Between ticks it calls the binary check, which re-execs onto a changed lym binary.
++//     It skips the check while a teardown of an ended run's pair is in flight, which a re-exec would cut short.
+ //     The check logs `re-exec onto the changed lym binary` right before the exec.
+ //     An exec that fails logs `re-exec failed` and posts a notice naming `lym beam stop` and `lym beam start`.
+ //     The notice goes once per binary identity, and the dobby keeps running.
+@@ -200,7 +201,8 @@
+ //     and no pause entry covers the hub or the slug.
+ //     Each tick reads the local board, which a write of `board.json` and the probe tick both cause.
+ //     It starts each ready task while fewer than `max_runs` runs it drives are in flight:
+-//     halted runs count; done runs, runs recorded owned elsewhere and pawl runs with no landing hold do not.
++//     halted runs count;
++//     done runs, runs recorded owned elsewhere, pawl runs with no landing hold and runs whose entry ended do not.
+ //     `max_runs: 0` starts nothing.
+ //   - Right before each start, dobby reads the cgroup task limit it sits under through Deps.TaskLimit.
+ //     The limit is that of the level of its own cgroup ancestry with the fewest free tasks, such as the user slice.
+@@ -268,7 +270,26 @@
+ //     Such a run only waits on its members at Worktree-Create, Preflight, Beam-Up and Beam-Await.
+ //     It takes a slot from Finalize on.
+ //     The parent's dobby still schedules the run's passes, owed full passes and probes as for every run it drives.
+-//     The view's `max_runs` reasons follow, since BuildView counts through the same rule.
++//   - A run whose RunView carries EntryEnded takes no slot either, whatever batten's state says.
++//     EntryEnded marks a run whose board entry is done or gone from the board.
++//     A landed run that batten stopped as failed or halted before its Worktree-Teardown row therefore frees its slot.
++//   - The view's `max_runs` reasons follow, since BuildView counts through the same rule.
++//
++// The ended teardown:
++//
++//   - A run is stranded when its entry ended (RunView.EntryEnded) and its pair is on disk (RunView.PairPresent),
++//     while dobby gives it no pass: batten's state is neither running, nor paused with its work on its parent, nor done.
++//     A run with a pass in flight, a held driver lock, a cancel marker, a covering pause or an owned-elsewhere mark is not.
++//   - After the passes, each tick hands every stranded run whose wait ran out to one call of Deps.TearDownEnded.
++//     The hub wiring runs the hub's origin reconcile there, as `lym cleanup --apply` does,
++//     and that reconcile tears down the pair of each run origin has ended.
++//     The call returns at once, and a later tick reads its one result; only one is in flight at a time.
++//   - A removed pair logs `teardown <slug>: pair removed`.
++//     A teardown that failed logs `teardown <slug> failing: <reason>` once per episode.
++//     Its run waits one probe interval, then twice its last wait after each further failure, up to an hour.
++//     The waits are in memory only, and a run that is no longer stranded forgets its wait.
++//   - A teardown in flight keeps the loop out of its idle backoff, and holds the binary check until it ends.
++//     A nil TearDownEnded tears nothing down.
+ //
+ // The landing step:
+ //
+diff --git a/internal/dobbyengine/ended.go b/internal/dobbyengine/ended.go
+new file mode 100644
+index 00000000..99c54a27
+--- /dev/null
++++ b/internal/dobbyengine/ended.go
+@@ -0,0 +1,119 @@
++// ended.go tears down the pair of a run whose board entry ended while batten left the run short of its own teardown.
++// It picks those runs, starts their teardown through Deps.TearDownEnded, and reads how it ended, with a wait per run.
++
++package dobbyengine
++
++import (
++	"errors"
++	"time"
++)
++
++// endedTeardownCeiling is the longest wait between two teardown attempts of one stranded run.
++const endedTeardownCeiling = time.Hour
++
++// errTeardownUnreported is the reason given for a slug the teardown's result left out.
++var errTeardownUnreported = errors.New("the teardown ended without reporting on the run")
++
++// endedTeardown is a teardown dobby started and has not read yet: the slugs it covers and its one result.
++type endedTeardown struct {
++	slugs  []string
++	result <-chan map[string]error
++}
++
++// endedRetry is when a stranded run's teardown may start next, the wait that set it, and whether its failure is logged.
++type endedRetry struct {
++	next     time.Time
++	interval time.Duration
++	failing  bool
++}
++
++// strandedEnded reports whether batten left run short of its own teardown although its board entry ended.
++// Its entry is done or gone, its pair is still on disk, and dobby gives it no pass:
++// batten's state is neither running, nor paused with its work on its parent, nor done.
++// A run with a pass in flight, a held driver lock or a cancel marker is not, since its driver or the cancel ends it.
++// Nor is a run a pause covers, or one recorded owned elsewhere, whose pair is not this dobby's to remove.
++func strandedEnded(run RunView, rs RunState, inFlight bool) bool {
++	return run.EntryEnded && run.PairPresent && !drivable(run) && run.State != runStateDone &&
++		!inFlight && !run.DriverLockHeld && !run.CancelMarker && !run.Covered && !rs.OwnedElsewhere
++}
++
++// tearDownEnded reads the teardown in flight once it ended, then starts one over the stranded runs whose wait ran out.
++// A run whose pair was removed logs `teardown <slug>: pair removed`.
++// A run whose teardown failed logs `teardown <slug> failing: <reason>` at the first failure of an episode.
++// It then waits one probe interval, and twice its last wait after each further failure, up to endedTeardownCeiling.
++// A removed run waits one probe interval too, since the listing of the tick that read the result still shows its pair.
++// A run no longer stranded forgets its wait.
++// A teardown in flight keeps the loop out of its idle backoff; a nil Deps.TearDownEnded starts none.
++func (d *daemon) tearDownEnded(now time.Time) error {
++	if d.deps.TearDownEnded == nil {
++		return nil
++	}
++	if d.teardown != nil {
++		select {
++		case results := <-d.teardown.result:
++			d.readEndedTeardown(now, d.teardown.slugs, results)
++			d.teardown = nil
++		default:
++			d.busy = true
++			return nil
++		}
++	}
++	current, _, err := ReadState(d.geom.StatePath)
++	if err != nil {
++		return err
++	}
++	if d.endedRetries == nil {
++		d.endedRetries = map[string]endedRetry{}
++	}
++	stranded := map[string]bool{}
++	var due []string
++	for _, run := range d.runs {
++		_, inFlight := d.flights[run.Slug]
++		if !strandedEnded(run, current.Runs[run.Slug], inFlight) {
++			continue
++		}
++		stranded[run.Slug] = true
++		if !now.Before(d.endedRetries[run.Slug].next) {
++			due = append(due, run.Slug)
++		}
++	}
++	for slug := range d.endedRetries {
++		if !stranded[slug] {
++			delete(d.endedRetries, slug)
++		}
++	}
++	if len(due) == 0 {
++		return nil
++	}
++	d.teardown = &endedTeardown{slugs: due, result: d.deps.TearDownEnded(due)}
++	d.busy = true
++	return nil
++}
++
++// readEndedTeardown logs each slug of a teardown that ended by its entry in results and sets the slug's next wait.
++// A slug results leaves out, as a closed channel's nil map does, failed with errTeardownUnreported.
++func (d *daemon) readEndedTeardown(now time.Time, slugs []string, results map[string]error) {
++	if d.endedRetries == nil {
++		d.endedRetries = map[string]endedRetry{}
++	}
++	for _, slug := range slugs {
++		reason, reported := results[slug]
++		if !reported {
++			reason = errTeardownUnreported
++		}
++		if reason == nil {
++			d.logLine(now, "teardown "+slug+": pair removed")
++			d.endedRetries[slug] = endedRetry{next: now.Add(d.probe)}
++			continue
++		}
++		retry := d.endedRetries[slug]
++		if !retry.failing {
++			d.logLine(now, "teardown "+slug+" failing: "+oneLine(reason.Error()))
++		}
++		interval := d.probe
++		if retry.interval > 0 {
++			interval = min(retry.interval*2, endedTeardownCeiling)
++		}
++		d.endedRetries[slug] = endedRetry{next: now.Add(interval), interval: interval, failing: true}
++	}
++}
+diff --git a/internal/dobbyengine/ended_test.go b/internal/dobbyengine/ended_test.go
+new file mode 100644
+index 00000000..bb34c168
+--- /dev/null
++++ b/internal/dobbyengine/ended_test.go
+@@ -0,0 +1,191 @@
++// ended_test.go pins which runs dobby counts as stranded past their ended board entry,
++// and the teardown of their pairs it starts, reads and retries.
++
++package dobbyengine
++
++import (
++	"errors"
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestStrandedEnded(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name     string
++		mutate   func(run *RunView, rs *RunState)
++		inFlight bool
++		want     bool
++	}{
++		{"FailedWithItsEntryEndedAndItsPairOnDisk", nil, false, true},
++		{"Halted", func(run *RunView, _ *RunState) { run.State = "blocked" }, false, true},
++		{"PausedShortOfItsParent", func(run *RunView, _ *RunState) { run.State = runStatePaused }, false, true},
++		{"Running", func(run *RunView, _ *RunState) { run.State = runStateRunning }, false, false},
++		{"PausedWithItsWorkOnItsParent", func(run *RunView, _ *RunState) { run.State, run.ReachedParent = runStatePaused, true }, false, false},
++		{"Done", func(run *RunView, _ *RunState) { run.State = runStateDone }, false, false},
++		{"EntryOpen", func(run *RunView, _ *RunState) { run.EntryEnded = false }, false, false},
++		{"PairGone", func(run *RunView, _ *RunState) { run.PairPresent = false }, false, false},
++		{"PassInFlight", nil, true, false},
++		{"DriverLockHeld", func(run *RunView, _ *RunState) { run.DriverLockHeld = true }, false, false},
++		{"CancelMarked", func(run *RunView, _ *RunState) { run.CancelMarker = true }, false, false},
++		{"CoveredByAPause", func(run *RunView, _ *RunState) { run.Covered = true }, false, false},
++		{"OwnedElsewhere", func(_ *RunView, rs *RunState) { rs.OwnedElsewhere = true }, false, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			run, rs := strandedRun("x"), RunState{}
++			if tt.mutate != nil {
++				tt.mutate(&run, &rs)
++			}
++			if got := strandedEnded(run, rs, tt.inFlight); got != tt.want {
++				t.Errorf("strandedEnded(%+v, %+v, %v) = %v; want %v", run, rs, tt.inFlight, got, tt.want)
++			}
++		})
++	}
++}
++
++func TestTearDownEnded(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	t.Run("a removed pair logs once and its run gets no further teardown once its pair is gone", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, strandedRun("x"))
++		lines := h.recordLog()
++		fake := &teardownFake{results: []map[string]error{{"x": nil}}}
++		h.d.deps.TearDownEnded = fake.tearDown
++
++		h.tick(false)
++		h.tick(false)
++		h.fake.runs[0].PairPresent = false
++		h.tick(false)
++		h.tick(false)
++
++		if want := [][]string{{"x"}}; !slices.EqualFunc(fake.calls, want, slices.Equal[[]string]) {
++			t.Errorf("teardown calls = %q; want %q", fake.calls, want)
++		}
++		if retry, held := h.d.endedRetries["x"]; held {
++			t.Errorf("endedRetries[x] = %+v; want no wait for a run whose pair is gone", retry)
++		}
++		if want := []string{"run x: failed at Run-Shed", "teardown x: pair removed"}; !slices.Equal(*lines, want) {
++			t.Errorf("log lines = %q; want %q", *lines, want)
++		}
++	})
++
++	t.Run("a failing teardown logs once and retries after one probe interval, then after twice it", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, strandedRun("x"))
++		lines := h.recordLog()
++		busy := map[string]error{"x": errors.New("its pair is busy")}
++		fake := &teardownFake{results: slices.Repeat([]map[string]error{busy}, 12)}
++		h.d.deps.TearDownEnded = fake.tearDown
++
++		for _, want := range []int{1, 1, 2, 2, 2, 3} {
++			h.tick(false)
++			if got := len(fake.calls); got != want {
++				t.Fatalf("teardown calls = %d; want %d", got, want)
++			}
++		}
++		// The wait doubles from 10s, so the 10th failure reaches the ceiling and the 12th, the last one read, must not pass it.
++		for len(fake.calls) < 12 {
++			h.advance(h.d.endedRetries["x"].next.Sub(h.clock.now()))
++			h.tick(false)
++		}
++		// This tick reads the 12th result and, with the wait it sets, starts no 13th teardown.
++		h.tick(false)
++		retry := h.d.endedRetries["x"]
++		if next := retry.next.Sub(h.clock.now()); retry.interval != endedTeardownCeiling || next != endedTeardownCeiling {
++			t.Errorf("wait, time to next attempt after 12 failures read = %v, %v; want %v, %v",
++				retry.interval, next, endedTeardownCeiling, endedTeardownCeiling)
++		}
++		if want := []string{"run x: failed at Run-Shed", "teardown x failing: its pair is busy"}; !slices.Equal(*lines, want) {
++			t.Errorf("log lines = %q; want %q", *lines, want)
++		}
++	})
++
++	t.Run("no teardown seam starts none and leaves the loop idle", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, strandedRun("x"))
++
++		h.tick(false)
++
++		if h.d.teardown != nil || h.d.inFlight || len(h.d.endedRetries) != 0 {
++			t.Errorf("teardown, in flight, waits = %v, %v, %v; want nil, false, none", h.d.teardown, h.d.inFlight, h.d.endedRetries)
++		}
++	})
++
++	t.Run("a teardown in flight holds the binary check", func(t *testing.T) {
++		t.Parallel()
++		h := newLoopHarness(t, 3)
++		h.deps.Runs = func() ([]RunView, error) { return []RunView{strandedRun("x")}, nil }
++		h.deps.TearDownEnded = func([]string) <-chan map[string]error { return make(chan map[string]error) }
++		checks := 0
++		h.checkBinary = func(func(), func(error)) { checks++ }
++
++		if err := h.run(t); err != nil {
++			t.Fatalf("Run() = %v; want nil", err)
++		}
++
++		if checks != 0 {
++			t.Errorf("CheckBinary calls = %d; want 0 while a teardown is in flight", checks)
++		}
++	})
++
++	t.Run("a teardown in flight is not doubled and keeps the loop busy", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, strandedRun("x"))
++		calls := 0
++		h.d.deps.TearDownEnded = func([]string) <-chan map[string]error {
++			calls++
++			return make(chan map[string]error)
++		}
++
++		h.tick(false)
++		h.tick(false)
++
++		if calls != 1 || !h.d.inFlight {
++			t.Errorf("teardown calls, in flight = %d, %v; want 1, true", calls, h.d.inFlight)
++		}
++	})
++
++	t.Run("a result that leaves the run out fails it as unreported", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, strandedRun("x"))
++		lines := h.recordLog()
++		fake := &teardownFake{results: []map[string]error{{}}}
++		h.d.deps.TearDownEnded = fake.tearDown
++
++		h.tick(false)
++		h.tick(false)
++
++		want := []string{"run x: failed at Run-Shed", "teardown x failing: " + errTeardownUnreported.Error()}
++		if !slices.Equal(*lines, want) {
++			t.Errorf("log lines = %q; want %q", *lines, want)
++		}
++	})
++}
++
++// strandedRun is a run batten left failed at Run-Shed whose board entry ended and whose pair is still on disk.
++func strandedRun(slug string) RunView {
++	return RunView{Slug: slug, State: "failed", Producer: producerRunShed, EntryEnded: true, PairPresent: true}
++}
++
++// teardownFake answers the TearDownEnded seam with its next result, delivered at once, and records each call's slugs.
++type teardownFake struct {
++	calls   [][]string
++	results []map[string]error
++}
++
++func (f *teardownFake) tearDown(slugs []string) <-chan map[string]error {
++	f.calls = append(f.calls, slices.Clone(slugs))
++	result := make(chan map[string]error, 1)
++	next, rest := f.results[0], f.results[1:]
++	f.results = rest
++	result <- next
++	return result
++}
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index b49df1ee..26c97951 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -93,6 +93,10 @@ type Deps struct {
+ 	// It runs in its own process group with the prime's anchor as its working directory, and the spawn is logged at Info.
+ 	// The pass registers itself in `internal/runproc`, so dobby registers nothing; the channel delivers the exit once.
+ 	SpawnPass func(slug string, continuePass, noReopen bool) (<-chan PassExit, error)
++	// TearDownEnded starts the teardown of the pairs of slugs, runs whose board entry ended short of their own teardown.
++	// The channel delivers once, mapping each slug to nil when its pair was removed and to the reason otherwise.
++	// A nil TearDownEnded tears nothing down.
++	TearDownEnded func(slugs []string) <-chan map[string]error
+ 	// Notice posts one line to the nearest live orch.
+ 	Notice func(ctx context.Context, line string) error
+ 	// PauseOwned pauses the run slug under the owner caller, since another machine owns it.
+@@ -377,6 +381,10 @@ type daemon struct {
+ 	lastReminders map[string]time.Time
+ 	// waitFailures guards the wait reads by slug or `|`-prefixed name: Warn first, Debug while it repeats, Info on recovery.
+ 	waitFailures logger.EpisodeSet
++	// teardown is the teardown of stranded runs' pairs in flight, nil when none is.
++	teardown *endedTeardown
++	// endedRetries holds, by slug, when each stranded run's teardown may start next, in memory only.
++	endedRetries map[string]endedRetry
+ }
+ 
+ // releaseLock releases the dobby lock when it is held.
+@@ -552,13 +560,16 @@ func (d *daemon) loop(ctx context.Context, events <-chan struct{}) error {
+ 		}
+ 		d.rememberKeptTidy(kept, readErr)
+ 
+-		d.deps.CheckBinary(
+-			func() { d.logOwn(d.deps.Now(), "re-exec onto the changed lym binary") },
+-			func(err error) {
+-				d.logOwn(d.deps.Now(), fmt.Sprintf("re-exec failed: %v; the dobby keeps running", err))
+-				d.post(ctx, fmt.Sprintf("%s: the dobby could not re-exec onto the changed lym binary: %v; it keeps running on the old binary; way forward: fix the binary, then run lym beam stop and lym beam start", d.geom.WorktreeName, err))
+-			},
+-		)
++		// A re-exec would cut a teardown in flight short, half done, so the check waits for it to end.
++		if d.teardown == nil {
++			d.deps.CheckBinary(
++				func() { d.logOwn(d.deps.Now(), "re-exec onto the changed lym binary") },
++				func(err error) {
++					d.logOwn(d.deps.Now(), fmt.Sprintf("re-exec failed: %v; the dobby keeps running", err))
++					d.post(ctx, fmt.Sprintf("%s: the dobby could not re-exec onto the changed lym binary: %v; it keeps running on the old binary; way forward: fix the binary, then run lym beam stop and lym beam start", d.geom.WorktreeName, err))
++				},
++			)
++		}
+ 
+ 		wait = nextWait(wait, d.inFlight, event)
+ 		if wait == 0 {
+@@ -649,6 +660,9 @@ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 		if err := d.drivePasses(ctx, now); err != nil {
+ 			return err
+ 		}
++		if err := d.tearDownEnded(now); err != nil {
++			return err
++		}
+ 		d.runNotices(ctx, now)
+ 		d.waitReminders(ctx, now)
+ 		d.landNotices(ctx, now, d.listedRuns)
+diff --git a/internal/dobbyengine/passes.go b/internal/dobbyengine/passes.go
+index f28d44ab..07b1f608 100644
+--- a/internal/dobbyengine/passes.go
++++ b/internal/dobbyengine/passes.go
+@@ -50,6 +50,11 @@ type RunView struct {
+ 	Held bool
+ 	// NoSlot reports whether the run takes no slot under max_runs: a pawl run whose landing hold does not stand.
+ 	NoSlot bool
++	// EntryEnded reports whether the run's board entry is done or gone from the board, whatever batten's state says.
++	// Such a run takes no slot under max_runs.
++	EntryEnded bool
++	// PairPresent reports whether the run's task worktree is still on disk.
++	PairPresent bool
+ 	// PastLand reports whether the run is past its Land row, and Landed whether it landed there rather than ending without landing.
+ 	PastLand bool
+ 	Landed   bool
+diff --git a/internal/dobbyengine/starts.go b/internal/dobbyengine/starts.go
+index cc76a211..af98cb3e 100644
+--- a/internal/dobbyengine/starts.go
++++ b/internal/dobbyengine/starts.go
+@@ -79,8 +79,10 @@ func readyToStart(task TaskView, here string, covered bool) bool {
+ // Starting runs the task's first pass, a full pass that claims it as batten does.
+ // A slug with a pass in flight is never started twice.
+ // The count covers the runs listed for this tick, halted and done ones included.
+-// It leaves out runs recorded as owned elsewhere and pawl runs without their landing hold;
+-// it adds first passes that have not yet left a status file.
++// It leaves out runs recorded as owned elsewhere.
++// It leaves out pawl runs without their landing hold.
++// It leaves out runs whose board entry is done or gone.
++// It adds first passes that have not yet left a status file.
+ // A task whose backoff has not run out waits, unless its entry changed since the refusal.
+ // While the cgroup task limit leaves fewer than task_headroom tasks free, the step starts no task.
+ // While an open front task of the worktree stands, the step starts no other task.
+@@ -292,7 +294,7 @@ func (d *daemon) taskLimitHolds(headroom int, now time.Time) bool {
+ }
+ 
+ // runsInFlight counts the runs this dobby drives that take a slot.
+-// These are the listed runs not recorded owned elsewhere, plus first passes that left no run yet.
++// These are the listed runs slotsTaken counts, plus first passes that left no run yet.
+ func (d *daemon) runsInFlight(current State) int {
+ 	listed := make(map[string]bool, len(d.runs))
+ 	for _, run := range d.runs {
+@@ -308,11 +310,13 @@ func (d *daemon) runsInFlight(current State) int {
+ }
+ 
+ // slotsTaken counts the runs that take a slot under max_runs:
+-// a run takes one unless the record marks it owned elsewhere, or it is a pawl run without its landing hold.
++// a run takes one unless the record marks it owned elsewhere, it is a pawl run without its landing hold,
++// or its board entry is done or gone.
++// A run whose entry ended has nothing left to start, so batten stopping it short of its teardown holds no slot.
+ func slotsTaken(runs []RunView, record State) int {
+ 	count := 0
+ 	for _, run := range runs {
+-		if !record.Runs[run.Slug].OwnedElsewhere && !run.NoSlot {
++		if !record.Runs[run.Slug].OwnedElsewhere && !run.NoSlot && !run.EntryEnded {
+ 			count++
+ 		}
+ 	}
+diff --git a/internal/dobbyengine/starts_test.go b/internal/dobbyengine/starts_test.go
+index 666b404a..aec2592f 100644
+--- a/internal/dobbyengine/starts_test.go
++++ b/internal/dobbyengine/starts_test.go
+@@ -264,6 +264,24 @@ func TestStartReady_RefusalsAndBackoff(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a run whose board entry ended takes no slot whatever batten's state", func(t *testing.T) {
++		t.Parallel()
++		for _, state := range []string{"failed", runStateRunning} {
++			t.Run(state, func(t *testing.T) {
++				t.Parallel()
++				ended := runningRun("ended")
++				ended.State, ended.EntryEnded = state, true
++				h := newPassHarness(t, ended)
++				h.fake.maxRuns = 1
++				h.fake.tasks = []TaskView{readyTask("a")}
++				h.tick(false)
++				if got := len(h.fake.spawnsOf("a")); got != 1 {
++					t.Errorf("passes of the ready task = %d; want it started in the slot the ended run leaves free", got)
++				}
++			})
++		}
++	})
++
+ 	t.Run("done runs take no slot, get no pass and leave the state record", func(t *testing.T) {
+ 		t.Parallel()
+ 		done := func(slug string) RunView {
