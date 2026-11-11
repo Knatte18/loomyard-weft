@@ -1,9 +1,9 @@
 # P1 Adopt as one resumable algorithm that never starts work on its own
 
-Rendered 2026-11-11 09:32 UTC; every age below is as of then.
+Rendered 2026-11-11 09:52 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`adopt-takeover`](design-adopt-takeover.md) · Age 1d · Owner `neve`
+[`adopt-takeover`](design-adopt-takeover.md) · Age 1d · Owner `osl-1046`
 
 Groups the entries filed from the Sketch `adopt-robust`: adopt-worker-record, adopt-owner-handover, adopt-here-archives.
 
