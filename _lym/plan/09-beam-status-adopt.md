@@ -1,9 +1,9 @@
 # Card 9 — beam-status-adopt
 
 **Create:**
-- `plan:internal/beamcli#adoptSection` -> `type adoptSection struct`
-- `plan:internal/beamcli#adoptSectionOf` -> `func adoptSectionOf(record adoptrecord.Record, state string) *adoptSection`
-- `plan:internal/beamcli#TestAdoptSectionOf` -> `func TestAdoptSectionOf(t *testing.T)`
+- `internal/beamcli#adoptSection`
+- `internal/beamcli#adoptSectionOf`
+- `internal/beamcli#TestAdoptSectionOf`
 
 **Edit:**
 - `internal/beamcli#statusResult`

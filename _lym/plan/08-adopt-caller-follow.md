@@ -1,25 +1,25 @@
 # Card 8 — adopt-caller-follow
 
 **Create:**
-- `plan:internal/runproc#RoleAdopt` -> `const RoleAdopt = "adopt"`
-- `plan:internal/adoptcli#callerDeps` -> `type callerDeps struct`
-- `plan:internal/adoptcli#hubCallerDeps` -> `func hubCallerDeps(prime *lymcwd.Location) (callerDeps, error)`
-- `plan:internal/adoptcli#runAdopt` -> `func runAdopt(deps callerDeps, req request, discardFlag bool, out io.Writer) int`
-- `plan:internal/adoptcli#TestRunAdopt` -> `func TestRunAdopt(t *testing.T)`
-- `plan:internal/adoptcli#TestSpawnersStartNothingUnderTest` -> `func TestSpawnersStartNothingUnderTest(t *testing.T)`
-- `plan:internal/adoptcli#followWakeFloor` -> `const followWakeFloor = time.Second`
-- `plan:internal/adoptcli#followWakeCeiling` -> `const followWakeCeiling = 8 * time.Second`
-- `plan:internal/adoptcli#followDeps` -> `type followDeps struct`
-- `plan:internal/adoptcli#follow` -> `func follow(deps followDeps, call adoptrecord.Request, workerPID int, since time.Time) (adoptrecord.Record, error)`
-- `plan:internal/adoptcli#followCap` -> `func followCap(keepWarm func(strand string) time.Duration, strand string) time.Duration`
-- `plan:internal/adoptcli#runsInOrch` -> `func runsInOrch(strand string) bool`
-- `plan:internal/adoptcli#workerArgs` -> `func workerArgs(req adoptrecord.Request) []string`
-- `plan:internal/adoptcli#workerCommand` -> `func workerCommand(executable, dir string, args []string) *exec.Cmd`
-- `plan:internal/adoptcli#spawnWorker` -> `func spawnWorker(prime *lymcwd.Location, args []string) (pid int, exited <-chan struct{}, err error)`
-- `plan:internal/adoptcli#discard` -> `func discard(hubPath string) (removed bool, err error)`
-- `plan:internal/adoptcli#TestFollow` -> `func TestFollow(t *testing.T)`
-- `plan:internal/adoptcli#TestDiscard` -> `func TestDiscard(t *testing.T)`
-- `plan:internal/adoptcli#TestWorkerArgs` -> `func TestWorkerArgs(t *testing.T)`
+- `internal/runproc#RoleAdopt`
+- `internal/adoptcli#callerDeps`
+- `internal/adoptcli#hubCallerDeps`
+- `internal/adoptcli#runAdopt`
+- `internal/adoptcli#TestRunAdopt`
+- `internal/adoptcli#TestSpawnersStartNothingUnderTest`
+- `internal/adoptcli#followWakeFloor`
+- `internal/adoptcli#followWakeCeiling`
+- `internal/adoptcli#followDeps`
+- `internal/adoptcli#follow`
+- `internal/adoptcli#followCap`
+- `internal/adoptcli#runsInOrch`
+- `internal/adoptcli#workerArgs`
+- `internal/adoptcli#workerCommand`
+- `internal/adoptcli#spawnWorker`
+- `internal/adoptcli#discard`
+- `internal/adoptcli#TestFollow`
+- `internal/adoptcli#TestDiscard`
+- `internal/adoptcli#TestWorkerArgs`
 
 **Delete:**
 - `internal/adoptcli#TestStartSuiteStartsNothingUnderTest`
@@ -33,9 +33,9 @@
 - `pattern/PATTERN-daemon-wakeups.md`
 
 **Uses:**
-- `plan:internal/adoptcli#validateRequest`
-- `plan:internal/adoptcli#judgeStanding`
-- `plan:internal/adoptcli#workerCmd`
+- `internal/adoptcli#validateRequest`
+- `internal/adoptcli#judgeStanding`
+- `internal/adoptcli#workerCmd`
 - `internal/adoptrecord#Read`
 - `internal/adoptrecord#Remove`
 - `internal/adoptrecord#ErrDecode`

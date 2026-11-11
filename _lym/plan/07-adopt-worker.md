@@ -1,22 +1,22 @@
 # Card 7 — adopt-worker
 
 **Create:**
-- `plan:internal/adoptcli#workerDeps` -> `type workerDeps struct`
-- `plan:internal/adoptcli#hubWorkerDeps` -> `func hubWorkerDeps(prime *lymcwd.Location, machine func() (string, error)) (workerDeps, error)`
-- `plan:internal/adoptcli#runWorker` -> `func runWorker(deps workerDeps, req request) (outcome, adoptrecord.Record, error)`
-- `plan:internal/adoptcli#validateRequest` -> `func validateRequest(deps adoptDeps, req request) (slugs []string, root bool, err error)`
-- `plan:internal/adoptcli#standingVerdict` -> `type standingVerdict string`
-- `plan:internal/adoptcli#verdictFresh` -> `const verdictFresh standingVerdict = "fresh"`
-- `plan:internal/adoptcli#verdictFollow` -> `const verdictFollow standingVerdict = "follow"`
-- `plan:internal/adoptcli#verdictResume` -> `const verdictResume standingVerdict = "resume"`
-- `plan:internal/adoptcli#judgeStanding` -> `func judgeStanding(record adoptrecord.Record, found bool, state string, call adoptrecord.Request) (standingVerdict, error)`
-- `plan:internal/adoptcli#mergeRequest` -> `func mergeRequest(recorded, call adoptrecord.Request) (merged adoptrecord.Request, restart bool)`
-- `plan:internal/adoptcli#request.recorded` -> `func (r request) recorded() adoptrecord.Request`
-- `plan:internal/adoptcli#requestOf` -> `func requestOf(recorded adoptrecord.Request) request`
-- `plan:internal/adoptcli#envelopeOf` -> `func envelopeOf(record adoptrecord.Record) (outcome, error)`
-- `plan:internal/adoptcli#workerCmd` -> `func workerCmd() *cobra.Command`
-- `plan:internal/adoptcli#world.workerDeps` -> `func (w *world) workerDeps() workerDeps`
-- `plan:internal/adoptcli#TestRunWorker` -> `func TestRunWorker(t *testing.T)`
+- `internal/adoptcli#workerDeps`
+- `internal/adoptcli#hubWorkerDeps`
+- `internal/adoptcli#runWorker`
+- `internal/adoptcli#validateRequest`
+- `internal/adoptcli#standingVerdict`
+- `internal/adoptcli#verdictFresh`
+- `internal/adoptcli#verdictFollow`
+- `internal/adoptcli#verdictResume`
+- `internal/adoptcli#judgeStanding`
+- `internal/adoptcli#mergeRequest`
+- `internal/adoptcli#request.recorded`
+- `internal/adoptcli#requestOf`
+- `internal/adoptcli#envelopeOf`
+- `internal/adoptcli#workerCmd`
+- `internal/adoptcli#world.workerDeps`
+- `internal/adoptcli#TestRunWorker`
 
 **Delete:**
 - `internal/adoptcli#adopt`
