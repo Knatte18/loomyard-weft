@@ -1,6 +1,6 @@
 # P1 Adopt as one resumable algorithm that never starts work on its own
 
-Rendered 2026-11-11 07:19 UTC; every age below is as of then.
+Rendered 2026-11-11 07:20 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`adopt-takeover`](design-adopt-takeover.md) · Age 1d · Owner `neve`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy** | [`adopt-worker-record`](design-adopt-worker-record.md)<br>[Sketch](decision-adopt-worker-record.md) | tapestry · solid | Describe | neve | 1d<br>1d | batten, tender, dobby, orch, fabric, shortcut |
+| T2 | **Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy** | [`adopt-worker-record`](design-adopt-worker-record.md)<br>[Sketch](decision-adopt-worker-record.md) | tapestry · solid | PR-Review | neve | 1d<br>1d | batten, tender, dobby, orch, fabric, shortcut |
 
 ### Ready (0)
 

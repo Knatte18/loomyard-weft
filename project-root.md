@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-11 07:19 UTC; every age below is as of then.
+Rendered 2026-11-11 07:20 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -27,7 +27,7 @@ Not released; nothing starts it until its status is cleared.
 | T5 | `draft` **machinename reads the machine name from machine.json before the hostname rule** | [`machine-name-file`](design-machine-name-file.md)<br>[Sketch](decision-machine-name-file.md) | darn · light |  | 1d<br>1d | config, slack |
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1d<br>1d | slack, reed, creel |
 | T13 | `draft` **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 1d<br>1d | config, slack |
-| T20 | `draft` **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light |  | 2d<br>56m | shed, friction, shuttle |
+| T20 | `draft` **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light |  | 2d<br>57m | shed, friction, shuttle |
 
 ## Notes (32)
 
@@ -38,7 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 1d<br>1d | gate, fabric |
-| R4 |  | **Bruk av advisor-kommando for Discussion og Plannrr6** | [`advisor-planner-trial`](design-advisor-planner-trial.md) | 56m<br>56m | loom, claude |
+| R4 |  | **Bruk av advisor-kommando for Discussion og Plannrr6** | [`advisor-planner-trial`](design-advisor-planner-trial.md) | 57m<br>57m | loom, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
 
 ### Bugs (8)
@@ -48,11 +48,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **creel post to a strand that is not running reports plain success** | [`creel-post-dead-recipient`](design-creel-post-dead-recipient.md) | 57m<br>57m | creel |
 | B3 |  | **Webster amends a card commit it already pushed, so the task branch diverges from origin** | [`webster-amends-pushed-card`](design-webster-amends-pushed-card.md) | 57m<br>57m | webster, batten, git |
 | B4 |  | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | 57m<br>57m | fabric |
-| B5 |  | **A paused Webster session acts on a decision notice without the run lock, and the loom row stays blocked** | [`paused-webster-acts-on-notice`](design-paused-webster-acts-on-notice.md) | 56m<br>56m | webster, loom, creel |
-| B6 |  | **gate test: card gate and explicit target never reach a second test project when tier0 command lacks a targets placeholder** | [`gate-target-dropped-silently`](design-gate-target-dropped-silently.md) | 56m<br>56m | gate, dotnet |
-| B7 |  | **loom halt: 'verify gate failed after 4 attempt(s) of 3: none named' reports an off-by-one count and no failure** | [`webster-gate-halt-count`](design-webster-gate-halt-count.md) | 56m<br>56m | webster, gate |
-| B8 |  | **Dobby starts a released raddle task whose depends_on has not landed** | [`dobby-raddle-ignores-deps`](design-dobby-raddle-ignores-deps.md) | 56m<br>56m | dobby, board |
-| B10 |  | **Worktree-Create halts on a reused slug path holding only obj/ leftovers** | [`worktree-create-build-leftovers`](design-worktree-create-build-leftovers.md) | 56m<br>56m | batten, fabric |
+| B5 |  | **A paused Webster session acts on a decision notice without the run lock, and the loom row stays blocked** | [`paused-webster-acts-on-notice`](design-paused-webster-acts-on-notice.md) | 57m<br>57m | webster, loom, creel |
+| B6 |  | **gate test: card gate and explicit target never reach a second test project when tier0 command lacks a targets placeholder** | [`gate-target-dropped-silently`](design-gate-target-dropped-silently.md) | 57m<br>57m | gate, dotnet |
+| B7 |  | **loom halt: 'verify gate failed after 4 attempt(s) of 3: none named' reports an off-by-one count and no failure** | [`webster-gate-halt-count`](design-webster-gate-halt-count.md) | 57m<br>57m | webster, gate |
+| B8 |  | **Dobby starts a released raddle task whose depends_on has not landed** | [`dobby-raddle-ignores-deps`](design-dobby-raddle-ignores-deps.md) | 57m<br>57m | dobby, board |
+| B10 |  | **Worktree-Create halts on a reused slug path holding only obj/ leftovers** | [`worktree-create-build-leftovers`](design-worktree-create-build-leftovers.md) | 57m<br>57m | batten, fabric |
 
 ### Enhancements (8)
 
@@ -64,15 +64,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E6 |  | **Console window titles put the task handle first, with hub and project in brackets** | [`console-title-handle-first`](design-console-title-handle-first.md) | 1d<br>1d | termwindow |
 | E7 |  | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | 57m<br>57m | fabric, cleanup |
 | E8 |  | **Finalize spawns a fixer on a single non-repeating test failure** | [`finalize-flaky-rerun`](design-finalize-flaky-rerun.md) | 57m<br>57m | landing, gate |
-| E9 |  | **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | 56m<br>56m | heddle |
-| E10 |  | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | 56m<br>56m | heddle |
+| E9 |  | **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | 57m<br>57m | heddle |
+| E10 |  | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | 57m<br>57m | heddle |
 
 ### Features (13)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 5w<br>2w | burler |
-| F2 |  | **One desktop launcher brings back every hub and beam that was in flight after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | 2d<br>40m | orch, reed, termwindow, shortcut |
+| F2 |  | **One desktop launcher brings back every hub and beam that was in flight after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | 2d<br>41m | orch, reed, termwindow, shortcut |
 | F3 |  | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | 2d<br>2d | slack, creel, orch |
 | F4 |  | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | 57m<br>57m | config, fabric |
 | F5 |  | **Let the parent orch review the Discussion decision record before Plan** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md) | 2d<br>2d | loom, orch, config |
