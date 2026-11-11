@@ -1,6 +1,6 @@
 # beam merge-parent reuses the slug of a completed merge-in run
 
-`merge-parent-slug-reuse` · Task · bug, workspaces, dobby · running · Darn-Write
+`merge-parent-slug-reuse` · Task · bug, workspaces, dobby · running · Drift-Verify
 
 Imported from [issue #115](https://github.com/Knatte18/loomyard/issues/115).
 
