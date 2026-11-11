@@ -590,6 +590,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `gate-scope-by-coverage-map`.\n\nTakes: coverage-test-select's selector and the diff scope as impactset.DeriveTargets and computeScope derive it\nDelivers: scope: coverage in gateslot and the template's darn-write, webster-fix and code-burler-fix keys; DeriveTargets keeping changed and lym-binary packages apart from importers; the D3 union per importing package and tier; a second tier invocation with an anchored -run in the run's own args, its green entry carrying them, over-budget fallback to whole; the per-package scope report; maps read only, never built\nExports: the coverage scope value and impactset.Targets' split of changed packages from importers\n\nThe part changes these packages:\n\n- internal/gateslot (about 80 changed lines)\n- internal/impactset (about 150 changed lines)\n- internal/gatecli (about 750 changed lines)\n\n## Changes from the upkeep design (D13 of `testmap-upkeep-design`)\n\nRead the record with `lym board get testmap-upkeep-design --record`; this part follows it where it changes this entry:\n\n- In its D3 union, \"every test its map does not record\" includes a test whose entry records only an outcome (D4).\n",
+      "status": "running · Worktree-Create",
       "created": "2026-11-11T09:07:11Z",
       "revised": "2026-11-11T15:28:17Z",
       "profile": "solid",
