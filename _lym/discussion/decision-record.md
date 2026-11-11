@@ -32,10 +32,14 @@ the call the gate makes with the working tree as target.
 The verdict per map is one of three:
 
 - **Current**: no affected test and no miss.
-  The pass re-stamps the map: `Commit` becomes `H`, the recorded file hashes become `H`'s, every entry is kept.
-- **Affected tests**: the pass keeps every unaffected entry, drops the affected ones, writes the map at `H` at once,
-  and queues the dropped tests for measurement.
+  The pass re-stamps the map: `Commit` becomes `H`, the recorded file hashes become `H`'s,
+  and every entry is kept but an outcome entry D4 drops, which is dropped and queued.
+- **Affected tests**: the pass keeps every unaffected entry but an outcome entry D4 drops, drops the affected ones,
+  writes the map at `H` at once, and queues the dropped tests for measurement.
 - **Miss**: the pass leaves the map as it is and queues a whole rebuild of the package.
+  A whole rebuild's first written round starts from an empty map:
+  it holds that round's results and a fresh spawn scan's verdicts (D4), so the map written at `H` holds only entries measured or scanned at `H`,
+  and the tests not yet measured are gaps.
 
 Under every verdict but Miss the plan also queues each declared mapped test of the package that has no entry;
 a spawn-marked test has one (D4).
@@ -44,7 +48,8 @@ is queued again at the next plan, and a Current map with such a gap is re-stampe
 The plan itself builds nothing and runs no test.
 
 Every write that moves a map's `Commit`, a re-stamp included, sets the format marker's `Commit` and `BuiltAt`
-to the map's own, and `BuiltAt` to the time of the write.
+to the map's own, and `BuiltAt` to the time of the write;
+it also sets the marker's environment stamp (D6) to the current one.
 This plan step reads file content at the map's `Commit` and at `H` through `fabricengine.Fabric.CodeFileAt` and holds no gate slot.
 It rewrites a map only under the package's build lock, through `testcover.WriteMap`,
 and skips a map whose lock is held, planning it again once the lock frees, under D9's wait rule;
@@ -162,6 +167,9 @@ Bound: the audit runs once per pass, so on a day with no landing it re-measures 
   it refuses package arguments.
   Under `--upkeep` the verb registers its own process as `runproc.RoleTestMap` under the hub owner,
   in place of the dobby's registration of the process it starts, and refuses to start while another such process lives.
+  A `--upkeep` call whose own registration fails reports the failure and exits before it plans;
+  the dobby logs that exit once per episode, as it logs a failed tick, and starts a pass again on a later tick.
+  The dobby starts no pass while a pass it started is still its live child, registered or not.
   A hand caller may pass the flag too: the call then runs, and writes the exit record, as a dobby-started pass does,
   and the dobby starts no pass while it lives.
 - A pass plans once at `H`, then works its queue.
@@ -179,12 +187,20 @@ Bound: the audit runs once per pass, so on a day with no landing it re-measures 
   before `applyReinterpretations`, so a reinterpretation never sees the key; `Migrate` runs before that prune.
   beam is a per-worktree module, so the same migration also runs on the prime's `_lym/config/beam.yaml`
   and on beam's local override file when `configsync.ReconcileAll` reconciles those layers.
+  So that the switch holds before any walk has run, `configengine.Spec` gains a per-layer migrate hook,
+  which `configengine.Load` applies to each layer in memory before it merges the layers and calls `DropRetired`.
+  `dobbyengine` owns the rewrite: its `ConfigSpec` sets the hook to it, and beam's `Migrate` calls it.
+  The in-memory pass logs nothing; the walk logs the rewrite when it writes it.
+  So a prime dobby re-exec'd onto the new binary reads `test_map_every: 0` as `test_map_upkeep: false`.
+  `test_map_upkeep` is classified `configengine.CategoryNone`, as `test_map_every` is today, so it loads from the local layer.
 
 Rationale: a backlog drains on its own, which answers `testmap-backlog-drain` by construction;
-`test_map_every: 0` is today's off switch, and the migration keeps a hub that set it off, in any layer that set it.
+`test_map_every: 0` is today's off switch, and the migration keeps a hub that set it off, in any layer that set it,
+before the walk as after it.
 Bound: a pass works one HEAD's plan, so a landing ends it at its next job or wake;
 a pass whose dobby died ends the same way;
-a pass started beside an unregistered one wastes work, and the build lock keeps the two off the same package.
+a call naming no package and lacking `--upkeep` is not registered, so it can run beside a pass;
+it wastes work, and the build lock keeps the two off the same package.
 
 ### D9 — Upkeep takes a slot only while another stays free, and yields
 
@@ -196,7 +212,9 @@ a pass started beside an unregistered one wastes work, and the build lock keeps 
   If so, it kills its runs in flight, writes the entries that finished, releases the slot
   and the build lock of the package whose job it interrupted,
   and waits to take a slot again under the same rule.
-  It takes that lock again with the slot, then reads the package's map again and plans it afresh at `H`
+  With the slot it tries that lock again without waiting;
+  when the lock is held, it skips the package as D1 skips a map whose lock is held, and goes on to its next job.
+  Holding both, it reads the package's map again and plans it afresh at `H`
   before it runs another test, so a map a hand call wrote meanwhile is not overwritten.
 - Its wait wakes at most once a second and backs off while it cannot take a slot (PATTERN-daemon-wakeups).
 - On a hub with fewer than two slots a pass takes none: it plans, re-stamps and ends.
@@ -290,7 +308,7 @@ Rationale: The operator decided in chat on 2026-11-11 to hold testmap-cross-pack
 - PATTERN-fabric-boundary: file content at a map's `Commit` and at `H` is read only through `fabricengine.Fabric.CodeFileAt`.
 - PATTERN-tolerant-records: D4's entry fields, D5's failure field, D6's stamp and D12's exit record fields are added fields;
   a read refuses no unknown key, and the retired landing count stays readable in an old dobby state record.
-- PATTERN-child-processes: a pass stays registered as `runproc.RoleTestMap`, and its test processes end through its own context.
+- PATTERN-child-processes: a `--upkeep` pass stays registered as `runproc.RoleTestMap`, and a pass's test processes end through its own context.
 - PATTERN-daemon-wakeups: D9's wait for a slot.
 
 ## Auto-mode assumptions
@@ -300,11 +318,16 @@ Rationale: The operator decided in chat on 2026-11-11 to hold testmap-cross-pack
 
 ## Open risks
 
-- `testmap-cross-package` is shown as running at Darn-Write while its entry and this one say the build tasks stay held until this record is approved.
-  Parent: confirm whether that run is held, and whether D13's changes reach it before its writer writes code.
 - The non-body miss stays the largest cost: the Sketch counts one in at least 95 of 118 weekly code commits,
   and each one rebuilds every map that links the changed file.
 - A selector bug is shared by the gate and upkeep; D7's self-check and audit counts are its only detectors before a landing gate fails.
+
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/discussion/round-2-review.md; fixer report: _lym/reviews/discussion/round-2-fixer-report.md.
+  - d1-d10-whole-rebuild-write-keeps-stale-entries (class design, severity MEDIUM, open in rounds 2)
+  - d8-off-switch-before-walk (class design, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
@@ -312,7 +335,8 @@ Rationale: The operator decided in chat on 2026-11-11 to hold testmap-cross-pack
   with every entry kept and the marker's `Commit` equal to the map's, and builds and runs nothing; the selector then reads it as no miss.
 - D1: after a landing that changes the body of a linked function test T covered, the plan writes B's map at HEAD without T's entry
   and with every other entry, and the job then measures T alone.
-- D1: after a landing with a non-body change to a linked file, the plan leaves B's map as it was and queues a whole rebuild of B.
+- D1: after a landing with a non-body change to a linked file, the plan leaves B's map as it was and queues a whole rebuild of B;
+  after the rebuild's first round the map at HEAD holds no entry measured before HEAD.
 - D2: the selector called with a commit as target gives the same verdict as with an equal working tree.
 - D2: a body change to one of B's own non-test functions selects the tests that covered it and is no miss;
   an edit to a `Test` function's text selects that test alone; an edit to a helper in a test file is a miss;
@@ -331,13 +355,17 @@ Rationale: The operator decided in chat on 2026-11-11 to hold testmap-cross-pack
 - D7: a kept entry whose block key is absent from a fresh build's block table is re-measured and counted as a self-check mismatch.
 - D7: a pass whose plan finds every map current still runs one audit round when it can take a slot,
   and counts a differing result as an audit mismatch.
-- D8: with no landing since the last pass and an exit record naming queued work, the dobby starts a pass on its next tick;
+- D8: on a hub with two or more slots, with no landing since the last pass and an exit record naming queued work,
+  the dobby starts a pass on its next tick;
   with no exit record, it starts one.
 - D8: a landing ends a pass at its next package job or slot-wait wake; a dirty-skipped or failed-at-HEAD package starts no restart.
 - D8: a hand call without `--upkeep` leaves the exit record as it was.
 - D8: on a one-slot hub a pass with queued work starts no second pass at the same HEAD.
 - D8: a hub base file holding `test_map_every: 0` reads as `test_map_upkeep: false` after the reconcile walk's migration,
   and no pass starts; so does a prime `_lym/config/beam.yaml` or local file holding it; one holding `test_map_batch` loads.
+- D8: a prime dobby re-exec'd onto the new binary over a `beam.yaml` holding `test_map_every: 0`, with no walk run, starts no pass.
+- D8: a `--upkeep` call whose registration fails exits before it plans, and the dobby logs that exit once per episode.
+- D8: while a pass the dobby started lives and has not yet registered, the dobby starts no second pass.
 - D9: with one slot free, a pass does not take it; with two free, it takes one.
 - D9: when a gate takes the last other free slot, the pass kills its runs, keeps the finished entries and releases within one poll.
 - D9: a hand call naming a package a pass is measuring waits for the package's lock, does not yield and rebuilds the package whole.
