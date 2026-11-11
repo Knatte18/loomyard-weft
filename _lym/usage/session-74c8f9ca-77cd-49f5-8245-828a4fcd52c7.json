@@ -1,0 +1,14 @@
+{
+  "session_id": "74c8f9ca-77cd-49f5-8245-828a4fcd52c7",
+  "row": "Webster",
+  "role": "webster",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 350,
+  "cache_write_tokens": 1289281,
+  "cache_read_tokens": 33405904,
+  "output_tokens": 356805,
+  "cost_usd": 13.473133300000004,
+  "started": "2026-11-09T20:47:39Z",
+  "ended": "2026-11-11T07:00:12Z"
+}
