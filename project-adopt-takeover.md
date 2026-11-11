@@ -39,11 +39,3 @@ Waits only on Running, Ready or Draft entries.
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy** | [`adopt-worker-record`](design-adopt-worker-record.md)<br>[Sketch](decision-adopt-worker-record.md) | 1d<br>1d | batten, tender, dobby, orch, fabric, shortcut |

@@ -575,7 +575,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nOn 2026-11-09 the operator reported that Codex has so far been mostly trouble in lym: it insists on running under its bubblewrap sandbox, which gets in the way of the work lym gives it.\nThe `astra` model (`gpt-6-astra` in `models.yaml`) fails on OSL-1046 for that reason.\n`testmap-verb`'s first Code-Review round recorded its astra assist only as `assist_ending: stopped`, with no error.\nThe operator then had astra removed from every task's `run_settings`.\n\n`codexengine` already has a way out: `codex.yaml`'s `sandbox_mode` may be set to `danger-full-access` on the machine layer, which launches Codex with no sandbox.\nNothing sets it or says it is needed: the default stays `workspace-write`, and a machine whose bubblewrap cannot create a user namespace only sees a seat that stops.\nOSL-1046 runs Ubuntu 24.04, whose AppArmor restricts unprivileged user namespaces by default; check whether that is the cause.\n\n## Fix\n\n- Find what makes Codex's sandbox fail in a lym session on a machine like OSL-1046, and settle the sandbox mode lym launches it with,\n  so a Codex seat runs there like a Claude one without the operator setting anything by hand.\n- lym reports a Codex seat that cannot start, naming the cause, instead of ending it quietly as stopped.\n\nThe run works on Neve and cannot reproduce on OSL-1046 itself; whatever it cannot confirm there it states in its summary.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Open-Window",
       "created": "2026-11-09T18:35:39Z",
       "revised": "2026-11-11T07:25:20Z",
       "profile": "light",
@@ -648,34 +648,6 @@
       "discussed": true
     },
     {
-      "id": 1275,
-      "handle": "T2",
-      "slug": "adopt-worker-record",
-      "title": "Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "batten",
-        "tender",
-        "dobby",
-        "orch",
-        "fabric",
-        "shortcut"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `adopt-robust`.\n\nTakes: today's adoptcli steps, holds.json hold and green end; testmap-dobby-refresh's landed changes to dobbyengine, beamcli, orchcli and runproc\nDelivers: lym adopt as a hidden detached worker the caller follows; the adopt record adopt.json and adopt.lock under fabricengine.AdoptScratchDir with resume and --discard; the D3 step order with the owner write before the deploy; the adopt pause entry replacing the hold and holds.json; --no-orch and its orch-session default; a green check that only reports; the adopt section of lym beam status\nExports: internal/adoptrecord (the record type, its path and a lock-free read, which neither engine import of adoptcli needs), pauserecord.AdoptCaller, the orch-skip field of orchcli.BeamUpOptions, a runproc adopt role\n\nThe part changes these packages:\n\n- internal/adoptcli (about 1500 changed lines)\n- internal/adoptrecord (about 250 changed lines)\n- internal/pauserecord (about 60 changed lines)\n- internal/tenderengine (about 20 changed lines)\n- internal/orchcli (about 40 changed lines)\n- internal/dobbyengine (about 60 changed lines)\n- internal/beamcli (about 200 changed lines)\n- internal/runproc (about 10 changed lines)\n- pattern (about 30 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-09T19:45:19Z",
-      "revised": "2026-11-09T19:45:19Z",
-      "profile": "solid",
-      "project": "adopt-takeover",
-      "discussed": true
-    },
-    {
       "id": 1276,
       "handle": "T4",
       "slug": "adopt-owner-handover",
@@ -692,9 +664,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "adopt-worker-record"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `adopt-robust`.\n\nTakes: adopt-worker-record's internal/adoptrecord and its record of the subjects whose owner write stood\nDelivers: the under-adopt predicate over the record and hubgeom.ParentOf, handed as a read-only accessor to the orch watcher and the dobby, which keep up and idle under it; the dobby's periodic Bolt pull on its probe; the old owner's owner-pause, archive-owner tag push of each local tip origin lacks, and exit; lym beam start's archive before its foreign-owner refusal\nExports: the under-adopt accessor in internal/adoptrecord, the archive-owner tag name function beside fabricengine.ArchiveTagName, the fabric archive call\n\nThe part changes these packages:\n\n- internal/adoptrecord (about 100 changed lines)\n- internal/orchengine (about 60 changed lines)\n- internal/orchcli (about 160 changed lines)\n- internal/dobbyengine (about 350 changed lines)\n- internal/beamcli (about 150 changed lines)\n- internal/fabricengine (about 350 changed lines)\n",

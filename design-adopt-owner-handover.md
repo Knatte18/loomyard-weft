@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-adopt-owner-handover.md)
 
-Depends on: [`adopt-worker-record`](design-adopt-worker-record.md)
-
 Filed from the Sketch `adopt-robust`.
 
 Takes: adopt-worker-record's internal/adoptrecord and its record of the subjects whose owner write stood

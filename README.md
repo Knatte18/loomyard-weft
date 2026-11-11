@@ -41,14 +41,6 @@ Waits only on Running, Ready or Draft entries.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy** | [`adopt-worker-record`](design-adopt-worker-record.md)<br>[Sketch](decision-adopt-worker-record.md) | 1d<br>1d | batten, tender, dobby, orch, fabric, shortcut |
-
 </details>
 
 <details open>
@@ -68,7 +60,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | darn · light | Worktree-Create | neve | 1d<br>0m | codex, shuttle |
+| T1 | **Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046** | [`codex-bubblewrap-sandbox`](design-codex-bubblewrap-sandbox.md) | darn · light | Open-Window | neve | 1d<br>0m | codex, shuttle |
 
 #### Ready (0)
 
