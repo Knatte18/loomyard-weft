@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Worktree-Create",
+    "history_length": 1,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-11T08:25:23.617827081+01:00",
+  "deadline": "2026-11-11T08:35:23.617827081+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/gate-scope-by-coverage-map/drive-reports/drive-envelope-20261111-082523-b07d.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/gate-scope-by-coverage-map/drive-reports/drive-report-20261111-082523-116d.md",
+  "strand_guid": "1d62ed8241e6ba731029a9155efcc9bb"
+}
