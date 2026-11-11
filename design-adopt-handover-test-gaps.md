@@ -1,6 +1,6 @@
 # Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests
 
-`adopt-handover-test-gaps` · Task · bug, dobby, fabric, tender · running · Code-Burler-Review
+`adopt-handover-test-gaps` · Task · bug, dobby, fabric, tender · running · Code-Burler-Fix
 
 ## Seen (board tidy, 2026-11-11)
 
