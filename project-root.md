@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Webster: no amend of a pushed card, no lockless work on a notice, and a gate halt that counts and names its failure** | [`webster-run-faults`](design-webster-run-faults.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>39m | webster, loom, creel, batten, git, gate |
-| T8 | **creel post to a strand that is not running reports plain success** | [`creel-post-dead-recipient`](design-creel-post-dead-recipient.md) | darn · light | PR-Review | neve | 1h<br>39m | creel |
+| T8 | **creel post to a strand that is not running reports plain success** | [`creel-post-dead-recipient`](design-creel-post-dead-recipient.md) | darn · light | Finalize | neve | 1h<br>39m | creel |
 | T15 | **Console window titles put the task handle first, with hub and project in brackets** | [`console-title-handle-first`](design-console-title-handle-first.md) | darn · light | Darn-Write | neve | 1d<br>11m | termwindow |
 | T20 | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | Code-Burler-Fix | neve | 2d<br>1h | shed, friction, shuttle |
 
@@ -75,7 +75,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 1d<br>1d | gate, fabric |
-| R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 1h<br>44m | darn, loom, shuttle, claude |
+| R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 1h<br>45m | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
 
 ### Bugs (2)
