@@ -1,6 +1,6 @@
 # Slack per orch: a button, machine-first channel names, no presence notice
 
-`slack-per-orch-activation` · Task · enhancement, slack, reed, creel · running · Open-IDE
+`slack-per-orch-activation` · Task · enhancement, slack, reed, creel · running · Preflight
 
 Depends on: [`machine-name-verb`](design-machine-name-verb.md)
 
