@@ -1079,6 +1079,27 @@
       "body": "Seen: the landing `push-notice-anchor-dir` lists this under \"To check by hand\".\nThe steps not yet converted to the anchored directory have no test for the weft-dirty stop or the upstream-anchor stop.\nIdea: add a test row for each stop.\n",
       "created": "2026-11-11T14:01:42Z",
       "revised": "2026-11-11T14:01:42Z"
+    },
+    {
+      "id": 1319,
+      "handle": "E15",
+      "slug": "decision-record-edit",
+      "title": "Decision records should allow editing a decision, not only appending",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "board"
+      ],
+      "issues": [
+        117
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #117](https://github.com/Knatte18/loomyard/issues/117).\n\nSeen: 'lym loom decision add' only appends. When a later call changes an earlier decision, the record keeps both: the original D-entry and an 'Added after Discussion' entry that overrides it. In a design that went through several review rounds and operator calls (motif run, then two independent reviews), the record grew about 30 appended entries, several contradicting the D-entries above them, so the record stopped being a readable statement of the design. The operator keeps board bodies as the current design only, and wants records kept the same way.\n\nExpected: a verb to edit or replace a recorded decision in place (for example 'lym loom decision edit \u003cslug\u003e D7 --from \u003cfile\u003e', and 'decision remove'), committed and announced like 'add', with git history keeping the old text. The same for a Sketch's stored record after its motif run, so a promoted Sketch's raddle reads the current design.\n\nRelated: #114 (no verb replaces a Sketch's record), #116 (raddle validates against the stale record and refuses a split that follows the body).",
+      "created": "2026-11-11T14:02:25Z",
+      "revised": "2026-11-11T14:02:25Z"
     }
   ],
   "prime_owner": "neve",
