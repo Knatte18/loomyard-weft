@@ -589,7 +589,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #115](https://github.com/Knatte18/loomyard/issues/115).\n\n## Seen\n\n`lym beam merge-parent \u003cbeam\u003e` names its merge task `\u003cbeam\u003e-merge-in` every time.\nA beam that already merged its parent once, through a completed and torn-down `\u003cbeam\u003e-merge-in` run, gets a second task with the same slug.\nDobby then refuses to start it: `\"\u003cbeam\u003e-merge-in\" has already completed; to run it again, run \"lym batten cleanup --apply\" from the prime ... or give the new task a different slug`.\n\n## Workaround\n\nThe beam orch renamed the new task to `\u003cbeam\u003e-merge-in-2` with `lym board rename`, and dobby started it.\n\n## Expected\n\n`merge-parent` picks a slug that no completed run or leftover task branch holds, such as a numbered suffix, so a second merge of the parent starts without a hand rename.\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-11T14:02:30Z",
       "revised": "2026-11-11T14:04:12Z",
       "profile": "light"
