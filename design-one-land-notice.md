@@ -1,6 +1,6 @@
 # One land notice: fold the beam-PR landing notice into notify_on_land
 
-`one-land-notice` · Task · enhancement, dobby, batten, workspaces · running · Worktree-Create
+`one-land-notice` · Task · enhancement, dobby, batten, workspaces · running · Seed-Child
 
 Depends on: [`landed-run-holds-slot`](design-landed-run-holds-slot.md)
 
