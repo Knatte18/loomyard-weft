@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,57 @@
       "output": "",
       "at": "2026-11-11T07:25:52Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/codex-bubblewrap-sandbox/_lym/landing/summary.md",
+      "at": "2026-11-11T07:37:34Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T07:31:59.526786492Z",
+          "end": "2026-11-11T07:31:59.534670762Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T07:34:54.436840941Z",
+          "end": "2026-11-11T07:34:54.447581114Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T07:31:59.584290419Z",
+          "end": "2026-11-11T07:34:40.928876823Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-11T07:34:41.367335779Z",
+          "end": "2026-11-11T07:34:54.407858035Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T07:34:54.510795158Z",
+          "end": "2026-11-11T07:36:59.348720673Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T07:36:59.400189274Z",
+          "end": "2026-11-11T07:36:59.592145253Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T07:36:59.640419862Z",
+          "end": "2026-11-11T07:36:59.640535549Z"
+        }
+      ]
     }
   ],
   "product": {
