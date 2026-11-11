@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (10)
+## Tasks (11)
 
 Concrete and claimable; only a task can run.
 
@@ -44,7 +44,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | darn · solid | T3 | 5h<br>28m | dobby, fabric, tender |
+| T5 | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | darn · solid | T3 | 5h<br>0m | dobby, fabric, tender |
 
 ### Layer C (1)
 
@@ -63,7 +63,15 @@ Starts when every entry it names under After is done.
 | T9 | **beam merge-parent reuses the slug of a completed merge-in run** | [`merge-parent-slug-reuse`](design-merge-parent-slug-reuse.md) | darn · light | T6 | 30m<br>28m | workspaces, dobby |
 | T16 | **lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor** | [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md) | darn · light | T6 | 29m<br>28m | shuttle, fabric |
 
-## Notes (29)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T10 | `draft` **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | darn · light |  | 8h<br>0m | heddle |
+
+## Notes (26)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -75,13 +83,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 8h<br>5h | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
 
-### Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B1 |  | **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | 8h<br>0m | heddle |
-
-### Enhancements (11)
+### Enhancements (9)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -90,8 +92,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome** | [`finalize-flaky-test-gaps`](design-finalize-flaky-test-gaps.md) | 5h<br>5h | landing, gate |
 | E5 |  | **Refresh the README: outdated parts, less wall of text, the dead Autoboard link and a shorter Lineage**<br>• The README is partly outdated, too long-winded, its Autoboard link is dead, and Lineage no longer fits LoomYard | [`readme-refresh`](design-readme-refresh.md) | 2h<br>2h | docs |
 | E6 |  | **Raddle shows each part's recipe and profile as table columns**<br>• Raddle names recipe and profile only in free text; put them in the proposal table | [`raddle-table-recipe-profile`](design-raddle-table-recipe-profile.md) | 5h<br>5h | stencil, shed |
-| E7 |  | **Adopt --here: no test pins the records tag against the records branch** | [`records-tag-vs-branch-untested`](design-records-tag-vs-branch-untested.md) | 30m<br>30m | fabric, tender |
-| E8 |  | **Teardown: no test pins that the owner archive is excluded** | [`teardown-archive-untested`](design-teardown-archive-untested.md) | 30m<br>30m | fabric, tender |
 | E10 |  | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | 8h<br>8h | heddle |
 | E11 |  | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | 7h<br>7h | fabric, ide |
 | E13 |  | **Calls of the lym verb directory lack tests in an anchored hub** | [`verbdir-calls-untested`](design-verbdir-calls-untested.md) | 30m<br>30m | fabric |

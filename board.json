@@ -548,10 +548,10 @@
     },
     {
       "id": 1289,
-      "handle": "B1",
+      "handle": "T10",
       "slug": "heddle-render-all-worktrees",
       "title": "heddle set/remove should re-render file targets in every live worktree of the hub",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "heddle"
@@ -559,12 +559,15 @@
       "issues": [
         103
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #103](https://github.com/Knatte18/loomyard/issues/103).\n\nlym heddle set and lym heddle remove save the entry and render HEDDLE.md, but leave every existing worktree's rendered files (CLAUDE.local.md, AGENTS.override.md, .claude/settings.local.json) stale until the worktree is made, taken in, or rendered by hand with lym heddle render.\n\nSeen: a new repository entry with target claude-file was set from a beam worktree. CLAUDE.local.md in that worktree, in the prime worktree and in a running task worktree all lacked the entry until lym heddle render was run in each one by hand.\n\nAn instruction entry usually exists because agents must follow it now (for example, a module that is out of scope), so agents in running task worktrees keep working without it, and nothing tells the caller which worktrees are stale.\n\nProposal: after a successful set or remove, render every file target into every live code worktree of the hub (prime, beams, task pairs), and report the rendered and failed worktrees in the verb's output. Running Claude sessions then take the change at their next compaction, as today; an optional flag to skip the fan-out could cover bulk edits.",
+      "status": "draft",
       "created": "2026-11-11T06:22:58Z",
-      "revised": "2026-11-11T14:32:34Z"
+      "revised": "2026-11-11T14:32:34Z",
+      "profile": "light"
     },
     {
       "id": 1290,
@@ -669,9 +672,9 @@
       ],
       "isolated": false,
       "brief": "",
-      "body": "## Seen (board tidy, 2026-11-11)\n\n`adopt-owner-handover` landed as `0198b955` with four findings its review left open under \"To check by hand\":\n\n- A beam with no owner recorded under an adopted `root` may not be covered by the under-adopt accessor in `internal/adoptrecord/watch.go`; the review marked it BLOCKING.\n  The accessor's comment says such a beam takes its parent's subject, `root` above the top, so it reads covered;\n  no test shows that the watcher and dobby of such a beam stay up and idle during `lym adopt root`.\n- The adopt hold in `internal/dobbyengine/handover.go` skips steps (pause, archive, pass starts) that no test pins.\n- The decision rows for which tips the owner archive takes (origin absent, equal, ahead, diverged) in `internal/fabricengine/ownerarchive.go` have no test rows.\n- The pairs the owner archive covers, in `internal/beamcli/ownerarchive.go` and `internal/fabricengine/ownerarchive.go`, are untested end to end.\n\n## Idea\n\nSettle the BLOCKING point first: a test of `adoptrecord.Watch.Covers` for a beam with no owner of its own under an unfinished `root` adopt,\nand a fix if it reads uncovered.\nThen add the missing test rows for the hold's skipped steps and the owner archive's decision rows, and one end-to-end test of the archive over a beam's pairs.\n",
+      "body": "## Seen (board tidy, 2026-11-11)\n\n`adopt-owner-handover` landed as `0198b955` with four findings its review left open under \"To check by hand\":\n\n- A beam with no owner recorded under an adopted `root` may not be covered by the under-adopt accessor in `internal/adoptrecord/watch.go`; the review marked it BLOCKING.\n  The accessor's comment says such a beam takes its parent's subject, `root` above the top, so it reads covered;\n  no test shows that the watcher and dobby of such a beam stay up and idle during `lym adopt root`.\n- The adopt hold in `internal/dobbyengine/handover.go` skips steps (pause, archive, pass starts) that no test pins.\n- The decision rows for which tips the owner archive takes (origin absent, equal, ahead, diverged) in `internal/fabricengine/ownerarchive.go` have no test rows.\n- The pairs the owner archive covers, in `internal/beamcli/ownerarchive.go` and `internal/fabricengine/ownerarchive.go`, are untested end to end.\n\n## Idea\n\nSettle the BLOCKING point first: a test of `adoptrecord.Watch.Covers` for a beam with no owner of its own under an unfinished `root` adopt,\nand a fix if it reads uncovered.\nThen add the missing test rows for the hold's skipped steps and the owner archive's decision rows, and one end-to-end test of the archive over a beam's pairs.\n\n## Also pin (folded in)\n\n## From note records-tag-vs-branch-untested\n\nSeen: the landing `adopt-here-archives` lists this under \"To check by hand\".\nNo test pins how `lym adopt --here` treats the records tag against the records branch.\nIdea: add a test row for each way the two differ.\n\n## From note teardown-archive-untested\n\nSeen: the landing `adopt-here-archives` lists this under \"To check by hand\".\nNo test pins the exclusion of an owner archive during teardown.\nIdea: add a test that a teardown leaves the archive out and still removes the worktree.\n\n",
       "created": "2026-11-11T08:49:23Z",
-      "revised": "2026-11-11T14:04:11Z",
+      "revised": "2026-11-11T14:32:34Z",
       "profile": "solid"
     },
     {
@@ -829,44 +832,6 @@
       "created": "2026-11-11T14:01:41Z",
       "revised": "2026-11-11T14:01:41Z",
       "project": "test-suite-trim"
-    },
-    {
-      "id": 1315,
-      "handle": "E7",
-      "slug": "records-tag-vs-branch-untested",
-      "title": "Adopt --here: no test pins the records tag against the records branch",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "tender"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Seen: the landing `adopt-here-archives` lists this under \"To check by hand\".\nNo test pins how `lym adopt --here` treats the records tag against the records branch.\nIdea: add a test row for each way the two differ.\n",
-      "created": "2026-11-11T14:01:42Z",
-      "revised": "2026-11-11T14:01:42Z"
-    },
-    {
-      "id": 1316,
-      "handle": "E8",
-      "slug": "teardown-archive-untested",
-      "title": "Teardown: no test pins that the owner archive is excluded",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "tender"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Seen: the landing `adopt-here-archives` lists this under \"To check by hand\".\nNo test pins the exclusion of an owner archive during teardown.\nIdea: add a test that a teardown leaves the archive out and still removes the worktree.\n",
-      "created": "2026-11-11T14:01:42Z",
-      "revised": "2026-11-11T14:01:42Z"
     },
     {
       "id": 1317,

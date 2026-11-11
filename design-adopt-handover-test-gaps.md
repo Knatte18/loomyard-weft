@@ -20,3 +20,18 @@ Depends on: [`adopt-takeover-fixes`](design-adopt-takeover-fixes.md)
 Settle the BLOCKING point first: a test of `adoptrecord.Watch.Covers` for a beam with no owner of its own under an unfinished `root` adopt,
 and a fix if it reads uncovered.
 Then add the missing test rows for the hold's skipped steps and the owner archive's decision rows, and one end-to-end test of the archive over a beam's pairs.
+
+## Also pin (folded in)
+
+## From note records-tag-vs-branch-untested
+
+Seen: the landing `adopt-here-archives` lists this under "To check by hand".
+No test pins how `lym adopt --here` treats the records tag against the records branch.
+Idea: add a test row for each way the two differ.
+
+## From note teardown-archive-untested
+
+Seen: the landing `adopt-here-archives` lists this under "To check by hand".
+No test pins the exclusion of an owner archive during teardown.
+Idea: add a test that a teardown leaves the archive out and still removes the worktree.
+
