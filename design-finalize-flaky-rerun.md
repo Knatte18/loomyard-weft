@@ -1,6 +1,6 @@
 # Finalize spawns a fixer on a single non-repeating test failure
 
-`finalize-flaky-rerun` · Task · enhancement, landing, gate · running · Open-Window
+`finalize-flaky-rerun` · Task · enhancement, landing, gate · running · Seed-IDE
 
 Imported from [issue #100](https://github.com/Knatte18/loomyard/issues/100).
 
