@@ -1,14 +1,22 @@
 {
-  "current_producer": "Preflight",
+  "current_producer": "Record-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Preflight",
-    "last": "",
+    "now": "Record-Write",
+    "last": "Preflight → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-11T17:58:45Z",
+      "started_at": "2026-11-11T17:58:45Z"
+    }
+  ],
   "product": {
     "slug": "hub-workspace-all-pairs",
     "parent": "main",
