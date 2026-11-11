@@ -1,0 +1,15 @@
+{
+  "subject": {
+    "kind": "code",
+    "merge_base": "99bec44e9a39be56809ea96f1ca90c91eda13857",
+    "head": "5179f5801889eb1e83e29e1d3ff16bbd54ecdaf3",
+    "full_hash": "f5daa65dbba929c71bc26e3ced5dd79ffb580797df283a617a0ce98f0ea3e01b",
+    "patch_id": "dc2320fd3e9de0b57cb4fa78aa0afcefd5e3759a"
+  },
+  "base": "99bec44e9a39be56809ea96f1ca90c91eda13857",
+  "generation": 1,
+  "round": 2,
+  "settled_at": "2026-11-11T16:53:08Z",
+  "round_started_at": "2026-11-11T16:48:37Z",
+  "settled": true
+}

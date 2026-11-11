@@ -1,0 +1,1505 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 04fe1b90..b472b000 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -401,7 +401,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/commentlint/        the comment line lint: fixed-column wraps and over-long lines in the `//` comment blocks a diff creates, over a told worktree and base
+ ├── internal/patternlint/        the PATTERN headroom lint: growth of the overview past its headroom line, over a told worktree and base
+ ├── internal/impactset/          the impacted-set command a gate key's `diff` scope runs: the packages a diff reaches over the import graph, plus the `//lym:guard` tests, or a fallback reason to run the full verify
+-├── internal/testcover/          the per-test coverage engine: runs each test of a package alone under a coverage binary, keys blocks by content, judges contained and removable tests, and reads and writes the per-package coverage map
++├── internal/testcover/          the per-test coverage engine: runs each test of a package alone under a coverage binary, keys blocks by content, judges contained and removable tests, reads and writes the per-package coverage map, and selects an importing package's tests from it or names the miss that runs the package whole
+ ├── internal/dotnetimpact/       the `dotnet` scoper's derivation: the test projects and test classes a C# diff or a card's targets reach, by type-name closure over the source, or a fallback reason to run the tier whole
+ ├── internal/verifytree/         the one plan-verify function: clean-tree check, verified-tree record and running marker, used by landing, both webster gates and `lym webster verify`
+ └── internal/verifyrun/          in-process shell-command runner behind `internal/verifytree` and webster's card-verify rerun
+diff --git a/internal/gatecli/testmaptree.go b/internal/gatecli/testmaptree.go
+index b5eeae14..279524c5 100644
+--- a/internal/gatecli/testmaptree.go
++++ b/internal/gatecli/testmaptree.go
+@@ -5,7 +5,6 @@ package gatecli
+ 
+ import (
+ 	"fmt"
+-	"maps"
+ 	"path"
+ 	"slices"
+ 	"strings"
+@@ -30,7 +29,7 @@ func (r *testMapRun) readPackageTree(rev, dir string) (packageTree, error) {
+ 	if err != nil {
+ 		return packageTree{}, err
+ 	}
+-	tree := packageTree{dir: dir, nested: nestedPackageDirs(files), hashes: map[string]string{}}
++	tree := packageTree{dir: dir, nested: testcover.NestedPackageDirs(files), hashes: map[string]string{}}
+ 	for _, rel := range files {
+ 		if !tree.ownsRelative(rel) {
+ 			continue
+@@ -46,39 +45,6 @@ func (r *testMapRun) readPackageTree(rev, dir string) (packageTree, error) {
+ 	return tree, nil
+ }
+ 
+-// nestedPackageDirs returns the directories below a package directory that hold another package or a nested module.
+-// They are sorted.
+-// files are the slash paths, relative to the package directory, of every file under it.
+-// A directory holds a package when it holds a Go file directly and the go command would build it:
+-// it lies under no testdata directory and no directory whose name opens with a dot or an underscore.
+-// A directory holding go.mod is a nested module wherever it lies.
+-// A directory whose Go files build constraints all exclude still counts as nested:
+-// the bound only misses files of the owner, and never adds a false one.
+-func nestedPackageDirs(files []string) []string {
+-	nested := map[string]struct{}{}
+-	for _, rel := range files {
+-		dir, name := path.Dir(rel), path.Base(rel)
+-		if dir == "." {
+-			continue
+-		}
+-		if name == "go.mod" || (strings.HasSuffix(name, ".go") && buildableDir(dir)) {
+-			nested[dir] = struct{}{}
+-		}
+-	}
+-	return slices.Sorted(maps.Keys(nested))
+-}
+-
+-// buildableDir reports whether the go command builds a package in the slash directory dir:
+-// no element of it is testdata or opens with a dot or an underscore.
+-func buildableDir(dir string) bool {
+-	for _, element := range strings.Split(dir, "/") {
+-		if element == "testdata" || strings.HasPrefix(element, ".") || strings.HasPrefix(element, "_") {
+-			return false
+-		}
+-	}
+-	return true
+-}
+-
+ // owns reports whether the package owns the worktree-relative slash path file:
+ // it lies under the package directory and under none of the nested directories.
+ func (p packageTree) owns(file string) bool {
+diff --git a/internal/testcover/declcompare.go b/internal/testcover/declcompare.go
+new file mode 100644
+index 00000000..2593c8ba
+--- /dev/null
++++ b/internal/testcover/declcompare.go
+@@ -0,0 +1,399 @@
++// declcompare.go compares one Go file's top-level declarations as a map's commit stores them with the working tree's.
++// It names the functions whose declaration changed, and the change a coverage map cannot speak for.
++
++package testcover
++
++import (
++	"fmt"
++	"go/ast"
++	"go/parser"
++	"go/token"
++	"go/types"
++	"maps"
++	"reflect"
++	"slices"
++	"strconv"
++	"strings"
++)
++
++// directivePrefix opens a compiler directive line.
++const directivePrefix = "//go:"
++
++// goSource is one side of a Go file's comparison: its text, or its absence.
++type goSource struct {
++	text    []byte
++	present bool
++}
++
++// goFileComparison is what one Go file's comparison found.
++type goFileComparison struct {
++	// miss is the first change the map cannot speak for, nil for none.
++	miss *Miss
++	// changed names each function whose declaration differs or that only the commit holds.
++	// A name is the one the coverage map's function keys use, Type.Method for a method.
++	changed []string
++	// addedImports are the import paths the working tree's file imports and the commit's does not.
++	// Whether an added import is a miss depends on the map's linked set, so the caller judges them.
++	addedImports []string
++	// removedImports are the import paths a deleted file imported.
++	// A file that remains and drops an import is a miss, so this is empty for it.
++	// A deleted file's imports reach no other file, but a module package it imported may leave the build,
++	// so the caller judges them.
++	removedImports []string
++	// methodsBefore and methodsAfter hold the file's methods by key name, at the commit and in the working tree.
++	methodsBefore, methodsAfter map[string][]*ast.FuncDecl
++}
++
++// fileDecls indexes one Go file's top-level declarations.
++type fileDecls struct {
++	packageName string
++	// directives are the file's `//go:` lines, in file order.
++	directives []string
++	// imports maps each import, keyed by its name and path, to its path.
++	imports map[string]string
++	// values holds the const, var and type declarations by a key of their kind and names.
++	values map[string][]valueDecl
++	// funcs holds the function and method declarations by the name a block key gives them.
++	funcs map[string][]*ast.FuncDecl
++}
++
++// valueDecl is one const, var or type declaration, or a whole const group that uses iota or an implicit value.
++type valueDecl struct {
++	node  ast.Node
++	names []string
++	// addable is set for a declaration that, once added, no unchanged code can reach:
++	// a const outside such a group, a var with no initializer or a type.
++	addable bool
++}
++
++// compareGoSources compares the Go file rel as the map's commit stores it, before, with the working tree's, after.
++// Either side may be absent.
++func compareGoSources(rel string, before, after goSource) goFileComparison {
++	old, err := parseFileDecls(before)
++	if err != nil {
++		return missed(MissParse, fmt.Sprintf("%s at the map's commit: %v", rel, err))
++	}
++	cur, err := parseFileDecls(after)
++	if err != nil {
++		return missed(MissParse, fmt.Sprintf("%s in the working tree: %v", rel, err))
++	}
++	if before.present && after.present && old.packageName != cur.packageName {
++		return missed(MissNonBody, rel+" changes its package clause")
++	}
++	if !slices.Equal(old.directives, cur.directives) {
++		return missed(MissDirective, rel+" adds, removes or changes a "+directivePrefix+" line")
++	}
++	var removedImports []string
++	for _, key := range slices.Sorted(maps.Keys(old.imports)) {
++		if _, kept := cur.imports[key]; kept {
++			continue
++		}
++		if after.present {
++			return missed(MissNonBody, fmt.Sprintf("%s removes the import %s", rel, strings.TrimSpace(key)))
++		}
++		removedImports = append(removedImports, old.imports[key])
++	}
++	for _, key := range slices.Sorted(maps.Keys(old.values)) {
++		if !valueDeclsEqual(old.values[key], cur.values[key]) {
++			return missed(MissNonBody, fmt.Sprintf("%s changes or removes %s", rel, key))
++		}
++	}
++	for _, key := range slices.Sorted(maps.Keys(cur.values)) {
++		if _, existed := old.values[key]; existed {
++			continue
++		}
++		for _, value := range cur.values[key] {
++			if name := firstPredeclared(value.names); name != "" {
++				return missed(MissPredeclared, fmt.Sprintf("%s declares %s", rel, name))
++			}
++			if !value.addable {
++				return missed(MissNonBody, fmt.Sprintf("%s adds %s, which unchanged code can reach", rel, key))
++			}
++		}
++	}
++	for _, key := range slices.Sorted(maps.Keys(cur.funcs)) {
++		if _, existed := old.funcs[key]; existed {
++			continue
++		}
++		for _, fn := range cur.funcs[key] {
++			if fn.Recv == nil && predeclared(fn.Name.Name) {
++				return missed(MissPredeclared, fmt.Sprintf("%s declares %s", rel, fn.Name.Name))
++			}
++		}
++	}
++	if added, held := len(cur.funcs["init"]), len(old.funcs["init"]); added > held {
++		return missed(MissInit, fmt.Sprintf("%s holds %d init functions, %d at the map's commit", rel, added, held))
++	}
++
++	comparison := goFileComparison{
++		removedImports: removedImports, methodsBefore: methodsOf(old.funcs), methodsAfter: methodsOf(cur.funcs),
++	}
++	for _, key := range slices.Sorted(maps.Keys(old.funcs)) {
++		if !syntaxListsEqual(old.funcs[key], cur.funcs[key]) {
++			comparison.changed = append(comparison.changed, key)
++		}
++	}
++	for _, key := range slices.Sorted(maps.Keys(cur.imports)) {
++		if _, existed := old.imports[key]; !existed {
++			comparison.addedImports = append(comparison.addedImports, cur.imports[key])
++		}
++	}
++	return comparison
++}
++
++// missed returns a comparison that found the miss reason with detail.
++func missed(reason MissReason, detail string) goFileComparison {
++	return goFileComparison{miss: &Miss{Reason: reason, Detail: detail}}
++}
++
++// parseFileDecls parses src and indexes its top-level declarations; an absent src has none.
++func parseFileDecls(src goSource) (fileDecls, error) {
++	decls := fileDecls{imports: map[string]string{}, values: map[string][]valueDecl{}, funcs: map[string][]*ast.FuncDecl{}}
++	if !src.present {
++		return decls, nil
++	}
++	file, err := parser.ParseFile(token.NewFileSet(), "", src.text, parser.ParseComments|parser.SkipObjectResolution)
++	if err != nil {
++		return fileDecls{}, err
++	}
++	decls.packageName = file.Name.Name
++	for _, group := range file.Comments {
++		for _, comment := range group.List {
++			if strings.HasPrefix(comment.Text, directivePrefix) {
++				decls.directives = append(decls.directives, strings.TrimSpace(comment.Text))
++			}
++		}
++	}
++	for _, decl := range file.Decls {
++		switch decl := decl.(type) {
++		case *ast.FuncDecl:
++			key := funcKeyName(decl)
++			decls.funcs[key] = append(decls.funcs[key], decl)
++		case *ast.GenDecl:
++			decls.addGenDecl(decl)
++		}
++	}
++	return decls, nil
++}
++
++// addGenDecl indexes the imports, consts, vars or types of decl.
++// A const group that uses iota or an implicit value is one declaration, so a spec added to it changes it.
++func (d fileDecls) addGenDecl(decl *ast.GenDecl) {
++	if decl.Tok == token.CONST && implicitConstGroup(decl) {
++		var names []string
++		for _, spec := range decl.Specs {
++			names = append(names, identNames(spec.(*ast.ValueSpec).Names)...)
++		}
++		d.addValue("const group "+strings.Join(names, ","), valueDecl{node: decl, names: names})
++		return
++	}
++	for _, spec := range decl.Specs {
++		switch spec := spec.(type) {
++		case *ast.ImportSpec:
++			// The parser accepted the file, so the path is a valid string literal.
++			importPath, _ := strconv.Unquote(spec.Path.Value)
++			name := ""
++			if spec.Name != nil {
++				name = spec.Name.Name
++			}
++			d.imports[name+" "+importPath] = importPath
++		case *ast.ValueSpec:
++			names := identNames(spec.Names)
++			addable := decl.Tok == token.CONST || len(spec.Values) == 0
++			d.addValue(decl.Tok.String()+" "+strings.Join(names, ","), valueDecl{node: spec, names: names, addable: addable})
++		case *ast.TypeSpec:
++			d.addValue("type "+spec.Name.Name, valueDecl{node: spec, names: []string{spec.Name.Name}, addable: true})
++		}
++	}
++}
++
++func (d fileDecls) addValue(key string, value valueDecl) {
++	d.values[key] = append(d.values[key], value)
++}
++
++// implicitConstGroup reports whether a const declaration has a spec with no value or a value that uses iota.
++func implicitConstGroup(decl *ast.GenDecl) bool {
++	for _, spec := range decl.Specs {
++		values := spec.(*ast.ValueSpec).Values
++		if len(values) == 0 {
++			return true
++		}
++		for _, value := range values {
++			usesIota := false
++			ast.Inspect(value, func(node ast.Node) bool {
++				if ident, ok := node.(*ast.Ident); ok && ident.Name == "iota" {
++					usesIota = true
++				}
++				return !usesIota
++			})
++			if usesIota {
++				return true
++			}
++		}
++	}
++	return false
++}
++
++func identNames(idents []*ast.Ident) []string {
++	names := make([]string, len(idents))
++	for i, ident := range idents {
++		names[i] = ident.Name
++	}
++	return names
++}
++
++// predeclared reports whether name is an identifier of the universe scope, such as max, len or error.
++func predeclared(name string) bool {
++	return types.Universe.Lookup(name) != nil
++}
++
++// firstPredeclared returns the first of names that predeclared reports, or "".
++func firstPredeclared(names []string) string {
++	for _, name := range names {
++		if predeclared(name) {
++			return name
++		}
++	}
++	return ""
++}
++
++// methodsOf returns the methods among funcs, by key name.
++func methodsOf(funcs map[string][]*ast.FuncDecl) map[string][]*ast.FuncDecl {
++	methods := map[string][]*ast.FuncDecl{}
++	for key, decls := range funcs {
++		if decls[0].Recv != nil {
++			methods[key] = decls
++		}
++	}
++	return methods
++}
++
++// methodSetMiss returns the miss of a package whose changed files change its method set, or nil for none.
++// A method added, removed, or with a changed receiver or signature changes the set.
++// before and after hold the methods of the package's changed files, by key name.
++// before is at the map's commit and after is in the working tree.
++func methodSetMiss(dir string, before, after map[string][]*ast.FuncDecl) *Miss {
++	keys := map[string]struct{}{}
++	for key := range before {
++		keys[key] = struct{}{}
++	}
++	for key := range after {
++		keys[key] = struct{}{}
++	}
++	for _, key := range slices.Sorted(maps.Keys(keys)) {
++		old, cur := before[key], after[key]
++		switch {
++		case len(old) == 0:
++			return &Miss{Reason: MissMethodSet, Detail: fmt.Sprintf("%s adds the method %s", dir, key)}
++		case len(cur) == 0:
++			return &Miss{Reason: MissMethodSet, Detail: fmt.Sprintf("%s removes the method %s", dir, key)}
++		case len(old) != len(cur) || !signaturesEqual(old[0], cur[0]):
++			return &Miss{Reason: MissMethodSet, Detail: fmt.Sprintf("%s changes the receiver or signature of %s", dir, key)}
++		}
++	}
++	return nil
++}
++
++// signaturesEqual reports whether two methods have the same receiver type, parameter types and result types.
++// Parameter and receiver names do not count.
++func signaturesEqual(a, b *ast.FuncDecl) bool {
++	return syntaxEqual(a.Recv.List[0].Type, b.Recv.List[0].Type) &&
++		syntaxListsEqual(fieldTypes(a.Type.Params), fieldTypes(b.Type.Params)) &&
++		syntaxListsEqual(fieldTypes(a.Type.Results), fieldTypes(b.Type.Results))
++}
++
++// fieldTypes returns the type of each entry of list, once per name it declares.
++func fieldTypes(list *ast.FieldList) []ast.Expr {
++	if list == nil {
++		return nil
++	}
++	var expressions []ast.Expr
++	for _, field := range list.List {
++		for range max(1, len(field.Names)) {
++			expressions = append(expressions, field.Type)
++		}
++	}
++	return expressions
++}
++
++func valueDeclsEqual(a, b []valueDecl) bool {
++	if len(a) != len(b) {
++		return false
++	}
++	for i := range a {
++		if !syntaxEqual(a[i].node, b[i].node) {
++			return false
++		}
++	}
++	return true
++}
++
++// syntaxListsEqual reports whether a and b hold pairwise equal syntax, in order.
++func syntaxListsEqual[T any](a, b []T) bool {
++	if len(a) != len(b) {
++		return false
++	}
++	for i := range a {
++		if !syntaxEqual(a[i], b[i]) {
++			return false
++		}
++	}
++	return true
++}
++
++// syntaxEqual reports whether two syntax trees are equal, ignoring comments and formatting.
++func syntaxEqual(a, b any) bool {
++	return equalSyntax(reflect.ValueOf(a), reflect.ValueOf(b))
++}
++
++// The syntax types equalSyntax treats specially.
++var (
++	posType          = reflect.TypeFor[token.Pos]()
++	commentGroupType = reflect.TypeFor[*ast.CommentGroup]()
++	objectType       = reflect.TypeFor[*ast.Object]()
++	scopeType        = reflect.TypeFor[*ast.Scope]()
++)
++
++// equalSyntax compares two values of a syntax tree field by field.
++// It ignores comments and resolved objects.
++// It compares a position only by whether it is valid, which tells `type A = B` from `type A B`.
++func equalSyntax(a, b reflect.Value) bool {
++	if !a.IsValid() || !b.IsValid() {
++		return a.IsValid() == b.IsValid()
++	}
++	if a.Type() != b.Type() {
++		return false
++	}
++	switch a.Type() {
++	case posType:
++		return token.Pos(a.Int()).IsValid() == token.Pos(b.Int()).IsValid()
++	case commentGroupType, objectType, scopeType:
++		return true
++	}
++	switch a.Kind() {
++	case reflect.Pointer, reflect.Interface:
++		if a.IsNil() || b.IsNil() {
++			return a.IsNil() == b.IsNil()
++		}
++		return equalSyntax(a.Elem(), b.Elem())
++	case reflect.Struct:
++		for i := range a.NumField() {
++			if !equalSyntax(a.Field(i), b.Field(i)) {
++				return false
++			}
++		}
++		return true
++	case reflect.Slice:
++		if a.Len() != b.Len() {
++			return false
++		}
++		for i := range a.Len() {
++			if !equalSyntax(a.Index(i), b.Index(i)) {
++				return false
++			}
++		}
++		return true
++	default:
++		return a.Equal(b)
++	}
++}
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index bca218d4..9d5d5f11 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -47,4 +47,24 @@
+ // The maps live under Dir, one directory per package, shared by every worktree of the hub on the machine.
+ // Beside them, the exit record holds the process ID of the last refresh.
+ // It also holds the count of stale packages the refresh's cap left unbuilt.
++// A package owns every file under its directory except those below a nested package or module.
++// NestedPackageDirs finds those nested directories.
++//
++// A Selector selects an importing package's tests from its map against the working tree.
++// It compares each linked package's files with the map's record.
++// For a changed Go file it compares the top-level declarations at the map's commit with the working tree's,
++// ignoring comments and formatting.
++// A function whose declaration differs, or that only the commit holds, is changed.
++// The tests that covered a changed function are selected, and with them every test the spawn scan marks.
++// A change the map cannot speak for is a Miss, under which the caller runs the package whole.
++// Such changes include:
++//   - the map missing, unreadable, failed or unmarked, or its commit unreadable;
++//   - the package's own Go files;
++//   - a non-Go file, unless inert_paths matches it and no go:embed pattern names it,
++//     the package's own test files counting as embed sources;
++//   - a declaration outside functions, bar a few additions no unchanged code can reach;
++//   - an import, bar an added one of a linked or standard-library package,
++//     and bar a standard-library one that a deleted file imported;
++//   - a `//go:` line, the method set, an added init function or a declared predeclared name;
++//   - a file that does not parse.
+ package testcover
+diff --git a/internal/testcover/packagedirs.go b/internal/testcover/packagedirs.go
+new file mode 100644
+index 00000000..6a8a6506
+--- /dev/null
++++ b/internal/testcover/packagedirs.go
+@@ -0,0 +1,44 @@
++// packagedirs.go tells which directories below a package directory hold another package or a nested module.
++// The files under them belong to that package and not the one above.
++
++package testcover
++
++import (
++	"maps"
++	"path"
++	"slices"
++	"strings"
++)
++
++// NestedPackageDirs returns the directories below a package directory that hold another package or a nested module.
++// They are sorted.
++// files are the slash paths, relative to the package directory, of every file under it.
++// A directory holds a package when it holds a Go file directly and the go command would build it:
++// it lies under no testdata directory and no directory whose name opens with a dot or an underscore.
++// A directory holding go.mod is a nested module wherever it lies.
++// A directory whose Go files build constraints all exclude still counts as nested:
++// the bound only misses files of the owner, and never adds a false one.
++func NestedPackageDirs(files []string) []string {
++	nested := map[string]struct{}{}
++	for _, rel := range files {
++		dir, name := path.Dir(rel), path.Base(rel)
++		if dir == "." {
++			continue
++		}
++		if name == "go.mod" || (strings.HasSuffix(name, ".go") && buildableDir(dir)) {
++			nested[dir] = struct{}{}
++		}
++	}
++	return slices.Sorted(maps.Keys(nested))
++}
++
++// buildableDir reports whether the go command builds a package in the slash directory dir:
++// no element of it is testdata or opens with a dot or an underscore.
++func buildableDir(dir string) bool {
++	for _, element := range strings.Split(dir, "/") {
++		if element == "testdata" || strings.HasPrefix(element, ".") || strings.HasPrefix(element, "_") {
++			return false
++		}
++	}
++	return true
++}
+diff --git a/internal/testcover/testselect.go b/internal/testcover/testselect.go
+new file mode 100644
+index 00000000..900a9a17
+--- /dev/null
++++ b/internal/testcover/testselect.go
+@@ -0,0 +1,555 @@
++// testselect.go selects an importing package's tests from its coverage map:
++// the tests that covered a function a linked package changed since the map's commit.
++// It names instead the miss that runs the package whole when the map cannot speak for a change.
++
++package testcover
++
++import (
++	"errors"
++	"fmt"
++	"go/ast"
++	"go/parser"
++	"go/token"
++	"io/fs"
++	"maps"
++	"os"
++	"path"
++	"path/filepath"
++	"slices"
++	"strconv"
++	"strings"
++	"unicode"
++)
++
++// embedDirective opens a `//go:embed` line, whose arguments are the patterns of the files it embeds.
++const embedDirective = "//go:embed"
++
++// CommitReader reads a file as a commit stores it.
++// rel is slash-separated and relative to the worktree root.
++// found is false with a nil error when rel is absent at rev; an error means rev or its tree cannot be read.
++type CommitReader interface {
++	CodeFileAt(rev, rel string) (data []byte, found bool, err error)
++}
++
++// SelectorConfig is the working tree a Selector compares coverage maps with.
++type SelectorConfig struct {
++	// MapsDir is the directory holding the per-package coverage maps.
++	MapsDir string
++	// WorktreeRoot is the worktree's absolute path.
++	WorktreeRoot string
++	// ModuleRel is the module's slash directory relative to the worktree root, "." for the root.
++	ModuleRel string
++	// ModulePath is the module's path, as its go.mod declares it.
++	ModulePath string
++	// GoRoot is the Go toolchain's root directory, whose src directory holds the standard library.
++	// It must be set: with it empty, no import counts as standard library.
++	GoRoot string
++	// WorkingFiles are the worktree-relative slash paths of every working-tree file that git does not ignore.
++	// It holds tracked and untracked files alike.
++	WorkingFiles []string
++	// Commits reads files at a map's commit.
++	Commits CommitReader
++	// Inert reports whether a worktree-relative slash path matches the hub's inert_paths; nil matches none.
++	Inert func(rel string) bool
++}
++
++// MissReason names why a coverage map cannot select an importing package's tests.
++type MissReason string
++
++// The reasons a Selector misses for.
++const (
++	MissNoMap            MissReason = "no coverage map"
++	MissMapUnreadable    MissReason = "coverage map unreadable"
++	MissBuildFailure     MissReason = "coverage map records a build failure"
++	MissUnmarked         MissReason = "coverage map unmarked"
++	MissCommitUnreadable MissReason = "map commit unreadable"
++	MissOwnFiles         MissReason = "own Go files changed"
++	MissNonGoFile        MissReason = "non-Go file changed"
++	MissParse            MissReason = "Go file does not parse"
++	MissNonBody          MissReason = "change outside function declarations"
++	MissDirective        MissReason = "compiler directive changed"
++	MissMethodSet        MissReason = "method set changed"
++	MissInit             MissReason = "init function added"
++	MissPredeclared      MissReason = "predeclared name declared"
++)
++
++// Miss is why a coverage map cannot select an importing package's tests, so the package runs whole.
++type Miss struct {
++	Reason MissReason
++	// Detail names the file, declaration or failure the reason is about.
++	Detail string
++}
++
++// String renders the miss as its reason and detail.
++func (m Miss) String() string {
++	return string(m.Reason) + ": " + m.Detail
++}
++
++// Selection is the outcome of selecting one importing package's tests.
++type Selection struct {
++	// Tests are the selected tests' names, sorted, each once.
++	Tests []string
++	// Miss is set when the package runs whole instead, and Tests is then empty.
++	Miss *Miss
++}
++
++// Selector selects importing packages' tests from their coverage maps against one working tree.
++// It caches the working tree's file hashes, each directory's owned files and each Go file's comparison.
++// Selecting many importing packages then reads each file once.
++// The working tree must not change while it is in use.
++// It is not safe for concurrent use.
++type Selector struct {
++	config SelectorConfig
++	// owned holds the working files each package directory owns, by slash path relative to it.
++	owned map[string]map[string]struct{}
++	// hashes holds each working file's hash, by worktree-relative slash path.
++	hashes map[string]workingHash
++	// compared holds each Go file's comparison, by the map's commit and the file's worktree-relative slash path.
++	compared map[string]goFileComparison
++	// embeds holds the go:embed patterns of each package directory, read with or without its test files.
++	embeds map[embedScope][]string
++}
++
++// embedScope keys the go:embed patterns of one package directory.
++// withTests is set when the package's test files count, which holds for the importing package alone.
++type embedScope struct {
++	dir       string
++	withTests bool
++}
++
++// workingHash is a working file's content hash, or its absence.
++type workingHash struct {
++	hash  string
++	found bool
++}
++
++// NewSelector returns a Selector over the working tree config describes.
++func NewSelector(config SelectorConfig) *Selector {
++	return &Selector{
++		config:   config,
++		owned:    map[string]map[string]struct{}{},
++		hashes:   map[string]workingHash{},
++		compared: map[string]goFileComparison{},
++		embeds:   map[embedScope][]string{},
++	}
++}
++
++// Select selects the tests of the package pkg, a module-relative slash path, from its coverage map.
++// A test is selected when it covered a linked package's function that changed or was removed since the map's commit.
++// A test the spawn scan marks is selected whenever any such function changed, since its map sees only in-process code.
++// A change the map cannot speak for gives a Miss instead.
++// The error reports a working file that cannot be read.
++func (s *Selector) Select(pkg string) (Selection, error) {
++	m, found, err := ReadMap(s.config.MapsDir, pkg)
++	if miss := mapMiss(m, found, err); miss != nil {
++		return Selection{Miss: miss}, nil
++	}
++	ownDir := path.Join(s.config.ModuleRel, pkg)
++	if miss, err := s.ownFilesMiss(ownDir, m); miss != nil || err != nil {
++		return Selection{Miss: miss}, err
++	}
++	if miss := s.commitMiss(ownDir, m); miss != nil {
++		return Selection{Miss: miss}, nil
++	}
++	changed := map[FuncKey]bool{}
++	for _, linked := range slices.Sorted(maps.Keys(m.Linked)) {
++		funcs, miss, err := s.linkedChanges(m, linked)
++		if miss != nil || err != nil {
++			return Selection{Miss: miss}, err
++		}
++		for _, key := range funcs {
++			changed[key] = true
++		}
++	}
++	return Selection{Tests: selectTests(m, changed)}, nil
++}
++
++// mapMiss returns the miss of a map a selection cannot use, or nil for a usable map.
++// Unusable maps are missing, unreadable, failed to build, unmarked, or rewritten by another writer.
++// found and err are ReadMap's.
++func mapMiss(m Map, found bool, err error) *Miss {
++	switch {
++	case err != nil:
++		return &Miss{Reason: MissMapUnreadable, Detail: err.Error()}
++	case !found:
++		return &Miss{Reason: MissNoMap, Detail: "no map was built for the package"}
++	case m.BuildFailure != "":
++		return &Miss{Reason: MissBuildFailure, Detail: m.BuildFailure}
++	case m.Format == nil:
++		return &Miss{Reason: MissUnmarked, Detail: "the map has no format marker"}
++	case m.Format.Version != MapFormatVersion:
++		return &Miss{Reason: MissUnmarked, Detail: fmt.Sprintf("the marker names format %d, not %d", m.Format.Version, MapFormatVersion)}
++	case m.Format.Commit != m.Commit || !m.Format.BuiltAt.Equal(m.BuiltAt):
++		return &Miss{Reason: MissUnmarked, Detail: "the marker's commit and build time differ from the map's, so another writer rewrote it"}
++	}
++	for _, test := range m.Tests {
++		for _, index := range test.Funcs {
++			if index < 0 || index >= len(m.Funcs) {
++				return &Miss{Reason: MissMapUnreadable, Detail: fmt.Sprintf("test %s names function %d of a table of %d", test.Name, index, len(m.Funcs))}
++			}
++		}
++	}
++	return nil
++}
++
++// ownFilesMiss returns the miss of a package whose own Go files differ in the working tree from m's record.
++// dir is the package's worktree-relative slash directory.
++// Its other files that change miss as a linked package's would.
++func (s *Selector) ownFilesMiss(dir string, m Map) (*Miss, error) {
++	recorded := map[string]string{}
++	maps.Copy(recorded, m.OtherFiles)
++	maps.Copy(recorded, m.Files)
++	changed, err := s.changedFiles(dir, recorded)
++	if err != nil {
++		return nil, err
++	}
++	for _, rel := range changed {
++		if isGoSourceFile(rel) || isGoTestFile(rel) {
++			return &Miss{Reason: MissOwnFiles, Detail: path.Join(dir, rel)}, nil
++		}
++		if miss, err := s.otherFileMiss(dir, rel, true); miss != nil || err != nil {
++			return miss, err
++		}
++	}
++	return nil, nil
++}
++
++// commitMiss returns the miss of a map whose commit the object store cannot read.
++// It probes with one of the package's own Go files; dir is the package's worktree-relative slash directory.
++func (s *Selector) commitMiss(dir string, m Map) *Miss {
++	names := slices.Sorted(maps.Keys(m.Files))
++	if len(names) == 0 {
++		return nil
++	}
++	probe := path.Join(dir, names[0])
++	_, found, err := s.config.Commits.CodeFileAt(m.Commit, probe)
++	switch {
++	case err != nil:
++		return &Miss{Reason: MissCommitUnreadable, Detail: err.Error()}
++	case !found:
++		return &Miss{Reason: MissCommitUnreadable, Detail: fmt.Sprintf("%s is absent at the map's commit %s", probe, m.Commit)}
++	}
++	return nil
++}
++
++// linkedChanges returns the changed functions of the linked package at importPath, or the miss its changes give.
++func (s *Selector) linkedChanges(m Map, importPath string) ([]FuncKey, *Miss, error) {
++	dir := s.importDir(importPath)
++	recorded := m.Linked[importPath]
++	changed, err := s.changedFiles(dir, recorded)
++	if err != nil {
++		return nil, nil, err
++	}
++	var funcs []FuncKey
++	methodsBefore, methodsAfter := map[string][]*ast.FuncDecl{}, map[string][]*ast.FuncDecl{}
++	for _, rel := range changed {
++		switch {
++		case isGoTestFile(rel):
++			continue
++		case !isGoSourceFile(rel):
++			if miss, err := s.otherFileMiss(dir, rel, false); miss != nil || err != nil {
++				return nil, miss, err
++			}
++			continue
++		}
++		_, wasRecorded := recorded[rel]
++		comparison, err := s.compareGoFile(m.Commit, path.Join(dir, rel), wasRecorded)
++		if err != nil || comparison.miss != nil {
++			return nil, comparison.miss, err
++		}
++		for _, imported := range comparison.addedImports {
++			if !s.importAllowed(m, imported) {
++				return nil, &Miss{Reason: MissNonBody, Detail: fmt.Sprintf(
++					"%s adds an import of %s, which is neither in the map's linked set nor in the standard library", path.Join(dir, rel), imported)}, nil
++			}
++		}
++		for _, removed := range comparison.removedImports {
++			if !s.standardLibrary(removed) {
++				return nil, &Miss{Reason: MissNonBody, Detail: fmt.Sprintf(
++					"%s is deleted and imported %s, which may leave the build with it", path.Join(dir, rel), removed)}, nil
++			}
++		}
++		for _, name := range comparison.changed {
++			funcs = append(funcs, FuncKey{Package: importPath, File: rel, Func: name})
++		}
++		for key, decls := range comparison.methodsBefore {
++			methodsBefore[key] = append(methodsBefore[key], decls...)
++		}
++		for key, decls := range comparison.methodsAfter {
++			methodsAfter[key] = append(methodsAfter[key], decls...)
++		}
++	}
++	if miss := methodSetMiss(dir, methodsBefore, methodsAfter); miss != nil {
++		return nil, miss, nil
++	}
++	return funcs, nil, nil
++}
++
++// changedFiles returns the sorted files that differ from recorded in the package at dir.
++// dir is a worktree-relative slash directory.
++// recorded maps each file, by slash path relative to dir, to its content hash at the map's commit.
++// A file on one side alone counts.
++func (s *Selector) changedFiles(dir string, recorded map[string]string) ([]string, error) {
++	owned := s.ownedFiles(dir)
++	candidates := map[string]struct{}{}
++	maps.Copy(candidates, owned)
++	for rel := range recorded {
++		candidates[rel] = struct{}{}
++	}
++	var changed []string
++	for _, rel := range slices.Sorted(maps.Keys(candidates)) {
++		var current workingHash
++		if _, inWorkingTree := owned[rel]; inWorkingTree {
++			var err error
++			if current, err = s.workingHash(path.Join(dir, rel)); err != nil {
++				return nil, err
++			}
++		}
++		hash, wasRecorded := recorded[rel]
++		if wasRecorded != current.found || hash != current.hash {
++			changed = append(changed, rel)
++		}
++	}
++	return changed, nil
++}
++
++// ownedFiles returns the working files that the package at the worktree-relative slash directory dir owns.
++// Paths are slash paths relative to dir.
++// A package owns the files under dir and under no directory below it that holds another package or module.
++func (s *Selector) ownedFiles(dir string) map[string]struct{} {
++	if owned, cached := s.owned[dir]; cached {
++		return owned
++	}
++	var below []string
++	for _, file := range s.config.WorkingFiles {
++		rel, under := file, true
++		if dir != "." {
++			rel, under = strings.CutPrefix(file, dir+"/")
++		}
++		if under {
++			below = append(below, rel)
++		}
++	}
++	nested := NestedPackageDirs(below)
++	owned := map[string]struct{}{}
++	for _, rel := range below {
++		if !slices.ContainsFunc(nested, func(nestedDir string) bool { return strings.HasPrefix(rel, nestedDir+"/") }) {
++			owned[rel] = struct{}{}
++		}
++	}
++	s.owned[dir] = owned
++	return owned
++}
++
++// workingHash returns the hash of the working file at the worktree-relative slash path rel.
++func (s *Selector) workingHash(rel string) (workingHash, error) {
++	if current, cached := s.hashes[rel]; cached {
++		return current, nil
++	}
++	data, found, err := s.readWorkingFile(rel)
++	if err != nil {
++		return workingHash{}, err
++	}
++	current := workingHash{found: found}
++	if found {
++		current.hash = ContentHash(data)
++	}
++	s.hashes[rel] = current
++	return current, nil
++}
++
++// readWorkingFile reads the working file at the worktree-relative slash path rel; found is false for an absent file.
++func (s *Selector) readWorkingFile(rel string) (data []byte, found bool, err error) {
++	data, err = os.ReadFile(filepath.Join(s.config.WorktreeRoot, filepath.FromSlash(rel)))
++	switch {
++	case errors.Is(err, fs.ErrNotExist):
++		return nil, false, nil
++	case err != nil:
++		return nil, false, err
++	}
++	return data, true, nil
++}
++
++// compareGoFile compares the Go file at the worktree-relative slash path rel as commit stores it with the working tree's.
++// wasRecorded tells whether the map's record holds the file, and so whether the commit does.
++func (s *Selector) compareGoFile(commit, rel string, wasRecorded bool) (goFileComparison, error) {
++	key := commit + "\x00" + rel
++	if comparison, cached := s.compared[key]; cached {
++		return comparison, nil
++	}
++	var before goSource
++	if wasRecorded {
++		data, found, err := s.config.Commits.CodeFileAt(commit, rel)
++		switch {
++		case err != nil:
++			return missed(MissCommitUnreadable, err.Error()), nil
++		case !found:
++			return missed(MissCommitUnreadable, fmt.Sprintf("%s is absent at the map's commit %s", rel, commit)), nil
++		}
++		before = goSource{text: data, present: true}
++	}
++	data, found, err := s.readWorkingFile(rel)
++	if err != nil {
++		return goFileComparison{}, err
++	}
++	comparison := compareGoSources(rel, before, goSource{text: data, present: found})
++	s.compared[key] = comparison
++	return comparison, nil
++}
++
++// importAllowed reports whether a changed file of a linked package may add an import of importPath:
++// a package m's linked set holds, or a standard-library package.
++func (s *Selector) importAllowed(m Map, importPath string) bool {
++	if _, linked := m.Linked[importPath]; linked {
++		return true
++	}
++	return s.standardLibrary(importPath)
++}
++
++// standardLibrary reports whether importPath names a package of the standard library, a directory under GoRoot's src.
++// It reports false when GoRoot is empty.
++func (s *Selector) standardLibrary(importPath string) bool {
++	if s.config.GoRoot == "" {
++		return false
++	}
++	info, err := os.Stat(filepath.Join(s.config.GoRoot, "src", filepath.FromSlash(importPath)))
++	return err == nil && info.IsDir()
++}
++
++// otherFileMiss returns the miss of a changed file that is no Go file directly in the package at dir.
++// dir is a worktree-relative slash directory, and rel is the file's slash path relative to dir.
++// A file inert_paths matches is no miss, unless a go:embed pattern of the package names it.
++// ownPackage is set when dir is the importing package, whose test files are in its binary, so their patterns count.
++func (s *Selector) otherFileMiss(dir, rel string, ownPackage bool) (*Miss, error) {
++	file := path.Join(dir, rel)
++	if s.config.Inert == nil || !s.config.Inert(file) {
++		return &Miss{Reason: MissNonGoFile, Detail: file}, nil
++	}
++	patterns, miss, err := s.embedPatterns(dir, ownPackage)
++	if miss != nil || err != nil {
++		return miss, err
++	}
++	if embedded(patterns, rel) {
++		return &Miss{Reason: MissNonGoFile, Detail: file + ", which a go:embed pattern names"}, nil
++	}
++	return nil, nil
++}
++
++// embedPatterns returns the go:embed patterns of the package at dir, read from the working tree's Go files.
++// dir is a worktree-relative slash directory; withTests also reads the package's test files.
++// A Go file that does not parse gives its miss instead.
++func (s *Selector) embedPatterns(dir string, withTests bool) ([]string, *Miss, error) {
++	scope := embedScope{dir: dir, withTests: withTests}
++	if patterns, cached := s.embeds[scope]; cached {
++		return patterns, nil, nil
++	}
++	var patterns []string
++	for _, rel := range slices.Sorted(maps.Keys(s.ownedFiles(dir))) {
++		if !isGoSourceFile(rel) && !(withTests && isGoTestFile(rel)) {
++			continue
++		}
++		file := path.Join(dir, rel)
++		data, found, err := s.readWorkingFile(file)
++		if err != nil {
++			return nil, nil, err
++		}
++		if !found {
++			continue
++		}
++		parsed, err := parser.ParseFile(token.NewFileSet(), "", data, parser.ParseComments|parser.SkipObjectResolution)
++		if err != nil {
++			return nil, &Miss{Reason: MissParse, Detail: fmt.Sprintf("%s in the working tree: %v", file, err)}, nil
++		}
++		for _, group := range parsed.Comments {
++			for _, comment := range group.List {
++				args, isEmbed := strings.CutPrefix(comment.Text, embedDirective)
++				if !isEmbed || (args != "" && !unicode.IsSpace(rune(args[0]))) {
++					continue
++				}
++				linePatterns, err := parseEmbedPatterns(args)
++				if err != nil {
++					return nil, &Miss{Reason: MissParse, Detail: fmt.Sprintf("%s: %s line: %v", file, embedDirective, err)}, nil
++				}
++				patterns = append(patterns, linePatterns...)
++			}
++		}
++	}
++	s.embeds[scope] = patterns
++	return patterns, nil, nil
++}
++
++// parseEmbedPatterns splits a go:embed line's arguments into its patterns.
++// It unquotes quoted patterns and drops an `all:` prefix.
++func parseEmbedPatterns(args string) ([]string, error) {
++	var patterns []string
++	for args = strings.TrimSpace(args); args != ""; args = strings.TrimSpace(args) {
++		var pattern string
++		switch args[0] {
++		case '"', '`':
++			quoted, err := strconv.QuotedPrefix(args)
++			if err != nil {
++				return nil, err
++			}
++			if pattern, err = strconv.Unquote(quoted); err != nil {
++				return nil, err
++			}
++			args = args[len(quoted):]
++		default:
++			end := strings.IndexFunc(args, unicode.IsSpace)
++			if end < 0 {
++				end = len(args)
++			}
++			pattern, args = args[:end], args[end:]
++		}
++		patterns = append(patterns, strings.TrimPrefix(pattern, "all:"))
++	}
++	return patterns, nil
++}
++
++// embedded reports whether a pattern names rel, a slash path relative to the package directory.
++// A pattern names rel itself or a directory above it, since a directory pattern names every file below it.
++func embedded(patterns []string, rel string) bool {
++	for candidate := rel; candidate != "."; candidate = path.Dir(candidate) {
++		for _, pattern := range patterns {
++			if matched, err := path.Match(pattern, candidate); err == nil && matched {
++				return true
++			}
++		}
++	}
++	return false
++}
++
++// importDir returns the worktree-relative slash directory of the module package at importPath.
++func (s *Selector) importDir(importPath string) string {
++	if importPath == s.config.ModulePath {
++		return s.config.ModuleRel
++	}
++	return path.Join(s.config.ModuleRel, strings.TrimPrefix(importPath, s.config.ModulePath+"/"))
++}
++
++// selectTests returns the names of m's tests that covered a function of changed, sorted, each once.
++// With any function changed, it also returns every test the spawn scan marks.
++func selectTests(m Map, changed map[FuncKey]bool) []string {
++	if len(changed) == 0 {
++		return nil
++	}
++	var names []string
++	for _, test := range m.Tests {
++		marked := test.Spawn.OutOfProcess || test.Spawn.Unresolved
++		if marked || slices.ContainsFunc(test.Funcs, func(index int) bool { return changed[m.Funcs[index]] }) {
++			names = append(names, test.Name)
++		}
++	}
++	slices.Sort(names)
++	return slices.Compact(names)
++}
++
++// isGoSourceFile reports whether rel, a slash path relative to a package directory, is a non-test Go file directly in it.
++func isGoSourceFile(rel string) bool {
++	return path.Dir(rel) == "." && strings.HasSuffix(rel, ".go") && !strings.HasSuffix(rel, "_test.go")
++}
++
++// isGoTestFile reports whether rel, a slash path relative to a package directory, is a test file directly in it.
++func isGoTestFile(rel string) bool {
++	return path.Dir(rel) == "." && strings.HasSuffix(rel, "_test.go")
++}
+diff --git a/internal/testcover/testselect_test.go b/internal/testcover/testselect_test.go
+new file mode 100644
+index 00000000..d4f5b266
+--- /dev/null
++++ b/internal/testcover/testselect_test.go
+@@ -0,0 +1,380 @@
++package testcover_test
++
++import (
++	"fmt"
++	"maps"
++	"os"
++	"path"
++	"path/filepath"
++	"reflect"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// selectCommit is the commit every fixture map was built from.
++const selectCommit = "c0ffee"
++
++// removedFile marks a fixture file the working tree no longer holds.
++const removedFile = "\x00removed"
++
++// linkedSource is the linked package a's main file at the map's commit.
++const linkedSource = `package a
++
++import (
++	"strconv"
++	"strings"
++)
++
++const Limit = 3
++
++const (
++	KindA = iota
++	KindB
++)
++
++const (
++	SizeA = 1
++	SizeB
++)
++
++var registered []string
++
++type Box struct{ N int }
++
++func (b Box) Size() int {
++	return b.N
++}
++
++func F(s string) string {
++	return strings.ToUpper(s)
++}
++
++func G() string {
++	return strconv.Itoa(Limit)
++}
++
++func init() {
++	registered = append(registered, "one")
++}
++
++func init() {
++	registered = append(registered, "two")
++}
++`
++
++// committedFiles are the module's files at the map's commit: the importing package b, the linked packages a and c.
++var committedFiles = map[string]string{
++	"a/a.go":            linkedSource,
++	"a/gone.go":         "package a\n\nimport \"strings\"\n\nfunc H() int {\n\treturn len(strings.TrimSpace(\" \"))\n}\n",
++	"a/assets.go":       "package a\n\nimport \"embed\"\n\n//go:embed static\nvar static embed.FS\n",
++	"a/static/page.txt": "hello\n",
++	"a/notes.md":        "notes\n",
++	"a/a_test.go":       "package a\n",
++	"c/c.go":            "package c\n",
++	"b/b.go":            "package b\n",
++	"b/b_test.go":       "package b\n\nimport \"embed\"\n\n//go:embed note.txt\nvar note embed.FS\n",
++	"b/note.txt":        "note\n",
++}
++
++// applyFileEdits sets each edited file's text in files, and removes a file whose text is removedFile.
++func applyFileEdits(files, edits map[string]string) {
++	for file, text := range edits {
++		if text == removedFile {
++			delete(files, file)
++		} else {
++			files[file] = text
++		}
++	}
++}
++
++// fakeCommits serves files at the one commit rev, and fails to read any other.
++type fakeCommits struct {
++	rev   string
++	files map[string]string
++}
++
++func (f fakeCommits) CodeFileAt(rev, rel string) ([]byte, bool, error) {
++	if rev != f.rev {
++		return nil, false, fmt.Errorf("object %s not found", rev)
++	}
++	text, found := f.files[rel]
++	return []byte(text), found, nil
++}
++
++// selectFixtureMap returns b's map at selectCommit, recording committed as the module's files.
++// It holds one test per function of a that b covers, and one test the spawn scan marks.
++func selectFixtureMap(committed map[string]string) testcover.Map {
++	hashesUnder := func(dir string) map[string]string {
++		hashes := map[string]string{}
++		for file, text := range committed {
++			if rel, under := strings.CutPrefix(file, dir+"/"); under {
++				hashes[rel] = testcover.ContentHash([]byte(text))
++			}
++		}
++		return hashes
++	}
++	built := time.Date(2026, 11, 11, 9, 0, 0, 0, time.UTC)
++	return testcover.Map{
++		Commit:  selectCommit,
++		BuiltAt: built,
++		Files:   hashesUnder("b"),
++		Linked:  map[string]map[string]string{"m/a": hashesUnder("a"), "m/c": hashesUnder("c")},
++		Blocks:  []testcover.BlockKey{{File: "b.go", Func: testcover.PackageLevelFunc, Hash: "h"}},
++		Funcs: []testcover.FuncKey{
++			{Package: "m/a", File: "a.go", Func: "Box.Size"},
++			{Package: "m/a", File: "a.go", Func: "F"},
++			{Package: "m/a", File: "a.go", Func: "G"},
++			{Package: "m/a", File: "a.go", Func: "init"},
++			{Package: "m/a", File: "gone.go", Func: "H"},
++		},
++		Tests: []testcover.MapTest{
++			{Name: "TestSize", Funcs: []int{0}},
++			{Name: "TestF", Funcs: []int{1}},
++			{Name: "TestG", Funcs: []int{2}},
++			{Name: "TestInit", Funcs: []int{3}},
++			{Name: "TestH", Funcs: []int{4}},
++			{Name: "TestSpawn", Blocks: []int{0}, Spawn: testcover.SpawnVerdict{OutOfProcess: true}},
++		},
++		Format: &testcover.MapFormat{Version: testcover.MapFormatVersion, Commit: selectCommit, BuiltAt: built},
++	}
++}
++
++// TestSelectorSelect pins which of b's tests a change to its linked package a selects.
++// It also pins the changes the map cannot speak for, so b runs whole.
++func TestSelectorSelect(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	inertText := func(rel string) bool { return path.Ext(rel) == ".txt" || path.Ext(rel) == ".md" }
++	embedAssets := func(directive string) map[string]string {
++		return map[string]string{"a/assets.go": "package a\n\nimport \"embed\"\n\n" + directive + "\nvar static embed.FS\n"}
++	}
++	pageChanged := map[string]string{"a/static/page.txt": "changed\n"}
++	tests := []struct {
++		name string
++		// committed replaces or adds files in the module as the map's commit, the map and the working tree all hold it.
++		committed map[string]string
++		// commitEdits replace files as the map's commit stores them alone, so the commit differs from the map's record.
++		commitEdits map[string]string
++		// linkedEdits are old and new text pairs replaced in a/a.go.
++		linkedEdits []string
++		// files replace or add working files by worktree-relative path; removedFile removes one.
++		files map[string]string
++		// editMap changes b's map before it is written.
++		editMap func(*testcover.Map)
++		// mapText, when set, is written as b's map file instead of the map.
++		mapText   string
++		noMap     bool
++		commitRev string
++		inert     func(string) bool
++		want      []string
++		wantMiss  testcover.MissReason
++	}{
++		{name: "NoChange"},
++		{name: "EditInsideFunctionBody", linkedEdits: []string{"strings.ToUpper(s)", "strings.ToLower(s)"},
++			want: []string{"TestF", "TestSpawn"}},
++		{name: "ChangedParameterTypes", linkedEdits: []string{"func F(s string) string {", "func F(s string, _ ...int) string {"},
++			want: []string{"TestF", "TestSpawn"}},
++		{name: "DeletedFile", files: map[string]string{"a/gone.go": removedFile}, want: []string{"TestH", "TestSpawn"}},
++		{name: "EditToOneOfTwoInits", linkedEdits: []string{`"two"`, `"three"`}, want: []string{"TestInit", "TestSpawn"}},
++		{name: "CommentAndFormatting", linkedEdits: []string{
++			"func G() string {", "// G renders the limit.\nfunc G() string {",
++			"return b.N", "return b.N // the count",
++			"type Box struct{ N int }", "type Box struct {\n\tN int\n}",
++		}},
++		{name: "ReorderedImports", linkedEdits: []string{"\t\"strconv\"\n\t\"strings\"\n", "\t\"strings\"\n\t\"strconv\"\n"}},
++		{name: "AddedConst", linkedEdits: []string{"const Limit = 3\n", "const Limit = 3\n\nconst Extra = 1\n"}},
++		{name: "AddedVarWithoutInitializer", linkedEdits: []string{"var registered []string\n", "var registered []string\n\nvar spare int\n"}},
++		{name: "AddedTypeWithoutMethods", linkedEdits: []string{"type Box struct{ N int }\n", "type Box struct{ N int }\n\ntype Extra struct{}\n"}},
++		{name: "AddedFunctionWithStandardLibraryImport",
++			files: map[string]string{"a/show.go": "package a\n\nimport \"fmt\"\n\nfunc Show() string {\n\treturn fmt.Sprint(1)\n}\n"}},
++		{name: "AddedImportOfLinkedPackage", files: map[string]string{"a/link.go": "package a\n\nimport _ \"m/c\"\n"}},
++		{name: "LinkedPackageTestFile", files: map[string]string{"a/a_test.go": "package a\n\nvar touched int\n"}},
++		{name: "NestedPackageFile", files: map[string]string{"a/sub/s.go": "package sub\n"}},
++		{name: "InertFileNoGoEmbedNames", files: map[string]string{"a/notes.md": "more notes\n"}, inert: inertText},
++		{name: "InertFileUnderUnrelatedDirectory", files: map[string]string{"a/other/x.txt": "x\n"}, inert: inertText},
++		{name: "EditInsideMethodBody", linkedEdits: []string{"return b.N\n", "return b.N + 1\n"}, want: []string{"TestSize", "TestSpawn"}},
++		{name: "RemovedInit", linkedEdits: []string{"\nfunc init() {\n\tregistered = append(registered, \"two\")\n}\n", ""},
++			want: []string{"TestInit", "TestSpawn"}},
++
++		{name: "NoMap", noMap: true, wantMiss: testcover.MissNoMap},
++		{name: "MapUnreadable", mapText: "{not json", wantMiss: testcover.MissMapUnreadable},
++		{name: "BuildFailure", editMap: func(m *testcover.Map) { m.BuildFailure = "build failed" }, wantMiss: testcover.MissBuildFailure},
++		{name: "NoMarker", editMap: func(m *testcover.Map) { m.Format = nil }, wantMiss: testcover.MissUnmarked},
++		{name: "MarkerDiffersFromMap", editMap: func(m *testcover.Map) { m.Format.Commit = "older" }, wantMiss: testcover.MissUnmarked},
++		{name: "TestNamesFunctionOutsideTable", editMap: func(m *testcover.Map) { m.Tests[0].Funcs = []int{9} },
++			wantMiss: testcover.MissMapUnreadable},
++		{name: "CommitUnreadable", commitRev: "other", wantMiss: testcover.MissCommitUnreadable},
++		{name: "OwnTestFileEdited", files: map[string]string{"b/b_test.go": "package b\n\nvar touched int\n"},
++			wantMiss: testcover.MissOwnFiles},
++		{name: "AddedInitInNewFile", files: map[string]string{"a/extra.go": "package a\n\nfunc init() {}\n"},
++			wantMiss: testcover.MissInit},
++		{name: "EmbeddedFileInert", files: map[string]string{"a/static/page.txt": "changed\n"}, inert: inertText,
++			wantMiss: testcover.MissNonGoFile},
++		{name: "NonGoFileNotInert", files: map[string]string{"a/notes.md": "more notes\n"}, wantMiss: testcover.MissNonGoFile},
++		{name: "UntrackedNonGoFile", files: map[string]string{"a/new.json": "{}\n"}, wantMiss: testcover.MissNonGoFile},
++		{name: "ChangedConst", linkedEdits: []string{"const Limit = 3", "const Limit = 4"}, wantMiss: testcover.MissNonBody},
++		{name: "ChangedStructField", linkedEdits: []string{"type Box struct{ N int }", "type Box struct{ N, M int }"},
++			wantMiss: testcover.MissNonBody},
++		{name: "AddedVarWithInitializer", linkedEdits: []string{"var registered []string\n", "var registered []string\n\nvar spare = 1\n"},
++			wantMiss: testcover.MissNonBody},
++		{name: "ConstAddedToIotaGroup", linkedEdits: []string{"\tKindB\n", "\tKindB\n\tKindC\n"}, wantMiss: testcover.MissNonBody},
++		{name: "RemovedImport", linkedEdits: []string{"\t\"strconv\"\n", "", "strconv.Itoa(Limit)", `"3"`},
++			wantMiss: testcover.MissNonBody},
++		{name: "AddedImportOutsideLinkedSet", files: map[string]string{"a/link.go": "package a\n\nimport _ \"example.com/x\"\n"},
++			wantMiss: testcover.MissNonBody},
++		{name: "AddedImportOfUnlinkedModulePackage", files: map[string]string{"a/link.go": "package a\n\nimport _ \"m/d\"\n"},
++			wantMiss: testcover.MissNonBody},
++		{name: "ReceiverValueToPointer", linkedEdits: []string{"func (b Box) Size", "func (b *Box) Size"}, wantMiss: testcover.MissMethodSet},
++		{name: "AddedMethod", linkedEdits: []string{"func (b Box) Size", "func (b Box) Twice() int {\n\treturn 2 * b.N\n}\n\nfunc (b Box) Size"},
++			wantMiss: testcover.MissMethodSet},
++		{name: "AddedFunctionNamedMax", linkedEdits: []string{"func G() string {", "func max() int {\n\treturn 0\n}\n\nfunc G() string {"},
++			wantMiss: testcover.MissPredeclared},
++		{name: "AddedDirective", linkedEdits: []string{"func G() string {", "//go:noinline\nfunc G() string {"},
++			wantMiss: testcover.MissDirective},
++		{name: "ChangedDirective", files: map[string]string{"a/assets.go": strings.Replace(committedFiles["a/assets.go"], "embed static", "embed static/*.txt", 1)},
++			wantMiss: testcover.MissDirective},
++		{name: "FileDoesNotParse", linkedEdits: []string{"func G() string {", "func G( string {"}, wantMiss: testcover.MissParse},
++		{name: "MarkerBuildTimeDiffersFromMap",
++			editMap:  func(m *testcover.Map) { m.Format.BuiltAt = m.Format.BuiltAt.Add(time.Second) },
++			wantMiss: testcover.MissUnmarked},
++		{name: "MarkerVersionDiffers", editMap: func(m *testcover.Map) { m.Format.Version++ }, wantMiss: testcover.MissUnmarked},
++		{name: "ProbeFileAbsentAtCommit", commitEdits: map[string]string{"b/b.go": removedFile},
++			wantMiss: testcover.MissCommitUnreadable},
++		{name: "FileDoesNotParseAtCommit", commitEdits: map[string]string{"a/gone.go": "package a\n\nfunc H( {\n"},
++			files:    map[string]string{"a/gone.go": "package a\n\nfunc H() int {\n\treturn 2\n}\n"},
++			wantMiss: testcover.MissParse},
++		{name: "DeletedFileBlankImportsModulePackage", committed: map[string]string{"a/reg.go": "package a\n\nimport _ \"m/c\"\n"},
++			files: map[string]string{"a/reg.go": removedFile}, wantMiss: testcover.MissNonBody},
++		{name: "RemovedConst", linkedEdits: []string{"const Limit = 3\n", ""}, wantMiss: testcover.MissNonBody},
++		{name: "RemovedVar", linkedEdits: []string{"var registered []string\n", ""}, wantMiss: testcover.MissNonBody},
++		{name: "RemovedType", linkedEdits: []string{"type Box struct{ N int }\n", ""}, wantMiss: testcover.MissNonBody},
++		{name: "ChangedPackageClause", linkedEdits: []string{"package a\n", "package z\n"}, wantMiss: testcover.MissNonBody},
++		{name: "ConstAddedToImplicitValueGroup", linkedEdits: []string{"\tSizeB\n", "\tSizeB\n\tSizeC\n"}, wantMiss: testcover.MissNonBody},
++		{name: "RemovedDirective",
++			files:    map[string]string{"a/assets.go": strings.Replace(committedFiles["a/assets.go"], "//go:embed static\n", "", 1)},
++			wantMiss: testcover.MissDirective},
++		{name: "AddedVarNamedLen", linkedEdits: []string{"var registered []string\n", "var registered []string\n\nvar len int\n"},
++			wantMiss: testcover.MissPredeclared},
++		{name: "AddedConstNamedCap", linkedEdits: []string{"const Limit = 3\n", "const Limit = 3\n\nconst cap = 1\n"},
++			wantMiss: testcover.MissPredeclared},
++		{name: "AddedTypeNamedError", linkedEdits: []string{"type Box struct{ N int }\n", "type Box struct{ N int }\n\ntype error struct{}\n"},
++			wantMiss: testcover.MissPredeclared},
++		{name: "AddedMethodNamedMax",
++			linkedEdits: []string{"func (b Box) Size", "func (b Box) max() int {\n\treturn 0\n}\n\nfunc (b Box) Size"},
++			wantMiss:    testcover.MissMethodSet},
++		{name: "RemovedMethod", linkedEdits: []string{"func (b Box) Size() int {\n\treturn b.N\n}\n\n", ""}, wantMiss: testcover.MissMethodSet},
++		{name: "ChangedMethodResultType", linkedEdits: []string{"func (b Box) Size() int {", "func (b Box) Size() int64 {"},
++			wantMiss: testcover.MissMethodSet},
++		{name: "AddedImportOfDotlessNonStandardPath", files: map[string]string{"a/link.go": "package a\n\nimport _ \"foo/bar\"\n"},
++			wantMiss: testcover.MissNonBody},
++		{name: "OwnGoFileAdded", files: map[string]string{"b/extra.go": "package b\n"}, wantMiss: testcover.MissOwnFiles},
++		{name: "OwnGoFileRemoved", files: map[string]string{"b/b.go": removedFile}, wantMiss: testcover.MissOwnFiles},
++		{name: "OwnNonGoFileChanged", files: map[string]string{"b/note.txt": "changed\n"}, inert: nil, wantMiss: testcover.MissNonGoFile},
++		{name: "OwnTestFileEmbedsInertFile", files: map[string]string{"b/note.txt": "changed\n"}, inert: inertText,
++			wantMiss: testcover.MissNonGoFile},
++		{name: "RecordedNonGoFileRemoved", files: map[string]string{"a/notes.md": removedFile}, wantMiss: testcover.MissNonGoFile},
++		{name: "EmbedQuotedPattern", committed: embedAssets(`//go:embed "static/page.txt"`), files: pageChanged, inert: inertText,
++			wantMiss: testcover.MissNonGoFile},
++		{name: "EmbedBackquotedPattern", committed: embedAssets("//go:embed `static/page.txt`"), files: pageChanged, inert: inertText,
++			wantMiss: testcover.MissNonGoFile},
++		{name: "EmbedAllPrefix", committed: embedAssets("//go:embed all:static"), files: pageChanged, inert: inertText,
++			wantMiss: testcover.MissNonGoFile},
++		{name: "EmbedTwoPatterns", committed: embedAssets("//go:embed other.txt static/page.txt"), files: pageChanged, inert: inertText,
++			wantMiss: testcover.MissNonGoFile},
++		{name: "EmbedGlobPattern", committed: embedAssets("//go:embed static/*.txt"), files: pageChanged, inert: inertText,
++			wantMiss: testcover.MissNonGoFile},
++		{name: "EmbedMalformedDirective", committed: embedAssets(`//go:embed "static`), files: pageChanged, inert: inertText,
++			wantMiss: testcover.MissParse},
++		{name: "EmbedPackageDoesNotParse", committed: map[string]string{"a/assets.go": "package a\n\nfunc (\n"}, files: pageChanged,
++			inert: inertText, wantMiss: testcover.MissParse},
++		{name: "LinkedTestFileEmbedIsNoSource",
++			committed: map[string]string{
++				"a/assets.go": "package a\n",
++				"a/a_test.go": "package a\n\nimport \"embed\"\n\n//go:embed static/page.txt\nvar page embed.FS\n",
++			},
++			files: pageChanged, inert: inertText},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			committed := maps.Clone(committedFiles)
++			applyFileEdits(committed, tt.committed)
++			atCommit := maps.Clone(committed)
++			applyFileEdits(atCommit, tt.commitEdits)
++			working := maps.Clone(committed)
++			for i := 0; i < len(tt.linkedEdits); i += 2 {
++				old, replacement := tt.linkedEdits[i], tt.linkedEdits[i+1]
++				if !strings.Contains(working["a/a.go"], old) {
++					t.Fatalf("a/a.go holds no %q to replace", old)
++				}
++				working["a/a.go"] = strings.Replace(working["a/a.go"], old, replacement, 1)
++			}
++			applyFileEdits(working, tt.files)
++			root := t.TempDir()
++			var workingFiles []string
++			for file, text := range working {
++				workingFiles = append(workingFiles, file)
++				full := filepath.Join(root, filepath.FromSlash(file))
++				if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(full, []byte(text), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++
++			mapsDir := t.TempDir()
++			switch {
++			case tt.mapText != "":
++				mapPath := testcover.MapPath(mapsDir, "b")
++				if err := os.MkdirAll(filepath.Dir(mapPath), 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(mapPath, []byte(tt.mapText), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			case !tt.noMap:
++				m := selectFixtureMap(committed)
++				if tt.editMap != nil {
++					tt.editMap(&m)
++				}
++				if err := testcover.WriteMap(mapsDir, "b", m); err != nil {
++					t.Fatal(err)
++				}
++			}
++			rev := selectCommit
++			if tt.commitRev != "" {
++				rev = tt.commitRev
++			}
++
++			goRoot := t.TempDir()
++			for _, standard := range []string{"embed", "fmt", "strconv", "strings"} {
++				if err := os.MkdirAll(filepath.Join(goRoot, "src", standard), 0o755); err != nil {
++					t.Fatal(err)
++				}
++			}
++			selector := testcover.NewSelector(testcover.SelectorConfig{
++				GoRoot: goRoot, MapsDir: mapsDir, WorktreeRoot: root, ModuleRel: ".", ModulePath: "m",
++				WorkingFiles: slices.Sorted(slices.Values(workingFiles)), Commits: fakeCommits{rev: rev, files: atCommit}, Inert: tt.inert,
++			})
++			got, err := selector.Select("b")
++			if err != nil {
++				t.Fatalf("Select(b) error = %v", err)
++			}
++			switch {
++			case tt.wantMiss == "" && got.Miss != nil:
++				t.Errorf("Select(b) missed %s; want tests %v", got.Miss, tt.want)
++			case tt.wantMiss != "" && (got.Miss == nil || got.Miss.Reason != tt.wantMiss || got.Miss.Detail == ""):
++				t.Errorf("Select(b) = %+v, miss %v; want a miss for %q with a detail", got, got.Miss, tt.wantMiss)
++			case !reflect.DeepEqual(got.Tests, tt.want):
++				t.Errorf("Select(b).Tests = %v; want %v", got.Tests, tt.want)
++			}
++		})
++	}
++}
