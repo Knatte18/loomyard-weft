@@ -10,6 +10,12 @@ Seen (orch, 2026-11-10): internal/fabricengine writes <hub>/_launchers/<anchor>/
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-11): TestSmokeBootstrapLifecycle died_driver failure is main's own, left unfixed here
+
+Decision: internal/loomcli TestSmokeBootstrapLifecycle/died_driver_proceeds_to_the_success_envelope_and_logs_why fails on main since d1535412, because the driver log now says 'step interrupted (loop-exited)' where the test waits for 'invalid state'. This task leaves it unfixed and touches no shed, loom or driver code.
+
+Rationale: The failure is outside the task's scope. It is filed as the bug note smoke-died-driver-wording on the board.
+
 ## Constraints
 
 ## Auto-mode assumptions
