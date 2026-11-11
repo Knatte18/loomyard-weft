@@ -2,17 +2,17 @@
 
 **Create:**
 - `internal/machinecli/doc.go`
-- `plan:internal/machinecli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/machinecli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/machinecli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
-- `plan:internal/machinecli#newCommand` -> `func newCommand(d deps) *cobra.Command`
-- `plan:internal/machinecli#deps` -> `type deps struct`
-- `plan:internal/machinecli#productionDeps` -> `func productionDeps() deps`
-- `plan:internal/machinecli#current` -> `type current struct`
-- `plan:internal/machinecli#readCurrent` -> `func readCurrent(d deps) current`
-- `plan:internal/machinecli#runName` -> `func runName(t *testing.T, d deps, cwd string, args ...string) (int, map[string]any)`
-- `plan:internal/machinecli#TestMain` -> `func TestMain(m *testing.M)`
-- `plan:internal/machinecli#TestName_Show` -> `func TestName_Show(t *testing.T)`
+- `internal/machinecli#Command`
+- `internal/machinecli#RunCLI`
+- `internal/machinecli#RunCLIIn`
+- `internal/machinecli#newCommand`
+- `internal/machinecli#deps`
+- `internal/machinecli#productionDeps`
+- `internal/machinecli#current`
+- `internal/machinecli#readCurrent`
+- `internal/machinecli#runName`
+- `internal/machinecli#TestMain`
+- `internal/machinecli#TestName_Show`
 
 **Edit:**
 - `cmd/lym#newRoot`
@@ -28,7 +28,7 @@
 - `internal/machinename#ReadFile`
 - `internal/machinename#CheckName`
 - `internal/machinename#File`
-- `plan:internal/machinename#FromThisHost`
+- `internal/machinename#FromThisHost`
 - `internal/gitkit#HermeticGitEnv`
 - `internal/testkit/tmuxkit#Main`
 

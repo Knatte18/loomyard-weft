@@ -1,30 +1,30 @@
 # Card 4 — machine-name-set
 
 **Create:**
-- `plan:internal/machinecli#nextFile` -> `func nextFile(cur current, name string) (machinename.File, int)`
-- `plan:internal/machinecli#hubsToSweep` -> `func hubsToSweep(d deps, cwd string) ([]string, error)`
-- `plan:internal/machinecli#liveHubs` -> `func liveHubs(dir string) ([]string, error)`
-- `plan:internal/machinecli#hubOfDir` -> `func hubOfDir(dir string) (string, bool)`
-- `plan:internal/machinecli#setName` -> `func setName(d deps, cwd, name string) (setResult, error)`
-- `plan:internal/machinecli#setResult` -> `type setResult struct`
-- `plan:internal/machinecli#hubOutcome` -> `type hubOutcome struct`
-- `plan:internal/machinecli#sweepHub` -> `func sweepHub(d deps, hub, name string, replace []string) hubOutcome`
-- `plan:internal/machinecli#recoveries` -> `var recoveries []string`
-- `plan:internal/machinecli#fakeHubs` -> `type fakeHubs struct`
-- `plan:internal/machinecli#TestName_Set` -> `func TestName_Set(t *testing.T)`
-- `plan:internal/machinecli#TestName_SweepsHubs` -> `func TestName_SweepsHubs(t *testing.T)`
+- `internal/machinecli#nextFile`
+- `internal/machinecli#hubsToSweep`
+- `internal/machinecli#liveHubs`
+- `internal/machinecli#hubOfDir`
+- `internal/machinecli#setName`
+- `internal/machinecli#setResult`
+- `internal/machinecli#hubOutcome`
+- `internal/machinecli#sweepHub`
+- `internal/machinecli#recoveries`
+- `internal/machinecli#fakeHubs`
+- `internal/machinecli#TestName_Set`
+- `internal/machinecli#TestName_SweepsHubs`
 
 **Edit:**
-- `plan:internal/machinecli#deps`
-- `plan:internal/machinecli#productionDeps`
-- `plan:internal/machinecli#newCommand`
+- `internal/machinecli#deps`
+- `internal/machinecli#productionDeps`
+- `internal/machinecli#newCommand`
 - `internal/machinecli/doc.go`
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/machinecli#current`
-- `plan:internal/machinecli#readCurrent`
-- `plan:internal/machinecli#runName`
+- `internal/machinecli#current`
+- `internal/machinecli#readCurrent`
+- `internal/machinecli#runName`
 - `internal/machinename#CheckName`
 - `internal/machinename#File`
 - `internal/boardengine#SetOwners`

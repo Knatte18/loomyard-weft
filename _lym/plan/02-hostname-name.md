@@ -1,8 +1,8 @@
 # Card 2 — hostname-name
 
 **Create:**
-- `plan:internal/machinename#FromThisHost` -> `func FromThisHost() (string, error)`
-- `plan:internal/machinename#TestFromThisHost` -> `func TestFromThisHost(t *testing.T)`
+- `internal/machinename#FromThisHost`
+- `internal/machinename#TestFromThisHost`
 
 **Uses:**
 - `internal/machinename#nameFromHostname`

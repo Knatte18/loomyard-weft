@@ -1,12 +1,12 @@
 {
   "runGuid": "26e3bd5661dd4a4e4cc10e508f949b14",
-  "planFingerprint": "b887a8631a334833b38826fc1337cb98d73cfa6ecf740720a67de0f9622a0076",
+  "planFingerprint": "5c476d6736fc780e848ac4a684f3e8b055a4a566b548aae9d3767fc014e74f50",
   "planFileHashes": {
     "00-overview.md": "a931b4ef27327c8bc07f0e4f9c3874a46977fcd41261a6bb8eb8f5537fdc7676",
     "01-owner-replace-set.md": "2458129308e955735349e13ba1f00a0d9120e526b1afc8bebfea209826c715c0",
-    "02-hostname-name.md": "b92d538ba8ff7aa281d83cfcf09fbb52249fb35d20a84f2b6ac7f27c52ef5125",
-    "03-machine-name-show.md": "1f846d900173a84acd0c6dbf9458ea12feb43cc80013dc55e0d02e7e8b6cb2a4",
-    "04-machine-name-set.md": "55e684726439d5bdcc20c12707b516980dbfcbe6facb156a645c8508024c505e"
+    "02-hostname-name.md": "3fe0abaf6af485f234151bf5d983e24abad0cef4ba622d8e1037c72d6ecb5bff",
+    "03-machine-name-show.md": "c64e6ab4fe967de1428f90975072710cf3f27f75bafec42c092b4308c9f0e9eb",
+    "04-machine-name-set.md": "7960c3053029774883772b0d59f0ba106af82b3ba8153d3638ad2154e324406d"
   },
   "planOverviewFrameHash": "0d20aaf83992253aca086ea1fb8fd176433b2fde09ac63cb1b6224f3f88ad84d",
   "partition": [
@@ -100,7 +100,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "1f60f7d7713caa74658e9e4b47965ba7",
   "masterSessionId": "f17d4143-94ca-45f8-bde2-4357843b9c1b",
   "masterEngine": "claude",
@@ -115,17 +115,42 @@
       ],
       "cardHashes": {
         "01-owner-replace-set": "2458129308e955735349e13ba1f00a0d9120e526b1afc8bebfea209826c715c0",
-        "02-hostname-name": "b92d538ba8ff7aa281d83cfcf09fbb52249fb35d20a84f2b6ac7f27c52ef5125",
-        "03-machine-name-show": "1f846d900173a84acd0c6dbf9458ea12feb43cc80013dc55e0d02e7e8b6cb2a4",
-        "04-machine-name-set": "55e684726439d5bdcc20c12707b516980dbfcbe6facb156a645c8508024c505e"
+        "02-hostname-name": "3fe0abaf6af485f234151bf5d983e24abad0cef4ba622d8e1037c72d6ecb5bff",
+        "03-machine-name-show": "c64e6ab4fe967de1428f90975072710cf3f27f75bafec42c092b4308c9f0e9eb",
+        "04-machine-name-set": "7960c3053029774883772b0d59f0ba106af82b3ba8153d3638ad2154e324406d"
       },
       "startSha": "0604f2ea85b08f244ab8434e20cd7070dc5eff42",
       "kind": "fork",
       "spawnedAt": "2026-11-11T11:33:39Z",
       "sessionId": "f17d4143-94ca-45f8-bde2-4357843b9c1b",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-owner-replace-set",
+        "status": "done",
+        "head_sha": "4b63dcd6573c7abf5e46a2dcad87806af1ca0de1",
+        "deviations": [
+          "internal/machinecli/cli.go",
+          "internal/machinecli/cli_test.go",
+          "internal/machinecli/current.go",
+          "internal/machinecli/set.go",
+          "internal/machinecli/set_test.go",
+          "internal/machinecli/sweep_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "4b63dcd6573c7abf5e46a2dcad87806af1ca0de1"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-machine-name-verb/f17d4143-94ca-45f8-bde2-4357843b9c1b/subagents/agent-a96883df023f334be.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-machine-name-verb/f17d4143-94ca-45f8-bde2-4357843b9c1b/subagents/agent-a96883df023f334be.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYMHUB-machine-name-verb/f17d4143-94ca-45f8-bde2-4357843b9c1b/subagents/agent-a96883df023f334be.jsonl"
+  ]
 }
