@@ -1,0 +1,1140 @@
+diff --git a/contracts/stencils/webster/webster-body-implementer.md b/contracts/stencils/webster/webster-body-implementer.md
+index bbd665a2..c47aa2d8 100644
+--- a/contracts/stencils/webster/webster-body-implementer.md
++++ b/contracts/stencils/webster/webster-body-implementer.md
+@@ -82,6 +82,8 @@ Make exactly the changes the card describes, in exactly the targets its type lab
+ 5. If the card declares a `**Verify:**` line, run `lym gate card-verify <card id>` once, as a foreground Bash call under the gate rule, immediately after committing that card; the call runs the card's line itself, so you never run the line as a Bash call of your own.
+    A non-zero exit fails the card exactly like the gate in step 3 — there is no separate "deferred verify" concept;
+    every card's gate (the steps above, plus its `lym gate card-verify` call when it declares a `**Verify:**` line) is checked right after that card's own commit, never bundled into a later card.
++6. A fix you make after a card's commit, for its `lym gate card-verify` call, the batch gate or a test it broke, lands as a new commit on top, its subject the card's own subject followed by ` (fix)`.
++   Never amend, squash, rebase or reset a commit already made: a status push may have published it, and a rewritten commit leaves the task branch diverged from origin.
+ 
+ A card that departs from its own text because a PATTERN entry forbids the card's way records the departure as a `Pattern-Departure:` trailer in that card's commit, in the shape the `## Pattern-Departure trailer` section of `{{.specs_dir}}/loom/loom-plan-spec.md` defines.
+ 
+diff --git a/contracts/stencils/webster/webster-template-master.md b/contracts/stencils/webster/webster-template-master.md
+index dd04beab..270c6a1d 100644
+--- a/contracts/stencils/webster/webster-template-master.md
++++ b/contracts/stencils/webster/webster-template-master.md
+@@ -190,9 +190,14 @@ You message your parent only on the `waiting` rung below and under "A parent dec
+   A dead batch with `recovery_retry: false` ends the run: write `outcome: stuck` naming the batch, as the dead rungs above do.
+   A refusal carrying `{"recovery_exhausted": true}` ends the run stuck naming the batch, as the recover-batch rung does, and its reset steps are the operator's.
+   Then continue the loop from the next batch.
++- Any verb refuses with `{"run_ended": true}` → no `lym webster run` owns this session any more, so your run is over.
++  End your turn with no tool call and write no file: your parent re-enters the run, which starts a fresh session.
+ - Any verb refuses with `{"config_invalid": true}` → a config file under `_lym/config` has broken content, and the operator's fix is not Master's to make.
+   Write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop without calling another verb.
+   A refusal that says a config file could not be read carries no `config_invalid` and is transient: re-run the verb.
++- A bracket verb refuses with the message "could not tell whether a live `lym webster run` owns this state" and no flag → the refusal is transient.
++  Re-run the verb once.
++  When the second call refuses the same way, write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop.
+ 
+ ## After every batch: the verify gate
+ 
+@@ -240,6 +245,8 @@ You read no decision record for it, and you edit no source, so the decision reac
+ - While your own fork, fixer fork, backgrounded `recover-batch`, backgrounded `fix-verify` or backgrounded `fix-plan` runs, end your turn with no tool call; the decision reaches the next fork you spawn.
+ - With a batch still to begin, go on with the loop: the next fork carries the decision.
+ - With no batch left to begin and nothing of yours running, tell your parent with `lym creel post --parent "<text>"` that every batch is recorded, so the decision reaches the code only through a gate fixer or a plan amendment, then end your turn.
++- After you wrote `outcome: stuck`, your run is over: a notice or any other message that reaches you then starts no work.
++  End your turn with no tool call; the fresh session your parent's re-entry starts carries the decision.
+ 
+ The decisions your parent recorded for this run before this session started are below, `none` when there is none.
+ They are answers your parent already gave, often to an earlier stop of this run: follow each like a decision notice, so every fork you spawn inherits it, and never raise a question one of them answers.
+diff --git a/docs/overview.md b/docs/overview.md
+index c44cf70b..b37ba40c 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1162,6 +1162,7 @@ User-facing modules each get one `lym <module>` namespace:
+   The line names the record and the heading of each entry.
+   The tackler, the arbiter and the caller get no line.
+   It reports the strands told under `notified` and any failed notice under `notice_errors`, without failing.
++  A Webster Master session of a run that is not running gets no notice and is named under `notice_held_back`.
+   `validate-plan` runs the same checks a non-twill Plan-Write run's and Plan-Burler-Fix's own gates run, standalone.
+   The exit-code and findings-envelope contract is the same as `validate-discussion`'s.
+   It works over the current worktree's plan instead of its discussion.
+diff --git a/internal/loomcli/decision.go b/internal/loomcli/decision.go
+index e84ffbff..3dc6bd67 100644
+--- a/internal/loomcli/decision.go
++++ b/internal/loomcli/decision.go
+@@ -366,20 +366,51 @@ func decisionNoticeReceiver(strand, caller string) bool {
+ 		!agentname.MatchesRole(name.Role, sheddriver.TacklerRole) && !agentname.MatchesRole(name.Role, loomengine.ArbiterRole)
+ }
+ 
++// decisionNoticeHeldBack is one live strand the verb did not wake, reported on its success envelope.
++type decisionNoticeHeldBack struct {
++	Strand string `json:"strand"`
++	Reason string `json:"reason"`
++}
++
++// heldBackReason returns why the live strand named strand gets no notice from a run standing in state halted.
++// It returns empty when the strand gets one.
++// halted is empty for a running run or one with no status file.
++// A Webster Master session of a halted run is left over from a run that ended:
++// woken, it would drive the run's bracket verbs with no `lym webster run` owning them.
++// The fresh session a re-entry starts carries the decision in its prompt instead.
++func heldBackReason(strand string, halted shedengine.State) string {
++	if halted == "" {
++		return ""
++	}
++	name, err := agentname.Parse(strand)
++	if err != nil || !agentname.MatchesRole(name.Role, websterengine.MerriamStrandRole) {
++		return ""
++	}
++	return fmt.Sprintf("the run is %s, so this Webster session's run has ended and waking it would start work no run owns; the fresh session the run's re-entry starts carries the decision", halted)
++}
++
+ // notifyLiveRuns posts one notice of the entries added to every live run of the target worktree the notice is for.
+-// It returns the strands posted to and the failures, each logged at Warn; a failure never stops the next post.
+-func notifyLiveRuns(deps decisionDeps, added []discussionparser.AddedDecision) ([]string, []decisionNoticeError) {
++// halted is the run's state when it is not running, and empty otherwise; heldBackReason picks the strands it keeps from.
++// It returns the strands posted to, the strands held back, and the failures, each logged at Warn;
++// a failure never stops the next post.
++func notifyLiveRuns(deps decisionDeps, added []discussionparser.AddedDecision, halted shedengine.State) ([]string, []decisionNoticeHeldBack, []decisionNoticeError) {
+ 	notified := []string{}
++	heldBack := []decisionNoticeHeldBack{}
+ 	failures := []decisionNoticeError{}
+ 	strands, err := deps.liveStrands()
+ 	if err != nil {
+ 		logger.Warn("loom: decision add could not list the run's live agents; no notice sent", "error", err)
+-		return notified, append(failures, decisionNoticeError{Error: "list the run's live agents: " + err.Error()})
++		return notified, heldBack, append(failures, decisionNoticeError{Error: "list the run's live agents: " + err.Error()})
+ 	}
+ 	for _, strand := range strands {
+ 		if !decisionNoticeReceiver(strand, deps.strandName) {
+ 			continue
+ 		}
++		if reason := heldBackReason(strand, halted); reason != "" {
++			logger.Warn("loom: decision add held its notice back from a live agent of a halted run", "strand", strand, "state", string(halted))
++			heldBack = append(heldBack, decisionNoticeHeldBack{Strand: strand, Reason: reason})
++			continue
++		}
+ 		lines := []string{decisionNoticeLine(deps.recordPath, added, decisionNoticeInline(strand))}
+ 		if len(added) > 1 && !noticeFits(deps, lines[0]) {
+ 			// Each one-entry notice fits, which decisionVerb checked before it recorded anything.
+@@ -401,7 +432,7 @@ func notifyLiveRuns(deps decisionDeps, added []discussionparser.AddedDecision) (
+ 		}
+ 		notified = append(notified, strand)
+ 	}
+-	return notified, failures
++	return notified, heldBack, failures
+ }
+ 
+ // recordWritePending reports whether the run's current row is Record-Write or an earlier one, so Record-Write has yet to finish.
+@@ -868,7 +899,11 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 		}
+ 	}
+ 	recordStoreError := copyRecordToBoard(deps, currentRow)
+-	notified, noticeErrors := notifyLiveRuns(deps, added)
++	var halted shedengine.State
++	if found && st.State != shedengine.StateRunning {
++		halted = st.State
++	}
++	notified, heldBack, noticeErrors := notifyLiveRuns(deps, added, halted)
+ 	result := map[string]any{
+ 		"slug":          slug,
+ 		"record":        deps.recordPath,
+@@ -876,6 +911,9 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 		"notified":      notified,
+ 		"notice_errors": noticeErrors,
+ 	}
++	if len(heldBack) > 0 {
++		result["notice_held_back"] = heldBack
++	}
+ 	if recordStoreError != "" {
+ 		result["record_store_error"] = recordStoreError
+ 	}
+@@ -1310,7 +1348,7 @@ discussion check (restoring the record on a finding) and commits.
+ It changes neither the support log nor the plan. Past Discussion approval it
+ also copies the record onto the run's board entry; a failed copy is reported
+ as "record_store_error", never fails the verb. It then notifies the run's other
+-live agents ("notified", "notice_errors").
++live agents ("notified", "notice_errors", "notice_held_back").
+ 
+ --by is parent, operator or arbiter (the last only from the run's arbiter
+ strand). --title, --decision and --rationale are required without --from. A named session other than the run's parent orch, arbiter or sampler
+@@ -1335,7 +1373,7 @@ pattern_text. --by and --amends-plan apply to every entry. All land in one
+ commit or none does; no two share a title or a PATTERN entry.
+ 
+ Example:
+-  lym loom decision add <slug> --by parent --title "Keep cache" --decision "Per run." --rationale "Shared races."`,
++  lym loom decision add <slug> --by parent --title "T" --decision "D" --rationale "R"`,
+ 		Args: cobra.MaximumNArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+diff --git a/internal/loomcli/decision_test.go b/internal/loomcli/decision_test.go
+index 4e844e04..98537280 100644
+--- a/internal/loomcli/decision_test.go
++++ b/internal/loomcli/decision_test.go
+@@ -1048,6 +1048,7 @@ func TestDecisionVerb_Refusals(t *testing.T) {
+ 
+ // TestDecisionVerb_NotifiesLiveAgents asserts a committed entry is announced to each live agent of the run.
+ // It skips the tackler, the arbiter and the caller.
++// A run that is not running holds the notice back from its Webster Master session and names it on the envelope.
+ // It also asserts that a failed listing or post is reported on a success envelope.
+ func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -1068,7 +1069,24 @@ func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
+ 		want      []string
+ 		// wantErrors are the strands of the reported failures, "" for a failed listing.
+ 		wantErrors []string
++		// state is the run's state, empty for a run with no status file.
++		state shedengine.State
++		// wantHeldBack are the strands the envelope names under notice_held_back.
++		wantHeldBack []string
+ 	}{
++		{
++			name:         "HaltedRun_HoldsBackTheWebsterSession",
++			state:        shedengine.StateBlocked,
++			liveStrands:  []string{"hub:task-a:webster", "hub:task-a:darn"},
++			want:         []string{"hub:task-a:darn"},
++			wantHeldBack: []string{"hub:task-a:webster"},
++		},
++		{
++			name:        "RunningRun_WakesTheWebsterSession",
++			state:       shedengine.StateRunning,
++			liveStrands: []string{"hub:task-a:webster"},
++			want:        []string{"hub:task-a:webster"},
++		},
+ 		{
+ 			name:        "Orch_SkipsTacklerArbiterAndUnnamedRun",
+ 			strandName:  "hub:orch",
+@@ -1129,6 +1147,7 @@ func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
+ 				f.parent.Name = tt.strandName
+ 			}
+ 			f.liveStrands, f.liveErr, f.notifyErrs = tt.liveStrands, tt.liveErr, tt.notifyErrs
++			f.status, f.found = shedengine.Status{State: tt.state}, tt.state != ""
+ 			input := goodDecisionInput()
+ 			if tt.arbiter {
+ 				f.arbiterName = tt.strandName
+@@ -1161,6 +1180,19 @@ func TestDecisionVerb_NotifiesLiveAgents(t *testing.T) {
+ 			if fmt.Sprint(gotErrors) != fmt.Sprint(append([]string{}, tt.wantErrors...)) {
+ 				t.Errorf("envelope notice_errors strands = %v; want %v", gotErrors, tt.wantErrors)
+ 			}
++			gotHeldBack := []string{}
++			if items, ok := data["notice_held_back"].([]any); ok {
++				for _, item := range items {
++					entry := item.(map[string]any)
++					if reason, _ := entry["reason"].(string); !strings.Contains(reason, "the run is "+string(tt.state)) {
++						t.Errorf("held-back reason = %q; want it to name the run's state %q", reason, tt.state)
++					}
++					gotHeldBack = append(gotHeldBack, entry["strand"].(string))
++				}
++			}
++			if fmt.Sprint(gotHeldBack) != fmt.Sprint(append([]string{}, tt.wantHeldBack...)) {
++				t.Errorf("envelope notice_held_back strands = %v; want %v", gotHeldBack, tt.wantHeldBack)
++			}
+ 
+ 			if tt.from != "" {
+ 				if len(f.posts) != tt.wantPosts {
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 8fa726fd..7bfb9021 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -686,6 +686,8 @@
+ // It may also have `pattern_entry`, `pattern_action` and `pattern_text`.
+ // `--by` and `--amends-plan` apply to every entry, and all entries land in one write and one commit, or none does.
+ // Each live agent gets one notice naming the headings (`headings`).
++// A run that is not running wakes no Webster Master session left live from its last run:
++// the envelope names each such strand and why under `notice_held_back`.
+ // Two entries may not share a title or a PATTERN entry.
+ // A `pattern_action` of `withdraws`, like `--pattern-action withdraws`, strikes a declared `## PATTERN changes` bullet.
+ // The strike lands in the entry's commit, and the envelope names the ID under `pattern_withdrawn`.
+diff --git a/internal/webstercli/cli.go b/internal/webstercli/cli.go
+index ed3ec573..3e4dc1a4 100644
+--- a/internal/webstercli/cli.go
++++ b/internal/webstercli/cli.go
+@@ -317,18 +317,19 @@ func (c *websterCLI) executionBatches(plan *planparser.Plan, st *websterengine.S
+ // A refusal that cobra raises before the verb's RunE stays unnoted.
+ // It fires before the friction directory is resolved:
+ // a flag-parse or argument-count error, and one raised in resolvePersistentPreRun.
++// The bracket verbs also go through refuseOrphanedMaster, so a Master session whose run ended cannot drive them.
+ func (c *websterCLI) addVerbs(parent *cobra.Command) {
+ 	parent.AddCommand(c.validateCmd())
+ 	parent.AddCommand(c.verifyCmd())
+ 	for _, verb := range []*cobra.Command{
+ 		c.runCmd(),
+ 		c.statusCmd(),
+-		c.beginBatchCmd(),
+-		c.awaitBatchCmd(),
+-		c.recordBatchCmd(),
+-		c.recoverBatchCmd(),
+-		c.fixVerifyCmd(),
+-		c.fixPlanCmd(),
++		c.refuseOrphanedMaster(c.beginBatchCmd()),
++		c.refuseOrphanedMaster(c.awaitBatchCmd()),
++		c.refuseOrphanedMaster(c.recordBatchCmd()),
++		c.refuseOrphanedMaster(c.recoverBatchCmd()),
++		c.refuseOrphanedMaster(c.fixVerifyCmd()),
++		c.refuseOrphanedMaster(c.fixPlanCmd()),
+ 		c.rebaselineCmd(),
+ 		c.acceptAuditCmd(),
+ 		c.restorePlanCmd(),
+diff --git a/internal/webstercli/doc.go b/internal/webstercli/doc.go
+index a673ded3..bb2cbf56 100644
+--- a/internal/webstercli/doc.go
++++ b/internal/webstercli/doc.go
+@@ -109,4 +109,13 @@
+ // a dead fixer, and a refusal for findings a fixer already had or for a batch out of fixers, exits non-zero.
+ // Its message's way forward is ending the run stuck quoting the begin-batch refusal,
+ // so the conflict goes to the plan writer.
++//
++// # Run ownership
++//
++// A bracket verb, begin, await, record and recover-batch, fix-verify and fix-plan, is Master's own call under a live run.
++// A call from a Master strand while no `lym webster run` holds run.lock refuses before it reads or writes anything.
++// The refusal carries `run_ended: true` and the way forward of ending the turn, since that session's run has ended.
++// A call from a Master strand whose run.lock probe fails also refuses.
++// Its way forward is to re-run the verb, and it carries no `run_ended`.
++// Any other caller, such as manual driving from a shell, gets a warning on the envelope instead.
+ package webstercli
+diff --git a/internal/webstercli/ownership.go b/internal/webstercli/ownership.go
+index febbea05..16165514 100644
+--- a/internal/webstercli/ownership.go
++++ b/internal/webstercli/ownership.go
+@@ -1,17 +1,26 @@
+-// ownership.go provides ownerlessRunWarnings, which the bracket verbs call to warn when no run owns their state.
+-// The bracket verbs are begin, await, record and recover-batch.
++// ownership.go guards the bracket verbs against state that no live `lym webster run` owns.
++// The bracket verbs are begin, await, record and recover-batch, fix-verify and fix-plan.
+ // A bracket verb is Master's own call and legitimately runs only under a live run holding run.lock.
+-// A Master that keeps driving verbs after its run process died is a zombie.
+-// A timeout exit leaves the pane alive, so its mutations have no run-level owner and no run-exit backstop.
+-// That is worth surfacing, never worth refusing.
+-// Refusing would break the sandbox suite's sanctioned manual driving, so the check only warns.
++// A Master session that keeps driving verbs after its run ended is a zombie:
++// its commits and records drift from the loom row, which still shows the run's last outcome.
++// So a bracket verb called from a Master strand refuses while run.lock is free.
++// Any other caller, such as the sandbox suite's manual driving, only gets a warning on the envelope.
+ package webstercli
+ 
+-import "github.com/Knatte18/loomyard/internal/websterengine"
++import (
++	"fmt"
++	"os"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/websterengine"
++	"github.com/spf13/cobra"
++)
+ 
+ // ownerlessRunWarnings returns warnings with a notice appended when no live run holds scratchDir's run.lock.
+ // A probe error is folded into the warnings rather than failing the verb.
+-// The probe is advisory, and a filesystem hiccup reading a lock file must never block a bracket verb.
++// The probe is advisory here, and a filesystem hiccup reading a lock file must never block a bracket verb.
+ func ownerlessRunWarnings(scratchDir string, warnings []string) []string {
+ 	active, err := websterengine.RunActive(scratchDir)
+ 	if err != nil {
+@@ -22,3 +31,41 @@ func ownerlessRunWarnings(scratchDir string, warnings []string) []string {
+ 	}
+ 	return warnings
+ }
++
++// orphanedMasterRefusal returns the refusal of verb, called by the strand named caller.
++// It refuses when caller is a Master strand and no live run holds scratchDir's run.lock, or when the probe fails.
++// runEnded is true only for the free-lock refusal.
++// A probe failure says nothing about the run, so its way forward is to re-run.
++// It returns empty for any other caller, an unnamed shell's included, and for a Master strand whose run is live.
++func orphanedMasterRefusal(caller, scratchDir, verb string) (refusal string, runEnded bool) {
++	name, err := agentname.Parse(caller)
++	if err != nil || !agentname.MatchesRole(name.Role, websterengine.MerriamStrandRole) {
++		return "", false
++	}
++	active, err := websterengine.RunActive(scratchDir)
++	if err != nil {
++		return fmt.Sprintf("webster: %s could not tell whether a live `lym webster run` owns this state: %v; way forward: re-run the verb", verb, err), false
++	}
++	if active {
++		return "", false
++	}
++	return fmt.Sprintf("webster: %s refuses: no live `lym webster run` owns this state (run.lock is free), so this session's run has ended and its work would drift from the loom row; way forward: end your turn with no further tool call, and the run's parent re-enters the run", verb), true
++}
++
++// refuseOrphanedMaster wraps cmd.RunE so a call from a Master strand whose run has ended refuses before the verb runs.
++// The refusal envelope carries `run_ended: true` only when the run has ended, and the verb's own RunE never runs.
++func (c *websterCLI) refuseOrphanedMaster(cmd *cobra.Command) *cobra.Command {
++	inner := cmd.RunE
++	cmd.RunE = func(cmd *cobra.Command, args []string) error {
++		if refusal, runEnded := orphanedMasterRefusal(os.Getenv(agentname.StrandNameEnv), c.geom.ScratchDir, cmd.Name()); refusal != "" {
++			var fields map[string]any
++			if runEnded {
++				fields = map[string]any{"run_ended": true}
++			}
++			clihelp.SetExit(cmd.Context(), output.ErrFields(cmd.OutOrStdout(), refusal, fields))
++			return nil
++		}
++		return inner(cmd, args)
++	}
++	return cmd
++}
+diff --git a/internal/webstercli/ownership_test.go b/internal/webstercli/ownership_test.go
+new file mode 100644
+index 00000000..cc3e452b
+--- /dev/null
++++ b/internal/webstercli/ownership_test.go
+@@ -0,0 +1,128 @@
++package webstercli
++
++import (
++	"bytes"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/testkit/envelope"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/websterengine"
++	"github.com/spf13/cobra"
++)
++
++// TestRefuseOrphanedMaster_RefusesAMasterWhoseRunEnded pins the bracket-verb guard.
++// A call from a Master strand while run.lock is free refuses with `run_ended` and its way forward.
++// A Master strand whose lock probe fails refuses with the way forward to re-run and no `run_ended`.
++// The verb never runs.
++// A Master strand under a held run.lock, another strand and an unnamed shell reach the verb.
++// The verb tree built by addVerbs wraps each bracket verb and no other verb.
++// It is not parallel: it sets the strand name variable with t.Setenv.
++func TestRefuseOrphanedMaster_RefusesAMasterWhoseRunEnded(t *testing.T) {
++	tiergate.Require(t, 0)
++
++	const masterCaller = "hub:task-a:" + websterengine.MerriamStrandRole
++	tests := []struct {
++		name    string
++		caller  string
++		runLive bool
++		// probeFails makes run.lock a directory, so the lock probe errors.
++		probeFails bool
++		wantRan    bool
++		// wantRefusal is the text the refusal carries, and wantWayForward its way forward.
++		wantRefusal    string
++		wantWayForward string
++		wantRunEnded   bool
++	}{
++		{
++			name: "a Master strand whose run ended", caller: masterCaller,
++			wantRefusal: "record-batch refuses: no live `lym webster run` owns this state", wantWayForward: "way forward: end your turn with no further tool call", wantRunEnded: true,
++		},
++		{
++			name: "a Master strand whose lock probe fails", caller: masterCaller, probeFails: true,
++			wantRefusal: "record-batch could not tell whether a live `lym webster run` owns this state", wantWayForward: "way forward: re-run the verb",
++		},
++		{name: "a Master strand under a live run", caller: masterCaller, runLive: true, wantRan: true},
++		{name: "another strand", caller: "hub:task-a:darn", wantRan: true},
++		{name: "an unnamed shell", wantRan: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			scratchDir := t.TempDir()
++			if tt.runLive {
++				held, locked, err := lock.TryAcquireWriteLock(filepath.Join(scratchDir, "run.lock"))
++				if err != nil || !locked {
++					t.Fatalf("hold run.lock = locked %v, err %v; want it held", locked, err)
++				}
++				t.Cleanup(func() { _ = held.Release() })
++			}
++			if tt.probeFails {
++				if err := os.Mkdir(filepath.Join(scratchDir, "run.lock"), 0o755); err != nil {
++					t.Fatalf("make run.lock a directory: %v", err)
++				}
++			}
++			t.Setenv(agentname.StrandNameEnv, tt.caller)
++			ran := false
++			c := &websterCLI{geom: websterengine.Geometry{ScratchDir: scratchDir}}
++			cmd := c.refuseOrphanedMaster(&cobra.Command{
++				Use: "record-batch",
++				RunE: func(*cobra.Command, []string) error {
++					ran = true
++					return nil
++				},
++			})
++
++			var out bytes.Buffer
++			code := clihelp.Execute(cmd, &out, nil)
++
++			if ran != tt.wantRan {
++				t.Fatalf("verb ran = %v; want %v (output %q)", ran, tt.wantRan, out.String())
++			}
++			if tt.wantRan {
++				return
++			}
++			if code == 0 {
++				t.Errorf("exit = 0; want non-zero for a refusal")
++			}
++			env := envelope.RequireErr(t, out.String(), tt.wantRefusal)
++			if runEnded := env.Raw["run_ended"] == true; runEnded != tt.wantRunEnded {
++				t.Errorf("envelope = %v; want run_ended %v", env.Raw, tt.wantRunEnded)
++			}
++			envelope.RequireErr(t, out.String(), tt.wantWayForward)
++		})
++	}
++
++	t.Run("addVerbs wraps each bracket verb and no other", func(t *testing.T) {
++		t.Setenv(agentname.StrandNameEnv, masterCaller)
++		c := &websterCLI{geom: websterengine.Geometry{ScratchDir: t.TempDir(), WebsterDir: t.TempDir()}}
++		verbs := []struct {
++			name        string
++			args        []string
++			wantRefused bool
++		}{
++			{"begin-batch", []string{"1"}, true},
++			{"await-batch", []string{"1"}, true},
++			{"record-batch", []string{"1"}, true},
++			{"recover-batch", []string{"1"}, true},
++			{"fix-verify", nil, true},
++			{"fix-plan", nil, true},
++			{"status", nil, false},
++		}
++		for _, verb := range verbs {
++			parent := &cobra.Command{Use: "webster", RunE: clihelp.GroupRunE}
++			c.addVerbs(parent)
++
++			var out bytes.Buffer
++			clihelp.Execute(parent, &out, append([]string{verb.name}, verb.args...))
++
++			if refused := strings.Contains(out.String(), `"run_ended":true`); refused != verb.wantRefused {
++				t.Errorf("%s with a free run.lock refused for an ended run = %v; want %v (output %q)", verb.name, refused, verb.wantRefused, out.String())
++			}
++		}
++	})
++}
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 362be2a4..8d1db8d7 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -336,7 +336,7 @@
+ // Master hands it on through the forks it spawns afterwards.
+ // Their implementer and verify-fix bodies let a parent decision win over a card.
+ // With no batch left, Master tells its parent the decision reaches the code only through a gate fixer or plan amendment.
+-// The notice reaches only a Master already running.
++// The notice reaches only a Master already running, and never one whose run is halted.
+ // Run therefore renders every `Added after Discussion` entry of the decision record verbatim into the master prompt.
+ // The entries land in the `parent_decisions` marker (`none` without one):
+ // a Master that a re-step starts after its parent answered an earlier stop is told that answer, and never asks it again.
+@@ -1181,7 +1181,14 @@
+ // Every failed evaluation writes the verify-gate report (VerifyGateReportPath).
+ // The report is `verify-gate.yaml` in the reports directory.
+ // It returns renderVerifyGateFindings of the report as the findings Merriam reads.
+-// The report carries the attempt and the cap, the failing identities or the dirty paths, and the verify log's path.
++// The report carries the attempt and the cap.
++// It also carries the verify command and its exit code.
++// It lists the failing identities or the dirty paths, and the verify log's path.
++// The cap is the entry's re-prompt budget, so the evaluation that spends it is numbered one past the cap.
++// A failure whose log names no failing identity keeps the log's tail, since only its output shows what failed.
++// The stuck reason of a run whose gate spent its budget counts the failing entry's re-prompts against that budget.
++// It names the command and what failed, and ends in a way forward.
++// It quotes the output tail of a failure that named no test.
+ // It also carries the commits the fixer made since the pre-fix head and a hint:
+ // the cards, in trail order, whose commits changed a file directly in a failing package's directory.
+ // cardHint computes it over accumulatedCardSHAs.
+diff --git a/internal/websterengine/verifygate.go b/internal/websterengine/verifygate.go
+index 6b653c8d..40ff9375 100644
+--- a/internal/websterengine/verifygate.go
++++ b/internal/websterengine/verifygate.go
+@@ -12,6 +12,7 @@ import (
+ 	"path/filepath"
+ 	"strings"
+ 	"sync"
++	"unicode/utf8"
+ 
+ 	"gopkg.in/yaml.v3"
+ 
+@@ -308,11 +309,14 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 	failures := 0
+ 	cold := false
+ 	lastFixCommits := 0
++	// command is the current arrival's verify command, empty until the arrival renders it.
++	command := ""
+ 
+-	// fail records the pre-fix head on the first failure;
+-	// it routes the failure to a fixer, then writes the report and returns its findings.
++	// fail records the pre-fix head on the first failure.
++	// It routes the failure to a fixer, writes the report naming the arrival's verify command, and returns its findings.
+ 	fail := func(report VerifyGateReport) (shuttleengine.GateResult, error) {
+ 		failures++
++		report.Command = command
+ 		if preFix == "" {
+ 			head, err := s.head()
+ 			if err != nil {
+@@ -407,6 +411,7 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 
+ 	return func() (shuttleengine.GateResult, error) {
+ 		attempt++
++		command = ""
+ 
+ 		outcome, err := s.outcome()
+ 		if err != nil {
+@@ -442,7 +447,7 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 			notes.addCommits(entries)
+ 		}
+ 
+-		command, err := s.verifyCommand()
++		command, err = s.verifyCommand()
+ 		if err != nil {
+ 			return shuttleengine.GateResult{}, fmt.Errorf("websterengine: verify gate: %w", err)
+ 		}
+@@ -498,7 +503,13 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 		if hang, hung := classifyHang(res, rerunOutput); hung {
+ 			return failHung(res, rerunOutput, hang)
+ 		}
+-		return fail(VerifyGateReport{Failures: parseVerifyFailures(rerunOutput, false), LogPath: res.Log})
++		report := VerifyGateReport{Failures: parseVerifyFailures(rerunOutput, false), LogPath: res.Log, ExitCode: res.ExitCode}
++		if len(report.Failures) == 1 && report.Failures[0].Kind == FailureKindOpaque {
++			// A failure that names no test, such as a build error or the gate tool's own error, is shown by its output alone.
++			report.Failures = nil
++			report.LogTail = logTail(rerunOutput)
++		}
++		return fail(report)
+ 	}
+ }
+ 
+@@ -515,14 +526,13 @@ func readVerifyGateReport(path string) (VerifyGateReport, error) {
+ 	return r, nil
+ }
+ 
+-// verifyGateStuckReason is the stuck reason of a done run whose verify gate did not pass.
++// verifyGateStuckReason is the one-line stuck reason of a done run whose verify gate did not pass.
+ // A Terminal failure, the rejection of a fixer commit, names the gate's own reason.
+ // It ends in the reset to the pre-fix head, then reentry.
+ // A Terminal runner crash names the gate's own reason and ends in reentry alone, since no fixer commit exists to reset.
+-// Otherwise it names the hang, the failing identities, the dirty paths or the verify timeout.
+-// It names the log the report holds, and the attempts spent.
+-// After a CPU watchdog quit, the reason also names the busy window.
+-// It names the way forward for a package that is CPU-bound but healthy, then reentry.
++// Otherwise it opens with the re-prompts the failing entry sent against its limit.
++// When the run ended with re-prompts left, it says why.
++// It then names the verify command and what failed, and ends in a way forward.
+ func verifyGateStuckReason(reportsDir string, gate *shuttleengine.GateOutcome, reentry string) string {
+ 	if strings.HasPrefix(gate.Reason, verifyGateCrashFindingsPrefix) {
+ 		return "verify gate failed: " + oneLine(gate.Reason) + "; " + wayForwardSteps(reentry)
+@@ -532,20 +542,105 @@ func verifyGateStuckReason(reportsDir string, gate *shuttleengine.GateOutcome, r
+ 	}
+ 	report, err := readVerifyGateReport(VerifyGateReportPath(reportsDir))
+ 	if err != nil {
+-		return fmt.Sprintf("verify gate failed after %d re-prompt(s); its report could not be read: %v", gate.Attempts, err)
++		return fmt.Sprintf("verify gate did not pass after %d re-prompt(s); its report could not be read: %v; %s", failedEntryReprompts(gate), err, wayForwardSteps(reentry))
++	}
++	return verifyGateStuckLead(gate, report.Cap) + ": " + verifyGateStuckFailure(report, reentry)
++}
++
++// verifyGateStuckLead opens the stuck reason of a verify gate that did not pass with no terminal reason.
++// It counts the failing entry's re-prompts against limit, the entry's re-prompt budget.
++// When the run ended with re-prompts left, it says why.
++func verifyGateStuckLead(gate *shuttleengine.GateOutcome, limit int) string {
++	sent := failedEntryReprompts(gate)
++	switch {
++	case gate.EndedEarly == "":
++		return fmt.Sprintf("verify gate did not pass after %d of %d re-prompt(s)", sent, limit)
++	case sent == 0:
++		return fmt.Sprintf("verify gate failed its first check and the session was never re-prompted, since %s", gate.EndedEarly)
++	default:
++		return fmt.Sprintf("verify gate did not pass after %d of %d re-prompt(s) and the run ended with re-prompts left, since %s", sent, limit, gate.EndedEarly)
++	}
++}
++
++// failedEntryReprompts returns the re-prompts the failed gate entry sent.
++// It returns every entry's re-prompts when none is marked failed.
++func failedEntryReprompts(gate *shuttleengine.GateOutcome) int {
++	for _, entry := range gate.Entries {
++		if entry.State == shuttleengine.GateEntryFailed {
++			return entry.Attempts
++		}
+ 	}
+-	what := "none named"
++	return gate.Attempts
++}
++
++// verifyGateStuckTextBytes bounds each piece of gate output a stuck reason quotes, so the one-line reason stays readable.
++const verifyGateStuckTextBytes = 400
++
++// verifyGateStuckFailure names what the report's failure was and ends in its way forward.
++// A failed verify names its command, then the hang, the failing identities, the dirty paths or the timeout.
++// A failure that named no identity says so.
++// It quotes the tail of the command's output, or says the output was empty, since the gate itself may have erred.
++// A run-level entry's failure names the entry and opens its findings.
++// After a CPU watchdog quit, the hang's own way forward replaces the general one.
++func verifyGateStuckFailure(report VerifyGateReport, reentry string) string {
++	fixStep := fmt.Sprintf("read %s and commit a fix on the task branch", report.LogPath)
++	var what string
+ 	switch {
++	case report.Entry != "":
++		what = fmt.Sprintf("the run-level %q entry failed: %s", report.Entry, oneLine(cutHead(report.Findings, verifyGateStuckTextBytes)))
++		fixStep = fmt.Sprintf("fix what the %q entry's findings name and commit it on the task branch", report.Entry)
++	case len(report.Dirty) > 0:
++		what = "the worktree held uncommitted paths " + strings.Join(report.Dirty, ", ")
++		fixStep = "commit or remove those paths on the task branch"
+ 	case report.Hang != "":
+ 		what = hangStuckReason(report, reentry)
+-	case len(report.Failures) > 0:
+-		what = strings.Join(failureIDs(report.Failures), ", ")
+-	case len(report.Dirty) > 0:
+-		what = "uncommitted paths " + strings.Join(report.Dirty, ", ")
++		if report.WatchdogWindow != "" {
++			return withCommand(report.Command, what)
++		}
+ 	case report.TimedOut != "":
+ 		what = fmt.Sprintf("the verify command timed out (%s) and was not re-run, see %s", report.TimedOut, report.LogPath)
++	case len(report.Failures) > 0:
++		what = fmt.Sprintf("failing %s, see %s", strings.Join(failureIDs(report.Failures), ", "), report.LogPath)
++	default:
++		output := "its output was empty"
++		if report.LogTail != "" {
++			output = "output tail: " + oneLine(cutTail(report.LogTail, verifyGateStuckTextBytes))
++		}
++		what = fmt.Sprintf("the verify command exited with code %d and its output named no failing test, so the gate itself may have erred; %s; see %s",
++			report.ExitCode, output, report.LogPath)
++	}
++	return withCommand(report.Command, what) + "; " + wayForwardSteps(fixStep, reentry)
++}
++
++// withCommand opens what with the verify command it failed under, and returns what alone when command is empty.
++func withCommand(command, what string) string {
++	if command == "" {
++		return what
++	}
++	return fmt.Sprintf("`%s`: %s", command, what)
++}
++
++// cutHead returns s cut to its first limit bytes on a rune boundary.
++func cutHead(s string, limit int) string {
++	if len(s) <= limit {
++		return s
++	}
++	for limit > 0 && !utf8.RuneStart(s[limit]) {
++		limit--
++	}
++	return s[:limit]
++}
++
++// cutTail returns s cut to its last limit bytes on a rune boundary.
++func cutTail(s string, limit int) string {
++	if len(s) <= limit {
++		return s
++	}
++	start := len(s) - limit
++	for start < len(s) && !utf8.RuneStart(s[start]) {
++		start++
+ 	}
+-	return fmt.Sprintf("verify gate failed after %d attempt(s) of %d: %s", report.Attempt, report.Cap, what)
++	return s[start:]
+ }
+ 
+ // hangStuckReason describes a hang report for the stuck reason.
+diff --git a/internal/websterengine/verifygate_test.go b/internal/websterengine/verifygate_test.go
+index 90599940..bf240e7a 100644
+--- a/internal/websterengine/verifygate_test.go
++++ b/internal/websterengine/verifygate_test.go
+@@ -387,7 +387,7 @@ func TestVerifyGate_FailedEvaluationWritesReport(t *testing.T) {
+ 	if report.LogPath != "/verify/verify-4.log" {
+ 		t.Errorf("report log path = %q; want the log of the run it reports on, /verify/verify-4.log", report.LogPath)
+ 	}
+-	for _, want := range []string{"example.com/mod/internal/a", "02-second", "attempt 2 of 3"} {
++	for _, want := range []string{"example.com/mod/internal/a", "02-second", "evaluation 2; the session may be re-prompted 3 time(s)"} {
+ 		if !strings.Contains(second.Findings, want) {
+ 			t.Errorf("findings = %q; want %q in it", second.Findings, want)
+ 		}
+@@ -646,11 +646,20 @@ func TestVerifyGateStuckReason_TerminalRejectionEndsInResetToPreFix(t *testing.T
+ 	}
+ }
+ 
+-func TestVerifyGateStuckReason_HungReportNamesTheHang(t *testing.T) {
++// TestVerifyGateStuckReason_NamesTheFailureAndAWayForward pins the stuck reason of a verify gate.
++// The gate spent its re-prompts.
++// It names the verify command and what failed, and ends in a way forward.
++// It quotes the output tail of a failure that named no test.
++func TestVerifyGateStuckReason_NamesTheFailureAndAWayForward(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	const log = "/wt/.lym/verify/verify.log"
++	const (
++		log  = "/wt/.lym/verify/verify.log"
++		cmd  = "lym gate test --gate webster"
++		lead = "verify gate did not pass after 2 of 2 re-prompt(s): "
++		fix  = "way forward: 1) read " + log + " and commit a fix on the task branch; 2) lym webster run"
++	)
+ 	tests := []struct {
+ 		name   string
+ 		report VerifyGateReport
+@@ -658,24 +667,69 @@ func TestVerifyGateStuckReason_HungReportNamesTheHang(t *testing.T) {
+ 	}{
+ 		{
+ 			name:   "a timed-out report names the timeout, that nothing was re-run and the log",
+-			report: VerifyGateReport{Attempt: 2, Cap: 2, TimedOut: "gate tier2 exceeded timeout_min 30m0s and was killed", LogPath: log},
+-			want:   "verify gate failed after 2 attempt(s) of 2: the verify command timed out (gate tier2 exceeded timeout_min 30m0s and was killed) and was not re-run, see " + log,
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Command: cmd, TimedOut: "gate tier2 exceeded timeout_min 30m0s and was killed", LogPath: log},
++			want:   lead + "`" + cmd + "`: the verify command timed out (gate tier2 exceeded timeout_min 30m0s and was killed) and was not re-run, see " + log + "; " + fix,
+ 		},
+ 		{
+ 			name:   "a SIGQUIT report names the hang, the stacks and the log",
+-			report: VerifyGateReport{Attempt: 2, Cap: 2, Hang: "SIGQUIT: quit", HangStacks: true, LogPath: log},
+-			want:   "verify gate failed after 2 attempt(s) of 2: the verify command hung (SIGQUIT: quit) and was not re-run; its goroutine stacks are in " + log,
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Command: cmd, Hang: "SIGQUIT: quit", HangStacks: true, LogPath: log},
++			want:   lead + "`" + cmd + "`: the verify command hung (SIGQUIT: quit) and was not re-run; its goroutine stacks are in " + log + "; " + fix,
+ 		},
+ 		{
+-			name:   "a watchdog report names the window, the way forward and the re-entry",
+-			report: VerifyGateReport{Attempt: 2, Cap: 2, Hang: "CPU watchdog SIGQUIT", HangStacks: true, WatchdogWindow: "2m0s", LogPath: log},
+-			want: "verify gate failed after 2 attempt(s) of 2: the verify command hung (CPU watchdog SIGQUIT) and was not re-run; its goroutine stacks are in " + log +
++			name:   "a watchdog report names the window and its own way forward with the re-entry",
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Command: cmd, Hang: "CPU watchdog SIGQUIT", HangStacks: true, WatchdogWindow: "2m0s", LogPath: log},
++			want: lead + "`" + cmd + "`: the verify command hung (CPU watchdog SIGQUIT) and was not re-run; its goroutine stacks are in " + log +
+ 				"; the gate test's CPU watchdog quit a test binary busy for 2m0s: if that package is CPU-bound but healthy, " + gateslot.BusyQuitWayForward + ", then lym webster run",
+ 		},
+ 		{
+ 			name:   "an exit-code report names the code and holds no stacks",
+-			report: VerifyGateReport{Attempt: 2, Cap: 2, Hang: "exit code 137", LogPath: log},
+-			want:   "verify gate failed after 2 attempt(s) of 2: the verify command was killed or exited with exit code 137 and was not re-run, see " + log,
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Command: cmd, Hang: "exit code 137", LogPath: log},
++			want:   lead + "`" + cmd + "`: the verify command was killed or exited with exit code 137 and was not re-run, see " + log + "; " + fix,
++		},
++		{
++			name:   "a report with failing identities names them and the log",
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Command: cmd, ExitCode: 1, Failures: []VerifyFailure{{ID: "example.com/mod/internal/a"}, {ID: "example.com/mod/internal/b.TestX"}}, LogPath: log},
++			want:   lead + "`" + cmd + "`: failing example.com/mod/internal/a, example.com/mod/internal/b.TestX, see " + log + "; " + fix,
++		},
++		{
++			name:   "a failure that named no test says so and quotes the output tail",
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Command: cmd, ExitCode: 2, LogTail: "gate: tier0\nbuild failed: x.go:3: undefined: y", LogPath: log},
++			want: lead + "`" + cmd + "`: the verify command exited with code 2 and its output named no failing test, so the gate itself may have erred; " +
++				"output tail: gate: tier0 build failed: x.go:3: undefined: y; see " + log + "; " + fix,
++		},
++		{
++			name:   "an empty output says so instead of quoting a tail",
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Command: cmd, ExitCode: 3, LogPath: log},
++			want:   lead + "`" + cmd + "`: the verify command exited with code 3 and its output named no failing test, so the gate itself may have erred; its output was empty; see " + log + "; " + fix,
++		},
++		{
++			name:   "an output tail is cut on a rune boundary",
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Command: cmd, ExitCode: 1, LogTail: "xé" + strings.Repeat("a", verifyGateStuckTextBytes-1), LogPath: log},
++			want: lead + "`" + cmd + "`: the verify command exited with code 1 and its output named no failing test, so the gate itself may have erred; " +
++				"output tail: " + strings.Repeat("a", verifyGateStuckTextBytes-1) + "; see " + log + "; " + fix,
++		},
++		{
++			name:   "a long entry findings text is cut to its first bytes on a rune boundary",
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Entry: "drift", Findings: strings.Repeat("a", verifyGateStuckTextBytes-1) + "étail"},
++			want: lead + `the run-level "drift" entry failed: ` + strings.Repeat("a", verifyGateStuckTextBytes-1) + `; ` +
++				`way forward: 1) fix what the "drift" entry's findings name and commit it on the task branch; 2) lym webster run`,
++		},
++		{
++			name:   "a long output tail is cut to its last bytes",
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Command: cmd, ExitCode: 1, LogTail: strings.Repeat("a", 500) + "END", LogPath: log},
++			want: lead + "`" + cmd + "`: the verify command exited with code 1 and its output named no failing test, so the gate itself may have erred; " +
++				"output tail: " + strings.Repeat("a", verifyGateStuckTextBytes-3) + "END; see " + log + "; " + fix,
++		},
++		{
++			name:   "a dirty tree found before any verify names the paths and no command",
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Dirty: []string{"a.go", "b.txt"}},
++			want:   lead + "the worktree held uncommitted paths a.go, b.txt; way forward: 1) commit or remove those paths on the task branch; 2) lym webster run",
++		},
++		{
++			name:   "a run-level entry's failure names the entry and its findings",
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Entry: "drift", Findings: "cell a.txt:3 moved\nsee expected.yaml"},
++			want: lead + `the run-level "drift" entry failed: cell a.txt:3 moved see expected.yaml; ` +
++				`way forward: 1) fix what the "drift" entry's findings name and commit it on the task branch; 2) lym webster run`,
+ 		},
+ 	}
+ 	for _, tt := range tests {
+@@ -686,8 +740,9 @@ func TestVerifyGateStuckReason_HungReportNamesTheHang(t *testing.T) {
+ 			if err := WriteVerifyGateReport(VerifyGateReportPath(reportsDir), tt.report); err != nil {
+ 				t.Fatal(err)
+ 			}
++			gate := &shuttleengine.GateOutcome{Attempts: 2, Entries: []shuttleengine.GateEntryOutcome{{Name: verifyGateName, Attempts: 2, State: shuttleengine.GateEntryFailed}}}
+ 
+-			got := verifyGateStuckReason(reportsDir, &shuttleengine.GateOutcome{}, "lym webster run")
++			got := verifyGateStuckReason(reportsDir, gate, "lym webster run")
+ 
+ 			if got != tt.want {
+ 				t.Errorf("verifyGateStuckReason() = %q; want %q", got, tt.want)
+@@ -696,6 +751,158 @@ func TestVerifyGateStuckReason_HungReportNamesTheHang(t *testing.T) {
+ 	}
+ }
+ 
++// TestVerifyGateStuckReason_CountsRepromptsAgainstTheLimit pins the stuck reason's opening.
++// It counts the failing entry's own re-prompts against the entry's limit, so the two agree,
++// and a run that ended with re-prompts left says why.
++// With no readable report it counts the re-prompts alone and still ends in the re-entry.
++func TestVerifyGateStuckReason_CountsRepromptsAgainstTheLimit(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	failed := func(name string, sent int) shuttleengine.GateEntryOutcome {
++		return shuttleengine.GateEntryOutcome{Name: name, Attempts: sent, State: shuttleengine.GateEntryFailed}
++	}
++	tests := []struct {
++		name       string
++		gate       shuttleengine.GateOutcome
++		noReport   bool
++		wantPrefix string
++		wantSuffix string
++	}{
++		{
++			name:       "a spent budget counts every re-prompt against the limit",
++			gate:       shuttleengine.GateOutcome{Attempts: 3, Entries: []shuttleengine.GateEntryOutcome{failed(verifyGateName, 3)}},
++			wantPrefix: "verify gate did not pass after 3 of 3 re-prompt(s): ",
++		},
++		{
++			name: "the failing entry's own re-prompts count, not the run's total",
++			gate: shuttleengine.GateOutcome{Attempts: 5, Entries: []shuttleengine.GateEntryOutcome{
++				{Name: verifyGateName, Attempts: 2, State: shuttleengine.GateEntryPassed}, failed("drift", 3),
++			}},
++			wantPrefix: "verify gate did not pass after 3 of 3 re-prompt(s): ",
++		},
++		{
++			name:       "a gate that ended before any re-prompt says why",
++			gate:       shuttleengine.GateOutcome{EndedEarly: "its re-prompt could not be sent: pane gone", Entries: []shuttleengine.GateEntryOutcome{failed(verifyGateName, 0)}},
++			wantPrefix: "verify gate failed its first check and the session was never re-prompted, since its re-prompt could not be sent: pane gone: ",
++		},
++		{
++			name:       "a gate that ended with re-prompts left counts them and says why",
++			gate:       shuttleengine.GateOutcome{Attempts: 1, EndedEarly: "the session ended", Entries: []shuttleengine.GateEntryOutcome{failed(verifyGateName, 1)}},
++			wantPrefix: "verify gate did not pass after 1 of 3 re-prompt(s) and the run ended with re-prompts left, since the session ended: ",
++		},
++		{
++			name:       "a gate with no failed entry counts its own re-prompts",
++			gate:       shuttleengine.GateOutcome{Attempts: 2},
++			wantPrefix: "verify gate did not pass after 2 of 3 re-prompt(s): ",
++		},
++		{
++			name:       "an unreadable report counts the re-prompts and ends in the re-entry",
++			gate:       shuttleengine.GateOutcome{Attempts: 2, Entries: []shuttleengine.GateEntryOutcome{failed(verifyGateName, 2)}},
++			noReport:   true,
++			wantPrefix: "verify gate did not pass after 2 re-prompt(s); its report could not be read: ",
++			wantSuffix: "; way forward: lym webster run",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			reportsDir := t.TempDir()
++			if !tt.noReport {
++				report := VerifyGateReport{Attempt: 4, Cap: 3, Command: "lym gate test --gate webster", Failures: []VerifyFailure{{ID: "example.com/mod/internal/a"}}, LogPath: "/verify.log"}
++				if err := WriteVerifyGateReport(VerifyGateReportPath(reportsDir), report); err != nil {
++					t.Fatal(err)
++				}
++			}
++
++			got := verifyGateStuckReason(reportsDir, &tt.gate, "lym webster run")
++
++			if !strings.HasPrefix(got, tt.wantPrefix) || !strings.HasSuffix(got, tt.wantSuffix) || strings.Contains(got, "\n") {
++				t.Errorf("verifyGateStuckReason() = %q; want one line opening %q and ending %q", got, tt.wantPrefix, tt.wantSuffix)
++			}
++		})
++	}
++}
++
++// TestVerifyGate_ReportKeepsWhatTheFailedArrivalObserved pins the report of a failed verify.
++// A log that parses to no failing identity keeps the verify command, the exit code and the log tail,
++// so the stuck reason can show what failed.
++// A log that names tests keeps them and no tail.
++// A dirty tree found on a later arrival carries no command, though an earlier arrival rendered one.
++func TestVerifyGate_ReportKeepsWhatTheFailedArrivalObserved(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const noTestOutput = "gate: tier0 could not start: tool missing\n"
++	const command = "lym gate test --gate webster"
++	tests := []struct {
++		name   string
++		output string
++		// dirtyOnSecondArrival makes the tree dirty for a second arrival, which is the one reported.
++		dirtyOnSecondArrival bool
++		wantCommand          string
++		wantExitCode         int
++		wantLogTail          string
++		wantLogPath          string
++		wantFailureIDs       []string
++		wantDirty            []string
++	}{
++		{
++			name: "a failure naming no test keeps the command, exit code and output tail", output: noTestOutput,
++			wantCommand: command, wantExitCode: 2, wantLogTail: strings.TrimSpace(noTestOutput), wantLogPath: "/verify/verify-2.log",
++		},
++		{
++			name: "a failure naming tests keeps them and no output tail", output: failingPackageLog,
++			wantCommand: command, wantExitCode: 2, wantLogPath: "/verify/verify-2.log", wantFailureIDs: []string{"example.com/mod/internal/a"},
++		},
++		{
++			name: "a dirty tree on a later arrival carries no command", output: noTestOutput, dirtyOnSecondArrival: true,
++			wantDirty: []string{"loose.go"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			reports := t.TempDir()
++			f := &gateFake{
++				outcome: outcomeDone,
++				command: command,
++				head:    "head0",
++				results: []verifytree.Result{{Status: verifytree.StatusFailed, ExitCode: 2}},
++				logs:    []string{tt.output},
++			}
++			gate := newVerifyGate(reports, 3, &VerifyGateNotes{}, testFixPromptPath, f.seams())
++
++			if res, err := gate(); err != nil || res.Passed || res.Terminal {
++				t.Fatalf("gate() = %+v, %v; want a plain failure", res, err)
++			}
++			if tt.dirtyOnSecondArrival {
++				f.dirty = []string{"loose.go"}
++				if res, err := gate(); err != nil || res.Passed || res.Terminal {
++					t.Fatalf("second gate() = %+v, %v; want a plain failure", res, err)
++				}
++			}
++
++			report, err := readVerifyGateReport(VerifyGateReportPath(reports))
++			if err != nil {
++				t.Fatalf("readVerifyGateReport() error = %v", err)
++			}
++			if report.Command != tt.wantCommand || report.ExitCode != tt.wantExitCode || report.LogTail != tt.wantLogTail || report.LogPath != tt.wantLogPath {
++				t.Errorf("report command, exit code, log tail and log = (%q, %d, %q, %q); want (%q, %d, %q, %q)",
++					report.Command, report.ExitCode, report.LogTail, report.LogPath, tt.wantCommand, tt.wantExitCode, tt.wantLogTail, tt.wantLogPath)
++			}
++			if got := failureIDs(report.Failures); !slices.Equal(got, tt.wantFailureIDs) {
++				t.Errorf("report failures = %v; want %v", got, tt.wantFailureIDs)
++			}
++			if !slices.Equal(report.Dirty, tt.wantDirty) {
++				t.Errorf("report dirty = %v; want %v", report.Dirty, tt.wantDirty)
++			}
++		})
++	}
++}
++
+ func TestReadModulePath(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	dir := t.TempDir()
+diff --git a/internal/websterengine/verifygatereport.go b/internal/websterengine/verifygatereport.go
+index 6145aabd..81a45b0c 100644
+--- a/internal/websterengine/verifygatereport.go
++++ b/internal/websterengine/verifygatereport.go
+@@ -28,14 +28,20 @@ func VerifyGateReportPath(reportsDir string) string {
+ type VerifyGateReport struct {
+ 	// Attempt is the failed evaluation's number, counted from one.
+ 	Attempt int `yaml:"attempt"`
+-	// Cap is the gate's attempt cap.
++	// Cap is the gate entry's re-prompt budget, so a failed evaluation's number can run one past it.
+ 	Cap int `yaml:"cap"`
++	// Command is the verify command the failed evaluation ran.
++	// It is empty for a run-level entry's failure and for a dirty tree found before the command was rendered.
++	Command string `yaml:"command,omitempty"`
++	// ExitCode is the failed verify command's exit code, zero for a failure that ran no command.
++	ExitCode int `yaml:"exit_code,omitempty"`
+ 	// Dirty lists the paths of a clean-tree failure, which runs no verify and so has no Failures or LogPath.
+ 	Dirty []string `yaml:"dirty,omitempty"`
+ 	// TimedOut names the gate tier and the timeout it outlived, and is empty when no tier timed out.
+ 	// Such a failure has no Failures and carries LogTail instead.
+ 	TimedOut string `yaml:"timed_out,omitempty"`
+ 	// LogTail is the bounded tail of the verify log of a timed-out or hung run.
++	// It is also the tail for a failed run whose log named no failing identity.
+ 	LogTail string `yaml:"log_tail,omitempty"`
+ 	// Hang is the marker, log line or `exit code <n>` that read the failed run as a hang, and empty for any other failure.
+ 	// Such a failure carries the Failures its log parses to and LogTail.
+@@ -204,9 +210,11 @@ func wrapRunLevelEntry(entry shuttleengine.GateEntry, reportPath, fixPromptPath
+ }
+ 
+ // renderVerifyGateFindings returns the findings text the gate returns to Merriam.
+-// The text opens with the way forward to the report's fixer, then the attempt and the cap.
++// The text opens with the way forward to the report's fixer, then the evaluation number and the re-prompt limit.
+ // It then gives the named entry's findings.
+ // Otherwise it gives the dirty paths, the timeout sentence, a hang or the failing identities.
++// A failure that named no test gives the exit code, the log path and the log tail.
++// It has no identity list and no card hint.
+ // A timeout carries the log path and tail.
+ // A hang carries its matched marker, identities, log path and tail.
+ // Identities carry their output tail, the full log path and the hint.
+@@ -215,7 +223,7 @@ func wrapRunLevelEntry(entry shuttleengine.GateEntry, reportPath, fixPromptPath
+ func renderVerifyGateFindings(r VerifyGateReport, fixPromptPath string) string {
+ 	var b strings.Builder
+ 	b.WriteString(verifyGateWayForward(r.Fixer, fixPromptPath) + "\n")
+-	fmt.Fprintf(&b, "Verify gate failed (attempt %d of %d).\n", r.Attempt, r.Cap)
++	fmt.Fprintf(&b, "Verify gate failed (evaluation %d; the session may be re-prompted %d time(s)).\n", r.Attempt, r.Cap)
+ 
+ 	if r.Entry != "" {
+ 		fmt.Fprintf(&b, "The run-level %q entry failed:\n%s\n", r.Entry, r.Findings)
+@@ -252,6 +260,12 @@ func renderVerifyGateFindings(r VerifyGateReport, fixPromptPath string) string {
+ 		return b.String()
+ 	}
+ 
++	if len(r.Failures) == 0 {
++		fmt.Fprintf(&b, "The verify command exited with code %d and named no failing test.\n", r.ExitCode)
++		writeLogLocation(&b, r)
++		return b.String()
++	}
++
+ 	writeFailingIdentities(&b, r.Failures)
+ 	writeLogLocation(&b, r)
+ 	if len(r.Hint) > 0 {
+diff --git a/internal/websterengine/verifygatereport_test.go b/internal/websterengine/verifygatereport_test.go
+index fb2928b0..23e68e76 100644
+--- a/internal/websterengine/verifygatereport_test.go
++++ b/internal/websterengine/verifygatereport_test.go
+@@ -222,19 +222,19 @@ func TestRenderVerifyGateFindings(t *testing.T) {
+ 	}
+ 	cold := r
+ 	cold.Fixer = FixerCold
+-	if got := renderVerifyGateFindings(cold, fixPromptPath); !strings.HasPrefix(got, coldWayForward+"\nVerify gate failed (attempt ") {
++	if got := renderVerifyGateFindings(cold, fixPromptPath); !strings.HasPrefix(got, coldWayForward+"\nVerify gate failed (evaluation ") {
+ 		t.Errorf("cold-routed findings should open with the cold way forward:\n%s", got)
+ 	}
+ 	assertOpensWithWayForward := func(findings string) {
+ 		t.Helper()
+-		if !strings.HasPrefix(findings, wayForward+"\nVerify gate failed (attempt ") {
++		if !strings.HasPrefix(findings, wayForward+"\nVerify gate failed (evaluation ") {
+ 			t.Errorf("findings should open with the way forward before the failure line:\n%s", findings)
+ 		}
+ 	}
+ 
+ 	got := renderVerifyGateFindings(r, fixPromptPath)
+ 	assertOpensWithWayForward(got)
+-	for _, want := range []string{"attempt 2 of 3", "m/a.TestX", "m/b", "line one", "line two", "/scratch/verify.log", "03-third"} {
++	for _, want := range []string{"evaluation 2; the session may be re-prompted 3 time(s)", "m/a.TestX", "m/b", "line one", "line two", "/scratch/verify.log", "03-third"} {
+ 		if !strings.Contains(got, want) {
+ 			t.Errorf("findings missing %q:\n%s", want, got)
+ 		}
+@@ -247,7 +247,7 @@ func TestRenderVerifyGateFindings(t *testing.T) {
+ 
+ 	timedOut := renderVerifyGateFindings(VerifyGateReport{Attempt: 1, Cap: 3, TimedOut: "gate tier2 exceeded timeout_min 30m0s and was killed", LogPath: "/scratch/verify.log", LogTail: "hung in TestSlow"}, fixPromptPath)
+ 	assertOpensWithWayForward(timedOut)
+-	for _, want := range []string{"attempt 1 of 3", "timed out: gate tier2 exceeded timeout_min 30m0s and was killed", "not re-run", "/scratch/verify.log", "hung in TestSlow"} {
++	for _, want := range []string{"evaluation 1; the session may be re-prompted 3 time(s)", "timed out: gate tier2 exceeded timeout_min 30m0s and was killed", "not re-run", "/scratch/verify.log", "hung in TestSlow"} {
+ 		if !strings.Contains(timedOut, want) {
+ 			t.Errorf("timed-out findings missing %q:\n%s", want, timedOut)
+ 		}
+@@ -277,7 +277,7 @@ func TestRenderVerifyGateFindings(t *testing.T) {
+ 
+ 	entry := renderVerifyGateFindings(VerifyGateReport{Attempt: 2, Cap: 3, Entry: "drift", Findings: "cell a.txt:3 changed outside the expectation"}, fixPromptPath)
+ 	assertOpensWithWayForward(entry)
+-	for _, want := range []string{"attempt 2 of 3", `"drift"`, "cell a.txt:3 changed outside the expectation"} {
++	for _, want := range []string{"evaluation 2; the session may be re-prompted 3 time(s)", `"drift"`, "cell a.txt:3 changed outside the expectation"} {
+ 		if !strings.Contains(entry, want) {
+ 			t.Errorf("entry findings missing %q:\n%s", want, entry)
+ 		}
+@@ -286,9 +286,22 @@ func TestRenderVerifyGateFindings(t *testing.T) {
+ 		t.Errorf("entry findings must not list identities:\n%s", entry)
+ 	}
+ 
++	tailOnly := renderVerifyGateFindings(VerifyGateReport{Attempt: 1, Cap: 3, ExitCode: 2, LogPath: "/scratch/verify.log", LogTail: "build failed: x.go:3"}, fixPromptPath)
++	assertOpensWithWayForward(tailOnly)
++	for _, want := range []string{"exited with code 2", "named no failing test", "/scratch/verify.log", "build failed: x.go:3"} {
++		if !strings.Contains(tailOnly, want) {
++			t.Errorf("tail-only findings missing %q:\n%s", want, tailOnly)
++		}
++	}
++	for _, unwanted := range []string{"Failing identities", "No recorded card touched"} {
++		if strings.Contains(tailOnly, unwanted) {
++			t.Errorf("tail-only findings must not carry %q:\n%s", unwanted, tailOnly)
++		}
++	}
++
+ 	dirty := renderVerifyGateFindings(VerifyGateReport{Attempt: 1, Cap: 3, Dirty: []string{"a.go", "b.txt"}}, fixPromptPath)
+ 	assertOpensWithWayForward(dirty)
+-	for _, want := range []string{"attempt 1 of 3", "a.go", "b.txt"} {
++	for _, want := range []string{"evaluation 1; the session may be re-prompted 3 time(s)", "a.go", "b.txt"} {
+ 		if !strings.Contains(dirty, want) {
+ 			t.Errorf("dirty findings missing %q:\n%s", want, dirty)
+ 		}
