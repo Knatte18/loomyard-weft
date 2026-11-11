@@ -1,14 +1,21 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Raddle-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Record-Write",
-    "last": "",
+    "now": "Raddle-Write",
+    "last": "Record-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/gate-scope-by-coverage-map/_lym/discussion/decision-record.md",
+      "at": "2026-11-11T08:45:11Z"
+    }
+  ],
   "product": {
     "slug": "gate-scope-by-coverage-map",
     "parent": "main",
