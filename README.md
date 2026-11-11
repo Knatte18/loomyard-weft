@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-11 15:52 UTC; every age below is as of then.
+Rendered 2026-11-11 15:53 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -71,7 +71,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Select an importing package's tests from its coverage map, or name the miss that runs it whole** | [`coverage-test-select`](design-coverage-test-select.md)<br>[Sketch](decision-coverage-test-select.md) | darn · solid | T4 | 6h<br>23m | gate, testkit, darn |
+| T14 | **Select an importing package's tests from its coverage map, or name the miss that runs it whole** | [`coverage-test-select`](design-coverage-test-select.md)<br>[Sketch](decision-coverage-test-select.md) | darn · solid | T4 | 6h<br>25m | gate, testkit, darn |
 
 #### Layer B (1)
 
@@ -79,7 +79,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T15 | **A coverage gate scope runs changed packages whole and importing packages' selected tests** | [`gate-scope-coverage`](design-gate-scope-coverage.md)<br>[Sketch](decision-gate-scope-coverage.md) | darn · solid | T14 | 6h<br>23m | gate, testkit, darn |
+| T15 | **A coverage gate scope runs changed packages whole and importing packages' selected tests** | [`gate-scope-coverage`](design-gate-scope-coverage.md)<br>[Sketch](decision-gate-scope-coverage.md) | darn · solid | T14 | 6h<br>25m | gate, testkit, darn |
 
 ### Notes (3)
 
@@ -89,14 +89,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S2 |  | **Decide how the coverage maps are kept fresh, from the upkeep research** | [`testmap-upkeep-design`](design-testmap-upkeep-design.md)<br>[Sketch](decision-testmap-upkeep-design.md) | 1h<br>48m | testkit, gate, dobby |
+| S2 |  | **Decide how the coverage maps are kept fresh, from the upkeep research** | [`testmap-upkeep-design`](design-testmap-upkeep-design.md)<br>[Sketch](decision-testmap-upkeep-design.md) | 1h<br>49m | testkit, gate, dobby |
 
 #### Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 1d<br>25m | testkit, gate |
-| E12 |  | **The prime dobby leaves a coverage map backlog unbuilt until more landings come** | [`testmap-backlog-drain`](design-testmap-backlog-drain.md) | 1d<br>25m | dobby, gate, testkit |
+| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 1d<br>26m | testkit, gate |
+| E12 |  | **The prime dobby leaves a coverage map backlog unbuilt until more landings come** | [`testmap-backlog-drain`](design-testmap-backlog-drain.md) | 1d<br>26m | dobby, gate, testkit |
 
 </details>
 
@@ -115,12 +115,12 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Raddle shows each part's recipe and profile as table columns**<br>• Raddle names recipe and profile only in free text; put them in the proposal table | [`raddle-table-recipe-profile`](design-raddle-table-recipe-profile.md) | darn · light | Darn-Write | neve | 6h<br>34m | stencil, shed |
-| T3 | **Adopt takes over without hanging behind a pause, failing on lym files or replaying stale stops** | [`adopt-takeover-fixes`](design-adopt-takeover-fixes.md) | darn · solid | Code-Burler-Fix | neve | 2h<br>40m | fabric, tender |
-| T7 | **Refresh the README: outdated parts, less wall of text, the dead Autoboard link and a shorter Lineage**<br>• The README is partly outdated, too long-winded, its Autoboard link is dead, and Lineage no longer fits LoomYard | [`readme-refresh`](design-readme-refresh.md) | darn · docs | Darn-Write | neve | 4h<br>34m | docs |
+| T2 | **Raddle shows each part's recipe and profile as table columns**<br>• Raddle names recipe and profile only in free text; put them in the proposal table | [`raddle-table-recipe-profile`](design-raddle-table-recipe-profile.md) | darn · light | Darn-Write | neve | 6h<br>35m | stencil, shed |
+| T3 | **Adopt takes over without hanging behind a pause, failing on lym files or replaying stale stops** | [`adopt-takeover-fixes`](design-adopt-takeover-fixes.md) | darn · solid | Code-Bouncer | neve | 2h<br>41m | fabric, tender |
+| T7 | **Refresh the README: outdated parts, less wall of text, the dead Autoboard link and a shorter Lineage**<br>• The README is partly outdated, too long-winded, its Autoboard link is dead, and Lineage no longer fits LoomYard | [`readme-refresh`](design-readme-refresh.md) | darn · docs | Darn-Write | neve | 4h<br>35m | docs |
 | T8 | **The adopt-check tab closes after the check; reed attach refuses a directory that is no worktree** | [`reed-tab-and-attach-fixes`](design-reed-tab-and-attach-fixes.md) | darn · light | Code-Burler-Fix | neve | 5h<br>1h | reed |
-| T10 | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | darn · light | Darn-Write | neve | 9h<br>34m | heddle |
-| T11 | **lym board upsert --record-file replaces a Sketch's stored record, stamped with the body hash promote checks** | [`record-file-upsert`](design-record-file-upsert.md)<br>[Sketch](decision-record-file-upsert.md) | darn · light | Darn-Write | neve | 19m<br>19m | shed, loom, board |
+| T10 | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | darn · light | Darn-Write | neve | 9h<br>35m | heddle |
+| T11 | **lym board upsert --record-file replaces a Sketch's stored record, stamped with the body hash promote checks** | [`record-file-upsert`](design-record-file-upsert.md)<br>[Sketch](decision-record-file-upsert.md) | darn · light | Darn-Write | neve | 20m<br>20m | shed, loom, board |
 
 #### Ready (0)
 
@@ -135,7 +135,7 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | darn · solid | T3 | 7h<br>1h | dobby, fabric, tender |
-| T17 | **lym loom decision replace folds a run's record under a lock, cuts the history check at it, and refreshes every stored record** | [`decision-record-replace-verb`](design-decision-record-replace-verb.md)<br>[Sketch](decision-decision-record-replace-verb.md) | darn · solid | T11 | 19m<br>19m | shed, loom, board |
+| T17 | **lym loom decision replace folds a run's record under a lock, cuts the history check at it, and refreshes every stored record** | [`decision-record-replace-verb`](design-decision-record-replace-verb.md)<br>[Sketch](decision-decision-record-replace-verb.md) | darn · solid | T11 | 20m<br>20m | shed, loom, board |
 
 #### Layer B (1)
 
@@ -187,8 +187,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 3d<br>3d | heddle |
-| E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 3d<br>19m | shed, loom, darn |
-| E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 23m<br>23m | testkit, gate |
+| E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 3d<br>20m | shed, loom, darn |
+| E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 25m<br>25m | testkit, gate |
 
 #### Features (14)
 
