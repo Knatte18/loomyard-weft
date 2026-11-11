@@ -240,6 +240,15 @@ Rationale: Hard-cap rule: accept when the fix in place already answers each open
   so the share of fresh maps is set by the cadence note `testmap-upkeep` governs.
   The tasks raddle files from this record must be ordered after the task that builds `testmap-upkeep`'s design.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - dirty-recheck-not-fresh-read-window-unbounded (class design, severity MEDIUM, open in rounds 3)
+  - inert-paths-exempts-embedded-file (class design, severity MEDIUM, open in rounds 3)
+  - testmap-upkeep-question-misstates-note (class consistency, severity BLOCKING, open in rounds 1, 2, 3)
+  - union-names-test-no-host-binary-compiles (class design, severity BLOCKING, open in rounds 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: a gate key with `scope: coverage` loads; the scope error for an unknown value names `coverage` among the allowed values.
