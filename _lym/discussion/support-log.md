@@ -13,6 +13,7 @@ Four subagents explored:
 - Upstream (Claude Code 2.1.322 installed): `CLAUDE_CONFIG_DIR` moves login, settings, transcripts and `.claude.json`.
   The status line input carries `rate_limits.five_hour` and `rate_limits.seven_day` since 2.1.80, for subscription accounts after the first API response.
   `/usage` is interactive only, and the OAuth usage endpoint is undocumented and reported to rate-limit.
+  A report that the five-hour window was removed for some Ultra accounts in October 2026 is single-sourced and unverified; D1's per-account window list covers either answer.
 - Launch: the engine's `Prepare` builds the launch and resume commands, and reed's pane line exports the `env` module first and the launch command last.
   `hubgeom`'s `paneEnv` closure knows the worktree, but naming a claude variable there would break the provider seam.
 - Readers: the transcript, session-registry, resume and audit readers take `$HOME/.claude`, and only the plugins lookup honours `CLAUDE_CONFIG_DIR`; hook-driven readers use `transcript_path`.
@@ -36,7 +37,7 @@ Every lens returned a report.
 - bound-breaker 3, accounts, counter and snapshots per hub: fixed by stating the per-hub bound in D1 and D3 and an open risk; a machine-wide per-user store has no `lymdirs` home and would depart from `PATTERN-lym-files`.
 - bound-breaker 4 and interactions 3, concurrent status line writers lowering figures: fixed; per-window merge under a lock, later reset or higher percentage wins (D5).
 - bound-breaker 5, existing-paths 3 and leanness 8, wrong precedence reason: fixed; D5 names the `--settings` file.
-- bound-breaker 6, layer provenance for the tracked-layer refusal: fixed; walkthrough found `configengine` reports provenance, and D1 names it.
+- bound-breaker 6, layer provenance for the tracked-layer refusal: fixed; D1 reads each tracked layer's own document, since `configengine`'s provenance names the highest layer only (round 2).
 - bound-breaker 7, standalone runs: fixed; Scope states they keep today's behaviour.
 - bound-breaker 8, the stat proves existence only: fixed; D3 states the bound.
 - interactions 2 and walkthrough 4, `env` module directory invisible to readers and reports: fixed; D6 reads the module's value among the known directories.
@@ -72,12 +73,14 @@ Every lens returned a report.
 - Picking on a resume with no record: moves a pre-change session away from its transcript, and the resume check refuses.
 - Re-picking when a recorded account leaves the list: strands that worktree's resumable sessions.
 - A machine-wide per-user store for usage figures shared across hubs: no `lymdirs` home exists for one, and it would depart from `PATTERN-lym-files`.
-- Matching the status line's `CLAUDE_CONFIG_DIR` to an account by path: a differently spelled path records nothing; the account name passed as an argument cannot miss.
+- Matching the status line's `CLAUDE_CONFIG_DIR` to an account by path inside the verb: a differently spelled path records nothing; the engine instead resolves the account by its cleaned directory at launch and passes the name.
 - Having deploy sync plugins into every account's directory: a link of the second directory's `plugins` reaches the same with no code.
+- With `claude.accounts` empty, a fresh launch over a record whose directory is gone exporting nothing: the session it starts lands outside the recorded directory, and its own resume is then refused over the gone one.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 2: every finding of `_lym/reviews/discussion/round-2-review.md` fixed; F6 and F7 with the fixer's own change, as `round-2-fixer-report.md` records.
+- Round 3: every finding of `_lym/reviews/discussion/round-3-review.md` fixed, as `round-3-fixer-report.md` records.
 
 ## Question ledger
 
@@ -87,7 +90,7 @@ _No rounds yet._
 - Q4 (resolved, auto-pick): rule for orch and dobby? Same per-worktree rule for prime and beam worktrees. Resume needs one directory per worktree.
 - Q5 (resolved, auto-pick): move on limit or report? Report and wait, as today. A moved session cannot resume.
 - Q6 (resolved, auto-pick): account whose directory is `~/.claude`? Unset `CLAUDE_CONFIG_DIR` in the launch. Setting it would relocate `.claude.json`.
-- Q7 (resolved, auto-pick): precedence over an `env` module `CLAUDE_CONFIG_DIR`? The account wins when accounts are configured; otherwise the `env` value stands.
+- Q7 (resolved, auto-pick): precedence over an `env` module `CLAUDE_CONFIG_DIR`? A worktree's record wins, with accounts configured or not; with no record the `env` value stands.
 - Q8 (resolved, auto-pick): invalid accounts config? Refused, failing the launch; never degraded to no accounts, which would silently put every session on one account.
 - Q9 (resolved, auto-pick): is an account without a login eligible? No: a stat of `.credentials.json` gates it, without reading it.
 - Q10 (resolved, auto-pick): how the second account is wired for the test: fake directories in automated tests and a one-time manual check by the operator (D9).
