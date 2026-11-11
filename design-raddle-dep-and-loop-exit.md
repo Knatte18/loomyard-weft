@@ -1,6 +1,26 @@
-# Loop exit not recorded when a step's loop ends without an envelope (loop-exited)
+# raddle-propose refuses a note dependency early; a loop exit without an envelope shows its log tail
 
-`loop-exit-log-tail` · Note · bug, loom, shed, friction
+`raddle-dep-and-loop-exit` · Task · bug, shed, board, loom · draft
+
+Depends on: [`load-turn-retry-cap`](design-load-turn-retry-cap.md)
+
+First read what landing d1535412 (shedverbs: record how an --until-stop loop's process ended) already covers of the second note; do only what is left, and the first note whole.
+
+## From note raddle-propose-note-deps
+
+## Seen (2026-11-11, raddle of gate-scope-by-coverage-map)
+
+The raddle proposal gave part `testmap-cross-package` a `depends_on` on the note `testmap-upkeep`.
+`raddle-propose` validated the proposal and passed it, and the operator was asked to approve it.
+Raddle-File then refused the entry because a note cannot be depended on, and the run failed at Raddle-File.
+The refusal text ends in "promote \"testmap-upkeep\" with ;", so the command it names is missing.
+
+## Idea
+
+Make `raddle-propose` refuse a `depends_on` that names a note, with the way forward (promote the note, or drop the dependency), so the check runs before the operator approves.
+Complete the Raddle-File refusal text with the command it means.
+
+## From note loop-exit-log-tail
 
 Imported from [issue #111](https://github.com/Knatte18/loomyard/issues/111).
 
@@ -25,3 +45,4 @@ Without a recorded exit status, an intentional interrupt and a lym crash look th
 - When the exit cannot be captured, say why in the note instead of `not recorded`.
 
 Provenance: task slug `models-full-buildsection`; note `loom-halt-2.md`.
+

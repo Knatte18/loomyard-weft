@@ -701,10 +701,10 @@
     },
     {
       "id": 1300,
-      "handle": "B1",
+      "handle": "T5",
       "slug": "adopt-handover-test-gaps",
       "title": "Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "dobby",
@@ -712,12 +712,17 @@
         "tender"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "adopt-takeover-fixes"
+      ],
       "isolated": false,
       "brief": "",
       "body": "## Seen (board tidy, 2026-11-11)\n\n`adopt-owner-handover` landed as `0198b955` with four findings its review left open under \"To check by hand\":\n\n- A beam with no owner recorded under an adopted `root` may not be covered by the under-adopt accessor in `internal/adoptrecord/watch.go`; the review marked it BLOCKING.\n  The accessor's comment says such a beam takes its parent's subject, `root` above the top, so it reads covered;\n  no test shows that the watcher and dobby of such a beam stay up and idle during `lym adopt root`.\n- The adopt hold in `internal/dobbyengine/handover.go` skips steps (pause, archive, pass starts) that no test pins.\n- The decision rows for which tips the owner archive takes (origin absent, equal, ahead, diverged) in `internal/fabricengine/ownerarchive.go` have no test rows.\n- The pairs the owner archive covers, in `internal/beamcli/ownerarchive.go` and `internal/fabricengine/ownerarchive.go`, are untested end to end.\n\n## Idea\n\nSettle the BLOCKING point first: a test of `adoptrecord.Watch.Covers` for a beam with no owner of its own under an unfinished `root` adopt,\nand a fix if it reads uncovered.\nThen add the missing test rows for the hold's skipped steps and the owner archive's decision rows, and one end-to-end test of the archive over a beam's pairs.\n",
+      "status": "draft",
       "created": "2026-11-11T08:49:23Z",
-      "revised": "2026-11-11T08:49:23Z"
+      "revised": "2026-11-11T14:04:11Z",
+      "profile": "solid"
     },
     {
       "id": 1301,
@@ -756,25 +761,6 @@
       "body": "## Seen (2026-11-11, raddle of gate-scope-by-coverage-map)\n\nRaddle shows its proposed parts to the operator in a table, but states each part's recipe and profile only in the free text around it.\nThe operator has to read the prose to learn what each part will run as.\n\n## Idea\n\nGive the proposal table one column for the recipe and one for the profile of each part, such as `darn` and `solid`.\nThe prose keeps only the reasons for the choice and the alternatives set aside.\n",
       "created": "2026-11-11T09:05:00Z",
       "revised": "2026-11-11T09:05:00Z"
-    },
-    {
-      "id": 1303,
-      "handle": "B2",
-      "slug": "raddle-propose-note-deps",
-      "title": "raddle-propose passes a dependency on a note that Raddle-File refuses",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shed",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Validate depends_on targets at raddle-propose, before approval; fix the truncated refusal text",
-      "body": "## Seen (2026-11-11, raddle of gate-scope-by-coverage-map)\n\nThe raddle proposal gave part `testmap-cross-package` a `depends_on` on the note `testmap-upkeep`.\n`raddle-propose` validated the proposal and passed it, and the operator was asked to approve it.\nRaddle-File then refused the entry because a note cannot be depended on, and the run failed at Raddle-File.\nThe refusal text ends in \"promote \\\"testmap-upkeep\\\" with ;\", so the command it names is missing.\n\n## Idea\n\nMake `raddle-propose` refuse a `depends_on` that names a note, with the way forward (promote the note, or drop the dependency), so the check runs before the operator approves.\nComplete the Raddle-File refusal text with the command it means.\n",
-      "created": "2026-11-11T09:05:57Z",
-      "revised": "2026-11-11T09:05:57Z"
     },
     {
       "id": 1304,
@@ -852,63 +838,6 @@
       "profile": "solid",
       "project": "test-suite-trim",
       "discussed": true
-    },
-    {
-      "id": 1307,
-      "handle": "B3",
-      "slug": "creel-repeat-notices",
-      "title": "Creel repeats the same notice many times for an unchanged state",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "creel",
-        "dobby",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Dobby and fabric sent identical notices about 25 times during an outage",
-      "body": "## Seen (orch, 2026-11-11)\n\nDuring a network outage on OSL-1046 (`Could not resolve host: github.com`, `EAI_AGAIN`), the orch's mail held about 25 dobby notices that read the same for `testmap-verb` and `arras-recipe-perch`: same state, same `since` time, same history length.\nFABRIC sent the same push failure for the same branch several times, for example the bolt branch `main` and the records branch of each pair.\n\n## Idea\n\nA notice whose text and run state have not changed since the last one sent to the same strand is not sent again, or is sent again only after a stated interval.\nRead first where dobby and fabric decide to send, and whether a repeat is deliberate, for instance as a reminder.\n",
-      "created": "2026-11-11T09:56:17Z",
-      "revised": "2026-11-11T09:56:17Z"
-    },
-    {
-      "id": 1308,
-      "handle": "B4",
-      "slug": "creel-stale-mail-delivery",
-      "title": "Creel hands the orch mail about runs and pairs that no longer exist",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "creel",
-        "orch"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A day-old queue of notices about torn-down pairs reached the orch as live mail",
-      "body": "## Seen (orch, 2026-11-11)\n\nThe orch received creel mail more than a day old, about pairs the orch had already torn down with `lym cleanup --apply`: `terminal-titles-hub-project`, `testmap-verb` and `arras-recipe-perch`.\nIt arrived under a tool result when the orch loaded skills, long after the orch's last turn, and the senders' runs no longer existed.\nOne line asked the orch to settle a stop of a run that was gone.\n\n## Idea\n\nMail addressed about a run or pair that no longer exists is dropped or marked stale rather than handed to the orch as live.\nRead first why the mail waited in the queue, whether the orch's session was down, and whether teardown can clear the strand's pending notices.\n",
-      "created": "2026-11-11T09:56:17Z",
-      "revised": "2026-11-11T09:56:17Z"
-    },
-    {
-      "id": 1309,
-      "handle": "B5",
-      "slug": "adopt-check-tab-stays",
-      "title": "The adopt-check tab stays open and takes space after the check ends",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The tab of a finished adopt check is not closed or shrunk",
-      "body": "## Seen (operator, 2026-11-11)\n\nAfter `lym adopt root` ran its check on OSL-1046, an `adopt-check` tab stayed open at the bottom of the terminal and took a lot of space.\nThe check had ended green in all three tiers, and the tab was still there.\n\n## Idea\n\nClose the check's pane or tab when the adopt check ends, or shrink it to one line, since its result is already in the adopt record and the creel mail.\nRead first which part of `lym adopt` opens the tab, whether a failed check should keep it open for the operator, and where the suite log stays readable after the close.\n",
-      "created": "2026-11-11T10:17:53Z",
-      "revised": "2026-11-11T10:17:53Z"
     },
     {
       "id": 1310,
@@ -1071,10 +1000,10 @@
     },
     {
       "id": 1321,
-      "handle": "B10",
+      "handle": "T9",
       "slug": "merge-parent-slug-reuse",
       "title": "beam merge-parent reuses the slug of a completed merge-in run",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "workspaces",
@@ -1083,12 +1012,17 @@
       "issues": [
         115
       ],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "creel-notice-hygiene"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #115](https://github.com/Knatte18/loomyard/issues/115).\n\n## Seen\n\n`lym beam merge-parent \u003cbeam\u003e` names its merge task `\u003cbeam\u003e-merge-in` every time.\nA beam that already merged its parent once, through a completed and torn-down `\u003cbeam\u003e-merge-in` run, gets a second task with the same slug.\nDobby then refuses to start it: `\"\u003cbeam\u003e-merge-in\" has already completed; to run it again, run \"lym batten cleanup --apply\" from the prime ... or give the new task a different slug`.\n\n## Workaround\n\nThe beam orch renamed the new task to `\u003cbeam\u003e-merge-in-2` with `lym board rename`, and dobby started it.\n\n## Expected\n\n`merge-parent` picks a slug that no completed run or leftover task branch holds, such as a numbered suffix, so a second merge of the parent starts without a hand rename.\n",
+      "status": "draft",
       "created": "2026-11-11T14:02:30Z",
-      "revised": "2026-11-11T14:02:30Z"
+      "revised": "2026-11-11T14:04:12Z",
+      "profile": "light"
     },
     {
       "id": 1322,
@@ -1114,53 +1048,11 @@
       "revised": "2026-11-11T14:02:33Z"
     },
     {
-      "id": 1323,
-      "handle": "B11",
-      "slug": "reed-attach-non-worktree",
-      "title": "reed: lym a in the hub's _bolt directory boots a reed session there",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "reed"
-      ],
-      "issues": [
-        112
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #112](https://github.com/Knatte18/loomyard/issues/112).\n\n## What was seen\n\nRunning `lym a` (lym reed attach) by mistake in the hub's board checkout `_bolt`, which is no worktree of the hub, booted a tmux session named `_bolt` on the hub's reed socket with one bare shell pane.\n`lym reed list` from the prime did not show it; only `tmux ls` did.\n\n## Workaround\n\n`lym reed down` run with cwd `_bolt` removed the session.\n\n## Expected\n\n`lym reed attach` and `lym reed up` refuse a directory that is not a fabric worktree of the hub, such as `_bolt` or a weft checkout, and name the prime or a worktree to attach to instead.\n",
-      "created": "2026-11-11T14:02:35Z",
-      "revised": "2026-11-11T14:02:35Z"
-    },
-    {
-      "id": 1324,
-      "handle": "B12",
-      "slug": "loop-exit-log-tail",
-      "title": "Loop exit not recorded when a step's loop ends without an envelope (loop-exited)",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "shed",
-        "friction"
-      ],
-      "issues": [
-        111
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #111](https://github.com/Knatte18/loomyard/issues/111).\n\n## What happened\n\nA `lym loom` run halted as `failed` with anomaly `interrupted-stop` at step `Code-Bouncer`.\nThe status error was `shedverbs: step Code-Bouncer interrupted (loop-exited)`.\nThe note reported `loop exit: not recorded`, so neither the exit code nor the signal that ended the loop was available.\nThe \"loop log\" field in the halt note held only the JSON envelopes of earlier steps (`Code-Bouncer`, `Code-Burler-Review`, `Code-Burler-Fix`, all outcome `stuck`) rather than anything from the interrupted loop's own end.\nThe history shows the same three steps already ran with outcome `stuck` before the interrupted `Code-Bouncer` invocation.\n\n## Why it is abnormal\n\nThe halt cannot be diagnosed from what lym records.\nThe way forward tells the operator to read `loop.trace_copy` and `loop.stderr_path` and apply `loop.interrupt_policy`, but the note gives no hint why the loop ended without an envelope (crash, kill, timeout, operator interrupt).\nWithout a recorded exit status, an intentional interrupt and a lym crash look the same.\n\n## What to do\n\n- Record the loop process's exit code or terminating signal in the halt note and in the run status when a loop ends without an envelope.\n- Make the \"loop log\" field show the tail of the interrupted loop's own output, not the envelopes of steps that completed earlier.\n- When the exit cannot be captured, say why in the note instead of `not recorded`.\n\nProvenance: task slug `models-full-buildsection`; note `loom-halt-2.md`.\n",
-      "created": "2026-11-11T14:02:37Z",
-      "revised": "2026-11-11T14:02:37Z"
-    },
-    {
       "id": 1325,
-      "handle": "B13",
+      "handle": "T16",
       "slug": "await-forks-subdir-cwd",
       "title": "lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "shuttle",
@@ -1169,12 +1061,18 @@
       "issues": [
         110
       ],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "load-turn-retry-cap",
+        "adopt-takeover-fixes"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #110](https://github.com/Knatte18/loomyard/issues/110).\n\nWhat happened: during a burler plan round the harness moved the session's working directory to the weft's `_lym/plan`. `lym shuttle await-forks` then failed with \"cwd is outside the recorded fabric anchor subtree\", because it accepts only the anchored directory itself rather than anything inside the anchor subtree.\n\nWhy abnormal: the message says \"subtree\", yet a directory inside the weft's own `_lym/plan` is refused. The session cannot control the harness's cwd changes. The self-check fell back to taking each fork's result as it arrived, across four turns.\n\nWhat to do: make `lym shuttle await-forks` accept a cwd anywhere under the recorded anchor, or resolve the anchor from the weft root. Otherwise make the error name the required directory.\n\nProvenance: task slug adopt-worker-record; note burler-plan-r2.md.",
+      "status": "draft",
       "created": "2026-11-11T14:02:40Z",
-      "revised": "2026-11-11T14:02:40Z"
+      "revised": "2026-11-11T14:04:13Z",
+      "profile": "light"
     },
     {
       "id": 1326,
@@ -1199,6 +1097,84 @@
       "created": "2026-11-11T13:26:56Z",
       "revised": "2026-11-11T14:04:10Z",
       "profile": "solid"
+    },
+    {
+      "id": 1327,
+      "handle": "T6",
+      "slug": "creel-notice-hygiene",
+      "title": "Creel sends an unchanged notice once and drops mail about runs that no longer exist",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "creel",
+        "dobby",
+        "fabric",
+        "orch"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "adopt-handover-test-gaps"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Fix both creel faults in one run. Read first where dobby and fabric decide to send, and why mail waited in the queue.\n\n## From note creel-repeat-notices\n\n## Seen (orch, 2026-11-11)\n\nDuring a network outage on OSL-1046 (`Could not resolve host: github.com`, `EAI_AGAIN`), the orch's mail held about 25 dobby notices that read the same for `testmap-verb` and `arras-recipe-perch`: same state, same `since` time, same history length.\nFABRIC sent the same push failure for the same branch several times, for example the bolt branch `main` and the records branch of each pair.\n\n## Idea\n\nA notice whose text and run state have not changed since the last one sent to the same strand is not sent again, or is sent again only after a stated interval.\nRead first where dobby and fabric decide to send, and whether a repeat is deliberate, for instance as a reminder.\n\n## From note creel-stale-mail-delivery\n\n## Seen (orch, 2026-11-11)\n\nThe orch received creel mail more than a day old, about pairs the orch had already torn down with `lym cleanup --apply`: `terminal-titles-hub-project`, `testmap-verb` and `arras-recipe-perch`.\nIt arrived under a tool result when the orch loaded skills, long after the orch's last turn, and the senders' runs no longer existed.\nOne line asked the orch to settle a stop of a run that was gone.\n\n## Idea\n\nMail addressed about a run or pair that no longer exists is dropped or marked stale rather than handed to the orch as live.\nRead first why the mail waited in the queue, whether the orch's session was down, and whether teardown can clear the strand's pending notices.\n\n",
+      "status": "draft",
+      "created": "2026-11-11T09:56:17Z",
+      "revised": "2026-11-11T14:04:11Z",
+      "profile": "light"
+    },
+    {
+      "id": 1328,
+      "handle": "T7",
+      "slug": "raddle-dep-and-loop-exit",
+      "title": "raddle-propose refuses a note dependency early; a loop exit without an envelope shows its log tail",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "shed",
+        "board",
+        "loom"
+      ],
+      "issues": [
+        111
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "load-turn-retry-cap"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "First read what landing d1535412 (shedverbs: record how an --until-stop loop's process ended) already covers of the second note; do only what is left, and the first note whole.\n\n## From note raddle-propose-note-deps\n\n## Seen (2026-11-11, raddle of gate-scope-by-coverage-map)\n\nThe raddle proposal gave part `testmap-cross-package` a `depends_on` on the note `testmap-upkeep`.\n`raddle-propose` validated the proposal and passed it, and the operator was asked to approve it.\nRaddle-File then refused the entry because a note cannot be depended on, and the run failed at Raddle-File.\nThe refusal text ends in \"promote \\\"testmap-upkeep\\\" with ;\", so the command it names is missing.\n\n## Idea\n\nMake `raddle-propose` refuse a `depends_on` that names a note, with the way forward (promote the note, or drop the dependency), so the check runs before the operator approves.\nComplete the Raddle-File refusal text with the command it means.\n\n## From note loop-exit-log-tail\n\nImported from [issue #111](https://github.com/Knatte18/loomyard/issues/111).\n\n## What happened\n\nA `lym loom` run halted as `failed` with anomaly `interrupted-stop` at step `Code-Bouncer`.\nThe status error was `shedverbs: step Code-Bouncer interrupted (loop-exited)`.\nThe note reported `loop exit: not recorded`, so neither the exit code nor the signal that ended the loop was available.\nThe \"loop log\" field in the halt note held only the JSON envelopes of earlier steps (`Code-Bouncer`, `Code-Burler-Review`, `Code-Burler-Fix`, all outcome `stuck`) rather than anything from the interrupted loop's own end.\nThe history shows the same three steps already ran with outcome `stuck` before the interrupted `Code-Bouncer` invocation.\n\n## Why it is abnormal\n\nThe halt cannot be diagnosed from what lym records.\nThe way forward tells the operator to read `loop.trace_copy` and `loop.stderr_path` and apply `loop.interrupt_policy`, but the note gives no hint why the loop ended without an envelope (crash, kill, timeout, operator interrupt).\nWithout a recorded exit status, an intentional interrupt and a lym crash look the same.\n\n## What to do\n\n- Record the loop process's exit code or terminating signal in the halt note and in the run status when a loop ends without an envelope.\n- Make the \"loop log\" field show the tail of the interrupted loop's own output, not the envelopes of steps that completed earlier.\n- When the exit cannot be captured, say why in the note instead of `not recorded`.\n\nProvenance: task slug `models-full-buildsection`; note `loom-halt-2.md`.\n\n",
+      "status": "draft",
+      "created": "2026-11-11T09:05:57Z",
+      "revised": "2026-11-11T14:04:11Z",
+      "profile": "light"
+    },
+    {
+      "id": 1329,
+      "handle": "T8",
+      "slug": "reed-tab-and-attach-fixes",
+      "title": "The adopt-check tab closes after the check; reed attach refuses a directory that is no worktree",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "reed"
+      ],
+      "issues": [
+        112
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "slack-per-orch-activation"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Fix both reed faults in one run.\n\n## From note adopt-check-tab-stays\n\n## Seen (operator, 2026-11-11)\n\nAfter `lym adopt root` ran its check on OSL-1046, an `adopt-check` tab stayed open at the bottom of the terminal and took a lot of space.\nThe check had ended green in all three tiers, and the tab was still there.\n\n## Idea\n\nClose the check's pane or tab when the adopt check ends, or shrink it to one line, since its result is already in the adopt record and the creel mail.\nRead first which part of `lym adopt` opens the tab, whether a failed check should keep it open for the operator, and where the suite log stays readable after the close.\n\n## From note reed-attach-non-worktree\n\nImported from [issue #112](https://github.com/Knatte18/loomyard/issues/112).\n\n## What was seen\n\nRunning `lym a` (lym reed attach) by mistake in the hub's board checkout `_bolt`, which is no worktree of the hub, booted a tmux session named `_bolt` on the hub's reed socket with one bare shell pane.\n`lym reed list` from the prime did not show it; only `tmux ls` did.\n\n## Workaround\n\n`lym reed down` run with cwd `_bolt` removed the session.\n\n## Expected\n\n`lym reed attach` and `lym reed up` refuse a directory that is not a fabric worktree of the hub, such as `_bolt` or a weft checkout, and name the prime or a worktree to attach to instead.\n\n",
+      "status": "draft",
+      "created": "2026-11-11T10:17:53Z",
+      "revised": "2026-11-11T14:04:12Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
