@@ -1,6 +1,6 @@
 # The orch session starts on the provider default model because orch.model and orch.effort default to empty
 
-`orch-model-default-empty` · Task · bug, orch, config · running · Describe
+`orch-model-default-empty` · Task · bug, orch, config · running · PR-Review
 
 ## Seen (operator, 2026-11-11)
 
