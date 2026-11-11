@@ -21,6 +21,11 @@ It complements #86 (the parent asked for review at PR time), which has landed (`
 This setting could replace it for most runs.
 
 
+## Belongs with `discussion-extra-reviewer-fans` (operator, 2026-11-11)
+
+This note and `discussion-extra-reviewer-fans` ask for one thing from two sides: an extra review of the Discussion record by the parent orch or a named agent.
+They are designed together, in one Motif.
+
 ## Issue comment, 2026-11-08
 
 Constraint from the operator: a parent orch is often very busy with coordination (the LoomYard hub's orch especially), which is why the parent review was dropped before. The design should keep the parent's load small: the review is opt-in per task, so a busy orch's hub leaves it off; the orch can hand the review to a fork of itself, which keeps its knowledge of the run but keeps the review out of the orch's main thread; and a deadline lets the run go on to Plan without the parent's review, recording that it did.
