@@ -676,7 +676,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `decision-record-replace`.\n\nTakes: lym board upsert --record-file from record-file-upsert, named by D3's filed refusal and by D6's parent directive; add's guards, refusals and notice in decision.go; CommitAnchoredPathsWithTrailers, FindTrailerCommit and commitEmptySnapshot in fabricengine; Board.HoldsRaddleFiling and raddleRunFiling\nDelivers: lym loom decision replace with its guards, base-hash check, carry-over and added-entry checks, trailer commit and notice; the per-run decision lock shared by add, replace, store and writeCarryOver; recordHistory cut at the newest Lym-Record-Replaced trailer; D3's board copy and filed refusal; the D6 spec, parent directive and overview text\nExports: fabricengine.CommitEmptyWithTrailers, a first-parent trailer-key commit list and an anchored file's first-parent history with commit SHAs and positions; a gitrepo.Repo method that commits one path allowing an empty commit; discussionparser checks for carry-over block equality and the added-entry subset\n\nThe part changes these packages:\n\n- internal/loomcli (about 900 changed lines)\n- internal/fabricengine (about 300 changed lines)\n- internal/gitrepo (about 80 changed lines)\n- internal/discussionparser (about 150 changed lines)\n- contracts/specs (about 15 changed lines)\n- contracts/stencils/parent (about 15 changed lines)\n- docs (about 10 changed lines)\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-11T15:32:42Z",
       "revised": "2026-11-11T15:32:42Z",
       "profile": "solid",
