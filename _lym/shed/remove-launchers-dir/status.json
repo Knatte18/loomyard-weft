@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,93 @@
       "output": "",
       "at": "2026-11-11T14:24:39Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/remove-launchers-dir/_lym/landing/summary.md",
+      "at": "2026-11-11T15:07:20Z",
+      "gate_attempts": 3,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T14:39:29.216114733Z",
+          "end": "2026-11-11T14:39:29.227142024Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T14:55:32.86254843Z",
+          "end": "2026-11-11T14:55:32.879314618Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T14:59:52.464112545Z",
+          "end": "2026-11-11T14:59:52.479430197Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T15:03:56.798831011Z",
+          "end": "2026-11-11T15:03:56.851811998Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T14:39:29.291248175Z",
+          "end": "2026-11-11T14:53:38.037978766Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-11T14:53:39.139718761Z",
+          "end": "2026-11-11T14:55:32.766972422Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T14:55:32.978021636Z",
+          "end": "2026-11-11T14:59:45.553056091Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-11T14:59:46.220372098Z",
+          "end": "2026-11-11T14:59:47.222796287Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T14:59:52.571050363Z",
+          "end": "2026-11-11T15:03:49.052610329Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-11T15:03:49.63727049Z",
+          "end": "2026-11-11T15:03:56.697694193Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T15:03:57.153568332Z",
+          "end": "2026-11-11T15:06:46.701431454Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T15:06:46.755253482Z",
+          "end": "2026-11-11T15:06:46.950903272Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T15:06:47.003745319Z",
+          "end": "2026-11-11T15:06:47.003940945Z"
+        }
+      ]
     }
   ],
   "product": {
