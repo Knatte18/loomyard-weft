@@ -793,6 +793,27 @@
       "body": "## Seen (operator, 2026-11-09)\n\nSince `7bccde26` every console window is titled `\u003chub\u003e: \u003cP#\u003e: \u003cT#\u003e: \u003cslug\u003e`, such as `ly: P1: T2: adopt-worker-record`.\nThe operator finds it hard to read: the task handle, which they look for first, sits third, behind two colon-separated prefixes.\nA task under root shows no project today.\n\n## Idea\n\nPut the leading handle first and set the hub and project apart in brackets:\n\n- A task: `T2 [ly:P1] adopt-worker-record`.\n- A task under root names root's project, `P0`: `T5 [ly:P0] machine-name-file`.\n- An orch leads with `ORCH` in place of a task handle:\n  the prime's orch is `ORCH [ly:P0] Prime`, and a beam's orch is `ORCH [ly:P1] adopt-takeover`, naming its beam's project and slug.\n\nFixed by the operator: the handle comes first, brackets read better than a chain of colons, root is project `P0`, and the prime's orch is `ORCH [ly:P0] Prime`.\nStill open: the exact form of the bracket, and the title of the other windows that hold no task, such as the runs window, in the same style.\n",
       "created": "2026-11-09T20:49:59Z",
       "revised": "2026-11-09T20:52:02Z"
+    },
+    {
+      "id": 1282,
+      "handle": "E7",
+      "slug": "remove-launchers-dir",
+      "title": "Remove the hub's _launchers directory: nothing in lym runs its scripts",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "cleanup"
+      ],
+      "issues": [
+        95
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #95](https://github.com/Knatte18/loomyard/issues/95).\n\nSeen (orch, 2026-11-10): internal/fabricengine writes \u003chub\u003e/_launchers/\u003canchor\u003e/\u003cslug\u003e/{ide.sh,run.sh,fabric-checkout.sh} for each pair, plus \u003chub\u003e/_launchers/ide-menu.sh, and removes them with the pair (addanchor.go, reconcile.go, anchorchange.go, destroy.go). A read of the non-test code finds no caller that runs, reads or documents those scripts; only the writer and the cleanup of them use the directory. The operator says terminals open through reed and the directory is no longer used. Leftovers of pairs that no longer exist stay behind, for example the pairs cold-gate-fixer and fabricengine-tier1-timeout-load of 2026-11-02. Idea: take the launcher scripts, ide-menu, the portal launcher test and the reserved _launchers name out of fabricengine in one rename-free removal, and make lym cleanup remove an existing _launchers directory once. Check first whether any desktop shortcut or VS Code task of an installed hub still points at one of the scripts.",
+      "created": "2026-11-11T06:22:43Z",
+      "revised": "2026-11-11T06:22:43Z"
     }
   ],
   "prime_owner": "neve",
