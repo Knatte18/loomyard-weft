@@ -1,6 +1,6 @@
 # Remove the hub's _launchers directory: nothing in lym runs its scripts
 
-`remove-launchers-dir` · Task · enhancement, fabric, cleanup · running · Darn-Write
+`remove-launchers-dir` · Task · enhancement, fabric, cleanup · running · Drift-Verify
 
 Imported from [issue #95](https://github.com/Knatte18/loomyard/issues/95).
 
