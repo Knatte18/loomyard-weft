@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-11 14:47 UTC; every age below is as of then.
+Rendered 2026-11-11 14:48 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -57,7 +57,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Decide how the coverage maps are kept fresh, from the upkeep research** | [`testmap-upkeep-design`](design-testmap-upkeep-design.md) | motif | Discussion-Burler-Fix | neve | 45m<br>45m | testkit, gate, dobby |
+| T2 | **Decide how the coverage maps are kept fresh, from the upkeep research** | [`testmap-upkeep-design`](design-testmap-upkeep-design.md) | motif | Discussion-Burler-Fix | neve | 46m<br>46m | testkit, gate, dobby |
 | T4 | **testmap records each test's coverage across every in-module package its binary links** | [`testmap-cross-package`](design-testmap-cross-package.md)<br>[Sketch](decision-testmap-cross-package.md) | darn · solid | Darn-Write | neve | 5h<br>5h | gate, testkit, darn |
 
 #### Ready (0)
@@ -111,11 +111,11 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **raddle-propose refuses a note dependency early; a loop exit without an envelope shows its log tail** | [`raddle-dep-and-loop-exit`](design-raddle-dep-and-loop-exit.md) | darn · light | Darn-Write | neve | 5h<br>43m | shed, board, loom |
-| T10 | **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | darn · light | Darn-Write | neve | 8h<br>14m | heddle |
+| T10 | **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | darn · light | Darn-Write | neve | 8h<br>15m | heddle |
 | T11 | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | Darn-Write | neve | 8h<br>7h | fabric, cleanup |
 | T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | Darn-Write | neve | 2d<br>6h | slack, reed, creel |
 | T17 | **A Sketch or decision record can be edited or replaced, and raddle follows the newer design** | [`decision-record-replace`](design-decision-record-replace.md) | motif | Discussion-Burler-Fix | neve | 45m<br>43m | shed, loom, board |
-| T19 | **Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome** | [`finalize-flaky-test-gaps`](design-finalize-flaky-test-gaps.md) | darn · light | Code-Bouncer | neve | 5h<br>14m | landing, gate |
+| T19 | **Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome** | [`finalize-flaky-test-gaps`](design-finalize-flaky-test-gaps.md) | darn · light | Code-Burler-Review | neve | 5h<br>15m | landing, gate |
 
 #### Ready (0)
 
@@ -138,7 +138,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | darn · solid | T3 | 5h<br>14m | dobby, fabric, tender |
+| T5 | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | darn · solid | T3 | 5h<br>15m | dobby, fabric, tender |
 
 #### Layer C (1)
 
@@ -155,7 +155,7 @@ Starts when every entry it names under After is done.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T9 | **beam merge-parent reuses the slug of a completed merge-in run** | [`merge-parent-slug-reuse`](design-merge-parent-slug-reuse.md) | darn · light | T6 | 45m<br>43m | workspaces, dobby |
-| T16 | **lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor** | [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md) | darn · light | T6 | 44m<br>43m | shuttle, fabric |
+| T16 | **lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor** | [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md) | darn · light | T6 | 45m<br>43m | shuttle, fabric |
 
 #### Layer E (1)
 
@@ -163,7 +163,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T13 | **Tests for the lym verb directory calls and the stops of unconverted steps in an anchored hub** | [`anchored-hub-test-gaps`](design-anchored-hub-test-gaps.md) | darn · light | T16 | 45m<br>14m | fabric |
+| T13 | **Tests for the lym verb directory calls and the stops of unconverted steps in an anchored hub** | [`anchored-hub-test-gaps`](design-anchored-hub-test-gaps.md) | darn · light | T16 | 46m<br>15m | fabric |
 
 #### Layer F (1)
 
@@ -171,7 +171,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T18 | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | darn · light | T13 | 7h<br>14m | fabric, ide |
+| T18 | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | darn · light | T13 | 7h<br>15m | fabric, ide |
 
 ### Notes (22)
 
@@ -204,7 +204,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F3 |  | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | 3d<br>2h | slack, creel, orch |
 | F4 |  | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | 8h<br>6h | config, fabric |
 | F5 |  | **Let the parent orch review the Discussion decision record before Plan** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md) | 2d<br>2d | loom, orch, config |
-| F6 |  | **Extra reviewer fans at the Discussion perch: parent orch or a named agent** | [`discussion-extra-reviewer-fans`](design-discussion-extra-reviewer-fans.md) | 44m<br>44m | loom, burler, config, orch |
+| F6 |  | **Extra reviewer fans at the Discussion perch: parent orch or a named agent** | [`discussion-extra-reviewer-fans`](design-discussion-extra-reviewer-fans.md) | 45m<br>45m | loom, burler, config, orch |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 12d<br>5d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 5w<br>7d | board, ide, orch |
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 9d<br>3d | claude, shuttle, config |
