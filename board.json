@@ -598,10 +598,10 @@
     },
     {
       "id": 1314,
-      "handle": "S2",
+      "handle": "T1",
       "slug": "testmap-upkeep-design",
       "title": "Decide how the coverage maps are kept fresh, from the upkeep research",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "sketch",
         "testkit",
@@ -609,12 +609,13 @@
         "dobby"
       ],
       "issues": [],
+      "recipe": "raddle",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Why\n\nThe research task `testmap-upkeep` landed `docs/research/speed/testmap-upkeep-2026-11-11/report.md`, which decides nothing.\n`testmap-cross-package`, `coverage-test-select` and `gate-scope-coverage` were filed on the premise that this design exists, and `testmap-cross-package` stopped before any code for that reason.\n\nBuilt since (board tidy, 2026-11-11): `testmap-cross-package` has landed (`99bec44e`).\nIts maps record a linked package's coverage by function (`Funcs`, `Linked`, `OtherFiles`, `MapTest.Spawn`, and a `Format` marker with an environment stamp), which agrees with this record's D3.\nIt left staleness as it was: a change to a linked package's file alone leaves a map fresh, until the build of D1 lands.\n\n## This task\n\nRun Discussion alone over the report and store the decision record on this entry.\nDecide:\n\n- whether a change in a linked-only package leaves a map fresh, which the cross-package criterion now assumes;\n- whether a failed build keeps the old map or writes a failed-build map;\n- whether testmap skips spawn-marked tests;\n- whether another package's coverage is recorded by function or by block;\n- what the decision changes in `testmap-cross-package`, `coverage-test-select`, `gate-scope-coverage`, `testmap-backlog-drain` and `redundancy-sweep-existing`.\n\nThe three build tasks stay held until this record is approved.\n",
       "created": "2026-11-11T14:01:41Z",
-      "revised": "2026-11-11T16:22:14Z",
+      "revised": "2026-11-11T16:41:27Z",
       "project": "test-suite-trim",
       "discussed": true
     },
