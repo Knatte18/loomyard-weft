@@ -1,91 +1,77 @@
-# lym loom decision replace folds a run's decision record under a lock
+# Add `lym loom decision replace` and cut the history check at it
 
-`lym loom decision replace` lets a run's parent change or withdraw an earlier decision by writing a whole, checked decision record.
-It folds `Added after Discussion` entries into the main decisions.
-Until now the only post-Discussion writer was `decision add`, which appends; nothing could fold the record or drop a stale call.
-The dropped-entry check also held every added entry forever.
+A run's decision record past Discussion approval could only grow through `lym loom decision add`.
+A changed or withdrawn call stayed in the record as a stale entry, and the board copy of a raddle run's Sketch went stale.
+This change adds a whole-record `replace` verb, bounds the dropped-entry check at the newest replace, and keeps every stored record current.
 
 ## What changes
 
-**The `replace` verb** (`internal/loomcli/decision.go`).
-`lym loom decision replace [<slug>] --by parent|operator|arbiter --from <file> --title <t> --base-sha256 <hex>`:
-
-- It takes `add`'s caller guards, now shared as `decisionCallerRefusal`, and refuses on every run `add` refuses.
-- It is also refused before a Discussion approval the recipe has.
-- It is refused between the plan's approval and the recipe's last Webster row, where each fresh Webster prompt renders only added entries.
-  `loomrecipe.InImplementerSpan` reads that span from the recipe's rows.
-  Both refusals name `lym loom decision add`.
-- The record committed at HEAD must hash to `--base-sha256`, and the working copy must equal it.
-  The refusal names no hash; its way forward is to re-read, rebuild and re-run.
-- The file must pass the section check and `CheckDecisionIDs`.
-  It must keep every carry-over block byte for byte (`discussionparser.CheckCarryOversKept`).
-  Each of its added entries must equal one of the record's (`discussionparser.CheckAddedEntriesSubset`).
-  So it may drop entries and appended PATTERN bullets, but never insert or rewrite one.
-- The commit goes through `CommitAnchoredPathsWithTrailers` with a `Lym-Record-Replaced: <by> <path> <sha256>` trailer.
-  When nothing is staged because HEAD already holds the bytes, `fabricengine.CommitEmptyWithTrailers` lands an empty commit carrying the trailer.
-  It commits the record's path alone and leaves any other staged path staged.
-- When the commit errors, `landReplace` reads HEAD:
-  - the written bytes under this call's trailer mean success, with `commit_error` reported;
-  - the bytes without the trailer get the empty trailer commit;
-  - only a HEAD without the bytes restores the prior record, and the refusal names re-running `replace`.
-- It refreshes the board copy as `add` does.
-  Each live agent gets a notice opening `Parent decision record replaced with lym loom decision replace` that names the title and asks for a whole re-read.
-
-**One per-run decision lock.**
-`add`, `replace`, `store` and the Bouncer's carry-over writer (`writeCarryOverLocked`) all take `holdDecisionLock`.
-It is a blocking file lock whose path `lock.TrackedFileLockPath` forms beside the record.
-The verbs hold it from their first precondition through the commit and the board copy, so a base check and its write are atomic against the other writers.
-
-**The history check stops at the newest replace** (`recordHistory` in `projectrecord.go`).
-It lists the records branch's first-parent commits that carry the trailer (`fabricengine.TrailerCommits`).
-It takes the newest trailer whose path names this record and reads the file's first-parent history (`fabricengine.AnchoredFileFirstParentHistory`).
-It keeps the versions from the cut onward.
-The cut is the newest version hashing to the trailer's sha256 at or before the trailer commit's first-parent position.
-Ordering is by first-parent position, not committer time.
-A later commit of the same bytes is never the cut, so an entry added after a replace and then dropped is still reported.
-With no matching trailer, or a sum no earlier version has, the history is read whole as before.
-
-**Every stored record is refreshed** (D3).
-`add` and `replace` copy the record to the board past a Discussion approval, as before.
-On a recipe with no approval row, such as raddle or a raddle-filed darn part, they now copy when the entry carries a stored record.
-A beam's project record is never copied.
-`store` is admitted on the same runs.
-`raddleFilingRefusal` replaces `perchFilingRefusal`.
-Once a raddle run's filing is done it refuses `add`, `replace` and `store` in any mode at any row, naming the filed parts and `lym board upsert --record-file` for the family's project.
-The filing counts as done when the store's marker is missing but the entry is no longer a task, or the board already holds the proposal's parts.
-That refusal names `lym loom resume` first.
-
-**Docs.**
-- The discussion spec's "Parts no writer authors" says `replace` may remove but never edit an added entry, and that the check reads back to the newest replace.
-- The parent directive quotes the replace notice's opening.
-- The parent directive tells a parent when to `add`, when to `replace`, to fold a Sketch with `--record-file`, and to re-`add` folded calls before a goto to a Webster row.
-- `docs/overview.md` names both verbs and the flag.
-- `PATTERN-run-records` names `replace` as a project record writer.
+- **`lym loom decision replace [<slug>] --from <file> --title <text> --base-sha256 <hex> --by parent|operator|arbiter`**
+  in `internal/loomcli/decision.go`.
+  - It takes `add`'s caller guards, so only the run's parent, its arbiter, the run's sampler strand with `--by operator`, or the operator's unnamed shell replaces.
+  - It takes `add`'s refusals too: Discussion-Write running, a perch raddle run at its Raddle-File row, and a Record-Write run with an uncommitted or diverged record.
+  - It is also refused on a run with a Discussion approval row that has not passed it, and on a run between its plan's approval and its recipe's last Webster row.
+    Both refusals name `lym loom decision add` as the way forward.
+    The Webster span is read through the new `loomrecipe.InImplementerSpan`.
+  - It refuses unless the committed record's sha256 equals `--base-sha256` and the working copy equals the committed one.
+    The refusal names no hash.
+  - The file must pass `discussionparser.Validate` and `CheckDecisionIDs`, keep every `lym:carry-over` block byte for byte, and keep each `### Added after Discussion` entry byte for byte.
+    It may drop added entries and appended `## PATTERN changes` bullets, and may rewrite a fenced board body in `## Goal`.
+    The new `discussionparser` checks are in `replacecheck.go`.
+  - It commits through `fabricengine` with a `Lym-Record-Replaced: <by> <path> <sha256>` trailer.
+    A replace whose bytes HEAD already holds lands an empty trailer commit through the new `fabricengine.CommitEmptyWithTrailers`
+    and `gitrepo.Repo.CommitPathAllowEmpty`, which leaves other staged content staged.
+  - A commit error is read against HEAD:
+    with the written bytes and the trailer at HEAD the call succeeds and reports `commit_error`;
+    with the bytes alone it lands the trailer commit;
+    without the bytes it restores the prior record and refuses with a way forward that names `replace`.
+  - It posts each live strand a creel notice that opens with `Parent decision record replaced with lym loom decision replace`.
+- **A per-run decision lock**, formed through `internal/lock`, is held by `add`, `replace`, `store` and the Bouncer carry-over writer `writeCarryOver`.
+  A second writer waits, so the base-hash check and its write are atomic against a concurrent `add` or carry-over write.
+- **The history check is cut at the newest replace.**
+  `recordHistory` in `internal/loomcli/projectrecord.go` finds the newest `Lym-Record-Replaced` trailer that names the record's path.
+  It returns the versions from the newest version whose bytes hash to the trailer's sha256 and that sits at or before the trailer commit.
+  Order is first-parent position on the records branch, never committer time.
+  With no matching trailer, or a sha256 that matches no version, the history is read whole as before.
+  `fabricengine` gains two general seams for this: a first-parent trailer-key commit list and an anchored file's first-parent history with commit SHAs and positions.
+  The trailer key and the cut stay in `internal/loomcli`.
+- **`add`, `replace` and `store` refresh the board copy of every stored record.**
+  - The copy runs on a run past its Discussion approval, and on a run whose recipe has no approval row when the entry carries a stored record.
+    That covers a raddle run of a promoted Sketch and a darn part filed by raddle.
+  - A beam's project record is excluded, and a run sent back into its Discussion segment copies nothing.
+  - Once a raddle run's filing is done, `add`, `replace` and `store` are refused in every mode.
+    The filing counts as done by `raddleRunFiling`, by the entry no longer being a task, or by `Board.HoldsRaddleFiling`.
+    The way forward names `add` or `replace` on the filed part, or `lym board upsert --record-file` on the family's project.
+    A filing that saved `board.json` but wrote no done marker names `lym loom resume`.
+- **Specs and directive.**
+  `contracts/specs/loom-discussion-spec.md`, `contracts/stencils/parent/parent-directive-parent.md` and `docs/overview.md` say when to `replace` and when to `add`.
+  They also say that the dropped-entry check reads back to the newest replace,
+  and that a fold on a record whose `## Goal` is a fenced board body rewrites that body.
+  The directive treats a LOOM `[creel]` line with the replace notice's opening as the parent's instruction.
+  `PATTERN-run-records` and the pawl recipe and project-record texts name `replace` beside `add`.
 
 ## Design decisions
 
-- **Webster span.**
-  The span check lives in `internal/loomrecipe` (`InImplementerSpan`), outside the record's package list.
-  It reads the recipe's own rows: the plan approval is the Bouncer row Plan-Write hands to, and Webster rows are `Implementer` rows.
-  That follows the existing `PastDiscussionApproval` instead of matching row names in `loomcli`.
-- **Lock file.**
-  The decision lock is `<record lock place>.decision.lock` under the never-tracked lock directory, so it never collides with the record's other locks.
-- **Filed check.**
-  The board judgement uses the proposal's part slugs alone, not the project slug, as the record says.
-  An absent board entry counts as still a task, so a removed entry never refuses on its own.
-- **Restore on error.**
-  When HEAD cannot be read after a failed commit, `replace` refuses without restoring the record, since it cannot tell whether the bytes landed.
-- **Parent directive wording.**
-  The stencil renders into a spawned role, so the four parent instructions sit under "When you are the parent of a run yourself".
+- No fixer folds, which departs from issue #114's first expected point.
+  An entry added in a Bouncer's settling window after the last fixer round would be removed without being folded, so the fold is the parent's explicit write.
+- `replace` takes no `--amends-plan`.
+  A call that amends an approved plan is recorded with `add --amends-plan` and folded by a later `replace` after the last Webster row.
+- The Webster-span refusal exists because a Merriam strand reads no record, and each fresh Master prompt renders only `Added after Discussion` entries.
+  The parent directive tells the parent to record each folded call again with `add` before sending a run back to a Webster row.
+- The `Lym-Record-Replaced` trailer guards against a mistaken writer, not a forged commit.
+  An entry recorded before the newest replace and absent from it is no longer a finding.
+  The replace that dropped it stays in git history with the caller's `--by`.
 
-## Tests
+## To check by hand
 
-- `TestDecisionReplaceVerb_WritesCommitsAndNotifies` covers each admitted caller.
-- `TestDecisionReplaceVerb_Refusals` covers every refusal, asserting the record, HEAD and the board are unchanged and the base refusal carries no hash.
-- `TestDecisionReplaceVerb_CommitOutcomes` covers the commit outcomes.
-- `TestDecisionLock_SerializesRecordWriters` uses a real file lock to show an `add` and a carry-over write both wait for a `replace`.
-- `TestDecisionCalls_RefreshEveryStoredRecord` and `TestDecisionCalls_RefusedOnAFiledRaddleRun` cover D3.
-- `TestRecordHistoryCut` pins each D2 scenario.
-- `TestRecordHistory_CutsAtTheNewestReplace` drives the history read over real weft commits.
-- Fabric and gitrepo integration tests pin the new seams, including an empty trailer commit while another path stays staged.
-- `TestInImplementerSpan` pins the recipe span.
+- `add`'s decision-lock refusal: confirm a refusal-table row in `internal/loomcli` reaches it.
+  The last review left this as an open finding (`add-lock-refusal-untested`), and a later commit added a row.
+- `replace`'s refusals in `internal/loomcli/decisionreplace_test.go`: confirm each reaches its refusal, the failed-write and failed-restore ones included.
+  The last review left this as an open finding (`replace-refusals-untested`), and later commits added tests.
+- A fold after the last Webster row followed by `lym loom goto --to` a Webster row leaves the folded call out of every Master spawned there.
+  The directive covers a goto the parent makes, but not one the operator makes after a Stuck halt.
+- `lym board promote` is not refused while a motif run's weft is live, so a raddle run started in that window adopts the weft and keeps its committed record.
+  The next board copy then writes that record over the stored one.
+- A replace during a live agent session, such as Plan-Write or Raddle-Write, reaches the agent only through the creel notice.
+  A replace made while a Bouncer round is open does not count as a decision made since that round.
+- The run report counts post-Discussion decisions from the added entries a record still holds, so a folded call drops out of its count.
