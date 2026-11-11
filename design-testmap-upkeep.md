@@ -1,6 +1,6 @@
 # Research how the coverage maps are kept fresh: three independent brainstorms
 
-`testmap-upkeep` · Task · research, testkit, gate, dobby · running · Preflight
+`testmap-upkeep` · Task · research, testkit, gate, dobby · running · Record-Write
 
 ## Seen (orch, 2026-11-09)
 
