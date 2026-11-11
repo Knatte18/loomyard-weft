@@ -655,7 +655,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #108](https://github.com/Knatte18/loomyard/issues/108).\n\nSeen: `lym beam merge-parent support-for-dop` halted its batten run at Worktree-Create because the directory `\u003chub\u003e/support-for-dop-merge-in` already existed and was not a worktree.\nIt held only `src/csharp/NORCE.Models/*/obj/Debug/...` build leftovers (15 files, generated AssemblyInfo and editorconfig) dated from the previous merge-in run of the same slug a day earlier, which had landed and been torn down.\nSomething (an IDE or a build triggered after teardown) recreated obj directories under the removed worktree path, and Worktree-Teardown does not check for or clean such leftovers.\n\nWorkaround: inspected the directory, removed it by hand (`rm -r` on the literal path), and ran `lym batten run support-for-dop-merge-in` again.\n\nExpected: a reused slug whose old path holds only build output (obj/bin) is not blocked; Worktree-Create, or Worktree-Teardown of the earlier run, removes a directory that contains nothing but build artefacts, or the halt names it as such so the parent does not need to inspect it.\n",
-      "status": "running · Preflight",
+      "status": "running · Record-Write",
       "created": "2026-11-11T06:23:09Z",
       "revised": "2026-11-11T07:31:27Z",
       "profile": "light"
@@ -819,7 +819,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `gate-scope-by-coverage-map`.\n\nTakes: testmap and the redundancy report as they stand once testmap-upkeep's design has landed\nDelivers: maps whose blocks span every linked in-module package, with per-linked-package file hashes (go:embed targets in subdirectories included), each test's spawn-scan verdict and a format marker holding Commit and BuiltAt; dirty checks over every linked package's files, read fresh before the build and after the last test; the redundancy report and mapDrift unchanged in verdict\nExports: testcover.Map's linked-package field, spawn verdict per test and format marker; BlockKey carrying an import path for another package's block\n\nThe part changes these packages:\n\n- internal/testcover (about 300 changed lines)\n- internal/gatecli (about 500 changed lines)\n",
-      "status": "running · Drift-Expect",
+      "status": "running · Darn-Write",
       "created": "2026-11-11T09:07:11Z",
       "revised": "2026-11-11T09:07:11Z",
       "profile": "solid",
