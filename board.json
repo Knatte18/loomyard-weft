@@ -1032,15 +1032,16 @@
       "kind": "note",
       "labels": [
         "enhancement",
-        "docs"
+        "docs",
+        "slack"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "The README is partly outdated, its Autoboard link is dead, and Lineage no longer fits LoomYard",
-      "body": "## Seen (operator, 2026-11-11)\n\nThe operator read the README and found it already somewhat out of date.\nThe Lineage list links `https://github.com/willietran/autoboard` (`README.md`, Lineage section), and that repository is gone: the GitHub API answers 404.\nAutoboard was the largest inspiration for Millhouse, so the credit should stay.\nLoomYard has also grown far beyond Millhouse, and the Lineage section no longer shows that.\n\n## Idea\n\nRefresh the README as one pass.\nRead it against the current `lym` verbs, `docs/overview.md` and `docs/getting-started.md`, and fix what no longer matches.\nIn Lineage, keep Autoboard and Willie Tran as plain text without the dead link, with a note that the repository was removed.\nShorten Lineage to the origin and the credits, now that LoomYard stands on its own.\n",
+      "brief": "The README is partly outdated, lacks Slack and why it is needed, its Autoboard link is dead, and Lineage no longer fits LoomYard",
+      "body": "## Seen (operator, 2026-11-11)\n\nThe operator read the README and found it already somewhat out of date.\nSlack is not mentioned in it at all, though `lym` has a Slack relay.\nThe Lineage list links `https://github.com/willietran/autoboard` (`README.md`, Lineage section), and that repository is gone: the GitHub API answers 404.\nAutoboard was the largest inspiration for Millhouse, so the credit should stay.\nLoomYard has also grown far beyond Millhouse, and the Lineage section no longer shows that.\n\n## Idea\n\nRefresh the README as one pass.\nRead it against the current `lym` verbs, `docs/overview.md` and `docs/getting-started.md`, and fix what no longer matches.\n\nAdd Slack, with the reason a reader will ask for: why a coding-agent tool needs Slack.\nThe operator's work PC carries a work licence of Claude, and no Claude client of that licence may be on a phone.\nSlack is approved for work and is on the phone, so the relay lets the operator follow the orch and answer it away from the PC.\nThe section states that need and says what the relay does; it does not describe the setup, which belongs in `docs/`.\n\nIn Lineage, keep Autoboard and Willie Tran as plain text without the dead link, with a note that the repository was removed.\nShorten Lineage to the origin and the credits, now that LoomYard stands on its own.\n",
       "created": "2026-11-11T11:50:23Z",
-      "revised": "2026-11-11T11:50:23Z"
+      "revised": "2026-11-11T11:52:30Z"
     }
   ],
   "prime_owner": "osl-1046",
