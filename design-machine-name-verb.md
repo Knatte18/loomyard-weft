@@ -1,6 +1,6 @@
 # lym machine name shows and sets the machine name and sweeps owners across a rename
 
-`machine-name-verb` · Task · feature, config, slack · running · Drift-Expect
+`machine-name-verb` · Task · feature, config, slack · running · Webster
 
 Decision record: [Sketch](decision-machine-name-verb.md)
 
