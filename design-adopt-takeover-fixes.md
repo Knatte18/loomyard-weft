@@ -1,6 +1,6 @@
 # Adopt takes over without hanging behind a pause, failing on lym files or replaying stale stops
 
-`adopt-takeover-fixes` · Task · bug, fabric, tender · running · Record-Write
+`adopt-takeover-fixes` · Task · bug, fabric, tender · running · Drift-Baseline
 
 Depends on: [`remove-launchers-dir`](design-remove-launchers-dir.md)
 
