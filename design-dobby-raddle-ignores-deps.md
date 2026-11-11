@@ -1,6 +1,6 @@
 # Dobby starts a released raddle task whose depends_on has not landed
 
-`dobby-raddle-ignores-deps` · Task · bug, dobby, board · running · Worktree-Create
+`dobby-raddle-ignores-deps` · Task · bug, dobby, board · running · Seed-Child
 
 Depends on: [`adopt-owner-handover`](design-adopt-owner-handover.md)
 
