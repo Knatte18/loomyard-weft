@@ -526,7 +526,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `parent-reviews-decision-record`.\n\nTakes: the Sketch's decision record; CapAssistTimeout, the decision add --by parent guard, KeepWarm, lock and state\nDelivers: the loom.yaml keys discussion_review_ask_parent and discussion_review_parent_timeout_min with validation and template comments; the never-tracked ask record and parent report under .lym, with forward-only state moves under one per-run lock; the capped-deadline function; lym loom parent-review answer and await\nExports: the ask record's read, write and state-move API in burlerengine, the deadline cap in loomengine, lym loom parent-review answer \u003cslug\u003e --ask \u003cn\u003e, lym loom parent-review await \u003cslug\u003e\n\nThe part changes these packages:\n\n- internal/loomcli (about 450 changed lines)\n- internal/burlerengine (about 280 changed lines)\n- internal/loomengine (about 110 changed lines)\n- internal/lymdirs (about 5 changed lines)\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-11T19:18:55Z",
       "revised": "2026-11-11T19:18:55Z",
       "profile": "solid",
