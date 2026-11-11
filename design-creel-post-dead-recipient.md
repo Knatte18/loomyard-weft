@@ -1,6 +1,6 @@
 # creel post to a strand that is not running reports plain success
 
-`creel-post-dead-recipient` · Task · bug, creel · running · Finalize
+`creel-post-dead-recipient` · Task · bug, creel · done
 
 Imported from [issue #96](https://github.com/Knatte18/loomyard/issues/96).
 
