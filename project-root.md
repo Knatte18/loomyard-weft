@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-11 18:02 UTC; every age below is as of then.
+Rendered 2026-11-11 18:03 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | darn · light | Describe | neve | 6d<br>14m | board, orch, workspaces |
-| T6 | **Optional extra review of the Discussion record by the parent orch or a named agent** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md) | motif | Discussion-Burler-Review | neve | 3d<br>9m | loom, orch, config, burler |
+| T1 | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | darn · light | PR-Review | neve | 6d<br>15m | board, orch, workspaces |
+| T6 | **Optional extra review of the Discussion record by the parent orch or a named agent** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md) | motif | Discussion-Burler-Review | neve | 3d<br>10m | loom, orch, config, burler |
 | T18 | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | darn · light | Darn-Write | neve | 10h<br>3h | fabric, ide |
 
 ### Ready (0)
