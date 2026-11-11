@@ -1,6 +1,6 @@
 # The parent-review ask record, its deadline keys, and lym loom parent-review answer and await
 
-`parent-review-ask-verbs` · Task · feature, loom, orch, config, burler · running · Drift-Await
+`parent-review-ask-verbs` · Task · feature, loom, orch, config, burler · running · Drift-Expect
 
 Decision record: [Sketch](decision-parent-review-ask-verbs.md)
 
