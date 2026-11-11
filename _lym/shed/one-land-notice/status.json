@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,57 @@
       "output": "",
       "at": "2026-11-11T09:31:09Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYMHUB/one-land-notice/_lym/landing/summary.md",
+      "at": "2026-11-11T10:58:15Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T10:10:09.156189249Z",
+          "end": "2026-11-11T10:10:09.355892932Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T10:32:07.24473065Z",
+          "end": "2026-11-11T10:32:07.369774411Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T10:10:12.059577957Z",
+          "end": "2026-11-11T10:31:41.144150583Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-11T10:31:42.954477362Z",
+          "end": "2026-11-11T10:32:06.458697481Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T10:32:09.758389941Z",
+          "end": "2026-11-11T10:57:03.651259383Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T10:57:05.243250206Z",
+          "end": "2026-11-11T10:57:05.621987272Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T10:57:07.144751767Z",
+          "end": "2026-11-11T10:57:07.145071147Z"
+        }
+      ]
     }
   ],
   "product": {
