@@ -334,7 +334,7 @@
       "id": 1227,
       "handle": "F2",
       "slug": "machine-restart-shortcut",
-      "title": "One desktop shortcut brings every lym session of the machine back after a crash or reboot",
+      "title": "One desktop launcher brings back every hub and beam that was in flight after a crash or reboot",
       "kind": "note",
       "labels": [
         "feature",
@@ -347,9 +347,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows",
-      "body": "## Seen (operator, 2026-11-08)\n\nNeve crashed at about 15:30 and rebooted.\nBringing lym back took the operator several manual steps: starting the hub's orch session by hand, after which the orch and dobby took the runs up again, one by one.\nA run whose step was cut off halts (`slack-presence-auto` at Darn-Write, `loop-exited`) and waits for the orch.\nVS Code needs nothing: on Kubuntu it reopens the windows it had open by itself.\n\n## Idea (operator, 2026-11-08)\n\nOne desktop shortcut brings every lym session of the machine back after a crash or reboot:\n\n- For each hub that was live on the machine, it starts the prime's orch session in its terminal window, as starting it by hand does today; the orch and dobby then take up the runs.\n- It opens the reed terminal windows the operator had open, such as the prime's and each running task's.\n- The shortcut is a `.desktop` launcher lym installs, which runs one `lym` verb; the verb is the part that does the work, so it can also be run from a terminal.\n\nOpen: whether the verb finds the hubs from the machine's hub registry or from a list the operator keeps; whether it opens a reed window for every running task or only the ones that were open; whether interrupted runs are resumed by the verb or left to the orch.\n",
+      "body": "## Seen (operator, 2026-11-08 and 2026-11-11)\n\nOSL-1046 and Neve crash often.\nAfter a crash, bringing lym back takes the operator several manual steps:\nfinding every hub and project that was in flight, often three or four, with beams under them,\nand starting each orch session by hand.\nOnce an orch is up, it and its dobby take the runs up again by themselves;\na run whose step was cut off halts (`loop-exited`) and the orch settles it.\nFinding what was running is the hard part, not resuming it.\nVS Code needs nothing: on Kubuntu it reopens the windows it had open by itself.\n\n## Idea (operator)\n\nA simple way to start again every project that was in flight on the machine, such as launcher scripts lym puts on the desktop:\n\n- The launcher brings back a whole project: the hub prime's orch, and the orch of every beam under it that was live, each in its terminal window, as starting it by hand does today.\n  The orchs and dobbies then take up the runs; the launcher resumes no run itself.\n- A `lym` verb does the work, so it also runs from a terminal; the desktop launcher only calls it.\n- lym keeps the launchers current as hubs and beams come and go, so a crash finds them already there.\n\nFixed by the operator: beams are included; resuming interrupted runs is left to the orchs.\n\nOpen: one launcher for the whole machine or one per hub; whether it also opens the reed windows of running tasks;\n`.sh` scripts or `.desktop` launchers on KDE.\n",
       "created": "2026-11-08T14:40:16Z",
-      "revised": "2026-11-08T14:40:16Z"
+      "revised": "2026-11-11T06:33:29Z"
     },
     {
       "id": 1229,

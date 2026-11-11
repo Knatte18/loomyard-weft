@@ -1,20 +1,28 @@
-# One desktop shortcut brings every lym session of the machine back after a crash or reboot
+# One desktop launcher brings back every hub and beam that was in flight after a crash or reboot
 
 `machine-restart-shortcut` · Note · feature, orch, reed, termwindow, shortcut
 
-## Seen (operator, 2026-11-08)
+## Seen (operator, 2026-11-08 and 2026-11-11)
 
-Neve crashed at about 15:30 and rebooted.
-Bringing lym back took the operator several manual steps: starting the hub's orch session by hand, after which the orch and dobby took the runs up again, one by one.
-A run whose step was cut off halts (`slack-presence-auto` at Darn-Write, `loop-exited`) and waits for the orch.
+OSL-1046 and Neve crash often.
+After a crash, bringing lym back takes the operator several manual steps:
+finding every hub and project that was in flight, often three or four, with beams under them,
+and starting each orch session by hand.
+Once an orch is up, it and its dobby take the runs up again by themselves;
+a run whose step was cut off halts (`loop-exited`) and the orch settles it.
+Finding what was running is the hard part, not resuming it.
 VS Code needs nothing: on Kubuntu it reopens the windows it had open by itself.
 
-## Idea (operator, 2026-11-08)
+## Idea (operator)
 
-One desktop shortcut brings every lym session of the machine back after a crash or reboot:
+A simple way to start again every project that was in flight on the machine, such as launcher scripts lym puts on the desktop:
 
-- For each hub that was live on the machine, it starts the prime's orch session in its terminal window, as starting it by hand does today; the orch and dobby then take up the runs.
-- It opens the reed terminal windows the operator had open, such as the prime's and each running task's.
-- The shortcut is a `.desktop` launcher lym installs, which runs one `lym` verb; the verb is the part that does the work, so it can also be run from a terminal.
+- The launcher brings back a whole project: the hub prime's orch, and the orch of every beam under it that was live, each in its terminal window, as starting it by hand does today.
+  The orchs and dobbies then take up the runs; the launcher resumes no run itself.
+- A `lym` verb does the work, so it also runs from a terminal; the desktop launcher only calls it.
+- lym keeps the launchers current as hubs and beams come and go, so a crash finds them already there.
 
-Open: whether the verb finds the hubs from the machine's hub registry or from a list the operator keeps; whether it opens a reed window for every running task or only the ones that were open; whether interrupted runs are resumed by the verb or left to the orch.
+Fixed by the operator: beams are included; resuming interrupted runs is left to the orchs.
+
+Open: one launcher for the whole machine or one per hub; whether it also opens the reed windows of running tasks;
+`.sh` scripts or `.desktop` launchers on KDE.
