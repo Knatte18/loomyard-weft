@@ -94,6 +94,12 @@ Provenance: task slug `models-backend`; notes `loom-halt.md`.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-11): Load-turn retry cap and idle time are left out of this run
+
+Decision: This run records the loop's exit status, trace and stderr location only. The bounded load-turn retry on server_error with its cap in the halt note, and the idle time between a stuck step and the next in lym loom status, are left out; the parent files them as a board note of their own.
+
+Rationale: They touch shuttle's load-turn retry and loom status, apart from the exit recording this light darn run built; the core of issue #102 is made.
+
 ## Constraints
 
 ## Auto-mode assumptions
