@@ -119,7 +119,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (12)
+### Tasks (14)
 
 Concrete and claimable; only a task can run.
 
@@ -140,29 +140,32 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Layer A (1)
+#### Layer A (2)
 
 Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | darn · light | T20 | 20m<br>0m | shuttle, loom |
 | T3 | **Dobby starts a released raddle task whose depends_on has not landed** | [`dobby-raddle-ignores-deps`](design-dobby-raddle-ignores-deps.md) | darn · light | T4 | 2h<br>58m | dobby, board |
 
-#### Layer B (2)
+#### Layer B (3)
 
 Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **machinename reads the machine name from machine.json before the hostname rule** | [`machine-name-file`](design-machine-name-file.md)<br>[Sketch](decision-machine-name-file.md) | darn · light | T6 | 1d<br>1h | config, slack |
+| T7 | **A landed run left failed before teardown holds a max_runs slot until a hand cleanup** | [`landed-run-holds-slot`](design-landed-run-holds-slot.md) | darn · light | T3 | 19m<br>0m | dobby, batten, cleanup |
 | T9 | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | darn · light | T6 | 2h<br>58m | fabric |
 
-#### Layer C (2)
+#### Layer C (3)
 
 Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
+| T8 | **One land notice: fold the beam-PR landing notice into notify_on_land** | [`one-land-notice`](design-one-land-notice.md) | darn · light | T7 | 1d<br>0m | dobby, batten, workspaces |
 | T10 | **Worktree-Create halts on a reused slug path holding only obj/ leftovers** | [`worktree-create-build-leftovers`](design-worktree-create-build-leftovers.md) | darn · light | T9 | 2h<br>58m | batten, fabric |
 | T13 | **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 1d<br>1d | config, slack |
 
@@ -175,15 +178,7 @@ Starts when every entry it names under After is done.
 | T11 | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | T10 | 2h<br>55m | fabric, cleanup |
 | T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1d<br>31m | slack, reed, creel |
 
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | darn |  | 20m<br>20m | shuttle, loom |
-
-### Notes (23)
+### Notes (21)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -195,19 +190,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 2h<br>1h | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
 
-#### Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B2 |  | **A landed run left failed before teardown holds a max_runs slot until a hand cleanup** | [`landed-run-holds-slot`](design-landed-run-holds-slot.md) | 19m<br>19m | dobby, batten, cleanup |
-
-#### Enhancements (6)
+#### Enhancements (5)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 3d<br>3d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 2d<br>1d | shed, loom, darn |
-| E3 |  | **One land notice: fold the beam-PR landing notice into notify_on_land** | [`one-land-notice`](design-one-land-notice.md) | 1d<br>1d | dobby, batten, workspaces |
 | E9 |  | **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | 2h<br>2h | heddle |
 | E10 |  | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | 2h<br>2h | heddle |
 | E11 |  | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | 1h<br>1h | fabric, ide |
