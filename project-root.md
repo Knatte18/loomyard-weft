@@ -51,8 +51,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B5 |  | **A paused Webster session acts on a decision notice without the run lock, and the loom row stays blocked** | [`paused-webster-acts-on-notice`](design-paused-webster-acts-on-notice.md) | 1h<br>1h | webster, loom, creel |
 | B6 |  | **gate test: card gate and explicit target never reach a second test project when tier0 command lacks a targets placeholder** | [`gate-target-dropped-silently`](design-gate-target-dropped-silently.md) | 1h<br>1h | gate, dotnet |
 | B7 |  | **loom halt: 'verify gate failed after 4 attempt(s) of 3: none named' reports an off-by-one count and no failure** | [`webster-gate-halt-count`](design-webster-gate-halt-count.md) | 1h<br>1h | webster, gate |
-| B8 |  | **Dobby starts a released raddle task whose depends_on has not landed** | [`dobby-raddle-ignores-deps`](design-dobby-raddle-ignores-deps.md) | 59m<br>59m | dobby, board |
-| B10 |  | **Worktree-Create halts on a reused slug path holding only obj/ leftovers** | [`worktree-create-build-leftovers`](design-worktree-create-build-leftovers.md) | 59m<br>59m | batten, fabric |
+| B8 |  | **Dobby starts a released raddle task whose depends_on has not landed** | [`dobby-raddle-ignores-deps`](design-dobby-raddle-ignores-deps.md) | 1h<br>1h | dobby, board |
+| B10 |  | **Worktree-Create halts on a reused slug path holding only obj/ leftovers** | [`worktree-create-build-leftovers`](design-worktree-create-build-leftovers.md) | 1h<br>1h | batten, fabric |
 
 ### Enhancements (9)
 
