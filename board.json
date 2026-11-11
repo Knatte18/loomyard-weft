@@ -831,7 +831,6 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #98](https://github.com/Knatte18/loomyard/issues/98).\n\nIn a hub whose anchor is a subdirectory (Models, anchor src/csharp/NORCE.Models), the mo:FABRIC notice for a failed async push says: way forward: run `lym fabric push` in \u003chub\u003e/knut-rheology-merge-in. Running it there fails with: cwd is outside the recorded fabric anchor subtree: cwd \u003chub\u003e/knut-rheology-merge-in does not equal the anchored directory \u003chub\u003e/knut-rheology-merge-in/src/csharp/NORCE.Models (recorded by .lym-anchor).\n\nWorkaround: run `lym fabric push` in the anchored directory instead; it pushed.\n\nExpected: the way forward names the anchored directory (or uses env -C with it), so the command it gives works as written.",
-      "status": "draft",
       "created": "2026-11-11T06:22:50Z",
       "revised": "2026-11-11T07:31:40Z",
       "profile": "light"
@@ -987,7 +986,6 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #108](https://github.com/Knatte18/loomyard/issues/108).\n\nSeen: `lym beam merge-parent support-for-dop` halted its batten run at Worktree-Create because the directory `\u003chub\u003e/support-for-dop-merge-in` already existed and was not a worktree.\nIt held only `src/csharp/NORCE.Models/*/obj/Debug/...` build leftovers (15 files, generated AssemblyInfo and editorconfig) dated from the previous merge-in run of the same slug a day earlier, which had landed and been torn down.\nSomething (an IDE or a build triggered after teardown) recreated obj directories under the removed worktree path, and Worktree-Teardown does not check for or clean such leftovers.\n\nWorkaround: inspected the directory, removed it by hand (`rm -r` on the literal path), and ran `lym batten run support-for-dop-merge-in` again.\n\nExpected: a reused slug whose old path holds only build output (obj/bin) is not blocked; Worktree-Create, or Worktree-Teardown of the earlier run, removes a directory that contains nothing but build artefacts, or the halt names it as such so the parent does not need to inspect it.\n",
-      "status": "draft",
       "created": "2026-11-11T06:23:09Z",
       "revised": "2026-11-11T07:31:27Z",
       "profile": "light"

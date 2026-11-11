@@ -1,6 +1,6 @@
 # FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub
 
-`push-notice-anchor-dir` · Task · bug, fabric · draft
+`push-notice-anchor-dir` · Task · bug, fabric
 
 Depends on: [`adopt-here-archives`](design-adopt-here-archives.md)
 
