@@ -39,6 +39,12 @@ Each change of presence mails a `[slack presence]` notice to every hub's orch an
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-11): No new export in the board module: the root project handle stays inside the Slack code
+
+Decision: Refuse the exported boardengine.RootProjectHandle: the Limits list names only internal/slackengine, internal/slackcli, the status bar's Slack toggle in reed, the orch role file and the tests. The channel name's root part is derived inside the allowed packages from what the board already exports, and the test of orchProject named in F4 covers it.
+
+Rationale: A new export in the board module widens the task's scope, which is the operator's call and not a run-level one. Finding F3 of Code-Burler-Fix round 1 is refused as a correction.
+
 ## Constraints
 
 ## Auto-mode assumptions
