@@ -1,0 +1,1989 @@
+diff --git a/internal/adoptrecord/doc.go b/internal/adoptrecord/doc.go
+index 5c9f428d..888ceae6 100644
+--- a/internal/adoptrecord/doc.go
++++ b/internal/adoptrecord/doc.go
+@@ -11,5 +11,16 @@
+ // A `Record` is a pure value.
+ // `ReadState` tells a running record whose worker is gone from a live one,
+ // and `ResumeStep` names the step a resume restarts at.
++// `Covers` reports whether the record holds a subject under adopt:
++// the record is unfinished, lists the subject, and records no owner write of it that stood.
+ // Unknown keys of the file are tolerated on read and kept on write.
++//
++// `Watch` is the read-only under-adopt accessor the orch watcher and the dobby are handed.
++// It answers whether an adopt in flight on this machine covers a worktree.
++// Neither the watcher nor the dobby stops or hands over a worktree another machine owns while the takeover runs here.
++// A worktree's subject is the entry whose owner it reads, resolved up the parent chain to `root`.
++// A beam with no owner of its own is therefore covered by the adopt that lists it.
++// Failing that, the adopt of the subject above it covers it.
++// It reads the record without a lock.
++// A record or board that does not read counts as no adopt, logged once per episode.
+ package adoptrecord
+diff --git a/internal/adoptrecord/record.go b/internal/adoptrecord/record.go
+index 205b86ff..2dc3ef45 100644
+--- a/internal/adoptrecord/record.go
++++ b/internal/adoptrecord/record.go
+@@ -13,6 +13,7 @@ import (
+ 	"strings"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -185,6 +186,18 @@ func (r Record) Unfinished() bool {
+ 	return r.State != StateDone
+ }
+ 
++// Covers reports whether the record holds subject, a beam slug or `root`, under adopt:
++// the record is unfinished, lists subject among its subjects, and records no owner write of subject that stood.
++func (r Record) Covers(subject string) bool {
++	if !r.Unfinished() || !slices.Contains(r.Subjects, subject) {
++		return false
++	}
++	if subject == boardengine.RootSubject {
++		return !r.Inputs.PrimeRecorded
++	}
++	return !slices.Contains(r.Inputs.OwnerStood, subject)
++}
++
+ // WorkerAlive reports whether the worker with pid and startTicks is running.
+ // An exited worker its parent has not reaped yet reads gone.
+ // So does a pid now held by a process with other start ticks.
+diff --git a/internal/adoptrecord/watch.go b/internal/adoptrecord/watch.go
+new file mode 100644
+index 00000000..f5c0b7ef
+--- /dev/null
++++ b/internal/adoptrecord/watch.go
+@@ -0,0 +1,87 @@
++// watch.go holds the under-adopt accessor: the read-only judgment of whether an adopt in flight covers a worktree.
++
++package adoptrecord
++
++import (
++	"fmt"
++	"slices"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// Watch reads whether an adopt in flight on this machine covers a worktree of its hub.
++// A worker that reads its worktree owned by another machine asks it,
++// so a takeover running here neither stops that worker nor makes it hand the worktree over.
++// It never writes and takes no lock.
++// It is not safe for concurrent use.
++type Watch struct {
++	hubPath  string
++	owners   func() (boardengine.Owners, error)
++	parentOf func(slug string) (string, error)
++	failures logger.Episode
++}
++
++// NewWatch returns the accessor over the adopt record of the hub at hubPath.
++// owners reads the hub's local board, and parentOf names the slug an entry was forked from, empty for the prime.
++func NewWatch(hubPath string, owners func() (boardengine.Owners, error), parentOf func(slug string) (string, error)) *Watch {
++	return &Watch{hubPath: hubPath, owners: owners, parentOf: parentOf}
++}
++
++// Covers reports whether an adopt in flight covers the worktree named slug, empty for the prime.
++// The worktree's subject is the entry whose owner it reads:
++// the slug itself for a beam project with its own owner recorded or one the record lists.
++// Otherwise it is its parent's subject, and `root` above the top.
++// So a beam with no owner of its own is covered by the adopt that lists it.
++// Failing that, the adopt of the subject above it covers it, `root` included.
++// The record must be unfinished, list that subject and record no owner write of it that stood.
++// The record is read before the board, so a hub with no unfinished record reads no board.
++// A record or board that does not read counts as no adopt, logged once per episode.
++func (w *Watch) Covers(slug string) bool {
++	covered, err := w.covers(slug)
++	if err != nil {
++		w.failures.Fail("adoptrecord: the adopt record or the owners it is judged against do not read; they count as no adopt", "hub", w.hubPath, "error", err)
++		return false
++	}
++	w.failures.Recover("adoptrecord: the adopt record and the owners read again", "hub", w.hubPath)
++	return covered
++}
++
++// covers reads the record and, when it is unfinished, the owners, and judges slug's subject against the record.
++func (w *Watch) covers(slug string) (bool, error) {
++	record, found, err := Read(w.hubPath)
++	if err != nil || !found || !record.Unfinished() {
++		return false, err
++	}
++	owners, err := w.owners()
++	if err != nil {
++		return false, fmt.Errorf("read the board's owners: %w", err)
++	}
++	listed := func(subject string) bool { return slices.Contains(record.Subjects, subject) }
++	subject, err := ownerSubject(owners, slug, listed, w.parentOf)
++	if err != nil {
++		return false, err
++	}
++	return record.Covers(subject), nil
++}
++
++// ownerSubject returns the subject whose owner the worktree slug reads, `root` for the prime's empty slug.
++// It is the slug itself for an entry the board does not hold.
++// It is also the slug itself for one the adopt record lists and for a beam project with its own owner recorded.
++// Otherwise it is the subject of the entry's parent, `root` above the top.
++func ownerSubject(
++	owners boardengine.Owners, slug string, listed func(subject string) bool, parentOf func(slug string) (string, error),
++) (string, error) {
++	if slug == "" {
++		return boardengine.RootSubject, nil
++	}
++	entry, held := owners.Entries[slug]
++	if !held || listed(slug) || (entry.IsProject && entry.Beam && entry.Owner != "") {
++		return slug, nil
++	}
++	parent, err := parentOf(slug)
++	if err != nil {
++		return "", fmt.Errorf("resolve the parent of %q: %w", slug, err)
++	}
++	return ownerSubject(owners, parent, listed, parentOf)
++}
+diff --git a/internal/adoptrecord/watch_test.go b/internal/adoptrecord/watch_test.go
+new file mode 100644
+index 00000000..ada22286
+--- /dev/null
++++ b/internal/adoptrecord/watch_test.go
+@@ -0,0 +1,100 @@
++// watch_test.go pins the under-adopt accessor: which worktrees an adopt record covers,
++// and a record or board that does not read.
++
++package adoptrecord_test
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/adoptrecord"
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestWatchCovers(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	owners := boardengine.Owners{Prime: "m2", Entries: map[string]boardengine.OwnerEntry{
++		"free":  {IsProject: true, Beam: true},
++		"owned": {IsProject: true, Beam: true, Owner: "m2"},
++		"nest":  {IsProject: true, Beam: true},
++		"deep":  {IsProject: true, Beam: true},
++		"torn":  {IsProject: true, Beam: true},
++	}}
++	parents := map[string]string{"free": "", "owned": "", "nest": "free", "deep": "owned"}
++	parentOf := func(slug string) (string, error) {
++		if slug == "torn" {
++			return "", errors.New("parent unreadable")
++		}
++		return parents[slug], nil
++	}
++	running := func(subjects ...string) *adoptrecord.Record {
++		return &adoptrecord.Record{State: adoptrecord.StateRunning, Subjects: subjects}
++	}
++	tests := []struct {
++		name   string
++		record *adoptrecord.Record
++		// file is planted at the record's path instead of a written record.
++		file      []byte
++		ownersErr error
++		slug      string
++		want      bool
++	}{
++		{name: "NoRecordCoversNothing"},
++		{name: "ADoneRecordCoversNothing", record: &adoptrecord.Record{State: adoptrecord.StateDone, Subjects: []string{"root"}}},
++		{name: "ARootAdoptCoversThePrime", record: running("root"), want: true},
++		{name: "ARootAdoptCoversABeamWithNoOwnerOfItsOwn", record: running("root"), slug: "free", want: true},
++		{name: "ARootAdoptLeavesABeamWithItsOwnOwner", record: running("root"), slug: "owned"},
++		{name: "ABeamAdoptCoversTheBeamListedWithNoOwnerOfItsOwn", record: running("free"), slug: "free", want: true},
++		{name: "ABeamAdoptCoversABeamWithNoOwnerNestedUnderTheListedBeam", record: running("free"), slug: "nest", want: true},
++		{name: "ARootAdoptStopsAtTheFirstBeamWithItsOwnOwner", record: running("root"), slug: "deep"},
++		{name: "AFailingParentReadCountsAsNone", record: running("root"), slug: "torn"},
++		{
++			name:   "AStoppedBeamAdoptStillCoversTheBeam",
++			record: &adoptrecord.Record{State: adoptrecord.StateStopped, Subjects: []string{"owned"}},
++			slug:   "owned", want: true,
++		},
++		{
++			name:   "ThePrimeOwnerWriteEndsTheRootCover",
++			record: &adoptrecord.Record{State: adoptrecord.StateRunning, Subjects: []string{"root"}, Inputs: adoptrecord.Inputs{PrimeRecorded: true}},
++		},
++		{
++			name:   "ABeamOwnerWriteEndsItsCover",
++			record: &adoptrecord.Record{State: adoptrecord.StateRunning, Subjects: []string{"owned"}, Inputs: adoptrecord.Inputs{OwnerStood: []string{"owned"}}},
++			slug:   "owned",
++		},
++		{name: "AnUndecodableRecordCountsAsNone", file: []byte(`{not json`)},
++		{name: "AnUnreadableBoardCountsAsNone", record: running("root"), ownersErr: errors.New("board unreadable")},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			hub := t.TempDir()
++			if tt.record != nil {
++				if err := adoptrecord.Write(hub, *tt.record); err != nil {
++					t.Fatal(err)
++				}
++			}
++			if tt.file != nil {
++				path := adoptrecord.Path(hub)
++				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(path, tt.file, 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			watch := adoptrecord.NewWatch(hub,
++				func() (boardengine.Owners, error) { return owners, tt.ownersErr },
++				parentOf)
++
++			if got := watch.Covers(tt.slug); got != tt.want {
++				t.Errorf("Covers(%q) = %v; want %v", tt.slug, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index 3713bac9..bdc03259 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -509,7 +509,7 @@ func start(cmd *cobra.Command, slug string, all bool) (*startResult, error) {
+ 		}
+ 	}
+ 	result, err := startBeams(targets, func(target beamTarget, prepare bool) (orchcli.BeamUpReport, error) {
+-		return orchcli.BeamUp(target.Location, orchcli.BeamUpOptions{Prepare: prepare})
++		return orchcli.BeamUp(target.Location, orchcli.BeamUpOptions{Prepare: prepare, ArchiveOwned: ownerArchiveBeforeRefusal(target)})
+ 	})
+ 	if err != nil {
+ 		return &result, fmt.Errorf("lym beam start: %w; way forward: fix the cause each names, then run `lym beam start` again", err)
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 31d22e09..efe91616 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -119,6 +119,7 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 	if geom.Slug == "" {
+ 		hibernateRequestPath = hibernatecli.RequestPath(prime)
+ 	}
++	underAdopt := orchcli.UnderAdoptWatch(prime)
+ 	deps := dobbyengine.Deps{
+ 		Now:   time.Now,
+ 		Awake: pauserecord.MonotonicAwake(),
+@@ -139,6 +140,9 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 			}
+ 			return read.Effective(geom.Slug, parents.Of)
+ 		},
++		UnderAdopt:   func() bool { return underAdopt.Covers(geom.Slug) },
++		PullBolt:     func() error { return pullBolt(geom.HubRoot, boardDir) },
++		ArchiveOwner: func() error { return archiveOwnerTips(prime, geom.WorktreeName) },
+ 		Runs: func() ([]dobbyengine.RunView, error) {
+ 			return battencli.DobbyRuns(prime, geom, parents, pause.RecordPath)
+ 		},
+@@ -249,6 +253,19 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 	return deps, nil
+ }
+ 
++// pullBolt brings the Bolt at boardDir, in the hub at hubRoot, up to date from origin.
++// A pull that skips, as a dirty or diverged Bolt does, is an error carrying the skip's way forward.
++func pullBolt(hubRoot, boardDir string) error {
++	skip, detail, err := fabricengine.NewBolt(boardDir).Pull(fabricengine.EnvSyncOptions(), fabricengine.NewMutations(hubRoot))
++	if err != nil {
++		return err
++	}
++	if skip != "" {
++		return errors.New(detail)
++	}
++	return nil
++}
++
+ // waitReminderDeps fills the wait reminder seams of the dobby of worktree, whose beam slug is slug, over the hub of prime.
+ // Only the wait rows that wait on the operator alone get reminders:
+ // a row such as Beam-Await also waits on the beam's members, so it gets none.
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 1bd2fddd..7628337e 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -309,6 +309,10 @@
+ // The verb exits non-zero, naming each.
+ // Every `BeamUp` refusal applies to the beam it acts on.
+ // Those refusals include an owner of another machine and a hold of a run other than the beam's own landing.
++// Before the owner refusal stands, `BeamUp` runs the archive `ownerArchiveBeforeRefusal` returns.
++// It archives this machine's unpushed tips under the worktree through `archiveOwnerTips`.
++// It archives nothing while an adopt in flight here covers the worktree (`orchcli.UnderAdoptWatch`).
++// A failed archive joins the refusal, and a re-run of the verb retries it.
+ // A beam held by its own pawl run's landing, a halted Finalize for one, gets its orch back, and its dobby stays down;
+ // `lym beam start` never starts the dobby of a held beam.
+ // The verb is idempotent.
+@@ -360,6 +364,12 @@
+ // `registerDobby` runs only once `Run` holds the lock, through `Deps.Locked`.
+ // It writes `runproc.SelfRecord(runproc.RoleDobby)` under the beam's slug, or `runproc.HubOwner` for the prime.
+ // That record lets the pair teardown of a landed beam end that beam's dobby.
++// `hubDobbyDeps` fills the hand-over seams.
++// `UnderAdopt` is over `orchcli.UnderAdoptWatch`.
++// `PullBolt` is through `fabricengine.Bolt.Pull`.
++// `ArchiveOwner` is through `archiveOwnerTips`.
++// `archiveOwnerTips` archives the worktree's own pair, named `root` for the prime.
++// It also archives the pair of each run `battencli.DobbyRuns` lists under it, through `fabricengine.ArchiveOwnerTips`.
+ // For the prime, `hubDobbyDeps` also fills the test-map refresh seams.
+ // `testMapRunning` reads whether a live `runproc.RoleTestMap` record stands under `runproc.HubOwner`.
+ // `startTestMap` starts `lym gate testmap --max <n>` with the binary `selfexec.LymBinary` names.
+diff --git a/internal/beamcli/ownerarchive.go b/internal/beamcli/ownerarchive.go
+new file mode 100644
+index 00000000..63051ef3
+--- /dev/null
++++ b/internal/beamcli/ownerarchive.go
+@@ -0,0 +1,80 @@
++// ownerarchive.go archives this machine's unpushed tips under a worktree another machine now owns.
++// The dobby's hand-over and `lym beam start`'s refusal of such a worktree both run it.
++
++package beamcli
++
++import (
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/battencli"
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/orchcli"
++)
++
++// archiveOwnerTips archives every local tip under the worktree named worktree that origin lacks.
++// It archives through fabric's owner archive.
++// The pairs are the worktree's own, named `root` for the prime.
++// They also include the pair of each batten run whose parent the worktree is.
++// A run whose task worktree is gone archives nothing.
++func archiveOwnerTips(prime *lymcwd.Location, worktree string) error {
++	geom, err := hubgeom.DobbyGeometry(prime, worktree)
++	if err != nil {
++		return err
++	}
++	pause, err := hubgeom.PauseGeometry(prime)
++	if err != nil {
++		return err
++	}
++	runs, err := battencli.DobbyRuns(prime, geom, battencli.NewDobbyParents(prime), pause.RecordPath)
++	if err != nil {
++		return fmt.Errorf("list the runs under %s: %w", worktree, err)
++	}
++	own := fabricengine.OwnerArchivePair{Slug: boardengine.RootSubject, Pair: prime}
++	if geom.Slug != "" {
++		pair, err := pairLocation(prime, geom.Slug)
++		if err != nil {
++			return err
++		}
++		own = fabricengine.OwnerArchivePair{Slug: geom.Slug, Pair: pair}
++	}
++	pairs := []fabricengine.OwnerArchivePair{own}
++	for _, run := range runs {
++		pair, err := pairLocation(prime, run.Slug)
++		if err != nil {
++			return err
++		}
++		pairs = append(pairs, fabricengine.OwnerArchivePair{Slug: run.Slug, Pair: pair})
++	}
++	tags, err := fabricengine.ArchiveOwnerTips(prime.HubPath, pairs)
++	if len(tags) > 0 {
++		logger.Info("beamcli: archived this machine's unpushed tips for the worktree's new owner", "worktree", worktree, "tags", tags)
++	}
++	return err
++}
++
++// ownerArchiveBeforeRefusal returns the archive `lym beam start` runs for target.
++// The verb runs it before refusing target for another machine's ownership.
++// The archive covers this machine's unpushed tips under the worktree.
++// It archives nothing while an adopt in flight here covers the worktree.
++func ownerArchiveBeforeRefusal(target beamTarget) func() error {
++	return func() error {
++		root, err := resolveBeamTarget(target.Location, rootSlug)
++		if err != nil {
++			return err
++		}
++		prime := root.Location
++		worktree := target.Location.WorktreeName
++		slug := worktree
++		if worktree == prime.WorktreeName {
++			slug = ""
++		}
++		if orchcli.UnderAdoptWatch(prime).Covers(slug) {
++			return nil
++		}
++		return archiveOwnerTips(prime, worktree)
++	}
++}
+diff --git a/internal/beamcli/ownerarchive_integration_test.go b/internal/beamcli/ownerarchive_integration_test.go
+new file mode 100644
+index 00000000..2e554b7f
+--- /dev/null
++++ b/internal/beamcli/ownerarchive_integration_test.go
+@@ -0,0 +1,108 @@
++// ownerarchive_integration_test.go pins which pairs the owner archive covers and when `lym beam start` skips it.
++// It runs over hubforge hubs whose pairs hold tips origin lacks.
++
++package beamcli
++
++import (
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/adoptrecord"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// archiveOwnerTagsOnCodeOrigin lists the owner archive tags on the hub's code origin, sorted.
++func archiveOwnerTagsOnCodeOrigin(t *testing.T, h *hubforge.Hub) []string {
++	t.Helper()
++
++	out := gitkit.Git(t, h.CodeBare, "tag", "--list", fabricengine.OwnerArchiveTagPrefix+"*")
++	if out == "" {
++		return nil
++	}
++	tags := strings.Fields(out)
++	slices.Sort(tags)
++	return tags
++}
++
++func TestArchiveOwnerTips_CoversTheWorktreesOwnPairAndTheRunsUnderIt(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// worktree is the archived worktree; empty names the prime.
++		worktree string
++		// taggedSlugs are the pairs whose tips the archive tags.
++		taggedSlugs []string
++	}{
++		{name: "ThePrimeArchivesItsOwnPairNamedRootAndEachRunUnderIt", taggedSlugs: []string{"r", "root"}},
++		{name: "ABeamArchivesOnlyItsOwnPair", worktree: "b", taggedSlugs: []string{"b"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{SkipPush: true, Beam: true})
++			hubforge.AddPairWith(t, h, "r", fabricengine.AddOptions{SkipPush: true})
++			prime := h.Location
++			seedBattenRun(t, prime, "r")
++			tips := map[string]string{
++				"root": gitkit.CommitFile(t, h.PrimeWorktree(), "owner-archive.txt", "local", "local code commit"),
++				"b":    gitkit.Git(t, h.PairCodeWorktree("b"), "rev-parse", "HEAD"),
++				"r":    gitkit.Git(t, h.PairCodeWorktree("r"), "rev-parse", "HEAD"),
++			}
++			var want []string
++			for _, slug := range tt.taggedSlugs {
++				want = append(want, fabricengine.OwnerArchiveTagName(slug, tips[slug]))
++			}
++			slices.Sort(want)
++			worktree := tt.worktree
++			if worktree == "" {
++				worktree = prime.WorktreeName
++			}
++
++			if err := archiveOwnerTips(prime, worktree); err != nil {
++				t.Fatalf("archiveOwnerTips() = %v; want nil", err)
++			}
++
++			if got := archiveOwnerTagsOnCodeOrigin(t, h); !slices.Equal(got, want) {
++				t.Errorf("owner archive tags on the code origin = %v; want %v", got, want)
++			}
++		})
++	}
++}
++
++func TestOwnerArchiveBeforeRefusal_SkipsWhileAnAdoptCoversTheWorktree(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	prime := h.Location
++	tip := gitkit.CommitFile(t, h.PrimeWorktree(), "owner-archive.txt", "local", "local code commit")
++	archive := ownerArchiveBeforeRefusal(primeTarget(prime))
++
++	if err := adoptrecord.Write(h.Path, adoptrecord.Record{State: adoptrecord.StateRunning, Subjects: []string{"root"}}); err != nil {
++		t.Fatalf("adoptrecord.Write() = %v; want nil", err)
++	}
++	if err := archive(); err != nil {
++		t.Fatalf("archive() under an adopt = %v; want nil", err)
++	}
++	if got := archiveOwnerTagsOnCodeOrigin(t, h); len(got) != 0 {
++		t.Errorf("owner archive tags under an adopt = %v; want none", got)
++	}
++
++	if err := adoptrecord.Write(h.Path, adoptrecord.Record{State: adoptrecord.StateDone, Subjects: []string{"root"}}); err != nil {
++		t.Fatalf("adoptrecord.Write() = %v; want nil", err)
++	}
++	if err := archive(); err != nil {
++		t.Fatalf("archive() with the adopt done = %v; want nil", err)
++	}
++	if got, want := archiveOwnerTagsOnCodeOrigin(t, h), []string{fabricengine.OwnerArchiveTagName("root", tip)}; !slices.Equal(got, want) {
++		t.Errorf("owner archive tags with the adopt done = %v; want %v", got, want)
++	}
++}
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index cd5a0671..def70057 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -68,8 +68,21 @@
+ //     So does an error out of Run after the lock other than ErrDobbyRunning.
+ //     The log rotates only while the lock is held, and an error after a re-exec posts a notice.
+ //   - It reads its beam's owner at start and on each probe tick.
+-//     When another machine owns the beam, it exits with the logged reason `stop: another machine owns this beam`.
+-//     The reason names `lym adopt root` or `lym adopt <slug>`.
++//     A probe tick first pulls Bolt through Deps.PullBolt, at most once per five minutes,
++//     so an idle machine learns a new owner; a failed pull logs once per episode.
++//     While an adopt in flight on this machine covers the beam another machine owns (Deps.UnderAdopt),
++//     the dobby stays up and hands nothing over.
++//     It spawns no pass, starts no task, and runs no tidy, test-map or landing step.
++//     The hold's start and end each log one line.
++//     Any other foreign owner gets the hand-over.
++//     The dobby owner-pauses each run it drives that is neither done nor recorded owned elsewhere,
++//     as a pass exiting owned elsewhere does.
++//     It then archives the local tips under the beam that origin lacks through Deps.ArchiveOwner.
++//     Once the archive succeeds it exits with the logged reason `stop: another machine owns this beam`,
++//     which names `lym adopt root` or `lym adopt <slug>`.
++//     A failed archive logs once per episode and keeps the dobby up, retrying at each probe tick.
++//     Meanwhile a run whose owner pause stands gets no pass,
++//     and one whose pause failed gets its full pass each probe tick.
+ //     A cancelled context logs `stop: the context ended`.
+ //   - A record with the process's own pid and start ticks owes no new full pass;
+ //     a record with the pid and no ticks gains the ticks and owes one;
+diff --git a/internal/dobbyengine/handover.go b/internal/dobbyengine/handover.go
+new file mode 100644
+index 00000000..55b0e0ff
+--- /dev/null
++++ b/internal/dobbyengine/handover.go
+@@ -0,0 +1,112 @@
++// handover.go is what a dobby does on a probe tick that reads its beam owned by another machine.
++// It stays up and idle while an adopt in flight here covers the beam.
++// Otherwise it pauses its runs, archives the local tips origin lacks and exits.
++// It also holds the probe's periodic Bolt pull, through which an idle machine learns a new owner.
++
++package dobbyengine
++
++import (
++	"context"
++	"fmt"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// boltPullInterval is the shortest gap between two Bolt pulls of the probe.
++const boltPullInterval = 5 * time.Minute
++
++// pullBolt pulls Bolt on a probe tick once boltPullInterval has passed since the last pull.
++// The first probe tick pulls.
++// A failed pull is logged once per episode, and the owner read goes on over the local Bolt.
++func (d *daemon) pullBolt(now time.Time) {
++	if d.deps.PullBolt == nil || (!d.lastBoltPull.IsZero() && now.Sub(d.lastBoltPull) < boltPullInterval) {
++		return
++	}
++	d.lastBoltPull = now
++	if err := d.deps.PullBolt(); err != nil {
++		d.boltPull.Fail("dobbyengine: the Bolt pull failed; the owner is read from the local Bolt", "worktree", d.geom.WorktreeName, "error", err)
++		return
++	}
++	d.boltPull.Recover("dobbyengine: the Bolt pulls again", "worktree", d.geom.WorktreeName)
++}
++
++// probeOwner reads the beam's owner on a probe tick and reports whether the dobby exits.
++// While an adopt in flight on this machine covers a beam another machine owns, it sets the adopt hold.
++// Under the hold the dobby stays up and schedules nothing, and the hold's start and end each log one line.
++// Any other foreign owner gets the hand-over.
++func (d *daemon) probeOwner(ctx context.Context, now time.Time) bool {
++	elsewhere, owner := d.beamOwnedElsewhere()
++	holds := elsewhere && d.deps.UnderAdopt != nil && d.deps.UnderAdopt()
++	if holds != d.adoptHolds {
++		d.adoptHolds = holds
++		if holds {
++			d.logLine(now, fmt.Sprintf("adopt hold: an adopt in flight here covers this beam, which machine %s owns; the dobby schedules nothing", owner))
++		} else {
++			d.logLine(now, "adopt hold ended")
++		}
++	}
++	if !elsewhere || holds {
++		// An unreadable owner says nothing of whether a hand-over is still due, so it leaves the episode standing.
++		if !d.ownerUnreadable {
++			d.endArchiveEpisode("dobbyengine: the beam needs no hand-over any more; the archive failure ends")
++		}
++		return false
++	}
++	return d.handOver(ctx, now, owner)
++}
++
++// endArchiveEpisode closes the hand-over's archive failure episode, logging msg, so a later failure logs its line again.
++func (d *daemon) endArchiveEpisode(msg string) {
++	d.archiveFailures.Recover(msg, "worktree", d.geom.WorktreeName)
++	d.archiveFailing = false
++}
++
++// handOver hands the beam to owner, the machine that owns it now, and reports whether the dobby exits.
++// It first owner-pauses the runs it drives, so no pass of a run whose pause stands starts while it archives.
++// It then archives the local tips under the beam that origin lacks, and exits once the archive succeeds.
++// A failed archive is logged once per episode and keeps the dobby up; the next probe tick retries it.
++func (d *daemon) handOver(ctx context.Context, now time.Time, owner string) bool {
++	d.pauseRunsForOwner(ctx, now)
++	if d.deps.ArchiveOwner != nil {
++		if err := d.deps.ArchiveOwner(); err != nil {
++			d.archiveFailures.Fail("dobbyengine: archiving the local tips for the beam's new owner failed; the dobby stays up and retries at the next probe tick",
++				"worktree", d.geom.WorktreeName, "owner", owner, "error", err)
++			if !d.archiveFailing {
++				d.archiveFailing = true
++				d.logLine(now, "archive failing: "+oneLine(err.Error()))
++			}
++			return false
++		}
++		d.endArchiveEpisode("dobbyengine: the archive succeeds again")
++	}
++	logger.Info("dobbyengine: another machine owns this beam; the dobby exits", "worktree", d.geom.WorktreeName, "owner", owner)
++	subject := d.geom.Slug
++	if subject == "" {
++		subject = "root"
++	}
++	d.logOwn(now, fmt.Sprintf("stop: another machine owns this beam (%s); lym adopt %s takes it over here", owner, subject))
++	return true
++}
++
++// pauseRunsForOwner owner-pauses each run this dobby drives that is neither done nor recorded owned elsewhere.
++// It pauses as a pass exiting owned elsewhere does.
++// A run listing or state read that fails is logged at Warn and pauses nothing; the next probe tick tries again.
++func (d *daemon) pauseRunsForOwner(ctx context.Context, now time.Time) {
++	runs, err := d.deps.Runs()
++	if err != nil {
++		logger.Warn("dobbyengine: the runs could not be listed for the hand-over; none is paused", "worktree", d.geom.WorktreeName, "error", err)
++		return
++	}
++	current, _, err := ReadState(d.geom.StatePath)
++	if err != nil {
++		logger.Warn("dobbyengine: the state record could not be read for the hand-over; no run is paused", "worktree", d.geom.WorktreeName, "error", err)
++		return
++	}
++	for _, run := range runs {
++		if run.State == runStateDone || current.Runs[run.Slug].OwnedElsewhere {
++			continue
++		}
++		d.ownedElsewhere(ctx, run.Slug, now)
++	}
++}
+diff --git a/internal/dobbyengine/handover_test.go b/internal/dobbyengine/handover_test.go
+new file mode 100644
+index 00000000..38ea9bab
+--- /dev/null
++++ b/internal/dobbyengine/handover_test.go
+@@ -0,0 +1,377 @@
++// handover_test.go pins what the loop does on a probe tick that reads the beam owned by another machine:
++// the adopt hold, the hand-over's pause and archive, and the Bolt pull through which an idle machine learns the owner.
++
++package dobbyengine
++
++import (
++	"context"
++	"errors"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// handOverStop is the log line the prime's dobby writes as it exits for machine m2.
++const handOverStop = "stop: another machine owns this beam (m2); lym adopt root takes it over here"
++
++// loggedContaining reports whether any logged line contains text.
++func (h *loopHarness) loggedContaining(text string) bool {
++	return slices.ContainsFunc(h.logged(), func(call loopLogCall) bool { return strings.Contains(call.line, text) })
++}
++
++func TestRun_ForeignOwner(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name       string
++		underAdopt bool
++		// archiveErrs answers the archive calls in order; a call past the list succeeds.
++		archiveErrs []error
++		// runs replaces the default running run r1 when set, and runsErr fails the run listing instead.
++		runs    []RunView
++		runsErr error
++		// recordedElsewhere names the runs the state record already holds owned elsewhere.
++		recordedElsewhere []string
++		wantArchives      int
++		wantPauses        []string
++		wantExit          bool
++		wantLine          string
++	}{
++		{name: "AnAdoptInFlightKeepsTheDobbyUpAndIdle", underAdopt: true, wantLine: "adopt hold:"},
++		{name: "NoAdoptPausesTheRunsArchivesAndExits", wantArchives: 1, wantPauses: []string{"r1"}, wantExit: true, wantLine: handOverStop},
++		{
++			name: "ADoneRunIsNotPaused", runs: []RunView{{Slug: "r1", State: runStateDone, Producer: producerRunShed}},
++			wantArchives: 1, wantExit: true, wantLine: handOverStop,
++		},
++		{
++			name: "ARunAlreadyOwnedElsewhereIsNotPausedAgain", recordedElsewhere: []string{"r1"},
++			wantArchives: 1, wantExit: true, wantLine: handOverStop,
++		},
++		{
++			name: "AFailingRunListingPausesNothingAndStillArchivesAndExits", runsErr: errors.New("status unreadable"),
++			wantArchives: 1, wantExit: true, wantLine: handOverStop,
++		},
++		{
++			name: "AFailedArchiveKeepsTheDobbyUpAndRetriesAtTheNextProbe", archiveErrs: []error{errors.New("origin unreachable")},
++			wantArchives: 2, wantPauses: []string{"r1"}, wantExit: true, wantLine: "archive failing: origin unreachable",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := newLoopHarness(t, 3)
++			var pauses, spawns []string
++			archives := 0
++			h.deps.Owner = func() (string, error) { return "m2", nil }
++			h.deps.SlugOwner = func(string) (string, error) { return "m2", nil }
++			h.deps.UnderAdopt = func() bool { return tt.underAdopt }
++			h.deps.Runs = func() ([]RunView, error) {
++				if tt.runsErr != nil || tt.runs != nil {
++					return tt.runs, tt.runsErr
++				}
++				return []RunView{{Slug: "r1", State: runStateRunning, Producer: producerRunShed, Covered: len(pauses) > 0}}, nil
++			}
++			if len(tt.recordedElsewhere) > 0 {
++				err := UpdateState(h.geom.StatePath, func(s *State) error {
++					s.Runs = map[string]RunState{}
++					for _, slug := range tt.recordedElsewhere {
++						s.Runs[slug] = RunState{OwnedElsewhere: true}
++					}
++					return nil
++				})
++				if err != nil {
++					t.Fatalf("UpdateState() = %v; want nil", err)
++				}
++			}
++			h.deps.PauseOwned = func(_ context.Context, slug string) error {
++				pauses = append(pauses, slug)
++				return nil
++			}
++			h.deps.ReleaseParentLock = func(context.Context, string) error { return nil }
++			h.deps.SpawnPass = func(slug string, _, _ bool) (<-chan PassExit, error) {
++				spawns = append(spawns, slug)
++				return nil, ErrSpawnUnderTest
++			}
++			h.deps.ArchiveOwner = func() error {
++				archives++
++				if archives <= len(tt.archiveErrs) {
++					return tt.archiveErrs[archives-1]
++				}
++				return nil
++			}
++
++			if err := h.run(t); err != nil {
++				t.Fatalf("Run() = %v; want nil", err)
++			}
++
++			if archives != tt.wantArchives {
++				t.Errorf("archives = %d; want %d", archives, tt.wantArchives)
++			}
++			if !slices.Equal(pauses, tt.wantPauses) {
++				t.Errorf("owner pauses = %v; want %v", pauses, tt.wantPauses)
++			}
++			if len(spawns) != 0 {
++				t.Errorf("passes spawned = %v; want none, held or paused", spawns)
++			}
++			if got := h.loggedContaining(handOverStop); got != tt.wantExit {
++				t.Errorf("logged the hand-over stop = %v; want %v", got, tt.wantExit)
++			}
++			if !h.loggedContaining(tt.wantLine) {
++				t.Errorf("log = %v; want a line containing %q", h.logged(), tt.wantLine)
++			}
++		})
++	}
++}
++
++// adoptHoldRun is what a beam dobby did across a run that held it under an adopt for two ticks and then lifted the adopt.
++type adoptHoldRun struct {
++	h                    *loopHarness
++	spawns, pauses       []string
++	tidyAgents, archives int
++	refreshes, landReads int
++	landings             int
++}
++
++// runAnAdoptHold runs a beam dobby of a beam another machine owns, under an adopt for its first two ticks.
++// Every spy must stay silent through those ticks.
++// The adopt then lifts, and the owner reads ownerAfterLift from the next probe on.
++func runAnAdoptHold(t *testing.T, ownerAfterLift string, stopAt int) adoptHoldRun {
++	t.Helper()
++
++	h := newLoopHarness(t, stopAt)
++	h.geom.Slug, h.geom.WorktreeRoot = "beam-a", t.TempDir()
++	if err := os.WriteFile(filepath.Join(h.geom.WorktreeRoot, ".git"), []byte("gitdir: elsewhere\n"), 0o644); err != nil {
++		t.Fatalf("WriteFile() = %v; want nil", err)
++	}
++	stencils := filepath.Join(t.TempDir(), "stencils")
++	stencilkit.SeedInto(t, stencils)
++	h.geom.TidyDir = filepath.Join(filepath.Dir(h.geom.StatePath), TidyDirName)
++
++	underAdopt, lifted := true, false
++	var spawns, pauses []string
++	shuttle := &tidyShuttleFake{}
++	archives, refreshes, landReads, landings, landingReads := 0, 0, 0, 0, 0
++	h.deps.Owner = func() (string, error) {
++		if lifted {
++			return ownerAfterLift, nil
++		}
++		return "m2", nil
++	}
++	h.deps.SlugOwner = func(string) (string, error) { return "m2", nil }
++	h.deps.UnderAdopt = func() bool { return underAdopt }
++	h.deps.Runs = func() ([]RunView, error) { return []RunView{runningRun("due")}, nil }
++	h.deps.SpawnPass = func(slug string, _, _ bool) (<-chan PassExit, error) {
++		spawns = append(spawns, slug)
++		exit := make(chan PassExit, 1)
++		exit <- PassExit{}
++		return exit, nil
++	}
++	h.deps.PauseOwned = func(_ context.Context, slug string) error {
++		pauses = append(pauses, slug)
++		return nil
++	}
++	h.deps.ReleaseParentLock = func(context.Context, string) error { return nil }
++	h.deps.StatusExists = func(string) (bool, error) { return true, nil }
++	h.deps.PauseCovers = func(string) (bool, error) { return false, nil }
++	h.deps.Tasks = func() ([]TaskView, error) {
++		return []TaskView{{Slug: "fresh", Kind: boardengine.KindTask, Parent: h.geom.WorktreeName}}, nil
++	}
++	h.deps.LoadConfig = func() (Config, error) {
++		return Config{MaxRuns: 5, BoardTidyEvery: 1, BoardTidyTimeoutMin: 30, TestMapEvery: 1, TestMapBatch: testMapBatch}, nil
++	}
++	h.deps.TestMapRunning = func() (bool, error) { return false, nil }
++	h.deps.StartTestMap = func(int) error {
++		refreshes++
++		return nil
++	}
++	h.deps.Landings = func() ([]string, error) {
++		landingReads++
++		if landingReads == 1 {
++			return nil, nil
++		}
++		return []string{"landed"}, nil
++	}
++	h.deps.TidyShuttle = shuttle
++	h.deps.TidyModel = shuttleengine.ModelChoice{Engine: "b", Model: "sonnet"}
++	h.deps.StencilsDir = stencils
++	h.deps.NearestOrch = func() (string, error) { return "ly:orch", nil }
++	h.deps.CanLand = func() (LandReading, error) {
++		landReads++
++		return LandReading{}, nil
++	}
++	h.deps.Land = func() error {
++		landings++
++		return nil
++	}
++	h.deps.ArchiveOwner = func() error {
++		archives++
++		return nil
++	}
++	h.perTick = func(n int) error {
++		if n > 2 {
++			return nil
++		}
++		if len(spawns) != 0 || len(shuttle.started) != 0 || refreshes != 0 || landReads != 0 || landings != 0 {
++			t.Errorf("after tick %d under the hold, passes = %v, tidy agents = %d, refreshes = %d, landing reads = %d, landings = %d; want none",
++				n, spawns, len(shuttle.started), refreshes, landReads, landings)
++		}
++		if n == 2 {
++			underAdopt, lifted = false, true
++		}
++		return nil
++	}
++
++	if err := h.run(t); err != nil {
++		t.Fatalf("Run() = %v; want nil", err)
++	}
++	return adoptHoldRun{
++		h: h, spawns: spawns, pauses: pauses, tidyAgents: len(shuttle.started),
++		archives: archives, refreshes: refreshes, landReads: landReads, landings: landings,
++	}
++}
++
++// TestRun_AnAdoptHoldSchedulesNothingUntilItLifts pins that the hold gates every scheduling step.
++// It also pins that the probe after the lift hands over.
++func TestRun_AnAdoptHoldSchedulesNothingUntilItLifts(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	got := runAnAdoptHold(t, "m2", 10)
++
++	if len(got.h.ticks) != 2 {
++		t.Errorf("ticks = %d; want the two held ticks, the probe after the lift handing over before a third", len(got.h.ticks))
++	}
++	if got.archives != 1 || !slices.Equal(got.pauses, []string{"due"}) {
++		t.Errorf("archives = %d, owner pauses = %v; want one archive and the run paused", got.archives, got.pauses)
++	}
++	for _, want := range []string{"adopt hold:", "adopt hold ended", "lym adopt beam-a takes it over here"} {
++		if !got.h.loggedContaining(want) {
++			t.Errorf("log = %v; want a line containing %q", got.h.logged(), want)
++		}
++	}
++}
++
++// TestRun_ABeamTheHoldReleasedSchedulesAgain is the control of the hold test.
++// It runs the same beam, with the owner leaving as the adopt lifts.
++// It proves each spy fires once nothing holds the beam, so the held ticks' silence is the hold's doing.
++func TestRun_ABeamTheHoldReleasedSchedulesAgain(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	got := runAnAdoptHold(t, "", 5)
++
++	if len(got.h.ticks) != 5 || got.archives != 0 {
++		t.Errorf("ticks = %d, archives = %d; want all five ticks and no archive", len(got.h.ticks), got.archives)
++	}
++	if len(got.spawns) == 0 || got.tidyAgents == 0 || got.refreshes == 0 || got.landReads == 0 {
++		t.Errorf("after the hold, passes = %v, tidy agents = %d, refreshes = %d, landing reads = %d; want each step to have run",
++			got.spawns, got.tidyAgents, got.refreshes, got.landReads)
++	}
++	if !got.h.loggedContaining("adopt hold ended") {
++		t.Errorf("log = %v; want a line containing %q", got.h.logged(), "adopt hold ended")
++	}
++}
++
++// TestRun_ALaterArchiveFailureLogsAgainAfterTheOwnerLeaves reads the beam owned elsewhere, then not.
++// It then reads it owned elsewhere again.
++// Each archive failure episode writes its own dobby log line.
++func TestRun_ALaterArchiveFailureLogsAgainAfterTheOwnerLeaves(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	h := newLoopHarness(t, 4)
++	owners := []string{"m2", "", "m2", "m2"}
++	reads := 0
++	h.deps.Owner = func() (string, error) {
++		owner := owners[min(reads, len(owners)-1)]
++		reads++
++		return owner, nil
++	}
++	h.deps.ArchiveOwner = func() error { return errors.New("origin unreachable") }
++
++	if err := h.run(t); err != nil {
++		t.Fatalf("Run() = %v; want nil", err)
++	}
++
++	lines := 0
++	for _, call := range h.logged() {
++		if strings.Contains(call.line, "archive failing:") {
++			lines++
++		}
++	}
++	if lines != 2 {
++		t.Errorf("archive failing lines = %d; want one for each of the two episodes", lines)
++	}
++}
++
++func TestRun_AFailedBoltPullLeavesTheOwnerReadToTheLocalBolt(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	h := newLoopHarness(t, 1000)
++	pulls, archives := 0, 0
++	h.deps.PullBolt = func() error {
++		pulls++
++		return errors.New("origin unreachable")
++	}
++	h.deps.Owner = func() (string, error) { return "m2", nil }
++	h.deps.ArchiveOwner = func() error {
++		archives++
++		return nil
++	}
++
++	if err := h.run(t); err != nil {
++		t.Fatalf("Run() = %v; want nil", err)
++	}
++
++	if pulls != 1 || archives != 1 || !h.loggedContaining(handOverStop) {
++		t.Errorf("pulls = %d, archives = %d, logged the hand-over stop = %v; want one failed pull, then the local owner handed over",
++			pulls, archives, h.loggedContaining(handOverStop))
++	}
++}
++
++func TestRun_BoltPullBringsInANewOwner(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	h := newLoopHarness(t, 1000)
++	owner := ""
++	var pulls []time.Time
++	archives := 0
++	h.deps.PullBolt = func() error {
++		pulls = append(pulls, h.clock.now())
++		if len(pulls) == 2 {
++			owner = "m2"
++		}
++		return nil
++	}
++	h.deps.Owner = func() (string, error) { return owner, nil }
++	h.deps.ArchiveOwner = func() error {
++		archives++
++		return nil
++	}
++
++	if err := h.run(t); err != nil {
++		t.Fatalf("Run() = %v; want nil", err)
++	}
++
++	if len(pulls) != 2 {
++		t.Fatalf("Bolt pulls = %d; want 2, the second bringing in the owner its own probe acts on", len(pulls))
++	}
++	if gap := pulls[1].Sub(pulls[0]); gap < boltPullInterval {
++		t.Errorf("gap between Bolt pulls = %v; want at least %v", gap, boltPullInterval)
++	}
++	if archives != 1 || !h.loggedContaining(handOverStop) {
++		t.Errorf("archives = %d, logged the hand-over stop = %v; want one archive and the stop", archives, h.loggedContaining(handOverStop))
++	}
++}
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index 34d5a358..b49df1ee 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -60,6 +60,15 @@ type Deps struct {
+ 	Machine func() (string, error)
+ 	// Owner returns the machine that owns this beam, the prime owner for the prime; empty means no other machine owns it.
+ 	Owner func() (string, error)
++	// UnderAdopt reports whether an adopt in flight on this machine covers this dobby's worktree.
++	// It is asked only on a probe tick that reads the beam owned by another machine; a nil UnderAdopt covers nothing.
++	UnderAdopt func() bool
++	// PullBolt pulls the hub's Bolt from origin, so an idle machine learns a new owner; a nil PullBolt pulls nothing.
++	PullBolt func() error
++	// ArchiveOwner archives every local tip under this dobby's worktree that origin lacks, for the machine that owns it now:
++	// the code and records tips of the worktree's own pair and of each run whose parent it is.
++	// A nil ArchiveOwner archives nothing.
++	ArchiveOwner func() error
+ 	// CheckBinary re-execs onto a changed lym binary and returns when the binary is unchanged.
+ 	// It calls beforeExec right before an exec and failed with the error of an exec that failed.
+ 	CheckBinary func(beforeExec func(), failed func(error))
+@@ -184,8 +193,9 @@ func ReadsAsReexec(statePath string, pid int, startTicks string) (bool, error) {
+ // Run drives one dobby for geom until ctx ends or another machine owns the beam.
+ // A start that reads as a re-exec waits Deps.ReexecLockWait for geom.LockPath; any other start waits lock.ProbeGrace.
+ // Run returns ErrDobbyRunning when another dobby still holds the lock.
+-// It reads the beam's owner at start and on every probe tick.
+-// It returns nil, logging why, when another machine owns the beam.
++// It reads the beam's owner at start and on every probe tick, after the probe's Bolt pull.
++// While an adopt in flight on this machine covers a beam another machine owns, the dobby stays up and schedules nothing.
++// Otherwise it hands such a beam over, and returns nil, logging why, once the hand-over's archive succeeds.
+ // A start that does not read as a re-exec owes every run a full pass; a re-exec owes none.
+ // A tick that fails is logged once per episode and the loop goes on; a cancelled context ends it after the tick in flight.
+ // Every way the dobby ends leaves a line in the log,
+@@ -302,6 +312,14 @@ type daemon struct {
+ 	ownerUnreadable bool
+ 	// taskLimitHeld reports whether the cgroup task limit held the last start the start step tried.
+ 	taskLimitHeld bool
++	// adoptHolds reports whether the last probe tick read the beam owned elsewhere under an adopt in flight here.
++	adoptHolds bool
++	// lastBoltPull is when the probe last pulled Bolt, and boltPull is the failure episode of those pulls.
++	lastBoltPull time.Time
++	boltPull     logger.Episode
++	// archiveFailures is the failure episode of the hand-over's archive; archiveFailing reports whether its line was logged.
++	archiveFailures logger.Episode
++	archiveFailing  bool
+ 
+ 	sleepWatch pauserecord.SleepWatch
+ 	owesAll    bool
+@@ -500,13 +518,8 @@ func (d *daemon) loop(ctx context.Context, events <-chan struct{}) error {
+ 		d.probeDue = d.lastProbe.IsZero() || now.Sub(d.lastProbe) >= d.probe
+ 		if d.probeDue {
+ 			d.lastProbe = now
+-			if elsewhere, owner := d.beamOwnedElsewhere(); elsewhere {
+-				logger.Info("dobbyengine: another machine owns this beam; the dobby exits", "worktree", d.geom.WorktreeName, "owner", owner)
+-				subject := d.geom.Slug
+-				if subject == "" {
+-					subject = "root"
+-				}
+-				d.logOwn(now, fmt.Sprintf("stop: another machine owns this beam (%s); lym adopt %s takes it over here", owner, subject))
++			d.pullBolt(now)
++			if d.probeOwner(ctx, now) {
+ 				return nil
+ 			}
+ 		}
+@@ -599,6 +612,7 @@ func (d *daemon) standingMove() string {
+ // It still owes what it owed before.
+ // That is logged once per episode,
+ // and the state record's upkeep and the landing count go on.
++// The adopt hold holds the scheduling the same way, and the beam's landing step too.
+ // A test-map step that fails is logged once per episode and does not end the tick, since the refresh is optional.
+ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 	d.sleepWatch.Observe(now, d.deps.Awake())
+@@ -630,7 +644,8 @@ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 	} else {
+ 		d.moveStands.Recover("dobbyengine: the anchor change ended; the dobby schedules again", "worktree", d.geom.WorktreeName)
+ 	}
+-	if moving == "" {
++	scheduling := moving == "" && !d.adoptHolds
++	if scheduling {
+ 		if err := d.drivePasses(ctx, now); err != nil {
+ 			return err
+ 		}
+@@ -645,7 +660,7 @@ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 	if err := d.countLandings(now); err != nil {
+ 		return err
+ 	}
+-	if moving == "" {
++	if scheduling {
+ 		if err := d.tidyStep(ctx, now); err != nil {
+ 			return err
+ 		}
+@@ -655,8 +670,10 @@ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 			d.testMapFailures.Recover("dobbyengine: the test-map refresh step works again", "worktree", d.geom.WorktreeName)
+ 		}
+ 	}
+-	if err := d.landBeam(ctx); err != nil {
+-		return err
++	if !d.adoptHolds {
++		if err := d.landBeam(ctx); err != nil {
++			return err
++		}
+ 	}
+ 	d.announceLandings(ctx)
+ 	d.inFlight = d.busy
+@@ -667,7 +684,7 @@ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 			return err
+ 		}
+ 	}
+-	if moving == "" {
++	if scheduling {
+ 		d.owesAll = false
+ 	}
+ 	return nil
+diff --git a/internal/fabricengine/archive.go b/internal/fabricengine/archive.go
+index dab96e9c..3bd1d00b 100644
+--- a/internal/fabricengine/archive.go
++++ b/internal/fabricengine/archive.go
+@@ -207,6 +207,17 @@ func tagAndPushArchiveTip(rec *Mutations, repoDir, slug, tip, side string, sleep
+ 	if err != nil {
+ 		return "", err
+ 	}
++	if err := pushArchiveTag(rec, repoDir, tag, sleep); err != nil {
++		return "", err
++	}
++	return tag, nil
++}
++
++// pushArchiveTag pushes the tag named tag in the repo at repoDir to origin.
++// A push refused with a bare "(failed)", "cannot lock ref" or "missing necessary objects" is retried.
++// The retries follow the archive push's delay schedule and sleep through sleep; a nil sleep sleeps for real.
++// KindTagPushed is recorded on rec only after the push observably succeeded.
++func pushArchiveTag(rec *Mutations, repoDir, tag string, sleep func(time.Duration)) error {
+ 	tagRef := "refs/tags/" + tag
+ 
+ 	pushTag := func() error {
+@@ -219,10 +230,10 @@ func tagAndPushArchiveTip(rec *Mutations, repoDir, slug, tip, side string, sleep
+ 		return err
+ 	}
+ 	if err := gitrepo.PushWithRetryReasons(pushTag, tagRef, archiveTagPushDelays(), sleep, []string{"missing necessary objects"}); err != nil {
+-		return "", fmt.Errorf("push archive tag %q to %q: %w", tag, originRemoteName, err)
++		return fmt.Errorf("push archive tag %q to %q: %w", tag, originRemoteName, err)
+ 	}
+ 	rec.Append(KindTagPushed, repoDir, tag)
+-	return tag, nil
++	return nil
+ }
+ 
+ // tagWeftTipForArchive tags the local tip of weftBranch before a teardown deletes the branch.
+@@ -260,19 +271,29 @@ func tagWeftTipForArchive(l *lymcwd.Location, slug, weftBranch string) (tip, tag
+ // so the tip stays reachable while the tag's push is still to come.
+ func createArchiveTag(repoDir, slug, tip, side string) (string, error) {
+ 	tag := ArchiveTagName(slug, tip)
++	if err := createTagAt(repoDir, tag, tip, side); err != nil {
++		return "", err
++	}
++	return tag, nil
++}
++
++// createTagAt tags tip as tag in the repo at repoDir, touching no remote.
++// A tag already at tip is reused.
++// A tag of that name at another commit is refused, and the error names side as the branch's side.
++func createTagAt(repoDir, tag, tip, side string) error {
+ 	existing, err := gitexec.Run([]string{"for-each-ref", "--format=%(objectname)", "refs/tags/" + tag}, repoDir)
+ 	if err != nil {
+-		return "", fmt.Errorf("look up archive tag %q: %w", tag, err)
++		return fmt.Errorf("look up archive tag %q: %w", tag, err)
+ 	}
+ 	switch existing = strings.TrimSpace(existing); {
+ 	case existing == "":
+ 		if _, err := gitexec.Run([]string{"tag", tag, tip}, repoDir); err != nil {
+-			return "", fmt.Errorf("create archive tag %q at %s: %w", tag, tip, err)
++			return fmt.Errorf("create archive tag %q at %s: %w", tag, tip, err)
+ 		}
+ 	case existing != tip:
+-		return "", fmt.Errorf("archive tag %q already exists at %s, not the %s tip %s", tag, existing, side, tip)
++		return fmt.Errorf("archive tag %q already exists at %s, not the %s tip %s", tag, existing, side, tip)
+ 	}
+-	return tag, nil
++	return nil
+ }
+ 
+ // localBranchTip returns the full SHA of refs/heads/<branch> in the repo at repoDir.
+diff --git a/internal/fabricengine/archivetag_test.go b/internal/fabricengine/archivetag_test.go
+index 260cddb6..c6c0d015 100644
+--- a/internal/fabricengine/archivetag_test.go
++++ b/internal/fabricengine/archivetag_test.go
+@@ -1,9 +1,11 @@
+-// archivetag_test.go — unit test for ArchiveTagSlug, the reader of the archive tag namespace.
++// archivetag_test.go holds unit tests for the archive tag names.
++// It also tests ArchiveTagSlug, the reader of the archive tag namespace.
+ 
+ package fabricengine
+ 
+ import (
+ 	"reflect"
++	"strings"
+ 	"testing"
+ 	"time"
+ 
+@@ -47,3 +49,20 @@ func TestArchiveTagSlug(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestOwnerArchiveTagName pins the owner archive tag's name,
++// and that no archive tag reader takes it for an archived run.
++func TestOwnerArchiveTagName(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tag := OwnerArchiveTagName("root", "0123456789abcdef0123")
++	if want := "archive-owner/root/0123456789ab"; tag != want {
++		t.Errorf("OwnerArchiveTagName() = %q; want %q", tag, want)
++	}
++	if slug, ok := ArchiveTagSlug(tag); ok {
++		t.Errorf("ArchiveTagSlug(%q) = (%q, true); want no archived run", tag, slug)
++	}
++	if strings.HasPrefix(tag, ArchiveTagPrefix) {
++		t.Errorf("%q carries the archive tag prefix %q; want it outside every archive tag listing", tag, ArchiveTagPrefix)
++	}
++}
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 1a442aef..3e50c212 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -705,6 +705,13 @@
+ // The hub's prime worktree is refused by name before any teardown begins.
+ // It is the warp repository rather than a pair.
+ // No teardown waits on the network.
++//
++// `ArchiveOwnerTips` archives the local tips a machine keeps of pairs whose subject another machine now owns.
++// Under each pair's teardown lock it tags each code and records tip origin lacks `archive-owner/<slug>/<tip>`.
++// `OwnerArchiveTagName` gives that name.
++// It pushes the tag to that side's origin with no branch push.
++// No reader of `archive/` tags matches that prefix, so such a tag never reads as an archived run.
++//
+ // `Remove`, `DiscardTaskBranch` and the `Cleanup` sweep run their local steps,
+ // and they hand the remote ones to a detached teardown child (remoteteardown.go).
+ // `Remove` tags the pair's local weft tip `archive/<slug>/<tip>` (`tagWeftTipForArchive`) before its first mutation.
+diff --git a/internal/fabricengine/ownerarchive.go b/internal/fabricengine/ownerarchive.go
+new file mode 100644
+index 00000000..c95c2485
+--- /dev/null
++++ b/internal/fabricengine/ownerarchive.go
+@@ -0,0 +1,137 @@
++// ownerarchive.go archives the local tips a machine keeps of a subject another machine now owns.
++// Each tip origin lacks is tagged archive-owner/<slug>/<sha12>, and the tag is pushed to origin with no branch push,
++// so the new owner can reach the commits it cannot see.
++
++package fabricengine
++
++import (
++	"errors"
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++)
++
++// OwnerArchiveTagPrefix is the short-name prefix every owner archive tag carries.
++// No reader of ArchiveTagPrefix tags matches it,
++// so the owner archive of a live run or the prime never reads as an archived run.
++const OwnerArchiveTagPrefix = "archive-owner/"
++
++// OwnerArchiveTagName returns the owner archive tag name of a tip: archive-owner/<slug>/<first 12 hex of tip>.
++// The tip must hold at least ArchiveTagSHALen characters.
++func OwnerArchiveTagName(slug, tip string) string {
++	return OwnerArchiveTagPrefix + slug + "/" + tip[:ArchiveTagSHALen]
++}
++
++// OwnerArchivePair is one pair whose local tips an owner archive covers.
++type OwnerArchivePair struct {
++	// Slug names the pair's tags and its teardown lock; the prime's pair is `root`.
++	Slug string
++	// Pair is the pair's code worktree.
++	Pair *lymcwd.Location
++}
++
++// ArchiveOwnerTips archives each local tip of pairs that origin lacks, for the machine that now owns them.
++// A pair's tips are the branches its code worktree and its records worktree have checked out.
++// Origin lacks a tip when its copy of that branch is absent, or is neither the tip nor a descendant of it.
++// Such a tip is tagged with its owner archive tag in its own repository,
++// and the tag is pushed to that repository's origin; no branch is pushed.
++// Each pair is archived under its slug's teardown lock, taken exclusive and waited on at most StatusPushLockWait.
++// A worktree that is not there, a repository with no origin remote and a branch with no local tip archive nothing.
++// The tag names follow from the tips, so a re-run reuses the tags an earlier run made and pushes what is missing.
++// It returns the tags it pushed.
++// Every pair is tried, and the error joins each pair's failure, each wrapping ErrArchiveFailed.
++func ArchiveOwnerTips(hubPath string, pairs []OwnerArchivePair) ([]string, error) {
++	rec := NewMutations(hubPath)
++	var tags []string
++	var failures []error
++	for _, pair := range pairs {
++		pushed, err := archiveOwnerPair(rec, hubPath, pair)
++		tags = append(tags, pushed...)
++		if err != nil {
++			failures = append(failures, fmt.Errorf("%w: pair %s: %w", ErrArchiveFailed, pair.Slug, err))
++		}
++	}
++	return tags, errors.Join(failures...)
++}
++
++// archiveOwnerPair archives the code and records tips of pair under its slug's teardown lock.
++// It returns the tags it pushed.
++func archiveOwnerPair(rec *Mutations, hubPath string, pair OwnerArchivePair) ([]string, error) {
++	if err := ensureTeardownLockDir(hubPath, pair.Slug); err != nil {
++		return nil, err
++	}
++	held, acquired, err := lock.AcquireWriteLockWithin(TeardownLockPath(hubPath, pair.Slug), StatusPushLockWait)
++	if err != nil {
++		return nil, fmt.Errorf("take the teardown lock: %w", err)
++	}
++	if !acquired {
++		return nil, fmt.Errorf("a push or removal of the pair still holds its teardown lock: %w", ErrPairPushRunning)
++	}
++	defer func() { _ = held.Release() }()
++
++	var tags []string
++	for _, side := range []struct{ name, dir string }{
++		{"code", pair.Pair.WorktreePath()},
++		{"records", RecordsWorktree(pair.Pair)},
++	} {
++		tag, err := archiveOwnerTip(rec, side.dir, pair.Slug, side.name)
++		if err != nil {
++			return tags, fmt.Errorf("archive the %s tip: %w", side.name, err)
++		}
++		if tag != "" {
++			tags = append(tags, tag)
++		}
++	}
++	return tags, nil
++}
++
++// archiveOwnerTip tags and pushes the tip of the branch checked out at dir when origin lacks it, and returns the tag.
++// It returns no tag for a directory that is not there, a repository with no origin remote and a tip origin holds.
++// A detached checkout is an error.
++// side names the branch's side, code or records, in the refusal for a tag of that name sitting elsewhere.
++func archiveOwnerTip(rec *Mutations, dir, slug, side string) (string, error) {
++	if !pathPresent(dir) {
++		return "", nil
++	}
++	repo := gitrepo.New(dir)
++	if _, err := repo.RemoteURL(originRemoteName); err != nil {
++		return "", nil
++	}
++	branch, err := repo.CurrentBranch()
++	if err != nil {
++		return "", fmt.Errorf("read the branch checked out at %s: %w", dir, err)
++	}
++	tip, err := localBranchTip(dir, branch)
++	if err != nil || tip == "" {
++		return "", err
++	}
++	originTip, err := remoteHeadTip(dir, branch)
++	if err != nil {
++		return "", err
++	}
++	if originTip == tip {
++		return "", nil
++	}
++	if originTip != "" {
++		if _, err := repo.FetchWithArgs(originRemoteName, originTip); err != nil {
++			return "", fmt.Errorf("fetch the tip %s of branch %q from %q: %w", originTip, branch, originRemoteName, err)
++		}
++		originHolds, err := isAncestorOrEqual(dir, tip, originTip)
++		if err != nil {
++			return "", fmt.Errorf("compare the local and origin tips of branch %q: %w", branch, err)
++		}
++		if originHolds {
++			return "", nil
++		}
++	}
++	tag := OwnerArchiveTagName(slug, tip)
++	if err := createTagAt(dir, tag, tip, side); err != nil {
++		return "", err
++	}
++	if err := pushArchiveTag(rec, dir, tag, nil); err != nil {
++		return "", err
++	}
++	return tag, nil
++}
+diff --git a/internal/fabricengine/ownerarchive_integration_test.go b/internal/fabricengine/ownerarchive_integration_test.go
+new file mode 100644
+index 00000000..0ecf1b1e
+--- /dev/null
++++ b/internal/fabricengine/ownerarchive_integration_test.go
+@@ -0,0 +1,155 @@
++// ownerarchive_integration_test.go covers ArchiveOwnerTips over the prime pair of a hubforge hub.
++// The hub's CodeBare and RecordsBare are the code and records origins.
++// Each row builds its own hub, since a row commits to the prime or breaks its origin.
++// Package fabricengine_test; shares the single TestMain in testmain_test.go.
++
++package fabricengine_test
++
++import (
++	"errors"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestArchiveOwnerTips(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// commitCode and commitRecords add a local commit origin lacks on that side.
++		commitCode, commitRecords bool
++		// breakOrigin points the code repository's origin at a path that does not exist.
++		breakOrigin bool
++		// setupCode shapes the code repository and returns the tip the archive must tag, empty for none.
++		setupCode func(t *testing.T, codeDir string) string
++		wantErr   bool
++	}{
++		{name: "TipsOriginHoldsArchiveNothing"},
++		{
++			name: "ATipOriginIsAheadOfArchivesNothing",
++			setupCode: func(t *testing.T, codeDir string) string {
++				gitkit.CommitFile(t, codeDir, "ahead.txt", "origin", "origin ahead")
++				gitkit.Git(t, codeDir, "push", "origin", "HEAD")
++				gitkit.Git(t, codeDir, "reset", "--hard", "HEAD~1")
++				return ""
++			},
++		},
++		{
++			name: "ATipOriginDivergedFromIsTagged",
++			setupCode: func(t *testing.T, codeDir string) string {
++				gitkit.CommitFile(t, codeDir, "diverged.txt", "origin", "origin side")
++				gitkit.Git(t, codeDir, "push", "origin", "HEAD")
++				gitkit.Git(t, codeDir, "reset", "--hard", "HEAD~1")
++				return gitkit.CommitFile(t, codeDir, "diverged.txt", "local", "local side")
++			},
++		},
++		{
++			name: "ABranchAbsentOnOriginIsTagged",
++			setupCode: func(t *testing.T, codeDir string) string {
++				gitkit.Git(t, codeDir, "checkout", "-b", "unpublished")
++				return gitkit.Git(t, codeDir, "rev-parse", "HEAD")
++			},
++		},
++		{name: "AnUnpushedCodeTipIsTaggedOnTheCodeOrigin", commitCode: true},
++		{name: "AnUnpushedRecordsTipIsTaggedOnTheRecordsOrigin", commitRecords: true},
++		{name: "AnUnreachableOriginFailsTheArchive", commitCode: true, breakOrigin: true, wantErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			l := h.Location
++			codeDir, recordsDir := l.WorktreePath(), fabricengine.RecordsWorktree(l)
++			// The fixture leaves the records prime's tip unpushed, so push it to start from tips origin holds.
++			gitkit.MustRun(t, recordsDir, "git", "push", "origin", "HEAD")
++			var want []string
++			var codeTip, recordsTip string
++			if tt.commitCode {
++				codeTip = gitkit.CommitFile(t, codeDir, "owner-archive.txt", "local", "local code commit")
++				want = append(want, "archive-owner/root/"+codeTip[:12])
++			}
++			if tt.setupCode != nil {
++				if codeTip = tt.setupCode(t, codeDir); codeTip != "" {
++					want = append(want, "archive-owner/root/"+codeTip[:12])
++				}
++			}
++			if tt.commitRecords {
++				recordsTip = gitkit.CommitFile(t, recordsDir, "owner-archive.txt", "local", "local records commit")
++				want = append(want, "archive-owner/root/"+recordsTip[:12])
++			}
++			if tt.breakOrigin {
++				mustBreakOrigin(t, codeDir)
++			}
++			pairs := []fabricengine.OwnerArchivePair{{Slug: "root", Pair: l}}
++			originBranchBefore := gitkit.Git(t, h.CodeBare, "rev-parse", "HEAD")
++
++			tags, err := fabricengine.ArchiveOwnerTips(l.HubPath, pairs)
++
++			if tt.wantErr {
++				if !errors.Is(err, fabricengine.ErrArchiveFailed) {
++					t.Fatalf("ArchiveOwnerTips() error = %v; want one wrapping ErrArchiveFailed", err)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("ArchiveOwnerTips() error = %v", err)
++			}
++			if !slices.Equal(tags, want) {
++				t.Errorf("ArchiveOwnerTips() = %v; want %v", tags, want)
++			}
++			if codeTip != "" {
++				if got := tagTargetAt(t, h.CodeBare, want[0]); got != codeTip {
++					t.Errorf("code origin tag %s points at %q; want the tip %s", want[0], got, codeTip)
++				}
++			}
++			if recordsTip != "" {
++				if got := tagTargetAt(t, h.RecordsBare, want[len(want)-1]); got != recordsTip {
++					t.Errorf("records origin tag %s points at %q; want the tip %s", want[len(want)-1], got, recordsTip)
++				}
++			}
++			if got := gitkit.Git(t, h.CodeBare, "rev-parse", "HEAD"); got != originBranchBefore {
++				t.Errorf("code origin branch tip = %s after the archive; want it unchanged at %s, no branch pushed", got, originBranchBefore)
++			}
++			again, err := fabricengine.ArchiveOwnerTips(l.HubPath, pairs)
++			if err != nil || !slices.Equal(again, want) {
++				t.Errorf("re-run ArchiveOwnerTips() = %v, %v; want %v, nil", again, err, want)
++			}
++		})
++	}
++}
++
++func TestArchiveOwnerTips_ATornPairDoesNotStopTheOthers(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{SkipPush: true, Beam: true})
++	l := h.Location
++	gitkit.MustRun(t, fabricengine.RecordsWorktree(l), "git", "push", "origin", "HEAD")
++	tip := gitkit.CommitFile(t, l.WorktreePath(), "owner-archive.txt", "local", "local code commit")
++	// A detached checkout has no branch to archive, so the pair fails.
++	gitkit.Git(t, h.PairCodeWorktree("b"), "checkout", "--detach")
++	torn, err := lymcwd.NamedWorktree(h.Path, "b")
++	if err != nil {
++		t.Fatalf("NamedWorktree() = %v; want nil", err)
++	}
++	pairs := []fabricengine.OwnerArchivePair{{Slug: "b", Pair: torn}, {Slug: "root", Pair: l}}
++
++	tags, err := fabricengine.ArchiveOwnerTips(l.HubPath, pairs)
++
++	if !errors.Is(err, fabricengine.ErrArchiveFailed) || !strings.Contains(err.Error(), "pair b") {
++		t.Errorf("ArchiveOwnerTips() error = %v; want one wrapping ErrArchiveFailed and naming pair b", err)
++	}
++	if want := []string{"archive-owner/root/" + tip[:12]}; !slices.Equal(tags, want) {
++		t.Errorf("ArchiveOwnerTips() = %v; want %v, the other pair still tagged", tags, want)
++	}
++}
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 8305f1ed..bdd79689 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -16,6 +16,8 @@
+ // a worktree another machine owns, naming the owner and `lym adopt <slug>` (`lym adopt root` for the prime);
+ // a worktree with an anchor change standing on it or on the prime, naming the change's way forward;
+ // and a beam whose board entry a run other than the beam's own landing holds, naming `lym batten status <slug>`.
++// Before the owner refusal stands, `BeamUpOptions.ArchiveOwned` runs when set, and its failure joins the refusal;
++// `lym beam start` sets it to archive this machine's unpushed tips of the worktree for the new owner.
+ // A beam held by its own pawl run's landing is no refusal:
+ // `ownLandingHold` reads it from the beam pair's own run status.
+ // The status is found, not done, and standing at the producer the board status names.
+@@ -94,6 +96,9 @@
+ // The read takes the prime's owner for the prime and a beam's effective owner through `hubgeom.ParentOf`.
+ // It reads from the hub's local Bolt and compares the owner with this machine's name from `machinename`.
+ // The verdict is as fresh as that Bolt.
++// `watch` also tells it the under-adopt accessor `UnderAdoptWatch` builds.
++// The accessor reads the hub's adopt record, its local board and `hubgeom.ParentOf`.
++// While an adopt in flight on this machine covers the worktree, a foreign owner leaves the orch strand up.
+ //
+ // # Status restarts a dead watcher
+ //
+diff --git a/internal/orchcli/start.go b/internal/orchcli/start.go
+index 2298ca5a..c8e25962 100644
+--- a/internal/orchcli/start.go
++++ b/internal/orchcli/start.go
+@@ -16,6 +16,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentconfig"
+ 	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+@@ -56,6 +57,10 @@ type BeamUpOptions struct {
+ 	// every step runs but the orch's start, and the report's orch fields stay empty.
+ 	// Only `lym adopt` sets it, for a request carrying `--no-orch`; `lym beam start` starts the orch later.
+ 	SkipOrch bool
++	// ArchiveOwned runs before the refusal of a worktree another machine owns, and its error joins that refusal;
++	// a nil ArchiveOwned runs nothing.
++	// `lym beam start` sets it to archive this machine's unpushed tips of the worktree for the machine that owns it.
++	ArchiveOwned func() error
+ }
+ 
+ // BeamUpReport is what one BeamUp did, and what it had done when it refused or failed.
+@@ -500,7 +505,7 @@ func (c *orchCLI) beamUp(opts BeamUpOptions) (report BeamUpReport, err error) {
+ 			here = opts.Here
+ 		}
+ 		if err := beamUpRefusal(facts.slug, here, facts.owner, facts.moveWayForward, facts.held, facts.ownLanding, facts.status); err != nil {
+-			return report, err
++			return report, archiveBeforeOwnerRefusal(err, facts.owner, here, opts.ArchiveOwned)
+ 		}
+ 		if facts.held && facts.ownLanding {
+ 			ownLandingOf = facts.slug
+@@ -533,6 +538,18 @@ func (c *orchCLI) beamUp(opts BeamUpOptions) (report BeamUpReport, err error) {
+ 	return report, err
+ }
+ 
++// archiveBeforeOwnerRefusal runs archive before refusal stands when owner is a machine other than here.
++// A failed archive joins the refusal with its retry; any other refusal, or a nil archive, returns refusal as it is.
++func archiveBeforeOwnerRefusal(refusal error, owner, here string, archive func() error) error {
++	if archive == nil || !boardengine.OwnedElsewhere(owner, here) {
++		return refusal
++	}
++	if err := archive(); err != nil {
++		return fmt.Errorf("%w; archiving this machine's unpushed tips for the new owner also failed: %v; a re-run of `lym beam start` retries it", refusal, err)
++	}
++	return refusal
++}
++
+ // startDobbyStep starts this worktree's dobby and records its outcome on report.
+ // A dobby that did not start only warns, naming `lym beam start` as the way to start it again.
+ func (c *orchCLI) startDobbyStep(report *BeamUpReport) {
+diff --git a/internal/orchcli/start_test.go b/internal/orchcli/start_test.go
+index ed25619e..10295e25 100644
+--- a/internal/orchcli/start_test.go
++++ b/internal/orchcli/start_test.go
+@@ -1006,6 +1006,60 @@ func TestStart_OwnLandingStartsTheOrchAlone(t *testing.T) {
+ 	}
+ }
+ 
++func TestStart_ArchivesBeforeRefusingAForeignOwner(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name         string
++		owner        string
++		move         string
++		archiveErr   error
++		wantArchives int
++		wantIn       []string
++		wantNotIn    string
++	}{
++		{name: "AForeignOwnerArchivesThenRefuses", owner: "laptop", wantArchives: 1, wantIn: []string{"lym adopt b"}, wantNotIn: "archiving"},
++		{
++			name: "AFailedArchiveJoinsTheRefusal", owner: "laptop", archiveErr: errors.New("origin unreachable"), wantArchives: 1,
++			wantIn: []string{"lym adopt b", "origin unreachable", "a re-run of `lym beam start` retries it"},
++		},
++		{name: "AnotherRefusalArchivesNothing", move: "finish the anchor change", wantIn: []string{"anchor change"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := newStartHarness(t)
++			h.cli.readBeamFacts = func() (beamFacts, error) {
++				return beamFacts{slug: "b", here: "desktop", owner: tt.owner, moveWayForward: tt.move}, nil
++			}
++			archives := 0
++
++			code, env := h.runWith(t, BeamUpOptions{Prepare: true, ArchiveOwned: func() error {
++				archives++
++				return tt.archiveErr
++			}})
++
++			msg, _ := env["error"].(string)
++			if code == 0 {
++				t.Fatalf("exit = 0; env = %v; want a refusal", env)
++			}
++			if archives != tt.wantArchives {
++				t.Errorf("archives = %d; want %d", archives, tt.wantArchives)
++			}
++			for _, want := range tt.wantIn {
++				if !strings.Contains(msg, want) {
++					t.Errorf("refusal %q missing %q", msg, want)
++				}
++			}
++			if tt.wantNotIn != "" && strings.Contains(msg, tt.wantNotIn) {
++				t.Errorf("refusal %q names %q; want an archive that succeeded left out", msg, tt.wantNotIn)
++			}
++		})
++	}
++}
++
+ // saveSeedState saves st as the state file start finds.
+ func saveSeedState(t *testing.T, h *startHarness, st orchengine.State) {
+ 	t.Helper()
+diff --git a/internal/orchcli/underadopt_integration_test.go b/internal/orchcli/underadopt_integration_test.go
+new file mode 100644
+index 00000000..53b9f65a
+--- /dev/null
++++ b/internal/orchcli/underadopt_integration_test.go
+@@ -0,0 +1,35 @@
++// underadopt_integration_test.go pins that UnderAdoptWatch judges a hub's adopt record against the hub's board.
++
++package orchcli
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/adoptrecord"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestUnderAdoptWatch_CoversThePrimeWhileARootAdoptIsUnfinished(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	watch := UnderAdoptWatch(h.Location)
++
++	if watch.Covers("") {
++		t.Error("Covers(prime) with no adopt record = true; want false")
++	}
++	if err := adoptrecord.Write(h.Path, adoptrecord.Record{State: adoptrecord.StateRunning, Subjects: []string{"root"}}); err != nil {
++		t.Fatalf("adoptrecord.Write() = %v; want nil", err)
++	}
++	if !watch.Covers("") {
++		t.Error("Covers(prime) under a running root adopt = false; want true")
++	}
++	if err := adoptrecord.Write(h.Path, adoptrecord.Record{State: adoptrecord.StateDone, Subjects: []string{"root"}}); err != nil {
++		t.Fatalf("adoptrecord.Write() = %v; want nil", err)
++	}
++	if watch.Covers("") {
++		t.Error("Covers(prime) with the root adopt done = true; want false")
++	}
++}
+diff --git a/internal/orchcli/watch.go b/internal/orchcli/watch.go
+index 1dc555b3..d1aa7863 100644
+--- a/internal/orchcli/watch.go
++++ b/internal/orchcli/watch.go
+@@ -11,6 +11,7 @@ import (
+ 	"syscall"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/adoptrecord"
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+@@ -84,6 +85,30 @@ func beamOwnerElsewhere(location *lymcwd.Location) (owner string, elsewhere bool
+ 	return owner, boardengine.OwnedElsewhere(owner, here), nil
+ }
+ 
++// UnderAdoptWatch returns the under-adopt accessor of the hub of prime.
++// It judges the hub's adopt record against the local board, resolving parents through `hubgeom.ParentOf`.
++func UnderAdoptWatch(prime *lymcwd.Location) *adoptrecord.Watch {
++	return adoptrecord.NewWatch(prime.HubPath,
++		func() (boardengine.Owners, error) {
++			return boardengine.ReadOwners(fabricengine.BoardDir(prime.HubPath))
++		},
++		func(slug string) (string, error) { return hubgeom.ParentOf(prime, slug) })
++}
++
++// underAdoptWatch returns the under-adopt accessor of the receiver's hub and the slug it asks about:
++// the beam's slug, empty for the prime.
++func (c *orchCLI) underAdoptWatch() (*adoptrecord.Watch, string, error) {
++	prime, err := resolvePrime(c.location)
++	if err != nil {
++		return nil, "", err
++	}
++	slug := c.location.WorktreeName
++	if slug == prime.WorktreeName {
++		slug = ""
++	}
++	return UnderAdoptWatch(prime), slug, nil
++}
++
+ // reapInheritedChildren waits on the children a watcher re-exec'd onto a new binary keeps from its old image.
+ // Nothing else waits on them.
+ func reapInheritedChildren() {
+@@ -142,9 +167,26 @@ A second watcher finding the first alive reports already_running and exits.`,
+ 				return nil
+ 			}
+ 			watcher.SetOrchName(orchName)
++			// The accessor resolves the hub's prime only when a foreign owner first makes the watcher ask.
++			// Once built it is kept, so its read failures log once per episode.
++			var underAdopt *adoptrecord.Watch
++			var adoptSlug string
++			var buildFailures logger.Episode
+ 			watcher.WatchOwner(orchengine.OwnerWatch{
+ 				Read: func() (string, bool, error) { return beamOwnerElsewhere(c.location) },
+ 				Stop: c.strands.RemoveStrand,
++				UnderAdopt: func() bool {
++					if underAdopt == nil {
++						built, slug, err := c.underAdoptWatch()
++						if err != nil {
++							buildFailures.Fail("orch: the under-adopt accessor could not be built; no adopt covers the beam", "error", err)
++							return false
++						}
++						buildFailures.Recover("orch: the under-adopt accessor is built")
++						underAdopt, adoptSlug = built, slug
++					}
++					return underAdopt.Covers(adoptSlug)
++				},
+ 			})
+ 			watcher.WatchBinary(selfexec.New().Check)
+ 			runErr := watcher.Run(ctx, time.Sleep)
+diff --git a/internal/orchengine/doc.go b/internal/orchengine/doc.go
+index 48e0051b..fa472255 100644
+--- a/internal/orchengine/doc.go
++++ b/internal/orchengine/doc.go
+@@ -129,6 +129,8 @@
+ // The watcher records `owned by machine <owner>` as the exit and ends as done.
+ // A failed stop is the tick's error, and the next tick retries it.
+ // A failed read reads as not owned elsewhere and logs once per episode.
++// A foreign owner stops nothing while OwnerWatch.UnderAdopt reports an adopt in flight here covering the beam.
++// The watcher goes on, and the hold's start and end each log once.
+ // The verdict is as fresh as this machine's local Bolt.
+ // A watcher running an older binary reaches the check only after it restarts;
+ // until then `lym beam status` shows the orch up.
+diff --git a/internal/orchengine/owner.go b/internal/orchengine/owner.go
+index ebc28202..0fd2a1d2 100644
+--- a/internal/orchengine/owner.go
++++ b/internal/orchengine/owner.go
+@@ -15,6 +15,9 @@ type OwnerWatch struct {
+ 	Read func() (owner string, elsewhere bool, err error)
+ 	// Stop removes the orch strand guid.
+ 	Stop func(guid string) error
++	// UnderAdopt reports whether an adopt in flight on this machine covers the beam.
++	// It is asked only while the owner reads as another machine, and a nil UnderAdopt covers nothing.
++	UnderAdopt func() bool
+ }
+ 
+ // WatchOwner tells the watcher where the beam's owner is read and how the orch strand is removed;
+@@ -24,8 +27,11 @@ func (w *Watcher) WatchOwner(o OwnerWatch) {
+ }
+ 
+ // ownerTick reads the beam's owner for this tick.
+-// When another machine owns it, ownerTick stops the orch strand and records the exit.
+-// done is true once the strand is stopped; a failed stop is the tick's error and the next tick retries it.
++// ownerTick stops the orch strand and records the exit when another machine owns the beam.
++// It does not stop it when an adopt in flight here covers the beam.
++// While such an adopt covers it, the strand stays up, and the hold's start and end each log once.
++// done is true once the strand is stopped.
++// A failed stop is the tick's error and the next tick retries it.
+ // A failed read reads as not owned elsewhere and logs once per episode.
+ func (w *Watcher) ownerTick(st State) (done bool, err error) {
+ 	if w.owner == nil {
+@@ -37,7 +43,16 @@ func (w *Watcher) ownerTick(st State) (done bool, err error) {
+ 		return false, nil
+ 	}
+ 	w.ownerReadFailures.Recover("orch: the beam's owner reads again")
+-	if !elsewhere {
++	held := elsewhere && w.owner.UnderAdopt != nil && w.owner.UnderAdopt()
++	if held != w.ownerAdoptHeld {
++		w.ownerAdoptHeld = held
++		if held {
++			logger.Info("orch: an adopt in flight here covers the beam another machine owns; the orch strand stays up", "owner", owner, "strand", st.Strand)
++		} else {
++			logger.Info("orch: no adopt in flight covers the beam any more", "strand", st.Strand)
++		}
++	}
++	if !elsewhere || held {
+ 		return false, nil
+ 	}
+ 	if err := w.owner.Stop(st.Strand); err != nil {
+diff --git a/internal/orchengine/watcher.go b/internal/orchengine/watcher.go
+index 73bf802c..41f1508e 100644
+--- a/internal/orchengine/watcher.go
++++ b/internal/orchengine/watcher.go
+@@ -190,6 +190,8 @@ type Watcher struct {
+ 	// ownerReadFailures is the failure episode of the owner reads.
+ 	// They repeat on every tick while the board is unreadable.
+ 	ownerReadFailures logger.Episode
++	// ownerAdoptHeld reports whether the last owner reading found the beam owned elsewhere under an adopt in flight here.
++	ownerAdoptHeld bool
+ }
+ 
+ // phaseEvents records what the current non-idle phase has observed.
+diff --git a/internal/orchengine/watcher_owner_test.go b/internal/orchengine/watcher_owner_test.go
+index eb14752a..4857cfff 100644
+--- a/internal/orchengine/watcher_owner_test.go
++++ b/internal/orchengine/watcher_owner_test.go
+@@ -10,6 +10,34 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++func TestWatcher_AnAdoptThatLiftsLetsTheNextTickStopTheStrand(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	e := newWatchEnv(t)
++	held := true
++	var stops []string
++	e.w.WatchOwner(OwnerWatch{
++		Read: func() (string, bool, error) { return "there", true, nil },
++		Stop: func(guid string) error {
++			stops = append(stops, guid)
++			return nil
++		},
++		UnderAdopt: func() bool { return held },
++	})
++
++	done, err := e.w.Tick()
++	if err != nil || done || len(stops) != 0 {
++		t.Fatalf("Tick() under the adopt = %v, %v with stops %v; want not done, no error, no stop", done, err, stops)
++	}
++	held = false
++	done, err = e.w.Tick()
++
++	if err != nil || !done || !slices.Equal(stops, []string{"s1"}) {
++		t.Errorf("Tick() after the adopt lifts = %v, %v with stops %v; want done, no error, the strand stopped once", done, err, stops)
++	}
++}
++
+ func TestWatcher_StopsTheOrchOfABeamOwnedElsewhere(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -18,6 +46,7 @@ func TestWatcher_StopsTheOrchOfABeamOwnedElsewhere(t *testing.T) {
+ 		name       string
+ 		owner      string
+ 		elsewhere  bool
++		underAdopt bool
+ 		readErr    error
+ 		stopErr    error
+ 		wantDone   bool
+@@ -27,6 +56,7 @@ func TestWatcher_StopsTheOrchOfABeamOwnedElsewhere(t *testing.T) {
+ 		wantNoExit bool
+ 	}{
+ 		{name: "OwnerNamingAnotherMachineStopsTheStrandOnceAndEndsTheWatcher", owner: "there", elsewhere: true, wantDone: true, wantStops: []string{"s1"}, wantExit: "owned by machine there"},
++		{name: "OwnerNamingAnotherMachineUnderAnAdoptInFlightKeepsTheStrand", owner: "there", elsewhere: true, underAdopt: true, wantNoExit: true},
+ 		{name: "OwnerNamingThisMachineGoesOn", owner: "here", wantNoExit: true},
+ 		{name: "NoOwnerRecordedGoesOn", wantNoExit: true},
+ 		{name: "FailingReadGoesOnWithNoStop", readErr: errors.New("board unreadable"), wantNoExit: true},
+@@ -44,6 +74,7 @@ func TestWatcher_StopsTheOrchOfABeamOwnedElsewhere(t *testing.T) {
+ 					stops = append(stops, guid)
+ 					return tt.stopErr
+ 				},
++				UnderAdopt: func() bool { return tt.underAdopt },
+ 			})
+ 
+ 			done, err := e.w.Tick()
