@@ -1,8 +1,8 @@
 # Card 5 — run-report-paused-by-adopt
 
 **Create:**
-- `plan:internal/adoptcli#runStatePausedByAdopt` -> `const runStatePausedByAdopt = "paused_by_adopt"`
-- `plan:internal/adoptcli#ownerHaltResume` -> `func ownerHaltResume(status shedengine.Status) string`
+- `internal/adoptcli#runStatePausedByAdopt`
+- `internal/adoptcli#ownerHaltResume`
 
 **Delete:**
 - `internal/adoptcli#runStateHeldFailedCheck`
