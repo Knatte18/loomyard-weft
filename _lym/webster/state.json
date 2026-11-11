@@ -276,7 +276,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "636f3f6da5eb07ee8c6fb49922ae67ab",
   "masterSessionId": "74c8f9ca-77cd-49f5-8245-828a4fcd52c7",
   "masterEngine": "claude",
@@ -350,6 +350,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-worker-record/74c8f9ca-77cd-49f5-8245-828a4fcd52c7/subagents/agent-a4729460ddd3ef029.jsonl"
       ]
+    },
+    "6": {
+      "slug": "adopt-step-order",
+      "cards": [
+        "06-adopt-step-order"
+      ],
+      "cardHashes": {
+        "06-adopt-step-order": "2dac080a8a052f1ac6ce109c6e0a273b52553a7cc51d0038839449f7245331ee"
+      },
+      "startSha": "78fd6ddf0cd58dc115ad6e363f7ceb5fa732fdad",
+      "kind": "fork",
+      "spawnedAt": "2026-11-11T06:11:33Z",
+      "sessionId": "74c8f9ca-77cd-49f5-8245-828a4fcd52c7",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
