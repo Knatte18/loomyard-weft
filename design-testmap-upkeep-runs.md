@@ -1,6 +1,6 @@
 # An upkeep pass runs under a slot it yields to a gate, side by side where tests declare it, and writes per round
 
-`testmap-upkeep-runs` · Task · feature, testkit, gate, dobby · running · Darn-Write
+`testmap-upkeep-runs` · Task · feature, testkit, gate, dobby · running · Drift-Verify
 
 Decision record: [Sketch](decision-testmap-upkeep-runs.md)
 
