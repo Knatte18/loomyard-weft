@@ -95,7 +95,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (19)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (20)</strong></summary>
 
 Owner `neve`
 
@@ -118,7 +118,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (17)
+### Notes (18)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -135,6 +135,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 2d<br>2d | gate, fabric |
 | R5 |  | **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | 3m<br>3m | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
+
+#### Bugs (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| B1 |  | **The orch session starts on the provider default model because orch.model and orch.effort default to empty** | [`orch-model-default-empty`](design-orch-model-default-empty.md) | 0m<br>0m | orch, config |
 
 #### Enhancements (3)
 

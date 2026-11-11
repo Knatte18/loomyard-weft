@@ -628,6 +628,25 @@
       "body": "## Idea (operator, 2026-11-11)\n\nThe bench that follows `advisor-model-trial`, which tunes the darn writer's advisor prompt.\nIt is filed as a task only when the operator approves that tuned prompt.\n\n## What it runs\n\nRerun three landed darn tasks of different sizes from their base commits, with a Sonnet writer, an Opus advisor and the tuned prompt, identical in all three:\n\n- large: `decision-record-replace-verb` (`6d58cad7`, about 2970 changed lines);\n- middle: `adopt-takeover-fixes` (`6f8d4cff`, about 580 changed lines);\n- small: `reed-tab-and-attach-fixes` (`aeea549d`, about 200 changed lines).\n\nThe cap is exactly three runs, one per task, and no repeats.\nEach run is compared with the task's recorded Opus run, whose recipe and profile come from its usage record:\nreview findings, bounces, tokens, cost and time with sleep removed.\nIt runs as darn `docs`, and the report goes under `docs/research/`.\n\n## Not decided\n\nWhether a lym config key for the advisor, beside each role's model and effort, follows: only after the bench shows it pays.\n",
       "created": "2026-11-11T18:38:11Z",
       "revised": "2026-11-11T18:38:11Z"
+    },
+    {
+      "id": 1340,
+      "handle": "B1",
+      "slug": "orch-model-default-empty",
+      "title": "The orch session starts on the provider default model because orch.model and orch.effort default to empty",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "orch",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-11)\n\nOn OSL-1046 the orch of the prime started on Sonnet.\nThe `orch` module's template holds `model: \"\"` and `effort: \"\"`, and `internal/orchcli/start.go` passes them as the session's `ModelChoice`, where empty means the provider default.\nSo the orch runs on whatever Claude Code's default is on that machine (a local `/model`, `~/.claude/settings.json` or the account's default), unlike every other agent in lym, whose model and effort come from a config default.\n\n## Wanted\n\nThe orch's model and effort come from lym's config with a non-empty default in the template, so `lym s` and `lym beam start` start the orch on the configured model on every machine.\nThe default is the operator's call; the operator reads the orch as needing a strong model, as the other agents are set.\nCheck that every path that starts an orch session, `lym s` included, reads `orch.model` and `orch.effort`.\n",
+      "created": "2026-11-11T18:42:01Z",
+      "revised": "2026-11-11T18:42:01Z"
     }
   ],
   "prime_owner": "neve",
