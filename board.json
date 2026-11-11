@@ -579,30 +579,6 @@
       "project": "test-suite-trim"
     },
     {
-      "id": 1274,
-      "handle": "P1",
-      "slug": "adopt-takeover",
-      "title": "Adopt as one resumable algorithm that never starts work on its own",
-      "kind": "project",
-      "labels": [
-        "enhancement",
-        "batten",
-        "tender",
-        "dobby",
-        "orch",
-        "fabric",
-        "shortcut"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Groups the entries filed from the Sketch `adopt-robust`: adopt-worker-record, adopt-owner-handover, adopt-here-archives.\n",
-      "created": "2026-11-09T19:45:19Z",
-      "revised": "2026-11-09T19:45:19Z",
-      "discussed": true
-    },
-    {
       "id": 1279,
       "handle": "P6",
       "slug": "test-suite-trim",
