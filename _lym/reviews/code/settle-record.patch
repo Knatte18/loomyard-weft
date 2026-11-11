@@ -1,0 +1,239 @@
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index 7a1c64af..f1f2d2fc 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -16,6 +16,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/adoptrecord"
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/creelcli"
+@@ -371,6 +372,44 @@ func TestHubDobbyDeps_WaitReminderPostReachesTheSlackRelaySignedAsTheDobby(t *te
+ 	}
+ }
+ 
++// TestHubDobbyDeps_ABeamWithNoOwnerOfItsOwnIsUnderARootAdopt pins the dobby of beam b.
++// b records no owner, so the dobby reads the prime's owner, another machine.
++// Its under-adopt seam must then read b covered by a root adopt, which holds the dobby up and idle.
++func TestHubDobbyDeps_ABeamWithNoOwnerOfItsOwnIsUnderARootAdopt(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const foreign = "other-machine"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{SkipPush: true, Beam: true})
++	board := `{"version":1,"prime_owner":"` + foreign + `","entries":[` +
++		`{"id":0,"slug":"b","title":"B","kind":"project","labels":["bug"],"beam":true}]}`
++	if err := os.WriteFile(filepath.Join(h.BoardDir(), "board.json"), []byte(board), 0o644); err != nil {
++		t.Fatalf("write board.json: %v", err)
++	}
++	geom, err := hubgeom.DobbyGeometry(h.Location, "b")
++	if err != nil {
++		t.Fatalf("DobbyGeometry(b) = %v; want nil", err)
++	}
++	deps, err := hubDobbyDeps(h.Location, geom)
++	if err != nil {
++		t.Fatalf("hubDobbyDeps(b) = %v; want nil", err)
++	}
++
++	if owner, err := deps.Owner(); err != nil || owner != foreign {
++		t.Fatalf("Owner() = %q, %v; want the prime's owner %q", owner, err, foreign)
++	}
++	if deps.UnderAdopt() {
++		t.Error("UnderAdopt() with no adopt record = true; want false")
++	}
++	if err := adoptrecord.Write(h.Path, adoptrecord.Record{State: adoptrecord.StateRunning, Subjects: []string{"root"}}); err != nil {
++		t.Fatalf("adoptrecord.Write() = %v; want nil", err)
++	}
++	if !deps.UnderAdopt() {
++		t.Error("UnderAdopt() under a running root adopt = false; want true")
++	}
++}
++
+ // landingHub returns a hubforge hub holding the beam b, owned by this machine, whose pawl run waits at Beam-Await.
+ // It also returns the seam set of b's dobby over that hub.
+ func landingHub(t *testing.T) (*hubforge.Hub, dobbyengine.Deps) {
+diff --git a/internal/fabricengine/ownerarchive_integration_test.go b/internal/fabricengine/ownerarchive_integration_test.go
+index d27272fe..96a6e9f1 100644
+--- a/internal/fabricengine/ownerarchive_integration_test.go
++++ b/internal/fabricengine/ownerarchive_integration_test.go
+@@ -171,10 +171,14 @@ func TestReadOwnerArchives(t *testing.T) {
+ 		unpublishedBranch bool
+ 		// teardownTag also pushes a teardown archive tag, archive/root/<tip>, naming the same tip.
+ 		teardownTag bool
++		// decoyBranch pushes the archived tip to its side's origin under the other side's branch name for the slug.
++		decoyBranch bool
+ 		wantListed  bool
+ 	}{
+ 		{name: "ACodeTagTheBranchOnOriginLacksIsListedAndFetched", wantListed: true},
++		{name: "ACodeTagIsListedThoughTheRecordsBranchNameOnTheCodeOriginHoldsIt", decoyBranch: true, wantListed: true},
+ 		{name: "ARecordsTagIsJudgedAgainstTheRecordsBranch", archiveRecords: true, wantListed: true},
++		{name: "ARecordsTagIsListedThoughTheCodeBranchNameOnTheRecordsOriginHoldsIt", archiveRecords: true, decoyBranch: true, wantListed: true},
+ 		{name: "ARecordsTagTheRecordsBranchHoldsIsNotListed", archiveRecords: true, pushTip: true},
+ 		{name: "ATagTheBranchOnOriginHoldsIsNotListed", pushTip: true},
+ 		{name: "ATagOfABranchAbsentOnOriginIsListed", unpublishedBranch: true, wantListed: true},
+@@ -205,6 +209,14 @@ func TestReadOwnerArchives(t *testing.T) {
+ 			if tt.pushTip {
+ 				gitkit.Git(t, dir, "push", "origin", "HEAD")
+ 			}
++			if tt.decoyBranch {
++				codeBranch := gitkit.CurrentBranch(t, l.WorktreePath())
++				decoy := fabricengine.RecordsBranchName(codeBranch)
++				if tt.archiveRecords {
++					decoy = codeBranch
++				}
++				gitkit.Git(t, dir, "push", "--force", "origin", "HEAD:refs/heads/"+decoy)
++			}
+ 			// The new owner holds no local tag, so the read must fetch it.
+ 			gitkit.Git(t, dir, "tag", "-d", tags[0])
+ 			if tt.teardownTag {
+diff --git a/internal/fabricengine/remove_archive_integration_test.go b/internal/fabricengine/remove_archive_integration_test.go
+index f4834fbb..aa7e8fee 100644
+--- a/internal/fabricengine/remove_archive_integration_test.go
++++ b/internal/fabricengine/remove_archive_integration_test.go
+@@ -2,6 +2,7 @@
+ // After every refusal and before any mutation, Remove tags the pair's weft tip under archive/<slug>/;
+ // it pushes the tag to the weft origin, so the run records committed on that branch outlive the branch itself.
+ // It covers the tag's landing and its reuse when the origin already holds it.
++// It covers a weft tip an owner archive already tagged, which the teardown archives under its own tag.
+ // It covers the commit-then-archive flow for a weft worktree with uncommitted records.
+ // It covers the fail-closed shape of an unreachable origin.
+ // It also checks that force does not skip the step and that a missing origin skips it.
+@@ -15,8 +16,10 @@ package fabricengine_test
+ 
+ import (
+ 	"errors"
++	"io/fs"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -25,6 +28,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/gitexec"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -108,6 +112,48 @@ func TestRemove_ReusesSameTipArchiveTag(t *testing.T) {
+ 	}
+ }
+ 
++// TestRemove_LeavesAnOwnerArchiveTagOutOfTheTeardownArchive covers a pair with an owner-archived weft tip.
++// An owner archive has tagged that tip on origin.
++// The teardown archives the tip under its own archive/ tag, not the owner archive tag.
++// It leaves the owner archive tag as it was and removes the worktree.
++func TestRemove_LeavesAnOwnerArchiveTagOutOfTheTeardownArchive(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const slug = "remove-archive-owner"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	l := h.Location
++	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
++	tip := gitkit.CommitFile(t, fabricengine.RecordsWorktreePath(l, slug), "_lym/record.txt", "run record\n", "record")
++	pair, err := lymcwd.NamedWorktree(h.Path, slug)
++	if err != nil {
++		t.Fatalf("NamedWorktree(%q) = %v; want nil", slug, err)
++	}
++	ownerTag := fabricengine.OwnerArchiveTagName(slug, tip)
++	ownerTags, err := fabricengine.ArchiveOwnerTips(l.HubPath, []fabricengine.OwnerArchivePair{{Slug: slug, Pair: pair}})
++	if err != nil || !slices.Contains(ownerTags, ownerTag) {
++		t.Fatalf("ArchiveOwnerTips() = %v, %v; want the weft tip tagged %s", ownerTags, err, ownerTag)
++	}
++
++	res, err := h.Topology.Remove(l, slug, false, false)
++	if err != nil {
++		t.Fatalf("Remove(%q) error = %v", slug, err)
++	}
++	wantTag := fabricengine.ArchiveTagName(slug, tip)
++	if res.ArchiveTag != wantTag {
++		t.Errorf("ArchiveTag = %q; want %q", res.ArchiveTag, wantTag)
++	}
++	if tags := archiveTagsAt(t, h.RecordsBare); !slices.Equal(tags, []string{wantTag}) {
++		t.Errorf("origin archive tags = %v; want exactly [%s]", tags, wantTag)
++	}
++	if got := tagTargetAt(t, h.RecordsBare, ownerTag); got != tip {
++		t.Errorf("origin owner archive tag %s points at %q; want it left at the tip %s", ownerTag, got, tip)
++	}
++	if _, statErr := os.Stat(fabricengine.WorktreePath(l, slug)); !errors.Is(statErr, fs.ErrNotExist) {
++		t.Errorf("pair worktree after Remove: stat = %v; want it removed", statErr)
++	}
++}
++
+ // TestRemove_PendingRecordsAreCommittedAndArchivedOnce covers the pre-archive record commit: a single no-force Remove of a pair whose weft worktree holds an uncommitted record commits it and archives the post-commit tip, once.
+ //
+ //testtiming:keep the post-commit tip carrying a pending uncommitted record getting the one archive tag on origin; coverage of its blocks by other tests does not show an assertion of this
+diff --git a/internal/orchcli/underadopt_integration_test.go b/internal/orchcli/underadopt_integration_test.go
+index 53b9f65a..88be1222 100644
+--- a/internal/orchcli/underadopt_integration_test.go
++++ b/internal/orchcli/underadopt_integration_test.go
+@@ -1,12 +1,17 @@
+ // underadopt_integration_test.go pins that UnderAdoptWatch judges a hub's adopt record against the hub's board.
++// It covers the prime and a beam with no owner of its own, whose watcher reads the prime's foreign owner.
+ 
+ package orchcli
+ 
+ import (
++	"os"
++	"path/filepath"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/adoptrecord"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -33,3 +38,45 @@ func TestUnderAdoptWatch_CoversThePrimeWhileARootAdoptIsUnfinished(t *testing.T)
+ 		t.Error("Covers(prime) with the root adopt done = true; want false")
+ 	}
+ }
++
++// TestUnderAdoptWatch_CoversABeamWithNoOwnerOfItsOwnWhileARootAdoptIsUnfinished pins the watcher of beam b.
++// b records no owner, so the watcher reads the prime's owner, another machine.
++// The accessor the watcher builds must then read b covered by a root adopt, so the watcher stops nothing.
++func TestUnderAdoptWatch_CoversABeamWithNoOwnerOfItsOwnWhileARootAdoptIsUnfinished(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const foreign = "other-machine"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{SkipPush: true, Beam: true})
++	board := `{"version":1,"prime_owner":"` + foreign + `","entries":[` +
++		`{"id":0,"slug":"b","title":"B","kind":"project","labels":["bug"],"beam":true}]}`
++	if err := os.WriteFile(filepath.Join(h.BoardDir(), "board.json"), []byte(board), 0o644); err != nil {
++		t.Fatalf("write board.json: %v", err)
++	}
++	beam, err := lymcwd.ResolveWorktree(fabricengine.WorktreePath(h.Location, "b"))
++	if err != nil {
++		t.Fatalf("resolve the beam worktree: %v", err)
++	}
++
++	owner, elsewhere, err := beamOwnerElsewhere(beam)
++	if err != nil || owner != foreign || !elsewhere {
++		t.Fatalf("beamOwnerElsewhere(b) = %q, %v, %v; want the prime's owner %q, elsewhere", owner, elsewhere, err, foreign)
++	}
++	watch, slug, err := (&orchCLI{location: beam}).underAdoptWatch()
++	if err != nil {
++		t.Fatalf("underAdoptWatch() = %v; want nil", err)
++	}
++	if slug != "b" {
++		t.Errorf("underAdoptWatch() slug = %q; want %q", slug, "b")
++	}
++	if watch.Covers(slug) {
++		t.Error("Covers(b) with no adopt record = true; want false")
++	}
++	if err := adoptrecord.Write(h.Path, adoptrecord.Record{State: adoptrecord.StateRunning, Subjects: []string{"root"}}); err != nil {
++		t.Fatalf("adoptrecord.Write() = %v; want nil", err)
++	}
++	if !watch.Covers(slug) {
++		t.Error("Covers(b) under a running root adopt = false; want true")
++	}
++}
