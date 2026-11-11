@@ -1,66 +1,52 @@
-# Codex sandbox_mode auto: probe the sandbox, drop it where it can't start
+# Codex sandbox: probe at launch, auto mode, refuse an unstartable seat
 
-A Codex seat on a machine whose bubblewrap cannot create a user namespace used to start normally.
-Inside it, every shell command then failed, and Code-Review's assist recorded the seat only as `stopped`.
-This change makes lym check Codex's sandbox before each launch.
-It then picks the sandbox mode itself, so such a machine needs no hand setting.
-
-## Cause
-
-Codex 0.164's Linux sandbox runs the system `/usr/bin/bwrap`.
-On Neve, a sandboxed command's AppArmor label reads `bwrap//&unpriv_bwrap`.
-Ubuntu restricts unprivileged user namespaces through AppArmor (`kernel.apparmor_restrict_unprivileged_userns`).
-A process that no AppArmor profile grants `userns` is moved into the `unprivileged_userns` profile when it creates one,
-and that profile denies every capability, so bwrap cannot write its uid map.
-Run under that profile on Neve (`aa-exec -p unprivileged_userns -- codex sandbox -- true`),
-Codex's sandbox fails with bwrap's namespace refusal and exits 1.
-OSL-1046 runs Ubuntu 24.04 with the restriction on by default, which matches the recorded symptom, `bwrap: setting up uid map: Permission denied`.
+A Codex seat now runs on a machine whose bubblewrap cannot create a user namespace, with nothing set by hand.
+Before, `codex.yaml`'s `sandbox_mode` defaulted to `workspace-write`, and on such a machine every shell command in the session failed with `bwrap: setting up uid map: Permission denied`.
+The seat wrote no output and ended as `stopped`, with no error recorded.
+This is the failure of the `astra` assist on OSL-1046 (Ubuntu 24.04, whose AppArmor restricts unprivileged user namespaces).
 
 ## What changes
 
-- `codex.yaml`'s `sandbox_mode` takes a third value, `auto`, which is now the template default.
-  `workspace-write` and `danger-full-access` keep their meaning, and the key stays a machine key.
-- Under `auto` and `workspace-write`, `Prepare` and `OpenLaunch` probe the sandbox once after readying the lym home.
-  The probe runs `codex sandbox -c sandbox_mode="workspace-write" -- true` under the lym home, in the anchor, with a 30 s timeout.
-  It takes about 35 ms on Neve.
-- A sandbox that starts runs `workspace-write`, as before.
-- Under `auto`, a sandbox that cannot start runs `danger-full-access`, the way a Claude seat runs, and logs a warning with the probe's output as the cause.
-- Under an explicit `workspace-write`, a sandbox that cannot start refuses the launch before the prompt file is written.
-  The refusal names the cause and gives the way forward `lym config codex --layer machine --set sandbox_mode=auto`.
-  A seat whose launch is refused this way ends as `not started: <cause>`, not `stopped`.
-- `danger-full-access` runs no probe.
-- The probe is a `Codex` field that tests replace, so no tier-0 test runs Codex.
-  `runSandboxProbe` itself is pinned at tier 1 against a fake executable.
-- The package doc, `template.yaml`'s comment and `docs/overview.md`'s codex entry describe the three modes.
+- `sandbox_mode` takes a third value, `auto`, and the template now sets it.
+- A launch under `auto` or `workspace-write` first probes Codex's sandbox: `codex sandbox -c sandbox_mode="workspace-write" -- true`, run under the lym Codex home in the worktree.
+- Under `auto`:
+  - A sandbox that starts runs `workspace-write`.
+  - A sandbox that refuses to start runs `danger-full-access`, with a warning naming the cause (bubblewrap's output).
+- Under an explicit `workspace-write`, a sandbox that refuses to start refuses the launch.
+  The error names the cause and the way forward, `lym config codex --layer machine --set sandbox_mode=auto`.
+  The seat reads as not started rather than stopped.
+- `danger-full-access` runs no probe and behaves as before.
+- Both `Prepare` and `OpenLaunch` settle the mode through the new `launchSandboxMode` in `codexengine/sandbox.go`.
+  `Prepare` refuses before `prompt.md` is written.
+- `docs/overview.md`, the package doc and the template comment describe the new modes.
 
 ## Design decisions
 
-- **Probe and fall back, not unsandboxed everywhere.**
-  The probe keeps Codex's sandbox on every machine where it works and drops it only where it cannot start.
-  Making `danger-full-access` the default would also have matched a Claude seat, but it would drop the write bound on every machine.
-- **The fallback warns; it does not refuse.**
-  The task asks for a seat that runs on such a machine with no setting changed by hand, so `auto` goes ahead without the sandbox.
-  An operator who requires the sandbox sets `workspace-write`, and the seat then fails loudly, naming the cause.
-- **Probe at every launch, with no cache.**
-  The probe is cheap, and an AppArmor or kernel change then takes effect on the next launch, with no stale record to clear.
-- **No config reinterpretation.**
-  The values that existed keep their meaning; only the template default moves.
-  The hub's base `codex.yaml` holds no `sandbox_mode`, and a machine override that pins one keeps it.
+- `auto` falls back to no sandbox rather than failing, so a Codex seat runs like a Claude seat, which has no sandbox either.
+  A machine that wants the bound regardless pins `workspace-write` in its machine layer.
+- A probe that cannot reach a verdict refuses the launch under both `auto` and `workspace-write`.
+  Such a probe is a missing or unexecutable binary, a timeout (30 seconds) or a signal.
+  It shows nothing about the sandbox, so dropping the write bound on it would be unfounded.
+  The error wraps `errSandboxProbeNotRun` and names the cause.
+- The probe checks that the sandbox starts.
+  It does not run the launch's writable roots or network setting.
+- `sandbox_mode` stays a machine key: the machine layer may set it, the local layer may not.
+- The probe is injected as `Codex.sandboxProbe`, so no unit test runs Codex.
+  `TestRunSandboxProbe` runs the real probe against a fake executable.
 
-## Not confirmed on OSL-1046
+## Not confirmed
 
-This run worked on Neve, which runs Ubuntu 26.04 with the restriction off, and could not run on OSL-1046 itself.
-Not confirmed there:
+The run worked on Neve and could not reproduce on OSL-1046.
+Check by hand on OSL-1046:
 
-- that the restriction is on, that is, `kernel.apparmor_restrict_unprivileged_userns = 1`;
-- that no AppArmor profile there, such as Ubuntu's `bwrap-userns-restrict`, covers `/usr/bin/bwrap`;
-- that Codex's sandbox therefore fails there.
+- That AppArmor's user-namespace restriction is the cause there.
+  The probe's warning under `auto` should name `bwrap: setting up uid map: Permission denied`.
+- That a Codex seat launched there under the template's `auto` runs, with that warning in the log.
+- That an `astra` seat on OSL-1046 completes work end to end, with no sandbox.
 
-The probe decides from the sandbox's real behaviour, so `auto` picks the right mode whatever the answer.
-To check by hand on OSL-1046, run `codex sandbox -- true`.
-A bwrap error with exit 1 confirms the cause.
+## Findings to check
 
-## Not covered
-
-A seat that starts and then fails for a reason other than its sandbox still ends the way it did before.
-The `auto` fallback reports only through lym's log, since the seat goes on working.
+- `OpenLaunch`'s refusal under `workspace-write` is pinned by `WorkspaceWriteSandboxCannotStart` in `open_test.go`.
+  Check that this covers the refusal and its error text.
+- A probe that fails to run no longer degrades `auto` to `danger-full-access`; it refuses the launch.
+  Check this in `launchSandboxMode` (`codexengine/sandbox.go`) and its tests `AutoProbeDidNotRun` and `WorkspaceWriteProbeDidNotRun` in `prepare_test.go`.
