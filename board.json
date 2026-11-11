@@ -517,7 +517,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #104](https://github.com/Knatte18/loomyard/issues/104).\n\nA heddle entry with target claude-file is rendered into both CLAUDE.local.md (Claude Code) and AGENTS.override.md (Codex). The name says Claude only, and there is no way to give an instruction to one agent family alone, although some instructions apply to Codex and not to Claude, or the other way round.\n\nProposal: three file targets.\n\n- claude-file renders into CLAUDE.local.md only.\n- codex-file renders into AGENTS.override.md only.\n- A new shared target (for example agents-file) renders into both.\n\nExisting claude-file entries keep today's behaviour by migrating to the shared target. lym heddle set --help, lym heddle list and HEDDLE.md state which files each file target renders to.",
-      "status": "running · Drift-Expect",
+      "status": "running · Darn-Write",
       "created": "2026-11-11T06:23:00Z",
       "revised": "2026-11-11T15:17:46Z",
       "profile": "light"
@@ -936,7 +936,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `decision-record-replace`.\n\nTakes: the board's stored record files and Board.StoreDecisionRecord, the run lock in runlock.go, the Add weft probe in remoteleftover.go, and the strand-name caller classification in boardcli\nDelivers: lym board upsert --record-file with its refusals and one-write landing, the record_body_sha256 stamp on every stored-record write, and promote's body-changed warning\nExports: a fabricengine function that reports whether a slug's weft branch is live, which Topology.Add also uses; a discussionparser record-only section check; the record_body_sha256 field on boardengine.Task\n\nThe part changes these packages:\n\n- internal/boardcli (about 250 changed lines)\n- internal/boardengine (about 250 changed lines)\n- internal/discussionparser (about 80 changed lines)\n- internal/fabricengine (about 120 changed lines)\n",
-      "status": "running · Drift-Await",
+      "status": "running · Drift-Expect",
       "created": "2026-11-11T15:32:42Z",
       "revised": "2026-11-11T15:32:42Z",
       "profile": "light",
