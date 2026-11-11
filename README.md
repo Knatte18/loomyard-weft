@@ -125,7 +125,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **beam merge-parent reuses the slug of a completed merge-in run** | [`merge-parent-slug-reuse`](design-merge-parent-slug-reuse.md) | darn · light | Drift-Recheck | neve | 3h<br>3h | workspaces, dobby |
+| T9 | **beam merge-parent reuses the slug of a completed merge-in run** | [`merge-parent-slug-reuse`](design-merge-parent-slug-reuse.md) | darn · light | Describe | neve | 3h<br>3h | workspaces, dobby |
 | T16 | **lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor** | [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md) | darn · light | Darn-Write | neve | 3h<br>3h | shuttle, fabric |
 | T17 | **lym loom decision replace folds a run's record under a lock, cuts the history check at it, and refreshes every stored record** | [`decision-record-replace-verb`](design-decision-record-replace-verb.md)<br>[Sketch](decision-decision-record-replace-verb.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>1h | shed, loom, board |
 
