@@ -1,6 +1,6 @@
 # lym board upsert --record-file replaces a Sketch's stored record, stamped with the body hash promote checks
 
-`record-file-upsert` · Task · feature, shed, loom, board · running · Seed-IDE
+`record-file-upsert` · Task · feature, shed, loom, board · running · Preflight
 
 Decision record: [Sketch](decision-record-file-upsert.md)
 
