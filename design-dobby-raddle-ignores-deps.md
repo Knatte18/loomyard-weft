@@ -2,6 +2,8 @@
 
 `dobby-raddle-ignores-deps` · Task · bug, dobby, board · draft
 
+Depends on: [`adopt-owner-handover`](design-adopt-owner-handover.md)
+
 Imported from [issue #107](https://github.com/Knatte18/loomyard/issues/107).
 
 ## What happened
