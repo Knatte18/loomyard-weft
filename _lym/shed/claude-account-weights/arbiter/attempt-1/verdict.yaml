@@ -1,0 +1,13 @@
+verdict: resume
+reason: |-
+  Cause hard-cap at round 3. I read the open design-wrong findings F1 to F5 and the mechanical F6 against the decision record as it now stands. The round-3 fixer's fixes already answer every one.
+  F1: D2's fresh-launch bullet (decision-record.md:77-83) now gives a rule: every record that stores a session id its owner resumes, read through the owner's exported reader. It names the sampler and PR-Review records as evidence, leaves the full owner list to Plan, and adds the acceptance row at :334. The fixer dropped the gate fixer, webster and treadle from the evidence, and the code bears that out: ResumeSessionID is set only in internal/loomshed/samplersession.go, internal/landingshed/prsession.go and internal/orchcli/start.go. Webster's "resume" is a fresh Master reading state.json.
+  F2: the live-holder test now reads every known directory's registry as one set, refuses on any live entry and states its bound (:98-101 and D6 :234), with the acceptance row at :359. This is a superset of the fix the review proposed.
+  F3: D6 now states the combining rule (:236-238), with the acceptance row at :361.
+  F4: a gone recorded directory now refuses fresh and resume launches whatever claude.accounts holds (:69-70, :92, :97), and the acceptance row at :326 gains the empty-list case.
+  F5: D3 now sets the count both ways, defines the no-reference case as 0 and overwrites kept counts (:139-145), with acceptance rows at :340-341.
+  F6: the criterion is restated by count over weight (:342-343).
+  No fix remains to be made, so the accept ends the segment without dropping any work.
+verbs:
+  - |-
+    lym loom circling accept claude-account-weights

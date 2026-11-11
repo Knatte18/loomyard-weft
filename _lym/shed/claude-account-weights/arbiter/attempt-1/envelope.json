@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Cause hard-cap at round 3. I read the open design-wrong findings F1 to F5 and the mechanical F6 against the decision record as it now stands. The round-3 fixer's fixes already answer every one.\nF1: D2's fresh-launch bullet (decision-record.md:77-83) now gives a rule: every record that stores a session id its owner resumes, read through the owner's exported reader. It names the sampler and PR-Review records as evidence, leaves the full owner list to Plan, and adds the acceptance row at :334. The fixer dropped the gate fixer, webster and treadle from the evidence, and the code bears that out: ResumeSessionID is set only in internal/loomshed/samplersession.go, internal/landingshed/prsession.go and internal/orchcli/start.go. Webster's \"resume\" is a fresh Master reading state.json.\nF2: the live-holder test now reads every known directory's registry as one set, refuses on any live entry and states its bound (:98-101 and D6 :234), with the acceptance row at :359. This is a superset of the fix the review proposed.\nF3: D6 now states the combining rule (:236-238), with the acceptance row at :361.\nF4: a gone recorded directory now refuses fresh and resume launches whatever claude.accounts holds (:69-70, :92, :97), and the acceptance row at :326 gains the empty-list case.\nF5: D3 now sets the count both ways, defines the no-reference case as 0 and overwrites kept counts (:139-145), with acceptance rows at :340-341.\nF6: the criterion is restated by count over weight (:342-343).\nNo fix remains to be made, so the accept ends the segment without dropping any work.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom circling accept claude-account-weights"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/claude-account-weights/_lym/shed/claude-account-weights/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/claude-account-weights/_lym/shed/claude-account-weights/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step claude-account-weights --until-stop --arbiter-attempt 1"
+}
