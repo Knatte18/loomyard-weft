@@ -794,7 +794,8 @@
       "status": "running · Discussion-Bouncer",
       "created": "2026-11-11T14:01:41Z",
       "revised": "2026-11-11T14:01:41Z",
-      "project": "test-suite-trim"
+      "project": "test-suite-trim",
+      "discussed": true
     },
     {
       "id": 1321,

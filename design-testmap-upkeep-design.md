@@ -2,6 +2,8 @@
 
 `testmap-upkeep-design` · Task · enhancement, testkit, gate, dobby · running · Discussion-Bouncer
 
+Decision record: [Sketch](decision-testmap-upkeep-design.md)
+
 ## Why
 
 The research task `testmap-upkeep` landed `docs/research/speed/testmap-upkeep-2026-11-11/report.md`, which decides nothing.
