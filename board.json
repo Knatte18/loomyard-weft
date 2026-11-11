@@ -574,7 +574,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nOn 2026-11-09 the operator reported that Codex has so far been mostly trouble in lym: it insists on running under its bubblewrap sandbox, which gets in the way of the work lym gives it.\nThe `astra` model (`gpt-6-astra` in `models.yaml`) fails on OSL-1046 for that reason.\n`testmap-verb`'s first Code-Review round recorded its astra assist only as `assist_ending: stopped`, with no error.\nThe operator then had astra removed from every task's `run_settings`.\n\n`codexengine` already has a way out: `codex.yaml`'s `sandbox_mode` may be set to `danger-full-access` on the machine layer, which launches Codex with no sandbox.\nNothing sets it or says it is needed: the default stays `workspace-write`, and a machine whose bubblewrap cannot create a user namespace only sees a seat that stops.\nOSL-1046 runs Ubuntu 24.04, whose AppArmor restricts unprivileged user namespaces by default; check whether that is the cause.\n\n## Fix\n\n- Find what makes Codex's sandbox fail in a lym session on a machine like OSL-1046, and settle the sandbox mode lym launches it with,\n  so a Codex seat runs there like a Claude one without the operator setting anything by hand.\n- lym reports a Codex seat that cannot start, naming the cause, instead of ending it quietly as stopped.\n\nThe run works on Neve and cannot reproduce on OSL-1046 itself; whatever it cannot confirm there it states in its summary.\n",
-      "status": "running · Drift-Recheck",
+      "status": "running · Describe",
       "created": "2026-11-09T18:35:39Z",
       "revised": "2026-11-11T07:25:20Z",
       "profile": "light",
