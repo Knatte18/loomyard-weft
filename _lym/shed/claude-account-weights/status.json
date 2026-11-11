@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler-Review",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler-Review",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -121,6 +121,36 @@
       "started_at": "2026-11-11T18:50:33Z",
       "budget_exempt": true,
       "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/claude-account-weights/_lym/reviews/discussion/round-3-review.md",
+      "at": "2026-11-11T18:56:57Z",
+      "started_at": "2026-11-11T18:51:09Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-11T18:56:19.173981144Z",
+          "end": "2026-11-11T18:56:19.17447656Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-11-11T18:56:19.590262886Z",
+          "end": "2026-11-11T18:56:56.692647216Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-11T18:56:56.717665537Z",
+          "end": "2026-11-11T18:56:56.718645069Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
     }
   ],
   "product": {
