@@ -1064,6 +1064,27 @@
       "body": "Imported from [issue #108](https://github.com/Knatte18/loomyard/issues/108).\n\nSeen: `lym beam merge-parent support-for-dop` halted its batten run at Worktree-Create because the directory `\u003chub\u003e/support-for-dop-merge-in` already existed and was not a worktree.\nIt held only `src/csharp/NORCE.Models/*/obj/Debug/...` build leftovers (15 files, generated AssemblyInfo and editorconfig) dated from the previous merge-in run of the same slug a day earlier, which had landed and been torn down.\nSomething (an IDE or a build triggered after teardown) recreated obj directories under the removed worktree path, and Worktree-Teardown does not check for or clean such leftovers.\n\nWorkaround: inspected the directory, removed it by hand (`rm -r` on the literal path), and ran `lym batten run support-for-dop-merge-in` again.\n\nExpected: a reused slug whose old path holds only build output (obj/bin) is not blocked; Worktree-Create, or Worktree-Teardown of the earlier run, removes a directory that contains nothing but build artefacts, or the halt names it as such so the parent does not need to inspect it.\n",
       "created": "2026-11-11T06:23:09Z",
       "revised": "2026-11-11T06:23:09Z"
+    },
+    {
+      "id": 1295,
+      "handle": "R4",
+      "slug": "advisor-planner-trial",
+      "title": "Bruk av advisor-kommando for Discussion og Plannrr6",
+      "kind": "note",
+      "labels": [
+        "research",
+        "loom",
+        "claude"
+      ],
+      "issues": [
+        109
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #109](https://github.com/Knatte18/loomyard/issues/109).\n\nTeste ut om f.eka planner kan kjøre på sonnet med opus som advisor med /advisor. Vs dagens opus hele veien",
+      "created": "2026-11-11T06:23:11Z",
+      "revised": "2026-11-11T06:23:11Z"
     }
   ],
   "prime_owner": "neve",
