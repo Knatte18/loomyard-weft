@@ -1,6 +1,6 @@
 # The hub workspace file lists every pair, beams' pairs included, named with their project handle
 
-`hub-workspace-all-pairs` · Task · enhancement, fabric, ide · running · PR-Review
+`hub-workspace-all-pairs` · Task · enhancement, fabric, ide · running · Finalize
 
 ## Seen (operator, 2026-11-11)
 
