@@ -1,0 +1,966 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 68907c087..232abecb9 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -359,12 +359,12 @@ github.com/Knatte18/loomyard/
+ ├── internal/dotgit/              the one `.git` parser (git dir, common dir, repository test, walk-up to a worktree root), a stdlib-only leaf
+ ├── internal/durfmt/              the duration formats the status panes and the timing report share, minute-resolution for growing times and second-resolution for closed spans, a stdlib-only leaf
+ ├── internal/consoletitle/        the one join of a console window's title, `<T#> [<hub shortname>:<P#>] <name>` or `ORCH [...]` with a missing part left out, shared by VS Code and terminal windows, a stdlib-only leaf
+-├── internal/machinename/         this machine's name, its hostname cut at the first dot and lowercased, the sole reader of the hostname, a stdlib-only leaf
++├── internal/machinename/         this machine's name, read from the machine file in the per-user config directory before the hostname rule (the hostname cut at the first dot and lowercased), the sole reader of the hostname and of that file, a leaf over the standard library and `internal/standalonestate`
+ ├── internal/sleepjournal/        the machine's suspends and hibernates read from systemd-sleep's journal entries, spawning no process, a stdlib-only leaf
+ ├── internal/lymdirs/             the two directory-name tokens (`_lym` durable, `.lym` ephemeral), a zero-import leaf
+ ├── internal/buildinfo/           the ldflags-stamped build channel, a zero-import leaf
+ ├── internal/buildvcs/            the running binary's VCS identity, a stdlib-only leaf
+-├── internal/standalonestate/     target-path-to-hash8-and-state-directory derivation, a stdlib-only leaf
++├── internal/standalonestate/     target-path-to-hash8-and-state-directory derivation, also resolving the per-user config directory, a stdlib-only leaf
+ ├── internal/segmentcolor/        the loom segments, lym's color palette and its tmux colors, a stdlib-only leaf
+ ├── internal/selfexec/            the self-re-exec helper a long-lived pane process calls on a changed binary, and `LymBinary`, the one lookup of the running lym binary for a pinned or spawned command, which refuses a test binary; a leaf over the standard library and `internal/logger`
+ ├── internal/runproc/             the owner record of a run's detached and long-lived processes, one file per process under the run's slug or the hub scope, and the one sequence that ends them, a leaf over the standard library, `internal/proc`, `internal/state` and `internal/logger`
+diff --git a/internal/battencli/arm.go b/internal/battencli/arm.go
+index 23cb11ef4..5abb2b1b9 100644
+--- a/internal/battencli/arm.go
++++ b/internal/battencli/arm.go
+@@ -439,7 +439,7 @@ func (c *battenCLI) specFor(verb string) shedverbs.Spec {
+ 			}
+ 			name, err := machineName()
+ 			if err != nil {
+-				return nil, fmt.Errorf("battencli: this machine's name is unknown, so the run cannot record which machine it ran on: %w; way forward: give the machine a hostname, then re-run lym batten run %s", err, c.slug)
++				return nil, fmt.Errorf("battencli: this machine's name is unknown, so the run cannot record which machine it ran on: %w; once the name reads, re-run lym batten run %s", err, c.slug)
+ 			}
+ 			shed.Machine = name
+ 			return shed, nil
+diff --git a/internal/battencli/dobbyreads.go b/internal/battencli/dobbyreads.go
+index 34038f091..225958700 100644
+--- a/internal/battencli/dobbyreads.go
++++ b/internal/battencli/dobbyreads.go
+@@ -257,9 +257,11 @@ func lockHeld(path string) (bool, error) {
+ }
+ 
+ // DobbyLandings lists the slugs of the runs whose parent worktree is geom's.
+-// A run is listed when its batten history holds a Land that finished on machine.
++// A run is listed when its batten history holds a Land that finished under one of machines.
++// machines holds this machine's current and former names, none of them empty.
++// A landing finished just before a rename therefore still reads as this machine's.
+ // An entry with no machine, and an entry naming another machine, are never counted.
+-func DobbyLandings(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *DobbyParents, machine string) ([]string, error) {
++func DobbyLandings(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *DobbyParents, machines []string) ([]string, error) {
+ 	runs, err := dobbyParentRuns(prime, geom, parents)
+ 	if err != nil {
+ 		return nil, err
+@@ -267,7 +269,7 @@ func DobbyLandings(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *D
+ 	var landed []string
+ 	for _, run := range runs {
+ 		if slices.ContainsFunc(run.status.History, func(entry shedengine.HistoryEntry) bool {
+-			return entry.Producer == battenrecipe.NameLand && entry.Outcome == shedengine.Done && entry.Machine == machine
++			return entry.Producer == battenrecipe.NameLand && entry.Outcome == shedengine.Done && slices.Contains(machines, entry.Machine)
+ 		}) {
+ 			landed = append(landed, run.slug)
+ 		}
+diff --git a/internal/battencli/owner.go b/internal/battencli/owner.go
+index ca0820377..3ba43b2be 100644
+--- a/internal/battencli/owner.go
++++ b/internal/battencli/owner.go
+@@ -122,14 +122,11 @@ func subjectOrSlug(subject, slug string) string {
+ 	return subject
+ }
+ 
+-// thisMachine returns this machine's name, refusing when it cannot be read or is empty.
++// thisMachine returns this machine's name, refusing with the name read's own way forward when it cannot be read.
+ func (c *battenCLI) thisMachine() (string, error) {
+ 	machine, err := c.owner.Machine()
+-	if err == nil && machine == "" {
+-		err = errors.New("the hostname is empty")
+-	}
+ 	if err != nil {
+-		return "", fmt.Errorf("battencli: this machine's name is unknown, so ownership cannot be judged: %w; fix the hostname, then re-run lym batten run %s", err, c.slug)
++		return "", fmt.Errorf("battencli: this machine's name is unknown, so ownership cannot be judged: %w; once the name reads, re-run lym batten run %s", err, c.slug)
+ 	}
+ 	return machine, nil
+ }
+diff --git a/internal/battencli/owner_test.go b/internal/battencli/owner_test.go
+index bcc598b65..041f97bd6 100644
+--- a/internal/battencli/owner_test.go
++++ b/internal/battencli/owner_test.go
+@@ -25,7 +25,7 @@ import (
+ // TestRefuseStartOwnedElsewhere covers the owner check of a start.
+ // An owner elsewhere refuses, and so does an unspawned member of a beam whose beam another machine owns;
+ // an owner here, an absent entry and a receiver with no seams pass;
+-// a pull that fails refuses with its way forward, an unreadable hostname refuses,
++// a pull that fails refuses with its way forward, an unreadable machine name refuses keeping its own,
+ // and a hub with no prime owner has this machine claim it first.
+ func TestRefuseStartOwnedElsewhere(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -103,9 +103,9 @@ func TestRefuseStartOwnedElsewhere(t *testing.T) {
+ 			wantPulls:  1,
+ 		},
+ 		{
+-			name:       "EmptyMachineNameRefusesNamingTheHostnameCause",
+-			fake:       fakeOwners{owners: ownedBy("here", "here", false)},
+-			wantErrors: []string{"the hostname is empty", "fix the hostname"},
++			name:       "UnreadableMachineNameRefusesKeepingItsWayForward",
++			fake:       fakeOwners{machineErr: errors.New("the machine file /cfg/machine.json does not read; way forward: run `lym machine name <name>`"), owners: ownedBy("here", "here", false)},
++			wantErrors: []string{"/cfg/machine.json", "lym machine name", "lym batten run " + slug},
+ 		},
+ 		{
+ 			name:      "HubWithNoPrimeOwnerClaimsItForThisMachine",
+diff --git a/internal/battencli/predrive_test.go b/internal/battencli/predrive_test.go
+index d96ae0993..ce3b782f1 100644
+--- a/internal/battencli/predrive_test.go
++++ b/internal/battencli/predrive_test.go
+@@ -182,7 +182,9 @@ func TestBuildShed_TellsTheMachine(t *testing.T) {
+ 		wantErrText []string
+ 	}{
+ 		{"TellsTheName", func() (string, error) { return "neve", nil }, "neve", nil},
+-		{"RefusesAnUnknownName", func() (string, error) { return "", errors.New("hostname unreadable") }, "", []string{"hostname unreadable", "give the machine a hostname"}},
++		{"RefusesAnUnknownName", func() (string, error) {
++			return "", errors.New("name unreadable; way forward: run `lym machine name <name>`")
++		}, "", []string{"name unreadable", "lym machine name", "lym batten run"}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/beamcli/dobby_test.go b/internal/beamcli/dobby_test.go
+index a97a50489..f3552160a 100644
+--- a/internal/beamcli/dobby_test.go
++++ b/internal/beamcli/dobby_test.go
+@@ -137,30 +137,32 @@ func TestMachineLandings(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	t.Run("PassesTheNameToTheRead", func(t *testing.T) {
++	t.Run("PassesTheCurrentAndFormerNamesToTheRead", func(t *testing.T) {
+ 		t.Parallel()
+-		var readFor string
++		var readFor []string
+ 		landings := machineLandings(
+-			func() (string, error) { return "m1", nil },
+-			func(machine string) ([]string, error) {
+-				readFor = machine
++			func() (string, []string, error) { return "m1", []string{"m0"}, nil },
++			func(machines []string) ([]string, error) {
++				readFor = machines
+ 				return []string{"a", "b"}, nil
+ 			},
+ 		)
+ 
+ 		got, err := landings()
+ 
+-		if err != nil || !reflect.DeepEqual(got, []string{"a", "b"}) || readFor != "m1" {
+-			t.Errorf("landings() = %v, %v with read for %q; want [a b], nil for m1", got, err, readFor)
++		if err != nil || !reflect.DeepEqual(got, []string{"a", "b"}) || !reflect.DeepEqual(readFor, []string{"m1", "m0"}) {
++			t.Errorf("landings() = %v, %v with read for %q; want [a b], nil for [m1 m0]", got, err, readFor)
+ 		}
+ 	})
+ 
+-	t.Run("FailingNameReadNamesTheWayForwardAndReadsNothing", func(t *testing.T) {
++	t.Run("FailingNameReadKeepsItsWayForwardAndReadsNothing", func(t *testing.T) {
+ 		t.Parallel()
+ 		var read bool
+ 		landings := machineLandings(
+-			func() (string, error) { return "", errors.New("hostname unreadable") },
+-			func(string) ([]string, error) {
++			func() (string, []string, error) {
++				return "", nil, errors.New("name unreadable; way forward: run `lym machine name <name>`")
++			},
++			func([]string) ([]string, error) {
+ 				read = true
+ 				return nil, nil
+ 			},
+@@ -168,8 +170,8 @@ func TestMachineLandings(t *testing.T) {
+ 
+ 		_, err := landings()
+ 
+-		if err == nil || !strings.Contains(err.Error(), "hostname unreadable") || !strings.Contains(err.Error(), "give the machine a hostname") {
+-			t.Errorf("landings() error = %v; want one naming the read's error and giving the machine a hostname", err)
++		if err == nil || !strings.Contains(err.Error(), "name unreadable") || !strings.Contains(err.Error(), "lym machine name") || strings.Contains(err.Error(), "hostname") {
++			t.Errorf("landings() error = %v; want one keeping the read's error and way forward and adding no hostname fix", err)
+ 		}
+ 		if read {
+ 			t.Error("landings() called read; want it never called after a failed name read")
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index efe916160..a47a5d981 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -194,8 +194,8 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 			return board.ClearNotifyOnLand(slug)
+ 		},
+ 		SettleFronts: func() error { return fronttask.Settle(settleFronts) },
+-		Landings: machineLandings(machinename.Name, func(machine string) ([]string, error) {
+-			return battencli.DobbyLandings(prime, geom, parents, machine)
++		Landings: machineLandings(machinename.Names, func(machines []string) ([]string, error) {
++			return battencli.DobbyLandings(prime, geom, parents, machines)
+ 		}),
+ 		Log: func(path, line string, rotate bool) {
+ 			if err := dobbyengine.AppendLog(path, line, rotate); err != nil {
+@@ -716,14 +716,16 @@ func (s *runnerTidyShuttle) StopStrand(guid string) error {
+ 	return s.runner.StopStrand(guid)
+ }
+ 
+-// machineLandings returns a Landings seam that reads this machine's name on each call and passes it to read.
+-// A name that cannot be read fails the call, so no landing is told apart from another machine's by a missing name.
+-func machineLandings(machine func() (string, error), read func(machine string) ([]string, error)) func() ([]string, error) {
++// machineLandings returns a Landings seam that reads this machine's names on each call.
++// It passes the current name and then the former names to read.
++// A name that cannot be read fails the call with the read's own way forward,
++// so no landing is told apart from another machine's by a missing name.
++func machineLandings(names func() (string, []string, error), read func(machines []string) ([]string, error)) func() ([]string, error) {
+ 	return func() ([]string, error) {
+-		name, err := machine()
++		current, former, err := names()
+ 		if err != nil {
+-			return nil, fmt.Errorf("this machine's name is unknown, so its landings cannot be told apart: %w; way forward: give the machine a hostname", err)
++			return nil, fmt.Errorf("this machine's name is unknown, so its landings cannot be told apart: %w", err)
+ 		}
+-		return read(name)
++		return read(append([]string{current}, former...))
+ 	}
+ }
+diff --git a/internal/beamcli/dobbypairanchor_test.go b/internal/beamcli/dobbypairanchor_test.go
+index af1bfcf21..f89946cf1 100644
+--- a/internal/beamcli/dobbypairanchor_test.go
++++ b/internal/beamcli/dobbypairanchor_test.go
+@@ -10,6 +10,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -175,7 +176,7 @@ func TestDobbyLandings_CountsOnlyThisMachine(t *testing.T) {
+ 	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	prime := h.Location
+ 	const landDone = `{"history":[{"producer":"Land","outcome":"done","output":"","at":"2026-10-27T10:00:00Z"%s}]}`
+-	for slug, machine := range map[string]string{"here": `,"machine":"m1"`, "elsewhere": `,"machine":"m2"`, "unstamped": ""} {
++	for slug, machine := range map[string]string{"here": `,"machine":"m1"`, "renamed": `,"machine":"m0"`, "elsewhere": `,"machine":"m2"`, "unstamped": ""} {
+ 		seedBattenRun(t, prime, slug)
+ 		status := fmt.Sprintf(landDone, machine)
+ 		if err := os.WriteFile(shedrun.StatusFile(prime, slug), []byte(status), 0o644); err != nil {
+@@ -183,10 +184,11 @@ func TestDobbyLandings_CountsOnlyThisMachine(t *testing.T) {
+ 		}
+ 	}
+ 
+-	got, err := battencli.DobbyLandings(prime, dobbyengine.Geometry{}, battencli.NewDobbyParents(prime), "m1")
++	got, err := battencli.DobbyLandings(prime, dobbyengine.Geometry{}, battencli.NewDobbyParents(prime), []string{"m1", "m0"})
++	slices.Sort(got)
+ 
+-	if err != nil || !reflect.DeepEqual(got, []string{"here"}) {
+-		t.Errorf("DobbyLandings(m1) = %v, %v; want [here], nil", got, err)
++	if err != nil || !reflect.DeepEqual(got, []string{"here", "renamed"}) {
++		t.Errorf("DobbyLandings([m1 m0]) = %v, %v; want [here renamed], nil", got, err)
+ 	}
+ }
+ 
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 7628337e5..735e4e201 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -426,7 +426,8 @@
+ // The seams are:
+ //   - the local batten status files of the prime and the board's tasks;
+ //     `battencli.DobbyRuns`, `battencli.DobbyLandings` and `battencli.DobbyTasks` read them;
+-//     `DobbyLandings` reads the landings of this machine's name only, and a beam's window reads `DobbyTasks` too;
++//     `DobbyLandings` reads the landings of this machine's current and former names only,
++//     read through `machinename.Names` on each call, and a beam's window reads `DobbyTasks` too;
+ //     each run's parent comes through `hubgeom.ParentOf`;
+ //   - `battencli.DobbyRuns` also marks each run `NoSlot` through the run's board entry;
+ //     a pawl run without its landing hold thus takes no slot under `max_runs`;
+diff --git a/internal/boardengine/ownerset.go b/internal/boardengine/ownerset.go
+index 3f8804911..068999db0 100644
+--- a/internal/boardengine/ownerset.go
++++ b/internal/boardengine/ownerset.go
+@@ -79,7 +79,7 @@ type OwnerWrite struct {
+ // BOARD_SKIP_GIT writes board.json with no pull, commit or push, and BOARD_SKIP_PUSH commits with no pull or push.
+ func SetOwners(boardDir string, req OwnerRequest) (OwnerWrite, error) {
+ 	if req.Machine == "" {
+-		return OwnerWrite{}, errors.New("board: the owner write names no machine: take this machine's name from internal/machinename.Name, which fails when the hostname cannot be read")
++		return OwnerWrite{}, errors.New("board: the owner write names no machine: take this machine's name from internal/machinename.Name, which fails when the name cannot be read")
+ 	}
+ 	if req.Claim != "" && len(req.Slugs) != 1 {
+ 		return OwnerWrite{}, fmt.Errorf("board: a claim status goes with exactly one slug, and the owner write names %d", len(req.Slugs))
+diff --git a/internal/githubclient/cache.go b/internal/githubclient/cache.go
+index 341772b3a..5074d4b5e 100644
+--- a/internal/githubclient/cache.go
++++ b/internal/githubclient/cache.go
+@@ -10,9 +10,10 @@ import (
+ 	"encoding/json"
+ 	"os"
+ 	"path/filepath"
+-	"runtime"
+ 	"sync"
+ 	"time"
++
++	"github.com/Knatte18/loomyard/internal/standalonestate"
+ )
+ 
+ // cacheFreshness is how long a cached token is trusted before falling back to `gh auth token`.
+@@ -34,28 +35,15 @@ type cachedCredentials struct {
+ // An atomic rename on write keeps concurrent processes safe.
+ var cacheMu sync.Mutex
+ 
+-// cacheDir resolves the cache directory.
++// cacheDir resolves the cache directory, the per-user lym config directory.
+ // On Windows it is %LOCALAPPDATA%\lym; elsewhere it is $XDG_CONFIG_HOME/lym or $HOME/.config/lym.
+ // It returns ("", false) when no usable environment variable is set.
+ func cacheDir() (string, bool) {
+-	if runtime.GOOS == "windows" {
+-		base := os.Getenv("LOCALAPPDATA")
+-		if base == "" {
+-			return "", false
+-		}
+-		return filepath.Join(base, "lym"), true
+-	}
+-
+-	if base := os.Getenv("XDG_CONFIG_HOME"); base != "" {
+-		return filepath.Join(base, "lym"), true
+-	}
+-	if home := os.Getenv("HOME"); home != "" {
+-		return filepath.Join(home, ".config", "lym"), true
+-	}
+-	return "", false
++	return standalonestate.UserConfigDir()
+ }
+ 
+-// CredentialDir returns the per-user lym directory the GitHub token cache lives in, where the Slack token file sits beside it.
++// CredentialDir returns the per-user lym config directory the GitHub token cache lives in.
++// The Slack token file sits beside it.
+ // It returns ("", false) when no usable environment variable is set.
+ func CredentialDir() (string, bool) {
+ 	return cacheDir()
+diff --git a/internal/githubclient/githubclient_test.go b/internal/githubclient/githubclient_test.go
+index 83c5babb6..62f07dfb2 100644
+--- a/internal/githubclient/githubclient_test.go
++++ b/internal/githubclient/githubclient_test.go
+@@ -26,6 +26,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
++	"github.com/Knatte18/loomyard/internal/standalonestate"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -235,6 +236,14 @@ func TestCacheDirRedirection_HonoursOverride(t *testing.T) {
+ 	if credDir != gotDir || credOK != ok {
+ 		t.Errorf("CredentialDir() = (%q, %v); want the cache directory (%q, %v)", credDir, credOK, gotDir, ok)
+ 	}
++
++	// A relative XDG_CONFIG_HOME keeps the credential files under it, as the per-user config rule takes it as given.
++	t.Setenv("XDG_CONFIG_HOME", "relative-config")
++	credDir, credOK = CredentialDir()
++	wantDir, wantOK := standalonestate.UserConfigDir()
++	if credDir != wantDir || credOK != wantOK {
++		t.Errorf("CredentialDir() under a relative XDG_CONFIG_HOME = (%q, %v); want UserConfigDir's (%q, %v)", credDir, credOK, wantDir, wantOK)
++	}
+ }
+ 
+ // isUnder reports whether candidate is base itself or a path beneath it.
+diff --git a/internal/githubclient/leaf_enforcement_test.go b/internal/githubclient/leaf_enforcement_test.go
+index 829987f76..d3fe6d0ae 100644
+--- a/internal/githubclient/leaf_enforcement_test.go
++++ b/internal/githubclient/leaf_enforcement_test.go
+@@ -1,6 +1,6 @@
+ // leaf_enforcement_test.go enforces the GitHub Auth Invariant's leaf half.
+ // Production code in internal/githubclient imports only the standard library and these dependencies:
+-// go-github, golang.org/x/sys, internal/proc, and internal/pauserecord.
++// go-github, golang.org/x/sys, internal/proc, internal/pauserecord and internal/standalonestate.
+ // It never imports internal/output, cobra, internal/gitexec, internal/gitrepo, or golang.org/x/oauth2.
+ // The check is an allowlist: any import outside the allowed set fails the test,
+ // so a future stray dependency is caught with no list maintenance required.
+@@ -20,6 +20,7 @@ var allowedImports = []string{
+ 	"golang.org/x/sys/windows",
+ 	"github.com/Knatte18/loomyard/internal/proc",
+ 	"github.com/Knatte18/loomyard/internal/pauserecord",
++	"github.com/Knatte18/loomyard/internal/standalonestate",
+ }
+ 
+ func TestLeafInvariant_AllowlistOnly(t *testing.T) {
+diff --git a/internal/machinename/doc.go b/internal/machinename/doc.go
+index 5322b568f..b14074059 100644
+--- a/internal/machinename/doc.go
++++ b/internal/machinename/doc.go
+@@ -1,4 +1,12 @@
+-// Package machinename provides this machine's name: the hostname cut at its first dot and lowercased.
+-// It is the only production reader of the hostname, and it imports the standard library only.
++// Package machinename provides this machine's name.
++// The name is read from the machine file, `machine.json` in the per-user lym config directory, on every call;
++// with no such file, or no directory to hold one, it is the hostname cut at its first dot and lowercased.
++// The file holds the current name under `name` and every name recorded for the machine under `names`.
++// A file that does not read, does not decode or holds a refused name is an error naming its path and way forward.
++// It never falls back to the hostname, so an owner is never judged under a wrong name.
++// Every error the package returns names its own way forward.
++//
++// It is the only production reader of the hostname and of the machine file,
++// and it imports the standard library and internal/standalonestate only.
+ // Every caller takes the name through a seam, so a test can hand in two names for two clones.
+ package machinename
+diff --git a/internal/machinename/machinename.go b/internal/machinename/machinename.go
+index 37f336242..b8480761a 100644
+--- a/internal/machinename/machinename.go
++++ b/internal/machinename/machinename.go
+@@ -1,19 +1,103 @@
++// machinename.go resolves this machine's name from the machine file or the hostname rule.
++// It also holds the name rule a name set in that file must meet.
++
+ package machinename
+ 
+ import (
++	"encoding/json"
++	"errors"
+ 	"fmt"
++	"io/fs"
+ 	"os"
++	"path/filepath"
+ 	"strings"
++
++	"github.com/Knatte18/loomyard/internal/standalonestate"
+ )
+ 
+-// Name returns this machine's name, read from the operating system's hostname.
+-// It returns an error when the hostname cannot be read or is empty.
+-func Name() (string, error) {
+-	host, err := os.Hostname()
++// fileName is the machine file's name in the per-user lym config directory.
++const fileName = "machine.json"
++
++// lockName is the name of the lock the machine file's writer holds, beside the file.
++const lockName = "machine.lock"
++
++// maxNameLength is the longest name the name rule accepts, a DNS label's length.
++const maxNameLength = 63
++
++// setNameWayForward is the way forward of a machine file that does not yield a name.
++const setNameWayForward = "run `lym machine name <name>`, which rewrites the file, or remove the file"
++
++// File is the machine file's content.
++// Unknown keys are ignored when it is decoded.
++type File struct {
++	// Name is the machine's current name.
++	Name string `json:"name"`
++	// Names lists every name recorded for this machine, oldest first, the current one last.
++	Names []string `json:"names"`
++}
++
++// FilePath returns the machine file's path and its writer's lock's path in the per-user lym config directory.
++// It returns ok false when no variable the directory resolves from is set.
++// A relative variable is an error naming it, with its way forward.
++func FilePath() (file, lock string, ok bool, err error) {
++	dir, ok, err := standalonestate.AbsoluteUserConfigDir()
+ 	if err != nil {
+-		return "", fmt.Errorf("read this machine's hostname: %w", err)
++		return "", "", false, fmt.Errorf("the machine file's directory does not resolve: %w; way forward: set that variable to an absolute path", err)
+ 	}
+-	return FromHostname(host)
++	if !ok {
++		return "", "", false, nil
++	}
++	return filepath.Join(dir, fileName), filepath.Join(dir, lockName), true, nil
++}
++
++// ReadFile decodes the machine file at path into its name and names, with no validation.
++// It reports false with no error when no file exists there.
++func ReadFile(path string) (File, bool, error) {
++	data, err := os.ReadFile(path)
++	if errors.Is(err, fs.ErrNotExist) {
++		return File{}, false, nil
++	}
++	if err != nil {
++		return File{}, false, err
++	}
++	var file File
++	if err := json.Unmarshal(data, &file); err != nil {
++		return File{}, true, err
++	}
++	return file, true, nil
++}
++
++// Name returns this machine's name: the machine file's name when the file exists, else the hostname rule's.
++// A file that does not read, does not decode or holds an invalid name is an error naming its path.
++// It never falls back to the hostname, since a wrong name changes which entries read as owned here.
++// The file is read on every call.
++func Name() (string, error) {
++	name, _, err := resolveNames(machineFile, os.Hostname)
++	return name, err
++}
++
++// Names returns this machine's current name, resolved as Name resolves it, and its former names.
++// A former name is a non-empty entry of the machine file's names other than the current one.
++// It is kept even when it fails the name rule, since only this machine could have written an owner under it.
++// The hostname rule has no former names.
++func Names() (current string, former []string, err error) {
++	return resolveNames(machineFile, os.Hostname)
++}
++
++// CheckName reports whether name meets the name rule a name set in the machine file must meet:
++// lower-case letters, digits and hyphens, starting and ending with a letter or digit, at most 63 characters.
++// The rule keeps the name from reading as a domain or a hub-qualified name in an owner, an address or a channel name.
++func CheckName(name string) error {
++	valid := name != "" && len(name) <= maxNameLength && name[0] != '-' && name[len(name)-1] != '-'
++	for _, r := range name {
++		if !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '-') {
++			valid = false
++		}
++	}
++	if !valid {
++		return fmt.Errorf("the machine name %q is invalid: a name is lower-case letters, digits and hyphens, starts and ends with a letter or digit, and is at most %d characters; way forward: choose a name of that form", name, maxNameLength)
++	}
++	return nil
+ }
+ 
+ // FromHostname reduces host to its short name: the part before the first dot, lowercased and trimmed of space.
+@@ -27,3 +111,52 @@ func FromHostname(host string) (string, error) {
+ 	}
+ 	return name, nil
+ }
++
++// fileLocator returns the machine file's path, whether one resolves, and the error of a relative variable.
++type fileLocator func() (path string, ok bool, err error)
++
++// machineFile locates the machine file in the per-user lym config directory.
++func machineFile() (string, bool, error) {
++	file, _, ok, err := FilePath()
++	return file, ok, err
++}
++
++// resolveNames resolves the current and former names from the file locate names, falling back to hostname's rule.
++// Tests hand in the file's path and the hostname through locate and hostname.
++func resolveNames(locate fileLocator, hostname func() (string, error)) (string, []string, error) {
++	path, ok, err := locate()
++	if err != nil {
++		return "", nil, err
++	}
++	if !ok {
++		name, err := nameFromHostname(hostname)
++		return name, nil, err
++	}
++	file, exists, err := ReadFile(path)
++	if err != nil {
++		return "", nil, fmt.Errorf("the machine file %s does not read: %w; way forward: %s", path, err, setNameWayForward)
++	}
++	if !exists {
++		name, err := nameFromHostname(hostname)
++		return name, nil, err
++	}
++	if err := CheckName(file.Name); err != nil {
++		return "", nil, fmt.Errorf("the machine file %s holds no valid name: %w; way forward: %s", path, err, setNameWayForward)
++	}
++	var former []string
++	for _, name := range file.Names {
++		if name != "" && name != file.Name {
++			former = append(former, name)
++		}
++	}
++	return file.Name, former, nil
++}
++
++// nameFromHostname applies the hostname rule to the hostname hostname reads.
++func nameFromHostname(hostname func() (string, error)) (string, error) {
++	host, err := hostname()
++	if err != nil {
++		return "", fmt.Errorf("read this machine's hostname: %w; way forward: give the machine a hostname, or name it with `lym machine name <name>`", err)
++	}
++	return FromHostname(host)
++}
+diff --git a/internal/machinename/machinename_test.go b/internal/machinename/machinename_test.go
+index ee08c5900..b92d01f2c 100644
+--- a/internal/machinename/machinename_test.go
++++ b/internal/machinename/machinename_test.go
+@@ -1,6 +1,11 @@
+ package machinename
+ 
+ import (
++	"errors"
++	"os"
++	"path/filepath"
++	"reflect"
++	"runtime"
+ 	"strings"
+ 	"testing"
+ 
+@@ -37,10 +42,193 @@ func TestFromHostname(t *testing.T) {
+ 	}
+ }
+ 
++// TestResolveNames pins how the name resolves from the machine file at the path the locator hands in.
++// No file, or no directory, falls back to the hostname rule;
++// a file that yields no valid name, and a relative variable, are errors and never the hostname's name.
++func TestResolveNames(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	hostname := func() (string, error) { return "Neve.lan", nil }
++	tests := []struct {
++		name string
++		// content is the machine file's content; "" writes no file.
++		content string
++		// noDirectory makes the locator resolve no directory.
++		noDirectory bool
++		// locateErr is the locator's error, as for a relative variable.
++		locateErr   error
++		hostname    func() (string, error)
++		wantName    string
++		wantFormer  []string
++		wantErrText []string
++	}{
++		{name: "NoDirectoryReadsTheHostnameRule", noDirectory: true, hostname: hostname, wantName: "neve"},
++		{name: "NoFileReadsTheHostnameRule", hostname: hostname, wantName: "neve"},
++		{name: "FileNameWinsOverTheHostname", content: `{"name":"osl46","names":["osl46"]}`, hostname: hostname, wantName: "osl46"},
++		{name: "UnknownKeyIsIgnored", content: `{"name":"osl46","color":"red"}`, hostname: hostname, wantName: "osl46"},
++		{
++			name:       "FormerNamesDropEmptyEntriesAndKeepInvalidOnes",
++			content:    `{"name":"osl46","names":["neve","","Old.Box","osl46"]}`,
++			hostname:   hostname,
++			wantName:   "osl46",
++			wantFormer: []string{"neve", "Old.Box"},
++		},
++		{name: "UndecodableFileIsAnError", content: `not json`, hostname: hostname, wantErrText: []string{"machine.json", "lym machine name"}},
++		{name: "EmptyNameIsAnError", content: `{"name":""}`, hostname: hostname, wantErrText: []string{"machine.json", "lym machine name"}},
++		{name: "InvalidNameIsAnError", content: `{"name":"OSL46"}`, hostname: hostname, wantErrText: []string{"machine.json", "OSL46", "lym machine name"}},
++		{name: "RelativeVariableIsItsError", locateErr: errors.New("HOME must be absolute"), hostname: hostname, wantErrText: []string{"HOME must be absolute"}},
++		{
++			name:        "UnreadableHostnameNamesItsWayForward",
++			noDirectory: true,
++			hostname:    func() (string, error) { return "", errors.New("no uname") },
++			wantErrText: []string{"no uname", "give the machine a hostname", "lym machine name"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			path := filepath.Join(t.TempDir(), "machine.json")
++			if tt.content != "" {
++				if err := os.WriteFile(path, []byte(tt.content), 0o600); err != nil {
++					t.Fatalf("write the machine file: %v", err)
++				}
++			}
++			locate := func() (string, bool, error) { return path, !tt.noDirectory, tt.locateErr }
++
++			name, former, err := resolveNames(locate, tt.hostname)
++
++			if tt.wantErrText != nil {
++				if err == nil || name != "" {
++					t.Fatalf("resolveNames() = %q, %v; want an error and no name", name, err)
++				}
++				for _, text := range tt.wantErrText {
++					if !strings.Contains(err.Error(), text) {
++						t.Errorf("resolveNames() error = %v; want it to name %q", err, text)
++					}
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("resolveNames() error = %v; want nil", err)
++			}
++			if name != tt.wantName || !reflect.DeepEqual(former, tt.wantFormer) {
++				t.Errorf("resolveNames() = %q, %q; want %q, %q", name, former, tt.wantName, tt.wantFormer)
++			}
++		})
++	}
++}
++
++// TestResolveNames_UnreadableFileIsAnError pins the error of a machine file that exists but does not read.
++// The error names the file's path.
++// A directory at the file's path stands in for an unreadable file on every platform.
++func TestResolveNames_UnreadableFileIsAnError(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	path := filepath.Join(t.TempDir(), "machine.json")
++	if err := os.Mkdir(path, 0o700); err != nil {
++		t.Fatalf("make a directory at the machine file's path: %v", err)
++	}
++
++	name, _, err := resolveNames(func() (string, bool, error) { return path, true, nil }, func() (string, error) { return "neve", nil })
++
++	if err == nil || name != "" || !strings.Contains(err.Error(), path) || !strings.Contains(err.Error(), "lym machine name") {
++		t.Errorf("resolveNames() = %q, %v; want an error naming %s and `lym machine name`", name, err, path)
++	}
++}
++
++func TestCheckName(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name    string
++		input   string
++		wantErr bool
++	}{
++		{"LettersAndDigits", "osl46", false},
++		{"Letters", "neve", false},
++		{"InnerHyphen", "osl-46", false},
++		{"MaximumLength", strings.Repeat("a", 63), false},
++		{"UpperCase", "OSL46", true},
++		{"Dot", "osl.46", true},
++		{"Colon", "osl:46", true},
++		{"Underscore", "osl_46", true},
++		{"LeadingHyphen", "-osl46", true},
++		{"TrailingHyphen", "osl46-", true},
++		{"OverMaximumLength", strings.Repeat("a", 64), true},
++		{"Empty", "", true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if err := CheckName(tt.input); (err != nil) != tt.wantErr {
++				t.Errorf("CheckName(%q) = %v; wantErr %v", tt.input, err, tt.wantErr)
++			}
++		})
++	}
++}
++
++// TestFilePath pins the machine file's and its lock's names in the per-user config directory.
++// It also pins that no variable set resolves nothing without an error,
++// and that a relative variable is an error naming it and its way forward.
++// Each row sets both platforms' variables, so the answer is the same on every platform.
++// It sets process-global environment, so neither it nor its subtests are parallel.
++func TestFilePath(t *testing.T) {
++	tiergate.Require(t, 0)
++	base := t.TempDir()
++	relativeVariable := "HOME"
++	if runtime.GOOS == "windows" {
++		relativeVariable = "LOCALAPPDATA"
++	}
++	tests := []struct {
++		name          string
++		localAppData  string
++		xdgConfigHome string
++		home          string
++		wantOK        bool
++		wantDir       string
++		wantErrText   []string
++	}{
++		{name: "ResolvedDirectory", localAppData: base, xdgConfigHome: base, wantOK: true, wantDir: filepath.Join(base, "lym")},
++		{name: "NoVariableSet"},
++		{name: "RelativeVariableIsAnError", localAppData: "relative", home: "relative", wantErrText: []string{relativeVariable, "absolute path"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Setenv("LOCALAPPDATA", tt.localAppData)
++			t.Setenv("XDG_CONFIG_HOME", tt.xdgConfigHome)
++			t.Setenv("HOME", tt.home)
++
++			file, lock, ok, err := FilePath()
++
++			if tt.wantErrText != nil {
++				if err == nil || ok || file != "" || lock != "" {
++					t.Fatalf("FilePath() = %q, %q, %v, %v; want an error and no paths", file, lock, ok, err)
++				}
++				for _, text := range tt.wantErrText {
++					if !strings.Contains(err.Error(), text) {
++						t.Errorf("FilePath() error = %v; want it to name %q", err, text)
++					}
++				}
++				return
++			}
++			if err != nil || ok != tt.wantOK {
++				t.Fatalf("FilePath() ok, error = %v, %v; want %v, nil", ok, err, tt.wantOK)
++			}
++			wantFile, wantLock := "", ""
++			if tt.wantOK {
++				wantFile, wantLock = filepath.Join(tt.wantDir, "machine.json"), filepath.Join(tt.wantDir, "machine.lock")
++			}
++			if file != wantFile || lock != wantLock {
++				t.Errorf("FilePath() = %q, %q; want %q, %q", file, lock, wantFile, wantLock)
++			}
++		})
++	}
++}
++
+ func TestLeafInvariant_AllowlistOnly(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+-	scankit.AssertImportAllowlist(t, "internal/machinename")
++	scankit.AssertImportAllowlist(t, "internal/machinename", "github.com/Knatte18/loomyard/internal/standalonestate")
+ }
+ 
+ func TestSoleSource_NoOtherProductionFileReadsTheHostname(t *testing.T) {
+diff --git a/internal/standalonestate/doc.go b/internal/standalonestate/doc.go
+index da4030916..e85b1450c 100644
+--- a/internal/standalonestate/doc.go
++++ b/internal/standalonestate/doc.go
+@@ -11,6 +11,12 @@
+ // It reads the same environment as Derive and creates nothing.
+ // A record that belongs to the machine and to no target, such as the list of hubs, lives there.
+ //
++// UserConfigDir and AbsoluteUserConfigDir resolve the per-user `lym` config directory.
++// The machine's credential files and its name file live there.
++// UserConfigDir takes a relative XDG_CONFIG_HOME as given.
++// AbsoluteUserConfigDir ignores it and refuses a relative HOME or LOCALAPPDATA,
++// so its answer never depends on a working directory.
++//
+ // Told-geometry tier: the package is told its geometry.
+ // Derive takes an already-absolute target from its caller and uses none of the three resolution tiers.
+ // `TestLeafInvariant_AllowlistOnly` in internal/standalonestate/leaf_enforcement_test.go enforces this;
+diff --git a/internal/standalonestate/standalonestate.go b/internal/standalonestate/standalonestate.go
+index 53a309305..942d20044 100644
+--- a/internal/standalonestate/standalonestate.go
++++ b/internal/standalonestate/standalonestate.go
+@@ -28,9 +28,9 @@ var errRelativeLocalAppData = errors.New("standalonestate: LOCALAPPDATA must be
+ // a relative xdgStateHome has been discarded and home turns out to be empty.
+ var errMissingStateHome = errors.New("standalonestate: no usable state home: XDG_STATE_HOME is unset or relative and HOME is unset")
+ 
+-// errRelativeHome is returned on the non-Windows branch when the home directory is relative.
++// errRelativeHome is returned on the non-Windows branch when HOME is relative.
+ // A relative home leaves no usable fallback, so it is refused rather than ignored.
+-var errRelativeHome = errors.New("standalonestate: home directory must be absolute")
++var errRelativeHome = errors.New("standalonestate: HOME must be absolute")
+ 
+ // errRelativeStateDir is the final assertion's error, fired when the composed state directory is relative.
+ // Every input branch has already ruled that out.
+@@ -165,3 +165,62 @@ func stateRootFor(goos, localAppData, xdgStateHome, home string) (string, error)
+ 	}
+ 	return filepath.Join(home, ".local", "state", "lym"), nil
+ }
++
++// UserConfigDir returns the per-user `lym` config directory.
++// It is `%LOCALAPPDATA%\lym` on Windows, elsewhere `$XDG_CONFIG_HOME/lym` or `$HOME/.config/lym`.
++// A non-empty XDG_CONFIG_HOME is taken as given, relative or not, so files kept there keep their paths.
++// It returns ("", false) when no variable it reads is set, and creates nothing.
++func UserConfigDir() (string, bool) {
++	return userConfigDirFor(runtime.GOOS, os.Getenv("LOCALAPPDATA"), os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME"))
++}
++
++// userConfigDirFor resolves UserConfigDir's directory from plain parameters, so a test drives both platform rows.
++func userConfigDirFor(goos, localAppData, xdgConfigHome, home string) (string, bool) {
++	if goos == "windows" {
++		if localAppData == "" {
++			return "", false
++		}
++		return filepath.Join(localAppData, "lym"), true
++	}
++	if xdgConfigHome != "" {
++		return filepath.Join(xdgConfigHome, "lym"), true
++	}
++	if home != "" {
++		return filepath.Join(home, ".config", "lym"), true
++	}
++	return "", false
++}
++
++// AbsoluteUserConfigDir returns the per-user `lym` config directory as an absolute path,
++// so a file kept there never resolves against a process's working directory.
++// A relative XDG_CONFIG_HOME is ignored in favour of `$HOME/.config/lym`.
++// The XDG Base Directory specification requires that.
++// A relative HOME or LOCALAPPDATA is an error naming the variable, since no fallback is left.
++// It returns ("", false, nil) when no variable it reads is set, and creates nothing.
++func AbsoluteUserConfigDir() (string, bool, error) {
++	return absoluteUserConfigDirFor(runtime.GOOS, os.Getenv("LOCALAPPDATA"), os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME"))
++}
++
++// absoluteUserConfigDirFor resolves AbsoluteUserConfigDir's directory from plain parameters,
++// so a test drives both platform rows.
++func absoluteUserConfigDirFor(goos, localAppData, xdgConfigHome, home string) (string, bool, error) {
++	if goos == "windows" {
++		if localAppData == "" {
++			return "", false, nil
++		}
++		if !filepath.IsAbs(localAppData) {
++			return "", false, fmt.Errorf("%w: %q", errRelativeLocalAppData, localAppData)
++		}
++		return filepath.Join(localAppData, "lym"), true, nil
++	}
++	if filepath.IsAbs(xdgConfigHome) {
++		return filepath.Join(xdgConfigHome, "lym"), true, nil
++	}
++	if home == "" {
++		return "", false, nil
++	}
++	if !filepath.IsAbs(home) {
++		return "", false, fmt.Errorf("%w: %q", errRelativeHome, home)
++	}
++	return filepath.Join(home, ".config", "lym"), true, nil
++}
+diff --git a/internal/standalonestate/standalonestate_test.go b/internal/standalonestate/standalonestate_test.go
+index 1a41d6d7a..0c47ede9a 100644
+--- a/internal/standalonestate/standalonestate_test.go
++++ b/internal/standalonestate/standalonestate_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"runtime"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -351,6 +352,56 @@ func TestDerive_SymlinkNormalization(t *testing.T) {
+ 	}
+ }
+ 
++// TestUserConfigDir pins both config-directory rules on both platform rows.
++// The plain rule takes a relative XDG_CONFIG_HOME as given;
++// the absolute rule ignores it and refuses a relative HOME or LOCALAPPDATA with an error naming the variable.
++func TestUserConfigDir(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name          string
++		goos          string
++		localAppData  string
++		xdgConfigHome string
++		home          string
++		wantPlain     string
++		wantAbsolute  string
++		wantErrText   string
++	}{
++		{"WindowsLocalAppData", "windows", "/appdata", "/xdg", "/home/user", filepath.Join("/appdata", "lym"), filepath.Join("/appdata", "lym"), ""},
++		{"WindowsUnset", "windows", "", "/xdg", "/home/user", "", "", ""},
++		{"WindowsRelativeLocalAppData", "windows", "appdata", "", "", filepath.Join("appdata", "lym"), "", "LOCALAPPDATA"},
++		{"AbsoluteXDG", "linux", "/appdata", "/xdg", "/home/user", filepath.Join("/xdg", "lym"), filepath.Join("/xdg", "lym"), ""},
++		{"HomeFallback", "linux", "", "", "/home/user", filepath.Join("/home/user", ".config", "lym"), filepath.Join("/home/user", ".config", "lym"), ""},
++		{"RelativeXDG", "linux", "", ".xdg", "/home/user", filepath.Join(".xdg", "lym"), filepath.Join("/home/user", ".config", "lym"), ""},
++		{"RelativeHome", "linux", "", "", "home/user", filepath.Join("home/user", ".config", "lym"), "", "HOME"},
++		{"RelativeXDGWithEmptyHome", "linux", "", ".xdg", "", filepath.Join(".xdg", "lym"), "", ""},
++		{"Unset", "linux", "", "", "", "", "", ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			plain, plainOK := userConfigDirFor(tt.goos, tt.localAppData, tt.xdgConfigHome, tt.home)
++			if plain != tt.wantPlain || plainOK != (tt.wantPlain != "") {
++				t.Errorf("userConfigDirFor() = (%q, %v); want (%q, %v)", plain, plainOK, tt.wantPlain, tt.wantPlain != "")
++			}
++			absolute, absoluteOK, err := absoluteUserConfigDirFor(tt.goos, tt.localAppData, tt.xdgConfigHome, tt.home)
++			if tt.wantErrText != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErrText) {
++					t.Errorf("absoluteUserConfigDirFor() error = %v; want one naming %s", err, tt.wantErrText)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("absoluteUserConfigDirFor() error = %v; want nil", err)
++			}
++			if absolute != tt.wantAbsolute || absoluteOK != (tt.wantAbsolute != "") {
++				t.Errorf("absoluteUserConfigDirFor() = (%q, %v); want (%q, %v)", absolute, absoluteOK, tt.wantAbsolute, tt.wantAbsolute != "")
++			}
++		})
++	}
++}
++
+ // TestUserStateDir pins where UserStateDir answers the `lym` directory.
+ // Under an absolute XDG_STATE_HOME it answers there; under a relative one, under HOME's .local/state.
+ // It sets process-global environment, so it is not parallel.
+diff --git a/pattern/PATTERN-leaf-packages.md b/pattern/PATTERN-leaf-packages.md
+index 3733ea343..55b2f1883 100644
+--- a/pattern/PATTERN-leaf-packages.md
++++ b/pattern/PATTERN-leaf-packages.md
+@@ -94,7 +94,9 @@ Imports only the standard library, so every lens review host and `planparser` ca
+ 
+ ## `internal/machinename`
+ 
+-Imports only the standard library.
++Imports only the standard library and `internal/standalonestate`.
++- `internal/standalonestate` is admitted for the per-user config directory the machine file lives in.
++  It imports only the standard library, so the admission reaches no feature package.
+ 
+ ## `internal/runproc`
+ 
+diff --git a/pattern/PATTERN-owner-machine.md b/pattern/PATTERN-owner-machine.md
+index b5a957b58..919408836 100644
+--- a/pattern/PATTERN-owner-machine.md
++++ b/pattern/PATTERN-owner-machine.md
+@@ -38,6 +38,8 @@ The rest of a Finalize already past its parent-side merge is exempt.
+   The landing's parent-owner read uses the Bolt its reconcile left.
+   A resume with origin unreachable reads the local Bolt.
+ - This machine's name comes only from `internal/machinename`.
++  It reads the machine file in the per-user lym config directory before the hostname rule,
++  and a machine file that yields no valid name is an error, never a fallback to the hostname.
+ 
+ ### Origin reconcile first
+ 
