@@ -57,7 +57,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **The coverage selector takes its target, compares own files by function, and misses on a changed environment stamp** | [`testmap-selector-upkeep-rules`](design-testmap-selector-upkeep-rules.md)<br>[Sketch](decision-testmap-selector-upkeep-rules.md) | darn · solid | Code-Bouncer | neve | 1h<br>1h | testkit, gate, dobby |
+| T2 | **The coverage selector takes its target, compares own files by function, and misses on a changed environment stamp** | [`testmap-selector-upkeep-rules`](design-testmap-selector-upkeep-rules.md)<br>[Sketch](decision-testmap-selector-upkeep-rules.md) | darn · solid | Drift-Recheck | neve | 1h<br>1h | testkit, gate, dobby |
 
 #### Ready (0)
 
