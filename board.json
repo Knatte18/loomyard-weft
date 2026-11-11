@@ -1043,6 +1043,27 @@
       "body": "Imported from [issue #107](https://github.com/Knatte18/loomyard/issues/107).\n\n## What happened\n\nIn a beam, the orch promoted a Sketch with `lym board promote S1`, which made it a task with recipe `raddle`.\nIt then ran `lym board set-deps '{\"slug\":\"\u003cslug\u003e\",\"depends_on\":[\"\u003cother\u003e\"]}'`, where `\u003cother\u003e` was a task of the same beam still `running · PR-Review`, and only after that released the task with `lym board set-status '{\"slug\":\"\u003cslug\u003e\",\"status\":null}'`.\n`lym board get` showed `depends_on` set and the status already `running · Seed-Child` moments later: the beam's dobby started the raddle task although its dependency had not landed.\n\n## Workaround\n\n`lym batten pause \u003cslug\u003e` holds the run; the orch resumes it with `lym batten run \u003cslug\u003e` once the dependency lands.\n\n## Expected\n\nDobby starts a released task only when every entry in its `depends_on` is done or gone, whatever its recipe, `raddle` included.\n",
       "created": "2026-11-11T06:23:07Z",
       "revised": "2026-11-11T06:23:07Z"
+    },
+    {
+      "id": 1294,
+      "handle": "B10",
+      "slug": "worktree-create-build-leftovers",
+      "title": "Worktree-Create halts on a reused slug path holding only obj/ leftovers",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "fabric"
+      ],
+      "issues": [
+        108
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #108](https://github.com/Knatte18/loomyard/issues/108).\n\nSeen: `lym beam merge-parent support-for-dop` halted its batten run at Worktree-Create because the directory `\u003chub\u003e/support-for-dop-merge-in` already existed and was not a worktree.\nIt held only `src/csharp/NORCE.Models/*/obj/Debug/...` build leftovers (15 files, generated AssemblyInfo and editorconfig) dated from the previous merge-in run of the same slug a day earlier, which had landed and been torn down.\nSomething (an IDE or a build triggered after teardown) recreated obj directories under the removed worktree path, and Worktree-Teardown does not check for or clean such leftovers.\n\nWorkaround: inspected the directory, removed it by hand (`rm -r` on the literal path), and ran `lym batten run support-for-dop-merge-in` again.\n\nExpected: a reused slug whose old path holds only build output (obj/bin) is not blocked; Worktree-Create, or Worktree-Teardown of the earlier run, removes a directory that contains nothing but build artefacts, or the halt names it as such so the parent does not need to inspect it.\n",
+      "created": "2026-11-11T06:23:09Z",
+      "revised": "2026-11-11T06:23:09Z"
     }
   ],
   "prime_owner": "neve",
