@@ -1,33 +1,41 @@
-# Fabric way forwards name the anchored directory for every lym verb
+# fabricengine: name the anchored directory in lym way-forward lines
 
-In a hub whose anchor is a subdirectory, the FABRIC notice for a failed push said to run `lym fabric push` in the code worktree's root.
-The cwd gate refuses every lym verb outside the anchored directory, so the command failed as written (issue #98).
+In a hub whose anchor is a subdirectory, the way forward of a failed-push notice named the worktree root.
+Every `lym` verb refuses a cwd other than the anchored directory, so the command failed as written with "cwd is outside the recorded fabric anchor subtree".
+A `lym` step in a way forward now names the code worktree's anchored directory, and the line works as written.
 
-## What changes
+Closes #98
 
-- `internal/fabricengine/failedpush.go` gains `lymVerbDir`, which reads the code worktree's recorded anchor through `lymcwd.NamedWorktree` and returns its anchored directory.
-  It reads the marker when the line is built, spawns no git, and falls back to the root when no marker is recorded or one cannot be read (logged at Warn).
-- Every way forward that names a `lym` verb in a code worktree now names that directory:
-  - the retry push of a code or records failed-push record (`pushStep`), which the transport, auth, other and deferred classes and the records not-fast-forward step use;
-  - the push after the merge of a diverged code branch (`codeDivergedWayForward`);
-  - the push after accepting a rewind (`rewoundWayForward`), which said `then lym fabric push there` and now names the directory;
-  - the push in the weft-replay conflict stop of `lym fabric pull` (`pull.go`);
-  - the reconcile stops' `lym fabric pull` of a rewritten code branch, `lym fabric commit` of a dirty records branch, and `lym fabric anchor --set` of an anchor-stopped weft.
-- A `git` step keeps naming the worktree root, where git runs from anywhere.
-  The prime's code push stays a plain `git push` at the root.
-- The `fabricengine` package doc states the rule beside the `PushFailedError` way-forward paragraph.
+## Changes
+
+- `lymVerbDir` in `internal/fabricengine/failedpush.go` returns the anchored directory of a code worktree.
+  It reads the worktree's recorded marker when the line is built, so a record written before an anchor change names the current anchor.
+  A worktree with no marker keeps its root.
+  A marker that cannot be read also keeps the root, logged at Warn.
+  An empty worktree stays empty.
+- `pushStep`, `codeDivergedWayForward` and `rewoundWayForward` route their `lym fabric push` steps through it.
+- The reconcile stops in `originreconcile.go` do the same for `lym fabric pull`, `lym fabric anchor` and `lym fabric commit`.
+- `weftDirtyStop` and the records-conflict stop in `pull.go`, and `upstreamAnchorStop` in `anchorstop.go`, do the same.
+- `BranchRewritten` now names the pull in the code worktree's anchored directory, taken from `b.CodeWorktree`, where it named `b.Worktree`.
+- `doc.go` states the rule.
 
 ## Design decisions
 
-- The anchored directory is resolved at render time rather than stored in the failed-push record.
-  A record outlives an anchor change, and `FailedPushFields`, the notice and `PushFailedError.Error` all render through the same helpers, so one read covers every reader.
-- A records-side `lym fabric pull` keeps its path: `lymVerbDir` applies only to a code worktree, since resolving a weft sibling's path would fall back to the hub-wide Bolt marker.
-- The `lym fabric remove` path in the gone-branch way forward names the pair, not a cwd, and is unchanged.
-- Out of scope: landingshed's push halt (`pushHaltReason`) still names the task worktree root.
-  It is a Stuck reason rather than the FABRIC notice, and fixing it needs a new told `Deps` field wired from `internal/loomcli`.
+- `git` steps keep the worktree root.
+  Git has no anchor gate, and the root is where the checkout lives.
+  Within one line, such as the rewind way forward, the `git` steps name the root and the `lym` step names the anchored directory.
+- The anchor is resolved when the line is built, not when the failure is recorded.
+  Persisted failed-push records are unchanged.
 
-## Tests
+## Also in this diff
 
-`TestFailedPushRecord`'s way-forward table gains rows over a temp hub whose task worktree records the anchor `src/app`:
-a code transport retry, a records auth retry pushing in the code worktree's anchored directory, a code not-fast-forward merging at the root and pushing in the anchored directory, and a rewind resetting at the root and pushing in the anchored directory.
-The existing rows, over paths with no marker, keep naming the root.
+`internal/gatecli/redundancy_integration_test.go`: the broken-build redundancy subtest's second unit goes from 50ms to 500ms.
+A loaded machine could time a real run out at the old value.
+
+## To check by hand
+
+- `lymverbdir-calls-lack-anchored-tests`: confirm the `lymVerbDir` call sites outside `pushStep`, in `originreconcile.go`, `pull.go` and `anchorstop.go`, have anchored-hub test coverage.
+  The tests added in `failedpush_test.go` cover the failed-push and rewind lines.
+- `unconverted-lym-steps-weftdirtystop-upstreamanchorstop`: confirm no `lym` step in a way forward still names a worktree root.
+  `weftDirtyStop` and `upstreamAnchorStop` were converted after this finding was raised.
+- Run a failed async push in an anchored hub, such as one whose anchor is `src/csharp/NORCE.Models`, and paste the notice's `lym fabric push` line.
