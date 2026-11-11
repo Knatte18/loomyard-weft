@@ -1,11 +1,11 @@
 {
-  "current_producer": "Finalize",
+  "current_producer": "Friction-Reflect",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Finalize",
-    "last": "PR-Review → done",
+    "now": "Friction-Reflect",
+    "last": "Finalize → done",
     "wait": ""
   },
   "history": [
@@ -156,6 +156,13 @@
       "output": "",
       "at": "2026-11-11T15:19:31Z",
       "started_at": "2026-11-11T15:19:31Z"
+    },
+    {
+      "producer": "Finalize",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-11T15:19:37Z",
+      "started_at": "2026-11-11T15:19:32Z"
     }
   ],
   "product": {
