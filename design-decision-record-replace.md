@@ -1,6 +1,6 @@
 # A Sketch or decision record can be edited or replaced, and raddle follows the newer design
 
-`decision-record-replace` · Task · sketch, shed, loom, board · running · Worktree-Create
+`decision-record-replace` · Task · sketch, shed, loom, board · running · Seed-Child
 
 Decision record: [Sketch](decision-decision-record-replace.md)
 
