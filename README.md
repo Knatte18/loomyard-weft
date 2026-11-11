@@ -84,17 +84,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 1d · Owner `neve`
 
-### Tasks (1)
+### Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T17 | **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md) | motif | Discussion-Bouncer | neve | 1d<br>1d | gate, testkit, darn |
 
 #### Ready (0)
 
@@ -102,9 +94,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (3)
+### Notes (4)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+#### Sketches (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| S1 |  | **A verify gate scopes to nearly the whole suite; scope it by the coverage map**<br>• A diff in a widely imported package reruns tiers 0 to 2 across the suite, 30 to 40 minutes on OSL-1046. | [`gate-scope-by-coverage-map`](design-gate-scope-by-coverage-map.md)<br>[Sketch](decision-gate-scope-by-coverage-map.md) | 1d<br>0m | gate, testkit, darn |
 
 #### Enhancements (3)
 

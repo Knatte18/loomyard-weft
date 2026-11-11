@@ -1,6 +1,8 @@
 # A verify gate scopes to nearly the whole suite; scope it by the coverage map
 
-`gate-scope-by-coverage-map` · Task · bug, gate, testkit, darn · running · Discussion-Bouncer
+`gate-scope-by-coverage-map` · Note · sketch, gate, testkit, darn
+
+Decision record: [Sketch](decision-gate-scope-by-coverage-map.md)
 
 ## Seen (orch, 2026-11-09)
 
