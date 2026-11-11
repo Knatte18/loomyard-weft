@@ -1,56 +1,67 @@
-# Gate test: refuse untakeable targets, name unreached dotnet projects
+# gate test: refuse or warn when a tier command drops requested targets
 
-Fixes [issue #105](https://github.com/Knatte18/loomyard/issues/105).
+`lym gate test` no longer reports a silent pass for tests it did not run.
+A tier command with neither `{targets}` nor `{test_targets}` runs whole and ignores the targets the call asked for.
+Two cases hit this with no warning:
 
-A tier command that holds neither `{targets}` nor `{test_targets}` runs whole whatever scope it is given.
-Under explicit targets and under a narrowed `dotnet` scope that meant a gate could report a pass for tests other than the ones asked for.
-In the reported case a card's tests lived in a second test project, tier0's command named only the fast project, and every gate route passed without running them.
-The only signal was a stderr line saying the tier "runs whole", which reads as a superset rather than a miss.
+- An explicit target, such as `lym gate test <project> -- --filter ...`, ran the fast suite instead.
+- A card or batch gate whose tests live in a second test project never reached that project.
+
+Closes #105
 
 ## What changes
 
-**Explicit targets that no listed tier can take are refused.**
-`planTierRuns` (`internal/gatecli/tiers.go`) now refuses the call before any slot when every kept tier's command lacks both placeholders.
-The refusal names the targets and the tiers, and gives the way forward: drop the targets to run the tier whole, or name a tier that takes targets with `--tier`.
-It also says only the prime adds `{targets}` to a tier's command, with `lym config gate`.
-A call where at least one listed tier takes the targets still runs, and each tier that ignores them is named on stderr as before.
-
-**The "runs whole" notice moved from run time to planning.**
-`planTierRuns` prints it once per kept tier whose command ignores the scope's targets, after the refusal check.
-The `tierRun.ignoresTargets` field, which existed only to carry that notice to `runListed`, is gone.
-
-**A dotnet call names each selected test project no run reaches.**
-`unrunProjectLines` (`internal/gatecli/dotnetscope.go`) reads the projects a narrowed `dotnet` share selected for a tier that runs whole.
-A project counts as reached when a run's targets, or for a command without a target placeholder its command's words, name the project's file name, name a solution file, or name no project file at all.
-The last two count as reached because lym reads neither a solution nor the directory a bare `dotnet test` runs in.
-For every selected project no run of the call reaches, `runTest` closes with a line saying the pass is not green for that project.
-Its way forward runs the lowest declared tier, not manual, whose command reaches the project, or, with none, names adding `{targets}` through `lym config gate`.
-The line is output only: it changes no exit code or record, like the existing not-run-tiers line of a card scope.
-It applies to every narrowed dotnet scope form, card, computed and `--base`, since each can select a project the whole run misses.
+- **Explicit targets no tier takes are refused.**
+  When every kept tier's command lacks both placeholders, `planTierRuns` refuses the call before any slot is taken.
+  The refusal offers three ways forward:
+  drop the targets, name a `--tier` whose command takes them, or have the prime run `lym config gate` to add `{targets}`.
+  It closes with the usual clause for a session that is not the prime.
+  A call where at least one kept tier takes the targets still runs; the others run whole.
+- **The run-whole notice moves.**
+  `gate test: the command of tierN holds neither {targets} nor {test_targets}, so it runs whole` now prints from `planTierRuns` instead of `runListed`.
+  It also prints for a narrower scope, not only for explicit targets.
+  It prints only once no refusal can follow, so a refused call prints none.
+  The `ignoresTargets` field of `tierRun` is gone; the notice is the only thing it fed.
+- **Unreached test projects are named under the dotnet scoper.**
+  `unrunProjectLines` in `dotnetscope.go` checks the projects a narrowed share selected for a whole-running command.
+  After the call it prints one stderr line for each project that no run of the call reaches.
+  The line says the pass is not green for that project.
+  Its way forward is the lowest declared non-manual tier whose command reaches the project, as `lym gate test --tier N [project]`.
+  When no tier does, the way forward is the prime's `lym config gate` step.
+- **The warning is output only.**
+  It changes no exit code and no record.
 
 ## Design decisions
 
-- The issue offered refuse or warn for the target case.
-  Explicit targets are refused only when no listed tier takes them, since then the call runs none of what was named.
-  A mixed call such as `--tier 0 --tier 2 ./pkg`, with tier2 a whole-only tier, keeps running; the scenario hub's integration tests rely on that shape.
-- For the card and diff routes the gate warns rather than refuses.
-  A refusal there would halt every card gate of a C# hub whose tier0 names one project until the prime edits the config.
-- The reach check is a file-name heuristic over the command's words, scoped to the `dotnet` scoper, where test projects are named files.
-  Under `go`, a whole run over a module is a superset of its packages, so the existing notice suffices.
-
-## Effects elsewhere
-
-- `gateslot.FailedTestsCall` renders explicit-target calls per tier.
-  On a tier whose command takes no targets such a call is now refused instead of running the tier whole with its `-run` pattern.
-- darn's `tree_scope` passes explicit targets beside `--gate`.
-  On a hub whose key lists only tiers without a target placeholder that gate now refuses instead of passing whole.
-  This hub's tiers all take targets, so neither path changes here.
+- **What counts as reaching a project** (`namesProject`):
+  a run reaches a project when its names hold that project's file, that project's built assembly, or a solution file.
+  It also reaches every project when its names hold no project, solution or built assembly file, as with a bare `dotnet test`.
+  The names are the run's invocation targets, or for a command without a target placeholder the words of the command.
+  Project paths are compared case-insensitively and with slashes normalised.
+  A bare file name matches on file name, and a path matches when one is the other or ends at a directory boundary with it.
+- **A command naming only other built assemblies reaches no project.**
+  A built assembly is a specific target, so it is matched to the project of the same name instead of counting as "no files named".
+- **The warning is not an error.**
+  Unlike explicit targets, a card scope runs real tests in the other projects, so a refusal would block a legitimately partial gate.
+  The line makes the gap visible without changing the verdict.
+- The Go scoper is untouched; the unreached-project line applies only when `cfg.Scoper == "dotnet"`.
+- `doc.go` documents the refusal, the notice and the unreached-project line.
 
 ## Tests
 
-- `TestPlanTierRuns` gains a refusal row for explicit targets no tier takes, and a row where a whole-only tier runs beside a tier that takes the targets.
-  The two rows that expected the dropped `ignores` marker now assert the stderr notice.
-- `TestUnrunProjectLines` covers the reach rules: an unnamed project with a targets tier or a naming tier as the way forward, a manual-only tier, a project another run names, a solution file and a command naming no project.
-- The missing-build-dir scenario subtest decodes the last stdout line as the refusal envelope.
-  Its tier2 run-whole notice now prints at plan time, ahead of the envelope.
-- The integration subtest that pinned `--tier 2 ./pkg` running whole is removed, since that call is now the refusal the unit row pins.
+- `TestUnrunProjectLines` in the new `dotnetscope_test.go` covers the reach rules and the way forward.
+- `TestPlanTierRuns` covers the refusal, the notice beside a tier that takes targets, and the notice under a narrower scope.
+- `TestGateTest_Scopes` covers a `--card` call under dotnet that prints the line and still exits 0.
+- The integration test for explicit targets on a command without `{targets}` is removed, as that call is now refused.
+  The missing-build-dir test now reads its JSON envelope from the last stdout line, since the notice precedes it.
+
+## To check by hand
+
+None of these was exercised against a real multi-project dotnet hub.
+
+- `namesProject` in `dotnetscope.go`: a built assembly (`.dll` or `.exe`) now reaches only the project it is named after.
+  Check that this holds for assemblies whose name differs from the project file name.
+- The `lym gate test` wiring in `runTest` in `run.go`: the dotnet-only call to `unrunProjectLines` after the run is covered by one integration case.
+  Check the line appears in a real card gate and that a non-dotnet hub prints nothing.
+- The targets refusal in `planTierRuns` in `tiers.go`: it ends with the role clause like the other refusals.
+  Check the wording of the full refusal on a hub whose tier0 command lacks `{targets}`.
