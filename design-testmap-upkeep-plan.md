@@ -1,6 +1,6 @@
 # lym gate testmap plans each map at the prime's HEAD, keeps what still holds, and checks what it keeps
 
-`testmap-upkeep-plan` · Task · feature, testkit, gate, dobby · running · Darn-Write
+`testmap-upkeep-plan` · Task · feature, testkit, gate, dobby · running · Drift-Verify
 
 Decision record: [Sketch](decision-testmap-upkeep-plan.md)
 
