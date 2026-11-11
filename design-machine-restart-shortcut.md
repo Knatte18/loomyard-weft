@@ -18,8 +18,8 @@ VS Code needs nothing: on Kubuntu it reopens the windows it had open by itself.
 A simple way to start again every project that was in flight on the machine, such as launcher scripts lym puts on the desktop:
 
 - The launcher brings back a whole project: the hub prime and every beam under it that was live.
-  It opens the hub's one VS Code workspace file, `<hub>/<repo>.code-workspace`, which lists every worktree of the hub
-  (note `hub-workspace-all-pairs` makes it list the pairs under beams too).
+  It opens the hub's one VS Code workspace file, `<hub>/<repo>.code-workspace`, which lists every worktree of the hub,
+  the pairs under beams too (built by `hub-workspace-all-pairs`, commit `2409c0f7`; a pair of a project is named `P1: <slug>` there).
   For the prime and each such beam it opens a terminal outside VS Code in the worktree running `lym s`,
   which starts the worktree's dobby and orch and attaches to its reed session.
   The operator never types `lym reed attach`; a running task's window opens from the orch or the Reed status bar's terminal button, so the launcher opens none.
