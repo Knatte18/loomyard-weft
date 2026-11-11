@@ -1208,6 +1208,27 @@
       "body": "Imported from [issue #111](https://github.com/Knatte18/loomyard/issues/111).\n\n## What happened\n\nA `lym loom` run halted as `failed` with anomaly `interrupted-stop` at step `Code-Bouncer`.\nThe status error was `shedverbs: step Code-Bouncer interrupted (loop-exited)`.\nThe note reported `loop exit: not recorded`, so neither the exit code nor the signal that ended the loop was available.\nThe \"loop log\" field in the halt note held only the JSON envelopes of earlier steps (`Code-Bouncer`, `Code-Burler-Review`, `Code-Burler-Fix`, all outcome `stuck`) rather than anything from the interrupted loop's own end.\nThe history shows the same three steps already ran with outcome `stuck` before the interrupted `Code-Bouncer` invocation.\n\n## Why it is abnormal\n\nThe halt cannot be diagnosed from what lym records.\nThe way forward tells the operator to read `loop.trace_copy` and `loop.stderr_path` and apply `loop.interrupt_policy`, but the note gives no hint why the loop ended without an envelope (crash, kill, timeout, operator interrupt).\nWithout a recorded exit status, an intentional interrupt and a lym crash look the same.\n\n## What to do\n\n- Record the loop process's exit code or terminating signal in the halt note and in the run status when a loop ends without an envelope.\n- Make the \"loop log\" field show the tail of the interrupted loop's own output, not the envelopes of steps that completed earlier.\n- When the exit cannot be captured, say why in the note instead of `not recorded`.\n\nProvenance: task slug `models-full-buildsection`; note `loom-halt-2.md`.\n",
       "created": "2026-11-11T14:02:37Z",
       "revised": "2026-11-11T14:02:37Z"
+    },
+    {
+      "id": 1325,
+      "handle": "B13",
+      "slug": "await-forks-subdir-cwd",
+      "title": "lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "fabric"
+      ],
+      "issues": [
+        110
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #110](https://github.com/Knatte18/loomyard/issues/110).\n\nWhat happened: during a burler plan round the harness moved the session's working directory to the weft's `_lym/plan`. `lym shuttle await-forks` then failed with \"cwd is outside the recorded fabric anchor subtree\", because it accepts only the anchored directory itself rather than anything inside the anchor subtree.\n\nWhy abnormal: the message says \"subtree\", yet a directory inside the weft's own `_lym/plan` is refused. The session cannot control the harness's cwd changes. The self-check fell back to taking each fork's result as it arrived, across four turns.\n\nWhat to do: make `lym shuttle await-forks` accept a cwd anywhere under the recorded anchor, or resolve the anchor from the weft root. Otherwise make the error name the required directory.\n\nProvenance: task slug adopt-worker-record; note burler-plan-r2.md.",
+      "created": "2026-11-11T14:02:40Z",
+      "revised": "2026-11-11T14:02:40Z"
     }
   ],
   "prime_owner": "neve",
