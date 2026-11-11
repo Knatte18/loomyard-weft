@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-testmap-selector-upkeep-rules.md)
 
-Depends on: [`gate-scope-coverage`](design-gate-scope-coverage.md)
-
 Filed from the Sketch `testmap-upkeep-design`.
 
 Takes: coverage-test-select's Selector in internal/testcover as it lands, which reads the working tree only and misses on any own-file change; the map format testmap-cross-package landed (FuncKey function sets, OtherFiles, MapFormat with an EnvironmentStamp); internal/gatecli as gate-scope-coverage leaves it
