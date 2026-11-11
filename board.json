@@ -604,6 +604,27 @@
       "project": "test-suite-trim",
       "discussed": true,
       "record_body_sha256": "71fabe0985adbe4799a689601a08b0b8cf52bd8eaf52d2b41809ee6c505addea"
+    },
+    {
+      "id": 1339,
+      "handle": "R5",
+      "slug": "advisor-model-bench",
+      "title": "Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks",
+      "kind": "note",
+      "labels": [
+        "research",
+        "darn",
+        "loom",
+        "shuttle",
+        "claude"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Idea (operator, 2026-11-11)\n\nThe bench that follows `advisor-model-trial`, which tunes the darn writer's advisor prompt.\nIt is filed as a task only when the operator approves that tuned prompt.\n\n## What it runs\n\nRerun three landed darn tasks of different sizes from their base commits, with a Sonnet writer, an Opus advisor and the tuned prompt, identical in all three:\n\n- large: `decision-record-replace-verb` (`6d58cad7`, about 2970 changed lines);\n- middle: `adopt-takeover-fixes` (`6f8d4cff`, about 580 changed lines);\n- small: `reed-tab-and-attach-fixes` (`aeea549d`, about 200 changed lines).\n\nThe cap is exactly three runs, one per task, and no repeats.\nEach run is compared with the task's recorded Opus run, whose recipe and profile come from its usage record:\nreview findings, bounces, tokens, cost and time with sleep removed.\nIt runs as darn `docs`, and the report goes under `docs/research/`.\n\n## Not decided\n\nWhether a lym config key for the advisor, beside each role's model and effort, follows: only after the bench shows it pays.\n",
+      "created": "2026-11-11T18:38:11Z",
+      "revised": "2026-11-11T18:38:11Z"
     }
   ],
   "prime_owner": "neve",
