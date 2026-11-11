@@ -863,10 +863,10 @@
     },
     {
       "id": 1287,
-      "handle": "E8",
+      "handle": "T14",
       "slug": "finalize-flaky-rerun",
       "title": "Finalize spawns a fixer on a single non-repeating test failure",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "landing",
@@ -879,6 +879,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #100](https://github.com/Knatte18/loomyard/issues/100).\n\n## What was seen\n\nA beam's Finalize landing ran the gate (tier0 and tier1) on the beam head.\nOne tier0 test of 3463 failed with `UnauthorizedAccessException`, and tier1 passed.\nThe test enumerates the source tree, `bin/` included, while another test running in parallel held a temporary directory under `bin/` with its read permission removed.\nThe failure is a race between two tests of the repository, not a fault of the change being landed.\n\nFinalize wrote `.lym/verify/landing-failure.yaml` and spawned a fixer strand at once, on that single run.\nThe gate's own failure report said that no failing test or error line was read from the tier0 output, so the fixer started without a named cause.\n\n## Workaround\n\nThe orch read the verify log, diagnosed the race and messaged the fixer with the cause.\n\n## Expected behaviour\n\n- Before Finalize spawns a fixer, it reruns the failed tests (or the failed tier) once on the same head.\n  A failure that does not repeat is recorded as flaky in the landing report, and the landing goes on.\n- The gate's failure report names the failing test and its error message when the test runner printed them, instead of reporting that no failing test line was read.\n",
+      "status": "draft",
       "created": "2026-11-11T06:22:54Z",
       "revised": "2026-11-11T06:22:54Z"
     },
