@@ -119,6 +119,13 @@ Rationale: A test binary already links the package, its linked set and the stand
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - summary-test-file-import-claim-stale (class consistency, severity MEDIUM, open in rounds 2)
+  - test-file-import-allowance-unrecorded (class decision, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D2: the selector called with a commit as target gives the same verdict as with an equal working tree.
