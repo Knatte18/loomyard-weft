@@ -1,67 +1,56 @@
-# lym adopt --here behind lym s, and lym adopt --archives
+# adopt: add --here behind lym s, and --archives for old-owner archives
 
-Adopt now starts from a plain shell on the machine taking over, through `lym s`, instead of from the orch.
-The new owner can also list the tips the old owner archived after the handover.
+`lym s` now runs `lym adopt --here --no-orch` before `beam start` and `reed attach`.
+A machine that does not own the worktree's subject adopts it first, from a plain shell, and then starts the beam.
+A machine that owns it ends with the outcome `owned_here` and goes straight on to `beam start`.
+The new `lym adopt --archives <subject>...` lists the archives an old owner pushed after a handover, which the new owner has to read after the adopt ends.
 
-## `lym adopt --here` (D10)
+## What changes
 
-`--here` adopts the subject of the worktree it runs in: `root` in the prime, the beam in an open beam project.
-In any other worktree it ends ok with `outcome: no_subject` and does nothing.
-A subject, `root` or `--all` beside it is refused.
+`lym adopt --here` adopts the subject of the worktree it runs in: `root` in the prime, the beam in a beam.
+It reads the adopt record first.
+An unfinished record takes the worktree up when its `check` step is not done
+and its subject set lists the worktree's subject, or the subject the worktree reads its owner from through `hubgeom.ParentOf`.
+The call then takes the record's request as its own, whoever the owner reads as, so it follows a live worker or resumes the record.
+A record past `check` that stopped on a held-back project takes up no worktree, so its other subjects still reach `beam start`.
 
-- **Record take-up.** It reads the adopt record first.
-  An unfinished record whose `check` step is not done takes the worktree up when its subjects list the subject the worktree reads its owner from.
-  That is the beam itself when the record lists it or it records its own owner, otherwise the subject above it through `hubgeom.ParentOf`, up to `root`.
-  The call then runs the record's request with its own flags merged in by `mergeRequest`, so it follows a live worker or resumes the record, whoever the owner reads as.
-  The new `adoptrecord.Record.TakesUp` makes this judgment, reusing the watcher's owner-subject resolution.
-  A record past `check`, such as one that stopped on a held-back project, takes up no worktree.
-- **Owner read.** With no record taking the worktree up, it pulls Bolt through `fabricengine.Bolt.Pull` and reads the subject's owner.
-  A pull that cannot bring Bolt up to date, an unreachable origin among them, reads the local Bolt and puts the skip's detail in `warnings`.
-- **Ends.** A subject no other machine owns ends ok with `outcome: owned_here` and `subject`, spawning no worker and writing no record.
-  Any other subject runs as `lym adopt <subject>` under the existing caller and worker rules.
+With no record taking the worktree up, `--here` pulls Bolt through fabric and reads the subject's owner from it.
+When origin is unreachable it reads the local Bolt and puts the reason in the envelope's `warnings`.
+If no other machine owns the subject, the call ends ok with `owned_here`, spawns no worker and writes no record.
+Otherwise it is `lym adopt <subject>`, under the same rules as that call.
+In a worktree that is neither the prime nor an open beam project it ends ok with `no_subject`.
+`--here` with a subject, `root` or `--all` is refused.
 
-`shortcuts.yaml`'s `s` becomes `adopt --here --no-orch`, then `beam start`, then `reed attach`.
-A shortcut stops at the first argv that exits non-zero, so a stopped adopt starts no beam.
+`lym adopt --archives <subject>...` takes beam projects or `root`.
+For each slug under the named subjects it reads the `archive-owner/` tags from each repository's origin
+and lists those whose commit the slug's branch on origin does not contain: the code branch for code tags, the weft branch for weft tags.
+Each listed tag carries a `git -C <dir> log <tag>` command to look at it.
+Teardown and `--drop-local` archives carry the `archive/` prefix, so none of them are listed.
+The call runs no step, brings nothing in, and reads and writes no record.
+It refuses every other flag, an unknown slug, and an entry that is not a beam project, naming the subject that moves a task or grouping project.
+The end envelope of an adopt whose owner write stood names this call, because the old owner archives only after it reads that write.
 
-`runAdopt` now takes a `callFlags` value (`Discard`, `Here`, `Archives`) in place of the bare discard bool.
-These flags pick what the call does, so they stay off `request`, which converts to `adoptrecord.Request`.
+## Design decisions
 
-## `lym adopt --archives <subject>...` (D12)
+- `lym s` stops at the first argv that exits non-zero, so a stopped adopt runs no `beam start`.
+  `beam start` starts the orch, which is why the shortcut passes `--no-orch`.
+- An owned-here `lym s` never meets another subject's unfinished record, because the record only takes up a worktree whose subject it lists.
+- Every `lym s` with no record taking its worktree up pays one Bolt pull more than before.
+  A pull that cannot reach origin reads the local Bolt, so a stale Bolt that reads this machine as owner skips the adopt.
+  `beam start` then judges the owner on the local Bolt too and starts the beam here, as `lym beam start` does today.
+  The next Bolt pull that reaches origin hands the subject to the old-owner path.
+- `fabricengine` gains the archive-owner tag read, built on a shared `remoteTagsUnder` helper that `remoteArchiveTags` now also uses.
+  Git still runs only in `internal/fabricengine`.
+- `gitrepo.RemoteURL` wraps a new `ErrRemoteNotConfigured` when the remote is absent or has no URL.
+  `fabricengine` uses it so that only a missing origin reads as none, and a failure to read the configuration is an error.
+- `adoptrecord.Record.TakesUp` holds the take-up judgment, next to the `Watch` logic it shares with `ownerSubject`.
+- `docs/overview.md`, `docs/getting-started.md` and the `adoptcli` package doc describe the new flags and the changed shortcut.
 
-- **Fabric read.** `fabricengine.Topology.ReadOwnerArchives` lists the `archive-owner/` tags on the code and records origins.
-  It keeps those whose commit the slug's branch on that origin does not contain.
-  A code tag is judged against the slug's code branch: the prime's checked-out branch for the prime slug, otherwise `PairTaskBranchOrOrigin`.
-  A records tag is judged against the paired records branch.
-  A branch origin lacks contains nothing.
-  Each listed tag is fetched as a local tag, so its `git log` works on the new owner.
-  The `ls-remote --tags` parsing behind `remoteArchiveTags` is now `remoteTagsUnder`, shared by both readers.
-- **Verb.** The verb validates each subject (`root` or a beam project on the board).
-  A task or grouping project is refused, naming the subject that moves it.
-  It places each tag's slug under its subject through `Owners.AdoptSubject`, and a slug the board no longer holds under its parent's subject.
-  It prints the tags per slug, each with side, commit, branch and a `git -C <dir> log <tag>` command.
-  It runs no step and reads or writes no adopt record.
-  `archive/` teardown and `--drop-local` tags never match the prefix.
-- **End envelope.** The adopt's end envelope gains `archives`: the `lym adopt --archives` call over the subjects whose owner write stood.
-  The old owner archives only once it reads that write.
+## To check by hand
 
-## Docs
-
-The package docs of `adoptcli`, `adoptrecord` and `fabricengine` cover the new paths.
-`docs/overview.md` and `docs/getting-started.md` describe the new `lym s` and the two flags.
-
-## Tests
-
-- `TestRunAdopt` gains `--here` rows covering:
-  - owned here, with and without another subject's unfinished record;
-  - a pull that could not reach origin;
-  - a foreign prime and a foreign beam;
-  - a worker killed at `deploy` resumed with no pull;
-  - a beam without its own owner following a running `root` adopt;
-  - a record past `check` with a held-back project;
-  - a task worktree;
-  - the refusal of a subject beside `--here`.
-- `TestRunArchives` (tier 0) covers subject placement, the per-slug listing and the refusals.
-- `TestAdoptFields` pins the `archives` field.
-- `TestReadOwnerArchives` (tier 1) runs over a hubforge hub.
-  It covers code and records tags the branch lacks, which are listed and fetched locally.
-  It also covers a tag the branch holds and a slug the filter refuses, neither of which is listed.
+- `lym s` in a foreign-owned prime and in a foreign-owned beam, against a real second machine and origin.
+  The integration tests cover the logic, not a live handover.
+- The test that separates records-tag from records-branch archive reads is missing (`records-tag-vs-records-branch-untested`).
+  `internal/fabricengine/ownerarchive_integration_test.go` is the place to look.
+- No test pins that a teardown archive is left out of the `--archives` list (`teardown-archive-exclusion-untested`).
+  The exclusion rests on the `archive/` versus `archive-owner/` prefix split in `internal/fabricengine/ownerarchive.go`.
