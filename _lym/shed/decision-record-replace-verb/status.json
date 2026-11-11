@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-11T16:44:46Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/decision-record-replace-verb/_lym/landing/summary.md",
+      "at": "2026-11-11T17:13:29Z",
+      "started_at": "2026-11-11T16:44:47Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T17:03:19.632084471Z",
+          "end": "2026-11-11T17:03:19.639850703Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T17:08:11.673538691Z",
+          "end": "2026-11-11T17:08:11.689182672Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T17:03:19.691653508Z",
+          "end": "2026-11-11T17:07:54.062087922Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-11T17:07:54.590080318Z",
+          "end": "2026-11-11T17:08:11.628767704Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T17:08:11.752479763Z",
+          "end": "2026-11-11T17:12:27.408435715Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T17:12:27.629314Z",
+          "end": "2026-11-11T17:12:28.0156733Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T17:12:28.175144025Z",
+          "end": "2026-11-11T17:12:28.175394529Z"
+        }
+      ]
     }
   ],
   "product": {
