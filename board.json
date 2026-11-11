@@ -897,7 +897,7 @@
       "isolated": false,
       "brief": "",
       "body": "Fix both reed faults in one run.\n\n## From note adopt-check-tab-stays\n\n## Seen (operator, 2026-11-11)\n\nAfter `lym adopt root` ran its check on OSL-1046, an `adopt-check` tab stayed open at the bottom of the terminal and took a lot of space.\nThe check had ended green in all three tiers, and the tab was still there.\n\n## Idea\n\nClose the check's pane or tab when the adopt check ends, or shrink it to one line, since its result is already in the adopt record and the creel mail.\nRead first which part of `lym adopt` opens the tab, whether a failed check should keep it open for the operator, and where the suite log stays readable after the close.\n\n## From note reed-attach-non-worktree\n\nImported from [issue #112](https://github.com/Knatte18/loomyard/issues/112).\n\n## What was seen\n\nRunning `lym a` (lym reed attach) by mistake in the hub's board checkout `_bolt`, which is no worktree of the hub, booted a tmux session named `_bolt` on the hub's reed socket with one bare shell pane.\n`lym reed list` from the prime did not show it; only `tmux ls` did.\n\n## Workaround\n\n`lym reed down` run with cwd `_bolt` removed the session.\n\n## Expected\n\n`lym reed attach` and `lym reed up` refuse a directory that is not a fabric worktree of the hub, such as `_bolt` or a weft checkout, and name the prime or a worktree to attach to instead.\n\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Seed-Child",
       "created": "2026-11-11T10:17:53Z",
       "revised": "2026-11-11T14:04:12Z",
       "profile": "light"
