@@ -2,6 +2,8 @@
 
 `parent-reviews-decision-record` · Task · feature, loom, orch, config, burler · running · Discussion-Bouncer
 
+Decision record: [Sketch](decision-parent-reviews-decision-record.md)
+
 Imported from [issue #87](https://github.com/Knatte18/loomyard/issues/87) and [issue #113](https://github.com/Knatte18/loomyard/issues/113).
 
 ## Idea
