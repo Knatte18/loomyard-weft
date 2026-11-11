@@ -1,6 +1,6 @@
 # Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046
 
-`codex-bubblewrap-sandbox` · Task · bug, codex, shuttle · running · Drift-Await
+`codex-bubblewrap-sandbox` · Task · bug, codex, shuttle · running · Drift-Expect
 
 ## Seen
 
