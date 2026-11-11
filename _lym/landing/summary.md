@@ -1,26 +1,26 @@
-# The orch session starts on opus at medium effort by default
+# orch: default the session model to opus and effort to medium
 
-The `orch` template held `model: ""` and `effort: ""`.
-`orchCLI.orchSpec` passes those to shuttle as the session's `ModelChoice`, where empty means the provider default.
-So the orch started on whatever Claude Code's default was on the machine: a local `/model`, `~/.claude/settings.json` or the account default.
-Every other lym agent takes its model and effort from config.
+The `orch` module's config template held `model: ""` and `effort: ""`.
+`internal/orchcli/start.go` passes both as the session's `ModelChoice`, where empty means the provider default.
+The orch therefore ran on whatever Claude Code defaulted to on that machine: a local `/model`, `~/.claude/settings.json`, or the account default.
+On OSL-1046 the prime's orch started on Sonnet.
+Every other agent in lym takes its model and effort from a config default.
 
-The template now defaults to `model: opus` and `effort: medium`, so every hub and machine starts the orch the same way.
-A hub that sets either key keeps its value.
-An explicit empty value still means the provider default.
-
-## Start paths
-
-Every path that starts an orch session builds its spec through `orchSpec` from the orch config that `wireCLI` loads with `orchengine.LoadConfig`:
-
-- `lym s` runs `lym adopt --here --no-orch`, then `lym beam start`, which calls `orchcli.BeamUp`;
-- `lym beam start` calls `orchcli.BeamUp`;
-- loom's beam-up step calls `orchcli.BeamUp`, and its dobby restart calls `orchcli.BeamUpWorktree`, which calls `BeamUp`.
-
-Both the fresh launch and the resume in `launchOrch` use that spec, so none of these paths needed a change.
+The template in `internal/orchengine/template.yaml` now sets `model: opus` and `effort: medium`.
+`lym s` and `lym beam start` start the orch on the same model and effort on every hub and machine unless a config layer overrides them.
 
 ## Design decisions
 
-- No `configreg.Reinterpretation` ships.
-  The change gives an absent key a new default and leaves the meaning of every value a hub has set unchanged, including an explicit `""`.
-- The test that loads the template with no config file now expects `opus` and `medium`.
+- The values are the operator's choice "for now".
+  They live only in the template, so changing them later is a one-line edit.
+- The key comments now say an explicit empty value still selects the provider default.
+  The override stays available to a hub that wants it.
+- `ConfigTemplate` in `internal/orchengine/template.go` has its doc comment updated to match.
+- `TestLoadConfig_TemplateResolvesWithNoFile` now expects `opus` and `medium` from the template.
+
+## To check by hand
+
+- The change edits no code path.
+  The task also asked that every path starting an orch session, `lym s` included, reads `orch.model` and `orch.effort`.
+  That was not re-verified in this diff, so confirm that `lym s` and `lym beam start` both load the orch config and pass both values.
+- Start an orch with `lym s` on a machine with no local model override and confirm it runs on opus at medium effort.
