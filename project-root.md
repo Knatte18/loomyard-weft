@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-11 15:11 UTC; every age below is as of then.
+Rendered 2026-11-11 15:12 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (10)
+## Tasks (11)
 
 Concrete and claimable; only a task can run.
 
@@ -42,7 +42,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | darn · solid | T3 | 6h<br>38m | dobby, fabric, tender |
+| T5 | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | darn · solid | T3 | 6h<br>39m | dobby, fabric, tender |
 
 ### Layer C (1)
 
@@ -67,7 +67,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T13 | **Tests for the lym verb directory calls and the stops of unconverted steps in an anchored hub** | [`anchored-hub-test-gaps`](design-anchored-hub-test-gaps.md) | darn · light | T16 | 1h<br>38m | fabric |
+| T13 | **Tests for the lym verb directory calls and the stops of unconverted steps in an anchored hub** | [`anchored-hub-test-gaps`](design-anchored-hub-test-gaps.md) | darn · light | T16 | 1h<br>39m | fabric |
 
 ### Layer F (1)
 
@@ -75,9 +75,17 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T18 | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | darn · light | T13 | 7h<br>38m | fabric, ide |
+| T18 | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | darn · light | T13 | 7h<br>39m | fabric, ide |
 
-## Notes (24)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **TestSmokeBootstrapLifecycle died_driver case still expects invalid state after d1535412** | [`smoke-died-driver-wording`](design-smoke-died-driver-wording.md) | darn |  | 16m<br>16m | loom, shed |
+
+## Notes (23)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -85,7 +93,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **A Sketch or decision record can be edited or replaced, and raddle follows the newer design** | [`decision-record-replace`](design-decision-record-replace.md)<br>[Sketch](decision-decision-record-replace.md) | 1h<br>9m | shed, loom, board |
+| S1 |  | **A Sketch or decision record can be edited or replaced, and raddle follows the newer design** | [`decision-record-replace`](design-decision-record-replace.md)<br>[Sketch](decision-decision-record-replace.md) | 1h<br>10m | shed, loom, board |
 
 ### Research (3)
 
@@ -94,12 +102,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 2d<br>2d | gate, fabric |
 | R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 8h<br>6h | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
-
-### Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B1 |  | **TestSmokeBootstrapLifecycle died_driver case still expects invalid state after d1535412** | [`smoke-died-driver-wording`](design-smoke-died-driver-wording.md) | 15m<br>15m | loom, shed |
 
 ### Enhancements (5)
 
