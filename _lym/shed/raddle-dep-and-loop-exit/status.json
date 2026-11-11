@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Recheck",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Recheck",
-    "last": "Code-Bouncer → done",
+    "now": "Describe",
+    "last": "Drift-Recheck → skipped",
     "wait": ""
   },
   "history": [
@@ -156,6 +156,13 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/raddle-dep-and-loop-exit/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-11-11T14:58:23Z",
       "started_at": "2026-11-11T14:57:54Z"
+    },
+    {
+      "producer": "Drift-Recheck",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-11T14:58:30Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
