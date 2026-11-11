@@ -1,6 +1,6 @@
 # The adopt-check tab closes after the check; reed attach refuses a directory that is no worktree
 
-`reed-tab-and-attach-fixes` · Task · bug, reed · running · Seed-Child
+`reed-tab-and-attach-fixes` · Task · bug, reed · running · Open-Window
 
 Depends on: [`slack-per-orch-activation`](design-slack-per-orch-activation.md)
 
