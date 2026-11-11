@@ -1,6 +1,6 @@
 # Decide how the coverage maps are kept fresh, from the upkeep research
 
-`testmap-upkeep-design` · Task · sketch, testkit, gate, dobby · running · Seed-Child
+`testmap-upkeep-design` · Task · sketch, testkit, gate, dobby · running · Open-Window
 
 Decision record: [Sketch](decision-testmap-upkeep-design.md)
 
