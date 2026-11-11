@@ -48,7 +48,7 @@ Six forks returned reports; each is saved beside this log.
 - interactions, existing-paths, bound-breaker: a hand call overwrites the exit record and stalls the backlog. Fixed: only a dobby-started pass writes it (D8).
 - interactions, existing-paths, bound-breaker: a pass waiting for a slot ignores landings and never ends on a one-slot hub. Fixed: HEAD read on each wake; a one-slot hub's pass plans and ends (D8, D9).
 - bound-breaker (BLOCKING): retiring `test_map_every` drops its 0 off switch. Fixed: `test_map_upkeep` and a reinterpretation of 0 (D8).
-- bound-breaker, walkthrough (BLOCKING): D13's carrier said "before Plan", but the build tasks are darn runs with no Plan. Fixed: before Darn-Write's writer starts (D13); T4's running status stays a parent question under Open risks.
+- bound-breaker, walkthrough (BLOCKING): D13's carrier said "before Plan", but the build tasks are darn runs with no Plan. Fixed: before Darn-Write's writer starts (D13); T4's running status stays a parent question under Open risks, since settled by the parent's Added after Discussion entry (Q15).
 - bound-breaker: a run or build killed by a yield or signal read as a failure. Fixed (D4).
 - bound-breaker: own-package non-Go files had no rule once the age limit goes. Fixed: recorded and compared as a linked package's (D2, D3).
 - existing-paths, walkthrough: a hand call skips a package a pass holds locked, so the sweep could judge a stale map. Fixed: a hand call waits for the lock (D9).
@@ -61,7 +61,7 @@ Six forks returned reports; each is saved beside this log.
 - walkthrough: the D9 criterion wording. Fixed.
 - interactions, walkthrough, leanness: D13's build split was wrong and duplicated in Notes. Fixed: one sentence on what orders after the selector; Notes cut.
 - board-scope: `coverage-test-select`'s D5 Bound names the age limit. Fixed (D13).
-- board-scope (decision): whether `testmap-cross-package`'s run is held. Kept under Open risks for the parent.
+- board-scope (decision): whether `testmap-cross-package`'s run is held. Kept under Open risks for the parent; settled by the parent's Added after Discussion entry of 2026-11-11, and the Open risks line dropped.
 - board-scope: no run exists yet for two of the entries. Fixed with the darn carrier wording (D13).
 - leanness: Goal's question map, the today's-code Constraint, the `slots: 3` Constraint, four restating auto-mode assumptions, D1's re-derivation and the Notes bullet. Fixed: cut or moved here and into D9.
 - leanness: the Review criterion checked parent actions. Fixed: it now checks D13's text.
@@ -105,4 +105,4 @@ _No rounds yet._
 - Q12 (auto-pick, resolved): which tests side by side? Those opening with `t.Parallel()` (D10).
 - Q13 (auto-pick, resolved): prime or pinned checkout? Prime (D12).
 - Q14 (auto-pick, resolved): measurements before the design? None; D12 reports them live.
-- Q15 (open, for the parent): `testmap-cross-package` runs at Darn-Write although held; see Open risks.
+- Q15 (parent, resolved): `testmap-cross-package` runs at Darn-Write although held? Held at Run-Shed until this record is approved and D13's changes reach it, per the Added after Discussion entry of 2026-11-11.
