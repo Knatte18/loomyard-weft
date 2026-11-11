@@ -594,30 +594,6 @@
       "revised": "2026-11-11T14:02:33Z"
     },
     {
-      "id": 1325,
-      "handle": "T16",
-      "slug": "await-forks-subdir-cwd",
-      "title": "lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "shuttle",
-        "fabric"
-      ],
-      "issues": [
-        110
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #110](https://github.com/Knatte18/loomyard/issues/110).\n\nWhat happened: during a burler plan round the harness moved the session's working directory to the weft's `_lym/plan`. `lym shuttle await-forks` then failed with \"cwd is outside the recorded fabric anchor subtree\", because it accepts only the anchored directory itself rather than anything inside the anchor subtree.\n\nWhy abnormal: the message says \"subtree\", yet a directory inside the weft's own `_lym/plan` is refused. The session cannot control the harness's cwd changes. The self-check fell back to taking each fork's result as it arrived, across four turns.\n\nWhat to do: make `lym shuttle await-forks` accept a cwd anywhere under the recorded anchor, or resolve the anchor from the weft root. Otherwise make the error name the required directory.\n\nProvenance: task slug adopt-worker-record; note burler-plan-r2.md.",
-      "status": "done",
-      "created": "2026-11-11T14:02:40Z",
-      "revised": "2026-11-11T14:04:23Z",
-      "profile": "light"
-    },
-    {
       "id": 1331,
       "handle": "T13",
       "slug": "anchored-hub-test-gaps",
@@ -629,9 +605,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "await-forks-subdir-cwd"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Add the missing tests below in one run.\n\n## From note verbdir-calls-untested\n\nSeen: the landing `push-notice-anchor-dir` lists this under \"To check by hand\".\nThe calls that resolve the lym verb directory have no test in an anchored hub.\nIdea: add an anchored-hub row for each call.\n\n## From note anchor-stops-untested\n\nSeen: the landing `push-notice-anchor-dir` lists this under \"To check by hand\".\nThe steps not yet converted to the anchored directory have no test for the weft-dirty stop or the upstream-anchor stop.\nIdea: add a test row for each stop.\n\n",

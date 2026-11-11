@@ -2,8 +2,6 @@
 
 `anchored-hub-test-gaps` · Task · bug, fabric · running · Darn-Write
 
-Depends on: [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md)
-
 Add the missing tests below in one run.
 
 ## From note verbdir-calls-untested
