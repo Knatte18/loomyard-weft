@@ -1,81 +1,61 @@
-# Adopt keeps the new owner idle; the old owner archives tips and exits
+# Keep adopter's orch and dobby idle; old owner archives tips and exits
+
+During an adopt, the adopting machine's orch watcher and dobby no longer react to the foreign owner they read.
+Before this change the watcher stopped its orch when the reconcile pulled the foreign owner record,
+and the local dobby could start a continue pass during the takeover.
+The old owner, for its part, now pauses its runs and archives its unpushed tips before it exits,
+so the adopting machine can reach commits it cannot otherwise see.
 
 ## What changes
 
-During `lym adopt` on the adopting machine, the reconcile pulls the foreign owner record before this machine's owner write.
-The orch watcher then stopped the orch, and the dobby could start a continue pass mid-takeover.
-On the old owner, an idle machine never learned it had lost the subject, and its unpushed commits stayed where the new owner could not see them.
-
-**Adopt in flight (D4).**
-`adoptrecord.Record.Covers` reports whether an unfinished record lists a subject whose owner write has not stood:
-`Inputs.PrimeRecorded` for `root`, `Inputs.OwnerStood` for a beam.
-`adoptrecord.Watch` is the read-only accessor built on it.
-It resolves a worktree to the subject whose owner it reads, walking up through the parent function to `root`,
-so a beam with no owner of its own is covered by an adopt of `root`.
-It reads the record before the board and takes no lock.
-A record or board that does not read counts as no adopt, logged once per episode.
-`orchcli.UnderAdoptWatch` builds it over the local board and `hubgeom.ParentOf`, and hands it to both workers:
-
-- The orch watcher's owner check (`orchengine.OwnerWatch.UnderAdopt`) leaves the strand up while the adopt covers the beam.
-- The dobby (`dobbyengine.Deps.UnderAdopt`) sets an adopt hold on the probe tick.
-  Under the hold it spawns no pass and starts no task.
-  It also runs no tidy, test-map or landing step, and does none of the hand-over below.
-  This works the same way as the existing anchor-move hold.
-
-Each hold's start and end log one line.
-
-**Old owner hands over (D11).**
-On a probe tick that reads the beam owned elsewhere with no adopt covering it, the dobby now:
-
-1. owner-pauses each run it drives that is neither done nor already recorded owned elsewhere, through the existing `ownedElsewhere` path;
-2. archives the local tips origin lacks through the new `Deps.ArchiveOwner`;
-3. exits as before, once the archive succeeds.
-
-A failed archive is logged once per episode and keeps the dobby up, retrying at each probe tick.
-A run whose owner pause stands gets no pass meanwhile.
-A run whose pause failed gets its full pass each probe tick, as it already did.
-
-The probe now pulls Bolt through `Deps.PullBolt`, at most once per `boltPullInterval` (five minutes), before it reads the owner.
-That way an idle machine learns a new owner, and the same probe acts on it.
-
-**The archive.**
-`fabricengine.ArchiveOwnerTips` takes `OwnerArchivePair`s, each a slug and a code worktree.
-Under each slug's teardown lock, taken exclusive with the status-push wait, it tags each tip origin lacks.
-The tips are the branches checked out in the code and records worktrees.
-A tip is tagged `archive-owner/<slug>/<sha12>` (`OwnerArchiveTagName`) and the tag is pushed to that side's origin, with no branch push.
-Origin lacks a tip when its copy of the branch is absent, or is neither the tip nor a descendant of it.
-`createArchiveTag` and `tagAndPushArchiveTip` were split so that the existing archive and the new one share `createTagAt` and `pushArchiveTag`.
-`beamcli.archiveOwnerTips` gathers the pairs: the worktree's own pair (`root` for the prime) and every run `battencli.DobbyRuns` lists under it.
-The dobby's deps and `lym beam start` both call it.
-
-**`lym beam start`.**
-`orchcli.BeamUpOptions.ArchiveOwned` runs before the owner refusal stands, and its error joins the refusal with "a re-run of `lym beam start` retries it".
-`lym beam start` sets it to the archive, skipped while an adopt in flight covers the worktree.
-The prepare step's owner pauses run before it, as they already did.
+- **Under-adopt accessor** (`internal/adoptrecord`): `Watch.Covers(slug)` is a read-only judgment of whether an adopt in flight on this machine covers a worktree.
+  The record must be unfinished, list the worktree's subject, and record no owner write of it that stood.
+  The local board must read the subject owned by another machine.
+  A beam with no owner of its own is covered through `hubgeom.ParentOf`, up to an adopted `root`.
+  It stats and reads the record without a lock; a record or board that does not read counts as no adopt, logged once per episode.
+- **Orch watcher** (`internal/orchengine`, `internal/orchcli`): the owner check reads the accessor first,
+  and while the worktree is covered the watcher neither stops its orch strand nor exits on the foreign owner.
+  `orchcli` wires the accessor in, so the engine does not import `adoptcli`.
+- **Dobby** (`internal/dobbyengine`, `internal/beamcli`): under an adopt the dobby stays up and starts no pass, continue passes included, and no task.
+  Its probe also pulls Bolt through fabric at most once per `boltPullInterval` (five minutes),
+  so an idle machine learns a new owner; a failed pull is logged once per episode.
+  When the probe reads a foreign owner and no adopt covers the beam, the dobby hands the beam over:
+  1. it owner-pauses each run it drives, so no pass of a run whose pause stands starts while it archives;
+  2. it archives the local tips origin lacks;
+  3. it exits.
+  A failed archive is logged once per episode and keeps the dobby up; the next probe retries it.
+- **Owner archive** (`internal/fabricengine`): `OwnerArchiveTagName` names `archive-owner/<slug>/<sha12>` beside `ArchiveTagName`,
+  and `ArchiveOwnerTips` tags and pushes each local code and weft tip of the given pairs that origin lacks.
+  Each tag goes to its own repository's origin with no branch push, under the slug's teardown lock.
+  A re-run reuses the same tags and pushes what is missing.
+- **`lym beam start`** (`internal/beamcli`): when no dobby runs on the machine, a subject another machine owns that no adopt covers
+  is archived through the same fabric call before the refusal; a failed archive is named in the refusal, and a re-run retries it.
 
 ## Design decisions
 
-- `archive-owner/` is a sibling prefix, not a sub-path of `archive/`.
-  `ArchiveTagSlug` and `ArchiveTagPrefix` match neither the prefix nor its tags.
-  So the run, cost, timing and raddle reports, `TagRefs("archive/")` and the remote-warp cleanup never see these tags, with no change to any reader.
-- The accessor is asked only once the owner reads foreign, in both workers.
-  The record is still read first inside the accessor, so a hub with no unfinished record never reads the board for it.
-- The accessor's constructor sits in `orchcli`, not in `adoptrecord`.
-  Building it over `hubgeom.ParentOf` inside `adoptrecord` would import `hubgeom`, which pulls in most of the engines.
-  `adoptrecord` instead takes the owners read and the parent function as seams.
-- The adopt hold is set only on probe ticks, where the owner is read, and holds until a later probe clears it.
-- The archive takes each pair's teardown lock exclusive, as the teardown's archive does, waiting at most `StatusPushLockWait`.
-- A detached HEAD in a pair worktree fails that pair's archive instead of skipping it, so the tip is never silently left out.
+- The `archive-owner/` prefix is separate from `archive/`, so no reader of `ArchiveTagSlug` or `ArchiveTagPrefix` matches it.
+  The run, cost, timing and raddle reports would otherwise list a live run, `root` or a beam as archived,
+  and the remote-warp cleanup would count the tags as its own.
+- Tags rather than archive branches, as the teardown and `--drop-local` archive do.
+  An archive-tag push moves no branch of the pair, so `PATTERN-owner-machine`'s rule on pushing does not cover it.
+- The old owner pauses its runs before it archives, the reverse of the board's order, so no pass starts during the archive.
+- The record is machine-local: the hold covers only this machine's watchers and dobbies, and ends at the subject's owner write.
+  After that write stands, a later foreign owner is handled as before and by the hand-over, even with the record unfinished.
+- Git runs only in `internal/fabricengine`; the Bolt pull and the archive are fabric calls.
+
+## Known bounds
+
+- An adopt abandoned before its owner write leaves this machine's orch and dobby of the covered worktrees up and idle until it is resumed or discarded.
+- A commit made by hand in a worktree after the archive stays local.
+- A dobby whose owner pause failed lets the run's full pass go on at each probe tick while the archive retries.
+- A machine with no dobby running archives nothing until `lym beam start` runs there.
 
 ## To check by hand
 
-- `beamcli.archiveOwnerTips` and `ownerArchiveBeforeRefusal` have no test of their own.
-  Tests pin the orch side of the refusal (`TestStart_ArchivesBeforeRefusingAForeignOwner`), the dobby side (`TestRun_ForeignOwner`) and the fabric call (`TestArchiveOwnerTips`).
-  Check the pair gathering by hand, especially a beam dobby whose runs live under the prime's status files.
-- `TestArchiveOwnerTips` pushes the hubforge fixture's records tip before each row, since the fixture leaves it unpushed.
-- The `watch` verb builds its under-adopt accessor the first time a foreign owner makes the watcher ask, and keeps it.
-  A watcher that cannot resolve the hub's prime counts as under no adopt, logged once per episode.
-- A dobby that cannot list its runs at hand-over still archives and exits; only a Warn records that no run was paused.
-  Confirm that is acceptable, or whether the hand-over should wait for a run listing.
-- An abandoned adopt record keeps this machine's orch and dobby of the covered worktrees idle under the foreign owner until `lym adopt --discard` or a resume, as D4's bound states.
-  `lym beam status` shows the record.
+Nothing was run by hand, and no regression check ran for this task. Check these findings, left open by the review:
+
+- A beam with no owner recorded under an adopted `root` may not be covered by the under-adopt accessor in `internal/adoptrecord/watch.go`
+  (severity BLOCKING); check that the watcher and dobby of such a beam stay up and idle during `lym adopt root`.
+- The adopt hold in `internal/dobbyengine/handover.go` skips steps (pause, archive, pass starts) that no test pins; check that each is skipped under the hold.
+- The decision rows for which tips the owner archive takes (origin absent, equal, ahead, diverged) in `internal/fabricengine/ownerarchive.go` are missing from its tests.
+- The pairs the owner archive covers in `internal/beamcli/ownerarchive.go` and `internal/fabricengine/ownerarchive.go` are untested end to end.
