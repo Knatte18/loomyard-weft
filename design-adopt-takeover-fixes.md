@@ -2,7 +2,7 @@
 
 `adopt-takeover-fixes` · Task · bug, fabric, tender
 
-Depends on: [`remove-launchers-dir`](design-remove-launchers-dir.md), [`smoke-died-driver-wording`](design-smoke-died-driver-wording.md)
+Depends on: [`remove-launchers-dir`](design-remove-launchers-dir.md)
 
 Fix the three adopt faults below in one run; each note's Idea is the starting point.
 

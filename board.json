@@ -868,8 +868,7 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "remove-launchers-dir",
-        "smoke-died-driver-wording"
+        "remove-launchers-dir"
       ],
       "isolated": false,
       "brief": "",
@@ -972,28 +971,6 @@
       "body": "Add the missing tests below in one run.\n\n## From note verbdir-calls-untested\n\nSeen: the landing `push-notice-anchor-dir` lists this under \"To check by hand\".\nThe calls that resolve the lym verb directory have no test in an anchored hub.\nIdea: add an anchored-hub row for each call.\n\n## From note anchor-stops-untested\n\nSeen: the landing `push-notice-anchor-dir` lists this under \"To check by hand\".\nThe steps not yet converted to the anchored directory have no test for the weft-dirty stop or the upstream-anchor stop.\nIdea: add a test row for each stop.\n\n",
       "created": "2026-11-11T14:01:42Z",
       "revised": "2026-11-11T14:32:39Z",
-      "profile": "light"
-    },
-    {
-      "id": 1332,
-      "handle": "T1",
-      "slug": "smoke-died-driver-wording",
-      "title": "TestSmokeBootstrapLifecycle died_driver case still expects invalid state after d1535412",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "loom",
-        "shed"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (remove-launchers-dir, 2026-11-11)\n\nThe verify gate fails on `internal/loomcli` `TestSmokeBootstrapLifecycle/died_driver_proceeds_to_the_success_envelope_and_logs_why` (`smoke_test.go:738`), and it reproduces on a rerun.\nThe driver log now carries `shedverbs: step interrupted (loop-exited)`, where the test waits for the poisoned status file's `invalid state`.\nThe wording comes from main's `d1535412` (shedverbs: record how an `--until-stop` loop's process ended); the run changed no shed, loom or driver code.\n\n## Idea\n\nDecide which message the died-driver case should surface: the loop's recorded exit reason, or the invalid state of the poisoned status file.\nThen change the code or the test to match, and keep the reason the run halted in the driver log.\n",
-      "status": "done",
-      "created": "2026-11-11T14:55:54Z",
-      "revised": "2026-11-11T15:12:06Z",
       "profile": "light"
     }
   ],
