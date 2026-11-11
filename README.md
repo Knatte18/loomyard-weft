@@ -103,7 +103,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (43)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (44)</strong></summary>
 
 Owner `neve`
 
@@ -136,7 +136,7 @@ Waits only on Running, Ready or Draft entries.
 | T11 | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | T10 | 7h<br>6h | fabric, cleanup |
 | T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 2d<br>6h | slack, reed, creel |
 
-### Notes (38)
+### Notes (39)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -148,7 +148,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 7h<br>5h | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
 
-#### Bugs (9)
+#### Bugs (10)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -161,6 +161,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B7 |  | **adopt --drop-local fails on an untracked lym file in the weft**<br>• reset --keep refuses over an untracked generation-record.json; the adopt ends partial | [`drop-local-untracked-weft`](design-drop-local-untracked-weft.md) | 32m<br>32m | fabric |
 | B8 |  | **lym adopt replays a stale record's stops after the operator cleared them**<br>• A partial adopt record keeps reporting gone pairs; only --discard got past it | [`adopt-stale-record-stops`](design-adopt-stale-record-stops.md) | 24m<br>24m | fabric |
 | B9 |  | **raddle splits a Sketch from its stored record and refuses a split that follows the body** | [`raddle-stale-sketch-record`](design-raddle-stale-sketch-record.md) | 0m<br>0m | shed, loom, board |
+| B10 |  | **beam merge-parent reuses the slug of a completed merge-in run** | [`merge-parent-slug-reuse`](design-merge-parent-slug-reuse.md) | 0m<br>0m | workspaces, dobby |
 
 #### Enhancements (13)
 

@@ -1122,6 +1122,27 @@
       "body": "Imported from [issue #116](https://github.com/Knatte18/loomyard/issues/116).\n\nSeen: a Sketch whose body was rewritten after its motif run (the body folds in later reviews and operator decisions, and supersedes the stored record) was promoted to raddle. raddle built its proposal from the stored decision record, which the run copies to _lym/discussion/decision-record.md, and so split by the superseded design. Told to follow the body, raddle rewrote the proposal from it, but raddle-propose validates criteria, risks, PATTERN changes and decision ids against decision-record.md and refuses it (criterion-uncarried/unknown, risk-uncarried/unknown, pattern-uncarried, criteria-miss-decision). raddle may write only proposal.yaml, and no verb replaces the record: 'lym loom decision add' only appends, and 'decision store' copies the run's record the other way. Related: #114 (no verb replaces a Sketch's record).\n\nWorkaround: none inside lym; the run is held while the operator chooses between re-running a motif from the body or replacing the record file in the run worktree by hand.\n\nExpected: a verb that replaces a Sketch's stored record (from a file, by the operator or parent orch), which raddle then reads; or raddle validating against the body when the entry's body is newer than its record.",
       "created": "2026-11-11T14:02:27Z",
       "revised": "2026-11-11T14:02:27Z"
+    },
+    {
+      "id": 1321,
+      "handle": "B10",
+      "slug": "merge-parent-slug-reuse",
+      "title": "beam merge-parent reuses the slug of a completed merge-in run",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "workspaces",
+        "dobby"
+      ],
+      "issues": [
+        115
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #115](https://github.com/Knatte18/loomyard/issues/115).\n\n## Seen\n\n`lym beam merge-parent \u003cbeam\u003e` names its merge task `\u003cbeam\u003e-merge-in` every time.\nA beam that already merged its parent once, through a completed and torn-down `\u003cbeam\u003e-merge-in` run, gets a second task with the same slug.\nDobby then refuses to start it: `\"\u003cbeam\u003e-merge-in\" has already completed; to run it again, run \"lym batten cleanup --apply\" from the prime ... or give the new task a different slug`.\n\n## Workaround\n\nThe beam orch renamed the new task to `\u003cbeam\u003e-merge-in-2` with `lym board rename`, and dobby started it.\n\n## Expected\n\n`merge-parent` picks a slug that no completed run or leftover task branch holds, such as a numbered suffix, so a second merge of the parent starts without a hand rename.\n",
+      "created": "2026-11-11T14:02:30Z",
+      "revised": "2026-11-11T14:02:30Z"
     }
   ],
   "prime_owner": "neve",
