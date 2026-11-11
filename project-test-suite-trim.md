@@ -11,17 +11,16 @@ cut existing redundant tests, and scope the verify gate to the tests that cover 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (4)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Decide how the coverage maps are kept fresh, from the upkeep research** | [`testmap-upkeep-design`](design-testmap-upkeep-design.md)<br>[Sketch](decision-testmap-upkeep-design.md) | motif | Discussion-Bouncer | neve | 1h<br>1h | testkit, gate, dobby |
 | T4 | **testmap records each test's coverage across every in-module package its binary links** | [`testmap-cross-package`](design-testmap-cross-package.md)<br>[Sketch](decision-testmap-cross-package.md) | darn · solid | Darn-Write | neve | 5h<br>5h | gate, testkit, darn |
 
 ### Ready (0)
@@ -46,9 +45,15 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- |
 | T15 | **A coverage gate scope runs changed packages whole and importing packages' selected tests** | [`gate-scope-coverage`](design-gate-scope-coverage.md)<br>[Sketch](decision-gate-scope-coverage.md) | darn · solid | T14 | 5h<br>5h | gate, testkit, darn |
 
-## Notes (2)
+## Notes (3)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Sketches (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| S2 |  | **Decide how the coverage maps are kept fresh, from the upkeep research** | [`testmap-upkeep-design`](design-testmap-upkeep-design.md)<br>[Sketch](decision-testmap-upkeep-design.md) | 1h<br>0m | testkit, gate, dobby |
 
 ### Enhancements (2)
 
