@@ -678,9 +678,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen (D13 of `testmap-upkeep-design`)\n\nThe selector runs a package whole when a change is not a function body (a non-body miss).\nThe design asks for a note that proposes narrowing this miss.\n\n## Idea\n\nFollow the names a changed declaration is referenced by, and select the tests that reach those references.\nMeasure with the miss counts that upkeep reports (D12) whether the narrowing pays before building it.\n",
+      "body": "## Seen (D13 of `testmap-upkeep-design`)\n\nThe selector runs a package whole when a change is not a function body (a non-body miss).\nThe design asks for a note that proposes narrowing this miss.\n\n## Built so far (board tidy, 2026-11-11)\n\nThe selector landed as `65416136` (task `coverage-test-select`): `Selector` in `internal/testcover`, with `MissNonBody` the miss reason for \"change outside function declarations\".\nNothing calls it yet; task `gate-scope-coverage` consumes it.\nIt already narrows part of the non-body case: comment and formatting edits, a reordered import block,\nand added declarations no unchanged code can reach (a const outside an `iota` or implicit-value group, a var with no initializer, a type with no methods) are not misses.\nWhat still misses is the rest: a changed or removed declaration outside functions, an import added or removed other than a linked or standard-library package,\na `//go:` line change, a changed method set, an added `init`, an added predeclared name and a file that does not parse.\n\n## Idea\n\nFollow the names a changed declaration is referenced by, and select the tests that reach those references.\nMeasure with the miss counts that upkeep reports (D12) whether the narrowing pays before building it.\n",
       "created": "2026-11-11T15:28:17Z",
-      "revised": "2026-11-11T15:28:17Z"
+      "revised": "2026-11-11T17:04:31Z"
     },
     {
       "id": 1334,
