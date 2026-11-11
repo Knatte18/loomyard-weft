@@ -7,39 +7,25 @@ Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
 <details open>
-<summary><strong><a href="project-adopt-takeover.md">P1 Adopt as one resumable algorithm that never starts work on its own</a> (3)</strong></summary>
+<summary><strong><a href="project-adopt-takeover.md">P1 Adopt as one resumable algorithm that never starts work on its own</a> (2)</strong></summary>
 
 [`adopt-takeover`](design-adopt-takeover.md) · Age 1d · Owner `neve`
 
-### Tasks (3)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy** | [`adopt-worker-record`](design-adopt-worker-record.md)<br>[Sketch](decision-adopt-worker-record.md) | tapestry · solid | Finalize | neve | 1d<br>1d | batten, tender, dobby, orch, fabric, shortcut |
-
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | **The adopting machine's orch and dobby stay up and idle, and the old owner pauses, archives its unpushed tips and exits** | [`adopt-owner-handover`](design-adopt-owner-handover.md)<br>[Sketch](decision-adopt-owner-handover.md) | darn · light |  | 1d<br>1d | batten, tender, dobby, orch, fabric, shortcut |
 
 #### Layer A (1)
 
 Waits only on Running, Ready or Draft entries.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | **The adopting machine's orch and dobby stay up and idle, and the old owner pauses, archives its unpushed tips and exits** | [`adopt-owner-handover`](design-adopt-owner-handover.md)<br>[Sketch](decision-adopt-owner-handover.md) | darn · light | T2 | 1d<br>1d | batten, tender, dobby, orch, fabric, shortcut |
-
-#### Layer B (1)
-
-Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -48,6 +34,14 @@ Starts when every entry it names under After is done.
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **Adopt runs as a detached, step-recorded worker that pauses every adopted run and writes the owner before the deploy** | [`adopt-worker-record`](design-adopt-worker-record.md)<br>[Sketch](decision-adopt-worker-record.md) | 1d<br>1d | batten, tender, dobby, orch, fabric, shortcut |
 
 </details>
 
@@ -177,9 +171,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **creel post to a strand that is not running reports plain success** | [`creel-post-dead-recipient`](design-creel-post-dead-recipient.md) | 59m<br>59m | creel |
-| B3 |  | **Webster amends a card commit it already pushed, so the task branch diverges from origin** | [`webster-amends-pushed-card`](design-webster-amends-pushed-card.md) | 59m<br>59m | webster, batten, git |
-| B4 |  | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | 59m<br>59m | fabric |
+| B2 |  | **creel post to a strand that is not running reports plain success** | [`creel-post-dead-recipient`](design-creel-post-dead-recipient.md) | 1h<br>1h | creel |
+| B3 |  | **Webster amends a card commit it already pushed, so the task branch diverges from origin** | [`webster-amends-pushed-card`](design-webster-amends-pushed-card.md) | 1h<br>1h | webster, batten, git |
+| B4 |  | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | 1h<br>1h | fabric |
 | B5 |  | **A paused Webster session acts on a decision notice without the run lock, and the loom row stays blocked** | [`paused-webster-acts-on-notice`](design-paused-webster-acts-on-notice.md) | 59m<br>59m | webster, loom, creel |
 | B6 |  | **gate test: card gate and explicit target never reach a second test project when tier0 command lacks a targets placeholder** | [`gate-target-dropped-silently`](design-gate-target-dropped-silently.md) | 59m<br>59m | gate, dotnet |
 | B7 |  | **loom halt: 'verify gate failed after 4 attempt(s) of 3: none named' reports an off-by-one count and no failure** | [`webster-gate-halt-count`](design-webster-gate-halt-count.md) | 59m<br>59m | webster, gate |
@@ -194,7 +188,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 2d<br>1d | shed, loom, darn |
 | E3 |  | **One land notice: fold the beam-PR landing notice into notify_on_land** | [`one-land-notice`](design-one-land-notice.md) | 1d<br>1d | dobby, batten, workspaces |
 | E6 |  | **Console window titles put the task handle first, with hub and project in brackets** | [`console-title-handle-first`](design-console-title-handle-first.md) | 1d<br>1d | termwindow |
-| E7 |  | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | 59m<br>59m | fabric, cleanup |
+| E7 |  | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | 1h<br>1h | fabric, cleanup |
 | E8 |  | **Finalize spawns a fixer on a single non-repeating test failure** | [`finalize-flaky-rerun`](design-finalize-flaky-rerun.md) | 59m<br>59m | landing, gate |
 | E9 |  | **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | 59m<br>59m | heddle |
 | E10 |  | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | 59m<br>59m | heddle |
