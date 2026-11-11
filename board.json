@@ -1023,6 +1023,24 @@
       "body": "## Seen (operator, 2026-11-11)\n\nAfter `lym adopt root` ran its check on OSL-1046, an `adopt-check` tab stayed open at the bottom of the terminal and took a lot of space.\nThe check had ended green in all three tiers, and the tab was still there.\n\n## Idea\n\nClose the check's pane or tab when the adopt check ends, or shrink it to one line, since its result is already in the adopt record and the creel mail.\nRead first which part of `lym adopt` opens the tab, whether a failed check should keep it open for the operator, and where the suite log stays readable after the close.\n",
       "created": "2026-11-11T10:17:53Z",
       "revised": "2026-11-11T10:17:53Z"
+    },
+    {
+      "id": 1310,
+      "handle": "E5",
+      "slug": "readme-refresh",
+      "title": "Refresh the README: outdated parts, the dead Autoboard link and a shorter Lineage",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "docs"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The README is partly outdated, its Autoboard link is dead, and Lineage no longer fits LoomYard",
+      "body": "## Seen (operator, 2026-11-11)\n\nThe operator read the README and found it already somewhat out of date.\nThe Lineage list links `https://github.com/willietran/autoboard` (`README.md`, Lineage section), and that repository is gone: the GitHub API answers 404.\nAutoboard was the largest inspiration for Millhouse, so the credit should stay.\nLoomYard has also grown far beyond Millhouse, and the Lineage section no longer shows that.\n\n## Idea\n\nRefresh the README as one pass.\nRead it against the current `lym` verbs, `docs/overview.md` and `docs/getting-started.md`, and fix what no longer matches.\nIn Lineage, keep Autoboard and Willie Tran as plain text without the dead link, with a note that the repository was removed.\nShorten Lineage to the origin and the credits, now that LoomYard stands on its own.\n",
+      "created": "2026-11-11T11:50:23Z",
+      "revised": "2026-11-11T11:50:23Z"
     }
   ],
   "prime_owner": "osl-1046",
