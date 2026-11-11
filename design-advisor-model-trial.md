@@ -26,6 +26,13 @@ with a few hard calls an advisor could take:
 
 Review judges, lenses and the arbiter stay out: their value is the judgment itself, which an advisor would only move.
 
+## What was tried before (operator, 2026-11-11)
+
+lym already tried the reverse: an Opus Discussion writer as chair with one or more Sonnet assistants in seats beside it.
+It gained nothing and only added cost, since the assistants came on top of a full Opus session.
+The advisor differs in where the saving comes from: the cheap model does the whole session and the strong one is paid only per consult.
+The trial's report reads the seats result first, under `docs/research/`, and says why this case may differ.
+
 ## How it runs (operator, 2026-11-11)
 
 - The trial needs no lym config: it passes the advisor through the `--settings` document claudeengine already writes for every launch.
