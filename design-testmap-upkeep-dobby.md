@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-testmap-upkeep-dobby.md)
 
-Depends on: [`testmap-upkeep-runs`](design-testmap-upkeep-runs.md)
-
 Filed from the Sketch `testmap-upkeep-design`.
 
 Takes: testmap-upkeep-runs' lym gate testmap --upkeep, which registers itself as RoleTestMap and exits on a failed registration, and the exit record's planned HEAD and queued count; today's testMapStep, LandingsSinceTestMap, test_map_every and test_map_batch in dobbyengine, startTestMap in beamcli, dobbyPassInFlight in fabriccli
