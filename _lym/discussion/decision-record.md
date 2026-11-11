@@ -1,0 +1,30 @@
+## Goal
+
+```markdown
+Add the missing tests below in one run.
+
+## From note verbdir-calls-untested
+
+Seen: the landing `push-notice-anchor-dir` lists this under "To check by hand".
+The calls that resolve the lym verb directory have no test in an anchored hub.
+Idea: add an anchored-hub row for each call.
+
+## From note anchor-stops-untested
+
+Seen: the landing `push-notice-anchor-dir` lists this under "To check by hand".
+The steps not yet converted to the anchored directory have no test for the weft-dirty stop or the upstream-anchor stop.
+Idea: add a test row for each stop.
+
+```
+
+## Scope
+
+## Decisions
+
+## Constraints
+
+## Auto-mode assumptions
+
+## Open risks
+
+## Acceptance criteria
