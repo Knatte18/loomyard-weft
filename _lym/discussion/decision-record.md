@@ -181,6 +181,12 @@ Decision: Q11: the motif lands its record now without depending on testmap-upkee
 
 Rationale: A motif lands no code, so landing the design costs nothing that the upkeep cadence could make wrong; the ordering belongs to the build tasks, which raddle files later.
 
+### Added after Discussion (parent, 2026-11-11): The verify gate's tier stop and budget from 1b6e3fca stand
+
+Decision: The record builds on the verify gate as commit 1b6e3fca left it: the stop at the first failed tier (--stop-on-fail), the rerun of only the failed tests, and the verify_budget_min time budget. Coverage scoping composes with them and replaces none of them.
+
+Rationale: 1b6e3fca landed after this run's Discussion started; the board tidy flagged that the record may predate it.
+
 ## Constraints
 
 - Go 1.26 (`go.mod`, toolchain go1.26.8): `go test -c -cover -coverpkg=<list>` instruments every listed package, and the set-mode profile lists blocks of each by file.
