@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-11 19:39 UTC; every age below is as of then.
+Rendered 2026-11-11 19:40 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -101,7 +101,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **The parent-review ask record, its deadline keys, and lym loom parent-review answer and await** | [`parent-review-ask-verbs`](design-parent-review-ask-verbs.md)<br>[Sketch](decision-parent-review-ask-verbs.md) | darn · solid | Darn-Write | neve | 20m<br>20m | loom, orch, config, burler |
+| T6 | **The parent-review ask record, its deadline keys, and lym loom parent-review answer and await** | [`parent-review-ask-verbs`](design-parent-review-ask-verbs.md)<br>[Sketch](decision-parent-review-ask-verbs.md) | darn · solid | Darn-Write | neve | 21m<br>21m | loom, orch, config, burler |
 
 #### Ready (0)
 
@@ -115,7 +115,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **The Discussion-Review round asks the parent orch, and its chair keeps every parent finding** | [`discussion-review-parent-seat`](design-discussion-review-parent-seat.md)<br>[Sketch](decision-discussion-review-parent-seat.md) | darn · solid | T6 | 20m<br>20m | loom, orch, config, burler |
+| T7 | **The Discussion-Review round asks the parent orch, and its chair keeps every parent finding** | [`discussion-review-parent-seat`](design-discussion-review-parent-seat.md)<br>[Sketch](decision-discussion-review-parent-seat.md) | darn · solid | T6 | 21m<br>21m | loom, orch, config, burler |
 
 #### Draft (1)
 
@@ -159,13 +159,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 2w<br>1h | loom, board, batten, workspaces |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>6d | burler, shed, orch, quarry, report |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 6d<br>6d | batten, board, fabric, workspaces |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **The orch session starts on the provider default model because orch.model and orch.effort default to empty** | [`orch-model-default-empty`](design-orch-model-default-empty.md) | 57m<br>9m | orch, config |
 
 </details>
