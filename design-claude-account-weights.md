@@ -1,6 +1,6 @@
 # Two Claude accounts, each worktree on one of them by a configured weight
 
-`claude-account-weights` · Task · sketch, claude, shuttle, config · running · Record-Write
+`claude-account-weights` · Task · sketch, claude, shuttle, config · running · Raddle-Write
 
 Decision record: [Sketch](decision-claude-account-weights.md)
 
