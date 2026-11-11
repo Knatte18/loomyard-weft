@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-testmap-upkeep-runs.md)
 
-Depends on: [`testmap-upkeep-plan`](design-testmap-upkeep-plan.md)
-
 Filed from the Sketch `testmap-upkeep-design`.
 
 Takes: testmap-upkeep-plan's plan, queue, job and exit record; gateslot's unexported tryAcquireSlot, the pool's drain and gateslot.RunRecord
