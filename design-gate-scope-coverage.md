@@ -17,3 +17,9 @@ The part changes these packages:
 - internal/gateslot (about 80 changed lines)
 - internal/impactset (about 150 changed lines)
 - internal/gatecli (about 750 changed lines)
+
+## Changes from the upkeep design (D13 of `testmap-upkeep-design`)
+
+Read the record with `lym board get testmap-upkeep-design --record`; this part follows it where it changes this entry:
+
+- In its D3 union, "every test its map does not record" includes a test whose entry records only an outcome (D4).
