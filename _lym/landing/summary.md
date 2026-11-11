@@ -1,84 +1,50 @@
-# board upsert --record-file replaces a stored record; promote warns
+# board upsert --record-file replaces a Sketch's stored record
 
-A Sketch keeps its approved decision record on the board as `decision-<slug>.md`.
-Until now nothing but a Discussion approval could rewrite that file,
-so an operator who edited the Sketch's body had no way to bring the record along.
-This change adds that way, and a warning at promote time when the two have drifted apart.
+`lym board upsert` gains `--record-file <file>`, which replaces an entry's stored decision record in the same board write that lands the payload's other fields.
+Until now a Sketch's body and record could only drift apart: editing the body left the stored record as the Discussion wrote it.
+The operator can now keep both current in one write, and raddle reads the record it has always read.
 
-## `lym board upsert --record-file <file>`
+Every write of a stored record also stamps the entry with `record_body_sha256`, the sha256 of the body that write leaves.
+`lym board promote` of a Sketch warns when the body it loaded no longer matches that stamp.
 
-The flag replaces an existing entry's stored record in the same board write as the payload's other fields.
-`boardengine.Board.UpsertTaskWithRecord` does the write under the board lock:
-the payload is validated by the store's upsert,
-then the record file is written, and only then is `board.json` saved.
-This is the order `StoreDecisionRecord` uses.
-When a check after the mutation refuses the write, the former record file is written back,
-the same way `FileRaddle` restores a record.
+## Behaviour
 
-Before anything is written, the CLI runs two checks from `internal/discussionparser` on the file:
-`CheckRecordSections` (new) and `CheckDecisionIDs`.
-`CheckRecordSections` is the record-only half of `Validate`: the required H2 sections and the `## PATTERN changes` bullets, with no support log, since the board keeps none.
-`Validate` now calls it, so the two cannot drift.
-
-The engine refuses the following, each with a way forward and nothing written:
-
-- a run's task session, by the board's existing strand-name classification;
-- a new entry, an entry with no stored record, and a done entry;
-- an entry a run holds, which gets `lym loom decision replace <slug>` on the run as its way forward;
-- an entry whose slug has a task worktree in the hub, because Record-Write never overwrites the record a worktree holds.
-  Its way forward is `decision replace` in that worktree, or `lym batten cancel` first;
-- an entry whose weft branch is live, and an upsert whose origin probe fails.
-
-A family project whose raddle filing the raddle store records is exempt from the worktree and weft refusals, since its run reads no record again.
-The guard reads no batten liveness.
-It does not see a run started after its check, or one on another machine.
-
-## One liveness test for Add and the upsert
-
-The live-weft refusal uses `fabricengine.Topology.RecordsBranchLive` (new).
-The name says "records branch" because the fabric vocabulary keeps the weft token inside fabric's owner set.
-It reports whether a slug's weft branch is live by the test `Topology.Add` adopts by:
-a local branch, or a branch on origin that no `archive/<slug>/*` tag covers.
-Both go through one unexported probe, `weftLiveness`, which applies `Add`'s own `SkipGit`/`SkipPush` skip,
-so the upsert refuses exactly when a raddle start would adopt the weft.
-A local branch decides with no origin read.
-The CLI passes the skip from the fabric skip environment, as every fabric verb does, and itself runs no git.
-The probe runs before the board lock is taken, since it may wait on the network.
-The entry refusals are judged again under the lock.
-
-## `record_body_sha256` and the promote warning
-
-Every write of an entry's stored record stamps the entry's new `record_body_sha256` field.
-The stamp is the sha256 of the body that write leaves.
-The writers are `StoreDecisionRecord`, the record upsert above, and Raddle-File's filing write, both for filed parts and for a family's project.
-The field lives on the entry in `board.json`, so a board sync's replay carries it, and an upsert payload naming it is refused as an unknown field.
-`StoreDecisionRecord`'s no-op shortcut now also requires the stamp to match the body.
-So re-storing the same record after a body edit refreshes the stamp.
-
-`lym board promote` of a Sketch whose body, as loaded before the write, no longer matches its stamp adds a `warning` to the envelope.
-The warning names `lym board upsert --record-file`.
-It never refuses.
-An entry with no stamp, stored by an older binary, gets no warning.
-To carry the warning, `Board.PromoteTo` now returns a `PromoteResult` holding the task, the siblings and the warning.
+- `--record-file` is admitted only for an existing entry that carries a stored record.
+- It is refused, with a way forward and nothing written, for:
+  - a new entry, an entry with no stored record, and a done entry;
+  - an entry a run holds, and an entry whose slug has a task worktree in the hub;
+  - an entry whose weft branch is live, and an upsert whose origin probe fails;
+  - a caller that is a run's task session, by the board's existing strand-name classification of a run's agent;
+  - a file that fails the record's format checks.
+- The run and worktree refusals point to `lym loom decision replace <slug>` or `lym batten cancel <slug>`.
+- A family project whose raddle filing is done is exempt from the worktree and live-weft refusals:
+  its run reads no record again.
+- The record file is written before `board.json`, as `StoreDecisionRecord` does.
+  When the save fails, the former record file is written back.
+- The promote warning never refuses.
+  An entry with no `record_body_sha256`, stored before this change, gets no warning.
 
 ## Design decisions
 
-- The record upsert's refusals live in `boardengine`, beside the store they judge, not in `boardcli`.
-  The CLI owns only the file read, the format checks and the probe wiring.
-  Judging the entry under the board lock is what makes the guard hold against a concurrent write.
-- The run-held refusal and the worktree refusal name `lym loom decision replace`, as the decision record asks.
-  That verb lands with the board entry that depends on this one, `decision-record-replace-verb`.
-- The warning fires on any body change after the store, one that leaves the design alone included.
-  A body hash cannot tell the two apart.
-- `lym board upsert --help` keeps its long page under the CLI form's size cap.
-  So the page describes `--record-file` only in the flag's own help line, and the package doc holds the full rules.
+- `fabricengine.Topology.RecordsBranchLive` is a new exported function that answers `Add`'s weft liveness test alone.
+  `Add` now routes through the same `weftLiveness` helper, so the upsert and a raddle start cannot disagree.
+  A local branch decides alone, and origin is probed only when `Add` would probe it (not under skip-git or skip-push).
+  `internal/boardcli` runs no git; it takes the function through the board.
+- `discussionparser` gains a record-only section check, because the board keeps no support log.
+  The decision-id and acceptance check is reused.
+  `raddleparser` still reads records through `discussionparser` alone.
+- `boardengine.Board.PromoteTo` now returns a `PromoteResult` (task, siblings, `RecordWarning`) in place of its three return values.
+  The body compared is the one loaded before the promote's write.
+- `record_body_sha256` is a new tolerantly read key of `board.json` and is carried by board-sync replay.
+- The run-agent refusal reads the strand name from the environment, so it guards against a mistaken call, not a forged or unset name.
+  The flag does not see a batten start after its check or a batten run on another machine.
+- The warning fires on any body change after the store, including one that leaves the design alone.
+  A record stored by an older binary leaves the stamp as it was, so the warning can be wrong until a newer binary stores the record again.
+- The `board` skill in `plugins/ly/skills/board/SKILL.md` documents the flag.
 
-## Testing
+## To check by hand
 
-- `discussionparser`: `TestCheckRecordSections` pins the bytes-only check's findings, each with an empty path.
-- `fabricengine`: `TestRecordsBranchLive` covers a local branch, an origin-only branch with and without a covering archive tag, no branch, the `SkipPush` skip, and an unreadable origin.
-- `boardengine`: the record upsert's refusals, each asserting its way forward and an unchanged record and entry.
-  The tests also cover the successful replace with its stamp, the family-project exemption, and a refused payload leaving the former record in place, before and after the record file was written.
-  They pin the stamp on `StoreDecisionRecord` and `FileRaddle`, and the promote warning's three cases.
-- `boardcli`: `TestCLI` steps drive the flag end to end.
-  They cover the replace, the file's format refusals, the probe-failure refusal without the fabric skip, the run-session refusal, and promote's `warning` key.
+- The family-project exemption (`judgeRecordReplaceIn` in `internal/boardengine/recordupsert.go`) applies only when the project's kind, its raddle filing and the filed project all match.
+  Check that tests pin each leg of that condition, not only the all-true case.
+- Check that board-sync replay of `record_body_sha256` (`replayFields` in `internal/boardengine/replay.go`) is covered for an entry whose stamp differs between the two sides.
+- Nothing here was exercised against a real origin outside the fabricengine integration test for the weft probe.
