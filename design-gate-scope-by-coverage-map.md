@@ -1,6 +1,6 @@
 # A verify gate scopes to nearly the whole suite; scope it by the coverage map
 
-`gate-scope-by-coverage-map` · Task · bug, gate, testkit, darn · running · Seed-Child
+`gate-scope-by-coverage-map` · Task · bug, gate, testkit, darn · running · Open-Window
 
 ## Seen (orch, 2026-11-09)
 
