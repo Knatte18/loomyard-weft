@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -271,6 +271,21 @@
       "output": "",
       "at": "2026-11-11T07:19:54Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/adopt-worker-record/_lym/landing/summary.md",
+      "at": "2026-11-11T07:20:29Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T07:20:29.343568784Z",
+          "end": "2026-11-11T07:20:29.343617424Z"
+        }
+      ]
     }
   ],
   "product": {
