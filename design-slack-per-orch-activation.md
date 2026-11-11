@@ -1,6 +1,6 @@
 # Slack per orch: a button, machine-first channel names, no presence notice
 
-`slack-per-orch-activation` · Task · enhancement, slack, reed, creel · running · Finalize
+`slack-per-orch-activation` · Task · enhancement, slack, reed, creel · done
 
 ## Seen (operator, 2026-11-09 and 2026-11-11)
 
