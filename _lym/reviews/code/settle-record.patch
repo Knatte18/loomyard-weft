@@ -1,0 +1,1741 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index ecf2d155..69c95ec6 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1010,7 +1010,7 @@ User-facing modules each get one `lym <module>` namespace:
+   The list is `contracts/recipes/tapestry-recipe.yaml`, assembled by `internal/loomrecipe`.
+   The packages are `internal/loomcli` + `internal/loomengine` + `internal/loomshed`.
+   Two more packages serve it: `internal/loomrecipe` and `internal/shedverbs`.
+-  The verbs are `lym loom start|resume|run|step|status|pause|commit-records|validate-discussion|validate-plan|validate-parts|join-parts|insert-card|remove-card|restore-renumber|validate-description|lint-comments|lint-pattern|fmt|circling accept|continue|decision add|decision replace|decision store|peers|peers show|raddle-propose|raddle-approve`.
++  The verbs are `lym loom start|resume|run|step|status|pause|commit-records|validate-discussion|validate-plan|validate-parts|join-parts|insert-card|remove-card|restore-renumber|validate-description|lint-comments|lint-pattern|fmt|circling accept|continue|decision add|decision replace|decision store|parent-review answer|parent-review await|peers|peers show|raddle-propose|raddle-approve`.
+   `lym loom raddle-propose` checks the raddle agent's proposal against the format checks.
+   `lym loom raddle-approve` records the operator's approval of a proposal that passed.
+   `internal/shedverbs` owns the generic `run`/`step`/`status`/`pause` verb bodies that `loomcli` arms;
+@@ -1391,6 +1391,10 @@ User-facing modules each get one `lym <module>` namespace:
+   `raddle_auto_approve` files a raddle proposal once its gate passes, with no operator approval; a run whose recipe rows hold a split perch never reads it.
+   `pr_review_ask_parent` has PR-Review ask the parent orch to review the open pull request.
+   It is open to the local layer, so a task's `run_settings` sets it for one run.
++  `discussion_review_ask_parent` has each Discussion-Review round ask the parent orch to review the decision record.
++  `discussion_review_parent_timeout_min` sets the minutes from that ask to its deadline,
++  capped so the reviewer keeps room to consolidate before `review_timeout_min`; both are open to `run_settings`.
++  The parent answers with `lym loom parent-review answer`, and the reviewer waits with `lym loom parent-review await`.
+   `discussion_lenses` names the `lenses.yaml` fan whose lenses the Discussion-Write lead forks itself for.
+   Empty turns the forks off, and the key is closed to the local layer.
+   `subagent_model` names the model of the fresh subagents that Plan, Discussion-Write and darn writers hand lookups to.
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index 9c849b77..8d5bba32 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -106,6 +106,17 @@
+ // ProbeReview and ResumeReview build the same table from the same RunOpts.
+ // So the caller passes the recorded token and assistant.
+ //
++// # Parent-review asks
++//
++// A run's asks to its parent orch to review a round live in a never-tracked record that ParentReviewFilesOf locates.
++// RecordParentAsk numbers each ask from 1 up in recording order.
++// An ask moves only from pending-post to open and from either to an end state: done, timeout, no-parent or not-sent.
++// Every move takes the record's one lock, so an answer and a timeout never both land.
++// AnswerParentAsk writes the parent's report beside the record and sets the latest ask done.
++// It numbers the report's findings P1 up and refuses with a ParentAnswerRefusal that names its kind.
++// An ask at or past its deadline is set timeout instead.
++// ExpireParentAsk sets the latest active ask timeout once its deadline has passed.
++//
+ // # The fix half
+ //
+ // Engine.Fix runs one fresh fixer session as the chair of the fix table.
+diff --git a/internal/burlerengine/parentreview.go b/internal/burlerengine/parentreview.go
+new file mode 100644
+index 00000000..071c40d5
+--- /dev/null
++++ b/internal/burlerengine/parentreview.go
+@@ -0,0 +1,283 @@
++// parentreview.go keeps a run's parent-review asks: the never-tracked record of each ask to the parent orch,
++// and the parent's report for each answered one.
++// Every state move is forward-only and runs under the record's one lock, so an answer and a timeout never both land.
++
++package burlerengine
++
++import (
++	"errors"
++	"fmt"
++	"path/filepath"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/fsx"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/state"
++	"gopkg.in/yaml.v3"
++)
++
++// ParentAskState is where one parent-review ask stands.
++type ParentAskState string
++
++// The states of a parent-review ask.
++// An ask moves only from pending-post to open, and from either of those to an end state.
++const (
++	// ParentAskPendingPost is an ask recorded before its mail was posted; the mail may have gone out before a crash.
++	ParentAskPendingPost ParentAskState = "pending-post"
++	// ParentAskOpen is an ask whose mail went out and that the parent has not answered.
++	ParentAskOpen ParentAskState = "open"
++	// ParentAskDone is an ask the parent answered; its report sits beside the record.
++	ParentAskDone ParentAskState = "done"
++	// ParentAskTimeout is an ask that reached its deadline, or whose round closed, with no answer.
++	ParentAskTimeout ParentAskState = "timeout"
++	// ParentAskNoParent is an ask that never went out because no parent orch resolved.
++	ParentAskNoParent ParentAskState = "no-parent"
++	// ParentAskNotSent is an ask that never went out because its deadline cap left no room; Reason says why.
++	ParentAskNotSent ParentAskState = "not-sent"
++)
++
++// Ended reports whether s is an end state, from which an ask never moves.
++// A state this binary does not know counts as ended, so it is never moved.
++func (s ParentAskState) Ended() bool {
++	return s != ParentAskPendingPost && s != ParentAskOpen
++}
++
++// ParentAsk is one ask to the parent orch to review a round.
++type ParentAsk struct {
++	// Number is the ask's number within the run, from 1 up in the order the asks were recorded.
++	Number int `json:"number"`
++	// Round is the review round the ask belongs to.
++	Round int            `json:"round"`
++	State ParentAskState `json:"state"`
++	// Strand is the orch strand the ask went to, which may answer it whichever orch the run's parent resolves to later.
++	Strand  string    `json:"strand,omitempty"`
++	AskedAt time.Time `json:"asked_at"`
++	// Deadline is when an ask still pending-post or open is set timeout; every ask that goes out carries one.
++	Deadline time.Time `json:"deadline"`
++	// Reason says why an ask never went out.
++	Reason string `json:"reason,omitempty"`
++	// Report is the parent report's path, set once the ask is done.
++	Report     string    `json:"report,omitempty"`
++	AnsweredAt time.Time `json:"answered_at,omitzero"`
++}
++
++// ParentAskRecord is a run's record of its parent-review asks, oldest first.
++type ParentAskRecord struct {
++	Asks []ParentAsk `json:"asks"`
++}
++
++// Latest returns the run's latest ask, and false when the run holds none.
++func (r ParentAskRecord) Latest() (ParentAsk, bool) {
++	if len(r.Asks) == 0 {
++		return ParentAsk{}, false
++	}
++	return r.Asks[len(r.Asks)-1], true
++}
++
++// Ask returns the ask numbered number, and false when the run holds no such ask.
++func (r ParentAskRecord) Ask(number int) (ParentAsk, bool) {
++	for _, ask := range r.Asks {
++		if ask.Number == number {
++			return ask, true
++		}
++	}
++	return ParentAsk{}, false
++}
++
++// ParentReviewFiles locates a run's parent-review files: the ask record, its lock and the directory holding the reports.
++// None is tracked.
++type ParentReviewFiles struct {
++	Dir    string
++	Record string
++	Lock   string
++}
++
++// parentReviewLockName is the name of the ask record's lock in the checkout's lock directory.
++const parentReviewLockName = "parent-review.lock"
++
++// ParentReviewFilesOf returns the parent-review files of the run whose worktree is anchored at anchorPath.
++func ParentReviewFilesOf(anchorPath string) ParentReviewFiles {
++	dir := filepath.Join(anchorPath, lymdirs.DotLymDirName, lymdirs.ParentReviewDirName)
++	return ParentReviewFiles{
++		Dir:    dir,
++		Record: filepath.Join(dir, "asks.json"),
++		Lock:   lock.TrackedLockPath(anchorPath, parentReviewLockName),
++	}
++}
++
++// ReportPath returns the path of the parent's report for the ask numbered number, beside the ask record.
++func (f ParentReviewFiles) ReportPath(number int) string {
++	return filepath.Join(f.Dir, fmt.Sprintf("ask-%d.report.yaml", number))
++}
++
++// ParentFinding is one finding of the parent's report.
++// Change names what to change and where; Severity and Class are optional and, when set, in the review format's words.
++type ParentFinding struct {
++	ID       string   `yaml:"id"`
++	Severity Severity `yaml:"severity,omitempty"`
++	Class    Class    `yaml:"class,omitempty"`
++	Change   string   `yaml:"change"`
++}
++
++// ParentReport is the parent's answer to one ask, written as YAML beside the ask record.
++// Satisfied is true for a report with no findings.
++type ParentReport struct {
++	Ask       int             `yaml:"ask"`
++	Satisfied bool            `yaml:"satisfied"`
++	Findings  []ParentFinding `yaml:"findings"`
++}
++
++// ReadParentAsks reads the run's ask record; found is false when the run never recorded an ask.
++func ReadParentAsks(files ParentReviewFiles) (ParentAskRecord, bool, error) {
++	return state.ReadJSON[ParentAskRecord](files.Record, files.Lock)
++}
++
++// RecordParentAsk appends ask as the run's next ask, numbered one past the latest, and returns it as recorded.
++// Its state is the caller's.
++// It is pending-post for an ask about to be posted, and no-parent or not-sent for one that never goes out.
++func RecordParentAsk(files ParentReviewFiles, ask ParentAsk) (ParentAsk, error) {
++	err := state.UpdateJSON(files.Record, files.Lock, func(record ParentAskRecord, _ bool) (ParentAskRecord, error) {
++		ask.Number = 1
++		if latest, ok := record.Latest(); ok {
++			ask.Number = latest.Number + 1
++		}
++		record.Asks = append(record.Asks, ask)
++		return record, nil
++	})
++	if err != nil {
++		return ParentAsk{}, fmt.Errorf("burler: record a parent-review ask: %w", err)
++	}
++	return ask, nil
++}
++
++// errParentAskUnchanged aborts a locked update that has nothing to write.
++var errParentAskUnchanged = errors.New("burler: the parent-review ask is unchanged")
++
++// MarkParentAskPosted moves the ask numbered number from pending-post to open once its mail went out.
++// An ask past pending-post is left as it stands, and so is a number the run holds no ask for.
++func MarkParentAskPosted(files ParentReviewFiles, number int) error {
++	err := state.UpdateJSON(files.Record, files.Lock, func(record ParentAskRecord, _ bool) (ParentAskRecord, error) {
++		for i := range record.Asks {
++			if record.Asks[i].Number == number && record.Asks[i].State == ParentAskPendingPost {
++				record.Asks[i].State = ParentAskOpen
++				return record, nil
++			}
++		}
++		return record, errParentAskUnchanged
++	})
++	if err != nil && !errors.Is(err, errParentAskUnchanged) {
++		return fmt.Errorf("burler: mark parent-review ask %d posted: %w", number, err)
++	}
++	return nil
++}
++
++// ParentAnswerRefusalKind names why an answer was refused.
++type ParentAnswerRefusalKind string
++
++// The reasons an answer is refused.
++const (
++	// ParentAnswerNoAsk: the run holds no ask.
++	ParentAnswerNoAsk ParentAnswerRefusalKind = "no-ask"
++	// ParentAnswerNotLatest: the answer names an ask other than the run's latest.
++	ParentAnswerNotLatest ParentAnswerRefusalKind = "not-latest"
++	// ParentAnswerEnded: the ask is already in an end state.
++	ParentAnswerEnded ParentAnswerRefusalKind = "ended"
++	// ParentAnswerPastDeadline: the ask was at or past its deadline, and the answer set it timeout.
++	ParentAnswerPastDeadline ParentAnswerRefusalKind = "past-deadline"
++)
++
++// ParentAnswerRefusal is the error AnswerParentAsk returns for an answer it did not record.
++// Latest is the run's latest ask as it stands after the call, and the zero ask when the run holds none.
++type ParentAnswerRefusal struct {
++	Kind   ParentAnswerRefusalKind
++	Latest ParentAsk
++}
++
++func (r *ParentAnswerRefusal) Error() string {
++	return fmt.Sprintf("burler: parent-review answer refused (%s); the latest ask is %d, %s", r.Kind, r.Latest.Number, r.Latest.State)
++}
++
++// AnswerParentAsk records the parent's answer to the ask numbered number as one step under the record's lock.
++// It writes the report and sets the ask done.
++// findings become the report's items in their order, with ids P1, P2 and so on; no findings make a satisfied report.
++// It answers only the run's latest ask, and only while that ask is pending-post or open and now is before its deadline.
++// An ask still pending-post or open at or past its deadline is set timeout instead, and the answer refused.
++// Every refusal is a *ParentAnswerRefusal and writes no report.
++func AnswerParentAsk(files ParentReviewFiles, number int, now time.Time, findings []ParentFinding) (ParentAsk, error) {
++	var refusal *ParentAnswerRefusal
++	var answered ParentAsk
++	err := state.UpdateJSON(files.Record, files.Lock, func(record ParentAskRecord, _ bool) (ParentAskRecord, error) {
++		latest, ok := record.Latest()
++		switch {
++		case !ok:
++			refusal = &ParentAnswerRefusal{Kind: ParentAnswerNoAsk}
++			return record, errParentAskUnchanged
++		case latest.Number != number:
++			refusal = &ParentAnswerRefusal{Kind: ParentAnswerNotLatest, Latest: latest}
++			return record, errParentAskUnchanged
++		case latest.State.Ended():
++			refusal = &ParentAnswerRefusal{Kind: ParentAnswerEnded, Latest: latest}
++			return record, errParentAskUnchanged
++		}
++		ask := &record.Asks[len(record.Asks)-1]
++		if !now.Before(ask.Deadline) {
++			ask.State = ParentAskTimeout
++			refusal = &ParentAnswerRefusal{Kind: ParentAnswerPastDeadline, Latest: *ask}
++			return record, nil
++		}
++		path := files.ReportPath(number)
++		if err := writeParentReport(path, number, findings); err != nil {
++			return record, err
++		}
++		ask.State, ask.Report, ask.AnsweredAt = ParentAskDone, path, now
++		answered = *ask
++		return record, nil
++	})
++	if err != nil && !errors.Is(err, errParentAskUnchanged) {
++		return ParentAsk{}, fmt.Errorf("burler: answer parent-review ask %d: %w", number, err)
++	}
++	if refusal != nil {
++		return ParentAsk{}, refusal
++	}
++	return answered, nil
++}
++
++// writeParentReport writes the report of findings for the ask numbered number to path, numbering the findings P1 up.
++func writeParentReport(path string, number int, findings []ParentFinding) error {
++	report := ParentReport{Ask: number, Satisfied: len(findings) == 0, Findings: make([]ParentFinding, len(findings))}
++	for i, finding := range findings {
++		finding.ID = fmt.Sprintf("P%d", i+1)
++		report.Findings[i] = finding
++	}
++	data, err := yaml.Marshal(report)
++	if err != nil {
++		return fmt.Errorf("marshal the parent report: %w", err)
++	}
++	return fsx.AtomicWriteBytes(path, data)
++}
++
++// ExpireParentAsk moves the run's latest ask to timeout as one step under the record's lock.
++// It does so only when the ask is pending-post or open and now is at or past its deadline.
++// It returns the latest ask as it then stands.
++// found is false when the run holds no ask, and nothing is written then.
++func ExpireParentAsk(files ParentReviewFiles, now time.Time) (ask ParentAsk, found bool, err error) {
++	err = state.UpdateJSON(files.Record, files.Lock, func(record ParentAskRecord, _ bool) (ParentAskRecord, error) {
++		latest, ok := record.Latest()
++		if !ok {
++			return record, errParentAskUnchanged
++		}
++		found = true
++		ask = latest
++		if latest.State.Ended() || now.Before(latest.Deadline) {
++			return record, errParentAskUnchanged
++		}
++		record.Asks[len(record.Asks)-1].State = ParentAskTimeout
++		ask.State = ParentAskTimeout
++		return record, nil
++	})
++	if err != nil && !errors.Is(err, errParentAskUnchanged) {
++		return ParentAsk{}, false, fmt.Errorf("burler: expire the parent-review ask: %w", err)
++	}
++	return ask, found, nil
++}
+diff --git a/internal/burlerengine/parentreview_test.go b/internal/burlerengine/parentreview_test.go
+new file mode 100644
+index 00000000..ef442322
+--- /dev/null
++++ b/internal/burlerengine/parentreview_test.go
+@@ -0,0 +1,313 @@
++// parentreview_test.go tables the parent-review ask record.
++// It covers numbering and the forward-only state moves.
++// It also covers the parent's answer and its report, an answer racing the deadline,
++// and a record write that fails at the deadline.
++
++package burlerengine_test
++
++import (
++	"errors"
++	"os"
++	"reflect"
++	"runtime"
++	"sync"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/burlerengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"gopkg.in/yaml.v3"
++)
++
++// parentAskBase is the clock every parent-review ask test judges deadlines against.
++var parentAskBase = time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
++
++// recordParentAsks records asks in order into a fresh run's files and returns those files.
++func recordParentAsks(t *testing.T, asks ...burlerengine.ParentAsk) burlerengine.ParentReviewFiles {
++	t.Helper()
++	files := burlerengine.ParentReviewFilesOf(t.TempDir())
++	for _, ask := range asks {
++		if _, err := burlerengine.RecordParentAsk(files, ask); err != nil {
++			t.Fatalf("RecordParentAsk() error = %v", err)
++		}
++	}
++	return files
++}
++
++// parentAskStates returns the state of every ask the run's record holds, oldest first.
++func parentAskStates(t *testing.T, files burlerengine.ParentReviewFiles) []burlerengine.ParentAskState {
++	t.Helper()
++	record, _, err := burlerengine.ReadParentAsks(files)
++	if err != nil {
++		t.Fatalf("ReadParentAsks() error = %v", err)
++	}
++	states := make([]burlerengine.ParentAskState, len(record.Asks))
++	for i, ask := range record.Asks {
++		states[i] = ask.State
++	}
++	return states
++}
++
++// TestParentAsks_RecordAndMoveForward verifies asks are numbered in order and move only forward.
++// MarkParentAskPosted opens only a pending-post ask;
++// ExpireParentAsk sets an active latest ask timeout only at or past its deadline and never moves an ended one.
++func TestParentAsks_RecordAndMoveForward(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	open := burlerengine.ParentAsk{State: burlerengine.ParentAskPendingPost, Deadline: parentAskBase.Add(time.Minute)}
++	tests := []struct {
++		name      string
++		asks      []burlerengine.ParentAsk
++		move      func(burlerengine.ParentReviewFiles) error
++		want      []burlerengine.ParentAskState
++		wantFound bool
++	}{
++		{
++			name: "posting opens a pending-post ask",
++			asks: []burlerengine.ParentAsk{open},
++			move: func(f burlerengine.ParentReviewFiles) error { return burlerengine.MarkParentAskPosted(f, 1) },
++			want: []burlerengine.ParentAskState{burlerengine.ParentAskOpen},
++		},
++		{
++			name: "posting leaves an ended ask ended",
++			asks: []burlerengine.ParentAsk{{State: burlerengine.ParentAskTimeout}},
++			move: func(f burlerengine.ParentReviewFiles) error { return burlerengine.MarkParentAskPosted(f, 1) },
++			want: []burlerengine.ParentAskState{burlerengine.ParentAskTimeout},
++		},
++		{
++			name: "expiry before the deadline leaves the ask active",
++			asks: []burlerengine.ParentAsk{open},
++			move: expireAt(parentAskBase),
++			want: []burlerengine.ParentAskState{burlerengine.ParentAskPendingPost},
++		},
++		{
++			name: "expiry at the deadline sets the latest ask timeout",
++			asks: []burlerengine.ParentAsk{{State: burlerengine.ParentAskDone}, open},
++			move: expireAt(parentAskBase.Add(time.Minute)),
++			want: []burlerengine.ParentAskState{burlerengine.ParentAskDone, burlerengine.ParentAskTimeout},
++		},
++		{
++			name: "expiry past the deadline leaves a done ask done",
++			asks: []burlerengine.ParentAsk{{State: burlerengine.ParentAskDone, Deadline: parentAskBase}},
++			move: expireAt(parentAskBase.Add(time.Hour)),
++			want: []burlerengine.ParentAskState{burlerengine.ParentAskDone},
++		},
++		{
++			name: "expiry past the deadline leaves an ask in an unknown state unmoved",
++			asks: []burlerengine.ParentAsk{{State: "future-state", Deadline: parentAskBase}},
++			move: expireAt(parentAskBase.Add(time.Hour)),
++			want: []burlerengine.ParentAskState{"future-state"},
++		},
++		{
++			name: "expiry of a run with no ask writes nothing",
++			move: expireAt(parentAskBase),
++			want: []burlerengine.ParentAskState{},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			files := recordParentAsks(t, tt.asks...)
++			if err := tt.move(files); err != nil {
++				t.Fatalf("move error = %v", err)
++			}
++			if got := parentAskStates(t, files); !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("ask states = %v; want %v", got, tt.want)
++			}
++			record, found, _ := burlerengine.ReadParentAsks(files)
++			if found != (len(tt.asks) > 0) {
++				t.Errorf("ReadParentAsks() found = %v; want %v", found, len(tt.asks) > 0)
++			}
++			for i, ask := range record.Asks {
++				if ask.Number != i+1 {
++					t.Errorf("ask %d Number = %d; want %d", i, ask.Number, i+1)
++				}
++			}
++		})
++	}
++}
++
++// expireAt returns a move that runs ExpireParentAsk at now.
++func expireAt(now time.Time) func(burlerengine.ParentReviewFiles) error {
++	return func(files burlerengine.ParentReviewFiles) error {
++		_, _, err := burlerengine.ExpireParentAsk(files, now)
++		return err
++	}
++}
++
++// TestAnswerParentAsk verifies an answer writes the report and sets the ask done,
++// and that each refusal names its kind, writes no report and leaves the ask as the refusal says.
++func TestAnswerParentAsk(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	active := burlerengine.ParentAsk{State: burlerengine.ParentAskOpen, Deadline: parentAskBase.Add(time.Minute)}
++	findings := []burlerengine.ParentFinding{
++		{Severity: burlerengine.SeverityMedium, Class: burlerengine.ClassDesign, Change: "name the lock in D5"},
++		{Change: "drop the duplicated bound"},
++	}
++	tests := []struct {
++		name        string
++		asks        []burlerengine.ParentAsk
++		number      int
++		now         time.Time
++		findings    []burlerengine.ParentFinding
++		wantRefusal burlerengine.ParentAnswerRefusalKind
++		wantStates  []burlerengine.ParentAskState
++		wantReport  burlerengine.ParentReport
++	}{
++		{
++			name:       "no findings make a satisfied report",
++			asks:       []burlerengine.ParentAsk{active},
++			number:     1,
++			now:        parentAskBase,
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskDone},
++			wantReport: burlerengine.ParentReport{Ask: 1, Satisfied: true, Findings: []burlerengine.ParentFinding{}},
++		},
++		{
++			name:       "findings are numbered in order and keep their severity and class",
++			asks:       []burlerengine.ParentAsk{{State: burlerengine.ParentAskTimeout}, {State: burlerengine.ParentAskPendingPost, Deadline: parentAskBase.Add(time.Minute)}},
++			number:     2,
++			now:        parentAskBase,
++			findings:   findings,
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskTimeout, burlerengine.ParentAskDone},
++			wantReport: burlerengine.ParentReport{Ask: 2, Findings: []burlerengine.ParentFinding{
++				{ID: "P1", Severity: burlerengine.SeverityMedium, Class: burlerengine.ClassDesign, Change: "name the lock in D5"},
++				{ID: "P2", Change: "drop the duplicated bound"},
++			}},
++		},
++		{name: "a run with no ask is refused", number: 1, now: parentAskBase, wantRefusal: burlerengine.ParentAnswerNoAsk, wantStates: []burlerengine.ParentAskState{}},
++		{
++			name:        "an ask other than the latest is refused",
++			asks:        []burlerengine.ParentAsk{{State: burlerengine.ParentAskTimeout}, active},
++			number:      1,
++			now:         parentAskBase,
++			wantRefusal: burlerengine.ParentAnswerNotLatest,
++			wantStates:  []burlerengine.ParentAskState{burlerengine.ParentAskTimeout, burlerengine.ParentAskOpen},
++		},
++		{
++			name:        "an ended ask is refused",
++			asks:        []burlerengine.ParentAsk{{State: burlerengine.ParentAskNotSent}},
++			number:      1,
++			now:         parentAskBase,
++			wantRefusal: burlerengine.ParentAnswerEnded,
++			wantStates:  []burlerengine.ParentAskState{burlerengine.ParentAskNotSent},
++		},
++		{
++			name:        "an ask in an unknown state past its deadline is refused as ended and left unmoved",
++			asks:        []burlerengine.ParentAsk{{State: "future-state", Deadline: parentAskBase}},
++			number:      1,
++			now:         parentAskBase.Add(time.Minute),
++			wantRefusal: burlerengine.ParentAnswerEnded,
++			wantStates:  []burlerengine.ParentAskState{"future-state"},
++		},
++		{
++			name:        "an ask at its deadline is set timeout and the answer refused",
++			asks:        []burlerengine.ParentAsk{active},
++			number:      1,
++			now:         parentAskBase.Add(time.Minute),
++			wantRefusal: burlerengine.ParentAnswerPastDeadline,
++			wantStates:  []burlerengine.ParentAskState{burlerengine.ParentAskTimeout},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			files := recordParentAsks(t, tt.asks...)
++			ask, err := burlerengine.AnswerParentAsk(files, tt.number, tt.now, tt.findings)
++			if got := parentAskStates(t, files); !reflect.DeepEqual(got, tt.wantStates) {
++				t.Errorf("ask states = %v; want %v", got, tt.wantStates)
++			}
++			if tt.wantRefusal != "" {
++				var refusal *burlerengine.ParentAnswerRefusal
++				if !errors.As(err, &refusal) || refusal.Kind != tt.wantRefusal {
++					t.Fatalf("AnswerParentAsk() error = %v; want a %s refusal", err, tt.wantRefusal)
++				}
++				if _, statErr := os.Stat(files.ReportPath(tt.number)); !errors.Is(statErr, os.ErrNotExist) {
++					t.Errorf("report at %s stat error = %v; want no report", files.ReportPath(tt.number), statErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("AnswerParentAsk() error = %v", err)
++			}
++			if ask.State != burlerengine.ParentAskDone || ask.Report != files.ReportPath(tt.number) || !ask.AnsweredAt.Equal(tt.now) {
++				t.Errorf("AnswerParentAsk() = %+v; want done with report %s answered at %s", ask, files.ReportPath(tt.number), tt.now)
++			}
++			data, err := os.ReadFile(ask.Report)
++			if err != nil {
++				t.Fatalf("read the report: %v", err)
++			}
++			var report burlerengine.ParentReport
++			if err := yaml.Unmarshal(data, &report); err != nil {
++				t.Fatalf("parse the report: %v", err)
++			}
++			if len(report.Findings) == 0 {
++				report.Findings = []burlerengine.ParentFinding{}
++			}
++			if !reflect.DeepEqual(report, tt.wantReport) {
++				t.Errorf("report = %+v; want %+v", report, tt.wantReport)
++			}
++		})
++	}
++}
++
++// TestAnswerParentAsk_FailedWriteAtDeadline verifies a failed record write returns a plain error, not a refusal.
++// The ask at its deadline stays open on disk.
++func TestAnswerParentAsk_FailedWriteAtDeadline(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	if runtime.GOOS == "windows" || os.Geteuid() == 0 {
++		t.Skip("a read-only directory does not block writes on Windows or for root")
++	}
++	files := recordParentAsks(t, burlerengine.ParentAsk{State: burlerengine.ParentAskOpen, Deadline: parentAskBase})
++	if err := os.Chmod(files.Dir, 0o500); err != nil {
++		t.Fatalf("make the record directory read-only: %v", err)
++	}
++	t.Cleanup(func() { _ = os.Chmod(files.Dir, 0o700) })
++
++	_, err := burlerengine.AnswerParentAsk(files, 1, parentAskBase.Add(time.Minute), nil)
++	if err == nil {
++		t.Fatal("AnswerParentAsk() error = nil; want the failed record write")
++	}
++	var refusal *burlerengine.ParentAnswerRefusal
++	if errors.As(err, &refusal) {
++		t.Errorf("AnswerParentAsk() error = %v; want a write error, not a refusal", err)
++	}
++	if got, want := parentAskStates(t, files), []burlerengine.ParentAskState{burlerengine.ParentAskOpen}; !reflect.DeepEqual(got, want) {
++		t.Errorf("ask states = %v; want %v", got, want)
++	}
++}
++
++// TestAnswerParentAsk_RacingTheDeadline verifies an answer and an expiry run at once leave exactly one end state.
++// When the expiry wins the answer is refused; when the answer wins the expiry reads it done.
++//
++//testtiming:keep pins that a concurrent answer and expiry leave exactly one end state under the one lock
++func TestAnswerParentAsk_RacingTheDeadline(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	for range 20 {
++		files := recordParentAsks(t, burlerengine.ParentAsk{State: burlerengine.ParentAskOpen, Deadline: parentAskBase})
++		var answerErr, expireErr error
++		var expired burlerengine.ParentAsk
++		var wg sync.WaitGroup
++		wg.Go(func() { _, answerErr = burlerengine.AnswerParentAsk(files, 1, parentAskBase.Add(-time.Second), nil) })
++		wg.Go(func() { expired, _, expireErr = burlerengine.ExpireParentAsk(files, parentAskBase) })
++		wg.Wait()
++		if expireErr != nil {
++			t.Fatalf("ExpireParentAsk() error = %v", expireErr)
++		}
++		switch states := parentAskStates(t, files); {
++		case reflect.DeepEqual(states, []burlerengine.ParentAskState{burlerengine.ParentAskDone}):
++			if answerErr != nil || expired.State != burlerengine.ParentAskDone {
++				t.Errorf("done ask: answer error = %v, expiry read %s; want no error and done", answerErr, expired.State)
++			}
++		case reflect.DeepEqual(states, []burlerengine.ParentAskState{burlerengine.ParentAskTimeout}):
++			var refusal *burlerengine.ParentAnswerRefusal
++			if !errors.As(answerErr, &refusal) || refusal.Kind != burlerengine.ParentAnswerEnded {
++				t.Errorf("timed-out ask: answer error = %v; want an ended refusal", answerErr)
++			}
++		default:
++			t.Fatalf("ask states = %v; want exactly one of done or timeout", states)
++		}
++	}
++}
+diff --git a/internal/loomcli/cli.go b/internal/loomcli/cli.go
+index b10f0699..121534ed 100644
+--- a/internal/loomcli/cli.go
++++ b/internal/loomcli/cli.go
+@@ -225,7 +225,7 @@ func (s runnerMasterStarter) StartMaster(spec shuttleengine.Spec, gate shuttleen
+ // resolvePersistentPreRun reads cwd through lymcwd.CwdFrom, arms the invoked verb, and stores the result on c.spec.
+ // Arming resolves the location and builds the engine stack through c.wire (wiring.go).
+ // The pre-run skips the loom group command, so a bare listing or an unknown subcommand needs no git repository.
+-// It also skips the circling, decision and peers groups and their verbs.
++// It also skips the circling, decision, parent-review and peers groups and their verbs.
+ // Those resolve their own target worktree in their own PersistentPreRunE.
+ // cmd/lym sets cobra.EnableTraverseRunHooks, so cobra runs this pre-run for them too;
+ // without the skip it would arm them and read a slug as a run-id.
+@@ -281,12 +281,13 @@ func (c *loomCLI) reportArmFailure(out io.Writer, cmd *cobra.Command, args []str
+ 	}, err)
+ }
+ 
+-// inReviewGroup reports whether cmd is loom's circling, decision or peers group, or a command under any of them.
++// inReviewGroup reports whether cmd is loom's circling, decision, parent-review or peers group.
++// It also reports a command under any of them.
+ // They resolve their own target worktree, from an optional slug or the caller's cwd.
+ // The loom pre-run must never arm them as a run-id.
+ func inReviewGroup(cmd *cobra.Command) bool {
+ 	for p := cmd; p.HasParent(); p = p.Parent() {
+-		if (p.Name() == "circling" || p.Name() == decisionGroup || p.Name() == peersGroup) && p.Parent().Name() == "loom" {
++		if (p.Name() == "circling" || p.Name() == decisionGroup || p.Name() == parentReviewGroup || p.Name() == peersGroup) && p.Parent().Name() == "loom" {
+ 			return true
+ 		}
+ 	}
+@@ -505,7 +506,7 @@ Example:
+ 	pauseVerb.Args = cobra.MaximumNArgs(1)
+ 	gotoVerb.Args = cobra.MaximumNArgs(1)
+ 
+-	parent.AddCommand(c.startCmd(), c.resumeCmd(), runVerb, stepVerb, statusVerb, pauseVerb, gotoVerb, c.validateDiscussionCmd(), c.validatePlanCmd(), c.validatePartsCmd(), c.joinPartsCmd(), c.insertCardCmd(), c.removeCardCmd(), c.restoreRenumberCmd(), c.validateDescriptionCmd(), c.lintCommentsCmd(), c.lintPatternCmd(), c.fmtCmd(), c.commitRecordsCmd(), c.prContinueCmd(), c.samplerDoneCmd(), c.raddleProposeCmd(), c.raddleApproveCmd(), c.circlingCmd(), c.decisionCmd(), c.peersCmd(), c.arbiterCmd(), c.checklistCmd(), c.driveCmd())
++	parent.AddCommand(c.startCmd(), c.resumeCmd(), runVerb, stepVerb, statusVerb, pauseVerb, gotoVerb, c.validateDiscussionCmd(), c.validatePlanCmd(), c.validatePartsCmd(), c.joinPartsCmd(), c.insertCardCmd(), c.removeCardCmd(), c.restoreRenumberCmd(), c.validateDescriptionCmd(), c.lintCommentsCmd(), c.lintPatternCmd(), c.fmtCmd(), c.commitRecordsCmd(), c.prContinueCmd(), c.samplerDoneCmd(), c.raddleProposeCmd(), c.raddleApproveCmd(), c.circlingCmd(), c.decisionCmd(), c.parentReviewCmd(), c.peersCmd(), c.arbiterCmd(), c.checklistCmd(), c.driveCmd())
+ 
+ 	return parent
+ }
+diff --git a/internal/loomcli/cli_test.go b/internal/loomcli/cli_test.go
+index b28bb96d..5c9c18f7 100644
+--- a/internal/loomcli/cli_test.go
++++ b/internal/loomcli/cli_test.go
+@@ -26,7 +26,7 @@ import (
+ )
+ 
+ // TestResolvePersistentPreRun_SkipsSlugGroups asserts that the loom pre-run arms no slug group:
+-// the circling, decision and peers groups and their verbs, and loom has no review group.
++// the circling, decision, peers and parent-review groups and their verbs, and loom has no review group.
+ // cmd/lym sets cobra.EnableTraverseRunHooks, so cobra calls that pre-run for a group verb too;
+ // over a non-git cwd an arm would write an error envelope and abort, so silence proves the skip.
+ func TestResolvePersistentPreRun_SkipsSlugGroups(t *testing.T) {
+@@ -37,7 +37,7 @@ func TestResolvePersistentPreRun_SkipsSlugGroups(t *testing.T) {
+ 			t.Fatal(`loom has a "review" child; want "lym loom review" to be no command`)
+ 		}
+ 	}
+-	for _, name := range []string{"circling", decisionGroup, peersGroup} {
++	for _, name := range []string{"circling", decisionGroup, peersGroup, parentReviewGroup} {
+ 		group, _, err := parent.Find([]string{name})
+ 		if err != nil || group.Name() != name {
+ 			t.Fatalf("Find(%q) = %v, %v; want the %s group", name, group, err, name)
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index e344eaa2..928ba3c7 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -168,6 +168,14 @@
+ // `recordHistory` reads the record's versions from the newest such trailer's cut onward,
+ // so the dropped-entry check no longer holds the record to an entry a replace dropped.
+ //
++// `parent-review answer` records the parent orch's answer to the run's latest Discussion-Review ask.
++// It admits the operator's unnamed shell, the run's parent orch resolved at call time, and the strand the ask went to.
++// A refused answer names `decision add` as the way forward, run by the run's parent orch or the operator's shell.
++// An older ask while the latest awaits an answer is instead sent to review the record again under the latest ask.
++// `parent-review await` is the chair's capped wait on the same ask.
++// It reads the record once a second up to the caller's keep-warm cap.
++// It sets an ask past its deadline timeout and writes nothing else.
++//
+ // # Start
+ //
+ // `lym loom start` works in order.
+diff --git a/internal/loomcli/parentreview.go b/internal/loomcli/parentreview.go
+new file mode 100644
+index 00000000..6f35ffa9
+--- /dev/null
++++ b/internal/loomcli/parentreview.go
+@@ -0,0 +1,409 @@
++// parentreview.go implements the `parent-review` loom group over a run's Discussion-Review asks to its parent orch.
++// `answer` writes the parent's report for the run's latest ask and sets the ask done.
++// `await` is the review chair's capped wait for that ask to end, setting it timeout once its deadline passed.
++// Both move the ask only through burlerengine's ask record, under its one lock.
++// The caller check guards against a mistaken call, not a forged strand name.
++
++package loomcli
++
++import (
++	"bytes"
++	"context"
++	"errors"
++	"fmt"
++	"io"
++	"os"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/burlerengine"
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/orchcli"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/shuttleengines"
++	"github.com/spf13/cobra"
++	"gopkg.in/yaml.v3"
++)
++
++const (
++	parentReviewGroup      = "parent-review"
++	parentReviewAnswerName = "answer"
++	parentReviewAwaitName  = "await"
++
++	// parentReviewPollInterval is how often await reads the ask record: the one-second floor of every wake.
++	parentReviewPollInterval = time.Second
++
++	parentReviewWayFlags         = "way forward: pass --ask <n> naming the ask the parent's request names, and exactly one of --satisfied or --findings-file <path>"
++	parentReviewWayFindingsFile  = `way forward: write the --findings-file as YAML holding a non-empty "findings" list, each item with a "change" naming what to change and where, and an optional "severity" (BLOCKING, MEDIUM, LOW or NIT) and "class" (design, scope, decision or consistency), then re-run the verb`
++	parentReviewWayParentAnswers = "way forward: the run's parent orch answers the ask; the operator's own unnamed shell may too"
++	parentReviewWayRetry         = "way forward: re-run the verb; nothing was answered"
++	parentReviewWayAwaitNoAsk    = "way forward: no ask went out for this run, so consolidate the round without a parent review"
++	parentReviewWayAwaitRetry    = "way forward: re-run the verb"
++)
++
++// parentReviewDeps holds every side effect of a parent-review verb, injected so that tests can supply fakes.
++type parentReviewDeps struct {
++	// strandName is the full name reed exported to the calling session, empty for a shell reed did not spawn.
++	strandName string
++	// parent resolves the run's parent orch at call time.
++	parent func() (hubgeom.Parent, error)
++	// files locates the run's ask record and the parent's reports.
++	files burlerengine.ParentReviewFiles
++	// now is the clock every deadline is judged against.
++	now func() time.Time
++	// awaitCap is the longest one await call waits: the keep-warm cap of the calling strand's role.
++	awaitCap time.Duration
++	// sleep waits d, returning early with ctx's error when ctx ends.
++	sleep func(ctx context.Context, d time.Duration) error
++}
++
++// parentAnswerInput holds the flag values of one `parent-review answer` call.
++type parentAnswerInput struct {
++	ask          int
++	satisfied    bool
++	findingsFile string
++}
++
++// parentFindingsFile is the shape of an answer's --findings-file.
++type parentFindingsFile struct {
++	Findings []struct {
++		Change   string `yaml:"change"`
++		Severity string `yaml:"severity"`
++		Class    string `yaml:"class"`
++	} `yaml:"findings"`
++}
++
++// parentFindingSeverities and parentFindingClasses are the review format's words a finding's severity and class take.
++var (
++	parentFindingSeverities = []burlerengine.Severity{burlerengine.SeverityBlocking, burlerengine.SeverityMedium, burlerengine.SeverityLow, burlerengine.SeverityNit}
++	parentFindingClasses    = []burlerengine.Class{burlerengine.ClassDesign, burlerengine.ClassScope, burlerengine.ClassDecision, burlerengine.ClassConsistency}
++)
++
++// readParentFindings reads the findings of the file at path, or returns the refusal text.
++// It refuses an unreadable or malformed file, a file with no item, an item with no change,
++// and a severity or class outside the review format's words.
++func readParentFindings(path string) ([]burlerengine.ParentFinding, string) {
++	data, err := os.ReadFile(path)
++	if err != nil {
++		return nil, fmt.Sprintf("read the --findings-file: %s; %s", err, parentReviewWayFindingsFile)
++	}
++	var file parentFindingsFile
++	if err := yaml.NewDecoder(bytes.NewReader(data)).Decode(&file); err != nil && !errors.Is(err, io.EOF) {
++		return nil, fmt.Sprintf("the --findings-file %s is not YAML holding a findings list: %s; %s", path, err, parentReviewWayFindingsFile)
++	}
++	if len(file.Findings) == 0 {
++		return nil, fmt.Sprintf("the --findings-file %s holds no finding; %s", path, parentReviewWayFindingsFile)
++	}
++	findings := make([]burlerengine.ParentFinding, 0, len(file.Findings))
++	for i, item := range file.Findings {
++		n := i + 1
++		if strings.TrimSpace(item.Change) == "" {
++			return nil, fmt.Sprintf("finding %d of the --findings-file has no change; %s", n, parentReviewWayFindingsFile)
++		}
++		severity, class := burlerengine.Severity(item.Severity), burlerengine.Class(item.Class)
++		if item.Severity != "" && !containsWord(parentFindingSeverities, severity) {
++			return nil, fmt.Sprintf("finding %d of the --findings-file has the severity %q; %s", n, item.Severity, parentReviewWayFindingsFile)
++		}
++		if item.Class != "" && !containsWord(parentFindingClasses, class) {
++			return nil, fmt.Sprintf("finding %d of the --findings-file has the class %q; %s", n, item.Class, parentReviewWayFindingsFile)
++		}
++		findings = append(findings, burlerengine.ParentFinding{Severity: severity, Class: class, Change: strings.TrimSpace(item.Change)})
++	}
++	return findings, ""
++}
++
++// containsWord reports whether words holds word.
++func containsWord[T comparable](words []T, word T) bool {
++	for _, candidate := range words {
++		if candidate == word {
++			return true
++		}
++	}
++	return false
++}
++
++// parentAnswerCallerRefusal returns the refusal text for a caller that may not answer asked, or empty when it may.
++// The operator's own unnamed shell always may, and so does the run's parent orch as resolved at call time.
++// So does the orch strand asked went to, which keeps an orch that came up or went down since the ask from refusing it.
++func parentAnswerCallerRefusal(caller string, parent hubgeom.Parent, parentErr error, asked burlerengine.ParentAsk) string {
++	if caller == "" || (asked.Strand != "" && caller == asked.Strand) {
++		return ""
++	}
++	if parentErr != nil {
++		return fmt.Sprintf("the caller %q is not the strand the ask went to, and the run's parent orch could not be resolved (%s); %s", caller, parentErr, parentReviewWayParentAnswers)
++	}
++	if parent.Name != "" && caller == parent.Name {
++		return ""
++	}
++	return fmt.Sprintf("the caller %q is neither the run's parent orch nor the strand the ask went to; %s", caller, parentReviewWayParentAnswers)
++}
++
++// parentReviewWayDecision returns the way forward of a refused answer that no later answer can take:
++// a call the parent still wants made goes in with `lym loom decision add`.
++// It names who runs that verb as its guard resolves it: the run's parent orch,
++// or the operator's own unnamed shell when no parent orch resolves or the resolved one has no name.
++func parentReviewWayDecision(slug string, parent hubgeom.Parent, parentErr error) string {
++	who := "the operator's own unnamed shell"
++	if parentErr == nil && parent.Name != "" {
++		who = "the run's parent orch " + parent.Name
++	}
++	return fmt.Sprintf(`way forward: a call the parent still wants made goes in with "lym loom decision add %s --by parent", run by %s`, slug, who)
++}
++
++// parentAnswerRefusalText returns the refusal text of an answer to the ask numbered number that refusal turned down.
++func parentAnswerRefusalText(slug string, number int, refusal *burlerengine.ParentAnswerRefusal, parent hubgeom.Parent, parentErr error) string {
++	latest := refusal.Latest
++	wayDecision := parentReviewWayDecision(slug, parent, parentErr)
++	switch refusal.Kind {
++	case burlerengine.ParentAnswerNoAsk:
++		return "the run has no parent-review ask; " + wayDecision
++	case burlerengine.ParentAnswerNotLatest:
++		if !latest.State.Ended() {
++			return fmt.Sprintf("ask %d is not the run's latest ask: ask %d is, and it awaits an answer, so the decision record may have changed since ask %d; way forward: review the record again under ask %d's own request, then answer with --ask %d",
++				number, latest.Number, number, latest.Number, latest.Number)
++		}
++		return fmt.Sprintf("ask %d is not the run's latest ask, which is ask %d, already %s; %s", number, latest.Number, latest.State, wayDecision)
++	case burlerengine.ParentAnswerPastDeadline:
++		return fmt.Sprintf("ask %d reached its deadline at %s with no answer and is now %s; %s", number, latest.Deadline.UTC().Format(time.RFC3339), latest.State, wayDecision)
++	}
++	return fmt.Sprintf("ask %d is already %s; %s", number, latest.State, wayDecision)
++}
++
++// parentReviewAnswerVerb records the parent's answer in input to the run's latest ask and sets the ask done.
++// A refusal carries a way forward and writes nothing.
++// An ask found at or past its deadline is the exception: the call sets it timeout.
++func parentReviewAnswerVerb(out io.Writer, slug string, deps parentReviewDeps, input parentAnswerInput) int {
++	refuse := func(format string, args ...any) int {
++		return output.Err(out, fmt.Sprintf("loom: %s %s: ", parentReviewGroup, parentReviewAnswerName)+fmt.Sprintf(format, args...))
++	}
++	if input.ask < 1 {
++		return refuse("--ask is required and numbers an ask from 1 up; %s", parentReviewWayFlags)
++	}
++	if input.satisfied == (input.findingsFile != "") {
++		return refuse("pass exactly one of --satisfied or --findings-file; %s", parentReviewWayFlags)
++	}
++	var findings []burlerengine.ParentFinding
++	if input.findingsFile != "" {
++		var refusal string
++		if findings, refusal = readParentFindings(input.findingsFile); refusal != "" {
++			return refuse("%s", refusal)
++		}
++	}
++
++	record, _, err := burlerengine.ReadParentAsks(deps.files)
++	if err != nil {
++		return refuse("read the run's parent-review asks: %s; %s", err, parentReviewWayRetry)
++	}
++	asked, _ := record.Ask(input.ask)
++	parent, parentErr := deps.parent()
++	if refusal := parentAnswerCallerRefusal(deps.strandName, parent, parentErr, asked); refusal != "" {
++		return refuse("%s", refusal)
++	}
++
++	ask, err := burlerengine.AnswerParentAsk(deps.files, input.ask, deps.now(), findings)
++	var refusal *burlerengine.ParentAnswerRefusal
++	if errors.As(err, &refusal) {
++		return refuse("%s", parentAnswerRefusalText(slug, input.ask, refusal, parent, parentErr))
++	}
++	if err != nil {
++		return refuse("%s; %s", err, parentReviewWayRetry)
++	}
++	return output.Ok(out, map[string]any{
++		"slug":     slug,
++		"ask":      ask.Number,
++		"state":    string(ask.State),
++		"report":   ask.Report,
++		"findings": len(findings),
++	})
++}
++
++// parentReviewAwaitVerb waits for the run's latest ask to end, capped at deps.awaitCap.
++// It reads the ask record once per poll interval.
++// An ask still pending-post or open at or past its deadline is set timeout, which ends it.
++// It answers ready true with the ask's state once the ask has ended.
++// That answer carries the reason of a not-sent ask and the report of a done one.
++// It answers ready false once the cap runs out first, and the caller runs it again.
++// A run with no ask is refused.
++func parentReviewAwaitVerb(ctx context.Context, out io.Writer, deps parentReviewDeps) int {
++	refuse := func(format string, args ...any) int {
++		return output.Err(out, fmt.Sprintf("loom: %s %s: ", parentReviewGroup, parentReviewAwaitName)+fmt.Sprintf(format, args...))
++	}
++	end := deps.now().Add(deps.awaitCap)
++	for {
++		ask, found, err := burlerengine.ExpireParentAsk(deps.files, deps.now())
++		if err != nil {
++			return refuse("%s; %s", err, parentReviewWayAwaitRetry)
++		}
++		if !found {
++			return refuse("the run has no parent-review ask to wait on; %s", parentReviewWayAwaitNoAsk)
++		}
++		if ask.State.Ended() {
++			result := map[string]any{"ready": true, "ask": ask.Number, "state": string(ask.State)}
++			if ask.State == burlerengine.ParentAskNotSent {
++				result["reason"] = ask.Reason
++			}
++			if ask.State == burlerengine.ParentAskDone {
++				result["report"] = ask.Report
++			}
++			return output.Ok(out, result)
++		}
++		remaining := end.Sub(deps.now())
++		if remaining <= 0 {
++			return output.Ok(out, map[string]any{
++				"ready":    false,
++				"ask":      ask.Number,
++				"state":    string(ask.State),
++				"deadline": ask.Deadline.UTC().Format(time.RFC3339),
++				"message":  "the parent has not answered and the ask's deadline has not passed; call this command again",
++			})
++		}
++		if err := deps.sleep(ctx, min(parentReviewPollInterval, remaining)); err != nil {
++			return refuse("the wait was cut short: %s; %s", err, parentReviewWayAwaitRetry)
++		}
++	}
++}
++
++// parentReviewState carries a parent-review verb's resolved target and side effects from the group's pre-run.
++type parentReviewState struct {
++	slug   string
++	deps   parentReviewDeps
++	answer parentAnswerInput
++}
++
++// preRun resolves the invoking cwd, then the target worktree, then the verb's side effects.
++func (s *parentReviewState) preRun(cmd *cobra.Command, args []string) error {
++	if cmd.Name() == parentReviewGroup {
++		return nil
++	}
++	ctx := cmd.Context()
++	out := cmd.OutOrStdout()
++	abort := func(msg string) error {
++		output.Err(out, msg)
++		clihelp.Abort(ctx, 1)
++		return nil
++	}
++
++	cwd, err := lymcwd.CwdFrom(ctx)
++	if err != nil {
++		return abort(err.Error())
++	}
++	location, err := lymcwd.Resolve(cwd)
++	if err != nil {
++		return abort(err.Error())
++	}
++	slug := ""
++	if len(args) >= 1 {
++		slug = args[0]
++	}
++	target, err := resolveReviewTarget(parentReviewGroup, cmd.Name(), location, slug, defaultReviewTargetDeps())
++	if err != nil {
++		return abort(err.Error())
++	}
++	recipe, err := seedRecipe(target)
++	if err != nil {
++		return abort(fmt.Sprintf("loom: %s %s: read the run's seed: %s; way forward: restore the run's seed, or begin the run again with `lym loom start`", parentReviewGroup, cmd.Name(), err))
++	}
++	record := runRecordOf(target, recipe)
++	strand := os.Getenv(agentname.StrandNameEnv)
++	s.slug = target.WorktreeName
++	s.deps = parentReviewDeps{
++		strandName: strand,
++		parent:     func() (hubgeom.Parent, error) { return decisionParent(target, record, orchcli.OrchLive) },
++		files:      burlerengine.ParentReviewFilesOf(target.AnchorPath()),
++		now:        time.Now,
++		awaitCap:   shuttleengines.KeepWarm(fabricengine.ConfigDirs(target), strand).Cap,
++		sleep:      sleepContext,
++	}
++	return nil
++}
++
++// parentReviewCmd builds the `parent-review` subtree.
++func (c *loomCLI) parentReviewCmd() *cobra.Command {
++	st := &parentReviewState{}
++
++	group := &cobra.Command{
++		Use:   parentReviewGroup,
++		Short: "answer or await a Discussion-Review round's ask to the parent orch",
++		Long: `parent-review holds the verbs of a Discussion-Review round's ask to the run's
++parent orch. "parent-review answer" records the parent's review of the decision
++record; "parent-review await" is the review chair's wait for that answer.
++
++The verb takes an optional slug naming the task worktree. A task worktree
++addresses itself; from the prime the slug is required. The ask record and the
++parent's reports are never tracked.
++
++Example:
++  lym loom parent-review answer <slug> --ask 1 --satisfied
++  lym loom parent-review await <slug>`,
++		RunE:              clihelp.GroupRunE,
++		PersistentPreRunE: st.preRun,
++	}
++
++	answer := &cobra.Command{
++		Use:         parentReviewAnswerName + " [<slug>]",
++		Short:       "record the parent orch's review of a Discussion-Review round's ask",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Long: `answer writes the parent's report for the ask --ask names and sets the ask
++done. --ask is required, with exactly one of --satisfied, which writes a report
++with no findings, or --findings-file <path>, a YAML file holding a "findings"
++list. Each item has a required "change", naming what to change and where, and
++an optional "severity" (BLOCKING, MEDIUM, LOW or NIT) and "class" (design,
++scope, decision or consistency). The report numbers the items P1, P2 and so on
++in the file's order.
++
++It answers only the run's latest ask while that ask is pending-post or open
++and before its deadline; an ask at or past its deadline is set timeout and the
++answer refused. A call the parent still wants made after a refusal goes in with
++"lym loom decision add <slug> --by parent".
++
++The callers are the run's parent orch, resolved at call time, the orch strand
++the ask went to, and the operator's own unnamed shell; the strand name is not
++verified. It edits no tracked file and never the decision record.
++
++Example:
++  lym loom parent-review answer <slug> --ask 2 --findings-file findings.yaml`,
++		Args: cobra.MaximumNArgs(1),
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			clihelp.SetExit(cmd.Context(), parentReviewAnswerVerb(cmd.OutOrStdout(), st.slug, st.deps, st.answer))
++			return nil
++		},
++	}
++	answer.Flags().IntVar(&st.answer.ask, "ask", 0, "the number of the ask the answer is for, as the parent's request names it")
++	answer.Flags().BoolVar(&st.answer.satisfied, "satisfied", false, "the parent has no findings")
++	answer.Flags().StringVar(&st.answer.findingsFile, "findings-file", "", "a YAML file holding the parent's findings list")
++
++	await := &cobra.Command{
++		Use:         parentReviewAwaitName + " [<slug>]",
++		Short:       "wait, capped, until the run's latest parent-review ask has ended",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceRole},
++		Long: `await waits until the run's latest parent-review ask has ended, and prints ok
++with ready true, the ask's state, the reason of a not-sent ask and the report
++of a done one. An ask still pending-post or open at or past its deadline is set
++timeout, which ends it. When the calling session's keep-warm cap elapses first
++it prints ok with ready false and exits 0: run it again, in a turn that does
++nothing else, with a Bash tool timeout above the cap. A run with no ask is
++refused. Any caller may run it; it writes only timeout, and only to an ask at
++or past its deadline.
++
++Example:
++  lym loom parent-review await <slug>`,
++		Args: cobra.MaximumNArgs(1),
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			clihelp.SetExit(cmd.Context(), parentReviewAwaitVerb(cmd.Context(), cmd.OutOrStdout(), st.deps))
++			return nil
++		},
++	}
++
++	group.AddCommand(answer, await)
++	return group
++}
+diff --git a/internal/loomcli/parentreview_test.go b/internal/loomcli/parentreview_test.go
+new file mode 100644
+index 00000000..a3a469d0
+--- /dev/null
++++ b/internal/loomcli/parentreview_test.go
+@@ -0,0 +1,368 @@
++// parentreview_test.go tables the parent-review answer and await verbs over a temp ask record and a fake clock.
++
++package loomcli
++
++import (
++	"bytes"
++	"context"
++	"errors"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/burlerengine"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/testkit/envelope"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"gopkg.in/yaml.v3"
++)
++
++// parentReviewNow is the clock the parent-review verb tests judge deadlines against.
++var parentReviewNow = time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
++
++// parentReviewParent is the run's parent orch as the fakes resolve it.
++const parentReviewParent = "ly:orch"
++
++// parentReviewFixture records asks into a fresh run's files and returns deps over them.
++// The parent resolves to parentReviewParent and the caller is the operator's unnamed shell until the test sets them.
++func parentReviewFixture(t *testing.T, asks ...burlerengine.ParentAsk) parentReviewDeps {
++	t.Helper()
++	files := burlerengine.ParentReviewFilesOf(t.TempDir())
++	for _, ask := range asks {
++		if _, err := burlerengine.RecordParentAsk(files, ask); err != nil {
++			t.Fatalf("RecordParentAsk() error = %v", err)
++		}
++	}
++	return parentReviewDeps{
++		parent: func() (hubgeom.Parent, error) { return hubgeom.Parent{Name: parentReviewParent}, nil },
++		files:  files,
++		now:    func() time.Time { return parentReviewNow },
++	}
++}
++
++// openParentAsk is an open ask whose deadline is d past parentReviewNow.
++func openParentAsk(d time.Duration) burlerengine.ParentAsk {
++	return burlerengine.ParentAsk{State: burlerengine.ParentAskOpen, Strand: "ly:orch-asked", Deadline: parentReviewNow.Add(d)}
++}
++
++// TestParentReviewAnswerVerb verifies the answer verb records a well-formed answer from an admitted caller,
++// and that each refusal names its way forward and leaves the asks as stated.
++func TestParentReviewAnswerVerb(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const decisionWay = `"lym loom decision add task-a --by parent", run by the run's parent orch ly:orch`
++	tests := []struct {
++		name string
++		asks []burlerengine.ParentAsk
++		// findings, when set, is the content of the --findings-file the call passes.
++		findings string
++		// emptyFindingsFile writes the --findings-file even when findings is empty.
++		emptyFindingsFile bool
++		input             parentAnswerInput
++		setup             func(*parentReviewDeps)
++		// want lists text the refusal must hold; empty wants an answer.
++		want       []string
++		wantStates []burlerengine.ParentAskState
++		// wantReport, when set, is the findings the written report must hold.
++		wantReport []burlerengine.ParentFinding
++	}{
++		{
++			name:       "satisfied answers the open ask",
++			asks:       []burlerengine.ParentAsk{openParentAsk(time.Minute)},
++			input:      parentAnswerInput{ask: 1, satisfied: true},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskDone},
++		},
++		{
++			name:       "a findings file answers with its findings",
++			asks:       []burlerengine.ParentAsk{openParentAsk(time.Minute)},
++			findings:   "findings:\n  - change: name the lock in D5\n    severity: MEDIUM\n    class: design\n  - change: drop the duplicated bound\n",
++			input:      parentAnswerInput{ask: 1},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskDone},
++			wantReport: []burlerengine.ParentFinding{
++				{ID: "P1", Severity: burlerengine.SeverityMedium, Class: burlerengine.ClassDesign, Change: "name the lock in D5"},
++				{ID: "P2", Change: "drop the duplicated bound"},
++			},
++		},
++		{
++			name:       "the run's parent orch answers an open ask",
++			asks:       []burlerengine.ParentAsk{openParentAsk(time.Minute)},
++			input:      parentAnswerInput{ask: 1, satisfied: true},
++			setup:      func(d *parentReviewDeps) { d.strandName = parentReviewParent },
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskDone},
++		},
++		{
++			name:       "the strand the ask went to answers a pending-post ask after the parent resolves to another orch",
++			asks:       []burlerengine.ParentAsk{{State: burlerengine.ParentAskPendingPost, Strand: "ly:orch-asked", Deadline: parentReviewNow.Add(time.Minute)}},
++			input:      parentAnswerInput{ask: 1, satisfied: true},
++			setup:      func(d *parentReviewDeps) { d.strandName = "ly:orch-asked" },
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskDone},
++		},
++		{name: "a missing --ask is refused", input: parentAnswerInput{satisfied: true}, want: []string{"--ask is required", parentReviewWayFlags}, wantStates: []burlerengine.ParentAskState{}},
++		{name: "both answer forms are refused", findings: "findings: []\n", input: parentAnswerInput{ask: 1, satisfied: true}, want: []string{"exactly one of", parentReviewWayFlags}, wantStates: []burlerengine.ParentAskState{}},
++		{name: "neither answer form is refused", input: parentAnswerInput{ask: 1}, want: []string{"exactly one of", parentReviewWayFlags}, wantStates: []burlerengine.ParentAskState{}},
++		{name: "a findings file with no item is refused", findings: "findings: []\n", input: parentAnswerInput{ask: 1}, want: []string{"holds no finding", parentReviewWayFindingsFile}, wantStates: []burlerengine.ParentAskState{}},
++		{name: "a finding with no change is refused", findings: "findings:\n  - severity: LOW\n", input: parentAnswerInput{ask: 1}, want: []string{"finding 1", "has no change", parentReviewWayFindingsFile}, wantStates: []burlerengine.ParentAskState{}},
++		{name: "a severity outside the review format is refused", findings: "findings:\n  - change: a\n  - change: b\n    severity: HIGH\n", input: parentAnswerInput{ask: 1}, want: []string{"finding 2", `"HIGH"`, parentReviewWayFindingsFile}, wantStates: []burlerengine.ParentAskState{}},
++		{name: "a class outside the review format is refused", findings: "findings:\n  - change: a\n    class: style\n", input: parentAnswerInput{ask: 1}, want: []string{"finding 1", `"style"`, parentReviewWayFindingsFile}, wantStates: []burlerengine.ParentAskState{}},
++		{
++			name:  "an empty findings file is refused",
++			asks:  []burlerengine.ParentAsk{openParentAsk(time.Minute)},
++			input: parentAnswerInput{ask: 1}, emptyFindingsFile: true,
++			want:       []string{"holds no finding", parentReviewWayFindingsFile},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskOpen},
++		},
++		{
++			name:       "a findings file that is not a YAML findings list is refused",
++			asks:       []burlerengine.ParentAsk{openParentAsk(time.Minute)},
++			findings:   "[",
++			input:      parentAnswerInput{ask: 1},
++			want:       []string{"is not YAML holding a findings list", parentReviewWayFindingsFile},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskOpen},
++		},
++		{
++			name:       "a findings file path that does not exist is refused",
++			asks:       []burlerengine.ParentAsk{openParentAsk(time.Minute)},
++			input:      parentAnswerInput{ask: 1, findingsFile: "/nonexistent/parent-review/findings.yaml"},
++			want:       []string{"read the --findings-file", parentReviewWayFindingsFile},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskOpen},
++		},
++		{
++			name:       "a finding whose change is only whitespace is refused",
++			asks:       []burlerengine.ParentAsk{openParentAsk(time.Minute)},
++			findings:   "findings:\n  - change: \"  \"\n",
++			input:      parentAnswerInput{ask: 1},
++			want:       []string{"finding 1", "has no change", parentReviewWayFindingsFile},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskOpen},
++		},
++		{
++			name:  "a caller is refused when the run's parent orch cannot be resolved",
++			asks:  []burlerengine.ParentAsk{openParentAsk(time.Minute)},
++			input: parentAnswerInput{ask: 1, satisfied: true},
++			setup: func(d *parentReviewDeps) {
++				d.strandName = "ly:task-a:darn"
++				d.parent = func() (hubgeom.Parent, error) { return hubgeom.Parent{}, errors.New("no orch is live") }
++			},
++			want:       []string{`"ly:task-a:darn"`, "could not be resolved", parentReviewWayParentAnswers},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskOpen},
++		},
++		{
++			name:       "a caller that is neither the parent nor the ask's strand is refused",
++			asks:       []burlerengine.ParentAsk{openParentAsk(time.Minute)},
++			input:      parentAnswerInput{ask: 1, satisfied: true},
++			setup:      func(d *parentReviewDeps) { d.strandName = "ly:task-a:darn" },
++			want:       []string{`"ly:task-a:darn"`, "neither the run's parent orch nor the strand the ask went to", parentReviewWayParentAnswers},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskOpen},
++		},
++		{name: "a run with no ask is refused", input: parentAnswerInput{ask: 1, satisfied: true}, want: []string{"no parent-review ask", decisionWay}, wantStates: []burlerengine.ParentAskState{}},
++		{
++			name:  "a run with no ask and no parent orch names the operator's shell",
++			input: parentAnswerInput{ask: 1, satisfied: true},
++			setup: func(d *parentReviewDeps) {
++				d.parent = func() (hubgeom.Parent, error) { return hubgeom.Parent{}, errors.New("no orch is live") }
++			},
++			want:       []string{"no parent-review ask", `"lym loom decision add task-a --by parent", run by the operator's own unnamed shell`},
++			wantStates: []burlerengine.ParentAskState{},
++		},
++		{
++			name:       "an older ask while the latest awaits an answer is sent to review the record again",
++			asks:       []burlerengine.ParentAsk{{State: burlerengine.ParentAskTimeout}, openParentAsk(time.Minute)},
++			input:      parentAnswerInput{ask: 1, satisfied: true},
++			want:       []string{"ask 2 is", "the decision record may have changed since ask 1", "review the record again under ask 2's own request", "--ask 2"},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskTimeout, burlerengine.ParentAskOpen},
++		},
++		{
++			name:       "an older ask while the latest has ended names the decision verb",
++			asks:       []burlerengine.ParentAsk{{State: burlerengine.ParentAskTimeout}, {State: burlerengine.ParentAskNoParent}},
++			input:      parentAnswerInput{ask: 1, satisfied: true},
++			want:       []string{"which is ask 2, already no-parent", decisionWay},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskTimeout, burlerengine.ParentAskNoParent},
++		},
++		{name: "a done ask is refused", asks: []burlerengine.ParentAsk{{State: burlerengine.ParentAskDone}}, input: parentAnswerInput{ask: 1, satisfied: true}, want: []string{"already done", decisionWay}, wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskDone}},
++		{name: "a timed-out ask is refused", asks: []burlerengine.ParentAsk{{State: burlerengine.ParentAskTimeout}}, input: parentAnswerInput{ask: 1, satisfied: true}, want: []string{"already timeout", decisionWay}, wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskTimeout}},
++		{name: "a no-parent ask is refused", asks: []burlerengine.ParentAsk{{State: burlerengine.ParentAskNoParent}}, input: parentAnswerInput{ask: 1, satisfied: true}, want: []string{"already no-parent", decisionWay}, wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskNoParent}},
++		{name: "a not-sent ask is refused", asks: []burlerengine.ParentAsk{{State: burlerengine.ParentAskNotSent}}, input: parentAnswerInput{ask: 1, satisfied: true}, want: []string{"already not-sent", decisionWay}, wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskNotSent}},
++		{
++			name:       "an open ask at its deadline is set timeout and the answer refused",
++			asks:       []burlerengine.ParentAsk{openParentAsk(0)},
++			input:      parentAnswerInput{ask: 1, satisfied: true},
++			want:       []string{"reached its deadline at 2026-11-11T12:00:00Z", "now timeout", decisionWay},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskTimeout},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			deps := parentReviewFixture(t, tt.asks...)
++			if tt.setup != nil {
++				tt.setup(&deps)
++			}
++			input := tt.input
++			if tt.findings != "" || tt.emptyFindingsFile {
++				input.findingsFile = filepath.Join(t.TempDir(), "findings.yaml")
++				if err := os.WriteFile(input.findingsFile, []byte(tt.findings), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			var out bytes.Buffer
++			code := parentReviewAnswerVerb(&out, "task-a", deps, input)
++			record, _, err := burlerengine.ReadParentAsks(deps.files)
++			if err != nil {
++				t.Fatalf("ReadParentAsks() error = %v", err)
++			}
++			states := []burlerengine.ParentAskState{}
++			for _, ask := range record.Asks {
++				states = append(states, ask.State)
++			}
++			if !reflect.DeepEqual(states, tt.wantStates) {
++				t.Errorf("ask states = %v; want %v", states, tt.wantStates)
++			}
++			if len(tt.want) > 0 {
++				env := envelope.RequireErr(t, out.String(), "loom: parent-review answer: ")
++				for _, want := range tt.want {
++					if !strings.Contains(env.Error, want) {
++						t.Errorf("refusal = %q; want it to hold %q", env.Error, want)
++					}
++				}
++				if code == 0 {
++					t.Errorf("parentReviewAnswerVerb() = 0; want a non-zero exit")
++				}
++				return
++			}
++			env := envelope.RequireOK(t, out.String())
++			want := map[string]any{"slug": "task-a", "ask": float64(input.ask), "state": "done", "report": deps.files.ReportPath(input.ask), "findings": float64(len(tt.wantReport))}
++			if !reflect.DeepEqual(env.Raw, want) {
++				t.Errorf("envelope = %v; want %v", env.Raw, want)
++			}
++			if tt.wantReport != nil {
++				data, err := os.ReadFile(deps.files.ReportPath(input.ask))
++				if err != nil {
++					t.Fatalf("read the report: %v", err)
++				}
++				var report burlerengine.ParentReport
++				if err := yaml.Unmarshal(data, &report); err != nil {
++					t.Fatalf("parse the report: %v", err)
++				}
++				if !reflect.DeepEqual(report.Findings, tt.wantReport) {
++					t.Errorf("report findings = %+v; want %+v", report.Findings, tt.wantReport)
++				}
++			}
++		})
++	}
++}
++
++// TestParentReviewAwaitVerb verifies the await answers ready once the latest ask has ended or reaches its deadline.
++// The answer names the state, a not-sent ask's reason and a done ask's report.
++// The await answers not ready once its cap runs out first.
++func TestParentReviewAwaitVerb(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name     string
++		asks     []burlerengine.ParentAsk
++		awaitCap time.Duration
++		// answerAfter, when above zero, answers the latest ask satisfied once the fake clock has run that long.
++		answerAfter time.Duration
++		want        map[string]any
++		wantErr     []string
++		wantSlept   time.Duration
++		// sleepErr, when set, is what the fake sleep returns, as a cancelled context's sleep does.
++		sleepErr error
++	}{
++		{
++			name:        "an answer during the wait answers ready with the report",
++			asks:        []burlerengine.ParentAsk{openParentAsk(time.Hour)},
++			awaitCap:    time.Minute,
++			answerAfter: 2 * time.Second,
++			want:        map[string]any{"ready": true, "ask": float64(1), "state": "done", "report": "<report 1>"},
++			wantSlept:   2 * time.Second,
++		},
++		{
++			name:     "an ask already timed out answers ready at once",
++			asks:     []burlerengine.ParentAsk{{State: burlerengine.ParentAskTimeout}},
++			awaitCap: time.Minute,
++			want:     map[string]any{"ready": true, "ask": float64(1), "state": "timeout"},
++		},
++		{
++			name:     "a not-sent ask answers ready with its reason",
++			asks:     []burlerengine.ParentAsk{{State: burlerengine.ParentAskNotSent, Reason: "raise review_timeout_min"}},
++			awaitCap: time.Minute,
++			want:     map[string]any{"ready": true, "ask": float64(1), "state": "not-sent", "reason": "raise review_timeout_min"},
++		},
++		{
++			name:      "the deadline reached during the wait sets the ask timeout and answers ready",
++			asks:      []burlerengine.ParentAsk{openParentAsk(3 * time.Second)},
++			awaitCap:  time.Minute,
++			want:      map[string]any{"ready": true, "ask": float64(1), "state": "timeout"},
++			wantSlept: 3 * time.Second,
++		},
++		{
++			name:     "a cap that runs out first answers not ready",
++			asks:     []burlerengine.ParentAsk{openParentAsk(time.Hour)},
++			awaitCap: 2500 * time.Millisecond,
++			want: map[string]any{
++				"ready": false, "ask": float64(1), "state": "open", "deadline": "2026-11-11T13:00:00Z",
++				"message": "the parent has not answered and the ask's deadline has not passed; call this command again",
++			},
++			wantSlept: 2500 * time.Millisecond,
++		},
++		{name: "a run with no ask is refused", awaitCap: time.Minute, wantErr: []string{parentReviewWayAwaitNoAsk}},
++		{
++			name:     "a wait cut short is refused",
++			asks:     []burlerengine.ParentAsk{openParentAsk(time.Hour)},
++			awaitCap: time.Minute,
++			sleepErr: context.Canceled,
++			wantErr:  []string{"the wait was cut short", parentReviewWayAwaitRetry},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			deps := parentReviewFixture(t, tt.asks...)
++			clock := parentReviewNow
++			deps.now = func() time.Time { return clock }
++			deps.awaitCap = tt.awaitCap
++			deps.sleep = func(_ context.Context, d time.Duration) error {
++				if d > time.Second {
++					t.Errorf("sleep(%s); want at most one second between reads", d)
++				}
++				if tt.sleepErr != nil {
++					return tt.sleepErr
++				}
++				clock = clock.Add(d)
++				if tt.answerAfter > 0 && !clock.Before(parentReviewNow.Add(tt.answerAfter)) {
++					if _, err := burlerengine.AnswerParentAsk(deps.files, len(tt.asks), clock, nil); err != nil {
++						t.Errorf("AnswerParentAsk() error = %v", err)
++					}
++				}
++				return nil
++			}
++			var out bytes.Buffer
++			parentReviewAwaitVerb(context.Background(), &out, deps)
++			if len(tt.wantErr) > 0 {
++				for _, want := range tt.wantErr {
++					envelope.RequireErr(t, out.String(), want)
++				}
++				return
++			}
++			env := envelope.RequireOK(t, out.String())
++			if report, ok := tt.want["report"]; ok && report == "<report 1>" {
++				tt.want["report"] = deps.files.ReportPath(1)
++			}
++			if !reflect.DeepEqual(env.Raw, tt.want) {
++				t.Errorf("envelope = %v; want %v", env.Raw, tt.want)
++			}
++			if slept := clock.Sub(parentReviewNow); slept != tt.wantSlept {
++				t.Errorf("await slept %s; want %s", slept, tt.wantSlept)
++			}
++			if tt.want["state"] == "timeout" && len(tt.asks) > 0 && tt.asks[0].State == burlerengine.ParentAskOpen {
++				record, _, _ := burlerengine.ReadParentAsks(deps.files)
++				if latest, _ := record.Latest(); latest.State != burlerengine.ParentAskTimeout {
++					t.Errorf("latest ask state = %s; want timeout written", latest.State)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/loomengine/config.go b/internal/loomengine/config.go
+index 2580efc9..1f6267e6 100644
+--- a/internal/loomengine/config.go
++++ b/internal/loomengine/config.go
+@@ -548,6 +548,14 @@ type Config struct {
+ 	// PRReviewAskParent makes the PR-Review row ask the parent orch for a review of the run's open pull request.
+ 	// It is open to the local layer, so a task's run_settings turns it on or off for one run.
+ 	PRReviewAskParent bool `yaml:"pr_review_ask_parent"`
++
++	// DiscussionReviewAskParent makes each Discussion-Review round ask the parent orch to review the decision record.
++	// It is open to the local layer, so a task's run_settings turns it on or off for one run.
++	DiscussionReviewAskParent bool `yaml:"discussion_review_ask_parent"`
++	// DiscussionReviewParentTimeoutMin is the minutes from a parent-review ask to its deadline, before the cap.
++	// The cap leaves the reviewer room to consolidate.
++	// It is a positive integer.
++	DiscussionReviewParentTimeoutMin int `yaml:"discussion_review_parent_timeout_min"`
+ }
+ 
+ // DiscussionAdvisor is one Discussion-Write advisor: Name is its seat name and Model its model-spec.
+@@ -672,6 +680,9 @@ func ConfigSpec() configengine.Spec {
+ 			"step_idle_timeout_min":            none,
+ 			"review_circling_checkpoint":       none,
+ 			"pr_review_ask_parent":             none,
++
++			"discussion_review_ask_parent":         none,
++			"discussion_review_parent_timeout_min": none,
+ 		},
+ 		RetiredKeys: map[string]configengine.Category{
+ 			"fan_review": none,
+@@ -1392,6 +1403,10 @@ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 		return Config{}, fmt.Errorf("loom config key %q: must be at least 1, got %d; set it to a positive integer in loom.yaml", "review_circling_checkpoint", cfg.ReviewCirclingCheckpoint)
+ 	}
+ 
++	if cfg.DiscussionReviewParentTimeoutMin < 1 {
++		return Config{}, fmt.Errorf("loom config key %q: must be at least 1, got %d; set it to a positive integer in loom.yaml", "discussion_review_parent_timeout_min", cfg.DiscussionReviewParentTimeoutMin)
++	}
++
+ 	if err := reviewbudget.CheckResolved(dirs, spec, reviewbudget.Values{
+ 		RunSoft:  cfg.ReviewMaxBounces,
+ 		RunHard:  cfg.ReviewHardMaxBounces,
+diff --git a/internal/loomengine/config_test.go b/internal/loomengine/config_test.go
+index e112c13c..e33ba264 100644
+--- a/internal/loomengine/config_test.go
++++ b/internal/loomengine/config_test.go
+@@ -136,6 +136,9 @@ var templateDefaults = map[string]any{
+ 	"SplitMaxBounces":               intPtr(2),
+ 	"DiscussionAutoAccept":          false,
+ 	"CodeAutoAccept":                true,
++
++	"DiscussionReviewAskParent":        false,
++	"DiscussionReviewParentTimeoutMin": 30,
+ }
+ 
+ // loadTemplateConfig returns the Config the shipped template loads to, read from an anchor that holds only the template.
+@@ -217,6 +220,11 @@ review_timeout_min: 240
+ 			values: map[string]string{"pr_review_ask_parent": "true"},
+ 			mutate: func(c *Config) { c.PRReviewAskParent = true },
+ 		},
++		{
++			name:   "Discussion-Review parent-review keys overridden",
++			values: map[string]string{"discussion_review_ask_parent": "true", "discussion_review_parent_timeout_min": "1"},
++			mutate: func(c *Config) { c.DiscussionReviewAskParent, c.DiscussionReviewParentTimeoutMin = true, 1 },
++		},
+ 		{
+ 			name:   "reviewer_model as a per-round list",
+ 			values: map[string]string{"reviewer_model": "\n  - sonnet[low]\n  - opus[high]"},
+@@ -697,6 +705,8 @@ func TestLoadConfig_Refuses(t *testing.T) {
+ 		{"malformed driver spec", "driver", `"opus[effort"`, nil, ""},
+ 		{"zero review_circling_checkpoint", "review_circling_checkpoint", "0", []string{positiveIntegerForward}, ""},
+ 		{"negative review_circling_checkpoint", "review_circling_checkpoint", "-1", []string{positiveIntegerForward}, ""},
++		{"zero discussion_review_parent_timeout_min", "discussion_review_parent_timeout_min", "0", []string{"must be at least 1", positiveIntegerForward}, ""},
++		{"negative discussion_review_parent_timeout_min", "discussion_review_parent_timeout_min", "-1", []string{"must be at least 1", positiveIntegerForward}, ""},
+ 		{"negative review_max_bounces", "review_max_bounces", "-1", []string{"must not be negative", "set it to 0 for no review round, or to a positive integer"}, ""},
+ 		{"negative discussion_max_bounces", "discussion_max_bounces", "-1", []string{"must not be negative", "set it to 0 for no review round, to a positive integer, or to null to take review_max_bounces"}, ""},
+ 		{"negative code_max_bounces", "code_max_bounces", "-1", []string{"must not be negative", "or to null to take review_max_bounces"}, ""},
+diff --git a/internal/loomengine/review.go b/internal/loomengine/review.go
+index 11a486f7..7590a1ae 100644
+--- a/internal/loomengine/review.go
++++ b/internal/loomengine/review.go
+@@ -62,10 +62,7 @@ type AssistModels struct {
+ // A capped bound logs one Warn naming assist_reviewer_timeout_min and review_timeout_min.
+ // A cap that leaves no time returns a zero bound and a non-empty reason naming both keys, and logs a Warn.
+ func CapAssistTimeout(cfg Config, runTimeout, startAllowance, awaitCap time.Duration) (time.Duration, string) {
+-	chair := time.Duration(cfg.ReviewTimeoutMin) * time.Minute
+-	if cfg.ReviewTimeoutMin == 0 {
+-		chair = runTimeout
+-	}
++	chair := chairTimeout(cfg, runTimeout)
+ 	room := chair - startAllowance - awaitCap
+ 	want := time.Duration(cfg.AssistReviewerTimeoutMin) * time.Minute
+ 	if room <= 0 {
+@@ -83,6 +80,44 @@ func CapAssistTimeout(cfg Config, runTimeout, startAllowance, awaitCap time.Dura
+ 	return want, ""
+ }
+ 
++// chairTimeout returns a review chair's timeout: review_timeout_min, or runTimeout when that key is 0.
++// runTimeout is shuttle's run_timeout_min.
++func chairTimeout(cfg Config, runTimeout time.Duration) time.Duration {
++	if cfg.ReviewTimeoutMin == 0 {
++		return runTimeout
++	}
++	return time.Duration(cfg.ReviewTimeoutMin) * time.Minute
++}
++
++// ParentConsolidationMargin is the time a Discussion-Review chair keeps after its wait for the parent orch ends.
++// The chair uses it to consolidate the round before its own timeout.
++const ParentConsolidationMargin = 5 * time.Minute
++
++// CapParentReviewWait returns the time from a Discussion-Review parent-review ask to its deadline.
++// The wait is capped so the chair keeps room to consolidate before its own timeout.
++// The uncapped wait is discussion_review_parent_timeout_min.
++// The room is the chair's timeout less startAllowance, one awaitCap and ParentConsolidationMargin.
++// The chair's timeout is review_timeout_min, or runTimeout, shuttle's run_timeout_min, when that key is 0.
++// startAllowance is what shuttle grants a launch and its start retries; awaitCap is the chair's keep-warm cap.
++// A capped wait logs one Warn naming discussion_review_parent_timeout_min and review_timeout_min.
++// A room of zero or less returns a zero wait and a non-empty reason naming both keys, and logs a Warn:
++// the round then sends no ask.
++func CapParentReviewWait(cfg Config, runTimeout, startAllowance, awaitCap time.Duration) (time.Duration, string) {
++	chair := chairTimeout(cfg, runTimeout)
++	room := chair - startAllowance - awaitCap - ParentConsolidationMargin
++	if room <= 0 {
++		reason := fmt.Sprintf("discussion_review_parent_timeout_min leaves the parent no time: the reviewer's timeout of %s (review_timeout_min) is spent by its start allowance of %s, one await cap of %s and the consolidation margin of %s; raise review_timeout_min", chair, startAllowance, awaitCap, ParentConsolidationMargin)
++		logger.Warn("loom: the parent review gets no time and no ask is sent; raise review_timeout_min", "key", "discussion_review_parent_timeout_min", "chairKey", "review_timeout_min", "chair", chair, "startAllowance", startAllowance, "awaitCap", awaitCap, "margin", ParentConsolidationMargin)
++		return 0, reason
++	}
++	want := time.Duration(cfg.DiscussionReviewParentTimeoutMin) * time.Minute
++	if want > room {
++		logger.Warn("loom: discussion_review_parent_timeout_min is capped to leave the reviewer room to consolidate before its own timeout", "key", "discussion_review_parent_timeout_min", "chairKey", "review_timeout_min", "value", want, "capped", room)
++		return room, ""
++	}
++	return want, ""
++}
++
+ // SegmentKeys names the config keys one review segment's reviewer and fixer model lists came from.
+ // Each key is the segment's own key when it is set, else loom.yaml's shared key.
+ type SegmentKeys struct {
+diff --git a/internal/loomengine/review_test.go b/internal/loomengine/review_test.go
+index f226ea97..a01f8803 100644
+--- a/internal/loomengine/review_test.go
++++ b/internal/loomengine/review_test.go
+@@ -281,6 +281,53 @@ func TestCapAssistTimeout(t *testing.T) {
+ 	}
+ }
+ 
++// TestCapParentReviewWait verifies the parent's wait is kept when it fits, and capped when it does not.
++// The room is the chair's timeout less the start allowance, one await cap and the consolidation margin;
++// with no room left the wait is zero, and the reason names both keys and says to raise review_timeout_min.
++func TestCapParentReviewWait(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name           string
++		cfg            Config
++		runTimeout     time.Duration
++		startAllowance time.Duration
++		awaitCap       time.Duration
++		want           time.Duration
++		wantSkip       bool
++	}{
++		{name: "a wait that fits is kept", cfg: Config{ReviewTimeoutMin: 240, DiscussionReviewParentTimeoutMin: 30}, startAllowance: 3 * time.Minute, awaitCap: 5 * time.Minute, want: 30 * time.Minute},
++		{name: "a wait past the room is capped to chair less start allowance, await cap and margin", cfg: Config{ReviewTimeoutMin: 20, DiscussionReviewParentTimeoutMin: 30}, startAllowance: 3 * time.Minute, awaitCap: 5 * time.Minute, want: 7 * time.Minute},
++		{name: "a zero review timeout takes the run timeout as the chair", cfg: Config{ReviewTimeoutMin: 0, DiscussionReviewParentTimeoutMin: 60}, runTimeout: 40 * time.Minute, startAllowance: 5 * time.Minute, awaitCap: 5 * time.Minute, want: 25 * time.Minute},
++		{name: "a room spent to exactly zero sends no ask", cfg: Config{ReviewTimeoutMin: 13, DiscussionReviewParentTimeoutMin: 30}, startAllowance: 3 * time.Minute, awaitCap: 5 * time.Minute, wantSkip: true},
++		{name: "an allowance past the chair sends no ask", cfg: Config{ReviewTimeoutMin: 5, DiscussionReviewParentTimeoutMin: 30}, startAllowance: 6 * time.Minute, awaitCap: 4 * time.Minute, wantSkip: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, reason := CapParentReviewWait(tt.cfg, tt.runTimeout, tt.startAllowance, tt.awaitCap)
++			if got != tt.want {
++				t.Errorf("CapParentReviewWait(...) wait = %s; want %s", got, tt.want)
++			}
++			if !tt.wantSkip {
++				if reason != "" {
++					t.Errorf("CapParentReviewWait(...) reason = %q; want none", reason)
++				}
++				chair := chairTimeout(tt.cfg, tt.runTimeout)
++				if slack := chair - tt.startAllowance - tt.awaitCap - got; slack < ParentConsolidationMargin {
++					t.Errorf("CapParentReviewWait(...) leaves the chair %s after its wait and start; want at least %s", slack, ParentConsolidationMargin)
++				}
++				return
++			}
++			for _, want := range []string{"discussion_review_parent_timeout_min", "review_timeout_min", "raise review_timeout_min"} {
++				if !strings.Contains(reason, want) {
++					t.Errorf("CapParentReviewWait(...) reason = %q; want it to name %q", reason, want)
++				}
++			}
++		})
++	}
++}
++
+ // TestResolveJudge verifies ResolveJudge resolves each segment's judge and seed through the fallback order:
+ // a segment's judge key, else judge; a segment's seed key, else seed, else the segment's resolved judge.
+ // The split perch has no seed key, so its seed is seed, else its resolved judge.
+diff --git a/internal/loomengine/template.yaml b/internal/loomengine/template.yaml
+index 36e3f7c9..6254a8fd 100644
+--- a/internal/loomengine/template.yaml
++++ b/internal/loomengine/template.yaml
+@@ -52,3 +52,5 @@ discussion_auto_accept: false  # true makes the Discussion-Review perch accept a
+ code_auto_accept: true  # true, the default, makes the Code-Review perch accept a harvested round at a spent budget with its open findings, BLOCKING ones included, instead of running the soft-cap rule; false restores the soft-cap rule
+ split_auto_accept: false  # true makes the split perch accept a harvested round at a spent budget with its open findings instead of running the soft-cap rule, and its approval files the proposal; false, the default, runs the soft-cap rule
+ pr_review_ask_parent: false  # true has the PR-Review row ask the parent orch for a review once the run's pull request is open, naming the slug, the pull request and its branches; the orch answers the PR-Review session, whose agent fixes any findings; false, the default, leaves asking to the operator; settable per run through run_settings
++discussion_review_ask_parent: false  # true has each Discussion-Review round ask the parent orch to review the decision record beside the reviewer, who keeps every finding the parent returns; false, the default, asks no parent; settable per run through run_settings
++discussion_review_parent_timeout_min: 30  # minutes from a Discussion-Review round's ask to the parent orch to its deadline, capped so the reviewer keeps room to consolidate before review_timeout_min; a cap that leaves no room sends no ask; a positive integer, 30 by default; settable per run through run_settings
+diff --git a/internal/lymdirs/dirs.go b/internal/lymdirs/dirs.go
+index 7d058ed5..9da0e32c 100644
+--- a/internal/lymdirs/dirs.go
++++ b/internal/lymdirs/dirs.go
+@@ -65,6 +65,10 @@ const BeamDirName = "beam"
+ // CreelFlagDirName is the directory under the `creel` directory that holds one flag file per strand with unread mail.
+ const CreelFlagDirName = "flags"
+ 
++// ParentReviewDirName is the directory under a worktree's `.lym` that holds a run's parent-review asks.
++// It holds the ask record and the parent orch's report for each answered ask.
++const ParentReviewDirName = "parent-review"
++
+ // HeddleDirName is the directory under a worktree's `.lym` that holds heddle's render lock.
+ const HeddleDirName = "heddle"
+ 
