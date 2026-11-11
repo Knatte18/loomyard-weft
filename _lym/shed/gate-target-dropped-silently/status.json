@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,57 @@
       "output": "",
       "at": "2026-11-11T07:32:25Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/gate-target-dropped-silently/_lym/landing/summary.md",
+      "at": "2026-11-11T07:51:34Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T07:39:27.868980635Z",
+          "end": "2026-11-11T07:39:27.891717307Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T07:46:20.531307924Z",
+          "end": "2026-11-11T07:46:20.562529002Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T07:39:27.998520829Z",
+          "end": "2026-11-11T07:45:47.441810288Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-11T07:45:48.161837667Z",
+          "end": "2026-11-11T07:46:20.427510152Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T07:46:20.735178697Z",
+          "end": "2026-11-11T07:49:57.329427103Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T07:49:57.44048002Z",
+          "end": "2026-11-11T07:49:57.811545945Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T07:49:57.894458984Z",
+          "end": "2026-11-11T07:49:57.896059345Z"
+        }
+      ]
     }
   ],
   "product": {
