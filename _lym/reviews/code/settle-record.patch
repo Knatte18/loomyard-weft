@@ -1,0 +1,465 @@
+diff --git a/internal/fabricengine/add.go b/internal/fabricengine/add.go
+index 2c19d3f4..e97b67ec 100644
+--- a/internal/fabricengine/add.go
++++ b/internal/fabricengine/add.go
+@@ -173,6 +173,10 @@ func SourceDirtyPaths(l *lymcwd.Location) ([]string, error) {
+ // Both refusals are *ErrAdoptLocalCheckedOut, which names the worktree and the way forward.
+ // A records worktree directory that is not a registered worktree is refused with *ErrRecordsWorktreeNotPair.
+ // A task worktree path that already exists is refused with *ErrTaskPathTaken.
++// One exception: a directory that no worktree registers, holds no `.git` entry and holds only files git ignores.
++// Add deletes such a directory, the output a build left at a removed pair's path, and goes on.
++// It deletes it only once its pre-flight refusals have passed, so a refused Add leaves the directory.
++// A delete that fails returns an error wrapping ErrStrayPathKept and leaves the path on disk.
+ // With opts.AdoptOnly, Add re-makes a live pair and forks nothing.
+ // A weft branch that is not live is refused with *ErrNotLive (Records true).
+ // A task branch that is neither local nor on origin is refused with *ErrNotLive too.
+@@ -334,8 +338,13 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 	}
+ 
+ 	target := WorktreePath(l, slug)
++	// A directory of only git-ignored output is judged here and deleted once the pre-flight refusals have passed.
++	deleteIgnoredLeftover := false
+ 	if _, err := os.Stat(target); !os.IsNotExist(err) {
+-		return AddResult{}, &ErrTaskPathTaken{Path: target}
++		if !ignoredTaskPathDeletable(l, target) {
++			return AddResult{}, &ErrTaskPathTaken{Path: target}
++		}
++		deleteIgnoredLeftover = true
+ 	}
+ 
+ 	stdout, err := gitexec.Run([]string{"remote"}, l.WorktreePath())
+@@ -480,6 +489,18 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 			return AddResult{}, fmt.Errorf("fetch warp branch %q from %q: %w", warpBranch, originRemoteName, err)
+ 		}
+ 	}
++	if deleteIgnoredLeftover {
++		// The pre-flight can take a network round, so the path is judged again just before the delete:
++		// a file saved there since the first judgement must keep it.
++		if !ignoredTaskPathDeletable(l, target) {
++			return AddResult{}, &ErrTaskPathTaken{Path: target}
++		}
++		if err := t.removeIgnoredTaskPath(rec, l.HubPath, target); err != nil {
++			return AddResult{}, err
++		}
++		logger.Info("fabricengine: deleted a directory of git-ignored output at the task worktree path", "verb", "add", "slug", slug, "path", target)
++	}
++
+ 	warpTok, branchTok, err := createGitWorktree(rec, l.WorktreePath(), l.HubPath, target, warpBranch, func(worktreePath string) []string {
+ 		if warpAdopted {
+ 			return []string{"worktree", "add", worktreePath, warpBranch}
+diff --git a/internal/fabricengine/add_taskpathleftover_integration_test.go b/internal/fabricengine/add_taskpathleftover_integration_test.go
+new file mode 100644
+index 00000000..7bbb24d6
+--- /dev/null
++++ b/internal/fabricengine/add_taskpathleftover_integration_test.go
+@@ -0,0 +1,165 @@
++// add_taskpathleftover_integration_test.go covers Add meeting a directory at the task worktree path that is no worktree.
++// Output git ignores, such as a build leaves after a pair's removal, is deleted; anything else blocks the pair.
++//
++// It shares the TestMain in testmain_test.go.
++
++package fabricengine_test
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestAdd_TaskPathLeftover asserts Add deletes a directory at the task worktree path whose every file git ignores.
++// Add then makes the pair there.
++// A directory holding a file git does not ignore, or a `.git` entry, is refused with *ErrTaskPathTaken.
++// Such a directory is left on disk.
++func TestAdd_TaskPathLeftover(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const buildOutput = "src/App/obj/Debug/App.AssemblyInfo.cs"
++	tests := []struct {
++		name string
++		slug string
++		// files are the paths, relative to the task worktree path, written there before Add.
++		files []string
++		// tracked are the paths in files that are also committed, at the same relative path, in the acting worktree.
++		tracked     []string
++		wantDeleted bool
++	}{
++		{name: "OnlyIgnoredOutputIsDeleted", slug: "ignored-only", files: []string{buildOutput}, wantDeleted: true},
++		{name: "EmptyDirectoryIsDeleted", slug: "empty-dir", wantDeleted: true},
++		{name: "FileGitDoesNotIgnoreKeepsIt", slug: "unignored-file", files: []string{buildOutput, "notes.txt"}},
++		{name: "NothingIgnoredKeepsIt", slug: "nothing-ignored", files: []string{"notes.txt"}},
++		{name: "GitEntryKeepsIt", slug: "git-entry", files: []string{buildOutput, "src/App/obj/.git"}},
++		{
++			name: "TrackedFileKeepsIt", slug: "tracked-file",
++			files:   []string{buildOutput, "src/App/obj/tracked.cs"},
++			tracked: []string{"src/App/obj/tracked.cs"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			l := h.Location
++			// Tracked paths are committed before the ignore rule, which git add would otherwise refuse them under.
++			for _, rel := range tt.tracked {
++				gitkit.CommitFile(t, l.WorktreePath(), rel, "tracked\n", "track "+rel)
++			}
++			gitkit.CommitFile(t, l.WorktreePath(), "src/.gitignore", "obj/\n", "ignore build output")
++
++			dir := fabricengine.WorktreePath(l, tt.slug)
++			if err := os.MkdirAll(dir, 0o755); err != nil {
++				t.Fatalf("make %s: %v", dir, err)
++			}
++			for _, rel := range tt.files {
++				path := filepath.Join(dir, filepath.FromSlash(rel))
++				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++					t.Fatalf("make the directory of %s: %v", path, err)
++				}
++				if err := os.WriteFile(path, []byte("left behind\n"), 0o644); err != nil {
++					t.Fatalf("write %s: %v", path, err)
++				}
++			}
++
++			res, err := h.Topology.Add(l, tt.slug, fabricengine.AddOptions{SkipPush: true})
++
++			deleted := fabricengine.Mutation{Kind: fabricengine.KindPathRemoved, Target: tt.slug, Detail: "recursive"}
++			if !tt.wantDeleted {
++				var taken *fabricengine.ErrTaskPathTaken
++				if !errors.As(err, &taken) || taken.Path != dir {
++					t.Fatalf("Add(%q) error = %v; want *ErrTaskPathTaken for %s", tt.slug, err, dir)
++				}
++				for _, rel := range tt.files {
++					if _, statErr := os.Lstat(filepath.Join(dir, filepath.FromSlash(rel))); statErr != nil {
++						t.Errorf("%s is gone after a refused Add (stat error = %v); want it kept", rel, statErr)
++					}
++				}
++				if slices.Contains(res.Mutations.Entries(), deleted) {
++					t.Errorf("mutation record = %+v; want no removal of %s", res.Mutations.Entries(), dir)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("Add(%q) error = %v; want the leftover deleted and the pair made", tt.slug, err)
++			}
++			if _, statErr := os.Lstat(filepath.Join(dir, ".git")); statErr != nil {
++				t.Errorf("%s holds no .git entry after Add (stat error = %v); want the task worktree made there", dir, statErr)
++			}
++			if _, statErr := os.Lstat(filepath.Join(dir, filepath.FromSlash(buildOutput))); !os.IsNotExist(statErr) {
++				t.Errorf("%s still on disk after Add (stat error = %v); want it deleted", buildOutput, statErr)
++			}
++			if !slices.Contains(res.Mutations.Entries(), deleted) {
++				t.Errorf("mutation record = %+v; want it to hold %+v", res.Mutations.Entries(), deleted)
++			}
++		})
++	}
++}
++
++// writeIgnoredLeftover commits an ignore rule for obj/ in h's acting worktree.
++// It then writes one ignored build-output file at the task worktree path of slug and returns the file's path.
++func writeIgnoredLeftover(t *testing.T, h *hubforge.Hub, slug string) string {
++	t.Helper()
++	gitkit.CommitFile(t, h.Location.WorktreePath(), "src/.gitignore", "obj/\n", "ignore build output")
++	file := filepath.Join(fabricengine.WorktreePath(h.Location, slug), "src", "App", "obj", "App.dll")
++	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
++		t.Fatalf("make the directory of %s: %v", file, err)
++	}
++	if err := os.WriteFile(file, []byte("left behind\n"), 0o644); err != nil {
++		t.Fatalf("write %s: %v", file, err)
++	}
++	return file
++}
++
++// TestAdd_TaskPathLeftoverKeptWhenPreflightRefuses asserts a refused Add leaves a directory of ignored output.
++func TestAdd_TaskPathLeftoverKeptWhenPreflightRefuses(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	const slug = "refused-add"
++	file := writeIgnoredLeftover(t, h, slug)
++
++	// An adopt-only add over a pair with no branch is refused by the pre-flight, after the task path is judged.
++	_, err := h.Topology.Add(h.Location, slug, fabricengine.AddOptions{SkipPush: true, AdoptLocal: true, AdoptOnly: true})
++
++	if !errors.Is(err, fabricengine.ErrPairNotLive) {
++		t.Fatalf("Add(%q) error = %v; want a refusal matching ErrPairNotLive", slug, err)
++	}
++	if _, statErr := os.Lstat(file); statErr != nil {
++		t.Errorf("%s is gone after a refused Add (stat error = %v); want it kept", file, statErr)
++	}
++}
++
++// TestAdd_TaskPathLeftoverDeleteFails asserts a delete that fails returns an error wrapping ErrStrayPathKept.
++// The directory stays on disk.
++func TestAdd_TaskPathLeftoverDeleteFails(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	const slug = "delete-fails"
++	file := writeIgnoredLeftover(t, h, slug)
++	fabricengine.SetLeftoverSeamForTest(h.Topology, func(container, target string) (bool, bool, error) {
++		return false, false, errors.New("delete refused")
++	}, nil)
++
++	_, err := h.Topology.Add(h.Location, slug, fabricengine.AddOptions{SkipPush: true})
++
++	if !errors.Is(err, fabricengine.ErrStrayPathKept) {
++		t.Fatalf("Add(%q) error = %v; want an error wrapping ErrStrayPathKept", slug, err)
++	}
++	if _, statErr := os.Lstat(file); statErr != nil {
++		t.Errorf("%s is gone after a failed delete (stat error = %v); want it kept", file, statErr)
++	}
++}
+diff --git a/internal/fabricengine/addadoptonly.go b/internal/fabricengine/addadoptonly.go
+index dd71a264..4614f910 100644
+--- a/internal/fabricengine/addadoptonly.go
++++ b/internal/fabricengine/addadoptonly.go
+@@ -70,9 +70,11 @@ func (e *ErrAdoptLocalCheckedOut) Error() string {
+ 	return fmt.Sprintf("--adopt-local: branch %q is checked out in %s; way forward: run `lym fabric checkout <other branch>` in %s to move it off the branch, then re-run `lym fabric add %s --adopt-local`", e.Branch, e.Path, e.Path, e.slug)
+ }
+ 
+-// ErrTaskPathTaken is the refusal to create a pair when the task worktree's directory already exists.
++// ErrTaskPathTaken is the refusal to create a pair when the task worktree's path holds something Add does not delete.
++// That is a registered worktree, a directory holding a `.git` entry or a file git does not ignore, or a non-directory.
++// A directory holding only git-ignored files is deleted by Add, unless the path cannot be judged.
+ type ErrTaskPathTaken struct {
+-	// Path is the directory that exists.
++	// Path is the path that holds it.
+ 	Path string
+ }
+ 
+@@ -84,7 +86,7 @@ func (e *ErrTaskPathTaken) Error() string {
+ 	// `lym fabric prune` reports leftovers, so the message names it.
+ 	// If it is a live pair, a different slug is the answer.
+ 	return fmt.Sprintf(
+-		"worktree directory %q already exists; if it is a live pair, use a different slug; if it is a leftover directory that is not a worktree, which `lym fabric prune` reports, save anything worth keeping from it, delete it and retry",
++		"worktree path %q already exists and fabric does not delete it, since fabric deletes only a directory of git-ignored output; if it is a live pair, use a different slug; if it is a leftover directory that is not a worktree, which `lym fabric prune` reports, save anything worth keeping from it, delete it and retry",
+ 		e.Path)
+ }
+ 
+diff --git a/internal/fabricengine/destroy.go b/internal/fabricengine/destroy.go
+index 5114c68b..473b8957 100644
+--- a/internal/fabricengine/destroy.go
++++ b/internal/fabricengine/destroy.go
+@@ -12,6 +12,7 @@ import (
+ 	"encoding/hex"
+ 	"errors"
+ 	"fmt"
++	"io/fs"
+ 	"os"
+ 	pathpkg "path"
+ 	"path/filepath"
+@@ -23,6 +24,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fslink"
+ 	"github.com/Knatte18/loomyard/internal/gitexec"
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ )
+ 
+@@ -1369,6 +1371,114 @@ func (t *Topology) RemoveStrayTaskPath(l *lymcwd.Location, slug string) (bool, e
+ 	return true, nil
+ }
+ 
++// ignoredTaskPathDeletable reports whether the directory at target, a task worktree path, holds only files git ignores.
++// It reads and deletes nothing.
++// A build or language server leaves such a directory when it writes into the path of a pair that was removed.
++// The ownership proof is git's own answer:
++// each file, at the same path in the repository checked out at l, is untracked and ignored there.
++// It reports false when the path is no real directory or is a registered linked worktree.
++// It does the same for a directory holding a `.git` entry at any depth or any file git does not ignore.
++// A step that fails proves nothing, so it reports false and logs the failure.
++func ignoredTaskPathDeletable(l *lymcwd.Location, target string) bool {
++	keep := func(cause error) bool {
++		logger.Warn("fabricengine: the files at a task worktree path could not be judged as git-ignored, so the path is kept", "path", target, "cause", cause)
++		return false
++	}
++	info, err := os.Lstat(target)
++	if err != nil {
++		return keep(err)
++	}
++	if !info.IsDir() {
++		return false
++	}
++	entries, err := List(l.WorktreePath())
++	if err != nil {
++		return keep(fmt.Errorf("list the worktrees: %w", err))
++	}
++	if listsLinkedWorktree(entries, target) {
++		return false
++	}
++	files, holdsRepository, err := filesUnderTaskPath(target)
++	if err != nil {
++		return keep(err)
++	}
++	if holdsRepository {
++		return false
++	}
++	ignored, err := ignoresEveryPath(l.WorktreePath(), files)
++	if err != nil {
++		return keep(err)
++	}
++	return ignored
++}
++
++// removeIgnoredTaskPath deletes the directory at target, a task worktree path, that ignoredTaskPathDeletable approved.
++// The delete is contained by an os.Root under hubPath and retried against a late writer;
++// it is appended to rec as KindPathRemoved.
++// No dirtiness check runs and no force applies, since what stands there is no worktree.
++// A delete that fails after the retries returns an error wrapping ErrStrayPathKept and leaves the path on disk.
++func (t *Topology) removeIgnoredTaskPath(rec *Mutations, hubPath, target string) error {
++	if err := removeWorktreeLeftover(rec, hubPath, target, t.leftover); err != nil {
++		return fmt.Errorf("%w: %w; way forward: stop whatever writes into it, such as a build or language server, then delete it", ErrStrayPathKept, err)
++	}
++	return nil
++}
++
++// filesUnderTaskPath returns the slash-separated paths, relative to root, of every entry under root that is no directory.
++// It also reports whether a `.git` entry stands anywhere under root, and it stops listing at the first one.
++func filesUnderTaskPath(root string) (files []string, holdsRepository bool, err error) {
++	err = filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
++		if walkErr != nil {
++			return walkErr
++		}
++		if entry.Name() == ".git" {
++			holdsRepository = true
++			return filepath.SkipAll
++		}
++		if entry.IsDir() {
++			return nil
++		}
++		rel, relErr := filepath.Rel(root, path)
++		if relErr != nil {
++			return relErr
++		}
++		files = append(files, filepath.ToSlash(rel))
++		return nil
++	})
++	if err != nil {
++		return nil, false, fmt.Errorf("list the files under %s: %w", root, err)
++	}
++	return files, holdsRepository, nil
++}
++
++// ignoresEveryPath reports whether git ignores every path in rels.
++// Each path is relative to the root of the repository checked out at worktreeDir.
++// A tracked path is never ignored, and an empty rels is ignored vacuously.
++func ignoresEveryPath(worktreeDir string, rels []string) (bool, error) {
++	if len(rels) == 0 {
++		return true, nil
++	}
++	stdout, err := gitexec.RunStdin([]string{"check-ignore", "--stdin", "-z"}, worktreeDir, strings.Join(rels, "\x00")+"\x00")
++	if err != nil {
++		// check-ignore exits 1 when it ignores none of the paths.
++		var gitErr *gitexec.GitError
++		if errors.As(err, &gitErr) && gitErr.ExitCode == 1 {
++			return false, nil
++		}
++		return false, fmt.Errorf("git check-ignore in %s: %w", worktreeDir, err)
++	}
++	ignored := make(map[string]bool)
++	for _, path := range strings.Split(stdout, "\x00") {
++		ignored[path] = true
++	}
++	for _, rel := range rels {
++		if !ignored[rel] {
++			return false, nil
++		}
++	}
++	return true, nil
++}
++
+ // removeGitWorktree is the executor for the git worktree remove primitive.
+ // It runs the pipeline, then runs git worktree remove [--force] from repoDir.
+ // It returns the error from git unchanged rather than wrapping it.
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 73a73624..3839235a 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -790,6 +790,7 @@
+ // The path must be no registered worktree and hold no `.git` entry.
+ // It is for a caller that knows the slug's pair stood there;
+ // a failed delete wraps `ErrStrayPathKept`.
++// `Add` returns an error wrapping `ErrStrayPathKept` too when it fails to delete a directory of git-ignored output.
+ // `PairWorktreeStands` reports whether a slug's task worktree stands as a registered linked worktree.
+ // A caller thus never reads a leftover directory as a pair.
+ // `Prune` reports every hub directory named as a pair slug that no registration covers as `Unowned`.
+@@ -998,6 +999,10 @@
+ // and a rollback leaves the worktree and its branch in place.
+ // A records worktree directory that stands without being such a worktree returns `*ErrRecordsWorktreeNotPair`.
+ // An existing task worktree path returns `*ErrTaskPathTaken`.
++// One exception: a directory that no worktree registers, holds no `.git` entry and holds only files git ignores.
++// `Add` deletes such a directory, the output a build left at a removed pair's path, and makes the pair there.
++// It deletes it only once its pre-flight refusals have passed.
++// A delete that fails returns an error wrapping `ErrStrayPathKept` and leaves the path on disk.
+ // Under `AdoptOnly` the checked-out guard has one more case.
+ // It covers a records branch another records worktree holds when the task branch comes from origin.
+ // `PruneRegistrations` runs `git worktree prune` in the code and the records repository.
+@@ -1316,14 +1321,18 @@
+ // deleting a branch on a remote (`git push <remote> --delete`);
+ // moving a task branch on a remote (a leased force push);
+ // a warp checkout's `ResetHard`; and the board checkout's seed-commit drop.
+-// There are two exceptions.
++// There are three exceptions.
+ // `removeWorktreeLeftover` keeps containment through `os.Root`.
+ // It takes ownership and dirtiness from the gated `git worktree remove` its caller just ran on the same target.
+ // `Topology.RemoveStrayTaskPath` reaches the same delete with no git run before it.
+ // Its caller proves ownership.
+ // That caller is either the run that created the pair at that path or an operator who asked to remove the slug's pair.
+ // It refuses a registered linked worktree and a directory holding a `.git` entry.
+-// Neither `force` nor dirtiness applies.
++// `Add` reaches the same delete for a directory at the task worktree path through `removeIgnoredTaskPath`.
++// Its ownership proof is `git check-ignore`, which must ignore every file under the directory;
++// `ignoredTaskPathDeletable` judges it in the pre-flight and deletes nothing.
++// It refuses a registered linked worktree and a directory holding a `.git` entry at any depth.
++// In none of them do `force` or dirtiness apply.
+ // `PATTERN-fabric-boundary` holds the rules;
+ // this section is the rationale the invariant omits.
+ //
+diff --git a/internal/fabricengine/remove.go b/internal/fabricengine/remove.go
+index 6a5cf91d..9e22b4de 100644
+--- a/internal/fabricengine/remove.go
++++ b/internal/fabricengine/remove.go
+@@ -50,8 +50,8 @@ func (e siblingDirtyRefusal) Unwrap() error { return ErrPairSiblingDirty }
+ var ErrPairNotFound = errors.New("pair not found")
+ 
+ // ErrStrayPathKept is the sentinel an error wraps when a non-worktree directory stays at a pair's task worktree path.
+-// Deleting it failed after the pair's removal.
+-// The pair itself is gone; the directory blocks the slug's next pair until it is deleted.
++// Deleting it failed, after the pair's removal or when Add met a directory of git-ignored output there.
++// The pair itself is gone, or never made; the directory blocks the slug's next pair until it is deleted.
+ var ErrStrayPathKept = errors.New("a directory that is no worktree stays at the pair's task worktree path")
+ 
+ // The steps a Remove call reports in RemoveResult.Steps, a closed set; each is appended only after it changed state.
+diff --git a/pattern/PATTERN-fabric-boundary.md b/pattern/PATTERN-fabric-boundary.md
+index 17b48ac2..108e1dcc 100644
+--- a/pattern/PATTERN-fabric-boundary.md
++++ b/pattern/PATTERN-fabric-boundary.md
+@@ -95,7 +95,7 @@ The entry binds lym's own code only.
+ `internal/fabricengine/destroy.go` is the only file in `package fabricengine` permitted a destructive primitive.
+ 
+ - Every executor checks, in order, stopping at the first failure: containment, ownership, dirtiness, force.
+-  There are two exceptions.
++  There are three exceptions.
+   `removeWorktreeLeftover` keeps containment through `os.Root`,
+   and it takes ownership and dirtiness from the gated `git worktree remove` its caller just ran on the same target.
+   `Topology.RemoveStrayTaskPath` reaches the same delete with no git run before it:
+@@ -103,6 +103,10 @@ The entry binds lym's own code only.
+   the proof is a run that created the pair at that path or an operator who asked to remove the slug's pair;
+   the function refuses a registered linked worktree and a directory holding a `.git` entry,
+   and `--force` and dirtiness do not apply.
++  `Add` reaches the same delete for a directory at the task worktree path through `removeIgnoredTaskPath`:
++  the proof is `git check-ignore` ignoring every file under it;
++  the function refuses a registered linked worktree and a directory holding a `.git` entry at any depth,
++  and `--force` and dirtiness do not apply.
+ - `--force` answers dirtiness only, never containment or ownership.
+ - A gate refusal is never silently discarded.
+ - The `rec *Mutations` recorder is threaded into `destroy.go` only.
