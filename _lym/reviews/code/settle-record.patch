@@ -1,0 +1,979 @@
+diff --git a/contracts/specs/loom-final-summary-spec.md b/contracts/specs/loom-final-summary-spec.md
+index c335b7b1..4223329f 100644
+--- a/contracts/specs/loom-final-summary-spec.md
++++ b/contracts/specs/loom-final-summary-spec.md
+@@ -46,6 +46,8 @@ Both consumers append the task's regression check, when the task has one, after
+ It is a `## Regression check` section that `internal/driftengine` renders from the task's Drift records.
+ The artifact never holds that section itself,
+ so it reaches the pull request and the landing commit whichever producer wrote the artifact last.
++`Finalize` also appends, after the regression check, a `## Flaky test failures` section to its landing commit and its GitHub merge.
++It lists each failure of its landing gate that passed when run once more on the same head, and it is absent when there was none.
+ 
+ `Finalize`'s read is unconditional: a missing or malformed artifact there is a hard error.
+ `Publish`'s read is reached only when the parent branch requires a pull request:
+diff --git a/internal/gatecli/counters.go b/internal/gatecli/counters.go
+index 37af5543..835de241 100644
+--- a/internal/gatecli/counters.go
++++ b/internal/gatecli/counters.go
+@@ -27,6 +27,13 @@ const (
+ // vstestSummary matches a VSTest summary line, whose `Passed!` and `Failed!` forms carry the same four counts.
+ var vstestSummary = regexp.MustCompile(`(?:Passed|Failed)!\s+-\s+Failed:\s*(\d+),\s*Passed:\s*(\d+),\s*Skipped:\s*(\d+),\s*Total:\s*(\d+)`)
+ 
++// vstestResult matches the VSTest console line that reports one test's result, such as `  Failed Ns.Tests.A [12 ms]`.
++// Its first group is the result and its second the test's display name.
++var vstestResult = regexp.MustCompile(`^\s*(Passed|Failed|Skipped)\s+(\S.*?)\s+\[[^\]]*\]\s*$`)
++
++// vstestSections are the headings VSTest prints inside a failed test's block, which state no cause themselves.
++var vstestSections = []string{"Error Message:", "Stack Trace:", "Standard Output Messages:", "Standard Error Messages:"}
++
+ // tierCounts is the number of tests a tier run discovered and how each ended.
+ type tierCounts struct {
+ 	discovered int
+@@ -406,9 +413,15 @@ func (c *goJSONCounter) handle(line []byte, terminated bool) error {
+ }
+ 
+ // vstestCounter passes every line through and sums the counts of the VSTest summary lines.
++// It also reads each failed test's block, which opens with the `Failed <name> [<duration>]` line.
++// The block runs up to a blank line, the next result line or a summary line.
+ type vstestCounter struct {
+ 	lines  lineReader
+ 	counts tierCounts
++	// failures holds every failed test in the order its result line came, with no package.
++	failures []runFailure
++	// inFailure is set while the lines read belong to the block of the last failed test.
++	inFailure bool
+ }
+ 
+ func (c *vstestCounter) Write(p []byte) (int, error) { return c.lines.Write(p) }
+@@ -427,14 +440,21 @@ func (c *vstestCounter) TestsRun() map[string]int { return nil }
+ // Launches returns nil: a VSTest run reports no per-package launch timing.
+ func (c *vstestCounter) Launches() []gateslot.PackageLaunch { return nil }
+ 
+-// Failures returns nil: a VSTest summary line names no test.
+-func (c *vstestCounter) Failures() []runFailure { return nil }
++// Failures returns a copy of the failed tests read so far.
++// Each keeps the first failureLines lines of its block, section headings left out,
++// so its error message and the first frames of its stack trace show.
++func (c *vstestCounter) Failures() []runFailure {
++	c.lines.mu.Lock()
++	defer c.lines.mu.Unlock()
++	return slices.Clone(c.failures)
++}
+ 
+ // Unparsed returns nil: a VSTest run's output is all text, so the failure report points at its log instead.
+ func (c *vstestCounter) Unparsed() []string { return nil }
+ 
+ // handle runs under the line reader's lock.
+ func (c *vstestCounter) handle(line []byte, terminated bool) error {
++	c.observeFailure(string(line))
+ 	if match := vstestSummary.FindSubmatch(line); match != nil {
+ 		// The pattern holds only digit groups, so the conversions cannot fail.
+ 		failed, _ := strconv.Atoi(string(match[1]))
+@@ -448,3 +468,26 @@ func (c *vstestCounter) handle(line []byte, terminated bool) error {
+ 	}
+ 	return c.lines.passThrough(line, terminated)
+ }
++
++// observeFailure folds line into the failed tests.
++// A `Failed` result line opens a failed test's block;
++// any other result line, a blank line or a summary line closes it.
++// A line inside the block is kept, trimmed, unless it is a section heading or the test already holds failureLines lines.
++func (c *vstestCounter) observeFailure(line string) {
++	text := strings.TrimSpace(line)
++	if match := vstestResult.FindStringSubmatch(line); match != nil {
++		c.inFailure = match[1] == "Failed"
++		if c.inFailure {
++			c.failures = append(c.failures, runFailure{test: match[2]})
++		}
++		return
++	}
++	if text == "" || vstestSummary.MatchString(text) {
++		c.inFailure = false
++		return
++	}
++	last := len(c.failures) - 1
++	if c.inFailure && !slices.Contains(vstestSections, text) && len(c.failures[last].lines) < failureLines {
++		c.failures[last].lines = append(c.failures[last].lines, text)
++	}
++}
+diff --git a/internal/gatecli/counters_test.go b/internal/gatecli/counters_test.go
+index acfa92a4..e2e4a6cf 100644
+--- a/internal/gatecli/counters_test.go
++++ b/internal/gatecli/counters_test.go
+@@ -65,6 +65,10 @@ func TestCounters(t *testing.T) {
+ 	splitEvent := goEvent("output", "TestA", "=== RUN   TestA\n") + "\n"
+ 	vstestPassed := "Passed!  - Failed:     0, Passed:    12, Skipped:     0, Total:    12, Duration: 1 s - x.dll (net8.0)\n"
+ 	vstestFailed := "Failed!  - Failed:     2, Passed:     3, Skipped:     1, Total:     6, Duration: 2 s - y.dll (net8.0)\n"
++	vstestFailedBlocks := "  Passed Ns.Tests.Kept [3 ms]\n" +
++		"  Failed Ns.Tests.EnumeratesTree [12 ms]\n  Error Message:\n   System.UnauthorizedAccessException : Access to the path '/r/bin/t' is denied.\n" +
++		"  Stack Trace:\n     at System.IO.Enumeration.FileSystemEnumerator`1.Init()\n\n" +
++		"  Failed Ns.Tests.Second(x: 1) [< 1 ms]\n  Error Message:\n   Assert.Equal() Failure\n"
+ 
+ 	tests := []struct {
+ 		name string
+@@ -252,6 +256,35 @@ func TestCounters(t *testing.T) {
+ 			wantOut:    vstestFailed,
+ 			wantCounts: tierCounts{discovered: 6, passed: 3, failed: 2, skipped: 1},
+ 		},
++		{
++			name:       "each VSTest failed test is named with its block's lines, headings left out, up to a blank or summary line",
++			kind:       "vstest",
++			writes:     []string{vstestFailedBlocks + vstestFailed + "Results File: r.trx\n"},
++			wantOut:    vstestFailedBlocks + vstestFailed + "Results File: r.trx\n",
++			wantCounts: tierCounts{discovered: 6, passed: 3, failed: 2, skipped: 1},
++			wantFailures: []runFailure{
++				{test: "Ns.Tests.EnumeratesTree", lines: []string{"System.UnauthorizedAccessException : Access to the path '/r/bin/t' is denied.", "at System.IO.Enumeration.FileSystemEnumerator`1.Init()"}},
++				{test: "Ns.Tests.Second(x: 1)", lines: []string{"Assert.Equal() Failure"}},
++			},
++		},
++		{
++			name:    "a VSTest failed test keeps its first failureLines lines",
++			kind:    "vstest",
++			writes:  []string{"  Failed Ns.Tests.Long [1 ms]\n  Error Message:\n   l1\n   l2\n   l3\n   l4\n   l5\n   l6\n   l7\n   l8\n   l9\n   l10\n"},
++			wantOut: "  Failed Ns.Tests.Long [1 ms]\n  Error Message:\n   l1\n   l2\n   l3\n   l4\n   l5\n   l6\n   l7\n   l8\n   l9\n   l10\n",
++			wantFailures: []runFailure{
++				{test: "Ns.Tests.Long", lines: []string{"l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8"}},
++			},
++		},
++		{
++			name:    "a VSTest result line closes a failed test's block with no blank line between",
++			kind:    "vstest",
++			writes:  []string{"  Failed Ns.Tests.One [1 ms]\n  Error Message:\n   boom\n  Passed Ns.Tests.Two [1 ms]\n   stray line of the passing test\n"},
++			wantOut: "  Failed Ns.Tests.One [1 ms]\n  Error Message:\n   boom\n  Passed Ns.Tests.Two [1 ms]\n   stray line of the passing test\n",
++			wantFailures: []runFailure{
++				{test: "Ns.Tests.One", lines: []string{"boom"}},
++			},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 4bf0b624..21e3e179 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -510,7 +510,10 @@
+ // It keeps them beside `go test`'s status and summary lines, and leaves out a test whose subtest failed.
+ // It keeps each failed package that no failed test explains, with its own first lines and its build's.
+ // It keeps the first lines that were no JSON event.
+-// The record carries each failed test with its first line as `failures`, and a `vstest` run keeps none.
++// The `vstest` counter keeps each test a `Failed <name> [<duration>]` line reports, with no package.
++// It keeps the first lines of the test's block, which hold its error message and stack trace;
++// the block's section headings are left out.
++// The record carries each failed test with its first line as `failures`.
+ // A `go-json` tier under the `go` scoper fails when a package holding a test under the tier's tag ran none;
+ // the tier's command then lacks its tag.
+ // A package holds such a test when a file of it has a `Test` function,
+@@ -598,11 +601,11 @@
+ // It then names each failed run in plan order, lint steps last.
+ // Each name carries the run's outcome and its log path, and for a lint step its way forward.
+ // Under a run each failure follows.
+-// A failed test shows as its package and test path.
++// A failed test shows as its package and test path, and a `vstest` test as its name alone.
+ // A package that failed outside any test, such as by a build error or a crash in `TestMain`, shows as its package.
+ // A lint finding shows as its own `file:line` line.
+ // Each carries up to `failureLines` lines it printed beside go test's own status and summary lines,
+-// so an error's got and want or a panic's first frames show.
++// so an error's got and want, a panic's first frames or a .NET exception's message show.
+ // A bare file name a test printed is prefixed with its package's worktree-relative directory.
+ // A build error in a package that failed outside any test may print a path relative to the run directory.
+ // That path is prefixed with the directory's worktree-relative path.
+diff --git a/internal/gatecli/failurereport.go b/internal/gatecli/failurereport.go
+index f97d4a21..d822b970 100644
+--- a/internal/gatecli/failurereport.go
++++ b/internal/gatecli/failurereport.go
+@@ -182,7 +182,9 @@ func touchedFiles(ctx context.Context, location *lymcwd.Location, root string, i
+ // renderFailureReport returns the failure report's lines for runs, given the files the change touches.
+ // It returns nil when no run failed.
+ // Each run names its outcome and its log.
+-// Then each failure names its package and test, or its package alone for a failure outside any test.
++// Then each failure names its package and test.
++// A failure the counter read no package for names its test alone.
++// A failure outside any test names its package alone.
+ // A path a run printed relative to its directory is prefixed with the directory's worktree-relative path.
+ // A run lists its cause lines, such as a timeout.
+ // Then, when no failure was read, it lists the first lines of output no test event carried,
+@@ -244,10 +246,10 @@ func (run failedRun) reportLines() []string {
+ 		indent := "  "
+ 		switch {
+ 		case failure.test != "":
+-			body = append(body, fmt.Sprintf("  %s %s:", failure.pkg, failure.test))
++			body = append(body, "  "+strings.TrimSpace(failure.pkg+" "+failure.test)+":")
+ 			indent = "    "
+ 		case failure.pkg != "":
+-			body = append(body, fmt.Sprintf("  %s, failed outside any test:", failure.pkg))
++			body = append(body, fmt.Sprintf("  %s%s:", failure.pkg, gateslot.ReportOutsideAnyTestSuffix))
+ 			indent = "    "
+ 		}
+ 		for _, line := range failure.lines {
+@@ -260,7 +262,7 @@ func (run failedRun) reportLines() []string {
+ 	switch {
+ 	case len(run.failures) > 0:
+ 	case len(run.unparsed) > 0:
+-		body = append(body, "  its output:")
++		body = append(body, "  "+gateslot.ReportOutputLine)
+ 		for _, line := range run.unparsed {
+ 			body = append(body, "    "+line)
+ 		}
+@@ -289,7 +291,7 @@ func cutLine(cut []cutRun) string {
+ 	if logged {
+ 		hints = slices.Insert(hints, 0, "the logs named above hold the cut lines of a run with a log")
+ 	}
+-	return fmt.Sprintf("... %d more lines cut (%s); %s", total, strings.Join(counts, ", "), strings.Join(hints, "; "))
++	return fmt.Sprintf("%s%d more lines cut (%s); %s", gateslot.ReportCutPrefix, total, strings.Join(counts, ", "), strings.Join(hints, "; "))
+ }
+ 
+ // qualify prefixes the Go file path line opens with by the worktree-relative module directory.
+diff --git a/internal/gatecli/failurereport_test.go b/internal/gatecli/failurereport_test.go
+index 94fbed81..59ffda56 100644
+--- a/internal/gatecli/failurereport_test.go
++++ b/internal/gatecli/failurereport_test.go
+@@ -80,6 +80,19 @@ func TestRenderFailureReport(t *testing.T) {
+ 				"    q/q.go:3:2: undefined: y",
+ 			},
+ 		},
++		{
++			name: "a failed test with no package, as a vstest run reads one, is named by its test alone",
++			runs: []failedRun{{
++				label: "tier0", outcome: "exit 1", log: "/logs/tier0.log",
++				failures: []runFailure{{test: "Ns.Tests.EnumeratesTree", lines: []string{"System.UnauthorizedAccessException : denied"}}},
++			}},
++			want: []string{
++				failureReportHeader,
++				"tier0 (exit 1), log /logs/tier0.log:",
++				"  Ns.Tests.EnumeratesTree:",
++				"    System.UnauthorizedAccessException : denied",
++			},
++		},
+ 		{
+ 			name: "a run's cause lines are listed beside its failures, and alone when nothing else was read",
+ 			runs: []failedRun{
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 66aaf9a1..fd8b9b03 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -249,6 +249,9 @@
+ // FailureReportHeader opens the failure report a failing call prints.
+ // FailedTests reads the report's failed tests, each with the tier of the run that failed it.
+ // It reports false unless every failure of the report is a named test of a tier or guard run.
++// TierRunFailures reads every failure of the report, each opened by its run's label.
++// It reports false unless every run the report lists is a tier or guard run.
++// It also reports false for a package that failed outside any test, such as by a compile error, which a rerun repeats.
+ //
+ // # Run log
+ //
+diff --git a/internal/gateslot/failedtests_test.go b/internal/gateslot/failedtests_test.go
+index d6e3c2e1..9d905dc3 100644
+--- a/internal/gateslot/failedtests_test.go
++++ b/internal/gateslot/failedtests_test.go
+@@ -80,6 +80,81 @@ func TestFailedTests(t *testing.T) {
+ 	}
+ }
+ 
++// TestTierRunFailures pins which failure reports list tier and guard runs alone, and how each failure is named.
++func TestTierRunFailures(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	report := func(lines ...string) string {
++		return "FAIL\n" + FailureReportHeader + "\n" + strings.Join(lines, "\n") + "\n" +
++			FailedRunsPrefix + "tier0 (exit 1); the exit code is tier0's\n"
++	}
++	tests := []struct {
++		name   string
++		log    string
++		want   []string
++		wantOK bool
++	}{
++		{
++			name: "every failure of tier and guard runs is named with its run's label, a run naming none by its outcome, up to a cut",
++			log: report(
++				"tier0 (exit 1), log /runs/a.log:",
++				"  example.com/m/a TestA/sub:",
++				"    a_test.go:3: got 1; want 2",
++				"  Ns.Tests.EnumeratesTree(x: 1):",
++				"    System.UnauthorizedAccessException : denied",
++				"tier1 (exit 1), log /runs/b.log:",
++				"  its output:",
++				"    some line",
++				"guard tier1 (exit 1), log /runs/g.log:",
++				"  example.com/m/g TestGuard:",
++				"... 3 more lines cut (guard tier1: 3); the logs named above hold the cut lines of a run with a log",
++			),
++			want:   []string{"tier0 example.com/m/a TestA/sub", "tier0 Ns.Tests.EnumeratesTree(x: 1)", "tier1 (exit 1)", "guard tier1 example.com/m/g TestGuard"},
++			wantOK: true,
++		},
++		{
++			name:   "a run with a cause line and no failure is listed by its outcome",
++			log:    report("tier1 (timed out), log /runs/a.log:", "  lym gate test: tier timeout: tier1 exceeded timeout_min 30m0s; find the hang"),
++			want:   []string{"tier1 (timed out)"},
++			wantOK: true,
++		},
++		{
++			name: "a package that failed outside any test is no test run",
++			log:  report("tier0 (exit 1), log /runs/a.log:", "  example.com/m/a TestA:", "  example.com/m/b, failed outside any test:", "    b.go:3: undefined: x"),
++		},
++		{
++			name: "a report that lists no run names none",
++			log:  report(),
++		},
++		{
++			name: "a build step beside a tier run is no test run",
++			log:  report("tier0 (exit 1), log /runs/a.log:", "  example.com/m/a TestA:", "build (exit 2), log /runs/b.log:", "  its output:"),
++		},
++		{
++			name: "a vet run is no test run",
++			log:  report("vet tier1 (exit 1), log /runs/v.log:", "  its output:", "    p.go:3:2: unreachable code"),
++		},
++		{
++			name: "a lint step is no test run",
++			log:  report("lint comments (1 finding); way forward: fix it:", "  a.go:3: // wrapped at the"),
++		},
++		{
++			name: "a log with no report names none",
++			log:  "--- FAIL: TestA (0.00s)\nFAIL\texample.com/m/a\t0.1s\n",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, ok := TierRunFailures(tt.log)
++			if ok != tt.wantOK || !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("TierRunFailures() = %q, %v; want %q, %v", got, ok, tt.want, tt.wantOK)
++			}
++		})
++	}
++}
++
+ // TestFailedTestsCall pins the command that runs failed tests alone: one call per tier in tier order, quoted per shell.
+ func TestFailedTestsCall(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/gateslot/runlog.go b/internal/gateslot/runlog.go
+index 4b0976e1..50e76fb1 100644
+--- a/internal/gateslot/runlog.go
++++ b/internal/gateslot/runlog.go
+@@ -77,9 +77,9 @@ type RunRecord struct {
+ 	// It is empty for a tier that reads no packages and for a run that launched none,
+ 	// and it is absent from a record written before the field existed.
+ 	Launches []PackageLaunch `json:"launches,omitempty"`
+-	// Failures lists the failed tests of a go-json tier in the order they failed.
+-	// It holds leaf tests only, so a test whose subtest failed is left out.
+-	// It is empty for a tier that failed no test and for a VSTest tier.
++	// Failures lists the failed tests of the tier run in the order they failed, empty for a run that failed no test.
++	// A go-json tier's list holds leaf tests only, so a test whose subtest failed is left out.
++	// A VSTest tier's tests carry no package.
+ 	Failures []TestFailure `json:"failures,omitempty"`
+ 	// CallID identifies the gate call that wrote the record.
+ 	// Every record of one call carries the same id; a record written before the field has none.
+@@ -271,6 +271,15 @@ const FailureReportHeader = "gate test: failure report, every failure of this ca
+ // failureReportEnd opens each line the gate prints after the failure report's runs, such as the closing line.
+ const failureReportEnd = "gate test: "
+ 
++// ReportCutPrefix opens the line that closes a failure report cut at its line cap.
++const ReportCutPrefix = "... "
++
++// ReportOutputLine, indented under a run, opens the output lines no test event carried; it names no failure.
++const ReportOutputLine = "its output:"
++
++// ReportOutsideAnyTestSuffix ends the package a failure report names as failed outside any test, before its colon.
++const ReportOutsideAnyTestSuffix = ", failed outside any test"
++
+ // FailedTest is one failed test a failure report names.
+ type FailedTest struct {
+ 	// Tier is the number of the tier or guard run that failed the test.
+@@ -349,6 +358,67 @@ func reportTestLine(line string) (FailedTest, bool) {
+ 	return FailedTest{Package: fields[0], Test: top}, true
+ }
+ 
++// TierRunFailures returns the failures the first failure report in log names, each opened by its run's label.
++// A failed test reads as `tier0 example.com/m/a TestA` or `tier0 Ns.Tests.A`.
++// A run that names no failure is listed by its label and outcome, such as `tier1 (exit 1)`.
++// ok is false unless the report lists at least one run and every run it lists is a tier or guard run.
++// A build, vet or lint step and a log with no report therefore give false.
++// So does a package that failed outside any test, such as by a compile error, which a rerun repeats.
++// A cut report lists the failures above its cut line.
++func TierRunFailures(log string) (failures []string, ok bool) {
++	lines := strings.Split(strings.ReplaceAll(log, "\r\n", "\n"), "\n")
++	start := slices.Index(lines, FailureReportHeader)
++	if start < 0 {
++		return nil, false
++	}
++	var label, header string
++	named := false
++	closeRun := func() {
++		if header != "" && !named {
++			failures = append(failures, header)
++		}
++	}
++	for _, line := range lines[start+1:] {
++		if line == "" || strings.HasPrefix(line, failureReportEnd) || strings.HasPrefix(line, ReportCutPrefix) {
++			break
++		}
++		switch {
++		case strings.HasPrefix(line, "    "):
++			// A failure's own output.
++		case strings.HasPrefix(line, "  "):
++			if failure, isFailure := reportFailureLine(line); isFailure {
++				if strings.HasSuffix(failure, ReportOutsideAnyTestSuffix) {
++					return nil, false
++				}
++				failures = append(failures, label+" "+failure)
++				named = true
++			}
++		default:
++			if _, isRun := reportRunTier(line); !isRun {
++				return nil, false
++			}
++			closeRun()
++			label, _, _ = strings.Cut(line, " (")
++			outcome, _, _ := strings.Cut(line, ")")
++			header, named = outcome+")", false
++		}
++	}
++	closeRun()
++	return failures, header != ""
++}
++
++// reportFailureLine returns the failure a failure report's `  <failure>:` line under a run names, without its colon.
++// A failed test, a test with no package and a package that failed outside any test each end with a colon.
++// A cause line and the line that opens unparsed output name none.
++func reportFailureLine(line string) (string, bool) {
++	text := strings.TrimSpace(line)
++	failure, isFailure := strings.CutSuffix(text, ":")
++	if !isFailure || text == ReportOutputLine {
++		return "", false
++	}
++	return failure, true
++}
++
+ // TierSummaryLine renders the one stderr line the gate prints after each tier run.
+ // A carried tier is marked with `carried` after its scope form.
+ func TierSummaryLine(record RunRecord, logPath string) string {
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index cc46e8c8..6eefcc79 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -246,6 +246,16 @@
+ // A darn Finalize over a diff wholly under `tree_scope` runs the tree-scoped command.
+ // Darn's verify source answers it.
+ // A passing gate removes the landing failure record, and a failing one writes it.
++// Finalize's gate runs a failure once more on the same head before it judges it.
++// It does so only when the failure report lists tier and guard runs alone.
++// A test can fail on a race with another test.
++// A timeout, a runner crash, a build, vet or lint failure and a package that failed outside any test are not rerun.
++// The rerun runs the failed tests alone when the report names Go tests only, and the whole call otherwise.
++// A rerun that passes takes the failure as flaky, and the gate passes.
++// The landing commit and the GitHub merge then list each such failure under `## Flaky test failures`.
++// A rerun that fails is the gate's failure, and the failure record names its log.
++// The gate of the fixer's turns reruns the same way; Parent-Align's gate runs no rerun.
++// Bound: the flaky failures live in the process, so a Finalize resumed after a flaky pass lists none found before.
+ // A failing gate spawns the merge fixer in finalize mode, which fixes failing tests only.
+ // The attempts are what `finalize_fix_attempts` leaves the entry, read from the attempt record under the row's entry.
+ // The fixer gets no parent tip to read from and the merged tip the merge record carries.
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index 39ef4af5..bbbec055 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -20,6 +20,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"path"
++	"slices"
+ 	"strconv"
+ 	"strings"
+ 	"time"
+@@ -82,8 +83,13 @@ type Finalize struct {
+ 	// It is the base of the landed diff.
+ 	// It is empty when this process read none, as in a Finalize resumed past the merge.
+ 	parentHeadMerged string
++	// flaky holds each gate failure of this process that passed when run once more on the same head.
++	flaky []flakyPass
+ }
+ 
++// flakyHeading opens the landing texts' section listing the gate failures a rerun on the same head did not repeat.
++const flakyHeading = "## Flaky test failures"
++
+ var _ shedengine.ShedProducer = (*Finalize)(nil)
+ 
+ // NewFinalize constructs a Finalize from deps.
+@@ -139,20 +145,60 @@ func NewFinalize(deps Deps) (*Finalize, error) {
+ 
+ 	gate := newVerifyGate(deps)
+ 	gate.recorder = &failureRecorder{failingTests: deps.FailingTests, traceFailure: deps.TraceFailure, head: deps.TaskHead}
+-	return &Finalize{
+-		deps:     deps,
+-		resolver: res,
+-		gate:     gate,
+-		premerge: newPreMerge(deps),
+-		guard:    newParentGuard(deps),
+-		parentOpener: func() (parentMerger, error) {
+-			h, err := deps.OpenParentFabric()
+-			if err != nil {
+-				return nil, err
++	fz := assembleFinalize(deps, res, gate)
++	fz.premerge = newPreMerge(deps)
++	fz.guard = newParentGuard(deps)
++	fz.parentOpener = func() (parentMerger, error) {
++		h, err := deps.OpenParentFabric()
++		if err != nil {
++			return nil, err
++		}
++		return h, nil
++	}
++	return fz, nil
++}
++
++// assembleFinalize builds a Finalize over deps, resolver and gate, and wires the gate to report its flaky passes to it.
++// The wiring enables the gate's rerun of a test failure and the landing texts' flaky section.
++func assembleFinalize(deps Deps, resolver resolver, gate verifyGate) *Finalize {
++	fz := &Finalize{deps: deps, resolver: resolver, gate: gate}
++	fz.gate.onFlakyPass = fz.noteFlakyPass
++	return fz
++}
++
++// noteFlakyPass keeps pass, so the landing texts list its failures.
++func (fz *Finalize) noteFlakyPass(pass flakyPass) {
++	fz.flaky = append(fz.flaky, pass)
++}
++
++// landingTexts composes from summary and credit the GitHub merge's title and body and the landing commit's message.
++// The body and the message carry the flaky section after summary's body.
++// The section lists each gate failure of this process that passed when run once more on the same head.
++func (fz *Finalize) landingTexts(summary summaryparser.Summary, credit string) (title, body, message string) {
++	summary.Body = withSection(summary.Body, fz.flakySection())
++	return summary.Title, bodyWithCredit(summary.Body, credit), summary.LandingMessage(credit)
++}
++
++// flakySection renders the section that lists, each once, the gate failures a rerun on the same head did not repeat.
++// It is empty when there were none.
++func (fz *Finalize) flakySection() string {
++	var failures []string
++	for _, pass := range fz.flaky {
++		for _, failure := range pass.failures {
++			if !slices.Contains(failures, failure) {
++				failures = append(failures, failure)
+ 			}
+-			return h, nil
+-		},
+-	}, nil
++		}
++	}
++	if len(failures) == 0 {
++		return ""
++	}
++	var b strings.Builder
++	b.WriteString(flakyHeading + "\n\nThe landing gate failed on these and passed when run once more on the same head, so no fixer ran for them:\n")
++	for _, failure := range failures {
++		fmt.Fprintf(&b, "\n- `%s`", failure)
++	}
++	return b.String()
+ }
+ 
+ // Call runs one Finalize iteration.
+@@ -185,6 +231,8 @@ func NewFinalize(deps Deps) (*Finalize, error) {
+ // so a lock that something released lands nothing and is a halting Stuck.
+ // The re-read and the landing are not atomic: a release between them is caught only by the parent push's rejection.
+ // The landing commit carries the change description.
++// A gate failure that passed when run once more on the same head is then listed as flaky.
++// Both the landing commit and the GitHub merge's body list it.
+ // After a blank line it carries the credit block, when the config yields one.
+ //
+ // Right after the lock, Finalize follows the pull-request resolver, which asks GitHub's rules for the parent branch.
+@@ -238,7 +286,6 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("landingshed: %s: %w", finalizeName, err)
+ 	}
+ 	summary.Body = withSection(summary.Body, verdict)
+-	landingMessage := summary.LandingMessage(credit)
+ 
+ 	// Step 1b: commit the product's own status file,
+ 	// so the pair carries no tracked modification when the merge guard below runs.
+@@ -262,7 +309,7 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 		return "", shedengine.OutputPointer{}, err
+ 	}
+ 	for ; ; front = true {
+-		outcome, out, err, again := fz.landUnderLock(ctx, front, summary.Title, bodyWithCredit(summary.Body, credit), landingMessage)
++		outcome, out, err, again := fz.landUnderLock(ctx, front, *summary, credit)
+ 		if !again {
+ 			return outcome, out, err
+ 		}
+@@ -282,11 +329,11 @@ func (fz *Finalize) returningFromFixer() (bool, error) {
+ 
+ // landUnderLock runs one pass of the steps from the parent lock to the landing.
+ // It takes the lock, at the front of the queue when front is set, and releases it on every way out.
+-// title and body are the GitHub merge's title and message, and landingMessage is the landing commit's message.
++// summary and credit compose the GitHub merge's title and message and the landing commit's message once the gate passed.
+ // again is true when the pass freed the lock for a fixer or fix review whose change was let through,
+ // so the caller runs the pass again;
+ // otherwise the other values are the pass's outcome, output pointer and error.
+-func (fz *Finalize) landUnderLock(ctx context.Context, front bool, title, body, landingMessage string) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
++func (fz *Finalize) landUnderLock(ctx context.Context, front bool, summary summaryparser.Summary, credit string) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
+ 	fz.lockFreed = false
+ 	end := func(outcome shedengine.Outcome, out shedengine.OutputPointer, err error) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
+ 		return outcome, out, err, false
+@@ -363,6 +410,7 @@ func (fz *Finalize) landUnderLock(ctx context.Context, front bool, title, body,
+ 	if fz.lockFreed {
+ 		return requeue()
+ 	}
++	title, body, landingMessage := fz.landingTexts(summary, credit)
+ 
+ 	// Step 2b: commit the parent pair's own run records,
+ 	// so a sibling run's uncommitted status record does not trip the parent-side merge guard.
+@@ -411,6 +459,7 @@ func (fz *Finalize) landUnderLock(ctx context.Context, front bool, title, body,
+ 		if fz.lockFreed {
+ 			return requeue()
+ 		}
++		_, _, mergeOpts.Message = fz.landingTexts(summary, credit)
+ 		if outcome, out, err, done := fz.commitParentRecords(ctx); done {
+ 			return end(outcome, out, err)
+ 		}
+diff --git a/internal/landingshed/finalize_gate_test.go b/internal/landingshed/finalize_gate_test.go
+index 1c2f6f62..1fee4b4a 100644
+--- a/internal/landingshed/finalize_gate_test.go
++++ b/internal/landingshed/finalize_gate_test.go
+@@ -14,11 +14,13 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/mergeresolve"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/summaryparser"
+ 	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+@@ -74,12 +76,8 @@ func newFinalizeGateFixture(t *testing.T) *finalizeGateFixture {
+ 	writeVerifyLog(t, fx.gate, "FAIL")
+ 	fx.gate.gate.recorder = &failureRecorder{head: deps.TaskHead}
+ 	fx.deps = deps
+-	fx.fz = &Finalize{
+-		deps:         deps,
+-		resolver:     &recordingResolver{result: resolved(false)},
+-		gate:         fx.gate.gate,
+-		parentOpener: func() (parentMerger, error) { return fx.merger, nil },
+-	}
++	fx.fz = assembleFinalize(deps, &recordingResolver{result: resolved(false)}, fx.gate.gate)
++	fx.fz.parentOpener = func() (parentMerger, error) { return fx.merger, nil }
+ 	return fx
+ }
+ 
+@@ -219,6 +217,59 @@ func (r *countingResolver) Resolve(context.Context, string, string) (mergeresolv
+ 	return resolved(r.onMerge != nil && r.onMerge(r.calls)), nil
+ }
+ 
++// TestFinalize_FlakyGateFailureLands pins that a gate failure which does not repeat on a rerun lands with no fixer.
++// It also pins that the landing commit lists the failure as flaky.
++func TestFinalize_FlakyGateFailureLands(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	fx := newFinalizeGateFixture(t)
++	writeVerifyLog(t, fx.gate, gateslot.FailureReportHeader+"\ntier0 (exit 1), log /runs/a.log:\n  Ns.Tests.EnumeratesTree:\n    System.UnauthorizedAccessException : denied\n"+
++		gateslot.FailedRunsPrefix+"tier0 (exit 1)\n")
++	fx.scriptGate(verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1}, verifytree.Result{Status: verifytree.StatusPassed})
++
++	outcome, ptr := fx.call(t)
++
++	fx.requireLanded(t, outcome, ptr)
++	if roles := fx.sessionRoles(); roles != "" {
++		t.Errorf("sessions = %q; want no fixer after a failure its rerun did not repeat", roles)
++	}
++	if fx.gate.fake.verifyCalls != 2 {
++		t.Errorf("verify calls = %d; want the gate and its one rerun", fx.gate.fake.verifyCalls)
++	}
++	message := fx.merger.calls[0].opts.Message
++	if !strings.Contains(message, flakyHeading+"\n") || !strings.Contains(message, "\n- `tier0 Ns.Tests.EnumeratesTree`") {
++		t.Errorf("landing message = %q; want the flaky section naming the failure", message)
++	}
++}
++
++// TestFinalize_LandingTextsListFlakyFailuresOnce pins the flaky section of the landing texts.
++// Both the GitHub merge's body and the landing commit's message carry it.
++// A failure two passes share is listed once.
++func TestFinalize_LandingTextsListFlakyFailuresOnce(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	fz := &Finalize{flaky: []flakyPass{
++		{failures: []string{"tier0 Ns.Tests.A", "tier0 Ns.Tests.B"}},
++		{failures: []string{"tier0 Ns.Tests.A"}},
++	}}
++
++	_, body, message := fz.landingTexts(summaryparser.Summary{Title: "A title", Body: "A body."}, "")
++
++	for name, text := range map[string]string{"body": body, "message": message} {
++		if !strings.Contains(text, flakyHeading+"\n") {
++			t.Errorf("%s = %q; want the flaky section", name, text)
++		}
++		if got := strings.Count(text, "\n- `tier0 Ns.Tests.A`"); got != 1 {
++			t.Errorf("%s lists tier0 Ns.Tests.A %d times; want once", name, got)
++		}
++		if !strings.Contains(text, "\n- `tier0 Ns.Tests.B`") {
++			t.Errorf("%s = %q; want tier0 Ns.Tests.B listed", name, text)
++		}
++	}
++}
++
+ // TestFinalize_GateAndFixer pins Finalize's landing gate and its finalize-mode fixer.
+ // It covers when the fixer spawns and how its attempts and its Baseline are kept across resumes.
+ // It also covers where a spent cap, an over-cap change and an escalate report lead.
+diff --git a/internal/landingshed/verifygate.go b/internal/landingshed/verifygate.go
+index 6ea35ce2..be1ba66a 100644
+--- a/internal/landingshed/verifygate.go
++++ b/internal/landingshed/verifygate.go
+@@ -8,6 +8,7 @@ import (
+ 	"context"
+ 	"fmt"
+ 	"os"
++	"runtime"
+ 	"slices"
+ 	"strings"
+ 	"time"
+@@ -43,6 +44,17 @@ type verifyGate struct {
+ 	now    func() time.Time
+ 	// recorder is set by the landing producers: nil leaves a failed verify unrecorded.
+ 	recorder *failureRecorder
++	// onFlakyPass, when set, makes check run a failure of test runs once more on the same head before judging it.
++	// It gets each failure that rerun did not repeat; nil runs no rerun.
++	onFlakyPass func(flakyPass)
++}
++
++// flakyPass is a failed verify that passed when run once more on the same head.
++type flakyPass struct {
++	// failures name the first run's failures, each opened by its run's label, such as `tier0 example.com/m/a TestA`.
++	failures []string
++	// log is the first run's verify log.
++	log string
+ }
+ 
+ // failureRecorder holds what the gate needs to write the landing failure record.
+@@ -232,6 +244,8 @@ func (g verifyGate) readBase(producer string) (string, error) {
+ // so no test judged the code: the reason is then a halt reason opening with `LandingStopPrefix`.
+ // The producer halts with it instead of spawning a fixer.
+ // A pass, and a skip over a tree already recorded as passed, remove a landing failure record an earlier failed call left.
++// A gate told onFlakyPass runs a failure once more on the same head when its report lists tier and guard runs alone.
++// It then judges the rerun's result in its place.
+ func (g verifyGate) check(ctx context.Context, producer, parentBranch string) (reason string, crashed bool, err error) {
+ 	if g.command == nil {
+ 		return "", false, nil
+@@ -250,13 +264,19 @@ func (g verifyGate) check(ctx context.Context, producer, parentBranch string) (r
+ 		return "", false, err
+ 	}
+ 
++	site := verifytree.Site{Label: producer, BaseCommand: base, Hold: g.hold}
+ 	g.markWait("")
+ 	g.markWait("verify " + producer)
+-	result, err := g.verify(ctx, g.paths, verifytree.Site{Label: producer, BaseCommand: base, Hold: g.hold}, command)
++	result, err := g.verify(ctx, g.paths, site, command)
+ 	g.markWait("")
+ 	if err != nil {
+ 		return "", false, fmt.Errorf("landingshed: %s: %w", producer, err)
+ 	}
++	if g.onFlakyPass != nil {
++		if result, err = g.rerunTestFailure(ctx, producer, site, command, result); err != nil {
++			return "", false, fmt.Errorf("landingshed: %s: %w", producer, err)
++		}
++	}
+ 	g.recordFailure(result)
+ 	reason, err = g.verdict(result, "landing gate", producer, parentBranch)
+ 	if reason == "" && err == nil {
+@@ -265,6 +285,49 @@ func (g verifyGate) check(ctx context.Context, producer, parentBranch string) (r
+ 	return reason, result.Status == verifytree.StatusFailed && result.RunnerCrash, err
+ }
+ 
++// rerunTestFailure runs the failed verify first once more on the same head and returns the result the gate judges.
++// A test can fail on a race with another test, so only a failure whose report lists tier and guard runs alone is rerun.
++// A timeout, a runner crash and a shell that could not start come back as they are.
++// So do a build, vet or lint failure, a package that failed outside any test and a log with no report.
++// The rerun runs the report's failed tests alone when it names Go tests only, and command otherwise.
++// A rerun that passes hands first's failures to onFlakyPass and returns the pass.
++// Any other rerun result comes back, so a failure the rerun repeats is judged on the rerun's log.
++func (g verifyGate) rerunTestFailure(ctx context.Context, producer string, site verifytree.Site, command string, first verifytree.Result) (verifytree.Result, error) {
++	if first.Status != verifytree.StatusFailed || first.TimedOut || first.RunnerCrash || first.ExitCode < 0 || first.Log == "" {
++		return first, nil
++	}
++	content, err := os.ReadFile(first.Log)
++	if err != nil {
++		logger.Warn("landingshed: could not read the failed verify's log, so the verify does not run again", "producer", producer, "log", first.Log, "cause", err)
++		return first, nil
++	}
++	failures, testRuns := gateslot.TierRunFailures(string(content))
++	if !testRuns {
++		return first, nil
++	}
++	rerun := command
++	if tests, named := gateslot.FailedTests(string(content)); named {
++		call, err := gateslot.FailedTestsCall(runtime.GOOS, tests)
++		if err != nil {
++			logger.Warn("landingshed: cannot render the run of the failed tests alone; the whole verify runs again", "producer", producer, "cause", err)
++		} else {
++			rerun = call
++		}
++	}
++	logger.Warn("landingshed: the verify failed in its test runs; it runs once more on the same head before any fixer", "producer", producer, "failures", strings.Join(failures, "; "), "log", first.Log, "rerun", rerun)
++	g.markWait("verify " + producer)
++	second, err := g.verify(ctx, g.paths, site, rerun)
++	g.markWait("")
++	if err != nil {
++		return verifytree.Result{}, err
++	}
++	if second.Status == verifytree.StatusPassed || second.Status == verifytree.StatusSkipped {
++		logger.Warn("landingshed: the failed verify passed when run once more on the same head, so its failures are flaky", "producer", producer, "failures", strings.Join(failures, "; "), "log", first.Log)
++		g.onFlakyPass(flakyPass{failures: failures, log: first.Log})
++	}
++	return second, nil
++}
++
+ // checkHead runs the pr-review gate over an agent's commits:
+ // the call of the row's gate key over the task head for producer.
+ // It reads the key's command and base command, and it marks the wait as verifying the producer while the call runs.
+diff --git a/internal/landingshed/verifygate_test.go b/internal/landingshed/verifygate_test.go
+index a3bfec48..69fc15a2 100644
+--- a/internal/landingshed/verifygate_test.go
++++ b/internal/landingshed/verifygate_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"runtime"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -364,6 +365,115 @@ func TestVerifyGate_CheckMapsVerifyResult(t *testing.T) {
+ 	}
+ }
+ 
++// TestVerifyGate_RerunsATestFailureOnce pins the rerun of a gate told onFlakyPass before it judges a failure.
++// It pins which failures rerun, the command the rerun runs and the flaky failures reported.
++// It also pins the log a repeated failure is judged on.
++func TestVerifyGate_RerunsATestFailureOnce(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	report := func(lines ...string) string {
++		return gateslot.FailureReportHeader + "\n" + strings.Join(lines, "\n") + "\n" + gateslot.FailedRunsPrefix + "tier0 (exit 1)\n"
++	}
++	goFailure := report("tier0 (exit 1), log /runs/a.log:", "  example.com/m/a TestA:", "    a_test.go:3: got 1; want 2")
++	dotnetFailure := report("tier0 (exit 1), log /runs/a.log:", "  Ns.Tests.EnumeratesTree:", "    System.UnauthorizedAccessException : denied")
++	buildFailure := report("build (exit 2), log /runs/b.log:", "  its output:", "    main.go:1: syntax error")
++	goRerun, err := gateslot.FailedTestsCall(runtime.GOOS, []gateslot.FailedTest{{Tier: 0, Package: "example.com/m/a", Test: "TestA"}})
++	if err != nil {
++		t.Fatal(err)
++	}
++	failed := verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1}
++	passed := verifytree.Result{Status: verifytree.StatusPassed}
++	timedOut := verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1, TimedOut: true, Detail: "gate tier0 exceeded timeout_min 30m0s and was killed"}
++	crashed := verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 134, RunnerCrash: true, Detail: "tier0 (exit 134, SIGABRT)"}
++	cannotStart := verifytree.Result{Status: verifytree.StatusFailed, ExitCode: -1, Detail: "exec: sh not found"}
++	skipped := verifytree.Result{Status: verifytree.StatusSkipped}
++
++	tests := []struct {
++		name string
++		// log is every verify call's log; empty leaves the failed result with no log.
++		log string
++		// results are the verify calls' results in order.
++		results []verifytree.Result
++		// noSink builds the gate without onFlakyPass.
++		noSink       bool
++		wantCommands []string
++		wantFlaky    []string
++		// wantReasonLog is the 1-based verify call whose log the reason names, 0 for a pass and -1 for a failure with no log.
++		wantReasonLog int
++	}{
++		{
++			name: "a Go test failure reruns its tests alone, and a pass there is flaky and passes the gate", log: goFailure,
++			results: []verifytree.Result{failed, passed}, wantCommands: []string{gateLandingCall, goRerun}, wantFlaky: []string{"tier0 example.com/m/a TestA"},
++		},
++		{
++			name: "a failure naming no Go test reruns the whole call", log: dotnetFailure,
++			results: []verifytree.Result{failed, passed}, wantCommands: []string{gateLandingCall, gateLandingCall}, wantFlaky: []string{"tier0 Ns.Tests.EnumeratesTree"},
++		},
++		{
++			name: "a failure the rerun repeats fails the gate on the rerun's log", log: dotnetFailure,
++			results: []verifytree.Result{failed, failed}, wantCommands: []string{gateLandingCall, gateLandingCall}, wantReasonLog: 2,
++		},
++		{name: "a build failure is not rerun", log: buildFailure, results: []verifytree.Result{failed}, wantCommands: []string{gateLandingCall}, wantReasonLog: 1},
++		{name: "a timed-out failure is not rerun", log: goFailure, results: []verifytree.Result{timedOut}, wantCommands: []string{gateLandingCall}, wantReasonLog: 1},
++		{name: "a gate told no flaky sink runs no rerun", log: goFailure, results: []verifytree.Result{failed}, noSink: true, wantCommands: []string{gateLandingCall}, wantReasonLog: 1},
++		{name: "a runner crash is not rerun", log: goFailure, results: []verifytree.Result{crashed}, wantCommands: []string{gateLandingCall}, wantReasonLog: 1},
++		{name: "a shell that could not start is not rerun", log: goFailure, results: []verifytree.Result{cannotStart}, wantCommands: []string{gateLandingCall}, wantReasonLog: 1},
++		{name: "a failure with no log is not rerun", results: []verifytree.Result{failed}, wantCommands: []string{gateLandingCall}, wantReasonLog: -1},
++		{
++			name: "a rerun that times out fails the gate on the rerun's log", log: dotnetFailure,
++			results: []verifytree.Result{failed, timedOut}, wantCommands: []string{gateLandingCall, gateLandingCall}, wantReasonLog: 2,
++		},
++		{
++			name: "a rerun skipped over a recorded pass is flaky and passes the gate", log: dotnetFailure,
++			results: []verifytree.Result{failed, skipped}, wantCommands: []string{gateLandingCall, gateLandingCall}, wantFlaky: []string{"tier0 Ns.Tests.EnumeratesTree"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			f := newGateFixture(t, "finalize", gateLandingCall, nil)
++			if tt.log != "" {
++				writeVerifyLog(t, f, tt.log)
++			}
++			f.fake.onVerify = func() { f.fake.result = tt.results[min(f.fake.verifyCalls-1, len(tt.results)-1)] }
++			var flaky []flakyPass
++			if !tt.noSink {
++				f.gate.onFlakyPass = func(pass flakyPass) { flaky = append(flaky, pass) }
++			}
++
++			reason, _, err := f.gate.check(context.Background(), "Finalize", "main")
++
++			if err != nil {
++				t.Fatalf("check() error = %v; want nil", err)
++			}
++			if !slices.Equal(f.fake.commands, tt.wantCommands) {
++				t.Errorf("verify commands = %q; want %q", f.fake.commands, tt.wantCommands)
++			}
++			logOf := func(call int) string { return filepath.Join(f.paths.Dir, fmt.Sprintf("verify-%d.log", call)) }
++			switch {
++			case tt.wantReasonLog == 0 && reason != "":
++				t.Errorf("reason = %q; want a pass", reason)
++			case tt.wantReasonLog < 0 && reason == "":
++				t.Error("reason is empty; want the gate's failure")
++			case tt.wantReasonLog > 0 && !strings.Contains(reason, logOf(tt.wantReasonLog)):
++				t.Errorf("reason = %q; want it to name the log %q", reason, logOf(tt.wantReasonLog))
++			}
++			var gotFlaky []string
++			for _, pass := range flaky {
++				gotFlaky = append(gotFlaky, pass.failures...)
++				if pass.log != logOf(1) {
++					t.Errorf("flaky pass log = %q; want the first run's %q", pass.log, logOf(1))
++				}
++			}
++			if !slices.Equal(gotFlaky, tt.wantFlaky) {
++				t.Errorf("flaky failures = %q; want %q", gotFlaky, tt.wantFlaky)
++			}
++		})
++	}
++}
++
+ // TestVerifyGate_CheckWithoutCommandSkipsVerify pins that a gate with no command proceeds without calling verify.
+ // It also pins that the gate warns once when the command closure answers empty.
+ // With no closure wired, the gate stays silent.
+diff --git a/pattern/PATTERN-gate-slot.md b/pattern/PATTERN-gate-slot.md
+index b24b456f..be2c7dfa 100644
+--- a/pattern/PATTERN-gate-slot.md
++++ b/pattern/PATTERN-gate-slot.md
+@@ -104,6 +104,7 @@ the `landing` gate's at Parent-Align, Finalize, Code-Burler-Fix and Darn-Write.
+   Darn-Write's call carries `--stop-on-fail`, so it ends at its first failed tier.
+   After a run whose failure report names failed tests alone, the next arrival first runs those tests alone through `Verify`.
+   `gateslot.FailedTestsCall` renders that call from the report, the one call a site spells with tiers and targets.
++  The rerun the Finalize bullet below describes renders its call the same way.
+ - PR-Review runs its own `pr-review` key's call through `Verify` over each clean head its agent commits,
+   and it shares no pass with another site.
+ - Parent-Align and Finalize run the `landing` call through `Verify` with `BaseCommand` set to the base command.
+@@ -112,6 +113,8 @@ the `landing` gate's at Parent-Align, Finalize, Code-Burler-Fix and Darn-Write.
+   A darn Finalize runs its `finalize` key's call over the touched trees' targets instead, for a tree-scoped diff.
+   The call is resolved each time it runs and is one `lym gate test --wait` call;
+   an empty one, rendered when no touched tree contributes a target, runs nothing.
++  A Finalize gate failure whose report lists tier and guard runs alone reruns once on the same head before any fixer,
++  and a passing rerun is recorded as flaky.
+ - Each run that spawns its command writes its own `verify-<n>.log` in the verify directory and names it on its result,
+   so no later verify overwrites an earlier run's log.
+   After each such run, `Verify` keeps the newest logs up to its retention bound plus the one the failure record names,
