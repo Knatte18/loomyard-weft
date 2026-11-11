@@ -118,6 +118,24 @@ Decision: The run of testmap-cross-package is paused at Run-Shed, so its Darn-Wr
 
 Rationale: The operator decided in chat on 2026-11-11 to hold testmap-cross-package, coverage-test-select and gate-scope-coverage until this design is decided; the orch paused the run with lym batten pause. The board shows the old running status because the pause leaves the entry's status.
 
+### Added after Discussion (parent, 2026-11-11): An audit re-measure refreshes the entry's measurement time whatever the result
+
+Decision: D7's audit re-measures a fixed small number of passing entries, oldest measurement first. A fresh result that differs from the kept one replaces the entry and counts as an audit mismatch, as D7 says. A fresh result equal to the kept one leaves the entry's coverage as it was and sets its measurement time to now, so the audit rotates through the entries instead of re-measuring the same oldest ones each pass. Keep the code as it stands.
+
+Rationale: Without the refreshed time an equal result leaves the entry the oldest, and the audit would pick it again at every pass, so it would never reach the rest. The coverage is unchanged and only the time it was last confirmed moves, which is true.
+
+### Added after Discussion (parent, 2026-11-11): The dobby's read of the exit record belongs to testmap-upkeep-dobby
+
+Decision: D12's criterion that the dobby reads the exit record is built by the dobby task, testmap-upkeep-dobby, which starts a pass from the record's planned HEAD and queued count (D8). This task writes the record and reads none of it in the dobby. Keep the code as it stands.
+
+Rationale: The dobby code that starts passes is that task's scope, and the record's fields it reads are exported by this one. Reading it here would put dobby code in two tasks.
+
+### Added after Discussion (parent, 2026-11-11): Retiring test_map_batch and test_map_every belongs to testmap-upkeep-dobby
+
+Decision: The retirement of test_map_batch and test_map_every as keys of dobbyengine, with test_map_upkeep and the migration of test_map_every: 0, is built by testmap-upkeep-dobby (D8), not by this task. This task retires test_map_max_age_days (D7) only. Keep the code as it stands.
+
+Rationale: The landing-count start of the present refresh reads both keys until the dobby starts passes by the new rule, so retiring them here would break that start. The dobby task replaces the start and retires the keys together.
+
 ## Constraints
 
 - PATTERN-gate-slot: every coverage build and test run of upkeep holds a slot; the plan step builds and runs nothing, so it holds none.
