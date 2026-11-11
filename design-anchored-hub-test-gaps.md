@@ -1,6 +1,6 @@
 # Tests for the lym verb directory calls and the stops of unconverted steps in an anchored hub
 
-`anchored-hub-test-gaps` · Task · bug, fabric · running · Darn-Write
+`anchored-hub-test-gaps` · Task · bug, fabric · running · Drift-Verify
 
 Add the missing tests below in one run.
 
