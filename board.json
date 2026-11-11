@@ -918,6 +918,28 @@
       "body": "Imported from [issue #100](https://github.com/Knatte18/loomyard/issues/100).\n\n## What was seen\n\nA beam's Finalize landing ran the gate (tier0 and tier1) on the beam head.\nOne tier0 test of 3463 failed with `UnauthorizedAccessException`, and tier1 passed.\nThe test enumerates the source tree, `bin/` included, while another test running in parallel held a temporary directory under `bin/` with its read permission removed.\nThe failure is a race between two tests of the repository, not a fault of the change being landed.\n\nFinalize wrote `.lym/verify/landing-failure.yaml` and spawned a fixer strand at once, on that single run.\nThe gate's own failure report said that no failing test or error line was read from the tier0 output, so the fixer started without a named cause.\n\n## Workaround\n\nThe orch read the verify log, diagnosed the race and messaged the fixer with the cause.\n\n## Expected behaviour\n\n- Before Finalize spawns a fixer, it reruns the failed tests (or the failed tier) once on the same head.\n  A failure that does not repeat is recorded as flaky in the landing report, and the landing goes on.\n- The gate's failure report names the failing test and its error message when the test runner printed them, instead of reporting that no failing test line was read.\n",
       "created": "2026-11-11T06:22:54Z",
       "revised": "2026-11-11T06:22:54Z"
+    },
+    {
+      "id": 1288,
+      "handle": "B5",
+      "slug": "paused-webster-acts-on-notice",
+      "title": "A paused Webster session acts on a decision notice without the run lock, and the loom row stays blocked",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "loom",
+        "creel"
+      ],
+      "issues": [
+        101
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #101](https://github.com/Knatte18/loomyard/issues/101).\n\n## What happened\n\nA tapestry run's Webster paused on the parent's order: Webster wrote `outcome: stuck`, the loom row went to `blocked · Webster`, and the outer batten driver yielded.\nThe Webster session itself stayed open: its strand (`\u003chub\u003e:\u003ctask\u003e:webster`) was still live in `lym reed list`.\n\nLater the parent recorded a decision on the run with `lym loom decision add \u003cslug\u003e --by parent`.\nThat verb notified the live Webster strand (`\"notified\":[\"\u003chub\u003e:\u003ctask\u003e:webster\"]`).\nThe idle Webster session woke on that notice and went on working in the old session, outside any `lym webster run`:\nit forked the batch, merged, committed two cards, ran the verify gate and wrote `outcome.yaml` with `outcome: done`.\n`record-batch` warned that no live `lym webster run` owned the state, because the session was not started under the run's lock.\n\n## Result\n\n`lym webster status` showed every batch done, but the loom row stayed `blocked` at Webster with the old pause reason, and `lym batten status` showed `failed` with `battencli: cannot resume`.\n`lym batten run \u003cslug\u003e` yielded with the stale blocked error.\nThe overview page showed the tapestry as blocked although its work was done.\nRunning `lym loom resume` in the task worktree was needed to get the driver to re-run Webster and move on.\nMeanwhile the parent's own `lym webster run` would have started a second Webster beside the lockless one.\n\n## Expected\n\nA Webster that reports stuck ends its session, or a session that does not hold the run's lock refuses to act on mail and says so.\n`lym loom decision add` does not wake a producer strand whose run is halted, or warns the parent that it did.\n`record-batch` without the lock refuses rather than warns, so the work and the loom row cannot drift apart.\n",
+      "created": "2026-11-11T06:22:56Z",
+      "revised": "2026-11-11T06:22:56Z"
     }
   ],
   "prime_owner": "neve",
