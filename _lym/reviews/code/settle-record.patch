@@ -1,0 +1,450 @@
+diff --git a/contracts/specs/raddle-proposal-spec.md b/contracts/specs/raddle-proposal-spec.md
+index 2186c4ab..183b8749 100644
+--- a/contracts/specs/raddle-proposal-spec.md
++++ b/contracts/specs/raddle-proposal-spec.md
+@@ -93,6 +93,7 @@ The gate, `raddle-propose` and `raddle-approve` run the checks of the proposal a
+ - `board-unchecked` — an open task or project, other than the run's own entry, that carries a module label the Sketch carries and is absent from `board_checked`.
+ - `depends-cycle` — a cycle in `depends_on`.
+ - `depends-unknown` — a `depends_on` that names no part, no board entry and no `board_checked` entry; a `board_checked` entry that is gone from the board passes as landed.
++- `depends-note` — a `depends_on` that names a note on the board, which the board refuses at filing; its way forward is to drop the dependency or to have the operator promote the note.
+ - `packages-shared` — two parts with no `depends_on` path between them that list a common package.
+ - `recipe-invalid` — a recipe that is neither `tapestry` nor `darn`.
+ - `profile-unknown` — a profile that `profiles.yaml` does not hold, or holds without a block for the part's recipe.
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index 8021e7e5..9d02200b 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -382,7 +382,8 @@ func (s *Store) validateWrite(snapshot []Task, incoming Task) error {
+ 	}
+ 	for _, dep := range incoming.DependsOn {
+ 		if snapshotIndex[dep].Kind == KindNote {
+-			return fmt.Errorf("%q depends on note %q, and a note cannot be depended on: promote %q with \"lym board promote\", or drop the dependency with \"lym board set-deps\"", incoming.Slug, dep, dep)
++			rest, _ := json.Marshal(slices.DeleteFunc(slices.Clone(incoming.DependsOn), func(other string) bool { return other == dep }))
++			return fmt.Errorf("%q depends on note %q, and a note cannot be depended on: promote the note with lym board promote '{\"slug\":\"%s\"}', or drop the dependency with lym board set-deps '{\"slug\":\"%s\",\"depends_on\":%s}'", incoming.Slug, dep, dep, incoming.Slug, rest)
+ 		}
+ 	}
+ 	if incoming.Kind == KindNote {
+diff --git a/internal/boardengine/store_test.go b/internal/boardengine/store_test.go
+index c5f79faf..1e2b2a54 100644
+--- a/internal/boardengine/store_test.go
++++ b/internal/boardengine/store_test.go
+@@ -136,9 +136,10 @@ func TestKindDependencyRules(t *testing.T) {
+ 
+ 	t.Run("depending on an open note refused", func(t *testing.T) {
+ 		s := seed(t)
+-		_, err := s.UpsertTask(map[string]any{"slug": "x", "kind": "task", "depends_on": []string{"idea"}})
+-		if err == nil || !stringContains(err.Error(), `"idea"`) || !stringContains(err.Error(), "promote") || !stringContains(err.Error(), "set-deps") {
+-			t.Errorf("expected refusal naming idea, promote and set-deps, got %v", err)
++		_, err := s.UpsertTask(map[string]any{"slug": "x", "kind": "task", "depends_on": []string{"dep", "idea"}})
++		want := `"x" depends on note "idea", and a note cannot be depended on: promote the note with lym board promote '{"slug":"idea"}', or drop the dependency with lym board set-deps '{"slug":"x","depends_on":["dep"]}'`
++		if err == nil || err.Error() != want {
++			t.Errorf("UpsertTask() error = %v; want %q", err, want)
+ 		}
+ 	})
+ 
+diff --git a/internal/raddleparser/check.go b/internal/raddleparser/check.go
+index daa6283b..bf736b0d 100644
+--- a/internal/raddleparser/check.go
++++ b/internal/raddleparser/check.go
+@@ -31,6 +31,7 @@ const (
+ 	CheckBoardUnchecked         = "board-unchecked"
+ 	CheckDependsCycle           = "depends-cycle"
+ 	CheckDependsUnknown         = "depends-unknown"
++	CheckDependsNote            = "depends-note"
+ 	CheckPackagesShared         = "packages-shared"
+ 	CheckRecipeInvalid          = "recipe-invalid"
+ 	CheckProfileUnknown         = "profile-unknown"
+@@ -50,6 +51,9 @@ const (
+ 	KindProject = "project"
+ )
+ 
++// KindNote is the board entry kind no entry can depend on, which the board refuses at filing.
++const KindNote = "note"
++
+ // sectionOpenRisks and sectionCriteria are the decision record sections whose bullets a part carries.
+ const (
+ 	sectionOpenRisks = "Open risks"
+@@ -322,6 +326,7 @@ func uncheckedEntries(p Proposal, board BoardContext) []string {
+ 
+ // dependencies reports a depends_on cycle and a depends_on that names no part, no board entry and no board_checked entry.
+ // A board_checked entry gone from the board passes as landed, whether or not the run is filing.
++// It also reports a depends_on that names a note on the board, which the board would refuse at filing.
+ func (c *checker) dependencies() []Finding {
+ 	var findings []Finding
+ 	parts := c.proposal.Parts
+@@ -364,10 +369,14 @@ func (c *checker) dependencies() []Finding {
+ 
+ 	for _, part := range parts {
+ 		for _, dep := range part.DependsOn {
+-			known := slices.ContainsFunc(parts, func(other Part) bool { return other.Slug == dep }) ||
+-				slices.ContainsFunc(c.board.Entries, func(entry BoardEntry) bool { return entry.Slug == dep }) ||
+-				slices.ContainsFunc(c.proposal.BoardChecked, func(checked BoardCheck) bool { return checked.Slug == dep })
+-			if !known {
++			isPart := slices.ContainsFunc(parts, func(other Part) bool { return other.Slug == dep })
++			entry := slices.IndexFunc(c.board.Entries, func(entry BoardEntry) bool { return entry.Slug == dep })
++			checked := slices.ContainsFunc(c.proposal.BoardChecked, func(checked BoardCheck) bool { return checked.Slug == dep })
++			switch {
++			case isPart:
++			case entry >= 0 && c.board.Entries[entry].Kind == KindNote:
++				findings = append(findings, Finding{Check: CheckDependsNote, Part: part.Slug, Detail: fmt.Sprintf("depends_on names the note %q, and the board refuses a dependency on a note; way forward: drop the dependency, or have the operator promote the note with lym board promote '{\"slug\":\"%s\"}', then run lym loom raddle-propose again", dep, dep)})
++			case entry < 0 && !checked:
+ 				findings = append(findings, Finding{Check: CheckDependsUnknown, Part: part.Slug, Detail: fmt.Sprintf("depends_on names %q, which is no part, no board entry and no board_checked entry", dep)})
+ 			}
+ 		}
+diff --git a/internal/raddleparser/check_test.go b/internal/raddleparser/check_test.go
+index 645598a3..69250a3d 100644
+--- a/internal/raddleparser/check_test.go
++++ b/internal/raddleparser/check_test.go
+@@ -74,6 +74,19 @@ func TestCheck(t *testing.T) {
+ 		}, []string{CheckBoardUnchecked}},
+ 		{"DependsOnCycle", func(p *Proposal, _ *BoardContext) { p.Parts[0].DependsOn = []string{"part-b"} }, []string{CheckDependsCycle}},
+ 		{"DependsOnUnknown", func(p *Proposal, _ *BoardContext) { p.Parts[1].DependsOn = append(p.Parts[1].DependsOn, "ghost") }, []string{CheckDependsUnknown}},
++		{"DependsOnNote", func(p *Proposal, b *BoardContext) {
++			b.Entries = append(b.Entries, BoardEntry{Slug: "idea", Kind: KindNote, Open: true})
++			p.Parts[1].DependsOn = append(p.Parts[1].DependsOn, "idea")
++		}, []string{CheckDependsNote}},
++		{"DependsOnNoteWhileFiling", func(p *Proposal, b *BoardContext) {
++			b.Entries = append(b.Entries, BoardEntry{Slug: "idea", Kind: KindNote, Open: true})
++			p.BoardChecked = append(p.BoardChecked, BoardCheck{Slug: "idea"})
++			p.Parts[1].DependsOn = append(p.Parts[1].DependsOn, "idea")
++			b.Filing = true
++		}, []string{CheckDependsNote}},
++		{"DependsOnPartThatIsAlsoANoteIsNoNoteDependency", func(_ *Proposal, b *BoardContext) {
++			b.Entries = append(b.Entries, BoardEntry{Slug: "part-a", Kind: KindNote, Open: true})
++		}, []string{CheckSlugTaken}},
+ 		{"DependsOnCheckedEntryGoneFromTheBoardPasses", func(p *Proposal, _ *BoardContext) { dependOnGoneEntry(p) }, nil},
+ 		{"DependsOnCheckedEntryGoneFromTheBoardPassesWhileFiling", func(p *Proposal, b *BoardContext) {
+ 			dependOnGoneEntry(p)
+@@ -156,6 +169,32 @@ func TestCheck(t *testing.T) {
+ 	}
+ }
+ 
++// TestCheck_DependsOnNoteDetailNamesTheWayForward pins the text that tells the author how to proceed.
++func TestCheck_DependsOnNoteDetailNamesTheWayForward(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	proposal, board := validProposal(), validBoard()
++	board.Entries = append(board.Entries, BoardEntry{Slug: "idea", Kind: KindNote, Open: true})
++	proposal.Parts[1].DependsOn = append(proposal.Parts[1].DependsOn, "idea")
++
++	var details []string
++	for _, finding := range Check(proposal, checkRecord, board) {
++		if finding.Check == CheckDependsNote {
++			details = append(details, finding.Detail)
++		}
++	}
++
++	if len(details) != 1 {
++		t.Fatalf("Check() depends-note details = %q; want exactly one", details)
++	}
++	for _, want := range []string{`the note "idea"`, "drop the dependency", `lym board promote '{"slug":"idea"}'`} {
++		if !strings.Contains(details[0], want) {
++			t.Errorf("depends-note detail = %q; want it to contain %q", details[0], want)
++		}
++	}
++}
++
+ // mergeIntoOnePart folds the second part into the first, leaving one part that builds every decision.
+ func mergeIntoOnePart(p *Proposal) {
+ 	first, second := p.Parts[0], p.Parts[1]
+diff --git a/internal/shedverbs/doc.go b/internal/shedverbs/doc.go
+index 4f7f4e07..74385739 100644
+--- a/internal/shedverbs/doc.go
++++ b/internal/shedverbs/doc.go
+@@ -217,6 +217,8 @@
+ // a loop process that does not start gets a mark naming the start error.
+ // The keeper's mark is written even when the waiter is gone, as after a driver hands over to its successor.
+ // lym's marks open with "lym shed: loop <loop id> ", which tells them from the output of the loop and its children.
++// The loop appends a finished child's standard output to the loop log, and that output is mostly the child's envelope.
++// Each of its lines opens with "lym shed: step <trace id> output: ", which tells a child's output from the loop's own.
+ //
+ // Optional seams let the arming module hook the loop.
+ // Spec.Loop.OnStart runs once in the loop and once in its keeper.
+@@ -253,8 +255,10 @@
+ // The dead-loop stop therefore first waits a bounded time for it.
+ // First come the marks of the loop, its keeper and the waiter's spawn.
+ // Such a mark records a signal the loop received or the loop's exit status.
+-// With no marks the clause reads "loop exit: not recorded".
+-// Then comes an excerpt of the log's other lines, a Go crash's first lines or the last lines.
++// With no marks the clause reads "loop exit: not recorded" and says why:
++// the log holds no starting mark for the loop, or no process marked the exit.
++// Then comes an excerpt of the loop's own output, a Go crash's first lines or the last lines;
++// a finished child's output is left out of it.
+ // A log with no starting mark for the loop gives the marks clause alone.
+ // With a child in flight, loop.stderr_path names its captured stderr and loop.trace_copy holds a copy of its trace files;
+ // with none, both are empty.
+diff --git a/internal/shedverbs/loop.go b/internal/shedverbs/loop.go
+index 19da5447..e72ed2f0 100644
+--- a/internal/shedverbs/loop.go
++++ b/internal/shedverbs/loop.go
+@@ -567,7 +567,7 @@ func runChild(ctx context.Context, spec *Spec, argv []string, traceID string, id
+ 	if kill != nil && loop.OnWatchdogKill != nil {
+ 		killNote = loop.OnWatchdogKill(*kill)
+ 	}
+-	appendLoopLog(loop.LogPath, stdout.Bytes())
++	appendLoopChildOutput(loop.LogPath, traceID, stdout.Bytes())
+ 
+ 	if spec.StepsDir != "" {
+ 		path := filepath.Join(spec.StepsDir, traceID+envelopeSuffix)
+@@ -744,6 +744,27 @@ func appendLoopLog(path string, data []byte) {
+ 	}
+ }
+ 
++// loopChildOutputPrefix opens every loop log line that holds a finished child's standard output.
++// That output is mostly the child's envelope.
++// It tells a child's output from the loop's own output, the lines a dead-loop stop excerpts.
++const loopChildOutputPrefix = "lym shed: step "
++
++// appendLoopChildOutput appends the standard output of the child under traceID to the loop log at path.
++// Each line opens with loopChildOutputPrefix and the trace id, and the first opens a line of its own.
++// Empty output keeps nothing.
++func appendLoopChildOutput(path, traceID string, stdout []byte) {
++	text := strings.TrimSuffix(string(stdout), "\n")
++	if text == "" {
++		return
++	}
++	var lines strings.Builder
++	lines.WriteString(newlineIfUnterminated(path))
++	for _, line := range strings.Split(text, "\n") {
++		lines.WriteString(loopChildOutputPrefix + traceID + " output: " + line + "\n")
++	}
++	appendLoopLog(path, []byte(lines.String()))
++}
++
+ // appendLoopLogMark appends mark to the loop log at path on a line of its own, even when the log's last line of output has no newline.
+ func appendLoopLogMark(path, mark string) {
+ 	appendLoopLog(path, []byte(newlineIfUnterminated(path)+mark))
+diff --git a/internal/shedverbs/loop_test.go b/internal/shedverbs/loop_test.go
+index 4836658c..009b1bb6 100644
+--- a/internal/shedverbs/loop_test.go
++++ b/internal/shedverbs/loop_test.go
+@@ -1459,6 +1459,51 @@ func TestLoop_TerminatingSignalIsMarkedInTheLoopLog(t *testing.T) {
+ 	}
+ }
+ 
++func TestLoop_ChildStdoutIsMarkedInTheLoopLog(t *testing.T) {
++	tiergate.Require(t, 0)
++	const ownOutput = "the loop's own output"
++	tests := []struct {
++		name   string
++		stdout string
++		// want builds the expected log from the child's trace id.
++		want func(traceID string) string
++	}{
++		{"LinesArePrefixedAndOpenALineOfTheirOwn", "first\nsecond", func(id string) string {
++			return ownOutput + "\nlym shed: step " + id + " output: first\nlym shed: step " + id + " output: second\n"
++		}},
++		{"TrailingNewlineAddsNoEmptyLine", "first\n", func(id string) string {
++			return ownOutput + "\nlym shed: step " + id + " output: first\n"
++		}},
++		{"EmptyOutputKeepsNothing", "", func(string) string { return ownOutput }},
++		{"LoneNewlineKeepsNothing", "\n", func(string) string { return ownOutput }},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			tiergate.Require(t, 0)
++			var traceID string
++			fx := newLoopFixture(t, func(fx *loopFixture, id string, req ChildRequest) error {
++				traceID = id
++				_, _ = req.Stdout.Write([]byte(tt.stdout))
++				return halting(shedengine.StateDone, "", 1)(fx, id, req)
++			})
++			if err := os.MkdirAll(fx.stepsDir, 0o755); err != nil {
++				t.Fatalf("create the steps directory: %v", err)
++			}
++			// The loop's own output ends without a newline, so the child's first line must open a line of its own.
++			if err := os.WriteFile(fx.spec.Loop.LogPath, []byte(ownOutput), 0o644); err != nil {
++				t.Fatalf("write the loop log: %v", err)
++			}
++
++			fx.execute()
++
++			log, err := os.ReadFile(fx.spec.Loop.LogPath)
++			if want := tt.want(traceID); err != nil || string(log) != want {
++				t.Errorf("loop log = %q, %v; want %q", log, err, want)
++			}
++		})
++	}
++}
++
+ func TestLoop_WakeHookRunsOnWatchWakes(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	const wakesBeforeExit = 4
+diff --git a/internal/shedverbs/loopwait.go b/internal/shedverbs/loopwait.go
+index f0584581..937d3905 100644
+--- a/internal/shedverbs/loopwait.go
++++ b/internal/shedverbs/loopwait.go
+@@ -199,16 +199,23 @@ func loopLogMark(loopID, text string) string {
+ 
+ // loopExitEvidence returns the clauses a gone loop's stop detail carries about how loop loopID ended.
+ // It reads the loop log at logPath after that loop's last starting mark.
+-// The first clause lists the marks lym wrote about the loop's processes, or says none was recorded.
++// The first clause lists the marks lym wrote about the loop's processes.
+ // Such marks include a terminating signal the loop received and the exit statuses of the loop and its keeper.
+-// When the loop has other lines, a second clause carries an excerpt of them.
++// With no mark it says the exit is not recorded and why:
++// the log holds no starting mark of the loop, or no process marked the exit.
++// When the loop has output of its own, a second clause carries an excerpt of it; a finished child's output is left out.
+ // The excerpt is a Go crash's first lines, or otherwise the last lines.
+ // A log with no starting mark for the loop yields the first clause alone, since its lines cannot be told from other loops' lines.
+ func loopExitEvidence(logPath, loopID string) string {
+-	marks, output := loopLogLinesOf(logPath, loopID)
+-	evidence := "; loop exit: not recorded"
+-	if len(marks) > 0 {
++	marks, output, started := loopLogLinesOf(logPath, loopID)
++	var evidence string
++	switch {
++	case len(marks) > 0:
+ 		evidence = "; loop exit: " + strings.Join(marks, " | ")
++	case !started:
++		evidence = "; loop exit: not recorded, since the loop log holds no start mark of loop " + loopID
++	default:
++		evidence = "; loop exit: not recorded, since no process marked the loop's exit, as after a kill of the loop and its keeper that no process can catch or a stop of the machine"
+ 	}
+ 	if excerpt := outputExcerpt(output); excerpt != "" {
+ 		evidence += "; loop log: " + excerpt
+@@ -218,15 +225,16 @@ func loopExitEvidence(logPath, loopID string) string {
+ 
+ // loopProcessExitRecorded reports whether the loop log at logPath holds the mark of the exit of loop loopID's process.
+ func loopProcessExitRecorded(logPath, loopID string) bool {
+-	marks, _ := loopLogLinesOf(logPath, loopID)
++	marks, _, _ := loopLogLinesOf(logPath, loopID)
+ 	prefix := loopLogMarkPrefix + loopID + " process "
+ 	return slices.ContainsFunc(marks, func(mark string) bool { return strings.HasPrefix(mark, prefix) })
+ }
+ 
+ // loopLogLinesOf splits the lines of the loop log at logPath after loop loopID's last starting mark.
+-// It returns the marks lym wrote about that loop and the loop's other output lines.
+-// A log with no starting mark for the loop yields neither.
+-func loopLogLinesOf(logPath, loopID string) (marks, output []string) {
++// It returns the marks lym wrote about that loop and the loop's own output lines.
++// The output of finished children is left out.
++// started reports whether the log holds a starting mark for the loop; a log with none yields no lines.
++func loopLogLinesOf(logPath, loopID string) (marks, output []string, started bool) {
+ 	data, _ := os.ReadFile(logPath)
+ 	lines := strings.Split(string(data), "\n")
+ 	startLine := strings.TrimSuffix(loopLogMark(loopID, loopStartingMark), "\n")
+@@ -242,12 +250,12 @@ func loopLogLinesOf(logPath, loopID string) (marks, output []string) {
+ 			switch {
+ 			case strings.HasPrefix(line, ownPrefix):
+ 				marks = append(marks, line)
+-			case !strings.HasPrefix(line, loopLogMarkPrefix):
++			case !strings.HasPrefix(line, loopLogMarkPrefix) && !strings.HasPrefix(line, loopChildOutputPrefix):
+ 				output = append(output, line)
+ 			}
+ 		}
+ 	}
+-	return marks, output
++	return marks, output, start >= 0
+ }
+ 
+ // loopSnapshot is what one look at the loop's files and lock found.
+diff --git a/internal/shedverbs/loopwait_test.go b/internal/shedverbs/loopwait_test.go
+index c0ae2d16..6d223fd5 100644
+--- a/internal/shedverbs/loopwait_test.go
++++ b/internal/shedverbs/loopwait_test.go
+@@ -525,21 +525,21 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 				traceID:       "trace-7",
+ 				traceBodies:   []string{"first\n", "second\n"},
+ 				wantProducer:  "A",
+-				wantCause:     "; step A was in flight under trace trace-7; loop exit: not recorded",
++				wantCause:     "; step A was in flight under trace trace-7; loop exit: not recorded, since the loop log holds no start mark of loop dead-1",
+ 				wantFile:      func(w *waitWorld) string { return w.traces["trace-7"][0] },
+ 				wantTraceCopy: true,
+ 			},
+ 			{
+ 				name:         "NoTraceID_LoopLog",
+ 				wantProducer: "A",
+-				wantCause:    "; step A was in flight; loop exit: not recorded",
++				wantCause:    "; step A was in flight; loop exit: not recorded, since the loop log holds no start mark of loop dead-1",
+ 				wantFile:     func(w *waitWorld) string { return w.spec.Loop.LogPath },
+ 			},
+ 			{
+ 				name:         "NoTraceFile_LoopLog",
+ 				traceID:      "trace-8",
+ 				wantProducer: "A",
+-				wantCause:    "; step A was in flight under trace trace-8; loop exit: not recorded",
++				wantCause:    "; step A was in flight under trace trace-8; loop exit: not recorded, since the loop log holds no start mark of loop dead-1",
+ 				wantFile:     func(w *waitWorld) string { return w.spec.Loop.LogPath },
+ 			},
+ 			{
+@@ -549,7 +549,7 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 				stepStderr:    "in-flight step's stderr\n",
+ 				statusMoved:   true,
+ 				wantProducer:  "B",
+-				wantCause:     "; step A was in flight under trace trace-9, and the status file now reads B; loop exit: not recorded; step stderr: in-flight step's stderr",
++				wantCause:     "; step A was in flight under trace trace-9, and the status file now reads B; loop exit: not recorded, since the loop log holds no start mark of loop dead-1; step stderr: in-flight step's stderr",
+ 				wantFile:      func(w *waitWorld) string { return w.traces["trace-9"][0] },
+ 				wantTraceCopy: true,
+ 			},
+@@ -559,7 +559,7 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 				statusMoved:       true,
+ 				movedSameProducer: true,
+ 				wantProducer:      "A",
+-				wantCause:         "; step A was in flight under trace trace-12; loop exit: not recorded",
++				wantCause:         "; step A was in flight under trace trace-12; loop exit: not recorded, since the loop log holds no start mark of loop dead-1",
+ 				wantFile:          func(w *waitWorld) string { return w.spec.Loop.LogPath },
+ 			},
+ 			{
+@@ -568,7 +568,7 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 				statusMoved:   true,
+ 				emptyProducer: true,
+ 				wantProducer:  "A",
+-				wantCause:     "; step A was in flight under trace trace-13; loop exit: not recorded",
++				wantCause:     "; step A was in flight under trace trace-13; loop exit: not recorded, since the loop log holds no start mark of loop dead-1",
+ 				wantFile:      func(w *waitWorld) string { return w.spec.Loop.LogPath },
+ 			},
+ 			{
+@@ -579,7 +579,7 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 				statusMoved:  true,
+ 				noChild:      true,
+ 				wantProducer: "B",
+-				wantCause:    "; loop exit: not recorded",
++				wantCause:    "; loop exit: not recorded, since the loop log holds no start mark of loop dead-1",
+ 				wantFile:     func(w *waitWorld) string { return w.spec.Loop.LogPath },
+ 			},
+ 			{
+@@ -596,11 +596,32 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 					"; step stderr: two | three | four",
+ 				wantFile: func(w *waitWorld) string { return w.spec.Loop.LogPath },
+ 			},
++			{
++				name:    "ChildOutputLeftOut_TheLoopsOwnLinesExcerpted",
++				traceID: "trace-14",
++				loopLog: "lym shed: loop dead-1 starting\n" +
++					"lym shed: step trace-a output: {\"ok\":false,\"producer\":\"Code-Bouncer\"}\n" +
++					"the loop's own line\n" +
++					"lym shed: step trace-b output: {\"ok\":false,\"producer\":\"Code-Burler-Fix\"}\n" +
++					"lym shed: loop dead-1 process 9 exited: exit status 1\n",
++				wantProducer: "A",
++				wantCause: "; step A was in flight under trace trace-14" +
++					"; loop exit: lym shed: loop dead-1 process 9 exited: exit status 1" +
++					"; loop log: the loop's own line",
++				wantFile: func(w *waitWorld) string { return w.spec.Loop.LogPath },
++			},
++			{
++				name:         "StartingMarkWithNoExitMark_SaysWhyNotRecorded",
++				loopLog:      "lym shed: loop dead-1 starting\n",
++				wantProducer: "A",
++				wantCause:    "; step A was in flight; loop exit: not recorded, since no process marked the loop's exit, as after a kill of the loop and its keeper that no process can catch or a stop of the machine",
++				wantFile:     func(w *waitWorld) string { return w.spec.Loop.LogPath },
++			},
+ 			{
+ 				name:         "NoStartingMark_OnlyTheLoopExitClause",
+ 				loopLog:      "lym shed: loop old-1 starting\npanic: old crash\nlym shed: loop old-1 process 7 exited: exit status 2\n",
+ 				wantProducer: "A",
+-				wantCause:    "; step A was in flight; loop exit: not recorded",
++				wantCause:    "; step A was in flight; loop exit: not recorded, since the loop log holds no start mark of loop dead-1",
+ 				wantFile:     func(w *waitWorld) string { return w.spec.Loop.LogPath },
+ 			},
+ 		}
+@@ -923,7 +944,7 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 		if detail := loopOf(t, env)["detail"].(string); !strings.Contains(detail, w.spec.Loop.LogPath) {
+ 			t.Errorf("detail = %q; want it naming the loop log %s", detail, w.spec.Loop.LogPath)
+ 		}
+-		wantCause := "loop-exited: loop " + spawnedID.Load().(string) + " exited before it recorded itself; its output is in " + w.spec.Loop.LogPath + "; loop exit: not recorded"
++		wantCause := "loop-exited: loop " + spawnedID.Load().(string) + " exited before it recorded itself; its output is in " + w.spec.Loop.LogPath + "; loop exit: not recorded, since the loop log holds no start mark of loop " + spawnedID.Load().(string)
+ 		if cause != wantCause || file != w.spec.Loop.LogPath {
+ 			t.Errorf("AfterInterrupt cause/file = %q/%q; want %q/%q", cause, file, wantCause, w.spec.Loop.LogPath)
+ 		}
