@@ -2,6 +2,8 @@
 
 `push-notice-anchor-dir` · Task · bug, fabric · draft
 
+Depends on: [`adopt-here-archives`](design-adopt-here-archives.md)
+
 Imported from [issue #98](https://github.com/Knatte18/loomyard/issues/98).
 
 In a hub whose anchor is a subdirectory (Models, anchor src/csharp/NORCE.Models), the mo:FABRIC notice for a failed async push says: way forward: run `lym fabric push` in <hub>/knut-rheology-merge-in. Running it there fails with: cwd is outside the recorded fabric anchor subtree: cwd <hub>/knut-rheology-merge-in does not equal the anchored directory <hub>/knut-rheology-merge-in/src/csharp/NORCE.Models (recorded by .lym-anchor).
