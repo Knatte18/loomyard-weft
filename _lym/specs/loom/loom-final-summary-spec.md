@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=51e523cd3f386799e9e94fe7d1747851e80ffe5027b307809788de11eab76381 build=f7465bd86b31478590683d0377771fca4647c425 time=2026-11-07T11:35:39Z -->
+<!-- lym-stencil: sha256=d9644a8d884806290f233a0d00d9d3dc61e264dea4141992cc33c9512310b301 build=dea07060083fe21d5186ac0f4f96a177f2eb2168 time=2026-11-11T08:46:52Z -->
 
 # Final-summary spec — the producer-agnostic final-summary artifact
 
@@ -48,6 +48,8 @@ Both consumers append the task's regression check, when the task has one, after 
 It is a `## Regression check` section that `internal/driftengine` renders from the task's Drift records.
 The artifact never holds that section itself,
 so it reaches the pull request and the landing commit whichever producer wrote the artifact last.
+`Finalize` also appends, after the regression check, a `## Flaky test failures` section to its landing commit and its GitHub merge.
+It lists each failure of its landing gate that passed when run once more on the same head, and it is absent when there was none.
 
 `Finalize`'s read is unconditional: a missing or malformed artifact there is a hard error.
 `Publish`'s read is reached only when the parent branch requires a pull request:
