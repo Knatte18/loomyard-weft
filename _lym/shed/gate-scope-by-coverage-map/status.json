@@ -2,6 +2,7 @@
   "current_producer": "Raddle-File",
   "state": "failed",
   "error": "loomshed: Raddle-File: file the proposal: file entry \"testmap-cross-package\": \"testmap-cross-package\" depends on note \"testmap-upkeep\", and a note cannot be depended on: promote \"testmap-upkeep\" with \"lym board promote\", or drop the dependency with \"lym board set-deps\"; way forward: the fault is transient, re-step the Raddle-File row",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Raddle-File",
