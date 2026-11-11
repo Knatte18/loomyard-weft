@@ -1,6 +1,6 @@
 # A beam orch cannot create a project at the root, only under its own beam
 
-`beam-orch-root-project` · Task · feature, board, orch, workspaces · draft
+`beam-orch-root-project` · Task · feature, board, orch, workspaces
 
 Imported from [issue #55](https://github.com/Knatte18/loomyard/issues/55).
 
