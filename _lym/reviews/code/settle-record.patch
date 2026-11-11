@@ -1,0 +1,537 @@
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 341be57d..9e2aceb9 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -164,40 +164,53 @@ available subcommands without requiring a git repo.
+ 
+ 	var promoteRecipe string
+ 	promoteCmd := &cobra.Command{
+-		Use:         "promote {slug|id|handle}",
++		Use:         "promote {slug|id|handle, depends_on?}",
+ 		Short:       "turn a note into a task once it is ready to be claimed",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Turn a note into a task. A task is returned unchanged, and nothing is written.
+ The promoted entry loses its priority, which only a note carries, and its note handle: it takes
+ the lowest free T handle.
+---recipe <name> sets the task's recipe in the same write.
++--recipe <name> sets the task's recipe in the same write, and "depends_on" sets its dependencies.
+ A Sketch, or any discussed note whose decision record is stored, becomes a task only with recipe
+ raddle, which keeps its record and releases the task so its raddle run starts: a promote with no
+ --recipe gives it raddle, --recipe raddle is accepted, and any other recipe is refused.
++Give such a task's dependencies in "depends_on" here: the parent's dobby can start the released
++task before a later "lym board set-deps" lands.
++On an entry that is already a task, a "depends_on" other than its own is refused; change it with
++"lym board set-deps".
++The "notice" names siblings sharing a new depends_on and a label.
+ Demotion goes through "lym board upsert" with "kind":"note".
+ 
+-Fields (one of):
+-  "slug"   string  — entry slug
+-  "id"     integer — entry id
+-  "handle" string  — entry handle, such as B4
++Fields:
++  "slug"       string  — entry slug (one of slug, id or handle)
++  "id"         integer — entry id (one of slug, id or handle)
++  "handle"     string  — entry handle, such as B4 (one of slug, id or handle)
++  "depends_on" array   — dependency slugs the promoted task waits on (optional)
+ 
+ Examples:
+   lym board promote '{"slug":"my-note"}'
+   lym board promote B4
+-  lym board promote S3` + slugLimitNote(),
++  lym board promote S3
++  lym board promote '{"handle":"S3","depends_on":["other-task"]}'` + slugLimitNote(),
+ 		RunE: clihelp.WrapRun(func(out io.Writer, args []string) int {
+ 			if len(args) == 0 {
+ 				return outputError(out, "json payload required")
+ 			}
+-			lookup, _, err := resolveLookup([]byte(args[0]), lookupPayload)
++			lookup, m, err := resolveLookup([]byte(args[0]), promotePayload)
+ 			if err != nil {
+ 				return outputError(out, err.Error())
+ 			}
+-			task, err := b.PromoteTo(lookup, promoteRecipe)
++			var dependsOn []string
++			if value, given := m["depends_on"]; given {
++				if dependsOn, err = dependsOnList(value); err != nil {
++					return outputError(out, err.Error())
++				}
++			}
++			task, siblings, err := b.PromoteTo(lookup, promoteRecipe, dependsOn)
+ 			if err != nil {
+ 				return outputError(out, err.Error())
+ 			}
+-			return outputSuccessWithTask(out, task, "")
++			return outputSuccessWithTask(out, task, siblingNotice(siblings))
+ 		}),
+ 	}
+ 	promoteCmd.Flags().StringVar(&promoteRecipe, "recipe", "", "set the promoted task's recipe in the same write; a Sketch takes raddle when none is given, and no other")
+@@ -499,6 +512,29 @@ var setStatusPayload = payloadKeys{required: []string{"status"}, exclusive: [][]
+ // setDepsPayload is the payload of set-deps.
+ var setDepsPayload = payloadKeys{required: []string{"depends_on"}, exclusive: [][]string{entrySelector}}
+ 
++// promotePayload is the payload of promote.
++var promotePayload = payloadKeys{optional: []string{"depends_on"}, exclusive: [][]string{entrySelector}}
++
++// dependsOnList reads a payload's depends_on value as a list of slugs; a null value reads as an empty list.
++func dependsOnList(value any) ([]string, error) {
++	if value == nil {
++		return []string{}, nil
++	}
++	arr, ok := value.([]any)
++	if !ok {
++		return nil, fmt.Errorf("depends_on must be an array")
++	}
++	dependsOn := make([]string, 0, len(arr))
++	for _, v := range arr {
++		s, ok := v.(string)
++		if !ok {
++			return nil, fmt.Errorf("depends_on elements must be strings")
++		}
++		dependsOn = append(dependsOn, s)
++	}
++	return dependsOn, nil
++}
++
+ // upsertPayload is the payload of upsert, and of the task objects that upsert-batch and merge nest.
+ // The store enforces it on every upsert path.
+ var upsertPayload = func() payloadKeys {
+@@ -1047,23 +1083,9 @@ Example:
+ 				return outputError(out, err.Error())
+ 			}
+ 
+-			var dependsOn []string
+-			if depsVal := m["depends_on"]; depsVal != nil {
+-				arr, ok := depsVal.([]any)
+-				if !ok {
+-					return outputError(out, "depends_on must be an array")
+-				}
+-				dependsOn = make([]string, 0, len(arr))
+-				for _, v := range arr {
+-					s, ok := v.(string)
+-					if !ok {
+-						return outputError(out, "depends_on elements must be strings")
+-					}
+-					dependsOn = append(dependsOn, s)
+-				}
+-			} else {
+-				// Explicit null — treat as empty (clear the list).
+-				dependsOn = []string{}
++			dependsOn, err := dependsOnList(m["depends_on"])
++			if err != nil {
++				return outputError(out, err.Error())
+ 			}
+ 
+ 			siblings, err := board().SetDeps(selector, dependsOn)
+diff --git a/internal/boardcli/cli_test.go b/internal/boardcli/cli_test.go
+index 45222784..b5ff19d7 100644
+--- a/internal/boardcli/cli_test.go
++++ b/internal/boardcli/cli_test.go
+@@ -204,6 +204,14 @@ func stepSiblingWarning(t *testing.T, f *cliFixture) {
+ 		seed(t)
+ 		wantSibling(t, runJSON(t, 0, "merge", `{"upsert":{"slug":"X","depends_on":["D"]}}`))
+ 	})
++	t.Run("promote names the sibling", func(t *testing.T) {
++		seed(t, `{"slug":"N","title":"N","kind":"note","labels":["bug","board"]}`)
++		notice, _ := runJSON(t, 0, "promote", `{"slug":"N","depends_on":["D"]}`)["notice"].(string)
++		want := `"N" now waits on D, which "Y" also waits on, and the two share module labels board: chain one after the other with "lym board set-deps", or leave both if they do not overlap`
++		if notice != want {
++			t.Errorf("notice = %q; want %q", notice, want)
++		}
++	})
+ 	t.Run("two siblings are two lines", func(t *testing.T) {
+ 		seed(t, `{"slug":"Y2","title":"Y2","kind":"task","labels":["bug","board"],"depends_on":["D"]}`)
+ 		notice, _ := runJSON(t, 0, "set-deps", `{"slug":"X","depends_on":["D"]}`)["notice"].(string)
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 9a72dea6..9b56c52a 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -114,11 +114,14 @@
+ // Its success envelope's `notice` then names the released members.
+ // A null status on a project with a run status or done is refused, naming each draft member's release.
+ //
+-// `set-deps`, `upsert`, `upsert-batch` and `merge` add the sibling warning to the success envelope's `notice`.
++// `set-deps`, `upsert`, `upsert-batch`, `merge` and `promote` add the sibling warning to the success envelope's `notice`.
+ // It is joined after a run-settings notice, one line per pair, a batch pair once;
+-// `set-deps` prints `notice` only then.
+-// `promote` and `intake import` write no `depends_on` and stay unchanged.
++// `set-deps` and `promote` print `notice` only then.
++// `intake import` writes no `depends_on` and stays unchanged.
+ // `promote` takes `--recipe <name>`, which sets the promoted task's recipe in the same write.
++// Its optional `depends_on` sets the promoted task's dependencies in that write too,
++// so a released Sketch never reaches its parent's dobby without them;
++// on an entry already a task, a `depends_on` other than its own is refused, naming `set-deps`.
+ // A Sketch, or any discussed note whose decision record is stored, becomes a task only with recipe raddle.
+ // That recipe keeps the record and releases the task:
+ // `promote` with no `--recipe` gives it raddle, and `--recipe raddle` is accepted;
+diff --git a/internal/boardcli/help_test.go b/internal/boardcli/help_test.go
+index 20b9817b..264be6bd 100644
+--- a/internal/boardcli/help_test.go
++++ b/internal/boardcli/help_test.go
+@@ -106,7 +106,7 @@ func TestHelpSchema_LeafCommands(t *testing.T) {
+ 		{
+ 			name:           "promote",
+ 			args:           []string{"promote"},
+-			mustContain:    []string{"slug", "id", "note", "task", "kind", "Example"},
++			mustContain:    []string{"slug", "id", "note", "task", "kind", "depends_on", "notice", "Example"},
+ 			mustNotContain: []string{"tier"},
+ 		},
+ 		{
+diff --git a/internal/boardcli/payload_test.go b/internal/boardcli/payload_test.go
+index ad030434..c862b200 100644
+--- a/internal/boardcli/payload_test.go
++++ b/internal/boardcli/payload_test.go
+@@ -30,7 +30,7 @@ func TestPayloadUse_MatchesDeclaredKeys(t *testing.T) {
+ 	}{
+ 		{name: "get", path: []string{"get"}, declared: lookupPayload, wantMatch: true},
+ 		{name: "remove", path: []string{"remove"}, declared: lookupPayload, wantMatch: true},
+-		{name: "promote", path: []string{"promote"}, declared: lookupPayload, wantMatch: true},
++		{name: "promote", path: []string{"promote"}, declared: promotePayload, wantMatch: true},
+ 		{name: "rename", path: []string{"rename"}, declared: renamePayload, wantMatch: true},
+ 		{name: "set-status", path: []string{"set-status"}, declared: setStatusPayload, wantMatch: true},
+ 		{name: "set-deps", path: []string{"set-deps"}, declared: setDepsPayload, wantMatch: true},
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 4507162e..8ae31d91 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -84,6 +84,20 @@ func stepPromote(t *testing.T, f *cliFixture) {
+ 		t.Fatalf("promote --recipe darn: task = %v, want r as a darn task", task)
+ 	}
+ 
++	// depends_on sets the promoted task's dependencies in the promoting write.
++	mustUpsert(t, `{"slug":"s","title":"S","labels":["bug"]}`)
++	task = runJSON(t, 0, "promote", `{"slug":"s","depends_on":["q"]}`)["task"].(map[string]any)
++	if deps, _ := task["depends_on"].([]any); task["kind"] != "task" || len(deps) != 1 || deps[0] != "q" {
++		t.Fatalf("promote with depends_on: task = %v, want s as a task depending on q", task)
++	}
++
++	// A null depends_on is an empty list: the promotion is admitted and the task has no dependencies.
++	mustUpsert(t, `{"slug":"u","title":"U","labels":["bug"]}`)
++	task = runJSON(t, 0, "promote", `{"slug":"u","depends_on":null}`)["task"].(map[string]any)
++	if deps, _ := task["depends_on"].([]any); task["kind"] != "task" || len(deps) != 0 {
++		t.Fatalf("promote with null depends_on: task = %v, want u as a task with no dependencies", task)
++	}
++
+ 	// Demotion goes through upsert.
+ 	task = runJSON(t, 0, "upsert", `{"slug":"p","kind":"note"}`)["task"].(map[string]any)
+ 	if task["kind"] != "note" {
+@@ -95,12 +109,15 @@ func stepPromote_Refusals(t *testing.T, f *cliFixture) {
+ 	mustUpsert(t, `{"slug":"p","title":"P","labels":["bug"]}`)
+ 
+ 	for name, payload := range map[string]string{
+-		"no payload key slug":    `{}`,
+-		"tier is an unknown key": `{"slug":"p","tier":1}`,
+-		"unknown key":            `{"slug":"p","kind":"task"}`,
+-		"slug and id":            `{"slug":"p","id":0}`,
+-		"unknown slug":           `{"slug":"missing"}`,
+-		"invalid json":           `{`,
++		"no payload key slug":     `{}`,
++		"tier is an unknown key":  `{"slug":"p","tier":1}`,
++		"unknown key":             `{"slug":"p","kind":"task"}`,
++		"slug and id":             `{"slug":"p","id":0}`,
++		"unknown slug":            `{"slug":"missing"}`,
++		"depends_on not an array": `{"slug":"p","depends_on":"q"}`,
++		"unknown dependency":      `{"slug":"p","depends_on":["missing"]}`,
++		"depends_on not strings":  `{"slug":"p","depends_on":[1]}`,
++		"invalid json":            `{`,
+ 	} {
+ 		t.Run(name, func(t *testing.T) {
+ 			result := runJSON(t, 1, "promote", payload)
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index 3fa4df6e..cbee16c6 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -424,20 +424,25 @@ func (b *Board) ListTasksFull() ([]Task, error) {
+ // Promote makes the entry identified by idOrSlug a task under the write lock.
+ // An entry that is already a task is returned unchanged without a write.
+ func (b *Board) Promote(idOrSlug any) (Task, error) {
+-	return b.PromoteTo(idOrSlug, "")
++	task, _, err := b.PromoteTo(idOrSlug, "", nil)
++	return task, err
+ }
+ 
+ // PromoteTo makes the entry identified by idOrSlug a task under the write lock.
++// It returns the siblings the write created.
+ // When recipe is not empty, the same write sets the task's recipe to recipe.
+-// An entry that is already a task is returned unchanged without a write.
++// A non-nil dependsOn replaces the task's depends_on in the same write,
++// so a task the write releases is never started ahead of its dependencies.
++// An entry that is already a task is returned unchanged without a write;
++// a non-nil dependsOn that differs from its depends_on is refused.
+ // When recipe is empty, a discussed note takes the raddle recipe if its decision record is stored.
+ // The same holds for a note that carries the sketch label.
+ // Promoting a note whose record is stored with the raddle recipe keeps the record and the flag.
+ // It restores the sketch label that a note write dropped, and it releases the task in the same write.
+ // A Sketch becomes a task only through that promotion; a promotion of it with any other recipe is refused.
+-func (b *Board) PromoteTo(idOrSlug any, recipe string) (Task, error) {
+-	result, err := b.boardCriticalSection(func(store *Store) (any, error) {
+-		task, changed, err := store.promoteTo(idOrSlug, recipe, b.recordStored)
++func (b *Board) PromoteTo(idOrSlug any, recipe string, dependsOn []string) (Task, []Sibling, error) {
++	result, siblings, err := b.writeReportingSiblings(func(store *Store) (any, error) {
++		task, changed, err := store.promoteTo(idOrSlug, recipe, dependsOn, b.recordStored)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+@@ -445,11 +450,11 @@ func (b *Board) PromoteTo(idOrSlug any, recipe string) (Task, error) {
+ 			return noWrite{result: task}, nil
+ 		}
+ 		return promoted{task: task}, nil
+-	}, nil)
++	})
+ 	if err != nil {
+-		return Task{}, err
++		return Task{}, nil, err
+ 	}
+-	return result.(Task), nil
++	return result.(Task), siblings, nil
+ }
+ 
+ // Prune removes every done entry under the write lock, except one still carrying notify_on_land.
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 6064c5d6..93a09a5b 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -485,6 +485,8 @@
+ // An empty string written to a task whose loaded status differs is `draft`, not a release.
+ // A write may release the tasks it makes: the draft rule skips the slugs it is told.
+ // That is the promoted task of a promotion with recipe `raddle`.
++// Such a promotion takes the task's depends_on in the same write.
++// A dependency set by a later write can land after the parent's dobby has started the run.
+ // The owner write and the replay of a local commit run no draft rule:
+ // the first never makes a task, and the second copies entries a critical-section write already normalised.
+ //
+@@ -568,7 +570,8 @@
+ // Board.PromoteTo with recipe `raddle`, or with no recipe, which gives a Sketch `raddle`, makes the task in one write.
+ // The write keeps the decision record, the discussed flag and the sketch label.
+ // It restores the label when a note write dropped it, and it releases the task, so its parent's dobby starts the run.
+-// Board.Promote is PromoteTo with no recipe.
++// PromoteTo's depends_on is set in that write, so the dobby never sees the task released without it.
++// Board.Promote is PromoteTo with no recipe and no depends_on.
+ // Two write rules close every other way.
+ // The first rule covers a discussed note whose record file exists.
+ // A write that makes it a task must carry recipe `raddle`, the discussed flag and the sketch label,
+diff --git a/internal/boardengine/raddlefile_test.go b/internal/boardengine/raddlefile_test.go
+index e2abbe01..530fbc11 100644
+--- a/internal/boardengine/raddlefile_test.go
++++ b/internal/boardengine/raddlefile_test.go
+@@ -53,7 +53,7 @@ func startRaddleRun(t *testing.T, b *Board, slug, project string) Task {
+ 	if err := b.StoreDecisionRecord(slug, []byte("sketch record\n")); err != nil {
+ 		t.Fatalf("StoreDecisionRecord() error = %v; want nil", err)
+ 	}
+-	if _, err := b.PromoteTo(slug, shedrun.RecipeRaddle); err != nil {
++	if _, _, err := b.PromoteTo(slug, shedrun.RecipeRaddle, nil); err != nil {
+ 		t.Fatalf("PromoteTo() error = %v; want nil", err)
+ 	}
+ 	return entryForRaddle(t, b, slug)
+diff --git a/internal/boardengine/siblings_test.go b/internal/boardengine/siblings_test.go
+index 9c4db8e0..dbcf51df 100644
+--- a/internal/boardengine/siblings_test.go
++++ b/internal/boardengine/siblings_test.go
+@@ -49,6 +49,13 @@ func TestWriteSiblings(t *testing.T) {
+ 		}
+ 	}
+ 
++	promote := func(selector string, deps ...string) func(b *boardengine.Board) ([]boardengine.Sibling, error) {
++		return func(b *boardengine.Board) ([]boardengine.Sibling, error) {
++			_, siblings, err := b.PromoteTo(selector, "", deps)
++			return siblings, err
++		}
++	}
++
+ 	rows := []struct {
+ 		name string
+ 		seed []map[string]any
+@@ -75,6 +82,11 @@ func TestWriteSiblings(t *testing.T) {
+ 			seed: []map[string]any{siblingEntry("D", nil, nil), siblingEntry("X", board, nil), siblingEntry("Y", board, waitsOnD)},
+ 			act:  merge(nil, map[string]any{"slug": "X", "depends_on": []string{"D"}}, nil), want: []boardengine.Sibling{pair},
+ 		},
++		{
++			name: "promote of a note giving a dependency an open sibling waits on",
++			seed: []map[string]any{siblingEntry("D", nil, nil), siblingEntry("X", board, map[string]any{"kind": "note"}), siblingEntry("Y", board, waitsOnD)},
++			act:  promote("X", "D"), want: []boardengine.Sibling{pair}, stored: map[string][]string{"X": {"D"}},
++		},
+ 		{
+ 			name: "two siblings come in board order",
+ 			seed: []map[string]any{siblingEntry("D", nil, nil), siblingEntry("X", board, nil), siblingEntry("Y1", board, waitsOnD), siblingEntry("Y2", board, waitsOnD)},
+diff --git a/internal/boardengine/sketch_test.go b/internal/boardengine/sketch_test.go
+index f93f3b28..9aaccbc2 100644
+--- a/internal/boardengine/sketch_test.go
++++ b/internal/boardengine/sketch_test.go
+@@ -205,6 +205,8 @@ func newPromotionBoard(t *testing.T) (*boardengine.Board, string) {
+ // TestDiscussedPromotion asserts that a Sketch becomes a task only through a promotion with recipe raddle.
+ // So does a discussed note that a note write stripped of its label.
+ // A promotion with no recipe gives the entry the raddle recipe and releases it in the same write.
++// The same write carries the depends_on the promotion names.
++// An entry already a task takes no depends_on from a promotion.
+ // A note with no sketch label, whose record file is missing or that was never discussed, promotes as any note does.
+ func TestDiscussedPromotion(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -236,15 +238,24 @@ func TestDiscussedPromotion(t *testing.T) {
+ 			t.Fatalf("remove record file: %v", err)
+ 		}
+ 	}
++	sketchWithDependency := func(t *testing.T, b *boardengine.Board, boardPath string) {
++		t.Helper()
++		mustUpsertEntry(t, b, map[string]any{"slug": "dep", "title": "Dep", "kind": "task", "labels": bugLabels})
++		sketch(t, b, boardPath)
++	}
+ 	promote := func(selector any, recipe string) func(b *boardengine.Board) error {
+ 		return func(b *boardengine.Board) error {
+-			_, err := b.PromoteTo(selector, recipe)
++			_, _, err := b.PromoteTo(selector, recipe, nil)
+ 			return err
+ 		}
+ 	}
+ 	promoteTo := func(recipe string) func(b *boardengine.Board) error {
+ 		return promote("idea", recipe)
+ 	}
++	promoteWaitingOnDep := func(b *boardengine.Board) error {
++		_, _, err := b.PromoteTo("idea", "", []string{"dep"})
++		return err
++	}
+ 	wayForward := `lym board promote '{"slug":"idea"}'`
+ 
+ 	tests := []struct {
+@@ -259,7 +270,48 @@ func TestDiscussedPromotion(t *testing.T) {
+ 		wantSketch    bool
+ 		wantDiscussed bool
+ 		wantRecord    bool
++		wantDependsOn []string
+ 	}{
++		{
++			name: "PromoteOfASketchReleasesItWithItsDependsOn", setup: sketchWithDependency, act: promoteWaitingOnDep,
++			wantKind: boardengine.KindTask, wantRecipe: shedrun.RecipeRaddle, wantSketch: true, wantDiscussed: true, wantRecord: true,
++			wantDependsOn: []string{"dep"},
++		},
++		{
++			name: "DependsOnOfAnEntryAlreadyATaskIsRefused", setup: sketchWithDependency,
++			act: func(b *boardengine.Board) error {
++				if err := promoteTo("")(b); err != nil {
++					return err
++				}
++				return promoteWaitingOnDep(b)
++			},
++			wantErr:  []string{`"idea" is a task already`, "lym board set-deps"},
++			wantKind: boardengine.KindTask, wantRecipe: shedrun.RecipeRaddle, wantSketch: true, wantDiscussed: true, wantRecord: true,
++		},
++		{
++			name: "DependsOnEqualToATasksOwnIsANoOp", setup: sketchWithDependency,
++			act: func(b *boardengine.Board) error {
++				if err := promoteWaitingOnDep(b); err != nil {
++					return err
++				}
++				return promoteWaitingOnDep(b)
++			},
++			wantKind: boardengine.KindTask, wantRecipe: shedrun.RecipeRaddle, wantSketch: true, wantDiscussed: true, wantRecord: true,
++			wantDependsOn: []string{"dep"},
++		},
++		{
++			name: "EmptyDependsOnOnATaskWithDependenciesIsRefused", setup: sketchWithDependency,
++			act: func(b *boardengine.Board) error {
++				if err := promoteWaitingOnDep(b); err != nil {
++					return err
++				}
++				_, _, err := b.PromoteTo("idea", "", []string{})
++				return err
++			},
++			wantErr:  []string{`"idea" is a task already`, "lym board set-deps"},
++			wantKind: boardengine.KindTask, wantRecipe: shedrun.RecipeRaddle, wantSketch: true, wantDiscussed: true, wantRecord: true,
++			wantDependsOn: []string{"dep"},
++		},
+ 		{
+ 			name: "RaddlePromoteOfASketch", setup: sketch, act: promoteTo(shedrun.RecipeRaddle),
+ 			wantKind: boardengine.KindTask, wantRecipe: shedrun.RecipeRaddle, wantSketch: true, wantDiscussed: true, wantRecord: true,
+@@ -350,6 +402,9 @@ func TestDiscussedPromotion(t *testing.T) {
+ 			if sketched := slices.Contains(got.Labels, boardengine.SketchType); sketched != tt.wantSketch {
+ 				t.Errorf("entry labels = %v; want the sketch label = %t", got.Labels, tt.wantSketch)
+ 			}
++			if !slices.Equal(got.DependsOn, tt.wantDependsOn) {
++				t.Errorf("entry depends_on = %v; want %v", got.DependsOn, tt.wantDependsOn)
++			}
+ 			if got.Discussed != tt.wantDiscussed {
+ 				t.Errorf("entry discussed = %t; want %t", got.Discussed, tt.wantDiscussed)
+ 			}
+diff --git a/internal/boardengine/slugrule_test.go b/internal/boardengine/slugrule_test.go
+index 1605c8dd..5ef71826 100644
+--- a/internal/boardengine/slugrule_test.go
++++ b/internal/boardengine/slugrule_test.go
+@@ -223,7 +223,7 @@ func TestSlugRule_RaddleStore(t *testing.T) {
+ 			if err := discussedNote(b, "part-b", []string{boardengine.SketchType}); err != nil {
+ 				return err
+ 			}
+-			_, err := b.PromoteTo("part-b", "raddle")
++			_, _, err := b.PromoteTo("part-b", "raddle", nil)
+ 			return err
+ 		}, []string{`"part-b"`, `Sketch "plan-me"`, "lym board rename"}},
+ 		{"NilSeamAndAStoreHit", nil, newTask("part-a"), []string{`"part-a"`, `Sketch "plan-me"`}},
+@@ -252,7 +252,7 @@ func TestSlugRule_RaddleStore(t *testing.T) {
+ 			t.Fatal(err)
+ 		}
+ 		writeRaddleStore(t, boardPath, "plan-me", own)
+-		if _, err := b.PromoteTo("plan-me", "raddle"); err != nil {
++		if _, _, err := b.PromoteTo("plan-me", "raddle", nil); err != nil {
+ 			t.Errorf("PromoteTo() error = %v; want nil for the Sketch whose created stamp the store records", err)
+ 		}
+ 	})
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index 56280df9..8021e7e5 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -780,17 +780,20 @@ func (s *Store) ListTasksBrief(labels []string) []BriefTask {
+ // A project is refused, since only a task is claimable bar a beam's landing.
+ // The promoted entry must pass the store's validation, so an entry without a type label is refused.
+ func (s *Store) Promote(idOrSlug any) (task Task, changed bool, err error) {
+-	return s.promoteTo(idOrSlug, "", nil)
++	return s.promoteTo(idOrSlug, "", nil, nil)
+ }
+ 
+ // promoteTo makes the entry identified by idOrSlug a task and clears its priority.
+ // When recipe is not empty, it is set in the same write.
++// A non-nil dependsOn replaces the task's depends_on in the same write,
++// so a write that also releases the task never lets a run start ahead of them.
++// An entry that is already a task takes no write, so a non-nil dependsOn that differs from its depends_on is refused.
+ // A discussed note takes recipe raddle when recipe is empty and its record is stored, or it carries the sketch label.
+ // Raddle is the one recipe such a note may take.
+ // With recipe raddle, a note whose record is stored keeps its record and flag,
+ // and it gets the sketch label back when a note write dropped it.
+ // A nil recordStored reports no record stored, so only the label then gives recipe raddle.
+-func (s *Store) promoteTo(idOrSlug any, recipe string, recordStored func(slug string) bool) (task Task, changed bool, err error) {
++func (s *Store) promoteTo(idOrSlug any, recipe string, dependsOn []string, recordStored func(slug string) bool) (task Task, changed bool, err error) {
+ 	current, ok := s.GetTask(idOrSlug)
+ 	if !ok {
+ 		return Task{}, false, fmt.Errorf("task not found: %v", idOrSlug)
+@@ -799,12 +802,18 @@ func (s *Store) promoteTo(idOrSlug any, recipe string, recordStored func(slug st
+ 		return Task{}, false, fmt.Errorf("entry %q is a project, and a project is never made a task: make it a beam with `lym beam create %s`", current.Slug, current.Slug)
+ 	}
+ 	if current.Kind == KindTask {
++		if dependsOn != nil && !slices.Equal(current.DependsOn, dependsOn) {
++			return Task{}, false, fmt.Errorf("entry %q is a task already, so promote writes nothing and sets no depends_on: change it with `lym board set-deps`", current.Slug)
++		}
+ 		return current, false, nil
+ 	}
+ 
+ 	incoming := current
+ 	incoming.Kind = KindTask
+ 	incoming.Priority = ""
++	if dependsOn != nil {
++		incoming.DependsOn = dependsOn
++	}
+ 	recordHeld := current.Discussed && recordStored != nil && recordStored(current.Slug)
+ 	if recipe == "" && current.Discussed && (recordHeld || slices.Contains(current.Labels, SketchType)) {
+ 		recipe = shedrun.RecipeRaddle
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index 001c1927..b9030eca 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -119,6 +119,11 @@ lym board promote '{"slug":"my-note"}'
+ Promoting a Sketch, by slug or by its handle such as `lym board promote S3`, makes it a task with recipe `raddle`.
+ That task splits the Sketch's decision record into tasks or a project.
+ A Sketch takes no other recipe.
++Give a Sketch's dependencies in the promotion, because it releases the task and the parent's dobby can start it before a later `set-deps` lands:
++
++```
++lym board promote '{"slug":"my-sketch","depends_on":["other-task"]}'
++```
+ 
+ Rename an entry, keeping every other field and rewriting the old slug in every other entry's `depends_on`:
+ 
