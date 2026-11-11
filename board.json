@@ -1044,11 +1044,13 @@
       "id": 1295,
       "handle": "R4",
       "slug": "advisor-model-trial",
-      "title": "Bruk av advisor-kommando for Discussion og Plannrr6",
+      "title": "Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way",
       "kind": "note",
       "labels": [
         "research",
+        "darn",
         "loom",
+        "shuttle",
         "claude"
       ],
       "issues": [
@@ -1057,9 +1059,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #109](https://github.com/Knatte18/loomyard/issues/109).\n\nTeste ut om f.eka planner kan kjøre på sonnet med opus som advisor med /advisor. Vs dagens opus hele veien",
+      "body": "Imported from [issue #109](https://github.com/Knatte18/loomyard/issues/109).\n\n## Idea (operator, 2026-11-10 and 2026-11-11)\n\nClaude Code's `/advisor` command lets a session on a cheaper model consult a stronger model when it is unsure.\nTrial whether a role can run on Sonnet with Opus as its advisor, instead of on Opus all the way, at no loss of quality.\nThe operator expects darn to gain the most, since its writer does most of a darn run's work and time.\nThe operator does not trust a plain Sonnet darn writer; the advisor is the thing that could make one trustworthy.\n\n## Where an advisor may pay\n\nEach is a role that runs on a strong model today and spends much of its tokens on routine reading and editing,\nwith a few hard calls an advisor could take:\n\n- Darn-Write, the darn writer: the first place to try.\n- The Code-Review fixer and the Rework writer, which apply findings already named.\n- Webster's implementer forks in tapestry, which build one batch of approved cards.\n- The Plan writer, from an approved decision record.\n- The Discussion writer.\n- Raddle's split writer.\n- Describe and Friction-Reflect, which may need no advisor at all, only a cheaper model.\n\nReview judges, lenses and the arbiter stay out: their value is the judgment itself, which an advisor would only move.\n\n## Before it runs\n\nA darn `docs` task first finds how `/advisor` works in a headless lym session:\nwhether lym can turn it on per role through shuttle and the role's model setting, and how its calls show in the usage records.\nThe trial then runs one or two real darn tasks with a Sonnet writer and an Opus advisor against their Opus-writer record,\ncomparing time with sleep removed, tokens, cost and review bounces; the task body states the exact count.\n",
       "created": "2026-11-11T06:23:11Z",
-      "revised": "2026-11-11T06:23:11Z"
+      "revised": "2026-11-11T07:26:05Z"
     },
     {
       "id": 1296,
