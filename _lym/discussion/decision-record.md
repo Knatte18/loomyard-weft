@@ -98,6 +98,12 @@ Decision: The Discussion review ends at round 3 with no further edit. The round-
 
 Rationale: Hard-cap rule: accept when the fix in place already answers each open design-wrong finding. The round-3 fixer report and the current decision record show every proposed fix applied; internal/gatecli/tierrun.go confirms holdsTierTest and emptyTierFailure behave as the F2 fix relies on.
 
+### Added after Discussion (parent, 2026-11-11): Spawn-marked tests are selected whenever any linked function changed
+
+Decision: The selector selects every test whose spawn verdict is out of process or unresolved whenever any linked function of the package changed, in addition to the tests whose recorded coverage names a changed function. When no linked function changed, it selects none of them on this account. D4's criterion that no test which covered only other functions is selected holds for tests with recorded coverage; a spawn-marked test has no recorded coverage (testmap-upkeep-design D2 and D4), so it cannot be shown unaffected and is selected as the safe widening. Keep the code as it stands.
+
+Rationale: A spawn-marked test runs the code out of process, so a changed linked function can affect it with nothing recorded to prove otherwise. Selecting it widens the run and never narrows it, and it follows D5's rule that misses widen. Refusing it would let a changed function skip a test whose coverage is unknown.
+
 ## Constraints
 
 - Go 1.26 (`go.mod`, toolchain go1.26.8): `go test -c -cover -coverpkg=<list>` instruments every listed package, and the set-mode profile lists blocks of each by file.
