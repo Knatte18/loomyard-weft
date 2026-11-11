@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Decide how the coverage maps are kept fresh, from the upkeep research** | [`testmap-upkeep-design`](design-testmap-upkeep-design.md)<br>[Sketch](decision-testmap-upkeep-design.md) | raddle | Worktree-Create | neve | 2h<br>0m | testkit, gate, dobby |
+| T1 | **Decide how the coverage maps are kept fresh, from the upkeep research** | [`testmap-upkeep-design`](design-testmap-upkeep-design.md)<br>[Sketch](decision-testmap-upkeep-design.md) | raddle | Seed-Child | neve | 2h<br>0m | testkit, gate, dobby |
 | T14 | **Select an importing package's tests from its coverage map, or name the miss that runs it whole** | [`coverage-test-select`](design-coverage-test-select.md)<br>[Sketch](decision-coverage-test-select.md) | darn · solid | Code-Burler-Fix | neve | 7h<br>1h | gate, testkit, darn |
 
 ### Ready (0)
