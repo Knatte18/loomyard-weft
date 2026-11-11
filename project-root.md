@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Creel sends an unchanged notice once and drops mail about runs that no longer exist** | [`creel-notice-hygiene`](design-creel-notice-hygiene.md) | darn · light | Drift-Verify | neve | 6h<br>2h | creel, dobby, fabric, orch |
+| T6 | **Creel sends an unchanged notice once and drops mail about runs that no longer exist** | [`creel-notice-hygiene`](design-creel-notice-hygiene.md) | darn · light | Code-Bouncer | neve | 6h<br>2h | creel, dobby, fabric, orch |
 | T17 | **lym loom decision replace folds a run's record under a lock, cuts the history check at it, and refreshes every stored record** | [`decision-record-replace-verb`](design-decision-record-replace-verb.md)<br>[Sketch](decision-decision-record-replace-verb.md) | darn · solid | Darn-Write | neve | 1h<br>1h | shed, loom, board |
 
 ### Ready (0)
