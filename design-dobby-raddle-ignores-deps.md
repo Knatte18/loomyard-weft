@@ -1,6 +1,6 @@
 # Dobby starts a released raddle task whose depends_on has not landed
 
-`dobby-raddle-ignores-deps` · Task · bug, dobby, board · running · Drift-Expect
+`dobby-raddle-ignores-deps` · Task · bug, dobby, board · running · Darn-Write
 
 Depends on: [`adopt-owner-handover`](design-adopt-owner-handover.md)
 
