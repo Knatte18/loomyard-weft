@@ -1,0 +1,751 @@
+diff --git a/internal/creelcli/cli.go b/internal/creelcli/cli.go
+index df75c13b..a42c4c40 100644
+--- a/internal/creelcli/cli.go
++++ b/internal/creelcli/cli.go
+@@ -373,7 +373,7 @@ func postCmd() *cobra.Command {
+ 		Long: `post leaves the text as a message for the receiver strand and prints its id.
+ A strand shuttle launched with creel's hooks gets the message in full at its
+ next tool call or turn end, an idle one woken with it.
+-Any other strand, a hand-added one or a session launched without those hooks included,
++Any other strand, a hand-added one or a session launched without those hooks,
+ gets a typed notice or reminder and reads the message with "lym creel read".
+ 
+ With --reply <id> the text answers message <id> and goes to its sender, so no
+@@ -385,17 +385,20 @@ post --wait-reply. With --wait-reply the call waits for the reply, up to
+ recorded it unanswered after chasing its holder.
+ 
+ --expect-reply marks the message as expecting a reply, without waiting for it;
+---wait-reply marks it too. The receiver sees the mark beside the reply command
+-in the message's header or line, and the holder's reply clears it.
++--wait-reply marks it too. The receiver sees the mark beside the reply command,
++and the holder's reply clears it.
+ 
+ With --parent the text goes to your parent orch, so no receiver is given: from a
+ pair the nearest live orch up from its recorded parent, else the prime's; from a
+ beam or the prime that worktree's own orch when live. The answer names the
+ resolved strand as receiver.
+ 
+---interrupt stops the receiver's running turn first, so the message arrives as
+-the input of the turn after it; it needs a receiver shuttle launched with
+-creel's hooks, and answers whether a turn was stopped as interrupted.
++--interrupt stops the receiver's running turn first; it needs a receiver
++shuttle launched with creel's hooks, and the answer says whether a turn was
++stopped as interrupted.
++
++A post to a strand answers receiver_live, and a receiver not live gets a
++"creel: warning:" line on stderr.
+ 
+ A receiver may be a strand of another hub, by its full name from lym creel
+ hubs; --interrupt is refused. The daemon delivers such a post, so --wait-reply
+@@ -403,7 +406,7 @@ may wait up to an hour, and an undeliverable one returns with a CREEL notice.
+ 
+ Example:
+   lym creel post ly:impl "the schema changed, rebase before you go on"
+-  lym creel post --parent "blocked: which schema do you want?"
++  lym creel post --parent "blocked: which schema?"
+   lym creel post --reply 12 "done"`,
+ 		Args: cobra.ArbitraryArgs,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+@@ -441,10 +444,18 @@ Example:
+ 				} else {
+ 					receiver = args[0]
+ 				}
+-				resp, err := client.Call(creelengine.Request{Verb: creelengine.VerbPost, Receiver: receiver, Text: text, Wait: waitReply, Interrupt: interrupt, ExpectReply: expectReply}, timeoutWhenWaiting(waitReply, timeout), nil)
++				// A waiting post hears the warning as progress, as soon as the post is stored, and a plain one in its answer.
++				warn := func(resp creelengine.Response) {
++					if resp.Warning != "" {
++						fmt.Fprintln(cmd.ErrOrStderr(), "creel: warning: "+resp.Warning)
++					}
++				}
++				req := creelengine.Request{Verb: creelengine.VerbPost, Receiver: receiver, Text: text, Wait: waitReply, Interrupt: interrupt, ExpectReply: expectReply}
++				resp, err := client.CallWatching(req, timeoutWhenWaiting(waitReply, timeout), nil, warn)
+ 				if err != nil {
+ 					return result{}, err
+ 				}
++				warn(resp)
+ 				fields := map[string]any{"id": resp.ID, "sender": resp.Sender}
+ 				if toParent {
+ 					fields["receiver"] = receiver
+@@ -452,6 +463,9 @@ Example:
+ 				if interrupt {
+ 					fields["interrupted"] = resp.Interrupted
+ 				}
++				if resp.ReceiverLive != nil {
++					fields["receiver_live"] = *resp.ReceiverLive
++				}
+ 				done := fmt.Sprintf("message #%d was posted", resp.ID)
+ 				if !waitReply {
+ 					return result{fields: fields, done: done}, nil
+diff --git a/internal/creelcli/cli_test.go b/internal/creelcli/cli_test.go
+index 846b38e5..2d287d93 100644
+--- a/internal/creelcli/cli_test.go
++++ b/internal/creelcli/cli_test.go
+@@ -756,6 +756,38 @@ func TestCreelCLI(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("post answers receiver_live and warns on stderr of a receiver that is not live, naming how to start it", func(t *testing.T) {
++		r := newRig(t)
++		alpha := r.name("alpha:driver")
++		beta := r.name("beta:driver")
++		r.delivery.SetStrands(creelfake.LiveStrand(alpha), creelfake.DormantStrand(beta))
++		r.startDaemon(t)
++
++		var liveStderr bytes.Buffer
++		live := runCreelSplit(r.cwd, &liveStderr, "post", alpha, "hello")
++		if live.code != 0 || live.fields["receiver_live"] != true || liveStderr.String() != "" {
++			t.Errorf("creel post to a live strand = (%d, %q, stderr %q); want exit 0 with receiver_live true and no warning", live.code, live.raw, liveStderr.String())
++		}
++		var dormantStderr bytes.Buffer
++		dormant := runCreelSplit(r.cwd, &dormantStderr, "post", beta, "hello")
++		wantWarning := "creel: warning: " + beta + " is not live, so the message waits in its mail until it runs again; way forward: start it with lym reed resume in /hub/worktree\n"
++		if id, _ := dormant.fields["id"].(float64); dormant.code != 0 || id < 1 || dormant.fields["receiver_live"] != false || dormantStderr.String() != wantWarning {
++			t.Errorf("creel post to a dormant strand = (%d, %q, stderr %q); want exit 0 with its id, receiver_live false and stderr %q", dormant.code, dormant.raw, dormantStderr.String(), wantWarning)
++		}
++
++		var waitingStderr lockedBuffer
++		waiting := make(chan cliRun, 1)
++		go func() {
++			waiting <- runCreelSplit(r.cwd, &waitingStderr, "post", "--wait-reply", "--timeout", "5s", beta, "anyone?")
++		}()
++		r.clientClock.AwaitWaits(1)
++		awaitStderr(t, &waitingStderr, wantWarning)
++		r.clientClock.Advance(5 * time.Second)
++		if timedOut := awaitRun(t, waiting); timedOut.code != ExitWaitTimeout || waitingStderr.String() != wantWarning {
++			t.Errorf("creel post --wait-reply to a dormant strand = (%d, %q, stderr %q); want exit %d with the warning once", timedOut.code, timedOut.raw, waitingStderr.String(), ExitWaitTimeout)
++		}
++	})
++
+ 	t.Run("post --expect-reply marks the message for its receiver, a reply's log entry names the id it answers, and --reply refuses the flag", func(t *testing.T) {
+ 		r := newRig(t)
+ 		alpha := r.name("alpha:driver")
+diff --git a/internal/creelcli/doc.go b/internal/creelcli/doc.go
+index e5f56989..fbeb974a 100644
+--- a/internal/creelcli/doc.go
++++ b/internal/creelcli/doc.go
+@@ -44,6 +44,11 @@
+ // For post and inject the line names what they already stored.
+ // For a forward, hold, release or interrupt it says the verb took effect.
+ // The refusal fallback line opens with that statement too for a post or inject that stored before it refused.
++// `post` adds `receiver_live` to the envelope when the daemon answers it, and leaves it out for a program or another hub.
++// A post to a receiver that is not live is stored all the same, and prints one `creel: warning: ` line on stderr.
++// The line names the receiver and the command that starts it, and it is printed before the answer line.
++// A `--wait-reply` prints it as soon as the post is stored.
++// A `--wait-reply` resumed after a dropped connection answers no `receiver_live`.
+ // `post --interrupt` stops the receiver's running turn before posting.
+ // It adds `interrupted` to the envelope beside the id, and with `--reply` it is refused before any call.
+ // A receiver a pause covers is claimed into the pause and interrupted;
+diff --git a/internal/creelengine/client.go b/internal/creelengine/client.go
+index 32d8dc51..41bdaa33 100644
+--- a/internal/creelengine/client.go
++++ b/internal/creelengine/client.go
+@@ -160,7 +160,8 @@ func (c *Client) Call(req Request, timeout time.Duration, handle func(Response)
+ }
+ 
+ // CallWatching sends the request as the client's claim and returns the final response.
+-// It hands every progress response of a waiting inject to progress, in arrival order; a nil progress ignores them.
++// It hands every progress response of a waiting inject or post to progress, in arrival order.
++// A nil progress ignores them.
+ func (c *Client) CallWatching(req Request, timeout time.Duration, handle func(Response) error, progress func(Response)) (Response, error) {
+ 	req.Claim = c.claim
+ 	var timer <-chan time.Time
+diff --git a/internal/creelengine/deliver_test.go b/internal/creelengine/deliver_test.go
+index e140fcbb..4b149bdd 100644
+--- a/internal/creelengine/deliver_test.go
++++ b/internal/creelengine/deliver_test.go
+@@ -2726,11 +2726,11 @@ func creelPostTo(e *env, sender, receiver string) int64 {
+ // postMarked posts text from sender to receiver expecting a reply and returns the id.
+ func (e *env) postMarked(t *testing.T, sender creelengine.Sender, receiver, text string) int64 {
+ 	t.Helper()
+-	id, _, _, err := e.store.PostWith(sender, receiver, text, creelengine.PostOptions{ExpectReply: true})
++	posted, err := e.store.PostWith(sender, receiver, text, creelengine.PostOptions{ExpectReply: true})
+ 	if err != nil {
+ 		t.Fatalf("PostWith(%s -> %s): %v", sender.Name, receiver, err)
+ 	}
+-	return id
++	return posted.ID
+ }
+ 
+ func TestScheduler_Chases(t *testing.T) {
+diff --git a/internal/creelengine/doc.go b/internal/creelengine/doc.go
+index d5acbcb4..cc005af9 100644
+--- a/internal/creelengine/doc.go
++++ b/internal/creelengine/doc.go
+@@ -96,6 +96,12 @@
+ // A dormant strand keeps its mail and its queue, and delivery resumes when its strand is live again.
+ // Mail to an orch whose strand is not listed waits in the pool, unread.
+ // It is delivered once a strand of that name is listed, so a notice to an orch that is down is never refused for it.
++// A stored post answers whether its receiver had a live pane: a listed strand by its flag, an unlisted orch as not live.
++// A receiver that is not live comes with a warning naming the command that starts it:
++// `lym beam start <slug>` for an orch, `root` for the prime's,
++// and `lym reed resume` in its worktree for any other strand.
++// A waiting post sends that warning in a progress response right after its pending one.
++// A post to a program or to a strand of another hub answers no liveness, since creel cannot tell whether either runs.
+ // A terminal is never typed into;
+ // a caller that wants an answer waits on the socket with `post --wait-reply` or `read --wait`.
+ //
+diff --git a/internal/creelengine/outbound_test.go b/internal/creelengine/outbound_test.go
+index 57c54add..084efedb 100644
+--- a/internal/creelengine/outbound_test.go
++++ b/internal/creelengine/outbound_test.go
+@@ -572,10 +572,11 @@ func TestScheduler_Outbound(t *testing.T) {
+ 			hubs.Add("lyt", receiving.geom)
+ 			e.store.SetHubs(hubs, "linux")
+ 			fake := listenHubFake(t, receiving, accepted(4))
+-			id, _, _, err := e.store.PostWith(strand(alpha), "lyt:orch", "hi", creelengine.PostOptions{})
++			posted, err := e.store.PostWith(strand(alpha), "lyt:orch", "hi", creelengine.PostOptions{})
+ 			if err != nil {
+ 				t.Fatalf("PostWith: %v", err)
+ 			}
++			id := posted.ID
+ 			e.store.FailJournalWrites(0)
+ 			e.start(t)
+ 			fake.awaitArrivals(t, 1)
+diff --git a/internal/creelengine/protocol.go b/internal/creelengine/protocol.go
+index bfb3dfe5..c4d0abc7 100644
+--- a/internal/creelengine/protocol.go
++++ b/internal/creelengine/protocol.go
+@@ -94,7 +94,9 @@ type Response struct {
+ 	HubPath string `json:"hub_path"`
+ 	// Pending marks the interim response of a waiting verb: the request is accepted and the outcome follows.
+ 	Pending bool `json:"pending,omitempty"`
+-	// Progress marks an interim inject response; Stall is the stall its receiver's delivery waits on, read at StallAt.
++	// Progress marks an interim response.
++	// An inject's carries the Stall its receiver's delivery waits on, read at StallAt.
++	// A waiting post's carries its Warning.
+ 	Progress bool `json:"progress,omitempty"`
+ 	// Stall and StallAt also ride the expired answer of an inject, as the stall that stood when its TTL ran out.
+ 	Stall   Stall     `json:"stall,omitempty"`
+@@ -116,6 +118,11 @@ type Response struct {
+ 	// Sent says an interrupt stopped a running turn, and Interrupted that an inject or a post did.
+ 	Sent        bool `json:"sent,omitempty"`
+ 	Interrupted bool `json:"interrupted,omitempty"`
++	// ReceiverLive answers a post whether its receiver had a live pane, and is absent when creel cannot tell.
++	ReceiverLive *bool `json:"receiver_live,omitempty"`
++	// Warning names a post's receiver that is not live and the command that starts it.
++	// A waiting post carries it in a progress response right after its pending one.
++	Warning string `json:"warning,omitempty"`
+ 	// Hold is the hold a hold verb set; Released says a release ended one.
+ 	Hold     *HoldResult `json:"hold,omitempty"`
+ 	Released bool        `json:"released,omitempty"`
+diff --git a/internal/creelengine/server.go b/internal/creelengine/server.go
+index 1851e099..f668a80c 100644
+--- a/internal/creelengine/server.go
++++ b/internal/creelengine/server.go
+@@ -302,20 +302,22 @@ func (d *daemon) dispatch(conn *net.UnixConn, reader *bufio.Reader, sender Sende
+ 	ok := Response{OK: true, Sender: sender.Name}
+ 	switch req.Verb {
+ 	case VerbPost:
+-		id, interrupted, waiter, err := store.PostWith(sender, req.Receiver, req.Text, PostOptions{Wait: req.Wait, Interrupt: req.Interrupt, ExpectReply: req.ExpectReply})
++		posted, err := store.PostWith(sender, req.Receiver, req.Text, PostOptions{Wait: req.Wait, Interrupt: req.Interrupt, ExpectReply: req.ExpectReply})
+ 		if err != nil {
+ 			return err
+ 		}
+ 		if req.Wait {
+-			return d.awaitOutcome(conn, reader, waiter, id, sender, interrupted)
++			stamp := postStamp{interrupted: posted.Interrupted, receiverLive: posted.ReceiverLive, warning: posted.Warning}
++			return d.awaitOutcome(conn, reader, posted.Waiter, posted.ID, sender, stamp)
+ 		}
+-		ok.ID, ok.Interrupted = id, interrupted
++		ok.ID, ok.Interrupted = posted.ID, posted.Interrupted
++		ok.ReceiverLive, ok.Warning = posted.ReceiverLive, posted.Warning
+ 	case VerbWaitReply:
+ 		waiter, err := store.WaitReply(sender, req.ID)
+ 		if err != nil {
+ 			return err
+ 		}
+-		return d.awaitOutcome(conn, reader, waiter, req.ID, sender, false)
++		return d.awaitOutcome(conn, reader, waiter, req.ID, sender, postStamp{})
+ 	case VerbReply:
+ 		id, err := store.Reply(sender, req.ID, req.Text)
+ 		if err != nil {
+@@ -335,7 +337,7 @@ func (d *daemon) dispatch(conn *net.UnixConn, reader *bufio.Reader, sender Sende
+ 		if err != nil {
+ 			return err
+ 		}
+-		return d.awaitOutcome(conn, reader, waiter, 0, sender, false)
++		return d.awaitOutcome(conn, reader, waiter, 0, sender, postStamp{})
+ 	case VerbInbox:
+ 		inbox, err := store.Inbox(sender)
+ 		if err != nil {
+@@ -366,7 +368,7 @@ func (d *daemon) dispatch(conn *net.UnixConn, reader *bufio.Reader, sender Sende
+ 			if err != nil {
+ 				return err
+ 			}
+-			return d.awaitOutcome(conn, reader, waiter, result.ID, sender, false)
++			return d.awaitOutcome(conn, reader, waiter, result.ID, sender, postStamp{})
+ 		}
+ 		result, err := store.Inject(sender, req.Receiver, req.Text, ttl, req.Interrupt)
+ 		if err != nil {
+@@ -378,7 +380,7 @@ func (d *daemon) dispatch(conn *net.UnixConn, reader *bufio.Reader, sender Sende
+ 		if err != nil {
+ 			return err
+ 		}
+-		return d.awaitOutcome(conn, reader, waiter, req.ID, sender, false)
++		return d.awaitOutcome(conn, reader, waiter, req.ID, sender, postStamp{})
+ 	case VerbInterrupt:
+ 		sent, err := store.Interrupt(sender, req.Receiver)
+ 		if err != nil {
+@@ -409,16 +411,30 @@ func (d *daemon) dispatch(conn *net.UnixConn, reader *bufio.Reader, sender Sende
+ 	return d.write(conn, ok)
+ }
+ 
++// postStamp is what a waiting post's responses carry about its receiver beside the outcome; other waits carry none.
++type postStamp struct {
++	interrupted  bool
++	receiverLive *bool
++	warning      string
++}
++
+ // awaitOutcome answers a waiting verb with an interim response that carries the id at once.
++// A stamp's warning follows at once as a progress response.
+ // It then sends a progress response for each stall note of a waiting inject.
+ // The outcome follows when the waiter is answered.
+-// The interim and final responses carry the resolved sender's name and whether the verb stopped the receiver's turn.
++// The interim and final responses carry the resolved sender's name.
++// They also carry whether the verb stopped the receiver's turn and whether the receiver was live.
+ // A client that closes its connection, or a daemon that shuts down, ends the wait with no answer.
+-func (d *daemon) awaitOutcome(conn net.Conn, reader *bufio.Reader, waiter *Waiter, id int64, sender Sender, interrupted bool) error {
++func (d *daemon) awaitOutcome(conn net.Conn, reader *bufio.Reader, waiter *Waiter, id int64, sender Sender, stamp postStamp) error {
+ 	defer waiter.Cancel()
+-	if err := d.write(conn, Response{OK: true, Pending: true, ID: id, Sender: sender.Name, Interrupted: interrupted}); err != nil {
++	if err := d.write(conn, Response{OK: true, Pending: true, ID: id, Sender: sender.Name, Interrupted: stamp.interrupted, ReceiverLive: stamp.receiverLive}); err != nil {
+ 		return nil
+ 	}
++	if stamp.warning != "" {
++		if err := d.write(conn, Response{OK: true, Progress: true, ID: id, Warning: stamp.warning}); err != nil {
++			return nil
++		}
++	}
+ 	watcher := watchClose(conn, reader)
+ 	defer watcher.stop()
+ 	if d.opts.beforeOutcomeWait != nil {
+@@ -446,7 +462,10 @@ func (d *daemon) awaitOutcome(conn net.Conn, reader *bufio.Reader, waiter *Waite
+ 				// Handed over even when the write failed: the ack line's failed read then releases the reading.
+ 				return d.awaitAck(conn, reader, sender, reading)
+ 			}
+-			resp := Response{OK: true, ID: id, Sender: sender.Name, Interrupted: interrupted, Outcome: outcome.Kind, Stall: outcome.Stall, StallAt: outcome.StallAt}
++			resp := Response{
++				OK: true, ID: id, Sender: sender.Name, Interrupted: stamp.interrupted, ReceiverLive: stamp.receiverLive,
++				Outcome: outcome.Kind, Stall: outcome.Stall, StallAt: outcome.StallAt,
++			}
+ 			if outcome.Kind == OutcomeReply || outcome.Kind == OutcomeReturned || outcome.Kind == OutcomeUnanswered {
+ 				resp.Message = &outcome.Message
+ 			}
+diff --git a/internal/creelengine/server_test.go b/internal/creelengine/server_test.go
+index 670f7ea7..f1857071 100644
+--- a/internal/creelengine/server_test.go
++++ b/internal/creelengine/server_test.go
+@@ -329,6 +329,48 @@ func (r *rig) rawExchange(line string) creelengine.Response {
+ 	return resp
+ }
+ 
++// rawResponses reads the responses a daemon sends to one request on a connection of its own.
++type rawResponses struct {
++	t      *testing.T
++	reader *bufio.Reader
++}
++
++// openRawRequest sends req on a new connection, which stays open until the test ends, and returns its responses.
++// The real-time read deadline only bounds a failing test.
++func (r *rig) openRawRequest(req creelengine.Request) *rawResponses {
++	r.t.Helper()
++	conn, err := net.Dial("unix", r.geom.SocketPath)
++	if err != nil {
++		r.t.Fatalf("dial %s: %v", r.geom.SocketPath, err)
++	}
++	r.t.Cleanup(func() { _ = conn.Close() })
++	line, err := json.Marshal(req)
++	if err != nil {
++		r.t.Fatalf("encode %+v: %v", req, err)
++	}
++	if _, err := conn.Write(append(line, '\n')); err != nil {
++		r.t.Fatalf("write: %v", err)
++	}
++	if err := conn.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
++		r.t.Fatalf("set the read deadline: %v", err)
++	}
++	return &rawResponses{t: r.t, reader: bufio.NewReader(conn)}
++}
++
++// next reads the next response of the request.
++func (c *rawResponses) next() creelengine.Response {
++	c.t.Helper()
++	answer, err := c.reader.ReadBytes('\n')
++	if err != nil {
++		c.t.Fatalf("read the response: %v", err)
++	}
++	var resp creelengine.Response
++	if err := json.Unmarshal(answer, &resp); err != nil {
++		c.t.Fatalf("decode %q: %v", answer, err)
++	}
++	return resp
++}
++
+ // sweepStep moves the daemon clock by the sweep's current wait and waits until it rearmed.
+ func (r *rig) sweepStep() {
+ 	waits := r.clock.AwaitWaitsWhere(1, isSweepWait)
+@@ -701,6 +743,64 @@ func TestDaemon_Protocol(t *testing.T) {
+ 				t.Errorf("wait-inject = %+v, %v; want expired carrying the draft stall", got.resp, got.err)
+ 			}
+ 		}},
++		{"PostAnswersWhetherItsReceiverIsLiveAndAWaitingPostHearsTheWarningAtOnce", false, func(t *testing.T, r *rig) {
++			r.del.SetStrands(creelfake.LiveStrand(alpha), creelfake.DormantStrand(beta))
++			r.start()
++			clientClock := creelfake.NewClock(epoch)
++			c := r.client(externalClaim(), nil, clientClock)
++			live := mustCall(t, c, creelengine.Request{Verb: creelengine.VerbPost, Receiver: alpha, Text: "hello"})
++			if live.ReceiverLive == nil || !*live.ReceiverLive || live.Warning != "" {
++				t.Errorf("post to a live strand = %+v; want receiver_live true and no warning", live)
++			}
++			dormant := mustCall(t, c, creelengine.Request{Verb: creelengine.VerbPost, Receiver: beta, Text: "hello"})
++			if dormant.ReceiverLive == nil || *dormant.ReceiverLive || !strings.HasPrefix(dormant.Warning, beta+" is not live") {
++				t.Errorf("post to a dormant strand = %+v; want receiver_live false and the warning naming %s", dormant, beta)
++			}
++			progress := make(chan creelengine.Response, 8)
++			done := make(chan callResult, 1)
++			go func() {
++				resp, err := c.CallWatching(creelengine.Request{Verb: creelengine.VerbPost, Receiver: beta, Text: "anyone?", Wait: true}, time.Minute, nil,
++					func(note creelengine.Response) { progress <- note })
++				done <- callResult{resp, err}
++			}()
++			if note := nextProgress(t, progress); !note.Progress || note.Warning != dormant.Warning {
++				t.Errorf("waiting post progress = %+v; want the warning %q", note, dormant.Warning)
++			}
++			clientClock.Advance(time.Minute)
++			if got := result(t, done); !errors.Is(got.err, creelengine.ErrWaitTimeout) {
++				t.Errorf("waiting post to a dormant strand = %+v, %v; want the client's timeout", got.resp, got.err)
++			}
++		}},
++		{"WaitingPostAnswersReceiverLiveOnItsPendingAndFinalResponsesAndWarnsOnlyOfAReceiverThatIsNotLive", false, func(t *testing.T, r *rig) {
++			liveAlpha := creelfake.LiveStrand(alpha)
++			liveAlpha.PanePID = os.Getpid()
++			r.del.SetStrands(liveAlpha, creelfake.DormantStrand(beta))
++			// Busy, so the EXTERNAL mail is not carried into the pane and marked read before alpha reads it.
++			r.del.SetIdle(alpha, false)
++			r.start()
++			toDormant := r.openRawRequest(creelengine.Request{Claim: externalClaim(), Verb: creelengine.VerbPost, Receiver: beta, Text: "anyone?", Wait: true})
++			if pending := toDormant.next(); !pending.Pending || pending.ReceiverLive == nil || *pending.ReceiverLive {
++				t.Errorf("pending response of a waiting post to a dormant strand = %+v; want receiver_live false", pending)
++			}
++			if note := toDormant.next(); !note.Progress || !strings.HasPrefix(note.Warning, beta+" is not live") {
++				t.Errorf("progress response of a waiting post to a dormant strand = %+v; want the warning naming %s", note, beta)
++			}
++
++			toLive := r.openRawRequest(creelengine.Request{Claim: externalClaim(), Verb: creelengine.VerbPost, Receiver: alpha, Text: "question", Wait: true})
++			if pending := toLive.next(); !pending.Pending || pending.ReceiverLive == nil || !*pending.ReceiverLive {
++				t.Errorf("pending response of a waiting post to a live strand = %+v; want receiver_live true", pending)
++			}
++			reader := r.client(strandClaim(alpha), nil, creelfake.NewClock(epoch))
++			mail := mustCall(t, reader, creelengine.Request{Verb: creelengine.VerbRead, Wait: true})
++			if len(mail.Messages) != 1 {
++				t.Fatalf("alpha read %d messages; want the question", len(mail.Messages))
++			}
++			mustCall(t, reader, creelengine.Request{Verb: creelengine.VerbReply, ID: mail.Messages[0].ID, Text: "answer"})
++			// Any warning would come between the pending response and this one.
++			if final := toLive.next(); final.Pending || final.Progress || final.Outcome != creelengine.OutcomeReply || final.ReceiverLive == nil || !*final.ReceiverLive {
++				t.Errorf("final response of a waiting post to a live strand = %+v; want the reply outcome with receiver_live true and no warning before it", final)
++			}
++		}},
+ 		{"PostWaitReplyIsAnsweredWhenTheMessageReturnsUndelivered", false, func(t *testing.T, r *rig) {
+ 			// Busy, so the EXTERNAL mail is not carried into the pane and marked read before alpha goes.
+ 			r.del.SetIdle(alpha, false)
+diff --git a/internal/creelengine/verbs.go b/internal/creelengine/verbs.go
+index 9aa40ad7..18a30763 100644
+--- a/internal/creelengine/verbs.go
++++ b/internal/creelengine/verbs.go
+@@ -4,6 +4,7 @@
+ package creelengine
+ 
+ import (
++	"cmp"
+ 	"errors"
+ 	"fmt"
+ 	"math"
+@@ -14,11 +15,15 @@ import (
+ 	"unicode"
+ 	"unicode/utf16"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
+ const holdTimeLayout = time.RFC3339
+ 
++// primeBeamSlug is the slug `lym beam start` takes for the prime, whose orch name carries no slug.
++const primeBeamSlug = "root"
++
+ // validateBody refuses an empty body and one over the cap.
+ // The cap bounds only a reply to an EXTERNAL sender, which only a waiting post receives and no claim hands out.
+ func validateBody(body string) error {
+@@ -102,25 +107,41 @@ type PostOptions struct {
+ 	ExpectReply bool
+ }
+ 
+-// PostWith stores a message for receiver as opts say.
+-// It returns the id, whether a running turn was stopped, and the wait the options registered.
++// PostResult is what a post did and what it learned of its receiver.
++type PostResult struct {
++	// ID is the new message's id.
++	ID int64
++	// Interrupted reports whether the post stopped the receiver's running turn.
++	Interrupted bool
++	// Waiter is the wait for the reply the options registered, nil without Wait.
++	Waiter *Waiter
++	// ReceiverLive reports whether the receiver had a live pane when the post was stored.
++	// It is nil when creel cannot tell: for a program and for a strand of another hub.
++	ReceiverLive *bool
++	// Warning names a receiver that is not live and the command that starts it, and is empty for every other post.
++	Warning string
++}
++
++// PostWith stores a message for receiver as opts say and answers what the post did.
++// A receiver that is not live still gets the message, which waits in its mail, and the result warns of it.
+ // The post is validated.
+ // With Interrupt, the receiver must run creel's hook delivery and be one the sender may interrupt.
+ // Both checks run before any key is sent.
+-func (s *Store) PostWith(sender Sender, receiver, body string, opts PostOptions) (int64, bool, *Waiter, error) {
++// A post that stopped a turn and then failed to store answers Interrupted beside its error.
++func (s *Store) PostWith(sender Sender, receiver, body string, opts PostOptions) (PostResult, error) {
+ 	return s.post(sender, receiver, body, opts)
+ }
+ 
+ // Post stores a message for receiver and returns its id.
+ func (s *Store) Post(sender Sender, receiver, body string) (int64, error) {
+-	id, _, _, err := s.post(sender, receiver, body, PostOptions{})
+-	return id, err
++	posted, err := s.post(sender, receiver, body, PostOptions{})
++	return posted.ID, err
+ }
+ 
+ // PostWait stores a message for receiver and registers a wait for its reply, before any reply can arrive.
+ func (s *Store) PostWait(sender Sender, receiver, body string) (int64, *Waiter, error) {
+-	id, _, waiter, err := s.post(sender, receiver, body, PostOptions{Wait: true})
+-	return id, waiter, err
++	posted, err := s.post(sender, receiver, body, PostOptions{Wait: true})
++	return posted.ID, posted.Waiter, err
+ }
+ 
+ // PostInterrupt stores a message for receiver after stopping the receiver's running turn.
+@@ -130,7 +151,8 @@ func (s *Store) PostWait(sender Sender, receiver, body string) (int64, *Waiter,
+ // The receiver must run creel's hook delivery and be one the sender may interrupt, both checked before any key is sent.
+ // A refusal, and a post whose store fails, say what was and was not done and the way forward.
+ func (s *Store) PostInterrupt(sender Sender, receiver, body string, wait bool) (int64, bool, *Waiter, error) {
+-	return s.post(sender, receiver, body, PostOptions{Wait: wait, Interrupt: true})
++	posted, err := s.post(sender, receiver, body, PostOptions{Wait: wait, Interrupt: true})
++	return posted.ID, posted.Interrupted, posted.Waiter, err
+ }
+ 
+ // interruptBeforePost stops the running turn of receiver for a post from sender and reports whether one was stopped.
+@@ -161,35 +183,36 @@ func (s *Store) interruptBeforePost(sender Sender, receiver string) (bool, error
+ 	}
+ }
+ 
+-func (s *Store) post(sender Sender, receiver, body string, opts PostOptions) (int64, bool, *Waiter, error) {
++func (s *Store) post(sender Sender, receiver, body string, opts PostOptions) (PostResult, error) {
+ 	if opts.Interrupt {
+ 		if err := s.refuseOtherHub(receiver, "post --interrupt"); err != nil {
+-			return 0, false, nil, err
++			return PostResult{}, err
+ 		}
+ 	}
+ 	if shortname, other := s.otherHub(receiver); other && s.hubs != nil {
+ 		id, waiter, err := s.postOtherHub(sender, receiver, shortname, body, opts)
+-		return id, false, waiter, err
++		return PostResult{ID: id, Waiter: waiter}, err
+ 	}
+ 	if err := validateLine(sender.Name, body); err != nil {
+-		return 0, false, nil, err
++		return PostResult{}, err
+ 	}
+ 	var interrupted bool
+ 	if opts.Interrupt {
+ 		var err error
+ 		interrupted, err = s.interruptBeforePost(sender, receiver)
+ 		if err != nil && !interrupted {
+-			return 0, false, nil, err
++			return PostResult{}, err
+ 		}
+ 		if err != nil {
+-			return 0, true, nil, storedAfterInterrupt(receiver, err)
++			return PostResult{Interrupted: true}, storedAfterInterrupt(receiver, err)
+ 		}
+ 	}
+-	id, waiter, err := s.storePost(sender, receiver, body, opts.Wait, opts.ExpectReply || opts.Wait)
++	posted, err := s.storePost(sender, receiver, body, opts.Wait, opts.ExpectReply || opts.Wait)
+ 	if err != nil && interrupted {
+-		return 0, true, nil, storedAfterInterrupt(receiver, err)
++		return PostResult{Interrupted: true}, storedAfterInterrupt(receiver, err)
+ 	}
+-	return id, interrupted, waiter, err
++	posted.Interrupted = interrupted
++	return posted, err
+ }
+ 
+ // storedAfterInterrupt words a store failure that came after a turn was stopped.
+@@ -199,31 +222,62 @@ func storedAfterInterrupt(receiver string, cause error) error {
+ 
+ // storePost journals a validated post to receiver, marked as expecting a reply when expect is set.
+ // With wait, it also registers the wait for the reply.
+-func (s *Store) storePost(sender Sender, receiver, body string, wait, expect bool) (int64, *Waiter, error) {
++// A stored post answers its receiver's liveness from the same strand listing the receiver check read.
++func (s *Store) storePost(sender Sender, receiver, body string, wait, expect bool) (PostResult, error) {
+ 	strands, err := s.readStrands()
+ 	if err != nil {
+-		return 0, nil, err
++		return PostResult{}, err
+ 	}
+-	var (
+-		id     int64
+-		waiter *Waiter
+-	)
++	var posted PostResult
+ 	err = s.do(func() error {
+ 		if err := s.checkReceiverLocked(strands, receiver); err != nil {
+ 			return err
+ 		}
+ 		var err error
+-		if id, err = s.appendPostedLocked(sender, record{To: receiver, Kind: kindMail, Body: body, ExpectReply: expect}); err != nil {
++		if posted.ID, err = s.appendPostedLocked(sender, record{To: receiver, Kind: kindMail, Body: body, ExpectReply: expect}); err != nil {
+ 			return err
+ 		}
+ 		if wait {
+-			if waiter, err = s.addWaiterLocked(waitKey{kind: waitReply, id: id}); err != nil {
++			if posted.Waiter, err = s.addWaiterLocked(waitKey{kind: waitReply, id: posted.ID}); err != nil {
+ 				return err
+ 			}
+ 		}
+-		return s.deliverMailLocked(id, receiver)
++		return s.deliverMailLocked(posted.ID, receiver)
+ 	})
+-	return id, waiter, err
++	if err != nil {
++		return posted, err
++	}
++	posted.ReceiverLive, posted.Warning = s.receiverLiveness(strands, receiver)
++	return posted, nil
++}
++
++// receiverLiveness reports whether receiver has a live pane among strands.
++// When it has none, it also returns the warning that says so.
++// A listed strand answers its own flag, and an orch name of this hub that no strand lists has no pane.
++// Any other receiver is a program, whose liveness creel cannot tell, and answers nil with no warning.
++func (s *Store) receiverLiveness(strands []Strand, receiver string) (*bool, string) {
++	strand, listed := findStrand(strands, receiver)
++	switch {
++	case listed && strand.Live:
++		return new(true), ""
++	case listed:
++		return new(false), notLiveWarning(receiver, strand.Worktree)
++	case s.isHubOrchName(receiver):
++		return new(false), notLiveWarning(receiver, "")
++	default:
++		return nil, ""
++	}
++}
++
++// notLiveWarning says that receiver has no live pane, so its mail waits, and names the command that starts it.
++// An orch starts with its beam, the prime's under primeBeamSlug.
++// Any other strand starts with `lym reed resume` in worktree.
++func notLiveWarning(receiver, worktree string) string {
++	start := "lym reed resume in " + worktree
++	if name, err := agentname.Parse(receiver); err == nil && agentname.MatchesRole(name.Role, agentname.RoleOrch) {
++		start = "lym beam start " + cmp.Or(name.Slug, primeBeamSlug)
++	}
++	return fmt.Sprintf("%s is not live, so the message waits in its mail until it runs again; way forward: start it with %s", receiver, start)
+ }
+ 
+ // Reply posts text as an answer to message id, addressed to the original sender.
+diff --git a/internal/creelengine/verbs_test.go b/internal/creelengine/verbs_test.go
+index 1c7b2a9e..e47c7d33 100644
+--- a/internal/creelengine/verbs_test.go
++++ b/internal/creelengine/verbs_test.go
+@@ -235,6 +235,47 @@ func TestStore_Mail(t *testing.T) {
+ 			wantBodies(t, e.readBodies(t, strand(orch), ""), "prime line")
+ 			wantBodies(t, e.readBodies(t, strand(forwardOrch), ""), "to forward")
+ 		}},
++		{"PostWith_AnswersWhetherTheReceiverIsLiveAndHowToStartOneThatIsNot", func(t *testing.T, e *env) {
++			const (
++				dormantBeamOrch = "ly:payments:orch"
++				absentBeamOrch  = "ly:gone:orch"
++			)
++			e.del.SetStrands(creelfake.LiveStrand(alpha), creelfake.DormantStrand(beta), creelfake.DormantStrand(orch), creelfake.DormantStrand(dormantBeamOrch))
++			e.withHubs()
++			e.post(t, program(batten), alpha, "makes the program known")
++			notLive := func(receiver, start string) string {
++				return receiver + " is not live, so the message waits in its mail until it runs again; way forward: start it with " + start
++			}
++			shown := func(live *bool) any {
++				if live == nil {
++					return nil
++				}
++				return *live
++			}
++			tests := []struct {
++				receiver    string
++				wantLive    *bool
++				wantWarning string
++			}{
++				{alpha, new(true), ""},
++				{beta, new(false), notLive(beta, "lym reed resume in /hub/worktree")},
++				{orch, new(false), notLive(orch, "lym beam start root")},
++				{dormantBeamOrch, new(false), notLive(dormantBeamOrch, "lym beam start payments")},
++				{absentBeamOrch, new(false), notLive(absentBeamOrch, "lym beam start gone")},
++				{batten, nil, ""},
++				{"zz:orch", nil, ""},
++			}
++			for _, tt := range tests {
++				posted, err := e.store.PostWith(strand(alpha), tt.receiver, "hi", creelengine.PostOptions{})
++				if err != nil {
++					t.Fatalf("PostWith(%s): %v", tt.receiver, err)
++				}
++				if !reflect.DeepEqual(posted.ReceiverLive, tt.wantLive) || posted.Warning != tt.wantWarning {
++					t.Errorf("PostWith(%s) = live %v, warning %q; want live %v, warning %q", tt.receiver, shown(posted.ReceiverLive), posted.Warning, shown(tt.wantLive), tt.wantWarning)
++				}
++			}
++			wantBodies(t, e.readBodies(t, strand(beta), ""), "hi")
++		}},
+ 		{"Post_ToAStrandOfAnotherHubIsJournaledOutboundAndWaitsOpen", func(t *testing.T, e *env) {
+ 			e.withHubs()
+ 			id, waiter, err := e.store.PostWait(strand(alpha), "zz:orch", "hello across")
+@@ -641,14 +682,14 @@ func TestStore_Mail(t *testing.T) {
+ 				{"PlainPostCarriesNone", creelengine.PostOptions{}, false},
+ 			}
+ 			for _, tt := range tests {
+-				id, _, waiter, err := e.store.PostWith(strand(alpha), beta, tt.name, tt.opts)
++				posted, err := e.store.PostWith(strand(alpha), beta, tt.name, tt.opts)
+ 				if err != nil {
+ 					t.Fatalf("%s: PostWith: %v", tt.name, err)
+ 				}
+-				if (waiter != nil) != tt.opts.Wait {
+-					t.Errorf("%s: waiter = %v; want one exactly when Wait is set", tt.name, waiter)
++				if (posted.Waiter != nil) != tt.opts.Wait {
++					t.Errorf("%s: waiter = %v; want one exactly when Wait is set", tt.name, posted.Waiter)
+ 				}
+-				if entries := e.store.Log(creelengine.LogFilter{ID: id}); len(entries) != 1 || entries[0].ExpectReply != tt.want {
++				if entries := e.store.Log(creelengine.LogFilter{ID: posted.ID}); len(entries) != 1 || entries[0].ExpectReply != tt.want {
+ 					t.Errorf("%s: posted log entry = %+v; want ExpectReply %v", tt.name, entries, tt.want)
+ 				}
+ 			}
+@@ -663,10 +704,11 @@ func TestStore_Mail(t *testing.T) {
+ 			}
+ 		}},
+ 		{"Reply_LogEntryCarriesTheIdItAnswers", func(t *testing.T, e *env) {
+-			id, _, _, err := e.store.PostWith(strand(alpha), beta, "question", creelengine.PostOptions{ExpectReply: true})
++			posted, err := e.store.PostWith(strand(alpha), beta, "question", creelengine.PostOptions{ExpectReply: true})
+ 			if err != nil {
+ 				t.Fatalf("PostWith: %v", err)
+ 			}
++			id := posted.ID
+ 			e.readBodies(t, strand(beta), "")
+ 			replyID, err := e.store.Reply(strand(beta), id, "answer")
+ 			if err != nil {
+@@ -1367,7 +1409,7 @@ func TestStore_ClaimAtBoundary(t *testing.T) {
+ 			}
+ 		}},
+ 		{"ClaimedLineOfAMarkedMessageIsTheMarkedFormAndAnUnmarkedOneThePlainForm", func(t *testing.T, e *env) {
+-			if _, _, _, err := e.store.PostWith(strand(alpha), beta, "marked", creelengine.PostOptions{ExpectReply: true}); err != nil {
++			if _, err := e.store.PostWith(strand(alpha), beta, "marked", creelengine.PostOptions{ExpectReply: true}); err != nil {
+ 				t.Fatalf("PostWith: %v", err)
+ 			}
+ 			e.post(t, strand(alpha), beta, "plain")
