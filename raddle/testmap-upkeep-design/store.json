@@ -1,0 +1,10 @@
+{
+  "created": "2026-11-11T14:01:41Z",
+  "hash": "cc03302ef89349e5c5a8df0e2601d0b280659ee1aef83d80d5a7a0535a1a46fa",
+  "filed": [
+    "testmap-selector-upkeep-rules",
+    "testmap-upkeep-plan",
+    "testmap-upkeep-runs",
+    "testmap-upkeep-dobby"
+  ]
+}

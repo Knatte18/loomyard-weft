@@ -1,6 +1,6 @@
 # Decide how the coverage maps are kept fresh, from the upkeep research
 
-`testmap-upkeep-design` · Task · sketch, testkit, gate, dobby · running · Raddle-File
+`testmap-upkeep-design` · Task · sketch, testkit, gate, dobby · done
 
 Decision record: [Sketch](decision-testmap-upkeep-design.md)
 

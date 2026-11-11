@@ -588,7 +588,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Why\n\nThe research task `testmap-upkeep` landed `docs/research/speed/testmap-upkeep-2026-11-11/report.md`, which decides nothing.\n`testmap-cross-package`, `coverage-test-select` and `gate-scope-coverage` were filed on the premise that this design exists, and `testmap-cross-package` stopped before any code for that reason.\n\nBuilt since (board tidy, 2026-11-11): `testmap-cross-package` has landed (`99bec44e`).\nIts maps record a linked package's coverage by function (`Funcs`, `Linked`, `OtherFiles`, `MapTest.Spawn`, and a `Format` marker with an environment stamp), which agrees with this record's D3.\nIt left staleness as it was: a change to a linked package's file alone leaves a map fresh, until the build of D1 lands.\n\n## This task\n\nRun Discussion alone over the report and store the decision record on this entry.\nDecide:\n\n- whether a change in a linked-only package leaves a map fresh, which the cross-package criterion now assumes;\n- whether a failed build keeps the old map or writes a failed-build map;\n- whether testmap skips spawn-marked tests;\n- whether another package's coverage is recorded by function or by block;\n- what the decision changes in `testmap-cross-package`, `coverage-test-select`, `gate-scope-coverage`, `testmap-backlog-drain` and `redundancy-sweep-existing`.\n\nThe three build tasks stay held until this record is approved.\n",
-      "status": "running · Raddle-File",
+      "status": "done",
       "created": "2026-11-11T14:01:41Z",
       "revised": "2026-11-11T16:41:27Z",
       "project": "test-suite-trim",
@@ -755,6 +755,119 @@
       "revised": "2026-11-11T15:32:42Z",
       "profile": "solid",
       "discussed": true
+    },
+    {
+      "id": 1335,
+      "handle": "T2",
+      "slug": "testmap-selector-upkeep-rules",
+      "title": "The coverage selector takes its target, compares own files by function, and misses on a changed environment stamp",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "testkit",
+        "gate",
+        "dobby"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "gate-scope-coverage"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `testmap-upkeep-design`.\n\nTakes: coverage-test-select's Selector in internal/testcover as it lands, which reads the working tree only and misses on any own-file change; the map format testmap-cross-package landed (FuncKey function sets, OtherFiles, MapFormat with an EnvironmentStamp); internal/gatecli as gate-scope-coverage leaves it\nDelivers: the selector with its target as an argument (working tree or a commit through fabricengine.Fabric.CodeFileAt); own non-test Go files compared by function; own non-Go files, testdata and its Go files included, a miss unless inert_paths exempts them and no go:embed pattern names them; test files compared with every top-level Test function's text removed; outcome and spawn entries read as no recorded test; a differing environment stamp a miss; the stamp holding the toolchain, GOOS/GOARCH, go.mod and go.sum hashes, the mapped tiers' command and environment digest before {parallel}, and the env.yaml variables digest; D3's map fields checked against the landed format and completed where they fall short\nExports: the selector's target argument and its verdict (affected tests or a miss with its reason), which testmap-upkeep-plan's plan and self-check call; the environment stamp builder; the MapTest outcome and spawn fields the selector reads\n\nThe part changes these packages:\n\n- internal/testcover (about 650 changed lines)\n- internal/gatecli (about 120 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-11T17:02:45Z",
+      "revised": "2026-11-11T17:02:45Z",
+      "profile": "solid",
+      "project": "test-suite-trim",
+      "discussed": true,
+      "record_body_sha256": "4eae376db02315c58e198df70764f0653dfe5c0e22cb48a8c85ba9de6437a1f2"
+    },
+    {
+      "id": 1336,
+      "handle": "T3",
+      "slug": "testmap-upkeep-plan",
+      "title": "lym gate testmap plans each map at the prime's HEAD, keeps what still holds, and checks what it keeps",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "testkit",
+        "gate",
+        "dobby"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "testmap-selector-upkeep-rules"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `testmap-upkeep-design`.\n\nTakes: testmap-selector-upkeep-rules' selector with a commit target and its environment stamp; today's lym gate testmap (runTestMap, mapPackages, stale, mapPackage, writeMap) in internal/gatecli, with its blocking slot take and one process per test\nDelivers: the plan at H with the Current, Affected and Miss verdicts, re-stamps, marker updates and queued gaps, under the build lock with held locks skipped (D1); outcome entries, spawn verdicts and nothing recorded for an ended run (D4); the kept map with a failure field, and no requeue at the failed HEAD (D5); test_map_max_age_days retired from gateslot, the self-check on every build and one audit round per pass (D7); testcover.ExitRecord's planned HEAD, queued count, verdict counts with miss reasons, mismatch counts and per-package build and run seconds, and the verb's report of them (D12); the redundancy step counting only passing entries as covers and judging a map with a failure field by its entries\nExports: the plan and queue a pass works, the job that measures a queued test list, testcover.ExitRecord's new fields\n\nThe part changes these packages:\n\n- internal/gatecli (about 850 changed lines)\n- internal/testcover (about 350 changed lines)\n- internal/gateslot (about 30 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-11T17:02:45Z",
+      "revised": "2026-11-11T17:02:45Z",
+      "profile": "solid",
+      "project": "test-suite-trim",
+      "discussed": true,
+      "record_body_sha256": "0144ffdfd2d429942cad885ecb089ab3d974a061e075f3d50e315d7b4408eb35"
+    },
+    {
+      "id": 1337,
+      "handle": "T4",
+      "slug": "testmap-upkeep-runs",
+      "title": "An upkeep pass runs under a slot it yields to a gate, side by side where tests declare it, and writes per round",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "testkit",
+        "gate",
+        "dobby"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "testmap-upkeep-plan"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `testmap-upkeep-design`.\n\nTakes: testmap-upkeep-plan's plan, queue, job and exit record; gateslot's unexported tryAcquireSlot, the pool's drain and gateslot.RunRecord\nDelivers: the verb side of D8: the hidden --upkeep flag refusing package arguments, its own RoleTestMap registration under the hub owner, refusal beside a live pass, exit before the plan on a failed registration, the exit record read and written only under --upkeep, HEAD read before each job and wake, queued work leaving out dirty-skipped, failed-at-HEAD and spawn-marked work; the take only while two slots are free and no drain waits, the yield that kills runs, writes finished entries and releases the slot and lock, the wait at most once a second with backoff, the lock retry and fresh plan on retake, no slot on a hub below two, and hand calls' blocking take, lock wait and whole rebuild (D9); side-by-side runs for top-level t.Parallel() tests up to the tier-0 parallel, per-round writes, the per-round HEAD and dirty read, signal handling and the job order from gate run records (D10)\nExports: lym gate testmap --upkeep, a registered pass that exits on a failed registration, which testmap-upkeep-dobby starts; gateslot's exported non-blocking take\n\nThe part changes these packages:\n\n- internal/gatecli (about 700 changed lines)\n- internal/gateslot (about 50 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-11T17:02:45Z",
+      "revised": "2026-11-11T17:02:45Z",
+      "profile": "solid",
+      "project": "test-suite-trim",
+      "discussed": true,
+      "record_body_sha256": "4ebc1a1b1a7d18ec329061fbdc005c461b669643ee2bda13efead367945598db"
+    },
+    {
+      "id": 1338,
+      "handle": "T5",
+      "slug": "testmap-upkeep-dobby",
+      "title": "The prime dobby starts an upkeep pass on remaining work, and an anchor move ends it",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "testkit",
+        "gate",
+        "dobby"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "testmap-upkeep-runs",
+        "creel-notice-hygiene"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `testmap-upkeep-design`.\n\nTakes: testmap-upkeep-runs' lym gate testmap --upkeep, which registers itself as RoleTestMap and exits on a failed registration, and the exit record's planned HEAD and queued count; today's testMapStep, LandingsSinceTestMap, test_map_every and test_map_batch in dobbyengine, startTestMap in beamcli, dobbyPassInFlight in fabriccli\nDelivers: the start rule on no exit record, a moved HEAD or queued work, held off on a hub below two slots for queued work alone, while a pass or its unregistered child lives, and while an anchor move stands; the failed-registration exit logged once per episode; test_map_every, test_map_batch and the landing count retired, the landing count still readable; test_map_upkeep (CategoryNone, true by default); dobbyengine's rewrite of test_map_every: 0 to test_map_upkeep: false, run by beam's configreg Migrate and by a new configengine.Spec per-layer migrate hook that Load applies before merging and DropRetired; dobbyPassInFlight no longer counting a RoleTestMap process\nExports: the dobby key test_map_upkeep and configengine.Spec's per-layer migrate hook\n\nThe part changes these packages:\n\n- internal/dobbyengine (about 300 changed lines)\n- internal/configengine (about 120 changed lines)\n- internal/configreg (about 40 changed lines)\n- internal/beamcli (about 120 changed lines)\n- internal/fabriccli (about 40 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-11T17:02:45Z",
+      "revised": "2026-11-11T17:02:45Z",
+      "profile": "solid",
+      "project": "test-suite-trim",
+      "discussed": true,
+      "record_body_sha256": "71fabe0985adbe4799a689601a08b0b8cf52bd8eaf52d2b41809ee6c505addea"
     }
   ],
   "prime_owner": "neve",
