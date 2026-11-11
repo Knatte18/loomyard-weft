@@ -1,6 +1,6 @@
 # The prime dobby leaves a coverage map backlog unbuilt until more landings come
 
-`testmap-backlog-drain` · Note · bug, dobby, gate, testkit
+`testmap-backlog-drain` · Note · enhancement, dobby, gate, testkit
 
 ## Seen (orch, 2026-11-09)
 

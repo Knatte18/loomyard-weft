@@ -603,12 +603,12 @@
     },
     {
       "id": 1273,
-      "handle": "B1",
+      "handle": "E12",
       "slug": "testmap-backlog-drain",
       "title": "The prime dobby leaves a coverage map backlog unbuilt until more landings come",
       "kind": "note",
       "labels": [
-        "bug",
+        "enhancement",
         "dobby",
         "gate",
         "testkit"
@@ -619,7 +619,7 @@
       "brief": "",
       "body": "## Seen (orch, 2026-11-09)\n\nNo coverage map exists yet: `_bolt/.lym/testcover` is absent.\nThe module has about 170 packages, and the prime dobby builds at most `test_map_batch` (5) maps per refresh,\nstarting one only after `test_map_every` (5) landings.\nAt those defaults the first full set of maps needs about 170 landings, so the tasks that wait on the maps wait for weeks.\n\nThe decision record of project `redundancy-check` (D6) said the dobby starts a refresh on a tick where the prime HEAD moved,\nor where the last refresh's exit record reported stale packages its `--max` cap left unbuilt.\n`testmap-dobby-refresh` (landed as `f4ed575e`) made the landing count the only trigger,\nso a refresh that leaves packages unbuilt starts no next one.\n`lym gate testmap` already writes that count in its exit record.\n\n## Idea\n\nWhile the last refresh reported stale packages left unbuilt, start the next refresh on the first tick after it ends,\nin batches of `test_map_batch`, so a backlog drains on its own and each refresh still holds the gate slot for at most one batch.\nKeep the landing count as the trigger once nothing is left.\n",
       "created": "2026-11-09T19:37:42Z",
-      "revised": "2026-11-09T20:46:47Z",
+      "revised": "2026-11-11T07:30:33Z",
       "project": "test-suite-trim"
     },
     {
