@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-11T15:12:38Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/smoke-died-driver-wording/_lym/landing/summary.md",
+      "at": "2026-11-11T15:17:00Z",
+      "started_at": "2026-11-11T15:12:40Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T15:16:30.487112301Z",
+          "end": "2026-11-11T15:16:30.576785098Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T15:16:30.629033175Z",
+          "end": "2026-11-11T15:16:30.644514252Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T15:16:30.690144845Z",
+          "end": "2026-11-11T15:16:30.931244399Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T15:16:30.982885122Z",
+          "end": "2026-11-11T15:16:30.98305537Z"
+        }
+      ]
     }
   ],
   "product": {
