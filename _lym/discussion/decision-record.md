@@ -93,6 +93,13 @@ Rationale: the Sketch conversion, label edits and promote's own write leave the 
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - family-project-exemption-only-all-true-tested (class scope, severity MEDIUM, open in rounds 1)
+  - replay-missing-record-body-sha256 (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D4: `lym board upsert --record-file` on an entry with a stored record and no run replaces the stored record in the same write as the payload's other fields.
