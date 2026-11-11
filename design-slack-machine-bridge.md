@@ -20,3 +20,14 @@ The operator judged on 2026-11-11 that this is more useful than the relay's phon
 - Proof of sender: the message came from the bot of a known machine's app (its app id); only the orch of a machine the operator approved is trusted, and the receiver weighs it as cross-hub mail, never as an operator instruction.
 - Size: Slack and creel together, so a Motif with its own Discussion.
 - `slack-push-channels` has landed (`92280f7e`: Socket Mode push, one channel per orch, two tokens), so the groundwork is there; the operator still wants this later, not now.
+
+## Changed by `slack-per-orch-activation` (board tidy, 2026-11-11, landed as `0091f39c`)
+
+- Each orch now has its own `slack` button on reed's status bar (the prime's orch and each beam's orch; a pair's orch has none), and has no channel until it is first pressed.
+  The relay runs only while a button is on; the machine-wide connection switch is gone.
+  The state is `forwarding.json` under the hub's `.lym/slack/`, and the channel map is `orch-channels.json`.
+- A new orch channel is named `<machine>-<shortname>-<project handle>-<project slug>`, such as `neve-ly-p0-root`.
+  A bridge channel's name above is a separate scheme and still open.
+- Mail posted to `SLACK` by an orch whose button is off is dropped, and the `[slack presence]` notice is gone.
+  A bridge design should follow the buttons: whether a bridge channel needs its own switch is open.
+- Everything inbound is still treated as the operator's, and still one app per machine.
