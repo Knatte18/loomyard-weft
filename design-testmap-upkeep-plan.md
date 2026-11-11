@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-testmap-upkeep-plan.md)
 
-Depends on: [`testmap-selector-upkeep-rules`](design-testmap-selector-upkeep-rules.md)
-
 Filed from the Sketch `testmap-upkeep-design`.
 
 Takes: testmap-selector-upkeep-rules' selector with a commit target and its environment stamp; today's lym gate testmap (runTestMap, mapPackages, stale, mapPackage, writeMap) in internal/gatecli, with its blocking slot take and one process per test

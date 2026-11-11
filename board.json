@@ -526,32 +526,6 @@
       "revised": "2026-11-11T17:59:33Z"
     },
     {
-      "id": 1335,
-      "handle": "T2",
-      "slug": "testmap-selector-upkeep-rules",
-      "title": "The coverage selector takes its target, compares own files by function, and misses on a changed environment stamp",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "testkit",
-        "gate",
-        "dobby"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `testmap-upkeep-design`.\n\nTakes: coverage-test-select's Selector in internal/testcover as it lands, which reads the working tree only and misses on any own-file change; the map format testmap-cross-package landed (FuncKey function sets, OtherFiles, MapFormat with an EnvironmentStamp); internal/gatecli as gate-scope-coverage leaves it\nDelivers: the selector with its target as an argument (working tree or a commit through fabricengine.Fabric.CodeFileAt); own non-test Go files compared by function; own non-Go files, testdata and its Go files included, a miss unless inert_paths exempts them and no go:embed pattern names them; test files compared with every top-level Test function's text removed; outcome and spawn entries read as no recorded test; a differing environment stamp a miss; the stamp holding the toolchain, GOOS/GOARCH, go.mod and go.sum hashes, the mapped tiers' command and environment digest before {parallel}, and the env.yaml variables digest; D3's map fields checked against the landed format and completed where they fall short\nExports: the selector's target argument and its verdict (affected tests or a miss with its reason), which testmap-upkeep-plan's plan and self-check call; the environment stamp builder; the MapTest outcome and spawn fields the selector reads\n\nThe part changes these packages:\n\n- internal/testcover (about 650 changed lines)\n- internal/gatecli (about 120 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-11T17:02:45Z",
-      "revised": "2026-11-11T17:02:45Z",
-      "profile": "solid",
-      "project": "test-suite-trim",
-      "discussed": true,
-      "record_body_sha256": "4eae376db02315c58e198df70764f0653dfe5c0e22cb48a8c85ba9de6437a1f2"
-    },
-    {
       "id": 1336,
       "handle": "T3",
       "slug": "testmap-upkeep-plan",
@@ -565,9 +539,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "testmap-selector-upkeep-rules"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `testmap-upkeep-design`.\n\nTakes: testmap-selector-upkeep-rules' selector with a commit target and its environment stamp; today's lym gate testmap (runTestMap, mapPackages, stale, mapPackage, writeMap) in internal/gatecli, with its blocking slot take and one process per test\nDelivers: the plan at H with the Current, Affected and Miss verdicts, re-stamps, marker updates and queued gaps, under the build lock with held locks skipped (D1); outcome entries, spawn verdicts and nothing recorded for an ended run (D4); the kept map with a failure field, and no requeue at the failed HEAD (D5); test_map_max_age_days retired from gateslot, the self-check on every build and one audit round per pass (D7); testcover.ExitRecord's planned HEAD, queued count, verdict counts with miss reasons, mismatch counts and per-package build and run seconds, and the verb's report of them (D12); the redundancy step counting only passing entries as covers and judging a map with a failure field by its entries\nExports: the plan and queue a pass works, the job that measures a queued test list, testcover.ExitRecord's new fields\n\nThe part changes these packages:\n\n- internal/gatecli (about 850 changed lines)\n- internal/testcover (about 350 changed lines)\n- internal/gateslot (about 30 changed lines)\n",
