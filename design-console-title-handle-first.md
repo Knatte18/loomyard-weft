@@ -15,6 +15,8 @@ Put the leading handle first and set the hub and project apart in brackets, as `
 - A task: `T2 [ly:P1] adopt-worker-record`.
 - A task under root names root's project, `P0`: `T5 [ly:P0] machine-name-file`.
 - An orch leads with `ORCH` in place of a task handle:
-  the prime's orch is `ORCH [ly:P0] Prime`, and a beam's orch is `ORCH [ly:P1] adopt-takeover`, naming its beam's project and slug.
+  the prime's orch is `ORCH [ly:P0] root`, and a beam's orch is `ORCH [ly:P1] adopt-takeover`, naming its beam's project and slug.
+  The last part names the project, not the worktree: the root project is `root`, while `prime` is only its worktree.
+  The Slack channel names in `slack-per-orch-activation` follow the same rule.
 
 There is no runs window to title; every console window is a task's or an orch's.
