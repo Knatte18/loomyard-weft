@@ -40,14 +40,15 @@ The trial's report reads the seats result first, under `docs/research/`, and say
   the trial confirms its settings key, that it takes effect in a lym tmux session, and how advisor calls show in the usage records.
 - A lym config key for the advisor, beside each role's model and effort, comes only after the trial shows it pays.
 
-## Trial (orch's proposal)
+## Trial (operator, 2026-11-11)
 
-- Replay rather than new tasks: rerun one or two darn tasks that already landed, from their base commit, with a Sonnet writer and an Opus advisor.
+- The trial runs against work that has already run: rerun one or two darn tasks that already landed, from their base commit, with a Sonnet writer and an Opus advisor.
   Compare each with its recorded Opus run: review findings, bounces, tokens, cost and time with sleep removed.
-- Order: the Code-Review fixer first (low risk, it applies findings already named), then Darn-Write.
+- The test is the darn writer, Darn-Write, since a darn is the most realistic place to test an advisor; no fixer-first stage.
 - The risk to watch: a weak writer that is sure and wrong does not ask its advisor, so the review bounces are the key measure.
-- Runs as darn `docs`; the task body states the exact number of runs.
+- Runs as darn `docs`; the task body states the exact number of runs, with one or two tasks unless the operator names more.
 
 ## Operator view (2026-11-11)
 
-Little faith in it: an advisor needs much tuning and depends wholly on the main session's prompt. Not planned to run now.
+Little faith in it: an advisor needs much tuning and depends wholly on the main session's prompt.
+It is not planned to run until the operator releases it.
