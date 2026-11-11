@@ -1,0 +1,32 @@
+{
+  "session_id": "c9dcdb6d-cc7f-42ff-bf88-de580546d045",
+  "row": "Discussion-Write",
+  "role": "discussion",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 154,
+  "cache_write_tokens": 241971,
+  "cache_read_tokens": 3715330,
+  "output_tokens": 71659,
+  "cost_usd": 3.0569294999999994,
+  "started": "2026-11-11T17:53:35Z",
+  "ended": "2026-11-11T18:01:39Z",
+  "models": [
+    {
+      "model": "claude-opus-5-5",
+      "input_tokens": 104,
+      "cache_write_tokens": 148536,
+      "cache_read_tokens": 3132698,
+      "output_tokens": 62049,
+      "cost_usd": 2.6106155999999996
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "input_tokens": 50,
+      "cache_write_tokens": 93435,
+      "cache_read_tokens": 582632,
+      "output_tokens": 9610,
+      "cost_usd": 0.4463139
+    }
+  ]
+}

@@ -1,14 +1,31 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/parent-reviews-decision-record/_lym/discussion/decision-record.md",
+      "at": "2026-11-11T18:01:40Z",
+      "started_at": "2026-11-11T17:53:35Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-11T18:00:49.804976847Z",
+          "end": "2026-11-11T18:01:39.65295422Z"
+        }
+      ]
+    }
+  ],
   "product": {
     "slug": "parent-reviews-decision-record",
     "parent": "main",
