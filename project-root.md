@@ -8,11 +8,11 @@ Owner `osl-1046`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (7)
+## Tasks (6)
 
 Concrete and claimable; only a task can run.
 
-### Running (3)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -20,7 +20,6 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T9 | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | darn · light | Finalize | osl-1046 | 6h<br>5h | fabric |
 | T13 | **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | Webster | osl-1046 | 1d<br>1d | config, slack |
-| T20 | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | Finalize | osl-1046 | 2d<br>6h | shed, friction, shuttle |
 
 ### Ready (0)
 
@@ -34,7 +33,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | darn · light | T20 | 4h<br>4h | shuttle, loom |
+| T1 | `draft` **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | darn · light |  | 4h<br>4h | shuttle, loom |
 | T10 | `draft` **Worktree-Create halts on a reused slug path holding only obj/ leftovers** | [`worktree-create-build-leftovers`](design-worktree-create-build-leftovers.md) | darn · light | T9 | 6h<br>5h | batten, fabric |
 | T11 | `draft` **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | T10 | 6h<br>5h | fabric, cleanup |
 | T12 | `draft` **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1d<br>4h | slack, reed, creel |
@@ -91,3 +90,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>5d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 6d<br>4d | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 6d<br>6d | batten, board, fabric, workspaces |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T20 | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | 2d<br>6h | shed, friction, shuttle |
