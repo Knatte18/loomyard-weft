@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-11T19:30:37Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/orch-model-default-empty/_lym/landing/summary.md",
+      "at": "2026-11-11T19:34:31Z",
+      "started_at": "2026-11-11T19:30:41Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T19:31:54.662387676Z",
+          "end": "2026-11-11T19:31:54.671789209Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T19:31:54.722666013Z",
+          "end": "2026-11-11T19:34:02.950104705Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T19:34:03.00109991Z",
+          "end": "2026-11-11T19:34:03.183788699Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T19:34:03.239521244Z",
+          "end": "2026-11-11T19:34:03.239650015Z"
+        }
+      ]
     }
   ],
   "product": {
