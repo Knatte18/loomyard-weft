@@ -1,0 +1,2094 @@
+diff --git a/cmd/lym/main.go b/cmd/lym/main.go
+index 406be8ed..6b09b0cc 100644
+--- a/cmd/lym/main.go
++++ b/cmd/lym/main.go
+@@ -153,6 +153,8 @@ Shortcuts, declared in internal/shortcutcli's embedded file, are listed under th
+ 				orchcli.InstallPushNotifier(cmd.Context())
+ 				// A reconcile that rewrites or flags a reinterpreted hub config value reaches the prime orch as creel mail from RECONCILE.
+ 				orchcli.InstallReconcileNotifier(cmd.Context())
++				// A pair's teardown drops the unread creel mail about its run, so no orch reads it as live.
++				orchcli.InstallRunMailDropper()
+ 				// lym beam start pauses a run another machine owns through tender, which imports orchcli.
+ 				orchcli.InstallOwnerPause(tendercli.PauseOwnedElsewhere)
+ 				// A records replay merges the board by entry through boardengine's Bolt replayer, in the detached push child and in a pull-first Bolt write.
+diff --git a/internal/battencli/dobbynotice_test.go b/internal/battencli/dobbynotice_test.go
+index 9ec8b355..8c8866b4 100644
+--- a/internal/battencli/dobbynotice_test.go
++++ b/internal/battencli/dobbynotice_test.go
+@@ -14,6 +14,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
+ 	"github.com/Knatte18/loomyard/internal/battenshed"
++	"github.com/Knatte18/loomyard/internal/creelengine"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -24,6 +25,17 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++func TestRunNotifyTags(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	got := runNotifyTags("pay")
++	want := creelengine.PostTags{Run: "pay"}
++	if got != want {
++		t.Errorf("runNotifyTags(pay) = %+v; want %+v", got, want)
++	}
++}
++
+ // noticeTaskWorktree creates a directory the repository walk accepts as the root of the task worktree slug.
+ // The directory sits under a new hub, and it returns the hub's prime location.
+ func noticeTaskWorktree(t *testing.T, slug string) *lymcwd.Location {
+diff --git a/internal/battencli/notices.go b/internal/battencli/notices.go
+index fd0ec6d7..6a1617a5 100644
+--- a/internal/battencli/notices.go
++++ b/internal/battencli/notices.go
+@@ -7,6 +7,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 
++	"github.com/Knatte18/loomyard/internal/creelengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -14,6 +15,7 @@ import (
+ )
+ 
+ // notifyRunParent sends line as creel mail to the nearest live orch above the run slug, signed as batten.
++// The mail is tagged with slug as its run, so the run's teardown drops it while it is unread.
+ // It reports whether the mail was posted.
+ // The walk starts at the run's pair when it is present here.
+ // Otherwise it starts at the worktree the pair forks or forked from, if that worktree is present here.
+@@ -26,7 +28,13 @@ func notifyRunParent(prime *lymcwd.Location, slug, line string) (bool, error) {
+ 	if isPair {
+ 		return orchcli.NotifyParent(site, battenProgram, line)
+ 	}
+-	return orchcli.NotifyFrom(site, battenProgram, line)
++	return orchcli.NotifyRunFrom(site, "", battenProgram, runNotifyTags(slug), line)
++}
++
++// runNotifyTags returns the creel tags of batten's notice about the run slug.
++// The run lets the run's teardown drop the mail while it is unread.
++func runNotifyTags(slug string) creelengine.PostTags {
++	return creelengine.PostTags{Run: slug}
+ }
+ 
+ // runParentRecorded reports whether the live orch above the run slug records an orch strand.
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 4f6781ff..572a9f79 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -28,6 +28,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/creelcli"
++	"github.com/Knatte18/loomyard/internal/creelengine"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/fronttask"
+@@ -57,6 +58,8 @@ import (
+ const (
+ 	// dobbyProgram is the program name dobby signs its notices with, scoped to its beam's slug.
+ 	dobbyProgram = "DOBBY"
++	// runNoticeTopicPrefix leads the creel topic of a run notice, followed by the run's slug.
++	runNoticeTopicPrefix = "dobby-run-notice/"
+ 	// defaultNoticeProbe is the probe interval when the batten recipe's Run-Shed row names none.
+ 	defaultNoticeProbe = 30 * time.Second
+ 	// defaultNoticeQuiet is the run notices' quiet window when the batten recipe's Run-Shed row names none.
+@@ -69,6 +72,23 @@ const (
+ 	passErrorTextRunes = 500
+ )
+ 
++// runNoticeTags returns the creel tags of dobby's notice about the run slug.
++// The topic lets a newer notice about the run replace an unread one, and the run lets the run's teardown drop it.
++func runNoticeTags(slug string) creelengine.PostTags {
++	return creelengine.PostTags{Topic: runNoticeTopicPrefix + slug, Run: slug}
++}
++
++// requirePosted turns a notice that no orch strand was recorded to receive into an error, so dobby tries it again.
++func requirePosted(posted bool, err error) error {
++	if err != nil {
++		return err
++	}
++	if !posted {
++		return errors.New("no orch strand is recorded to receive the notice")
++	}
++	return nil
++}
++
+ // registerDobby records this process as the dobby of geom in the run-process registry under runProcDir.
+ // The owner is the beam's slug, so the pair teardown of a landed beam ends its dobby;
+ // the prime's dobby has the hub owner instead.
+@@ -121,6 +141,10 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 		hibernateRequestPath = hibernatecli.RequestPath(prime)
+ 	}
+ 	underAdopt := orchcli.UnderAdoptWatch(prime)
++	runNotices := battencli.DobbyRunNotices(prime, pause.RecordPath, quiet)
++	runNotices.Post = func(_ context.Context, slug, line string) error {
++		return requirePosted(orchcli.NotifyRunFrom(worktree, geom.Slug, dobbyProgram, runNoticeTags(slug), line))
++	}
+ 	deps := dobbyengine.Deps{
+ 		Now:   time.Now,
+ 		Awake: pauserecord.MonotonicAwake(),
+@@ -152,14 +176,7 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 		},
+ 		TearDownEnded: func(slugs []string) <-chan map[string]error { return tearDownEnded(prime, slugs) },
+ 		Notice: func(_ context.Context, line string) error {
+-			posted, err := orchcli.NotifyFromScoped(worktree, geom.Slug, dobbyProgram, line)
+-			if err != nil {
+-				return err
+-			}
+-			if !posted {
+-				return errors.New("no orch strand is recorded to receive the notice")
+-			}
+-			return nil
++			return requirePosted(orchcli.NotifyFromScoped(worktree, geom.Slug, dobbyProgram, line))
+ 		},
+ 		PauseOwned: func(_ context.Context, slug string) error { return tendercli.PauseOwnedElsewhere(prime, slug) },
+ 		ReleaseParentLock: func(_ context.Context, slug string) error {
+@@ -186,7 +203,7 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 			coverage, err := pauserecord.ReadCoverage(pause.RecordPath, slug, time.Now())
+ 			return coverage.Covered, err
+ 		},
+-		RunNotices:    battencli.DobbyRunNotices(prime, pause.RecordPath, quiet),
++		RunNotices:    runNotices,
+ 		WaitReminders: waitReminderDeps(prime, worktree, geom.Slug, pause.RecordPath, dirs),
+ 		ClearNotifyOnLand: func(slug string) error {
+ 			board, err := boardengine.OpenHub(prime.HubPath)
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index f1f2d2fc..bfb82ecf 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -112,7 +112,7 @@ func TestHubDobbyDeps_PrimeTidyShuttle(t *testing.T) {
+ 	// Both dobbies send the run notices.
+ 	// They use the batten recipe's quiet window and the marker in the run's records directory.
+ 	for name, notices := range map[string]dobbyengine.RunNoticeDeps{"beam": beamDeps.RunNotices, "prime": primeDeps.RunNotices} {
+-		if notices.ReadChild == nil || notices.DriverAlive == nil || notices.Agents == nil || notices.NewestAgentEnd == nil || notices.Pause == nil || notices.ReviveAPIError == nil || notices.MarkerPath == nil {
++		if notices.ReadChild == nil || notices.DriverAlive == nil || notices.Agents == nil || notices.NewestAgentEnd == nil || notices.Pause == nil || notices.ReviveAPIError == nil || notices.MarkerPath == nil || notices.Post == nil {
+ 			t.Errorf("%s RunNotices = %+v; want every seam filled", name, notices)
+ 			continue
+ 		}
+diff --git a/internal/beamcli/dobbydeps_test.go b/internal/beamcli/dobbydeps_test.go
+index c8015761..722da987 100644
+--- a/internal/beamcli/dobbydeps_test.go
++++ b/internal/beamcli/dobbydeps_test.go
+@@ -9,11 +9,23 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/creelengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++func TestRunNoticeTags(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	got := runNoticeTags("pay")
++	want := creelengine.PostTags{Topic: "dobby-run-notice/pay", Run: "pay"}
++	if got != want {
++		t.Errorf("runNoticeTags(pay) = %+v; want %+v", got, want)
++	}
++}
++
+ func TestEndedTeardownResults(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/creelcli/doc.go b/internal/creelcli/doc.go
+index fbeb974a..b73c0db9 100644
+--- a/internal/creelcli/doc.go
++++ b/internal/creelcli/doc.go
+@@ -135,6 +135,8 @@
+ // They start the daemon through the spawn seam when none answers, and they connect on the first call.
+ // Every call but ReadWait passes a 30-second timeout, so a caller under a lock waits at most that long per call.
+ // Post, Inject, InjectCommand, Hold, Release and Withdraw send the matching verb; withdraw has no CLI verb.
++// PostTagged posts with a topic and a run, and DropRun sends drop-run; neither has a CLI verb.
++// DropRun on a hub with no creel journal sends nothing, since such a hub holds no mail, and starts no daemon.
+ // ReadAll reads every unread message without waiting and hands them to its handler.
+ // The client acknowledges them after the handler returns, so a handler error leaves them unread.
+ // Log answers the journal entries matching a filter.
+diff --git a/internal/creelcli/goclient.go b/internal/creelcli/goclient.go
+index b48dfe51..40a27639 100644
+--- a/internal/creelcli/goclient.go
++++ b/internal/creelcli/goclient.go
+@@ -6,6 +6,7 @@ package creelcli
+ import (
+ 	"errors"
+ 	"fmt"
++	"os"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+@@ -24,6 +25,8 @@ const goCallTimeout = 30 * time.Second
+ type GoClient struct {
+ 	client    *creelengine.Client
+ 	shortname string
++	// journalDir is the hub's creel journal directory, which exists once a daemon has served the hub.
++	journalDir string
+ }
+ 
+ // NewProgramClient returns a client that signs as the program named program under the hub's shortname.
+@@ -83,7 +86,7 @@ func newGoClient(location *lymcwd.Location, claim func(shortname string) (creele
+ 	}
+ 	hubPath := location.HubPath
+ 	client := creelengine.NewClient(geometry, signed, func() (creelengine.Spawn, error) { return seam.spawn(hubPath, geometry.DaemonLogPath) }, seam.clock)
+-	return &GoClient{client: client, shortname: geometry.Shortname}, nil
++	return &GoClient{client: client, shortname: geometry.Shortname, journalDir: geometry.JournalDir}, nil
+ }
+ 
+ // Shortname returns the shortname of the client's hub.
+@@ -91,10 +94,27 @@ func (c *GoClient) Shortname() string { return c.shortname }
+ 
+ // Post leaves body as a message for receiver and returns its id.
+ func (c *GoClient) Post(receiver, body string) (int64, error) {
+-	resp, err := c.client.Call(creelengine.Request{Verb: creelengine.VerbPost, Receiver: receiver, Text: body}, goCallTimeout, nil)
++	return c.PostTagged(receiver, body, creelengine.PostTags{})
++}
++
++// PostTagged leaves body as a message for receiver carrying tags and returns its id.
++// A topic replaces the caller's unread mail to receiver under the same topic.
++func (c *GoClient) PostTagged(receiver, body string, tags creelengine.PostTags) (int64, error) {
++	resp, err := c.client.Call(creelengine.Request{Verb: creelengine.VerbPost, Receiver: receiver, Text: body, Topic: tags.Topic, Run: tags.Run}, goCallTimeout, nil)
+ 	return resp.ID, err
+ }
+ 
++// DropRun returns undelivered the hub's unread mail tagged with run, whoever sent it, and answers what it dropped.
++// Only a program client may drop.
++// A hub whose creel journal does not exist holds no mail, so the call answers none and starts no daemon.
++func (c *GoClient) DropRun(run string) ([]creelengine.WithdrawnMessage, error) {
++	if _, err := os.Stat(c.journalDir); errors.Is(err, os.ErrNotExist) {
++		return nil, nil
++	}
++	resp, err := c.client.Call(creelengine.Request{Verb: creelengine.VerbDropRun, Run: run}, goCallTimeout, nil)
++	return resp.Dropped, err
++}
++
+ // ReadAll reads every unread message of the caller without waiting and hands them to handle.
+ // The daemon marks them read only once handle returns nil, so a handler error leaves them unread.
+ // With nothing unread handle is not called.
+diff --git a/internal/creelcli/goclient_test.go b/internal/creelcli/goclient_test.go
+index 8c533080..11e749d9 100644
+--- a/internal/creelcli/goclient_test.go
++++ b/internal/creelcli/goclient_test.go
+@@ -3,12 +3,25 @@
+ package creelcli
+ 
+ import (
++	"path/filepath"
+ 	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++func TestGoClient_DropRunOnAHubWithNoJournalAnswersNothingAndConnectsToNoDaemon(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	// The client has no connection behind it, so any call it made would panic.
++	client := &GoClient{journalDir: filepath.Join(t.TempDir(), "journal")}
++	dropped, err := client.DropRun("pay")
++	if dropped != nil || err != nil {
++		t.Errorf("DropRun on a hub with no journal directory = %v, %v; want no messages and no error", dropped, err)
++	}
++}
++
+ func TestProgramClaim(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/creelengine/doc.go b/internal/creelengine/doc.go
+index cc005af9..ec9dae27 100644
+--- a/internal/creelengine/doc.go
++++ b/internal/creelengine/doc.go
+@@ -528,6 +528,21 @@
+ // Each inject queued for the gone holder expires.
+ // Creel learns only that the strand no longer exists, never why.
+ //
++// # Notice tags
++//
++// A post can carry two tags, which only the Go client sets: a topic and a run.
++// A post to another hub drops them, and retention carries them with the message.
++// A post with a topic returns undelivered the sender's unread, unreserved mail to the same receiver under the same topic.
++// Each is journaled `undelivered` with the reason `superseded`, and a wait on its reply is answered returned.
++// So a receiver whose mail waited, an orch that was down among them, reads only the newest notice of each topic.
++// A message already read or being read stays.
++// The run is the slug of the run the message concerns.
++// drop-run is a Go-client verb that only a program may send, naming a run.
++// Store.DropRun returns undelivered every unread, unreserved message tagged with that run.
++// It does so whatever the sender and holder, with the reason `run-gone`, and answers each one's id and subject.
++// A pair's teardown sends it once the pair is removed.
++// So mail about a run that is gone never reaches an orch as live.
++//
+ // # Orch strands
+ //
+ // Creel delivers into an orch strand as into any strand:
+diff --git a/internal/creelengine/fold.go b/internal/creelengine/fold.go
+index 50b2ffb6..a6718605 100644
+--- a/internal/creelengine/fold.go
++++ b/internal/creelengine/fold.go
+@@ -80,6 +80,9 @@ type Message struct {
+ 	RemotePosted time.Time
+ 	// DeliveredTo is the receiver the delivery named, which never changes, since Holder moves on a forward.
+ 	DeliveredTo string
++	// Topic and Run are the tags the post carried, empty on untagged mail.
++	Topic string
++	Run   string
+ 
+ 	// origin is the journal day of the file holding the record that created the entry.
+ 	origin string
+@@ -477,7 +480,7 @@ func (p *pool) applyPosted(rec record, day string) {
+ 	p.messages[rec.ID] = &Message{
+ 		ID: rec.ID, From: rec.From, Envelope: rec.Envelope, Holder: rec.To, Kind: kind,
+ 		Subject: firstLine(rec.Body), Body: rec.Body, ReplyTo: rec.ReplyTo,
+-		Posted: rec.At, Status: StatusUnread, ExpectReply: rec.ExpectReply, ChaseOf: rec.Chased, origin: day,
++		Posted: rec.At, Status: StatusUnread, ExpectReply: rec.ExpectReply, ChaseOf: rec.Chased, Topic: rec.Topic, Run: rec.Run, origin: day,
+ 	}
+ 	if chased := p.messages[rec.Chased]; chased != nil {
+ 		chased.Chases = max(chased.Chases, rec.Chase)
+@@ -606,7 +609,7 @@ func (p *pool) applyCarried(rec record, day string) bool {
+ 				ID: rec.ID, From: rec.From, Envelope: rec.Envelope, Holder: rec.To, Path: rec.Path, Kind: kind,
+ 				Subject: firstLine(rec.Body), Body: rec.Body, ReplyTo: rec.ReplyTo,
+ 				Posted: rec.OrigAt, Status: StatusUnread, ExpectReply: rec.ExpectReply, ChaseOf: rec.Chased,
+-				EndedUnreadBy: rec.Receiver, EndedUnreadAt: rec.ReceiverAt, origin: day,
++				EndedUnreadBy: rec.Receiver, EndedUnreadAt: rec.ReceiverAt, Topic: rec.Topic, Run: rec.Run, origin: day,
+ 				SendingHub: rec.SendingHub, SendingRepository: rec.SendingRepository, SendingID: rec.SendingID, Trusted: rec.Trusted, RemotePosted: rec.RemotePosted, DeliveredTo: rec.DeliveredTo,
+ 			}
+ 			if !rec.ReadAt.IsZero() {
+@@ -712,7 +715,7 @@ func (p *pool) carryRecords(cutoffDay string, now time.Time) []record {
+ 				Event: eventCarried, At: now, Of: of, ID: msg.ID, From: msg.From, Envelope: msg.Envelope, To: msg.Holder,
+ 				Kind: msg.Kind, Body: msg.Body, ReplyTo: msg.ReplyTo, Path: msg.Path, ExpectReply: msg.ExpectReply, Chased: msg.ChaseOf,
+ 				ReadAt: msg.ReadAt, ConsumedSeconds: int64(msg.ChaseConsumed / time.Second), Chase: msg.Chases, MarkSeconds: int64(msg.ChaseMark / time.Second),
+-				Receiver: msg.EndedUnreadBy, ReceiverAt: msg.EndedUnreadAt, OrigAt: msg.Posted,
++				Receiver: msg.EndedUnreadBy, ReceiverAt: msg.EndedUnreadAt, OrigAt: msg.Posted, Topic: msg.Topic, Run: msg.Run,
+ 				SendingHub: msg.SendingHub, SendingRepository: msg.SendingRepository, SendingID: msg.SendingID, Trusted: msg.Trusted, RemotePosted: msg.RemotePosted, DeliveredTo: msg.DeliveredTo,
+ 			})
+ 		}
+diff --git a/internal/creelengine/journal.go b/internal/creelengine/journal.go
+index e03c9d05..086184d3 100644
+--- a/internal/creelengine/journal.go
++++ b/internal/creelengine/journal.go
+@@ -145,6 +145,9 @@ type record struct {
+ 	DeliveredTo string `json:"delivered_to,omitempty"`
+ 	// Answers is the id of the local message an outbound reply answers.
+ 	Answers int64 `json:"answers,omitempty"`
++	// Topic and Run are the tags of a posted record, and of a carried snapshot of its message.
++	Topic string `json:"topic,omitempty"`
++	Run   string `json:"run,omitempty"`
+ }
+ 
+ // journalDay returns the UTC day t falls on, as YYYY-MM-DD, the stem of a journal file name.
+diff --git a/internal/creelengine/journal_test.go b/internal/creelengine/journal_test.go
+index 996312d1..9cd5debe 100644
+--- a/internal/creelengine/journal_test.go
++++ b/internal/creelengine/journal_test.go
+@@ -630,7 +630,7 @@ func TestJournal_Retention(t *testing.T) {
+ 
+ 	// Day one: the messages (one read), the injects (one finished), and the holds.
+ 	// The holds are one live hold renewed to a later expiry, one expiring before the carry, and one released.
+-	appendRecord(record{Event: eventPosted, ID: 1, From: alpha, To: beta, Body: "unread", ExpectReply: true})
++	appendRecord(record{Event: eventPosted, ID: 1, From: alpha, To: beta, Body: "unread", ExpectReply: true, Topic: "tidy", Run: "pay"})
+ 	appendRecord(record{Event: eventForwarded, ID: 1, By: beta, To: gamma})
+ 	appendRecord(record{Event: eventPosted, ID: 2, From: alpha, To: beta, Body: "read"})
+ 	appendRecord(record{Event: eventRead, ID: 2, By: beta})
+@@ -698,6 +698,12 @@ func TestJournal_Retention(t *testing.T) {
+ 		if !p.messages[1].ExpectReply || p.messages[5].ExpectReply {
+ 			t.Errorf("%s: ExpectReply of messages 1 and 5 = %v and %v, want the carried unread message to keep its mark and the unmarked one none", label, p.messages[1].ExpectReply, p.messages[5].ExpectReply)
+ 		}
++		if got, want := [2]string{p.messages[1].Topic, p.messages[1].Run}, [2]string{"tidy", "pay"}; got != want {
++			t.Errorf("%s: topic and run of the carried message 1 = %q, want %q", label, got, want)
++		}
++		if p.messages[5].Topic != "" || p.messages[5].Run != "" {
++			t.Errorf("%s: topic and run of the untagged message 5 = %q and %q, want none", label, p.messages[5].Topic, p.messages[5].Run)
++		}
+ 		if !p.programs["ly:BATTEN"] || p.maxID != 6 {
+ 			t.Errorf("%s: programs = %v and maxID = %d, want ly:BATTEN known and 6", label, p.programs, p.maxID)
+ 		}
+diff --git a/internal/creelengine/protocol.go b/internal/creelengine/protocol.go
+index c4d0abc7..c99fbcc8 100644
+--- a/internal/creelengine/protocol.go
++++ b/internal/creelengine/protocol.go
+@@ -29,6 +29,8 @@ const (
+ 	VerbRelease    = "release"
+ 	// VerbWithdraw removes a program's own queued injects and unread mail to one receiver; only the Go client sends it.
+ 	VerbWithdraw = "withdraw"
++	// VerbDropRun drops the unread mail tagged with one run, whatever its sender; only the Go client sends it.
++	VerbDropRun = "drop-run"
+ 	// VerbClaim hands a strand's tool-boundary hook its unread mail, which the client acknowledges on the same connection.
+ 	VerbClaim = "claim"
+ 	// VerbHookWait holds a strand's idle waiter until the daemon rings it or a newer waiter supersedes it.
+@@ -67,6 +69,9 @@ type Request struct {
+ 	Interrupt bool `json:"interrupt,omitempty"`
+ 	// ExpectReply marks a post as expecting a reply, which Wait implies.
+ 	ExpectReply bool `json:"expect_reply,omitempty"`
++	// Topic and Run are the tags of a post, which only the Go client sets; Run is also the run drop-run names.
++	Topic string `json:"topic,omitempty"`
++	Run   string `json:"run,omitempty"`
+ 	// TTLSeconds is the TTL of an inject, 0 for the default.
+ 	TTLSeconds int64 `json:"ttl_s,omitempty"`
+ 	// ForSeconds is how long a hold lasts.
+@@ -128,6 +133,8 @@ type Response struct {
+ 	Released bool        `json:"released,omitempty"`
+ 	// Withdrawn is what a withdraw removed.
+ 	Withdrawn *WithdrawResult `json:"withdrawn,omitempty"`
++	// Dropped is the mail a drop-run returned undelivered.
++	Dropped []WithdrawnMessage `json:"dropped,omitempty"`
+ 	// Delivery is a deliver's answer, accepted or refused; Reason is the refusal's cause, ID the receiver's id.
+ 	Delivery string `json:"delivery,omitempty"`
+ 	Reason   string `json:"reason,omitempty"`
+diff --git a/internal/creelengine/server.go b/internal/creelengine/server.go
+index f668a80c..571c96d0 100644
+--- a/internal/creelengine/server.go
++++ b/internal/creelengine/server.go
+@@ -302,7 +302,9 @@ func (d *daemon) dispatch(conn *net.UnixConn, reader *bufio.Reader, sender Sende
+ 	ok := Response{OK: true, Sender: sender.Name}
+ 	switch req.Verb {
+ 	case VerbPost:
+-		posted, err := store.PostWith(sender, req.Receiver, req.Text, PostOptions{Wait: req.Wait, Interrupt: req.Interrupt, ExpectReply: req.ExpectReply})
++		posted, err := store.PostWith(sender, req.Receiver, req.Text, PostOptions{
++			Wait: req.Wait, Interrupt: req.Interrupt, ExpectReply: req.ExpectReply, Tags: PostTags{Topic: req.Topic, Run: req.Run},
++		})
+ 		if err != nil {
+ 			return err
+ 		}
+@@ -405,6 +407,12 @@ func (d *daemon) dispatch(conn *net.UnixConn, reader *bufio.Reader, sender Sende
+ 			return err
+ 		}
+ 		ok.Withdrawn = &withdrawn
++	case VerbDropRun:
++		dropped, err := store.DropRun(sender, req.Run)
++		if err != nil {
++			return err
++		}
++		ok.Dropped = dropped
+ 	default:
+ 		return fmt.Errorf("creel: unknown verb %q", req.Verb)
+ 	}
+diff --git a/internal/creelengine/verbs.go b/internal/creelengine/verbs.go
+index 18a30763..2039e77f 100644
+--- a/internal/creelengine/verbs.go
++++ b/internal/creelengine/verbs.go
+@@ -1,5 +1,5 @@
+ // verbs.go implements the pool's verbs and the privilege rules that gate them.
+-// The verbs are post, reply, read, inbox, forward, log, inject, interrupt, hold, release and withdraw.
++// The verbs are post, reply, read, inbox, forward, log, inject, interrupt, hold, release, withdraw and drop-run.
+ 
+ package creelengine
+ 
+@@ -105,6 +105,18 @@ type PostOptions struct {
+ 	Interrupt bool
+ 	// ExpectReply marks the message as expecting a reply from its holder.
+ 	ExpectReply bool
++	// Tags are the topic and run the message carries.
++	Tags PostTags
++}
++
++// PostTags are what a notice is about, set only through the Go client; a post to another hub drops them.
++type PostTags struct {
++	// Topic names what the notice reports on.
++	// A post with a topic returns undelivered its sender's unread, unreserved mail to the same receiver under the same topic,
++	// so the receiver reads only the newest notice of each topic.
++	Topic string
++	// Run is the slug of the run the message concerns, which DropRun drops the unread mail of once the run is gone.
++	Run string
+ }
+ 
+ // PostResult is what a post did and what it learned of its receiver.
+@@ -207,7 +219,7 @@ func (s *Store) post(sender Sender, receiver, body string, opts PostOptions) (Po
+ 			return PostResult{Interrupted: true}, storedAfterInterrupt(receiver, err)
+ 		}
+ 	}
+-	posted, err := s.storePost(sender, receiver, body, opts.Wait, opts.ExpectReply || opts.Wait)
++	posted, err := s.storePost(sender, receiver, body, opts.Wait, opts.ExpectReply || opts.Wait, opts.Tags)
+ 	if err != nil && interrupted {
+ 		return PostResult{Interrupted: true}, storedAfterInterrupt(receiver, err)
+ 	}
+@@ -220,10 +232,11 @@ func storedAfterInterrupt(receiver string, cause error) error {
+ 	return fmt.Errorf("creel: the turn of %s was interrupted, but the post was not stored: %w; way forward: post again without --interrupt", receiver, cause)
+ }
+ 
+-// storePost journals a validated post to receiver, marked as expecting a reply when expect is set.
++// storePost journals a validated post to receiver, marked as expecting a reply when expect is set and carrying tags.
+ // With wait, it also registers the wait for the reply.
++// The new message supersedes the sender's unread mail to receiver under the same topic.
+ // A stored post answers its receiver's liveness from the same strand listing the receiver check read.
+-func (s *Store) storePost(sender Sender, receiver, body string, wait, expect bool) (PostResult, error) {
++func (s *Store) storePost(sender Sender, receiver, body string, wait, expect bool, tags PostTags) (PostResult, error) {
+ 	strands, err := s.readStrands()
+ 	if err != nil {
+ 		return PostResult{}, err
+@@ -234,7 +247,11 @@ func (s *Store) storePost(sender Sender, receiver, body string, wait, expect boo
+ 			return err
+ 		}
+ 		var err error
+-		if posted.ID, err = s.appendPostedLocked(sender, record{To: receiver, Kind: kindMail, Body: body, ExpectReply: expect}); err != nil {
++		rec := record{To: receiver, Kind: kindMail, Body: body, ExpectReply: expect, Topic: tags.Topic, Run: tags.Run}
++		if posted.ID, err = s.appendPostedLocked(sender, rec); err != nil {
++			return err
++		}
++		if err := s.supersedeLocked(sender.Name, receiver, tags.Topic, posted.ID); err != nil {
+ 			return err
+ 		}
+ 		if wait {
+@@ -251,6 +268,30 @@ func (s *Store) storePost(sender Sender, receiver, body string, wait, expect boo
+ 	return posted, nil
+ }
+ 
++// SupersededReason is the journal reason of a message returned undelivered.
++// A newer post under its topic replaced that message.
++const SupersededReason = "superseded"
++
++// supersedeLocked returns undelivered every unread, unreserved message from to holder under topic.
++// The message with id kept stays.
++// Each is journaled undelivered with reason `SupersededReason`, and a wait on its reply is answered returned.
++// An empty topic supersedes nothing.
++func (s *Store) supersedeLocked(from, holder, topic string, kept int64) error {
++	if topic == "" {
++		return nil
++	}
++	for _, msg := range s.unreadLocked(holder, from) {
++		if msg.ID == kept || msg.Topic != topic {
++			continue
++		}
++		if err := s.writer.append(record{Event: eventUndelivered, ID: msg.ID, Reason: SupersededReason}); err != nil {
++			return err
++		}
++		s.answerLocked(waitKey{kind: waitReply, id: msg.ID}, Outcome{Kind: OutcomeReturned, Message: *msg})
++	}
++	return nil
++}
++
+ // receiverLiveness reports whether receiver has a live pane among strands.
+ // When it has none, it also returns the warning that says so.
+ // A listed strand answers its own flag, and an orch name of this hub that no strand lists has no pane.
+@@ -1391,6 +1432,42 @@ func (s *Store) Withdraw(sender Sender, receiver string) (WithdrawResult, error)
+ 	return result, err
+ }
+ 
++// RunGoneReason is the journal reason of a message returned undelivered because the run it concerns is gone.
++const RunGoneReason = "run-gone"
++
++// DropRun returns undelivered every unread, unreserved message tagged with run, whatever its sender and holder.
++// Each is journaled undelivered with reason `RunGoneReason`, and a wait on its reply is answered returned.
++// A message already read or being read is left alone.
++// Only a program may drop; any other sender, and an empty run, get an error.
++// It answers the dropped messages in id order, none when no unread message carries the run.
++func (s *Store) DropRun(sender Sender, run string) ([]WithdrawnMessage, error) {
++	if sender.Kind != KindProgram {
++		return nil, fmt.Errorf("creel: %s may not drop a run's mail; only a program may, through the Go client", sender.Name)
++	}
++	if run == "" {
++		return nil, errors.New("creel: drop-run names no run")
++	}
++	var dropped []WithdrawnMessage
++	err := s.do(func() error {
++		var tagged []*Message
++		for id, msg := range s.state.messages {
++			if msg.Run == run && msg.Status == StatusUnread && s.reserved[id] == "" {
++				tagged = append(tagged, msg)
++			}
++		}
++		sort.Slice(tagged, func(i, j int) bool { return tagged[i].ID < tagged[j].ID })
++		for _, msg := range tagged {
++			if err := s.writer.append(record{Event: eventUndelivered, ID: msg.ID, Reason: RunGoneReason}); err != nil {
++				return err
++			}
++			s.answerLocked(waitKey{kind: waitReply, id: msg.ID}, Outcome{Kind: OutcomeReturned, Message: *msg})
++			dropped = append(dropped, WithdrawnMessage{ID: msg.ID, Subject: msg.Subject})
++		}
++		return nil
++	})
++	return dropped, err
++}
++
+ // Release ends the caller's hold on receiver and reports whether there was one, even when the strand is gone.
+ // Another sender's hold is refused.
+ // With no live hold, a name that is no existing strand is refused, and the error lists the strands that exist.
+diff --git a/internal/creelengine/verbs_test.go b/internal/creelengine/verbs_test.go
+index e47c7d33..518be780 100644
+--- a/internal/creelengine/verbs_test.go
++++ b/internal/creelengine/verbs_test.go
+@@ -1340,6 +1340,161 @@ func TestStore_InjectAndHold(t *testing.T) {
+ 	}
+ }
+ 
++// postTagged posts as from with the tags, optionally waiting on the reply, and returns the id and the waiter.
++func (e *env) postTagged(t *testing.T, from creelengine.Sender, to, body string, tags creelengine.PostTags, wait bool) (int64, *creelengine.Waiter) {
++	t.Helper()
++	posted, err := e.store.PostWith(from, to, body, creelengine.PostOptions{Wait: wait, Tags: tags})
++	if err != nil {
++		t.Fatalf("PostWith(%s -> %s): %v", from.Name, to, err)
++	}
++	return posted.ID, posted.Waiter
++}
++
++// undeliveredReason returns the reason of the undelivered record of message id, and whether it has one.
++func (e *env) undeliveredReason(id int64) (string, bool) {
++	for _, entry := range e.store.Log(creelengine.LogFilter{ID: id}) {
++		if entry.Event == "undelivered" {
++			return entry.Reason, true
++		}
++	}
++	return "", false
++}
++
++// waiterOutcome returns the outcome standing in the waiter, and whether it has been answered.
++func waiterOutcome(waiter *creelengine.Waiter) (creelengine.Outcome, bool) {
++	select {
++	case outcome := <-waiter.C:
++		return outcome, true
++	default:
++		return creelengine.Outcome{}, false
++	}
++}
++
++func TestStore_SupersedeReturnsTheSendersUnreadMailUnderTheSameTopic(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name         string
++		priorSender  creelengine.Sender
++		priorTo      string
++		priorTopic   string
++		priorRead    bool
++		newTopic     string
++		wantReturned bool
++	}{
++		{"SameSenderReceiverAndTopic", strand(alpha), beta, "tidy", false, "tidy", true},
++		{"EmptyTopicSupersedesNothing", strand(alpha), beta, "tidy", false, "", false},
++		{"OtherTopic", strand(alpha), beta, "tidy", false, "sweep", false},
++		{"OtherSender", strand(orch), beta, "tidy", false, "tidy", false},
++		{"OtherReceiver", strand(alpha), orch, "tidy", false, "tidy", false},
++		{"AMessageAlreadyRead", strand(alpha), beta, "tidy", true, "tidy", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			e := newEnv(t)
++			prior, waiter := e.postTagged(t, tt.priorSender, tt.priorTo, "old", creelengine.PostTags{Topic: tt.priorTopic}, true)
++			if tt.priorRead {
++				wantBodies(t, e.readBodies(t, strand(tt.priorTo), ""), "old")
++			}
++			fresh, _ := e.postTagged(t, strand(alpha), beta, "new", creelengine.PostTags{Topic: tt.newTopic}, false)
++
++			reason, returned := e.undeliveredReason(prior)
++			if returned != tt.wantReturned || (returned && reason != creelengine.SupersededReason) {
++				t.Errorf("undelivered record of the earlier post = %q, %v; want returned %v with reason %q", reason, returned, tt.wantReturned, creelengine.SupersededReason)
++			}
++			outcome, answered := waiterOutcome(waiter)
++			if answered != tt.wantReturned || (answered && (outcome.Kind != creelengine.OutcomeReturned || outcome.Message.ID != prior)) {
++				t.Errorf("wait on the earlier post = %+v, answered %v; want OutcomeReturned for #%d exactly when superseded (%v)", outcome, answered, prior, tt.wantReturned)
++			}
++			if got := eventsOf(e.store.Log(creelengine.LogFilter{ID: fresh})); !slices.Equal(got, []string{"posted"}) {
++				t.Errorf("events of the new post = %v; want posted only", got)
++			}
++			if tt.wantReturned {
++				wantBodies(t, e.readBodies(t, strand(beta), ""), "new")
++			}
++		})
++	}
++}
++
++func TestStore_DropRun(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const run = "pay"
++	tests := []struct {
++		name string
++		run  func(t *testing.T, e *env)
++	}{
++		{"ReturnsTheRunsUnreadMailFromEverySenderAndHolderInIdOrderAndLeavesTheRest", func(t *testing.T, e *env) {
++			tagged := creelengine.PostTags{Run: run}
++			readTagged, _ := e.postTagged(t, strand(alpha), beta, "already read", tagged, false)
++			wantBodies(t, e.readBodies(t, strand(beta), ""), "already read")
++			first, firstWaiter := e.postTagged(t, strand(alpha), beta, "first\nmore", tagged, true)
++			second, _ := e.postTagged(t, program(batten), orch, "second", creelengine.PostTags{Topic: "tidy", Run: run}, false)
++			e.post(t, strand(alpha), beta, "untagged")
++			e.postTagged(t, strand(alpha), beta, "other run", creelengine.PostTags{Run: "ship"}, false)
++			reservedID, _ := e.postTagged(t, strand(alpha), orch2, "reserved", tagged, false)
++			reserving, err := e.store.Read(strand(orch2), "")
++			if err != nil || len(reserving.Messages) != 1 {
++				t.Fatalf("Read as %s = %+v, %v; want the one message reserved", orch2, reserving, err)
++			}
++
++			got, err := e.store.DropRun(program(webster), run)
++			if err != nil {
++				t.Fatalf("DropRun: %v", err)
++			}
++			want := []creelengine.WithdrawnMessage{{ID: first, Subject: "first"}, {ID: second, Subject: "second"}}
++			if !reflect.DeepEqual(got, want) {
++				t.Errorf("DropRun = %+v; want %+v", got, want)
++			}
++			for _, id := range []int64{first, second} {
++				if reason, returned := e.undeliveredReason(id); !returned || reason != creelengine.RunGoneReason {
++					t.Errorf("undelivered record of #%d = %q, %v; want reason %q", id, reason, returned, creelengine.RunGoneReason)
++				}
++			}
++			for _, id := range []int64{readTagged, reservedID} {
++				if _, returned := e.undeliveredReason(id); returned {
++					t.Errorf("DropRun returned #%d undelivered; want a read or reserved message left", id)
++				}
++			}
++			if outcome, answered := waiterOutcome(firstWaiter); !answered || outcome.Kind != creelengine.OutcomeReturned || outcome.Message.ID != first {
++				t.Errorf("wait on the dropped #%d = %+v, answered %v; want OutcomeReturned", first, outcome, answered)
++			}
++			wantBodies(t, e.readBodies(t, strand(beta), ""), "untagged", "other run")
++			wantBodies(t, e.readBodies(t, strand(orch), ""))
++			reserving.Release()
++		}},
++		{"AnswersNoneWhenNoUnreadMessageCarriesTheRun", func(t *testing.T, e *env) {
++			e.post(t, strand(alpha), beta, "untagged")
++			got, err := e.store.DropRun(program(webster), run)
++			if err != nil || len(got) != 0 {
++				t.Errorf("DropRun = %+v, %v; want no messages and no error", got, err)
++			}
++			if entries := e.store.Log(creelengine.LogFilter{}); len(entries) != 1 {
++				t.Errorf("an empty DropRun journaled %v; want only the post", eventsOf(entries))
++			}
++		}},
++		{"IsRefusedForAnythingButAProgramAndForAnEmptyRun", func(t *testing.T, e *env) {
++			id, _ := e.postTagged(t, strand(alpha), beta, "stays", creelengine.PostTags{Run: run}, false)
++			for _, sender := range []creelengine.Sender{strand(orch2), external()} {
++				_, err := e.store.DropRun(sender, run)
++				wantErr(t, err, "only a program")
++			}
++			_, err := e.store.DropRun(program(webster), "")
++			wantErr(t, err, "no run")
++			if _, returned := e.undeliveredReason(id); returned {
++				t.Errorf("a refused DropRun returned #%d undelivered; want it kept", id)
++			}
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			tt.run(t, newEnv(t))
++		})
++	}
++}
++
+ // inboundLine renders the journal line of mail from another hub's strand id, delivered to the receiver.
+ // extra is more JSON members, such as `,"trusted":true`.
+ func inboundLine(id int, from, to, body, extra string) string {
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 5ab5f4b2..172be09a 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -357,8 +357,9 @@
+ //   - A notice reads `[dobby notice] <slug>: <state> at <row>; <condition>`.
+ //     The child's reason follows as `waiting:`, `since` and `history`.
+ //     Paths under the task pair are rendered relative to it.
+-//     The notice goes through Deps.Notice;
+-//     one not posted is tried on each probe tick, at most three times, then dropped with a Warn.
++//     The notice goes through RunNotices.Post, tagged with the run's slug:
++//     a newer run notice of the run replaces one the orch has not read, and the run's teardown drops one still unread.
++//     One not posted is tried on each probe tick, at most three times, then dropped with a Warn.
+ //   - A notice goes once per episode:
+ //     its key is the condition, the child's state and a stamp.
+ //     The marker RunNotices.MarkerPath names keeps the keys, one per line.
+diff --git a/internal/dobbyengine/runnotice.go b/internal/dobbyengine/runnotice.go
+index 5b188f16..f122100d 100644
+--- a/internal/dobbyengine/runnotice.go
++++ b/internal/dobbyengine/runnotice.go
+@@ -1,7 +1,7 @@
+ // runnotice.go implements the run notices dobby sends for the running child of each run it drives:
+ // a dead driver, a usage limit, an API-error stall and a quiet child.
+ // It decides each condition on a probe tick and keeps the episode keys of the notices sent in the run's marker.
+-// It posts each notice through the Notice seam.
++// It posts each notice through the run notices' Post seam.
+ 
+ package dobbyengine
+ 
+@@ -120,6 +120,11 @@ type RunNoticeDeps struct {
+ 	ReviveAPIError func(ctx context.Context, slug string) error
+ 	// MarkerPath returns the path of the marker holding the episode keys of the notices sent for slug, one per line.
+ 	MarkerPath func(slug string) string
++	// Post posts one run notice about the run slug to the nearest live orch.
++	// The mail is tagged with slug, so a newer run notice of the run replaces one the orch has not read,
++	// and the run's teardown drops one still unread.
++	// A nil Post sends no run notice.
++	Post func(ctx context.Context, slug, line string) error
+ 	// Quiet is how long every agent of a running child may stay idle before the quiet notice; zero sends none.
+ 	Quiet time.Duration
+ }
+@@ -389,7 +394,7 @@ func (d *daemon) apiErrorNoticeDue(ctx context.Context, slug, key string, status
+ 	return memory.APIRevives >= apiErrorReviveStreak
+ }
+ 
+-// deliverRunNotice makes one attempt to post line through the Notice seam, and reports whether it was posted.
++// deliverRunNotice makes one attempt to post line through the run notices' Post seam, and reports whether it was posted.
+ // A notice not posted after runNoticeMaxAttempts probe ticks is dropped with a Warn.
+ func (d *daemon) deliverRunNotice(ctx context.Context, slug, key, condition, line string) bool {
+ 	deliveryKey := slug + "|" + key
+@@ -401,10 +406,11 @@ func (d *daemon) deliverRunNotice(ctx context.Context, slug, key, condition, lin
+ 		delivery = &noticeDelivery{}
+ 		d.deliveries[deliveryKey] = delivery
+ 	}
+-	if delivery.dropped || d.deps.Notice == nil {
++	post := d.deps.RunNotices.Post
++	if delivery.dropped || post == nil {
+ 		return false
+ 	}
+-	err := d.deps.Notice(ctx, line)
++	err := post(ctx, slug, line)
+ 	if err == nil {
+ 		delete(d.deliveries, deliveryKey)
+ 		return true
+diff --git a/internal/dobbyengine/runnotice_test.go b/internal/dobbyengine/runnotice_test.go
+index 2b7d3b35..0b133dd1 100644
+--- a/internal/dobbyengine/runnotice_test.go
++++ b/internal/dobbyengine/runnotice_test.go
+@@ -34,6 +34,8 @@ type noticeFake struct {
+ 	pause     pauserecord.Coverage
+ 	marker    string
+ 	revives   int
++	// postedSlugs is the slug each run notice post named, in order.
++	postedSlugs []string
+ }
+ 
+ // newNoticeHarness returns a pass harness over one running run, task, and the fake its notice seams read.
+@@ -55,7 +57,12 @@ func newNoticeHarness(t *testing.T) (*passHarness, *noticeFake) {
+ 		NewestAgentEnd: func(context.Context, string) (time.Time, error) { return f.newestEnd, f.endErr },
+ 		Pause:          func(string) (pauserecord.Coverage, error) { return f.pause, nil },
+ 		MarkerPath:     func(string) string { return f.marker },
+-		Quiet:          45 * time.Minute,
++		Post: func(_ context.Context, slug, line string) error {
++			f.postedSlugs = append(f.postedSlugs, slug)
++			h.fake.notices = append(h.fake.notices, line)
++			return nil
++		},
++		Quiet: 45 * time.Minute,
+ 	}
+ 	return h, f
+ }
+@@ -397,6 +404,9 @@ func TestRunNotice_Conditions(t *testing.T) {
+ 					t.Errorf("run notice = %q; want it to hold %q", got[0], want)
+ 				}
+ 			}
++			if !slices.Equal(f.postedSlugs, []string{"task"}) {
++				t.Errorf("run notice post slugs = %q; want the run's slug %q once", f.postedSlugs, "task")
++			}
+ 			if strings.Contains(got[0], "3h") {
+ 				t.Errorf("run notice = %q; want no slept time in the idle time", got[0])
+ 			}
+@@ -554,10 +564,8 @@ func TestRunNotice_DeliveryIsRetriedOnProbeTicksThenDropped(t *testing.T) {
+ 	f.alive = false
+ 	h.advance(driverStartGrace)
+ 	attempts := 0
+-	h.d.deps.Notice = func(_ context.Context, line string) error {
+-		if strings.HasPrefix(line, runNoticePrefix) {
+-			attempts++
+-		}
++	h.d.deps.RunNotices.Post = func(context.Context, string, string) error {
++		attempts++
+ 		return errors.New("no orch strand is recorded to receive the notice")
+ 	}
+ 
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 69bf011e..11d1197d 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -1447,6 +1447,8 @@
+ // The push returns nil and writes a `deferred` record that mails nothing.
+ // Every other record mails the hub's orch once per episode.
+ // The mail goes through `SyncOptions.Notifier`, or through the process's installed push notifier when that field is nil.
++// It carries the side and branch as its topic, so a newer notice of the branch replaces one the orch has not read.
++// A pair's branch also carries the pair's slug as its run, so the pair's teardown drops the notice while it is unread.
+ // It leaves the commits to the next push of the branch, whose landing removes the record.
+ // A replay that stops on a conflict is a `not_fast_forward` failure.
+ // The failure carries the conflicting paths and the local commits.
+diff --git a/internal/fabricengine/failedpush.go b/internal/fabricengine/failedpush.go
+index b1333062..c0dc4165 100644
+--- a/internal/fabricengine/failedpush.go
++++ b/internal/fabricengine/failedpush.go
+@@ -79,9 +79,20 @@ type FailedPush struct {
+ 	Notified     bool             `json:"notified"`
+ }
+ 
+-// PushNotifier posts line to the orch of the hub at hubPath and reports whether the mail was posted.
++// PushNotice is the mail a failed push sends the orch.
++type PushNotice struct {
++	// Line names the branch, the class, the error and the way forward.
++	Line string
++	// Topic names the repository side and branch, so a newer notice of the branch replaces one still unread.
++	Topic string
++	// Run is the slug of the pair whose branch failed, empty for the prime's code branch and the board branch.
++	// The pair's teardown drops the notice while it is unread.
++	Run string
++}
++
++// PushNotifier posts notice to the orch of the hub at hubPath and reports whether the mail was posted.
+ // A notifier reporting false, because no orch is recorded, leaves the failure to be mailed by a later one.
+-type PushNotifier func(hubPath, line string) (posted bool, err error)
++type PushNotifier func(hubPath string, notice PushNotice) (posted bool, err error)
+ 
+ var installedPushNotifier atomic.Pointer[PushNotifier]
+ 
+@@ -126,7 +137,8 @@ func failedPushLockPath(path string) string {
+ // The first failure creates the record.
+ // Later failures keep its first-seen time and notified flag, replace the other fields and bump the count.
+ // While the record is not notified and its class is not deferred, the installed notifier is called once.
+-// The line it receives names the branch, the class, the error and the way forward.
++// The notice it receives names the branch, the class, the error and the way forward.
++// It carries the side and branch as its topic and the pair's slug as its run.
+ // The record is marked notified only when the notifier reports the mail posted.
+ // A notifier error is logged and leaves the record unnotified, so the next failure mails again.
+ func RecordPushFailure(hubPath string, f FailedPush, now time.Time) error {
+@@ -152,8 +164,12 @@ func recordPushFailure(hubPath string, f FailedPush, now time.Time, notify PushN
+ 		if notify == nil {
+ 			return f, nil
+ 		}
+-		line := fmt.Sprintf("a push of %s branch %s failed (%s): %s; way forward: %s", f.Repo, f.Branch, f.Class, f.Error, FailedPushWayForward(f))
+-		posted, err := notify(hubPath, line)
++		notice := PushNotice{
++			Line:  fmt.Sprintf("a push of %s branch %s failed (%s): %s; way forward: %s", f.Repo, f.Branch, f.Class, f.Error, FailedPushWayForward(f)),
++			Topic: "push/" + f.Repo + "/" + f.Branch,
++			Run:   f.pairSlug(),
++		}
++		posted, err := notify(hubPath, notice)
+ 		if err != nil {
+ 			logger.Warn("fabricengine: failed-push notice not posted", "repo", f.Repo, "branch", f.Branch, "error", err)
+ 			return f, nil
+@@ -163,6 +179,23 @@ func recordPushFailure(hubPath string, f FailedPush, now time.Time, notify PushN
+ 	})
+ }
+ 
++// pairSlug names the pair whose branch f records.
++// It is the base name of the pair's code worktree, which the hub names by its slug.
++// The prime's code branch, the board branch and a records branch with no paired code worktree answer empty.
++// A records branch with a paired code worktree answers that worktree's name.
++// That includes the prime's, since a records record never marks the prime.
++// No pair's teardown shares the prime's name, so none drops that mail.
++func (f FailedPush) pairSlug() string {
++	switch {
++	case f.Repo == failedPushSideRecords && f.CodeWorktree != "":
++		return filepath.Base(f.CodeWorktree)
++	case f.Repo == failedPushSideCode && !f.Prime:
++		return filepath.Base(f.RepoPath)
++	default:
++		return ""
++	}
++}
++
+ // ClearPushFailure removes the failed-push record of a repository side and branch, and does nothing when none exists.
+ func ClearPushFailure(hubPath, repo, branch string) error {
+ 	path := failedPushPath(hubPath, repo, branch)
+diff --git a/internal/fabricengine/failedpush_test.go b/internal/fabricengine/failedpush_test.go
+index 260bec27..b940e9c4 100644
+--- a/internal/fabricengine/failedpush_test.go
++++ b/internal/fabricengine/failedpush_test.go
+@@ -64,6 +64,54 @@ func TestFailedPushRecord(t *testing.T) {
+ 		}
+ 	})
+ 
++	noticeTagRows := []struct {
++		name    string
++		failure fabricengine.FailedPush
++		want    fabricengine.PushNotice
++	}{
++		{
++			"PairCodeBranchRunsAsTheWorktreeBaseName",
++			fabricengine.FailedPush{Repo: "code", RepoPath: "/hub/task", Branch: "task", Class: fabricengine.PushFailureTransport, Error: "connection refused"},
++			fabricengine.PushNotice{Topic: "push/code/task", Run: "task"},
++		},
++		{
++			"RecordsBranchRunsAsTheCodeWorktreeBaseName",
++			fabricengine.FailedPush{Repo: "records", RepoPath: "/hub/task-weft", CodeWorktree: "/hub/task", Branch: "task-weft", Class: fabricengine.PushFailureTransport, Error: "connection refused"},
++			fabricengine.PushNotice{Topic: "push/records/task-weft", Run: "task"},
++		},
++		{
++			"PrimeCodeBranchHasNoRun",
++			fabricengine.FailedPush{Repo: "code", RepoPath: "/hub/main", Branch: "main", Prime: true, Class: fabricengine.PushFailureTransport, Error: "connection refused"},
++			fabricengine.PushNotice{Topic: "push/code/main"},
++		},
++		{
++			"RecordsBranchWithNoPairedCodeWorktreeHasNoRun",
++			fabricengine.FailedPush{Repo: "records", RepoPath: "/hub/stray", Branch: "stray", Class: fabricengine.PushFailureTransport, Error: "connection refused"},
++			fabricengine.PushNotice{Topic: "push/records/stray"},
++		},
++		{
++			"BoltBranchHasNoRun",
++			fabricengine.FailedPush{Repo: "bolt", RepoPath: "/hub/" + fabricengine.BoltDirName, Branch: "main", Class: fabricengine.PushFailureTransport, Error: "connection refused"},
++			fabricengine.PushNotice{Topic: "push/bolt/main"},
++		},
++	}
++	for _, tt := range noticeTagRows {
++		t.Run("NoticeTags_"+tt.name, func(t *testing.T) {
++			hub := t.TempDir()
++			fake := &fakePushNotifier{hub: hub, posted: true}
++
++			if err := fabricengine.RecordPushFailureNotifyingForTest(hub, tt.failure, base, fake.notify); err != nil {
++				t.Fatalf("RecordPushFailure: %v", err)
++			}
++
++			want := tt.want
++			want.Line = composedPushLine(tt.failure)
++			if len(fake.notices) != 1 || fake.notices[0] != want {
++				t.Errorf("notices = %+v; want one %+v", fake.notices, want)
++			}
++		})
++	}
++
+ 	t.Run("NotPostedLeavesNotifiedUnsetSoTheNextFailureMails", func(t *testing.T) {
+ 		hub := t.TempDir()
+ 		fake := &fakePushNotifier{hub: hub, posted: false}
+diff --git a/internal/fabricengine/pushnotifier_helper_test.go b/internal/fabricengine/pushnotifier_helper_test.go
+index 568f5952..5bb151b6 100644
+--- a/internal/fabricengine/pushnotifier_helper_test.go
++++ b/internal/fabricengine/pushnotifier_helper_test.go
+@@ -15,13 +15,16 @@ type fakePushNotifier struct {
+ 	posted bool
+ 	err    error
+ 	lines  []string
++	// notices holds the whole notice of every counted call, in the order the calls came.
++	notices []fabricengine.PushNotice
+ }
+ 
+-func (n *fakePushNotifier) notify(hubPath, line string) (bool, error) {
++func (n *fakePushNotifier) notify(hubPath string, notice fabricengine.PushNotice) (bool, error) {
+ 	if hubPath != n.hub {
+ 		return true, nil
+ 	}
+-	n.lines = append(n.lines, line)
++	n.lines = append(n.lines, notice.Line)
++	n.notices = append(n.notices, notice)
+ 	return n.posted, n.err
+ }
+ 
+diff --git a/internal/fabricengine/remoteteardown.go b/internal/fabricengine/remoteteardown.go
+index c1a4b217..ed6b42ee 100644
+--- a/internal/fabricengine/remoteteardown.go
++++ b/internal/fabricengine/remoteteardown.go
+@@ -240,13 +240,15 @@ func NoticeRemoteTeardownEnded(hubPath, slug, reason string) {
+ }
+ 
+ // postRemoteTeardownNotice logs line at Warn and mails it to the hub's orch through the installed notifier; with none installed it only logs.
++// The notice's topic names the slug's remote teardown, so a newer one replaces one the orch has not read.
++// It carries no run, since it asks for a step the pair's teardown already left behind.
+ func postRemoteTeardownNotice(hubPath, slug, line string) {
+ 	logger.Warn("fabricengine: "+line, "slug", slug)
+ 	notifier := installedPushNotifier.Load()
+ 	if notifier == nil {
+ 		return
+ 	}
+-	if _, err := (*notifier)(hubPath, line); err != nil {
++	if _, err := (*notifier)(hubPath, PushNotice{Line: line, Topic: "remote-teardown/" + slug}); err != nil {
+ 		logger.Warn("fabricengine: remote teardown notice not posted", "slug", slug, "error", err)
+ 	}
+ }
+diff --git a/internal/fabricengine/remoteteardown_integration_test.go b/internal/fabricengine/remoteteardown_integration_test.go
+index fb0aa4d5..f979ddf1 100644
+--- a/internal/fabricengine/remoteteardown_integration_test.go
++++ b/internal/fabricengine/remoteteardown_integration_test.go
+@@ -76,8 +76,8 @@ func TestRunTeardownChild_RunsTheRemoteStepsInOrderUnderTheLock(t *testing.T) {
+ 				return !acquired
+ 			}
+ 			var notices []string
+-			t.Cleanup(fabricengine.InstallPushNotifier(func(hubPath, line string) (bool, error) {
+-				notices = append(notices, line)
++			t.Cleanup(fabricengine.InstallPushNotifier(func(hubPath string, notice fabricengine.PushNotice) (bool, error) {
++				notices = append(notices, notice.Line)
+ 				return true, nil
+ 			}))
+ 			var events []string
+diff --git a/internal/fabricengine/remoteteardown_test.go b/internal/fabricengine/remoteteardown_test.go
+index a3b0f8bb..dabb8c72 100644
+--- a/internal/fabricengine/remoteteardown_test.go
++++ b/internal/fabricengine/remoteteardown_test.go
+@@ -16,18 +16,18 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// recordNotices installs a push notifier that records every line it is given until the test ends.
+-// It returns a reader of the recorded lines.
++// recordNotices installs a push notifier that records every notice it is given until the test ends.
++// It returns a reader of the recorded notices.
+ // It changes process-global state, so the calling test must not be parallel.
+-func recordNotices(t *testing.T) (lines func() []string) {
++func recordNotices(t *testing.T) (notices func() []PushNotice) {
+ 	t.Helper()
+-	var got []string
+-	restore := InstallPushNotifier(func(hubPath, line string) (bool, error) {
+-		got = append(got, line)
++	var got []PushNotice
++	restore := InstallPushNotifier(func(hubPath string, notice PushNotice) (bool, error) {
++		got = append(got, notice)
+ 		return true, nil
+ 	})
+ 	t.Cleanup(restore)
+-	return func() []string { return slices.Clone(got) }
++	return func() []PushNotice { return slices.Clone(got) }
+ }
+ 
+ // TestNoticeRemoteTeardown covers the log line and the one creel notice of a failed remote step.
+@@ -98,14 +98,17 @@ func TestNoticeRemoteTeardown(t *testing.T) {
+ 			if len(got) != 1 {
+ 				t.Fatalf("noticeRemoteTeardown() posted %d notices %q; want exactly one", len(got), got)
+ 			}
++			if got[0].Topic != "remote-teardown/"+slug || got[0].Run != "" {
++				t.Errorf("notice topic %q run %q; want topic %q and no run", got[0].Topic, got[0].Run, "remote-teardown/"+slug)
++			}
+ 			for _, want := range tt.wantInLine {
+-				if !strings.Contains(got[0], want) {
+-					t.Errorf("notice = %q; want it to hold %q", got[0], want)
++				if !strings.Contains(got[0].Line, want) {
++					t.Errorf("notice = %q; want it to hold %q", got[0].Line, want)
+ 				}
+ 			}
+ 			for _, absent := range tt.wantAbsent {
+-				if strings.Contains(got[0], absent) {
+-					t.Errorf("notice = %q; want it free of %q", got[0], absent)
++				if strings.Contains(got[0].Line, absent) {
++					t.Errorf("notice = %q; want it free of %q", got[0].Line, absent)
+ 				}
+ 			}
+ 		})
+@@ -139,8 +142,8 @@ func TestSyncOptionsNotifier(t *testing.T) {
+ 			var own []string
+ 			options := SyncOptions{}
+ 			if tt.setOwn {
+-				options.Notifier = func(hubPath, line string) (bool, error) {
+-					own = append(own, line)
++				options.Notifier = func(hubPath string, notice PushNotice) (bool, error) {
++					own = append(own, notice.Line)
+ 					return true, nil
+ 				}
+ 			}
+@@ -149,7 +152,7 @@ func TestSyncOptionsNotifier(t *testing.T) {
+ 			if notify == nil {
+ 				t.Fatalf("SyncOptions.notifier() = nil; want a notifier")
+ 			}
+-			if _, err := notify("hub", "line"); err != nil {
++			if _, err := notify("hub", PushNotice{Line: "line"}); err != nil {
+ 				t.Fatalf("notifier error = %v; want nil", err)
+ 			}
+ 
+@@ -187,8 +190,8 @@ func TestNoticeRemoteTeardownEnded(t *testing.T) {
+ 				t.Fatalf("NoticeRemoteTeardownEnded() posted %d notices %q; want exactly one", len(got), got)
+ 			}
+ 			for _, want := range []string{slug, "ended before its last step", tt.reason, "`lym fabric remove " + slug + " --remote`", "`lym fabric cleanup --apply --remote`", "discarded the task branch"} {
+-				if !strings.Contains(got[0], want) {
+-					t.Errorf("notice = %q; want it to hold %q", got[0], want)
++				if !strings.Contains(got[0].Line, want) {
++					t.Errorf("notice = %q; want it to hold %q", got[0].Line, want)
+ 				}
+ 			}
+ 		})
+@@ -213,8 +216,8 @@ func TestRunTeardownChild_NoticesAnUnreadableJob(t *testing.T) {
+ 		t.Fatalf("notices = %q; want exactly one", got)
+ 	}
+ 	for _, want := range []string{slug, "reading its job", "way forward", "`lym fabric remove " + slug + " --remote`", "`lym fabric cleanup --apply --remote`", "discarded the task branch"} {
+-		if !strings.Contains(got[0], want) {
+-			t.Errorf("notice = %q; want it to hold %q", got[0], want)
++		if !strings.Contains(got[0].Line, want) {
++			t.Errorf("notice = %q; want it to hold %q", got[0].Line, want)
+ 		}
+ 	}
+ }
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index bdd79689..bd587287 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -286,6 +286,7 @@
+ // so the pause checks match an orch caller or network operation marker against that name.
+ // The prime's watcher keeps matching an orch name with no slug.
+ // `InstallPushNotifier` routes fabric's failed-push notice to the prime orch as mail signed `FABRIC`.
++// The mail carries the notice's topic and run as creel tags.
+ // The root pre-run installs it for every lym process.
+ // It resolves the hub from the working directory as the network gate does.
+ // A detached push child starting in the board worktree is therefore covered, and nothing is installed outside a hub.
+@@ -293,4 +294,7 @@
+ // The mail is signed `RECONCILE`.
+ // The notice says what a binary's change of a config value's meaning rewrote or flagged in the hub's files.
+ // It resolves the hub from the working directory, as the network gate does.
++// `InstallRunMailDropper` gives pairteardown the drop of a removed run's unread creel mail, signed `TEARDOWN`;
++// the root pre-run installs it for every lym process.
++// `NotifyParent` tags its mail with the pair's slug as the run, and `NotifyRunFrom` posts with the tags its caller names.
+ package orchcli
+diff --git a/internal/orchcli/notifierwiring_test.go b/internal/orchcli/notifierwiring_test.go
+index aabc5366..0b9906d3 100644
+--- a/internal/orchcli/notifierwiring_test.go
++++ b/internal/orchcli/notifierwiring_test.go
+@@ -26,7 +26,7 @@ func TestRootPreRun_InstallsTheHubNotifiers(t *testing.T) {
+ 		t.Fatalf("%s holds no root PersistentPreRunE", path)
+ 	}
+ 	preRun, _, _ := strings.Cut(afterPreRun, "seedStencils(cmd)")
+-	for _, call := range []string{"orchcli.InstallPushNotifier(cmd.Context())", "orchcli.InstallReconcileNotifier(cmd.Context())"} {
++	for _, call := range []string{"orchcli.InstallPushNotifier(cmd.Context())", "orchcli.InstallReconcileNotifier(cmd.Context())", "orchcli.InstallRunMailDropper()"} {
+ 		if !strings.Contains(preRun, call) {
+ 			t.Errorf("%s: the root pre-run = %q; want it to call %s", path, preRun, call)
+ 		}
+diff --git a/internal/orchcli/notify.go b/internal/orchcli/notify.go
+index 5675b4cf..33f92a6d 100644
+--- a/internal/orchcli/notify.go
++++ b/internal/orchcli/notify.go
+@@ -18,9 +18,9 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/orchroute"
+ )
+ 
+-// notifyPoster is the one creel call a notice makes: leaving a body as mail for a receiver.
++// notifyPoster is the one creel call a notice makes: leaving a body as mail for a receiver, carrying tags.
+ type notifyPoster interface {
+-	Post(receiver, body string) (int64, error)
++	PostTagged(receiver, body string, tags creelengine.PostTags) (int64, error)
+ }
+ 
+ // notifyClients holds the functions that build the creel clients a notice posts through.
+@@ -35,29 +35,40 @@ type notifyClients struct {
+ // A prime with no orch strand recorded is not an error: the notice is logged and nothing is posted.
+ // A refusal or failure comes back as an error carrying the full line, and the notice is not retried.
+ func NotifyPrime(location *lymcwd.Location, program, line string) (posted bool, err error) {
+-	return postNotice(location, "", program, line, func() (string, bool, error) { return PrimeOrchStrand(location) })
++	return postNotice(location, "", program, line, creelengine.PostTags{}, func() (string, bool, error) { return PrimeOrchStrand(location) })
+ }
+ 
+ // NotifyParent sends line as creel mail to the nearest live orch up the beam chain of the pair's parent.
+ // It is signed as program, and it reports whether the notice was posted.
++// The mail is tagged with the pair's slug as its run, so the pair's teardown drops it while it is unread.
+ // The destination is resolved at each call; the prime's orch is the answer when no orch above the pair is live.
+ // A destination with no orch strand recorded is not an error: the notice is logged and nothing is posted.
+ // A refusal or failure comes back as an error carrying the full line, and the notice is not retried.
+ func NotifyParent(pair *lymcwd.Location, program, line string) (posted bool, err error) {
+-	return postNotice(pair, "", program, line, func() (string, bool, error) { return parentOrchStrand(pair, OrchLive) })
++	tags := creelengine.PostTags{Run: pair.WorktreeName}
++	return postNotice(pair, "", program, line, tags, func() (string, bool, error) { return parentOrchStrand(pair, OrchLive) })
+ }
+ 
+ // NotifyFrom sends line as creel mail to the nearest live orch on the beam chain at or above from.
+ // It is signed as program, and it reports whether the notice was posted.
+ // It serves a notice of a run whose pair is absent, which the run's beam worktree stands in for.
+ func NotifyFrom(from *lymcwd.Location, program, line string) (posted bool, err error) {
+-	return postNotice(from, "", program, line, func() (string, bool, error) { return nearestOrchStrand(from, OrchLive) })
++	return postNotice(from, "", program, line, creelengine.PostTags{}, func() (string, bool, error) { return nearestOrchStrand(from, OrchLive) })
+ }
+ 
+ // NotifyFromScoped sends line as creel mail to the nearest live orch on the beam chain at or above from.
+ // It is signed as program scoped to slug, as "<shortname>:<slug>:<NAME>", and it reports whether the notice was posted.
+ func NotifyFromScoped(from *lymcwd.Location, slug, program, line string) (posted bool, err error) {
+-	return postNotice(from, slug, program, line, func() (string, bool, error) { return nearestOrchStrand(from, OrchLive) })
++	return postNotice(from, slug, program, line, creelengine.PostTags{}, func() (string, bool, error) { return nearestOrchStrand(from, OrchLive) })
++}
++
++// NotifyRunFrom sends line as creel mail carrying tags to the nearest live orch on the beam chain at or above from.
++// It is signed as program scoped to slug, the unscoped program for an empty slug,
++// and it reports whether the notice was posted.
++// It serves a notice about one run: its run tag lets the run's teardown drop it unread,
++// and its topic lets a newer notice of the same topic replace it unread.
++func NotifyRunFrom(from *lymcwd.Location, slug, program string, tags creelengine.PostTags, line string) (posted bool, err error) {
++	return postNotice(from, slug, program, line, tags, func() (string, bool, error) { return nearestOrchStrand(from, OrchLive) })
+ }
+ 
+ // NotifyAsker sends line as creel mail to the orch the agents of location reach as their parent.
+@@ -68,7 +79,7 @@ func NotifyFromScoped(from *lymcwd.Location, slug, program, line string) (posted
+ // A destination with no orch strand recorded is not an error: the notice is logged and nothing is posted.
+ // A refusal or failure comes back as an error carrying the full line, and the notice is not retried.
+ func NotifyAsker(location *lymcwd.Location, program, line string) (posted bool, err error) {
+-	return postNotice(location, "", program, line, func() (string, bool, error) { return askerOrchStrand(location, OrchLive) })
++	return postNotice(location, "", program, line, creelengine.PostTags{}, func() (string, bool, error) { return askerOrchStrand(location, OrchLive) })
+ }
+ 
+ // NotifyOrchAt sends line as creel mail to the orch strand of worktree itself.
+@@ -77,7 +88,7 @@ func NotifyAsker(location *lymcwd.Location, program, line string) (posted bool,
+ // A worktree whose orch state records no strand is not an error: the notice is logged and nothing is posted.
+ // A refusal or failure comes back as an error carrying the full line, and the notice is not retried.
+ func NotifyOrchAt(worktree *lymcwd.Location, program, line string) (posted bool, err error) {
+-	return postNotice(worktree, "", program, line, func() (string, bool, error) { return OrchStrandOf(worktree) })
++	return postNotice(worktree, "", program, line, creelengine.PostTags{}, func() (string, bool, error) { return OrchStrandOf(worktree) })
+ }
+ 
+ // ParentOrchRecorded reports whether the orch a notice of pair goes to records an orch strand.
+@@ -87,9 +98,9 @@ func ParentOrchRecorded(pair *lymcwd.Location) (bool, error) {
+ 	return recorded, err
+ }
+ 
+-// postNotice posts line through creel to the orch strand orch answers, signing the call as program scoped to slug from location.
+-// An empty slug signs as the unscoped program.
+-func postNotice(location *lymcwd.Location, slug, program, line string, orch func() (string, bool, error)) (bool, error) {
++// postNotice posts line carrying tags through creel to the orch strand orch answers.
++// It signs the call as program scoped to slug from location, and an empty slug signs as the unscoped program.
++func postNotice(location *lymcwd.Location, slug, program, line string, tags creelengine.PostTags, orch func() (string, bool, error)) (bool, error) {
+ 	clients := notifyClients{
+ 		strand: func(strandClaim string) (notifyPoster, error) {
+ 			return creelcli.NewStrandClient(location, strandClaim)
+@@ -98,7 +109,7 @@ func postNotice(location *lymcwd.Location, slug, program, line string, orch func
+ 			return creelcli.NewScopedProgramClient(location, slug, program)
+ 		},
+ 	}
+-	return notifyPrime(orch, line, os.Getenv(agentname.StrandNameEnv), clients)
++	return notifyPrime(orch, line, tags, os.Getenv(agentname.StrandNameEnv), clients)
+ }
+ 
+ // NearestLiveParent answers the orch a notice of pair goes to, as the orch's agent name and worktree.
+@@ -171,10 +182,10 @@ func resolvePrime(location *lymcwd.Location) (*lymcwd.Location, error) {
+ 	return orchroute.Prime(location)
+ }
+ 
+-// notifyPrime posts line to the orch strand orch answers.
++// notifyPrime posts line carrying tags to the orch strand orch answers.
+ // A strand claim naming a strand that is not an orch is tried first.
+ // A claim creel refuses as coming from outside that strand's pane falls back to posting once as the program.
+-func notifyPrime(orch func() (string, bool, error), line, strandClaim string, clients notifyClients) (bool, error) {
++func notifyPrime(orch func() (string, bool, error), line string, tags creelengine.PostTags, strandClaim string, clients notifyClients) (bool, error) {
+ 	receiver, recorded, err := orch()
+ 	if err != nil {
+ 		return false, err
+@@ -188,7 +199,7 @@ func notifyPrime(orch func() (string, bool, error), line, strandClaim string, cl
+ 		if err != nil {
+ 			return false, noticeError(line, err)
+ 		}
+-		_, err = poster.Post(receiver, line)
++		_, err = poster.PostTagged(receiver, line, tags)
+ 		switch {
+ 		case err == nil:
+ 			return true, nil
+@@ -200,7 +211,7 @@ func notifyPrime(orch func() (string, bool, error), line, strandClaim string, cl
+ 	if err != nil {
+ 		return false, noticeError(line, err)
+ 	}
+-	if _, err := poster.Post(receiver, line); err != nil {
++	if _, err := poster.PostTagged(receiver, line, tags); err != nil {
+ 		return false, noticeError(line, err)
+ 	}
+ 	return true, nil
+diff --git a/internal/orchcli/notify_test.go b/internal/orchcli/notify_test.go
+index a4ef4533..d24dc24b 100644
+--- a/internal/orchcli/notify_test.go
++++ b/internal/orchcli/notify_test.go
+@@ -13,15 +13,18 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// fakePoster records each post as "<identity> <receiver>" and answers the error it is given.
++// fakePoster records each post as "<identity> <receiver> <body>" and the tags it carried.
++// It answers the error it is given.
+ type fakePoster struct {
+ 	identity string
+ 	posts    *[]string
++	tags     *[]creelengine.PostTags
+ 	err      error
+ }
+ 
+-func (f fakePoster) Post(receiver, body string) (int64, error) {
++func (f fakePoster) PostTagged(receiver, body string, tags creelengine.PostTags) (int64, error) {
+ 	*f.posts = append(*f.posts, f.identity+" "+receiver+" "+body)
++	*f.tags = append(*f.tags, tags)
+ 	return 1, f.err
+ }
+ 
+@@ -30,6 +33,7 @@ func TestNotifyPrime_SignsAndPosts(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	const line = "[batten notice] a-slug: blocked"
++	tags := creelengine.PostTags{Topic: "blocked", Run: "a-slug"}
+ 	refused := errors.New("creel: the receiver is not a listed strand")
+ 	tests := []struct {
+ 		name         string
+@@ -75,20 +79,27 @@ func TestNotifyPrime_SignsAndPosts(t *testing.T) {
+ 			t.Parallel()
+ 
+ 			var posts []string
++			var postedTags []creelengine.PostTags
+ 			clients := notifyClients{
+ 				strand: func(string) (notifyPoster, error) {
+-					return fakePoster{identity: "strand", posts: &posts, err: tt.strandErr}, nil
++					return fakePoster{identity: "strand", posts: &posts, tags: &postedTags, err: tt.strandErr}, nil
+ 				},
+ 				program: func() (notifyPoster, error) {
+-					return fakePoster{identity: "program", posts: &posts, err: tt.programErr}, nil
++					return fakePoster{identity: "program", posts: &posts, tags: &postedTags, err: tt.programErr}, nil
+ 				},
+ 			}
+ 
+-			posted, err := notifyPrime(func() (string, bool, error) { return "tst:orch", tt.recorded, nil }, line, tt.strandClaim, clients)
++			posted, err := notifyPrime(func() (string, bool, error) { return "tst:orch", tt.recorded, nil }, line, tags, tt.strandClaim, clients)
+ 
+ 			if !slices.Equal(posts, tt.wantPosts) {
+ 				t.Errorf("posts = %q; want %q", posts, tt.wantPosts)
+ 			}
++			// Every post, the strand attempt and the program fallback alike, carries the caller's tags unchanged.
++			for i, got := range postedTags {
++				if got != tags {
++					t.Errorf("post %d tags = %+v; want %+v", i, got, tags)
++				}
++			}
+ 			if posted != tt.wantPosted {
+ 				t.Errorf("notifyPrime() posted = %v; want %v", posted, tt.wantPosted)
+ 			}
+diff --git a/internal/orchcli/pushnotifier.go b/internal/orchcli/pushnotifier.go
+index 06e3901c..34cb57d8 100644
+--- a/internal/orchcli/pushnotifier.go
++++ b/internal/orchcli/pushnotifier.go
+@@ -1,5 +1,5 @@
+ // pushnotifier.go installs the process-wide route for failed-push notices.
+-// The route mails each notice to the hub's prime orch, signed as the FABRIC program.
++// The route mails each notice to the hub's prime orch, signed as the FABRIC program and carrying the notice's tags.
+ 
+ package orchcli
+ 
+@@ -10,6 +10,7 @@ import (
+ 	"path/filepath"
+ 	"strings"
+ 
++	"github.com/Knatte18/loomyard/internal/creelengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/preflight"
+@@ -31,7 +32,7 @@ func InstallPushNotifier(ctx context.Context) {
+ 		return
+ 	}
+ 	hubPath := filepath.Clean(location.HubPath)
+-	fabricengine.InstallPushNotifier(func(failedHubPath, line string) (bool, error) {
++	fabricengine.InstallPushNotifier(func(failedHubPath string, notice fabricengine.PushNotice) (bool, error) {
+ 		if filepath.Clean(failedHubPath) != hubPath {
+ 			return false, nil
+ 		}
+@@ -39,7 +40,8 @@ func InstallPushNotifier(ctx context.Context) {
+ 		if err != nil {
+ 			return false, err
+ 		}
+-		return NotifyPrime(sender, fabricProgram, line)
++		tags := creelengine.PostTags{Topic: notice.Topic, Run: notice.Run}
++		return postNotice(sender, "", fabricProgram, notice.Line, tags, func() (string, bool, error) { return PrimeOrchStrand(sender) })
+ 	})
+ }
+ 
+diff --git a/internal/orchcli/pushnotifier_integration_test.go b/internal/orchcli/pushnotifier_integration_test.go
+index 06502687..a2805bcf 100644
+--- a/internal/orchcli/pushnotifier_integration_test.go
++++ b/internal/orchcli/pushnotifier_integration_test.go
+@@ -40,6 +40,8 @@ func startCreelDaemon(t *testing.T, h *hubforge.Hub, receiver string) {
+ 	}
+ 	delivery := creelfake.NewDelivery()
+ 	delivery.SetStrands(creelfake.LiveStrand(receiver))
++	// Busy, so a posted mail is not carried into the pane and marked read before the test drops or supersedes it.
++	delivery.SetIdle(receiver, false)
+ 	epoch := time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC)
+ 
+ 	ready := make(chan struct{})
+@@ -107,6 +109,108 @@ func postedMails(t *testing.T, h *hubforge.Hub) []creelengine.LogEntry {
+ 	return posted
+ }
+ 
++// undeliveredEntries returns the log entry of each message the hub's creel daemon returned undelivered, by message id.
++func undeliveredEntries(t *testing.T, h *hubforge.Hub) map[int64]creelengine.LogEntry {
++	t.Helper()
++	reader, err := creelcli.NewProgramClient(h.Location, "CHECK")
++	if err != nil {
++		t.Fatalf("NewProgramClient: %v", err)
++	}
++	entries, err := reader.Log(creelengine.LogFilter{})
++	if err != nil {
++		t.Fatalf("Log: %v", err)
++	}
++	undelivered := map[int64]creelengine.LogEntry{}
++	for _, entry := range entries {
++		if entry.Event == "undelivered" {
++			undelivered[entry.ID] = entry
++		}
++	}
++	return undelivered
++}
++
++// TestCreelNoticeTags drives the tags a notice carries through a real creel client and daemon:
++// the topic supersedes the sender's earlier unread notice, and the run lets the teardown dropper drop it.
++//
++// It runs without t.Parallel: the push notifier and the strand environment variable are process-global.
++func TestCreelNoticeTags(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	// failedPushNotice records a push failure of the pair branch "task" over a hub whose prime orch is live.
++	// It returns the hub, the orch's strand name and the id of the mail the notifier posted.
++	failedPushNotice := func(t *testing.T) (*hubforge.Hub, string, int64) {
++		t.Helper()
++		t.Setenv(agentname.StrandNameEnv, "")
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++		receiver := startHubOrchDaemon(t, h)
++		t.Cleanup(fabricengine.InstallPushNotifier(func(string, fabricengine.PushNotice) (bool, error) { return false, nil }))
++		InstallPushNotifier(lymcwd.WithCwd(context.Background(), fabricengine.BoardDir(h.Path)))
++		failure := fabricengine.FailedPush{
++			Repo: "code", RepoPath: h.PairCodeWorktree("task"), Branch: "task",
++			Class: fabricengine.PushFailureTransport, Error: "connection refused",
++		}
++		if err := fabricengine.RecordPushFailure(h.Path, failure, time.Now()); err != nil {
++			t.Fatalf("RecordPushFailure: %v", err)
++		}
++		posted := postedMails(t, h)
++		if len(posted) != 1 {
++			t.Fatalf("posted events = %+v; want exactly one", posted)
++		}
++		return h, receiver, posted[0].ID
++	}
++
++	t.Run("FailedPushNoticeIsSupersededByANewerPostOfItsTopic", func(t *testing.T) {
++		h, receiver, first := failedPushNotice(t)
++		fabric, err := creelcli.NewProgramClient(h.Location, fabricProgram)
++		if err != nil {
++			t.Fatalf("NewProgramClient: %v", err)
++		}
++
++		if _, err := fabric.PostTagged(receiver, "newer", creelengine.PostTags{Topic: "push/code/task"}); err != nil {
++			t.Fatalf("PostTagged: %v", err)
++		}
++
++		if got := undeliveredEntries(t, h)[first].Reason; got != creelengine.SupersededReason {
++			t.Errorf("undelivered reason of the failed-push notice #%d = %q; want %q", first, got, creelengine.SupersededReason)
++		}
++	})
++
++	t.Run("FailedPushNoticeIsDroppedWithItsRun", func(t *testing.T) {
++		h, _, first := failedPushNotice(t)
++
++		dropped, err := dropRunMail(h.Location, "task")
++
++		if err != nil || dropped != 1 {
++			t.Fatalf("dropRunMail(task) = %d, %v; want 1, nil", dropped, err)
++		}
++		if got := undeliveredEntries(t, h)[first].Reason; got != creelengine.RunGoneReason {
++			t.Errorf("undelivered reason of the failed-push notice #%d = %q; want %q", first, got, creelengine.RunGoneReason)
++		}
++		if again, err := dropRunMail(h.Location, "other"); err != nil || again != 0 {
++			t.Errorf("dropRunMail(other) = %d, %v; want 0, nil", again, err)
++		}
++	})
++
++	t.Run("NotifyParentMailIsDroppedWithThePairsSlug", func(t *testing.T) {
++		t.Setenv(agentname.StrandNameEnv, "")
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++		hubforge.AddPair(t, h, "task1")
++		startHubOrchDaemon(t, h)
++		pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("task1"))
++		if err != nil {
++			t.Fatalf("ResolveWorktree: %v", err)
++		}
++
++		if posted, err := NotifyParent(pair, "CHECK", "a pair notice"); err != nil || !posted {
++			t.Fatalf("NotifyParent() = %v, %v; want posted", posted, err)
++		}
++
++		if dropped, err := dropRunMail(h.Location, "task1"); err != nil || dropped != 1 {
++			t.Errorf("dropRunMail(task1) = %d, %v; want the pair's notice dropped", dropped, err)
++		}
++	})
++}
++
+ // TestInstallPushNotifier covers the install from the board worktree and from outside a hub.
+ //
+ // It runs without t.Parallel: the push notifier and the strand environment variable are process-global.
+@@ -116,7 +220,7 @@ func TestInstallPushNotifier(t *testing.T) {
+ 		t.Setenv(agentname.StrandNameEnv, "")
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 		receiver := startHubOrchDaemon(t, h)
+-		t.Cleanup(fabricengine.InstallPushNotifier(func(string, string) (bool, error) { return false, nil }))
++		t.Cleanup(fabricengine.InstallPushNotifier(func(string, fabricengine.PushNotice) (bool, error) { return false, nil }))
+ 
+ 		InstallPushNotifier(lymcwd.WithCwd(context.Background(), fabricengine.BoardDir(h.Path)))
+ 		failure := fabricengine.FailedPush{
+@@ -143,7 +247,7 @@ func TestInstallPushNotifier(t *testing.T) {
+ 
+ 	t.Run("OutsideAHubInstallsNothing", func(t *testing.T) {
+ 		calls := 0
+-		t.Cleanup(fabricengine.InstallPushNotifier(func(string, string) (bool, error) {
++		t.Cleanup(fabricengine.InstallPushNotifier(func(string, fabricengine.PushNotice) (bool, error) {
+ 			calls++
+ 			return true, nil
+ 		}))
+diff --git a/internal/orchcli/runmail.go b/internal/orchcli/runmail.go
+new file mode 100644
+index 00000000..e395c5e8
+--- /dev/null
++++ b/internal/orchcli/runmail.go
+@@ -0,0 +1,31 @@
++// runmail.go installs the process-wide route that drops a removed run's unread creel mail at its pair's teardown.
++
++package orchcli
++
++import (
++	"github.com/Knatte18/loomyard/internal/creelcli"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pairteardown"
++)
++
++// teardownProgram is the program name the drop of a removed run's mail is signed with.
++const teardownProgram = "TEARDOWN"
++
++// InstallRunMailDropper installs pairteardown's run mail dropper for this process,
++// so a pair's teardown drops the unread creel mail about its run, signed as the TEARDOWN program.
++// A hub with no creel journal holds no mail, so the drop starts no daemon there.
++// Creel refuses a program claim from the pane of a strand that is no orch's, so a teardown run there drops nothing.
++func InstallRunMailDropper() {
++	pairteardown.InstallRunMailDropper(dropRunMail)
++}
++
++// dropRunMail drops the unread creel mail of prime's hub tagged with slug as its run, signed as the TEARDOWN program.
++// It answers how many messages it dropped.
++func dropRunMail(prime *lymcwd.Location, slug string) (int, error) {
++	client, err := creelcli.NewProgramClient(prime, teardownProgram)
++	if err != nil {
++		return 0, err
++	}
++	dropped, err := client.DropRun(slug)
++	return len(dropped), err
++}
+diff --git a/internal/pairteardown/doc.go b/internal/pairteardown/doc.go
+index 461eeef0..dc7d885d 100644
+--- a/internal/pairteardown/doc.go
++++ b/internal/pairteardown/doc.go
+@@ -111,6 +111,16 @@
+ // Every failure logs a Warn naming the pull request's URL where it is known, and never stops the teardown.
+ // Failures include an unreadable record, the client, the status read and the close.
+ //
++// # Run mail
++//
++// After a successful removal, RemovePair drops the hub's unread creel mail tagged with the removed pair's slug.
++// The slug is the mail's run tag.
++// So a notice about the gone run never reaches an orch as live.
++// It drops through the process's run mail dropper, which `InstallRunMailDropper` sets;
++// the package cannot reach creel's client itself, since that client's tests import this package.
++// With no dropper installed nothing is dropped.
++// A failed drop logs a Warn and never fails the teardown.
++//
+ // # Log archive
+ //
+ // RemovePair copies the pair's trace logs and its `verify-<n>.log` files into the hub's log archive.
+diff --git a/internal/pairteardown/runmail.go b/internal/pairteardown/runmail.go
+new file mode 100644
+index 00000000..a8a9ecc0
+--- /dev/null
++++ b/internal/pairteardown/runmail.go
+@@ -0,0 +1,40 @@
++// runmail.go drops a removed run's unread creel mail through the process's installed run mail dropper.
++
++package pairteardown
++
++import (
++	"sync/atomic"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++)
++
++// RunMailDropper drops the unread creel mail of prime's hub tagged with the run slug.
++// It answers how many messages it dropped.
++type RunMailDropper func(prime *lymcwd.Location, slug string) (dropped int, err error)
++
++var installedRunMailDropper atomic.Pointer[RunMailDropper]
++
++// InstallRunMailDropper stores d as the process's run mail dropper.
++// It returns a function that reinstates the previous one.
++func InstallRunMailDropper(d RunMailDropper) (restore func()) {
++	previous := installedRunMailDropper.Swap(&d)
++	return func() { installedRunMailDropper.Store(previous) }
++}
++
++// dropPairRunMail drops the hub's unread creel mail tagged with slug's run through the installed dropper.
++// With none installed it drops nothing, and a failure logs a Warn.
++func (t *Teardown) dropPairRunMail(slug string) {
++	dropper := installedRunMailDropper.Load()
++	if dropper == nil {
++		return
++	}
++	dropped, err := (*dropper)(t.prime, slug)
++	if err != nil {
++		logger.Warn("pairteardown: the removed run's unread creel mail was not dropped, so an orch may still read it", "slug", slug, "error", err)
++		return
++	}
++	if dropped > 0 {
++		logger.Info("pairteardown: unread creel mail about the removed run dropped", "slug", slug, "messages", dropped)
++	}
++}
+diff --git a/internal/pairteardown/runmail_test.go b/internal/pairteardown/runmail_test.go
+new file mode 100644
+index 00000000..0f58a41a
+--- /dev/null
++++ b/internal/pairteardown/runmail_test.go
+@@ -0,0 +1,65 @@
++// runmail_test.go pins how a teardown drops a removed run's unread creel mail through the installed dropper.
++
++package pairteardown
++
++import (
++	"errors"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestDropPairRunMail_InstalledDropper pins that the installed dropper is called with the teardown's prime and the slug.
++// It also pins that nothing happens with none installed, and that a dropper error is logged and never propagates.
++// The dropper is process-wide state, so this test is not parallel, and each case restores the previous one.
++func TestDropPairRunMail_InstalledDropper(t *testing.T) {
++	tiergate.Require(t, 0)
++
++	prime := &lymcwd.Location{HubPath: "/hub", AnchorRel: "."}
++	td := &Teardown{prime: prime}
++
++	t.Run("InstalledDropperGetsThePrimeAndTheSlug", func(t *testing.T) {
++		var gotPrimes []*lymcwd.Location
++		var gotSlugs []string
++		restore := InstallRunMailDropper(func(p *lymcwd.Location, slug string) (int, error) {
++			gotPrimes = append(gotPrimes, p)
++			gotSlugs = append(gotSlugs, slug)
++			return 2, nil
++		})
++		t.Cleanup(restore)
++
++		td.dropPairRunMail("slug")
++
++		if len(gotPrimes) != 1 || gotPrimes[0] != prime || len(gotSlugs) != 1 || gotSlugs[0] != "slug" {
++			t.Errorf("dropper saw primes %v and slugs %v; want one call with the teardown's prime and %q", gotPrimes, gotSlugs, "slug")
++		}
++	})
++
++	t.Run("NoDropperInstalledDoesNothing", func(t *testing.T) {
++		previous := installedRunMailDropper.Swap(nil)
++		t.Cleanup(func() { installedRunMailDropper.Store(previous) })
++
++		td.dropPairRunMail("slug")
++	})
++
++	t.Run("DropperErrorIsLoggedAndNotPropagated", func(t *testing.T) {
++		var buf strings.Builder
++		logger.SetOutput(&buf)
++		t.Cleanup(func() { logger.SetOutput(logger.DefaultOutput()) })
++		restore := InstallRunMailDropper(func(*lymcwd.Location, string) (int, error) {
++			return 0, errors.New("creel unreachable")
++		})
++		t.Cleanup(restore)
++
++		td.dropPairRunMail("slug")
++
++		for _, want := range []string{"slug", "creel unreachable"} {
++			if !strings.Contains(buf.String(), want) {
++				t.Errorf("log = %q, want it to name %q", buf.String(), want)
++			}
++		}
++	})
++}
+diff --git a/internal/pairteardown/teardown.go b/internal/pairteardown/teardown.go
+index 5854cc1e..e280eb03 100644
+--- a/internal/pairteardown/teardown.go
++++ b/internal/pairteardown/teardown.go
+@@ -141,7 +141,9 @@ type Teardown struct {
+ 	archive func(slug string)
+ 	// closePR closes the run's open pull request, since an unlanded teardown would leave it pending; it never fails.
+ 	closePR func(slug string)
+-	sleep   func(ctx context.Context, d time.Duration) error
++	// dropRunMail drops the hub's unread creel mail tagged with the removed pair's run; it never fails.
++	dropRunMail func(slug string)
++	sleep       func(ctx context.Context, d time.Duration) error
+ 
+ 	// landed reports whether the present task worktree's run finished a Finalize.
+ 	landed func(slug string) (bool, error)
+@@ -208,6 +210,7 @@ func New(prime *lymcwd.Location) (*Teardown, error) {
+ 	t.endSession = t.endReedSession
+ 	t.archive = t.archivePairLogs
+ 	t.closePR = t.closePairPullRequest
++	t.dropRunMail = t.dropPairRunMail
+ 	t.killCapture = t.killPairCapture
+ 	t.killLoop = t.killPairLoop
+ 	t.seizeLoop = t.holdPairLoopLock
+@@ -425,9 +428,13 @@ func (t *Teardown) driverLockBusyError(slug, retry string) error {
+ //
+ // With req.ClearStray, a non-worktree directory at the task worktree's path is deleted before the claim is settled.
+ // It follows a removal that left the pair gone, succeeded, found nothing of the pair, or kept a refilled directory.
++//
+ // RemovePair removes the task's pair.
+ // When req.Snapshot is set, it keeps the uncommitted paths under a snapshot tag first.
+ // A failed delete returns its error; a delete that clears a kept directory reports the removal as succeeded.
++//
++// A successful removal drops the hub's unread creel mail tagged with the pair's run,
++// so no notice about the gone run reaches an orch as live; a failed drop never fails the teardown.
+ func (t *Teardown) RemovePair(req Request) (fabricengine.RemoveResult, error) {
+ 	var snap snapshotOutcome
+ 	if req.Snapshot {
+@@ -466,6 +473,7 @@ func (t *Teardown) RemovePair(req Request) (fabricengine.RemoveResult, error) {
+ 	if err != nil {
+ 		return res, err
+ 	}
++	t.dropRunMail(req.Slug)
+ 	if landedKnown {
+ 		t.settleBoardClaim(req.Slug, landed)
+ 	}
+diff --git a/internal/pairteardown/teardown_test.go b/internal/pairteardown/teardown_test.go
+index 09c58e7b..cd353106 100644
+--- a/internal/pairteardown/teardown_test.go
++++ b/internal/pairteardown/teardown_test.go
+@@ -98,6 +98,8 @@ type fakeSubstrates struct {
+ 	writeLockBusy bool
+ 	// driverLockHeldByProbe answers each driver-lock probe in turn, ahead of the driverLockHeld flag.
+ 	driverLockHeldByProbe []bool
++	// droppedRunMail holds the slug of each run mail drop, in call order.
++	droppedRunMail []string
+ }
+ 
+ // awaitCall is one call of the pre-end run-lock wait.
+@@ -182,6 +184,10 @@ func (f *fakeSubstrates) teardown() *Teardown {
+ 			}
+ 			return fabricengine.RemoveResult{StrayPath: f.removeStrayPath}, f.removeErr
+ 		},
++		dropRunMail: func(slug string) {
++			f.calls = append(f.calls, "dropRunMail")
++			f.droppedRunMail = append(f.droppedRunMail, slug)
++		},
+ 		removeStray: func(string) (bool, error) {
+ 			f.calls = append(f.calls, "removeStray")
+ 			return f.strayRemoved, f.strayErr
+@@ -254,7 +260,18 @@ func (f *fakeSubstrates) teardown() *Teardown {
+ 
+ var busy = quietState{driver: "tst:slug:driver"}
+ 
++// wantDroppedRunMail is the slugs the run mail drop must have seen when the expected call order holds it:
++// the removal's slug once after a removal that returned no error, and none otherwise.
++func wantDroppedRunMail(wantCalls string) []string {
++	if strings.Contains(wantCalls, "dropRunMail") {
++		return []string{"slug"}
++	}
++	return nil
++}
++
+ // TestRemovePair_ClearStray asserts a request with ClearStray deletes a stray path at the task worktree's location once the removal left the pair gone, reads a kept refilled directory the delete clears as success, returns a failed delete, and leaves the path alone without the flag or after a removal that may have left the pair standing.
++// It also pins that the run mail drop follows only a removal that returned no error.
++// The drop happens once with the slug, before the claim settles.
+ func TestRemovePair_ClearStray(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -278,8 +295,8 @@ func TestRemovePair_ClearStray(t *testing.T) {
+ 		wantCalls   string
+ 	}{
+ 		{name: "WithoutTheFlagAKeptDirectoryIsReturned", removeErr: kept, strayPath: strayPath, wantErrIs: fabricengine.ErrStrayPathKept, wantStrayPath: strayPath, wantCalls: "archive,remove"},
+-		{name: "SuccessfulRemovalLooksForAStrayThenSettlesTheClaim", clearStray: true, wantDeleted: true, wantCalls: "archive,remove,removeStray,readClaim"},
+-		{name: "KeptDirectoryTheDeleteClearsReadsAsSuccess", clearStray: true, removeErr: kept, strayPath: strayPath, wantDeleted: true, wantCalls: "archive,remove,removeStray,readClaim"},
++		{name: "SuccessfulRemovalLooksForAStrayThenSettlesTheClaim", clearStray: true, wantDeleted: true, wantCalls: "archive,remove,removeStray,dropRunMail,readClaim"},
++		{name: "KeptDirectoryTheDeleteClearsReadsAsSuccess", clearStray: true, removeErr: kept, strayPath: strayPath, wantDeleted: true, wantCalls: "archive,remove,removeStray,dropRunMail,readClaim"},
+ 		{name: "NothingOfThePairLeftClearsTheStrayAndStaysNotFound", clearStray: true, removeErr: notFound, strayPath: strayPath, wantErrIs: fabricengine.ErrPairNotFound, wantDeleted: true, wantCalls: "archive,remove,removeStray"},
+ 		{name: "FailedDeleteIsReturned", clearStray: true, removeErr: kept, strayPath: strayPath, strayErr: deleteFailed, wantErrIs: deleteFailed, wantStrayPath: strayPath, wantCalls: "archive,remove,removeStray"},
+ 		{name: "RefusedRemovalLeavesThePathAlone", clearStray: true, removeErr: refused, wantErrIs: refused, wantCalls: "archive,remove"},
+@@ -306,6 +323,9 @@ func TestRemovePair_ClearStray(t *testing.T) {
+ 			if got := strings.Join(f.calls, ","); got != tt.wantCalls {
+ 				t.Errorf("RemovePair calls = %q; want %q", got, tt.wantCalls)
+ 			}
++			if got, want := f.droppedRunMail, wantDroppedRunMail(tt.wantCalls); !slices.Equal(got, want) {
++				t.Errorf("RemovePair dropped run mail for %v; want %v", got, want)
++			}
+ 		})
+ 	}
+ }
+@@ -437,7 +457,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			run:       true,
+ 			quiets:    []quietState{{quiet: true}},
+ 			request:   Request{Slug: "slug"},
+-			wantCalls: sessionEnd + ",landed,archive,remove,readClaim",
++			wantCalls: sessionEnd + ",landed,archive,remove,dropRunMail,readClaim",
+ 		},
+ 		{
+ 			name:        "DoneEntryIsKeptAndSkipsTheDriverChecksWhateverBattenReads",
+@@ -447,7 +467,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			claim:       text("done"),
+ 			claimFound:  true,
+ 			battenAlive: true,
+-			wantCalls:   "readClaim," + skippedEnd + ",landed,archive,remove,readClaim",
++			wantCalls:   "readClaim," + skippedEnd + ",landed,archive,remove,dropRunMail,readClaim",
+ 		},
+ 		{
+ 			name:       "EntryWithoutTheRunFormIsKept",
+@@ -456,7 +476,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			request:    Request{Slug: "slug"},
+ 			claim:      text("wip"),
+ 			claimFound: true,
+-			wantCalls:  sessionEnd + ",landed,archive,remove,readClaim",
++			wantCalls:  sessionEnd + ",landed,archive,remove,dropRunMail,readClaim",
+ 		},
+ 		{
+ 			name:       "LandedFromTheRequestMarksDoneWithoutReadingTheChild",
+@@ -465,7 +485,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			request:    Request{Slug: "slug", Landed: true},
+ 			claim:      runClaim,
+ 			claimFound: true,
+-			wantCalls:  sessionEnd + ",archive,remove,readClaim,write=done",
++			wantCalls:  sessionEnd + ",archive,remove,dropRunMail,readClaim,write=done",
+ 		},
+ 		{
+ 			name:        "LandedFromTheChildReadMarksDone",
+@@ -476,7 +496,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			battenAlive: true,
+ 			claim:       runClaim,
+ 			claimFound:  true,
+-			wantCalls:   sessionEnd + ",landed,archive,remove,readClaim,write=done",
++			wantCalls:   sessionEnd + ",landed,archive,remove,dropRunMail,readClaim,write=done",
+ 		},
+ 		{
+ 			name:       "UnseededRunIsCleared",
+@@ -485,7 +505,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			request:    Request{Slug: "slug"},
+ 			claim:      runClaim,
+ 			claimFound: true,
+-			wantCalls:  sessionEnd + ",landed,archive,remove,readClaim,battenRun,write=draft",
++			wantCalls:  sessionEnd + ",landed,archive,remove,dropRunMail,readClaim,battenRun,write=draft",
+ 		},
+ 		{
+ 			name:         "PausedBattenRunIsCleared",
+@@ -496,7 +516,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			battenState:  "paused",
+ 			claim:        runClaim,
+ 			claimFound:   true,
+-			wantCalls:    sessionEnd + ",landed,archive,remove,readClaim,battenRun,write=draft",
++			wantCalls:    sessionEnd + ",landed,archive,remove,dropRunMail,readClaim,battenRun,write=draft",
+ 		},
+ 		{
+ 			name:         "BlockedBattenRunIsCleared",
+@@ -507,7 +527,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			battenState:  "blocked",
+ 			claim:        runClaim,
+ 			claimFound:   true,
+-			wantCalls:    sessionEnd + ",landed,archive,remove,readClaim,battenRun,write=draft",
++			wantCalls:    sessionEnd + ",landed,archive,remove,dropRunMail,readClaim,battenRun,write=draft",
+ 		},
+ 		{
+ 			name:         "FailedBattenRunIsCleared",
+@@ -518,7 +538,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			battenState:  "failed",
+ 			claim:        runClaim,
+ 			claimFound:   true,
+-			wantCalls:    sessionEnd + ",landed,archive,remove,readClaim,battenRun,write=draft",
++			wantCalls:    sessionEnd + ",landed,archive,remove,dropRunMail,readClaim,battenRun,write=draft",
+ 		},
+ 		{
+ 			name:         "AwaitingBattenRunIsCleared",
+@@ -529,7 +549,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			battenState:  "awaiting",
+ 			claim:        runClaim,
+ 			claimFound:   true,
+-			wantCalls:    sessionEnd + ",landed,archive,remove,readClaim,battenRun,write=draft",
++			wantCalls:    sessionEnd + ",landed,archive,remove,dropRunMail,readClaim,battenRun,write=draft",
+ 		},
+ 		{
+ 			name:         "DoneBattenRunMarksDone",
+@@ -540,7 +560,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			battenState:  "done",
+ 			claim:        runClaim,
+ 			claimFound:   true,
+-			wantCalls:    sessionEnd + ",landed,archive,remove,readClaim,battenRun,write=done",
++			wantCalls:    sessionEnd + ",landed,archive,remove,dropRunMail,readClaim,battenRun,write=done",
+ 		},
+ 		{
+ 			name:         "RunningBattenRunIsHeldWithNoWrite",
+@@ -551,7 +571,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			battenState:  "running",
+ 			claim:        runClaim,
+ 			claimFound:   true,
+-			wantCalls:    sessionEnd + ",landed,archive,remove,readClaim,battenRun",
++			wantCalls:    sessionEnd + ",landed,archive,remove,dropRunMail,readClaim,battenRun",
+ 		},
+ 		{
+ 			name:         "ClaimReadFailureAfterTheRemovalWritesNothing",
+@@ -559,7 +579,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			quiets:       []quietState{{quiet: true}},
+ 			request:      Request{Slug: "slug", Verdict: fabricengine.EntryEnded},
+ 			claimReadErr: errors.New("board unreadable"),
+-			wantCalls:    skippedEnd + ",landed,archive,remove,readClaim",
++			wantCalls:    skippedEnd + ",landed,archive,remove,dropRunMail,readClaim",
+ 		},
+ 		{
+ 			name:         "ClaimReadFailureInTheSkipReadingIsReturnedWithNothingEnded",
+@@ -578,7 +598,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			request:     Request{Slug: "slug", RefuseWhenBusy: true},
+ 			claim:       runClaim,
+ 			claimFound:  true,
+-			wantCalls:   "refusal,endOwned,killCapture,end,archive,remove,readClaim,battenRun,write=draft",
++			wantCalls:   "refusal,endOwned,killCapture,end,archive,remove,dropRunMail,readClaim,battenRun,write=draft",
+ 			wantSawGone: true,
+ 		},
+ 		{
+@@ -717,7 +737,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			request:    Request{Slug: "slug", Local: true, RefuseWhenBusy: true},
+ 			claim:      runClaim,
+ 			claimFound: true,
+-			wantCalls:  sessionEnd + ",archive,remove-local",
++			wantCalls:  sessionEnd + ",archive,remove-local,dropRunMail",
+ 		},
+ 		{
+ 			name:              "LocalSnapshotRunsSnapshotThenAfterSnapshotThenRemove",
+@@ -725,7 +745,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			quiets:            []quietState{{quiet: true}},
+ 			request:           Request{Slug: "slug", Local: true, Snapshot: true},
+ 			withAfterSnapshot: true,
+-			wantCalls:         sessionEnd + ",snapshot,after,archive,remove-local",
++			wantCalls:         sessionEnd + ",snapshot,after,archive,remove-local,dropRunMail",
+ 			wantSnapshotTag:   "set-aside/slug/abc",
+ 		},
+ 		{
+@@ -734,7 +754,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			quiets:            []quietState{{quiet: true}},
+ 			request:           Request{Slug: "slug", Snapshot: true},
+ 			withAfterSnapshot: true,
+-			wantCalls:         sessionEnd + ",snapshot,after,landed,archive,remove,readClaim",
++			wantCalls:         sessionEnd + ",snapshot,after,landed,archive,remove,dropRunMail,readClaim",
+ 			wantSnapshotTag:   "set-aside/slug/abc",
+ 		},
+ 		{
+@@ -753,7 +773,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			request:    Request{Slug: "slug", Verdict: fabricengine.EntryEnded, LeaveClaim: true},
+ 			claim:      runClaim,
+ 			claimFound: true,
+-			wantCalls:  skippedEnd + ",archive,remove",
++			wantCalls:  skippedEnd + ",archive,remove,dropRunMail",
+ 		},
+ 		{
+ 			name:        "BattenRecordBeforeLandWarnsWithTheCancelFollowUp",
+@@ -761,7 +781,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			quiets:      []quietState{{quiet: true}},
+ 			request:     Request{Slug: "slug"},
+ 			runRecord:   runShed,
+-			wantCalls:   sessionEnd + ",landed,archive,remove,readClaim",
++			wantCalls:   sessionEnd + ",landed,archive,remove,dropRunMail,readClaim",
+ 			wantWarning: "the batten run of slug still stands; " + BattenFollowUp("slug", *runShed, true, false),
+ 		},
+ 		{
+@@ -771,7 +791,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			request:     Request{Slug: "slug"},
+ 			runRecord:   runShed,
+ 			ownerPaused: true,
+-			wantCalls:   sessionEnd + ",landed,archive,remove,readClaim",
++			wantCalls:   sessionEnd + ",landed,archive,remove,dropRunMail,readClaim",
+ 		},
+ 		{
+ 			name:      "LeaveClaimGivesNoWarning",
+@@ -779,7 +799,7 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			quiets:    []quietState{{quiet: true}},
+ 			request:   Request{Slug: "slug", Verdict: fabricengine.EntryEnded, LeaveClaim: true},
+ 			runRecord: runShed,
+-			wantCalls: skippedEnd + ",archive,remove",
++			wantCalls: skippedEnd + ",archive,remove,dropRunMail",
+ 		},
+ 		{
+ 			name:              "SnapshotRefusedBusyStopsBeforeAfterSnapshotAndRemove",
+@@ -968,6 +988,9 @@ func TestTeardown_CallSequence(t *testing.T) {
+ 			if got := strings.Join(f.calls, ","); got != tt.wantCalls {
+ 				t.Errorf("calls = %s, want %s", got, tt.wantCalls)
+ 			}
++			if got, want := f.droppedRunMail, wantDroppedRunMail(tt.wantCalls); !slices.Equal(got, want) {
++				t.Errorf("run mail dropped for %v, want %v", got, want)
++			}
+ 			if removal.SnapshotTag != tt.wantSnapshotTag {
+ 				t.Errorf("SnapshotTag = %q, want %q", removal.SnapshotTag, tt.wantSnapshotTag)
+ 			}
+diff --git a/pattern/PATTERN-pair-remote.md b/pattern/PATTERN-pair-remote.md
+index 4833930d..1d102b36 100644
+--- a/pattern/PATTERN-pair-remote.md
++++ b/pattern/PATTERN-pair-remote.md
+@@ -69,6 +69,9 @@ and its removal leaves the board claim to the cancel, which clears it.
+   So every teardown route releases the claim.
+   A `running` record with no live registered batten process means the run is gone.
+   The composite keeps the claim and warns with `lym batten cancel <slug>`.
++- After a successful removal the composite drops the hub's unread creel mail tagged with the pair's slug as its run,
++  through the run mail dropper the root pre-run installs, so no notice about a gone run reaches an orch as live.
++  A failed drop never fails the teardown.
+ - A request with `ClearStray` deletes a directory that is no worktree at the task worktree's path.
+   It does so once the removal left the pair gone, through `fabricengine`'s `RemoveStrayTaskPath`.
+   A failed delete fails the teardown.
