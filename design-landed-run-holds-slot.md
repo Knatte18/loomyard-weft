@@ -1,6 +1,6 @@
 # A landed run left failed before teardown holds a max_runs slot until a hand cleanup
 
-`landed-run-holds-slot` · Task · bug, dobby, batten, cleanup · running · Seed-Child
+`landed-run-holds-slot` · Task · bug, dobby, batten, cleanup · running · Seed-IDE
 
 Depends on: [`dobby-raddle-ignores-deps`](design-dobby-raddle-ignores-deps.md)
 
