@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (11)
+## Tasks (12)
 
 Concrete and claimable; only a task can run.
 
@@ -64,7 +64,15 @@ Starts when every entry it names under After is done.
 | T11 | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | T10 | 2h<br>55m | fabric, cleanup |
 | T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1d<br>31m | slack, reed, creel |
 
-## Notes (24)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | darn |  | 20m<br>20m | shuttle, loom |
+
+## Notes (23)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -76,11 +84,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 2h<br>1h | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
 
-### Bugs (2)
+### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | 20m<br>20m | shuttle, loom |
 | B2 |  | **A landed run left failed before teardown holds a max_runs slot until a hand cleanup** | [`landed-run-holds-slot`](design-landed-run-holds-slot.md) | 19m<br>19m | dobby, batten, cleanup |
 
 ### Enhancements (6)
