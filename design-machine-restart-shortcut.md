@@ -24,7 +24,11 @@ A simple way to start again every project that was in flight on the machine, suc
   The operator never types `lym reed attach`; a running task's window opens from the orch or the Reed status bar's terminal button, so the launcher opens none.
   The orchs and dobbies then take up the runs; the launcher resumes no run itself.
 - A `lym` verb does the work, so it also runs from a terminal; the desktop launcher only calls it.
-- lym keeps the launchers current as hubs and beams come and go, so a crash finds them already there.
+- The launcher is the form the machine's desktop runs: a `.desktop` file on Linux (the freedesktop standard, so KDE, GNOME and others), a `.cmd` file on Windows.
+  Both call the same `lym` verb.
+- lym itself adds and removes the launchers as hubs and beams come and go,
+  and removes a hub's launcher when another machine takes the hub over,
+  so a crash finds the right set already on the desktop; the operator never makes or deletes one by hand.
 
 - A launcher starts only what this machine still owns.
   One hub, such as loomyard, is worked on from several machines:
@@ -35,6 +39,4 @@ A simple way to start again every project that was in flight on the machine, suc
 
 Fixed by the operator: one launcher per hub plus one that starts every hub;
 beams are included; resuming interrupted runs is left to the orchs;
-nothing another machine owns is started.
-
-Open: `.sh` scripts or `.desktop` launchers on KDE.
+nothing another machine owns is started; `.desktop` on Linux and `.cmd` on Windows, added and removed by lym.
