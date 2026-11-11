@@ -897,6 +897,27 @@
       "body": "Imported from [issue #99](https://github.com/Knatte18/loomyard/issues/99).\n\n## What was seen\n\n`fabric.branch_prefix` can be set only on the hub's default layer, which is committed in the board repository and applies to every machine and user of the hub.\n`lym config fabric --layer machine --set branch_prefix=x/` is refused with \"fabric has no machine key\",\nand `--layer local` is refused with \"key branch_prefix is cross-pair and cannot be set in a local override\".\n\nA branch prefix usually names the person who owns the branches, such as `\u003cuser\u003e/\u003cslug\u003e`.\nOn a hub shared by several people, or one person on several machines with different conventions, one hub-wide value does not fit.\n\n## Idea\n\n- Let `branch_prefix` be set per machine, or per user, with the hub default as the fallback.\n  Since #59, teardown uses the recorded branch name, so a pair's branch no longer depends on the prefix in force later; a pair created on one machine keeps its name when adopted on another.\n- Review which other keys are personal rather than hub-wide and give them the same layer, for example:\n  the identity a pull request is opened under or assigned to, the Slack operator, the default model or effort a session opens with, and editor or window settings such as `batten.open_ide`.\n",
       "created": "2026-11-11T06:22:52Z",
       "revised": "2026-11-11T06:22:52Z"
+    },
+    {
+      "id": 1287,
+      "handle": "E8",
+      "slug": "finalize-flaky-rerun",
+      "title": "Finalize spawns a fixer on a single non-repeating test failure",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "landing",
+        "gate"
+      ],
+      "issues": [
+        100
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #100](https://github.com/Knatte18/loomyard/issues/100).\n\n## What was seen\n\nA beam's Finalize landing ran the gate (tier0 and tier1) on the beam head.\nOne tier0 test of 3463 failed with `UnauthorizedAccessException`, and tier1 passed.\nThe test enumerates the source tree, `bin/` included, while another test running in parallel held a temporary directory under `bin/` with its read permission removed.\nThe failure is a race between two tests of the repository, not a fault of the change being landed.\n\nFinalize wrote `.lym/verify/landing-failure.yaml` and spawned a fixer strand at once, on that single run.\nThe gate's own failure report said that no failing test or error line was read from the tier0 output, so the fixer started without a named cause.\n\n## Workaround\n\nThe orch read the verify log, diagnosed the race and messaged the fixer with the cause.\n\n## Expected behaviour\n\n- Before Finalize spawns a fixer, it reruns the failed tests (or the failed tier) once on the same head.\n  A failure that does not repeat is recorded as flaky in the landing report, and the landing goes on.\n- The gate's failure report names the failing test and its error message when the test runner printed them, instead of reporting that no failing test line was read.\n",
+      "created": "2026-11-11T06:22:54Z",
+      "revised": "2026-11-11T06:22:54Z"
     }
   ],
   "prime_owner": "neve",
