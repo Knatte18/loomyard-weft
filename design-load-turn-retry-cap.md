@@ -2,8 +2,6 @@
 
 `load-turn-retry-cap` · Task · bug, shuttle, loom · draft
 
-Depends on: [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md)
-
 ## Seen (issue #102, left out of loop-exit-not-recorded)
 
 A load turn that ends on an API `server_error` makes shuttle wait and retype (`load turn ended on an API error; the prompt waits until the load runs through`), with `apiErrors` rising each time and no cap.
