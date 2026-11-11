@@ -38,7 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 1d<br>1d | gate, fabric |
-| R4 |  | **Bruk av advisor-kommando for Discussion og Plannrr6** | [`advisor-planner-trial`](design-advisor-planner-trial.md) | 59m<br>59m | loom, claude |
+| R4 |  | **Bruk av advisor-kommando for Discussion og Plannrr6** | [`advisor-planner-trial`](design-advisor-planner-trial.md) | 1h<br>1h | loom, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
 
 ### Bugs (8)
