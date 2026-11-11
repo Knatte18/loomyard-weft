@@ -1,0 +1,117 @@
+{
+  "sketch": "decision-record-replace",
+  "shape": "tasks",
+  "board_checked": [
+    {"slug": "raddle-table-recipe-profile", "revised": "2026-11-11T15:17:45Z"},
+    {"slug": "discussed-task-split", "revised": "2026-11-09T20:26:58Z"},
+    {"slug": "raddle-darn-sizing", "revised": "2026-11-09T19:29:45Z"}
+  ],
+  "parts": [
+    {
+      "slug": "record-file-upsert",
+      "title": "lym board upsert --record-file replaces a Sketch's stored record, stamped with the body hash promote checks",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D4", "D5"],
+      "packages": [
+        {"path": "internal/boardcli", "size": 250},
+        {"path": "internal/boardengine", "size": 250},
+        {"path": "internal/discussionparser", "size": 80},
+        {"path": "internal/fabricengine", "size": 120}
+      ],
+      "contract": {
+        "takes": "the board's stored record files and Board.StoreDecisionRecord, the run lock in runlock.go, the Add weft probe in remoteleftover.go, and the strand-name caller classification in boardcli",
+        "delivers": "lym board upsert --record-file with its refusals and one-write landing, the record_body_sha256 stamp on every stored-record write, and promote's body-changed warning",
+        "exports": "a fabricengine function that reports whether a slug's weft branch is live, which Topology.Add also uses; a discussionparser record-only section check; the record_body_sha256 field on boardengine.Task"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "D4: `lym board upsert --record-file` on an entry with a stored record and no run replaces the stored record in the same write as the payload's other fields.",
+        "D4: `--record-file` is refused for a new entry, an entry with no stored record, a done entry, an entry a run holds, an entry whose slug has a task worktree in the hub, an entry whose slug's weft branch is live, an upsert whose origin probe fails, a run's task session and a file that fails the format checks, each with a way forward and nothing written.",
+        "D4: `--record-file` on a family project whose raddle run has filed and keeps its worktree replaces the project's stored record.",
+        "D4: a `--record-file` upsert whose payload the store refuses leaves the stored record unchanged.",
+        "D5: promote of a Sketch whose body changed after its record was stored warns and still promotes.",
+        "D5: promote of a Sketch made by a motif run with no body edit since, and of an entry with no `record_body_sha256`, gives no warning."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 5.51,
+      "cost_line": "darn/light/stored-record fit over 14 runs: $1.96 fixed plus $0.51 per 100 lines, at about 700 changed lines"
+    },
+    {
+      "slug": "decision-record-replace-verb",
+      "title": "lym loom decision replace folds a run's record under a lock, cuts the history check at it, and refreshes every stored record",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D6"],
+      "packages": [
+        {"path": "internal/loomcli", "size": 900},
+        {"path": "internal/fabricengine", "size": 300},
+        {"path": "internal/gitrepo", "size": 80},
+        {"path": "internal/discussionparser", "size": 150},
+        {"path": "contracts/specs", "size": 15},
+        {"path": "contracts/stencils/parent", "size": 15},
+        {"path": "docs", "size": 10}
+      ],
+      "contract": {
+        "takes": "lym board upsert --record-file from record-file-upsert, named by D3's filed refusal and by D6's parent directive; add's guards, refusals and notice in decision.go; CommitAnchoredPathsWithTrailers, FindTrailerCommit and commitEmptySnapshot in fabricengine; Board.HoldsRaddleFiling and raddleRunFiling",
+        "delivers": "lym loom decision replace with its guards, base-hash check, carry-over and added-entry checks, trailer commit and notice; the per-run decision lock shared by add, replace, store and writeCarryOver; recordHistory cut at the newest Lym-Record-Replaced trailer; D3's board copy and filed refusal; the D6 spec, parent directive and overview text",
+        "exports": "fabricengine.CommitEmptyWithTrailers, a first-parent trailer-key commit list and an anchored file's first-parent history with commit SHAs and positions; a gitrepo.Repo method that commits one path allowing an empty commit; discussionparser checks for carry-over block equality and the added-entry subset"
+      },
+      "depends_on": ["record-file-upsert"],
+      "open_risks": [
+        "A replace during a live agent session, such as Plan-Write or Raddle-Write, reaches the agent only through the creel notice, as `add` does.\nA Bouncer's settling window counts only added-entry titles, so a replace made while a review round is open does not count as a decision made since that round.",
+        "A replace after a perch's last approving round reaches every part's record without a review of the split's seams, the same accepted gap the board's `discussed-task-split` note records for `add`.",
+        "When D3's board copy fails and the run then re-enters its `Motif` block, the seed rewrites the run's record from the stale board copy. `lym loom decision store`, which is the way forward from the `record_store_error`, prevents this.",
+        "The run report counts post-Discussion decisions per `--by` author from the added entries a record still holds, so a folded call drops out of its count.",
+        "D1's Webster refusal reads the row at the fold, so a fold after the last Webster row followed by `lym loom goto --to` a Webster row\nleaves the folded call absent from every Master spawned there.\nD6's parent directive has the parent record the call again with `add` before a goto it makes;\na goto the operator makes after a Stuck halt is not covered, and the call stays out of Master's view.",
+        "D4 refuses `--record-file` while the weft is live, but `lym board promote` is not refused,\nso a raddle run started in that window adopts the weft and keeps the motif run's committed record, which Record-Write never overwrites.\nThe board's stored record does not reach that run, and D3's later copy writes that adopted record over the stored one.\nThe window closes when the pair's teardown finishes, and D5's warning does not cover it."
+      ],
+      "criteria": [
+        "D1: a replace whose `--base-sha256` matches the committed record writes the file as the record, commits it with the trailer, and the record at HEAD equals the file.",
+        "D1: a replace whose base differs is refused with a way forward, the refusal names no hash, and the record and HEAD are unchanged.",
+        "D1: a replace on a run whose recipe has a Discussion approval row and that is not past it is refused, naming `lym loom decision add`.",
+        "D1: a file that fails the section check or the decision-id and acceptance check, that drops, changes or adds a carry-over block,\nor that rewrites or inserts an `### Added after Discussion` entry, is refused and the record is unchanged.",
+        "D1: a task session that is not the run's parent is refused, and the parent, the run's arbiter, the run's sampler strand with `--by operator` and the operator's unnamed shell are admitted, as for `add`.",
+        "D1: a replace whose bytes HEAD already holds still leaves a commit carrying its trailer at HEAD, also while another path is staged in the weft index, which stays staged.",
+        "D1: a replace on a run standing at one of its Webster rows, or at a row between its plan's approval and its first Webster row, is refused, naming `lym loom decision add`.",
+        "D1: a replace whose commit fails while HEAD lacks the written bytes restores the prior record and refuses with a way forward that names `replace`.",
+        "D1: a replace whose commit returns an error after HEAD already holds the written bytes succeeds:\nwith the trailer at HEAD it reports `commit_error`, and without it it lands the trailer commit.",
+        "D1: an `add` started while a `replace` holds the decision lock runs after it, and its entry is in the record at HEAD.",
+        "D1: a carry-over write started while a `replace` holds the decision lock runs after it, and its block is in the record at HEAD.",
+        "D1: each live strand of the run gets a notice that opens with the replace notice's opening and names the title.",
+        "D2: after a replace that drops an `### Added after Discussion` entry, `lym loom validate-discussion` and the discussion gate report no `added-decision-dropped` finding.",
+        "D2: when the replaced bytes landed in an earlier commit than the trailer commit, the check still reports no `added-decision-dropped` finding for the dropped entry.",
+        "D2: an entry added after a replace and then dropped by a writer is still an `added-decision-dropped` finding.",
+        "D2: when a replace writes X, an `add` makes Y, a writer restores X and a sweep commits it, the check still reports `added-decision-dropped` for Y's entry.",
+        "D2: when HEAD already holds X from a sweep, a replace lands an empty trailer commit, an `add` makes Y, a writer restores X and a sweep commits it,\nthe check still reports `added-decision-dropped` for Y's entry.",
+        "D2: a trailer that names another record's path does not bound this record's history.",
+        "D3: `add` and `replace` on a raddle run of a promoted Sketch refresh the entry's stored record, and `lym loom decision store` is admitted on that run.",
+        "D3: `add`, `replace` and `store` on a non-perch raddle run whose family filing is done are refused, naming the filed part and `--record-file` on the project, and the project's stored record is unchanged.",
+        "D3: the same holds for a family filing that saved `board.json` and failed to write the raddle store.",
+        "D3: `add` on a run re-entered into its Discussion segment, whose entry carries a stored record, leaves the stored record unchanged.",
+        "D3: `add` on a beam run leaves the project entry's stored record unchanged.",
+        "Review: D6 — the discussion spec, the parent directive and the overview name `replace` and `--record-file`, when to use each rather than `add`, and the history reset, and the parent directive names the replace notice's opening\nand says a fold on a record whose `## Goal` is a fenced board body rewrites that body.",
+        "Review: D6 — the parent directive says to record each folded call again with `lym loom decision add` before sending a run back to a Webster row after a fold."
+      ],
+      "pattern_changes": ["PATTERN-run-records"],
+      "expected_cost_usd": 9.68,
+      "cost_line": "darn/solid/stored-record fit over 6 runs: $4.06 fixed plus $0.38 per 100 lines, at about 1480 changed lines"
+    }
+  ],
+  "cost": {
+    "expected_usd": 15.19,
+    "line": "two chained darns: record-file-upsert on the darn/light/stored-record fit (14 runs) and decision-record-replace-verb on the darn/solid/stored-record fit (6 runs)",
+    "next_best": {
+      "split": "one darn/solid task building D1 to D6, about 2180 changed lines across eight packages",
+      "expected_usd": 12.34,
+      "line": "darn/solid/stored-record fit over 6 runs: $4.06 fixed plus $0.38 per 100 lines; cheaper by one fixed cost, but one writer session carries all 31 criteria and no run in the cell is known to be this large"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "light", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
