@@ -81,7 +81,7 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- |
 | T18 | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | darn · light | T13 | 7h<br>23m | fabric, ide |
 
-## Notes (22)
+## Notes (23)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -92,6 +92,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 2d<br>2d | gate, fabric |
 | R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 8h<br>6h | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
+
+### Bugs (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| B1 |  | **TestSmokeBootstrapLifecycle died_driver case still expects invalid state after d1535412** | [`smoke-died-driver-wording`](design-smoke-died-driver-wording.md) | 0m<br>0m | loom, shed |
 
 ### Enhancements (5)
 
