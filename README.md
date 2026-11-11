@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **The adopting machine's orch and dobby stay up and idle, and the old owner pauses, archives its unpushed tips and exits** | [`adopt-owner-handover`](design-adopt-owner-handover.md)<br>[Sketch](decision-adopt-owner-handover.md) | darn · light | Record-Write | neve | 1d<br>1d | batten, tender, dobby, orch, fabric, shortcut |
+| T4 | **The adopting machine's orch and dobby stay up and idle, and the old owner pauses, archives its unpushed tips and exits** | [`adopt-owner-handover`](design-adopt-owner-handover.md)<br>[Sketch](decision-adopt-owner-handover.md) | darn · light | Drift-Baseline | neve | 1d<br>1d | batten, tender, dobby, orch, fabric, shortcut |
 
 #### Ready (0)
 
@@ -182,7 +182,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B4 |  | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | 1h<br>1h | fabric |
 | B5 |  | **A paused Webster session acts on a decision notice without the run lock, and the loom row stays blocked** | [`paused-webster-acts-on-notice`](design-paused-webster-acts-on-notice.md) | 1h<br>1h | webster, loom, creel |
 | B6 |  | **gate test: card gate and explicit target never reach a second test project when tier0 command lacks a targets placeholder** | [`gate-target-dropped-silently`](design-gate-target-dropped-silently.md) | 1h<br>1h | gate, dotnet |
-| B7 |  | **loom halt: 'verify gate failed after 4 attempt(s) of 3: none named' reports an off-by-one count and no failure** | [`webster-gate-halt-count`](design-webster-gate-halt-count.md) | 59m<br>59m | webster, gate |
+| B7 |  | **loom halt: 'verify gate failed after 4 attempt(s) of 3: none named' reports an off-by-one count and no failure** | [`webster-gate-halt-count`](design-webster-gate-halt-count.md) | 1h<br>1h | webster, gate |
 | B8 |  | **Dobby starts a released raddle task whose depends_on has not landed** | [`dobby-raddle-ignores-deps`](design-dobby-raddle-ignores-deps.md) | 59m<br>59m | dobby, board |
 | B10 |  | **Worktree-Create halts on a reused slug path holding only obj/ leftovers** | [`worktree-create-build-leftovers`](design-worktree-create-build-leftovers.md) | 59m<br>59m | batten, fabric |
 
