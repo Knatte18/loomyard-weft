@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=341c75b4d077194c97211006b26f77f27a37f3ba616c29365146abde87dab970 build=2ad39d2610630086e298bbf432879b35e8435f25 time=2026-11-09T14:23:03Z -->
+<!-- lym-stencil: sha256=5c4f21e5725aee1a11d84949d2d006452526bde2c1a37ec1c7abba7f12c49d8d build=10d581c9150c7a81410e893979c5a37f1c6856f4 time=2026-11-11T15:05:32Z -->
 
 # Raddle proposal-spec — how a Sketch splits into filed entries
 
@@ -95,6 +95,7 @@ The gate, `raddle-propose` and `raddle-approve` run the checks of the proposal a
 - `board-unchecked` — an open task or project, other than the run's own entry, that carries a module label the Sketch carries and is absent from `board_checked`.
 - `depends-cycle` — a cycle in `depends_on`.
 - `depends-unknown` — a `depends_on` that names no part, no board entry and no `board_checked` entry; a `board_checked` entry that is gone from the board passes as landed.
+- `depends-note` — a `depends_on` that names a note on the board, which the board refuses at filing; its way forward is to drop the dependency or to have the operator promote the note.
 - `packages-shared` — two parts with no `depends_on` path between them that list a common package.
 - `recipe-invalid` — a recipe that is neither `tapestry` nor `darn`.
 - `profile-unknown` — a profile that `profiles.yaml` does not hold, or holds without a block for the part's recipe.
