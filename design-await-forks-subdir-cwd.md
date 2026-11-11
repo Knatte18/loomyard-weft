@@ -2,7 +2,7 @@
 
 `await-forks-subdir-cwd` · Task · bug, shuttle, fabric · draft
 
-Depends on: [`load-turn-retry-cap`](design-load-turn-retry-cap.md), [`adopt-takeover-fixes`](design-adopt-takeover-fixes.md)
+Depends on: [`load-turn-retry-cap`](design-load-turn-retry-cap.md), [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md)
 
 Imported from [issue #110](https://github.com/Knatte18/loomyard/issues/110).
 

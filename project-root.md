@@ -49,7 +49,7 @@ Not released; nothing starts it until its status is cleared.
 | T7 | `draft` **raddle-propose refuses a note dependency early; a loop exit without an envelope shows its log tail** | [`raddle-dep-and-loop-exit`](design-raddle-dep-and-loop-exit.md) | darn · light | T1 | 4h<br>0m | shed, board, loom |
 | T8 | `draft` **The adopt-check tab closes after the check; reed attach refuses a directory that is no worktree** | [`reed-tab-and-attach-fixes`](design-reed-tab-and-attach-fixes.md) | darn · light | T12 | 3h<br>0m | reed |
 | T9 | `draft` **beam merge-parent reuses the slug of a completed merge-in run** | [`merge-parent-slug-reuse`](design-merge-parent-slug-reuse.md) | darn · light | T6 | 1m<br>0m | workspaces, dobby |
-| T16 | `draft` **lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor** | [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md) | darn · light | T1<br>T3 | 1m<br>0m | shuttle, fabric |
+| T16 | `draft` **lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor** | [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md) | darn · light | T1<br>T5 | 1m<br>0m | shuttle, fabric |
 | T17 | `draft` **A Sketch or decision record can be edited or replaced, and raddle follows the newer design** | [`decision-record-replace`](design-decision-record-replace.md) | motif |  | 1m<br>0m | shed, loom, board |
 
 ## Notes (29)
