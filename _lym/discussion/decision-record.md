@@ -92,6 +92,15 @@ A machine whose dobby is not running archives nothing until `lym beam start` run
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - adopt-beam-without-owner-not-covered (class design, severity BLOCKING, open in rounds 1)
+  - adopt-hold-skipped-steps-unpinned (class design, severity MEDIUM, open in rounds 1)
+  - archive-tip-decision-rows-missing (class design, severity MEDIUM, open in rounds 1)
+  - owner-archive-pairs-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D4: with an unfinished record listing a subject that reads owned by another machine and has no owner write, the orch watcher keeps its strand and the dobby neither exits, archives, nor starts a pass or task under the subject.
