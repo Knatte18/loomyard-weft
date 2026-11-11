@@ -2,7 +2,7 @@
 
 `await-forks-subdir-cwd` · Task · bug, shuttle, fabric
 
-Depends on: [`load-turn-retry-cap`](design-load-turn-retry-cap.md), [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md)
+Depends on: [`load-turn-retry-cap`](design-load-turn-retry-cap.md), [`creel-notice-hygiene`](design-creel-notice-hygiene.md)
 
 Imported from [issue #110](https://github.com/Knatte18/loomyard/issues/110).
 

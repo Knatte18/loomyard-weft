@@ -111,7 +111,7 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (3)
+#### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -120,14 +120,13 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step** | [`load-turn-retry-cap`](design-load-turn-retry-cap.md) | darn · light | Darn-Write | neve | 5h<br>5h | shuttle, loom |
 | T10 | **Worktree-Create halts on a reused slug path holding only obj/ leftovers** | [`worktree-create-build-leftovers`](design-worktree-create-build-leftovers.md) | darn · light | Darn-Write | neve | 7h<br>6h | batten, fabric |
 | T13 | **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | Code-Burler-Fix | neve | 1d<br>1d | config, slack |
+| T17 | **A Sketch or decision record can be edited or replaced, and raddle follows the newer design** | [`decision-record-replace`](design-decision-record-replace.md) | motif | Worktree-Create | neve | 1m<br>0m | shed, loom, board |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T17 | **A Sketch or decision record can be edited or replaced, and raddle follows the newer design** | [`decision-record-replace`](design-decision-record-replace.md) | motif |  | 1m<br>0m | shed, loom, board |
+_None._
 
 #### Layer A (3)
 
@@ -156,22 +155,22 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests** | [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md) | darn · solid | T3 | 5h<br>0m | dobby, fabric, tender |
 
-#### Layer D (2)
+#### Layer D (1)
 
 Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Creel sends an unchanged notice once and drops mail about runs that no longer exist** | [`creel-notice-hygiene`](design-creel-notice-hygiene.md) | darn · light | T5 | 4h<br>0m | creel, dobby, fabric, orch |
-| T16 | **lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor** | [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md) | darn · light | T1<br>T5 | 1m<br>0m | shuttle, fabric |
 
-#### Layer E (1)
+#### Layer E (2)
 
 Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T9 | **beam merge-parent reuses the slug of a completed merge-in run** | [`merge-parent-slug-reuse`](design-merge-parent-slug-reuse.md) | darn · light | T6 | 1m<br>0m | workspaces, dobby |
+| T16 | **lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor** | [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md) | darn · light | T1<br>T6 | 1m<br>0m | shuttle, fabric |
 
 ### Notes (29)
 
