@@ -57,7 +57,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **lym gate testmap plans each map at the prime's HEAD, keeps what still holds, and checks what it keeps** | [`testmap-upkeep-plan`](design-testmap-upkeep-plan.md)<br>[Sketch](decision-testmap-upkeep-plan.md) | darn · solid | Worktree-Create | neve | 1h<br>1h | testkit, gate, dobby |
+| T3 | **lym gate testmap plans each map at the prime's HEAD, keeps what still holds, and checks what it keeps** | [`testmap-upkeep-plan`](design-testmap-upkeep-plan.md)<br>[Sketch](decision-testmap-upkeep-plan.md) | darn · solid | Seed-Child | neve | 1h<br>1h | testkit, gate, dobby |
 
 #### Ready (0)
 
@@ -117,7 +117,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | motif | Discussion-Write | neve | 9d<br>5m | claude, shuttle, config |
+| T1 | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | motif | Discussion-Write | neve | 9d<br>6m | claude, shuttle, config |
 | T6 | **Optional extra review of the Discussion record by the parent orch or a named agent** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md) | motif | Discussion-Burler-Review | neve | 3d<br>26m | loom, orch, config, burler |
 
 #### Ready (0)
