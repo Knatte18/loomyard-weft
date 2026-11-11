@@ -1,77 +1,54 @@
 # Darn verify gate: stop at first failed tier, rerun failures, time budget
 
-The darn verify gate, which Darn-Write runs and which Code-Burler-Fix also runs in a darn run, used to spend a full pass of every tier on each attempt.
-It also kept going past a failed tier, and nothing told anyone when it ran long.
-A step whose gate never re-prompted halted with `gate did not pass after 0 attempts`, which read as a spent budget.
-This change addresses all four.
+Darn-Write's verify gate cost a darn run 35 to 40 minutes in two observed runs.
+It ran every tier after a failed one, re-ran the whole scope on each attempt, and nothing told anyone it was long.
+A halt after a gate that never re-prompted also read `gate did not pass after 0 attempts`.
+This change fixes those four faults together, since they share the gate's code path.
 
-## Stop at the first failing tier
+Closes #92
 
-`lym gate test` gains `--stop-on-fail`.
-With it, a call ends at its first failed run: no later tier, vet or guard run starts, and a stderr line names the failed run and every run it skipped.
-A run that crashed its test runner twice judged no code, so it stops nothing.
-The key's lint and report steps still run, and the failure report and closing line follow as before.
+## What changes
 
-Running every tier after a failure is deliberate for a plain call, as `internal/gatecli`'s doc says, so a failure already present at the base hides no later check.
-So `--upto` and the landing gates keep that default, and the flag is the separate choice.
-The darn wiring (`loomcli.wireTreeScope`) adds the flag to the `darn-write` key's told call and tree-scoped call, through `gateslot.StopOnFailCall`.
-Every other key keeps its whole call, so Code-Burler-Fix and the landing gates still run every tier.
-The fixer therefore hears of a tier0 failure after tier0, not after tier1 and tier2 have also run.
-
-## Rerun only the failed tests between attempts
-
-Before this change the gate already handed the fixer and the writer findings drawn from the log, not the whole log.
-It could not rerun failed tests alone.
-Now, in the darn form of `loomshed.NewVerifyGate`, a failed run whose failure report names failed tests alone keeps them in the gate's closure.
-The next arrival first runs just those tests through `verifytree.Verify`, with the command `gateslot.FailedTestsCall` renders.
-That command holds one `lym gate test --wait --stop-on-fail --tier N <packages> -- -run '^(<tests>)$'` call per tier, joined by `&&`.
-- Tests that fail again fail the arrival with their findings alone, prefixed with a note, so the fixer and the writer get only those.
-- Tests that pass alone hand the arrival to the full command, which runs once.
-- A failure with no test to name keeps nothing, so the next arrival runs the full command at once.
-  That covers a build error, a failure outside any test, a vet or lint step, a timeout, a runner crash and a cut report.
-
-`gateslot.FailedTests` reads the failure report through `gateslot.FailureReportHeader`, which `gatecli` now takes its header from.
-It reports false unless every failure in the report is a named test of a tier or guard run.
-
-## A time budget
-
-`darn.yaml` gains `verify_budget_min`, defaulting to 30, with category None.
-`loomshed.VerifyBudget` counts from the gate's first arrival.
-Once it is spent, the gate sends one line to the run's parent orch through `orchcli.NotifyParent`.
-The line names the gate, the budget, the current attempt and the latest failed run with its log.
-It goes out at an arrival or, through a timer armed only while a verify command runs, during a long run.
-So it never fires after the gate stopped running.
-
-## A truthful halt when no re-prompt was sent
-
-Shuttle's gate loop could finalize while the failing entry still had re-prompts left.
-That happens when the re-prompt could not be sent, when the pane showed no input box past the bound, or when an entry's wait ran out.
-It also happens when the session ended or the deadline passed first, as when a resumed step attaches to a finished session.
-`GateOutcome.EndedEarly` now carries that cause.
-`shedadapters.gateFailedReason` uses it instead of the attempt count.
-With no re-prompt sent, the reason reads `gate failed its first check and the session was never re-prompted, since <cause>; findings: <path>`.
-With some re-prompts sent, it reads `gate did not pass after N attempts and the run ended with re-prompts left, since <cause>`.
-A spent budget keeps the old wording.
-The attempt count stays the number of re-prompts sent, which is what was made.
+- **Stop at the first failed tier.**
+  `lym gate test` gains `--stop-on-fail`, which ends the call at its first failed or build-blocked run.
+  No later tier, vet or guard run starts, and one stderr line names the failed run and every skipped one.
+  The lint and report steps still run.
+  A run that crashed its test runner in its run and its rerun judged no code, so it stops nothing.
+  The default stays as it was: running past a failed tier is deliberate, so a failure the change did not cause hides no later check.
+  Only the `darn-write` gate key's told and tree-scoped commands add the flag; the landing call and every other key keep the whole call.
+- **Rerun only the failed tests between attempts.**
+  When a failed run's failure report names failed tests alone, the verify gate keeps them.
+  The next attempt first runs those tests alone, one `lym gate test --wait` call per tier with a `-run` pattern.
+  If they fail again, the fixer and the writer get only those findings, and the full command waits.
+  If they pass, or fail naming no test, the full command runs.
+  A timeout, a runner crash, a build error and a failure outside any test keep nothing, so the next attempt runs the full command.
+  `gateslot.FailedTests` reads the report and `gateslot.FailedTestsCall` renders the command.
+- **A time budget.**
+  A new `darn.yaml` key `verify_budget_min` (template default 30, 0 turns it off) sets how long a verify gate may run from its first check.
+  Once spent, the run's parent orch gets one notice naming the gate, the attempt and the failed runs so far.
+  The notice only informs: the attempts go on and `verify_attempts` still bounds them.
+  A timer sends it while a verify command runs, so a single long pass raises it too.
+- **A truthful zero-attempt halt.**
+  `GateOutcome` gains `EndedEarly`, the reason a run ended while its failing entry still had re-prompts left.
+  The causes are a re-prompt that could not be sent, a pane with no input box past the bound, an entry's wait that ran out,
+  and a session or deadline that ended first.
+  The Stuck reason now reads `gate failed its first check and the session was never re-prompted, since <cause>` at zero attempts,
+  and names the attempts made plus the cause otherwise.
+  A gate that spent its budget keeps the old wording.
 
 ## Design decisions
 
-- A spent budget only raises a notice and stops no attempt.
-  `verify_attempts` already bounds the attempts, so stopping on time as well would cut a run that is close to passing.
-  The orch can still pause or cancel the run once it sees the notice.
-  The key is classified `CategoryNone` because it gates nothing.
-- The rerun lives in the gate, not in `lym gate test`.
-  The run records are a domain log no run reads to proceed, so the gate reads the failure report of its own verify log.
-  It keeps the tests in its closure, so a restarted driver starts the budget clock and the kept tests afresh.
-- The rerun call is the one place a site spells tiers and targets.
-  `gateslot.FailedTestsCall` renders it from the gate's own report, and `pattern/PATTERN-gate-slot.md`'s Verified tree section now says so.
-- The flag is added in the darn wiring, so `NewVerifyGate` still runs its told command as it is.
-  Each pass is recorded under the call that ran.
+- The stop-on-fail flag is opt-in per call, not a new default, to keep `lym gate test --upto` and the landing gate reporting every failure.
+- The failed-tests state and the budget clock live in the gate closure, so a restarted driver starts both afresh.
+- A spent budget raises a notice rather than stopping the attempts or handing the run over; the operator decides from the notice.
+- `FailedTestsCall` runs a failed test name in every package of its tier that the call lists, so a name that failed in one package also runs in the others.
+- The `lym gate test` help text no longer carries the line `-C names the run directory, with explicit targets only.`
 
-## Tests
+## To check by hand
 
-- `gateslot.TestFailedTests` and `TestFailedTestsCall` (tier0) cover the report read and the rendered call.
-- `loomshed.TestVerifyBudget` (tier0) covers when the notice goes out.
-- `loomshed.TestVerifyGate_DarnFormRunsTheFailedTestsAloneFirst` (tier1) drives the darn form past a failed run with a stand-in `lym`.
-- A new `TestGateTest_Scenario` subtest (tier1) covers `--stop-on-fail`.
-- New rows cover the reason wording, and `TestGate_RepromptOverPicker` now checks `EndedEarly` for the no-input-box bound.
+No regression check ran for this task, and none of the following was run against a live darn run:
+
+- A Darn-Write verify gate with a failing tier 0 stops there and starts no tier 1.
+- A second attempt after named test failures runs those tests alone first, then the full command once they pass.
+- A gate left running past `verify_budget_min` sends one creel notice to the orch and goes on.
+- A run halted with no gate re-prompt shows the new reason, not `after 0 attempts`.
