@@ -856,9 +856,7 @@
         100
       ],
       "recipe": "darn",
-      "depends_on": [
-        "gate-target-dropped-silently"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #100](https://github.com/Knatte18/loomyard/issues/100).\n\n## What was seen\n\nA beam's Finalize landing ran the gate (tier0 and tier1) on the beam head.\nOne tier0 test of 3463 failed with `UnauthorizedAccessException`, and tier1 passed.\nThe test enumerates the source tree, `bin/` included, while another test running in parallel held a temporary directory under `bin/` with its read permission removed.\nThe failure is a race between two tests of the repository, not a fault of the change being landed.\n\nFinalize wrote `.lym/verify/landing-failure.yaml` and spawned a fixer strand at once, on that single run.\nThe gate's own failure report said that no failing test or error line was read from the tier0 output, so the fixer started without a named cause.\n\n## Workaround\n\nThe orch read the verify log, diagnosed the race and messaged the fixer with the cause.\n\n## Expected behaviour\n\n- Before Finalize spawns a fixer, it reruns the failed tests (or the failed tier) once on the same head.\n  A failure that does not repeat is recorded as flaky in the landing report, and the landing goes on.\n- The gate's failure report names the failing test and its error message when the test runner printed them, instead of reporting that no failing test line was read.\n",
@@ -905,30 +903,6 @@
       "body": "Imported from [issue #104](https://github.com/Knatte18/loomyard/issues/104).\n\nA heddle entry with target claude-file is rendered into both CLAUDE.local.md (Claude Code) and AGENTS.override.md (Codex). The name says Claude only, and there is no way to give an instruction to one agent family alone, although some instructions apply to Codex and not to Claude, or the other way round.\n\nProposal: three file targets.\n\n- claude-file renders into CLAUDE.local.md only.\n- codex-file renders into AGENTS.override.md only.\n- A new shared target (for example agents-file) renders into both.\n\nExisting claude-file entries keep today's behaviour by migrating to the shared target. lym heddle set --help, lym heddle list and HEDDLE.md state which files each file target renders to.",
       "created": "2026-11-11T06:23:00Z",
       "revised": "2026-11-11T06:23:00Z"
-    },
-    {
-      "id": 1291,
-      "handle": "T7",
-      "slug": "gate-target-dropped-silently",
-      "title": "gate test: card gate and explicit target never reach a second test project when tier0 command lacks a targets placeholder",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "gate",
-        "dotnet"
-      ],
-      "issues": [
-        105
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #105](https://github.com/Knatte18/loomyard/issues/105).\n\n## What happened\n\nA card created tests in a second test project (a slow-tests project), but the hub's tier0 command runs only the fast test assembly, and tier1 is empty.\n`lym gate test --gate card --card \u003ccard\u003e`, the batch gate, and an explicit `lym gate test \u003cproject\u003e -- --filter ...` all ran the fast suite instead.\nThe tier0 command holds neither `{targets}` nor `{test_targets}`, so the requested target was silently ignored.\nThe card was committed after only a compile check of the slow-tests project; its tests never ran through any gate route.\nThe tests were later found failing only because an agent ran them through `lym gate test --tier 1 --card \u003ccard\u003e -- --filter ...` by hand.\n\n## Why it is abnormal\n\nA gate that is asked for a named target and cannot pass it to the command reports a pass for different tests, with no warning.\nA card whose tests live outside the configured tier0 assembly gets no verification and nothing says so.\n\n## What to do\n\n- Refuse or warn when a gate or explicit target is requested and the tier command has no `{targets}` or `{test_targets}` placeholder.\n- Warn when a card adds or edits tests in a project that no configured tier command reaches.\n\nProvenance: task `trip-history-transfer`; notes `04-aligner-moving-junction-recovery.md`, `04-aligner-moving-junction.md`.\n",
-      "status": "done",
-      "created": "2026-11-11T06:23:02Z",
-      "revised": "2026-11-11T07:31:26Z",
-      "profile": "light"
     },
     {
       "id": 1293,

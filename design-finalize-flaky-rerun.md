@@ -2,8 +2,6 @@
 
 `finalize-flaky-rerun` · Task · enhancement, landing, gate
 
-Depends on: [`gate-target-dropped-silently`](design-gate-target-dropped-silently.md)
-
 Imported from [issue #100](https://github.com/Knatte18/loomyard/issues/100).
 
 ## What was seen
