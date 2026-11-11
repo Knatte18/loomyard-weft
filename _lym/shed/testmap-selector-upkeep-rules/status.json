@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -198,6 +198,22 @@
       "output": "",
       "at": "2026-11-11T18:14:03Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/testmap-selector-upkeep-rules/_lym/landing/summary.md",
+      "at": "2026-11-11T18:14:39Z",
+      "started_at": "2026-11-11T18:14:04Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T18:14:38.99032673Z",
+          "end": "2026-11-11T18:14:38.990391371Z"
+        }
+      ]
     }
   ],
   "product": {
