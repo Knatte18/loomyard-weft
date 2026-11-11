@@ -1,0 +1,4001 @@
+diff --git a/cmd/lym/uncontainedwrite_test.go b/cmd/lym/uncontainedwrite_test.go
+index 88217037..c12d23bc 100644
+--- a/cmd/lym/uncontainedwrite_test.go
++++ b/cmd/lym/uncontainedwrite_test.go
+@@ -110,7 +110,7 @@ func TestNoUncontainedWrite_FabricengineProductionSource(t *testing.T) {
+ 			for _, tok := range uncontainedWriteBannedTokens {
+ 				if strings.Contains(content, tok) {
+ 					failures = append(failures, fmt.Sprintf(
+-						"%s: contains raw filesystem-write primitive %q — a write to a hub-relative or caller-derived path must route through an os.Root rooted at the hub (see internal/fabricengine/launchers.go's writeLaunchers and hubworkspace_write.go's writeHubWorkspace), or add a uncontainedWriteAllowlist entry in cmd/lym/uncontainedwrite_test.go with a reason if this is a new audited safe site",
++						"%s: contains raw filesystem-write primitive %q — a write to a hub-relative or caller-derived path must route through an os.Root rooted at the hub (see internal/fabricengine/hubworkspace_write.go's writeHubWorkspace), or add a uncontainedWriteAllowlist entry in cmd/lym/uncontainedwrite_test.go with a reason if this is a new audited safe site",
+ 						f.Rel, tok,
+ 					))
+ 				}
+diff --git a/docs/overview.md b/docs/overview.md
+index 232abecb..29d1d5b7 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -84,7 +84,7 @@ the module that constructs each of those owns it.
+ 
+ `Location` carries `RepoName`, `HubPath`, `WorktreeName` and `AnchorRel`, plus the derived accessors `WorktreePath()` and `AnchorPath()`.
+ Every other geometry token is a per-module constructor, joined onto `Location`'s coordinates by the module that owns it.
+-The tokens are records paths, junctions, `_lym/<module>`, launchers and the hub-reserved name set.
++The tokens are records paths, junctions, `_lym/<module>` and the hub-reserved name set.
+ See [PATTERN-cwd-resolution](../pattern/PATTERN-cwd-resolution.md) for the full per-token ownership map.
+ 
+ `lymcwd.Resolve` proves that cwd is the root of a git worktree and nothing more.
+@@ -142,12 +142,11 @@ The two-sided design is documented in `internal/fabricengine`'s package doc.
+   ├── <slug>-<records>/             (records worktree for <slug>; git repo root)
+   ├── _bolt/                       (the Bolt checkout, records main-branch worktree; holds board.json)
+   │     └── .lym/                   (hub-wide machine-local scratch; a real dir, never a junction)
+-  ├── <RepoName>.code-workspace     (the hub's VS Code workspace; lym-owned)
+-  └── _launchers/<anchor>/          (anchor-mirrored)
+-        └── <slug>                  (per-worktree launcher scripts)
++  └── <RepoName>.code-workspace     (the hub's VS Code workspace; lym-owned)
+ ```
+ 
+-`_bolt`, `_launchers` and `_portals` are hub geometry, so none of them can be claimed as a worktree slug.
++`_bolt` is hub geometry, and `_portals` and `_launchers` are retired hub containers, so none of them can be claimed as a worktree slug.
++`lym cleanup` removes what a hub still holds under `_launchers`.
+ The check is `fabricengine.IsReservedHubName`.
+ `.lym` is slug-reserved too, but via `structuralNeverCommittedDirs` rather than as hub geometry.
+ It has no hub-level presence of its own.
+@@ -779,7 +778,8 @@ User-facing modules each get one `lym <module>` namespace:
+ - **cleanup** — the routine cleanups of the hub prime's leftover state, as one verb (`internal/cleanupcli`; `lym cleanup [--apply]`, from the prime and from any beam).
+   Without `--apply` it is a dry run that lists, per segment, what `--apply` would remove.
+   The segments run in order and each calls its owner's own cleanup in-process:
+-  `lym batten cleanup`, `lym board prune`, the orch's handoff cleanup, the `.scratch/` children at the prime's anchor older than 14 days that no open board entry cites, logger's trace retention sweep, and the temp root's sweep of dead owners' run directories.
++  `lym batten cleanup`, `lym board prune`, the orch's handoff cleanup, the `.scratch/` children at the prime's anchor older than 14 days that no open board entry cites, logger's trace retention sweep, the temp root's sweep of dead owners' run directories,
++  and fabric's sweep of the hub's retired `_launchers` directory.
+   A failing segment never stops the later ones.
+   ✅ Implemented. See the `internal/cleanupcli` package documentation.
+ - **adopt** — the takeover of beam projects, or of root, and of the runs under them from another machine of the operator, as one verb (`internal/adoptcli`; `lym adopt <beam>...`, `lym adopt root` and `lym adopt --all`, with `--keep-local` and `--drop-local`, from the prime and from any beam).
+@@ -1701,7 +1701,7 @@ User-facing modules each get one `lym <module>` namespace:
+   That happens when a process is killed before the transition persists.
+   The post-condition is the pair's, not the task worktree's alone:
+   fabric removes the task worktree before its sibling,
+-  so a removal interrupted between the two halves leaves the sibling, its launcher entries and both branches behind.
++  so a removal interrupted between the two halves leaves the sibling and both branches behind.
+   Re-entered there, the row halts `blocked`, naming the leftover and `lym fabric prune --apply` as the remedy.
+   It never reports done over the debris.
+   Teardown first tags the tip of the pair's other-side branch `archive/<slug>/<tip>` and deletes that branch locally.
+diff --git a/docs/sandbox-hub.md b/docs/sandbox-hub.md
+index c7d48657..df616a06 100644
+--- a/docs/sandbox-hub.md
++++ b/docs/sandbox-hub.md
+@@ -41,8 +41,7 @@ Discovery is structural, so it resolves normally;
+ the only degradation is the display name derived from its basename.
+ 
+ It is never renamed in place.
+-The launcher scripts inside it were materialised against its absolute path,
+-and the tmux socket key is derived from that same absolute path,
++The tmux socket key is derived from its absolute path,
+ so moving the directory breaks a working container rather than migrating it.
+ 
+ The `-reset` flag does not reach it.
+diff --git a/docs/shared-libs/lymcwd.md b/docs/shared-libs/lymcwd.md
+index c308d9dc..36985258 100644
+--- a/docs/shared-libs/lymcwd.md
++++ b/docs/shared-libs/lymcwd.md
+@@ -20,7 +20,7 @@ an out-of-allowlist import that creates no cycle compiles fine.
+ The cwd-≠-worktree-root bug recurs because path math is scattered.
+ Each module re-derives the relationship between the worktree root and the cwd ad hoc.
+ A single, minimal resolver makes correctness structural, not a matter of discipline — but it stops there.
+-Every per-module path (records siblings, junctions, `_lym/plan`, launchers) is built by the module that owns it.
++Every per-module path (records siblings, junctions, `_lym/plan`) is built by the module that owns it.
+ The module joins it onto the coordinates `lymcwd` hands back.
+ 
+ ## Exported API
+@@ -114,7 +114,7 @@ see "What moved out" below.
+ 
+ Every per-module durable-storage subdirectory (`_lym/plan`, `_lym/webster`, and the rest) is that module's own private relative-path constant.
+ The owning module joins it onto `AnchorPath()` directly, never through a `lymcwd` function call.
+-Records-sibling paths, junction construction and launcher paths belong to `internal/fabricengine`,
++Records-sibling paths and junction construction belong to `internal/fabricengine`,
+ as do the prime and sibling-worktree lookups they are built from (for example `RecordsWorktree` and `CodeLymLink`).
+ Fabric config (`fabric.yaml`'s `pathspec`) supplies the records-backed junction name-set;
+ that too is `fabricengine`'s concern, never `lymcwd`'s.
+diff --git a/internal/battencli/cancel.go b/internal/battencli/cancel.go
+index bd74bd44..98b95ce0 100644
+--- a/internal/battencli/cancel.go
++++ b/internal/battencli/cancel.go
+@@ -673,7 +673,7 @@ func refuseNothingLeft(slug string, remove, endOnly bool, rerun string, reading
+ 	}
+ 
+ 	otherLeft := recordsHere || boardengine.IsRunStatus(boardStatus) || sessionLive || len(records) > 0 || reading.Present ||
+-		parts.TaskWorktree || parts.RecordsWorktree || parts.RecordsBranch || parts.Launchers
++		parts.TaskWorktree || parts.RecordsWorktree || parts.RecordsBranch
+ 	if otherLeft {
+ 		return nil
+ 	}
+diff --git a/internal/battencli/startguard_test.go b/internal/battencli/startguard_test.go
+index 01eb29f1..5cd664af 100644
+--- a/internal/battencli/startguard_test.go
++++ b/internal/battencli/startguard_test.go
+@@ -206,7 +206,7 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 		{
+ 			name:  "LeftTaskBranchAlonePasses",
+ 			verbs: []string{"run", "step"},
+-			parts: fabricengine.PairParts{TaskBranch: true, Launchers: true},
++			parts: fabricengine.PairParts{TaskBranch: true},
+ 		},
+ 		{
+ 			name:     "LeftPartsDoNotRefuseAResume",
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index f5c71679..ecc4d825 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -326,7 +326,7 @@ func taskWorktreeComplete(prime *lymcwd.Location, slug string) (present, complet
+ 
+ // incompletePairRemedy returns the manual cleanup for a task pair that is not fully created.
+ // Running "lym fabric remove --force" from prime removes whatever part of the pair was created, in one command.
+-// That covers the task worktree, its sibling, their junctions, the launcher entries, and the sibling's branch.
++// That covers the task worktree, its sibling, their junctions and the sibling's branch.
+ // No plain git commands can do that from here, since the sibling is a worktree of another repository.
+ // The remove deletes the task branch when its work is already on another ref.
+ // That is always so for a create interrupted before any work; otherwise the remove keeps the branch.
+@@ -1167,7 +1167,7 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 		// so a process killed right after Remove succeeds re-enters the row with no pair on disk.
+ 		// EndSession's refusal probe then reports ErrPairNotFound, which Shutdown takes as nothing left to shut down.
+ 		// RemovePair reports it again as done.
+-		// The composite finishes a half-removed pair itself (sibling worktree, launcher entries, both branches),
++		// The composite finishes a half-removed pair itself (sibling worktree, both branches),
+ 		// so no such state is refused by name here.
+ 		// EndSession ends the session by name when the task worktree is gone, and runs the refusal probe,
+ 		// so a refusal reaches the row before Remove and leaves the pair in place.
+diff --git a/internal/cleanupcli/cleanup_integration_test.go b/internal/cleanupcli/cleanup_integration_test.go
+index e2d474af..d38d6a61 100644
+--- a/internal/cleanupcli/cleanup_integration_test.go
++++ b/internal/cleanupcli/cleanup_integration_test.go
+@@ -135,9 +135,14 @@ func TestCleanupVerb_RefusesOutsideThePrimeThenListsAndThenRemovesEverySeededLef
+ 	traceFile := filepath.Join(logger.LogsDirAt(anchor), "trace-20260101T000000Z-0123456789abcdef-2147483.log")
+ 	writeAged(t, traceFile, "trace", 3*24*time.Hour)
+ 
++	// launchers: a pair's run script and the menu script under the hub's retired launchers directory.
++	launchersDir := filepath.Join(h.Path, "_launchers")
++	writeAged(t, filepath.Join(launchersDir, "gone-pair", "run.sh"), "#!/usr/bin/env bash\n", 0)
++	writeAged(t, filepath.Join(launchersDir, "ide-menu.sh"), "#!/usr/bin/env bash\n", 0)
++
+ 	assertLeftoversRemain := func(t *testing.T, step string) {
+ 		t.Helper()
+-		for _, path := range []string{runDir, oldHandoff, keptHandoff, scratchChild, traceFile} {
++		for _, path := range []string{runDir, oldHandoff, keptHandoff, scratchChild, traceFile, launchersDir} {
+ 			if !exists(path) {
+ 				t.Errorf("%s: %s was removed", step, path)
+ 			}
+@@ -192,12 +197,15 @@ func TestCleanupVerb_RefusesOutsideThePrimeThenListsAndThenRemovesEverySeededLef
+ 		names = append(names, segment["name"].(string))
+ 		listed[segment["name"].(string)] = segment["listed"].(map[string]any)
+ 	}
+-	if want := []string{"batten", "board", "orch", "scratch", "logs", "temp"}; !slices.Equal(names, want) {
++	if want := []string{"batten", "board", "orch", "scratch", "logs", "temp", "launchers"}; !slices.Equal(names, want) {
+ 		t.Errorf("dry run segments = %v, want %v", names, want)
+ 	}
+ 	if removed := listed["logs"]["removed"].([]any); len(removed) != 1 || removed[0] != traceFile {
+ 		t.Errorf("dry run logs segment lists %v, want the seeded trace group %s", removed, traceFile)
+ 	}
++	if removed := listed["launchers"]["removed"].([]any); len(removed) != 4 || removed[len(removed)-1] != launchersDir {
++		t.Errorf("dry run launchers segment lists %v, want the two scripts, the pair's directory and %s last", removed, launchersDir)
++	}
+ 	assertLeftoversRemain(t, "dry run")
+ 	requireEmptyRecord(t, "dry run", dry, false)
+ 	requireList(t, dry, "failed_pushes")
+@@ -291,7 +299,7 @@ func TestCleanupVerb_RefusesOutsideThePrimeThenListsAndThenRemovesEverySeededLef
+ 	}
+ 	restoreOrigin()
+ 	requireList(t, applied, "failed_pushes")
+-	for _, path := range []string{runDir, oldHandoff, scratchChild, traceFile} {
++	for _, path := range []string{runDir, oldHandoff, scratchChild, traceFile, launchersDir} {
+ 		if exists(path) {
+ 			t.Errorf("--apply left %s", path)
+ 		}
+diff --git a/internal/cleanupcli/cli.go b/internal/cleanupcli/cli.go
+index f5e3b1cb..f664fa89 100644
+--- a/internal/cleanupcli/cli.go
++++ b/internal/cleanupcli/cli.go
+@@ -20,7 +20,7 @@ func Command() *cobra.Command {
+ 	var apply bool
+ 	cmd := &cobra.Command{
+ 		Use:         "cleanup",
+-		Short:       "remove the hub prime's routine leftovers: finished batten runs, done board entries, old handoffs, scratch, logs and temp",
++		Short:       "remove the hub prime's routine leftovers: finished batten runs, done board entries, old handoffs, scratch, logs, temp and launchers",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Without --apply, cleanup is a dry run: it lists, per segment, what --apply would
+ remove, prints "applied": false and changes nothing. With --apply it removes it.
+@@ -43,6 +43,8 @@ Segments, in order, each calling its owner's own cleanup in-process:
+   scratch  old children of the prime's .scratch/ that no open board entry cites
+   logs     trace files past the retention bounds, in the prime and the board
+   temp     temp directories left by dead lym processes
++  launchers the retired _launchers directory: scripts and workspace files
++           fabric wrote there; anything else is kept and listed
+ 
+ Every segment runs even when an earlier one fails; the failing ones are named in
+ the error. Nothing is removed that the segment's own verb would refuse to remove.
+diff --git a/internal/cleanupcli/cli_test.go b/internal/cleanupcli/cli_test.go
+index deb6ee68..a652a4c7 100644
+--- a/internal/cleanupcli/cli_test.go
++++ b/internal/cleanupcli/cli_test.go
+@@ -68,7 +68,7 @@ func TestPrimeSegments(t *testing.T) {
+ 	for _, s := range segments {
+ 		names = append(names, s.name)
+ 	}
+-	if want := []string{"batten", "board", "orch", "scratch", "logs", "temp"}; !slices.Equal(names, want) {
++	if want := []string{"batten", "board", "orch", "scratch", "logs", "temp", "launchers"}; !slices.Equal(names, want) {
+ 		t.Fatalf("segment names = %v, want %v", names, want)
+ 	}
+ 
+diff --git a/internal/cleanupcli/doc.go b/internal/cleanupcli/doc.go
+index b43a7ff4..2a144b69 100644
+--- a/internal/cleanupcli/doc.go
++++ b/internal/cleanupcli/doc.go
+@@ -53,6 +53,9 @@
+ //   - logs: `logger.SweepDir` over the prime's anchor and the Bolt checkout, with the bounds the exit sweep picks.
+ //   - temp: `lymtemp`'s sweep of the dead owners' run directories, failing when the root fails its checks
+ //     or the sweep reports a failure.
++//   - launchers: `fabricengine.SweepRetiredLaunchers` over the hub's retired `_launchers` directory.
++//     It lists what it removes under `removed` and what it leaves in place under `kept`.
++//     A hub without the directory lists nothing.
+ //
+ // # The scratch segment
+ //
+diff --git a/internal/cleanupcli/segments.go b/internal/cleanupcli/segments.go
+index 051c9a98..284047ae 100644
+--- a/internal/cleanupcli/segments.go
++++ b/internal/cleanupcli/segments.go
+@@ -158,5 +158,9 @@ func segmentsOver(location *lymcwd.Location, hubOrchs func(*lymcwd.Location) ([]
+ 			}
+ 			return listed, nil
+ 		}},
++		{name: "launchers", run: func(apply bool) (any, error) {
++			sweep, err := fabricengine.SweepRetiredLaunchers(fabricengine.NewMutations(location.HubPath), location.HubPath, apply)
++			return map[string]any{"removed": sweep.Removed, "kept": sweep.Kept}, err
++		}},
+ 	}
+ }
+diff --git a/internal/fabriccli/adoptremote_integration_test.go b/internal/fabriccli/adoptremote_integration_test.go
+index b79407d3..a74c67a1 100644
+--- a/internal/fabriccli/adoptremote_integration_test.go
++++ b/internal/fabriccli/adoptremote_integration_test.go
+@@ -125,7 +125,6 @@ func requireAdoptedFromOrigin(t *testing.T, h *hubforge.Hub, slug string) {
+ 	for _, path := range []string{
+ 		filepath.Join(weft, weftLockDirName),
+ 		filepath.Join(h.PairCodeWorktree(slug), h.Location.AnchorRel, lymdirs.LymDirName),
+-		h.PairLauncherDir(slug),
+ 	} {
+ 		if _, err := os.Lstat(path); err != nil {
+ 			t.Errorf("%s missing after reconcile: %v", path, err)
+@@ -252,7 +251,6 @@ func TestRunCLI_AdoptRemoteWeftScenario(t *testing.T) {
+ 			for _, path := range []string{
+ 				filepath.Join(weftSibling, weftLockDirName),
+ 				filepath.Join(h.PairCodeWorktree(slug), h.Location.AnchorRel, lymdirs.LymDirName),
+-				h.PairLauncherDir(slug),
+ 			} {
+ 				if _, err := os.Lstat(path); err != nil {
+ 					t.Errorf("%s missing after reconcile: %v", path, err)
+diff --git a/internal/fabriccli/anchor.go b/internal/fabriccli/anchor.go
+index 92872143..a1b472ab 100644
+--- a/internal/fabriccli/anchor.go
++++ b/internal/fabriccli/anchor.go
+@@ -570,7 +570,7 @@ func anchorCommand() *cobra.Command {
+ is the directory of the warp checkout lym works in for it. <slug> names the prime by
+ its worktree name, or a pair present on this machine.
+ 
+-With --set <dir> it moves the worktree's anchor there: its junctions and launchers,
++With --set <dir> it moves the worktree's anchor there: its junctions,
+ and the content of its records branch, which a single commit on that branch re-roots
+ and whose marker names the new directory. <dir> must be a directory the warp checkout
+ tracks, so commit it there first when it is new.
+diff --git a/internal/fabriccli/anchor_integration_test.go b/internal/fabriccli/anchor_integration_test.go
+index 84ca3e9b..463d604f 100644
+--- a/internal/fabriccli/anchor_integration_test.go
++++ b/internal/fabriccli/anchor_integration_test.go
+@@ -89,9 +89,6 @@ func TestRunCLI_Anchor(t *testing.T) {
+ 				t.Errorf("%s at the old anchor: %v; want it gone", name, err)
+ 			}
+ 		}
+-		if _, err := os.Stat(filepath.Join(h.Path, "_launchers", "sub", "mover")); err != nil {
+-			t.Errorf("launcher directory at sub: %v; want it", err)
+-		}
+ 		if again := requireAnchorOK(t, h.PrimeWorktree(), "mover"); again.Raw["anchor"] != "sub" {
+ 			t.Errorf("anchor mover printed after the move = %v; want sub", again.Raw)
+ 		}
+diff --git a/internal/fabriccli/fabric.go b/internal/fabriccli/fabric.go
+index 3a2f5d1f..7fa8c88b 100644
+--- a/internal/fabriccli/fabric.go
++++ b/internal/fabriccli/fabric.go
+@@ -167,8 +167,7 @@ use "lym fabric pairs".`,
+ 		Short:       "destroy a dual warp+weft worktree pair",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `remove tears down a warp+weft worktree pair: both worktrees, the warp
+-junctions (_lym, .lym), the pair's launchers, its reed
+-session and its weft branch. The local task branch is deleted too once its
++junctions (_lym, .lym), its reed session and its weft branch. The local task branch is deleted too once its
+ work is pushed or landed on the parent branch recorded at "lym fabric add";
+ otherwise it is kept, with the reason in code_branch_kept_reason, and the
+ command still exits 0.
+@@ -221,8 +220,7 @@ suffix-paired weft branch, re-pointing junctions in the same operation.
+ 
+ When no branch is given, the current warp branch is re-resolved and used as
+ the target — this performs an in-place re-checkout that re-points junctions
+-and re-syncs the weft side, which is how the fabric-checkout launcher
+-shortcut invokes this command.
++and re-syncs the weft side.
+ 
+ The command refuses before switching anything if the WEFT worktree has
+ uncommitted tracked changes: a half-switched pair is the one state this verb
+@@ -270,11 +268,6 @@ missing, not a link, or points elsewhere, this re-wires every junction for
+ that pair in one call — a pair with only one junction broken is repaired,
+ not reported already-healthy.
+ 
+-It also restores a pair's launcher directory (_launchers/<slug>) when it has
+-gone missing, reporting launchers_restored rather than already_healthy. The
+-hub's prime worktree is skipped: it has no launcher directory, so there is
+-nothing there to repair.
+-
+ It also removes fabric's retired portal links (under _portals) and the old
+ workspace file under _launchers, and keeps anything else found there, naming it
+ under hub_details. Every regeneration of the hub workspace file warns until this
+@@ -304,9 +297,8 @@ warp worktree directory is gone (stale), and a weft worktree with no warp
+ sibling at all (orphaned).
+ 
+ By default this is a dry run: every stale or orphaned pair is reported and
+-nothing is removed. With --apply, each entry's weft worktree is removed, the
+-dead slug's launcher directory is torn down, and stale
+-worktree registrations are pruned on both repos. Branches are never deleted
++nothing is removed. With --apply, each entry's weft worktree is removed and
++stale worktree registrations are pruned on both repos. Branches are never deleted
+ here — orphaned weft branches are "lym fabric cleanup"'s job.
+ 
+ The weft worktree is removed forcefully, so an entry whose weft worktree
+diff --git a/internal/fabriccli/hubmutation_integration_test.go b/internal/fabriccli/hubmutation_integration_test.go
+index 59d0e0aa..ba642756 100644
+--- a/internal/fabriccli/hubmutation_integration_test.go
++++ b/internal/fabriccli/hubmutation_integration_test.go
+@@ -412,62 +412,6 @@ func TestRunCLI_HubMutationScenario(t *testing.T) {
+ 				t.Fatalf("remove the planted _portals directory: %v", err)
+ 			}
+ 		}},
+-		{"Remove_RefusesDriftedLauncherDirLinkWithRefusalObject", func(t *testing.T) {
+-			// A real gate refusal through "fabric remove --force", reached via fabricengine.RefusalOf's contract, not a stub.
+-			// The pair's launcher directory is moved outside the hub and a link is left in its place,
+-			// so the containment check refuses removeLaunchers' first script removal.
+-			// The "refusal" object carries all four keys (check, what, target, reason),
+-			// and the flattened "error" string is still present alongside it.
+-			hubforge.SeedFabricConfig(t, h, "branch_prefix: \"\"\npathspec: \"\"\n")
+-
+-			const slug = "remove-refusal-launcher"
+-			if code, output := runFabric(t, h.PrimeWorktree(), "add", slug); code != 0 {
+-				t.Fatalf("RunCLI(add) = %d; want 0\noutput: %s", code, output)
+-			}
+-
+-			// "fabric add" above wrote the launcher directory; move it, scripts included, outside the hub and leave a link to it where it stood.
+-			launcherDir := h.PairLauncherDir(slug)
+-			movedDir := filepath.Join(t.TempDir(), "moved-launchers")
+-			if err := os.Rename(launcherDir, movedDir); err != nil {
+-				t.Fatalf("move launcher dir outside the hub: %v", err)
+-			}
+-			if err := fslink.CreateDirLink(launcherDir, movedDir); err != nil {
+-				t.Fatalf("create drifted launcher dir link: %v", err)
+-			}
+-
+-			code, output := runFabric(t, h.PrimeWorktree(), "remove", "--force", slug)
+-			if code != 1 {
+-				t.Fatalf("RunCLI(remove) = %d; want 1 (a launcher directory linked outside the hub must be refused)\noutput: %s", code, output)
+-			}
+-
+-			result := envelope.Decode(t, output)
+-			if result.OK {
+-				t.Errorf("RunCLI(remove) ok = true; want false")
+-			}
+-			if result.Error == "" {
+-				t.Errorf("RunCLI(remove) output missing non-empty 'error'; want the flattened error string alongside the refusal object")
+-			}
+-			refusal, ok := result.Raw["refusal"].(map[string]any)
+-			if !ok {
+-				t.Fatalf("RunCLI(remove) output missing 'refusal' object; got %v", result)
+-			}
+-			for _, key := range []string{"check", "what", "target", "reason"} {
+-				val, present := refusal[key]
+-				if !present {
+-					t.Errorf("refusal object missing key %q: %v", key, refusal)
+-					continue
+-				}
+-				if s, _ := val.(string); s == "" {
+-					t.Errorf("refusal[%q] = %q; want a non-empty string", key, s)
+-				}
+-			}
+-			if check, _ := refusal["check"].(string); check != string(fabricengine.CheckContainment) {
+-				t.Errorf("refusal[\"check\"] = %q; want %q", check, fabricengine.CheckContainment)
+-			}
+-			if _, present := result.Raw["mutations"]; !present {
+-				t.Errorf("RunCLI(remove) output missing 'mutations' key on the failure path")
+-			}
+-		}},
+ 		{"PrimePushReportsItsUnpushedCodeBranchAndPushesRecords", func(t *testing.T) {
+ 			// With an unpushed commit on the prime's code branch, "lym fabric push" from the prime exits 0, pushes the records side, leaves the code branch on its bare unchanged, and names the skipped branch in code_push_skipped.
+ 			warpBranch := gitkit.CurrentBranch(t, h.PrimeWorktree())
+diff --git a/internal/fabricengine/add.go b/internal/fabricengine/add.go
+index e97b67ec..aac1b8bb 100644
+--- a/internal/fabricengine/add.go
++++ b/internal/fabricengine/add.go
+@@ -1,4 +1,4 @@
+-// add.go implements Add, which creates a paired warp and weft worktree, wires its junctions and writes its launchers.
++// add.go implements Add, which creates a paired warp and weft worktree and wires its junctions.
+ // A failure after the first worktree is made rolls the whole pair back, best-effort, and never touches origin.
+ // The pre-flight decides, before the first mutation, whether the pair is live and what origin lends it.
+ 
+@@ -197,7 +197,7 @@ func SourceDirtyPaths(l *lymcwd.Location) ([]string, error) {
+ // and a parent that cannot be forked from is refused before any mutation.
+ // A forked pair takes the anchor of its fork point through the marker its weft branch inherits.
+ // The fork point is the named parent, or else the acting worktree.
+-// The pair's launchers, junctions, scratch link and origin record sit at that anchor.
++// The pair's junctions, scratch link and origin record sit at that anchor.
+ // A fork point whose own marker is present but empty is refused before any mutation.
+ // With opts.Anchor naming another directory, the pair takes that anchor instead.
+ // Add validates the anchor against the fork point's warp checkout before any mutation.
+@@ -327,7 +327,7 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 	if err != nil {
+ 		return AddResult{}, err
+ 	}
+-	// pairAt is the Location the new pair's launchers, junctions, scratch link and origin record are built at.
++	// pairAt is the Location the new pair's junctions, scratch link and origin record are built at.
+ 	// An adopted weft branch carries its own anchor,
+ 	// and the adopt step below replaces pairAt with the adopted pair's Location.
+ 	// A pair moved to a requested anchor takes it once the move has committed.
+@@ -644,7 +644,7 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 		t.beforeWire()
+ 	}
+ 
+-	// (10b) Wire the new worktree's warp junctions as soon as the weft worktree exists, ahead of the launchers,
++	// (10b) Wire the new worktree's warp junctions as soon as the weft worktree exists,
+ 	// so a hub reader polling the half-built pair meets a warp worktree without its junction for as little time as possible.
+ 	// The wired name-set comes from the repo-wide BoardDir base (not any per-pair weft base or acting-worktree config):
+ 	// every worktree must converge to the same repo-wide pathspec, as a later checkout's re-point does.
+@@ -660,11 +660,6 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 		return AddResult{}, fmt.Errorf("wire junctions: %w", err)
+ 	}
+ 
+-	if err := writeLaunchers(rec, pairAt, slug); err != nil {
+-		_ = t.rollbackAdd(rec, pairAt, slug, warpBranch, weftBranch, target, weftBranchAlreadyExists, weftReused, warpTok, &warpPush)
+-		return AddResult{}, err
+-	}
+-
+ 	// (10c) Record and commit the pair's provenance now that the pair is fully wired;
+ 	// the caller's push of the weft branch carries this commit to the remote.
+ 	// An adopted weft worktree that already carries the record keeps its parent fields,
+@@ -815,12 +810,6 @@ func (t *Topology) rollbackAdd(rec *Mutations, l *lymcwd.Location, slug, warpBra
+ 		}
+ 	}
+ 
+-	if err := removeLaunchers(rec, l, slug); err != nil {
+-		if firstErr == nil {
+-			firstErr = err
+-		}
+-	}
+-
+ 	removeReq := pathRequest{
+ 		what:      "remove warp worktree",
+ 		container: l.HubPath,
+diff --git a/internal/fabricengine/add_adoptonly_integration_test.go b/internal/fabricengine/add_adoptonly_integration_test.go
+index 448f5e04..54e1b365 100644
+--- a/internal/fabricengine/add_adoptonly_integration_test.go
++++ b/internal/fabricengine/add_adoptonly_integration_test.go
+@@ -50,9 +50,6 @@ func goneLocally(t *testing.T, slug string) *hubforge.Hub {
+ 	dropTaskWorktree(h, slug)
+ 	dropRecordsWorktree(h, slug)
+ 	mustGit(h.PrimeWorktree(), "branch", "-D", slug)
+-	if err := os.RemoveAll(fabricengine.LauncherDir(h.Location, slug)); err != nil {
+-		t.Fatalf("remove the launchers of %s: %v", slug, err)
+-	}
+ 	return h
+ }
+ 
+diff --git a/internal/fabricengine/add_anchor_integration_test.go b/internal/fabricengine/add_anchor_integration_test.go
+index 0b255a75..36780f09 100644
+--- a/internal/fabricengine/add_anchor_integration_test.go
++++ b/internal/fabricengine/add_anchor_integration_test.go
+@@ -75,7 +75,7 @@ func TestAdd_AtAnchor(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	t.Run("A beam added at y has its marker, content, wiring and launcher there and no record", func(t *testing.T) {
++	t.Run("A beam added at y has its marker, content and wiring there and no record", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newAtAnchorHub(t)
+ 		weftRoot := mustRecordsRepoRoot(t, h.Location)
+@@ -90,9 +90,6 @@ func TestAdd_AtAnchor(t *testing.T) {
+ 		if _, err := os.Stat(filepath.Join(h.PairRecordsSibling("beam"), "y", fabricengine.OriginRecordRel())); err != nil {
+ 			t.Errorf("origin record at y: %v; want it", err)
+ 		}
+-		if _, err := os.Stat(filepath.Join(h.Path, "_launchers", "y", "beam")); err != nil {
+-			t.Errorf("launcher directory at y: %v; want it", err)
+-		}
+ 	})
+ 
+ 	t.Run("A fork point with no committed marker is moved from its resolved anchor and gets the marker", func(t *testing.T) {
+diff --git a/internal/fabricengine/add_remoteleftover_integration_test.go b/internal/fabricengine/add_remoteleftover_integration_test.go
+index 7de25196..3eed584a 100644
+--- a/internal/fabricengine/add_remoteleftover_integration_test.go
++++ b/internal/fabricengine/add_remoteleftover_integration_test.go
+@@ -54,7 +54,7 @@ func requireRemoteLeftover(t *testing.T, err error, branch string) *fabricengine
+ 	return leftover
+ }
+ 
+-// requireNothingCreated asserts a refused Add left no worktree or launcher and no local branch.
++// requireNothingCreated asserts a refused Add left no worktree and no local branch.
+ func requireNothingCreated(t *testing.T, h *hubforge.Hub, slug string) {
+ 	t.Helper()
+ 
+@@ -62,7 +62,6 @@ func requireNothingCreated(t *testing.T, h *hubforge.Hub, slug string) {
+ 	for _, p := range []string{
+ 		fabricengine.WorktreePath(l, slug),
+ 		fabricengine.RecordsWorktreePath(l, slug),
+-		fabricengine.LauncherDir(l, slug),
+ 	} {
+ 		if _, err := os.Lstat(p); !os.IsNotExist(err) {
+ 			t.Errorf("%s exists after a refused Add (stat err = %v)", p, err)
+diff --git a/internal/fabricengine/add_rollback_adopt_test.go b/internal/fabricengine/add_rollback_adopt_test.go
+index 3eb10329..1c41e224 100644
+--- a/internal/fabricengine/add_rollback_adopt_test.go
++++ b/internal/fabricengine/add_rollback_adopt_test.go
+@@ -1,7 +1,8 @@
+ // add_rollback_adopt_test.go proves that Add's rollback never deletes a pre-existing (adopted) weft branch.
+ // When Add adopts an existing <slug>-weft branch and then fails at a later step:
+ // the rollback tears down only the worktree Add created; the branch, and any unpushed history it carries, survives.
+-// This test injects a deterministic post-adopt failure, a launcher blocker directory, instead of a network failure.
++// This test injects a deterministic post-adopt failure instead of a network failure.
++// The failure is a real directory where a junction goes.
+ //
+ // Package fabricengine_test, reusing the external-test-package fixture idiom of lifecycle_differential_test.go;
+ // it shares the single TestMain in testmain_test.go.
+@@ -11,7 +12,6 @@ package fabricengine_test
+ import (
+ 	"os"
+ 	"path/filepath"
+-	"runtime"
+ 	"strings"
+ 	"testing"
+ 
+@@ -35,22 +35,17 @@ func mustRecordsRepoRoot(t *testing.T, l *lymcwd.Location) string {
+ 	return root
+ }
+ 
+-// plantLauncherBlocker plants a directory at the pair's ide launcher script path;
+-// so Add fails writing the launcher scripts after the pair's worktrees and weft branch exist.
+-// The rollback's launcher teardown removes the planted directory and the launcher directory.
+-// It returns the planted path.
+-func plantLauncherBlocker(tb testing.TB, l *lymcwd.Location, slug string) string {
++// failAddBeforeWiring makes Add on topology fail once the pair's worktrees and weft branch exist.
++// Before the junctions are wired it plants a real directory where the pair's `_lym` junction goes, which wiring refuses.
++// The failure sends Add through its rollback.
++func failAddBeforeWiring(tb testing.TB, topology *fabricengine.Topology, l *lymcwd.Location, slug string) {
+ 	tb.Helper()
+ 
+-	scriptName := "ide.sh"
+-	if runtime.GOOS == "windows" {
+-		scriptName = "ide.cmd"
+-	}
+-	blocker := filepath.Join(fabricengine.LauncherDir(l, slug), scriptName)
+-	if err := os.MkdirAll(blocker, 0o755); err != nil {
+-		tb.Fatalf("plant launcher blocker %s: %v", blocker, err)
+-	}
+-	return blocker
++	fabricengine.SetBeforeWireForTest(topology, func() {
++		if err := os.MkdirAll(fabricengine.CodeLymLink(l, slug), 0o755); err != nil {
++			tb.Errorf("plant the real directory at the _lym junction of %s: %v", slug, err)
++		}
++	})
+ }
+ 
+ // TestAddRollback_AdoptedWeftBranchSurvives pre-creates a weft branch carrying a unique commit,
+@@ -80,14 +75,13 @@ func TestAddRollback_AdoptedWeftBranchSurvives(t *testing.T) {
+ 	gitkit.MustRun(t, mustRecordsRepoRoot(t, l), "git", "worktree", "remove", seedDir)
+ 
+ 	// Inject a deterministic failure after the adopt:
+-	// a directory at the ide launcher script path makes writeLaunchers fail, triggering rollback.
+-	plantLauncherBlocker(t, l, slug)
+-
++	// a real directory at the _lym junction path makes junction wiring fail, triggering rollback.
+ 	const branchPrefix = "task/"
+ 	warpBranch := branchPrefix + slug
+ 	topology := fabricengine.NewTopology(fabricengine.Config{BranchPrefix: branchPrefix})
++	failAddBeforeWiring(t, topology, l, slug)
+ 	if _, err := topology.Add(l, slug, fabricengine.AddOptions{SkipPush: true}); err == nil {
+-		t.Fatalf("Add should have failed (launcher blocker)")
++		t.Fatalf("Add should have failed (junction blocker)")
+ 	}
+ 
+ 	// The adopted branch survives the rollback, still at its unique commit.
+@@ -155,11 +149,11 @@ func TestAddRollback_LiveWeftFromOrigin(t *testing.T) {
+ 			}
+ 			originTip := gitkit.RevParse(t, h.RecordsBare, weftBranch)
+ 
+-			// A blocker at the ide launcher script path fails Add at writeLaunchers, after the weft branch is taken from origin.
+-			plantLauncherBlocker(t, l, slug)
++			// A blocker at the _lym junction path fails Add at junction wiring, after the weft branch is taken from origin.
++			failAddBeforeWiring(t, h.Topology, l, slug)
+ 
+ 			if _, err := h.Topology.Add(l, slug, fabricengine.AddOptions{}); err == nil {
+-				t.Fatalf("Add should have failed (launcher blocker)")
++				t.Fatalf("Add should have failed (junction blocker)")
+ 			}
+ 
+ 			if got := gitkit.RevParse(t, h.RecordsBare, weftBranch); got != originTip {
+@@ -197,10 +191,10 @@ func TestAddRollback_AdoptedWarpBranchLocalCopyDeleted(t *testing.T) {
+ 	pushCommitToOrigin(t, h.RecordsBare, fabricengine.RecordsBranchName(slug))
+ 	originTip := gitkit.RevParse(t, h.CodeBare, slug)
+ 
+-	plantLauncherBlocker(t, l, slug)
++	failAddBeforeWiring(t, h.Topology, l, slug)
+ 
+ 	if _, err := h.Topology.Add(l, slug, fabricengine.AddOptions{}); err == nil {
+-		t.Fatalf("Add should have failed (launcher blocker)")
++		t.Fatalf("Add should have failed (junction blocker)")
+ 	}
+ 
+ 	if gitkit.BranchExists(t, l.WorktreePath(), slug) {
+@@ -212,7 +206,7 @@ func TestAddRollback_AdoptedWarpBranchLocalCopyDeleted(t *testing.T) {
+ }
+ 
+ // TestAdd_WiresJunctionsEagerly proves a successful Add leaves the new worktree's warp junctions wired immediately.
+-// Add wires them in step 10b, after writeLaunchers and before the warp push.
++// Add wires them in step 10b, before the warp push.
+ // The pair is usable at once: no dormant state and no separate `lym init` step.
+ // Asserts both the repo-wide default junctions (_lym and _extra) resolve to their paired weft
+ // directories.
+diff --git a/internal/fabricengine/addanchor.go b/internal/fabricengine/addanchor.go
+index 399d8127..3b4dad76 100644
+--- a/internal/fabricengine/addanchor.go
++++ b/internal/fabricengine/addanchor.go
+@@ -116,8 +116,7 @@ func stageNewMarker(weftPath, anchor string) error {
+ // An uncommitted move is undone and made again, and a committed one goes on to the wiring.
+ // A failed recovery says to run `lym beam create <slug>` again.
+ // A held move lock is refused with the message that names the change in progress.
+-// An anchor equal to the pair's, or an empty one, rewires the pair's junctions and scratch link.
+-// The pair's launchers are then rewritten, and both steps are idempotent.
++// An anchor equal to the pair's, or an empty one, rewires the pair's junctions and scratch link, which is idempotent.
+ // Any other anchor is refused with the two commands that move the pair and then finish the create.
+ // The record is removed here and no push is spawned, since the create spawns the pair's push next.
+ func (t *Topology) EnsureAnchor(rec *Mutations, pair *lymcwd.Location, anchor string) error {
+@@ -159,8 +158,5 @@ func (t *Topology) EnsureAnchor(rec *Mutations, pair *lymcwd.Location, anchor st
+ 	if err != nil {
+ 		return fmt.Errorf("load the wired names to wire %s: %w", slug, err)
+ 	}
+-	if err := WireJunctionsWith(rec, current, slug, names); err != nil {
+-		return err
+-	}
+-	return writeLaunchers(rec, current, slug)
++	return WireJunctionsWith(rec, current, slug, names)
+ }
+diff --git a/internal/fabricengine/addparent_integration_test.go b/internal/fabricengine/addparent_integration_test.go
+index 73d586de..ecbf9d31 100644
+--- a/internal/fabricengine/addparent_integration_test.go
++++ b/internal/fabricengine/addparent_integration_test.go
+@@ -232,9 +232,6 @@ func TestAdd_FromParentPair(t *testing.T) {
+ 				if _, err := os.Stat(filepath.Join(weftPath, anchor, fabricengine.OriginRecordRel())); err != nil {
+ 					t.Errorf("origin record at %s/%s in the records worktree: %v", anchor, fabricengine.OriginRecordRel(), err)
+ 				}
+-				if _, err := os.Stat(filepath.Join(h.Path, "_launchers", anchor, slug)); err != nil {
+-					t.Errorf("launcher directory under _launchers/%s/%s: %v", anchor, slug, err)
+-				}
+ 			})
+ 		}
+ 	})
+diff --git a/internal/fabricengine/ancestors.go b/internal/fabricengine/ancestors.go
+index 96a55853..b45531d0 100644
+--- a/internal/fabricengine/ancestors.go
++++ b/internal/fabricengine/ancestors.go
+@@ -1,21 +1,15 @@
+-// ancestors.go implements the empty-directory sweeper that prunes empty ancestors of removed worktrees and launchers.
+-// It also holds the containment check that the destructive callers share.
++// ancestors.go holds the containment check that the destructive callers share.
++// It resolves the symlinks in a path's ancestors before it relates the path to its container.
+ 
+ package fabricengine
+ 
+ import (
+ 	"fmt"
+-	"os"
+ 	"path/filepath"
+ 	"strings"
+ )
+ 
+-// refuseUncontainedPath returns an error unless target resolves strictly below container.
+-//
+-// It guards the teardown helpers that delete a path derived by joining a caller-supplied slug onto hub geometry.
+-// Slug validation is the primary defence.
+-// A derived path that has escaped its container would reach os.RemoveAll.
+-// Asserting containment costs far less than being wrong once.
++// containmentFailure returns the reason target does not resolve strictly below container, or nil when it does.
+ //
+ // The comparison resolves the symlinks in both paths before it relates them.
+ // A lexical comparison trusts the nominal path.
+@@ -23,22 +17,6 @@ import (
+ // The final component of target stays unresolved.
+ // A link being removed must be judged where it lives, not where it points.
+ //
+-// The failure is returned as a refusal, not a plain error.
+-// Best-effort callers discard every error that is not a refusal, so a plain error would be swallowed silently.
+-func refuseUncontainedPath(container, target, what string) error {
+-	if err := containmentFailure(container, target); err != nil {
+-		return &destructiveRefusal{
+-			Check:  CheckContainment,
+-			What:   "remove " + what,
+-			Target: target,
+-			Reason: err.Error(),
+-		}
+-	}
+-	return nil
+-}
+-
+-// containmentFailure returns the reason target does not resolve strictly below container, or nil when it does.
+-//
+ // The reason carries no message prefix, so a caller that already names the action does not repeat it.
+ func containmentFailure(container, target string) error {
+ 	resolvedContainer := resolveAncestorSymlinks(container)
+@@ -74,7 +52,7 @@ func containmentPath(path string) string {
+ // resolveAncestorSymlinks returns dir with every symlink in it resolved.
+ //
+ // filepath.EvalSymlinks fails when the leaf of a path is absent.
+-// That is ordinary for a gate target, such as a launcher directory already swept or a hub not yet created.
++// That is ordinary for a gate target, such as a path already removed or a hub not yet created.
+ // So the function resolves the deepest ancestor that exists and joins the missing tail back on.
+ // Every link that is present is still resolved.
+ // A path that cannot be resolved falls back to its cleaned lexical form.
+@@ -92,45 +70,3 @@ func resolveAncestorSymlinks(dir string) string {
+ 	}
+ 	return filepath.Join(resolveAncestorSymlinks(parent), filepath.Base(cleaned))
+ }
+-
+-// pruneEmptyAncestors walks upward from start, removing empty directories up to, but not including, stop.
+-// All errors are silently swallowed, and the walk halts at the first one.
+-// It is idempotent: calling it on an already-pruned tree is safe.
+-//
+-// Removal goes through an os.Root opened at stop.
+-// A component that escapes stop is refused by the OS rather than followed.
+-// Callers walk a hub-level container that an attacker can plant a link in, so the nominal path is not trusted.
+-func pruneEmptyAncestors(start, stop string) {
+-	root, err := os.OpenRoot(stop)
+-	if err != nil {
+-		// The stop directory is gone or cannot be opened, so there is nothing above start left to prune.
+-		return
+-	}
+-	defer func() { _ = root.Close() }()
+-
+-	cur := start
+-	for {
+-		// Boundary guard: cur must still be strictly under stop.
+-		// The check is lexical because it only ends the loop; the removal below refuses any escape.
+-		// A lexical comparison can stop the walk early, but it cannot widen it.
+-		rel, err := filepath.Rel(stop, cur)
+-		if err != nil {
+-			// The paths cannot be related, so the walk stops here.
+-			return
+-		}
+-
+-		if rel == "." || strings.HasPrefix(rel, "..") {
+-			return
+-		}
+-
+-		// Remove through the root deletes a single entry, so the OS refuses a non-empty directory.
+-		// A component that escapes stop is refused rather than followed.
+-		// A final-component link is unlinked as a link, since os.Root never follows the last component.
+-		if err := root.Remove(rel); err != nil {
+-			// Any failure halts the walk, including a directory that is not empty.
+-			return
+-		}
+-
+-		cur = filepath.Dir(cur)
+-	}
+-}
+diff --git a/internal/fabricengine/ancestors_test.go b/internal/fabricengine/ancestors_test.go
+deleted file mode 100644
+index 2fce78e4..00000000
+--- a/internal/fabricengine/ancestors_test.go
++++ /dev/null
+@@ -1,235 +0,0 @@
+-// ancestors_test.go tests the pruneEmptyAncestors helper.
+-
+-package fabricengine
+-
+-import (
+-	"os"
+-	"path/filepath"
+-	"testing"
+-
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-)
+-
+-// TestPruneEmptyAncestors tests the pruneEmptyAncestors helper with various scenarios:
+-// empty ancestors removed to stop; non-empty dirs halt the walk; start == stop is a no-op;
+-// and idempotency on already-pruned trees.
+-func TestPruneEmptyAncestors(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	tests := []struct {
+-		name   string
+-		setup  func(t *testing.T, tempDir string) (start, stop string)
+-		verify func(t *testing.T, tempDir string, start, stop string)
+-	}{
+-		{
+-			name: "PruneEmptyAncestorsUpToStop",
+-			setup: func(t *testing.T, tempDir string) (start, stop string) {
+-				// Create a tree: tempDir/_portals/a/b/c/slug
+-				// start = tempDir/_portals/a/b/c/slug
+-				// stop = tempDir/_portals
+-				// Expected: a/b/c/slug removed; _portals remains
+-				stop = filepath.Join(tempDir, "_portals")
+-				start = filepath.Join(stop, "a", "b", "c", "slug")
+-				if err := os.MkdirAll(start, 0o755); err != nil {
+-					t.Fatalf("mkdir: %v", err)
+-				}
+-				return
+-			},
+-			verify: func(t *testing.T, tempDir string, start, stop string) {
+-				if _, err := os.Stat(start); err == nil {
+-					t.Error("start dir still exists")
+-				} else if !os.IsNotExist(err) {
+-					t.Fatalf("stat start: %v", err)
+-				}
+-
+-				for _, subpath := range []string{"a", "a/b", "a/b/c"} {
+-					dir := filepath.Join(stop, subpath)
+-					if _, err := os.Stat(dir); err == nil {
+-						t.Errorf("intermediate dir %s still exists", subpath)
+-					} else if !os.IsNotExist(err) {
+-						t.Fatalf("stat %s: %v", subpath, err)
+-					}
+-				}
+-
+-				if _, err := os.Stat(stop); err != nil {
+-					t.Errorf("stop dir was removed: %v", err)
+-				}
+-			},
+-		},
+-		{
+-			name: "NonEmptyIntermediateHaltsWalk",
+-			setup: func(t *testing.T, tempDir string) (start, stop string) {
+-				// Create a tree: tempDir/_portals/a/b/c/slug with a file in a/b
+-				// start = tempDir/_portals/a/b/c/slug
+-				// stop = tempDir/_portals
+-				// Expected: c/slug removed, but a/b survives because it has a file
+-				stop = filepath.Join(tempDir, "_portals")
+-				start = filepath.Join(stop, "a", "b", "c", "slug")
+-				if err := os.MkdirAll(start, 0o755); err != nil {
+-					t.Fatalf("mkdir: %v", err)
+-				}
+-
+-				// Add a file to a/b to make it non-empty
+-				filePath := filepath.Join(stop, "a", "b", "keepme.txt")
+-				if err := os.WriteFile(filePath, []byte("content"), 0o644); err != nil {
+-					t.Fatalf("write file: %v", err)
+-				}
+-
+-				return
+-			},
+-			verify: func(t *testing.T, tempDir string, start, stop string) {
+-				if _, err := os.Stat(start); err == nil {
+-					t.Error("start dir still exists")
+-				} else if !os.IsNotExist(err) {
+-					t.Fatalf("stat start: %v", err)
+-				}
+-
+-				// Check that a/b/c is gone (c is empty after slug is removed)
+-				cDir := filepath.Join(stop, "a", "b", "c")
+-				if _, err := os.Stat(cDir); err == nil {
+-					t.Error("a/b/c still exists")
+-				} else if !os.IsNotExist(err) {
+-					t.Fatalf("stat c: %v", err)
+-				}
+-
+-				// Check that a/b survives (it has keepme.txt)
+-				bDir := filepath.Join(stop, "a", "b")
+-				if _, err := os.Stat(bDir); err != nil {
+-					t.Errorf("a/b was removed: %v", err)
+-				}
+-
+-				// Check that a remains (it's not empty because it contains b)
+-				aDir := filepath.Join(stop, "a")
+-				if _, err := os.Stat(aDir); err != nil {
+-					t.Errorf("a was removed: %v", err)
+-				}
+-			},
+-		},
+-		{
+-			name: "StartEqualStopIsNoop",
+-			setup: func(t *testing.T, tempDir string) (start, stop string) {
+-				// Create a tree and then try to prune from the root itself
+-				stop = filepath.Join(tempDir, "_portals")
+-				if err := os.MkdirAll(stop, 0o755); err != nil {
+-					t.Fatalf("mkdir: %v", err)
+-				}
+-				start = stop
+-				return
+-			},
+-			verify: func(t *testing.T, tempDir string, start, stop string) {
+-				if _, err := os.Stat(stop); err != nil {
+-					t.Errorf("stop dir was removed: %v", err)
+-				}
+-			},
+-		},
+-		{
+-			name: "IdempotentOnAlreadyPruned",
+-			setup: func(t *testing.T, tempDir string) (start, stop string) {
+-				// Create a tree, prune it, then prune again
+-				stop = filepath.Join(tempDir, "_portals")
+-				start = filepath.Join(stop, "a", "b", "c")
+-				if err := os.MkdirAll(start, 0o755); err != nil {
+-					t.Fatalf("mkdir: %v", err)
+-				}
+-
+-				pruneEmptyAncestors(start, stop)
+-
+-				return
+-			},
+-			verify: func(t *testing.T, tempDir string, start, stop string) {
+-				pruneEmptyAncestors(start, stop)
+-
+-				if _, err := os.Stat(stop); err != nil {
+-					t.Errorf("stop dir was removed on second prune: %v", err)
+-				}
+-
+-				if _, err := os.Stat(start); err == nil {
+-					t.Error("start dir still exists after second prune")
+-				} else if !os.IsNotExist(err) {
+-					t.Fatalf("stat start on second prune: %v", err)
+-				}
+-			},
+-		},
+-	}
+-
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			tempDir := t.TempDir()
+-			start, stop := tt.setup(t, tempDir)
+-			pruneEmptyAncestors(start, stop)
+-			tt.verify(t, tempDir, start, stop)
+-		})
+-	}
+-}
+-
+-// TestRefuseUncontainedPath asserts that a path escaping its container is refused, including paths derived from "..".
+-//
+-//testtiming:keep the containment assertion shared by the launcher teardown helpers refusing ".."-derived paths that once let `lym fabric remove ..` delete a hub; coverage of its blocks by other tests does not show an assertion of this
+-func TestRefuseUncontainedPath(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	const container = "/hub/_launchers"
+-
+-	tests := []struct {
+-		name    string
+-		target  string
+-		wantErr bool
+-	}{
+-		{"direct child", "/hub/_launchers/my-task", false},
+-		{"nested child", "/hub/_launchers/backend/my-task", false},
+-		{"the container itself", "/hub/_launchers", true},
+-		{"the container's parent", "/hub", true},
+-		{"escaping sibling", "/hub/_portals/my-task", true},
+-		{"unrelated absolute path", "/etc", true},
+-	}
+-
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-
+-			err := refuseUncontainedPath(container, filepath.Clean(tt.target), "launcher dir")
+-			if tt.wantErr && err == nil {
+-				t.Errorf("refuseUncontainedPath(%q, %q) = nil; want an error", container, tt.target)
+-			}
+-			if !tt.wantErr && err != nil {
+-				t.Errorf("refuseUncontainedPath(%q, %q) = %v; want nil", container, tt.target, err)
+-			}
+-		})
+-	}
+-}
+-
+-// TestPruneEmptyAncestors_RefusesEscapingIntermediate proves the sweep's removal is rooted at stop
+-// rather than acting on the nominal path.
+-//
+-// A symlink planted at an intermediate component must not carry the removal out of the hub.
+-// The attacker-plantable containers are the hub-level <hub>/_launchers and <hub>/_portals.
+-// The OS refuses to remove a non-empty directory, so only an empty out-of-container directory can be destroyed;
+-// the victim below is empty, so a nominal removal would succeed on it.
+-// This assertion is therefore real rather than a vacuous OS refusal.
+-//
+-//testtiming:keep the empty-ancestor sweep refusing a symlinked intermediate that escapes the hub, with an empty out-of-container victim that survives; coverage of its blocks by other tests does not show an assertion of this
+-func TestPruneEmptyAncestors_RefusesEscapingIntermediate(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	stop := t.TempDir()
+-	outside := t.TempDir()
+-
+-	victim := filepath.Join(outside, "api")
+-	if err := os.MkdirAll(victim, 0o755); err != nil {
+-		t.Fatalf("mkdir victim: %v", err)
+-	}
+-	if err := os.Symlink(outside, filepath.Join(stop, "services")); err != nil {
+-		t.Skipf("symlink unsupported on this platform: %v", err)
+-	}
+-
+-	// start is <stop>/services/api, whose `services` component escapes the container.
+-	pruneEmptyAncestors(filepath.Join(stop, "services", "api"), stop)
+-
+-	if _, err := os.Stat(victim); err != nil {
+-		t.Errorf("pruneEmptyAncestors() destroyed the out-of-container directory at %s: %v; want it untouched", victim, err)
+-	}
+-	if _, err := os.Lstat(filepath.Join(stop, "services")); err != nil {
+-		t.Errorf("pruneEmptyAncestors() removed the planted link at %s: %v; want the walk to halt on the refusal instead", filepath.Join(stop, "services"), err)
+-	}
+-}
+diff --git a/internal/fabricengine/anchorchange.go b/internal/fabricengine/anchorchange.go
+index 260b14af..26352370 100644
+--- a/internal/fabricengine/anchorchange.go
++++ b/internal/fabricengine/anchorchange.go
+@@ -370,7 +370,7 @@ func writeMoveRecordFile(weftPath string, record MoveRecord) error {
+ 
+ // Apply carries the change out.
+ // It unwires the pair at the old anchor, moves or integrates the weft, then wires it at the new anchor.
+-// The wiring writes the launchers and regenerates the workspace files at the new anchor.
++// The wiring regenerates the workspace files at the new anchor.
+ // landed reports whether the weft's commit or branch move happened, which decides what a re-run does.
+ //
+ // A failure before the weft is committed or its branch moved returns landed false.
+@@ -530,54 +530,16 @@ func (c *AnchorChange) rollback(rec *Mutations, cause error) error {
+ }
+ 
+ // wireAtTarget wires the pair at the new anchor:
+-// its junctions and scratch link, its launchers, and the hub and beam workspace files.
+-// A pair with a launcher directory at the old anchor has it written at the new one and removed from the old.
+-// The prime has none, and loses the menu launcher of the old anchor instead.
++// its junctions and scratch link, and the hub and beam workspace files.
+ func (c *AnchorChange) wireAtTarget(rec *Mutations) error {
+-	slug := c.pair.WorktreeName
+-	source, target := c.locationAt(c.from), c.locationAt(c.to)
+-	if err := WireJunctionsWith(rec, target, slug, c.names); err != nil {
+-		return err
+-	}
+-	prime, err := IsPrimeWorktree(source)
+-	if err != nil {
++	target := c.locationAt(c.to)
++	if err := WireJunctionsWith(rec, target, c.pair.WorktreeName, c.names); err != nil {
+ 		return err
+ 	}
+-	if prime {
+-		if err := removeMenuLauncher(rec, source); err != nil {
+-			return err
+-		}
+-	} else if _, err := os.Stat(LauncherDir(source, slug)); err == nil {
+-		if err := writeLaunchers(rec, target, slug); err != nil {
+-			return err
+-		}
+-		if err := removeLaunchers(rec, source, slug); err != nil {
+-			return err
+-		}
+-	}
+-	_, err = RegenerateHubWorkspace(rec, target)
++	_, err := RegenerateHubWorkspace(rec, target)
+ 	return err
+ }
+ 
+-// removeMenuLauncher removes the menu launcher of l's anchor, which opens the prime at that anchor.
+-// An absent launcher is no error, and the emptied launcher directories above it go too.
+-func removeMenuLauncher(rec *Mutations, l *lymcwd.Location) error {
+-	menu := menuLauncherPath(l)
+-	req := pathRequest{
+-		what:      "remove the menu launcher of the old anchor",
+-		container: launchersDir(l),
+-		target:    menu,
+-		ownership: ownedUnderGeometryRoot(launchersDir(l)),
+-		dirtiness: dirtinessNA("launcher scripts are generated artifacts, never edited content"),
+-		force:     false,
+-	}
+-	if err := removePath(rec, req); err != nil {
+-		return fmt.Errorf("remove the menu launcher %s: %w", menu, err)
+-	}
+-	pruneEmptyAncestors(filepath.Dir(menu), launchersDir(l))
+-	return nil
+-}
+-
+ // Finish ends the change: it removes the record and spawns the detached push of the pair's commit.
+ // A failed spawn is returned after the record is gone, and the next push of the pair carries the commit.
+ // Finish does nothing for a change with nothing to do.
+diff --git a/internal/fabricengine/anchorchange_integration_test.go b/internal/fabricengine/anchorchange_integration_test.go
+index 81ad10ea..67afc378 100644
+--- a/internal/fabricengine/anchorchange_integration_test.go
++++ b/internal/fabricengine/anchorchange_integration_test.go
+@@ -207,7 +207,7 @@ func TestAnchorChange(t *testing.T) {
+ 	t.Parallel()
+ 	const mover = "mover"
+ 
+-	t.Run("A pair moves to sub with its content, wiring, launcher and workspace entry", func(t *testing.T) {
++	t.Run("A pair moves to sub with its content, wiring and workspace entry", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newAnchorHub(t)
+ 		hubforge.AddPair(t, h, mover)
+@@ -233,12 +233,6 @@ func TestAnchorChange(t *testing.T) {
+ 		if got, err := os.ReadFile(filepath.Join(weft, "sub", lymdirs.DotLymDirName, "kept.txt")); err != nil || string(got) != "kept\n" {
+ 			t.Errorf("sub/.lym/kept.txt = (%q, %v); want the file moved with .lym", got, err)
+ 		}
+-		if _, err := os.Stat(filepath.Join(h.Path, "_launchers", "sub", mover)); err != nil {
+-			t.Errorf("launcher directory at sub: %v; want it", err)
+-		}
+-		if _, err := os.Stat(filepath.Join(h.Path, "_launchers", mover)); !os.IsNotExist(err) {
+-			t.Errorf("launcher directory at the old anchor: %v; want it gone", err)
+-		}
+ 		workspace, err := os.ReadFile(fabricengine.HubWorkspacePath(h.Location))
+ 		if err != nil || !strings.Contains(string(workspace), mover+"/sub") {
+ 			t.Errorf("hub workspace file = (%q, %v); want it to name %s/sub", workspace, err, mover)
+diff --git a/internal/fabricengine/destroy.go b/internal/fabricengine/destroy.go
+index 473b8957..20c25647 100644
+--- a/internal/fabricengine/destroy.go
++++ b/internal/fabricengine/destroy.go
+@@ -574,7 +574,6 @@ func resolvePathOwnership(own pathOwnership, target string) (ok bool, reason str
+ 
+ 	case pathOwnershipUnderGeometryRoot:
+ 		// A fabric geometry root is a directory whose base name is launchersDirName or portalsDirName.
+-		// The value launchersDir returns is one such root.
+ 		// A root outside that set is refused, so a call site cannot satisfy this check by naming a convenient parent.
+ 		//
+ 		// The base-name test runs against the resolved root, not the nominal one, as pathAtOrBelow does.
+diff --git a/internal/fabricengine/destroy_containment_toctou_integration_test.go b/internal/fabricengine/destroy_containment_toctou_integration_test.go
+deleted file mode 100644
+index 7c613691..00000000
+--- a/internal/fabricengine/destroy_containment_toctou_integration_test.go
++++ /dev/null
+@@ -1,61 +0,0 @@
+-// destroy_containment_toctou_integration_test.go runs the real `remove` verb end to end.
+-// It replaces the per-slug launcher directory with a symlink that points outside the hub.
+-// It checks that the removal never deletes a file outside the hub through that symlink.
+-// It is in package fabricengine_test to reuse the shared TestMain.
+-
+-package fabricengine_test
+-
+-import (
+-	"os"
+-	"path/filepath"
+-	"testing"
+-
+-	"github.com/Knatte18/loomyard/internal/fabricengine"
+-	"github.com/Knatte18/loomyard/internal/hubforge"
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-)
+-
+-// TestRemove_DoesNotDeleteOutsideHubThroughLauncherSymlink builds a real pair.
+-// It replaces the launcher directory with a symlink that escapes the hub, then runs `remove --force`.
+-// It asserts that the outside files the symlink points at are preserved.
+-// The gated removal must never follow the escaping segment out of the hub.
+-func TestRemove_DoesNotDeleteOutsideHubThroughLauncherSymlink(t *testing.T) {
+-	tiergate.Require(t, 1)
+-	t.Parallel()
+-
+-	const slug = "toctou-launcher"
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	l := h.Location
+-
+-	topology := h.Topology
+-	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true})
+-
+-	// Build an out-of-hub directory that holds the file names removeLaunchers targets,
+-	// so any follow-through by the removal would delete them.
+-	outside := t.TempDir()
+-	canaries := []string{"ide.sh", "fabric-checkout.sh", "run.sh"}
+-	for _, name := range canaries {
+-		if err := os.WriteFile(filepath.Join(outside, name), []byte("PRECIOUS"), 0o644); err != nil {
+-			t.Fatalf("seed outside canary %s: %v", name, err)
+-		}
+-	}
+-
+-	// Replace the real per-slug launcher directory with a symlink that escapes the hub.
+-	// The directory is an intermediate segment of every launcher-script gate target,
+-	// so the symlink is live at removal time.
+-	launcherDir := fabricengine.LauncherDir(l, slug)
+-	if err := os.RemoveAll(launcherDir); err != nil {
+-		t.Fatalf("remove real launcher dir: %v", err)
+-	}
+-	if err := os.Symlink(outside, launcherDir); err != nil {
+-		t.Fatalf("plant escaping launcher symlink: %v", err)
+-	}
+-
+-	_, _ = topology.Remove(l, slug, true, false)
+-
+-	for _, name := range canaries {
+-		if _, err := os.Stat(filepath.Join(outside, name)); err != nil {
+-			t.Fatalf("outside file %s was deleted through the escaping launcher symlink: %v", name, err)
+-		}
+-	}
+-}
+diff --git a/internal/fabricengine/destroy_test.go b/internal/fabricengine/destroy_test.go
+index 779018fa..35a994dd 100644
+--- a/internal/fabricengine/destroy_test.go
++++ b/internal/fabricengine/destroy_test.go
+@@ -145,7 +145,7 @@ func TestGate_Containment(t *testing.T) {
+ 		assertRefusalCheck(t, err, CheckOwnership)
+ 	})
+ 
+-	// refuseUncontainedPath resolves through filepath.Rel, which is separator-native.
++	// containmentFailure resolves through filepath.Rel, which is separator-native.
+ 	// A backslash therefore escapes the container only on Windows, where it is a path separator.
+ 	// Each subtest asserts the result that is correct for the separator it names, on the OS the test runs.
+ 	t.Run("EscapeWithForwardSlash", func(t *testing.T) {
+@@ -369,7 +369,7 @@ func TestGate_ZeroValueDeclarationsAreRefusals(t *testing.T) {
+ 
+ 	t.Run("WellFormedRequestOnAnAbsentTargetIsStillANoOpSuccess", func(t *testing.T) {
+ 		// A well-formed request on an absent target must still succeed as a no-op.
+-		// The idempotent teardown sites rely on this: removeLaunchers and Remove's already-absent weft worktree.
++		// The idempotent teardown sites rely on this: Remove's already-absent weft worktree.
+ 		container := t.TempDir()
+ 		req := pathRequest{
+ 			what:      "test",
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 3839235a..6f87b4f9 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -167,7 +167,7 @@
+ // Every scope reads the ended set from origin's fetched Bolt tip and its history before any replay.
+ // It drops each run this machine's own landing has reached.
+ // `reconcileEnded` then applies the removal to each of those runs that has a batten run record here.
+-// An entry with a local part of its pair, its worktree paths, launchers or branches, goes to `OriginSeams.Teardown`.
++// An entry with a local part of its pair, its worktree paths or branches, goes to `OriginSeams.Teardown`.
+ // The `EndedTeardown` names the slug and whether `SnapshotTagged` finds the snapshot tag a force-case run left.
+ // An ended entry with no local part is reported with no teardown and no network call.
+ // The report's `Summary` leaves it out.
+@@ -721,7 +721,7 @@
+ // `Remove` tags the pair's local weft tip `archive/<slug>/<tip>` (`tagWeftTipForArchive`) before its first mutation.
+ // The tag comes after its refusals, the no-force dirtiness checks and their status probes among them.
+ // It keeps the run records on the weft branch reachable once the branch is deleted.
+-// A failed tag returns its error with the worktrees, launchers and both branches still in place.
++// A failed tag returns its error with the worktrees and both branches still in place.
+ // A plain re-run retries it;
+ // `force` and `remote` never skip it,
+ // and a weft repo with no origin proceeds untagged with `ArchiveSkippedReason` set.
+@@ -752,7 +752,7 @@
+ // only changes outside that pathspec refuse without `force`.
+ // `Topology.RemoveRefusal` is the read-only probe of every refusal `Remove` raises before its first mutation.
+ // `Topology.PairParts` is the read-only, network-free reading of which parts of a pair are left locally.
+-// The parts are the task worktree, records worktree, records branch, task branch and launchers.
++// The parts are the task worktree, records worktree, records branch and task branch.
+ // A stray path at the task worktree's location counts as a part too.
+ // It is made from the same `inspectPair` `Remove` uses.
+ // `Topology.PairTaskBranch` reads the warp branch a pair stands on from the pair itself, in this order:
+@@ -1534,8 +1534,8 @@
+ // **Why containment resolves symlinks, and why it stops short of the final component**.
+ // A lexical check, `filepath.Rel` over the nominal strings, compares spellings.
+ // Every destructive primitive acts on the inode those spellings resolve to.
+-// Under a lexical check, a symlink planted at `<Hub>/_launchers/<slug>` passes the gate.
+-// `removeLaunchers`' `removePath` then deletes files outside the hub and reports `ok:true`.
++// Under a lexical check, a symlink planted at an intermediate segment of a gate target passes the gate.
++// `removePath` then deletes files outside the hub and reports `ok:true`.
+ // The mutation record names hub-relative paths that were never the inodes removed.
+ // Both sides therefore go through `filepath.EvalSymlinks` (`ancestors.go`'s `resolveAncestorSymlinks`).
+ // An ancestor-walk fallback covers the ordinary case of a target that does not exist yet.
+@@ -1561,7 +1561,7 @@
+ // That is a larger claim about every future call path than the residual risk warrants.
+ //
+ // **The gate's containment check, by contrast, is bound to its act**.
+-// The check resolves symlinks at one instant (`refuseUncontainedPath`, `containmentPath`).
++// The check resolves symlinks at one instant (`containmentFailure`, `containmentPath`).
+ // A symlink planted at an intermediate segment of a gate target can be dangling when the check runs.
+ // It can then flip to live and escaping before the executor's `os.Lstat`+unlink.
+ // A gated `remove --force` would then delete outside the hub and report it as (partial) success.
+@@ -1601,17 +1601,13 @@
+ // The operation is still never reported as success and never leaves the target a dangling out-of-hub symlink.
+ // This is the create-side twin of the delete-side guarantee.
+ //
+-// **The hub-level container writer binds its writes to a rooted act the same way**.
+-// `writeLaunchers` (launchers.go) writes into `<hub>/_launchers/<AnchorRel>/<slug>`.
+-// That is a hub-level structural container, not a freshly created worktree.
+-// A raw `os.MkdirAll`+`os.WriteFile` would resolve and follow the container path itself.
+-// A static symlink planted at the `<slug>` leaf or the `_launchers` container needs no race and no observation.
+-// It would carry executable launcher content outside the hub.
+-// `add` would report `ok:true` with a mutation record naming a hub-relative path the bytes never reached.
+-// `writeLaunchers` therefore writes through an `os.Root` rooted at `l.HubPath`.
+-// That is the true containment boundary, since `_launchers` is never legitimately a symlink.
+-// Any component escaping the hub is refused at write time.
+-// `writeHubWorkspace` (hubworkspace_write.go) writes the hub workspace file the same way.
++// **The hub-level writer binds its writes to a rooted act the same way**.
++// `writeHubWorkspace` (hubworkspace_write.go) writes the hub workspace file directly under the hub.
++// A raw `os.WriteFile` would resolve and follow the file's path itself.
++// A static symlink planted there needs no race and no observation, and it would carry the write outside the hub.
++// The verb would report `ok:true` with a mutation record naming a hub-relative path the bytes never reached.
++// `writeHubWorkspace` therefore writes through an `os.Root` rooted at the hub,
++// and any component escaping the hub is refused at write time.
+ // The remaining raw writes in the package are not this class.
+ // Some target a git-owned `.git/…` path.
+ // The others target a worktree or board directory that a contained minter created in the same call.
+@@ -1620,32 +1616,6 @@
+ // Each is an allowlisted entry with a stated reason in the write-side guard, which PATTERN-fabric-boundary describes.
+ // `TestNoUncontainedWrite_FabricengineProductionSource` in `cmd/lym/uncontainedwrite_test.go` enforces the guard.
+ //
+-// **The launcher teardown path is rooted end to end**.
+-// `removeLaunchers`' launcher-directory removal runs the gate's `checkPathRequest`.
+-// It then calls `removeContainedPath` directly with `recursive` false.
+-// It cannot use `removePath`, whose directory branch is `RemoveAll`.
+-// That would destroy operator content beside the launchers.
+-// The non-recursive branch is `os.Root.Remove`, which the OS refuses on a non-empty directory.
+-// The neighbours are preserved, and the unlink is one rooted `openat` chain.
+-// `pruneEmptyAncestors` runs immediately after on both teardown paths.
+-// It removes through a root at the sweep's stop directory.
+-// Otherwise a symlink at an intermediate segment of a multi-segment `AnchorRel` redirects the removal out of the hub.
+-// Its lexical `filepath.Rel` is only the loop's termination condition; it can stop the walk early but never widen it.
+-// Neither `launchers.go` nor `ancestors.go` is on the destructive guard's allowlist,
+-// so a raw removal introduced in either fails the guard.
+-//
+-// `refuseUncontainedPath` is the pre-gate guard the teardown helper opens with.
+-// It returns the gate's own `*destructiveRefusal` type.
+-// Every best-effort call site (`Remove`, `Prune`) wraps the call in `surfaceRefusal`.
+-// `surfaceRefusal` discards anything that is not a `*destructiveRefusal`.
+-// A bare error would be dropped.
+-// A static symlink at the `_launchers` container would make the teardown refuse correctly.
+-// `lym fabric remove` would still report `ok:true`, `partial:false` and exit 0.
+-// The launcher scripts would remain on disk, with no reason for the operator to reach for `reconcile`.
+-// With the gate's type, every site propagates the refusal and `RefusalOf` answers for it.
+-// A refusal's type is part of its contract.
+-// A check that refuses correctly in a type the best-effort wrapper drops is, to the operator, no check at all.
+-//
+ // **Why the token-carrying ownership kinds exist, and the limit of what backs them**.
+ // `ownedFreshlyCreatedPath` and `ownedFreshlyCreatedWorktree` let a rollback site prove something specific:
+ // the gate itself created the target, moments ago, in this same call.
+@@ -1691,6 +1661,19 @@
+ // It lists the folders only after taking the lock, so a pair created while the regeneration waits is listed.
+ // The write goes through an `os.Root` at the hub, so a symlink planted at the file's path that escapes the hub is refused.
+ //
++// # The retired launchers container
++//
++// Fabric once wrote launcher scripts under `<hub>/_launchers/<anchor>/`.
++// A pair had an `ide`, a `run` and a `fabric-checkout` script, and an anchor had an `ide-menu` script.
++// Each script was a `.sh` or a `.cmd`.
++// The hub workspace file was also written there before it moved to the hub dir.
++// No verb writes there now, and no pair verb removes it.
++// `SweepRetiredLaunchers` removes what a hub still holds, and `lym cleanup` runs it as its `launchers` segment.
++// It removes those script names and `.code-workspace` files, then each directory that empties, the container last.
++// Anything else under the container, a link included, is kept and named, with the directories above it.
++// Every removal goes through the gate under the container, non-recursively and without following a link.
++// The name stays in `HubReservedNames`, so no pair can take the container's path while a hub may still hold it.
++//
+ // # The correspondence index's write path
+ //
+ // The index is a rebuildable cache of the weft commit trailers; this section states the limits of its write path.
+@@ -1873,9 +1856,7 @@
+ // It runs `integrateWeft`, which replays the weft's local commits onto U and re-roots the result to B.
+ // It then renames `A/.lym` to `B/.lym`.
+ // `Apply` then wires the junctions and scratch link at B.
+-// It writes the launchers under `_launchers/<B>/<slug>` and removes `_launchers/<A>/<slug>`.
+ // It also regenerates the hub and beam workspace files.
+-// The prime has no launcher directory, so it loses the menu launcher of A instead.
+ // `Finish` removes the record and spawns the pair's detached push, which carries the commit.
+ //
+ // **Failure and recovery.** A failure before the commit, or before the integration moves the branch, is undone:
+diff --git a/internal/fabricengine/hubworkspace.go b/internal/fabricengine/hubworkspace.go
+index 0dcb39ee..176ff0e3 100644
+--- a/internal/fabricengine/hubworkspace.go
++++ b/internal/fabricengine/hubworkspace.go
+@@ -431,6 +431,17 @@ func hubWorkspaceFolder(hubPath, name, dir string) (vscode.WorkspaceFolder, erro
+ 	return vscode.WorkspaceFolder{Name: name, Path: filepath.ToSlash(rel)}, nil
+ }
+ 
++// hubRel returns path expressed relative to hubPath, the form every os.Root call under the hub takes.
++// It returns an error rather than degrading.
++// A path that cannot be related to hubPath is a bug in the geometry derivation, not a case to write blindly.
++func hubRel(hubPath, path string) (string, error) {
++	rel, err := filepath.Rel(hubPath, path)
++	if err != nil {
++		return "", fmt.Errorf("relate %s to hub %s: %w", path, hubPath, err)
++	}
++	return rel, nil
++}
++
+ // dirPresent reports whether dir exists; a stat error other than not-exist is returned.
+ func dirPresent(dir string) (bool, error) {
+ 	if _, err := os.Stat(dir); err != nil {
+diff --git a/internal/fabricengine/junctionnames.go b/internal/fabricengine/junctionnames.go
+index 5bbebe8a..81c85860 100644
+--- a/internal/fabricengine/junctionnames.go
++++ b/internal/fabricengine/junctionnames.go
+@@ -229,7 +229,7 @@ func HubPath(parent, name string) string {
+ 
+ // HubReservedNames returns the hub-structural names that must never wire a per-worktree junction:
+ // the Bolt checkout, `_portals` and `_launchers`.
+-// `_portals` is retired but stays reserved.
++// `_portals` and `_launchers` are retired but stay reserved.
+ // `.lym` is not a member: listing it would keep it from being wired into each worktree.
+ // It would also keep it from ever being torn down.
+ // It is reserved through a separate structural set.
+diff --git a/internal/fabricengine/launcher_content.go b/internal/fabricengine/launcher_content.go
+deleted file mode 100644
+index 7c16f67f..00000000
+--- a/internal/fabricengine/launcher_content.go
++++ /dev/null
+@@ -1,37 +0,0 @@
+-// launcher_content.go builds the content and file mode of launcher scripts (ide, fabric-checkout, ide-menu, run).
+-// It is pure and GOOS-parameterized.
+-// Keeping it free of build tags lets tests cover both the Windows (.cmd) and non-Windows (.sh) branches.
+-// Only the OS I/O in launchers.go reads the real runtime.GOOS.
+-
+-package fabricengine
+-
+-import (
+-	"fmt"
+-	"os"
+-	"path/filepath"
+-	"strings"
+-)
+-
+-func launcherExt(goos string) string {
+-	if goos == "windows" {
+-		return ".cmd"
+-	}
+-	return ".sh"
+-}
+-
+-// launcherScript builds the content and file mode of a launcher script that runs lym with lymArgs.
+-// It changes into climbRel, relative to the script's own directory.
+-// On Windows it is a cmd script with CRLF line endings and mode 0o644.
+-// Elsewhere it is a bash script with LF line endings and mode 0o755, so the file is executable.
+-func launcherScript(goos, climbRel, lymArgs string) (content []byte, mode os.FileMode) {
+-	climbFwd := filepath.ToSlash(climbRel)
+-
+-	if goos == "windows" {
+-		climbBack := strings.ReplaceAll(climbFwd, "/", "\\")
+-		text := fmt.Sprintf("@cd /d \"%%~dp0%s\" && lym %s\r\n", climbBack, lymArgs)
+-		return []byte(text), 0o644
+-	}
+-
+-	text := fmt.Sprintf("#!/usr/bin/env bash\ncd \"$(dirname \"$0\")/%s\" && lym %s\n", climbFwd, lymArgs)
+-	return []byte(text), 0o755
+-}
+diff --git a/internal/fabricengine/launcher_content_test.go b/internal/fabricengine/launcher_content_test.go
+deleted file mode 100644
+index ae4a94be..00000000
+--- a/internal/fabricengine/launcher_content_test.go
++++ /dev/null
+@@ -1,230 +0,0 @@
+-// launcher_content_test.go tests the pure launcher content builder for Windows (.cmd) and non-Windows (.sh) branches.
+-// Because launcherScript and launcherExt take goos as a parameter rather than reading runtime.GOOS;
+-// both branches are exercised on any warp, including a Windows dev box.
+-// The fabric-checkout case asserts fabric's own checkout script content ("fabric checkout" lym args),
+-// and the run case asserts the run launcher's own command line ("loom start" lym args).
+-//
+-// TestWriteLaunchers_RunScriptContentAndFilename also drives writeLaunchers itself.
+-// It pins that the run launcher's filename stays "run"+ext while its content names "loom start".
+-
+-package fabricengine
+-
+-import (
+-	"os"
+-	"path/filepath"
+-	"runtime"
+-	"strings"
+-	"testing"
+-
+-	"github.com/Knatte18/loomyard/internal/testkit/locationkit"
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-)
+-
+-func TestLauncherExt(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	tests := []struct {
+-		name string
+-		goos string
+-		want string
+-	}{
+-		{"windows", "windows", ".cmd"},
+-		{"linux", "linux", ".sh"},
+-		{"darwin", "darwin", ".sh"},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			got := launcherExt(tt.goos)
+-			if got != tt.want {
+-				t.Errorf("launcherExt(%q) = %q; want %q", tt.goos, got, tt.want)
+-			}
+-		})
+-	}
+-}
+-
+-func TestLauncherScript(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	tests := []struct {
+-		name     string
+-		goos     string
+-		climbRel string
+-		lymArgs  string
+-		want     string
+-		wantMode uint32
+-	}{
+-		{
+-			name:     "windows ide spawn empty climb",
+-			goos:     "windows",
+-			climbRel: "",
+-			lymArgs:  "ide spawn myslug",
+-			want:     "@cd /d \"%~dp0\" && lym ide spawn myslug\r\n",
+-			wantMode: 0o644,
+-		},
+-		{
+-			name:     "windows fabric checkout nested climb",
+-			goos:     "windows",
+-			climbRel: "../../myslug/sub",
+-			lymArgs:  "fabric checkout",
+-			want:     "@cd /d \"%~dp0..\\..\\myslug\\sub\" && lym fabric checkout\r\n",
+-			wantMode: 0o644,
+-		},
+-		{
+-			name:     "windows ide menu nested climb",
+-			goos:     "windows",
+-			climbRel: "../sub",
+-			lymArgs:  "ide menu",
+-			want:     "@cd /d \"%~dp0..\\sub\" && lym ide menu\r\n",
+-			wantMode: 0o644,
+-		},
+-		{
+-			name:     "windows run nested climb",
+-			goos:     "windows",
+-			climbRel: "../../myslug/sub",
+-			lymArgs:  "loom start",
+-			want:     "@cd /d \"%~dp0..\\..\\myslug\\sub\" && lym loom start\r\n",
+-			wantMode: 0o644,
+-		},
+-		{
+-			name:     "linux ide spawn empty climb",
+-			goos:     "linux",
+-			climbRel: "",
+-			lymArgs:  "ide spawn myslug",
+-			want:     "#!/usr/bin/env bash\ncd \"$(dirname \"$0\")/\" && lym ide spawn myslug\n",
+-			wantMode: 0o755,
+-		},
+-		{
+-			name:     "linux fabric checkout nested climb",
+-			goos:     "linux",
+-			climbRel: "../../myslug/sub",
+-			lymArgs:  "fabric checkout",
+-			want:     "#!/usr/bin/env bash\ncd \"$(dirname \"$0\")/../../myslug/sub\" && lym fabric checkout\n",
+-			wantMode: 0o755,
+-		},
+-		{
+-			name:     "linux ide menu nested climb",
+-			goos:     "linux",
+-			climbRel: "../sub",
+-			lymArgs:  "ide menu",
+-			want:     "#!/usr/bin/env bash\ncd \"$(dirname \"$0\")/../sub\" && lym ide menu\n",
+-			wantMode: 0o755,
+-		},
+-		{
+-			name:     "linux run nested climb",
+-			goos:     "linux",
+-			climbRel: "../../myslug/sub",
+-			lymArgs:  "loom start",
+-			want:     "#!/usr/bin/env bash\ncd \"$(dirname \"$0\")/../../myslug/sub\" && lym loom start\n",
+-			wantMode: 0o755,
+-		},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			gotContent, gotMode := launcherScript(tt.goos, tt.climbRel, tt.lymArgs)
+-
+-			if string(gotContent) != tt.want {
+-				t.Errorf("launcherScript(%q, %q, %q) content = %q; want %q",
+-					tt.goos, tt.climbRel, tt.lymArgs, string(gotContent), tt.want)
+-			}
+-			if uint32(gotMode) != tt.wantMode {
+-				t.Errorf("launcherScript(%q, %q, %q) mode = %o; want %o",
+-					tt.goos, tt.climbRel, tt.lymArgs, gotMode, tt.wantMode)
+-			}
+-		})
+-	}
+-
+-	t.Run("sh has shebang", func(t *testing.T) {
+-		content, _ := launcherScript("linux", "", "ide menu")
+-		if !strings.HasPrefix(string(content), "#!/usr/bin/env bash\n") {
+-			t.Errorf("launcherScript(linux) content = %q; want shebang prefix", string(content))
+-		}
+-	})
+-
+-	t.Run("cmd has no shebang", func(t *testing.T) {
+-		content, _ := launcherScript("windows", "", "ide menu")
+-		if strings.HasPrefix(string(content), "#!") {
+-			t.Errorf("launcherScript(windows) content = %q; want no shebang", string(content))
+-		}
+-	})
+-
+-	t.Run("cmd uses backslashes and CRLF", func(t *testing.T) {
+-		content, _ := launcherScript("windows", "../sub", "ide menu")
+-		s := string(content)
+-		if !strings.Contains(s, "\\sub") {
+-			t.Errorf("launcherScript(windows) content = %q; want backslash climb", s)
+-		}
+-		if strings.Contains(s, "/sub") {
+-			t.Errorf("launcherScript(windows) content = %q; want no forward slash climb", s)
+-		}
+-		if !strings.HasSuffix(s, "\r\n") {
+-			t.Errorf("launcherScript(windows) content = %q; want CRLF ending", s)
+-		}
+-	})
+-
+-	t.Run("sh uses forward slashes and LF", func(t *testing.T) {
+-		content, _ := launcherScript("linux", "../sub", "ide menu")
+-		s := string(content)
+-		if !strings.Contains(s, "/sub") {
+-			t.Errorf("launcherScript(linux) content = %q; want forward slash climb", s)
+-		}
+-		if strings.Contains(s, "\\sub") {
+-			t.Errorf("launcherScript(linux) content = %q; want no backslash climb", s)
+-		}
+-		if strings.HasSuffix(s, "\r\n") {
+-			t.Errorf("launcherScript(linux) content = %q; want no CRLF ending", s)
+-		}
+-		if !strings.HasSuffix(s, "\n") {
+-			t.Errorf("launcherScript(linux) content = %q; want LF ending", s)
+-		}
+-	})
+-}
+-
+-// TestWriteLaunchers_RunScriptContentAndFilename pins that writeLaunchers names the run launcher file "run"+ext,
+-// and that the file's content invokes "loom start", not "loom drive" or "loom run".
+-//
+-// Neither launcherScript nor launcherExt constructs a path, so a scenario in their shape cannot catch a file rename.
+-// runPath is built by filepath.Join(launcherDir, "run"+ext) inside writeLaunchers alone.
+-// So this scenario calls writeLaunchers directly.
+-// It runs against a hand-built *lymcwd.Location whose HubPath is a t.TempDir().
+-// It avoids a real hub, the pattern portallauncher_test.go's other tier 1 suites use.
+-// The menu launcher is pre-seeded at menuLauncherPath(l).
+-// So writeLaunchers' never-clobber early return fires before it reaches PrimeName(l).
+-// A hand-built Location cannot satisfy what PrimeName(l) needs.
+-//
+-//testtiming:keep the run launcher keeping its "run"+ext filename and a content that invokes "loom start"; coverage of its blocks by other tests does not show an assertion of this
+-func TestWriteLaunchers_RunScriptContentAndFilename(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	hub := t.TempDir()
+-	l := locationkit.Location(hub, "prime", ".")
+-	const slug = "test-slug"
+-
+-	menuPath := menuLauncherPath(l)
+-	if err := os.MkdirAll(filepath.Dir(menuPath), 0o755); err != nil {
+-		t.Fatalf("mkdir menu launcher dir: %v", err)
+-	}
+-	if err := os.WriteFile(menuPath, []byte("preexisting menu launcher\n"), 0o755); err != nil {
+-		t.Fatalf("seed menu launcher: %v", err)
+-	}
+-
+-	if err := writeLaunchers(NewMutations(hub), l, slug); err != nil {
+-		t.Fatalf("writeLaunchers() error = %v; want nil", err)
+-	}
+-
+-	ext := launcherExt(runtime.GOOS)
+-	launcherDir := LauncherDir(l, slug)
+-
+-	runPath := filepath.Join(launcherDir, "run"+ext)
+-	runContent, err := os.ReadFile(runPath)
+-	if err != nil {
+-		t.Fatalf("read %s: %v; want the run launcher written at run%s", runPath, err, ext)
+-	}
+-	if !strings.Contains(string(runContent), "loom start") {
+-		t.Errorf("run launcher content = %q; want it to contain %q", string(runContent), "loom start")
+-	}
+-
+-	startPath := filepath.Join(launcherDir, "start"+ext)
+-	if _, err := os.Stat(startPath); !os.IsNotExist(err) {
+-		t.Errorf("start%s exists at %s; want the launcher filename to stay run%s per the "+
+-			"launcher-filename-unchanged decision", ext, startPath, ext)
+-	}
+-}
+diff --git a/internal/fabricengine/launchers.go b/internal/fabricengine/launchers.go
+deleted file mode 100644
+index 7fb88df7..00000000
+--- a/internal/fabricengine/launchers.go
++++ /dev/null
+@@ -1,302 +0,0 @@
+-// launchers.go writes and tears down the per-worktree launcher scripts and the container-root menu launcher.
+-// Launchers are cross-platform.
+-// On Windows a launcher is a .cmd script; elsewhere it is an executable .sh script.
+-// Both are built from the pure content builder in launcher_content.go.
+-// The checkout launcher file (fabric-checkout<ext>) invokes "lym fabric checkout",
+-// and the run launcher file (run<ext>) invokes "lym loom start".
+-
+-package fabricengine
+-
+-import (
+-	"fmt"
+-	"os"
+-	"path/filepath"
+-	"runtime"
+-
+-	"github.com/Knatte18/loomyard/internal/lymcwd"
+-)
+-
+-// launchersDirName is the directory name for the hub-level launchers container (i.e. <hub>/_launchers).
+-// It is declared here rather than in internal/lymcwd.
+-// The launcher surface is fabric's own illusion-maintenance code, not a resolution primitive lymcwd exposes.
+-const launchersDirName = "_launchers"
+-
+-// launchersDir returns the path to the _launchers directory in the hub.
+-func launchersDir(l *lymcwd.Location) string {
+-	return filepath.Join(l.HubPath, launchersDirName)
+-}
+-
+-// LauncherDir returns the path to the mirrored launcher directory for the given slug.
+-// It is mirrored into the repo subpath structure, including AnchorRel segments.
+-// It is exported so the external fabricengine_test package can call it.
+-func LauncherDir(l *lymcwd.Location, slug string) string {
+-	return filepath.Join(l.HubPath, launchersDirName, l.AnchorRel, slug)
+-}
+-
+-// menuLauncherPath returns the path to the per-subpath menu launcher script.
+-// It is mirrored into the repo subpath structure.
+-// The extension follows GOOS: ".cmd" on Windows, ".sh" elsewhere.
+-func menuLauncherPath(l *lymcwd.Location) string {
+-	return filepath.Join(l.HubPath, launchersDirName, l.AnchorRel, menuLauncherName())
+-}
+-
+-// menuLauncherName returns the OS-appropriate filename for the menu launcher script.
+-func menuLauncherName() string {
+-	if runtime.GOOS == "windows" {
+-		return "ide-menu.cmd"
+-	}
+-	return "ide-menu.sh"
+-}
+-
+-// launcherSpawnRel returns the relative path from a launcher directory to the target worktree's subpath for spawning.
+-// The error is returned rather than collapsed into an empty string.
+-// Both paths are absolute and hub-rooted, so filepath.Rel cannot fail for them,
+-// but an empty result would be written into a launcher script that then spawns in the wrong directory.
+-// A wrong directory is worse than a failed write.
+-func launcherSpawnRel(l *lymcwd.Location, slug string) (string, error) {
+-	launcherDir := LauncherDir(l, slug)
+-	target := filepath.Join(filepath.Join(l.HubPath, slug), l.AnchorRel)
+-	rel, err := filepath.Rel(launcherDir, target)
+-	if err != nil {
+-		return "", fmt.Errorf("relate launcher dir %s to worktree subpath %s: %w", launcherDir, target, err)
+-	}
+-	return rel, nil
+-}
+-
+-// menuLauncherRel returns the relative path from the menu launcher directory to the prime worktree's subpath.
+-// primeName is the main worktree's base name, which the caller sources from PrimeName.
+-func menuLauncherRel(l *lymcwd.Location, primeName string) (string, error) {
+-	menuDir := filepath.Dir(menuLauncherPath(l))
+-	target := filepath.Join(l.HubPath, primeName, l.AnchorRel)
+-	rel, err := filepath.Rel(menuDir, target)
+-	if err != nil {
+-		return "", fmt.Errorf("relate menu launcher dir %s to prime subpath %s: %w", menuDir, target, err)
+-	}
+-	return rel, nil
+-}
+-
+-// writeLaunchers writes the per-worktree launcher scripts (ide, fabric-checkout, and run).
+-// It also ensures the menu launcher exists.
+-// The extension follows GOOS: .cmd on Windows, .sh elsewhere.
+-// Files with the .sh extension are written executable.
+-//
+-// Every write goes through an os.Root rooted at l.HubPath, not a raw os.MkdirAll or os.WriteFile.
+-// This is a containment property: _launchers sits directly under the hub and is never legitimately a symlink,
+-// so a symlink planted at the leaf or at _launchers must not redirect an executable script write outside the hub.
+-// Rooting at the hub makes each write one openat chain.
+-// That chain refuses any component that escapes the hub.
+-// l.HubPath always exists here, because writeLaunchers runs only after the hub and the worktree pair it serves exist.
+-//
+-// rec is the calling verb's own recorder.
+-// An entry is recorded only when an observation shows an effect, never on plain success.
+-// writeLaunchers doubles as the repair path: restoreLaunchers in reconcile.go calls it against an already-wired pair,
+-// and an unconditional record would claim writes that did not happen on that path.
+-//   - The launcher directory is recorded as created only when it was absent before the call.
+-//     root.MkdirAll succeeds on an existing directory, so the path is stat'd before the MkdirAll.
+-//   - The three scripts are written unconditionally with deterministic content, so a repair-path call
+-//     rewrites them byte-identically.
+-//     Each is recorded as KindFileWritten only when the write changes its bytes; an absent file counts as changed.
+-//     The read before the write decides the record, not whether the write succeeded.
+-//   - The menu launcher is never clobbered: writeLaunchers returns early when it exists,
+-//     and removeLaunchers leaves it in place.
+-//     It is recorded only on the branch that reaches its root.WriteFile.
+-func writeLaunchers(rec *Mutations, l *lymcwd.Location, slug string) error {
+-	ext := launcherExt(runtime.GOOS)
+-
+-	root, err := os.OpenRoot(l.HubPath)
+-	if err != nil {
+-		return fmt.Errorf("open hub root %s: %w", l.HubPath, err)
+-	}
+-	defer func() { _ = root.Close() }()
+-
+-	// Create the mirrored launcher directory. It is recorded only when this call creates it:
+-	// a repair-path call against an already-wired pair must not claim a creation that an earlier call made.
+-	// A symlink escaping the hub at any component surfaces as a root.Stat error other than os.IsNotExist.
+-	// dirWasAbsent then stays false, so root.MkdirAll fails closed rather than following it.
+-	launcherDir := LauncherDir(l, slug)
+-	launcherDirRel, err := hubRel(l.HubPath, launcherDir)
+-	if err != nil {
+-		return err
+-	}
+-	_, statErr := root.Stat(launcherDirRel)
+-	dirWasAbsent := os.IsNotExist(statErr)
+-	if err := root.MkdirAll(launcherDirRel, 0o755); err != nil {
+-		return fmt.Errorf("mkdir launcher dir %s: %w", launcherDir, err)
+-	}
+-	if dirWasAbsent {
+-		rec.Append(KindDirCreated, launcherDir, "")
+-	}
+-
+-	// Build and write the ide launcher from spawnRel, the path from the launcher directory to the worktree subpath.
+-	spawnRel, err := launcherSpawnRel(l, slug)
+-	if err != nil {
+-		return err
+-	}
+-	ideContent, ideMode := launcherScript(runtime.GOOS, spawnRel, "ide spawn "+slug)
+-	idePath := filepath.Join(launcherDir, "ide"+ext)
+-	if err := writeLauncherScriptIfChanged(rec, root, l.HubPath, idePath, ideContent, ideMode); err != nil {
+-		return fmt.Errorf("write ide%s: %w", ext, err)
+-	}
+-
+-	// Write the fabric-checkout launcher, a shortcut that runs coordinated checkout for this worktree.
+-	// It climbs to the worktree subpath the same way the ide launcher does,
+-	// so the user can run it from the _launchers directory.
+-	fabricCheckoutContent, fabricCheckoutMode := launcherScript(runtime.GOOS, spawnRel, "fabric checkout")
+-	fabricCheckoutPath := filepath.Join(launcherDir, "fabric-checkout"+ext)
+-	if err := writeLauncherScriptIfChanged(rec, root, l.HubPath, fabricCheckoutPath, fabricCheckoutContent, fabricCheckoutMode); err != nil {
+-		return fmt.Errorf("write fabric-checkout%s: %w", ext, err)
+-	}
+-
+-	// Write the run launcher, the double-click entry point that hands this pair to loom's session bootstrap.
+-	// It reuses spawnRel like the ide launcher and invokes the explicit two-word verb rather than a root alias,
+-	// so it keeps working whatever happens to the alias.
+-	runContent, runMode := launcherScript(runtime.GOOS, spawnRel, "loom start")
+-	runPath := filepath.Join(launcherDir, "run"+ext)
+-	if err := writeLauncherScriptIfChanged(rec, root, l.HubPath, runPath, runContent, runMode); err != nil {
+-		return fmt.Errorf("write run%s: %w", ext, err)
+-	}
+-
+-	// Ensure per-subpath menu launcher exists (never clobber)
+-	menuPath := menuLauncherPath(l)
+-	menuRelPath, err := hubRel(l.HubPath, menuPath)
+-	if err != nil {
+-		return err
+-	}
+-	if _, err := root.Stat(menuRelPath); err == nil {
+-		return nil
+-	} else if !os.IsNotExist(err) {
+-		// A symlink escaping the hub at any component also lands here.
+-		// The write then fails closed rather than clobbering whatever it points at.
+-		return fmt.Errorf("stat menu launcher: %w", err)
+-	}
+-
+-	if err := root.MkdirAll(filepath.Dir(menuRelPath), 0o755); err != nil {
+-		return fmt.Errorf("mkdir menu launcher dir: %w", err)
+-	}
+-
+-	// Build the menu content from menuLauncherRel, with the prime worktree's name from PrimeName.
+-	// A launcher pointing at an unresolved prime is worse than a failed wire,
+-	// so the error is returned rather than replaced by an empty prime name.
+-	primeName, err := PrimeName(l)
+-	if err != nil {
+-		return fmt.Errorf("resolve prime worktree name: %w", err)
+-	}
+-	menuRel, err := menuLauncherRel(l, primeName)
+-	if err != nil {
+-		return err
+-	}
+-	menuContent, menuMode := launcherScript(runtime.GOOS, menuRel, "ide menu")
+-	if err := root.WriteFile(menuRelPath, menuContent, menuMode); err != nil {
+-		return fmt.Errorf("write menu launcher: %w", err)
+-	}
+-	rec.Append(KindFileWritten, menuPath, "")
+-
+-	return nil
+-}
+-
+-// hubRel returns path expressed relative to hubPath, the form every os.Root call under the hub takes.
+-// It returns an error rather than degrading.
+-// A path that cannot be related to hubPath is a bug in the geometry derivation, not a case to write blindly.
+-func hubRel(hubPath, path string) (string, error) {
+-	rel, err := filepath.Rel(hubPath, path)
+-	if err != nil {
+-		return "", fmt.Errorf("relate %s to hub %s: %w", path, hubPath, err)
+-	}
+-	return rel, nil
+-}
+-
+-// writeLauncherScriptIfChanged writes content to path with the given mode, through root rooted at hubPath.
+-// It records KindFileWritten against rec only when the bytes change; an absent file counts as changed.
+-// The repair-path call in writeLaunchers rewrites an already-wired pair byte-identically.
+-// This lets it report no change, since exit code alone cannot tell such a rewrite from a fresh authoring.
+-// The read and the write both go through root, so a symlink at any component that escapes the hub is refused by both.
+-func writeLauncherScriptIfChanged(rec *Mutations, root *os.Root, hubPath, path string, content []byte, mode os.FileMode) error {
+-	rel, err := hubRel(hubPath, path)
+-	if err != nil {
+-		return err
+-	}
+-	existing, readErr := root.ReadFile(rel)
+-	changed := readErr != nil || string(existing) != string(content)
+-	if err := root.WriteFile(rel, content, mode); err != nil {
+-		return err
+-	}
+-	if changed {
+-		rec.Append(KindFileWritten, path, "")
+-	}
+-	return nil
+-}
+-
+-// removeLaunchers removes the launcher scripts fabric wrote for the given slug.
+-// It then removes the directory itself and prunes empty ancestors.
+-// The menu launcher is left in place.
+-// It returns nil if the directory does not exist.
+-//
+-// It deletes the named scripts rather than the whole tree, so anything else under the directory survives.
+-// An os.RemoveAll there would destroy whatever the operator had put beside the launchers.
+-// The directory removal below is non-recursive, so it declines to delete a non-empty directory.
+-// A leftover file is reported by that removal, never silently swept.
+-// rec is the calling verb's own recorder.
+-// The script removals route through removePath, which records for itself.
+-// The directory removal routes through removeContainedPath directly, non-recursively.
+-// The OS still refuses a non-empty directory.
+-// That removal records KindPathRemoved with detail "single" at its own success site.
+-// It follows the same record-only-on-observed-effect rule the gate executors follow.
+-func removeLaunchers(rec *Mutations, l *lymcwd.Location, slug string) error {
+-	launcherDir := LauncherDir(l, slug)
+-	if err := refuseUncontainedPath(launchersDir(l), launcherDir, "launcher dir"); err != nil {
+-		return err
+-	}
+-
+-	ext := launcherExt(runtime.GOOS)
+-	// Every script writeLaunchers writes must be listed here.
+-	// The directory removal that follows is non-recursive.
+-	// A missing script leaves the directory non-empty, so the removal fails outright rather than orphaning a stray file.
+-	for _, name := range []string{"ide" + ext, "fabric-checkout" + ext, "run" + ext} {
+-		target := filepath.Join(launcherDir, name)
+-		req := pathRequest{
+-			what:      "remove launcher script",
+-			container: launchersDir(l),
+-			target:    target,
+-			slug:      nil,
+-			ownership: ownedUnderGeometryRoot(launchersDir(l)),
+-			dirtiness: dirtinessNA("launcher scripts are generated artifacts, never edited content"),
+-			force:     false,
+-		}
+-		if err := removePath(rec, req); err != nil && !os.IsNotExist(err) {
+-			return fmt.Errorf("remove launcher script %s: %w", target, err)
+-		}
+-	}
+-
+-	// The directory itself runs the gate's checks (containment, ownership, dirtiness) via checkPathRequest.
+-	// It is removed through removeContainedPath with recursive=false, not through removePath.
+-	// removePath's directory branch is RemoveAll.
+-	// That would silently destroy anything the operator had put beside the launchers, so this removal is non-recursive.
+-	// The non-recursive branch is os.Root.Remove.
+-	// The OS refuses it on a non-empty directory, so foreign content in the directory is preserved.
+-	// TestRemoveLaunchers_PreservesForeignContent pins that.
+-	// Rooting the unlink at the launchers container makes it one openat chain.
+-	// Component resolution then cannot leave the container.
+-	dirReq := pathRequest{
+-		what:      "remove launcher dir",
+-		container: launchersDir(l),
+-		target:    launcherDir,
+-		slug:      nil,
+-		ownership: ownedUnderGeometryRoot(launchersDir(l)),
+-		dirtiness: dirtinessNA("launcher scripts are generated artifacts, never edited content"),
+-		force:     false,
+-	}
+-	if err := checkPathRequest(dirReq); err != nil {
+-		return fmt.Errorf("remove launcher dir %s: %w", launcherDir, err)
+-	}
+-	removed, _, removeErr := removeContainedPath(launchersDir(l), launcherDir, false)
+-	if removeErr != nil {
+-		return fmt.Errorf("remove launcher dir %s: %w", launcherDir, removeErr)
+-	}
+-	if removed {
+-		rec.Append(KindPathRemoved, launcherDir, "single")
+-	}
+-
+-	// Prune empty ancestors up to but not including launchersDir
+-	pruneEmptyAncestors(filepath.Dir(launcherDir), launchersDir(l))
+-	return nil
+-}
+diff --git a/internal/fabricengine/launchers_containment_integration_test.go b/internal/fabricengine/launchers_containment_integration_test.go
+deleted file mode 100644
+index 829c8799..00000000
+--- a/internal/fabricengine/launchers_containment_integration_test.go
++++ /dev/null
+@@ -1,96 +0,0 @@
+-// launchers_containment_integration_test.go drives the real `add` verb end-to-end against a symlink
+-// planted at the per-slug launcher directory (<hub>/_launchers/<anchor>/<slug>) and at the _launchers
+-// container itself, both pointing outside the hub.
+-//
+-// The test checks the whole Add call.
+-// It must fail closed and write nothing outside the hub.
+-// It must also never record a launcher file_written that did not land in the hub.
+-// writeLaunchers roots every write through an os.Root at the hub;
+-// a raw os.MkdirAll and os.WriteFile would follow the planted symlink.
+-// It would write executable launcher scripts to the out-of-hub target while reporting success.
+-//
+-// The file is package fabricengine_test, which reuses the shared TestMain as other integration tests here do.
+-
+-package fabricengine_test
+-
+-import (
+-	"os"
+-	"path/filepath"
+-	"strings"
+-	"testing"
+-
+-	"github.com/Knatte18/loomyard/internal/fabricengine"
+-	"github.com/Knatte18/loomyard/internal/hubforge"
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-)
+-
+-// TestAdd_DoesNotWriteOutsideHubThroughLauncherSymlink asserts that a launcher directory, or the
+-// _launchers container, pre-planted as a symlink that escapes the hub, makes Add fail closed:
+-// it must not write launcher scripts to the symlink's out-of-hub target.
+-func TestAdd_DoesNotWriteOutsideHubThroughLauncherSymlink(t *testing.T) {
+-	tiergate.Require(t, 1)
+-	t.Parallel()
+-
+-	tests := []struct {
+-		name string
+-		// plant returns the path the test replaces with an escaping symlink, given the hub and slug.
+-		plant func(hub, slug string) string
+-	}{
+-		{
+-			name: "leaf",
+-			plant: func(hub, slug string) string {
+-				return filepath.Join(hub, "_launchers", slug)
+-			},
+-		},
+-		{
+-			name: "container",
+-			plant: func(hub, slug string) string {
+-				return filepath.Join(hub, "_launchers")
+-			},
+-		},
+-	}
+-
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-
+-			const slug = "toctou-write"
+-			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-			l := h.Location
+-
+-			// An out-of-hub directory the launcher writes would land in if containment were bypassed.
+-			outside := t.TempDir()
+-
+-			planted := tt.plant(l.HubPath, slug)
+-			// The container vector plants the symlink at _launchers;
+-			// the leaf vector plants it one level down, so _launchers must exist first for the leaf case.
+-			if err := os.MkdirAll(filepath.Dir(planted), 0o755); err != nil {
+-				t.Fatalf("mkdir parent of planted symlink: %v", err)
+-			}
+-			if err := os.Symlink(outside, planted); err != nil {
+-				t.Fatalf("plant escaping symlink at %s: %v", planted, err)
+-			}
+-
+-			topology := h.Topology
+-			res, err := topology.Add(l, slug, fabricengine.AddOptions{SkipPush: true})
+-			if err == nil {
+-				t.Fatalf("Add(%q) succeeded through an escaping launcher symlink; want a fail-closed error", slug)
+-			}
+-
+-			// No launcher script may have landed in the out-of-hub target.
+-			for _, name := range []string{"ide.sh", "fabric-checkout.sh", "run.sh", "ide-menu.sh"} {
+-				if _, statErr := os.Stat(filepath.Join(outside, name)); statErr == nil {
+-					t.Fatalf("launcher %s was written outside the hub through the escaping symlink", name)
+-				}
+-			}
+-
+-			// The mutation record must not claim a launcher file_written:
+-			// a record naming a hub-relative launcher path while the bytes escaped would report a false success.
+-			for _, m := range res.Mutated().Entries() {
+-				if m.Kind == fabricengine.KindFileWritten && strings.Contains(m.Target, "_launchers") {
+-					t.Fatalf("mutation record claims a launcher write %q that did not land inside the hub", m.Target)
+-				}
+-			}
+-		})
+-	}
+-}
+diff --git a/internal/fabricengine/livestate_doc_test.go b/internal/fabricengine/livestate_doc_test.go
+index b4ceccd9..50fb6e73 100644
+--- a/internal/fabricengine/livestate_doc_test.go
++++ b/internal/fabricengine/livestate_doc_test.go
+@@ -199,7 +199,7 @@
+ // A worktree's creation or destruction can touch it without a record entry naming that exact admin path.
+ // An ancestor directory of a recorded Target is covered too, when the diff change is itself a directory.
+ // Such ancestors are implicit chains around the roots fabric records.
+-// fslink.CreateDirLink and writeLaunchers' MkdirAll create them, and pruneEmptyAncestors reaps them on the way out.
++// fslink.CreateDirLink creates them.
+ //
+ // DiffManifest is called twice per cell, on the same before and after manifest pair.
+ // The two calls answer two questions that neither can answer for the other.
+diff --git a/internal/fabricengine/livestate_matrix_test.go b/internal/fabricengine/livestate_matrix_test.go
+index 04fdc0dd..3145fe4e 100644
+--- a/internal/fabricengine/livestate_matrix_test.go
++++ b/internal/fabricengine/livestate_matrix_test.go
+@@ -7,7 +7,6 @@
+ package fabricengine_test
+ 
+ import (
+-	"os"
+ 	"path/filepath"
+ 	"strings"
+ 	"testing"
+@@ -228,21 +227,13 @@ func assertSurvivesIfUnpermitted(t *testing.T, h *hubforge.Hub, abs string, perm
+ }
+ 
+ // assertArrangePreconditions fails t when verb's Arrange left a fixture that would make the verb's column vacuous.
+-// Add, Checkout and Pull each need one fixture field set, and an empty one fails as surely as a wrong one:
+-// A launcher blocker that is not a directory lets Add proceed.
++// Checkout and Pull each need one fixture field set, and an empty one fails as surely as a wrong one:
+ // A checkout branch equal to the original makes Checkout a no-op.
+ // An unadvanced warp bare makes Pull return before its dirty check.
+ func assertArrangePreconditions(t *testing.T, verb string, fixture VerbFixture) {
+ 	t.Helper()
+ 
+ 	switch verb {
+-	case "Add":
+-		if fixture.LauncherBlocker == "" {
+-			t.Fatalf("Arrange: Add left LauncherBlocker empty")
+-		}
+-		if info, err := os.Lstat(fixture.LauncherBlocker); err != nil || !info.IsDir() {
+-			t.Errorf("Arrange: launcher blocker %s is not a directory (err %v)", fixture.LauncherBlocker, err)
+-		}
+ 	case "Checkout":
+ 		if fixture.CheckoutBranch == "" {
+ 			t.Fatalf("Arrange: Checkout left CheckoutBranch empty")
+diff --git a/internal/fabricengine/livestate_mutationoracle_test.go b/internal/fabricengine/livestate_mutationoracle_test.go
+index 81018432..c8eec6e5 100644
+--- a/internal/fabricengine/livestate_mutationoracle_test.go
++++ b/internal/fabricengine/livestate_mutationoracle_test.go
+@@ -57,8 +57,6 @@ var manifestObservableKind = map[fabricengine.Kind]bool{
+ // A rollback may tear a freshly minted worktree down through the os.RemoveAll fallback, not only through git.
+ // A link_created is undone only by a link_removed, including a dangling link repointed during reconcile.
+ // A file_written is undone by a path_removed at the same Target.
+-// Launcher scripts are removed one by one before their directory.
+-// A rollback therefore writes and then removes each script at the identical target.
+ var invertedBy = map[fabricengine.Kind][]fabricengine.Kind{
+ 	fabricengine.KindDirCreated:      {fabricengine.KindPathRemoved, fabricengine.KindWorktreeRemoved},
+ 	fabricengine.KindWorktreeCreated: {fabricengine.KindPathRemoved, fabricengine.KindWorktreeRemoved},
+@@ -303,8 +301,7 @@ var worktreeRootedKind = map[fabricengine.Kind]bool{
+ // Coverage is segment-wise subtree containment on e.Target.
+ // A worktree-rooted kind also covers its derived <prime>/.git/worktrees/<name> admin entry.
+ // It also covers every KindDir ancestor directory of e.Target.
+-// These directories are created implicitly around the recorded roots by fslink.CreateDirLink and writeLaunchers.
+-// pruneEmptyAncestors reaps them on the way out.
++// These directories are created implicitly around the recorded roots by fslink.CreateDirLink.
+ // A "." Target is exempt except for path_removed.
+ // A whole-hub teardown is the one "."-targeted entry that covers everything.
+ // Nothing survives it for a finer entry to name.
+diff --git a/internal/fabricengine/livestate_verbs_test.go b/internal/fabricengine/livestate_verbs_test.go
+index 068e6cdb..333c8d57 100644
+--- a/internal/fabricengine/livestate_verbs_test.go
++++ b/internal/fabricengine/livestate_verbs_test.go
+@@ -20,7 +20,6 @@
+ //   - Remove own pre-flight (remove.go) — scopeAll, the pair's warp worktree.
+ //   - Remove's refuseDirtyWeftWorktree (remove.go) — scopeAll, the pair's weft worktree.
+ //   - Remove's gate call (remove.go) — dirtyScopeAll, the pair's warp worktree.
+-//   - Remove's gate call (launchers.go) — dirtinessNA.
+ //   - Prune own pre-flight (prune.go) — scopeTracked, the weft path.
+ //   - Prune's gate call (prune.go) — dirtyScopeTracked, stale pair paths.
+ //   - Pull own pre-flight (pull.go) — scopeTracked, the prime warp worktree.
+@@ -104,8 +103,6 @@ type VerbFixture struct {
+ 	// Target is the StateTarget that a hostile or dirty state plants against.
+ 	// Each verb resolves it from the verified dirtiness-scope table above.
+ 	Target StateTarget
+-	// LauncherBlocker is a directory planted at the pair's launcher script path, failing Add's launcher step.
+-	LauncherBlocker string
+ 	// AdvancedFromSHA is the prime warp worktree's HEAD before Pull's Arrange pushes a new commit to
+ 	// the hub's own warp bare.
+ 	AdvancedFromSHA string
+@@ -292,45 +289,31 @@ func firstWiredJunctionLink(tb testing.TB, h *hubforge.Hub, slug string) string
+ }
+ 
+ // pairPermittedRoots returns the hub-relative roots a pair's full teardown or creation may touch:
+-// its warp worktree, its weft sibling, and its launcher directory.
++// its warp worktree and its weft sibling.
+ func pairPermittedRoots(tb testing.TB, h *hubforge.Hub, slug string) []string {
+ 	tb.Helper()
+ 
+ 	return []string{
+ 		hubRelative(tb, h, h.PairCodeWorktree(slug)),
+ 		hubRelative(tb, h, h.PairRecordsSibling(slug)),
+-		hubRelative(tb, h, h.PairLauncherDir(slug)),
+ 	}
+ }
+ 
+-// slugPermittedRoots returns the hub-relative roots a pair named slug may occupy, unioned across
+-// both anchors ("." and "backend").
++// slugPermittedRoots returns the hub-relative roots a pair named slug may occupy:
++// its warp worktree, its weft sibling and their git-admin entries in the prime worktrees.
+ // A VerbCase's Expect closure has no *hubforge.Hub to resolve an accessor against, only the state name.
+-// A permitted root that matches nothing in a given hub's anchor is harmless: DiffManifest's
+-// pathPermitted only narrows what a diff flags, so an unused anchor's root cannot hide an unpermitted change.
+ // The *lymcwd.Location built below leaves HubPath empty.
+-// That is valid because every accessor this function calls composes paths with filepath.Join.
+-// filepath.Join drops an empty leading element, so each accessor yields exactly the hub-relative suffix.
++// That is valid because the accessor composes its path with filepath.Join.
++// Join drops an empty leading element, so the accessor yields exactly the hub-relative suffix.
+ func slugPermittedRoots(slug string) []string {
+ 	// A Remove or Prune cell rewrites the hub workspace file, which is named after the warp repo.
+-	roots := []string{filepath.ToSlash(fabricengine.HubWorkspacePath(&lymcwd.Location{RepoName: "warp-bare"}))}
+-	for _, anchor := range []string{".", "backend"} {
+-		loc := &lymcwd.Location{WorktreeName: slug, AnchorRel: anchor}
+-		launcher := fabricengine.LauncherDir(loc, slug)
+-		roots = append(roots,
+-			filepath.ToSlash(slug),
+-			filepath.ToSlash(weftname.SiblingPath("", slug)),
+-			filepath.ToSlash(launcher),
+-			// pruneEmptyAncestors removes an anchor-level parent left empty by the leaf's own
+-			// removal (e.g. "_launchers/backend" once "_launchers/backend/<slug>" is gone); the parent
+-			// itself is therefore also a legitimate part of a full pair teardown, not an
+-			// unpermitted change.
+-			filepath.ToSlash(filepath.Dir(launcher)),
+-			primeWorktreeAdminPermittedRoot(slug),
+-			primeWeftAdminPermittedRoot(slug),
+-		)
++	return []string{
++		filepath.ToSlash(fabricengine.HubWorkspacePath(&lymcwd.Location{RepoName: "warp-bare"})),
++		filepath.ToSlash(slug),
++		filepath.ToSlash(weftname.SiblingPath("", slug)),
++		primeWorktreeAdminPermittedRoot(slug),
++		primeWeftAdminPermittedRoot(slug),
+ 	}
+-	return roots
+ }
+ 
+ // escapeRelName returns a "../"-prefixed junction name.
+@@ -380,17 +363,17 @@ func assertExists(tb testing.TB, path string) {
+ 
+ // addCase builds Topology.Add's VerbCase.
+ //
+-// Arrange plants a directory at the pair's ide launcher script path.
+-// Add's launcher step then fails after the branch and both worktrees already exist, which triggers rollbackAdd.
++// Arrange makes Add fail at junction wiring through failAddBeforeWiring.
++// Add then fails after the branch and both worktrees already exist, which triggers rollbackAdd.
+ // Without it, Add never reaches the gate.
+ // rollbackAdd fires only at post-creation sites, and no state induces one on its own.
+ //
+ // The arrangement sends every path that the pre-flight does not refuse through rollbackAdd.
+ // On a clean hub, rollback's removal calls succeed unconditionally.
+-// A clean-state Run therefore returns the launcher error.
+-// It leaves the hub as it was before Run, apart from the blocker.
++// A clean-state Run therefore returns the wiring error.
++// It leaves the hub as it was before Run.
+ // That is add.go's documented rollback contract, so this case expects RefusedBefore rather than Proceeds.
+-// The case has no Build: the blocker is one directory and no git step, so a template would only add a build.
++// The case has no Build: the blocker is a hook and no git step, so a template would only add a build.
+ func addCase() VerbCase {
+ 	return VerbCase{
+ 		Name: "Add",
+@@ -398,11 +381,10 @@ func addCase() VerbCase {
+ 			tb.Helper()
+ 
+ 			slug := "verb-add-owner"
+-			blocker := plantLauncherBlocker(tb, h.Location, slug)
++			failAddBeforeWiring(tb, h.Topology, h.Location, slug)
+ 
+ 			return VerbFixture{
+-				Slug:            slug,
+-				LauncherBlocker: blocker,
++				Slug: slug,
+ 				Target: StateTarget{
+ 					WarpCheckout: h.PrimeWorktree(),
+ 					WeftCheckout: h.PrimeRecords(),
+@@ -448,10 +430,10 @@ func addCase() VerbCase {
+ 				}
+ 			default:
+ 				// Every other state's own pre-flight (or absence of one) lets Add proceed through both worktrees;
+-				// the launcher blocker then fails the launcher step unconditionally, its error naming the script path and so the slug.
++				// the junction blocker then fails the wiring step unconditionally, its error naming the junction path and so the slug.
+ 				// rollbackAdd reverts every step it can.
+ 				// The warp branch is reverted too, whatever the BranchPrefix.
+-				// The rollback removes the planted blocker and its launcher directory, which the pair's roots permit.
++				// The rollback removes the planted blocker with the pair's warp worktree, which the pair's roots permit.
+ 				return Expectation{
+ 					Kind:           KindRefusedBefore,
+ 					PermittedRoots: slugPermittedRoots("verb-add-owner"),
+@@ -460,7 +442,6 @@ func addCase() VerbCase {
+ 						tb.Helper()
+ 						assertGone(tb, h.PairCodeWorktree(f.Slug))
+ 						assertGone(tb, h.PairRecordsSibling(f.Slug))
+-						assertGone(tb, h.PairLauncherDir(f.Slug))
+ 						if gitkit.BranchExists(tb, h.PrimeWorktree(), f.Slug) {
+ 							tb.Errorf("Add's rollback left branch %q behind", f.Slug)
+ 						}
+@@ -507,12 +488,11 @@ func removeCase() VerbCase {
+ 			switch state {
+ 			case "dirtyWarpTracked", "dirtyWarpUntracked", "dirtyWeftTracked", "dirtyWeftUntracked", "bothDirty":
+ 				// Remove runs both no-force dirtiness checks before its archive and every teardown,
+-				// so a refused cell leaves the launchers and warp worktree in place.
++				// so a refused cell leaves the warp worktree in place.
+ 				return Expectation{
+ 					Kind:      KindRefusedBefore,
+ 					Substring: "uncommitted changes",
+ 					Effect: func(tb testing.TB, h *hubforge.Hub, f VerbFixture) {
+-						assertExists(tb, h.PairLauncherDir(f.Slug))
+ 						assertExists(tb, h.PairCodeWorktree(f.Slug))
+ 					},
+ 				}
+@@ -524,7 +504,6 @@ func removeCase() VerbCase {
+ 						tb.Helper()
+ 						assertGone(tb, h.PairCodeWorktree(f.Slug))
+ 						assertGone(tb, h.PairRecordsSibling(f.Slug))
+-						assertGone(tb, h.PairLauncherDir(f.Slug))
+ 					},
+ 				}
+ 			}
+@@ -580,7 +559,6 @@ func pruneCase() VerbCase {
+ 					Effect: func(tb testing.TB, h *hubforge.Hub, f VerbFixture) {
+ 						tb.Helper()
+ 						assertExists(tb, h.PairRecordsSibling(f.Slug))
+-						assertExists(tb, h.PairLauncherDir(f.Slug))
+ 					},
+ 				}
+ 			default:
+@@ -590,7 +568,6 @@ func pruneCase() VerbCase {
+ 					Effect: func(tb testing.TB, h *hubforge.Hub, f VerbFixture) {
+ 						tb.Helper()
+ 						assertGone(tb, h.PairRecordsSibling(f.Slug))
+-						assertGone(tb, h.PairLauncherDir(f.Slug))
+ 					},
+ 				}
+ 			}
+diff --git a/internal/fabricengine/originreconcileended.go b/internal/fabricengine/originreconcileended.go
+index 3d96f2ed..bb6cdeea 100644
+--- a/internal/fabricengine/originreconcileended.go
++++ b/internal/fabricengine/originreconcileended.go
+@@ -75,14 +75,10 @@ func onlyRuns(ended EndedSet, runs []string) EndedSet {
+ }
+ 
+ // pairHasLocalPart reports whether this machine holds any part of slug's pair.
+-// The parts are its task worktree path, its sibling worktree path, its launchers or either local branch.
++// The parts are its task worktree path, its sibling worktree path or either local branch.
+ // A branch counts when it is named by the slug alone.
+ func pairHasLocalPart(l *lymcwd.Location, slug string) (bool, error) {
+-	pair, err := lymcwd.NamedWorktree(l.HubPath, slug)
+-	if err != nil {
+-		return false, err
+-	}
+-	if pathPresent(WorktreePath(l, slug)) || pathPresent(RecordsWorktreePath(l, slug)) || pathPresent(LauncherDir(pair, slug)) {
++	if pathPresent(WorktreePath(l, slug)) || pathPresent(RecordsWorktreePath(l, slug)) {
+ 		return true, nil
+ 	}
+ 	taskBranch, err := localBranchExists(l.WorktreePath(), slug)
+diff --git a/internal/fabricengine/pairbranch_integration_test.go b/internal/fabricengine/pairbranch_integration_test.go
+index 4494770f..8a9db50a 100644
+--- a/internal/fabricengine/pairbranch_integration_test.go
++++ b/internal/fabricengine/pairbranch_integration_test.go
+@@ -72,11 +72,8 @@ func TestBranchPrefixChange_PairWithNothingLeftLocally(t *testing.T) {
+ 		tests := []struct {
+ 			name string
+ 			slug string
+-			// launcherDirLeft leaves the pair's launcher directory behind as its only local remnant.
+-			launcherDirLeft bool
+ 		}{
+-			{"NothingLeftLocally", "pn-remove", false},
+-			{"OnlyTheLauncherDirectoryLeft", "pn-launchers", true},
++			{"NothingLeftLocally", "pn-remove"},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+@@ -84,11 +81,6 @@ func TestBranchPrefixChange_PairWithNothingLeftLocally(t *testing.T) {
+ 
+ 				h, top := pairOnOriginOnly(t, tt.slug)
+ 				recordsBranch := fabricengine.RecordsBranchName(tt.slug)
+-				if tt.launcherDirLeft {
+-					if err := os.MkdirAll(h.PairLauncherDir(tt.slug), 0o755); err != nil {
+-						t.Fatalf("create the launcher directory of %q: %v", tt.slug, err)
+-					}
+-				}
+ 
+ 				res, err := top.Remove(h.Location, tt.slug, false, true)
+ 				if err != nil {
+diff --git a/internal/fabricengine/pairparts.go b/internal/fabricengine/pairparts.go
+index 2ab285bd..0d8ee79e 100644
+--- a/internal/fabricengine/pairparts.go
++++ b/internal/fabricengine/pairparts.go
+@@ -22,15 +22,13 @@ type PairParts struct {
+ 	RecordsBranch bool
+ 	// TaskBranch reports the local task branch.
+ 	TaskBranch bool
+-	// Launchers reports the pair's launcher directory.
+-	Launchers bool
+ 	// StrayPath reports an unregistered path at the pair's task worktree location, such as one a late writer refilled.
+ 	StrayPath bool
+ }
+ 
+ // Any reports whether any part of the pair is present.
+ func (p PairParts) Any() bool {
+-	return p.TaskWorktree || p.RecordsWorktree || p.RecordsBranch || p.TaskBranch || p.Launchers || p.StrayPath
++	return p.TaskWorktree || p.RecordsWorktree || p.RecordsBranch || p.TaskBranch || p.StrayPath
+ }
+ 
+ // PairParts reports which parts of slug's pair are present, read locally.
+@@ -44,7 +42,6 @@ func (t *Topology) PairParts(l *lymcwd.Location, slug string) (PairParts, error)
+ 		RecordsWorktree: state.siblingWorktree,
+ 		RecordsBranch:   state.siblingBranch,
+ 		TaskBranch:      state.taskBranch,
+-		Launchers:       state.launchers,
+ 		StrayPath:       state.strayPath,
+ 	}, nil
+ }
+diff --git a/internal/fabricengine/pairparts_integration_test.go b/internal/fabricengine/pairparts_integration_test.go
+index b02b1fb9..f02667c3 100644
+--- a/internal/fabricengine/pairparts_integration_test.go
++++ b/internal/fabricengine/pairparts_integration_test.go
+@@ -24,7 +24,7 @@ func TestPairParts(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	all := fabricengine.PairParts{TaskWorktree: true, RecordsWorktree: true, RecordsBranch: true, TaskBranch: true, Launchers: true}
++	all := fabricengine.PairParts{TaskWorktree: true, RecordsWorktree: true, RecordsBranch: true, TaskBranch: true}
+ 
+ 	t.Run("AfterAddEveryPartIsPresent", func(t *testing.T) {
+ 		t.Parallel()
+diff --git a/internal/fabricengine/portallauncher_test.go b/internal/fabricengine/portallauncher_test.go
+deleted file mode 100644
+index 6dc1e65d..00000000
+--- a/internal/fabricengine/portallauncher_test.go
++++ /dev/null
+@@ -1,382 +0,0 @@
+-// portallauncher_test.go covers the launcher path accessors and the launcher teardown.
+-// It pins the `_launchers` layout and the launcher relative-path math across root and subpath AnchorRel cases.
+-// A wrong HubPath base or a broken filepath.Rel fails here rather than in a live hub.
+-
+-package fabricengine
+-
+-import (
+-	"os"
+-	"path/filepath"
+-	"runtime"
+-	"testing"
+-
+-	"github.com/Knatte18/loomyard/internal/lymcwd"
+-	"github.com/Knatte18/loomyard/internal/testkit/locationkit"
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-)
+-
+-// wantMenuLauncherName returns the menu launcher filename for runtime.GOOS.
+-// The selection mirrors the GOOS check in launchers.go, so the tests hold on every OS.
+-func wantMenuLauncherName() string {
+-	if runtime.GOOS == "windows" {
+-		return "ide-menu.cmd"
+-	}
+-	return "ide-menu.sh"
+-}
+-
+-// TestLaunchersDir verifies that launchersDir and LauncherDir join the hub, the launchers directory, and the slug.
+-//
+-//testtiming:keep launchersDir and LauncherDir joining the hub, the _launchers name and the slug; coverage of its blocks by other tests does not show an assertion of this
+-func TestLaunchersDir(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	hub := filepath.Join("repos", "loomyard-LYMHUB")
+-	l := &lymcwd.Location{HubPath: hub, WorktreeName: "loomyard", AnchorRel: "."}
+-	slug := "test-wt"
+-
+-	if got, want := launchersDir(l), filepath.Join(hub, "_launchers"); got != want {
+-		t.Errorf("launchersDir() = %q; want %q", got, want)
+-	}
+-
+-	if got, want := LauncherDir(l, slug), filepath.Join(hub, "_launchers", slug); got != want {
+-		t.Errorf("LauncherDir(%q) = %q; want %q", slug, got, want)
+-	}
+-}
+-
+-// TestMirroredLauncherMethods tests the launcher path accessors at the anchor root and at a nested subpath.
+-// It also checks that two distinct subpaths never collide.
+-//
+-//testtiming:keep the AnchorRel-mirrored launcher accessors at the root and a nested subpath, with distinct subpaths never colliding; coverage of its blocks by other tests does not show an assertion of this
+-func TestMirroredLauncherMethods(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	hub := filepath.Join("repos", "loomyard-LYMHUB")
+-	const worktreeName = "loomyard"
+-
+-	t.Run("LauncherDir", func(t *testing.T) {
+-		t.Parallel()
+-
+-		t.Run("at root (backward compat)", func(t *testing.T) {
+-			t.Parallel()
+-
+-			l := locationkit.Location(hub, worktreeName, ".")
+-			slug := "test-slug"
+-			got := LauncherDir(l, slug)
+-			// At the root, the expected path is the launchers directory joined with the slug.
+-			want := filepath.Join(launchersDir(l), slug)
+-			if got != want {
+-				t.Errorf("LauncherDir(%q) = %q; want %q", slug, got, want)
+-			}
+-		})
+-
+-		t.Run("at subpath", func(t *testing.T) {
+-			t.Parallel()
+-
+-			l := locationkit.Location(hub, worktreeName, filepath.Join("services", "api"))
+-			slug := "test-slug"
+-			got := LauncherDir(l, slug)
+-			want := filepath.Join(l.HubPath, "_launchers", "services", "api", slug)
+-			if got != want {
+-				t.Errorf("LauncherDir(%q) = %q; want %q", slug, got, want)
+-			}
+-		})
+-
+-		t.Run("no collision between different subpaths", func(t *testing.T) {
+-			t.Parallel()
+-
+-			l1 := locationkit.Location(hub, worktreeName, filepath.Join("services", "api"))
+-			l2 := locationkit.Location(hub, worktreeName, filepath.Join("services", "web"))
+-			slug := "test-slug"
+-			dir1 := LauncherDir(l1, slug)
+-			dir2 := LauncherDir(l2, slug)
+-			if dir1 == dir2 {
+-				t.Errorf("LauncherDir produced collision: %q == %q", dir1, dir2)
+-			}
+-		})
+-	})
+-
+-	t.Run("menuLauncherPath", func(t *testing.T) {
+-		t.Parallel()
+-
+-		t.Run("at root", func(t *testing.T) {
+-			t.Parallel()
+-
+-			l := locationkit.Location(hub, worktreeName, ".")
+-			got := menuLauncherPath(l)
+-			want := filepath.Join(l.HubPath, "_launchers", wantMenuLauncherName())
+-			if got != want {
+-				t.Errorf("menuLauncherPath() = %q; want %q", got, want)
+-			}
+-		})
+-
+-		t.Run("at subpath", func(t *testing.T) {
+-			t.Parallel()
+-
+-			l := locationkit.Location(hub, worktreeName, filepath.Join("services", "api"))
+-			got := menuLauncherPath(l)
+-			want := filepath.Join(l.HubPath, "_launchers", "services", "api", wantMenuLauncherName())
+-			if got != want {
+-				t.Errorf("menuLauncherPath() = %q; want %q", got, want)
+-			}
+-		})
+-	})
+-
+-	t.Run("launcherSpawnRel", func(t *testing.T) {
+-		t.Parallel()
+-
+-		t.Run("at root", func(t *testing.T) {
+-			t.Parallel()
+-
+-			l := locationkit.Location(hub, worktreeName, ".")
+-			slug := "test-slug"
+-			got, err := launcherSpawnRel(l, slug)
+-			if err != nil {
+-				t.Fatalf("launcherSpawnRel returned an unexpected error: %v", err)
+-			}
+-
+-			launcherDir := LauncherDir(l, slug)
+-			targetPath := filepath.Join(filepath.Join(l.HubPath, slug), l.AnchorRel)
+-			want, _ := filepath.Rel(launcherDir, targetPath)
+-
+-			if got != want {
+-				t.Errorf("launcherSpawnRel(%q) = %q; want %q", slug, got, want)
+-			}
+-		})
+-
+-		t.Run("at subpath", func(t *testing.T) {
+-			t.Parallel()
+-
+-			l := locationkit.Location(hub, worktreeName, filepath.Join("services", "api"))
+-			slug := "test-slug"
+-			got, err := launcherSpawnRel(l, slug)
+-			if err != nil {
+-				t.Fatalf("launcherSpawnRel returned an unexpected error: %v", err)
+-			}
+-
+-			launcherDir := LauncherDir(l, slug)
+-			targetPath := filepath.Join(filepath.Join(l.HubPath, slug), l.AnchorRel)
+-			want, _ := filepath.Rel(launcherDir, targetPath)
+-
+-			if got != want {
+-				t.Errorf("launcherSpawnRel(%q) = %q; want %q", slug, got, want)
+-			}
+-		})
+-	})
+-
+-	t.Run("menuLauncherRel", func(t *testing.T) {
+-		t.Parallel()
+-
+-		t.Run("at root", func(t *testing.T) {
+-			t.Parallel()
+-
+-			l := locationkit.Location(hub, worktreeName, ".")
+-			primeName := worktreeName
+-			got, err := menuLauncherRel(l, primeName)
+-			if err != nil {
+-				t.Fatalf("menuLauncherRel returned an unexpected error: %v", err)
+-			}
+-
+-			menuDir := filepath.Dir(menuLauncherPath(l))
+-			targetPath := filepath.Join(l.HubPath, primeName, l.AnchorRel)
+-			want, _ := filepath.Rel(menuDir, targetPath)
+-
+-			if got != want {
+-				t.Errorf("menuLauncherRel(%q) = %q; want %q", primeName, got, want)
+-			}
+-		})
+-
+-		t.Run("at subpath", func(t *testing.T) {
+-			t.Parallel()
+-
+-			l := locationkit.Location(hub, worktreeName, filepath.Join("services", "api"))
+-			primeName := worktreeName
+-			got, err := menuLauncherRel(l, primeName)
+-			if err != nil {
+-				t.Fatalf("menuLauncherRel returned an unexpected error: %v", err)
+-			}
+-
+-			menuDir := filepath.Dir(menuLauncherPath(l))
+-			targetPath := filepath.Join(l.HubPath, primeName, l.AnchorRel)
+-			want, _ := filepath.Rel(menuDir, targetPath)
+-
+-			if got != want {
+-				t.Errorf("menuLauncherRel(%q) = %q; want %q", primeName, got, want)
+-			}
+-		})
+-	})
+-}
+-
+-// TestRemoveLaunchers_PreservesForeignContent proves the launcher teardown deletes only the scripts fabric wrote.
+-// A file the operator placed beside the launchers survives the teardown.
+-func TestRemoveLaunchers_PreservesForeignContent(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	hub := t.TempDir()
+-	l := locationkit.Location(hub, "prime", ".")
+-	const slug = "my-task"
+-
+-	launcherDir := LauncherDir(l, slug)
+-	if err := os.MkdirAll(launcherDir, 0o755); err != nil {
+-		t.Fatalf("mkdir launcher dir: %v", err)
+-	}
+-	ext := launcherExt(runtime.GOOS)
+-	for _, name := range []string{"ide" + ext, "fabric-checkout" + ext, "run" + ext} {
+-		if err := os.WriteFile(filepath.Join(launcherDir, name), []byte("#!/bin/sh\n"), 0o755); err != nil {
+-			t.Fatalf("seed %s: %v", name, err)
+-		}
+-	}
+-	operatorFile := filepath.Join(launcherDir, "operator-notes.txt")
+-	if err := os.WriteFile(operatorFile, []byte("keep me\n"), 0o644); err != nil {
+-		t.Fatalf("seed operator file: %v", err)
+-	}
+-
+-	// The directory cannot be removed while the operator's file is in it.
+-	// That refusal is the point: teardown reports it rather than deleting what it does not own.
+-	if err := removeLaunchers(NewMutations(""), l, slug); err == nil {
+-		t.Error("removeLaunchers() = nil; want the non-empty-directory refusal to be reported")
+-	}
+-
+-	if _, err := os.Stat(operatorFile); err != nil {
+-		t.Errorf("removeLaunchers() destroyed the operator's own file at %s: %v", operatorFile, err)
+-	}
+-	if _, err := os.Stat(filepath.Join(launcherDir, "ide"+ext)); !os.IsNotExist(err) {
+-		t.Errorf("removeLaunchers() left ide%s in place; want fabric's own scripts removed", ext)
+-	}
+-	if _, err := os.Stat(filepath.Join(launcherDir, "run"+ext)); !os.IsNotExist(err) {
+-		t.Errorf("removeLaunchers() left run%s in place; want fabric's own scripts removed", ext)
+-	}
+-}
+-
+-// TestRemoveLaunchers_DirRemovalIsContained proves the launcher-directory removal stays inside the launchers container.
+-//
+-// The escape is deterministic here rather than raced.
+-// The test calls removeContainedPath, which removeLaunchers uses, on an escaping intermediate component.
+-// The out-of-container victim must survive.
+-//
+-// The routing itself is guarded by `TestNoDestructiveBypass_FabricengineProductionSource`.
+-// It lives in cmd/lym/destructiveguard_test.go and fails if a raw os.Remove appears in launchers.go.
+-//
+-//testtiming:keep launcher-directory removal acting through the containment root so an escaping intermediate cannot delete an outside directory; coverage of its blocks by other tests does not show an assertion of this
+-func TestRemoveLaunchers_DirRemovalIsContained(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	hub := t.TempDir()
+-	outside := t.TempDir()
+-	l := locationkit.Location(hub, "prime", "escapes")
+-	const slug = "my-task"
+-
+-	// The victim the escaping link points at is an empty directory: a plain os.Remove would succeed on it,
+-	// so the assertion below fails without the containment guard.
+-	victim := filepath.Join(outside, slug)
+-	if err := os.MkdirAll(victim, 0o755); err != nil {
+-		t.Fatalf("mkdir victim: %v", err)
+-	}
+-	if err := os.MkdirAll(launchersDir(l), 0o755); err != nil {
+-		t.Fatalf("mkdir launchers container: %v", err)
+-	}
+-	// AnchorRel component "escapes" is the intermediate segment, planted as a link out of the hub.
+-	if err := os.Symlink(outside, filepath.Join(launchersDir(l), "escapes")); err != nil {
+-		t.Skipf("symlink unsupported on this platform: %v", err)
+-	}
+-
+-	removed, _, err := removeContainedPath(launchersDir(l), LauncherDir(l, slug), false)
+-	if err == nil {
+-		t.Errorf("removeContainedPath(...) error = nil; want a refusal of the escaping intermediate component")
+-	}
+-	if removed {
+-		t.Error("removeContainedPath(...) removed = true; want false — nothing inside the container was removed")
+-	}
+-	if _, statErr := os.Stat(victim); statErr != nil {
+-		t.Errorf("the out-of-container victim at %s was destroyed: %v; want it untouched", victim, statErr)
+-	}
+-}
+-
+-// TestRemoveLaunchers_EmptyDirRemovedAndRecorded pins the success path of removeLaunchers:
+-// an empty launcher directory is removed and recorded exactly once, and a second call is a silent, unrecorded no-op.
+-// removeContainedPath reports removed=false for an absent target,
+-// and that keeps the idempotence every teardown caller relies on.
+-//
+-//testtiming:keep an empty launcher directory being removed and recorded exactly once with a silent second call; coverage of its blocks by other tests does not show an assertion of this
+-func TestRemoveLaunchers_EmptyDirRemovedAndRecorded(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	hub := t.TempDir()
+-	l := locationkit.Location(hub, "prime", ".")
+-	const slug = "my-task"
+-
+-	launcherDir := LauncherDir(l, slug)
+-	if err := os.MkdirAll(launcherDir, 0o755); err != nil {
+-		t.Fatalf("mkdir launcher dir: %v", err)
+-	}
+-
+-	rec := NewMutations(hub)
+-	if err := removeLaunchers(rec, l, slug); err != nil {
+-		t.Fatalf("removeLaunchers() error = %v; want nil", err)
+-	}
+-	if _, err := os.Stat(launcherDir); !os.IsNotExist(err) {
+-		t.Errorf("removeLaunchers() left %s in place; want it removed", launcherDir)
+-	}
+-	if got := rec.Len(); got != 1 {
+-		t.Errorf("removeLaunchers() recorded %d mutations; want 1 (the directory removal)", got)
+-	}
+-
+-	// Second call: idempotent, and it records nothing, since an absent target is a successful no-op and not a removal.
+-	rec2 := NewMutations(hub)
+-	if err := removeLaunchers(rec2, l, slug); err != nil {
+-		t.Fatalf("removeLaunchers() second call error = %v; want nil", err)
+-	}
+-	if got := rec2.Len(); got != 0 {
+-		t.Errorf("removeLaunchers() second call recorded %d mutations; want 0", got)
+-	}
+-}
+-
+-// TestRemoveLaunchers_ContainmentRefusalSurvivesSurfaceRefusal proves that the containment refusal is not discarded:
+-// removeLaunchers opens with refuseUncontainedPath.
+-// Every best-effort call site in Remove and Prune wraps its error in surfaceRefusal.
+-// surfaceRefusal returns nil for anything that is not a *destructiveRefusal,
+-// so a bare containment error would be dropped unnoticed.
+-//
+-// The assertion checks surfaceRefusal's result, not only a non-nil error:
+-// a bare error from refuseUncontainedPath would still be non-nil here, and only the surfaceRefusal round-trip fails.
+-func TestRemoveLaunchers_ContainmentRefusalSurvivesSurfaceRefusal(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	hub := t.TempDir()
+-	outside := t.TempDir()
+-	l := locationkit.Location(hub, "prime", "escapes")
+-	const slug = "my-task"
+-
+-	if err := os.MkdirAll(launchersDir(l), 0o755); err != nil {
+-		t.Fatalf("mkdir %s: %v", launchersDir(l), err)
+-	}
+-	if err := os.Symlink(outside, filepath.Join(launchersDir(l), "escapes")); err != nil {
+-		t.Skipf("symlink unsupported on this platform: %v", err)
+-	}
+-	// The teardown targets must exist out there, so the guard refuses on containment rather than
+-	// short-circuiting on an absent target.
+-	if err := os.MkdirAll(filepath.Join(outside, slug), 0o755); err != nil {
+-		t.Fatalf("mkdir escaped target: %v", err)
+-	}
+-
+-	err := removeLaunchers(NewMutations(hub), l, slug)
+-	if err == nil {
+-		t.Fatal("launchers teardown error = nil; want a containment refusal")
+-	}
+-	if surfaceRefusal(err) == nil {
+-		t.Error("surfaceRefusal(launchers teardown error) = nil; want the refusal propagated so " +
+-			"Remove/Prune report it instead of exiting ok:true with artifacts left on disk")
+-	}
+-	refusal, ok := RefusalOf(err)
+-	if !ok {
+-		t.Fatal("RefusalOf(launchers teardown error) ok = false; want a typed gate refusal")
+-	}
+-	if refusal.Check != CheckContainment {
+-		t.Errorf("RefusalOf(...).Check = %q; want %q", refusal.Check, CheckContainment)
+-	}
+-}
+diff --git a/internal/fabricengine/portals.go b/internal/fabricengine/portals.go
+index e935e083..fcd10924 100644
+--- a/internal/fabricengine/portals.go
++++ b/internal/fabricengine/portals.go
+@@ -31,7 +31,7 @@ func retiredPortalTarget(l *lymcwd.Location, name string) string {
+ // retiredHubWorkspacePath returns the path of the retired hub workspace file.
+ // The path is <hub>/_launchers/<AnchorRel>/<primeName>.code-workspace.
+ func retiredHubWorkspacePath(l *lymcwd.Location, primeName string) string {
+-	return filepath.Join(launchersDir(l), l.AnchorRel, primeName+hubWorkspaceExt)
++	return filepath.Join(launchersDir(l.HubPath), l.AnchorRel, primeName+hubWorkspaceExt)
+ }
+ 
+ // retiredPortalChain returns the hub-relative directories from the portals container down to its anchor directory, in that order.
+@@ -46,9 +46,9 @@ func retiredPortalChain(l *lymcwd.Location) []string {
+ 	return chain
+ }
+ 
+-// readRetiredPortalDir lists the entry names of dirRel, a hub-relative directory, in byte order, through root.
++// readRetiredDir lists the entry names of dirRel, a hub-relative directory, in byte order, through root.
+ // A component that is a symlink escaping the hub fails the read.
+-func readRetiredPortalDir(root *os.Root, dirRel string) ([]string, error) {
++func readRetiredDir(root *os.Root, dirRel string) ([]string, error) {
+ 	dir, err := root.Open(dirRel)
+ 	if err != nil {
+ 		return nil, err
+@@ -90,7 +90,7 @@ func retiredHubArtifactsPresent(l *lymcwd.Location) bool {
+ 
+ 	chain := retiredPortalChain(l)
+ 	anchorRel := chain[len(chain)-1]
+-	if names, err := readRetiredPortalDir(root, anchorRel); err == nil {
++	if names, err := readRetiredDir(root, anchorRel); err == nil {
+ 		for _, name := range names {
+ 			if isRetiredPortalLink(l, anchorRel, name) {
+ 				return true
+@@ -150,7 +150,7 @@ func sweepRetiredPortals(rec *Mutations, l *lymcwd.Location) []string {
+ 	listed := 0
+ 	lastKept := -1
+ 	for level, dirRel := range chain {
+-		names, err := readRetiredPortalDir(root, dirRel)
++		names, err := readRetiredDir(root, dirRel)
+ 		if errors.Is(err, fs.ErrNotExist) {
+ 			break
+ 		}
+@@ -240,7 +240,7 @@ func isDirectoryAt(root *os.Root, rel string) bool {
+ 
+ // directoryHoldsEntries reports whether the hub-relative directory rel lists at least one entry.
+ func directoryHoldsEntries(root *os.Root, rel string) bool {
+-	names, err := readRetiredPortalDir(root, rel)
++	names, err := readRetiredDir(root, rel)
+ 	return err == nil && len(names) > 0
+ }
+ 
+@@ -265,17 +265,17 @@ func sweepRetiredHubWorkspace(rec *Mutations, l *lymcwd.Location) []string {
+ 	}
+ 	err = checkPathRequest(pathRequest{
+ 		what:      "remove retired hub workspace file",
+-		container: launchersDir(l),
++		container: launchersDir(l.HubPath),
+ 		target:    path,
+ 		slug:      nil,
+-		ownership: ownedUnderGeometryRoot(launchersDir(l)),
++		ownership: ownedUnderGeometryRoot(launchersDir(l.HubPath)),
+ 		dirtiness: dirtinessNA("the retired workspace file is a generated artifact, never edited content"),
+ 		force:     false,
+ 	})
+ 	if err != nil {
+ 		return []string{keptDetail(l, path, err.Error())}
+ 	}
+-	removed, _, err := removeContainedPath(launchersDir(l), path, false)
++	removed, _, err := removeContainedPath(launchersDir(l.HubPath), path, false)
+ 	if err != nil {
+ 		return []string{keptDetail(l, path, err.Error())}
+ 	}
+diff --git a/internal/fabricengine/portals_test.go b/internal/fabricengine/portals_test.go
+index a179e659..9747b7fd 100644
+--- a/internal/fabricengine/portals_test.go
++++ b/internal/fabricengine/portals_test.go
+@@ -28,7 +28,7 @@ func TestSweepRetiredHubArtifacts_UnresolvablePrime(t *testing.T) {
+ 	if err := fslink.CreateDirLink(link, retiredPortalTarget(l, "slug")); err != nil {
+ 		t.Fatalf("plant the portal link: %v", err)
+ 	}
+-	workspaceFile := filepath.Join(launchersDir(l), l.AnchorRel, "prime"+hubWorkspaceExt)
++	workspaceFile := filepath.Join(launchersDir(hub), l.AnchorRel, "prime"+hubWorkspaceExt)
+ 	if err := os.MkdirAll(filepath.Dir(workspaceFile), 0o755); err != nil {
+ 		t.Fatalf("create the _launchers anchor dir: %v", err)
+ 	}
+diff --git a/internal/fabricengine/prune.go b/internal/fabricengine/prune.go
+index ae45c3eb..23041082 100644
+--- a/internal/fabricengine/prune.go
++++ b/internal/fabricengine/prune.go
+@@ -75,7 +75,7 @@ type PruneResult struct {
+ }
+ 
+ // Prune identifies stale or orphaned warp↔weft pairs.
+-// When apply is true, it removes their stale weft worktrees and associated launcher directories.
++// When apply is true, it removes their stale weft worktrees.
+ // A weft worktree with uncommitted tracked changes is protected unless force is true.
+ // The forced removal would otherwise discard those changes without a trace.
+ // Per-entry removal errors and protection reasons are recorded in PruneEntry.Error.
+@@ -205,7 +205,7 @@ func (t *Topology) Prune(l *lymcwd.Location, apply, force bool) (res PruneResult
+ // So does a separate git clone at `<hub>/proj-weft/`.
+ //
+ // An absent path is not unowned: there is nothing to delete.
+-// removeStalePair still clears launcher and worktree-registration debris for a pair whose weft worktree is gone.
++// removeStalePair still clears worktree-registration debris for a pair whose weft worktree is gone.
+ func applyStalePairOwnership(l *lymcwd.Location, weftPath string, pe *PruneEntry) {
+ 	if _, statErr := os.Stat(weftPath); os.IsNotExist(statErr) {
+ 		return
+@@ -257,7 +257,7 @@ func applyStalePairProtection(weftPath string, force bool, pe *PruneEntry) {
+ }
+ 
+ // removeStalePair removes the stale weft worktree at weftPath when it exists.
+-// It tears down the slug's launcher directory and prunes administrative state in both repos.
++// It prunes administrative state in both repos.
+ // Errors are recorded in pe.Error.
+ // It returns true only when a weft worktree existed and was removed without error.
+ //
+@@ -267,10 +267,6 @@ func applyStalePairProtection(weftPath string, force bool, pe *PruneEntry) {
+ // It runs only after git declines to remove a path that git still registers as a worktree.
+ // That is recoverable bookkeeping, not data loss.
+ // The same rule and justification apply to removeWarpWorktreeDir's fallback.
+-//
+-// Launcher teardown runs after the ownership gate, since its slug comes from a directory name.
+-// Tearing it down first would let a stray `<hub>/my-task-weft/` directory remove a live pair's launcher directory.
+-// Nothing has yet shown the entry is fabric's at that point.
+ // rec is the calling verb's own recorder, threaded through every gate call this helper makes.
+ func removeStalePair(rec *Mutations, l *lymcwd.Location, slug, weftPath string, pe *PruneEntry) bool {
+ 	weftRepoRoot, weftRepoRootErr := RecordsRepoRoot(l)
+@@ -279,13 +275,6 @@ func removeStalePair(rec *Mutations, l *lymcwd.Location, slug, weftPath string,
+ 		return false
+ 	}
+ 
+-	// The launcher teardown is keyed on a slug the orphan pass derived from a directory name.
+-	// A refusal here is most likely about that input, so it is recorded rather than swallowed as an ordinary failure.
+-	if err := surfaceRefusal(removeLaunchers(rec, l, slug)); err != nil {
+-		pe.Error = err.Error()
+-		return false
+-	}
+-
+ 	removed := false
+ 
+ 	if _, statErr := os.Stat(weftPath); statErr == nil {
+diff --git a/internal/fabricengine/reconcile.go b/internal/fabricengine/reconcile.go
+index 8d58ec9c..6631d1a0 100644
+--- a/internal/fabricengine/reconcile.go
++++ b/internal/fabricengine/reconcile.go
+@@ -47,11 +47,6 @@ const (
+ 	// ReconcileActionAlreadyHealthy means the pair required no corrective action.
+ 	ReconcileActionAlreadyHealthy ReconcileAction = "already_healthy"
+ 
+-	// ReconcileActionLaunchersRestored means the pair's junctions were healthy but its launcher directory was missing.
+-	// The launcher directory has been recreated.
+-	// It is reported rather than as healthy: a consumer keying off Action must see that convergence altered the pair.
+-	ReconcileActionLaunchersRestored ReconcileAction = "launchers_restored"
+-
+ 	// ReconcileActionStaleRemoved means the pair needed no junction added or re-pointed.
+ 	// Declarative stale removal still deleted at least one on-disk junction absent from the repo-wide pathspec.
+ 	//
+@@ -457,41 +452,9 @@ func (t *Topology) repairPairWiring(rec *Mutations, warpLayout *lymcwd.Location,
+ 		appendPrDetail(pr, detail)
+ 	}
+ 
+-	if restoreLaunchers(rec, warpLayout, slug, warpBranch, pr) && setAction && pr.Action == ReconcileActionAlreadyHealthy {
+-		pr.Action = ReconcileActionLaunchersRestored
+-	}
+-
+ 	applyStaleRemoval(rec, warpLayout, slug, pr)
+ }
+ 
+-// restoreLaunchers recreates the pair's launcher directory when it is missing, and reports whether it restored it.
+-//
+-// The launcher directory is part of the managed topology.
+-// Adding a pair creates it, and removing or pruning a pair tears it down.
+-// A pair whose directory was deleted would otherwise read already_healthy until it was removed and re-added.
+-// The hub's prime worktree is skipped, since the hub never gives it a worktree.
+-// A restore failure is a Detail note, never an Error or a changed Action.
+-// The launchers are convenience plumbing.
+-// A failed rebuild must not downgrade a verdict about the pair's git topology.
+-// rec is Reconcile's own recorder, threaded through to writeLaunchers.
+-func restoreLaunchers(rec *Mutations, warpLayout *lymcwd.Location, slug, warpBranch string, pr *ReconcilePairResult) bool {
+-	primeName, primeErr := PrimeName(warpLayout)
+-	if primeErr != nil || slug == primeName {
+-		return false
+-	}
+-
+-	if _, err := os.Stat(LauncherDir(warpLayout, slug)); !os.IsNotExist(err) {
+-		return false
+-	}
+-
+-	if launcherErr := writeLaunchers(rec, warpLayout, slug); launcherErr != nil {
+-		appendPrDetail(pr, fmt.Sprintf("launcher restore failed: %v", launcherErr))
+-		return false
+-	}
+-	appendPrDetail(pr, "launcher scripts restored")
+-	return true
+-}
+-
+ // reconcileMissingWeft determines and applies the corrective action for a warp worktree that has no weft worktree.
+ // It recreates the worktree from the existing branch, adopts a raw warp worktree, or reports it unmanaged.
+ // A missing weft repo (the prime weft checkout that holds the weft gitdir) is diagnosed first and reported by name.
+diff --git a/internal/fabricengine/reconcile_stale_registration_test.go b/internal/fabricengine/reconcile_stale_registration_test.go
+index 9965f4fe..4fecae2e 100644
+--- a/internal/fabricengine/reconcile_stale_registration_test.go
++++ b/internal/fabricengine/reconcile_stale_registration_test.go
+@@ -22,7 +22,6 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+-	"github.com/Knatte18/loomyard/internal/fslink"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -505,84 +504,3 @@ func reconcilePairFor(t *testing.T, result fabricengine.ReconcileResult, slug st
+ 	t.Fatalf("Reconcile() reported no pair for slug %q", slug)
+ 	return fabricengine.ReconcilePairResult{}
+ }
+-
+-// TestReconcile_RestoresDeletedLaunchers proves Reconcile restores a pair's missing launcher directory and reports it.
+-// It also proves a failed restore stays a Detail note.
+-// The report matters: a pair whose directory was deleted must not read already_healthy.
+-func TestReconcile_RestoresDeletedLaunchers(t *testing.T) {
+-	tiergate.Require(t, 1)
+-	t.Parallel()
+-
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	l := h.Location
+-
+-	reconcile := func(t *testing.T) fabricengine.ReconcileResult {
+-		t.Helper()
+-		result, err := h.Topology.Reconcile(l)
+-		if err != nil {
+-			t.Fatalf("Reconcile() error = %v", err)
+-		}
+-		return result
+-	}
+-
+-	t.Run("RestoresAndThenReadsHealthy", func(t *testing.T) {
+-		const slug = "launchers-repair"
+-		hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true})
+-		launcherDir := fabricengine.LauncherDir(l, slug)
+-		if err := os.RemoveAll(launcherDir); err != nil {
+-			t.Fatalf("delete launcher dir: %v", err)
+-		}
+-
+-		if got := reconcilePairFor(t, reconcile(t), slug).Action; got != fabricengine.ReconcileActionLaunchersRestored {
+-			t.Errorf("Reconcile() action = %q; want %q", got, fabricengine.ReconcileActionLaunchersRestored)
+-		}
+-		if _, err := os.Stat(launcherDir); err != nil {
+-			t.Errorf("Reconcile() left the launcher dir missing at %s: %v", launcherDir, err)
+-		}
+-		if got := reconcilePairFor(t, reconcile(t), slug).Action; got != fabricengine.ReconcileActionAlreadyHealthy {
+-			t.Errorf("second Reconcile() action = %q; want %q", got, fabricengine.ReconcileActionAlreadyHealthy)
+-		}
+-	})
+-
+-	t.Run("KeepsJunctionRepointedAndNotesTheRestore", func(t *testing.T) {
+-		const slug = "launchers-junction"
+-		hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true})
+-		if err := os.RemoveAll(fabricengine.LauncherDir(l, slug)); err != nil {
+-			t.Fatalf("delete launcher dir: %v", err)
+-		}
+-		if err := fslink.Remove(filepath.Join(fabricengine.WorktreePath(l, slug), l.AnchorRel, "_lym")); err != nil {
+-			t.Fatalf("delete warp junction: %v", err)
+-		}
+-
+-		pair := reconcilePairFor(t, reconcile(t), slug)
+-
+-		if pair.Action != fabricengine.ReconcileActionJunctionRepointed {
+-			t.Errorf("Reconcile() action = %q; want %q", pair.Action, fabricengine.ReconcileActionJunctionRepointed)
+-		}
+-		if !strings.Contains(pair.Detail, "launcher scripts restored") {
+-			t.Errorf("Reconcile() detail = %q; want it to note the launcher restore", pair.Detail)
+-		}
+-	})
+-
+-	t.Run("FailedRestoreIsADetailNote", func(t *testing.T) {
+-		const slug = "launchers-blocked"
+-		hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true})
+-		launcherRoot := filepath.Join(l.HubPath, "_launchers", l.AnchorRel)
+-		if err := os.RemoveAll(launcherRoot); err != nil {
+-			t.Fatalf("delete launcher root: %v", err)
+-		}
+-		outside := t.TempDir()
+-		if err := fslink.CreateDirLink(launcherRoot, outside); err != nil {
+-			t.Fatalf("link the launcher root outside the hub: %v", err)
+-		}
+-
+-		pair := reconcilePairFor(t, reconcile(t), slug)
+-
+-		if pair.Action != fabricengine.ReconcileActionAlreadyHealthy || pair.Error != "" {
+-			t.Errorf("Reconcile() action = %q, error = %q; want %q and no error", pair.Action, pair.Error, fabricengine.ReconcileActionAlreadyHealthy)
+-		}
+-		if !strings.Contains(pair.Detail, "launcher restore failed") {
+-			t.Errorf("Reconcile() detail = %q; want it to note the failed launcher restore", pair.Detail)
+-		}
+-	})
+-}
+diff --git a/internal/fabricengine/remove.go b/internal/fabricengine/remove.go
+index 9e22b4de..bbef1780 100644
+--- a/internal/fabricengine/remove.go
++++ b/internal/fabricengine/remove.go
+@@ -2,8 +2,8 @@
+ // Every refusal runs first, through the read-only probe RemoveRefusal, and leaves the hub and the weft origin untouched.
+ // Then the sibling's pending records are committed (commitPendingRecords);
+ // the weft tip is then tagged locally for its archive.
+-// Only then are the launchers and worktrees removed.
+-// A refused call therefore never loses a launcher or tags a tip that misses uncommitted records.
++// Only then are the worktrees removed.
++// A refused call therefore never loses a worktree or tags a tip that misses uncommitted records.
+ // The pushes of the weft tip and the tag, and every delete on origin, run last in the detached teardown child.
+ // The weft branch it removes is RecordsBranchName(warpBranch).
+ // After both worktrees are gone, the local warp branch is deleted only when the destructive gate proves no work is lost.
+@@ -45,7 +45,7 @@ func (e siblingDirtyRefusal) Error() string { return e.msg }
+ func (e siblingDirtyRefusal) Unwrap() error { return ErrPairSiblingDirty }
+ 
+ // ErrPairNotFound is the sentinel an error wraps when no trace of the pair remains.
+-// No worktree stands on either side, no branch exists locally or on origin, and no launcher entry is left.
++// No worktree stands on either side, and no branch exists locally or on origin.
+ // The message names neither side of the pair, so callers outside this package can match it with errors.Is.
+ var ErrPairNotFound = errors.New("pair not found")
+ 
+@@ -62,8 +62,6 @@ const (
+ 	// RemoveStepArchive is the archive tag made on the local weft tip before the teardown;
+ 	// its push to origin is the teardown child's.
+ 	RemoveStepArchive = "archive"
+-	// RemoveStepLaunchers is the removal of the pair's launcher directory.
+-	RemoveStepLaunchers = "launchers"
+ 	// RemoveStepTaskWorktree is the removal of the task worktree.
+ 	RemoveStepTaskWorktree = "task_worktree"
+ 	// RemoveStepSiblingWorktree is the removal of the sibling worktree.
+@@ -168,7 +166,6 @@ type RemoveResult struct {
+ // A failed tag returns an error wrapping ErrArchiveFailed, with everything still in place, so a plain re-run retries it.
+ // The tag is taken whatever remote says, and force does not skip it: force answers dirtiness only.
+ // A weft repo with no origin proceeds untagged, with ArchiveSkippedReason set on the result.
+-// Launcher cleanup runs after the tag and before the git removal.
+ // The pair's branches are read from the pair before any teardown, through PairTaskBranch.
+ // A pair made under an earlier branch prefix is torn down by the branches it stands on.
+ // With no worktree or local branch of the pair left, origin names them.
+@@ -321,7 +318,7 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 		}
+ 	} else {
+ 		// Tag the weft tip after every refusal and before the first teardown mutation:
+-		// a failed tag leaves the worktrees, launchers and both branches untouched, so a plain re-run retries it.
++		// a failed tag leaves the worktrees and both branches untouched, so a plain re-run retries it.
+ 		// force answers dirtiness only, so it never skips this step; the tag's push is the teardown child's.
+ 		weftTip, archiveTag, archiveSkippedReason, err = tagWeftTipForArchive(l, slug, weftBranch)
+ 		if err != nil {
+@@ -332,15 +329,6 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 		}
+ 	}
+ 
+-	// removeLaunchers is best-effort: an operational failure is discarded,
+-	// but a gate refusal must surface rather than vanish.
+-	if err := surfaceRefusal(removeLaunchers(rec, pairLoc, slug)); err != nil {
+-		return RemoveResult{}, err
+-	}
+-	if pair.launchers && !pathPresent(LauncherDir(pairLoc, slug)) {
+-		steps = append(steps, RemoveStepLaunchers)
+-	}
+-
+ 	// Sweep the anchored directory, and only the links fabric itself created there.
+ 	// The worktree root is the wrong place to sweep.
+ 	// On a subpath-anchored hub the junctions live under <worktree>/<anchorRel>.
+@@ -567,8 +555,6 @@ type pairState struct {
+ 	siblingWorktree bool
+ 	// taskBranch and siblingBranch report the pair's local branches.
+ 	taskBranch, siblingBranch bool
+-	// launchers reports the hub-level launcher directory, which the removal tears down.
+-	launchers bool
+ 	// warpBranch is the pair's warp branch, read locally from the pair itself.
+ 	warpBranch string
+ }
+@@ -585,11 +571,6 @@ func (t *Topology) inspectPair(l *lymcwd.Location, slug string) (pairState, erro
+ 		}
+ 	}
+ 	s.siblingWorktree = pathPresent(RecordsWorktreePath(l, slug))
+-	pairLoc, err := lymcwd.NamedWorktree(l.HubPath, slug)
+-	if err != nil {
+-		return pairState{}, fmt.Errorf("read the anchor of %q: %w", slug, err)
+-	}
+-	s.launchers = pathPresent(LauncherDir(pairLoc, slug))
+ 
+ 	warpBranch, err := t.PairTaskBranch(l, slug)
+ 	if err != nil {
+@@ -615,12 +596,10 @@ func (s pairState) branchPartRemains() bool {
+ // Origin is asked only once no worktree and no local branch of the pair remains.
+ // It is asked only for a repository with an origin.
+ // A pair with a worktree or branch left never costs a network call.
+-// A pair whose only local remnant is its launcher directory is asked too, because the directory names no branch.
+-// In localMode such a pair is not asked; otherwise it is no error when origin holds nothing.
+ // When origin holds the pair, it returns the name origin holds it under, and otherwise "".
+ // A stray path at the pair's location is named in the error and left alone.
+-func (t *Topology) refuseWhenNothingRemains(l *lymcwd.Location, slug string, s pairState, localMode bool) (onOrigin string, err error) {
+-	if s.branchPartRemains() || (s.launchers && localMode) {
++func (t *Topology) refuseWhenNothingRemains(l *lymcwd.Location, slug string, s pairState) (onOrigin string, err error) {
++	if s.branchPartRemains() {
+ 		return "", nil
+ 	}
+ 
+@@ -631,9 +610,6 @@ func (t *Topology) refuseWhenNothingRemains(l *lymcwd.Location, slug string, s p
+ 	if onOrigin != "" {
+ 		return onOrigin, nil
+ 	}
+-	if s.launchers {
+-		return "", nil
+-	}
+ 
+ 	if s.strayPath {
+ 		return "", fmt.Errorf("%w: nothing of %q remains, and %s exists at the pair location but is not a linked worktree of this repo, so it was left alone",
+@@ -758,7 +734,7 @@ func (t *Topology) refuseRemoval(l *lymcwd.Location, slug string, force, localMo
+ 	if err != nil {
+ 		return "", err
+ 	}
+-	onOrigin, err = t.refuseWhenNothingRemains(l, slug, pair, localMode)
++	onOrigin, err = t.refuseWhenNothingRemains(l, slug, pair)
+ 	if err != nil {
+ 		return "", err
+ 	}
+diff --git a/internal/fabricengine/remove_archive_integration_test.go b/internal/fabricengine/remove_archive_integration_test.go
+index 97655047..f4834fbb 100644
+--- a/internal/fabricengine/remove_archive_integration_test.go
++++ b/internal/fabricengine/remove_archive_integration_test.go
+@@ -158,7 +158,8 @@ func TestRemove_PendingRecordsAreCommittedAndArchivedOnce(t *testing.T) {
+ 	}
+ }
+ 
+-// TestRemove_UnreachableOriginFailsClosed covers an unreachable origin: Remove errors and leaves both worktrees, the launchers and both branches in place.
++// TestRemove_UnreachableOriginFailsClosed covers an unreachable origin.
++// Remove errors and leaves both worktrees and both branches in place.
+ func TestRemove_UnreachableOriginFailsClosed(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -180,7 +181,6 @@ func TestRemove_UnreachableOriginFailsClosed(t *testing.T) {
+ 	for _, p := range []string{
+ 		fabricengine.WorktreePath(l, slug),
+ 		fabricengine.RecordsWorktreePath(l, slug),
+-		fabricengine.LauncherDir(l, slug),
+ 	} {
+ 		if _, err := os.Lstat(p); !os.IsNotExist(err) {
+ 			t.Errorf("%s after a failed remote archive: Lstat error = %v; want the local teardown done", p, err)
+@@ -407,12 +407,11 @@ func TestAddRollback_LeavesNoArchiveTag(t *testing.T) {
+ 	l := h.Location
+ 	weftRoot := mustRecordsRepoRoot(t, l)
+ 
+-	// A blocker directory at the ide launcher script path fails Add after its weft branch exists, triggering rollbackAdd.
+-	plantLauncherBlocker(t, l, slug)
+-
++	// A blocker directory at the _lym junction path fails Add after its weft branch exists, triggering rollbackAdd.
+ 	topology := h.Topology
++	failAddBeforeWiring(t, topology, l, slug)
+ 	if _, err := topology.Add(l, slug, fabricengine.AddOptions{}); err == nil {
+-		t.Fatalf("Add should have failed (launcher blocker)")
++		t.Fatalf("Add should have failed (junction blocker)")
+ 	}
+ 
+ 	if tags := archiveTagsAt(t, weftRoot); len(tags) != 0 {
+diff --git a/internal/fabricengine/remove_junctions_integration_test.go b/internal/fabricengine/remove_junctions_integration_test.go
+index 301c1a59..703abd87 100644
+--- a/internal/fabricengine/remove_junctions_integration_test.go
++++ b/internal/fabricengine/remove_junctions_integration_test.go
+@@ -84,14 +84,6 @@ func TestRemove_TearsDownNestedJunction(t *testing.T) {
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 		hubforge.AddPairWith(t, h, reanchored, fabricengine.AddOptions{SkipPush: true})
+ 		hubforge.ReanchorPair(t, h, reanchored, "sub")
+-		pairLauncherDir := h.PairLauncherDir(reanchored)
+-		if err := os.MkdirAll(pairLauncherDir, 0o755); err != nil {
+-			t.Fatalf("plant the pair's launcher directory %s: %v", pairLauncherDir, err)
+-		}
+-		primeAnchorLauncherDir := fabricengine.LauncherDir(h.Location, reanchored)
+-		if _, err := os.Stat(primeAnchorLauncherDir); err != nil {
+-			t.Fatalf("setup: the launcher directory Add wrote at the prime's anchor %s: %v", primeAnchorLauncherDir, err)
+-		}
+ 
+ 		result, err := h.Topology.Remove(h.Location, reanchored, true, false)
+ 		if err != nil {
+@@ -102,8 +94,6 @@ func TestRemove_TearsDownNestedJunction(t *testing.T) {
+ 		if result.LinksRemoved != 2 {
+ 			t.Errorf("LinksRemoved = %d; want 2 (_lym, .lym at <slug>/sub)", result.LinksRemoved)
+ 		}
+-		assertAbsent(t, pairLauncherDir)
+-		assertPresent(t, primeAnchorLauncherDir)
+ 		assertAbsent(t, h.PairCodeWorktree(reanchored))
+ 	})
+ 
+diff --git a/internal/fabricengine/remove_records_integration_test.go b/internal/fabricengine/remove_records_integration_test.go
+index 138556d6..2a694cf5 100644
+--- a/internal/fabricengine/remove_records_integration_test.go
++++ b/internal/fabricengine/remove_records_integration_test.go
+@@ -191,7 +191,6 @@ func TestRemoveRefusal_ProbeLeavesPairUntouched(t *testing.T) {
+ 			t.Errorf("local archive tags after RemoveRefusal = %v; want none", tags)
+ 		}
+ 		for _, p := range []string{
+-			fabricengine.LauncherDir(l, slug),
+ 			warpPath,
+ 			weftWorktree,
+ 		} {
+diff --git a/internal/fabricengine/remove_refusal_remedy_integration_test.go b/internal/fabricengine/remove_refusal_remedy_integration_test.go
+index 1b7c5f34..0892c667 100644
+--- a/internal/fabricengine/remove_refusal_remedy_integration_test.go
++++ b/internal/fabricengine/remove_refusal_remedy_integration_test.go
+@@ -1,7 +1,7 @@
+ // remove_refusal_remedy_integration_test.go pins that a no-force Remove refusal changes nothing:
+ // the pair and the weft origin stay untouched.
+ // A refusal here is a dirty worktree or a failed status probe.
+-// No portal or launcher is torn down, no mutation is recorded, and no archive tag is pushed.
++// No portal is torn down, no mutation is recorded, and no archive tag is pushed.
+ //
+ // Remove runs every refusal before its archive and the archive before every removal;
+ // remove.go's header states the order.
+@@ -97,7 +97,6 @@ func TestRemove_WarpStatusProbeFailurePushesNoTag(t *testing.T) {
+ 	}
+ 	assertNoArchiveTag(t, h.RecordsBare, weftRoot)
+ 	for _, p := range []string{
+-		fabricengine.LauncherDir(l, slug),
+ 		fabricengine.RecordsWorktreePath(l, slug),
+ 	} {
+ 		if _, statErr := os.Lstat(p); statErr != nil {
+@@ -106,12 +105,11 @@ func TestRemove_WarpStatusProbeFailurePushesNoTag(t *testing.T) {
+ 	}
+ }
+ 
+-// assertPairIntact fails unless the pair's launchers, both worktrees and both branches exist.
++// assertPairIntact fails unless the pair's both worktrees and both branches exist.
+ func assertPairIntact(t *testing.T, l *lymcwd.Location, slug string) {
+ 	t.Helper()
+ 
+ 	for _, p := range []string{
+-		fabricengine.LauncherDir(l, slug),
+ 		fabricengine.WorktreePath(l, slug),
+ 		fabricengine.RecordsWorktreePath(l, slug),
+ 	} {
+diff --git a/internal/fabricengine/retiredlaunchers.go b/internal/fabricengine/retiredlaunchers.go
+new file mode 100644
+index 00000000..2424ee6c
+--- /dev/null
++++ b/internal/fabricengine/retiredlaunchers.go
+@@ -0,0 +1,159 @@
++// retiredlaunchers.go names the retired `_launchers` hub container and sweeps what a hub still holds of it.
++// Fabric once wrote launcher scripts and a workspace file there; no verb writes the container now.
++
++package fabricengine
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++)
++
++// launchersDirName is the directory name of the retired hub-level launchers container (<hub>/_launchers).
++// It stays declared so that the name remains reserved and the sweep can find the container.
++const launchersDirName = "_launchers"
++
++// retiredLauncherFileNames are the script names fabric wrote under the launchers container, each as a .sh or a .cmd:
++// a pair's ide, run and fabric-checkout scripts, and an anchor's ide-menu script.
++var retiredLauncherFileNames = []string{
++	"ide.sh", "ide.cmd",
++	"run.sh", "run.cmd",
++	"fabric-checkout.sh", "fabric-checkout.cmd",
++	"ide-menu.sh", "ide-menu.cmd",
++}
++
++// launchersDir returns the path of the retired launchers container in the hub at hubPath.
++func launchersDir(hubPath string) string {
++	return filepath.Join(hubPath, launchersDirName)
++}
++
++// RetiredLaunchersSweep is what a sweep of the retired launchers container removed, or in a dry run would remove.
++type RetiredLaunchersSweep struct {
++	// Removed lists the absolute paths of the files and emptied directories, each directory after its contents.
++	Removed []string `json:"removed"`
++	// Kept lists one detail per entry the sweep left in place, naming it hub-relative and saying why.
++	Kept []string `json:"kept"`
++}
++
++// SweepRetiredLaunchers removes the retired `<hub>/_launchers` container that fabric once wrote launchers into.
++// With apply false it only lists what it would remove.
++// It removes the launcher scripts fabric wrote and any `.code-workspace` file.
++// Then it removes every directory that empties, the container last.
++// Anything else, a link included, is kept and named in Kept, and the directories above it stay.
++// A link is never followed, and every removal goes through the destructive gate under the container.
++// A hub with no container is an empty sweep.
++// A removal that fails stops the sweep and returns what it removed so far with the error.
++func SweepRetiredLaunchers(rec *Mutations, hubPath string, apply bool) (RetiredLaunchersSweep, error) {
++	sweep := RetiredLaunchersSweep{Removed: []string{}, Kept: []string{}}
++	root, err := os.OpenRoot(hubPath)
++	if err != nil {
++		return sweep, fmt.Errorf("open hub root %s: %w", hubPath, err)
++	}
++	defer func() { _ = root.Close() }()
++
++	info, err := root.Lstat(launchersDirName)
++	if errors.Is(err, fs.ErrNotExist) {
++		return sweep, nil
++	}
++	if err != nil {
++		return sweep, fmt.Errorf("read %s: %w", launchersDir(hubPath), err)
++	}
++	if !info.IsDir() {
++		sweep.Kept = append(sweep.Kept, retiredLauncherKept(hubPath, launchersDirName, "not a directory"))
++		return sweep, nil
++	}
++
++	var candidates []string
++	if _, err := planRetiredLaunchersSweep(root, hubPath, launchersDirName, &candidates, &sweep.Kept); err != nil {
++		return sweep, err
++	}
++	for _, rel := range candidates {
++		path := filepath.Join(hubPath, rel)
++		if apply {
++			if err := removeRetiredLauncherEntry(rec, hubPath, path); err != nil {
++				return sweep, err
++			}
++		}
++		sweep.Removed = append(sweep.Removed, path)
++	}
++	return sweep, nil
++}
++
++// planRetiredLaunchersSweep lists, under the hub-relative directory dirRel, what the sweep removes and what it keeps.
++// It appends the removable entries to candidates, each directory after its contents, and a detail per kept entry to kept.
++// It reports whether dirRel empties, which is when every entry under it is removable.
++func planRetiredLaunchersSweep(root *os.Root, hubPath, dirRel string, candidates, kept *[]string) (bool, error) {
++	names, err := readRetiredDir(root, dirRel)
++	if err != nil {
++		return false, fmt.Errorf("list %s: %w", filepath.Join(hubPath, dirRel), err)
++	}
++	empties := true
++	for _, name := range names {
++		rel := filepath.Join(dirRel, name)
++		info, err := root.Lstat(rel)
++		if err != nil {
++			return false, fmt.Errorf("read %s: %w", filepath.Join(hubPath, rel), err)
++		}
++		switch {
++		case info.IsDir():
++			childEmpties, err := planRetiredLaunchersSweep(root, hubPath, rel, candidates, kept)
++			if err != nil {
++				return false, err
++			}
++			empties = empties && childEmpties
++		case info.Mode().IsRegular() && isRetiredLauncherFile(name):
++			*candidates = append(*candidates, rel)
++		default:
++			*kept = append(*kept, retiredLauncherKept(hubPath, rel, "not a file fabric wrote there"))
++			empties = false
++		}
++	}
++	if empties {
++		*candidates = append(*candidates, dirRel)
++	}
++	return empties, nil
++}
++
++// isRetiredLauncherFile reports whether name is a launcher script fabric wrote or a workspace file.
++func isRetiredLauncherFile(name string) bool {
++	return slices.Contains(retiredLauncherFileNames, name) || strings.HasSuffix(name, hubWorkspaceExt)
++}
++
++// retiredLauncherKept words a sweep detail naming the hub-relative rel and the reason it was kept.
++func retiredLauncherKept(hubPath, rel, reason string) string {
++	return fmt.Sprintf("kept %s: %s", hubRelativeTarget(hubPath, filepath.Join(hubPath, rel)), reason)
++}
++
++// removeRetiredLauncherEntry removes the one file or emptied directory at path through the destructive gate.
++// The removal is non-recursive, so a directory that gained an entry since the listing is refused by the OS and stays.
++// The container itself is removed from the hub; every entry below it is removed from the container.
++func removeRetiredLauncherEntry(rec *Mutations, hubPath, path string) error {
++	container := launchersDir(hubPath)
++	if filepath.Clean(path) == container {
++		container = hubPath
++	}
++	err := checkPathRequest(pathRequest{
++		what:      "remove retired launcher entry",
++		container: container,
++		target:    path,
++		slug:      nil,
++		ownership: ownedUnderGeometryRoot(launchersDir(hubPath)),
++		dirtiness: dirtinessNA("the retired launcher container holds only generated artifacts"),
++		force:     false,
++	})
++	if err != nil {
++		return fmt.Errorf("remove %s: %w", path, err)
++	}
++	removed, _, err := removeContainedPath(container, path, false)
++	if err != nil {
++		return fmt.Errorf("remove %s: %w", path, err)
++	}
++	if removed {
++		rec.Append(KindPathRemoved, path, "single")
++	}
++	return nil
++}
+diff --git a/internal/fabricengine/retiredlaunchers_test.go b/internal/fabricengine/retiredlaunchers_test.go
+new file mode 100644
+index 00000000..c7988db4
+--- /dev/null
++++ b/internal/fabricengine/retiredlaunchers_test.go
+@@ -0,0 +1,212 @@
++// retiredlaunchers_test.go covers SweepRetiredLaunchers over a seeded `_launchers` tree in a bare temporary hub.
++// It needs no git, so it runs in the offline tier.
++
++package fabricengine_test
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"reflect"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestSweepRetiredLaunchers pins what the sweep removes, keeps and records for each shape of retired container.
++// Every path in a row is hub-relative and slash-separated.
++func TestSweepRetiredLaunchers(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	fabricWrittenTree := []string{
++		"_launchers/hub.code-workspace",
++		"_launchers/y/beam/fabric-checkout.cmd",
++		"_launchers/y/beam/fabric-checkout.sh",
++		"_launchers/y/beam/ide.cmd",
++		"_launchers/y/beam/ide.sh",
++		"_launchers/y/beam/run.cmd",
++		"_launchers/y/beam/run.sh",
++		"_launchers/y/ide-menu.cmd",
++		"_launchers/y/ide-menu.sh",
++	}
++	fabricWrittenRemoved := []string{
++		"_launchers/hub.code-workspace",
++		"_launchers/y/beam/fabric-checkout.cmd",
++		"_launchers/y/beam/fabric-checkout.sh",
++		"_launchers/y/beam/ide.cmd",
++		"_launchers/y/beam/ide.sh",
++		"_launchers/y/beam/run.cmd",
++		"_launchers/y/beam/run.sh",
++		"_launchers/y/beam",
++		"_launchers/y/ide-menu.cmd",
++		"_launchers/y/ide-menu.sh",
++		"_launchers/y",
++		"_launchers",
++	}
++
++	tests := []struct {
++		name  string
++		apply bool
++		// files are the regular files seeded in the hub, each with its parent directories.
++		files []string
++		// linkRel, when set, is a symlink seeded at that path pointing at a directory outside the hub.
++		linkRel     string
++		wantRemoved []string
++		wantKept    []string
++		// wantStay lists the paths that still exist afterwards.
++		wantStay []string
++		// wantGone lists the paths that no longer exist afterwards.
++		wantGone []string
++	}{
++		{
++			name:        "NoContainer",
++			apply:       true,
++			files:       []string{"notes.txt"},
++			wantRemoved: []string{},
++			wantKept:    []string{},
++			wantStay:    []string{"notes.txt"},
++		},
++		{
++			name:        "ContainerIsAFile",
++			apply:       true,
++			files:       []string{"_launchers"},
++			wantRemoved: []string{},
++			wantKept:    []string{"kept _launchers: not a directory"},
++			wantStay:    []string{"_launchers"},
++		},
++		{
++			name:        "OnlyFabricWrittenFilesUnderNestedAnchors",
++			apply:       true,
++			files:       fabricWrittenTree,
++			wantRemoved: fabricWrittenRemoved,
++			wantKept:    []string{},
++			wantGone:    []string{"_launchers"},
++		},
++		{
++			name:  "ForeignFileKeepsItsAncestors",
++			apply: true,
++			files: []string{
++				"_launchers/y/beam/ide.sh",
++				"_launchers/y/beam/notes.txt",
++				"_launchers/z/run.sh",
++			},
++			wantRemoved: []string{
++				"_launchers/y/beam/ide.sh",
++				"_launchers/z/run.sh",
++				"_launchers/z",
++			},
++			wantKept: []string{"kept _launchers/y/beam/notes.txt: not a file fabric wrote there"},
++			wantStay: []string{
++				"_launchers/y/beam/notes.txt",
++				"_launchers/y/beam",
++				"_launchers/y",
++				"_launchers",
++			},
++			wantGone: []string{"_launchers/y/beam/ide.sh", "_launchers/z"},
++		},
++		{
++			name:        "SymlinkIsKeptAndNotFollowed",
++			apply:       true,
++			files:       []string{"_launchers/y/ide.sh"},
++			linkRel:     "_launchers/y/outside-link",
++			wantRemoved: []string{"_launchers/y/ide.sh"},
++			wantKept:    []string{"kept _launchers/y/outside-link: not a file fabric wrote there"},
++			wantStay:    []string{"_launchers/y/outside-link", "_launchers/y", "_launchers"},
++			wantGone:    []string{"_launchers/y/ide.sh"},
++		},
++		{
++			name:        "SymlinkAtTheContainerIsKeptAndNotFollowed",
++			apply:       true,
++			linkRel:     "_launchers",
++			wantRemoved: []string{},
++			wantKept:    []string{"kept _launchers: not a directory"},
++			wantStay:    []string{"_launchers"},
++		},
++		{
++			name:        "DryRunListsTheRemovalsAndRemovesNothing",
++			apply:       false,
++			files:       fabricWrittenTree,
++			wantRemoved: fabricWrittenRemoved,
++			wantKept:    []string{},
++			wantStay:    fabricWrittenRemoved,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			hub := t.TempDir()
++			for _, rel := range tt.files {
++				path := filepath.Join(hub, filepath.FromSlash(rel))
++				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++					t.Fatalf("create the parent of %s: %v", rel, err)
++				}
++				if err := os.WriteFile(path, []byte("seeded\n"), 0o644); err != nil {
++					t.Fatalf("seed %s: %v", rel, err)
++				}
++			}
++			var outsideFiles []string
++			if tt.linkRel != "" {
++				outside := t.TempDir()
++				for _, name := range []string{"sentinel.txt", "ide.sh"} {
++					path := filepath.Join(outside, name)
++					if err := os.WriteFile(path, []byte("outside\n"), 0o644); err != nil {
++						t.Fatalf("seed %s outside the hub: %v", name, err)
++					}
++					outsideFiles = append(outsideFiles, path)
++				}
++				if err := os.Symlink(outside, filepath.Join(hub, filepath.FromSlash(tt.linkRel))); err != nil {
++					if errors.Is(err, os.ErrPermission) {
++						t.Skipf("symlinks need a privilege this host does not grant: %v", err)
++					}
++					t.Fatalf("seed the symlink %s: %v", tt.linkRel, err)
++				}
++			}
++
++			rec := fabricengine.NewMutations(hub)
++			sweep, err := fabricengine.SweepRetiredLaunchers(rec, hub, tt.apply)
++			if err != nil {
++				t.Fatalf("SweepRetiredLaunchers(apply %v) error = %v; want nil", tt.apply, err)
++			}
++
++			wantRemoved := make([]string, len(tt.wantRemoved))
++			for i, rel := range tt.wantRemoved {
++				wantRemoved[i] = filepath.Join(hub, filepath.FromSlash(rel))
++			}
++			if !reflect.DeepEqual(sweep.Removed, wantRemoved) {
++				t.Errorf("SweepRetiredLaunchers().Removed = %q; want %q", sweep.Removed, wantRemoved)
++			}
++			if !reflect.DeepEqual(sweep.Kept, tt.wantKept) {
++				t.Errorf("SweepRetiredLaunchers().Kept = %q; want %q", sweep.Kept, tt.wantKept)
++			}
++
++			wantEntries := []fabricengine.Mutation{}
++			if tt.apply {
++				for _, rel := range tt.wantRemoved {
++					wantEntries = append(wantEntries, fabricengine.Mutation{Kind: fabricengine.KindPathRemoved, Target: rel, Detail: "single"})
++				}
++			}
++			if got := rec.Entries(); !reflect.DeepEqual(got, wantEntries) {
++				t.Errorf("mutation record = %+v; want %+v", got, wantEntries)
++			}
++
++			for _, rel := range tt.wantStay {
++				if _, err := os.Lstat(filepath.Join(hub, filepath.FromSlash(rel))); err != nil {
++					t.Errorf("%s after the sweep: %v; want it kept", rel, err)
++				}
++			}
++			for _, rel := range tt.wantGone {
++				if _, err := os.Lstat(filepath.Join(hub, filepath.FromSlash(rel))); !errors.Is(err, os.ErrNotExist) {
++					t.Errorf("%s after the sweep: Lstat error = %v; want it removed", rel, err)
++				}
++			}
++			for _, path := range outsideFiles {
++				if _, err := os.Stat(path); err != nil {
++					t.Errorf("file outside the hub after the sweep: %v; want it untouched", err)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/slug.go b/internal/fabricengine/slug.go
+index 50ee317e..2d990f8e 100644
+--- a/internal/fabricengine/slug.go
++++ b/internal/fabricengine/slug.go
+@@ -55,7 +55,7 @@ func validateWorktreeSlug(slug string, junctionNames []string) error {
+ 	}
+ 
+ 	// "." and ".." carry no separator and name no reserved directory, so the checks around this one let them through.
+-	// filepath.Join resolves them, though: a slug of ".." turns <hub>/_launchers/<anchor>/<slug> into the hub itself,
++	// filepath.Join resolves them, though: a slug of "." turns <hub>/<slug> into the hub itself,
+ 	// so a teardown's os.RemoveAll would delete the whole hub, warp clone and weft clone included.
+ 	// A slug must denote a directory below its parent, never the parent or the parent's parent.
+ 	// So joining it must not move anywhere: filepath.Clean must leave it untouched.
+diff --git a/internal/fabricengine/slug_test.go b/internal/fabricengine/slug_test.go
+index 2f700261..133b5734 100644
+--- a/internal/fabricengine/slug_test.go
++++ b/internal/fabricengine/slug_test.go
+@@ -35,8 +35,7 @@ func TestValidateWorktreeSlug(t *testing.T) {
+ 		{"transient structural dir", ".lym", nil, "reserved for lym hub geometry"},
+ 		{"configured junction name", "_extra", []string{"_extra"}, "reserved for lym hub geometry"},
+ 		// "." and ".." carry no separator and name no reserved directory, so every other rule here waves them through.
+-		// Then filepath.Join resolves ".." out of the launcher directory onto the hub itself.
+-		// Remove's os.RemoveAll deletes the whole hub.
++		// Then filepath.Join resolves ".." above the pair's directory, and Remove's os.RemoveAll deletes what it reaches.
+ 		{"self reference", ".", nil, "not a relative path element"},
+ 		{"parent reference", "..", nil, "not a relative path element"},
+ 		{"trailing dot segment", "task/.", nil, "single path component"},
+diff --git a/internal/hubforge/hub.go b/internal/hubforge/hub.go
+index 53952fa0..4533e7f7 100644
+--- a/internal/hubforge/hub.go
++++ b/internal/hubforge/hub.go
+@@ -227,16 +227,6 @@ func (h *Hub) PairRecordsSibling(slug string) string {
+ 	return fabricengine.RecordsWorktreePath(h.Location, slug)
+ }
+ 
+-// PairLauncherDir returns the path to slug's mirrored launcher directory, at slug's own anchor.
+-// It panics when slug's recorded anchor is unusable, which no fixture produces.
+-func (h *Hub) PairLauncherDir(slug string) string {
+-	pair, err := lymcwd.NamedWorktree(h.Path, slug)
+-	if err != nil {
+-		panic(fmt.Sprintf("hubforge: read the anchor of %q: %v", slug, err))
+-	}
+-	return fabricengine.LauncherDir(pair, slug)
+-}
+-
+ // NewHub builds a real fabric hub at anchor ("." or "backend").
+ // It copies the cached bare template into tb's own temp dir, then drives fabriccli.CloneAndWire against the copies.
+ // It calls CloneAndWire rather than replicating the wiring sequence by hand.
+diff --git a/internal/hubforge/hub_test.go b/internal/hubforge/hub_test.go
+index 0e96e5e3..6c6b3a1e 100644
+--- a/internal/hubforge/hub_test.go
++++ b/internal/hubforge/hub_test.go
+@@ -260,22 +260,13 @@ func TestNewHub(t *testing.T) {
+ 						t.Errorf("%s content = %q; want the seeded override %q", configPath, got, override)
+ 					}
+ 				}},
+-				{"AddPairWiresLauncherAndNoPortals", func(t *testing.T) {
+-					const slug = "px"
+-					AddPair(t, h, slug)
++				{"AddPairWiresNoPortals", func(t *testing.T) {
++					AddPair(t, h, "px")
+ 
+ 					portalsDir := filepath.Join(h.Location.HubPath, "_portals")
+ 					if _, err := os.Lstat(portalsDir); !os.IsNotExist(err) {
+ 						t.Errorf("%s exists after AddPair (err = %v); want no _portals directory", portalsDir, err)
+ 					}
+-
+-					launcherDir := fabricengine.LauncherDir(h.Location, slug)
+-					if _, err := os.Stat(launcherDir); err != nil {
+-						t.Errorf("pair launcher dir missing at %s: %v", launcherDir, err)
+-					}
+-					if got := h.PairLauncherDir(slug); got != launcherDir {
+-						t.Errorf("h.PairLauncherDir(%s) = %s; want %s", slug, got, launcherDir)
+-					}
+ 				}},
+ 				{"AddPairWith_SkipPushKeepsWeftBranchOffTheBare", func(t *testing.T) {
+ 					skipped := AddPairWith(t, h, "skipped", fabricengine.AddOptions{SkipPush: true})
+@@ -586,7 +577,7 @@ func TestNewHub_TeardownSurvivesCorruptHub(t *testing.T) {
+ }
+ 
+ // TestCopyHub copies the "." shape with its one pair and asserts the copy is a working hub of its own:
+-// fabric status is clean on its prime, every worktree git lists resolves, and the pair's launcher directory resolves.
++// fabric status is clean on its prime, and every worktree git lists resolves.
+ // The board has the relocated binding folded into its HEAD and pushed.
+ // No `_portals` directory exists, and no file or link names the template root.
+ func TestCopyHub(t *testing.T) {
+@@ -630,11 +621,6 @@ func TestCopyHub(t *testing.T) {
+ 		t.Errorf("git lists %d worktrees on the copy; want %d", worktrees, want)
+ 	}
+ 
+-	for _, slug := range shape.Pairs {
+-		if _, err := os.Stat(h.PairLauncherDir(slug)); err != nil {
+-			t.Errorf("launcher dir of pair %s does not resolve: %v", slug, err)
+-		}
+-	}
+ 	portalsDir := filepath.Join(h.Location.HubPath, "_portals")
+ 	if _, err := os.Lstat(portalsDir); !os.IsNotExist(err) {
+ 		t.Errorf("%s exists on the copy (err = %v); want no _portals directory", portalsDir, err)
+diff --git a/internal/loomcli/smoke_prebootstrap_integration_test.go b/internal/loomcli/smoke_prebootstrap_integration_test.go
+index 30c5f396..731ca597 100644
+--- a/internal/loomcli/smoke_prebootstrap_integration_test.go
++++ b/internal/loomcli/smoke_prebootstrap_integration_test.go
+@@ -8,8 +8,6 @@ package loomcli
+ import (
+ 	"encoding/json"
+ 	"os"
+-	"path/filepath"
+-	"runtime"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -19,7 +17,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configreg"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+-	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/preflight"
+@@ -29,14 +26,13 @@ import (
+ )
+ 
+ // TestLoomPreBootstrapPair walks one never-bootstrapped pair through the pre-bootstrap states, in order.
+-// Each step builds on the one before:
+-// no seed, a seed commit, then a second pair added to and removed from the same hub.
++// Each step builds on the one before: no seed, then a seed commit.
+ func TestLoomPreBootstrapPair(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+ 	exe := lymbin.Build(t)
+-	hub, loc, worktree, slug := newWiredPairFixture(t)
++	_, loc, worktree, slug := newWiredPairFixture(t)
+ 	recordsDir := fabricengine.RecordsWorktree(loc)
+ 
+ 	// The run verb on a never-seeded pair refuses on the envelope with a message naming the bootstrap verb.
+@@ -115,29 +111,6 @@ func TestLoomPreBootstrapPair(t *testing.T) {
+ 			t.Errorf("Check report still carries CheckWorktreeClean after the seed commit; the bootstrap must reach past the first precondition row rather than block on it")
+ 		}
+ 	})
+-
+-	// A second pair of the same hub covers the run launcher.
+-	// The launcher exists in the per-slug launcher directory after the add and is gone after the matching remove.
+-	t.Run("run launcher exists after a pair is added and is gone after the remove", func(t *testing.T) {
+-		const launcherSlug = "loom-smoke-launcher"
+-		hubforge.AddPair(t, hub, launcherSlug)
+-
+-		ext := ".sh"
+-		if runtime.GOOS == "windows" {
+-			ext = ".cmd"
+-		}
+-		runLauncherPath := filepath.Join(hub.PairLauncherDir(launcherSlug), "run"+ext)
+-		if _, err := os.Stat(runLauncherPath); err != nil {
+-			t.Fatalf("run launcher missing after add: %v", err)
+-		}
+-
+-		if _, err := hub.Topology.Remove(hub.Location, launcherSlug, false, false); err != nil {
+-			t.Fatalf("Remove(%s): %v", launcherSlug, err)
+-		}
+-		if _, err := os.Stat(runLauncherPath); !os.IsNotExist(err) {
+-			t.Fatalf("run launcher still present after remove (stat err=%v); want it gone", err)
+-		}
+-	})
+ }
+ 
+ // TestLoomStatusAndPauseOnNeverBootstrappedPair asserts that the status and pause verbs name the remedy.
+diff --git a/internal/lymcwd/lymcwd.go b/internal/lymcwd/lymcwd.go
+index 28c6795b..7d87ab3b 100644
+--- a/internal/lymcwd/lymcwd.go
++++ b/internal/lymcwd/lymcwd.go
+@@ -15,7 +15,7 @@
+ // the hub is the worktree root's parent, and looksLikeHub checks its structure.
+ // A hub that still carries the older suffix therefore resolves, and only the display-only RepoName degrades.
+ // Such a hub is never renamed in place.
+-// Launcher scripts and the tmux socket key are bound to the hub's absolute path.
++// The tmux socket key is bound to the hub's absolute path.
+ // An operator removes the old container by hand and re-clones; `clone --reset` resolves the new suffix only.
+ package lymcwd
+ 
+diff --git a/pattern/PATTERN-cwd-resolution.md b/pattern/PATTERN-cwd-resolution.md
+index 5670458a..ac8c8fe5 100644
+--- a/pattern/PATTERN-cwd-resolution.md
++++ b/pattern/PATTERN-cwd-resolution.md
+@@ -44,10 +44,10 @@ Only a standalone CLI's own wiring calls it.
+ ## Hub containment
+ 
+ No hub-level container is ever junctioned into a worktree.
+-The Bolt checkout and `_launchers` are reachable from the hub only.
++The Bolt checkout is reachable from the hub only.
+ 
+-- `_launchers` links point hub-inward only; a per-worktree link to it is banned.
+ - `_portals` is retired and stays reserved; `lym fabric reconcile` sweeps what a hub still holds.
++- `_launchers` is retired and stays reserved; `lym cleanup` sweeps what a hub still holds.
+ - Workspace files are the hub's `<RepoName>.code-workspace` and each beam's `<RepoName>-<beam>.code-workspace`.
+   They sit directly in the hub dir and reference hub-inward folders only.
+   They are never written into a worktree.
+diff --git a/pattern/PATTERN-fabric-boundary.md b/pattern/PATTERN-fabric-boundary.md
+index 108e1dcc..10b57d6d 100644
+--- a/pattern/PATTERN-fabric-boundary.md
++++ b/pattern/PATTERN-fabric-boundary.md
+@@ -113,7 +113,7 @@ The entry binds lym's own code only.
+ 
+ ### Write containment
+ 
+-`fabricengine` writes `_launchers` and the hub workspace file only through an `os.Root` opened on the hub.
++`fabricengine` writes the hub workspace file only through an `os.Root` opened on the hub.
+ 
+ ### Store housekeeping
+ 
+diff --git a/tools/sandbox/SANDBOX-FABRIC-SUITE.md b/tools/sandbox/SANDBOX-FABRIC-SUITE.md
+index 01cb3a77..c2bb6baf 100644
+--- a/tools/sandbox/SANDBOX-FABRIC-SUITE.md
++++ b/tools/sandbox/SANDBOX-FABRIC-SUITE.md
+@@ -473,10 +473,9 @@ Confirm nothing outside the named pair is touched."
+ `..`, `.`, `../evil`, `a/b`, and `""`.
+ Every one must be refused BEFORE any teardown runs.
+ After all of them the hub must still list exactly what it listed before:
+-`_bolt _launchers <RepoName>.code-workspace <prime> <prime>-weft <slug> <slug>-weft`.
+-`_launchers` must still hold `ide-menu.sh` and the pair's directory.
++`_bolt <RepoName>.code-workspace <prime> <prime>-weft <slug> <slug>-weft`.
+ Then confirm an ordinary `lym fabric remove <slug>` still works.
+-A slug of `.` or `..` would resolve `<hub>/_launchers/<anchor>/<slug>` to `<hub>` itself.
++A slug of `.` or `..` would resolve `<hub>/<slug>` to `<hub>` itself or above it.
+ The refusal must therefore come before any removal.
+ Repeat on a `--subpath backend` hub, where the anchor segment absorbs one `..` and the damage lands one level lower.
+ 
+@@ -537,22 +536,14 @@ Confirm the hook lands in THAT directory, and that `git checkout` onto a diverge
+ 
+ ---
+ 
+-### F17 -- The launcher surface is repairable (`add`, `reconcile`, `remove`)
++### F17 -- The retired hub containers are swept (`add`, `reconcile`, `cleanup`)
+ 
+ **Covers:** fabric
+ 
+-**Goal:** "Break the hub-level `_launchers` artefacts and confirm the repair verb repairs them.
+-Confirm the teardown verb owns only what it created."
+-
+-**Watch:** After `lym fabric add <slug>`, confirm `<hub>/_launchers/<slug>/` holds `ide` and `fabric-checkout` scripts.
+-Delete the launcher directory, then run `lym fabric reconcile`:
+-it must report `launchers_restored` for that pair, not `already_healthy`, and the directory must be back.
+-A second `reconcile` must report `already_healthy`.
+-`pairs` must not report `junction_healthy: true` while the launchers are gone.
+-Then ownership: put a file of your own inside `<hub>/_launchers/<slug>/` and run `lym fabric remove <slug>`.
+-Fabric's two scripts must go, your file must survive, and the pair must still be torn down.
+-Finally confirm the hub's prime worktree is left alone throughout:
+-it never had a launcher directory, and `reconcile` must not start creating one.
++**Goal:** "Plant what an older lym left in the hub's retired `_portals` and `_launchers` containers.
++Confirm the sweeps remove only what fabric wrote there."
++
++**Watch:** After `lym fabric add <slug>`, confirm the hub holds no `_launchers` directory.
+ Then the retired-artifact sweep:
+ plant a link `<hub>/_portals/<anchor>/<slug>` pointing at `<hub>/<slug>/<anchor>/_lym`;
+ plant a file at `<hub>/_launchers/<anchor>/<prime>.code-workspace`;
+@@ -562,6 +553,14 @@ Confirm its log warns about the retired artifacts and names `lym fabric reconcil
+ Then run `lym fabric reconcile`:
+ the planted link and the old workspace file must be gone;
+ your foreign file and `_portals` must survive, and `hub_details` must name the foreign file.
++Then the launchers sweep:
++plant `<hub>/_launchers/<anchor>/<slug>/run.sh` and `<hub>/_launchers/<anchor>/ide-menu.sh`,
++and a foreign file of your own under `<hub>/_launchers/<anchor>/keep/`.
++From the prime, `lym cleanup` must list both scripts and the emptied `<slug>` directory under the `launchers` segment,
++name your foreign file under `kept`, and change nothing.
++`lym cleanup --apply` must remove both scripts and the `<slug>` directory;
++your foreign file and the directories above it must survive.
++Delete your foreign file and run `lym cleanup --apply` again: `_launchers` must be gone.
+ 
+ **Verdict:** `OK` / `WARN` / `FAIL`
+ 
