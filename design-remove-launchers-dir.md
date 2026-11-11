@@ -1,6 +1,6 @@
 # Remove the hub's _launchers directory: nothing in lym runs its scripts
 
-`remove-launchers-dir` · Task · enhancement, fabric, cleanup · running · Seed-Child
+`remove-launchers-dir` · Task · enhancement, fabric, cleanup · running · Preflight
 
 Depends on: [`worktree-create-build-leftovers`](design-worktree-create-build-leftovers.md)
 
