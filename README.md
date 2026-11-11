@@ -57,7 +57,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Research how the coverage maps are kept fresh: three independent brainstorms**<br>• Three agents, two Fable 5.2 and one Opus 5.5, each propose a smarter upkeep of the per-test coverage maps; one report lands<br>• `darn: writer fable[high]` | [`testmap-upkeep`](design-testmap-upkeep.md) | darn · docs | Record-Write | osl-1046 | 1d<br>1h | testkit, gate, dobby |
+| T3 | **Research how the coverage maps are kept fresh: three independent brainstorms**<br>• Three agents, two Fable 5.2 and one Opus 5.5, each propose a smarter upkeep of the per-test coverage maps; one report lands<br>• `darn: writer fable[high]` | [`testmap-upkeep`](design-testmap-upkeep.md) | darn · docs | Drift-Baseline | osl-1046 | 1d<br>1h | testkit, gate, dobby |
 
 #### Ready (0)
 
