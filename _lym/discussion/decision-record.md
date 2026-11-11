@@ -193,6 +193,13 @@ Rationale: the verbs alone do not keep records current; the parent has to be tol
   The board's stored record does not reach that run, and D3's later copy writes that adopted record over the stored one.
   The window closes when the pair's teardown finishes, and D5's warning does not cover it.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - add-lock-refusal-untested (class design, severity BLOCKING, open in rounds 2)
+  - replace-refusals-untested (class design, severity BLOCKING, open in rounds 1, 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a replace whose `--base-sha256` matches the committed record writes the file as the record, commits it with the trailer, and the record at HEAD equals the file.
