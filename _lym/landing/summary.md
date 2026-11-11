@@ -1,44 +1,47 @@
-# Worktree-Create deletes a reused slug's path of git-ignored output
+# fabricengine: Add deletes a task path holding only git-ignored output
 
-A build or language server can write into a pair's task worktree path after the pair was torn down.
-It leaves a directory of `obj/` or `bin/` output that no worktree registers.
-`fabricengine.Add` refused that directory with `*ErrTaskPathTaken`, so the next run of the same slug halted at Worktree-Create until someone inspected and deleted it by hand.
+`Topology.Add` no longer halts when the task worktree path already exists as a directory of build output.
+A build or IDE can recreate `obj/` directories under the path of a removed pair.
+A later pair with the same slug, such as a repeated `lym beam merge-parent`, then failed with `*ErrTaskPathTaken`
+until the operator deleted the directory by hand.
 
-`Add` now deletes such a directory and makes the pair there.
-It deletes the directory only when all of these hold:
+Closes #108
 
-- it is a real directory, not a file or a link;
-- no worktree of the repository registers it;
-- it holds no `.git` entry at any depth;
-- `git check-ignore`, run in the acting worktree, ignores every file under it at the same repository-relative path.
-  A tracked path never counts as ignored, and an empty directory passes.
+## What changes
 
-Anything else is refused with `*ErrTaskPathTaken` as before, and batten's halt and way forward for that refusal are unchanged.
-A `check-ignore` that fails proves nothing, so the path is kept and the failure logged.
-The delete goes through `removeWorktreeLeftover`: contained by an `os.Root` under the hub, retried against a late writer, and recorded as `KindPathRemoved`.
-A delete that still fails returns an error wrapping `ErrStrayPathKept`.
+- `Add` deletes the directory at the task worktree path and makes the pair there when the directory is provably build output.
+  The proof is `git check-ignore`: the directory is no registered worktree, holds no `.git` entry at any depth,
+  and every file under it is untracked and ignored at the same relative path in the acting worktree.
+  An empty directory counts.
+- Any other path still returns `*ErrTaskPathTaken`: a registered worktree, a non-directory,
+  a directory with a `.git` entry or with one file git does not ignore.
+  The refusal text now says fabric deletes only a directory of git-ignored output.
+- A step of the judgement that fails (listing worktrees, walking the directory, `git check-ignore`) keeps the path,
+  logs a warning and returns `*ErrTaskPathTaken`.
+- A delete that fails returns an error wrapping `ErrStrayPathKept` and leaves the path on disk.
+  `ErrStrayPathKept` was previously returned only after a pair's removal, and its doc comment says so.
+- The delete is recorded as a `KindPathRemoved` mutation and logged at info level.
 
 ## Design decisions
 
-- **The proof is the repository's own ignore rules, not a list of build directory names.**
-  `PATTERN-code-conventions` forbids hard-coding a language, and `obj/` and `bin/` are one toolchain's names.
-  Git's ignore rules already name what each repository treats as generated output.
-- **The fix is at Worktree-Create, not Worktree-Teardown.**
-  Teardown already deletes a stray directory refilled during the removal, through `RemoveStrayTaskPath`.
-  In the reported case the output was written a day after teardown, so only the next Create can see it.
-- **A new destruction-chokepoint exception.**
-  The judge and the delete live in `destroy.go` as `removeIgnoredTaskPath`.
-  The `PATTERN-fabric-boundary` background and the package doc's chokepoint section now list three exceptions in place of two.
+- The fix is in `Add`, not in teardown.
+  A build can write into the path at any time after teardown, so only the create side can be sure to meet the leftover.
+- The judgement runs in the pre-flight, but the delete runs after the remaining pre-flight refusals have passed,
+  so an `Add` that is refused for another reason leaves the directory untouched.
+- The path is judged again just before the delete, since the pre-flight can take a network round;
+  a file saved there in between keeps the directory.
+- The delete reuses `removeWorktreeLeftover`, so it keeps `os.Root` containment and the retry against a late writer.
+  It is a third documented exception, beside `RemoveStrayTaskPath`, to the executor order in `PATTERN-fabric-boundary`:
+  ownership comes from `git check-ignore`, and `--force` and dirtiness do not apply.
+  `PATTERN-fabric-boundary.md` and the `doc.go` of `fabricengine` state it.
 
-## Risk
+## To check by hand
 
-A directory at a slug's path that holds only ignored files is deleted even when those files were not build output: a git-ignored `.env`, for instance.
-Teardown already deletes ignored files with the worktree, so this matches what lym does to ignored content at a pair's path.
+Nothing was run by hand.
+The new tests are in `add_taskpathleftover_integration_test.go`.
+Check these two findings from the code review:
 
-## Tests
-
-`TestAdd_TaskPathLeftover` (tier 1) covers four cases in one table:
-a directory of ignored output is deleted and the pair is made;
-an empty directory is deleted;
-a directory with a file git does not ignore is refused and left on disk;
-and a directory with a `.git` entry under an ignored directory is refused and left on disk.
+- `Add` deleting before the pre-flight refusals (`internal/fabricengine/add.go`):
+  confirm the delete now sits after the last refusal and that `TestAdd_TaskPathLeftoverKeptWhenPreflightRefuses` pins it.
+- The refusal for a tracked file under the path (`internal/fabricengine/destroy.go`, `ignoresEveryPath`):
+  confirm the `TrackedFileKeepsIt` case in `TestAdd_TaskPathLeftover` pins it.
