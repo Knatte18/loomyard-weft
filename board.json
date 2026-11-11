@@ -506,7 +506,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `machine-name-config`.\n\nTakes: machine-name-file's machinename.FilePath, ReadFile, Names, CheckName and FromHostname; internal/state's WriteJSON; hubregistry.Live; fabricengine.Bolt Pull and HasUnpushed; boardengine.ReadOwners\nDelivers: the module machine with lym machine name showing and setting the name, its collision check across every swept hub, the file write that keeps names, and the per-hub owner sweep with its recovery output; boardengine.OwnerRequest's replace-set field selecting owners after the write's own pull\nExports: machinecli.Command, the replace-set field of boardengine.OwnerRequest\n\nThe part changes these packages:\n\n- internal/boardengine (about 130 changed lines)\n- internal/machinecli (about 800 changed lines)\n- cmd/lym (about 10 changed lines)\n",
-      "status": "running · Drift-Baseline",
+      "status": "running · Parts-Write",
       "created": "2026-11-09T14:52:44Z",
       "revised": "2026-11-09T14:52:44Z",
       "profile": "solid",
