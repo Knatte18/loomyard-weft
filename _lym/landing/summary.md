@@ -1,43 +1,33 @@
-# Refuse a raddle note dependency early; show a dead loop's own output
+# raddle-propose refuses a note dependency; loop exit notes say why
 
-A raddle proposal whose part depended on a board note passed `raddle-propose` and was put to the operator.
-Raddle-File then failed at the board write, because the board refuses a dependency on a note.
-Separately, a `lym shed step --until-stop` loop that ended without an envelope reported a `loop log:` excerpt holding the envelopes of steps that had already finished, and `loop exit: not recorded` with no reason.
-Landing d1535412 already records the loop process's exit status or signal; this change covers what that landing left.
+`raddle-propose` now refuses a `depends_on` that names a note, so the failure surfaces before the operator approves the proposal.
+Before, the proposal passed and Raddle-File then refused the entry at filing.
+
+A dead-loop stop whose loop left no envelope now says why its exit is not recorded, and its loop log field shows the loop's own output.
+Before, that field held the envelopes of earlier finished steps.
+
+Closes #111
 
 ## What changes
 
-- `internal/raddleparser` has a new check, `depends-note`.
-  It reports a part whose `depends_on` names a note on the board.
-  The way forward is to drop the dependency, or to have the operator promote the note with the full `lym board promote '{"slug":"<note>"}'` command, then run `lym loom raddle-propose` again.
-  The check runs wherever the raddle checks run: the Raddle-Write gate, `raddle-propose`, `raddle-approve` and Raddle-File.
-  At Raddle-File it now sends the proposal back to Raddle-Write before the board write.
-  Before, the board refusal surfaced as a failure the halt called transient.
+- `internal/raddleparser`: a new check, `depends-note`, reports a `depends_on` that names a note on the board.
+  Its detail gives the way forward: drop the dependency, or have the operator promote the note with `lym board promote`, then run `lym loom raddle-propose` again.
   `contracts/specs/raddle-proposal-spec.md` lists the check.
-- The board's own refusal of a dependency on a note now spells both commands with their arguments:
-  `lym board promote '{"slug":"<note>"}'`, and `lym board set-deps` with the entry's slug and its remaining dependencies.
-  Before, it named the bare command words in quotes.
-- In `internal/shedverbs`, the loop writes a finished child's stdout to the loop log with each line opened by `lym shed: step <trace id> output: `.
-  The dead-loop stop's `loop log:` excerpt leaves those lines out, so it carries only the loop's own output, such as a crash.
-- An unrecorded loop exit now says why.
-  When the log holds no start mark of the loop, the clause names that.
-  When it holds one but no process marked the exit, it says no process marked it, as after a kill no process can catch or a stop of the machine.
-- The `shedverbs` package doc follows both changes.
+- `internal/boardengine`: the refusal text for a dependency on a note named its commands with a bare quote and ended in an empty `with ;`.
+  It now spells out `lym board promote '{"slug":…}'` and `lym board set-deps '{"slug":…,"depends_on":[…]}'`, the latter with the remaining dependencies.
+- `internal/shedverbs`: the loop log tags each line of a finished child's standard output with `lym shed: step <trace id> output: `.
+  The dead-loop stop's excerpt skips those lines, so it shows the loop's own output.
+- `internal/shedverbs`: `loop exit: not recorded` now carries a reason.
+  Either the log holds no starting mark for the loop, or no process marked the exit, as after an uncatchable kill or a machine stop.
+  The earlier landing already records the exit code and signal marks, so this change adds only the reason and the excerpt fix.
 
 ## Design decisions
 
-- The note dependency is caught in the shared proposal checks rather than in `raddle-propose` alone.
-  That way the gate, the approval and the filing all agree, and a proposal that slipped past an earlier check is still sent back before the board write.
-- A dependency that names both a part and a board note counts as the part.
-  The slug rules already refuse a part slug that is taken on the board.
-- A child's stdout is prefixed line by line, not fenced by begin and end marks.
-  Each line can then be classified alone, and a child line is never mistaken for a mark of the loop.
-- When the loop has no output of its own, the stop carries no `loop log:` clause, as before, rather than a clause saying it is empty.
+- `depends-note` reuses the board's own rule, so the check and the filing refusal agree on what a note is.
+  `raddleparser` holds its own `KindNote` constant rather than importing the board engine.
+- A `depends_on` that names a `board_checked` entry gone from the board still passes as landed; only a note present on the board is refused.
+- Child output is tagged in the log rather than kept out of it, so the log still holds the full record for an operator reading it by hand.
 
 ## To check by hand
 
-- The note reported the board refusal as ending in `promote "testmap-upkeep" with ;`.
-  The archived trace of that run holds the full text, with the command word in quotes.
-  The command was most likely lost where the text was copied into the note.
-  The change spells the command out in full either way.
-- A loop log written before this change holds unprefixed child envelopes, so a dead-loop stop read over such a log still excerpts them.
+Nothing was run by hand.
