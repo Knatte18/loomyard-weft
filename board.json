@@ -970,6 +970,25 @@
       "body": "## Seen (board tidy, 2026-11-11)\n\n`adopt-owner-handover` landed as `0198b955` with four findings its review left open under \"To check by hand\":\n\n- A beam with no owner recorded under an adopted `root` may not be covered by the under-adopt accessor in `internal/adoptrecord/watch.go`; the review marked it BLOCKING.\n  The accessor's comment says such a beam takes its parent's subject, `root` above the top, so it reads covered;\n  no test shows that the watcher and dobby of such a beam stay up and idle during `lym adopt root`.\n- The adopt hold in `internal/dobbyengine/handover.go` skips steps (pause, archive, pass starts) that no test pins.\n- The decision rows for which tips the owner archive takes (origin absent, equal, ahead, diverged) in `internal/fabricengine/ownerarchive.go` have no test rows.\n- The pairs the owner archive covers, in `internal/beamcli/ownerarchive.go` and `internal/fabricengine/ownerarchive.go`, are untested end to end.\n\n## Idea\n\nSettle the BLOCKING point first: a test of `adoptrecord.Watch.Covers` for a beam with no owner of its own under an unfinished `root` adopt,\nand a fix if it reads uncovered.\nThen add the missing test rows for the hold's skipped steps and the owner archive's decision rows, and one end-to-end test of the archive over a beam's pairs.\n",
       "created": "2026-11-11T08:49:23Z",
       "revised": "2026-11-11T08:49:23Z"
+    },
+    {
+      "id": 1301,
+      "handle": "E3",
+      "slug": "finalize-flaky-test-gaps",
+      "title": "Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "landing",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (board tidy, 2026-11-11)\n\n`finalize-flaky-rerun` landed as `dea07060` with findings its review left open under \"To check by hand\":\n\n- No test covers that `NewFinalize` wires the gate's flaky sink to the Finalize it returns (`internal/landingshed/finalize.go`, `NewFinalize` and `assembleFinalize`).\n- The guards that skip a rerun and the rerun's outcomes lack test rows each (`internal/landingshed/verifygate.go`, `rerunTestFailure`).\n- Nothing ran beyond the unit tests: no real landing has had a tier0 test fail once and land with the `## Flaky test failures` section,\n  and no real .NET gate run has shown a VSTest failure's test name and error message in the report.\n\n## Idea\n\nAdd the missing test rows for the sink wiring and for each rerun guard and outcome.\nThe two real-run checks are left to the next landing that meets a flaky test, in this hub or a .NET hub; the orch reads its landing commit then.\n",
+      "created": "2026-11-11T08:49:24Z",
+      "revised": "2026-11-11T08:49:24Z"
     }
   ],
   "prime_owner": "neve",
