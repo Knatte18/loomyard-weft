@@ -1,6 +1,6 @@
 # heddle set/remove should re-render file targets in every live worktree of the hub
 
-`heddle-render-all-worktrees` · Task · bug, heddle · running · Drift-Expect
+`heddle-render-all-worktrees` · Task · bug, heddle · running · Darn-Write
 
 Imported from [issue #103](https://github.com/Knatte18/loomyard/issues/103).
 
