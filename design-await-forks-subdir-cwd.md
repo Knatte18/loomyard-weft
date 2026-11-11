@@ -1,6 +1,6 @@
 # lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor
 
-`await-forks-subdir-cwd` · Task · bug, shuttle, fabric · running · Seed-Child
+`await-forks-subdir-cwd` · Task · bug, shuttle, fabric · running · Open-Window
 
 Depends on: [`creel-notice-hygiene`](design-creel-notice-hygiene.md)
 
