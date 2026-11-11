@@ -1,7 +1,7 @@
 # Board
 
-Rendered 2026-11-11 13:36 UTC; every age below is as of then.
-Prime owner: `osl-1046`.
+Rendered 2026-11-11 13:37 UTC; every age below is as of then.
+Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -9,7 +9,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 <details open>
 <summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (3)</strong></summary>
 
-[`codex-engine-trial`](design-codex-engine-trial.md) · Age 7d · Owner `osl-1046`
+[`codex-engine-trial`](design-codex-engine-trial.md) · Age 7d · Owner `neve`
 
 Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
 
@@ -45,7 +45,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 <details open>
 <summary><strong><a href="project-test-suite-trim.md">P6 Coverage maps: build them, keep them fresh, and cut the test suite with them</a> (6)</strong></summary>
 
-[`test-suite-trim`](design-test-suite-trim.md) · Age 1d · Owner `osl-1046`
+[`test-suite-trim`](design-test-suite-trim.md) · Age 1d · Owner `neve`
 
 ### Tasks (4)
 
@@ -57,7 +57,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Research how the coverage maps are kept fresh: three independent brainstorms**<br>• Three agents, two Fable 5.2 and one Opus 5.5, each propose a smarter upkeep of the per-test coverage maps; one report lands<br>• `darn: writer fable[high]` | [`testmap-upkeep`](design-testmap-upkeep.md) | darn · docs | Finalize | osl-1046 | 1d<br>3h | testkit, gate, dobby |
+| T3 | **Research how the coverage maps are kept fresh: three independent brainstorms**<br>• Three agents, two Fable 5.2 and one Opus 5.5, each propose a smarter upkeep of the per-test coverage maps; one report lands<br>• `darn: writer fable[high]` | [`testmap-upkeep`](design-testmap-upkeep.md) | darn · docs | Finalize | neve | 1d<br>3h | testkit, gate, dobby |
 
 #### Ready (0)
 
@@ -91,7 +91,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 <details open>
 <summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (37)</strong></summary>
 
-Owner `osl-1046`
+Owner `neve`
 
 ### Tasks (6)
 
@@ -103,8 +103,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | darn · light | Finalize | osl-1046 | 7h<br>6h | fabric |
-| T13 | **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | Parent-Align | osl-1046 | 1d<br>1d | config, slack |
+| T9 | **FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub** | [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md) | darn · light | Finalize | neve | 7h<br>6h | fabric |
+| T13 | **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | Parent-Align | neve | 1d<br>1d | config, slack |
 
 #### Ready (0)
 
@@ -144,8 +144,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **Creel repeats the same notice many times for an unchanged state**<br>• Dobby and fabric sent identical notices about 25 times during an outage | [`creel-repeat-notices`](design-creel-repeat-notices.md) | 3h<br>3h | creel, dobby, fabric |
 | B4 |  | **Creel hands the orch mail about runs and pairs that no longer exist**<br>• A day-old queue of notices about torn-down pairs reached the orch as live mail | [`creel-stale-mail-delivery`](design-creel-stale-mail-delivery.md) | 3h<br>3h | creel, orch |
 | B5 |  | **The adopt-check tab stays open and takes space after the check ends**<br>• The tab of a finished adopt check is not closed or shrunk | [`adopt-check-tab-stays`](design-adopt-check-tab-stays.md) | 3h<br>3h | reed |
-| B6 |  | **lym adopt hangs silently behind a hub-wide pause**<br>• Adopt network calls wait on a hub pause with no word; reconcile stops on a busy weft push lock | [`adopt-held-by-pause`](design-adopt-held-by-pause.md) | 9m<br>9m | tender, fabric |
-| B7 |  | **adopt --drop-local fails on an untracked lym file in the weft**<br>• reset --keep refuses over an untracked generation-record.json; the adopt ends partial | [`drop-local-untracked-weft`](design-drop-local-untracked-weft.md) | 6m<br>6m | fabric |
+| B6 |  | **lym adopt hangs silently behind a hub-wide pause**<br>• Adopt network calls wait on a hub pause with no word; reconcile stops on a busy weft push lock | [`adopt-held-by-pause`](design-adopt-held-by-pause.md) | 10m<br>10m | tender, fabric |
+| B7 |  | **adopt --drop-local fails on an untracked lym file in the weft**<br>• reset --keep refuses over an untracked generation-record.json; the adopt ends partial | [`drop-local-untracked-weft`](design-drop-local-untracked-weft.md) | 7m<br>7m | fabric |
 
 #### Enhancements (8)
 
