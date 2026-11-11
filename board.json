@@ -149,10 +149,10 @@
     },
     {
       "id": 1002,
-      "handle": "F12",
+      "handle": "T1",
       "slug": "claude-account-weights",
       "title": "Two Claude accounts, each worktree on one of them by a configured weight",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "feature",
         "claude",
