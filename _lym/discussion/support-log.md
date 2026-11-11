@@ -19,6 +19,7 @@ Findings the design rests on:
 
 The own-package-only map forced D2: the board's idea needs cross-package records.
 Strict freshness (D5 file-hash rule) was picked over a relaxed one, per the board's "widen, never narrow".
+Review round 1 moved that rule from the tier's base to the map's own `Commit`.
 
 ### Turn 3 — lens review
 
@@ -44,7 +45,7 @@ Every fork returned a report.
 - bound-breaker 4: drift in a package no test covered. Fixed: D5's bound reworded to the precise case.
 - interactions 3: "exactly" against D6's overlap. Fixed in the D3 criterion.
 - board-scope 1 (decision): D2 ahead of `testmap-upkeep`. Kept as a question for the parent in Open risks.
-- board-scope 2 (decision): this hub's `gate.yaml`. Kept as a question for the parent in Open risks.
+- board-scope 2 (decision): this hub's `gate.yaml`. Kept as a question for the parent in Open risks; moved to Scope Out in round 1.
 - board-scope 3: sweep delayed by the rebuild. Fixed: one clause in Open risks.
 - leanness 1 to 7: fixed: the `pr-review` assumption cut, the tier-2 assumption trimmed, the Scope Out bullet made bare,
   the `BuildBinary` hint moved to Notes, D7's last sentence cut, the test-speed constraint trimmed, the Scope In tier claim dropped.
@@ -59,10 +60,41 @@ Every fork returned a report.
 - Treat every new function as a miss: widens on nearly every diff, while a plain function is reached only through a changed caller.
 - Block-level selection keyed at gate time: needs a coverage build or a re-implementation of cmd/cover's block splitting; function level needs neither.
 - Leave testmap's staleness at own-package files: a dependency-drift miss would last until the age limit.
+- Check map freshness against the tier's base: maps are built at main's HEAD,
+  so a base that predates a landing to a widely imported package, or a base on a branch commit, misses for every such package.
+- Hash the working tree through git's clean filter: needs a git call beside the fabric's readers (PATTERN-fabric-boundary);
+  a checkout converting line endings misses instead, a D5 bound.
+- Select on a method's receiver or signature change through D4: a method-set change can alter an interface assertion in unchanged code,
+  so it is a D5 miss.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- F1 (BLOCKING): D4 and D5 compare from the map's own `Commit`; the tier-base hash check and the hit-rate risk are gone.
+- F2 to F5, F10, F11: D5 compares the importing package's own `Files`; D3 states the spawn scan's bound;
+  testmap's dirty and changed-file checks cover every covered package; the marker holds the build's `Commit` and `BuiltAt`;
+  an added or removed import is a miss, but an added standard-library or covered-package import;
+  same-named `init` functions change together.
+- Fixer self-check: D4's rationale names the non-body bound, with an Open risk for non-body landings on main.
+- F6, F15, F16: constraint, Notes hint and test-isolation bullet corrected.
+- F7: the `gate.yaml` question became a Scope Out line (Q8). F8: the `testmap-upkeep` question reworded.
+- F9: the tier cost split is a measured Constraint. F12 to F14: D3, D5 and D7 criteria and labels aligned.
+
+### Round 2
+
+- F1, F2: D2 records every linked package, covered or not, with every file impactset maps to it,
+  `go:embed` targets in subdirectories included; D4 and D5 compare that set.
+- F3: the non-body change rate on main is a measured Constraint;
+  D5 exempts an added const outside an `iota` group, a var with no initializer and a type with no methods;
+  the dependency on testmap's rebuild cadence is a question for the parent in Open risks (Q11).
+- Fixer self-check: the `iota` group rule, a lower-bound count, the D3 and D4 rationale and criteria aligned, and ignored files kept out of D5.
+- F5: D4 compares whole function declarations; a method's receiver or signature change is a D5 method-set miss.
+- F6 to F8: a `//go:` directive line is never a comment; D3's union keeps only the tier's tests and drops watch-skipped ones;
+  an unparsable changed file is a miss.
+- F9: D5's bound names line-ending conversion. F10: testmap repeats its dirty check after each package's tests.
+  F11: the gate-slot constraint corrected.
+- F4 (decision): with the parent.
 
 ## Question ledger
 
@@ -70,9 +102,15 @@ _No rounds yet._
 - Q2 (auto-pick): which keys default to `coverage`? `darn-write`, `webster-fix`, `code-burler-fix`; `pr-review` keeps `diff` as the last gate before landing.
 - Q3 (auto-pick): how to see importer coverage? Cross-package coverpkg in testmap (D2).
 - Q4 (auto-pick): tier 2? Import scope as today, as a D5 miss (unmapped tier).
-- Q5 (auto-pick): freshness rule? Every recorded file hash must match the tier's base (D5).
-- Q6 (auto-pick): non-body changes and new functions? Non-body change other than comments, formatting and named imports widens; a new method or `init` widens; a new plain function does not.
+- Q5 (auto-pick): freshness rule? Selection diffs every linked package from the map's own `Commit` (D4);
+  a map whose `Commit` is unreadable, or whose importing package's own files differ, is a miss (D5).
+- Q6 (auto-pick): non-body changes and new declarations? Non-body change other than comments, formatting and a reordered import block widens,
+  as does an added or removed import other than an added standard-library or linked-package one, and any `//go:` directive change;
+  a method-set change or an added `init` widens;
+  a new plain function, a const outside an `iota` group, a var with no initializer or a type with no methods does not.
 - Q7 (auto-pick): redundancy judgment with cross-package maps? Unchanged, own-package blocks only.
-- Q8 (open, for the parent): the hub's own `gate.yaml` switch? The record leaves it out; the run edits no hub config.
+- Q8 (auto-pick): the hub's own `gate.yaml` switch?
+  The operator switches the three keys to `coverage` with `lym config gate` from the prime after landing; the run edits no hub config.
 - Q9 (auto-pick): selection granularity? Function level from `go/parser` (D4), after the lens review found no gate-time source of block boundaries.
 - Q10 (open, for the parent): may D2 raise testmap's cost ahead of note `testmap-upkeep`? Recorded in Open risks.
+- Q11 (open, for the parent): land before note `testmap-upkeep` sets a rebuild cadence, or wait for it? Recorded in Open risks.
