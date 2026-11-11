@@ -16,7 +16,14 @@ The operator wants the existing ones cut, across the packages, not only kept fro
    a candidate is cut or folded into another test only when its assertions add nothing the covering tests check, since equal coverage does not mean equal checks.
 3. `internal/fabricengine` was swept by hand on 2026-11-08 and is being reworked by its serial-phase tasks, so it comes last or not at all.
 
+## Changed by the Sketch `testmap-upkeep-design` (board tidy, 2026-11-11)
+
+Its approved decision record (D13) asks two changes of this note:
+
+- Before judging a package, the sweep runs a hand call of `lym gate testmap` naming it (D9), which rebuilds that package's map whole.
+- Spawn-marked tests (D4) are neither candidates nor covers.
+
 ## Before it becomes a task
 
 It needs a full set of coverage maps, one per package; on 2026-11-09 none was built yet.
-Note `testmap-backlog-drain` is about the prime dobby building them only a few per batch of landings.
+The prime dobby's upkeep passes build them (see note `testmap-backlog-drain` and the Sketch above), not a batch of five per five landings.
