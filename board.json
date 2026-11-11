@@ -937,7 +937,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #105](https://github.com/Knatte18/loomyard/issues/105).\n\n## What happened\n\nA card created tests in a second test project (a slow-tests project), but the hub's tier0 command runs only the fast test assembly, and tier1 is empty.\n`lym gate test --gate card --card \u003ccard\u003e`, the batch gate, and an explicit `lym gate test \u003cproject\u003e -- --filter ...` all ran the fast suite instead.\nThe tier0 command holds neither `{targets}` nor `{test_targets}`, so the requested target was silently ignored.\nThe card was committed after only a compile check of the slow-tests project; its tests never ran through any gate route.\nThe tests were later found failing only because an agent ran them through `lym gate test --tier 1 --card \u003ccard\u003e -- --filter ...` by hand.\n\n## Why it is abnormal\n\nA gate that is asked for a named target and cannot pass it to the command reports a pass for different tests, with no warning.\nA card whose tests live outside the configured tier0 assembly gets no verification and nothing says so.\n\n## What to do\n\n- Refuse or warn when a gate or explicit target is requested and the tier command has no `{targets}` or `{test_targets}` placeholder.\n- Warn when a card adds or edits tests in a project that no configured tier command reaches.\n\nProvenance: task `trip-history-transfer`; notes `04-aligner-moving-junction-recovery.md`, `04-aligner-moving-junction.md`.\n",
-      "status": "running · Drift-Await",
+      "status": "running · Drift-Expect",
       "created": "2026-11-11T06:23:02Z",
       "revised": "2026-11-11T07:31:26Z",
       "profile": "light"
