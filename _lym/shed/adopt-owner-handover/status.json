@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -41,6 +41,57 @@
       "output": "",
       "at": "2026-11-11T07:23:13Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/adopt-owner-handover/_lym/landing/summary.md",
+      "at": "2026-11-11T08:02:13Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T07:37:58.236261568Z",
+          "end": "2026-11-11T07:37:58.246823468Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T07:53:51.274236151Z",
+          "end": "2026-11-11T07:53:51.296767959Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T07:37:58.308024277Z",
+          "end": "2026-11-11T07:53:11.503491432Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-11T07:53:11.94803349Z",
+          "end": "2026-11-11T07:53:51.215344473Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T07:53:51.395674948Z",
+          "end": "2026-11-11T08:00:42.222557537Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T08:00:42.419888553Z",
+          "end": "2026-11-11T08:00:42.891741199Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T08:00:43.012980092Z",
+          "end": "2026-11-11T08:00:43.017386848Z"
+        }
+      ]
     }
   ],
   "product": {
