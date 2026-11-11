@@ -10,7 +10,8 @@ The design asks for a note that proposes narrowing this miss.
 ## Built so far (board tidy, 2026-11-11)
 
 The selector landed as `65416136` (task `coverage-test-select`): `Selector` in `internal/testcover`, with `MissNonBody` the miss reason for "change outside function declarations".
-Nothing calls it yet; task `gate-scope-coverage` consumes it.
+Task `gate-scope-coverage` (`cdc3522a`) now consumes it: the gate scope `coverage` runs, for a package in the diff set only because it imports a changed package, the tests the selector selects, and the whole package on any miss.
+The scope report names such a package `miss: <reason>`, so the non-body misses a real gate sees can be counted there.
 It already narrows part of the non-body case: comment and formatting edits, a reordered import block,
 and added declarations no unchanged code can reach (a const outside an `iota` or implicit-value group, a var with no initializer, a type with no methods) are not misses.
 What still misses is the rest: a changed or removed declaration outside functions, an import added or removed other than a linked or standard-library package,
