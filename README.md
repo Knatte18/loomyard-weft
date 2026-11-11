@@ -95,21 +95,21 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 1d<br>30m | testkit, gate |
-| E12 |  | **The prime dobby leaves a coverage map backlog unbuilt until more landings come** | [`testmap-backlog-drain`](design-testmap-backlog-drain.md) | 1d<br>30m | dobby, gate, testkit |
+| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 1d<br>31m | testkit, gate |
+| E12 |  | **The prime dobby leaves a coverage map backlog unbuilt until more landings come** | [`testmap-backlog-drain`](design-testmap-backlog-drain.md) | 1d<br>31m | dobby, gate, testkit |
 
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (33)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (32)</strong></summary>
 
 Owner `neve`
 
-### Tasks (13)
+### Tasks (12)
 
 Concrete and claimable; only a task can run.
 
-#### Running (6)
+#### Running (5)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -118,7 +118,6 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **Raddle shows each part's recipe and profile as table columns**<br>• Raddle names recipe and profile only in free text; put them in the proposal table | [`raddle-table-recipe-profile`](design-raddle-table-recipe-profile.md) | darn · light | Code-Burler-Review | neve | 6h<br>39m | stencil, shed |
 | T3 | **Adopt takes over without hanging behind a pause, failing on lym files or replaying stale stops** | [`adopt-takeover-fixes`](design-adopt-takeover-fixes.md) | darn · solid | Finalize | neve | 2h<br>45m | fabric, tender |
 | T7 | **Refresh the README: outdated parts, less wall of text, the dead Autoboard link and a shorter Lineage**<br>• The README is partly outdated, too long-winded, its Autoboard link is dead, and Lineage no longer fits LoomYard | [`readme-refresh`](design-readme-refresh.md) | darn · docs | Finalize | neve | 4h<br>39m | docs |
-| T8 | **The adopt-check tab closes after the check; reed attach refuses a directory that is no worktree** | [`reed-tab-and-attach-fixes`](design-reed-tab-and-attach-fixes.md) | darn · light | Finalize | neve | 5h<br>1h | reed |
 | T10 | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | darn · light | Darn-Write | neve | 9h<br>39m | heddle |
 | T11 | **lym board upsert --record-file replaces a Sketch's stored record, stamped with the body hash promote checks** | [`record-file-upsert`](design-record-file-upsert.md)<br>[Sketch](decision-record-file-upsert.md) | darn · light | Darn-Write | neve | 24m<br>24m | shed, loom, board |
 
@@ -208,5 +207,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>5d | burler, shed, orch, quarry, report |
 | F19 |  | **A beam orch cannot create a project at the root, only under its own beam** | [`beam-orch-root-project`](design-beam-orch-root-project.md) | 6d<br>4d | board, orch, workspaces |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 6d<br>6d | batten, board, fabric, workspaces |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T8 | **The adopt-check tab closes after the check; reed attach refuses a directory that is no worktree** | [`reed-tab-and-attach-fixes`](design-reed-tab-and-attach-fixes.md) | 5h<br>1h | reed |
 
 </details>
