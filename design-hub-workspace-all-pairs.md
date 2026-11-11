@@ -1,6 +1,6 @@
 # The hub workspace file lists every pair, beams' pairs included, named with their project handle
 
-`hub-workspace-all-pairs` · Task · enhancement, fabric, ide
+`hub-workspace-all-pairs` · Task · enhancement, fabric, ide · running · Worktree-Create
 
 Depends on: [`anchored-hub-test-gaps`](design-anchored-hub-test-gaps.md)
 
