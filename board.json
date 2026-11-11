@@ -752,21 +752,23 @@
     },
     {
       "id": 1281,
-      "handle": "E6",
+      "handle": "T15",
       "slug": "console-title-handle-first",
       "title": "Console window titles put the task handle first, with hub and project in brackets",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "termwindow"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-09)\n\nSince `7bccde26` every console window is titled `\u003chub\u003e: \u003cP#\u003e: \u003cT#\u003e: \u003cslug\u003e`, such as `ly: P1: T2: adopt-worker-record`.\nThe operator finds it hard to read: the task handle, which they look for first, sits third, behind two colon-separated prefixes.\nA task under root shows no project today.\n\n## Design (operator, 2026-11-09 and 2026-11-11)\n\nPut the leading handle first and set the hub and project apart in brackets, as `\u003clead\u003e [\u003chub\u003e:\u003cproject\u003e] \u003cname\u003e`:\n\n- A task: `T2 [ly:P1] adopt-worker-record`.\n- A task under root names root's project, `P0`: `T5 [ly:P0] machine-name-file`.\n- An orch leads with `ORCH` in place of a task handle:\n  the prime's orch is `ORCH [ly:P0] Prime`, and a beam's orch is `ORCH [ly:P1] adopt-takeover`, naming its beam's project and slug.\n\nThere is no runs window to title; every console window is a task's or an orch's.\n",
       "created": "2026-11-09T20:49:59Z",
-      "revised": "2026-11-11T07:54:37Z"
+      "revised": "2026-11-11T07:54:38Z",
+      "profile": "light"
     },
     {
       "id": 1282,
