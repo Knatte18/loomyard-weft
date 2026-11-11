@@ -1,0 +1,9 @@
+{
+  "created": "2026-11-09T15:17:11Z",
+  "hash": "31ba897aee5ee2c3b505e33210acfdfcb4c04bb23d155d01e60c0b2228ee5c79",
+  "filed": [
+    "testmap-cross-package",
+    "coverage-test-select",
+    "gate-scope-coverage"
+  ]
+}
