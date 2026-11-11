@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-11 08:02 UTC; every age below is as of then.
+Rendered 2026-11-11 08:03 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,9 +18,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Webster: no amend of a pushed card, no lockless work on a notice, and a gate halt that counts and names its failure** | [`webster-run-faults`](design-webster-run-faults.md) | darn · solid | Code-Burler-Review | neve | 1h<br>31m | webster, loom, creel, batten, git, gate |
-| T7 | **gate test: card gate and explicit target never reach a second test project when tier0 command lacks a targets placeholder** | [`gate-target-dropped-silently`](design-gate-target-dropped-silently.md) | darn · light | Code-Burler-Fix | neve | 1h<br>31m | gate, dotnet |
-| T8 | **creel post to a strand that is not running reports plain success** | [`creel-post-dead-recipient`](design-creel-post-dead-recipient.md) | darn · light | Code-Burler-Fix | neve | 1h<br>31m | creel |
+| T2 | **Webster: no amend of a pushed card, no lockless work on a notice, and a gate halt that counts and names its failure** | [`webster-run-faults`](design-webster-run-faults.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>32m | webster, loom, creel, batten, git, gate |
+| T7 | **gate test: card gate and explicit target never reach a second test project when tier0 command lacks a targets placeholder** | [`gate-target-dropped-silently`](design-gate-target-dropped-silently.md) | darn · light | Code-Burler-Fix | neve | 1h<br>32m | gate, dotnet |
+| T8 | **creel post to a strand that is not running reports plain success** | [`creel-post-dead-recipient`](design-creel-post-dead-recipient.md) | darn · light | Code-Burler-Fix | neve | 1h<br>32m | creel |
 | T20 | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | Darn-Write | neve | 2d<br>1h | shed, friction, shuttle |
 
 ### Ready (1)
@@ -55,7 +55,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Worktree-Create halts on a reused slug path holding only obj/ leftovers** | [`worktree-create-build-leftovers`](design-worktree-create-build-leftovers.md) | darn · light | T9 | 1h<br>31m | batten, fabric |
+| T10 | **Worktree-Create halts on a reused slug path holding only obj/ leftovers** | [`worktree-create-build-leftovers`](design-worktree-create-build-leftovers.md) | darn · light | T9 | 1h<br>32m | batten, fabric |
 | T13 | **lym machine name shows and sets the machine name and sweeps owners across a rename** | [`machine-name-verb`](design-machine-name-verb.md)<br>[Sketch](decision-machine-name-verb.md) | tapestry · solid | T5 | 1d<br>1d | config, slack |
 
 ### Layer D (2)
@@ -65,7 +65,7 @@ Starts when every entry it names under After is done.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T11 | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | T10 | 1h<br>28m | fabric, cleanup |
-| T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1d<br>4m | slack, reed, creel |
+| T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 1d<br>5m | slack, reed, creel |
 
 ## Notes (22)
 
@@ -76,7 +76,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 1d<br>1d | gate, fabric |
-| R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 1h<br>36m | darn, loom, shuttle, claude |
+| R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 1h<br>37m | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>1d | loom, stencil |
 
 ### Enhancements (6)
