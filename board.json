@@ -1186,6 +1186,28 @@
       "body": "Imported from [issue #112](https://github.com/Knatte18/loomyard/issues/112).\n\n## What was seen\n\nRunning `lym a` (lym reed attach) by mistake in the hub's board checkout `_bolt`, which is no worktree of the hub, booted a tmux session named `_bolt` on the hub's reed socket with one bare shell pane.\n`lym reed list` from the prime did not show it; only `tmux ls` did.\n\n## Workaround\n\n`lym reed down` run with cwd `_bolt` removed the session.\n\n## Expected\n\n`lym reed attach` and `lym reed up` refuse a directory that is not a fabric worktree of the hub, such as `_bolt` or a weft checkout, and name the prime or a worktree to attach to instead.\n",
       "created": "2026-11-11T14:02:35Z",
       "revised": "2026-11-11T14:02:35Z"
+    },
+    {
+      "id": 1324,
+      "handle": "B12",
+      "slug": "loop-exit-log-tail",
+      "title": "Loop exit not recorded when a step's loop ends without an envelope (loop-exited)",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "shed",
+        "friction"
+      ],
+      "issues": [
+        111
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #111](https://github.com/Knatte18/loomyard/issues/111).\n\n## What happened\n\nA `lym loom` run halted as `failed` with anomaly `interrupted-stop` at step `Code-Bouncer`.\nThe status error was `shedverbs: step Code-Bouncer interrupted (loop-exited)`.\nThe note reported `loop exit: not recorded`, so neither the exit code nor the signal that ended the loop was available.\nThe \"loop log\" field in the halt note held only the JSON envelopes of earlier steps (`Code-Bouncer`, `Code-Burler-Review`, `Code-Burler-Fix`, all outcome `stuck`) rather than anything from the interrupted loop's own end.\nThe history shows the same three steps already ran with outcome `stuck` before the interrupted `Code-Bouncer` invocation.\n\n## Why it is abnormal\n\nThe halt cannot be diagnosed from what lym records.\nThe way forward tells the operator to read `loop.trace_copy` and `loop.stderr_path` and apply `loop.interrupt_policy`, but the note gives no hint why the loop ended without an envelope (crash, kill, timeout, operator interrupt).\nWithout a recorded exit status, an intentional interrupt and a lym crash look the same.\n\n## What to do\n\n- Record the loop process's exit code or terminating signal in the halt note and in the run status when a loop ends without an envelope.\n- Make the \"loop log\" field show the tail of the interrupted loop's own output, not the envelopes of steps that completed earlier.\n- When the exit cannot be captured, say why in the note instead of `not recorded`.\n\nProvenance: task slug `models-full-buildsection`; note `loom-halt-2.md`.\n",
+      "created": "2026-11-11T14:02:37Z",
+      "revised": "2026-11-11T14:02:37Z"
     }
   ],
   "prime_owner": "neve",
