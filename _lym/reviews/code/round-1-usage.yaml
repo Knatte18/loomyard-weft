@@ -6,6 +6,12 @@ lenses:
     - code-correctness
     - code-affected-set
     - code-tests
+fix_lenses:
+    - fix-code-correctness
+    - fix-consistency
+    - fix-proposal
+    - fix-affected-set
+fix_forks: 4
 review:
     engine: claude
     model: sonnet
@@ -20,6 +26,16 @@ review:
     fork_fresh_tokens: 22689
     fork_cache_read_tokens: 432818
     fork_fresh_share: 0.16826359739547025
+fix:
+    engine: claude
+    model: sonnet
+    effort: medium
+    start: 2026-11-11T08:24:58Z
+    end: 2026-11-11T09:32:15.721135519+01:00
+    wall_seconds: 437.721135519
+    tokens_known: true
+    fresh_tokens: 76101
+    cache_read_tokens: 919959
 seed:
     - engine: claude
       model: sonnet
