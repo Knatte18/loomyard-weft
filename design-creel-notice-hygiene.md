@@ -1,6 +1,6 @@
 # Creel sends an unchanged notice once and drops mail about runs that no longer exist
 
-`creel-notice-hygiene` · Task · bug, creel, dobby, fabric, orch
+`creel-notice-hygiene` · Task · bug, creel, dobby, fabric, orch · running · Worktree-Create
 
 Depends on: [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md)
 

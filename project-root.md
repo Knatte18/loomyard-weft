@@ -12,21 +12,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T6 | **Creel sends an unchanged notice once and drops mail about runs that no longer exist** | [`creel-notice-hygiene`](design-creel-notice-hygiene.md) | darn · light | Worktree-Create | neve | 6h<br>2h | creel, dobby, fabric, orch |
 | T11 | **lym board upsert --record-file replaces a Sketch's stored record, stamped with the body hash promote checks** | [`record-file-upsert`](design-record-file-upsert.md)<br>[Sketch](decision-record-file-upsert.md) | darn · light | Code-Burler-Review | neve | 54m<br>54m | shed, loom, board |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Creel sends an unchanged notice once and drops mail about runs that no longer exist** | [`creel-notice-hygiene`](design-creel-notice-hygiene.md) | darn · light |  | 6h<br>2h | creel, dobby, fabric, orch |
+_None._
 
 ### Layer A (3)
 
