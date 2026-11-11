@@ -19,3 +19,8 @@ On a hub shared by several people, or one person on several machines with differ
   Since #59, teardown uses the recorded branch name, so a pair's branch no longer depends on the prefix in force later; a pair created on one machine keeps its name when adopted on another.
 - Review which other keys are personal rather than hub-wide and give them the same layer, for example:
   the identity a pull request is opened under or assigned to, the Slack operator, the default model or effort a session opens with, and editor or window settings such as `batten.open_ide`.
+
+## When (operator, 2026-11-11)
+
+Not yet: the hub-wide `branch_prefix` is enough for now.
+Kept for when a hub is shared across users or machines with different conventions.
