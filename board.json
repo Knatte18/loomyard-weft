@@ -791,10 +791,10 @@
     },
     {
       "id": 1283,
-      "handle": "B2",
+      "handle": "T8",
       "slug": "creel-post-dead-recipient",
       "title": "creel post to a strand that is not running reports plain success",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "creel"
@@ -802,19 +802,22 @@
       "issues": [
         96
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #96](https://github.com/Knatte18/loomyard/issues/96).\n\n## Seen\n\nAfter a machine crash, the hub prime's orch (`dop:orch`) was not running: `lym reed list` showed it `live: false`.\nA beam orch posted it a request with `lym creel post dop:orch \"\u003ctext\u003e\"`.\nThe command printed only `{\"id\":224,\"ok\":true,\"sender\":\"...\"}`, with no word that the recipient was down.\nThe sender told the operator the request was on its way, and the operator found the recipient dead only by asking.\n\n## Workaround\n\nCheck `lym reed list` (or the session list) for the recipient's `live` flag before relying on a post, and ask the operator to start it.\n\n## Expected\n\n`creel post` to a strand that is not live still queues the message, but says so in its output, for example a `recipient_live: false` field and a warning line naming the strand and how to start it (`lym beam start` for an orch).\n",
+      "status": "draft",
       "created": "2026-11-11T06:22:45Z",
-      "revised": "2026-11-11T06:22:45Z"
+      "revised": "2026-11-11T07:31:26Z",
+      "profile": "light"
     },
     {
       "id": 1285,
-      "handle": "B4",
+      "handle": "T9",
       "slug": "push-notice-anchor-dir",
       "title": "FABRIC push-failure notice names the worktree root, which fabric push refuses in an anchored hub",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "fabric"
@@ -822,12 +825,15 @@
       "issues": [
         98
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #98](https://github.com/Knatte18/loomyard/issues/98).\n\nIn a hub whose anchor is a subdirectory (Models, anchor src/csharp/NORCE.Models), the mo:FABRIC notice for a failed async push says: way forward: run `lym fabric push` in \u003chub\u003e/knut-rheology-merge-in. Running it there fails with: cwd is outside the recorded fabric anchor subtree: cwd \u003chub\u003e/knut-rheology-merge-in does not equal the anchored directory \u003chub\u003e/knut-rheology-merge-in/src/csharp/NORCE.Models (recorded by .lym-anchor).\n\nWorkaround: run `lym fabric push` in the anchored directory instead; it pushed.\n\nExpected: the way forward names the anchored directory (or uses env -C with it), so the command it gives works as written.",
+      "status": "draft",
       "created": "2026-11-11T06:22:50Z",
-      "revised": "2026-11-11T06:22:50Z"
+      "revised": "2026-11-11T07:31:26Z",
+      "profile": "light"
     },
     {
       "id": 1286,
@@ -913,10 +919,10 @@
     },
     {
       "id": 1291,
-      "handle": "B6",
+      "handle": "T7",
       "slug": "gate-target-dropped-silently",
       "title": "gate test: card gate and explicit target never reach a second test project when tier0 command lacks a targets placeholder",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "gate",
@@ -925,19 +931,22 @@
       "issues": [
         105
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #105](https://github.com/Knatte18/loomyard/issues/105).\n\n## What happened\n\nA card created tests in a second test project (a slow-tests project), but the hub's tier0 command runs only the fast test assembly, and tier1 is empty.\n`lym gate test --gate card --card \u003ccard\u003e`, the batch gate, and an explicit `lym gate test \u003cproject\u003e -- --filter ...` all ran the fast suite instead.\nThe tier0 command holds neither `{targets}` nor `{test_targets}`, so the requested target was silently ignored.\nThe card was committed after only a compile check of the slow-tests project; its tests never ran through any gate route.\nThe tests were later found failing only because an agent ran them through `lym gate test --tier 1 --card \u003ccard\u003e -- --filter ...` by hand.\n\n## Why it is abnormal\n\nA gate that is asked for a named target and cannot pass it to the command reports a pass for different tests, with no warning.\nA card whose tests live outside the configured tier0 assembly gets no verification and nothing says so.\n\n## What to do\n\n- Refuse or warn when a gate or explicit target is requested and the tier command has no `{targets}` or `{test_targets}` placeholder.\n- Warn when a card adds or edits tests in a project that no configured tier command reaches.\n\nProvenance: task `trip-history-transfer`; notes `04-aligner-moving-junction-recovery.md`, `04-aligner-moving-junction.md`.\n",
+      "status": "draft",
       "created": "2026-11-11T06:23:02Z",
-      "revised": "2026-11-11T06:23:02Z"
+      "revised": "2026-11-11T07:31:26Z",
+      "profile": "light"
     },
     {
       "id": 1293,
-      "handle": "B8",
+      "handle": "T3",
       "slug": "dobby-raddle-ignores-deps",
       "title": "Dobby starts a released raddle task whose depends_on has not landed",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "dobby",
@@ -946,19 +955,22 @@
       "issues": [
         107
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #107](https://github.com/Knatte18/loomyard/issues/107).\n\n## What happened\n\nIn a beam, the orch promoted a Sketch with `lym board promote S1`, which made it a task with recipe `raddle`.\nIt then ran `lym board set-deps '{\"slug\":\"\u003cslug\u003e\",\"depends_on\":[\"\u003cother\u003e\"]}'`, where `\u003cother\u003e` was a task of the same beam still `running · PR-Review`, and only after that released the task with `lym board set-status '{\"slug\":\"\u003cslug\u003e\",\"status\":null}'`.\n`lym board get` showed `depends_on` set and the status already `running · Seed-Child` moments later: the beam's dobby started the raddle task although its dependency had not landed.\n\n## Workaround\n\n`lym batten pause \u003cslug\u003e` holds the run; the orch resumes it with `lym batten run \u003cslug\u003e` once the dependency lands.\n\n## Expected\n\nDobby starts a released task only when every entry in its `depends_on` is done or gone, whatever its recipe, `raddle` included.\n",
+      "status": "draft",
       "created": "2026-11-11T06:23:07Z",
-      "revised": "2026-11-11T06:23:07Z"
+      "revised": "2026-11-11T07:31:26Z",
+      "profile": "light"
     },
     {
       "id": 1294,
-      "handle": "B10",
+      "handle": "T10",
       "slug": "worktree-create-build-leftovers",
       "title": "Worktree-Create halts on a reused slug path holding only obj/ leftovers",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "batten",
@@ -967,12 +979,17 @@
       "issues": [
         108
       ],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "push-notice-anchor-dir"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #108](https://github.com/Knatte18/loomyard/issues/108).\n\nSeen: `lym beam merge-parent support-for-dop` halted its batten run at Worktree-Create because the directory `\u003chub\u003e/support-for-dop-merge-in` already existed and was not a worktree.\nIt held only `src/csharp/NORCE.Models/*/obj/Debug/...` build leftovers (15 files, generated AssemblyInfo and editorconfig) dated from the previous merge-in run of the same slug a day earlier, which had landed and been torn down.\nSomething (an IDE or a build triggered after teardown) recreated obj directories under the removed worktree path, and Worktree-Teardown does not check for or clean such leftovers.\n\nWorkaround: inspected the directory, removed it by hand (`rm -r` on the literal path), and ran `lym batten run support-for-dop-merge-in` again.\n\nExpected: a reused slug whose old path holds only build output (obj/bin) is not blocked; Worktree-Create, or Worktree-Teardown of the earlier run, removes a directory that contains nothing but build artefacts, or the halt names it as such so the parent does not need to inspect it.\n",
+      "status": "draft",
       "created": "2026-11-11T06:23:09Z",
-      "revised": "2026-11-11T06:23:09Z"
+      "revised": "2026-11-11T07:31:27Z",
+      "profile": "light"
     },
     {
       "id": 1295,

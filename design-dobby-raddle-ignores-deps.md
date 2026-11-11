@@ -1,6 +1,6 @@
 # Dobby starts a released raddle task whose depends_on has not landed
 
-`dobby-raddle-ignores-deps` · Note · bug, dobby, board
+`dobby-raddle-ignores-deps` · Task · bug, dobby, board · draft
 
 Imported from [issue #107](https://github.com/Knatte18/loomyard/issues/107).
 
