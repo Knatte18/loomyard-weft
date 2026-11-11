@@ -70,6 +70,12 @@ Decision: The Discussion review ends at round 3 with no further edit. The round-
 
 Rationale: Hard-cap rule: accept when the fix in place already answers each open design-wrong finding. The round-3 fixer report and the current decision record show every proposed fix applied; internal/gatecli/tierrun.go confirms holdsTierTest and emptyTierFailure behave as the F2 fix relies on.
 
+### Added after Discussion (parent, 2026-11-11): Carry the upkeep design's D13 change for this entry
+
+Decision: Per the Sketch testmap-upkeep-design (D13): D3's function sets replace the block keys that carry an import path; the map records its own package's non-Go file hashes (D3); the format marker holds D6's stamp. The criterion that a linked-only change leaves a map fresh stays, as the interim rule D1 describes. Read the stored record of testmap-upkeep-design with lym board get testmap-upkeep-design --record.
+
+Rationale: This entry's record predates the upkeep design; D13 asks the parent to carry the change onto it before its Darn-Write writer writes code.
+
 ## Constraints
 
 - Go 1.26 (`go.mod`, toolchain go1.26.8): `go test -c -cover -coverpkg=<list>` instruments every listed package, and the set-mode profile lists blocks of each by file.
