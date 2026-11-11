@@ -1,6 +1,6 @@
 # A loop that ends without an envelope records no exit status, so its halt cannot be explained
 
-`loop-exit-not-recorded` · Task · bug, shed, friction, shuttle · running · Seed-Child
+`loop-exit-not-recorded` · Task · bug, shed, friction, shuttle · running · Open-Window
 
 Imported from [issue #88](https://github.com/Knatte18/loomyard/issues/88).
 
