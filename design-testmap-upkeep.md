@@ -46,4 +46,5 @@ Fable, Codex astra, and Opus at high effort.
 Each reads `internal/testcover`, `internal/gatecli/testmap.go`, the prime dobby's refresh step and this note, and writes its own proposal.
 One brainstorm per agent, three in all.
 The proposals land together in one report under `docs/research/`, compared side by side, as the input for the design.
-Codex fails on OSL-1046 for its bubblewrap sandbox, so the research runs on Neve.
+Codex's bubblewrap sandbox failed on OSL-1046, so the research was to run on Neve.
+Since commit `9874c966`, `sandbox_mode: auto` (the template default) probes the sandbox and runs Codex without one where bubblewrap cannot start, so a Codex seat starts on OSL-1046 too; Neve is no longer required.
