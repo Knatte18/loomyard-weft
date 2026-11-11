@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-11 19:53 UTC; every age below is as of then.
+Rendered 2026-11-11 19:54 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **The parent-review ask record, its deadline keys, and lym loom parent-review answer and await** | [`parent-review-ask-verbs`](design-parent-review-ask-verbs.md)<br>[Sketch](decision-parent-review-ask-verbs.md) | darn · solid | Code-Burler-Fix | neve | 34m<br>34m | loom, orch, config, burler |
+| T6 | **The parent-review ask record, its deadline keys, and lym loom parent-review answer and await** | [`parent-review-ask-verbs`](design-parent-review-ask-verbs.md)<br>[Sketch](decision-parent-review-ask-verbs.md) | darn · solid | Code-Burler-Fix | neve | 35m<br>35m | loom, orch, config, burler |
 
 ### Ready (0)
 
@@ -32,7 +32,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **The Discussion-Review round asks the parent orch, and its chair keeps every parent finding** | [`discussion-review-parent-seat`](design-discussion-review-parent-seat.md)<br>[Sketch](decision-discussion-review-parent-seat.md) | darn · solid | T6 | 34m<br>34m | loom, orch, config, burler |
+| T7 | **The Discussion-Review round asks the parent orch, and its chair keeps every parent finding** | [`discussion-review-parent-seat`](design-discussion-review-parent-seat.md)<br>[Sketch](decision-discussion-review-parent-seat.md) | darn · solid | T6 | 35m<br>35m | loom, orch, config, burler |
 
 ### Draft (2)
 
@@ -41,9 +41,9 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 9d<br>24m | claude, shuttle, config |
-| T2 | `draft` **Build the full set of coverage maps and list, per package, the tests the others already cover**<br>• Use the maps: build them all and rank the redundant-test candidates per package; no test is cut | [`test-redundancy-candidates`](design-test-redundancy-candidates.md) | darn · light | T5 | 10m<br>10m | testkit, gate |
+| T2 | `draft` **Build the full set of coverage maps and list, per package, the tests the others already cover**<br>• Use the maps: build them all and rank the redundant-test candidates per package; no test is cut | [`test-redundancy-candidates`](design-test-redundancy-candidates.md) | darn · light | T5 | 11m<br>11m | testkit, gate |
 
-## Notes (16)
+## Notes (15)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -63,7 +63,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 3d<br>1h | shed, loom, darn |
 | E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 4h<br>1h | testkit, gate |
 
-### Features (10)
+### Features (9)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -74,6 +74,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 12d<br>6d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 5w<br>7d | board, ide, orch |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 4w<br>6d | webster |
-| F14 |  | **The decision record on the board, and splitting a discussed task**<br>• A task flagged discussed carries its decision record on the board and skips Discussion; three ways to split, from by hand to stitch | [`discussed-task-split`](design-discussed-task-split.md) | 2w<br>1h | loom, board, batten, workspaces |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>6d | burler, shed, orch, quarry, report |
 | F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 6d<br>6d | batten, board, fabric, workspaces |
