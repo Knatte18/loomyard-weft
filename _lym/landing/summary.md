@@ -1,65 +1,50 @@
-# Coverage selector: a target, own files by function, a stamp miss
+# testcover: selector takes a target, compares own files, checks stamp
 
-`testcover.Selector` is the one selector the coverage gate scope and the coming upkeep plan both call.
-This change gives it the rules that upkeep needs on top of the gate's.
+The coverage selector in `internal/testcover` now serves the gate and a later upkeep plan with one set of rules.
+Before, it read the working tree only and missed on any change to the package's own Go files, so a package's own edits always ran the package whole.
 
 ## What changes
 
-**A target argument.**
-`NewSelector(config, target)` takes a `testcover.Target`.
-An empty `Commit` selects the working tree under `WorktreeRoot`, and a set `Commit` selects that commit, read through the `CommitReader`, which is `fabricengine.Fabric` in production.
-`Target.Files` lists the target's files and replaces `SelectorConfig.WorkingFiles`.
-Every read of the target's side goes through one `readTargetFile`, so a commit and an equal working tree give the same verdict.
-The test runs every row against both targets.
+- `NewSelector` takes a `Target`: the working tree, or a commit read through `fabricengine.Fabric.CodeFileAt`.
+  The working-tree file list moved from `SelectorConfig.WorkingFiles` to `Target.Files`.
+- A package's own non-test Go files are compared by function, as a linked package's are.
+  A test is affected when its blocks cover a changed own function, or its recorded functions cover a changed linked one.
+  `MissOwnFiles` is gone.
+- A package's own test files are compared with every top-level `Test` function set apart (`compareTestSources`).
+  A `Test` function whose text changed, or that is new, is affected whatever the map records for it.
+  A removed one is neither affected nor a miss.
+  Any other change, such as a helper, `TestMain`, an `init`, a package-level declaration or the package clause, is a miss (`MissTestFile`).
+- A changed non-Go file under the package, `testdata` and its Go files included, is a miss unless `inert_paths` exempts it and no `go:embed` pattern names it.
+- A map's `EnvironmentStamp` that differs from the current one is a miss (`MissEnvironment`).
+  The detail names the differing fields.
+  `StampModuleFiles` fills the `go.mod` and `go.sum` hashes from the target's own tree, so a commit target stamps its own files.
+- A `MapTest` entry may record an `Outcome` (`failed`, `timed out`, `skipped`, `covered nothing`) or a spawn verdict instead of a passing measurement.
+  The selector reads such an entry as no recorded test, and `Selection.Recorded` holds only passing measurements.
+  Spawn-marked tests are no longer selected on any change; the gate's union runs them as tests the map has no measurement for.
+- A build-failure record beside test entries no longer misses the map.
+  A map whose test entries name an out-of-range block now misses as unreadable.
 
-**Own non-test Go files are compared by function.**
-D5's miss for any change to the package's own files is gone.
-The package's own files go through the same per-file comparison as a linked package's: function changes, import rules, method set, init, predeclared names and directives.
-A changed own function selects each recorded test whose own-package block keys name that file and function.
-Own non-Go files, testdata and the Go files under it included, miss unless `inert_paths` matches them and no `go:embed` pattern of the package names them.
-That rule is unchanged.
-
-**Own test files are compared with their Test functions set apart.**
-A changed own `_test.go` file is parsed on both sides.
-Its top-level Test functions are set apart, and the rest of the file is compared, ignoring comments and formatting.
-A Test function whose declaration changed, or that is new, is affected whatever the map records for it.
-Any other difference is the new miss `MissTestFile`: a helper, `TestMain`, an `init`, an import or a package-level declaration.
-A removed Test function is neither.
-A linked package's test files are still skipped.
-
-**Outcome and spawn entries are no recorded test.**
-`MapTest` gains `Outcome` (`TestOutcome`: failed, timed out, skipped, covered nothing), empty for a passing measurement.
-`Selection.Recorded` now holds only passing entries.
-An entry with an outcome, or with a spawn verdict marking it out of process or unresolved, is left out.
-It is never selected through coverage.
-`gatecli`'s `coverageUnion` therefore runs every test that `Recorded` lacks and no longer checks spawn marks itself.
-For spawn-marked tests the gate runs exactly what it ran before.
-
-**A differing environment stamp is a miss.**
-`SelectorConfig.Environment` carries the current stamp without its module file hashes.
-The selector fills those from the target's go.mod and go.sum through the new `testcover.StampModuleFiles`.
-Any difference from the map's `Format.Environment` gives `MissEnvironment`, with the differing fields named.
-In `gatecli`, `stampEnvironment` builds the two digests, over the hub's mapped tiers' commands and env (before `{parallel}`) and over the env.yaml variables.
-`mappedTierConfigs` lists those tiers.
-`lym gate testmap` and the coverage scope's `openSelector` both stamp through these two functions and `StampModuleFiles`, so a map's stamp and the gate's agree.
-The gate reads the toolchain through `Toolchain.GoEnvironment` under `gateEnv`, as testmap does, and keeps the hub env on `testRequest.hubEnv`.
-
-`MissOwnFiles` is removed.
-`mapMiss` now also rejects a test whose block index lies outside the block table, since own-file selection reads `Blocks`.
+`internal/gatecli` builds the current stamp through `stampEnvironment`, which `lym gate testmap` and the coverage scope now share.
+Both stamp the toolchain, the digest of the mapped tiers' command and env before `{parallel}`, and the digest of the hub's `env.yaml` variables.
+`mappedTierConfigs` collects the tiers for both.
+`openSelector` reads `go env` under the gate's environment and passes the working tree as target.
+`coverageUnion` drops its separate marked-test set, since `Recorded` already excludes those tests.
 
 ## Design decisions
 
-- The rest of a test file is compared syntactically, ignoring comments and formatting, rather than as raw text.
-  This matches how every other Go file is compared, and comments do not change a test binary.
-  A Test function is compared the same way.
-- Imports in a test file get no linked-package allowance: adding or removing one is a miss, as the record lists "any other change".
-  A new test file that only declares Test functions selects them.
-  One with imports misses.
-- D3 was checked against the landed format: function sets keyed by import path, file and function; no block of another package; `OtherFiles` with testdata.
-  Nothing fell short, so the map shape and `MapFormatVersion` are unchanged.
-  `Outcome` is an added `omitempty` field that old maps read as a passing entry, and every old map holds only passing entries.
-- D5's separate failure field beside test entries belongs to `testmap-upkeep-plan`, which writes it.
-  The selector ignores unknown keys, so that field will be no miss.
-  A failure-only map with `BuildFailure` still misses, as the sibling record keeps it.
-- Only `Outcome` is added to `MapTest`.
-  The per-entry commit and time that D4 also names are left to their writer, `testmap-upkeep-plan`, since the selector reads neither.
+- Under the gate a package the diff touches still runs whole, so the own-file rules narrow only a change that reached the base after the map's commit.
+- A changed `Test` function selects its own test alone; test files are not instrumented, so nothing finer can be matched.
+- A test file's import change is no miss when the test binary already links the import.
+  An added import must be the package's own, in the map's linked set, or in the standard library.
+  A removed import must be the package's own or in the standard library.
+  Any other import change in a test file is a miss.
+  This narrows the rule that every change outside a `Test` function misses; imports are the one exempted declaration.
+  Without it, each new test file would force a whole rebuild of its package.
+- A tier's parallel count stays out of the stamp, since it changes no test's coverage.
+
+## To check by hand
+
+- `internal/testcover/doc.go` and the miss list in the package doc: the claim about test-file imports (summary-test-file-import-claim-stale) should match the allowance in `packageChanges` in `internal/testcover/testselect.go`.
+- The test-file import allowance (test-file-import-allowance-unrecorded) departs from the original rule that any non-`Test` change in a test file misses; confirm the departure is intended and recorded where the rule is stated.
+- No regression check ran, and no integration suite ran for this task.
+  The unit tests cover the selector, `compareTestSources`, `stampEnvironment` and `mappedTierConfigs`, plus a unix integration test of the coverage scope.
