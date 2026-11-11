@@ -1086,6 +1086,25 @@
       "body": "Imported from [issue #109](https://github.com/Knatte18/loomyard/issues/109).\n\nTeste ut om f.eka planner kan kjøre på sonnet med opus som advisor med /advisor. Vs dagens opus hele veien",
       "created": "2026-11-11T06:23:11Z",
       "revised": "2026-11-11T06:23:11Z"
+    },
+    {
+      "id": 1296,
+      "handle": "E11",
+      "slug": "hub-workspace-all-pairs",
+      "title": "The hub workspace file lists every pair, beams' pairs included, named with their project handle",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "ide"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-11)\n\nThe hub workspace file `\u003chub\u003e/\u003crepo\u003e.code-workspace` lists the prime, Bolt and every pair whose parent is the prime, beams included,\nbut no pair under a beam: those are only in the beam's own `\u003crepo\u003e-\u003cbeam\u003e.code-workspace`.\nThe operator rarely opens VS Code, and when they do they want to see all of a repository's code in one window,\nso a beam's tasks missing from the hub file sends them to a second window.\nA folder is named by its slug alone, such as `adopt-worker-record`, so nothing shows which project it belongs to.\n\n## Idea\n\n- The hub workspace file lists every pair of the hub, the pairs under each beam included, at any depth.\n- Each pair's folder name leads with its project's handle, `P1: adopt-worker-record`, when its board entry belongs to a project;\n  a pair with no project keeps its slug alone.\n  The handle comes from the board at regeneration, so a regeneration after a board change brings it current.\n- The beam workspace files stay as they are.\n\nThe machine restart launcher (`machine-restart-shortcut`) opens only this hub file, so it relies on it listing every pair.\n",
+      "created": "2026-11-11T07:22:39Z",
+      "revised": "2026-11-11T07:22:39Z"
     }
   ],
   "prime_owner": "neve",
