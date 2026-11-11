@@ -1,0 +1,820 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 232abecb..7f64271d 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -649,7 +649,8 @@ User-facing modules each get one `lym <module>` namespace:
+   it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it.
+   `Stop`-hook completion is read off an events file and classified into the outcomes `done`/`died`/`timeout` and `api-error`.
+   A spec with `APIErrorRetries` re-sends a turn the provider's API ended on an error that many times, then ends the run `api-error`;
+-  a turn end the engine reads as a model the provider does not know, Claude's `model_not_found`, ends the run `api-error` at once.
++  a turn end the engine reads as a model the provider does not know, Claude's `model_not_found`, ends the run `api-error` at once;
++  a start whose skill-load hold read its cap of API errors ends `api-error` too, after the hold's back-offs.
+   Any other turn end without every output file never ends a run:
+   `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call).
+   An autonomous run notifies its parent once per held turn end as creel mail to the orch,
+@@ -1127,6 +1128,8 @@ User-facing modules each get one `lym <module>` namespace:
+   `last_step` is the record `lym shed step` keeps under `.lym`.
+   It also carries the build identity (`vcs_revision`, `vcs_modified`) of the `lym` that ran that step.
+   `binary_changed` is true when the running `lym` is a different known build.
++  `idle_gaps`, an `idle` line each in the human view, names every stretch of the history of five minutes or more in which no step ran.
++  Each history entry a producer call writes records the call's start in `started_at` beside its `at`.
+   A routed `stuck` reads as `bounced to <row>` in `activity.last`.
+   The run directory is named by the worktree slug (`_lym/shed/<slug>/`).
+   `self` is an alias that resolves to it, and a `_lym/shed/self/` directory resolves too.
+diff --git a/internal/loomcli/status_test.go b/internal/loomcli/status_test.go
+index b0b1896f..98e6c336 100644
+--- a/internal/loomcli/status_test.go
++++ b/internal/loomcli/status_test.go
+@@ -94,6 +94,7 @@ func TestStatusCmd_EnvelopeKeySet(t *testing.T) {
+ 				"pause_reason": true, "pause_requested": true, "activity": true, "history_length": true,
+ 				"slug": true, "parent": true, "interrupt_policy": true, "trace_dir": true,
+ 				"run_id": true, "progress": true, "last_step": true, "hand_back": true, "restep_hold": true,
++				"idle_gaps": true,
+ 			}
+ 			if tt.covered {
+ 				wantKeys["paused_since"] = true
+diff --git a/internal/shedarbiter/doc.go b/internal/shedarbiter/doc.go
+index dffa1826..66717e63 100644
+--- a/internal/shedarbiter/doc.go
++++ b/internal/shedarbiter/doc.go
+@@ -23,7 +23,8 @@
+ // A call ends as a hand-on naming a cause in three cases:
+ // a verdict file does not read; a run times out or dies; a resume's precondition fails.
+ // The arbiter's spec has shuttle re-send a turn the provider's API ended on an error.
+-// A run that ends on an API error, its re-sends spent or its model rejected, ends as a hand-on with cause `api-error`.
++// A run that ends on an API error ends as a hand-on with cause `api-error`:
++// its re-sends spent, its model rejected, or its start's skill-load hold at its cap of API errors.
+ // The hand-on's question names the error, so the stop reaches the run's parent at once rather than at the deadline.
+ // Every refusal ends with Deps.HandBackWayForward, which names the verb that shows the stop.
+ //
+diff --git a/internal/sheddriver/doc.go b/internal/sheddriver/doc.go
+index 67cf027d..3ad08550 100644
+--- a/internal/sheddriver/doc.go
++++ b/internal/sheddriver/doc.go
+@@ -147,7 +147,8 @@
+ // The stop is handed back with the cause when the agent timed out, died, or left no verdict or an unreadable one.
+ // It is also handed back when the verdict names a precondition the run does not meet.
+ // Shuttle re-sends a turn the provider's API ends on an error `SettlerAPIErrorRetries` times.
+-// The error past them, or a model the provider rejects, is a hand-back with cause `api-error`.
++// The error past them is a hand-back with cause `api-error`.
++// So is a model the provider rejects, or a start whose skill-load hold reached its cap of API errors.
+ // Its question names the error, so the parent hears of the stop at once rather than at the deadline.
+ // A tackler switched off, or a spawn budget spent, hands the stop back without a spawn.
+ // `TacklerDeps.Snapshot` is optional.
+diff --git a/internal/shedengine/historyfold_test.go b/internal/shedengine/historyfold_test.go
+index 17ffccaa..13ad0e50 100644
+--- a/internal/shedengine/historyfold_test.go
++++ b/internal/shedengine/historyfold_test.go
+@@ -67,13 +67,14 @@ func TestAppendOrFold_Folds(t *testing.T) {
+ 			t.Parallel()
+ 			var h []HistoryEntry
+ 			for _, e := range tt.entries {
++				e.StartedAt = "s" + e.At
+ 				h = appendOrFold(h, e)
+ 			}
+ 			if len(h) != 1 {
+ 				t.Fatalf("len = %d; want 1", len(h))
+ 			}
+-			if h[0].At != "t1" || h[0].Repeats != tt.wantRepeats || h[0].LastAt != tt.wantLastAt {
+-				t.Errorf("entry = %+v; want At t1, Repeats %d, LastAt %s", h[0], tt.wantRepeats, tt.wantLastAt)
++			if h[0].At != "t1" || h[0].StartedAt != "st1" || h[0].Repeats != tt.wantRepeats || h[0].LastAt != tt.wantLastAt {
++				t.Errorf("entry = %+v; want At t1, StartedAt st1, Repeats %d, LastAt %s", h[0], tt.wantRepeats, tt.wantLastAt)
+ 			}
+ 			if !reflect.DeepEqual(h[0].GateSpans, tt.wantSpans) {
+ 				t.Errorf("GateSpans = %+v; want %+v", h[0].GateSpans, tt.wantSpans)
+diff --git a/internal/shedengine/reroute.go b/internal/shedengine/reroute.go
+index 740e3ffe..3be40691 100644
+--- a/internal/shedengine/reroute.go
++++ b/internal/shedengine/reroute.go
+@@ -39,14 +39,14 @@ func (s *Shed) rerouteCapWayForward() string {
+ }
+ 
+ // rerouteStuck handles a Stuck verdict of def that carries OutputPointer.Reroute.
+-// st is the status read at the start of the step.
++// st is the status read at the start of the step, and startedAt the time the producer call began.
+ // Below rerouteCap it moves the run to def.OnReroute with a reroute history entry and spends no bounce budget.
+ // At the cap it blocks the run at def with a RerouteCapped entry.
+ // A row with no OnReroute is a wiring fault that fails the run.
+-func (s *Shed) rerouteStuck(st Status, def ProducerDef, output OutputPointer) (StepResult, error) {
++func (s *Shed) rerouteStuck(st Status, def ProducerDef, output OutputPointer, startedAt string) (StepResult, error) {
+ 	at := nowRFC3339()
+ 	if def.OnReroute == "" {
+-		nextHistory := appendOrFold(st.History, HistoryEntry{Producer: def.Name, Outcome: Stuck, Output: output.Path, At: at, GateAttempts: output.GateAttempts, GateSpans: output.GateSpans, BudgetExempt: output.BudgetExempt, Machine: s.Machine, Block: def.Block})
++		nextHistory := appendOrFold(st.History, HistoryEntry{Producer: def.Name, Outcome: Stuck, Output: output.Path, At: at, StartedAt: startedAt, GateAttempts: output.GateAttempts, GateSpans: output.GateSpans, BudgetExempt: output.BudgetExempt, Machine: s.Machine, Block: def.Block})
+ 		failErr := fmt.Errorf("shedengine: producer %q returned a reroute verdict but has no OnReroute", def.Name)
+ 		if persistErr := s.persist(st.CurrentProducer, StateFailed, failErr.Error(), nextHistory, false, ""); persistErr != nil {
+ 			return StepResult{}, errors.Join(failErr, persistErr)
+@@ -56,7 +56,7 @@ func (s *Shed) rerouteStuck(st Status, def ProducerDef, output OutputPointer) (S
+ 
+ 	count := rerouteCount(st.History, def.Name)
+ 	if count < rerouteCap {
+-		nextHistory := appendOrFold(st.History, HistoryEntry{Producer: def.Name, Outcome: OutcomeReroute, Output: output.Path, At: at, GateAttempts: output.GateAttempts, GateSpans: output.GateSpans, RoutedTo: def.OnReroute, Machine: s.Machine, Block: def.Block})
++		nextHistory := appendOrFold(st.History, HistoryEntry{Producer: def.Name, Outcome: OutcomeReroute, Output: output.Path, At: at, StartedAt: startedAt, GateAttempts: output.GateAttempts, GateSpans: output.GateSpans, RoutedTo: def.OnReroute, Machine: s.Machine, Block: def.Block})
+ 		next, reason, err := s.routedState(def)
+ 		if err != nil {
+ 			return StepResult{}, err
+@@ -67,7 +67,7 @@ func (s *Shed) rerouteStuck(st Status, def ProducerDef, output OutputPointer) (S
+ 		return StepResult{Producer: def.Name, Outcome: Stuck, Output: output.Path, Next: def.OnReroute, State: next, Reason: reason, History: nextHistory}, nil
+ 	}
+ 
+-	nextHistory := appendOrFold(st.History, HistoryEntry{Producer: def.Name, Outcome: Stuck, Output: output.Path, At: at, GateAttempts: output.GateAttempts, GateSpans: output.GateSpans, BudgetExempt: true, RerouteCapped: true, Machine: s.Machine, Block: def.Block})
++	nextHistory := appendOrFold(st.History, HistoryEntry{Producer: def.Name, Outcome: Stuck, Output: output.Path, At: at, StartedAt: startedAt, GateAttempts: output.GateAttempts, GateSpans: output.GateSpans, BudgetExempt: true, RerouteCapped: true, Machine: s.Machine, Block: def.Block})
+ 	reason := fmt.Sprintf("%s: %s rerouted to %s %d times since its last done; %s; way forward: %s", ReasonRerouteCapReached, def.Name, def.OnReroute, count, stuckReason(output.Reason), s.rerouteCapWayForward())
+ 	if err := s.persist(st.CurrentProducer, StateBlocked, reason, nextHistory, false, ""); err != nil {
+ 		return StepResult{}, err
+diff --git a/internal/shedengine/reroute_test.go b/internal/shedengine/reroute_test.go
+index b1b1f3c9..923a4fa1 100644
+--- a/internal/shedengine/reroute_test.go
++++ b/internal/shedengine/reroute_test.go
+@@ -84,6 +84,7 @@ func TestStep_RerouteMovesToTargetAndEndsTargetSegmentEpisode(t *testing.T) {
+ 		t.Errorf("last history entry = %+v; want A's reroute entry routed to B, spending no budget, carrying block Blk", last)
+ 	}
+ 	assertRFC3339UTC(t, last.At)
++	assertCallTimed(t, last)
+ 	if !reflect.DeepEqual(last.GateSpans, rerouteSpans) {
+ 		t.Errorf("reroute entry GateSpans = %+v; want %+v", last.GateSpans, rerouteSpans)
+ 	}
+@@ -126,6 +127,7 @@ func TestRun_RerouteCapHaltsOnFourthRerouteAndResumeGrantsThreeMore(t *testing.T
+ 				if last.Outcome != Stuck || !last.RerouteCapped || !last.BudgetExempt {
+ 					t.Fatalf("Run %d last entry = %+v; want a budget-exempt capped Stuck", halt, last)
+ 				}
++				assertCallTimed(t, last)
+ 				if !reflect.DeepEqual(last.GateSpans, rerouteSpans) {
+ 					t.Errorf("Run %d capped Stuck GateSpans = %+v; want %+v", halt, last.GateSpans, rerouteSpans)
+ 				}
+@@ -167,9 +169,11 @@ func TestStep_RerouteWithoutOnRerouteFailsRun(t *testing.T) {
+ 	if got.State != StateFailed || got.CurrentProducer != "A" {
+ 		t.Errorf("status = %q at %q; want failed at A", got.State, got.CurrentProducer)
+ 	}
+-	if last := got.History[len(got.History)-1]; !reflect.DeepEqual(last.GateSpans, rerouteSpans) {
++	last := got.History[len(got.History)-1]
++	if !reflect.DeepEqual(last.GateSpans, rerouteSpans) {
+ 		t.Errorf("persisted Stuck GateSpans = %+v; want %+v", last.GateSpans, rerouteSpans)
+ 	}
++	assertCallTimed(t, last)
+ }
+ 
+ func TestStep_HaltStuckBlocksAtRowDespiteOnStuckAndSpendsNoBudget(t *testing.T) {
+diff --git a/internal/shedengine/run.go b/internal/shedengine/run.go
+index 4e5afdb8..1b103888 100644
+--- a/internal/shedengine/run.go
++++ b/internal/shedengine/run.go
+@@ -342,6 +342,7 @@ func (s *Shed) stepLocked(ctx context.Context) (StepResult, error) {
+ 	}
+ 
+ 	// Step 4: call the looked-up definition's producer.
++	startedAt := nowRFC3339()
+ 	outcome, output, callErr := def.Producer.Call(ctx)
+ 
+ 	// Steps 5 and 6 are computed in memory, then committed with one persist call for this iteration.
+@@ -379,6 +380,7 @@ func (s *Shed) stepLocked(ctx context.Context) (StepResult, error) {
+ 			Outcome:      outcome,
+ 			Output:       output.Path,
+ 			At:           nowRFC3339(),
++			StartedAt:    startedAt,
+ 			GateAttempts: output.GateAttempts,
+ 			GateSpans:    output.GateSpans,
+ 			// A Stuck that blocks at a row with no OnStuck never reaches a budget, so it is exempt too.
+@@ -426,7 +428,7 @@ func (s *Shed) stepLocked(ctx context.Context) (StepResult, error) {
+ 		return StepResult{}, callErr
+ 
+ 	case outcome == Stuck && output.Reroute && !output.Halt:
+-		return s.rerouteStuck(st, def, output)
++		return s.rerouteStuck(st, def, output, startedAt)
+ 
+ 	case outcome == Stuck:
+ 		switch {
+@@ -716,7 +718,7 @@ func segmentEnders(producers []ProducerDef, def ProducerDef) []string {
+ // An entry folds into the last element when both are budget-exempt Stucks;
+ // they must match on Producer, Output, GateAttempts and RoutedTo.
+ // Otherwise entry is appended unchanged.
+-// A fold keeps the last element's At and increments its Repeats.
++// A fold keeps the last element's At and StartedAt and increments its Repeats.
+ // It sets LastAt to entry.At and appends entry's GateSpans to the last element's own.
+ // The last element's Repeats, LastAt and spans never take part in the match.
+ // It never writes through history's backing array or its entries' span arrays.
+diff --git a/internal/shedengine/status.go b/internal/shedengine/status.go
+index ddba5cf6..6b98fdeb 100644
+--- a/internal/shedengine/status.go
++++ b/internal/shedengine/status.go
+@@ -76,7 +76,12 @@ type HistoryEntry struct {
+ 	Producer string  `json:"producer"`
+ 	Outcome  Outcome `json:"outcome"`
+ 	Output   string  `json:"output"`
+-	At       string  `json:"at"`
++	// At is the RFC 3339 UTC time the call's verdict was recorded.
++	At string `json:"at"`
++	// StartedAt is the RFC 3339 UTC time the producer call began, empty on an entry no producer call wrote.
++	// The time between one entry's end and the next entry's StartedAt is time no step ran.
++	// A status file written before the field existed decodes as empty.
++	StartedAt string `json:"started_at,omitempty"`
+ 	// GateAttempts is the gate's own re-prompt count (shuttleengine.GateOutcome.Attempts).
+ 	// It is carried through so the status file shows it, as the producer-gate contract requires:
+ 	// an explicit attempt counter bounds the loop.
+diff --git a/internal/shedengine/step_test.go b/internal/shedengine/step_test.go
+index e4cf978b..21d3b3a3 100644
+--- a/internal/shedengine/step_test.go
++++ b/internal/shedengine/step_test.go
+@@ -54,6 +54,7 @@ func TestStep_DoneWithNonEmptyOnDone(t *testing.T) {
+ 		t.Errorf("History[0] = %+v; want Producer A, Outcome done, Output out.md", res.History[0])
+ 	}
+ 	assertRFC3339UTC(t, res.History[0].At)
++	assertCallTimed(t, res.History[0])
+ 
+ 	got := readStatus(t, statusPath, statusLockPath)
+ 	if got.CurrentProducer != "B" || got.State != StateRunning {
+@@ -107,6 +108,19 @@ func TestStep_StuckWithinBudget(t *testing.T) {
+ 	if res.State != StateRunning {
+ 		t.Errorf("State = %q; want %q", res.State, StateRunning)
+ 	}
++	if len(res.History) != 1 {
++		t.Fatalf("len(History) = %d; want 1", len(res.History))
++	}
++	assertCallTimed(t, res.History[0])
++}
++
++// assertCallTimed checks that entry carries the RFC 3339 UTC start of its producer call, no later than its verdict time.
++func assertCallTimed(t *testing.T, entry HistoryEntry) {
++	t.Helper()
++	assertRFC3339UTC(t, entry.StartedAt)
++	if entry.StartedAt > entry.At {
++		t.Errorf("entry StartedAt = %q, At = %q; want the call's start no later than its verdict", entry.StartedAt, entry.At)
++	}
+ }
+ 
+ func TestStep_StuckWithNoOnStuck(t *testing.T) {
+@@ -128,6 +142,10 @@ func TestStep_StuckWithNoOnStuck(t *testing.T) {
+ 	if res.Reason != wantReason {
+ 		t.Errorf("Reason = %q; want %q", res.Reason, wantReason)
+ 	}
++	if len(res.History) != 1 {
++		t.Fatalf("len(History) = %d; want 1", len(res.History))
++	}
++	assertCallTimed(t, res.History[0])
+ }
+ 
+ func TestStep_StuckAtBudgetBoundary(t *testing.T) {
+diff --git a/internal/shedverbs/doc.go b/internal/shedverbs/doc.go
+index 2c3d46a0..4f7f4e07 100644
+--- a/internal/shedverbs/doc.go
++++ b/internal/shedverbs/doc.go
+@@ -19,6 +19,11 @@
+ // The label gates nothing, and the engine records it in the paused run's pause_reason;
+ // --by shed is refused before any write, since shed is the label of lym's own automatic steps.
+ // status's human view prints pause_reason as a "why" line for a paused run with a non-empty reason.
++// status's idle_gaps, and an "idle" line each in its human view, name every stretch of the history in which no step ran.
++// A stretch counts when it lasts at least idleGapFloor.
++// It runs from one entry's end to the start of the producer call that wrote the next.
++// For a goto or skip entry it ends at the entry's own time.
++// Calls folded into one stuck entry are one stretch, so the time between them is not reported.
+ // Spec.GotoGuard is the recipe's check of a goto target, which every goto passes; nil admits every target.
+ // Spec.HandBack is the recipe's check of a blocked stop that goes to the orch; it keeps the package recipe-generic.
+ // The loop's stop envelope and lym shed status report its answer as hand_back.
+diff --git a/internal/shedverbs/human.go b/internal/shedverbs/human.go
+index 101cbad7..732a66f5 100644
+--- a/internal/shedverbs/human.go
++++ b/internal/shedverbs/human.go
+@@ -22,8 +22,9 @@ var writerIsTerminal = clihelp.WriterIsTerminal
+ // Lines, in order: the header (label, run-id when non-empty, state); the progress line "step
+ // <i>/<n> <name>", followed by " | bounce <count>/<budget>" while the current producer sits inside
+ // a segment, and omitted when routing carries no producers; "now", then "last" when non-empty, then
+-// "wait" when non-empty and the state is blocked, failed or awaiting; and "next" naming the
+-// main-line steps still ahead, omitted when none remain.
++// "wait" when non-empty and the state is blocked, failed or awaiting;
++// one "idle" line per idle gap of the history, oldest first;
++// and "next" naming the main-line steps still ahead, omitted when none remain.
+ // A paused run with a recorded reason prints a "why" line after "last".
+ // The "now" line names the current row's block when its routing definition carries one, and the "last" line reads a block row's Done as entered and names an inlined row's block.
+ // A non-empty waiting note prints "waiting <note>" in the header in place of the state.
+@@ -58,6 +59,9 @@ func RenderStatusHuman(label, runID string, st shedengine.Status, routing sheden
+ 	fmt.Fprintf(&b, "now  %s\n", now)
+ 	st.Activity.Last = blockAwareLast(st, routing)
+ 	writeActivityTail(&b, st)
++	for _, gap := range idleGapsOf(st.History) {
++		fmt.Fprintf(&b, "idle %s before %s, after %s %s\n", gap.Idle, gap.Before, gap.After, gap.AfterOutcome)
++	}
+ 	if len(remaining) > 0 {
+ 		fmt.Fprintf(&b, "next %s\n", strings.Join(remaining, ", "))
+ 	}
+diff --git a/internal/shedverbs/human_test.go b/internal/shedverbs/human_test.go
+index ba17fb02..f5f42f33 100644
+--- a/internal/shedverbs/human_test.go
++++ b/internal/shedverbs/human_test.go
+@@ -175,6 +175,24 @@ func TestRenderStatusHuman(t *testing.T) {
+ 				"last Discussion-Write in Motif → done\n" +
+ 				"next Ship\n",
+ 		},
++		{
++			name: "an idle gap after a stuck step prints an idle line and a short one prints none",
++			st: shedengine.Status{
++				CurrentProducer: "Ship",
++				State:           shedengine.StateRunning,
++				History: []shedengine.HistoryEntry{
++					{Producer: "Intro", Outcome: shedengine.Done, At: "2026-11-11T08:00:00Z"},
++					{Producer: "Plan", Outcome: shedengine.Stuck, StartedAt: "2026-11-11T08:01:00Z", At: "2026-11-11T08:10:00Z"},
++					{Producer: "Plan", Outcome: shedengine.Done, StartedAt: "2026-11-11T11:10:00Z", At: "2026-11-11T11:20:00Z"},
++				},
++				Activity: shedengine.Activity{Now: "Ship", Last: "Plan → done"},
++			},
++			want: "loom self | running\n" +
++				"step 3/3 Ship\n" +
++				"now  Ship\n" +
++				"last Plan → done\n" +
++				"idle 3h0m0s before Plan, after Plan stuck\n",
++		},
+ 		{
+ 			name: "waiting note replaces state",
+ 			st:   shedengine.Status{State: shedengine.StateRunning, Activity: shedengine.Activity{Now: "working"}},
+diff --git a/internal/shedverbs/status.go b/internal/shedverbs/status.go
+index 28882220..6991c527 100644
+--- a/internal/shedverbs/status.go
++++ b/internal/shedverbs/status.go
+@@ -5,6 +5,7 @@
+ package shedverbs
+ 
+ import (
++	"cmp"
+ 	"fmt"
+ 	"io"
+ 	"os"
+@@ -96,6 +97,52 @@ func PrintStatusLinesOnChange(out io.Writer, poll func() (line, key string), sle
+ 	}
+ }
+ 
++// idleGapFloor is the shortest stretch between two history entries that status reports as idle.
++// A driver starts the next step within seconds of the last, so a longer stretch is a halt, a wait on a person,
++// or a step that ended without recording a verdict.
++const idleGapFloor = 5 * time.Minute
++
++// IdleGap is one stretch of a run's history in which no step ran.
++// It runs from the end of one entry to the start of the producer call that wrote the next.
++// When the next entry is a goto or a skip, which no call writes, it runs to that entry's own time.
++// Calls folded into one stuck entry are one stretch of the history, so the time between them is not a gap.
++type IdleGap struct {
++	// After and AfterOutcome name the entry the gap follows.
++	After        string `json:"after"`
++	AfterOutcome string `json:"after_outcome"`
++	// Before names the row of the entry that ends the gap.
++	Before string `json:"before"`
++	// From and To are the gap's RFC 3339 bounds, and Idle is its length.
++	From string `json:"from"`
++	To   string `json:"to"`
++	Idle string `json:"idle"`
++}
++
++// idleGapsOf returns the gaps of at least idleGapFloor in history, oldest first, and an empty list when there is none.
++// An entry ends at its LastAt when a fold set one, and at its At otherwise.
++// An entry a producer call wrote with no StartedAt, as one an older binary wrote, ends no gap.
++// Neither does an entry whose times do not parse.
++func idleGapsOf(history []shedengine.HistoryEntry) []IdleGap {
++	gaps := []IdleGap{}
++	for i := 1; i < len(history); i++ {
++		prev, next := history[i-1], history[i]
++		from := cmp.Or(prev.LastAt, prev.At)
++		to := next.StartedAt
++		if next.Outcome == shedengine.OutcomeGoto || next.Outcome == shedengine.OutcomeSkipped {
++			to = next.At
++		}
++		end, endErr := time.Parse(time.RFC3339, from)
++		start, startErr := time.Parse(time.RFC3339, to)
++		if endErr != nil || startErr != nil {
++			continue
++		}
++		if idle := start.Sub(end); idle >= idleGapFloor {
++			gaps = append(gaps, IdleGap{After: prev.Producer, AfterOutcome: string(prev.Outcome), Before: next.Producer, From: from, To: to, Idle: idle.String()})
++		}
++	}
++	return gaps
++}
++
+ // waitingNote asks spec.Hooks.Waiting what a running run waits on.
+ // It returns the zero note when the hook is nil or the state is not running, so the hook never runs against a settled run.
+ func waitingNote(spec *Spec, st shedengine.Status) (WaitNote, error) {
+@@ -195,6 +242,7 @@ func statusCmd(texts VerbTexts, spec *Spec) *cobra.Command {
+ 				"pause_reason":     st.PauseReason,
+ 				"activity":         st.Activity,
+ 				"history_length":   len(st.History),
++				"idle_gaps":        idleGapsOf(st.History),
+ 				"interrupt_policy": interruptPolicy,
+ 				"trace_dir":        traceDir,
+ 				"run_id":           spec.RunID,
+diff --git a/internal/shedverbs/status_test.go b/internal/shedverbs/status_test.go
+index 0caf552e..7d5c6a9c 100644
+--- a/internal/shedverbs/status_test.go
++++ b/internal/shedverbs/status_test.go
+@@ -10,6 +10,7 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"strings"
+ 	"testing"
+ 
+@@ -430,6 +431,73 @@ func TestEnsureStatusLockDir_ErrorReusesToldPrefix(t *testing.T) {
+ 	}
+ }
+ 
++func TestIdleGapsOf(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name    string
++		history []shedengine.HistoryEntry
++		want    []IdleGap
++	}{
++		{
++			name: "GapAtTheFloorIsReported",
++			history: []shedengine.HistoryEntry{
++				{Producer: "A", Outcome: shedengine.Stuck, At: "2026-11-11T08:00:00Z"},
++				{Producer: "A", Outcome: shedengine.Done, StartedAt: "2026-11-11T08:05:00Z", At: "2026-11-11T08:30:00Z"},
++			},
++			want: []IdleGap{{After: "A", AfterOutcome: "stuck", Before: "A", From: "2026-11-11T08:00:00Z", To: "2026-11-11T08:05:00Z", Idle: "5m0s"}},
++		},
++		{
++			name: "GapUnderTheFloorIsNot",
++			history: []shedengine.HistoryEntry{
++				{Producer: "A", Outcome: shedengine.Done, At: "2026-11-11T08:00:00Z"},
++				{Producer: "B", Outcome: shedengine.Done, StartedAt: "2026-11-11T08:04:59Z", At: "2026-11-11T09:00:00Z"},
++			},
++			want: []IdleGap{},
++		},
++		{
++			name: "FoldedEntryEndsAtItsLastCall",
++			history: []shedengine.HistoryEntry{
++				{Producer: "A", Outcome: shedengine.Stuck, At: "2026-11-11T08:00:00Z", LastAt: "2026-11-11T09:00:00Z"},
++				{Producer: "B", Outcome: shedengine.Done, StartedAt: "2026-11-11T09:30:00Z", At: "2026-11-11T09:40:00Z"},
++			},
++			want: []IdleGap{{After: "A", AfterOutcome: "stuck", Before: "B", From: "2026-11-11T09:00:00Z", To: "2026-11-11T09:30:00Z", Idle: "30m0s"}},
++		},
++		{
++			name: "GotoEndsTheGapAtItsOwnTime",
++			history: []shedengine.HistoryEntry{
++				{Producer: "A", Outcome: shedengine.Stuck, At: "2026-11-11T08:00:00Z"},
++				{Producer: "B", Outcome: shedengine.OutcomeGoto, At: "2026-11-11T10:00:00Z"},
++			},
++			want: []IdleGap{{After: "A", AfterOutcome: "stuck", Before: "B", From: "2026-11-11T08:00:00Z", To: "2026-11-11T10:00:00Z", Idle: "2h0m0s"}},
++		},
++		{
++			name: "CallEntryWithNoStartTimeEndsNoGap",
++			history: []shedengine.HistoryEntry{
++				{Producer: "A", Outcome: shedengine.Stuck, At: "2026-11-11T08:00:00Z"},
++				{Producer: "A", Outcome: shedengine.Done, At: "2026-11-11T12:00:00Z"},
++			},
++			want: []IdleGap{},
++		},
++		{
++			name: "UnparseableTimeEndsNoGap",
++			history: []shedengine.HistoryEntry{
++				{Producer: "A", Outcome: shedengine.Stuck, At: "not a time"},
++				{Producer: "A", Outcome: shedengine.Done, StartedAt: "2026-11-11T12:00:00Z", At: "2026-11-11T12:10:00Z"},
++			},
++			want: []IdleGap{},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := idleGapsOf(tt.history); !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("idleGapsOf() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
++
+ // seededStatusSpec builds a Spec over a seeded status file whose history holds two entries.
+ func seededStatusSpec(t *testing.T, hooks Hooks) *Spec {
+ 	t.Helper()
+@@ -486,6 +554,9 @@ func TestStatusCmd_FoundEnvelope_GenericCore(t *testing.T) {
+ 			if env["history_length"] != float64(2) {
+ 				t.Errorf("history_length = %v; want 2", env["history_length"])
+ 			}
++			if gaps, ok := env["idle_gaps"].([]any); !ok || len(gaps) != 0 {
++				t.Errorf("idle_gaps = %v; want an empty list for entries with no times", env["idle_gaps"])
++			}
+ 			if env["interrupt_policy"] != tt.wantPolicy {
+ 				t.Errorf("interrupt_policy = %v; want %q", env["interrupt_policy"], tt.wantPolicy)
+ 			}
+@@ -568,6 +639,37 @@ func TestStatusCmd_FoundEnvelope_GenericCore(t *testing.T) {
+ 	}
+ }
+ 
++// TestStatusCmd_FoundEnvelope_IdleGaps asserts a history stretch over the floor reaches idle_gaps.
++// It checks the gap under its JSON field names.
++func TestStatusCmd_FoundEnvelope_IdleGaps(t *testing.T) {
++	tiergate.Require(t, 0)
++	spec := seededStatusSpec(t, Hooks{})
++	if err := state.UpdateJSON(spec.StatusPath, spec.StatusLockPath, func(cur shedengine.Status, found bool) (shedengine.Status, error) {
++		cur.History = []shedengine.HistoryEntry{
++			{Producer: "A", Outcome: shedengine.Stuck, At: "2026-11-11T08:00:00Z"},
++			{Producer: "B", Outcome: shedengine.Done, StartedAt: "2026-11-11T08:10:00Z", At: "2026-11-11T08:20:00Z"},
++		}
++		return cur, nil
++	}); err != nil {
++		t.Fatalf("record the history: %v", err)
++	}
++	env, code := execEnvelope(t, statusCmd(statusTexts(), spec), nil)
++	if code != 0 {
++		t.Fatalf("exit code = %d; want 0", code)
++	}
++	gaps, _ := env["idle_gaps"].([]any)
++	if len(gaps) != 1 {
++		t.Fatalf("idle_gaps = %v; want one gap", env["idle_gaps"])
++	}
++	want := map[string]any{
++		"after": "A", "after_outcome": "stuck", "before": "B",
++		"from": "2026-11-11T08:00:00Z", "to": "2026-11-11T08:10:00Z", "idle": "10m0s",
++	}
++	if !reflect.DeepEqual(gaps[0], want) {
++		t.Errorf("idle_gaps[0] = %v; want %v", gaps[0], want)
++	}
++}
++
+ // TestStatusCmd_FoundEnvelope_RunIDAndProgress asserts the found envelope carries the told run_id
+ // and a progress matching ProgressAt for the current producer, and null progress when Routing is
+ // unarmed.
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 7877889d..601e6218 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -92,7 +92,8 @@
+ // Wait holds it, logs it at Info and keeps polling the same agent, whether the turn end is a Stop or a live ask.
+ // A run ends only as done, died, timeout, api-error or a mechanism failure.
+ // Done means every output file is present at a turn end, or at the deadline or a pane's death.
+-// Api-error means a spec with APIErrorRetries, or a turn end the engine marks ModelRejected.
++// Api-error means a spec with APIErrorRetries, a turn end the engine marks ModelRejected,
++// or a start whose skill-load hold reached its API-error cap.
+ // A died or api-error run whose strand is own-window keeps its last pane capture in `died-capture.txt`.
+ // The capture sits in the run directory; the run loses its strand, and an anchored strand stays.
+ // A timed-out run keeps its strand, since its agent may still be live.
+@@ -510,8 +511,10 @@
+ // So the prompt line is never typed into a session whose load turn the API failed.
+ // A turn start read during the back-off takes the place of the typed line.
+ // A busy session moves the line to the next back-off, and a pane that dies ends the hold as a died startup.
+-// The hold has no bound of its own and moves the run's deadline later by its length;
++// The hold moves the run's deadline later by its length;
+ // at the second API error it sends the run's parent one notifier line, skipped for an interactive run.
++// The hold's loadHoldMaxAPIErrors-th API error ends the start as api-error, an API outage.
++// Result.APIError names the error, and the start's error names the cap.
+ // A turn end the engine marks ModelRejected ends the start at once as api-error, with Result.APIError naming the error.
+ // No further turn changes the model.
+ // An attached run is the exception: it delivers a pending prompt without judging the API,
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 7d3427d6..1dfd4fb7 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -34,7 +34,8 @@ const (
+ 	OutcomeTimeout Outcome = "timeout"
+ 	// OutcomeAPIError: the provider's API ended the agent's turn on an error once the spec's re-send limit was spent.
+ 	// It also ends the turn at once when the provider rejects the model, a skill-load turn's included.
+-	// Both apply only before output files are written.
++	// A start whose skill-load hold read its cap of API errors ends here too.
++	// Each applies only before output files are written.
+ 	OutcomeAPIError Outcome = "api-error"
+ )
+ 
+diff --git a/internal/shuttleengine/loadturn.go b/internal/shuttleengine/loadturn.go
+index 36e6a6f8..a07f3f4c 100644
+--- a/internal/shuttleengine/loadturn.go
++++ b/internal/shuttleengine/loadturn.go
+@@ -1,11 +1,13 @@
+ // loadturn.go runs one skill-load turn of a starting run and holds it through an API error.
+ // An API error says nothing about the skills, so such a turn is no skipped skill.
+ // The load runs again once a back-off has passed, and the prompt waits behind it.
++// The wait ends at a cap on the API errors of one hold.
+ // The typed load line is the probe, since a session has no other way of asking whether its API answers.
+ 
+ package shuttleengine
+ 
+ import (
++	"cmp"
+ 	"errors"
+ 	"fmt"
+ 	"time"
+@@ -18,8 +20,24 @@ const (
+ 	loadHoldBackoffCeiling = 5 * time.Minute
+ 	// loadHoldNoticeErrors is the API-error count at which the parent is told of the hold; a passing error sends no notice.
+ 	loadHoldNoticeErrors = 2
++	// loadHoldMaxAPIErrors is the API-error turn end count that ends a hold, and the start with it, as an API outage.
++	// Its back-offs add up to about half an hour.
++	// Past that, an outage is the parent's to judge rather than the hold's to wait out.
++	loadHoldMaxAPIErrors = 8
+ )
+ 
++// loadAPIErrorCapError ends a start whose load turns the provider's API failed loadHoldMaxAPIErrors times.
++type loadAPIErrorCapError struct {
++	// errors is the API-error turn ends the hold read, and text is the newest one's error text.
++	errors int
++	text   string
++}
++
++func (e *loadAPIErrorCapError) Error() string {
++	return fmt.Sprintf("shuttle: the provider's API failed %d skill-load turns, the cap on one start's hold of %d, so the start ends as an API outage: %s",
++		e.errors, loadHoldMaxAPIErrors, cmp.Or(e.text, apiErrorUnknownText))
++}
++
+ // loadModelRejectedError ends a start whose load turn the provider ended on a model it does not know.
+ // No further turn changes the model.
+ type loadModelRejectedError struct {
+@@ -107,8 +125,9 @@ func (w *loadTurnWatch) turnStartRead(signal SessionSignal, now time.Time) {
+ //
+ // A turn that ends on an API error, by the engine's signal or by the transcript's marker on a turn end, returns nothing.
+ // The poll sleeps out a back-off from apiErrorRetryBackoff, doubling to loadHoldBackoffCeiling.
+-// The load message goes out again through the verified send path as many times as the API fails.
+-// It has no bound of its own: the loop ends when a turn ends, the pane dies or a send fails.
++// The load message goes out again through the verified send path after each API error.
++// That repeats until a turn ends, the pane dies, a send fails or the hold reads its loadHoldMaxAPIErrors-th API error.
++// That last error fails the call with a *loadAPIErrorCapError, with no load typed after it.
+ // A turn start read meanwhile takes the place of that line: the operator or a revive may have carried the session on.
+ // A busy session only moves the line to the next back-off.
+ // A turn end the engine marks ModelRejected fails with a *loadModelRejectedError.
+@@ -132,6 +151,9 @@ func (run *Run) loadSkillTurn(loader SkillLoader, skills []string, timeout time.
+ 		if watch.rejected {
+ 			return Event{}, false, false, &loadModelRejectedError{text: watch.text}
+ 		}
++		if watch.pending && watch.errors >= loadHoldMaxAPIErrors {
++			return Event{}, false, false, &loadAPIErrorCapError{errors: watch.errors, text: watch.text}
++		}
+ 		run.noticeLoadHold(&watch)
+ 
+ 		if status, serr := reed.Status(); serr == nil {
+@@ -247,7 +269,7 @@ func (run *Run) noticeLoadHold(watch *loadTurnWatch) {
+ 	if strandName == "" {
+ 		strandName = run.state.StrandGUID
+ 	}
+-	line := fmt.Sprintf("agent %s is held at its skill-load turn: the provider's API keeps failing it, so its prompt is not typed yet. The load runs again by itself and the prompt follows once the API answers, so nothing is needed unless the error is one that will not pass.", strandName)
++	line := fmt.Sprintf("agent %s is held at its skill-load turn: the provider's API keeps failing it, so its prompt is not typed yet. The load runs again by itself and the prompt follows once the API answers, so nothing is needed unless the error is one that will not pass. At %d API errors the start ends as an API outage.", strandName, loadHoldMaxAPIErrors)
+ 	if err := notify(line); err != nil {
+ 		logger.Warn("shuttle: load hold notice failed", "strandGUID", run.state.StrandGUID, "error", err)
+ 	}
+@@ -265,16 +287,17 @@ func (run *Run) endLoadHold(watch *loadTurnWatch) {
+ }
+ 
+ // abandonLoad ends a start whose load turn failed with err.
+-// A rejected model ends it OutcomeAPIError with Result.APIError naming the error,
++// A rejected model or a hold past its API-error cap ends it OutcomeAPIError with Result.APIError naming the error,
+ // and a turn still open at the run's deadline ends it OutcomeTimeout;
+-// either returns the run instead when every output file exists, as a start past its gates.
++// any of them returns the run instead when every output file exists, as a start past its gates.
+ // Any other failure ends it OutcomeDied.
+ func (run *Run) abandonLoad(err error) (Result, error) {
+ 	var rejected *loadModelRejectedError
++	var capped *loadAPIErrorCapError
+ 	var expired *loadDeadlineError
+ 	var expiredOutcome Outcome
+ 	switch {
+-	case errors.As(err, &rejected):
++	case errors.As(err, &rejected), errors.As(err, &capped):
+ 		expiredOutcome = OutcomeAPIError
+ 	case errors.As(err, &expired):
+ 		expiredOutcome = OutcomeTimeout
+@@ -289,5 +312,8 @@ func (run *Run) abandonLoad(err error) (Result, error) {
+ 	if rejected != nil {
+ 		result.APIError = rejected.text
+ 	}
++	if capped != nil {
++		result.APIError = cmp.Or(capped.text, apiErrorUnknownText)
++	}
+ 	return result, startErr
+ }
+diff --git a/internal/shuttleengine/startup_test.go b/internal/shuttleengine/startup_test.go
+index 735bfb3f..9a08dffb 100644
+--- a/internal/shuttleengine/startup_test.go
++++ b/internal/shuttleengine/startup_test.go
+@@ -1714,6 +1714,12 @@ func TestStartup_LoadTurnAPIError(t *testing.T) {
+ 		marked = "STOP:API Error"
+ 	)
+ 	loaded := func(skills ...string) SkillLoadReport { return SkillLoadReport{Verified: true, Loaded: skills} }
++	cappedTurns := cappedLoadTurnEnds()
++	var cappedHold time.Duration
++	for i, backoff := 0, apiErrorRetryBackoff; i < loadHoldMaxAPIErrors-1; i++ {
++		cappedHold += backoff
++		backoff = min(2*backoff, loadHoldBackoffCeiling)
++	}
+ 	tests := []struct {
+ 		name         string
+ 		spec         Spec
+@@ -1741,6 +1747,10 @@ func TestStartup_LoadTurnAPIError(t *testing.T) {
+ 		// the start fails before wantFailedAfter plus one apiErrorRetryBackoff.
+ 		wantFailedAfter time.Duration
+ 		wantHoldOver    bool
++		// wantErrText is a text a failing start's error carries, empty for none checked.
++		wantErrText string
++		// wantNoticeContains is a text the parent's first notice carries, empty for none checked.
++		wantNoticeContains string
+ 	}{
+ 		{
+ 			name:      "a turn the API ended runs again after the back-off and the prompt follows it",
+@@ -1867,6 +1877,19 @@ func TestStartup_LoadTurnAPIError(t *testing.T) {
+ 			wantHeld:    apiErrorRetryBackoff*(1+2+4+8) + 2*loadHoldBackoffCeiling,
+ 			wantNotices: 1,
+ 		},
++		{
++			name:               "the hold's last API error under the cap ends the start as an API outage naming the cap",
++			spec:               Spec{Skills: []string{"a"}},
++			turnEnds:           cappedTurns,
++			wantTyped:          strings.TrimSuffix(strings.Repeat("LOAD:a|", loadHoldMaxAPIErrors-1), "|"),
++			wantNotices:        1,
++			wantFailed:         true,
++			wantOutcome:        "api-error",
++			wantFailedAfter:    cappedHold,
++			wantHoldOver:       true,
++			wantErrText:        fmt.Sprintf("failed %d skill-load turns, the cap on one start's hold of %d", loadHoldMaxAPIErrors, loadHoldMaxAPIErrors),
++			wantNoticeContains: fmt.Sprintf("At %d API errors", loadHoldMaxAPIErrors),
++		},
+ 		{
+ 			name:        "an interactive run holds with no notice",
+ 			spec:        Spec{Skills: []string{"a"}, Interactive: true},
+@@ -1925,6 +1948,9 @@ func TestStartup_LoadTurnAPIError(t *testing.T) {
+ 			if len(notices) != tt.wantNotices {
+ 				t.Errorf("notices = %q; want %d", notices, tt.wantNotices)
+ 			}
++			if tt.wantNoticeContains != "" && (len(notices) == 0 || !strings.Contains(notices[0], tt.wantNoticeContains)) {
++				t.Errorf("notices = %q; want the first to carry %q", notices, tt.wantNoticeContains)
++			}
+ 			if tt.wantFailed {
+ 				if !errors.Is(err, ErrNotStarted) {
+ 					t.Fatalf("Start() error = %v; want one wrapping ErrNotStarted", err)
+@@ -1932,6 +1958,9 @@ func TestStartup_LoadTurnAPIError(t *testing.T) {
+ 				if want := `outcome "` + tt.wantOutcome + `"`; !strings.Contains(err.Error(), want) {
+ 					t.Errorf("Start() error = %v; want it to name %s", err, want)
+ 				}
++				if !strings.Contains(err.Error(), tt.wantErrText) {
++					t.Errorf("Start() error = %v; want it to carry %q", err, tt.wantErrText)
++				}
+ 				if elapsed < tt.wantFailedAfter {
+ 					t.Errorf("virtual elapsed = %s; want at least %s", elapsed, tt.wantFailedAfter)
+ 				}
+@@ -2010,6 +2039,73 @@ func TestRun_LoadTurnModelRejectedEndsTheStart(t *testing.T) {
+ 	}
+ }
+ 
++// cappedNewestErrorText is the error text of the last API-error turn end that cappedLoadTurnEnds scripts.
++const cappedNewestErrorText = "overloaded, newest"
++
++// cappedLoadTurnEnds scripts an API error on each of the first loadHoldMaxAPIErrors load turns.
++// The last one carries cappedNewestErrorText.
++func cappedLoadTurnEnds() map[int]string {
++	turns := map[int]string{}
++	for i := 0; i < loadHoldMaxAPIErrors; i++ {
++		turns[i] = "APIERR:overloaded"
++	}
++	turns[loadHoldMaxAPIErrors-1] = "APIERR:" + cappedNewestErrorText
++	return turns
++}
++
++func TestRun_LoadTurnCappedHold(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// outputWritten makes the agent's output file exist by the time the start reads its API errors.
++		outputWritten bool
++		wantOutcome   Outcome
++		wantAPIError  string
++	}{
++		{"a capped hold ends the run naming the newest error", false, OutcomeAPIError, cappedNewestErrorText},
++		{"a capped hold with every output file present returns the run", true, OutcomeDone, ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			base := &fakeReed{AddStrandResult: reedengine.Strand{GUID: "strand-1"}, StatusQueue: liveStrandStatus(true)}
++			engine := &skillFakeEngine{
++				fakeEngine: &fakeEngine{
++					PrepareLaunch: Launch{Cmd: "cmd", SessionID: "session-1", PromptLine: "do the task"},
++					StartupScript: []StartupState{StartupReady},
++				},
++				Timeout: time.Minute,
++			}
++			output := filepath.Join(t.TempDir(), "out.md")
++			engine.PrepareHook = func(runDir string) {
++				if err := os.WriteFile(filepath.Join(runDir, eventsFileName), []byte("SESSIONSTART:startup\n"), 0o644); err != nil {
++					t.Errorf("seed the events file: %v", err)
++				}
++				if tt.outputWritten {
++					if err := os.WriteFile(output, []byte("done"), 0o644); err != nil {
++						t.Errorf("write the output file: %v", err)
++					}
++				}
++			}
++			reed := &skillReed{fakeReed: base, Hangs: map[int]bool{}, Dies: map[int]bool{}, TurnEnds: cappedLoadTurnEnds(), OpenTurns: true}
++			fx := newFixture(t, reed, &hookStateSkillEngine{skillFakeEngine: engine}, withConfig(fastConfig), withClock(newFakeClock(time.Now())))
++			reed.EventsPath = func() string { return filepath.Join(soleStartupRunDir(t, fastConfig, fx.Anchor), eventsFileName) }
++
++			result, err := fx.Runner.Run(Spec{Prompt: "x", OutputFiles: []string{output}, Skills: []string{"a"}, Timeout: time.Hour})
++			if err != nil {
++				t.Fatalf("Run() error = %v", err)
++			}
++			if result.Outcome != tt.wantOutcome || result.APIError != tt.wantAPIError {
++				t.Errorf("Run() outcome, API error = %q, %q; want %q, %q", result.Outcome, result.APIError, tt.wantOutcome, tt.wantAPIError)
++			}
++			if result.NotStarted != (tt.wantOutcome == OutcomeAPIError) {
++				t.Errorf("Run() not started = %v; want %v", result.NotStarted, tt.wantOutcome == OutcomeAPIError)
++			}
++		})
++	}
++}
++
+ func TestStartup_SkillsRefusedWithoutSkillLoader(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	reed := &fakeReed{AddStrandResult: reedengine.Strand{GUID: "strand-1"}, StatusQueue: liveStrandStatus(true)}
