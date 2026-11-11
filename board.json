@@ -609,7 +609,7 @@
       "isolated": false,
       "brief": "",
       "body": "Add the missing tests below in one run.\n\n## From note verbdir-calls-untested\n\nSeen: the landing `push-notice-anchor-dir` lists this under \"To check by hand\".\nThe calls that resolve the lym verb directory have no test in an anchored hub.\nIdea: add an anchored-hub row for each call.\n\n## From note anchor-stops-untested\n\nSeen: the landing `push-notice-anchor-dir` lists this under \"To check by hand\".\nThe steps not yet converted to the anchored directory have no test for the weft-dirty stop or the upstream-anchor stop.\nIdea: add a test row for each stop.\n\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-11T14:01:42Z",
       "revised": "2026-11-11T14:32:39Z",
       "profile": "light"
