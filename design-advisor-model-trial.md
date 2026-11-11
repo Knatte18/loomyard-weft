@@ -47,3 +47,7 @@ The trial's report reads the seats result first, under `docs/research/`, and say
 - Order: the Code-Review fixer first (low risk, it applies findings already named), then Darn-Write.
 - The risk to watch: a weak writer that is sure and wrong does not ask its advisor, so the review bounces are the key measure.
 - Runs as darn `docs`; the task body states the exact number of runs.
+
+## Operator view (2026-11-11)
+
+Little faith in it: an advisor needs much tuning and depends wholly on the main session's prompt. Not planned to run now.
