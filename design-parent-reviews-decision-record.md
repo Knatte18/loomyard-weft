@@ -1,6 +1,6 @@
 # Optional extra review of the Discussion record by the parent orch or a named agent
 
-`parent-reviews-decision-record` · Task · feature, loom, orch, config, burler · running · Discussion-Burler-Fix
+`parent-reviews-decision-record` · Task · feature, loom, orch, config, burler · running · Discussion-Bouncer
 
 Imported from [issue #87](https://github.com/Knatte18/loomyard/issues/87) and [issue #113](https://github.com/Knatte18/loomyard/issues/113).
 
