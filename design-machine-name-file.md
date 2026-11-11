@@ -4,6 +4,8 @@
 
 Decision record: [Sketch](decision-machine-name-file.md)
 
+Depends on: [`adopt-here-archives`](design-adopt-here-archives.md)
+
 Filed from the Sketch `machine-name-config`.
 
 Takes: the decision record's D1-D4, D7 and D8 for internal/machinename's tests
