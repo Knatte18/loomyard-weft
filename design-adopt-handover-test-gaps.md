@@ -2,8 +2,6 @@
 
 `adopt-handover-test-gaps` · Task · bug, dobby, fabric, tender · running · Darn-Write
 
-Depends on: [`adopt-takeover-fixes`](design-adopt-takeover-fixes.md)
-
 ## Seen (board tidy, 2026-11-11)
 
 `adopt-owner-handover` landed as `0198b955` with four findings its review left open under "To check by hand":
