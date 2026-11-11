@@ -1,6 +1,6 @@
 # Webster: no amend of a pushed card, no lockless work on a notice, and a gate halt that counts and names its failure
 
-`webster-run-faults` · Task · bug, webster, loom, creel, batten, git, gate · running · Drift-Baseline
+`webster-run-faults` · Task · bug, webster, loom, creel, batten, git, gate · running · Drift-Expect
 
 Three Webster faults from issues #97, #101 and #106, fixed in one run since all three sit in Webster's run and verify path.
 
