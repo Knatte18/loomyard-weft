@@ -1,6 +1,6 @@
 # gate test: card gate and explicit target never reach a second test project when tier0 command lacks a targets placeholder
 
-`gate-target-dropped-silently` · Task · bug, gate, dotnet · running · Worktree-Create
+`gate-target-dropped-silently` · Task · bug, gate, dotnet · running · Open-IDE
 
 Imported from [issue #105](https://github.com/Knatte18/loomyard/issues/105).
 
