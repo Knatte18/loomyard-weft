@@ -1,6 +1,6 @@
 # lym loom decision replace folds a run's record under a lock, cuts the history check at it, and refreshes every stored record
 
-`decision-record-replace-verb` · Task · feature, shed, loom, board · running · Describe
+`decision-record-replace-verb` · Task · feature, shed, loom, board · running · PR-Review
 
 Decision record: [Sketch](decision-decision-record-replace-verb.md)
 
