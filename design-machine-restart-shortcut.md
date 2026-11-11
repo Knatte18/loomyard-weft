@@ -22,7 +22,15 @@ A simple way to start again every project that was in flight on the machine, suc
 - A `lym` verb does the work, so it also runs from a terminal; the desktop launcher only calls it.
 - lym keeps the launchers current as hubs and beams come and go, so a crash finds them already there.
 
-Fixed by the operator: beams are included; resuming interrupted runs is left to the orchs.
+- A launcher starts only what this machine still owns.
+  One hub, such as loomyard, is worked on from several machines:
+  when OSL-1046 crashes, the operator often goes on from Neve, which takes the hub over,
+  so starting OSL-1046 again must not bring that hub's prime or beams up there.
+  The verb reads the owner of the hub's prime and of each beam, the owner `lym adopt` writes,
+  and skips every one another machine owns, saying which machine holds it.
 
-Open: one launcher for the whole machine or one per hub; whether it also opens the reed windows of running tasks;
-`.sh` scripts or `.desktop` launchers on KDE.
+Fixed by the operator: one launcher per hub plus one that starts every hub;
+beams are included; resuming interrupted runs is left to the orchs;
+nothing another machine owns is started.
+
+Open: whether it also opens the reed windows of running tasks; `.sh` scripts or `.desktop` launchers on KDE.
