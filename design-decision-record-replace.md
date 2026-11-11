@@ -2,6 +2,8 @@
 
 `decision-record-replace` · Task · bug, shed, loom, board · running · Discussion-Bouncer
 
+Decision record: [Sketch](decision-decision-record-replace.md)
+
 Design: a verb that replaces a Sketch's stored decision record, or raddle validating against the newer body. Both notes below describe the same gap.
 
 ## From note raddle-stale-sketch-record
