@@ -1,0 +1,1905 @@
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 9e2aceb9..1a3be806 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -66,6 +66,21 @@ func Command() *cobra.Command {
+ 		}
+ 		return hubissues.Open(url)
+ 	}
++	// recordsBranchLive reports whether a slug's records branch is live.
++	// It applies the test a raddle start's pair creation adopts the branch by.
++	// Origin is skipped under the fabric skip environment, as every fabric verb skips it.
++	// That environment is a test and CI bypass, so the refusal and a raddle start agree on origin only outside it.
++	recordsBranchLive := func(slug string) (bool, error) {
++		if location == nil {
++			return false, fmt.Errorf("the records branch is resolved only from a hub worktree, not under --board-path: run the verb from a worktree of the hub")
++		}
++		fabricConfig, err := fabricengine.LoadConfig(fabricengine.ConfigDirs(location))
++		if err != nil {
++			return false, err
++		}
++		skip := fabricengine.EnvSyncOptions()
++		return fabricengine.NewTopology(fabricConfig).RecordsBranchLive(location, slug, fabricengine.AddOptions{SkipGit: skip.SkipGit, SkipPush: skip.SkipPush})
++	}
+ 
+ 	cmd := &cobra.Command{
+ 		Use:   "board",
+@@ -179,6 +194,8 @@ task before a later "lym board set-deps" lands.
+ On an entry that is already a task, a "depends_on" other than its own is refused; change it with
+ "lym board set-deps".
+ The "notice" names siblings sharing a new depends_on and a label.
++A Sketch whose body changed after its decision record was stored is still promoted, and a "warning"
++names "lym board upsert --record-file" to bring the record up to the body before its run starts.
+ Demotion goes through "lym board upsert" with "kind":"note".
+ 
+ Fields:
+@@ -206,11 +223,18 @@ Examples:
+ 					return outputError(out, err.Error())
+ 				}
+ 			}
+-			task, siblings, err := b.PromoteTo(lookup, promoteRecipe, dependsOn)
++			result, err := b.PromoteTo(lookup, promoteRecipe, dependsOn)
+ 			if err != nil {
+ 				return outputError(out, err.Error())
+ 			}
+-			return outputSuccessWithTask(out, task, siblingNotice(siblings))
++			envelope := map[string]any{"task": result.Task}
++			if notice := siblingNotice(result.Siblings); notice != "" {
++				envelope["notice"] = notice
++			}
++			if result.RecordWarning != "" {
++				envelope["warning"] = result.RecordWarning
++			}
++			return output.Ok(out, envelope)
+ 		}),
+ 	}
+ 	promoteCmd.Flags().StringVar(&promoteRecipe, "recipe", "", "set the promoted task's recipe in the same write; a Sketch takes raddle when none is given, and no other")
+@@ -464,7 +488,7 @@ Example:
+ 		}),
+ 	}
+ 
+-	cmd.AddCommand(storeVerbs(board, profiles)...)
++	cmd.AddCommand(storeVerbs(board, profiles, recordsBranchLive)...)
+ 	cmd.AddCommand(
+ 		labelsCmd,
+ 		profilesCmd,
+@@ -554,9 +578,10 @@ var mergePayload = payloadKeys{
+ 
+ // storeVerbs builds the store verbs over the one store board returns.
+ // The upsert paths check a task's profile against the run profiles that profiles returns.
+-func storeVerbs(board func() *boardengine.Board, profiles func() (runprofile.Profiles, error)) []*cobra.Command {
++// upsert --record-file asks recordsBranchLive whether the entry's records branch is live before it writes.
++func storeVerbs(board func() *boardengine.Board, profiles func() (runprofile.Profiles, error), recordsBranchLive func(slug string) (bool, error)) []*cobra.Command {
+ 	// upsert subcommand: create or update a single task.
+-	var bodyFile string
++	var bodyFile, recordFile string
+ 	upsertCmd := &cobra.Command{
+ 		Use:         "upsert {slug, title?, brief?, body?, depends_on?, isolated?, status?, kind?, labels?, recipe?, priority?, short_name?, issues?, created?, revised?, run_settings?, profile?, pull_request?, notify_on_land?, owner_machine?, project?, order?, beam?, front?, on_land?, discussed?}",
+ 		Short:       "create or update a single task",
+@@ -618,6 +643,13 @@ Example:
+ 				if decodeErr != nil {
+ 					return outputError(out, fmt.Sprintf("invalid json: %v", decodeErr))
+ 				}
++				var record []byte
++				if recordFile != "" {
++					var err error
++					if record, err = readRecordFile(recordFile); err != nil {
++						return outputError(out, err.Error())
++					}
++				}
+ 				if err := refuseNoticeOnAbsentEntry(board(), fields); err != nil {
+ 					return outputError(out, err.Error())
+ 				}
+@@ -625,7 +657,13 @@ Example:
+ 				if err != nil {
+ 					return outputError(out, err.Error())
+ 				}
+-				task, siblings, err := board().UpsertTaskSiblings(fields)
++				var task boardengine.Task
++				var siblings []boardengine.Sibling
++				if recordFile != "" {
++					task, siblings, err = board().UpsertTaskWithRecord(fields, record, recordsBranchLive)
++				} else {
++					task, siblings, err = board().UpsertTaskSiblings(fields)
++				}
+ 				if err != nil {
+ 					return outputError(out, err.Error())
+ 				}
+@@ -634,6 +672,7 @@ Example:
+ 		},
+ 	}
+ 	upsertCmd.Flags().StringVar(&bodyFile, "body-file", "", `read the task's "body" from this file, or from stdin when "-"`)
++	upsertCmd.Flags().StringVar(&recordFile, "record-file", "", "replace the entry's stored decision record with this file in the same write; a path only, stdin is not read")
+ 
+ 	// upsert-batch subcommand: create or update multiple tasks atomically.
+ 	// A typo'd wrapper (e.g. "taks") errors;
+diff --git a/internal/boardcli/cli_test.go b/internal/boardcli/cli_test.go
+index b5ff19d7..1e047889 100644
+--- a/internal/boardcli/cli_test.go
++++ b/internal/boardcli/cli_test.go
+@@ -140,6 +140,8 @@ func TestCLI(t *testing.T) {
+ 		{"GetBody", stepGetBody},
+ 		{"GetBodyRoundTrip", stepGetBodyRoundTrip},
+ 		{"GetRecord", stepGetRecord},
++		{"UpsertRecordFile", stepUpsertRecordFile},
++		{"PromoteWarnsOnChangedSketchBody", stepPromoteWarnsOnChangedSketchBody},
+ 		{"LabelsMapShapedPrintsFileOrderWithDescriptions", stepLabelsMapShapedPrintsFileOrderWithDescriptions},
+ 		{"LabelsListShapedPrintsNamesWithEmptyDescriptions", stepLabelsListShapedPrintsNamesWithEmptyDescriptions},
+ 		{"RunSettings", stepRunSettings},
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 9b56c52a..435dbf7b 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -69,6 +69,18 @@
+ // It is refused when the payload also carries `body`, and when the payload argument is itself `-`.
+ // `merge` takes the same flag and sets the `upsert` object's `body` under the same refusals.
+ //
++// `upsert` takes `--record-file <path>` to replace an existing entry's stored decision record.
++// The value is a file path only; unlike `--body-file`, `-` is not read as stdin.
++// The record lands in the write that carries the payload, through `boardengine.Board.UpsertTaskWithRecord`.
++// The file must first pass `discussionparser`'s record-only section check and its decision-id and acceptance check;
++// a failing file is refused with every finding listed and nothing written.
++// The engine refuses a run's task session, by the board's classification of a run's agent, and the entries it guards.
++// The live-branch refusal runs on a probe the verb hands the engine.
++// The probe is `fabricengine.Topology.RecordsBranchLive` at the resolved location.
++// It reads origin unless the fabric skip environment is set; the verb itself runs no git.
++// That environment is a test and CI bypass, and only outside it does the probe read origin as a raddle start does.
++// Every refusal names its way forward.
++//
+ // Every verb that takes a slug states the slug length limit in its `--help`, formatted from `boardengine.MaxSlugLength`.
+ //
+ // An entry whose status has the run-status form is held by a run.
+@@ -126,6 +138,8 @@
+ // That recipe keeps the record and releases the task:
+ // `promote` with no `--recipe` gives it raddle, and `--recipe raddle` is accepted;
+ // any other recipe is refused, naming the plain promote.
++// `promote` of a Sketch whose body changed after its record was stored adds a `warning` to its envelope.
++// The warning names `upsert --record-file`; `promote` never refuses on it.
+ //
+ // `profiles` prints `{"ok":true,"defaults":{…},"profiles":[{"name":…,"settings":{recipe:{module:{…}}}}]}`:
+ // every run profile in the hub's `profiles.yaml` in name order, with its settings per recipe.
+diff --git a/internal/boardcli/recordfile.go b/internal/boardcli/recordfile.go
+new file mode 100644
+index 00000000..32771171
+--- /dev/null
++++ b/internal/boardcli/recordfile.go
+@@ -0,0 +1,32 @@
++// recordfile.go reads an upsert's --record-file, a decision record.
++// The record must pass the record's format checks before anything is written.
++
++package boardcli
++
++import (
++	"fmt"
++	"os"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/discussionparser"
++)
++
++// readRecordFile returns the decision record in the file at path.
++// It refuses a file it cannot read, naming the path,
++// and a record that fails the section check or the decision-id and acceptance check, listing every finding.
++func readRecordFile(path string) ([]byte, error) {
++	record, err := os.ReadFile(path)
++	if err != nil {
++		return nil, fmt.Errorf("read --record-file %s: %w; nothing was written; way forward: pass the path of a readable decision record", path, err)
++	}
++	findings := append(discussionparser.CheckRecordSections(record), discussionparser.CheckDecisionIDs(record)...)
++	if len(findings) == 0 {
++		return record, nil
++	}
++	details := make([]string, len(findings))
++	for i, finding := range findings {
++		details[i] = finding.Error()
++	}
++	return nil, fmt.Errorf("--record-file %s fails the decision record's format checks: %s; nothing was written; way forward: fix each finding in the file, then re-run the upsert",
++		path, strings.Join(details, "; "))
++}
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 8ae31d91..70f3db33 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -830,6 +830,190 @@ func stepGetRecord(t *testing.T, f *cliFixture) {
+ 	}
+ }
+ 
++// decisionRecordText returns a decision record that passes the section, decision-id and acceptance checks:
++// every required H2, decision D1 under Decisions and an acceptance bullet naming D1.
++func decisionRecordText(goal string) string {
++	return "# Decision record\n\n" +
++		"## Goal\n\n" + goal + "\n\n" +
++		"## Scope\n\nScoped.\n\n" +
++		"## Decisions\n\n### D1 — First\n\nBody.\n\n" +
++		"## Constraints\n\nNone.\n\n" +
++		"## Auto-mode assumptions\n\nNone.\n\n" +
++		"## Open risks\n\nNone.\n\n" +
++		"## Acceptance criteria\n\n- D1 holds.\n"
++}
++
++// writeTempFile writes content to a new file under t.TempDir() and returns its path.
++func writeTempFile(t *testing.T, content string) string {
++	t.Helper()
++	path := filepath.Join(t.TempDir(), "record.md")
++	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++		t.Fatalf("write %s: %v", path, err)
++	}
++	return path
++}
++
++// seedDiscussedSketch files the Sketch slug titled "Old" with body.
++// It then stores record as the Sketch's decision record, which flags it discussed.
++// The record is stored through the board engine on the fixture's hub board.
++// That board honours the BOARD_SKIP_GIT that TestCLI sets.
++func seedDiscussedSketch(t *testing.T, f *cliFixture, slug, body, record string) {
++	t.Helper()
++	payload, err := json.Marshal(map[string]any{"slug": slug, "title": "Old", "kind": "note", "labels": []string{"sketch"}, "body": body})
++	if err != nil {
++		t.Fatalf("marshal payload: %v", err)
++	}
++	mustUpsert(t, string(payload))
++	board, err := boardengine.OpenHub(filepath.Dir(f.cwd))
++	if err != nil {
++		t.Fatalf("OpenHub: %v", err)
++	}
++	if err := board.StoreDecisionRecord(slug, []byte(record)); err != nil {
++		t.Fatalf("StoreDecisionRecord: %v", err)
++	}
++}
++
++// stepUpsertRecordFile pins upsert --record-file at the CLI:
++// a valid file replaces the stored record in the write that lands the payload,
++// and each refusal writes nothing and names its way forward.
++// The file checks, the probe wiring, the session guard and the absent entry stand for the engine's refusals;
++// the engine's other refusals are covered in boardengine.
++func stepUpsertRecordFile(t *testing.T, f *cliFixture) {
++	const slugPayload = `{"slug":"sketched","title":"New"}`
++	stored := decisionRecordText("Stored goal")
++	seedDiscussedSketch(t, f, "sketched", "body", stored)
++
++	requireUntouched := func(t *testing.T) {
++		t.Helper()
++		if exitCode, stdout := runCLI(t, "get", `{"slug":"sketched"}`, "--record"); exitCode != 0 || stdout != stored {
++			t.Errorf("get --record: exit %d, stdout %q; want 0 and the stored record %q", exitCode, stdout, stored)
++		}
++		if task := runJSON(t, 0, "get", `{"slug":"sketched"}`)["task"].(map[string]any); task["title"] != "Old" {
++			t.Errorf("title = %v; want Old, nothing written", task["title"])
++		}
++	}
++
++	valid := decisionRecordText("New goal")
++	refusals := []struct {
++		name    string
++		payload string
++		// record is the file's content; a nil record names a path where no file exists.
++		record *string
++		env    map[string]string
++		// boardPath runs the verb under --board-path, which resolves no worktree.
++		boardPath bool
++		wantErr   []string
++	}{
++		{
++			name:    "a record missing Scope",
++			payload: slugPayload,
++			record:  ptr(strings.Replace(valid, "## Scope\n\nScoped.\n\n", "", 1)),
++			wantErr: []string{"## Scope", "way forward"},
++		},
++		{
++			name:    "a decision no acceptance bullet names",
++			payload: slugPayload,
++			record:  ptr(strings.Replace(valid, "## Constraints", "### D2 — Second\n\nBody.\n\n## Constraints", 1)),
++			wantErr: []string{"decision D2 is named in no acceptance criteria bullet", "way forward"},
++		},
++		{
++			name:    "a file that does not exist",
++			payload: slugPayload,
++			wantErr: []string{"missing-record.md", "way forward"},
++		},
++		{
++			name:    "an origin that cannot be probed",
++			payload: slugPayload,
++			record:  &valid,
++			env:     map[string]string{"FABRIC_SKIP_GIT": "", "FABRIC_SKIP_PUSH": ""},
++			wantErr: []string{"resolve the cause above, then re-run the upsert"},
++		},
++		{
++			name:      "a records branch that --board-path cannot resolve",
++			payload:   slugPayload,
++			record:    &valid,
++			boardPath: true,
++			wantErr:   []string{"only from a hub worktree", "resolve the cause above, then re-run the upsert"},
++		},
++		{
++			name:    "a run task session",
++			payload: slugPayload,
++			record:  &valid,
++			env:     map[string]string{agentname.StrandNameEnv: "ly:task-a:loom"},
++			wantErr: []string{"ly:task-a:loom", "way forward"},
++		},
++		{
++			name:    "a slug not on the board",
++			payload: `{"slug":"absent","title":"New"}`,
++			record:  &valid,
++			wantErr: []string{"no board entry"},
++		},
++	}
++	for _, tt := range refusals {
++		t.Run("refuses "+tt.name, func(t *testing.T) {
++			for key, value := range tt.env {
++				t.Setenv(key, value)
++			}
++			path := filepath.Join(t.TempDir(), "missing-record.md")
++			if tt.record != nil {
++				path = writeTempFile(t, *tt.record)
++			}
++			args := []string{"upsert", tt.payload, "--record-file", path}
++			if tt.boardPath {
++				args = append([]string{"--board-path", fabricengine.BoardDir(filepath.Dir(f.cwd))}, args...)
++			}
++			result := runJSON(t, 1, args...)
++			message, _ := result["error"].(string)
++			for _, want := range tt.wantErr {
++				if !strings.Contains(message, want) {
++					t.Errorf("error %q lacks %q", message, want)
++				}
++			}
++			requireUntouched(t)
++		})
++	}
++
++	t.Run("a valid record replaces the stored one with the payload", func(t *testing.T) {
++		t.Setenv("FABRIC_SKIP_PUSH", "1")
++		result := runJSON(t, 0, "upsert", slugPayload, "--record-file", writeTempFile(t, valid))
++		if ok, _ := result["ok"].(bool); !ok {
++			t.Fatalf("envelope = %v; want ok", result)
++		}
++		if exitCode, stdout := runCLI(t, "get", `{"slug":"sketched"}`, "--record"); exitCode != 0 || stdout != valid {
++			t.Errorf("get --record: exit %d, stdout %q; want 0 and the file's bytes %q", exitCode, stdout, valid)
++		}
++		if task := runJSON(t, 0, "get", `{"slug":"sketched"}`)["task"].(map[string]any); task["title"] != "New" {
++			t.Errorf("title = %v; want New", task["title"])
++		}
++	})
++}
++
++// ptr returns a pointer to value.
++func ptr[T any](value T) *T { return &value }
++
++// stepPromoteWarnsOnChangedSketchBody pins the promote envelope's warning:
++// a Sketch whose body changed after its record was stored is still promoted and the warning names --record-file,
++// and a Sketch whose body is unchanged carries no warning key.
++func stepPromoteWarnsOnChangedSketchBody(t *testing.T, f *cliFixture) {
++	record := decisionRecordText("Goal")
++	seedDiscussedSketch(t, f, "changed", "v1", record)
++	seedDiscussedSketch(t, f, "steady", "v1", record)
++	runJSON(t, 0, "upsert", `{"slug":"changed","body":"v2"}`)
++
++	result := runJSON(t, 0, "promote", `{"slug":"changed"}`)
++	if warning, _ := result["warning"].(string); !strings.Contains(warning, "--record-file") {
++		t.Errorf("promote of a Sketch with an edited body: warning = %q; want one naming --record-file", warning)
++	}
++	if task := result["task"].(map[string]any); task["kind"] != "task" {
++		t.Errorf("promote of a Sketch with an edited body: task = %v; want it promoted anyway", task)
++	}
++
++	result = runJSON(t, 0, "promote", `{"slug":"steady"}`)
++	if warning, has := result["warning"]; has {
++		t.Errorf("promote of a Sketch with an unchanged body: warning = %v; want no warning key", warning)
++	}
++}
++
+ // pipeStdin replaces os.Stdin with a file holding content until the test ends.
+ func pipeStdin(t *testing.T, content string) {
+ 	t.Helper()
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index 0d857aa9..f2f34757 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -438,12 +438,25 @@ func (b *Board) ListTasksFull() ([]Task, error) {
+ // Promote makes the entry identified by idOrSlug a task under the write lock.
+ // An entry that is already a task is returned unchanged without a write.
+ func (b *Board) Promote(idOrSlug any) (Task, error) {
+-	task, _, err := b.PromoteTo(idOrSlug, "", nil)
+-	return task, err
++	result, err := b.PromoteTo(idOrSlug, "", nil)
++	return result.Task, err
++}
++
++// PromoteResult is what a promote wrote.
++// It holds the task, the siblings the write created, and a warning about its decision record.
++type PromoteResult struct {
++	Task     Task
++	Siblings []Sibling
++	// RecordWarning is set when the promoted entry was a Sketch whose body changed after its decision record was stored;
++	// it names the upsert that brings the record up to the body.
++	// It is empty otherwise, and for an entry with no record_body_sha256 stamp.
++	RecordWarning string
+ }
+ 
+ // PromoteTo makes the entry identified by idOrSlug a task under the write lock.
+-// It returns the siblings the write created.
++// It returns the task with the siblings the write created.
++// It also returns a warning for a Sketch whose decision record was stored against a different body.
++// The body compared is the one loaded before the write; the warning never refuses the promote.
+ // When recipe is not empty, the same write sets the task's recipe to recipe.
+ // A non-nil dependsOn replaces the task's depends_on in the same write,
+ // so a task the write releases is never started ahead of its dependencies.
+@@ -454,8 +467,14 @@ func (b *Board) Promote(idOrSlug any) (Task, error) {
+ // Promoting a note whose record is stored with the raddle recipe keeps the record and the flag.
+ // It restores the sketch label that a note write dropped, and it releases the task in the same write.
+ // A Sketch becomes a task only through that promotion; a promotion of it with any other recipe is refused.
+-func (b *Board) PromoteTo(idOrSlug any, recipe string, dependsOn []string) (Task, []Sibling, error) {
++func (b *Board) PromoteTo(idOrSlug any, recipe string, dependsOn []string) (PromoteResult, error) {
++	var warning string
+ 	result, siblings, err := b.writeReportingSiblings(func(store *Store) (any, error) {
++		if current, found := store.GetTask(idOrSlug); found && IsSketch(current.Kind, current.Labels) && recordBodyChanged(current) {
++			warning = fmt.Sprintf("the body of Sketch %q changed after its decision record was stored, so the record may not cover it; "+
++				"to bring the record up to the body before its raddle run starts, run `lym board upsert '{\"slug\":\"%s\"}' --record-file <record.md>`",
++				current.Slug, current.Slug)
++		}
+ 		task, changed, err := store.promoteTo(idOrSlug, recipe, dependsOn, b.recordStored)
+ 		if err != nil {
+ 			return nil, err
+@@ -466,9 +485,9 @@ func (b *Board) PromoteTo(idOrSlug any, recipe string, dependsOn []string) (Task
+ 		return promoted{task: task}, nil
+ 	})
+ 	if err != nil {
+-		return Task{}, nil, err
++		return PromoteResult{}, err
+ 	}
+-	return result.(Task), siblings, nil
++	return PromoteResult{Task: result.(Task), Siblings: siblings, RecordWarning: warning}, nil
+ }
+ 
+ // Prune removes every done entry under the write lock, except one still carrying notify_on_land.
+diff --git a/internal/boardengine/decision.go b/internal/boardengine/decision.go
+index bbeec615..f47e89fa 100644
+--- a/internal/boardengine/decision.go
++++ b/internal/boardengine/decision.go
+@@ -6,6 +6,8 @@ package boardengine
+ 
+ import (
+ 	"bytes"
++	"crypto/sha256"
++	"encoding/hex"
+ 	"errors"
+ 	"fmt"
+ 	"io/fs"
+@@ -37,9 +39,10 @@ func DecisionFileName(slug string) string {
+ }
+ 
+ // StoreDecisionRecord writes record as the entry slug's decision record and flags the entry discussed, under the write lock.
++// The same write stamps the entry's record_body_sha256 with the sha256 of its body.
+ // The file is written before board.json is saved, so a crash leaves a file with no flag and never a flag with no file.
+-// It writes nothing when the entry is already flagged and the file already holds exactly record.
+-// It bypasses the run lock for the flag and the file only; every other field of a held entry stays locked.
++// It writes nothing when the entry is flagged, its stamp matches its body and the file already holds record.
++// It bypasses the run lock for the flag, the stamp and the file only; every other field of a held entry stays locked.
+ // It refuses an absent entry, and a done entry with an error that matches ErrRecordEntryDone.
+ func (b *Board) StoreDecisionRecord(slug string, record []byte) error {
+ 	_, err := b.boardCriticalSection(func(store *Store) (any, error) {
+@@ -51,18 +54,33 @@ func (b *Board) StoreDecisionRecord(slug string, record []byte) error {
+ 			return nil, fmt.Errorf("entry %q: %w: the run ledger sets aside a board commit whose entries have all ended, so a record stored now would not reach origin", slug, ErrRecordEntryDone)
+ 		}
+ 		name := DecisionFileName(slug)
+-		if current, err := os.ReadFile(filepath.Join(b.boardPath, name)); err == nil && store.tasks[i].Discussed && bytes.Equal(current, record) {
++		stamp := bodySHA256(store.tasks[i].Body)
++		if current, err := os.ReadFile(filepath.Join(b.boardPath, name)); err == nil && store.tasks[i].Discussed &&
++			store.tasks[i].RecordBodySHA256 == stamp && bytes.Equal(current, record) {
+ 			return noWrite{}, nil
+ 		}
+ 		if err := fsx.AtomicWrite(b.boardPath, name, string(record)); err != nil {
+ 			return nil, fmt.Errorf("write decision record %s: %w", name, err)
+ 		}
+ 		store.tasks[i].Discussed = true
++		store.tasks[i].RecordBodySHA256 = stamp
+ 		return nil, nil
+ 	}, nil)
+ 	return err
+ }
+ 
++// bodySHA256 returns the hex sha256 of body: the stamp a write of an entry's decision record leaves on the entry.
++func bodySHA256(body string) string {
++	sum := sha256.Sum256([]byte(body))
++	return hex.EncodeToString(sum[:])
++}
++
++// recordBodyChanged reports whether task's body differs from the body its decision record was last stored against.
++// An entry with no stamp, such as one whose record an older binary stored, reports false.
++func recordBodyChanged(task Task) bool {
++	return task.RecordBodySHA256 != "" && task.RecordBodySHA256 != bodySHA256(task.Body)
++}
++
+ // recordStored reports whether the decision record file of the entry slug exists in the board directory.
+ func (b *Board) recordStored(slug string) bool {
+ 	_, err := os.Stat(filepath.Join(b.boardPath, DecisionFileName(slug)))
+diff --git a/internal/boardengine/decision_test.go b/internal/boardengine/decision_test.go
+index 396ac10b..61cff20a 100644
+--- a/internal/boardengine/decision_test.go
++++ b/internal/boardengine/decision_test.go
+@@ -3,6 +3,8 @@
+ package boardengine_test
+ 
+ import (
++	"crypto/sha256"
++	"encoding/hex"
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
+@@ -18,6 +20,12 @@ import (
+ // readmeFile is the rendered overview file that a test board's config names.
+ const readmeFile = "Home.md"
+ 
++// bodyDigest returns the hex sha256 of body, the stamp a store of a decision record leaves on its entry.
++func bodyDigest(body string) string {
++	sum := sha256.Sum256([]byte(body))
++	return hex.EncodeToString(sum[:])
++}
++
+ // TestStoreDecisionRecord pins what StoreDecisionRecord writes and when it writes nothing.
+ // It also pins what StoreDecisionRecord refuses, and whether DecisionRecord finds the record.
+ func TestStoreDecisionRecord(t *testing.T) {
+@@ -69,8 +77,9 @@ func TestStoreDecisionRecord(t *testing.T) {
+ 			after, _, _ := b.GetTask("waiter")
+ 			want := before
+ 			want.Discussed = true
++			want.RecordBodySHA256 = bodyDigest(want.Body)
+ 			if !reflect.DeepEqual(after, want) {
+-				t.Errorf("run-held entry after the store = %+v; want only Discussed changed: %+v", after, want)
++				t.Errorf("run-held entry after the store = %+v; want only Discussed and RecordBodySHA256 changed: %+v", after, want)
+ 			}
+ 		}},
+ 		{"RepeatWithSameBytesWritesNothing", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
+@@ -87,6 +96,30 @@ func TestStoreDecisionRecord(t *testing.T) {
+ 				t.Errorf("a repeat store with the same bytes rendered %s; stat err = %v", readmeFile, err)
+ 			}
+ 		}},
++		{"StampsTheDigestOfTheBody", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
++			if err := b.StoreDecisionRecord("old", record); err != nil {
++				t.Fatalf("StoreDecisionRecord: %v", err)
++			}
++			task, _, _ := b.GetTask("old")
++			if want := bodyDigest("The body names old here."); task.RecordBodySHA256 != want {
++				t.Errorf("GetTask(old).RecordBodySHA256 = %q; want %q", task.RecordBodySHA256, want)
++			}
++		}},
++		{"RepeatWithSameBytesAfterABodyEditRewritesTheStamp", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
++			if err := b.StoreDecisionRecord("old", record); err != nil {
++				t.Fatalf("StoreDecisionRecord: %v", err)
++			}
++			if _, err := b.UpsertTask(map[string]any{"slug": "old", "body": "An edited body."}); err != nil {
++				t.Fatalf("UpsertTask: %v", err)
++			}
++			if err := b.StoreDecisionRecord("old", record); err != nil {
++				t.Fatalf("repeat StoreDecisionRecord: %v", err)
++			}
++			task, _, _ := b.GetTask("old")
++			if want := bodyDigest("An edited body."); task.RecordBodySHA256 != want {
++				t.Errorf("GetTask(old).RecordBodySHA256 = %q; want %q, the digest of the edited body", task.RecordBodySHA256, want)
++			}
++		}},
+ 		{"HandWrittenSameBytesStillFlags", func(t *testing.T, b *boardengine.Board, boardPath string, now *time.Time) {
+ 			if err := os.WriteFile(filepath.Join(boardPath, "decision-old.md"), record, 0o644); err != nil {
+ 				t.Fatalf("write decision-old.md: %v", err)
+@@ -384,13 +417,18 @@ func TestDecisionRecordFollowsEntry(t *testing.T) {
+ 		}},
+ 		{"MergeUpsertingTheRemovedSlugAgainKeepsFileAndFlag", func(t *testing.T, b *boardengine.Board, boardPath string) {
+ 			store(t, b, "near")
++			stored, _, _ := b.GetTask("near")
+ 			if _, _, err := b.MergeTasks([]string{"near"}, map[string]any{"slug": "near", "title": "Near again", "labels": bugLabels}, nil); err != nil {
+ 				t.Fatalf("MergeTasks: %v", err)
+ 			}
+ 			wantFile(t, boardPath, "decision-near.md", true)
+-			if task, _, _ := b.GetTask("near"); !task.Discussed {
++			task, _, _ := b.GetTask("near")
++			if !task.Discussed {
+ 				t.Errorf("GetTask(near).Discussed = false; want the flag kept")
+ 			}
++			if stored.RecordBodySHA256 == "" || task.RecordBodySHA256 != stored.RecordBodySHA256 {
++				t.Errorf("GetTask(near).RecordBodySHA256 = %q; want the stamp %q kept", task.RecordBodySHA256, stored.RecordBodySHA256)
++			}
+ 		}},
+ 		{"ClearingTheStatusKeepsFileAndFlag", func(t *testing.T, b *boardengine.Board, boardPath string) {
+ 			store(t, b, "old")
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 9ee650ea..6b053951 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -544,13 +544,17 @@
+ // A flagged entry's Slug cell in every board table links it as `Sketch`.
+ // So does a `Decision record:` line under the metadata line of the entry's design doc.
+ // RenderToDisk renders a flagged entry whose file is missing as unflagged, so no board file links a missing record.
+-// Only lym writes the flag and the file: Board.StoreDecisionRecord is the one writer.
++// Only lym writes the flag and the file.
++// Board.StoreDecisionRecord sets both; Board.UpsertTaskWithRecord and Board.FileRaddle also write a record file.
+ // A payload may carry discussed only as the entry's stored value, false for a new entry, which is dropped as a no-op;
+ // any other value is refused.
++// Every write of an entry's record file stamps its `record_body_sha256` with the sha256 of the body the write leaves.
++// The key is part of the entry in board.json, so a board sync's replay carries it, and a payload naming it is refused.
++// An entry stored before the key existed carries none.
+ // StoreDecisionRecord writes the file before it saves board.json.
+ // A crash therefore leaves a file with no flag and never a flag with no file.
+-// It writes nothing when the entry is flagged and the file already holds the bytes.
+-// It bypasses the run lock for the flag and the file alone, so every other field of a held entry stays locked.
++// It writes nothing when the entry is flagged, its stamp matches its body and the file already holds the bytes.
++// It bypasses the run lock for the flag, the stamp and the file alone, so every other field of a held entry stays locked.
+ // It refuses an absent entry and a done entry, since a landed entry keeps the record it last stored.
+ // The done refusal matches ErrRecordEntryDone.
+ // Board.DecisionRecord reads without the lock.
+@@ -560,6 +564,17 @@
+ // LoadConfig refuses a design_prefix that would render a design file onto a record file's name:
+ // a prefix of `decision-` or one starting with it, the empty prefix included.
+ //
++// Board.UpsertTaskWithRecord, behind `lym board upsert --record-file`, replaces an existing entry's stored record.
++// It lands the record in the write that carries the payload.
++// The record file is written before board.json is saved, and a failed write puts the former record file back.
++// It refuses a run agent's session, a new entry, an entry with no stored record, a done entry and an entry a run holds.
++// It also refuses an entry whose task worktree stands in the hub.
++// It refuses too an entry whose weft branch its caller's probe reports live.
++// A family project whose filing the raddle store records is exempt from those two refusals.
++// Its run reads no record again.
++// The probe runs before the board lock, and the entry refusals are judged again under it.
++// The guard reads no batten liveness, so a run started after its check, or on another machine, is not seen.
++//
+ // # Sketch
+ //
+ // An entry whose Discussion-only run, a motif run, ended with its decision record approved and stored is a Sketch.
+@@ -581,6 +596,10 @@
+ // It restores the label when a note write dropped it, and it releases the task, so its parent's dobby starts the run.
+ // PromoteTo's depends_on is set in that write, so the dobby never sees the task released without it.
+ // Board.Promote is PromoteTo with no recipe and no depends_on.
++// PromoteTo warns, and still promotes, a Sketch whose body no longer matches its `record_body_sha256`.
++// The body compared is the one loaded before the write.
++// The warning names `lym board upsert --record-file` as the way to bring the record up to the body.
++// An entry with no stamp gets none; any body edit after the store warns, one that leaves the design alone included.
+ // Two write rules close every other way.
+ // The first rule covers a discussed note whose record file exists.
+ // A write that makes it a task must carry recipe `raddle`, the discussed flag and the sketch label,
+@@ -638,7 +657,7 @@
+ // Otherwise it runs the filing's re-check over the entries and the store as they stand.
+ // A refusal is wrapped in ErrRaddleRecheck.
+ // It then adds the project the shape files and the parts as discussed entries.
+-// It writes each entry's decision record file before the save.
++// It writes each entry's decision record file before the save, stamping each entry's `record_body_sha256`.
+ // After the save it writes the store directory with store.json last, so the write leaves its own done marker.
+ // The filing's Project is the Sketch's own project field, so every filed entry's parent beam equals the Sketch's;
+ // the parts are members of the new project when the shape files one.
+diff --git a/internal/boardengine/raddlefile.go b/internal/boardengine/raddlefile.go
+index bb6dadd8..a240537e 100644
+--- a/internal/boardengine/raddlefile.go
++++ b/internal/boardengine/raddlefile.go
+@@ -161,7 +161,8 @@ func (b *Board) FileRaddle(f RaddleFiling) error {
+ }
+ 
+ // fileRaddleEntry adds one filed entry to store as a discussed entry, under project when project is not empty.
+-// It writes the entry's decision record file and appends the file's path to recordFiles.
++// It writes the entry's decision record file and appends the file's path to recordFiles,
++// and it stamps the entry's record_body_sha256 with the sha256 of the filed body.
+ // A dependency on the run's entry or on a slug the store does not hold is dropped.
+ func (b *Board) fileRaddleEntry(store *Store, f RaddleFiling, entry RaddleEntry, project string, recordFiles *[]string) error {
+ 	fields := map[string]any{"slug": entry.Slug, "title": entry.Title, "kind": entry.Kind, "labels": entry.Labels, "body": entry.Body}
+@@ -194,11 +195,13 @@ func (b *Board) fileRaddleEntry(store *Store, f RaddleFiling, entry RaddleEntry,
+ 	*recordFiles = append(*recordFiles, filepath.Join(b.boardPath, name))
+ 	i, _ := store.index(entry.Slug)
+ 	store.tasks[i].Discussed = true
++	store.tasks[i].RecordBodySHA256 = bodySHA256(store.tasks[i].Body)
+ 	return nil
+ }
+ 
+ // convertRunEntry turns the run's entry in store into the project of f's family filing, in place.
+-// It writes the project's decision record, appending the file's path to recordFiles.
++// It writes the project's decision record and appends the file's path to recordFiles.
++// It stamps the project's record_body_sha256 with the sha256 of the project's body.
+ // The project's order and part list name f's parts in filed order.
+ // The record file the entry held before is kept in formerRecords under its path, so a failed write restores it.
+ func (b *Board) convertRunEntry(store *Store, f RaddleFiling, formerRecords map[string][]byte, recordFiles *[]string) error {
+@@ -225,6 +228,7 @@ func (b *Board) convertRunEntry(store *Store, f RaddleFiling, formerRecords map[
+ 	}
+ 	*recordFiles = append(*recordFiles, path)
+ 	store.tasks[i] = arrasProjectOf(store.tasks[i], parts)
++	store.tasks[i].RecordBodySHA256 = bodySHA256(store.tasks[i].Body)
+ 	return nil
+ }
+ 
+diff --git a/internal/boardengine/raddlefile_test.go b/internal/boardengine/raddlefile_test.go
+index 530fbc11..285f3479 100644
+--- a/internal/boardengine/raddlefile_test.go
++++ b/internal/boardengine/raddlefile_test.go
+@@ -53,7 +53,7 @@ func startRaddleRun(t *testing.T, b *Board, slug, project string) Task {
+ 	if err := b.StoreDecisionRecord(slug, []byte("sketch record\n")); err != nil {
+ 		t.Fatalf("StoreDecisionRecord() error = %v; want nil", err)
+ 	}
+-	if _, _, err := b.PromoteTo(slug, shedrun.RecipeRaddle, nil); err != nil {
++	if _, err := b.PromoteTo(slug, shedrun.RecipeRaddle, nil); err != nil {
+ 		t.Fatalf("PromoteTo() error = %v; want nil", err)
+ 	}
+ 	return entryForRaddle(t, b, slug)
+@@ -204,6 +204,9 @@ func TestFileRaddle(t *testing.T) {
+ 				if record, held, err := b.DecisionRecord(slug); err != nil || !held || string(record) != "record of "+slug+"\n" {
+ 					t.Errorf("DecisionRecord(%q) = %q, %t, %v; want the filed record", slug, record, held, err)
+ 				}
++				if entry.RecordBodySHA256 != sha256Hex(entry.Body) {
++					t.Errorf("entry %q record_body_sha256 = %q; want %q, the digest of its body", slug, entry.RecordBodySHA256, sha256Hex(entry.Body))
++				}
+ 				if slices.Contains(entry.Labels, SketchType) {
+ 					t.Errorf("entry %q labels = %v; want no sketch label", slug, entry.Labels)
+ 				}
+@@ -395,10 +398,17 @@ func TestFileRaddle(t *testing.T) {
+ 		if record, held, err := b.DecisionRecord("plan"); err != nil || !held || string(record) != "record of plan\n" {
+ 			t.Errorf("DecisionRecord(plan) = %q, %t, %v; want the whole record the filing stored", record, held, err)
+ 		}
++		if project.RecordBodySHA256 != sha256Hex(project.Body) {
++			t.Errorf("project record_body_sha256 = %q; want %q, the digest of the body the filing left", project.RecordBodySHA256, sha256Hex(project.Body))
++		}
+ 		for _, slug := range parts {
+-			if part := entryForRaddle(t, b, slug); part.Project != "plan" || part.Status == nil || *part.Status != StatusDraft {
++			part := entryForRaddle(t, b, slug)
++			if part.Project != "plan" || part.Status == nil || *part.Status != StatusDraft {
+ 				t.Errorf("part %q project, status = %q, %v; want plan, draft", slug, part.Project, part.Status)
+ 			}
++			if part.RecordBodySHA256 != sha256Hex(part.Body) {
++				t.Errorf("part %q record_body_sha256 = %q; want %q, the digest of its body", slug, part.RecordBodySHA256, sha256Hex(part.Body))
++			}
+ 		}
+ 		if got := entryForRaddle(t, b, "plan-b").DependsOn; !slices.Equal(got, []string{"plan-a"}) {
+ 			t.Errorf("plan-b depends_on = %v; want [plan-a]", got)
+diff --git a/internal/boardengine/recordupsert.go b/internal/boardengine/recordupsert.go
+new file mode 100644
+index 00000000..c6a1c500
+--- /dev/null
++++ b/internal/boardengine/recordupsert.go
+@@ -0,0 +1,128 @@
++// recordupsert.go holds the upsert that replaces an entry's stored decision record in the write that lands its payload.
++
++package boardengine
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/fsx"
++)
++
++// UpsertTaskWithRecord upserts fields onto the existing entry fields["slug"] names.
++// It replaces the entry's stored decision record with record.
++// Both land in one write under the board lock, and it returns the written entry and the siblings the write created.
++// It refuses, with nothing written and each refusal naming its way forward:
++// a run agent's session, as the board's strand name classifies it;
++// a slug the board does not hold, an entry with no stored record and a done entry;
++// an entry a run holds, and an entry whose task worktree stands in the hub;
++// and an entry whose weft branch weftLive reports live, or whose probe fails.
++// A family project whose raddle filing the raddle store records is exempt from the worktree and weft refusals.
++// Its run reads no record again.
++// weftLive may read origin, so it runs before the board lock is taken.
++// The entry refusals are judged again under the lock.
++// The payload is validated before the record file is written, and the record file is written before board.json is saved.
++// The write stamps the entry's record_body_sha256 with the sha256 of the body it leaves.
++// When the write fails after the record file was written, the entry's former record is written back.
++func (b *Board) UpsertTaskWithRecord(fields map[string]any, record []byte, weftLive func(slug string) (bool, error)) (Task, []Sibling, error) {
++	if isRunAgentSession(b.strandName) {
++		return Task{}, nil, fmt.Errorf("the run session %s cannot replace a stored decision record: the run reads its own record, never the board's; "+
++			"way forward: change the record on the run with `lym loom decision replace <slug>`, or ask the operator or an orch to run the upsert", b.strandName)
++	}
++	slug, _ := fields["slug"].(string)
++	exempt, err := b.judgeRecordReplace(slug)
++	if err != nil {
++		return Task{}, nil, err
++	}
++	if !exempt {
++		live, err := weftLive(slug)
++		if err != nil {
++			return Task{}, nil, fmt.Errorf("the weft branch of %q could not be probed: %w; nothing was written; way forward: resolve the cause above, then re-run the upsert", slug, err)
++		}
++		if live {
++			return Task{}, nil, fmt.Errorf("the weft branch of %q is live, so a raddle start would adopt it and keep the record its run committed, never the stored one; nothing was written; "+
++				"way forward: wait for the pair's teardown to finish, or, when its remote step failed, carry out the way forward its failure mail names, then re-run the upsert", slug)
++		}
++	}
++
++	name := DecisionFileName(slug)
++	path := filepath.Join(b.boardPath, name)
++	var former []byte
++	var siblings []Sibling
++	recordWritten, saved := false, false
++	result, err := b.boardCriticalSection(func(store *Store) (any, error) {
++		if _, err := b.judgeRecordReplaceIn(store, slug); err != nil {
++			return nil, err
++		}
++		loaded := cloneTasks(store.Tasks())
++		task, err := store.UpsertTask(fields)
++		if err != nil {
++			return nil, err
++		}
++		if former, err = os.ReadFile(path); err != nil {
++			return nil, fmt.Errorf("read decision record %s: %w", name, err)
++		}
++		if err := fsx.AtomicWrite(b.boardPath, name, string(record)); err != nil {
++			return nil, fmt.Errorf("write decision record %s: %w", name, err)
++		}
++		recordWritten = true
++		i, _ := store.index(slug)
++		store.tasks[i].RecordBodySHA256 = bodySHA256(store.tasks[i].Body)
++		siblings = addedSiblings(loaded, store.Tasks(), b.vocab)
++		return task, nil
++	}, func() error {
++		saved = true
++		return nil
++	})
++	if err != nil {
++		if recordWritten && !saved {
++			_ = fsx.AtomicWriteBytes(path, former)
++		}
++		return Task{}, nil, err
++	}
++	return result.(Task), siblings, nil
++}
++
++// judgeRecordReplace loads the board without the lock and judges the entry slug as judgeRecordReplaceIn does.
++func (b *Board) judgeRecordReplace(slug string) (bool, error) {
++	store, err := b.loadStore()
++	if err != nil {
++		return false, err
++	}
++	return b.judgeRecordReplaceIn(store, slug)
++}
++
++// judgeRecordReplaceIn refuses an entry of store whose stored decision record an upsert may not replace.
++// It refuses a slug store does not hold, an entry with no stored record, a done entry and an entry a run holds.
++// It also refuses an entry whose task worktree stands in the hub.
++// A family project whose filing is done is exempt from that refusal.
++// It reports whether the entry is such a family project, which the weft refusal exempts too.
++func (b *Board) judgeRecordReplaceIn(store *Store, slug string) (bool, error) {
++	task, found := store.GetTask(slug)
++	switch {
++	case !found:
++		return false, fmt.Errorf("no board entry %q: --record-file replaces the stored decision record of an existing entry; nothing was written; "+
++			"way forward: file the entry with `lym board upsert` without --record-file, and lym stores its record when its run's Discussion is approved", slug)
++	case !task.Discussed || !b.recordStored(slug):
++		return false, fmt.Errorf("entry %q has no stored decision record to replace; nothing was written; "+
++			"way forward: drop --record-file, since lym stores an entry's record when its run's Discussion is approved", slug)
++	case isDone(task):
++		return false, fmt.Errorf("entry %q is done, and a landed entry keeps the decision record it last stored; nothing was written; "+
++			"way forward: file the change as a new entry with `lym board upsert`", slug)
++	case RunHolds(task):
++		return false, fmt.Errorf("entry %q is held by a run (status %q), which reads its own record and never the stored one; nothing was written; "+
++			"way forward: change the record on the run with `lym loom decision replace %s`", slug, *task.Status, slug)
++	}
++	raddle, err := ReadRaddleStore(b.boardPath)
++	if err != nil {
++		return false, err
++	}
++	filed, held := raddle.Holds(slug)
++	familyFiled := task.Kind == KindProject && held && filed.Project == slug
++	if !familyFiled && b.pairExists != nil && b.pairExists(slug) {
++		return false, fmt.Errorf("entry %q has a task worktree in the hub, and Record-Write never overwrites the record a worktree holds, so a resumed run there would keep the old one; nothing was written; "+
++			"way forward: run `lym loom decision replace %s` in that worktree, or end the run first with `lym batten cancel %s` from the hub's prime worktree", slug, slug, slug)
++	}
++	return familyFiled, nil
++}
+diff --git a/internal/boardengine/recordupsert_test.go b/internal/boardengine/recordupsert_test.go
+new file mode 100644
+index 00000000..5a0687c8
+--- /dev/null
++++ b/internal/boardengine/recordupsert_test.go
+@@ -0,0 +1,340 @@
++// recordupsert_test.go — tests of Board.UpsertTaskWithRecord.
++// They cover the refusals that write nothing and the replacement of the stored record with the payload.
++// They also cover the family project exemption.
++
++package boardengine
++
++import (
++	"cmp"
++	"crypto/sha256"
++	"encoding/hex"
++	"errors"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// formerRecord is the decision record the seeded entries of these tests store.
++const formerRecord = "former record\n"
++
++// sha256Hex returns the hex sha256 of body, the stamp a write of a decision record leaves on its entry.
++func sha256Hex(body string) string {
++	sum := sha256.Sum256([]byte(body))
++	return hex.EncodeToString(sum[:])
++}
++
++// newRecordUpsertBoards returns two boards over one directory, and the directory.
++// seeder acts as the operator; actor carries strandName and pairExists.
++func newRecordUpsertBoards(t *testing.T, strandName string, pairExists func(slug string) bool) (seeder, actor *Board, boardPath string) {
++	t.Helper()
++	boardPath = t.TempDir()
++	types := []Label{{Name: SketchType}, {Name: "bug"}, {Name: "enhancement"}}
++	config := Config{Path: boardPath, Readme: "Home.md", DesignPrefix: "proposal-", Types: types, Labels: []Label{{Name: "board"}}, SkipGit: true}
++	seeder = New(config)
++	config.StrandName, config.PairExists = strandName, pairExists
++	return seeder, New(config), boardPath
++}
++
++// seedDiscussedEntry files the entry slug of kind with labels, body "former body" and a stored record of formerRecord.
++func seedDiscussedEntry(t *testing.T, b *Board, slug, kind string, labels []string) {
++	t.Helper()
++	upsertForRaddle(t, b, map[string]any{"slug": slug, "title": "Former title", "kind": kind, "labels": labels, "body": "former body"})
++	if err := b.StoreDecisionRecord(slug, []byte(formerRecord)); err != nil {
++		t.Fatalf("StoreDecisionRecord(%q) error = %v; want nil", slug, err)
++	}
++}
++
++// seedDiscussedSketch files the Sketch slug with a stored record.
++func seedDiscussedSketch(t *testing.T, b *Board, slug string) {
++	t.Helper()
++	seedDiscussedEntry(t, b, slug, KindNote, []string{SketchType, "board"})
++}
++
++// seedDiscussedTask files the task slug with a stored record.
++func seedDiscussedTask(t *testing.T, b *Board, slug string) {
++	t.Helper()
++	seedDiscussedEntry(t, b, slug, KindTask, []string{"bug", "board"})
++}
++
++// probeNeverCalled returns a weftLive that fails t when it is called.
++func probeNeverCalled(t *testing.T) func(string) (bool, error) {
++	t.Helper()
++	return func(slug string) (bool, error) {
++		t.Errorf("weftLive(%q) was called; want the refusal or the exemption to come before the probe", slug)
++		return false, nil
++	}
++}
++
++// TestUpsertTaskWithRecord_Refusals pins each refusal of UpsertTaskWithRecord:
++// the message names a way forward and the command or step it points at, and nothing is written.
++func TestUpsertTaskWithRecord_Refusals(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	done := StatusDone
++	fileFamily := func(t *testing.T, b *Board, _ string) {
++		t.Helper()
++		if err := b.FileRaddle(familyFiling(startArrasRun(t, b, "plan"))); err != nil {
++			t.Fatalf("FileRaddle() error = %v; want nil", err)
++		}
++	}
++	seedDiscussedProject := func(t *testing.T, b *Board, _ string) {
++		t.Helper()
++		seedDiscussedEntry(t, b, "proj", KindProject, []string{"enhancement", "board"})
++	}
++	tests := []struct {
++		name       string
++		strandName string
++		pairExists func(slug string) bool
++		// slug is the entry the payload names; empty means "idea".
++		slug  string
++		setup func(t *testing.T, b *Board, boardPath string)
++		// weftLive is the probe; nil means the refusal comes before the probe, which then fails the test when called.
++		weftLive func(slug string) (bool, error)
++		wantErr  []string
++	}{
++		{
++			name: "RunAgentSession", strandName: "ly:some-task:webster",
++			setup:   func(t *testing.T, b *Board, _ string) { seedDiscussedSketch(t, b, "idea") },
++			wantErr: []string{"lym loom decision replace"},
++		},
++		{
++			name: "SlugNotOnTheBoard", slug: "ghost",
++			setup:   func(t *testing.T, b *Board, _ string) { seedDiscussedSketch(t, b, "idea") },
++			wantErr: []string{`no board entry "ghost"`, "lym board upsert"},
++		},
++		{
++			name: "EntryNotDiscussed",
++			setup: func(t *testing.T, b *Board, _ string) {
++				upsertForRaddle(t, b, map[string]any{"slug": "idea", "title": "Former title", "kind": KindNote, "labels": []string{SketchType}, "body": "former body"})
++			},
++			wantErr: []string{"has no stored decision record", "drop --record-file"},
++		},
++		{
++			name: "RecordFileMissing",
++			setup: func(t *testing.T, b *Board, boardPath string) {
++				seedDiscussedSketch(t, b, "idea")
++				if err := os.Remove(filepath.Join(boardPath, DecisionFileName("idea"))); err != nil {
++					t.Fatalf("Remove(decision record of idea) = %v; want nil", err)
++				}
++			},
++			wantErr: []string{"has no stored decision record", "drop --record-file"},
++		},
++		{
++			name: "DoneEntry",
++			setup: func(t *testing.T, b *Board, _ string) {
++				seedDiscussedTask(t, b, "idea")
++				if err := b.SetStatus("idea", &done); err != nil {
++					t.Fatalf("SetStatus() error = %v; want nil", err)
++				}
++			},
++			wantErr: []string{"is done", "as a new entry"},
++		},
++		{
++			name: "RunHeldEntry",
++			setup: func(t *testing.T, b *Board, _ string) {
++				seedDiscussedTask(t, b, "idea")
++				if err := b.SetRunStatus("idea", RunStatus("running", "Webster")); err != nil {
++					t.Fatalf("SetRunStatus() error = %v; want nil", err)
++				}
++			},
++			wantErr: []string{"is held by a run", "lym loom decision replace idea"},
++		},
++		{
++			name: "TaskWorktreeStands", pairExists: func(string) bool { return true },
++			setup:   func(t *testing.T, b *Board, _ string) { seedDiscussedSketch(t, b, "idea") },
++			wantErr: []string{"has a task worktree in the hub", "lym batten cancel idea"},
++		},
++		{
++			name:     "WeftBranchLive",
++			setup:    func(t *testing.T, b *Board, _ string) { seedDiscussedSketch(t, b, "idea") },
++			weftLive: func(string) (bool, error) { return true, nil },
++			wantErr:  []string{"is live", "wait for the pair's teardown"},
++		},
++		{
++			name:     "WeftProbeFails",
++			setup:    func(t *testing.T, b *Board, _ string) { seedDiscussedSketch(t, b, "idea") },
++			weftLive: func(string) (bool, error) { return false, errors.New("origin unreachable") },
++			wantErr:  []string{"origin unreachable", "resolve the cause above, then re-run the upsert"},
++		},
++		{
++			name: "FiledPartWorktreeStands", slug: "plan-a", pairExists: func(string) bool { return true },
++			setup:   fileFamily,
++			wantErr: []string{"has a task worktree in the hub", "lym batten cancel plan-a"},
++		},
++		{
++			name: "UnfiledProjectWorktreeStands", slug: "proj", pairExists: func(string) bool { return true },
++			setup:   seedDiscussedProject,
++			wantErr: []string{"has a task worktree in the hub", "lym batten cancel proj"},
++		},
++		{
++			// The store records the project "proj" as filed by a run whose family project is "other".
++			name: "FiledProjectOfAnotherFamilyWorktreeStands", slug: "proj", pairExists: func(string) bool { return true },
++			setup: func(t *testing.T, b *Board, boardPath string) {
++				seedDiscussedProject(t, b, boardPath)
++				storeDir := filepath.Join(boardPath, raddleStoreDirName, "proj")
++				if err := os.MkdirAll(storeDir, 0o755); err != nil {
++					t.Fatalf("MkdirAll(%q) = %v; want nil", storeDir, err)
++				}
++				storeJSON := `{"created":"2026-10-01T08:00:00Z","hash":"h","filed":["proj","other"],"project":"other"}`
++				if err := os.WriteFile(filepath.Join(storeDir, raddleStoreFileName), []byte(storeJSON), 0o644); err != nil {
++					t.Fatalf("WriteFile(store.json) = %v; want nil", err)
++				}
++			},
++			wantErr: []string{"has a task worktree in the hub", "lym batten cancel proj"},
++		},
++		{
++			name: "UnfiledProjectWeftLive", slug: "proj",
++			setup:    seedDiscussedProject,
++			weftLive: func(string) (bool, error) { return true, nil },
++			wantErr:  []string{"is live", "wait for the pair's teardown"},
++		},
++		{
++			name: "FamilyProjectHeldByARun", slug: "plan", pairExists: func(string) bool { return true },
++			setup: func(t *testing.T, b *Board, boardPath string) {
++				fileFamily(t, b, boardPath)
++				if err := b.SetRunStatus("plan", RunStatus("running", "Webster")); err != nil {
++					t.Fatalf("SetRunStatus() error = %v; want nil", err)
++				}
++			},
++			wantErr: []string{"is held by a run", "lym loom decision replace plan"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			seeder, actor, boardPath := newRecordUpsertBoards(t, tt.strandName, tt.pairExists)
++			tt.setup(t, seeder, boardPath)
++			slug := cmp.Or(tt.slug, "idea")
++			recordPath := filepath.Join(boardPath, DecisionFileName(slug))
++			recordBefore, recordErrBefore := os.ReadFile(recordPath)
++			entryBefore, foundBefore, _ := seeder.GetTask(slug)
++			weftLive := tt.weftLive
++			if weftLive == nil {
++				weftLive = probeNeverCalled(t)
++			}
++
++			_, _, err := actor.UpsertTaskWithRecord(map[string]any{"slug": slug, "title": "New title", "body": "new body"}, []byte("new record\n"), weftLive)
++
++			if err == nil {
++				t.Fatalf("UpsertTaskWithRecord() error = nil; want a refusal containing %v", tt.wantErr)
++			}
++			for _, want := range append([]string{"way forward"}, tt.wantErr...) {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("UpsertTaskWithRecord() error = %q; want it to contain %q", err, want)
++				}
++			}
++			recordAfter, recordErrAfter := os.ReadFile(recordPath)
++			if string(recordAfter) != string(recordBefore) || (recordErrAfter == nil) != (recordErrBefore == nil) {
++				t.Errorf("decision record of %q = %q, %v after the refusal; want %q, %v as before", slug, recordAfter, recordErrAfter, recordBefore, recordErrBefore)
++			}
++			entryAfter, foundAfter, _ := actor.GetTask(slug)
++			if foundAfter != foundBefore || !reflect.DeepEqual(entryAfter, entryBefore) {
++				t.Errorf("entry %q = %+v, found %t after the refusal; want %+v, found %t as before", slug, entryAfter, foundAfter, entryBefore, foundBefore)
++			}
++		})
++	}
++}
++
++// TestUpsertTaskWithRecord_ReplacesRecordWithPayload pins the one write:
++// the payload lands on the entry, the record file holds the new bytes, and the stamp is the digest of the body left.
++func TestUpsertTaskWithRecord_ReplacesRecordWithPayload(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	seeder, actor, boardPath := newRecordUpsertBoards(t, "", nil)
++	seedDiscussedSketch(t, seeder, "idea")
++	var probed []string
++	weftLive := func(slug string) (bool, error) {
++		probed = append(probed, slug)
++		return false, nil
++	}
++
++	task, siblings, err := actor.UpsertTaskWithRecord(map[string]any{"slug": "idea", "title": "New title", "body": "new body"}, []byte("new record\n"), weftLive)
++
++	if err != nil {
++		t.Fatalf("UpsertTaskWithRecord() error = %v; want nil", err)
++	}
++	if task.Slug != "idea" || task.Title != "New title" || len(siblings) != 0 {
++		t.Errorf("UpsertTaskWithRecord() = slug %q, title %q, %d siblings; want idea, New title, none", task.Slug, task.Title, len(siblings))
++	}
++	if !reflect.DeepEqual(probed, []string{"idea"}) {
++		t.Errorf("weftLive called for %v; want [idea]", probed)
++	}
++	if got, err := os.ReadFile(filepath.Join(boardPath, DecisionFileName("idea"))); err != nil || string(got) != "new record\n" {
++		t.Errorf("decision record of idea = %q, %v; want %q", got, err, "new record\n")
++	}
++	entry := entryForRaddle(t, actor, "idea")
++	if entry.Title != "New title" || entry.Body != "new body" || !entry.Discussed || entry.Kind != KindNote {
++		t.Errorf("entry title, body, discussed, kind = %q, %q, %t, %q; want New title, new body, true, note", entry.Title, entry.Body, entry.Discussed, entry.Kind)
++	}
++	if want := sha256Hex("new body"); entry.RecordBodySHA256 != want {
++		t.Errorf("entry record_body_sha256 = %q; want %q, the digest of the new body", entry.RecordBodySHA256, want)
++	}
++}
++
++// TestUpsertTaskWithRecord_FamilyProjectSkipsWorktreeAndWeftRefusals pins the exemption:
++// a family project whose raddle filing the store records is replaced although its worktree stands, with no weft probe.
++//
++//testtiming:keep pins the family-project exemption from the worktree and live-weft refusals, which TestFileRaddle and the other upsert tests never reach
++func TestUpsertTaskWithRecord_FamilyProjectSkipsWorktreeAndWeftRefusals(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	seeder, actor, boardPath := newRecordUpsertBoards(t, "", func(string) bool { return true })
++	run := startArrasRun(t, seeder, "plan")
++	if err := seeder.FileRaddle(familyFiling(run)); err != nil {
++		t.Fatalf("FileRaddle() error = %v; want nil", err)
++	}
++
++	_, _, err := actor.UpsertTaskWithRecord(map[string]any{"slug": "plan", "title": "Renamed plan"}, []byte("new project record\n"), probeNeverCalled(t))
++
++	if err != nil {
++		t.Fatalf("UpsertTaskWithRecord() error = %v; want nil", err)
++	}
++	if got, err := os.ReadFile(filepath.Join(boardPath, DecisionFileName("plan"))); err != nil || string(got) != "new project record\n" {
++		t.Errorf("decision record of plan = %q, %v; want %q", got, err, "new project record\n")
++	}
++	project := entryForRaddle(t, actor, "plan")
++	if project.Kind != KindProject || project.Title != "Renamed plan" || project.RecordBodySHA256 != sha256Hex(project.Body) {
++		t.Errorf("project kind, title, record_body_sha256 = %q, %q, %q; want project, Renamed plan, the digest of its body %q", project.Kind, project.Title, project.RecordBodySHA256, sha256Hex(project.Body))
++	}
++}
++
++// TestUpsertTaskWithRecord_RefusedPayloadKeepsFormerRecord pins that a refused payload leaves the record as it was.
++// One payload is refused before the record file is written, the other after it, which then restores the former bytes.
++func TestUpsertTaskWithRecord_RefusedPayloadKeepsFormerRecord(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		payload map[string]any
++		wantErr string
++	}{
++		{"InvalidKindRefusedBeforeTheRecordWrite", map[string]any{"slug": "idea", "kind": "epic"}, "kind"},
++		{"DiscussedNoteTurnedTaskWithNoRecipeRefusedAfterTheRecordWrite", map[string]any{"slug": "idea", "kind": "task"}, `"idea"`},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			seeder, actor, boardPath := newRecordUpsertBoards(t, "", nil)
++			seedDiscussedSketch(t, seeder, "idea")
++			entryBefore := entryForRaddle(t, seeder, "idea")
++
++			_, _, err := actor.UpsertTaskWithRecord(tt.payload, []byte("new record\n"), func(string) (bool, error) { return false, nil })
++
++			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++				t.Fatalf("UpsertTaskWithRecord(%v) error = %v; want a refusal containing %q", tt.payload, err, tt.wantErr)
++			}
++			if got, err := os.ReadFile(filepath.Join(boardPath, DecisionFileName("idea"))); err != nil || string(got) != formerRecord {
++				t.Errorf("decision record of idea = %q, %v; want %q, the former record", got, err, formerRecord)
++			}
++			if entryAfter := entryForRaddle(t, actor, "idea"); !reflect.DeepEqual(entryAfter, entryBefore) {
++				t.Errorf("entry idea = %+v; want %+v as before", entryAfter, entryBefore)
++			}
++		})
++	}
++}
+diff --git a/internal/boardengine/replay.go b/internal/boardengine/replay.go
+index 1936d173..cb42b254 100644
+--- a/internal/boardengine/replay.go
++++ b/internal/boardengine/replay.go
+@@ -213,6 +213,7 @@ var replayFields = entrymerge.Table[Task]{
+ 		{Name: "front", Get: func(t Task) any { return t.Front }, Set: func(dst *Task, src Task) { dst.Front = src.Front }},
+ 		{Name: "on_land", Get: func(t Task) any { return t.OnLand }, Set: func(dst *Task, src Task) { dst.OnLand = src.OnLand }},
+ 		{Name: "discussed", Get: func(t Task) any { return t.Discussed }, Set: func(dst *Task, src Task) { dst.Discussed = src.Discussed }},
++		{Name: "record_body_sha256", Get: func(t Task) any { return t.RecordBodySHA256 }, Set: func(dst *Task, src Task) { dst.RecordBodySHA256 = src.RecordBodySHA256 }},
+ 		{Name: "beam_color", Get: func(t Task) any { return t.BeamColor }, Set: func(dst *Task, src Task) { dst.BeamColor = src.BeamColor }},
+ 	},
+ }
+diff --git a/internal/boardengine/replay_test.go b/internal/boardengine/replay_test.go
+index 282d8dc6..6fe204d0 100644
+--- a/internal/boardengine/replay_test.go
++++ b/internal/boardengine/replay_test.go
+@@ -87,6 +87,10 @@ func asNotifyOnLand(task *Task) { task.NotifyOnLand = true }
+ 
+ func asDiscussed(task *Task) { task.Discussed = true }
+ 
++func withRecordStamp(stamp string) func(*Task) {
++	return func(task *Task) { task.RecordBodySHA256 = stamp }
++}
++
+ // wantOriginFile returns a row check asserting that origin's board directory holds want under name.
+ // An empty want asserts that the file is absent.
+ func wantOriginFile(name, want string) func(t *testing.T, dir string, got map[string]Task) {
+@@ -629,6 +633,19 @@ func TestFabricReplay(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name:        "RecordStampChangedWithTheBodyLandsOnOriginsEntry",
++			base:        []Task{replayEntry("a", asDiscussed, withBody("first"), withRecordStamp("stamp-1"))},
++			origin:      []Task{replayEntry("a", asDiscussed, withBody("first"), withRecordStamp("stamp-1"))},
++			parent:      []Task{replayEntry("a", asDiscussed, withBody("first"), withRecordStamp("stamp-1"))},
++			commit:      []Task{replayEntry("a", asDiscussed, withBody("second"), withRecordStamp("stamp-2"))},
++			wantEntries: map[string]string{"a": "a"},
++			check: func(t *testing.T, _ string, got map[string]Task) {
++				if got["a"].Body != "second" || got["a"].RecordBodySHA256 != "stamp-2" {
++					t.Errorf("a body, record_body_sha256 = %q, %q; want second, stamp-2", got["a"].Body, got["a"].RecordBodySHA256)
++				}
++			},
++		},
+ 		{
+ 			name:        "RaddleStoreDirectoryAndItsFiledEntriesReplayTogether",
+ 			base:        []Task{replayEntry("a")},
+diff --git a/internal/boardengine/runlock.go b/internal/boardengine/runlock.go
+index a06014ef..7cafbfff 100644
+--- a/internal/boardengine/runlock.go
++++ b/internal/boardengine/runlock.go
+@@ -208,8 +208,8 @@ func removedDoneSlugs(loaded, after []Task) map[string]bool {
+ // PullRequest is compared too, so a held entry takes no change to its pull-request override.
+ // Front and OnLand are compared as Kind is: they never change after the filing,
+ // and a run-held entry takes no change to them.
+-// RunSettings, Profile, NotifyOnLand, OwnerMachine and Discussed are never compared:
+-// a run settings, profile, landing-notice, owner or discussed-flag change is not a scope change,
++// RunSettings, Profile, NotifyOnLand, OwnerMachine, Discussed and RecordBodySHA256 are never compared:
++// a run settings, profile, landing-notice, owner, discussed-flag or record-stamp change is not a scope change,
+ // so a run-held entry takes it.
+ // Unknown is never compared either, since this binary cannot change a kept key.
+ func scopeChanged(before, now Task, removedDone map[string]bool) bool {
+diff --git a/internal/boardengine/siblings_test.go b/internal/boardengine/siblings_test.go
+index dbcf51df..185969f3 100644
+--- a/internal/boardengine/siblings_test.go
++++ b/internal/boardengine/siblings_test.go
+@@ -51,8 +51,8 @@ func TestWriteSiblings(t *testing.T) {
+ 
+ 	promote := func(selector string, deps ...string) func(b *boardengine.Board) ([]boardengine.Sibling, error) {
+ 		return func(b *boardengine.Board) ([]boardengine.Sibling, error) {
+-			_, siblings, err := b.PromoteTo(selector, "", deps)
+-			return siblings, err
++			result, err := b.PromoteTo(selector, "", deps)
++			return result.Siblings, err
+ 		}
+ 	}
+ 
+diff --git a/internal/boardengine/sketch_test.go b/internal/boardengine/sketch_test.go
+index 9aaccbc2..6cd24a39 100644
+--- a/internal/boardengine/sketch_test.go
++++ b/internal/boardengine/sketch_test.go
+@@ -5,6 +5,7 @@
+ package boardengine_test
+ 
+ import (
++	"encoding/json"
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
+@@ -202,6 +203,93 @@ func newPromotionBoard(t *testing.T) (*boardengine.Board, string) {
+ 	return boardengine.New(boardengine.Config{Path: path, Readme: "Home.md", DesignPrefix: "proposal-", Types: types, Labels: []boardengine.Label{{Name: "board"}}, SkipGit: true}), path
+ }
+ 
++// TestPromoteToRecordWarning asserts that PromoteTo succeeds with a warning.
++// The Sketch's body changed after its record was stored.
++// The warning names the slug and `--record-file`; it is empty when the body is unchanged or the entry carries no stamp.
++func TestPromoteToRecordWarning(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// clearStamp removes record_body_sha256 from board.json before the body edit.
++		clearStamp bool
++		editBody   bool
++		wantWarned bool
++		// notSketch files the entry as a note with a type label other than sketch.
++		notSketch bool
++	}{
++		{"BodyEditedAfterTheStoreWarns", false, true, true, false},
++		{"BodyUnchangedSinceTheStoreIsSilent", false, false, false, false},
++		{"EditedBodyOfAnUnstampedEntryIsSilent", true, true, false, false},
++		{"EditedBodyOfAStampedNonSketchIsSilent", false, true, false, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			b, boardPath := newPromotionBoard(t)
++			labels := []string{boardengine.SketchType}
++			if tt.notSketch {
++				labels = bugLabels
++			}
++			mustUpsertEntry(t, b, map[string]any{"slug": "idea", "title": "Idea", "kind": "note", "labels": labels, "body": "first body"})
++			if err := b.StoreDecisionRecord("idea", []byte("record\n")); err != nil {
++				t.Fatalf("StoreDecisionRecord() error = %v; want nil", err)
++			}
++			if tt.clearStamp {
++				clearRecordStamps(t, filepath.Join(boardPath, "board.json"))
++			}
++			if tt.editBody {
++				mustUpsertEntry(t, b, map[string]any{"slug": "idea", "body": "second body"})
++			}
++
++			result, err := b.PromoteTo("idea", "", nil)
++
++			if err != nil {
++				t.Fatalf("PromoteTo() error = %v; want nil", err)
++			}
++			if result.Task.Kind != boardengine.KindTask {
++				t.Errorf("PromoteTo() task kind = %q; want task", result.Task.Kind)
++			}
++			if !tt.wantWarned {
++				if result.RecordWarning != "" {
++					t.Errorf("PromoteTo() RecordWarning = %q; want empty", result.RecordWarning)
++				}
++				return
++			}
++			for _, want := range []string{"--record-file", "idea"} {
++				if !strings.Contains(result.RecordWarning, want) {
++					t.Errorf("PromoteTo() RecordWarning = %q; want it to contain %q", result.RecordWarning, want)
++				}
++			}
++		})
++	}
++}
++
++// clearRecordStamps removes the record_body_sha256 key from every entry of the board.json file at path.
++func clearRecordStamps(t *testing.T, path string) {
++	t.Helper()
++	raw, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatalf("ReadFile(board.json) = %v; want nil", err)
++	}
++	var board map[string]any
++	if err := json.Unmarshal(raw, &board); err != nil {
++		t.Fatalf("Unmarshal(board.json) = %v; want nil", err)
++	}
++	entries, _ := board["entries"].([]any)
++	for _, entry := range entries {
++		delete(entry.(map[string]any), "record_body_sha256")
++	}
++	cleared, err := json.MarshalIndent(board, "", "  ")
++	if err != nil {
++		t.Fatalf("MarshalIndent(board) = %v; want nil", err)
++	}
++	if err := os.WriteFile(path, cleared, 0o644); err != nil {
++		t.Fatalf("WriteFile(board.json) = %v; want nil", err)
++	}
++}
++
+ // TestDiscussedPromotion asserts that a Sketch becomes a task only through a promotion with recipe raddle.
+ // So does a discussed note that a note write stripped of its label.
+ // A promotion with no recipe gives the entry the raddle recipe and releases it in the same write.
+@@ -245,7 +333,7 @@ func TestDiscussedPromotion(t *testing.T) {
+ 	}
+ 	promote := func(selector any, recipe string) func(b *boardengine.Board) error {
+ 		return func(b *boardengine.Board) error {
+-			_, _, err := b.PromoteTo(selector, recipe, nil)
++			_, err := b.PromoteTo(selector, recipe, nil)
+ 			return err
+ 		}
+ 	}
+@@ -253,7 +341,7 @@ func TestDiscussedPromotion(t *testing.T) {
+ 		return promote("idea", recipe)
+ 	}
+ 	promoteWaitingOnDep := func(b *boardengine.Board) error {
+-		_, _, err := b.PromoteTo("idea", "", []string{"dep"})
++		_, err := b.PromoteTo("idea", "", []string{"dep"})
+ 		return err
+ 	}
+ 	wayForward := `lym board promote '{"slug":"idea"}'`
+@@ -305,7 +393,7 @@ func TestDiscussedPromotion(t *testing.T) {
+ 				if err := promoteWaitingOnDep(b); err != nil {
+ 					return err
+ 				}
+-				_, _, err := b.PromoteTo("idea", "", []string{})
++				_, err := b.PromoteTo("idea", "", []string{})
+ 				return err
+ 			},
+ 			wantErr:  []string{`"idea" is a task already`, "lym board set-deps"},
+diff --git a/internal/boardengine/slugrule_test.go b/internal/boardengine/slugrule_test.go
+index 5ef71826..ebbbe1b1 100644
+--- a/internal/boardengine/slugrule_test.go
++++ b/internal/boardengine/slugrule_test.go
+@@ -223,7 +223,7 @@ func TestSlugRule_RaddleStore(t *testing.T) {
+ 			if err := discussedNote(b, "part-b", []string{boardengine.SketchType}); err != nil {
+ 				return err
+ 			}
+-			_, _, err := b.PromoteTo("part-b", "raddle", nil)
++			_, err := b.PromoteTo("part-b", "raddle", nil)
+ 			return err
+ 		}, []string{`"part-b"`, `Sketch "plan-me"`, "lym board rename"}},
+ 		{"NilSeamAndAStoreHit", nil, newTask("part-a"), []string{`"part-a"`, `Sketch "plan-me"`}},
+@@ -252,7 +252,7 @@ func TestSlugRule_RaddleStore(t *testing.T) {
+ 			t.Fatal(err)
+ 		}
+ 		writeRaddleStore(t, boardPath, "plan-me", own)
+-		if _, _, err := b.PromoteTo("plan-me", "raddle", nil); err != nil {
++		if _, err := b.PromoteTo("plan-me", "raddle", nil); err != nil {
+ 			t.Errorf("PromoteTo() error = %v; want nil for the Sketch whose created stamp the store records", err)
+ 		}
+ 	})
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index 9d02200b..9f8c36a7 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -495,6 +495,7 @@ type MergeStatusUpdate struct {
+ // "discussed" is accepted only as the entry's stored value too.
+ // "beam_color" is output only: a beam carries it in what is read back, the owner setter records it,
+ // and an upsert naming it is refused as an unknown field.
++// "record_body_sha256" is output only in the same way: a write that stores the entry's decision record stamps it.
+ func UpsertPayloadKeys() (required, optional []string) {
+ 	return []string{"slug"}, []string{"title", "brief", "body", "depends_on", "isolated", "status", "kind", "labels", "recipe", "priority", "short_name", "issues", "created", "revised", "run_settings", "profile", "pull_request", "notify_on_land", "owner_machine", "project", "order", "beam", "front", "on_land", "discussed"}
+ }
+@@ -1177,7 +1178,7 @@ func (s *Store) MergeTasks(removeSlugs []string, upsert map[string]any, setStatu
+ 		return Task{}, err
+ 	}
+ 
+-	// A removed entry the merge upserts again keeps its discussed flag, as it keeps its record file.
++	// A removed entry the merge upserts again keeps its discussed flag and record stamp, as it keeps its record file.
+ 	removedEntry, upsertedAgain := s.GetTask(slugStr)
+ 	keepDiscussed := upsertedAgain && removedEntry.Discussed && slices.Contains(removeSlugs, slugStr)
+ 
+@@ -1192,7 +1193,9 @@ func (s *Store) MergeTasks(removeSlugs []string, upsert map[string]any, setStatu
+ 	if keepDiscussed {
+ 		i, _ := s.index(upserted.Slug)
+ 		s.tasks[i].Discussed = true
++		s.tasks[i].RecordBodySHA256 = removedEntry.RecordBodySHA256
+ 		upserted.Discussed = true
++		upserted.RecordBodySHA256 = removedEntry.RecordBodySHA256
+ 	}
+ 	s.mergeOrders(removeSlugs, upserted.Slug)
+ 
+diff --git a/internal/boardengine/store_test.go b/internal/boardengine/store_test.go
+index 1e2b2a54..8a2f6655 100644
+--- a/internal/boardengine/store_test.go
++++ b/internal/boardengine/store_test.go
+@@ -292,6 +292,17 @@ func TestUpsertFieldAllowlist(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("upsert_record_body_sha256_key_errors", func(t *testing.T) {
++		s := boardengine.NewStore("")
++		_, err := s.UpsertTask(map[string]any{
++			"slug":               "task1",
++			"record_body_sha256": "abc",
++		})
++		if err == nil || !stringContains(err.Error(), `unknown field: "record_body_sha256"`) {
++			t.Errorf("expected unknown-field refusal naming record_body_sha256, got %v", err)
++		}
++	})
++
+ 	t.Run("upsert_status_field_allowed_and_persisted", func(t *testing.T) {
+ 		s := boardengine.NewStore("")
+ 		task, err := s.UpsertTask(map[string]any{
+diff --git a/internal/boardengine/task.go b/internal/boardengine/task.go
+index e4536dec..665810a7 100644
+--- a/internal/boardengine/task.go
++++ b/internal/boardengine/task.go
+@@ -69,6 +69,10 @@ type Task struct {
+ 	// lym stored its decision record as decision-<slug>.md.
+ 	// Only StoreDecisionRecord sets it.
+ 	Discussed bool `json:"discussed,omitempty"`
++	// RecordBodySHA256 is the hex sha256 of the body the entry had when a write last stored its decision record;
++	// empty when no write has stamped it.
++	// Only a write that stores the record sets it, and a payload naming it is refused as an unknown field.
++	RecordBodySHA256 string `json:"record_body_sha256,omitempty"`
+ 
+ 	// Unknown holds the decoded entry's keys this binary does not know, each with its raw JSON value, nil when there are none.
+ 	// Encoding writes them back after the known fields in key order, and no step decodes a value into a Go type.
+diff --git a/internal/discussionparser/doc.go b/internal/discussionparser/doc.go
+index 79c658d0..5c72405d 100644
+--- a/internal/discussionparser/doc.go
++++ b/internal/discussionparser/doc.go
+@@ -2,6 +2,10 @@
+ // the decision record's required H2 sections, the support log's existence and the relevant list's format.
+ // It also holds the two write paths into the record.
+ //
++// CheckRecordSections runs Validate's record checks on a record's bytes alone, with no support log:
++// the required H2 sections and the `## PATTERN changes` bullets.
++// The board's `upsert --record-file` runs it, with CheckDecisionIDs, on a record it stores apart from any discussion.
++//
+ // CheckRelevant checks a present relevant list, the Discussion-Write lead's list of the code it read.
+ // It runs apart from the decision record's check.
+ //
+diff --git a/internal/discussionparser/validate.go b/internal/discussionparser/validate.go
+index c6a083ec..4e786150 100644
+--- a/internal/discussionparser/validate.go
++++ b/internal/discussionparser/validate.go
+@@ -1,5 +1,6 @@
+ // validate.go implements Validate, which checks that a discussion's support log and decision record exist.
+ // It also checks that the decision record carries every required H2 section.
++// CheckRecordSections runs that check on a record's bytes alone.
+ 
+ package discussionparser
+ 
+@@ -73,22 +74,32 @@ func Validate(decisionRecordPath, supportLogPath string) ([]Finding, error) {
+ 	}
+ 
+ 	var findings []Finding
+-	for _, missing := range missingSections(string(data), requiredDiscussionSections) {
++	for _, f := range CheckRecordSections(data) {
++		f.Path = decisionRecordPath
++		findings = append(findings, f)
++	}
++	return findings, nil
++}
++
++// CheckRecordSections checks the sections of a decision record held as bytes, with no support log beside it.
++// A caller that keeps a record apart from its discussion directory, such as the board's stored record, uses it.
++// Each missing required H2 heading is one Finding.
++// The optional `## PATTERN changes` section, when present, yields one Finding per malformed bullet.
++// It yields another per `adds` or `changes` bullet whose rule text is longer than a PATTERN.md entry's rule text may be.
++// A record without that section passes it.
++// Section order is not checked, and neither is an extra H2.
++// The findings carry an empty Path, which the caller stamps.
++func CheckRecordSections(record []byte) []Finding {
++	var findings []Finding
++	for _, missing := range missingSections(string(record), requiredDiscussionSections) {
+ 		findings = append(findings, Finding{
+ 			Check:  checkSectionMissing,
+-			Path:   decisionRecordPath,
+ 			Detail: "decision record is missing required section " + missing,
+ 		})
+ 	}
+-
+-	changes, patternFindings := ParsePatternChanges(data)
+-	patternFindings = append(patternFindings, patternOverCapFindings(changes)...)
+-	for _, f := range patternFindings {
+-		f.Path = decisionRecordPath
+-		findings = append(findings, f)
+-	}
+-
+-	return findings, nil
++	changes, patternFindings := ParsePatternChanges(record)
++	findings = append(findings, patternFindings...)
++	return append(findings, patternOverCapFindings(changes)...)
+ }
+ 
+ // missingSections returns every heading in required that no line of content matches outside a fenced block.
+diff --git a/internal/discussionparser/validate_test.go b/internal/discussionparser/validate_test.go
+index 4eebecf9..a63f6f3a 100644
+--- a/internal/discussionparser/validate_test.go
++++ b/internal/discussionparser/validate_test.go
+@@ -417,6 +417,49 @@ func TestValidate_MissingHeadings(t *testing.T) {
+ 	}
+ }
+ 
++// TestCheckRecordSections asserts the bytes-only check reports each defect of a decision record with an empty Path.
++// Missing required sections come first, in required order, then the `## PATTERN changes` findings.
++func TestCheckRecordSections(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	skipped := []string{requiredDiscussionSections[1], requiredDiscussionSections[4]}
++	// The bullet sits after the heading and a blank line, below every required section of four lines each.
++	bulletLine := 4*len(requiredDiscussionSections) + 3
++
++	tests := []struct {
++		name   string
++		record string
++		want   []Finding
++	}{
++		{name: "EverySectionPresent", record: allSectionsContent()},
++		{
++			name:   "TwoSectionsMissing",
++			record: sectionsWithout(skipped...),
++			want: []Finding{
++				{Check: checkSectionMissing, Detail: "decision record is missing required section " + skipped[0]},
++				{Check: checkSectionMissing, Detail: "decision record is missing required section " + skipped[1]},
++			},
++		},
++		{
++			name:   "MalformedPatternChangeBullet",
++			record: allSectionsContent() + patternChangesSection("- `PATTERN-a` — renames: x"),
++			want: []Finding{{
++				Check:  checkPatternChangeMalformed,
++				Detail: fmt.Sprintf("line %d: `PATTERN-a` has unknown action \"renames\"; want adds, changes or removes", bulletLine),
++			}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := CheckRecordSections([]byte(tt.record)); !slices.Equal(got, tt.want) {
++				t.Errorf("CheckRecordSections() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
++
+ func TestValidate_DecisionRecordAbsent(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/fabricengine/add.go b/internal/fabricengine/add.go
+index aac1b8bb..0940b015 100644
+--- a/internal/fabricengine/add.go
++++ b/internal/fabricengine/add.go
+@@ -70,6 +70,11 @@ type AddOptions struct {
+ 	Hold func() (release func(), err error)
+ }
+ 
++// probesOrigins reports whether an add under these options consults origin: neither SkipGit nor SkipPush is set.
++func (o AddOptions) probesOrigins() bool {
++	return !o.SkipGit && !o.SkipPush
++}
++
+ // syncOptions returns the options the records helpers take.
+ func (o AddOptions) syncOptions() SyncOptions {
+ 	return SyncOptions{SkipGit: o.SkipGit, SkipPush: o.SkipPush, BackoffSleep: o.BackoffSleep}
+@@ -238,7 +243,7 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 	// so the add waits on one round of network, and the hold covers only what is left of it when the probes are waited for.
+ 	// The answers are read only once the pre-flight refusals have passed,
+ 	// so a refusal keeps its precedence over a probe's error.
+-	probeOrigins := !opts.SkipPush && !opts.SkipGit
++	probeOrigins := opts.probesOrigins()
+ 	// A local warp branch being adopted is the pair's own, so origin's copy of it is not consulted.
+ 	// AdoptOnly is the exception: its probe only learns whether origin holds the branch,
+ 	// and the adopted branch is never fetched or replaced from origin.
+@@ -257,13 +262,11 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 			warpTip, warpTipErr = remoteHeadTip(l.WorktreePath(), warpBranch)
+ 		}()
+ 	}
+-	if probeOrigins {
+-		probes.Add(1)
+-		go func() {
+-			defer probes.Done()
+-			weftProbe, weftProbeErr = probeWeftLeftover(l, slug, weftBranch, weftBranchAlreadyExists)
+-		}()
+-	}
++	probes.Add(1)
++	go func() {
++		defer probes.Done()
++		weftProbe, weftProbeErr = weftLiveness(l, slug, weftBranch, weftBranchAlreadyExists, opts)
++	}()
+ 	// No git call a probe started outlives Add.
+ 	defer probes.Wait()
+ 
+@@ -429,13 +432,10 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 	// and an archived leftover is replaced at step 11, so the caller's push of the weft branch is not rejected.
+ 	// The warp branch's origin tip is judged once the weft answer says whether the pair is live.
+ 	probes.Wait()
+-	weftOld := weftLeftover{live: weftBranchAlreadyExists}
+-	if probeOrigins {
+-		if weftProbeErr != nil {
+-			return AddResult{}, weftProbeErr
+-		}
+-		weftOld = weftProbe
++	if weftProbeErr != nil {
++		return AddResult{}, weftProbeErr
+ 	}
++	weftOld := weftProbe
+ 	var warpAdoptTip string
+ 	var warpPush addWarpBranch
+ 	// warpAbsentOnOrigin is whether the warp probe ran and read the branch absent on origin.
+diff --git a/internal/fabricengine/add_remoteleftover_integration_test.go b/internal/fabricengine/add_remoteleftover_integration_test.go
+index 3eed584a..8f2c5772 100644
+--- a/internal/fabricengine/add_remoteleftover_integration_test.go
++++ b/internal/fabricengine/add_remoteleftover_integration_test.go
+@@ -488,3 +488,98 @@ func TestAdd_DropsStaleTrackingRef(t *testing.T) {
+ 		requireNothingCreated(t, h, slug)
+ 	})
+ }
++
++// TestRecordsBranchLive covers the weft liveness test Add adopts a pair's weft branch by, asked alone.
++// A local branch is live with no origin read.
++// An origin-only branch is live unless an archive tag covers its tip.
++// A skipped origin read reads as not live, and a failed one as an error.
++func TestRecordsBranchLive(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const slug = "weft-live"
++	weftBranch := fabricengine.RecordsBranchName(slug)
++
++	for _, tc := range []struct {
++		name    string
++		build   func(t *testing.T) *hubforge.Hub
++		opts    fabricengine.AddOptions
++		want    bool
++		wantErr bool
++	}{
++		{
++			name: "local weft branch is live",
++			build: func(t *testing.T) *hubforge.Hub {
++				h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++				hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
++				return h
++			},
++			want: true,
++		},
++		{
++			name: "local weft branch is live with an unreadable origin",
++			build: func(t *testing.T) *hubforge.Hub {
++				h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++				hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
++				mustGit(h.PrimeRecords(), "remote", "set-url", "origin", filepath.Join(t.TempDir(), "missing.git"))
++				return h
++			},
++			want: true,
++		},
++		{
++			name: "origin-only weft branch with no archive tag is live",
++			build: func(t *testing.T) *hubforge.Hub {
++				h := removedPair(t, slug)
++				pushCommitToOrigin(t, h.RecordsBare, weftBranch)
++				return h
++			},
++			want: true,
++		},
++		{
++			name: "origin-only weft branch covered by an archive tag is not live",
++			build: func(t *testing.T) *hubforge.Hub {
++				h := removedPair(t, slug)
++				requireArchiveCovers(t, h.RecordsBare, slug, gitkit.RevParse(t, h.RecordsBare, weftBranch))
++				return h
++			},
++		},
++		{
++			name: "no weft branch locally or on origin is not live",
++			build: func(t *testing.T) *hubforge.Hub {
++				return hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			},
++		},
++		{
++			name: "origin-only weft branch under SkipPush is not live",
++			build: func(t *testing.T) *hubforge.Hub {
++				h := removedPair(t, slug)
++				pushCommitToOrigin(t, h.RecordsBare, weftBranch)
++				return h
++			},
++			opts: fabricengine.AddOptions{SkipPush: true},
++		},
++		{
++			name: "no local branch and an unreadable origin is an error",
++			build: func(t *testing.T) *hubforge.Hub {
++				h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++				mustGit(h.PrimeRecords(), "remote", "set-url", "origin", filepath.Join(t.TempDir(), "missing.git"))
++				return h
++			},
++			wantErr: true,
++		},
++	} {
++		t.Run(tc.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := tc.build(t)
++
++			got, err := h.Topology.RecordsBranchLive(h.Location, slug, tc.opts)
++			if (err != nil) != tc.wantErr {
++				t.Fatalf("RecordsBranchLive(%q) error = %v; want error: %v", slug, err, tc.wantErr)
++			}
++			if got != tc.want {
++				t.Errorf("RecordsBranchLive(%q) = %v; want %v", slug, got, tc.want)
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 6f87b4f9..b33732bd 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -868,6 +868,12 @@
+ // The coalesced push logs a Warn and leaves the commits unpushed once the attempts run out.
+ // `SkipPush`/`SkipGit` skip every probe and the replacement: the pair is then live only by a local weft branch,
+ // and the warp branch forks from `HEAD`.
++// `Topology.RecordsBranchLive` answers that liveness test alone.
++// It serves a caller that must not act while a start would adopt the weft.
++// `Add` reaches the same answer through the same probe, so the two cannot disagree.
++// A local weft branch decides with no origin read.
++// Without one, origin is probed only when `Add` would probe it.
++// Under `SkipGit` or `SkipPush` the branch then reads not live.
+ //
+ // **Weft-branch resolution.**
+ // `resolveWeftBranch` (weftbranch.go) is the one place a verb decides where a pair's weft branch comes from.
+diff --git a/internal/fabricengine/remoteleftover.go b/internal/fabricengine/remoteleftover.go
+index 29f8f89b..e76db30e 100644
+--- a/internal/fabricengine/remoteleftover.go
++++ b/internal/fabricengine/remoteleftover.go
+@@ -1,4 +1,5 @@
+ // remoteleftover.go holds the read-only probes that Add runs against both origins before its first mutation.
++// It also holds RecordsBranchLive, which answers Add's weft liveness test alone for a caller that creates no pair.
+ // A branch on the weft or warp origin either makes the pair live or is the leftover of a removed pair.
+ // A live pair's branch is adopted;
+ // a leftover is proven replaceable or refused before the first mutation,
+@@ -72,6 +73,32 @@ type weftLeftover struct {
+ 	originAbsent  bool
+ }
+ 
++// RecordsBranchLive reports whether slug's weft branch is live by the test Add adopts a pair's weft branch by.
++// The branch is live when it exists locally.
++// It is also live when it exists on origin with no archive/<slug>/* tag whose target equals or descends from its tip.
++// A local branch decides alone, with no origin read.
++// Without one, origin is probed read-only only when Add would probe it:
++// under opts.SkipGit or opts.SkipPush nothing is probed and the branch reads not live.
++// A failed origin read is returned as the error.
++func (t *Topology) RecordsBranchLive(l *lymcwd.Location, slug string, opts AddOptions) (bool, error) {
++	weftBranch := RecordsBranchName(t.cfg.BranchPrefix + slug)
++	if weftBranchExists(l, weftBranch) {
++		return true, nil
++	}
++	answer, err := weftLiveness(l, slug, weftBranch, false, opts)
++	return answer.live, err
++}
++
++// weftLiveness answers whether weftBranch is live as Add judges it, with localExists the local branch check's answer.
++// When opts consult no origin, the local branch alone decides and nothing is probed.
++// Otherwise it returns probeWeftLeftover's answer, its fast-forward target and replaceable leftover included.
++func weftLiveness(l *lymcwd.Location, slug, weftBranch string, localExists bool, opts AddOptions) (weftLeftover, error) {
++	if !opts.probesOrigins() {
++		return weftLeftover{live: localExists}, nil
++	}
++	return probeWeftLeftover(l, slug, weftBranch, localExists)
++}
++
+ // probeWeftLeftover inspects the weft origin for weftBranch, run in the weft repo against originRemoteName.
+ // With localExists the pair is live:
+ // an origin tip that equals or is an ancestor of the local tip needs nothing,
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index b9030eca..10b2fd79 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -110,6 +110,18 @@ lym board get '{"slug":"my-task"}' --body > body.md
+ lym board upsert '{"slug":"my-task"}' --body-file body.md
+ ```
+ 
++Replace an existing entry's stored decision record in the same write as its payload with `--record-file`:
++
++```
++lym board upsert '{"slug":"my-sketch","body":"New body."}' --record-file record.md
++```
++
++The file must pass the decision record's format checks, and it is read from a path only, never from stdin.
++The upsert is refused, with nothing written and a way forward named, for a slug the board does not hold,
++an entry with no stored record, a done entry, an entry a run holds,
++an entry whose task worktree stands in the hub, and an entry whose records branch is live or cannot be probed.
++A run's task session cannot use it: a run changes its own record with `lym loom decision replace`.
++
+ Promote a note to a task:
+ 
+ ```
+@@ -119,6 +131,8 @@ lym board promote '{"slug":"my-note"}'
+ Promoting a Sketch, by slug or by its handle such as `lym board promote S3`, makes it a task with recipe `raddle`.
+ That task splits the Sketch's decision record into tasks or a project.
+ A Sketch takes no other recipe.
++When the Sketch's body changed after its record was stored, the promote still lands and adds a `warning` key to its output.
++The warning names `upsert --record-file`, which brings the record up to the body before the run starts.
+ Give a Sketch's dependencies in the promotion, because it releases the task and the parent's dobby can start it before a later `set-deps` lands:
+ 
+ ```
