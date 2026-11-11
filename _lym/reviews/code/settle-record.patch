@@ -1,0 +1,41 @@
+diff --git a/internal/orchengine/config_test.go b/internal/orchengine/config_test.go
+index 718584ee..337e0c70 100644
+--- a/internal/orchengine/config_test.go
++++ b/internal/orchengine/config_test.go
+@@ -36,8 +36,8 @@ func TestLoadConfig_TemplateResolvesWithNoFile(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("unexpected error: %v", err)
+ 	}
+-	if cfg.Model != "" || cfg.Effort != "" {
+-		t.Errorf("Model/Effort = %q/%q, want empty", cfg.Model, cfg.Effort)
++	if cfg.Model != "opus" || cfg.Effort != "medium" {
++		t.Errorf("Model/Effort = %q/%q, want opus/medium", cfg.Model, cfg.Effort)
+ 	}
+ 	if cfg.PermissionMode != "bypass" {
+ 		t.Errorf("PermissionMode = %q, want bypass", cfg.PermissionMode)
+diff --git a/internal/orchengine/template.go b/internal/orchengine/template.go
+index 76979cec..1cb59fe7 100644
+--- a/internal/orchengine/template.go
++++ b/internal/orchengine/template.go
+@@ -10,7 +10,8 @@ import _ "embed"
+ var configTemplate string
+ 
+ // ConfigTemplate returns the default YAML template for orch configuration.
+-// Every key is a plain literal; model and effort are empty, meaning the provider default.
++// Every key is a plain literal.
++// Model and effort are set, so the orch session never falls back to the provider default of the machine it starts on.
+ func ConfigTemplate() string {
+ 	return configTemplate
+ }
+diff --git a/internal/orchengine/template.yaml b/internal/orchengine/template.yaml
+index 968a15c6..f2b2adbf 100644
+--- a/internal/orchengine/template.yaml
++++ b/internal/orchengine/template.yaml
+@@ -1,5 +1,5 @@
+-model: ""  # model alias for the orchestrator session; empty uses the provider default
+-effort: ""  # effort level, in shuttle's engine vocabulary; empty uses the provider default
++model: opus  # model alias for the orchestrator session, so every machine starts the orch on the same model; an explicit empty value uses the provider default
++effort: medium  # effort level, in shuttle's engine vocabulary; an explicit empty value uses the provider default
+ cycle_mode: compact  # how the watcher cycles the session: compact keeps the session id and Remote Control link and writes no handoff file; clear runs the handoff, /clear and resume cycle
+ permission_mode: bypass  # permission mode of the orch session; bypass is the only accepted value, because the orch never prompts per action
+ soft_threshold_tokens: 150000  # context-token count at which the watcher may cycle at a natural break, below threshold_tokens; a value at or above threshold_tokens never fires; non-positive is floored back to 150000
