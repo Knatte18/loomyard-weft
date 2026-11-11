@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-11T16:56:51Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/gate-scope-coverage/_lym/landing/summary.md",
+      "at": "2026-11-11T17:21:27Z",
+      "started_at": "2026-11-11T16:56:55Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-11T17:08:47.041509738Z",
+          "end": "2026-11-11T17:08:47.07398456Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-11T17:08:47.276539615Z",
+          "end": "2026-11-11T17:20:32.590583079Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-11T17:20:32.675809536Z",
+          "end": "2026-11-11T17:20:32.953245846Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-11T17:20:33.029206174Z",
+          "end": "2026-11-11T17:20:33.030807108Z"
+        }
+      ]
     }
   ],
   "product": {
