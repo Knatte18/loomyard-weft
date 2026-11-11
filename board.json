@@ -1051,6 +1051,25 @@
       "created": "2026-11-11T06:22:47Z",
       "revised": "2026-11-11T07:31:25Z",
       "profile": "solid"
+    },
+    {
+      "id": 1298,
+      "handle": "B1",
+      "slug": "load-turn-retry-cap",
+      "title": "A load turn retries server_error without a cap, and loom status hides the idle time of a stuck step",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (issue #102, left out of loop-exit-not-recorded)\n\nA load turn that ends on an API `server_error` makes shuttle wait and retype (`load turn ended on an API error; the prompt waits until the load runs through`), with `apiErrors` rising each time and no cap.\nIn the reported run it rose 3, 4, 5 before the loop ended with no envelope, and the run history showed hours of idle time around the stuck step that no status line surfaced.\nThe run `loop-exit-not-recorded` made the loop record its exit status but left these two asks out.\n\n## Idea\n\n- Bound the load-turn retry on `server_error` and name the cap in the halt note, so a halt reads as an API outage rather than only `loop-exited`.\n- Show in `lym loom status` the idle time between a stuck step and the next step.",
+      "created": "2026-11-11T08:09:18Z",
+      "revised": "2026-11-11T08:09:18Z"
     }
   ],
   "prime_owner": "neve",
