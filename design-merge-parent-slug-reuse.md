@@ -1,6 +1,6 @@
 # beam merge-parent reuses the slug of a completed merge-in run
 
-`merge-parent-slug-reuse` · Task · bug, workspaces, dobby · draft
+`merge-parent-slug-reuse` · Task · bug, workspaces, dobby
 
 Depends on: [`creel-notice-hygiene`](design-creel-notice-hygiene.md)
 
