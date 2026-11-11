@@ -1,6 +1,6 @@
 # One land notice: fold the beam-PR landing notice into notify_on_land
 
-`one-land-notice` · Task · enhancement, dobby, batten, workspaces · running · Drift-Verify
+`one-land-notice` · Task · enhancement, dobby, batten, workspaces · running · Code-Bouncer
 
 Imported from [issue #93](https://github.com/Knatte18/loomyard/issues/93).
 
