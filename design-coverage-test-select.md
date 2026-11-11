@@ -1,6 +1,6 @@
 # Select an importing package's tests from its coverage map, or name the miss that runs it whole
 
-`coverage-test-select` · Task · feature, gate, testkit, darn · running · Preflight
+`coverage-test-select` · Task · feature, gate, testkit, darn · running · Drift-Baseline
 
 Decision record: [Sketch](decision-coverage-test-select.md)
 
