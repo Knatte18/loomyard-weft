@@ -15,8 +15,15 @@ So a fixed weight alone is not enough: a Max account can hit its five-hour windo
 
 - The weight sets the long-run share, from each account's plan.
 - The pick also reads each account's current headroom in every window it has, and passes over an account that is near or at a limit; an account with no five-hour window is never judged by one.
-- Lym today learns of a limit only when a pane shows the usage-limit message (`internal/shuttleengine/claudeengine/usagelimit.go`); reading an account's headroom before a pick is new, and the source is open: Claude Code's status line input, `/usage`, or lym's own transcript totals per config directory against a configured budget. Check what Claude Code exposes before choosing.
+- The pick is more than a weight: the operator says an account's usage for the session window and the week can be read, so the pick reads both (operator, 2026-11-11).
+- Lym today learns of a limit only when a pane shows the usage-limit message (`internal/shuttleengine/claudeengine/usagelimit.go`); reading an account's headroom before a pick is new, and the source is open: Claude Code's status line input, `/usage`, or lym's own transcript totals per config directory against a configured budget. Check what Claude Code exposes before choosing, and which of these gives the session and week figures.
 - This was weighed against offloading to Codex (`codex-engine`): the two-account route keeps every agent on Claude's review quality and is far smaller to build, so it is the first route to quota relief (orch, 2026-11-03).
+
+## Testing needs a second account (operator, 2026-11-11)
+
+A test of the pick and the headroom reads needs a real second Claude account on the machine, which the operator provides.
+Without it the Discussion and the build can be tested only against a fake config directory and a fake usage source.
+The task that builds this states in its body how the second account is wired for the test.
 
 ## Seen (orch, 2026-11-02)
 
