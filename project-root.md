@@ -12,21 +12,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | motif | Discussion-Burler-Review | neve | 9d<br>24m | claude, shuttle, config |
+| T2 | **Tune the darn writer prompt for an Opus advisor on one landed darn task** | [`advisor-model-trial`](design-advisor-model-trial.md) | darn · docs | Worktree-Create | neve | 12h<br>0m | darn, loom, shuttle, claude |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Tune the darn writer prompt for an Opus advisor on one landed darn task** | [`advisor-model-trial`](design-advisor-model-trial.md) | darn · docs |  | 12h<br>0m | darn, loom, shuttle, claude |
+_None._
 
 ## Notes (17)
 
