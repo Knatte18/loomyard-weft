@@ -1,6 +1,6 @@
 # Optional extra review of the Discussion record by the parent orch or a named agent
 
-`parent-reviews-decision-record` · Task · feature, loom, orch, config, burler · running · Discussion-Bouncer
+`parent-reviews-decision-record` · Note · sketch, loom, orch, config, burler
 
 Decision record: [Sketch](decision-parent-reviews-decision-record.md)
 
