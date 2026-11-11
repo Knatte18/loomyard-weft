@@ -1,6 +1,6 @@
 # Adopt takes over without hanging behind a pause, failing on lym files or replaying stale stops
 
-`adopt-takeover-fixes` · Task · bug, fabric, tender · running · Describe
+`adopt-takeover-fixes` · Task · bug, fabric, tender · running · PR-Review
 
 Fix the three adopt faults below in one run; each note's Idea is the starting point.
 
