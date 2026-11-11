@@ -41,5 +41,17 @@ The fix is checked against unit cases only: the original rollout and a live Code
 ## Built since (tidy, 2026-11-08)
 
 Task `codex-sandbox-mode` (`539525a0`) made part 2's sandbox a machine setting: `codex.yaml` has a `sandbox_mode` key, `workspace-write` by default or `danger-full-access`, set with `lym config codex --layer machine`.
-A `danger-full-access` launch carries no sandbox flags, no network setting and no writable roots, and `OpenLaunch` does the same, so part 2 tests the default mode and, on a machine whose bubblewrap cannot start, the other.
-The change was checked by unit tests only: a real Codex session with `danger-full-access` on a machine where bwrap fails is not yet run.
+A `danger-full-access` launch carries no sandbox flags, no network setting and no writable roots, and `OpenLaunch` does the same.
+The change was checked by unit tests only.
+
+## Built since (tidy, 2026-11-11)
+
+Commit `9874c966` (task `codex-bubblewrap-sandbox`) added a third `sandbox_mode` value, `auto`, now the template default, so part 2 no longer needs the mode set by hand on a machine whose bubblewrap cannot start.
+A launch under `auto` or `workspace-write` first probes the sandbox (`codex sandbox -c sandbox_mode="workspace-write" -- true` under the lym Codex home in the worktree):
+
+- Under `auto`, a sandbox that starts runs `workspace-write`; one that refuses (OSL-1046's AppArmor-restricted user namespaces) runs `danger-full-access` with a warning naming bubblewrap's output.
+- Under an explicit `workspace-write`, a sandbox that refuses refuses the launch, naming the cause and `lym config codex --layer machine --set sandbox_mode=auto`; the seat reads as not started, not stopped.
+- `danger-full-access` runs no probe.
+
+Both `Prepare` and `OpenLaunch` settle the mode through `launchSandboxMode` in `codexengine/sandbox.go`; `Prepare` refuses before `prompt.md` is written.
+Part 2 therefore tests the probe, its three outcomes and the refusal on a real machine where bwrap fails (OSL-1046) and on one where it works (Neve), not only the fixed `workspace-write` flags.
