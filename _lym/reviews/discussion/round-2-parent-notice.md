@@ -1,0 +1,1 @@
+Review segment of task `gate-scope-by-coverage-map` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/gate-scope-by-coverage-map/_lym/reviews/discussion/round-2-escalation.md` with a one-shot fork.
