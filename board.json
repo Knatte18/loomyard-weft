@@ -615,7 +615,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #115](https://github.com/Knatte18/loomyard/issues/115).\n\n## Seen\n\n`lym beam merge-parent \u003cbeam\u003e` names its merge task `\u003cbeam\u003e-merge-in` every time.\nA beam that already merged its parent once, through a completed and torn-down `\u003cbeam\u003e-merge-in` run, gets a second task with the same slug.\nDobby then refuses to start it: `\"\u003cbeam\u003e-merge-in\" has already completed; to run it again, run \"lym batten cleanup --apply\" from the prime ... or give the new task a different slug`.\n\n## Workaround\n\nThe beam orch renamed the new task to `\u003cbeam\u003e-merge-in-2` with `lym board rename`, and dobby started it.\n\n## Expected\n\n`merge-parent` picks a slug that no completed run or leftover task branch holds, such as a numbered suffix, so a second merge of the parent starts without a hand rename.\n",
-      "status": "running · Seed-IDE",
+      "status": "running · Record-Write",
       "created": "2026-11-11T14:02:30Z",
       "revised": "2026-11-11T14:04:12Z",
       "profile": "light"
@@ -664,7 +664,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #110](https://github.com/Knatte18/loomyard/issues/110).\n\nWhat happened: during a burler plan round the harness moved the session's working directory to the weft's `_lym/plan`. `lym shuttle await-forks` then failed with \"cwd is outside the recorded fabric anchor subtree\", because it accepts only the anchored directory itself rather than anything inside the anchor subtree.\n\nWhy abnormal: the message says \"subtree\", yet a directory inside the weft's own `_lym/plan` is refused. The session cannot control the harness's cwd changes. The self-check fell back to taking each fork's result as it arrived, across four turns.\n\nWhat to do: make `lym shuttle await-forks` accept a cwd anywhere under the recorded anchor, or resolve the anchor from the weft root. Otherwise make the error name the required directory.\n\nProvenance: task slug adopt-worker-record; note burler-plan-r2.md.",
-      "status": "running · Open-Window",
+      "status": "running · Preflight",
       "created": "2026-11-11T14:02:40Z",
       "revised": "2026-11-11T14:04:23Z",
       "profile": "light"
