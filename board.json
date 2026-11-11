@@ -571,30 +571,6 @@
       "discussed": true
     },
     {
-      "id": 1314,
-      "handle": "T1",
-      "slug": "testmap-upkeep-design",
-      "title": "Decide how the coverage maps are kept fresh, from the upkeep research",
-      "kind": "task",
-      "labels": [
-        "sketch",
-        "testkit",
-        "gate",
-        "dobby"
-      ],
-      "issues": [],
-      "recipe": "raddle",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Why\n\nThe research task `testmap-upkeep` landed `docs/research/speed/testmap-upkeep-2026-11-11/report.md`, which decides nothing.\n`testmap-cross-package`, `coverage-test-select` and `gate-scope-coverage` were filed on the premise that this design exists, and `testmap-cross-package` stopped before any code for that reason.\n\nBuilt since (board tidy, 2026-11-11): `testmap-cross-package` has landed (`99bec44e`).\nIts maps record a linked package's coverage by function (`Funcs`, `Linked`, `OtherFiles`, `MapTest.Spawn`, and a `Format` marker with an environment stamp), which agrees with this record's D3.\nIt left staleness as it was: a change to a linked package's file alone leaves a map fresh, until the build of D1 lands.\n\n## This task\n\nRun Discussion alone over the report and store the decision record on this entry.\nDecide:\n\n- whether a change in a linked-only package leaves a map fresh, which the cross-package criterion now assumes;\n- whether a failed build keeps the old map or writes a failed-build map;\n- whether testmap skips spawn-marked tests;\n- whether another package's coverage is recorded by function or by block;\n- what the decision changes in `testmap-cross-package`, `coverage-test-select`, `gate-scope-coverage`, `testmap-backlog-drain` and `redundancy-sweep-existing`.\n\nThe three build tasks stay held until this record is approved.\n",
-      "status": "done",
-      "created": "2026-11-11T14:01:41Z",
-      "revised": "2026-11-11T16:41:27Z",
-      "project": "test-suite-trim",
-      "discussed": true
-    },
-    {
       "id": 1321,
       "handle": "T9",
       "slug": "merge-parent-slug-reuse",
@@ -609,9 +585,7 @@
         115
       ],
       "recipe": "darn",
-      "depends_on": [
-        "creel-notice-hygiene"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #115](https://github.com/Knatte18/loomyard/issues/115).\n\n## Seen\n\n`lym beam merge-parent \u003cbeam\u003e` names its merge task `\u003cbeam\u003e-merge-in` every time.\nA beam that already merged its parent once, through a completed and torn-down `\u003cbeam\u003e-merge-in` run, gets a second task with the same slug.\nDobby then refuses to start it: `\"\u003cbeam\u003e-merge-in\" has already completed; to run it again, run \"lym batten cleanup --apply\" from the prime ... or give the new task a different slug`.\n\n## Workaround\n\nThe beam orch renamed the new task to `\u003cbeam\u003e-merge-in-2` with `lym board rename`, and dobby started it.\n\n## Expected\n\n`merge-parent` picks a slug that no completed run or leftover task branch holds, such as a numbered suffix, so a second merge of the parent starts without a hand rename.\n",
@@ -658,39 +632,13 @@
         110
       ],
       "recipe": "darn",
-      "depends_on": [
-        "creel-notice-hygiene"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #110](https://github.com/Knatte18/loomyard/issues/110).\n\nWhat happened: during a burler plan round the harness moved the session's working directory to the weft's `_lym/plan`. `lym shuttle await-forks` then failed with \"cwd is outside the recorded fabric anchor subtree\", because it accepts only the anchored directory itself rather than anything inside the anchor subtree.\n\nWhy abnormal: the message says \"subtree\", yet a directory inside the weft's own `_lym/plan` is refused. The session cannot control the harness's cwd changes. The self-check fell back to taking each fork's result as it arrived, across four turns.\n\nWhat to do: make `lym shuttle await-forks` accept a cwd anywhere under the recorded anchor, or resolve the anchor from the weft root. Otherwise make the error name the required directory.\n\nProvenance: task slug adopt-worker-record; note burler-plan-r2.md.",
       "status": "running · Darn-Write",
       "created": "2026-11-11T14:02:40Z",
       "revised": "2026-11-11T14:04:23Z",
-      "profile": "light"
-    },
-    {
-      "id": 1327,
-      "handle": "T6",
-      "slug": "creel-notice-hygiene",
-      "title": "Creel sends an unchanged notice once and drops mail about runs that no longer exist",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "creel",
-        "dobby",
-        "fabric",
-        "orch"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Fix both creel faults in one run. Read first where dobby and fabric decide to send, and why mail waited in the queue.\n\n## From note creel-repeat-notices\n\n## Seen (orch, 2026-11-11)\n\nDuring a network outage on OSL-1046 (`Could not resolve host: github.com`, `EAI_AGAIN`), the orch's mail held about 25 dobby notices that read the same for `testmap-verb` and `arras-recipe-perch`: same state, same `since` time, same history length.\nFABRIC sent the same push failure for the same branch several times, for example the bolt branch `main` and the records branch of each pair.\n\n## Idea\n\nA notice whose text and run state have not changed since the last one sent to the same strand is not sent again, or is sent again only after a stated interval.\nRead first where dobby and fabric decide to send, and whether a repeat is deliberate, for instance as a reminder.\n\n## From note creel-stale-mail-delivery\n\n## Seen (orch, 2026-11-11)\n\nThe orch received creel mail more than a day old, about pairs the orch had already torn down with `lym cleanup --apply`: `terminal-titles-hub-project`, `testmap-verb` and `arras-recipe-perch`.\nIt arrived under a tool result when the orch loaded skills, long after the orch's last turn, and the senders' runs no longer existed.\nOne line asked the orch to settle a stop of a run that was gone.\n\n## Idea\n\nMail addressed about a run or pair that no longer exists is dropped or marked stale rather than handed to the orch as live.\nRead first why the mail waited in the queue, whether the orch's session was down, and whether teardown can clear the strand's pending notices.\n\n",
-      "status": "done",
-      "created": "2026-11-11T09:56:17Z",
-      "revised": "2026-11-11T14:04:11Z",
       "profile": "light"
     },
     {
@@ -857,8 +805,7 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "testmap-upkeep-runs",
-        "creel-notice-hygiene"
+        "testmap-upkeep-runs"
       ],
       "isolated": false,
       "brief": "",

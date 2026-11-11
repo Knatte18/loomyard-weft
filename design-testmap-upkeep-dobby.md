@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-testmap-upkeep-dobby.md)
 
-Depends on: [`testmap-upkeep-runs`](design-testmap-upkeep-runs.md), [`creel-notice-hygiene`](design-creel-notice-hygiene.md)
+Depends on: [`testmap-upkeep-runs`](design-testmap-upkeep-runs.md)
 
 Filed from the Sketch `testmap-upkeep-design`.
 

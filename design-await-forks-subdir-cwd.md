@@ -2,8 +2,6 @@
 
 `await-forks-subdir-cwd` · Task · bug, shuttle, fabric · running · Darn-Write
 
-Depends on: [`creel-notice-hygiene`](design-creel-notice-hygiene.md)
-
 Imported from [issue #110](https://github.com/Knatte18/loomyard/issues/110).
 
 What happened: during a burler plan round the harness moved the session's working directory to the weft's `_lym/plan`. `lym shuttle await-forks` then failed with "cwd is outside the recorded fabric anchor subtree", because it accepts only the anchored directory itself rather than anything inside the anchor subtree.

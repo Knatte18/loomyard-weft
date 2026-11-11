@@ -2,8 +2,6 @@
 
 `merge-parent-slug-reuse` · Task · bug, workspaces, dobby · running · Darn-Write
 
-Depends on: [`creel-notice-hygiene`](design-creel-notice-hygiene.md)
-
 Imported from [issue #115](https://github.com/Knatte18/loomyard/issues/115).
 
 ## Seen
