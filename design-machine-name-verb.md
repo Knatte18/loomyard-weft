@@ -1,6 +1,6 @@
 # lym machine name shows and sets the machine name and sweeps owners across a rename
 
-`machine-name-verb` · Task · feature, config, slack · running · Seed-Child
+`machine-name-verb` · Task · feature, config, slack · running · Open-Window
 
 Decision record: [Sketch](decision-machine-name-verb.md)
 
