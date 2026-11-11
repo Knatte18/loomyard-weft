@@ -1,67 +1,58 @@
 # testcover: select an importing package's tests from its coverage map
 
-`testcover.Selector` takes an importing package's coverage map and returns one of two things.
-Either it lists the tests that covered a function a linked package changed since the map's commit,
-or it gives a `Miss` naming why the map cannot speak for the change.
-The coverage gate scope, a later task, calls it once per importing package, and runs the package whole on a miss.
+`internal/testcover` gains a `Selector` that decides, for one importing package, which of its tests a change can affect.
+It reads the package's coverage map, compares every linked package the map records with the working tree,
+and returns either the selected test names or a `Miss` naming why the map cannot speak for the change.
+A miss means the caller runs the importing package whole.
+Nothing calls the selector yet; the gate-scope task that consumes it calls `Select` once per importing package.
+
+Why: tiers 0 and 1 carry most of the verify time, and a package whose linked code changed in one function need not rerun every test.
+Misses only widen the run, never narrow it.
 
 ## What changes
 
-- `NewSelector(SelectorConfig)` takes:
-  - the maps directory;
-  - the worktree root, the module's directory and path;
-  - the working tree's non-ignored files, tracked and untracked;
-  - a `CommitReader`, which `*fabricengine.Fabric` satisfies through `CodeFileAt`;
-  - the hub's `inert_paths` matcher.
-  `Select(pkg)` returns a `Selection` holding the sorted test names, or a `Miss`.
-  The error result is kept for a working file that cannot be read.
-- A linked package's file is changed when its working-tree hash differs from the map's `Linked` record, or it exists on one side only.
-  A changed non-test Go file is parsed at the map's `Commit` and in the working tree,
-  and its top-level declarations are compared syntactically, ignoring comments and formatting.
-  A function is changed when its declaration differs, or when only the commit holds it.
-  Functions sharing a key name, such as two `init`s, change together.
-  The tests whose `Funcs` name a changed function are selected.
-- Each D5 case is a `MissReason`:
-  - the map is missing, unreadable, a build failure or unmarked, or its marker's `Commit` and `BuiltAt` differ from the map's;
-  - the map's commit cannot be read;
-  - the package's own Go files changed;
-  - a non-Go file changed, untracked ones included.
-    A file `inert_paths` matches is exempt unless a `go:embed` pattern in the package's Go files names it or a directory above it;
-  - a change outside function declarations;
-  - a removed import, or an added one outside the linked set and the standard library;
-  - an added, removed or changed `//go:` line;
-  - an added or removed method, or one whose receiver or signature changed;
-  - more `init` functions in a file;
-  - an added top-level name of the universe scope;
-  - a file that does not parse.
-- The allowed additions follow D5:
-  - a const outside a group using `iota` or an implicit value;
-  - a var with no initializer;
-  - a type;
-  - a plain function.
-  A group using `iota` or an implicit value compares as one declaration.
-- `NestedPackageDirs` moves from `gatecli` to `testcover`, exported, so testmap's package trees and the selector use one ownership rule.
-- The `testcover` package doc and the `docs/overview.md` module row describe the selector.
+- `Selector` (`NewSelector`, `Select`) in `testselect.go` and `declcompare.go`.
+  It takes the working tree, the module's standard-library root and `fabricengine.Fabric.CodeFileAt` as the reader of file content at the map's `Commit`.
+- A linked package's non-test Go file counts as changed when its working-tree hash differs from the map's record, or it exists on one side only.
+  The selector parses the file at the map's `Commit` and in the working tree with `go/parser`
+  and compares each function's receiver, signature and body, ignoring comments and formatting.
+  Functions sharing a key name, such as several `init` functions, change together.
+  A deleted file makes every function it held changed.
+- A test is selected when the map records a covered block of a changed file whose enclosing function changed.
+  A test the spawn scan marks (out of process or unresolved) has no recorded coverage,
+  so it is selected whenever any linked function changed, and on no other account.
+- Misses: the map is missing, unreadable, failed or unmarked, its marker's `Commit` and `BuiltAt` differ from the map's,
+  its `Commit` is unreadable, or the package's own files, tests included, differ from the record.
+  For a changed linked file the misses are:
+  a declaration change outside functions,
+  an import removed or added other than a linked or standard-library package,
+  a `//go:` line added, removed or changed, a changed method set, an added `init`,
+  an added top-level name that is a predeclared identifier, and a file that does not parse.
+  A non-Go file that differs misses unless `inert_paths` matches it and no `go:embed` pattern names it.
+  The package's own test files count as embed sources.
+- Not a miss: comment or formatting edits, a reordered import block,
+  and added declarations that no unchanged code can reach (a const outside an `iota` or implicit-value group, a var with no initializer, a type with no methods).
+- `NestedPackageDirs` moves from `internal/gatecli` into `internal/testcover` as an exported function,
+  so the selector and the testmap tree reader share one definition of which files a package owns.
+  `internal/gatecli/testmaptree.go` calls the moved function; behaviour is unchanged.
+- `internal/testcover/doc.go` and `docs/overview.md` describe the selector.
 
-## Design decisions
+## Design decisions to review
 
-- A test the spawn scan marks, as out of process or unresolved, is selected whenever any linked function changed.
-  The record does not say this.
-  Its map records only in-process coverage, so a change its subprocess reaches would otherwise never select it.
-- The selector reads `CodeFileAt` through a one-method interface instead of importing `fabricengine`.
-  That keeps `testcover` free of fabric, and lets its test serve the commit from memory at tier 0.
-  The working tree's non-ignored file list comes from the caller for the same reason; the selector never runs git.
-- The method-set check runs per package over all its changed files, so moving a method between files is no miss.
-  The `init` count and the predeclared-name check run per file, as D5 words them.
-- The package's own non-Go files fall under the same non-Go rule as a linked package's.
-  D5 names only its Go files, and the own-package rule widens the set.
-- A `Selector` caches file hashes, ownership, `go:embed` patterns and each file's comparison per commit,
-  so a call over many importing packages reads each linked file once.
-  It is not safe for concurrent use.
+- Function-level matching selects a superset of what block-level matching would, and needs no block boundaries from a coverage build.
+  The block keys already carry their enclosing function.
+- Comparing from the map's own `Commit` lets a map built before or after the tier's base select on changes inside function declarations.
+  A change on main since the build counts as a change, which can only add tests.
+- Bound: a test that reaches a linked function it did not reach when the map was built, through code unchanged since, is not selected.
+  Neither is a test relying on the `init` of a standard-library package that a changed file newly imports.
+  Only the landing gate catches these.
+- A dependency-drift miss lasts until testmap rebuilds the map by its present rules; this change leaves testmap's staleness rule as it is.
+  Coverage narrows only while a map is fresh, and testmap-upkeep owns that cadence.
+- A checkout whose `core.autocrlf` converts line endings rehashes every package's own files, so every importing package misses.
+- The selector caches file hashes, owned files and file comparisons, so it assumes the working tree does not change while it is in use,
+  and it is not safe for concurrent use.
 
-## Testing
+## To check by hand
 
-`TestSelectorSelect` is a table over a fixture module with an importing package `b` and linked packages `a` and `c`.
-It serves the commit's files from memory.
-Its rows cover each D4 and D5 acceptance criterion, the allowed additions, and a linked test file, a nested package and an inert file, which change nothing.
-`go build` and `go vet` pass for `internal/testcover` and `internal/gatecli`; the gate's verify runs the tests.
+- `lym loom fmt` and the `internal/testcover` and `internal/gatecli` test suites were not run for this description.
+  Run `lym gate test ./internal/testcover ./internal/gatecli` before merging.
