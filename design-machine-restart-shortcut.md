@@ -17,7 +17,11 @@ VS Code needs nothing: on Kubuntu it reopens the windows it had open by itself.
 
 A simple way to start again every project that was in flight on the machine, such as launcher scripts lym puts on the desktop:
 
-- The launcher brings back a whole project: the hub prime's orch, and the orch of every beam under it that was live, each in its terminal window, as starting it by hand does today.
+- The launcher brings back a whole project: the hub prime and every beam under it that was live.
+  For each such worktree it does what the operator does by hand today:
+  opens the worktree's VS Code workspace file, and opens a terminal outside VS Code in the worktree running `lym s`,
+  which starts the worktree's dobby and orch and attaches to its reed session.
+  The operator never types `lym reed attach`; a running task's window opens from the orch or the Reed status bar's terminal button, so the launcher opens none.
   The orchs and dobbies then take up the runs; the launcher resumes no run itself.
 - A `lym` verb does the work, so it also runs from a terminal; the desktop launcher only calls it.
 - lym keeps the launchers current as hubs and beams come and go, so a crash finds them already there.
@@ -33,4 +37,4 @@ Fixed by the operator: one launcher per hub plus one that starts every hub;
 beams are included; resuming interrupted runs is left to the orchs;
 nothing another machine owns is started.
 
-Open: whether it also opens the reed windows of running tasks; `.sh` scripts or `.desktop` launchers on KDE.
+Open: `.sh` scripts or `.desktop` launchers on KDE.
