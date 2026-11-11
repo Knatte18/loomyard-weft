@@ -15,13 +15,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **The coverage selector takes its target, compares own files by function, and misses on a changed environment stamp** | [`testmap-selector-upkeep-rules`](design-testmap-selector-upkeep-rules.md)<br>[Sketch](decision-testmap-selector-upkeep-rules.md) | darn · solid | Worktree-Create | neve | 43m<br>43m | testkit, gate, dobby |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **The coverage selector takes its target, compares own files by function, and misses on a changed environment stamp** | [`testmap-selector-upkeep-rules`](design-testmap-selector-upkeep-rules.md)<br>[Sketch](decision-testmap-selector-upkeep-rules.md) | darn · solid |  | 43m<br>43m | testkit, gate, dobby |
+_None._
 
 ### Layer A (1)
 
