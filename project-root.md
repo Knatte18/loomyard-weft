@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Dobby starts a released raddle task whose depends_on has not landed** | [`dobby-raddle-ignores-deps`](design-dobby-raddle-ignores-deps.md) | darn · light | Drift-Verify | neve | 2h<br>1h | dobby, board |
+| T3 | **Dobby starts a released raddle task whose depends_on has not landed** | [`dobby-raddle-ignores-deps`](design-dobby-raddle-ignores-deps.md) | darn · light | Code-Bouncer | neve | 2h<br>1h | dobby, board |
 | T14 | **Finalize spawns a fixer on a single non-repeating test failure** | [`finalize-flaky-rerun`](design-finalize-flaky-rerun.md) | darn · light | Code-Burler-Fix | neve | 2h<br>46m | landing, gate |
 | T20 | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | Code-Burler-Fix | neve | 2d<br>2h | shed, friction, shuttle |
 
