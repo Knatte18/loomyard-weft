@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Baseline",
+  "current_producer": "Drift-Await",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Baseline",
-    "last": "Record-Write → done",
+    "now": "Drift-Await",
+    "last": "Drift-Baseline → skipped",
     "wait": ""
   },
   "history": [
@@ -22,6 +22,13 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/parent-review-ask-verbs/_lym/discussion/decision-record.md",
       "at": "2026-11-11T19:29:59Z",
       "started_at": "2026-11-11T19:29:59Z"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-11T19:30:02Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
