@@ -1,6 +1,6 @@
 # Worktree-Create halts on a reused slug path holding only obj/ leftovers
 
-`worktree-create-build-leftovers` · Task · bug, batten, fabric · running · Record-Write
+`worktree-create-build-leftovers` · Task · bug, batten, fabric · running · Drift-Baseline
 
 Depends on: [`push-notice-anchor-dir`](design-push-notice-anchor-dir.md)
 
