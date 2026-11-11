@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (13)
+## Tasks (14)
 
 Concrete and claimable; only a task can run.
 
@@ -63,7 +63,7 @@ Starts when every entry it names under After is done.
 | T9 | **beam merge-parent reuses the slug of a completed merge-in run** | [`merge-parent-slug-reuse`](design-merge-parent-slug-reuse.md) | darn · light | T6 | 30m<br>28m | workspaces, dobby |
 | T16 | **lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor** | [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md) | darn · light | T6 | 29m<br>28m | shuttle, fabric |
 
-### Draft (3)
+### Draft (4)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -72,8 +72,9 @@ Not released; nothing starts it until its status is cleared.
 | T10 | `draft` **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | darn · light |  | 8h<br>0m | heddle |
 | T13 | `draft` **Tests for the lym verb directory calls and the stops of unconverted steps in an anchored hub** | [`anchored-hub-test-gaps`](design-anchored-hub-test-gaps.md) | darn · light | T16 | 30m<br>0m | fabric |
 | T18 | `draft` **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | darn · light | T13 | 7h<br>0m | fabric, ide |
+| T19 | `draft` **Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome** | [`finalize-flaky-test-gaps`](design-finalize-flaky-test-gaps.md) | darn · light |  | 5h<br>0m | landing, gate |
 
-## Notes (23)
+## Notes (22)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -85,13 +86,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 8h<br>5h | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
 
-### Enhancements (6)
+### Enhancements (5)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 3d<br>3d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 3d<br>1d | shed, loom, darn |
-| E3 |  | **Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome** | [`finalize-flaky-test-gaps`](design-finalize-flaky-test-gaps.md) | 5h<br>5h | landing, gate |
 | E5 |  | **Refresh the README: outdated parts, less wall of text, the dead Autoboard link and a shorter Lineage**<br>• The README is partly outdated, too long-winded, its Autoboard link is dead, and Lineage no longer fits LoomYard | [`readme-refresh`](design-readme-refresh.md) | 2h<br>2h | docs |
 | E6 |  | **Raddle shows each part's recipe and profile as table columns**<br>• Raddle names recipe and profile only in free text; put them in the proposal table | [`raddle-table-recipe-profile`](design-raddle-table-recipe-profile.md) | 5h<br>5h | stencil, shed |
 | E10 |  | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | 8h<br>8h | heddle |
