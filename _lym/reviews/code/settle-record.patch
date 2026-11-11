@@ -1,0 +1,626 @@
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 83f1523a..4bf0b624 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -139,6 +139,9 @@
+ // A command holding neither `{targets}` nor `{test_targets}` runs once, whole.
+ // It does so under explicit targets and under a non-empty narrower scope.
+ // It says so on stderr.
++// Explicit targets that no listed tier's command takes are refused before any slot.
++// The call would run none of them.
++// The refusal names dropping the targets, a `--tier` whose command takes them, and the prime's `lym config gate` step.
+ // Flag-shape refusals need no config and run first, before hub resolution:
+ // `--tags`, naming `--tier`; a negative `--upto`; `-C` without explicit targets, naming them;
+ // `--gate` beside `--tier`, `--upto`, `--all` or `--base`; more than one scope form;
+@@ -183,6 +186,15 @@
+ // A narrowed share runs each selected test project once in the tier's `dir`, under one slot hold and one `timeout_min`.
+ // The project path is `{targets}`, and its class terms render into `{filter}`.
+ // A command holding neither `{targets}` nor `{test_targets}` runs once, whole, with its tier filter only.
++// Such a run is passed none of the selected projects.
++// When no run of the call reaches a selected project, the call closes with one stderr line per such project.
++// The line says the pass is not green for that project.
++// A run reaches a project when its names hold that project's file or its built assembly, or a solution file.
++// It also reaches every project when its names hold no project, solution or built assembly file at all.
++// The names are the run's targets, or for a command without a target placeholder its command's words.
++// The line's way forward runs the lowest declared tier, not manual, whose command reaches the project.
++// With none it is the prime's `lym config gate` step of adding `{targets}` to a tier's command.
++// Bound: the line is output only and changes no exit code or record.
+ // Two empty scopes tell apart.
+ // Nothing testable changed, such as an inert-only diff: that makes no invocation, as under `go`.
+ // Changes that no test class names run a tier with `shared_build` as no invocation.
+@@ -214,7 +226,8 @@
+ // The import graph cannot see everything a narrower run skips, such as `go build ./...`.
+ // That is left to the whole runs at `final` and `landing`.
+ // Once the config is loaded, `planTierRuns` refuses these before any slot, naming `lym config gate`:
+-// words after `--` for a tier whose command lacks `{args}`; an undeclared tier; a hub with no `tier0`;
++// words after `--` for a tier whose command lacks `{args}`; explicit targets that no listed tier's command takes;
++// an undeclared tier; a hub with no `tier0`;
+ // a `covers` entry naming a tier the hub does not declare;
+ // and, for the guard step below, a guard group whose tier the hub does not declare.
+ // Every such refusal closes with a clause for a session that is not the prime:
+diff --git a/internal/gatecli/dotnetscope.go b/internal/gatecli/dotnetscope.go
+index d790659c..1e9894aa 100644
+--- a/internal/gatecli/dotnetscope.go
++++ b/internal/gatecli/dotnetscope.go
+@@ -1,10 +1,16 @@
+ // dotnetscope.go computes the scope of a call under the dotnet scoper: the test projects and class filter terms each listed tier narrows to.
++// It also names the selected test projects that no run of the call reaches.
+ 
+ package gatecli
+ 
+ import (
+ 	"context"
+ 	"fmt"
++	"path"
++	"slices"
++	"sort"
++	"strconv"
++	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/dotnetimpact"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+@@ -98,3 +104,124 @@ func assignShare(shares map[int]tierScope, group dirGroup, derived dotnetimpact.
+ 		shares[number] = share
+ 	}
+ }
++
++// The extensions of the .NET files a tier command or target names, matched without regard to case.
++var (
++	projectFileExtensions   = []string{".csproj", ".fsproj", ".vbproj"}
++	solutionFileExtensions  = []string{".sln", ".slnx"}
++	builtAssemblyExtensions = []string{".dll", ".exe"}
++)
++
++// unrunProjectLines returns one stderr line per test project of sc that no run of runs reaches, in path order.
++// It reads only the projects a narrowed share selected for a run whose command holds no target placeholder.
++// Such a run runs whole and is passed none of them.
++// Each line says the pass is not green for its project.
++// Its way forward runs the lowest declared tier, not manual, whose command reaches the project.
++// With no such tier it names the prime's `lym config gate` step of adding {targets} to a tier's command.
++func unrunProjectLines(cfg gateslot.Config, runs []tierRun, sc scope) []string {
++	var projects []string
++	for _, run := range runs {
++		if !gateslot.HoldsTargets(run.tier.Command) {
++			for _, module := range sc.forTier(run.number).modules {
++				projects = append(projects, module.targets...)
++			}
++		}
++	}
++	slices.Sort(projects)
++	var lines []string
++	for _, project := range slices.Compact(projects) {
++		if slices.ContainsFunc(runs, func(run tierRun) bool { return runReachesProject(run, project) }) {
++			continue
++		}
++		wayForward := "no declared tier's command reaches it, so the prime adds {targets} to a tier's command with \"lym config gate\", and the same command runs again"
++		if number, holdsTargets, found := lowestTierReaching(cfg, project); found {
++			call := "lym gate test --tier " + strconv.Itoa(number)
++			if holdsTargets {
++				call += " " + project
++			}
++			wayForward = "run \"" + call + "\""
++		}
++		lines = append(lines, fmt.Sprintf("gate test: the scope selected tests in %s, and no tier this call runs reaches that project, so this pass is not green for it; way forward: %s", project, wayForward))
++	}
++	return lines
++}
++
++// runReachesProject reports whether run runs the test project at projectPath.
++// A run with no invocation runs nothing.
++// A run whose command takes targets runs the projects its invocations' targets name;
++// any other run runs those its command's words name.
++func runReachesProject(run tierRun, projectPath string) bool {
++	if len(run.invocations) == 0 {
++		return false
++	}
++	if !gateslot.HoldsTargets(run.tier.Command) {
++		return namesProject(strings.Fields(run.tier.Command), projectPath)
++	}
++	return slices.ContainsFunc(run.invocations, func(inv invocation) bool { return namesProject(inv.targets, projectPath) })
++}
++
++// lowestTierReaching returns the lowest declared tier, not manual, whose command reaches the project at projectPath.
++// holdsTargets reports whether that command takes targets, which reach every project.
++// found is false when no such tier exists.
++func lowestTierReaching(cfg gateslot.Config, projectPath string) (number int, holdsTargets, found bool) {
++	numbers := make([]int, 0, len(cfg.Tiers))
++	for key := range cfg.Tiers {
++		parsed, _ := strconv.Atoi(strings.TrimPrefix(key, "tier"))
++		numbers = append(numbers, parsed)
++	}
++	sort.Ints(numbers)
++	for _, candidate := range numbers {
++		tier := cfg.Tiers[tierName(candidate)]
++		switch {
++		case tier.Manual:
++		case gateslot.HoldsTargets(tier.Command):
++			return candidate, true, true
++		case namesProject(strings.Fields(tier.Command), projectPath):
++			return candidate, false, true
++		}
++	}
++	return 0, false, false
++}
++
++// namesProject reports whether words, a command's words or a run's targets, run the test project at projectPath.
++// Words naming a solution file, or naming no project, solution or built assembly file, count as running it:
++// lym reads neither a solution, a built assembly's project, nor the directory a bare `dotnet test` runs in.
++// A built assembly names a specific target of its own and runs the project it is named after,
++// so a command naming only other assemblies runs no project.
++// Otherwise the words run it when one of the project files they name is that project.
++func namesProject(words []string, projectPath string) bool {
++	project := strings.ToLower(strings.ReplaceAll(projectPath, `\`, "/"))
++	namesAny := false
++	for _, word := range words {
++		word = strings.ToLower(strings.ReplaceAll(strings.Trim(word, `"'`), `\`, "/"))
++		extension := path.Ext(word)
++		switch {
++		case slices.Contains(solutionFileExtensions, extension):
++			return true
++		case slices.Contains(builtAssemblyExtensions, extension):
++			namesAny = true
++			if path.Base(strings.TrimSuffix(word, extension)) == strings.TrimSuffix(path.Base(project), path.Ext(project)) {
++				return true
++			}
++		case slices.Contains(projectFileExtensions, extension):
++			namesAny = true
++			if isSameProjectFile(word, project) {
++				return true
++			}
++		}
++	}
++	return !namesAny
++}
++
++// isSameProjectFile reports whether word, a project file named by a command, is the project at projectPath.
++// Both are lowercase and slash-separated.
++// A bare file name matches the project's file name.
++// A word with a directory part matches when one path is the other, or ends at a directory boundary with it.
++// A command word and a project path may be relative to different directories.
++func isSameProjectFile(word, projectPath string) bool {
++	word, projectPath = path.Clean(word), path.Clean(projectPath)
++	if !strings.Contains(word, "/") {
++		return path.Base(projectPath) == word
++	}
++	return word == projectPath || strings.HasSuffix(projectPath, "/"+word) || strings.HasSuffix(word, "/"+projectPath)
++}
+diff --git a/internal/gatecli/dotnetscope_test.go b/internal/gatecli/dotnetscope_test.go
+new file mode 100644
+index 00000000..842cfc74
+--- /dev/null
++++ b/internal/gatecli/dotnetscope_test.go
+@@ -0,0 +1,145 @@
++// dotnetscope_test.go covers naming the selected test projects that no run of a dotnet call reaches.
++
++package gatecli
++
++import (
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestUnrunProjectLines(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	lineFor := func(project, wayForward string) string {
++		return "gate test: the scope selected tests in " + project + ", and no tier this call runs reaches that project, so this pass is not green for it; way forward: " + wayForward
++	}
++	const configStep = `no declared tier's command reaches it, so the prime adds {targets} to a tier's command with "lym config gate", and the same command runs again`
++	fastOnly := gateslot.Tier{Command: "dotnet test Fast/Fast.csproj {filter}"}
++	wholeRun := func(tier gateslot.Tier) tierRun {
++		return tierRun{number: 0, tier: tier, invocations: []invocation{{dir: "."}}}
++	}
++	selected := scope{form: scopeCard, tiers: map[int]tierScope{0: {modules: []moduleTargets{
++		{dir: ".", targets: []string{"A/A.csproj"}, terms: []string{"T1"}},
++		{dir: ".", targets: []string{"Fast/Fast.csproj"}, terms: []string{"T2"}},
++	}}}}
++	// selectedIn returns a scope that selects only the project at projectPath, in each of tiers.
++	selectedIn := func(projectPath string, tiers ...int) scope {
++		shares := map[int]tierScope{}
++		for _, number := range tiers {
++			shares[number] = tierScope{modules: []moduleTargets{{dir: ".", targets: []string{projectPath}}}}
++		}
++		return scope{form: scopeCard, tiers: shares}
++	}
++	tests := []struct {
++		name  string
++		tier1 gateslot.Tier
++		// tier0 is the command of the listed run, which runs whole; it defaults to fastOnly.
++		tier0 gateslot.Tier
++		// tier1Run lists tier1 in the call with its own invocations when set.
++		tier1Run []invocation
++		// sc is the call's scope; it defaults to selected.
++		sc   scope
++		want []string
++	}{
++		{
++			name:  "a project the whole run's command does not name is reported with the lowest tier that takes targets",
++			tier1: gateslot.Tier{Command: "dotnet test {targets} {filter}"},
++			want:  []string{lineFor("A/A.csproj", `run "lym gate test --tier 1 A/A.csproj"`)},
++		},
++		{
++			name:  "a tier whose command names the project in quotes and backslashes is the way forward without targets",
++			tier1: gateslot.Tier{Command: `dotnet test "A\A.csproj"`},
++			want:  []string{lineFor("A/A.csproj", `run "lym gate test --tier 1"`)},
++		},
++		{
++			name:  "with only a manual tier reaching it the line names the config step",
++			tier1: gateslot.Tier{Command: "llm {targets} {args}", Manual: true},
++			want:  []string{lineFor("A/A.csproj", configStep)},
++		},
++		{
++			name:     "a project another run of the call names among its targets is not reported",
++			tier1:    gateslot.Tier{Command: "dotnet test {targets} {filter}"},
++			tier1Run: []invocation{{dir: ".", targets: []string{"A/A.csproj"}}},
++		},
++		{
++			name:  "a command naming a solution file reaches every project",
++			tier0: gateslot.Tier{Command: "dotnet test All.sln {filter}"},
++			tier1: gateslot.Tier{Command: "dotnet test Fast/Fast.csproj"},
++		},
++		{
++			name:  "a command naming no project file reaches every project",
++			tier0: gateslot.Tier{Command: "dotnet test {filter}"},
++			tier1: gateslot.Tier{Command: "dotnet test Fast/Fast.csproj"},
++		},
++		{
++			name:  "a command naming only a built assembly reaches no project",
++			tier0: gateslot.Tier{Command: "dotnet test Fast/bin/Debug/Fast.dll"},
++			tier1: gateslot.Tier{Command: "dotnet test Fast/Fast.csproj"},
++			sc:    selectedIn("A/A.csproj", 0),
++			want:  []string{lineFor("A/A.csproj", configStep)},
++		},
++		{
++			name:  "a command naming the built assembly of a project reaches that project",
++			tier0: gateslot.Tier{Command: "dotnet test A/bin/Debug/A.dll"},
++			tier1: gateslot.Tier{Command: "dotnet test Fast/Fast.csproj"},
++			sc:    selectedIn("A/A.csproj", 0),
++		},
++		{
++			name:     "a project of the same file name in another directory is reported",
++			tier1:    gateslot.Tier{Command: "dotnet test B/Tests.csproj"},
++			tier1Run: []invocation{{dir: "."}},
++			sc:       selectedIn("A/Tests.csproj", 0),
++			want:     []string{lineFor("A/Tests.csproj", configStep)},
++		},
++		{
++			name:     "a command naming the project with a leading dot slash reaches it",
++			tier1:    gateslot.Tier{Command: "dotnet test ./A/Tests.csproj"},
++			tier1Run: []invocation{{dir: "."}},
++			sc:       selectedIn("A/Tests.csproj", 0),
++		},
++		{
++			name:     "a run with no invocation reaches nothing",
++			tier1:    gateslot.Tier{Command: "dotnet test {targets} {filter}"},
++			tier1Run: []invocation{},
++			want:     []string{lineFor("A/A.csproj", `run "lym gate test --tier 1 A/A.csproj"`)},
++		},
++		{
++			name:     "a project selected by two tier shares is reported once",
++			tier1:    gateslot.Tier{Command: "dotnet test Fast/Fast.csproj"},
++			tier1Run: []invocation{{dir: "."}},
++			sc:       selectedIn("A/A.csproj", 0, 1),
++			want:     []string{lineFor("A/A.csproj", configStep)},
++		},
++		{
++			name:     "a project path written with backslashes is reached by a command naming it with slashes",
++			tier1:    gateslot.Tier{Command: "dotnet test A/A.csproj"},
++			tier1Run: []invocation{{dir: "."}},
++			sc:       selectedIn(`A\A.csproj`, 0),
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			tier0 := tt.tier0
++			if tier0.Command == "" {
++				tier0 = fastOnly
++			}
++			sc := tt.sc
++			if sc.tiers == nil {
++				sc = selected
++			}
++			cfg := gateslot.Config{Scoper: "dotnet", Tiers: map[string]gateslot.Tier{"tier0": tier0, "tier1": tt.tier1}}
++			runs := []tierRun{wholeRun(tier0)}
++			if tt.tier1Run != nil {
++				runs = append(runs, tierRun{number: 1, tier: tt.tier1, invocations: tt.tier1Run})
++			}
++			if got := unrunProjectLines(cfg, runs, sc); !slices.Equal(got, tt.want) {
++				t.Errorf("unrunProjectLines() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 774d721b..be4c5e7d 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -219,6 +219,11 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	if code == 0 && sc.form == scopeCard {
+ 		printNotRunTiers(request.stderr, notRunTiers(cfg, plan))
+ 	}
++	if cfg.Scoper == "dotnet" {
++		for _, line := range unrunProjectLines(cfg, plan, sc) {
++			printLine(request.stderr, line)
++		}
++	}
+ 	return exitAfterSignal(caught, code)
+ }
+ 
+@@ -504,9 +509,6 @@ func (e *execution) runListed(run tierRun) runEnd {
+ 	if run.tier.SharedBuild && e.buildFailure != "" {
+ 		return e.reportBlocked(run)
+ 	}
+-	if run.ignoresTargets {
+-		printLine(e.request.stderr, fmt.Sprintf("gate test: the command of %s holds neither {targets} nor {test_targets}, so it runs whole", tierName(run.number)))
+-	}
+ 	if len(run.invocations) == 0 && !run.buildOnly {
+ 		printLine(e.request.stderr, fmt.Sprintf("gate test: the scope is empty, so %s runs no command", tierName(run.number)))
+ 		return e.runWithSlots(run, true, func(env []string, _ time.Time) tierResult {
+diff --git a/internal/gatecli/scopes_integration_test.go b/internal/gatecli/scopes_integration_test.go
+index cd049da3..efa15c2f 100644
+--- a/internal/gatecli/scopes_integration_test.go
++++ b/internal/gatecli/scopes_integration_test.go
+@@ -431,6 +431,27 @@ func TestGateTest_Scopes(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("--card under dotnet names a selected project that a tier0 command without {targets} does not reach, and still exits 0", func(t *testing.T) {
++		writeDotnet(t, func(cfg map[string]any) {
++			tiers := cfg["tiers"].(map[string]any)
++			tiers["tier0"].(map[string]any)["command"] = "'" + os.Args[0] + "' cs/Other/Other.csproj {filter}"
++		})
++		defer writeScoper(t, "go")
++		csharpPlan := plan
++		csharpPlan.Language = "csharp"
++		csharpPlan.Cards = []plankit.Card{{Number: 1, Slug: "span", Groups: []plankit.Group{{Label: "Edit", Targets: []string{"Lib#Circle.Area"}}}}}
++		plankit.Write(t, planparser.PlanDir(pair), csharpPlan)
++		t.Cleanup(func() { plankit.Write(t, planparser.PlanDir(pair), plan) })
++		g := gate(t, pair, nil, "--card", "1")
++		if g.exit != 0 {
++			t.Errorf("exit code = %d, stdout %q; want 0, since the line is output only", g.exit, g.stdout.String())
++		}
++		want := "gate test: the scope selected tests in cs/Lib.Tests/Lib.Tests.csproj, and no tier this call runs reaches that project, so this pass is not green for it; way forward: run \"lym gate test --tier 1 cs/Lib.Tests/Lib.Tests.csproj\""
++		if !strings.Contains(g.stdout.String(), want) {
++			t.Errorf("stdout = %q; want it to hold %q", g.stdout.String(), want)
++		}
++	})
++
+ 	t.Run("--card skips a //lym:watch test of a card's package that no change since the parent merge base concerns, and runs it once one does or with no parent branch", func(t *testing.T) {
+ 		watchedPlan := plan
+ 		watchedPlan.Cards = []plankit.Card{{Number: 1, Slug: "span", Groups: []plankit.Group{{Label: "Edit", Targets: []string{"watched/w.go"}}}}}
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index 83e612b1..c7561673 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -971,8 +971,10 @@ func TestGateTest_Scenario(t *testing.T) {
+ 			OK    bool   `json:"ok"`
+ 			Error string `json:"error"`
+ 		}
+-		if err := json.Unmarshal(g.stdout.Bytes(), &envelope); err != nil {
+-			t.Fatalf("stdout %q is not a JSON envelope: %v", g.stdout.String(), err)
++		// The notice that tier2's command runs whole precedes the envelope, which is the last line.
++		stdoutLines := strings.Split(strings.TrimSpace(g.stdout.String()), "\n")
++		if err := json.Unmarshal([]byte(stdoutLines[len(stdoutLines)-1]), &envelope); err != nil {
++			t.Fatalf("stdout %q does not end in a JSON envelope: %v", g.stdout.String(), err)
+ 		}
+ 		missing := filepath.Join(prime, "missing")
+ 		if code != 1 || envelope.OK || !strings.Contains(envelope.Error, "could not start the shell for the build in "+missing) || !strings.Contains(envelope.Error, "make build.dir an existing directory and put the platform shell on PATH, then re-run the same command") {
+@@ -1799,19 +1801,6 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		requireFree(t)
+ 	})
+ 
+-	t.Run("a command without {targets} runs whole under explicit targets", func(t *testing.T) {
+-		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "2", "./pkg"}})
+-		if code := g.wait(t); code != 0 {
+-			t.Fatalf("exit code = %d, stdout %q; want 0", code, g.stdout.String())
+-		}
+-		if got := g.tierArgs(t); !reflect.DeepEqual(got, [][]string{{"whole"}}) {
+-			t.Errorf("tier invocations = %q; want the command as written", got)
+-		}
+-		if !strings.Contains(g.stdout.String(), "the command of tier2 holds neither {targets} nor {test_targets}") {
+-			t.Errorf("stdout = %q; want the notice that the command runs whole", g.stdout.String())
+-		}
+-	})
+-
+ 	t.Run("a tier that outlives timeout_min is killed with the timeout line", func(t *testing.T) {
+ 		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "./pkg"}, env: []string{helperHoldEnv + "=1", helperUnitEnv + "=1s"}})
+ 		code := g.wait(t)
+diff --git a/internal/gatecli/tiers.go b/internal/gatecli/tiers.go
+index 1bf6f296..3ff0789f 100644
+--- a/internal/gatecli/tiers.go
++++ b/internal/gatecli/tiers.go
+@@ -50,9 +50,6 @@ type tierRun struct {
+ 	invocations []invocation
+ 	// args are the words that fill the command's {args}.
+ 	args []string
+-	// ignoresTargets is set when explicit targets were given and the command holds neither {targets} nor {test_targets},
+-	// so it runs whole.
+-	ignoresTargets bool
+ 	// guardStep marks the run of a tier's command over the guard tests of the files that belong to that tier.
+ 	guardStep bool
+ 	// vetStep marks the run of `go vet` under a tier's build tag over a --card scope's packages.
+@@ -81,6 +78,9 @@ func tierName(number int) string {
+ // A guard run is a placeholder whose packages and names the run fills from sc.guards.
+ // A covered tier is named on request.stderr when it has one.
+ // A tier a no-test-class scope runs whole is named on request.stderr when it has one.
++// So is a tier whose command holds neither {targets} nor {test_targets}, which runs whole over any scope;
++// that line prints only once no refusal can follow.
++// It refuses explicit targets that no kept tier's command takes, since such a call runs none of the tests named.
+ // It refuses, naming `lym config gate`: a hub with no tier0; an undeclared tier; a dangling covers entry;
+ // words after `--` for a tier whose command lacks {args};
+ // a guard group whose tier is undeclared or whose command lacks {targets} and {test_targets}, or lacks {args};
+@@ -109,6 +109,8 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 	kept := dropCovered(numbers, tiers, request)
+ 
+ 	runs := make([]tierRun, 0, len(kept)+1)
++	// wholeTiers are the kept tiers whose command ignores the scope's targets.
++	var wholeTiers []int
+ 	for _, number := range kept {
+ 		tier := tiers[number]
+ 		if len(request.args) > 0 && !strings.Contains(tier.Command, "{args}") {
+@@ -119,14 +121,16 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 			printLine(request.stderr, fmt.Sprintf("gate test: the scope selected no test class, so %s runs whole", tierName(number)))
+ 		}
+ 		invocations, ignoresTargets := scopeInvocations(tier, request, share)
++		if ignoresTargets {
++			wholeTiers = append(wholeTiers, number)
++		}
+ 		run := tierRun{
+-			number:         number,
+-			tier:           tier,
+-			scopeForm:      sc.form,
+-			invocations:    invocations,
+-			args:           request.args,
+-			ignoresTargets: ignoresTargets,
+-			buildOnly:      tier.SharedBuild && share.noTests && len(invocations) == 0,
++			number:      number,
++			tier:        tier,
++			scopeForm:   sc.form,
++			invocations: invocations,
++			args:        request.args,
++			buildOnly:   tier.SharedBuild && share.noTests && len(invocations) == 0,
+ 		}
+ 		// A caller's own filter decides what runs, so the watch skip stays out of it.
+ 		if !share.whole && len(share.skip) > 0 && len(invocations) > 0 && strings.Contains(tier.Command, "{args}") && !slices.ContainsFunc(request.args, isFilterFlag) {
+@@ -136,6 +140,10 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 		}
+ 		runs = append(runs, run)
+ 	}
++	if sc.form == scopeTargets && len(wholeTiers) == len(kept) {
++		names := tierNames(kept)
++		return nil, fmt.Errorf("gate test: no command of %s holds {targets} or {test_targets}, so the targets %s reach no tier this call runs; way forward: drop the targets to run %s whole, or name with --tier a tier whose command takes targets, then re-run the same command; to add {targets} to a tier's command, run \"lym config gate\" from the prime%s", names, strings.Join(request.targets, " "), names, roleClause)
++	}
+ 
+ 	if sc.form == scopeCard && cfg.Scoper == "go" {
+ 		for _, number := range sc.tagTiers {
+@@ -151,6 +159,7 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 	}
+ 
+ 	if !request.guards && !sc.guardStep {
++		printRunWholeNotices(request, wholeTiers)
+ 		return runs, nil
+ 	}
+ 	if cfg.Scoper == "dotnet" {
+@@ -193,9 +202,18 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 			guardStep:   true,
+ 		})
+ 	}
++	printRunWholeNotices(request, wholeTiers)
+ 	return runs, nil
+ }
+ 
++// printRunWholeNotices names on request.stderr each tier of wholeTiers, whose command holds no target placeholder.
++// planTierRuns calls it only once no refusal can follow, so a refused call prints none.
++func printRunWholeNotices(request testRequest, wholeTiers []int) {
++	for _, number := range wholeTiers {
++		printLine(request.stderr, fmt.Sprintf("gate test: the command of %s holds neither {targets} nor {test_targets}, so it runs whole", tierName(number)))
++	}
++}
++
+ // watchSkipArgs returns the go test words that skip the top-level tests names.
+ func watchSkipArgs(names []string) []string {
+ 	return []string{"-skip", "^(" + strings.Join(names, "|") + ")$"}
+diff --git a/internal/gatecli/tiers_test.go b/internal/gatecli/tiers_test.go
+index 53239843..bddee4d8 100644
+--- a/internal/gatecli/tiers_test.go
++++ b/internal/gatecli/tiers_test.go
+@@ -36,7 +36,7 @@ func withManualTier3(cfg *gateslot.Config) {
+ // describe renders a run as `tier<N> <scope> dir=<dir> <targets>`.
+ // It joins one `dir=… …` part per invocation with ` | `, and renders no invocations as `none`.
+ // An invocation that carries terms adds ` terms=<terms>`, and a partial one adds ` partial`.
+-// A command that ignores the scope adds ` ignores`, and the guard step adds ` guard`.
++// The guard step adds ` guard`.
+ // A run with args adds ` args=<args>`, and one with watch skips adds ` skip=<names>`.
+ func describe(run tierRun) string {
+ 	parts := make([]string, len(run.invocations))
+@@ -53,9 +53,6 @@ func describe(run tierRun) string {
+ 		parts = []string{"none"}
+ 	}
+ 	line := fmt.Sprintf("%s %s %s", tierName(run.number), run.scopeForm, strings.Join(parts, " | "))
+-	if run.ignoresTargets {
+-		line += " ignores"
+-	}
+ 	if run.guardStep {
+ 		line += " guard"
+ 	}
+@@ -115,6 +112,11 @@ func TestPlanTierRuns(t *testing.T) {
+ 		{dir: ".", targets: []string{"A/A.csproj"}, terms: []string{"T1", "T2"}},
+ 		{dir: ".", targets: []string{"B/B.csproj"}, terms: []string{"T3"}},
+ 	}}
++	wholeTier0 := func(cfg *gateslot.Config) {
++		t0 := cfg.Tiers["tier0"]
++		t0.Command = "make test {args}"
++		cfg.Tiers["tier0"] = t0
++	}
+ 	tests := []struct {
+ 		name    string
+ 		mutate  func(*gateslot.Config)
+@@ -186,6 +188,18 @@ func TestPlanTierRuns(t *testing.T) {
+ 			request: testRequest{tiers: []int{0}, targets: []string{"./a", "./b"}, dir: "/work/nested"},
+ 			want:    []string{"tier0 targets dir=/work/nested ./a ./b"},
+ 		},
++		{
++			name: "explicit targets run a tier whose command cannot take them whole, naming it, beside a tier that takes them",
++			mutate: func(cfg *gateslot.Config) {
++				wholeTier0(cfg)
++				t1 := cfg.Tiers["tier1"]
++				t1.Covers = nil
++				cfg.Tiers["tier1"] = t1
++			},
++			request:    testRequest{tiers: []int{0, 1}, targets: []string{"./a"}},
++			want:       []string{"tier0 targets dir=. ./a", "tier1 targets dir=sub ./a"},
++			wantStderr: "gate test: the command of tier0 holds neither {targets} nor {test_targets}, so it runs whole\n",
++		},
+ 		{
+ 			name:    "explicit targets run in the tier's dir without -C",
+ 			request: testRequest{tiers: []int{1}, targets: []string{"./a"}},
+@@ -237,14 +251,11 @@ func TestPlanTierRuns(t *testing.T) {
+ 			want:  []string{"tier0 computed dir=. ./a ./b | dir=nested .", "tier1 guard dir=. guard"},
+ 		},
+ 		{
+-			name: "a command without {targets} runs once, whole, under a narrower scope",
+-			mutate: func(cfg *gateslot.Config) {
+-				t0 := cfg.Tiers["tier0"]
+-				t0.Command = "make test {args}"
+-				cfg.Tiers["tier0"] = t0
+-			},
+-			scope: narrower,
+-			want:  []string{"tier0 computed dir=. ./... ignores", "tier1 guard dir=. guard"},
++			name:       "a command without {targets} runs once, whole, under a narrower scope, naming it",
++			mutate:     wholeTier0,
++			scope:      narrower,
++			want:       []string{"tier0 computed dir=. ./...", "tier1 guard dir=. guard"},
++			wantStderr: "gate test: the command of tier0 holds neither {targets} nor {test_targets}, so it runs whole\n",
+ 		},
+ 		{
+ 			name: "a command holding {test_targets} alone narrows like one holding {targets}",
+@@ -310,8 +321,9 @@ func TestPlanTierRuns(t *testing.T) {
+ 				t0.Command = "dotnet test {filter}"
+ 				cfg.Tiers["tier0"] = t0
+ 			},
+-			scope: scope{form: scopeComputed, tiers: map[int]tierScope{0: projects}},
+-			want:  []string{"tier0 computed dir=. ./... ignores"},
++			scope:      scope{form: scopeComputed, tiers: map[int]tierScope{0: projects}},
++			want:       []string{"tier0 computed dir=. ./..."},
++			wantStderr: "gate test: the command of tier0 holds neither {targets} nor {test_targets}, so it runs whole\n",
+ 		},
+ 		{
+ 			name:    "dotnet shares split by base: one tier narrowed, another whole with no terms",
+@@ -474,6 +486,12 @@ func TestPlanTierRuns(t *testing.T) {
+ 			request: testRequest{args: []string{"-v"}},
+ 			want:    "command of tier0 holds no {args}",
+ 		},
++		{
++			name:    "explicit targets that no listed tier's command takes",
++			mutate:  wholeTier0,
++			request: testRequest{targets: []string{"./a", "./b"}},
++			exact:   `gate test: no command of tier0 holds {targets} or {test_targets}, so the targets ./a ./b reach no tier this call runs; way forward: drop the targets to run tier0 whole, or name with --tier a tier whose command takes targets, then re-run the same command; to add {targets} to a tier's command, run "lym config gate" from the prime` + roleClause,
++		},
+ 		{name: "an undeclared tier", request: testRequest{tiers: []int{5}}, want: "declares no tier5"},
+ 		{
+ 			name:   "a hub with no tier0",
