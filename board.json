@@ -677,7 +677,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `adopt-robust`.\n\nTakes: adopt-worker-record's worker, record, follow and resume; adopt-owner-handover's archive-owner tag name function\nDelivers: lym adopt --here with its owned_here outcome and record take-up; the s shortcut as adopt --here --no-orch, beam start, reed attach; lym adopt --archives over a fabric read of archive-owner tags against each repository's origin branch\nExports: the fabric archive-owner tag read\n\nThe part changes these packages:\n\n- internal/adoptcli (about 450 changed lines)\n- internal/shortcutcli (about 10 changed lines)\n- internal/fabricengine (about 150 changed lines)\n",
-      "status": "running · Preflight",
+      "status": "running · Drift-Baseline",
       "created": "2026-11-09T19:45:19Z",
       "revised": "2026-11-09T19:45:19Z",
       "profile": "light",
@@ -907,7 +907,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #107](https://github.com/Knatte18/loomyard/issues/107).\n\n## What happened\n\nIn a beam, the orch promoted a Sketch with `lym board promote S1`, which made it a task with recipe `raddle`.\nIt then ran `lym board set-deps '{\"slug\":\"\u003cslug\u003e\",\"depends_on\":[\"\u003cother\u003e\"]}'`, where `\u003cother\u003e` was a task of the same beam still `running · PR-Review`, and only after that released the task with `lym board set-status '{\"slug\":\"\u003cslug\u003e\",\"status\":null}'`.\n`lym board get` showed `depends_on` set and the status already `running · Seed-Child` moments later: the beam's dobby started the raddle task although its dependency had not landed.\n\n## Workaround\n\n`lym batten pause \u003cslug\u003e` holds the run; the orch resumes it with `lym batten run \u003cslug\u003e` once the dependency lands.\n\n## Expected\n\nDobby starts a released task only when every entry in its `depends_on` is done or gone, whatever its recipe, `raddle` included.\n",
-      "status": "running · Record-Write",
+      "status": "running · Drift-Baseline",
       "created": "2026-11-11T06:23:07Z",
       "revised": "2026-11-11T07:31:40Z",
       "profile": "light"
