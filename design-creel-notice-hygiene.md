@@ -1,6 +1,6 @@
 # Creel sends an unchanged notice once and drops mail about runs that no longer exist
 
-`creel-notice-hygiene` · Task · bug, creel, dobby, fabric, orch · running · PR-Review
+`creel-notice-hygiene` · Task · bug, creel, dobby, fabric, orch · running · Finalize
 
 Fix both creel faults in one run. Read first where dobby and fabric decide to send, and why mail waited in the queue.
 
