@@ -1,6 +1,6 @@
 # A coverage gate scope runs changed packages whole and importing packages' selected tests
 
-`gate-scope-coverage` · Task · feature, gate, testkit, darn · running · Seed-Child
+`gate-scope-coverage` · Task · feature, gate, testkit, darn · running · Open-Window
 
 Decision record: [Sketch](decision-gate-scope-coverage.md)
 
