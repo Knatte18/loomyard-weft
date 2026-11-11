@@ -1,6 +1,6 @@
 # Console window titles put the task handle first, with hub and project in brackets
 
-`console-title-handle-first` · Task · enhancement, termwindow · running · Worktree-Create
+`console-title-handle-first` · Task · enhancement, termwindow · running · Seed-Child
 
 ## Seen (operator, 2026-11-09)
 
