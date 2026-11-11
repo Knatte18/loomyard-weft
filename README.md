@@ -57,7 +57,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T15 | **A coverage gate scope runs changed packages whole and importing packages' selected tests** | [`gate-scope-coverage`](design-gate-scope-coverage.md)<br>[Sketch](decision-gate-scope-coverage.md) | darn · solid | Describe | neve | 8h<br>2h | gate, testkit, darn |
+| T15 | **A coverage gate scope runs changed packages whole and importing packages' selected tests** | [`gate-scope-coverage`](design-gate-scope-coverage.md)<br>[Sketch](decision-gate-scope-coverage.md) | darn · solid | PR-Review | neve | 8h<br>2h | gate, testkit, darn |
 
 #### Ready (0)
 
@@ -71,7 +71,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **The coverage selector takes its target, compares own files by function, and misses on a changed environment stamp** | [`testmap-selector-upkeep-rules`](design-testmap-selector-upkeep-rules.md)<br>[Sketch](decision-testmap-selector-upkeep-rules.md) | darn · solid | T15 | 33m<br>33m | testkit, gate, dobby |
+| T2 | **The coverage selector takes its target, compares own files by function, and misses on a changed environment stamp** | [`testmap-selector-upkeep-rules`](design-testmap-selector-upkeep-rules.md)<br>[Sketch](decision-testmap-selector-upkeep-rules.md) | darn · solid | T15 | 34m<br>34m | testkit, gate, dobby |
 
 #### Layer B (1)
 
@@ -79,7 +79,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **lym gate testmap plans each map at the prime's HEAD, keeps what still holds, and checks what it keeps** | [`testmap-upkeep-plan`](design-testmap-upkeep-plan.md)<br>[Sketch](decision-testmap-upkeep-plan.md) | darn · solid | T2 | 33m<br>33m | testkit, gate, dobby |
+| T3 | **lym gate testmap plans each map at the prime's HEAD, keeps what still holds, and checks what it keeps** | [`testmap-upkeep-plan`](design-testmap-upkeep-plan.md)<br>[Sketch](decision-testmap-upkeep-plan.md) | darn · solid | T2 | 34m<br>34m | testkit, gate, dobby |
 
 #### Layer C (1)
 
@@ -87,7 +87,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **An upkeep pass runs under a slot it yields to a gate, side by side where tests declare it, and writes per round** | [`testmap-upkeep-runs`](design-testmap-upkeep-runs.md)<br>[Sketch](decision-testmap-upkeep-runs.md) | darn · solid | T3 | 33m<br>33m | testkit, gate, dobby |
+| T4 | **An upkeep pass runs under a slot it yields to a gate, side by side where tests declare it, and writes per round** | [`testmap-upkeep-runs`](design-testmap-upkeep-runs.md)<br>[Sketch](decision-testmap-upkeep-runs.md) | darn · solid | T3 | 34m<br>34m | testkit, gate, dobby |
 
 #### Layer D (1)
 
@@ -95,7 +95,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **The prime dobby starts an upkeep pass on remaining work, and an anchor move ends it** | [`testmap-upkeep-dobby`](design-testmap-upkeep-dobby.md)<br>[Sketch](decision-testmap-upkeep-dobby.md) | darn · solid | T4 | 33m<br>33m | testkit, gate, dobby |
+| T5 | **The prime dobby starts an upkeep pass on remaining work, and an anchor move ends it** | [`testmap-upkeep-dobby`](design-testmap-upkeep-dobby.md)<br>[Sketch](decision-testmap-upkeep-dobby.md) | darn · solid | T4 | 34m<br>34m | testkit, gate, dobby |
 
 ### Notes (2)
 
@@ -168,7 +168,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 4d<br>4d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 3d<br>2h | shed, loom, darn |
-| E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 2h<br>31m | testkit, gate |
+| E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 2h<br>32m | testkit, gate |
 
 #### Features (14)
 
