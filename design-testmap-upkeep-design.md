@@ -9,6 +9,10 @@ Decision record: [Sketch](decision-testmap-upkeep-design.md)
 The research task `testmap-upkeep` landed `docs/research/speed/testmap-upkeep-2026-11-11/report.md`, which decides nothing.
 `testmap-cross-package`, `coverage-test-select` and `gate-scope-coverage` were filed on the premise that this design exists, and `testmap-cross-package` stopped before any code for that reason.
 
+Built since (board tidy, 2026-11-11): `testmap-cross-package` has landed (`99bec44e`).
+Its maps record a linked package's coverage by function (`Funcs`, `Linked`, `OtherFiles`, `MapTest.Spawn`, and a `Format` marker with an environment stamp), which agrees with this record's D3.
+It left staleness as it was: a change to a linked package's file alone leaves a map fresh, until the build of D1 lands.
+
 ## This task
 
 Run Discussion alone over the report and store the decision record on this entry.
