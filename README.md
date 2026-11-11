@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-11 19:07 UTC; every age below is as of then.
+Rendered 2026-11-11 19:08 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -109,8 +109,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Optional extra review of the Discussion record by the parent orch or a named agent** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md)<br>[Sketch](decision-parent-reviews-decision-record.md) | raddle | Worktree-Create | neve | 3d<br>0m | loom, orch, config, burler |
-| T2 | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md)<br>[Sketch](decision-claude-account-weights.md) | raddle | Open-Window | neve | 9d<br>0m | claude, shuttle, config |
+| T1 | **Optional extra review of the Discussion record by the parent orch or a named agent** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md)<br>[Sketch](decision-parent-reviews-decision-record.md) | raddle | Seed-Child | neve | 3d<br>0m | loom, orch, config, burler |
+| T2 | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md)<br>[Sketch](decision-claude-account-weights.md) | raddle | Seed-IDE | neve | 9d<br>0m | claude, shuttle, config |
 
 #### Ready (0)
 
@@ -134,7 +134,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **The orch session starts on the provider default model because orch.model and orch.effort default to empty** | [`orch-model-default-empty`](design-orch-model-default-empty.md) | 25m<br>25m | orch, config |
+| B1 |  | **The orch session starts on the provider default model because orch.model and orch.effort default to empty** | [`orch-model-default-empty`](design-orch-model-default-empty.md) | 26m<br>26m | orch, config |
 
 #### Enhancements (3)
 
