@@ -22,4 +22,11 @@ Expected: a reused slug whose old path holds only build output (obj/bin) is not 
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - delete-before-preflight-refusals (class design, severity MEDIUM, open in rounds 1)
+  - tracked-file-refusal-unpinned (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
