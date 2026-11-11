@@ -2,8 +2,6 @@
 
 `landed-run-holds-slot` · Task · bug, dobby, batten, cleanup · running · Darn-Write
 
-Depends on: [`dobby-raddle-ignores-deps`](design-dobby-raddle-ignores-deps.md)
-
 ## Seen (orch, 2026-11-11)
 
 `reed-slack-relay` landed on 2026-11-05 and its board entry is done, but its batten run stopped as `failed` at Run-Shed before Worktree-Teardown, with the error `origin ended "reed-slack-relay" (it landed and its board entry is done); run "lym cleanup --apply" from the prime`.
