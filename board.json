@@ -545,7 +545,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-11)\n\nOn OSL-1046 the orch of the prime started on Sonnet.\nThe `orch` module's template holds `model: \"\"` and `effort: \"\"`, and `internal/orchcli/start.go` passes them as the session's `ModelChoice`, where empty means the provider default.\nSo the orch runs on whatever Claude Code's default is on that machine (a local `/model`, `~/.claude/settings.json` or the account's default), unlike every other agent in lym, whose model and effort come from a config default.\n\n## Wanted\n\nThe orch's model and effort come from lym's config with a non-empty default in the template, so `lym s` and `lym beam start` start the orch on the configured model on every machine.\nThe template default is `model: opus` and `effort: medium` (operator, 2026-11-11, \"for now\").\nThe operator has already set both in this hub's default layer; the template default makes every hub and machine start the same way.\nCheck that every path that starts an orch session, `lym s` included, reads `orch.model` and `orch.effort`.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-11T18:42:01Z",
       "revised": "2026-11-11T19:30:02Z",
       "profile": "light"
