@@ -76,7 +76,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 1d · Owner `neve`
 
-### Tasks (1)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -94,16 +94,23 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (3)
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | `draft` **Decide how the coverage maps are kept fresh: triggers, batch, staleness and sharing across machines** | [`testmap-upkeep`](design-testmap-upkeep.md) | darn |  | 1d<br>48m | testkit, gate, dobby |
+
+### Notes (2)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-#### Enhancements (3)
+#### Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 1d<br>1d | testkit, gate |
-| E5 |  | **Decide how the coverage maps are kept fresh: triggers, batch, staleness and sharing across machines** | [`testmap-upkeep`](design-testmap-upkeep.md) | 1d<br>48m | testkit, gate, dobby |
 | E12 |  | **The prime dobby leaves a coverage map backlog unbuilt until more landings come** | [`testmap-backlog-drain`](design-testmap-backlog-drain.md) | 1d<br>1h | dobby, gate, testkit |
 
 </details>

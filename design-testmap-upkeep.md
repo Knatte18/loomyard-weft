@@ -1,6 +1,6 @@
 # Decide how the coverage maps are kept fresh: triggers, batch, staleness and sharing across machines
 
-`testmap-upkeep` · Note · enhancement, testkit, gate, dobby
+`testmap-upkeep` · Task · enhancement, testkit, gate, dobby · draft
 
 ## Seen (orch, 2026-11-09)
 
