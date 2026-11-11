@@ -1,0 +1,110 @@
+{
+  "sketch": "parent-reviews-decision-record",
+  "shape": "tasks",
+  "board_checked": [
+    {"slug": "claude-account-weights", "revised": "2026-11-11T19:07:53Z"}
+  ],
+  "parts": [
+    {
+      "slug": "parent-review-ask-verbs",
+      "title": "The parent-review ask record, its deadline keys, and lym loom parent-review answer and await",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D4", "D5"],
+      "packages": [
+        {"path": "internal/loomcli", "size": 450},
+        {"path": "internal/burlerengine", "size": 280},
+        {"path": "internal/loomengine", "size": 110},
+        {"path": "internal/lymdirs", "size": 5}
+      ],
+      "contract": {
+        "takes": "the Sketch's decision record; CapAssistTimeout, the decision add --by parent guard, KeepWarm, lock and state",
+        "delivers": "the loom.yaml keys discussion_review_ask_parent and discussion_review_parent_timeout_min with validation and template comments; the never-tracked ask record and parent report under .lym, with forward-only state moves under one per-run lock; the capped-deadline function; lym loom parent-review answer and await",
+        "exports": "the ask record's read, write and state-move API in burlerengine, the deadline cap in loomengine, lym loom parent-review answer <slug> --ask <n>, lym loom parent-review await <slug>"
+      },
+      "depends_on": [],
+      "open_risks": ["None."],
+      "criteria": [
+        "D4: `--satisfied` sets the ask `done` with a report that holds no findings; `--findings-file` sets it `done` with the file's findings, each keeping its given severity and class, with ids `P1`, `P2` and so on in the file's order.",
+        "D4: a findings file with no item, an item with no `change`, or a severity or class outside the review format's words is refused, naming the file's shape.",
+        "D4: the answer verb is refused, each refusal naming `lym loom decision add` and who runs it, for a slug with no ask, for an `--ask` that is not the latest ask's number while the latest is in an end state, and for an ask already `done`, `timeout`, `no-parent` or `not-sent`;\nthe refusal names the run's resolved parent orch, or the operator's unnamed shell when no parent orch resolves.",
+        "D4: an `--ask` that is not the latest ask's number, while the latest is `pending-post` or `open`, is refused naming the latest number and saying to review the record again before answering it.",
+        "D4: the answer verb is refused for a named caller that is neither the run's parent orch nor the strand the ask went to, and admitted for that strand after the parent orch resolves to another strand, the ask's state `pending-post` included.",
+        "D4: an answer to an ask still `open` at or past its deadline sets the ask `timeout` and is refused, naming `lym loom decision add` and the run's resolved parent orch.",
+        "D5: the await verb answers ready once the ask is answered or already `timeout`; at the deadline with no answer it sets the ask `timeout` and answers ready; before both it answers not ready once its cap runs out.",
+        "D5: the await's ready answer names the ask's state, the `not-sent` reason for a `not-sent` ask, and the report's path for a `done` one.",
+        "D5: with `review_timeout_min` shorter than `discussion_review_parent_timeout_min`, the deadline falls before the chair's timeout by at least the consolidation margin.",
+        "D5: an answer racing the deadline leaves exactly one of `done` or `timeout`, and the losing answer is refused.",
+        "D5: `discussion_review_parent_timeout_min: 0` is refused by config validation naming the key.",
+        "Review: the `internal/loomengine/template.yaml` comments for both new keys say they are settable per run through `run_settings`."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 7.3,
+      "cost_line": "darn/solid/stored-record fit over 11 runs: fixed $4.72 plus $0.31 per 100 lines times about 845 changed lines"
+    },
+    {
+      "slug": "discussion-review-parent-seat",
+      "title": "The Discussion-Review round asks the parent orch, and its chair keeps every parent finding",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D6", "D7"],
+      "packages": [
+        {"path": "internal/burlerengine", "size": 500},
+        {"path": "internal/shedadapters", "size": 300},
+        {"path": "contracts/stencils", "size": 90},
+        {"path": "internal/orchcli", "size": 50},
+        {"path": "internal/loomcli", "size": 40},
+        {"path": "contracts/orchrole", "size": 40}
+      ],
+      "contract": {
+        "takes": "parent-review-ask-verbs' ask record API, deadline cap, config keys and verbs; NotifyParent's routing; the assistant seat as the model for the consolidation part and the copy beside the review",
+        "delivers": "the asking rule and creel ask in Discussion-Burler-Review, signed as <shortname>:LOOM; the parent consolidation stencil and marker; Finding's parent_ids and the review format stencil's key; the parent coverage gate entry; the copy of a done report beside the review; the orch-role section for [discussion-review request]",
+        "exports": "the [discussion-review request] creel line, Finding.ParentIDs, the parent coverage gate entry, an orchcli post to a given strand signed as a program"
+      },
+      "depends_on": ["parent-review-ask-verbs"],
+      "open_risks": [],
+      "criteria": [
+        "D1: a task whose `run_settings` sets `discussion_assist_reviewer_model: fable[high]` over a hub that sets none runs its Discussion-Review round with an assistant seat on that model; existing coverage may meet it.",
+        "D2: with `discussion_review_ask_parent` off, a Discussion-Burler-Review round sends no `[discussion-review request]`; with it on in the hub, or on in a task's `run_settings` over a hub that leaves it off, the run's first round sends one.",
+        "D2: a task's `run_settings` setting `discussion_review_ask_parent: false` over a hub that sets it `true` sends no ask.",
+        "D2: a later round of the same seed asks again when the round before's parent answer held findings or the ask was `not-sent`, and asks nothing when it was satisfied, `timeout` or `no-parent`.",
+        "D2: the first round of a new generation, whose round number is 1 again, asks whatever the previous generation's last parent answer was.",
+        "D2: after a satisfied parent answer, a goto back to Discussion-Write over an undecided escalated round, followed by a `continue`, makes the next round ask about the rewritten record.",
+        "D2: with the key turned off after a round's ask, a restarted review row of that round sends no new ask, posts an ask it finds `pending-post`, and its chair awaits and consolidates the round's ask.",
+        "D3: the ask line names the slug, the round, the ask number, the decision record's path, the deadline and the answer verb with its `--ask` flag.",
+        "D3: a review row restarted in the same round, with a new attempt token, sends no second ask and keeps the first deadline once the ask is `open`, and posts again when it finds the ask `pending-post`.",
+        "D3: a Bouncer clear after a `done` ask seeds round 1, which sends a new ask and keeps none of the old report's findings.",
+        "D3: with no orch strand recorded at the destination, nothing is posted, the ask is set `no-parent`, the round goes on, and the review records that the parent review did not arrive.",
+        "D3: a review row whose process carries a non-orch strand name posts the request signed as `<shortname>:LOOM`.",
+        "D3: an ask posted to an orch that never answers is set `timeout` at the deadline.",
+        "D4: a `done` parent report is copied beside the review file once the round's review is accepted.",
+        "D4: a row restarted after its review was accepted, with a `done` report not yet copied, copies it, and a later answer to the round's ask is refused.",
+        "D5: with a chair timeout that leaves no room, the round sends no ask, sets the ask `not-sent`, logs a Warn saying to raise `review_timeout_min`, and the review's line names the reason.",
+        "D5: a round whose ask ends in `timeout` writes the review line saying the parent review did not arrive, naming `timeout` as the reason.",
+        "D5: an ask still `open` when the chair reaches done with the review written is set `timeout` before the review is accepted, and a later answer to it is refused;\nafter a table that failed before its chair reached done, the restarted row's chair still awaits it up to the first deadline.",
+        "D7: in a round whose parent report holds findings, a review that leaves a report id in no `origin: parent` finding's `parent_ids` fails the parent coverage entry, naming the missing ids, and is not accepted; one that covers every id passes it.",
+        "D7: a round whose ask is `not-sent`, with `discussion_review_ask_parent` off, still fills the parent consolidation part.",
+        "Review: D6 — `contracts/orchrole/orch-role.md` has a section for a `[discussion-review request]` line from the hub's LOOM program, that hands the review to a one-shot fork, lets that fork run `lym loom decision add --by parent` and `lym loom parent-review answer` for the named slug only, gives the findings file's shape, and names the D1 assistant keys and the D2 and D5 keys.",
+        "Review: D7 — the parent consolidation stencil tells the chair to wait with the await verb, keep every parent finding with `origin: parent` and the `parent_ids` it covers, keep a merged finding's `origin: parent`, give a finding with no severity `BLOCKING`, map `decision` to `design`, and never reject one.",
+        "Review: D7 — the review format stencil names the optional `parent_ids` finding key, and `burlerengine`'s `Finding` reads it."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 7.9,
+      "cost_line": "darn/solid/stored-record fit over 11 runs: fixed $4.72 plus $0.31 per 100 lines times about 1020 changed lines"
+    }
+  ],
+  "cost": {
+    "expected_usd": 15.2,
+    "line": "two chained darn/solid parts on the stored record, each priced by the darn/solid/stored-record fit over 11 runs: $7.30 plus $7.90",
+    "next_best": {
+      "split": "one darn/solid part building D1-D7 over about 1825 lines",
+      "expected_usd": 10.3,
+      "line": "the same darn/solid/stored-record fit paid once: $4.72 fixed plus $0.31 per 100 lines; set aside under the operator's rule that smaller darns, each with its own run and review perches, beat a lower fixed cost"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}

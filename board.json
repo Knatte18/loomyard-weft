@@ -625,6 +625,60 @@
       "body": "## Seen (operator, 2026-11-11)\n\nOn OSL-1046 the orch of the prime started on Sonnet.\nThe `orch` module's template holds `model: \"\"` and `effort: \"\"`, and `internal/orchcli/start.go` passes them as the session's `ModelChoice`, where empty means the provider default.\nSo the orch runs on whatever Claude Code's default is on that machine (a local `/model`, `~/.claude/settings.json` or the account's default), unlike every other agent in lym, whose model and effort come from a config default.\n\n## Wanted\n\nThe orch's model and effort come from lym's config with a non-empty default in the template, so `lym s` and `lym beam start` start the orch on the configured model on every machine.\nThe default is the operator's call; the operator reads the orch as needing a strong model, as the other agents are set.\nCheck that every path that starts an orch session, `lym s` included, reads `orch.model` and `orch.effort`.\n",
       "created": "2026-11-11T18:42:01Z",
       "revised": "2026-11-11T18:42:01Z"
+    },
+    {
+      "id": 1341,
+      "handle": "T6",
+      "slug": "parent-review-ask-verbs",
+      "title": "The parent-review ask record, its deadline keys, and lym loom parent-review answer and await",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "loom",
+        "orch",
+        "config",
+        "burler"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `parent-reviews-decision-record`.\n\nTakes: the Sketch's decision record; CapAssistTimeout, the decision add --by parent guard, KeepWarm, lock and state\nDelivers: the loom.yaml keys discussion_review_ask_parent and discussion_review_parent_timeout_min with validation and template comments; the never-tracked ask record and parent report under .lym, with forward-only state moves under one per-run lock; the capped-deadline function; lym loom parent-review answer and await\nExports: the ask record's read, write and state-move API in burlerengine, the deadline cap in loomengine, lym loom parent-review answer \u003cslug\u003e --ask \u003cn\u003e, lym loom parent-review await \u003cslug\u003e\n\nThe part changes these packages:\n\n- internal/loomcli (about 450 changed lines)\n- internal/burlerengine (about 280 changed lines)\n- internal/loomengine (about 110 changed lines)\n- internal/lymdirs (about 5 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-11T19:18:55Z",
+      "revised": "2026-11-11T19:18:55Z",
+      "profile": "solid",
+      "discussed": true,
+      "record_body_sha256": "246d72348c90ce2836e95017d490d8529f209ba7acb470f5825071c2501edfef"
+    },
+    {
+      "id": 1342,
+      "handle": "T7",
+      "slug": "discussion-review-parent-seat",
+      "title": "The Discussion-Review round asks the parent orch, and its chair keeps every parent finding",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "loom",
+        "orch",
+        "config",
+        "burler"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "parent-review-ask-verbs"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `parent-reviews-decision-record`.\n\nTakes: parent-review-ask-verbs' ask record API, deadline cap, config keys and verbs; NotifyParent's routing; the assistant seat as the model for the consolidation part and the copy beside the review\nDelivers: the asking rule and creel ask in Discussion-Burler-Review, signed as \u003cshortname\u003e:LOOM; the parent consolidation stencil and marker; Finding's parent_ids and the review format stencil's key; the parent coverage gate entry; the copy of a done report beside the review; the orch-role section for [discussion-review request]\nExports: the [discussion-review request] creel line, Finding.ParentIDs, the parent coverage gate entry, an orchcli post to a given strand signed as a program\n\nThe part changes these packages:\n\n- internal/burlerengine (about 500 changed lines)\n- internal/shedadapters (about 300 changed lines)\n- contracts/stencils (about 90 changed lines)\n- internal/orchcli (about 50 changed lines)\n- internal/loomcli (about 40 changed lines)\n- contracts/orchrole (about 40 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-11T19:18:55Z",
+      "revised": "2026-11-11T19:18:55Z",
+      "profile": "solid",
+      "discussed": true,
+      "record_body_sha256": "af949c14b154fb48ae60e0ce62059ba8c8f92f3bae6f8967a93065a8fba7dfc4"
     }
   ],
   "prime_owner": "neve",

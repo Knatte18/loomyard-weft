@@ -95,11 +95,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (19)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (21)</strong></summary>
 
 Owner `neve`
 
-### Tasks (2)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -117,6 +117,15 @@ Held by a run; its scope is locked until the run ends.
 Waits on nothing open; can start now.
 
 _None._
+
+#### Draft (2)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T6 | `draft` **The parent-review ask record, its deadline keys, and lym loom parent-review answer and await** | [`parent-review-ask-verbs`](design-parent-review-ask-verbs.md)<br>[Sketch](decision-parent-review-ask-verbs.md) | darn · solid |  | 0m<br>0m | loom, orch, config, burler |
+| T7 | `draft` **The Discussion-Review round asks the parent orch, and its chair keeps every parent finding** | [`discussion-review-parent-seat`](design-discussion-review-parent-seat.md)<br>[Sketch](decision-discussion-review-parent-seat.md) | darn · solid | T6 | 0m<br>0m | loom, orch, config, burler |
 
 ### Notes (17)
 
