@@ -52,19 +52,54 @@
 - Forcing a Bouncer continue while parent findings await the parent's confirmation: costs a round and a second parent read for findings Burler-Fix already fixed.
 - A deadline of `0` meaning "no deadline": the operator wants a deadline so a run goes on without the parent.
 - Extending the parent seat to Plan and Code perches now: the entry says "could later"; YAGNI.
+- The chair waiting with `lym shuttle await` on a marker: something must set `timeout` at the deadline, and the parent is no shuttle run whose end writes a marker.
+- Keying the ask by Bouncer generation and round: a clear re-seeds round 1 under the same generation, and a goto back to Discussion-Write starts none.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- BLOCKING F1, D2's generation premises false: fixed; asking keyed on the round's seed and on a `Discussion-Write` run after the latest ask.
+- MEDIUM F2, clear reuses the ask key: fixed; ask matched by seed and round, ask record outside the run directory.
+- MEDIUM F3, cap formula: fixed (D5 formula, 5-minute consolidation margin, `not-sent`).
+- MEDIUM F4, `no-parent` unreachable: fixed (D3 maps the nil-error return; dead orch ends in `timeout`).
+- MEDIUM F5, answer names no ask, open ask never closed: fixed differently; an ask number in place of generation and round.
+  Go closes an open ask when the table ends with its review, and the answer verb closes one past its deadline, so a failed table's restart keeps the ask.
+- MEDIUM F6, findings file shape: fixed (D4 YAML shape).
+- MEDIUM F7, ask signer: fixed by the reviewer's alternative; D3 signs the ask as the program `LOOM`, which D6 keys on.
+- LOW F8–F13, NIT F14: fixed.
+- Fixer self-check: six fork findings, all fixed (fork reach bound, history folding, goto case, `pending-post` and the key, `not-sent` retry, strand stored before the post).
+
+### Round 2
+
+- MEDIUM F1, parent findings kept by chair prose alone: fixed differently in part.
+  Report ids, `parent_ids` and a merged finding keeping `origin: parent` as proposed;
+  the coverage check is a gate entry that closes a still-open ask before it checks, so no answer lands between check and close.
+- MEDIUM F2, close and copy missed on the accepted-review hand-on path: fixed differently;
+  the close moved into the coverage gate entry, before acceptance, and the copy runs at acceptance on both paths.
+- MEDIUM F3, the chair cannot learn the ask's state, reason or report path: fixed (await answer, D7 fill rule).
+- LOW F4, refusal ways forward: fixed (latest-ask refusal, resolved parent named, D6 bound).
+- LOW F5, F6, F7, NIT F8: fixed.
+- Fixer self-check: four forks, nine findings, all fixed (await ready on `timeout`, copy archive clause dropped,
+  re-review before answering the latest ask, operator's shell when no parent resolves, coverage entry order and failure path,
+  criterion twins, ledger picks, format key criterion).
 
 ## Question ledger
 
 - Fan beside the lenses, step before Plan, or both? Auto-pick: fan (D2). Rationale: the perch's round already reviews, fixes and gates.
 - New agent-fan key? Auto-pick: none; reuse the assistant reviewer (D1).
 - How does the parent answer? Auto-pick: a `lym loom parent-review answer` verb writing a never-tracked report (D4).
+- What shape is the findings file? Auto-pick: a YAML `findings` list, each item with a required `change` and optional `severity` and `class` (D4); the chair needs them for D7.
 - Default deadline? Auto-pick: 30 minutes, positive integer only (D5).
-- Which rounds ask? Auto-pick: round 1, and later rounds only after parent findings (D2).
+- How much room does the chair keep after the wait? Auto-pick: a 5-minute consolidation margin (D5).
+- No room before the chair's timeout? Auto-pick: send no ask, mark it `not-sent`, warn (D5).
+- Which rounds ask? Auto-pick: a round of a new seed, a round after Discussion-Write rewrote the record, and a round after parent findings (D2).
 - May the orch's fork write? Auto-pick: yes, only `decision add --by parent` and the answer verb, for the named slug (D6).
-- Does a new Bouncer generation ask again? Auto-pick: yes, its first round always asks (D2).
+- Does a new Bouncer generation or a clear ask again? Auto-pick: yes, each seeds round 1, which asks (D2).
 - May the chair reject a parent finding? Auto-pick: no; merge only (D7).
 - No reachable parent? Auto-pick: mark `no-parent`, go on, record it (D3).
+- How does Go hold the chair to keeping every parent finding? Auto-pick: report ids `P1`, `P2` and so on,
+  a `parent_ids` finding key, and a gate entry that never passes on its cap (D4, D7).
+  Rationale: a prose rule alone loses findings when the chair skips the await or drops an item.
+- When is an ask the chair never awaited closed? Auto-pick: by the coverage gate entry, before it checks (D5, D7).
+  Rationale: closing after the check lets an answer land `done` between the check and the close, unconsolidated.
