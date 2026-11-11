@@ -103,13 +103,19 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (1)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Optional extra review of the Discussion record by the parent orch or a named agent** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md)<br>[Sketch](decision-parent-reviews-decision-record.md) | raddle | Worktree-Create | neve | 3d<br>0m | loom, orch, config, burler |
+
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Optional extra review of the Discussion record by the parent orch or a named agent** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md)<br>[Sketch](decision-parent-reviews-decision-record.md) | raddle |  | 3d<br>0m | loom, orch, config, burler |
+_None._
 
 ### Notes (18)
 
