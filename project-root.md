@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T16 | **Darn verify gate: stop at the first failing tier, rerun only failed tests, a time budget, and a truthful zero-attempt halt** | [`verify-gate-faults`](design-verify-gate-faults.md) | darn · solid | PR-Review | neve | 1d<br>1d | gate, darn, loom |
+| T16 | **Darn verify gate: stop at the first failing tier, rerun only failed tests, a time budget, and a truthful zero-attempt halt** | [`verify-gate-faults`](design-verify-gate-faults.md) | darn · solid | Finalize | neve | 1d<br>1d | gate, darn, loom |
 
 ### Ready (0)
 

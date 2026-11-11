@@ -1,6 +1,6 @@
 # Darn verify gate: stop at the first failing tier, rerun only failed tests, a time budget, and a truthful zero-attempt halt
 
-`verify-gate-faults` · Task · bug, enhancement, gate, darn, loom · running · PR-Review
+`verify-gate-faults` · Task · bug, enhancement, gate, darn, loom · running · Finalize
 
 ## This task
 
