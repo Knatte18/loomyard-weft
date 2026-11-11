@@ -563,7 +563,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `gate-scope-by-coverage-map`.\n\nTakes: testmap-cross-package's map shape, the working tree and fabricengine.Fabric.CodeFileAt for file content at the map's Commit\nDelivers: for one importing package's map: the tests selected by changed functions of linked packages per D4, or a D5 miss with its reason (map unreadable or unmarked, Commit unreadable, own files changed, non-body change, //go: line, method set, added init, predeclared name, parse failure, non-Go file change with the go:embed carve-out from inert_paths)\nExports: a selector in internal/testcover returning the selected test names or a miss reason, which coverage-gate-scope calls per importing package\n\nThe part changes these packages:\n\n- internal/testcover (about 900 changed lines)\n\n## Changes from the upkeep design (D13 of `testmap-upkeep-design`)\n\nRead the record with `lym board get testmap-upkeep-design --record`; this part follows it where it changes this entry:\n\n- The rules of D2, over D3's function sets.\n- Its D5 Bound's list of what rebuilds a map becomes D1's plan verdicts at each landing and a hand call naming the package.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-11T09:07:11Z",
       "revised": "2026-11-11T15:28:17Z",
       "profile": "solid",
