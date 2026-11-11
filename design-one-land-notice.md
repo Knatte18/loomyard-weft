@@ -2,8 +2,6 @@
 
 `one-land-notice` · Task · enhancement, dobby, batten, workspaces · running · Darn-Write
 
-Depends on: [`landed-run-holds-slot`](design-landed-run-holds-slot.md)
-
 Imported from [issue #93](https://github.com/Knatte18/loomyard/issues/93).
 
 ## Seen

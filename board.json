@@ -527,9 +527,7 @@
         93
       ],
       "recipe": "darn",
-      "depends_on": [
-        "landed-run-holds-slot"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #93](https://github.com/Knatte18/loomyard/issues/93).\n\n## Seen\n\nIn hub `dop`, beam `loomyard-setup` with PR 30 recorded, member task `dotnet10-upgrade` carried `notify_on_land: true`.\nIts landing sent the beam orch two separate mails from the beam's dobby:\n\n1. `#130`: \"loomyard-setup: landed into the beam while its pull request is recorded: 74fc86c ... (#31); add them to the change description, then run `lym beam describe loomyard-setup`\" (the beam-PR landing notice, sent for every landing while a beam PR is recorded).\n2. `#131`: \"[dobby notice] dotnet10-upgrade: landed as 74fc86c8f712\" (the `notify_on_land` line).\n\nTwo mechanisms report the same event. The operator found this redundant and confusing: it was not clear which one did what, or that the beam-PR notice exists at all.\n\n## Expected (operator's design)\n\nOne mechanism, `notify_on_land`, for every land notice.\nWhile a beam has a recorded pull request, its members land with `notify_on_land` in effect without anyone setting it, and the one line they send carries the beam's follow-up (add the landing to the change description, run `lym beam describe \u003cslug\u003e`).\nA task that also has `notify_on_land` set by hand gets that same single line, not a second one.\n\n\n## Issue comment, 2026-11-09\n\nOperator's refinement: opening the beam's pull request (lym beam pr open) sets notify_on_land: true on the beam's member tasks, and on every member added while the PR is recorded, so dobby has one trigger only: the flag. The beam-PR landing notice as a separate trigger goes away; its follow-up (update the change description, run lym beam describe) rides on the notify_on_land line for members of a beam with a recorded PR.",
@@ -848,29 +846,6 @@
       "body": "## Seen (issue #102, left out of loop-exit-not-recorded)\n\nA load turn that ends on an API `server_error` makes shuttle wait and retype (`load turn ended on an API error; the prompt waits until the load runs through`), with `apiErrors` rising each time and no cap.\nIn the reported run it rose 3, 4, 5 before the loop ended with no envelope, and the run history showed hours of idle time around the stuck step that no status line surfaced.\nThe run `loop-exit-not-recorded` made the loop record its exit status but left these two asks out.\n\n## Idea\n\n- Bound the load-turn retry on `server_error` and name the cap in the halt note, so a halt reads as an API outage rather than only `loop-exited`.\n- Show in `lym loom status` the idle time between a stuck step and the next step.",
       "created": "2026-11-11T08:09:18Z",
       "revised": "2026-11-11T08:30:13Z",
-      "profile": "light"
-    },
-    {
-      "id": 1299,
-      "handle": "T7",
-      "slug": "landed-run-holds-slot",
-      "title": "A landed run left failed before teardown holds a max_runs slot until a hand cleanup",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "dobby",
-        "batten",
-        "cleanup"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (orch, 2026-11-11)\n\n`reed-slack-relay` landed on 2026-11-05 and its board entry is done, but its batten run stopped as `failed` at Run-Shed before Worktree-Teardown, with the error `origin ended \"reed-slack-relay\" (it landed and its board entry is done); run \"lym cleanup --apply\" from the prime`.\nDobby counts halted runs under `max_runs`, so the landed run held a slot for six days and a released task waited on `max_runs 8` behind it.\nNothing cleaned it up on its own; only a hand `lym cleanup --apply` removes the pair.\n\n## Idea\n\n- Dobby gives no slot to a run whose board entry is done or gone, whatever batten's state says.\n- Dobby, or the prime's reconcile, tears down the pair of such a run itself, as `lym cleanup --apply` does, instead of leaving a failing pass for the orch.",
-      "status": "done",
-      "created": "2026-11-11T08:11:01Z",
-      "revised": "2026-11-11T08:30:14Z",
       "profile": "light"
     },
     {
