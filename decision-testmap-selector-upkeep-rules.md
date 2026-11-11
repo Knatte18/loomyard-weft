@@ -94,6 +94,12 @@ Decision: The run of testmap-cross-package is paused at Run-Shed, so its Darn-Wr
 
 Rationale: The operator decided in chat on 2026-11-11 to hold testmap-cross-package, coverage-test-select and gate-scope-coverage until this design is decided; the orch paused the run with lym batten pause. The board shows the old running status because the pause leaves the entry's status.
 
+### Added after Discussion (parent, 2026-11-11): A test file's import change is no miss when the binary already links the import
+
+Decision: The selector reads a change to a test file's imports as no miss when the import is the package's own import path, in the map's linked set, or in the standard library, for an added import; for a removed import, when it is the package's own or in the standard library. Any other added or removed import in a test file is a miss. A new or removed test file whose only imports fall under this allowance is no miss, and its Test functions are selected or dropped as D2 says for a Test function's text. This narrows D2's rule that any change to a test file outside a Test function's text is a miss: the import is the one declaration exempted. Keep the code as it stands.
+
+Rationale: A test binary already links the package, its linked set and the standard library, so such an import adds no instrumented code and changes no recorded coverage. Without the allowance every new test file, which needs testing, would force a whole rebuild of the package, which widens the run for no gain. An import outside those sets can change what the binary links, so it still misses.
+
 ## Constraints
 
 - PATTERN-gate-slot: every coverage build and test run of upkeep holds a slot; the plan step builds and runs nothing, so it holds none.
