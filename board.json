@@ -874,7 +874,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Why\n\nThe research task `testmap-upkeep` landed `docs/research/speed/testmap-upkeep-2026-11-11/report.md`, which decides nothing.\n`testmap-cross-package`, `coverage-test-select` and `gate-scope-coverage` were filed on the premise that this design exists, and `testmap-cross-package` stopped before any code for that reason.\n\n## This task\n\nRun Discussion alone over the report and store the decision record on this entry.\nDecide:\n\n- whether a change in a linked-only package leaves a map fresh, which the cross-package criterion now assumes;\n- whether a failed build keeps the old map or writes a failed-build map;\n- whether testmap skips spawn-marked tests;\n- whether another package's coverage is recorded by function or by block;\n- what the decision changes in `testmap-cross-package`, `coverage-test-select`, `gate-scope-coverage`, `testmap-backlog-drain` and `redundancy-sweep-existing`.\n\nThe three build tasks stay held until this record is approved.\n",
-      "status": "running · Open-Window",
+      "status": "running · Discussion-Write",
       "created": "2026-11-11T14:01:41Z",
       "revised": "2026-11-11T14:01:41Z",
       "project": "test-suite-trim"
