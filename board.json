@@ -609,7 +609,7 @@
       "isolated": false,
       "brief": "Raddle names recipe and profile only in free text; put them in the proposal table",
       "body": "## Seen (2026-11-11, raddle of gate-scope-by-coverage-map)\n\nRaddle shows its proposed parts to the operator in a table, but states each part's recipe and profile only in the free text around it.\nThe operator has to read the prose to learn what each part will run as.\n\n## Idea\n\nGive the proposal table one column for the recipe and one for the profile of each part, such as `darn` and `solid`.\nThe prose keeps only the reasons for the choice and the alternatives set aside.\n",
-      "status": "running · Drift-Await",
+      "status": "running · Drift-Expect",
       "created": "2026-11-11T09:05:00Z",
       "revised": "2026-11-11T15:17:45Z",
       "profile": "light"
