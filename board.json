@@ -1005,6 +1005,26 @@
       "profile": "solid",
       "project": "test-suite-trim",
       "discussed": true
+    },
+    {
+      "id": 1307,
+      "handle": "B3",
+      "slug": "creel-repeat-notices",
+      "title": "Creel repeats the same notice many times for an unchanged state",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel",
+        "dobby",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Dobby and fabric sent identical notices about 25 times during an outage",
+      "body": "## Seen (orch, 2026-11-11)\n\nDuring a network outage on OSL-1046 (`Could not resolve host: github.com`, `EAI_AGAIN`), the orch's mail held about 25 dobby notices that read the same for `testmap-verb` and `arras-recipe-perch`: same state, same `since` time, same history length.\nFABRIC sent the same push failure for the same branch several times, for example the bolt branch `main` and the records branch of each pair.\n\n## Idea\n\nA notice whose text and run state have not changed since the last one sent to the same strand is not sent again, or is sent again only after a stated interval.\nRead first where dobby and fabric decide to send, and whether a repeat is deliberate, for instance as a reminder.\n",
+      "created": "2026-11-11T09:56:17Z",
+      "revised": "2026-11-11T09:56:17Z"
     }
   ],
   "prime_owner": "osl-1046",
