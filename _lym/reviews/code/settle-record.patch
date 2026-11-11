@@ -1,0 +1,205 @@
+diff --git a/internal/fabricengine/export_test.go b/internal/fabricengine/export_test.go
+index 7e43fb1e..672447a8 100644
+--- a/internal/fabricengine/export_test.go
++++ b/internal/fabricengine/export_test.go
+@@ -836,6 +836,11 @@ func WeftDirtyStopForTest(warpPath, weftPath, branch string, paths []string) *We
+ 	return (&Fabric{warpPath: warpPath, weftPath: weftPath}).weftDirtyStop(branch, paths, errors.New("dirty"))
+ }
+ 
++// WeftConflictStopForTest is weftConflictStop for a Fabric holding only warpPath and weftPath.
++func WeftConflictStopForTest(warpPath, weftPath, branch string, paths, ahead []string) *WeftStopError {
++	return (&Fabric{warpPath: warpPath, weftPath: weftPath}).weftConflictStop(branch, paths, ahead, ErrReplayConflict)
++}
++
+ // EntryFactsForTest is entryFacts, the facts an entry is classified from, including OwnedElsewhere.
+ type EntryFactsForTest = entryFacts
+ 
+diff --git a/internal/fabricengine/failedpush_test.go b/internal/fabricengine/failedpush_test.go
+index b940e9c4..752c820e 100644
+--- a/internal/fabricengine/failedpush_test.go
++++ b/internal/fabricengine/failedpush_test.go
+@@ -487,4 +487,15 @@ func TestFailedPushRecord(t *testing.T) {
+ 			t.Errorf("weftDirtyStop way forward = %q; want %q", stop.WayForward, want)
+ 		}
+ 	})
++
++	t.Run("WeftConflictStopMergesAtTheRecordsRootAndPushesInTheAnchoredDir", func(t *testing.T) {
++		stop := fabricengine.WeftConflictStopForTest(anchoredTask, anchoredWeft, "task-weft", []string{"notes/a.md"}, []string{"abc123"})
++		want := "origin/task-weft holds commits that change the same paths as this branch's (paths: notes/a.md; local commits: abc123); " +
++			"to keep origin's side, run `git reset --keep origin/task-weft` in " + anchoredWeft + ", which drops the local commits; " +
++			"to keep this machine's, run `git merge origin/task-weft` in " + anchoredWeft + ", settle the named paths and commit, " +
++			"then run `lym fabric push` in " + anchoredDir + ", whose push is then a fast-forward and meets no replay"
++		if stop.WayForward != want {
++			t.Errorf("weftConflictStop way forward =\n%s\nwant\n%s", stop.WayForward, want)
++		}
++	})
+ }
+diff --git a/internal/fabricengine/pull.go b/internal/fabricengine/pull.go
+index 8a3be033..28f62de9 100644
+--- a/internal/fabricengine/pull.go
++++ b/internal/fabricengine/pull.go
+@@ -436,12 +436,7 @@ func (f *Fabric) settleUnmovedWeft(rec *Mutations, result *PullResult, pullErr e
+ 		logWeftReplay(f.weftPath, outcome)
+ 		return nil, nil
+ 	case errors.Is(err, ErrReplayConflict):
+-		return &WeftStopError{
+-			Branch:     branch,
+-			Paths:      outcome.Conflicts,
+-			WayForward: recordsConflictWayForward(f.weftPath, branch, outcome.Conflicts, ahead, fmt.Sprintf("`lym fabric push` in %s", lymVerbDir(f.warpPath))),
+-			Err:        err,
+-		}, nil
++		return f.weftConflictStop(branch, outcome.Conflicts, ahead, err), nil
+ 	case errors.Is(err, ErrReplayDirty):
+ 		dirtyPaths, pathsErr := f.weftDirtyPaths()
+ 		if pathsErr != nil {
+@@ -464,6 +459,17 @@ func (f *Fabric) weftDirtyStop(branch string, paths []string, cause error) *Weft
+ 	}
+ }
+ 
++// weftConflictStop builds the weft stop for a replay that conflicted on paths.
++// ahead holds the weft's local commits; the way forward settles them, then names `lym fabric push`.
++func (f *Fabric) weftConflictStop(branch string, paths, ahead []string, cause error) *WeftStopError {
++	return &WeftStopError{
++		Branch:     branch,
++		Paths:      paths,
++		WayForward: recordsConflictWayForward(f.weftPath, branch, paths, ahead, fmt.Sprintf("`lym fabric push` in %s", lymVerbDir(f.warpPath))),
++		Err:        cause,
++	}
++}
++
+ // weftDirtyPaths returns the weft worktree's tracked uncommitted paths, relative to it, with slash separators.
+ func (f *Fabric) weftDirtyPaths() ([]string, error) {
+ 	absolute, err := trackedDirtyPaths(f.weftPath)
+diff --git a/internal/fabricengine/pull_integration_test.go b/internal/fabricengine/pull_integration_test.go
+index d7539cda..e05dfad2 100644
+--- a/internal/fabricengine/pull_integration_test.go
++++ b/internal/fabricengine/pull_integration_test.go
+@@ -580,6 +580,48 @@ func TestPull_WeftDivergedWarpAdvancesCleanly(t *testing.T) {
+ 	})
+ }
+ 
++// TestPull_UpstreamAnchorStopRunsInTheAnchoredDir covers a pull stopped by origin's changed anchor marker.
++// In a hub anchored at a subdirectory, the way forward must name that subdirectory of the code worktree, not its root.
++func TestPull_UpstreamAnchorStopRunsInTheAnchoredDir(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	boardkit.InstallReplay(t)
++
++	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend"})
++	hubforge.AddPair(t, hub, "task")
++	warpPath := hub.PairCodeWorktree("task")
++	weftPath := hub.PairRecordsSibling("task")
++	weftBranch := gitkit.CurrentBranch(t, weftPath)
++	gitkit.MustRun(t, weftPath, "git", "push", "-u", "origin", weftBranch)
++
++	cloneB := filepath.Join(t.TempDir(), "weft-cloneB")
++	gitkit.MustRun(t, filepath.Dir(cloneB), "git", "clone", "-q", "-b", weftBranch, hub.RecordsBare, cloneB)
++	gitkit.Git(t, cloneB, "config", "user.email", "test@test.com")
++	gitkit.Git(t, cloneB, "config", "user.name", "Test")
++	gitkit.CommitFile(t, cloneB, lymcwd.AnchorFileName, "other\n", "origin changes the marker")
++	gitkit.MustRun(t, cloneB, "git", "push", "-q")
++
++	loc, err := lymcwd.ResolveWorktree(warpPath)
++	if err != nil {
++		t.Fatalf("ResolveWorktree(%s): %v", warpPath, err)
++	}
++	f, err := fabricengine.Open(loc)
++	if err != nil {
++		t.Fatalf("Open(%s): %v", warpPath, err)
++	}
++
++	_, err = f.Pull(fabricengine.SyncOptions{})
++
++	var stop *fabricengine.WeftStopError
++	if !errors.As(err, &stop) || !errors.Is(err, fabricengine.ErrAnchorChange) {
++		t.Fatalf("Pull() error = %v (%T); want a *fabricengine.WeftStopError wrapping ErrAnchorChange", err, err)
++	}
++	want := "run `lym fabric anchor task --set other` in " + filepath.Join(warpPath, "backend")
++	if !strings.Contains(stop.WayForward, want) {
++		t.Errorf("WeftStopError way forward = %q; want it to carry %q", stop.WayForward, want)
++	}
++}
++
+ // TestPull_WeftUpstreamUnreadableIsAnError covers a weft whose pull fails because origin is unreachable.
+ // Its tracking ref names an object the repository lacks, so its commits against head cannot be listed.
+ // A failed local read is an infrastructure error: Pull returns it rather than a nil error with WeftPulled false.
+diff --git a/internal/fabricengine/pushclasses_integration_test.go b/internal/fabricengine/pushclasses_integration_test.go
+index 047eefcb..c03c4fb1 100644
+--- a/internal/fabricengine/pushclasses_integration_test.go
++++ b/internal/fabricengine/pushclasses_integration_test.go
+@@ -36,9 +36,15 @@ const authRefusingHook = "#!/bin/sh\necho 'Permission to hub denied to tester.'
+ // newFailureFixture builds a hub with the board replay installed and a notifier counting the mails of its own hub.
+ // A push reaches the notifier only through the options the notifier builds.
+ func newFailureFixture(t *testing.T) (*recordsFixture, *fakePushNotifier) {
++	t.Helper()
++	return newFailureFixtureAt(t, ".")
++}
++
++// newFailureFixtureAt builds the hub of newFailureFixture with the worktree-relative anchor anchor.
++func newFailureFixtureAt(t *testing.T, anchor string) (*recordsFixture, *fakePushNotifier) {
+ 	t.Helper()
+ 	boardkit.InstallReplay(t)
+-	f := &recordsFixture{t: t, hub: hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})}
++	f := &recordsFixture{t: t, hub: hubforge.CopyHub(t, hubforge.Shape{Anchor: anchor})}
+ 	return f, &fakePushNotifier{hub: f.hub.Location.HubPath, posted: true}
+ }
+ 
+@@ -113,7 +119,13 @@ type pairFixture struct {
+ 
+ func newPairFixture(t *testing.T, slug string) *pairFixture {
+ 	t.Helper()
+-	f, fake := newFailureFixture(t)
++	return newPairFixtureAt(t, ".", slug)
++}
++
++// newPairFixtureAt builds the pair slug of newPairFixture in a hub with the worktree-relative anchor anchor.
++func newPairFixtureAt(t *testing.T, anchor, slug string) *pairFixture {
++	t.Helper()
++	f, fake := newFailureFixtureAt(t, anchor)
+ 	added := hubforge.AddPair(t, f.hub, slug)
+ 	location, err := lymcwd.ResolveWorktree(f.hub.PairCodeWorktree(slug))
+ 	if err != nil {
+@@ -462,19 +474,24 @@ func TestPushFailureClasses(t *testing.T) {
+ 	t.Run("AWeftPushThatMustReplayStopsOnAnAnchorChange", func(t *testing.T) {
+ 		tests := []struct {
+ 			name string
++			// hubAnchor is the anchor of the hub the pair is made in.
++			hubAnchor string
+ 			// arrange makes the pair's weft push need a replay, and returns what the way forward must name.
+ 			arrange func(t *testing.T, p *pairFixture) string
+ 		}{
+ 			{
+-				"OntoAnUpstreamCarryingAnotherMarker",
++				"OntoAnUpstreamCarryingAnotherMarkerSetsTheAnchorInTheAnchoredDir",
++				"backend",
+ 				func(t *testing.T, p *pairFixture) string {
+ 					p.originCommit(p.weftBranch, lymcwd.AnchorFileName, "sub\n", "other machine re-anchored")
+ 					gitkit.CommitFile(t, p.weftPath, "local.txt", "local\n", "local")
+-					return "lym fabric anchor"
++					return fmt.Sprintf("run `lym fabric anchor %s --set sub` in %s, which integrates the other marker",
++						p.location.WorktreeName, filepath.Join(p.warpPath, "backend"))
+ 				},
+ 			},
+ 			{
+ 				"WhileTheOwnMarkerIsEmpty",
++				".",
+ 				func(t *testing.T, p *pairFixture) string {
+ 					p.originCommit(p.weftBranch, "other.txt", "other\n", "other machine")
+ 					gitkit.CommitFile(t, p.weftPath, "local.txt", "local\n", "local")
+@@ -486,6 +503,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 			},
+ 			{
+ 				"WhileAMoveRecordStands",
++				".",
+ 				func(t *testing.T, p *pairFixture) string {
+ 					p.originCommit(p.weftBranch, "other.txt", "other\n", "other machine")
+ 					gitkit.CommitFile(t, p.weftPath, "local.txt", "local\n", "local")
+@@ -496,7 +514,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		}
+ 		for i, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+-				p := newPairFixture(t, fmt.Sprintf("anchorstop%d", i))
++				p := newPairFixtureAt(t, tt.hubAnchor, fmt.Sprintf("anchorstop%d", i))
+ 				wantNamed := tt.arrange(t, p)
+ 				weftHeadWas := gitkit.RevParse(t, p.weftPath, "HEAD")
+ 				originTipWas := bareBranchTip(t, p.hub.RecordsBare, p.weftBranch)
