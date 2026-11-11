@@ -1,0 +1,166 @@
+{
+  "sketch": "testmap-upkeep-design",
+  "shape": "tasks",
+  "board_checked": [
+    {"slug": "coverage-test-select", "revised": "2026-11-11T15:28:17Z"},
+    {"slug": "gate-scope-coverage", "revised": "2026-11-11T15:28:17Z"},
+    {"slug": "creel-notice-hygiene", "revised": "2026-11-11T14:04:11Z"},
+    {"slug": "merge-parent-slug-reuse", "revised": "2026-11-11T14:04:12Z"},
+    {"slug": "test-suite-trim", "revised": "2026-11-09T20:46:48Z"},
+    {"slug": "testmap-backlog-drain", "revised": "2026-11-11T15:26:33Z"},
+    {"slug": "redundancy-sweep-existing", "revised": "2026-11-11T15:26:33Z"},
+    {"slug": "selector-non-body-miss", "revised": "2026-11-11T15:28:17Z"}
+  ],
+  "parts": [
+    {
+      "slug": "testmap-selector-upkeep-rules",
+      "title": "The coverage selector takes its target, compares own files by function, and misses on a changed environment stamp",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D2", "D3", "D6", "D13"],
+      "packages": [
+        {"path": "internal/testcover", "size": 650},
+        {"path": "internal/gatecli", "size": 120}
+      ],
+      "contract": {
+        "takes": "coverage-test-select's Selector in internal/testcover as it lands, which reads the working tree only and misses on any own-file change; the map format testmap-cross-package landed (FuncKey function sets, OtherFiles, MapFormat with an EnvironmentStamp); internal/gatecli as gate-scope-coverage leaves it",
+        "delivers": "the selector with its target as an argument (working tree or a commit through fabricengine.Fabric.CodeFileAt); own non-test Go files compared by function; own non-Go files, testdata and its Go files included, a miss unless inert_paths exempts them and no go:embed pattern names them; test files compared with every top-level Test function's text removed; outcome and spawn entries read as no recorded test; a differing environment stamp a miss; the stamp holding the toolchain, GOOS/GOARCH, go.mod and go.sum hashes, the mapped tiers' command and environment digest before {parallel}, and the env.yaml variables digest; D3's map fields checked against the landed format and completed where they fall short",
+        "exports": "the selector's target argument and its verdict (affected tests or a miss with its reason), which testmap-upkeep-plan's plan and self-check call; the environment stamp builder; the MapTest outcome and spawn fields the selector reads"
+      },
+      "depends_on": ["coverage-test-select", "gate-scope-coverage"],
+      "open_risks": [],
+      "criteria": [
+        "D2: the selector called with a commit as target gives the same verdict as with an equal working tree.",
+        "D2: a body change to one of B's own non-test functions selects the tests that covered it and is no miss;\nan edit to a `Test` function's text selects that test alone; an edit to a helper in a test file is a miss;\nan edit to a file under B's `testdata` is a miss.",
+        "D3: a map records, for a test of B that calls a function F of A, F under A's import path and file, and no block of A.",
+        "D6: a map whose stamp differs in the toolchain version or the `go.mod` hash is a miss for the selector and is rebuilt whole by upkeep;\na changed tier `parallel` value changes no stamp; a changed `env.yaml` variable changes it.",
+        "Review: D13 names, for each of the five entries, the change it carries, and the note it files."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 7.0,
+      "cost_line": "darn solid with a stored record, 7 runs: fit $4.05 fixed + $0.38 per 100 changed lines over about 770 lines"
+    },
+    {
+      "slug": "testmap-upkeep-plan",
+      "title": "lym gate testmap plans each map at the prime's HEAD, keeps what still holds, and checks what it keeps",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D1", "D4", "D5", "D7", "D12"],
+      "packages": [
+        {"path": "internal/gatecli", "size": 850},
+        {"path": "internal/testcover", "size": 350},
+        {"path": "internal/gateslot", "size": 30}
+      ],
+      "contract": {
+        "takes": "testmap-selector-upkeep-rules' selector with a commit target and its environment stamp; today's lym gate testmap (runTestMap, mapPackages, stale, mapPackage, writeMap) in internal/gatecli, with its blocking slot take and one process per test",
+        "delivers": "the plan at H with the Current, Affected and Miss verdicts, re-stamps, marker updates and queued gaps, under the build lock with held locks skipped (D1); outcome entries, spawn verdicts and nothing recorded for an ended run (D4); the kept map with a failure field, and no requeue at the failed HEAD (D5); test_map_max_age_days retired from gateslot, the self-check on every build and one audit round per pass (D7); testcover.ExitRecord's planned HEAD, queued count, verdict counts with miss reasons, mismatch counts and per-package build and run seconds, and the verb's report of them (D12); the redundancy step counting only passing entries as covers and judging a map with a failure field by its entries",
+        "exports": "the plan and queue a pass works, the job that measures a queued test list, testcover.ExitRecord's new fields"
+      },
+      "depends_on": ["testmap-selector-upkeep-rules"],
+      "open_risks": [
+        "The non-body miss stays the largest cost: the Sketch counts one in at least 95 of 118 weekly code commits,\nand each one rebuilds every map that links the changed file.",
+        "A selector bug is shared by the gate and upkeep; D7's self-check and audit counts are its only detectors before a landing gate fails."
+      ],
+      "criteria": [
+        "D1: after a landing that changes the body of a linked function no test of B's map covered, the plan re-stamps B's map to HEAD\nwith every entry kept and the marker's `Commit` equal to the map's, and builds and runs nothing; the selector then reads it as no miss.",
+        "D1: after a landing that changes the body of a linked function test T covered, the plan writes B's map at HEAD without T's entry\nand with every other entry, and the job then measures T alone.",
+        "D1: after a landing with a non-body change to a linked file, the plan leaves B's map as it was and queues a whole rebuild of B;\nafter the rebuild's first round the map at HEAD holds no entry measured before HEAD.",
+        "D4: a test that fails alone gets an outcome entry; a Current verdict keeps it, and a change to one of B's own files drops it.",
+        "D4: a test the spawn scan marks out-of-process is recorded with its verdict, is never run and leaves the queue empty.",
+        "D4: the redundancy step counts no outcome entry and no spawn-marked test as a cover.",
+        "D5: a coverage build failure at HEAD keeps the package's earlier entries, `Commit` and marker, records the failure with HEAD,\nand the next pass at that HEAD queues nothing for the package; the redundancy step still judges by the kept entries.",
+        "D7: a hub base file holding `test_map_max_age_days` loads after the reconcile walk; no map is rebuilt for its age.",
+        "D7: a kept entry whose block key is absent from a fresh build's block table is re-measured and counted as a self-check mismatch.",
+        "D7: a pass whose plan finds every map current still runs one audit round when it can take a slot,\nand counts a differing result as an audit mismatch.",
+        "D12: the exit record names the planned HEAD, the queued count, the plan's outcome counts with miss reasons and the mismatch counts,\nand the dobby reads it."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 8.6,
+      "cost_line": "darn solid with a stored record, 7 runs: fit $4.05 fixed + $0.38 per 100 changed lines over about 1230 lines"
+    },
+    {
+      "slug": "testmap-upkeep-runs",
+      "title": "An upkeep pass runs under a slot it yields to a gate, side by side where tests declare it, and writes per round",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D8", "D9", "D10"],
+      "packages": [
+        {"path": "internal/gatecli", "size": 700},
+        {"path": "internal/gateslot", "size": 50}
+      ],
+      "contract": {
+        "takes": "testmap-upkeep-plan's plan, queue, job and exit record; gateslot's unexported tryAcquireSlot, the pool's drain and gateslot.RunRecord",
+        "delivers": "the verb side of D8: the hidden --upkeep flag refusing package arguments, its own RoleTestMap registration under the hub owner, refusal beside a live pass, exit before the plan on a failed registration, the exit record read and written only under --upkeep, HEAD read before each job and wake, queued work leaving out dirty-skipped, failed-at-HEAD and spawn-marked work; the take only while two slots are free and no drain waits, the yield that kills runs, writes finished entries and releases the slot and lock, the wait at most once a second with backoff, the lock retry and fresh plan on retake, no slot on a hub below two, and hand calls' blocking take, lock wait and whole rebuild (D9); side-by-side runs for top-level t.Parallel() tests up to the tier-0 parallel, per-round writes, the per-round HEAD and dirty read, signal handling and the job order from gate run records (D10)",
+        "exports": "lym gate testmap --upkeep, a registered pass that exits on a failed registration, which testmap-upkeep-dobby starts; gateslot's exported non-blocking take"
+      },
+      "depends_on": ["testmap-upkeep-plan"],
+      "open_risks": [],
+      "criteria": [
+        "D4: a test killed by a yield gets no outcome entry and is queued again,\nand the next pass after one that ended before measuring it still queues it.",
+        "D8: a landing ends a pass at its next package job or slot-wait wake; a dirty-skipped or failed-at-HEAD package starts no restart.",
+        "D8: a hand call without `--upkeep` leaves the exit record as it was.",
+        "D9: with one slot free, a pass does not take it; with two free, it takes one.",
+        "D9: when a gate takes the last other free slot, the pass kills its runs, keeps the finished entries and releases within one poll.",
+        "D9: a hand call naming a package a pass is measuring waits for the package's lock, does not yield and rebuilds the package whole.",
+        "D9: a hand call naming a package whose job a pass yielded gets the lock without waiting for the pass to retake a slot.",
+        "D10: tests calling `t.Parallel()` as a top-level statement before any other but `tiergate.Require` run side by side,\neach with its own profile; the map holds the same entries as a serial run of them.",
+        "D10: a HEAD move during a round discards that round and keeps the rounds before it.",
+        "D10: the queue orders packages by summed elapsed seconds from the gate run records."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 7.0,
+      "cost_line": "darn solid with a stored record, 7 runs: fit $4.05 fixed + $0.38 per 100 changed lines over about 750 lines"
+    },
+    {
+      "slug": "testmap-upkeep-dobby",
+      "title": "The prime dobby starts an upkeep pass on remaining work, and an anchor move ends it",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D8", "D11"],
+      "packages": [
+        {"path": "internal/dobbyengine", "size": 300},
+        {"path": "internal/configengine", "size": 120},
+        {"path": "internal/configreg", "size": 40},
+        {"path": "internal/beamcli", "size": 120},
+        {"path": "internal/fabriccli", "size": 40}
+      ],
+      "contract": {
+        "takes": "testmap-upkeep-runs' lym gate testmap --upkeep, which registers itself as RoleTestMap and exits on a failed registration, and the exit record's planned HEAD and queued count; today's testMapStep, LandingsSinceTestMap, test_map_every and test_map_batch in dobbyengine, startTestMap in beamcli, dobbyPassInFlight in fabriccli",
+        "delivers": "the start rule on no exit record, a moved HEAD or queued work, held off on a hub below two slots for queued work alone, while a pass or its unregistered child lives, and while an anchor move stands; the failed-registration exit logged once per episode; test_map_every, test_map_batch and the landing count retired, the landing count still readable; test_map_upkeep (CategoryNone, true by default); dobbyengine's rewrite of test_map_every: 0 to test_map_upkeep: false, run by beam's configreg Migrate and by a new configengine.Spec per-layer migrate hook that Load applies before merging and DropRetired; dobbyPassInFlight no longer counting a RoleTestMap process",
+        "exports": "the dobby key test_map_upkeep and configengine.Spec's per-layer migrate hook"
+      },
+      "depends_on": ["testmap-upkeep-runs", "creel-notice-hygiene"],
+      "open_risks": [],
+      "criteria": [
+        "D8: on a hub with two or more slots, with no landing since the last pass and an exit record naming queued work,\nthe dobby starts a pass on its next tick;\nwith no exit record, it starts one.",
+        "D8: on a one-slot hub a pass with queued work starts no second pass at the same HEAD.",
+        "D8: a hub base file holding `test_map_every: 0` reads as `test_map_upkeep: false` after the reconcile walk's migration,\nand no pass starts; so does a prime `_lym/config/beam.yaml` or local file holding it; one holding `test_map_batch` loads.",
+        "D8: a prime dobby re-exec'd onto the new binary over a `beam.yaml` holding `test_map_every: 0`, with no walk run, starts no pass.",
+        "D8: a `--upkeep` call whose registration fails exits before it plans, and the dobby logs that exit once per episode.",
+        "D8: while a pass the dobby started lives and has not yet registered, the dobby starts no second pass.",
+        "D11: an anchor move that finds a pass running ends it and does not wait for its queue."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 6.4,
+      "cost_line": "darn solid with a stored record, 7 runs: fit $4.05 fixed + $0.38 per 100 changed lines over about 620 lines"
+    }
+  ],
+  "order_departures": [],
+  "cost": {
+    "expected_usd": 29.0,
+    "line": "four darn solid parts with stored records, chained after gate-scope-coverage; the cell has 7 runs and its fit ($4.05 fixed + $0.38 per 100 lines, correlation 0.64) over about 3370 lines in all, about 7.4 hours of runs end to end",
+    "next_best": {
+      "split": "three darn solid parts, the pass as one part of about 2000 lines",
+      "expected_usd": 25.2,
+      "line": "the same darn solid cell, 7 runs: one fixed start fewer, but the pass part lies beyond the sizes most of the fit's runs cover; one tapestry would cost about $30.1 on the tapestry solid cell's 5 runs"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "solid", "stored_record": true},
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
