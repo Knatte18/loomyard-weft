@@ -89,7 +89,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S2 |  | **Decide how the coverage maps are kept fresh, from the upkeep research** | [`testmap-upkeep-design`](design-testmap-upkeep-design.md)<br>[Sketch](decision-testmap-upkeep-design.md) | 1h<br>12m | testkit, gate, dobby |
+| S2 |  | **Decide how the coverage maps are kept fresh, from the upkeep research** | [`testmap-upkeep-design`](design-testmap-upkeep-design.md)<br>[Sketch](decision-testmap-upkeep-design.md) | 1h<br>13m | testkit, gate, dobby |
 
 #### Enhancements (2)
 
@@ -115,7 +115,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **TestSmokeBootstrapLifecycle died_driver case still expects invalid state after d1535412** | [`smoke-died-driver-wording`](design-smoke-died-driver-wording.md) | darn · light | Code-Bouncer | neve | 21m<br>4m | loom, shed |
+| T1 | **TestSmokeBootstrapLifecycle died_driver case still expects invalid state after d1535412** | [`smoke-died-driver-wording`](design-smoke-died-driver-wording.md) | darn · light | Code-Burler-Review | neve | 21m<br>5m | loom, shed |
 | T11 | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | Code-Burler-Fix | neve | 8h<br>7h | fabric, cleanup |
 | T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | Code-Burler-Fix | neve | 2d<br>7h | slack, reed, creel |
 
@@ -131,7 +131,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Adopt takes over without hanging behind a pause, failing on lym files or replaying stale stops** | [`adopt-takeover-fixes`](design-adopt-takeover-fixes.md) | darn · solid | T11<br>T1 | 1h<br>4m | fabric, tender |
+| T3 | **Adopt takes over without hanging behind a pause, failing on lym files or replaying stale stops** | [`adopt-takeover-fixes`](design-adopt-takeover-fixes.md) | darn · solid | T11<br>T1 | 1h<br>5m | fabric, tender |
 | T8 | **The adopt-check tab closes after the check; reed attach refuses a directory that is no worktree** | [`reed-tab-and-attach-fixes`](design-reed-tab-and-attach-fixes.md) | darn · light | T12 | 4h<br>1h | reed |
 
 #### Layer B (1)
