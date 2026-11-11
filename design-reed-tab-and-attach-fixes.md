@@ -2,8 +2,6 @@
 
 `reed-tab-and-attach-fixes` · Task · bug, reed · running · Darn-Write
 
-Depends on: [`slack-per-orch-activation`](design-slack-per-orch-activation.md)
-
 Fix both reed faults in one run.
 
 ## From note adopt-check-tab-stays

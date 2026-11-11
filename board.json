@@ -413,29 +413,6 @@
       "revised": "2026-11-09T12:09:36Z"
     },
     {
-      "id": 1256,
-      "handle": "T12",
-      "slug": "slack-per-orch-activation",
-      "title": "Slack per orch: a button, machine-first channel names, no presence notice",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "slack",
-        "reed",
-        "creel"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes.",
-      "body": "## Seen (operator, 2026-11-09 and 2026-11-11)\n\nThe Slack relay was started on OSL-1046 and made one channel for every orch of every hub on the machine, seven in all.\nThere is no way to choose which orchs get a channel; `slack.yaml` holds only `remind_after_min`.\nThe channel names read `\u003chub\u003e-\u003cmachine\u003e-\u003cslug\u003e`, the opposite order of the creel address `\u003cmachine\u003e::\u003chub\u003e:\u003cslug\u003e:orch`.\nOn its first real use, following a hub from a phone, the operator could not tell which channel was which.\nEach change of presence mails a `[slack presence]` notice to every hub's orch and every beam's orch, and wakes the idle ones; `contracts/orchrole/role-slack.md` says an orch need not track the presence, since the turn-end hook posts its reply.\n\n## This task\n\n- `away` stays one machine-wide setting: the operator away from the machine is away for every orch.\n- Each orch that has a status bar, the prime's and each beam's, has its own `slack` button.\n  An orch gets no channel until its button is pressed once; the press makes the channel and switches that orch's forwarding on, and a second press switches it off and leaves the channel in place.\n  A pair's orch gets no button.\n- The button's state is kept per orch in a file in the hub's `.lym/slack/` directory, beside the channel map and the presence files; the status bar reads it from there.\n  It survives the orch's restart, so a restarted orch keeps its channel without a new press.\n- The machine's Slack connection follows the buttons: the relay runs only while at least one orch is active.\n  The `slack` toggle of the status bar, which switches the machine's connection today, becomes the per-orch button.\n- The `[slack presence]` notice is removed: the relay no longer mails it, and its line leaves `contracts/orchrole/role-slack.md`.\n- A channel is named `\u003cmachine\u003e-\u003chub\u003e-\u003cproject handle\u003e-\u003cproject slug\u003e`, lower-cased, such as `osl46-mo-p1-adopt-takeover`;\n  the prime's orch is the root project's, `osl46-mo-p0-root`.\n  The machine name is the one `machine-name-config` provides; the operator sets short names, such as `osl46`.\n  - The machine stays in the name, so an orch never moves to another channel, and Slack's alphabetical order groups a machine's channels, then a hub's.\n  - The last part names the project, not the worktree: the root project is `root`, while `prime` is only its worktree.\n  - Slack allows no colon or capital in a channel name, so hyphens separate the parts.\n- The channels that already exist keep their old names and are left alone: the relay does not rename or archive them, and the operator archives them in Slack.\n  Only a channel made after this task takes the new name.\n\n## Limits\n\n- Only `internal/slackengine`, `internal/slackcli`, the status bar's Slack toggles in reed, the orch role file and the tests that pin them change.\n- The turn-end hook's posting of a reply while the presence is `slack` is unchanged, but it posts only for an orch whose button is on.\n",
-      "status": "done",
-      "created": "2026-11-09T13:53:14Z",
-      "revised": "2026-11-11T07:58:19Z",
-      "profile": "solid"
-    },
-    {
       "id": 1270,
       "handle": "E4",
       "slug": "redundancy-sweep-existing",
@@ -891,9 +868,7 @@
         112
       ],
       "recipe": "darn",
-      "depends_on": [
-        "slack-per-orch-activation"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Fix both reed faults in one run.\n\n## From note adopt-check-tab-stays\n\n## Seen (operator, 2026-11-11)\n\nAfter `lym adopt root` ran its check on OSL-1046, an `adopt-check` tab stayed open at the bottom of the terminal and took a lot of space.\nThe check had ended green in all three tiers, and the tab was still there.\n\n## Idea\n\nClose the check's pane or tab when the adopt check ends, or shrink it to one line, since its result is already in the adopt record and the creel mail.\nRead first which part of `lym adopt` opens the tab, whether a failed check should keep it open for the operator, and where the suite log stays readable after the close.\n\n## From note reed-attach-non-worktree\n\nImported from [issue #112](https://github.com/Knatte18/loomyard/issues/112).\n\n## What was seen\n\nRunning `lym a` (lym reed attach) by mistake in the hub's board checkout `_bolt`, which is no worktree of the hub, booted a tmux session named `_bolt` on the hub's reed socket with one bare shell pane.\n`lym reed list` from the prime did not show it; only `tmux ls` did.\n\n## Workaround\n\n`lym reed down` run with cwd `_bolt` removed the session.\n\n## Expected\n\n`lym reed attach` and `lym reed up` refuse a directory that is not a fabric worktree of the hub, such as `_bolt` or a weft checkout, and name the prime or a worktree to attach to instead.\n\n",
