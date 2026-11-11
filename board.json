@@ -1005,6 +1005,80 @@
       "created": "2026-11-11T14:01:41Z",
       "revised": "2026-11-11T14:01:41Z",
       "project": "test-suite-trim"
+    },
+    {
+      "id": 1315,
+      "handle": "E7",
+      "slug": "records-tag-vs-branch-untested",
+      "title": "Adopt --here: no test pins the records tag against the records branch",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "tender"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Seen: the landing `adopt-here-archives` lists this under \"To check by hand\".\nNo test pins how `lym adopt --here` treats the records tag against the records branch.\nIdea: add a test row for each way the two differ.\n",
+      "created": "2026-11-11T14:01:42Z",
+      "revised": "2026-11-11T14:01:42Z"
+    },
+    {
+      "id": 1316,
+      "handle": "E8",
+      "slug": "teardown-archive-untested",
+      "title": "Teardown: no test pins that the owner archive is excluded",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "tender"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Seen: the landing `adopt-here-archives` lists this under \"To check by hand\".\nNo test pins the exclusion of an owner archive during teardown.\nIdea: add a test that a teardown leaves the archive out and still removes the worktree.\n",
+      "created": "2026-11-11T14:01:42Z",
+      "revised": "2026-11-11T14:01:42Z"
+    },
+    {
+      "id": 1317,
+      "handle": "E13",
+      "slug": "verbdir-calls-untested",
+      "title": "Calls of the lym verb directory lack tests in an anchored hub",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Seen: the landing `push-notice-anchor-dir` lists this under \"To check by hand\".\nThe calls that resolve the lym verb directory have no test in an anchored hub.\nIdea: add an anchored-hub row for each call.\n",
+      "created": "2026-11-11T14:01:42Z",
+      "revised": "2026-11-11T14:01:42Z"
+    },
+    {
+      "id": 1318,
+      "handle": "E14",
+      "slug": "anchor-stops-untested",
+      "title": "Unconverted lym steps: weft-dirty stop and upstream anchor stop have no tests",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Seen: the landing `push-notice-anchor-dir` lists this under \"To check by hand\".\nThe steps not yet converted to the anchored directory have no test for the weft-dirty stop or the upstream-anchor stop.\nIdea: add a test row for each stop.\n",
+      "created": "2026-11-11T14:01:42Z",
+      "revised": "2026-11-11T14:01:42Z"
     }
   ],
   "prime_owner": "neve",

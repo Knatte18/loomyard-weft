@@ -37,7 +37,7 @@ Waits only on Running, Ready or Draft entries.
 | T11 | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | T10 | 7h<br>6h | fabric, cleanup |
 | T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 2d<br>6h | slack, reed, creel |
 
-## Notes (32)
+## Notes (36)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -62,7 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B7 |  | **adopt --drop-local fails on an untracked lym file in the weft**<br>• reset --keep refuses over an untracked generation-record.json; the adopt ends partial | [`drop-local-untracked-weft`](design-drop-local-untracked-weft.md) | 32m<br>32m | fabric |
 | B8 |  | **lym adopt replays a stale record's stops after the operator cleared them**<br>• A partial adopt record keeps reporting gone pairs; only --discard got past it | [`adopt-stale-record-stops`](design-adopt-stale-record-stops.md) | 23m<br>23m | fabric |
 
-### Enhancements (8)
+### Enhancements (12)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -71,9 +71,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome** | [`finalize-flaky-test-gaps`](design-finalize-flaky-test-gaps.md) | 5h<br>5h | landing, gate |
 | E5 |  | **Refresh the README: outdated parts, less wall of text, the dead Autoboard link and a shorter Lineage**<br>• The README is partly outdated, too long-winded, its Autoboard link is dead, and Lineage no longer fits LoomYard | [`readme-refresh`](design-readme-refresh.md) | 2h<br>2h | docs |
 | E6 |  | **Raddle shows each part's recipe and profile as table columns**<br>• Raddle names recipe and profile only in free text; put them in the proposal table | [`raddle-table-recipe-profile`](design-raddle-table-recipe-profile.md) | 4h<br>4h | stencil, shed |
+| E7 |  | **Adopt --here: no test pins the records tag against the records branch** | [`records-tag-vs-branch-untested`](design-records-tag-vs-branch-untested.md) | 0m<br>0m | fabric, tender |
+| E8 |  | **Teardown: no test pins that the owner archive is excluded** | [`teardown-archive-untested`](design-teardown-archive-untested.md) | 0m<br>0m | fabric, tender |
 | E9 |  | **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | 7h<br>7h | heddle |
 | E10 |  | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | 7h<br>7h | heddle |
 | E11 |  | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | 6h<br>6h | fabric, ide |
+| E13 |  | **Calls of the lym verb directory lack tests in an anchored hub** | [`verbdir-calls-untested`](design-verbdir-calls-untested.md) | 0m<br>0m | fabric |
+| E14 |  | **Unconverted lym steps: weft-dirty stop and upstream anchor stop have no tests** | [`anchor-stops-untested`](design-anchor-stops-untested.md) | 0m<br>0m | fabric |
 
 ### Features (13)
 
