@@ -1,12 +1,11 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
+  "state": "done",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Bouncer → awaiting",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -177,6 +176,14 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/claude-account-weights/_lym/reviews/discussion/round-3-bouncer-ledger.md",
       "at": "2026-11-11T19:02:10Z",
       "started_at": "2026-11-11T19:01:31Z"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/claude-account-weights/_lym/reviews/discussion/round-3-bouncer-ledger.md",
+      "at": "2026-11-11T19:02:58Z",
+      "started_at": "2026-11-11T19:02:57Z",
+      "by": "shed"
     }
   ],
   "product": {
