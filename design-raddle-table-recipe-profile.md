@@ -1,6 +1,6 @@
 # Raddle shows each part's recipe and profile as table columns
 
-`raddle-table-recipe-profile` · Task · enhancement, stencil, shed · draft
+`raddle-table-recipe-profile` · Task · enhancement, stencil, shed
 
 ## Seen (2026-11-11, raddle of gate-scope-by-coverage-map)
 
