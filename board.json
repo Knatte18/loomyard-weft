@@ -1070,6 +1070,26 @@
       "body": "## Seen (issue #102, left out of loop-exit-not-recorded)\n\nA load turn that ends on an API `server_error` makes shuttle wait and retype (`load turn ended on an API error; the prompt waits until the load runs through`), with `apiErrors` rising each time and no cap.\nIn the reported run it rose 3, 4, 5 before the loop ended with no envelope, and the run history showed hours of idle time around the stuck step that no status line surfaced.\nThe run `loop-exit-not-recorded` made the loop record its exit status but left these two asks out.\n\n## Idea\n\n- Bound the load-turn retry on `server_error` and name the cap in the halt note, so a halt reads as an API outage rather than only `loop-exited`.\n- Show in `lym loom status` the idle time between a stuck step and the next step.",
       "created": "2026-11-11T08:09:18Z",
       "revised": "2026-11-11T08:09:18Z"
+    },
+    {
+      "id": 1299,
+      "handle": "B2",
+      "slug": "landed-run-holds-slot",
+      "title": "A landed run left failed before teardown holds a max_runs slot until a hand cleanup",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "dobby",
+        "batten",
+        "cleanup"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (orch, 2026-11-11)\n\n`reed-slack-relay` landed on 2026-11-05 and its board entry is done, but its batten run stopped as `failed` at Run-Shed before Worktree-Teardown, with the error `origin ended \"reed-slack-relay\" (it landed and its board entry is done); run \"lym cleanup --apply\" from the prime`.\nDobby counts halted runs under `max_runs`, so the landed run held a slot for six days and a released task waited on `max_runs 8` behind it.\nNothing cleaned it up on its own; only a hand `lym cleanup --apply` removes the pair.\n\n## Idea\n\n- Dobby gives no slot to a run whose board entry is done or gone, whatever batten's state says.\n- Dobby, or the prime's reconcile, tears down the pair of such a run itself, as `lym cleanup --apply` does, instead of leaving a failing pass for the orch.",
+      "created": "2026-11-11T08:11:01Z",
+      "revised": "2026-11-11T08:11:01Z"
     }
   ],
   "prime_owner": "neve",
