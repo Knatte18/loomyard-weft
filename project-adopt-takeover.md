@@ -1,6 +1,6 @@
 # P1 Adopt as one resumable algorithm that never starts work on its own
 
-Rendered 2026-11-11 08:53 UTC; every age below is as of then.
+Rendered 2026-11-11 08:54 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`adopt-takeover`](design-adopt-takeover.md) · Age 1d · Owner `neve`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **lym adopt --here behind the lym s shortcut, and lym adopt --archives lists the old owner's archives** | [`adopt-here-archives`](design-adopt-here-archives.md)<br>[Sketch](decision-adopt-here-archives.md) | darn · light | Code-Bouncer | neve | 1d<br>1d | batten, tender, dobby, orch, fabric, shortcut |
+| T6 | **lym adopt --here behind the lym s shortcut, and lym adopt --archives lists the old owner's archives** | [`adopt-here-archives`](design-adopt-here-archives.md)<br>[Sketch](decision-adopt-here-archives.md) | darn · light | Code-Burler-Review | neve | 1d<br>1d | batten, tender, dobby, orch, fabric, shortcut |
 
 ### Ready (0)
 
