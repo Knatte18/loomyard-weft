@@ -1,0 +1,401 @@
+diff --git a/cmd/lym/main.go b/cmd/lym/main.go
+index 6b09b0cc..25a40e79 100644
+--- a/cmd/lym/main.go
++++ b/cmd/lym/main.go
+@@ -161,6 +161,8 @@ Shortcuts, declared in internal/shortcutcli's embedded file, are listed under th
+ 				fabricengine.RegisterBoltReplayer(boardengine.FabricReplay{})
+ 				// A worktree that fabric makes or moves reaches heddle through the worktree seam, to render its files.
+ 				fabricengine.InstallWorktreeSeam(heddleengine.Seam{})
++				// The hub workspace file leads a pair's folder name with its project's handle, read from the board.
++				fabricengine.InstallPairFolderNamer(boardengine.WorkspaceFolderNames)
+ 				// A records replay merges heddle.json by entry through heddle's Bolt replayer.
+ 				// That replayer also claims HEDDLE.md and renders it afresh after each replay.
+ 				fabricengine.RegisterBoltReplayer(heddleengine.Replayer{})
+diff --git a/cmd/lym/prerunseams_test.go b/cmd/lym/prerunseams_test.go
+index 237641a8..ed1fafb9 100644
+--- a/cmd/lym/prerunseams_test.go
++++ b/cmd/lym/prerunseams_test.go
+@@ -1,4 +1,4 @@
+-// prerunseams_test.go guards that root's PersistentPreRunE installs heddle's seams.
++// prerunseams_test.go guards that root's PersistentPreRunE installs the seams other modules plug into fabric and shuttle.
+ // No behavioural test can pin them, because the installs are skipped under testing.Testing().
+ 
+ package main
+@@ -15,7 +15,8 @@ import (
+ )
+ 
+ // TestPersistentPreRunE_InstallsSeams parses cmd/lym/main.go and checks root's PersistentPreRunE.
+-// It fails naming the missing call unless the body installs the worktree seam and the passage reader.
++// It fails naming the missing call unless the body installs the worktree seam.
++// The pair folder namer and the passage reader must be installed too.
+ // It also requires one Bolt replayer from boardengine and one from heddleengine to be registered.
+ func TestPersistentPreRunE_InstallsSeams(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -51,7 +52,7 @@ func TestPersistentPreRunE_InstallsSeams(t *testing.T) {
+ 		return true
+ 	})
+ 
+-	for _, want := range []string{"fabricengine.InstallWorktreeSeam", "shuttleengine.InstallPassageReader"} {
++	for _, want := range []string{"fabricengine.InstallWorktreeSeam", "fabricengine.InstallPairFolderNamer", "shuttleengine.InstallPassageReader"} {
+ 		if len(calls[want]) == 0 {
+ 			t.Errorf("root's PersistentPreRunE never calls %s", want)
+ 		}
+diff --git a/docs/overview.md b/docs/overview.md
+index 1ad70965..ecf2d155 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -558,7 +558,8 @@ User-facing modules each get one `lym <module>` namespace:
+   `--force` never overrides that check.
+   ✅ Implemented; see the `internal/fabricengine` package documentation for rationale.
+ - **ide** — one-shot VS Code launcher with interactive menu.
+-  `lym ide spawn <prime>` opens the hub workspace `<hub>/<RepoName>.code-workspace` (the prime, `Bolt` and every task pair).
++  `lym ide spawn <prime>` opens the hub workspace `<hub>/<RepoName>.code-workspace` (the prime, `Bolt` and every pair, those under beams included).
++  A pair whose board entry belongs to a project is named `<P#>: <slug>` there, from the board at regeneration.
+   Its `settings` carry the prime's `.vscode/settings.json`.
+   `lym ide spawn <beam>` opens the beam's workspace `<hub>/<RepoName>-<beam>.code-workspace` the same way.
+   It holds the beam, its parent, `Bolt` and the beam's pairs.
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index b163ff27..1057d5f3 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -109,6 +109,8 @@
+ // The prime's names the root project, `ORCH [<shortname>:P0] root`, and a beam's names its slug.
+ // `RecipeWindowTitle` gives the title of a run's status window.
+ // It is the worktree's console title with the recipe in place of the slug, and a beam's has no lead.
++// `WorkspaceFolderNames` names a pair's folder in the hub workspace file `<P#>: <slug>` by its entry's project;
++// the lym root pre-run installs it as fabric's pair folder namer.
+ // Every Board and Store method that takes a selector takes a Handle beside a slug string and a numeric id.
+ // A handle's letter matches case-insensitively.
+ //
+diff --git a/internal/boardengine/handles.go b/internal/boardengine/handles.go
+index 405ea5cf..b75d0cd5 100644
+--- a/internal/boardengine/handles.go
++++ b/internal/boardengine/handles.go
+@@ -162,6 +162,30 @@ func TitleWithHandle(boardDir, slug, name string) string {
+ 	return name
+ }
+ 
++// WorkspaceFolderNames returns the hub workspace folder name of each entry that belongs to a project, keyed by slug.
++// The name reads `<P#>: <slug>`, the project's handle read from the board of the hub at hubPath at the call,
++// so the operator sees which project a pair's folder belongs to.
++// An entry with no project, or whose project the board does not hold with a handle, is left out.
++// An unreadable board is logged at Warn and names no entry, since a folder name never fails its caller.
++func WorkspaceFolderNames(hubPath string) map[string]string {
++	tasks, err := ReadTasks(fabricengine.BoardDir(hubPath))
++	if err != nil {
++		logger.Warn("board: could not read the board for the workspace folders' project handles; naming them by slug", "cause", err)
++		return nil
++	}
++	handles := make(map[string]string, len(tasks))
++	for _, task := range tasks {
++		handles[task.Slug] = task.Handle
++	}
++	names := map[string]string{}
++	for _, task := range tasks {
++		if handle := handles[task.Project]; task.Project != "" && handle != "" {
++			names[task.Slug] = handle + handleTitleSeparator + task.Slug
++		}
++	}
++	return names
++}
++
+ // ConsoleWindowTitle returns the title of a console window on the worktree slug.
+ // The window is a VS Code window or a desktop terminal window.
+ // The worktree is in the hub at hubPath, whose prime is named primeName.
+diff --git a/internal/boardengine/handles_test.go b/internal/boardengine/handles_test.go
+index bc798340..643a155b 100644
+--- a/internal/boardengine/handles_test.go
++++ b/internal/boardengine/handles_test.go
+@@ -4,6 +4,7 @@
+ package boardengine_test
+ 
+ import (
++	"maps"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+@@ -225,6 +226,58 @@ func TestTitleWithHandle(t *testing.T) {
+ 	}
+ }
+ 
++// TestWorkspaceFolderNames pins that an entry in a project is named after its project's handle,
++// and that an entry the board cannot give a project handle is left out.
++func TestWorkspaceFolderNames(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const board = `{"version":1,"entries":[` +
++		`{"id":1,"slug":"bm","kind":"project","labels":["bug"],"beam":true,"handle":"P2"},` +
++		`{"id":2,"slug":"proj","kind":"project","labels":["bug"],"handle":"P3"},` +
++		`{"id":3,"slug":"inner","kind":"project","labels":["bug"],"project":"bm","handle":"P6"},` +
++		`{"id":4,"slug":"gate-shard","kind":"task","labels":["bug"],"project":"proj","handle":"T7"},` +
++		`{"id":5,"slug":"adopt","kind":"task","labels":["bug"],"handle":"T12"},` +
++		`{"id":6,"slug":"wellbore","kind":"task","labels":["bug"],"project":"bm","handle":"T4"},` +
++		`{"id":7,"slug":"deep","kind":"task","labels":["bug"],"project":"inner","handle":"T5"},` +
++		`{"id":8,"slug":"orphan","kind":"task","labels":["bug"],"project":"gone","handle":"T10"},` +
++		`{"id":9,"slug":"nohandle","kind":"note","labels":["removed-type"]},` +
++		`{"id":10,"slug":"under-nohandle","kind":"task","labels":["bug"],"project":"nohandle","handle":"T11"}]}`
++	tests := []struct {
++		name string
++		// board is the board.json the board directory holds; empty means none.
++		board string
++		want  map[string]string
++	}{
++		{"EntriesInAProjectTakeItsHandle", board, map[string]string{
++			"inner":      "P2: inner",
++			"gate-shard": "P3: gate-shard",
++			"wellbore":   "P2: wellbore",
++			"deep":       "P6: deep",
++		}},
++		{"AnUnreadableBoardNamesNoEntry", `{"version":1,"entries":[`, nil},
++		{"NoBoardNamesNoEntry", "", nil},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			hub := t.TempDir()
++			boardDir := fabricengine.BoardDir(hub)
++			if err := os.MkdirAll(boardDir, 0o755); err != nil {
++				t.Fatalf("make the board directory: %v", err)
++			}
++			if tt.board != "" {
++				if err := os.WriteFile(filepath.Join(boardDir, "board.json"), []byte(tt.board), 0o644); err != nil {
++					t.Fatalf("write board.json: %v", err)
++				}
++			}
++
++			if got := boardengine.WorkspaceFolderNames(hub); !maps.Equal(got, tt.want) {
++				t.Errorf("WorkspaceFolderNames() = %v; want %v", got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestWindowTitles pins the VS Code and terminal window titles of the prime, a beam and a task,
+ // and that a part the hub or board does not give is left out.
+ func TestWindowTitles(t *testing.T) {
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index cd1545cf..f1c32f67 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -1660,14 +1660,18 @@
+ //
+ // `RegenerateHubWorkspace` writes `<hub>/<RepoName>.code-workspace`, the hub's own VS Code workspace file.
+ // It lists the prime first and `Bolt` second.
+-// Then come the pairs whose parent is the prime, each at its anchor dir and sorted by slug, the beams among them.
++// Then comes every pair of the hub, each at its anchor dir and sorted by slug.
++// The beams and the pairs under them are included, so one window shows all of the repository's code.
++// A pair's folder is named by its slug, unless the process's installed `PairFolderNamer` gives the slug a name.
++// The namer is a general seam: fabric hands it the hub path and knows nothing of what it reads.
++// lym's root pre-run installs the board's, which leads a pair's slug with its project's handle, such as `P1: <slug>`.
++// The names are read at every regeneration, so a regeneration after a board change brings them current.
++// Each pair whose origin record carries the beam mark also gets a beam file of its own.
++// `BeamWorkspacePath` names it `<hub>/<RepoName>-<beam>.code-workspace`.
++// It lists the beam, its parent, `Bolt` and every pair whose parent is the beam, each named by its slug.
+ // A pair's parent is the `parent_worktree` of its origin record, read with `ReadOriginFor`.
+ // The prime is the parent when that field is empty, names the prime or names a pair that is gone.
+ // It is also the parent when the record is absent or cannot be read.
+-// A pair under a beam is left out of the hub file.
+-// Each pair whose origin record carries the beam mark also gets a beam file of its own.
+-// `BeamWorkspacePath` names it `<hub>/<RepoName>-<beam>.code-workspace`.
+-// It lists the beam, its parent, `Bolt` and every pair whose parent is the beam.
+ // A sub-beam appears there by its own worktree only, and has a file of its own.
+ // Each beam file carries `lym.generated: true` as its first key.
+ // A regeneration removes a marked file only when its beam pair is gone, through the hub's `os.Root`.
+@@ -1682,6 +1686,7 @@
+ // so a workspace window is told apart from the worktree whose settings it carries.
+ // A regeneration runs under `HubWorkspaceLockPath(hub)`, a leaf lock under the hub scratch directory.
+ // It lists the folders only after taking the lock, so a pair created while the regeneration waits is listed.
++// It reads the folder names before taking the lock, so the namer's own locks never nest inside it.
+ // The write goes through an `os.Root` at the hub, so a symlink planted at the file's path that escapes the hub is refused.
+ //
+ // # The retired launchers container
+diff --git a/internal/fabricengine/hubworkspace.go b/internal/fabricengine/hubworkspace.go
+index 176ff0e3..a576574a 100644
+--- a/internal/fabricengine/hubworkspace.go
++++ b/internal/fabricengine/hubworkspace.go
+@@ -8,6 +8,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"sort"
++	"sync/atomic"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/consoletitle"
+@@ -57,12 +58,14 @@ func HubWorkspaceLockPath(hubPath string) string {
+ // it returns the hub file's path.
+ // Each file splices its settings with the workspace look set:
+ // a title naming the workspace and the workspace colour on the activity bar.
+-// The hub file lists the prime, the board as Bolt, and every pair whose parent is the prime, beams included;
+-// it lists no pair under a beam.
++// The hub file lists the prime, the board as Bolt and every pair of the hub.
++// The pairs under each beam are included, so one window shows all of the repository's code.
++// A pair's folder there takes the name the installed PairFolderNamer gives its slug, else the slug itself.
+ // A beam's file, BeamWorkspacePath, lists the beam, its parent, Bolt and every pair whose parent is the beam.
++// Each pair there is named by its slug.
+ // Its settings come from the beam's own .vscode/settings.json when readable, else from the prime's.
+ // A file of a beam that is gone is removed when it carries the generated mark.
+-// A pair with no readable origin record is listed in the hub file as a pair of the prime.
++// A pair with no readable origin record is a pair of the prime, in no beam's file.
+ // Each file is rewritten only when its bytes change; a write or removal is recorded in rec.
+ // When the hub has a board, the regeneration runs under the hub workspace lock:
+ // two callers never interleave their listing and write.
+@@ -72,6 +75,29 @@ func RegenerateHubWorkspace(rec *Mutations, l *lymcwd.Location) (string, error)
+ 	return regenerateHubWorkspace(rec, l, hubWorkspaceLockWait)
+ }
+ 
++// PairFolderNamer returns hub workspace folder names keyed by pair slug, for the hub at hubPath.
++// A pair whose slug it leaves out, or maps to "", is named by its slug.
++type PairFolderNamer func(hubPath string) map[string]string
++
++var installedPairFolderNamer atomic.Pointer[PairFolderNamer]
++
++// InstallPairFolderNamer stores namer as the process's pair folder namer.
++// It returns a function that reinstates the previous one.
++// With no namer installed every pair's folder in the hub workspace file is named by its slug.
++func InstallPairFolderNamer(namer PairFolderNamer) (restore func()) {
++	previous := installedPairFolderNamer.Swap(&namer)
++	return func() { installedPairFolderNamer.Store(previous) }
++}
++
++// pairFolderNames returns the installed namer's folder names for the hub at hubPath, and nil with none installed.
++func pairFolderNames(hubPath string) map[string]string {
++	namer := installedPairFolderNamer.Load()
++	if namer == nil {
++		return nil
++	}
++	return (*namer)(hubPath)
++}
++
+ // beamWorkspaceSettings returns the settings a beam's workspace file splices.
+ // These are the beam's own .vscode/settings.json, which carries its window title and colours;
+ // primeSettings stands in when the beam has none.
+@@ -130,6 +156,9 @@ func regenerateHubWorkspace(rec *Mutations, l *lymcwd.Location, lockWait time.Du
+ 		logger.Warn("prime settings hold relative paths that now resolve against the hub directory, where the workspace file sits", "keys", keys)
+ 	}
+ 
++	// The names are read before the lock is taken: the namer may take locks of its own,
++	// and the hub workspace lock is a leaf lock.
++	names := pairFolderNames(l.HubPath)
+ 	if pathPresent(BoltDir(l.HubPath)) {
+ 		release, err := lockHubWorkspace(rec, l.HubPath, lockWait)
+ 		if err != nil {
+@@ -138,7 +167,7 @@ func regenerateHubWorkspace(rec *Mutations, l *lymcwd.Location, lockWait time.Du
+ 		defer release()
+ 	}
+ 
+-	layout, err := hubWorkspaceFolders(l, prime)
++	layout, err := hubWorkspaceFolders(l, prime, names)
+ 	if err != nil {
+ 		return "", fmt.Errorf("compute workspace folders: %w", err)
+ 	}
+@@ -276,8 +305,8 @@ type workspacePair struct {
+ // hubWorkspaceFolders returns the folders of the hub workspace file and of each beam file.
+ // Each path is relative to the hub and slash-separated.
+ // The hub file holds the prime's anchor dir, named after its branch (its directory name when HEAD is detached):
+-// the board named Bolt, then every pair whose parent is the prime, named after its slug in byte order.
+-// A beam file holds the beam, its parent, Bolt, then every pair whose parent is the beam.
++// the board named Bolt, then every pair in slug byte order, named by names[slug], else after its slug.
++// A beam file holds the beam, its parent, Bolt, then every pair whose parent is the beam, each named after its slug.
+ // A pair's parent is the ParentWorktree of its origin record.
+ // A pair whose parent is empty, names the prime, or names no listed pair is a pair of the prime.
+ // A pair whose origin record is absent is a pair of the prime;
+@@ -285,7 +314,7 @@ type workspacePair struct {
+ // A folder whose directory does not exist is left out, and a stat error other than not-exist is returned.
+ // A pair that fails to resolve, or whose worktree is not a direct child of the hub, is skipped with a debug log;
+ // one half-made pair never drops the others.
+-func hubWorkspaceFolders(l *lymcwd.Location, primeName string) (workspaceLayout, error) {
++func hubWorkspaceFolders(l *lymcwd.Location, primeName string, names map[string]string) (workspaceLayout, error) {
+ 	var layout workspaceLayout
+ 	var primeFolder, boltFolder *vscode.WorkspaceFolder
+ 
+@@ -393,9 +422,11 @@ func hubWorkspaceFolders(l *lymcwd.Location, primeName string) (workspaceLayout,
+ 		layout.hub = append(layout.hub, *boltFolder)
+ 	}
+ 	for _, pair := range pairs {
+-		if pair.parent == "" {
+-			layout.hub = append(layout.hub, pair.folder)
++		folder := pair.folder
++		if name := names[pair.slug]; name != "" {
++			folder.Name = name
+ 		}
++		layout.hub = append(layout.hub, folder)
+ 	}
+ 	for _, beam := range pairs {
+ 		if !beam.beam {
+diff --git a/internal/fabricengine/hubworkspace_integration_test.go b/internal/fabricengine/hubworkspace_integration_test.go
+index eb8e6ff3..2fa13361 100644
+--- a/internal/fabricengine/hubworkspace_integration_test.go
++++ b/internal/fabricengine/hubworkspace_integration_test.go
+@@ -157,11 +157,33 @@ func recordedFileWrite(rec *fabricengine.Mutations, hubPath, path string) bool {
+ }
+ 
+ // TestRegenerateHubWorkspace covers the folder list, skip exits, mutation record, lock and failures.
+-// The top level is not parallel:
+-// the lock-ordering and log-capture cases touch process-global state (a test hook and the logger output),
+-// so they run before the parallel cases are released and no regeneration runs beside them.
++// The top level is not parallel.
++// The lock-ordering, folder-naming and log-capture cases touch process-global state:
++// a test hook, the pair folder namer and the logger output.
++// They run before the parallel cases are released, so no regeneration runs beside them.
+ func TestRegenerateHubWorkspace(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Run("NamesHubFileFoldersByTheInstalledNamer", func(t *testing.T) {
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++		hubforge.AddPairWith(t, h, "b", beamAddOptions)
++		hubforge.AddPairWith(t, h, "m", memberAddOptions("b", false))
++		hubforge.AddPair(t, h, "plain")
++		var namedHub string
++		t.Cleanup(fabricengine.InstallPairFolderNamer(func(hubPath string) map[string]string {
++			namedHub = hubPath
++			return map[string]string{"m": "P1: m", "plain": "", "gone": "P2: gone"}
++		}))
++
++		path, _ := regenerateHub(t, h)
++
++		if namedHub != h.Path {
++			t.Errorf("namer hub path = %q; want %q", namedHub, h.Path)
++		}
++		prime := primeBranch(t, h)
++		requireFolderNames(t, path, prime, "Bolt", "b", "P1: m", "plain")
++		requireFolderNames(t, fabricengine.BeamWorkspacePath(h.Location, "b"), "b", prime, "Bolt", "m")
++	})
++
+ 	t.Run("ListsFolderAddedWhileWaitingForTheLock", func(t *testing.T) {
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 		l := *h.Location
+@@ -313,7 +335,7 @@ func TestRegenerateHubWorkspace(t *testing.T) {
+ 		})
+ 	}
+ 
+-	t.Run("WritesABeamFileAndKeepsItsMembersOutOfTheHubFile", func(t *testing.T) {
++	t.Run("WritesABeamFileAndListsItsMembersInTheHubFileToo", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 		hubforge.AddPairWith(t, h, "b", beamAddOptions)
+@@ -322,7 +344,7 @@ func TestRegenerateHubWorkspace(t *testing.T) {
+ 		path, _ := regenerateHub(t, h)
+ 
+ 		prime := primeBranch(t, h)
+-		requireFolderNames(t, path, prime, "Bolt", "b")
++		assertFolders(t, h, path, prime, "Bolt", "b", "m")
+ 		beamPath := fabricengine.BeamWorkspacePath(h.Location, "b")
+ 		requireFolderNames(t, beamPath, "b", prime, "Bolt", "m")
+ 		for file, want := range map[string]bool{path: false, beamPath: true} {
+@@ -450,7 +472,7 @@ func TestRegenerateHubWorkspace(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("ListsSubBeamsInTheirParentBeamsFileByThemselvesOnly", func(t *testing.T) {
++	t.Run("ListsSubBeamsInTheirParentBeamsFileByThemselvesOnlyAndEveryPairInTheHubFile", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 		hubforge.AddPairWith(t, h, "b", beamAddOptions)
+@@ -461,7 +483,7 @@ func TestRegenerateHubWorkspace(t *testing.T) {
+ 		path, _ := regenerateHub(t, h)
+ 
+ 		prime := primeBranch(t, h)
+-		requireFolderNames(t, path, prime, "Bolt", "b")
++		requireFolderNames(t, path, prime, "Bolt", "b", "c", "m", "n")
+ 		requireFolderNames(t, fabricengine.BeamWorkspacePath(h.Location, "b"), "b", prime, "Bolt", "c", "m")
+ 		requireFolderNames(t, fabricengine.BeamWorkspacePath(h.Location, "c"), "c", "b", "Bolt", "n")
+ 	})
