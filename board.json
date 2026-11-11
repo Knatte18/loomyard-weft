@@ -991,7 +991,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (remove-launchers-dir, 2026-11-11)\n\nThe verify gate fails on `internal/loomcli` `TestSmokeBootstrapLifecycle/died_driver_proceeds_to_the_success_envelope_and_logs_why` (`smoke_test.go:738`), and it reproduces on a rerun.\nThe driver log now carries `shedverbs: step interrupted (loop-exited)`, where the test waits for the poisoned status file's `invalid state`.\nThe wording comes from main's `d1535412` (shedverbs: record how an `--until-stop` loop's process ended); the run changed no shed, loom or driver code.\n\n## Idea\n\nDecide which message the died-driver case should surface: the loop's recorded exit reason, or the invalid state of the poisoned status file.\nThen change the code or the test to match, and keep the reason the run halted in the driver log.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-11T14:55:54Z",
       "revised": "2026-11-11T15:12:06Z",
       "profile": "light"
