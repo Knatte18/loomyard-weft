@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **The parent-review ask record, its deadline keys, and lym loom parent-review answer and await** | [`parent-review-ask-verbs`](design-parent-review-ask-verbs.md)<br>[Sketch](decision-parent-review-ask-verbs.md) | darn · solid | Drift-Baseline | neve | 11m<br>11m | loom, orch, config, burler |
+| T6 | **The parent-review ask record, its deadline keys, and lym loom parent-review answer and await** | [`parent-review-ask-verbs`](design-parent-review-ask-verbs.md)<br>[Sketch](decision-parent-review-ask-verbs.md) | darn · solid | Drift-Await | neve | 11m<br>11m | loom, orch, config, burler |
 
 ### Ready (1)
 
