@@ -29,3 +29,8 @@ Their findings join the round's findings like any other lens, and Burler-Fix fix
 No pause, no extra round and no parent decision is needed.
 
 The same option could later apply to the Plan and Code perches.
+
+## Belongs with `parent-reviews-decision-record` (operator, 2026-11-11)
+
+This note and `parent-reviews-decision-record` ask for one thing from two sides: an extra review of the Discussion record by the parent orch or a named agent.
+They are designed together, in one Motif.
