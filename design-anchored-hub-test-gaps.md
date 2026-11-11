@@ -1,6 +1,6 @@
 # Tests for the lym verb directory calls and the stops of unconverted steps in an anchored hub
 
-`anchored-hub-test-gaps` · Task · bug, fabric · running · Open-Window
+`anchored-hub-test-gaps` · Task · bug, fabric · running · Seed-IDE
 
 Depends on: [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md)
 
