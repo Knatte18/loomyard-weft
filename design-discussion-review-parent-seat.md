@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-discussion-review-parent-seat.md)
 
-Depends on: [`parent-review-ask-verbs`](design-parent-review-ask-verbs.md)
-
 Filed from the Sketch `parent-reviews-decision-record`.
 
 Takes: parent-review-ask-verbs' ask record API, deadline cap, config keys and verbs; NotifyParent's routing; the assistant seat as the model for the consolidation part and the copy beside the review
