@@ -71,7 +71,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Select an importing package's tests from its coverage map, or name the miss that runs it whole** | [`coverage-test-select`](design-coverage-test-select.md)<br>[Sketch](decision-coverage-test-select.md) | darn · solid | T4 | 6h<br>4m | gate, testkit, darn |
+| T14 | **Select an importing package's tests from its coverage map, or name the miss that runs it whole** | [`coverage-test-select`](design-coverage-test-select.md)<br>[Sketch](decision-coverage-test-select.md) | darn · solid | T4 | 6h<br>5m | gate, testkit, darn |
 
 #### Layer B (1)
 
@@ -79,7 +79,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T15 | **A coverage gate scope runs changed packages whole and importing packages' selected tests** | [`gate-scope-coverage`](design-gate-scope-coverage.md)<br>[Sketch](decision-gate-scope-coverage.md) | darn · solid | T14 | 6h<br>4m | gate, testkit, darn |
+| T15 | **A coverage gate scope runs changed packages whole and importing packages' selected tests** | [`gate-scope-coverage`](design-gate-scope-coverage.md)<br>[Sketch](decision-gate-scope-coverage.md) | darn · solid | T14 | 6h<br>5m | gate, testkit, darn |
 
 ### Notes (3)
 
@@ -116,7 +116,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Adopt takes over without hanging behind a pause, failing on lym files or replaying stale stops** | [`adopt-takeover-fixes`](design-adopt-takeover-fixes.md) | darn · solid | Darn-Write | neve | 2h<br>21m | fabric, tender |
-| T8 | **The adopt-check tab closes after the check; reed attach refuses a directory that is no worktree** | [`reed-tab-and-attach-fixes`](design-reed-tab-and-attach-fixes.md) | darn · light | Open-Window | neve | 5h<br>1h | reed |
+| T8 | **The adopt-check tab closes after the check; reed attach refuses a directory that is no worktree** | [`reed-tab-and-attach-fixes`](design-reed-tab-and-attach-fixes.md) | darn · light | Drift-Baseline | neve | 5h<br>1h | reed |
 
 #### Ready (0)
 
@@ -195,7 +195,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 3d<br>3d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 3d<br>0m | shed, loom, darn |
-| E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 4m<br>4m | testkit, gate |
+| E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 5m<br>5m | testkit, gate |
 
 #### Features (14)
 
