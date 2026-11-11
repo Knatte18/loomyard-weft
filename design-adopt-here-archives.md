@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-adopt-here-archives.md)
 
-Depends on: [`adopt-owner-handover`](design-adopt-owner-handover.md)
-
 Filed from the Sketch `adopt-robust`.
 
 Takes: adopt-worker-record's worker, record, follow and resume; adopt-owner-handover's archive-owner tag name function
