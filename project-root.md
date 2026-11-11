@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Webster: no amend of a pushed card, no lockless work on a notice, and a gate halt that counts and names its failure** | [`webster-run-faults`](design-webster-run-faults.md) | darn · solid | Finalize | neve | 2h<br>59m | webster, loom, creel, batten, git, gate |
-| T3 | **Dobby starts a released raddle task whose depends_on has not landed** | [`dobby-raddle-ignores-deps`](design-dobby-raddle-ignores-deps.md) | darn · light | Drift-Baseline | neve | 2h<br>59m | dobby, board |
+| T3 | **Dobby starts a released raddle task whose depends_on has not landed** | [`dobby-raddle-ignores-deps`](design-dobby-raddle-ignores-deps.md) | darn · light | Drift-Await | neve | 2h<br>59m | dobby, board |
 | T14 | **Finalize spawns a fixer on a single non-repeating test failure** | [`finalize-flaky-rerun`](design-finalize-flaky-rerun.md) | darn · light | Code-Burler-Review | neve | 2h<br>38m | landing, gate |
 | T15 | **Console window titles put the task handle first, with hub and project in brackets** | [`console-title-handle-first`](design-console-title-handle-first.md) | darn · light | Code-Burler-Fix | neve | 1d<br>31m | termwindow |
 | T20 | **A loop that ends without an envelope records no exit status, so its halt cannot be explained** | [`loop-exit-not-recorded`](design-loop-exit-not-recorded.md) | darn · light | Code-Burler-Fix | neve | 2d<br>2h | shed, friction, shuttle |
