@@ -1,0 +1,1562 @@
+diff --git a/internal/fabricengine/diff.go b/internal/fabricengine/diff.go
+index 10e9b065..e55292ae 100644
+--- a/internal/fabricengine/diff.go
++++ b/internal/fabricengine/diff.go
+@@ -115,6 +115,16 @@ func (f *Fabric) CodeDirtyPaths() (checkout string, paths []string, err error) {
+ 	return f.warpPath, paths, nil
+ }
+ 
++// CodeWorktreeChanges returns every uncommitted path of the code checkout's live worktree, untracked files included.
++// The paths are relative to that checkout and slash-separated; it never lists the records checkout.
++func (f *Fabric) CodeWorktreeChanges() ([]string, error) {
++	paths, err := f.code.WorktreeChangedFiles()
++	if err != nil {
++		return nil, fmt.Errorf("fabricengine: code checkout worktree changes: %w", err)
++	}
++	return paths, nil
++}
++
+ // Status reports every uncommitted path on both sides of the warp<->weft pair, merged into one side-labelled slice.
+ // It reads each checkout's live worktree, so no correspondence is involved.
+ func (f *Fabric) Status() ([]ChangeEntry, error) {
+diff --git a/internal/fabricengine/diff_integration_test.go b/internal/fabricengine/diff_integration_test.go
+index cb872394..9ba78fbd 100644
+--- a/internal/fabricengine/diff_integration_test.go
++++ b/internal/fabricengine/diff_integration_test.go
+@@ -206,6 +206,14 @@ func TestStatus_MergesUncommittedChangesBothSides_ExcludesWeftArtifacts(t *testi
+ 	if !slices.Contains(warpPaths, "uncommitted.txt") {
+ 		t.Errorf("Status() warp-side paths = %v; want it to contain uncommitted.txt", warpPaths)
+ 	}
++
++	codeChanges, err := f.CodeWorktreeChanges()
++	if err != nil {
++		t.Fatalf("CodeWorktreeChanges() error = %v", err)
++	}
++	if !slices.Equal(slices.Sorted(slices.Values(codeChanges)), slices.Sorted(slices.Values(warpPaths))) {
++		t.Errorf("CodeWorktreeChanges() = %v; want exactly the code side's paths of Status(), %v", codeChanges, warpPaths)
++	}
+ 	if !slices.Contains(weftPaths, filepath.Join("_lym", "config.yaml")) {
+ 		t.Errorf("Status() weft-side paths = %v; want it to contain _lym/config.yaml", weftPaths)
+ 	}
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index d2360c90..633f0639 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -202,6 +202,10 @@ type testRequest struct {
+ 
+ 	// The fields below are filled by runTest once the hub is resolved and the config loaded, and read by the tier runs.
+ 
++	// coverage is set when the --gate key's scope is coverage, so the computed scope narrows its importing packages.
++	coverage bool
++	// coverageMaps is the hub's coverage map directory; empty outside a hub.
++	coverageMaps string
+ 	// root is the worktree root the tiers' dirs and a prebuild are relative to.
+ 	root string
+ 	// prebuiltStore is the hub's store of prebuilt `lym` binaries; empty outside a hub.
+diff --git a/internal/gatecli/coveragescope.go b/internal/gatecli/coveragescope.go
+new file mode 100644
+index 00000000..f5137d9a
+--- /dev/null
++++ b/internal/gatecli/coveragescope.go
+@@ -0,0 +1,320 @@
++// coveragescope.go narrows a computed diff share under a gate key of scope coverage.
++// A changed package runs whole, and an importing package runs only the tests its coverage map selects.
++
++package gatecli
++
++import (
++	"context"
++	"fmt"
++	"go/ast"
++	"go/build"
++	"go/parser"
++	"go/token"
++	"os"
++	"os/exec"
++	"path"
++	"path/filepath"
++	"slices"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/impactset"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testcover"
++)
++
++// The labels the scope report gives a package of a coverage-scoped tier, beside a miss's and a selection's own.
++const (
++	coverageChanged    = "changed"
++	coverageLymBinary  = "whole: lym binary"
++	coverageOverBudget = "whole: over budget"
++	coverageNone       = "none selected"
++)
++
++// selectionSource returns the selection of the importing package at a module-relative slash directory.
++type selectionSource func(pkg string) testcover.Selection
++
++// coveragePackage is one package of a coverage-scoped tier, as the scope report names it.
++type coveragePackage struct {
++	// module is the directory of the package's module, and target its module-relative package argument.
++	module, target string
++	label          string
++	// whole is set when the package runs every test of the tier.
++	whole bool
++	// tests are the names the package runs by, when it runs neither whole nor nothing.
++	tests []string
++}
++
++// coverageTier returns the tier numbered number when a coverage scope narrows its share, and whether it does.
++// A call that is not of scope coverage, or whose words after `--` carry a filter flag, narrows no tier.
++// A tier the hub does not declare is not narrowed.
++// Nor is a tier whose command lacks {args} or a target placeholder.
++// Nor is a tier with carry: false, which runs whole.
++func coverageTier(cfg gateslot.Config, request testRequest, number int) (gateslot.Tier, bool) {
++	if !request.coverage || slices.ContainsFunc(request.args, isFilterFlag) {
++		return gateslot.Tier{}, false
++	}
++	tier, err := cfg.Tier(number)
++	if err != nil || tier.NoCarry || !gateslot.HoldsTargets(tier.Command) || !strings.Contains(tier.Command, "{args}") {
++		return gateslot.Tier{}, false
++	}
++	return tier, true
++}
++
++// narrowCoverage returns share, the diff share targets derive, narrowed for the tier numbered number.
++// It also returns the scope report's line for each package of the share.
++// A changed package and a binary builder of targets run whole.
++// An importing package runs the union of its Test functions of the tier that match one of four rules.
++// selectionOf selects the function.
++// The map does not record it.
++// The map marks it out of process or unresolved.
++// It carries `//lym:guard`.
++// The union holds only the tests a run of the tier executes.
++// Those are declared in a test file the host admits under the tier's tag.
++// It drops the tests targets leave unwatched in the package.
++// A selection miss, a test file that cannot be read, or a guard marker the scan refuses runs the package whole.
++// A package whose union is empty runs nothing.
++// A union whose anchored names pass greenCommandBudget runs every selected package whole.
++// root is the worktree root the module directories resolve against.
++func narrowCoverage(share tierScope, targets impactset.Targets, root string, number int, tier gateslot.Tier, selectionOf selectionSource) (tierScope, []string) {
++	tiers := append([]int{number}, tier.Covers...)
++	tagged := build.Default
++	tagged.BuildTags = []string{tierName(number)}
++
++	var packages []coveragePackage
++	for _, module := range targets.Modules {
++		for _, target := range module.Packages {
++			entry := coveragePackage{module: module.Dir, target: target, label: coverageChanged, whole: true}
++			switch {
++			case slices.Contains(module.BinaryBuilders, target):
++				entry.label = coverageLymBinary
++			case slices.Contains(module.Importers, target):
++				entry = importerPackage(entry, tagged, tiers, root, targets, selectionOf)
++			}
++			packages = append(packages, entry)
++		}
++	}
++
++	var names []string
++	for _, entry := range packages {
++		names = append(names, entry.tests...)
++	}
++	slices.Sort(names)
++	names = slices.Compact(names)
++	if len(anchoredPattern(names)) > greenCommandBudget {
++		for i := range packages {
++			if len(packages[i].tests) > 0 {
++				packages[i] = coveragePackage{module: packages[i].module, target: packages[i].target, label: coverageOverBudget, whole: true}
++			}
++		}
++		names = nil
++	}
++
++	narrowed := tierScope{skip: share.skip, selectedTests: names}
++	lines := make([]string, len(packages))
++	for i, entry := range packages {
++		lines[i] = fmt.Sprintf("gate test: %s coverage: %s %s", tierName(number), entry.target, entry.label)
++		switch {
++		case entry.whole:
++			narrowed.modules = appendTarget(narrowed.modules, entry.module, entry.target)
++		case len(entry.tests) > 0:
++			narrowed.selected = appendTarget(narrowed.selected, entry.module, entry.target)
++		}
++	}
++	return narrowed, lines
++}
++
++// importerPackage returns entry, an importing package of targets, with the tests it runs and its label.
++func importerPackage(entry coveragePackage, tagged build.Context, tiers []int, root string, targets impactset.Targets, selectionOf selectionSource) coveragePackage {
++	pkg := path.Clean(strings.TrimPrefix(entry.target, "./"))
++	dir := path.Join(entry.module, pkg)
++	selection := selectionOf(pkg)
++	if selection.Miss != nil {
++		entry.label = "miss: " + selection.Miss.String()
++		return entry
++	}
++	declared, err := tierTestNames(tagged, filepath.Join(root, filepath.FromSlash(dir)), tiers, targets.Unwatched[dir])
++	var guards map[string][]impactset.GuardTest
++	if err == nil {
++		guards, err = impactset.FindGuardTests(root, []string{dir})
++	}
++	switch {
++	case impactset.IsGuardScanError(err):
++		entry.label = "miss: " + err.Error()
++		return entry
++	case err != nil:
++		entry.label = "miss: " + testcover.Miss{Reason: testcover.MissParse, Detail: err.Error()}.String()
++		return entry
++	}
++	entry.tests = coverageUnion(declared, selection, guards[dir])
++	entry.whole = false
++	entry.label = coverageNone
++	if len(entry.tests) > 0 {
++		entry.label = fmt.Sprintf("selected %d of %d", len(entry.tests), len(declared))
++	}
++	return entry
++}
++
++// coverageUnion returns the names of declared, sorted, that the selection selects.
++// It adds the names its map does not record or marks out of process or unresolved, and the names guards holds.
++func coverageUnion(declared []string, selection testcover.Selection, guards []impactset.GuardTest) []string {
++	recorded, marked := map[string]bool{}, map[string]bool{}
++	for _, test := range selection.Recorded {
++		recorded[test.Name] = true
++		marked[test.Name] = test.Spawn.OutOfProcess || test.Spawn.Unresolved
++	}
++	var union []string
++	for _, name := range declared {
++		guarded := slices.ContainsFunc(guards, func(guard impactset.GuardTest) bool { return guard.Name == name })
++		if guarded || !recorded[name] || marked[name] || slices.Contains(selection.Tests, name) {
++			union = append(union, name)
++		}
++	}
++	return union
++}
++
++// tierTestNames returns the Test functions a run of tiers executes from the test files directly in dir, sorted.
++// It reads only the files tagged admits on the host, and leaves out the names in skipped.
++// A function opening with `tiergate.Require(t, N)` counts when tiers holds N, and any other counts always.
++// A directory or test file that cannot be read, matched or parsed is an error.
++func tierTestNames(tagged build.Context, dir string, tiers []int, skipped []string) ([]string, error) {
++	entries, err := os.ReadDir(dir)
++	if err != nil {
++		return nil, err
++	}
++	var names []string
++	for _, entry := range entries {
++		name := entry.Name()
++		if entry.IsDir() || !strings.HasSuffix(name, "_test.go") {
++			continue
++		}
++		matches, err := tagged.MatchFile(dir, name)
++		if err != nil {
++			return nil, err
++		}
++		if !matches {
++			continue
++		}
++		file, err := parser.ParseFile(token.NewFileSet(), filepath.Join(dir, name), nil, parser.SkipObjectResolution)
++		if err != nil {
++			return nil, err
++		}
++		for _, decl := range file.Decls {
++			fn, ok := decl.(*ast.FuncDecl)
++			if !ok || fn.Recv != nil || !isTestName(fn.Name.Name) || slices.Contains(skipped, fn.Name.Name) {
++				continue
++			}
++			if tier, required := impactset.RequiredTier(file, fn); !required || slices.Contains(tiers, tier) {
++				names = append(names, fn.Name.Name)
++			}
++		}
++	}
++	slices.Sort(names)
++	return slices.Compact(names), nil
++}
++
++// appendTarget returns modules with target added to the module at dir, which joins last when modules lacks it.
++func appendTarget(modules []moduleTargets, dir, target string) []moduleTargets {
++	index := slices.IndexFunc(modules, func(module moduleTargets) bool { return module.dir == dir })
++	if index < 0 {
++		return append(modules, moduleTargets{dir: dir, targets: []string{target}})
++	}
++	modules[index].targets = append(modules[index].targets, target)
++	return modules
++}
++
++// anchoredPattern returns the go test filter that matches exactly the top-level tests names.
++func anchoredPattern(names []string) string {
++	return "^(" + strings.Join(names, "|") + ")$"
++}
++
++// coverageSelections returns the selection source of a coverage scope over the worktree at root.
++// It opens the selector at its first use, so a call with no importing package reads nothing,
++// and it caches each package's selection, which every tier and base group of the call shares.
++// A selector that cannot open, or a selection whose working files cannot be read, is a miss.
++func coverageSelections(ctx context.Context, cfg gateslot.Config, location *lymcwd.Location, root string, request testRequest) selectionSource {
++	cache := map[string]testcover.Selection{}
++	var (
++		selector  *testcover.Selector
++		setupMiss *testcover.Miss
++		opened    bool
++	)
++	return func(pkg string) testcover.Selection {
++		if cached, ok := cache[pkg]; ok {
++			return cached
++		}
++		if !opened {
++			opened = true
++			selector, setupMiss = openSelector(ctx, cfg, location, root, request)
++		}
++		selection := testcover.Selection{Miss: setupMiss}
++		if selector != nil {
++			var err error
++			if selection, err = selector.Select(pkg); err != nil {
++				selection = testcover.Selection{Miss: &testcover.Miss{Reason: testcover.MissMapUnreadable, Detail: err.Error()}}
++			}
++		}
++		cache[pkg] = selection
++		return selection
++	}
++}
++
++// openSelector returns the selector over the hub's coverage maps and the worktree at root.
++// It reads the working tree's files as HEAD's tree and the uncommitted and untracked paths, through fabric.
++// It returns instead the miss every importing package takes: outside a hub there are no maps,
++// and a working tree or toolchain that cannot be read leaves the maps nothing to compare with.
++func openSelector(ctx context.Context, cfg gateslot.Config, location *lymcwd.Location, root string, request testRequest) (*testcover.Selector, *testcover.Miss) {
++	if request.coverageMaps == "" {
++		return nil, &testcover.Miss{Reason: testcover.MissNoMap, Detail: "the worktree is in no hub, which holds the coverage maps"}
++	}
++	unreadable := func(err error) (*testcover.Selector, *testcover.Miss) {
++		return nil, &testcover.Miss{Reason: testcover.MissMapUnreadable, Detail: "cannot read the working tree to compare the maps with: " + err.Error()}
++	}
++	fabric, err := fabricengine.Open(location)
++	if err != nil {
++		return unreadable(err)
++	}
++	head, err := fabric.HeadSHA()
++	if err != nil {
++		return unreadable(err)
++	}
++	files, err := fabric.CodeTreeAt(head, ".")
++	if err != nil {
++		return unreadable(err)
++	}
++	changes, err := fabric.CodeWorktreeChanges()
++	if err != nil {
++		return unreadable(err)
++	}
++	files = append(files, changes...)
++	slices.Sort(files)
++	goRoot, err := goRootOf(ctx, request.goBinary, root)
++	if err != nil {
++		return unreadable(err)
++	}
++	return testcover.NewSelector(testcover.SelectorConfig{
++		MapsDir:      request.coverageMaps,
++		WorktreeRoot: root,
++		ModuleRel:    ".",
++		ModulePath:   modulePathOf(root),
++		GoRoot:       goRoot,
++		WorkingFiles: slices.Compact(files),
++		Commits:      fabric,
++		Inert:        cfg.Inert,
++	}), nil
++}
++
++// goRootOf returns the root of the Go toolchain goBinary runs, as `go env GOROOT` prints it in dir.
++func goRootOf(ctx context.Context, goBinary, dir string) (string, error) {
++	cmd := exec.CommandContext(ctx, goBinary, "env", "GOROOT")
++	cmd.Dir = dir
++	logger.Info("gate test: spawning go env GOROOT", "dir", dir)
++	out, err := cmd.Output()
++	logger.Info("gate test: go env GOROOT exited", "dir", dir, "err", err)
++	if err != nil {
++		return "", fmt.Errorf("go env GOROOT: %w", err)
++	}
++	return strings.TrimSpace(string(out)), nil
++}
+diff --git a/internal/gatecli/coveragescope_test.go b/internal/gatecli/coveragescope_test.go
+new file mode 100644
+index 00000000..7c23ab48
+--- /dev/null
++++ b/internal/gatecli/coveragescope_test.go
+@@ -0,0 +1,332 @@
++// coveragescope_test.go covers how a coverage gate key marks a call and how its scope narrows a diff share.
++// It needs no process and no hub: an importing package is a directory of test files under a temporary root.
++
++package gatecli
++
++import (
++	"context"
++	"fmt"
++	"os"
++	"path/filepath"
++	"reflect"
++	"runtime"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/impactset"
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestWithGateScope(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	cfg := gateslot.Config{Gates: map[string]gateslot.GateKey{
++		"darn-write": {Tiers: []int{0}, Scope: gateslot.ScopeCoverage},
++		"pr-review":  {Tiers: []int{0}, Scope: "diff"},
++	}}
++	tests := []struct {
++		name    string
++		request testRequest
++		want    testRequest
++	}{
++		{
++			name:    "CoverageKeyIsTheComputedFormMarkedForCoverage",
++			request: testRequest{gate: "darn-write", cards: []string{"1"}},
++			want:    testRequest{gate: "darn-write", coverage: true},
++		},
++		{
++			name:    "DiffKeyIsNotMarked",
++			request: testRequest{gate: "pr-review", cards: []string{"1"}},
++			want:    testRequest{gate: "pr-review"},
++		},
++		{
++			name:    "ExplicitTargetsLeaveACoverageKeyUnnarrowed",
++			request: testRequest{gate: "darn-write", targets: []string{"./a"}},
++			want:    testRequest{gate: "darn-write", targets: []string{"./a"}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := withGateScope(cfg, tt.request); !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("withGateScope(%+v) = %+v; want %+v", tt.request, got, tt.want)
++			}
++		})
++	}
++}
++
++func TestCoverageTier(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	withTier0 := func(change func(*gateslot.Tier)) gateslot.Config {
++		cfg := planConfig()
++		t0 := cfg.Tiers["tier0"]
++		change(&t0)
++		cfg.Tiers["tier0"] = t0
++		return cfg
++	}
++	withoutTier0 := func() gateslot.Config {
++		cfg := planConfig()
++		delete(cfg.Tiers, "tier0")
++		return cfg
++	}
++	tests := []struct {
++		name    string
++		cfg     gateslot.Config
++		request testRequest
++		want    bool
++	}{
++		{name: "NotATierTheHubDoesNotDeclare", cfg: withoutTier0(), request: testRequest{coverage: true}},
++		{name: "NotATierWhoseCommandLacksATargetPlaceholder", cfg: withTier0(func(t0 *gateslot.Tier) { t0.Command = "go test {args}" }), request: testRequest{coverage: true}},
++		{name: "NarrowsADeclaredTierOfACoverageCall", cfg: planConfig(), request: testRequest{coverage: true}, want: true},
++		{name: "NotWithoutTheCoverageScope", cfg: planConfig(), request: testRequest{}},
++		{name: "NotWhenTheCallsWordsCarryAFilter", cfg: planConfig(), request: testRequest{coverage: true, args: []string{"-run", "X"}}},
++		{name: "NotATierWithCarryFalse", cfg: withTier0(func(t0 *gateslot.Tier) { t0.NoCarry = true }), request: testRequest{coverage: true}},
++		{name: "NotATierWhoseCommandLacksArgs", cfg: withTier0(func(t0 *gateslot.Tier) { t0.Command = "go test {targets}" }), request: testRequest{coverage: true}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if _, got := coverageTier(tt.cfg, tt.request, 0); got != tt.want {
++				t.Errorf("coverageTier() narrows = %v; want %v", got, tt.want)
++			}
++		})
++	}
++}
++
++// testFileHeader opens every fixture test file of package b.
++const testFileHeader = "package b\n\nimport (\n\t\"testing\"\n\n\t\"github.com/Knatte18/loomyard/internal/testkit/tiergate\"\n)\n"
++
++// testFunc returns the source of a Test function that opens with tiergate.Require for tier.
++func testFunc(name string, tier int) string {
++	return fmt.Sprintf("\nfunc %s(t *testing.T) { tiergate.Require(t, %d) }\n", name, tier)
++}
++
++// guardFunc returns the source of a tier0 Test function marked //lym:guard.
++func guardFunc(name string) string {
++	return "\n//lym:guard" + testFunc(name, 0)
++}
++
++// mapTests returns a map's record of tests named names, none of them marked by the spawn scan.
++func mapTests(names ...string) []testcover.MapTest {
++	tests := make([]testcover.MapTest, len(names))
++	for i, name := range names {
++		tests[i] = testcover.MapTest{Name: name}
++	}
++	return tests
++}
++
++func TestCoverageSelections(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	// A request outside a hub names no maps directory, so the selector never opens and each package misses.
++	selectionOf := coverageSelections(context.Background(), gateslot.Config{}, nil, t.TempDir(), testRequest{})
++	for _, pkg := range []string{"internal/b", "internal/b", "internal/c"} {
++		got := selectionOf(pkg)
++		if got.Miss == nil || got.Miss.Reason != testcover.MissNoMap {
++			t.Errorf("selection of %s = %+v; want a miss for %q", pkg, got, testcover.MissNoMap)
++		}
++	}
++}
++
++func TestNarrowCoverage(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	otherGOOS := "plan9"
++	if runtime.GOOS == otherGOOS {
++		otherGOOS = "linux"
++	}
++	mixed := testFileHeader + testFunc("TestSel", 0) + testFunc("TestOther", 0) + guardFunc("TestGuard") +
++		testFunc("TestSpawn", 0) + testFunc("TestNew", 0) + testFunc("TestLater", 1)
++	mixedRecord := append(mapTests("TestSel", "TestOther", "TestGuard", "TestLater"),
++		testcover.MapTest{Name: "TestSpawn", Spawn: testcover.SpawnVerdict{OutOfProcess: true}})
++	var longNames strings.Builder
++	longNames.WriteString(testFileHeader)
++	for i := range 200 {
++		longNames.WriteString(testFunc(fmt.Sprintf("TestAVeryLongNameThatFillsTheCommandBudget%03d", i), 0))
++	}
++
++	line := func(number int, target, label string) string {
++		return "gate test: " + tierName(number) + " coverage: " + target + " " + label
++	}
++	root := func(targets ...string) []moduleTargets { return []moduleTargets{{dir: ".", targets: targets}} }
++	tests := []struct {
++		name      string
++		files     map[string]string
++		selection testcover.Selection
++		unwatched []string
++		want      tierScope
++		wantLabel string
++		// number is the tier narrowed; tier0 when unset.
++		number int
++		// labelPrefix makes wantLabel the start of the importer's label, which goes on with a path or a parser's text.
++		labelPrefix bool
++	}{
++		{
++			name:      "an importer runs its selected, unrecorded, out-of-process and guard tests of the tier",
++			files:     map[string]string{"b_test.go": mixed},
++			selection: testcover.Selection{Tests: []string{"TestLater", "TestSel"}, Recorded: mixedRecord},
++			want: tierScope{
++				modules:       root("./internal/a", "./internal/e"),
++				selected:      root("./internal/b"),
++				selectedTests: []string{"TestGuard", "TestNew", "TestSel", "TestSpawn"},
++			},
++			wantLabel: "selected 4 of 5",
++		},
++		{
++			name:      "an importer runs its guard, out-of-process and unrecorded tests when the map selects none",
++			files:     map[string]string{"b_test.go": mixed},
++			selection: testcover.Selection{Recorded: mixedRecord},
++			want: tierScope{
++				modules:       root("./internal/a", "./internal/e"),
++				selected:      root("./internal/b"),
++				selectedTests: []string{"TestGuard", "TestNew", "TestSpawn"},
++			},
++			wantLabel: "selected 3 of 5",
++		},
++		{
++			name:      "an importer with no test in the union runs nothing",
++			files:     map[string]string{"b_test.go": testFileHeader + testFunc("TestOther", 0)},
++			selection: testcover.Selection{Recorded: mapTests("TestOther")},
++			want:      tierScope{modules: root("./internal/a", "./internal/e")},
++			wantLabel: "none selected",
++		},
++		{
++			name:      "an importer whose only union member is an unwatched guard test runs nothing",
++			files:     map[string]string{"b_test.go": testFileHeader + guardFunc("TestGuard") + testFunc("TestOther", 0)},
++			selection: testcover.Selection{Recorded: mapTests("TestGuard", "TestOther")},
++			unwatched: []string{"TestGuard"},
++			want:      tierScope{modules: root("./internal/a", "./internal/e"), skip: []string{"TestGuard"}},
++			wantLabel: "none selected",
++		},
++		{
++			name: "an unrecorded test in a file constrained to another GOOS stays out of the union",
++			files: map[string]string{
++				"b_test.go":       testFileHeader + testFunc("TestOther", 0),
++				"b_other_test.go": "//go:build " + otherGOOS + "\n\n" + testFileHeader + testFunc("TestElsewhere", 0),
++			},
++			selection: testcover.Selection{Recorded: mapTests("TestOther")},
++			want:      tierScope{modules: root("./internal/a", "./internal/e")},
++			wantLabel: "none selected",
++		},
++		{
++			name:      "a selection miss runs the importer whole",
++			files:     map[string]string{"b_test.go": mixed},
++			selection: testcover.Selection{Miss: &testcover.Miss{Reason: testcover.MissNoMap, Detail: "no map was built for the package"}},
++			want:      tierScope{modules: root("./internal/a", "./internal/b", "./internal/e")},
++			wantLabel: "miss: no coverage map: no map was built for the package",
++		},
++		{
++			name:      "a union whose pattern passes the command budget runs the selected packages whole",
++			files:     map[string]string{"b_test.go": longNames.String()},
++			want:      tierScope{modules: root("./internal/a", "./internal/b", "./internal/e")},
++			wantLabel: "whole: over budget",
++		},
++		{
++			name:  "an importer runs a recorded test the map marks unresolved",
++			files: map[string]string{"b_test.go": testFileHeader + testFunc("TestOther", 0) + testFunc("TestUnresolved", 0)},
++			selection: testcover.Selection{Recorded: append(mapTests("TestOther"),
++				testcover.MapTest{Name: "TestUnresolved", Spawn: testcover.SpawnVerdict{Unresolved: true}})},
++			want: tierScope{
++				modules:       root("./internal/a", "./internal/e"),
++				selected:      root("./internal/b"),
++				selectedTests: []string{"TestUnresolved"},
++			},
++			wantLabel: "selected 1 of 2",
++		},
++		{
++			name:      "an importer runs a test that opens with no tiergate.Require",
++			files:     map[string]string{"b_test.go": testFileHeader + "\nfunc TestPlain(t *testing.T) {}\n" + testFunc("TestOther", 0)},
++			selection: testcover.Selection{Recorded: mapTests("TestOther")},
++			want: tierScope{
++				modules:       root("./internal/a", "./internal/e"),
++				selected:      root("./internal/b"),
++				selectedTests: []string{"TestPlain"},
++			},
++			wantLabel: "selected 1 of 2",
++		},
++		{
++			name:   "a tier that covers another counts the covered tier's tests but not a third tier's",
++			number: 1,
++			files: map[string]string{"b_test.go": testFileHeader + testFunc("TestZero", 0) + testFunc("TestOne", 1) +
++				testFunc("TestTwo", 2)},
++			want: tierScope{
++				modules:       root("./internal/a", "./internal/e"),
++				selected:      root("./internal/b"),
++				selectedTests: []string{"TestOne", "TestZero"},
++			},
++			wantLabel: "selected 2 of 2",
++		},
++		{
++			name:        "an importer whose test file does not parse runs whole with a parse miss",
++			files:       map[string]string{"b_test.go": "package b\n\nfunc (\n"},
++			want:        tierScope{modules: root("./internal/a", "./internal/b", "./internal/e")},
++			wantLabel:   "miss: Go file does not parse: ",
++			labelPrefix: true,
++		},
++		{
++			name:        "an importer whose guard marker is misplaced runs whole with the scan error as its label",
++			files:       map[string]string{"b_test.go": testFileHeader + "\n//lym:guard\nfunc helper() {}\n"},
++			want:        tierScope{modules: root("./internal/a", "./internal/b", "./internal/e")},
++			wantLabel:   "miss: impactset: ",
++			labelPrefix: true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			worktree := t.TempDir()
++			dir := filepath.Join(worktree, "internal", "b")
++			if err := os.MkdirAll(dir, 0o755); err != nil {
++				t.Fatal(err)
++			}
++			for name, source := range tt.files {
++				if err := os.WriteFile(filepath.Join(dir, name), []byte(source), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			targets := impactset.Targets{Modules: []impactset.ModuleTargets{{
++				Dir:            ".",
++				Packages:       []string{"./internal/a", "./internal/b", "./internal/e"},
++				Importers:      []string{"./internal/b"},
++				BinaryBuilders: []string{"./internal/e"},
++			}}}
++			share := tierScope{modules: root(targets.Modules[0].Packages...)}
++			if tt.unwatched != nil {
++				targets.Unwatched = map[string][]string{"internal/b": tt.unwatched}
++				share.skip = tt.unwatched
++			}
++			var asked []string
++			selectionOf := func(pkg string) testcover.Selection {
++				asked = append(asked, pkg)
++				return tt.selection
++			}
++
++			got, lines := narrowCoverage(share, targets, worktree, tt.number, planConfig().Tiers[tierName(tt.number)], selectionOf)
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("narrowCoverage() = %+v; want %+v", got, tt.want)
++			}
++			wantLines := []string{
++				line(tt.number, "./internal/a", "changed"),
++				line(tt.number, "./internal/b", tt.wantLabel),
++				line(tt.number, "./internal/e", "whole: lym binary"),
++			}
++			if tt.labelPrefix && len(lines) == len(wantLines) && strings.HasPrefix(lines[1], wantLines[1]) {
++				lines[1] = wantLines[1]
++			}
++			if !slices.Equal(lines, wantLines) {
++				t.Errorf("narrowCoverage() lines = %q; want %q", lines, wantLines)
++			}
++			if !slices.Equal(asked, []string{"internal/b"}) {
++				t.Errorf("narrowCoverage() asked the selections of %q; want the importer internal/b alone", asked)
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index c325732d..ffa34f80 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -65,6 +65,7 @@
+ // A key of scope `card` takes the `--card` ids as the card form.
+ // It is refused when none is given, naming the key and the way forward of passing `--card <id>` per card.
+ // A key of scope `all` is the `--all` form, and a key of scope `diff` is the computed form.
++// A key of scope `coverage` is the computed form too, narrowed as the Coverage scope section says.
+ // `--card` ids beside a key of another scope are ignored.
+ // Explicit `<targets>` beside `--gate` replace the key's scope.
+ // Each run record carries the key as `gate_key`, empty for a call with manual flags.
+@@ -364,6 +365,41 @@
+ // A misplaced or malformed watch marker refuses the call, as a guard scan error does.
+ // Bound: `-skip` matches by name in every package of the run, so a test of the same name elsewhere is skipped too.
+ //
++// # Coverage scope
++//
++// A key of scope `gateslot.ScopeCoverage` derives its scope as `diff` does.
++// That covers the base per tier, the whole-tree fallbacks, the guard and watched tests and `inert_paths`.
++// Under the `go` scoper it then narrows each tier of a narrowed share; under any other scoper it is `diff`.
++// The narrowing only removes tests of packages the diff does not touch, so it never runs a package `diff` would not.
++// It narrows no call with explicit targets, `tree_scope`'s and the failed-test rerun's included,
++// and no call whose words after `--` carry a filter flag.
++// Nor does it narrow a tier whose command lacks `{args}` or a target placeholder, or one with `carry: false`.
++// `impactset.ModuleTargets` keeps apart the changed packages, the binary builders and the importers.
++// A changed package and a binary builder run every test of the tier, as under `diff`.
++// An importing package runs, per tier, the union of four sets of tests.
++// The first is the tests its coverage map selects through `testcover.Selector`.
++// The next two are the tests the map does not record and those it marks out of process or unresolved.
++// The last is its `//lym:guard` tests.
++// The union holds only Test functions the tier runs, read from each one's `tiergate.Require`.
++// They are declared in a test file `go/build` admits on the host under the tier's tag, and the watch skip drops some.
++// A selector miss runs the package whole, and a package with an empty union runs nothing for the tier.
++// The maps are read from the hub's `testcover.Dir` and never built.
++// Outside a hub every importing package misses, and so does each one when the working tree cannot be read.
++// A tier runs its whole packages as one run, as under `diff`, and its selected packages as a second run.
++// That run's scope form is `selected`.
++// Its `{args}` are the call's own words and `-run '^(<names>)$'`, the names of every selected package together.
++// A name selected in one package also runs in another that declares it.
++// A pattern past `greenCommandBudget` runs the selected packages whole in the first run instead.
++// The selected run's green entry carries the filter, so it is never a diff base and never stands in for another run.
++// The filter is in the run's args, not the call's, so the empty-tier check still reads the run.
++// `--stop-on-fail`, the failed-test rerun and the closing line name the selected run by its tier, as any tier run.
++// Before the runs, stderr names each package of a narrowed tier as `gate test: tierN coverage: <package> <label>`.
++// The label is one of `changed`, `whole: lym binary`, `miss: <reason>: <detail>` and `whole: over budget`.
++// Otherwise it is `selected <n> of <m>`, with m the package's tests of the tier, or `none selected`.
++//
++// Bound: a test that runs changed code in a child process the spawn scan does not see is not selected.
++// The landing gate, of scope `all`, still runs it.
++//
+ // # Hub resolution
+ //
+ // The directory is resolved with lymcwd.ResolveWorktree.
+@@ -741,9 +777,9 @@
+ //	  parent-align: {tiers: [0, 1], scope: all}
+ //	  finalize: {tiers: [0, 1], scope: all}
+ //	  adopt: {tiers: [0, 1], scope: all}
+-//	  webster-fix: {tiers: [0, 1], scope: diff}
+-//	  darn-write: {tiers: [0, 1], scope: diff}
+-//	  code-burler-fix: {tiers: [0, 1], scope: diff}
++//	  webster-fix: {tiers: [0, 1], scope: coverage}
++//	  darn-write: {tiers: [0, 1], scope: coverage}
++//	  code-burler-fix: {tiers: [0, 1], scope: coverage}
+ //	  pr-review: {tiers: [0], scope: diff}
+ //
+ // A tier is written whole with one flow mapping, for example:
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index be4c5e7d..5d56809b 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -30,6 +30,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/preflight"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/testcover"
+ )
+ 
+ // siteLabelPrefix starts every holder and wait record this verb writes.
+@@ -77,6 +78,9 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	cfg = cfg.WithDefaultDir(location.AnchorRel)
+ 	request.root = buildRoot(location, dir)
+ 	request.busyQuit = cfg.Limits().BusyQuit
++	if inHub {
++		request.coverageMaps = testcover.Dir(fabricengine.BoltDir(location.HubPath))
++	}
+ 
+ 	green := openGreen(gateslot.WaitDir(location.AnchorPath()), request.root, request.goBinary, cfg)
+ 	sc, err := computeScope(preCtx, cfg, location, request.root, request, green)
+@@ -431,11 +435,12 @@ func preTierExpiry(preCtx, runCtx context.Context, request testRequest, step str
+ 	return fmt.Sprintf("gate test: the work before the first tier outlived its %s ceiling while %s; way forward: run the same command again, which a transient hang such as a stalled \"go list\" passes", request.preTierCeiling, step)
+ }
+ 
+-// tierNumbers returns the tier numbers of the listed runs of plan, leaving out the vet and guard steps.
++// tierNumbers returns the tier numbers of the listed runs of plan, each once, leaving out the vet and guard steps.
++// A tier's selected-tests run counts as that tier.
+ func tierNumbers(plan []tierRun) []int {
+ 	var numbers []int
+ 	for _, run := range plan {
+-		if !run.guardStep && !run.vetStep {
++		if !run.guardStep && !run.vetStep && !slices.Contains(numbers, run.number) {
+ 			numbers = append(numbers, run.number)
+ 		}
+ 	}
+diff --git a/internal/gatecli/scope.go b/internal/gatecli/scope.go
+index 0b8eefc7..76b993e8 100644
+--- a/internal/gatecli/scope.go
++++ b/internal/gatecli/scope.go
+@@ -57,6 +57,10 @@ type tierScope struct {
+ 	noTests bool
+ 	// skip names the `//lym:watch` tests of modules that the tier's diff leaves alone, sorted.
+ 	skip []string
++	// selected are a coverage share's importing packages that run only the tests selectedTests names, per module.
++	// Both are empty under every other scope.
++	selected      []moduleTargets
++	selectedTests []string
+ }
+ 
+ // scope is what a call's tiers run over.
+@@ -86,23 +90,28 @@ type scope struct {
+ 	// skip names the `//lym:watch` tests of modules that the scope's changed files leave alone, sorted.
+ 	// Each listed tier's run skips them.
+ 	skip []string
++	// selected and selectedTests are the tier's coverage narrowing, set from the tier's share.
++	selected      []moduleTargets
++	selectedTests []string
+ 	// changed holds the worktree-relative paths a --card scope's changes are read as, when changesRead is set.
+ 	// The guard scan drops the watched guard tests they leave alone.
+ 	changed     []string
+ 	changesRead bool
+ }
+ 
+-// forTier returns s with the narrowing of tier number in place of its own whole, modules, noTests and skip.
++// forTier returns s with the narrowing of tier number in place of its own whole, modules, noTests, skip and selection.
+ func (s scope) forTier(number int) scope {
+ 	if share, ok := s.tiers[number]; ok {
+ 		s.whole, s.modules, s.noTests, s.skip = share.whole, share.modules, share.noTests, share.skip
++		s.selected, s.selectedTests = share.selected, share.selectedTests
+ 	}
+ 	return s
+ }
+ 
+ // withGateScope returns request with the scope form its --gate key names in place of the scope flags.
+-// A key of scope all is the --all form, and a key of scope diff is the computed form.
+-// A key of scope card keeps the --card ids; the other two scopes drop them.
++// A key of scope all is the --all form, and a key of scope diff or coverage is the computed form.
++// A key of scope coverage also marks the request to narrow its importing packages.
++// A key of scope card keeps the --card ids; the other scopes drop them.
+ // Explicit targets replace the key's scope and a call with no key is returned unchanged.
+ func withGateScope(cfg gateslot.Config, request testRequest) testRequest {
+ 	if request.gate == "" || len(request.targets) > 0 {
+@@ -114,6 +123,9 @@ func withGateScope(cfg gateslot.Config, request testRequest) testRequest {
+ 		request.cards = nil
+ 	case "diff":
+ 		request.cards = nil
++	case gateslot.ScopeCoverage:
++		request.cards = nil
++		request.coverage = true
+ 	}
+ 	return request
+ }
+@@ -141,6 +153,8 @@ func withGateScope(cfg gateslot.Config, request testRequest) testRequest {
+ // A --card scope is the cards' packages per module.
+ // With request.mainPackages it also holds every package main of tier0's module, listed once.
+ // It adds the declared tiers whose build tag brings a file into one of those packages.
++// Under a key of scope coverage, narrowCoverage narrows each tier of a narrowed share.
++// It names each package of such a tier on request.stderr; the selections are read once per call.
+ // A narrowed share, and a --card scope, skip the `//lym:watch` tests of their packages that no changed file concerns.
+ // A --card scope reads its changed files as the diff from the merge base with the parent branch.
+ // With no parent branch or an unreadable diff it skips none.
+@@ -229,6 +243,7 @@ func computeScope(ctx context.Context, cfg gateslot.Config, location *lymcwd.Loc
+ 	groups, wholeTiers := diffBaseGroups(cfg, location, root, request, form, green)
+ 	shares := map[int]tierScope{}
+ 	var guards map[string][]impactset.GuardTest
++	selections := coverageSelections(ctx, cfg, location, root, request)
+ 	narrowed := false
+ 	anyWhole := len(wholeTiers) > 0
+ 	for _, group := range groups {
+@@ -263,6 +278,13 @@ func computeScope(ctx context.Context, cfg gateslot.Config, location *lymcwd.Loc
+ 		}
+ 		for _, number := range group.tiers {
+ 			shares[number] = share
++			if tier, narrows := coverageTier(cfg, request, number); narrows && !targets.Whole {
++				var lines []string
++				shares[number], lines = narrowCoverage(share, targets, root, number, tier, selections)
++				for _, line := range lines {
++					printLine(request.stderr, line)
++				}
++			}
+ 		}
+ 	}
+ 	for _, number := range wholeTiers {
+diff --git a/internal/gatecli/scopes_integration_test.go b/internal/gatecli/scopes_integration_test.go
+index efa15c2f..a3971772 100644
+--- a/internal/gatecli/scopes_integration_test.go
++++ b/internal/gatecli/scopes_integration_test.go
+@@ -629,10 +629,29 @@ func TestGateTest_Scopes(t *testing.T) {
+ 
+ 	t.Run("--gate with scope diff runs the computed scope", func(t *testing.T) {
+ 		edit(t, "lib/lib.go", "package lib\n\nfunc One() int { return 5 }\n")
+-		g := gate(t, pair, nil, "--gate", "webster-fix")
++		g := gate(t, pair, nil, "--gate", "pr-review")
+ 		wantArgs(t, g, []string{"./lib", "./user"}, guardInvocation)
+-		if run, _ := runRecordOf(t, g.stdout.String(), 0); run.ScopeForm != "computed" || run.GateKey != "webster-fix" {
+-			t.Errorf("tier0 run record = %+v; want the computed scope form and gate key webster-fix", run)
++		if run, _ := runRecordOf(t, g.stdout.String(), 0); run.ScopeForm != "computed" || run.GateKey != "pr-review" {
++			t.Errorf("tier0 run record = %+v; want the computed scope form and gate key pr-review", run)
++		}
++	})
++
++	t.Run("--gate with scope coverage runs whole on a whole fallback, and takes all_targets under the none scoper", func(t *testing.T) {
++		edit(t, "nested/n.go", "package nested\n\nvar Changed = 2\n")
++		g := gate(t, pair, nil, "--gate", "darn-write")
++		wantArgs(t, g, []string{"./..."})
++		if !strings.Contains(g.stdout.String(), "falls back to whole: nested/n.go is neither a Markdown file nor under a Go package directory") ||
++			strings.Contains(g.stdout.String(), " coverage: ") {
++			t.Errorf("stdout = %q; want the whole fallback and no coverage line", g.stdout.String())
++		}
++
++		writeScoper(t, "none")
++		defer writeScoper(t, "go")
++		edit(t, "lib/lib.go", "package lib\n\nfunc One() int { return 11 }\n")
++		g = gate(t, pair, nil, "--gate", "darn-write")
++		wantArgs(t, g, []string{"./..."})
++		if run, _ := runRecordOf(t, g.stdout.String(), 0); run.ScopeForm != "computed" || run.GateKey != "darn-write" {
++			t.Errorf("tier run record = %+v; want the computed scope form and gate key darn-write", run)
+ 		}
+ 	})
+ 
+diff --git a/internal/gatecli/tiers.go b/internal/gatecli/tiers.go
+index 3ff0789f..5e4dcd79 100644
+--- a/internal/gatecli/tiers.go
++++ b/internal/gatecli/tiers.go
+@@ -23,6 +23,8 @@ const (
+ 	scopeAll     = "all"
+ 	scopeGuard   = "guard"
+ 	scopeVet     = "vet"
++	// scopeSelected labels the run of a coverage share's selected tests in its importing packages.
++	scopeSelected = "selected"
+ )
+ 
+ // roleClause closes every refusal that sends the caller to `lym config gate`: the steps need the prime,
+@@ -75,6 +77,8 @@ func tierName(number int) string {
+ // A narrowed tier whose share names watched tests to skip gets `-skip '^(<names>)$'` after the call's own words.
+ // It gets none when those words carry a filter flag or the command holds no {args}.
+ // A line on request.stderr names the tests.
++// A tier whose coverage share selects tests gets a second run over the selected packages, which selectedTestsRun builds;
++// the tier's own run is left out when it has no invocation, and is no build-only run.
+ // A guard run is a placeholder whose packages and names the run fills from sc.guards.
+ // A covered tier is named on request.stderr when it has one.
+ // A tier a no-test-class scope runs whole is named on request.stderr when it has one.
+@@ -138,7 +142,13 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 			run.skip = share.skip
+ 			printLine(request.stderr, fmt.Sprintf("gate test: %s skips %s, since no changed file matches their //lym:watch patterns", tierName(number), strings.Join(share.skip, ", ")))
+ 		}
+-		runs = append(runs, run)
++		selects := !share.whole && !tier.NoCarry && len(share.selected) > 0
++		if !selects || len(invocations) > 0 || run.buildOnly {
++			runs = append(runs, run)
++		}
++		if selects {
++			runs = append(runs, selectedTestsRun(number, tier, share, request))
++		}
+ 	}
+ 	if sc.form == scopeTargets && len(wholeTiers) == len(kept) {
+ 		names := tierNames(kept)
+@@ -214,6 +224,24 @@ func printRunWholeNotices(request testRequest, wholeTiers []int) {
+ 	}
+ }
+ 
++// selectedTestsRun returns the run of the tier numbered number over the selected packages of share, a coverage share.
++// Its {args} are the call's own words followed by `-run '^(<names>)$'` over every selected package's tests.
++// The filter sits in the run's args, not the call's, so the empty-tier check still reads the run.
++// Its green entry carries the filter, so it never serves as a diff base or stands in for an unfiltered run.
++func selectedTestsRun(number int, tier gateslot.Tier, share scope, request testRequest) tierRun {
++	invocations := make([]invocation, len(share.selected))
++	for i, module := range share.selected {
++		invocations[i] = invocation{dir: module.dir, targets: module.targets}
++	}
++	return tierRun{
++		number:      number,
++		tier:        tier,
++		scopeForm:   scopeSelected,
++		invocations: invocations,
++		args:        append(slices.Clone(request.args), "-run", anchoredPattern(share.selectedTests)),
++	}
++}
++
+ // watchSkipArgs returns the go test words that skip the top-level tests names.
+ func watchSkipArgs(names []string) []string {
+ 	return []string{"-skip", "^(" + strings.Join(names, "|") + ")$"}
+diff --git a/internal/gatecli/tiers_test.go b/internal/gatecli/tiers_test.go
+index bddee4d8..9f3de702 100644
+--- a/internal/gatecli/tiers_test.go
++++ b/internal/gatecli/tiers_test.go
+@@ -435,6 +435,24 @@ func TestPlanTierRuns(t *testing.T) {
+ 			request: testRequest{tiers: []int{0}, targets: []string{"./a"}},
+ 			want:    []string{"tier0 targets dir=. ./a"},
+ 		},
++		{
++			name:    "a coverage share runs its whole packages, then its selected packages under an anchored -run after the call's words",
++			request: testRequest{args: []string{"-v"}},
++			scope: scope{form: scopeComputed, tiers: map[int]tierScope{0: {
++				modules:       []moduleTargets{{dir: ".", targets: []string{"./a"}}},
++				selected:      []moduleTargets{{dir: ".", targets: []string{"./b", "./c"}}},
++				selectedTests: []string{"TestX", "TestY"},
++			}}},
++			want: []string{"tier0 computed dir=. ./a args=-v", "tier0 selected dir=. ./b ./c args=-v -run ^(TestX|TestY)$"},
++		},
++		{
++			name: "a coverage share with only selected packages runs the selected run alone",
++			scope: scope{form: scopeComputed, tiers: map[int]tierScope{0: {
++				selected:      []moduleTargets{{dir: ".", targets: []string{"./b"}}},
++				selectedTests: []string{"TestX"},
++			}}},
++			want: []string{"tier0 selected dir=. ./b args=-run ^(TestX)$"},
++		},
+ 	}
+ 	for _, tc := range tests {
+ 		t.Run(tc.name, func(t *testing.T) {
+@@ -575,6 +593,22 @@ func TestPlanTierRuns(t *testing.T) {
+ 	}
+ }
+ 
++func TestTierNumbers(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	plan := []tierRun{
++		{number: 1},
++		{number: 1, scopeForm: "selected"},
++		{number: 0},
++		{number: 0, vetStep: true},
++		{number: 2, guardStep: true},
++	}
++	if got, want := tierNumbers(plan), []int{1, 0}; !slices.Equal(got, want) {
++		t.Errorf("tierNumbers() = %v; want %v, each listed tier once and no vet or guard step", got, want)
++	}
++}
++
+ func TestTrimpathLine(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index 3c1fed6d..9df22ac1 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -487,9 +487,9 @@ func decodeGates(entries map[string]yaml.Node) (map[string]GateKey, error) {
+ 			if name != cardGateKey && name != "batch" {
+ 				return nil, guidedError{fmt.Errorf("gate config key %q: scope card is only for the card and batch keys; fix it with \"lym config gate\" from the prime%s", path, roleClause)}
+ 			}
+-		case scopeDiff, scopeAll:
++		case scopeDiff, ScopeCoverage, scopeAll:
+ 		default:
+-			return nil, guidedError{fmt.Errorf("gate config key %q: scope %q; want card, diff or all; fix it with \"lym config gate\" from the prime%s", path, key.Scope, roleClause)}
++			return nil, guidedError{fmt.Errorf("gate config key %q: scope %q; want card, diff, coverage or all; fix it with \"lym config gate\" from the prime%s", path, key.Scope, roleClause)}
+ 		}
+ 		for _, lint := range key.Lints {
+ 			if lint != LintComments && lint != LintPattern {
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index 80ae657a..151fecaf 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -77,9 +77,9 @@ var templateDefaults = Config{
+ 		"parent-align":    {Tiers: []int{0}, Scope: "all", Reports: []string{"redundancy"}},
+ 		"finalize":        {Tiers: []int{0}, Scope: "all"},
+ 		"adopt":           {Tiers: []int{0}, Scope: "all"},
+-		"webster-fix":     {Tiers: []int{0}, Scope: "diff"},
+-		"darn-write":      {Tiers: []int{0}, Scope: "diff", Reports: []string{"redundancy"}},
+-		"code-burler-fix": {Tiers: []int{0}, Scope: "diff", Reports: []string{"redundancy"}},
++		"webster-fix":     {Tiers: []int{0}, Scope: "coverage"},
++		"darn-write":      {Tiers: []int{0}, Scope: "coverage", Reports: []string{"redundancy"}},
++		"code-burler-fix": {Tiers: []int{0}, Scope: "coverage", Reports: []string{"redundancy"}},
+ 		"pr-review":       {Tiers: []int{0}, Scope: "diff"},
+ 	},
+ 	Scoper: "none",
+@@ -301,7 +301,7 @@ func TestLoadConfig(t *testing.T) {
+ 			}), "",
+ 		},
+ 		{"scope card on a key but card and batch", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: card}\n", Config{}, `gate config key "gates.parent-align": scope card is only for the card and batch keys` + fixIt},
+-		{"an unknown scope", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: some}\n", Config{}, `gate config key "gates.parent-align": scope "some"; want card, diff or all` + fixIt},
++		{"an unknown scope", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: some}\n", Config{}, `gate config key "gates.parent-align": scope "some"; want card, diff, coverage or all` + fixIt},
+ 		{"an unknown lint", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: all, lints: [spelling]}\n", Config{}, `gate config key "gates.parent-align": lint "spelling"; want comments or pattern` + fixIt},
+ 		{
+ 			"a key's lints load in order", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: all, lints: [pattern, comments]}\n",
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index fd8b9b03..9030caf6 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -97,8 +97,12 @@
+ // A tier is written whole with one `lym config gate --set 'tiers.tierN={...}'` flow mapping.
+ // It may also be written one key at a time, as `--set tiers.tier0.env.LYM_TEST_TIER=0` or `--set build.timeout_min=10`.
+ // A key no tier or build step holds is refused.
+-// `gates` is a per-name map from a gate key to a GateKey written `{tiers: [<n>...], scope: card|diff|all}`,
++// `gates` is a per-name map from a gate key to a GateKey written `{tiers: [<n>...], scope: card|diff|coverage|all}`,
+ // so a hub file that sets one key keeps the template's value for every other.
++// ScopeCoverage is the `diff` scope with each importing package narrowed to the tests its coverage map selects.
++// The template gives it to `webster-fix`, `darn-write` and `code-burler-fix`, and keeps `pr-review` on `diff`.
++// It is a new value, so a hub file holding `diff` keeps its meaning,
++// and a binary that predates the value refuses a hub file holding it until it updates.
+ // `tier_parallel` is an open map from a tier name to this machine's parallel for it.
+ // A GateKey may also hold `lints`, the lint steps its call runs after its tiers, each LintComments or LintPattern.
+ // The template's `card` key lists both.
+@@ -156,7 +160,7 @@
+ // a `covers` entry not lower than its tier's number, a tier key not spelled `tier<N>`;
+ // a `refuse_raw` entry that is not words of letters, digits, `.`, `_` and `-` separated by single spaces;
+ // a `tier_parallel` entry that is no integer of at least 1;
+-// a gate key whose scope is not `card`, `diff` or `all`;
++// a gate key whose scope is not `card`, `diff`, `coverage` or `all`;
+ // a `card` scope on any key but `card` and `batch`; a lint other than `comments` or `pattern`;
+ // a report other than ReportRedundancy, `redundancy`.
+ // A GateKey may also hold `fixer`, a model-spec naming the cold fixer an agent's red call hands its failures to.
+@@ -218,14 +222,14 @@
+ //	Recipe                         Row                                         Key              Scope
+ //	loom                           Webster, per card                           card             card
+ //	loom                           Webster, per batch                          batch            card
+-//	loom                           Webster, verify fixers                      webster-fix      diff
++//	loom                           Webster, verify fixers                      webster-fix      coverage
+ //	loom                           Webster, end gate                           webster          all
+ //	loom                           Parent-Align                                parent-align     all
+-//	tapestry, darn, sampler        Code-Burler-Fix                             code-burler-fix  diff
++//	tapestry, darn, sampler        Code-Burler-Fix                             code-burler-fix  coverage
+ //	tapestry, darn, pawl, sampler  PR-Review                                   pr-review        diff
+ //	tapestry, darn, sampler        Finalize                                    finalize         all
+ //	adopt                          lym adopt check <subject>, in its worktree  adopt            all
+-//	darn                           Darn-Write                                  darn-write       diff
++//	darn                           Darn-Write                                  darn-write       coverage
+ //	darn                           Darn-Write, Code-Burler-Fix, Finalize       the row's key    the touched trees' targets
+ //
+ // The last line holds for a diff wholly under darn's `tree_scope`:
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index a813ef18..52624ce8 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -16,8 +16,9 @@ redundancy_budget_min: 10  # minutes the redundancy report step may spend on its
+ # One key of a declared tier is set alone with its dotted path: lym config gate --set tiers.tier0.env.LYM_TEST_TIER=0
+ tiers: {}
+ 
+-# Gate key to the tiers that site runs and the scope it runs them over, written {tiers: [<n>...], scope: card|diff|all}.
+-# The keys lym reads: card and batch (scope card, the card's own packages), webster, parent-align, finalize and adopt (scope all, the whole tree), and webster-fix, darn-write, code-burler-fix and pr-review (scope diff, the diff from the merge base).
++# Gate key to the tiers that site runs and the scope it runs them over, written {tiers: [<n>...], scope: card|diff|coverage|all}.
++# The keys lym reads: card and batch (scope card, the card's own packages), webster, parent-align, finalize and adopt (scope all, the whole tree), webster-fix, darn-write and code-burler-fix (scope coverage), and pr-review (scope diff, the diff from the merge base).
++# The scope coverage is the diff scope with each importing package narrowed to the tests its coverage map selects, while a changed package runs whole; under a scoper other than go it is the diff scope.
+ # The scope card is only for the card and batch keys.
+ # A key may also hold lints, the lint steps its call runs after the tiers against HEAD: comments (fixed-column-wrapped breaks and over-long lines in // comments) and pattern (PATTERN.md grown past its headroom line).
+ # A key may also hold reports, the advisory steps its call runs after the lints, which never change its result: redundancy (judges the diff's new and changed Go tests against the coverage maps and writes the verdicts into the worktree's gate directory); reports: [] turns them off.
+@@ -30,9 +31,9 @@ gates:
+   parent-align: {tiers: [0], scope: all, reports: [redundancy]}
+   finalize: {tiers: [0], scope: all}
+   adopt: {tiers: [0], scope: all}
+-  webster-fix: {tiers: [0], scope: diff}
+-  darn-write: {tiers: [0], scope: diff, reports: [redundancy]}
+-  code-burler-fix: {tiers: [0], scope: diff, reports: [redundancy]}
++  webster-fix: {tiers: [0], scope: coverage}
++  darn-write: {tiers: [0], scope: coverage, reports: [redundancy]}
++  code-burler-fix: {tiers: [0], scope: coverage, reports: [redundancy]}
+   pr-review: {tiers: [0], scope: diff}
+ 
+ # How a computed, base or card scope maps to {targets}: go derives the impacted Go packages per module, dotnet derives the impacted C# test projects and classes from the type-name closure over test classes, none runs every tier whole.
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index a1a83078..d74d79dc 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -95,7 +95,7 @@ const DefaultTestTimeoutMin = 20
+ type GateKey struct {
+ 	// Tiers are the tier numbers the key runs, in order.
+ 	Tiers []int `yaml:"tiers"`
+-	// Scope is card, diff or all.
++	// Scope is card, diff, coverage or all.
+ 	Scope string `yaml:"scope"`
+ 	// Lints are the lint steps the key's call runs after its tiers, in order, each LintComments or LintPattern; empty runs none.
+ 	Lints []string `yaml:"lints"`
+@@ -117,6 +117,10 @@ const (
+ 	scopeAll  = "all"
+ )
+ 
++// ScopeCoverage is the gate key scope that runs the diff scope's changed packages whole.
++// Each importing package runs the tests its coverage map selects.
++const ScopeCoverage = "coverage"
++
+ // Lint step names a gate key's lints may hold.
+ const (
+ 	// LintComments is the comment line lint.
+diff --git a/internal/impactset/derive.go b/internal/impactset/derive.go
+index 3fc12b01..578e6bcd 100644
+--- a/internal/impactset/derive.go
++++ b/internal/impactset/derive.go
+@@ -72,23 +72,23 @@ func listPackages(ctx context.Context, worktree string) ([]pkg, error) {
+ 	return parseGoList(string(output), absolute), nil
+ }
+ 
+-// impactedFor returns the impacted set of the changed paths over the graph.
+-// When the diff cannot be narrowed to packages, it returns a nil set and the reason as fallback.
+-func impactedFor(graph moduleGraph, changedPaths []string) (set map[string]bool, fallback string) {
+-	changed := map[string]bool{}
++// impactedFor returns the impacted set of the changed paths over the graph, and the packages the paths touch.
++// When the diff cannot be narrowed to packages, it returns nil sets and the reason as fallback.
++func impactedFor(graph moduleGraph, changedPaths []string) (set, changed map[string]bool, fallback string) {
++	changed = map[string]bool{}
+ 	for _, changedPath := range changedPaths {
+ 		if changedPath == "go.mod" || changedPath == "go.sum" {
+-			return nil, changedPath + " changed"
++			return nil, nil, changedPath + " changed"
+ 		}
+ 		importPath, mapped, ok := packageOfPath(graph, changedPath)
+ 		if !ok {
+-			return nil, fmt.Sprintf("%s is neither a Markdown file nor under a Go package directory", changedPath)
++			return nil, nil, fmt.Sprintf("%s is neither a Markdown file nor under a Go package directory", changedPath)
+ 		}
+ 		if mapped {
+ 			changed[importPath] = true
+ 		}
+ 	}
+-	return graph.impactedSet(changed), ""
++	return graph.impactedSet(changed), changed, ""
+ }
+ 
+ // packageOfPath maps one changed path to the import path of the package it belongs to.
+diff --git a/internal/impactset/doc.go b/internal/impactset/doc.go
+index cf0546c0..e8be62e1 100644
+--- a/internal/impactset/doc.go
++++ b/internal/impactset/doc.go
+@@ -6,7 +6,7 @@
+ // Git runs through `gitexec.Run`, and `go list` is a logged spawn.
+ // It diffs the base to the working tree, not to HEAD:
+ // tracked changes, staged or not, a rename counted at both paths, and the untracked files git does not ignore.
+-// It returns Targets{Whole, Fallback, Base, Modules, Guards, BinaryTests}.
++// It returns Targets{Whole, Fallback, Base, Modules, Guards, BinaryTests, Unwatched}.
+ // Each ModuleTargets names a module directory, `.` for the root,
+ // and its module-relative package arguments in the order the graph lists them, test-less packages included.
+ // Targets also names the base it diffed from whenever that base was usable.
+@@ -32,6 +32,10 @@
+ // So the set also gets every package whose tests import `internal/testkit/lymbin`, which builds the binary;
+ // any other change reaches those packages through the import graph only.
+ // Targets.BinaryTests lists those packages, inside the set or not.
++// Each ModuleTargets keeps apart the packages the diff does not touch.
++// Importers names those the set holds only because they reach a changed package.
++// BinaryBuilders names those it holds because `cmd/lym` changed and their tests build the binary.
++// The rest of Packages are the changed packages, so a caller can run them whole and narrow the importers.
+ // A diff touching only Markdown files yields no module and no package.
+ // The context is checked before each git read, and cancelling it kills a stalled `go list`;
+ // a local git read already in flight runs to its end.
+diff --git a/internal/impactset/graph.go b/internal/impactset/graph.go
+index 1b063875..f886cab4 100644
+--- a/internal/impactset/graph.go
++++ b/internal/impactset/graph.go
+@@ -4,6 +4,7 @@ package impactset
+ 
+ import (
+ 	"path/filepath"
++	"slices"
+ 	"sort"
+ 	"strings"
+ )
+@@ -144,6 +145,35 @@ func (g moduleGraph) addBinaryBuildingTests(set map[string]bool) []string {
+ 	return dirs
+ }
+ 
++// splitUnchanged sorts the packages of set that changed holds none of into importers and binary builders.
++// A binary builder is a package of binaryTests, the directories whose tests build the `lym` binary.
++// It counts only when changed holds the `cmd/lym` package; every other unchanged package is an importer.
++func (g moduleGraph) splitUnchanged(set, changed map[string]bool, binaryTests []string) (importers, builders map[string]bool) {
++	commandChanged := false
++	if command, ok := g.byDir[commandDir]; ok {
++		commandChanged = changed[command.ImportPath]
++	}
++	importers, builders = map[string]bool{}, map[string]bool{}
++	for importPath := range set {
++		switch {
++		case changed[importPath]:
++		case commandChanged && slices.Contains(binaryTests, g.byImportPath[importPath].Dir):
++			builders[importPath] = true
++		default:
++			importers[importPath] = true
++		}
++	}
++	return importers, builders
++}
++
++// packageArgsOf returns the import paths as sorted package arguments, or nil for none.
++func (g moduleGraph) packageArgsOf(importPaths map[string]bool) []string {
++	if len(importPaths) == 0 {
++		return nil
++	}
++	return packageArgs(g.packageDirs(importPaths))
++}
++
+ // packageDirs returns the directories of the import paths, sorted.
+ func (g moduleGraph) packageDirs(importPaths map[string]bool) []string {
+ 	var dirs []string
+diff --git a/internal/impactset/targets.go b/internal/impactset/targets.go
+index cc19f887..b89ad3f1 100644
+--- a/internal/impactset/targets.go
++++ b/internal/impactset/targets.go
+@@ -42,6 +42,12 @@ type ModuleTargets struct {
+ 	Dir string
+ 	// Packages are the module-relative package arguments, in the order the module graph lists them.
+ 	Packages []string
++	// Importers are the Packages the set holds only because their build or tests reach a changed package, sorted.
++	// The diff touches none of their files.
++	Importers []string
++	// BinaryBuilders are the Packages the set holds because the `cmd/lym` package changed and their tests build its binary.
++	// The diff touches none of their files; they are sorted, and no package is both an importer and a binary builder.
++	BinaryBuilders []string
+ }
+ 
+ // DeriveTargets derives the impacted set of the diff between base and the working tree in worktree.
+@@ -131,14 +137,20 @@ func ChangedPaths(ctx context.Context, worktree, base string) ([]string, error)
+ // the changed paths' impacted set over the graph, as root-module targets, or a Whole fallback.
+ // guards and watched map a package directory to its guard tests and its watched tests.
+ func targetsFor(graph moduleGraph, changedPaths []string, guards map[string][]GuardTest, watched map[string][]WatchedTest) Targets {
+-	set, fallback := impactedFor(graph, changedPaths)
++	set, changed, fallback := impactedFor(graph, changedPaths)
+ 	if fallback != "" {
+ 		return wholeTargets("", fallback)
+ 	}
+ 
+ 	targets := Targets{Guards: map[string][]GuardTest{}, BinaryTests: graph.addBinaryBuildingTests(map[string]bool{})}
+ 	if len(set) > 0 {
+-		targets.Modules = []ModuleTargets{{Dir: ".", Packages: packageArgs(graph.packageDirs(set))}}
++		importers, builders := graph.splitUnchanged(set, changed, targets.BinaryTests)
++		targets.Modules = []ModuleTargets{{
++			Dir:            ".",
++			Packages:       packageArgs(graph.packageDirs(set)),
++			Importers:      graph.packageArgsOf(importers),
++			BinaryBuilders: graph.packageArgsOf(builders),
++		}}
+ 	}
+ 	unwatched := UnwatchedTests(watched, changedPaths)
+ 	for dir, tests := range guards {
+diff --git a/internal/impactset/targets_test.go b/internal/impactset/targets_test.go
+index 1d459bc8..29d20cf7 100644
+--- a/internal/impactset/targets_test.go
++++ b/internal/impactset/targets_test.go
+@@ -18,6 +18,15 @@ func TestTargetsFor(t *testing.T) {
+ 	root := func(packages ...string) []ModuleTargets {
+ 		return []ModuleTargets{{Dir: ".", Packages: packages}}
+ 	}
++	// withImporters returns modules with its one module's Importers set to importers.
++	withImporters := func(modules []ModuleTargets, importers ...string) []ModuleTargets {
++		modules[0].Importers = importers
++		return modules
++	}
++	fromA := func() []ModuleTargets {
++		return withImporters(root("./cmd/lym", "./internal/a", "./internal/b", "./internal/c", "./internal/tmuxonly"),
++			"./cmd/lym", "./internal/b", "./internal/c", "./internal/tmuxonly")
++	}
+ 
+ 	binaryTests := []string{"internal/e"}
+ 	graphWithoutLymbin := moduleGraph{byImportPath: map[string]pkg{}, byDir: map[string]pkg{}}
+@@ -28,6 +37,17 @@ func TestTargetsFor(t *testing.T) {
+ 		}
+ 	}
+ 
++	// The importing-builder graph is the test graph plus internal/f.
++	// internal/f imports internal/a, and its tests build the binary.
++	var withBuilderPackages []pkg
++	for _, p := range testGraph().byImportPath {
++		withBuilderPackages = append(withBuilderPackages, p)
++	}
++	withBuilderPackages = append(withBuilderPackages,
++		pkg{ImportPath: "m/internal/f", Dir: "internal/f", Imports: []string{"m/internal/a"}, TestImports: []string{"m/internal/testkit/lymbin"}})
++	graphWithImportingBuilder := newModuleGraph(withBuilderPackages)
++	builtByEAndF := []string{"internal/e", "internal/f"}
++
+ 	tests := []struct {
+ 		name    string
+ 		graph   *moduleGraph
+@@ -37,11 +57,11 @@ func TestTargetsFor(t *testing.T) {
+ 		want    Targets
+ 	}{
+ 		{
+-			name:    "one changed package yields it and its reverse dependencies, tmux and llm test imports included",
++			name:    "one changed package yields it and its reverse dependencies as importers, tmux and llm test imports included",
+ 			changed: []string{"internal/a/a.go"},
+ 			guards:  guards,
+ 			want: Targets{
+-				Modules:     root("./cmd/lym", "./internal/a", "./internal/b", "./internal/c", "./internal/tmuxonly"),
++				Modules:     fromA(),
+ 				Guards:      map[string][]GuardTest{"internal/d": guardsD},
+ 				BinaryTests: binaryTests,
+ 			},
+@@ -49,13 +69,51 @@ func TestTargetsFor(t *testing.T) {
+ 		{
+ 			name:    "a change to a dependency of cmd/lym leaves out a package that reaches it only through the binary",
+ 			changed: []string{"internal/b/b.go"},
+-			want:    Targets{Modules: root("./cmd/lym", "./internal/b", "./internal/c"), Guards: map[string][]GuardTest{}, BinaryTests: binaryTests},
++			want:    Targets{Modules: withImporters(root("./cmd/lym", "./internal/b", "./internal/c"), "./cmd/lym", "./internal/c"), Guards: map[string][]GuardTest{}, BinaryTests: binaryTests},
+ 		},
+ 		{
+-			name:    "a change to the cmd/lym main package pulls in every package that builds the binary",
++			name:    "a change to the cmd/lym main package pulls in every package that builds the binary as a binary builder",
+ 			changed: []string{"cmd/lym/main.go"},
++			want: Targets{
++				Modules:     []ModuleTargets{{Dir: ".", Packages: []string{"./cmd/lym", "./internal/e"}, BinaryBuilders: []string{"./internal/e"}}},
++				Guards:      map[string][]GuardTest{},
++				BinaryTests: binaryTests,
++			},
++		},
++		{
++			name:    "a changed package whose tests build the binary stays changed beside a cmd/lym change",
++			changed: []string{"cmd/lym/main.go", "internal/e/e.go"},
+ 			want:    Targets{Modules: root("./cmd/lym", "./internal/e"), Guards: map[string][]GuardTest{}, BinaryTests: binaryTests},
+ 		},
++		{
++			name:    "a package reached by imports that also builds the binary is a binary builder when cmd/lym changed too",
++			graph:   &graphWithImportingBuilder,
++			changed: []string{"internal/a/a.go", "cmd/lym/main.go"},
++			want: Targets{
++				Modules: []ModuleTargets{{
++					Dir:            ".",
++					Packages:       []string{"./cmd/lym", "./internal/a", "./internal/b", "./internal/c", "./internal/e", "./internal/f", "./internal/tmuxonly"},
++					Importers:      []string{"./internal/b", "./internal/c", "./internal/tmuxonly"},
++					BinaryBuilders: []string{"./internal/e", "./internal/f"},
++				}},
++				Guards:      map[string][]GuardTest{},
++				BinaryTests: builtByEAndF,
++			},
++		},
++		{
++			name:    "a package reached by imports that also builds the binary stays an importer while cmd/lym is unchanged",
++			graph:   &graphWithImportingBuilder,
++			changed: []string{"internal/a/a.go"},
++			want: Targets{
++				Modules: []ModuleTargets{{
++					Dir:       ".",
++					Packages:  []string{"./cmd/lym", "./internal/a", "./internal/b", "./internal/c", "./internal/f", "./internal/tmuxonly"},
++					Importers: []string{"./cmd/lym", "./internal/b", "./internal/c", "./internal/f", "./internal/tmuxonly"},
++				}},
++				Guards:      map[string][]GuardTest{},
++				BinaryTests: builtByEAndF,
++			},
++		},
+ 		{
+ 			name:    "a change to the cmd/lym main package over a module without the binary builder adds nothing",
+ 			graph:   &graphWithoutLymbin,
+@@ -144,7 +202,7 @@ func TestTargetsFor(t *testing.T) {
+ 			guards:  guards,
+ 			watched: map[string][]WatchedTest{"internal/d": {{Name: "TestGuardD2", File: "internal/d/d_test.go", Patterns: []string{"*.sql"}}}},
+ 			want: Targets{
+-				Modules:     root("./cmd/lym", "./internal/a", "./internal/b", "./internal/c", "./internal/tmuxonly"),
++				Modules:     fromA(),
+ 				Guards:      map[string][]GuardTest{"internal/d": {{Name: "TestGuardD", Tier: 0}}},
+ 				BinaryTests: binaryTests,
+ 			},
+@@ -154,7 +212,7 @@ func TestTargetsFor(t *testing.T) {
+ 			changed: []string{"internal/a/a.go"},
+ 			watched: map[string][]WatchedTest{"internal/d": {{Name: "TestW", File: "internal/d/d_test.go", Patterns: []string{"*.sql"}}}},
+ 			want: Targets{
+-				Modules:     root("./cmd/lym", "./internal/a", "./internal/b", "./internal/c", "./internal/tmuxonly"),
++				Modules:     fromA(),
+ 				Guards:      map[string][]GuardTest{},
+ 				BinaryTests: binaryTests,
+ 			},
+diff --git a/internal/loomcli/landingdeps_verify_test.go b/internal/loomcli/landingdeps_verify_test.go
+index 0353e8b1..a5252cee 100644
+--- a/internal/loomcli/landingdeps_verify_test.go
++++ b/internal/loomcli/landingdeps_verify_test.go
+@@ -33,7 +33,7 @@ func gateConfigWithTwoTiers() string {
+ 	return strings.NewReplacer(
+ 		"tiers: {}", tiers,
+ 		"  finalize: {tiers: [0], scope: all}", "  finalize: {tiers: [0, 1], scope: all}",
+-		"  code-burler-fix: {tiers: [0], scope: diff, reports: [redundancy]}", "  code-burler-fix: {tiers: [0, 1], scope: diff, reports: [redundancy]}",
++		"  code-burler-fix: {tiers: [0], scope: coverage, reports: [redundancy]}", "  code-burler-fix: {tiers: [0, 1], scope: coverage, reports: [redundancy]}",
+ 	).Replace(gateslot.ConfigTemplate())
+ }
+ 
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index 9d5d5f11..105cdc5e 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -56,6 +56,7 @@
+ // ignoring comments and formatting.
+ // A function whose declaration differs, or that only the commit holds, is changed.
+ // The tests that covered a changed function are selected, and with them every test the spawn scan marks.
++// A Selection also carries the map's recorded tests, so a caller can run the tests the map holds no coverage for.
+ // A change the map cannot speak for is a Miss, under which the caller runs the package whole.
+ // Such changes include:
+ //   - the map missing, unreadable, failed or unmarked, or its commit unreadable;
+diff --git a/internal/testcover/testselect.go b/internal/testcover/testselect.go
+index 900a9a17..dde26be9 100644
+--- a/internal/testcover/testselect.go
++++ b/internal/testcover/testselect.go
+@@ -91,6 +91,9 @@ type Selection struct {
+ 	Tests []string
+ 	// Miss is set when the package runs whole instead, and Tests is then empty.
+ 	Miss *Miss
++	// Recorded are the tests the map records, in its order; empty with a Miss.
++	// A caller tells from them which of the package's tests the map has no coverage for.
++	Recorded []MapTest
+ }
+ 
+ // Selector selects importing packages' tests from their coverage maps against one working tree.
+@@ -161,7 +164,7 @@ func (s *Selector) Select(pkg string) (Selection, error) {
+ 			changed[key] = true
+ 		}
+ 	}
+-	return Selection{Tests: selectTests(m, changed)}, nil
++	return Selection{Tests: selectTests(m, changed), Recorded: m.Tests}, nil
+ }
+ 
+ // mapMiss returns the miss of a map a selection cannot use, or nil for a usable map.
+diff --git a/internal/testcover/testselect_test.go b/internal/testcover/testselect_test.go
+index d4f5b266..29fec4b5 100644
+--- a/internal/testcover/testselect_test.go
++++ b/internal/testcover/testselect_test.go
+@@ -375,6 +375,18 @@ func TestSelectorSelect(t *testing.T) {
+ 			case !reflect.DeepEqual(got.Tests, tt.want):
+ 				t.Errorf("Select(b).Tests = %v; want %v", got.Tests, tt.want)
+ 			}
++			var gotRecorded, wantRecorded []string
++			for _, recorded := range got.Recorded {
++				gotRecorded = append(gotRecorded, recorded.Name)
++			}
++			if got.Miss == nil {
++				for _, recorded := range selectFixtureMap(committed).Tests {
++					wantRecorded = append(wantRecorded, recorded.Name)
++				}
++			}
++			if !slices.Equal(gotRecorded, wantRecorded) {
++				t.Errorf("Select(b).Recorded = %v; want %v, the map's tests, and none with a miss", gotRecorded, wantRecorded)
++			}
+ 		})
+ 	}
+ }
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index 12b969d8..6a2df251 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -49,11 +49,11 @@ No site spells a tier list, a scope or a test command.
+ |---|---|---|
+ | `card` | each Webster card, through `--card`, then the comment lint and the headroom lint | `card` |
+ | `batch` | each Webster batch, each tier run failing on a tmux server socket its end-of-package check finds | `card` |
+-| `webster-fix` | Webster-Burler-Fix's verify fixers, after the headroom and comment lints | `diff` |
++| `webster-fix` | Webster-Burler-Fix's verify fixers, after the headroom and comment lints | `coverage` |
+ | `webster` | Webster's end gate | `all` |
+ | `parent-align`, `finalize` | Parent-Align and Finalize | `all` |
+ | `adopt` | `lym adopt check <subject>`, in-process through `gatecli.RunGate` in the subject's worktree | `all` |
+-| `darn-write`, `code-burler-fix` | darn's writer and the Code-Burler-Fix rows | `diff` |
++| `darn-write`, `code-burler-fix` | darn's writer and the Code-Burler-Fix rows | `coverage` |
+ | `pr-review` | PR-Review's gate over the agent's commits | `diff` |
+ | By hand | the `tier3` tier | |
+ 
