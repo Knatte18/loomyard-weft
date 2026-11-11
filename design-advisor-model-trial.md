@@ -40,7 +40,19 @@ The trial's report reads the seats result first, under `docs/research/`, and say
   the trial confirms its settings key, that it takes effect in a lym tmux session, and how advisor calls show in the usage records.
 - A lym config key for the advisor, beside each role's model and effort, comes only after the trial shows it pays.
 
-## Trial (operator, 2026-11-11)
+## Stage 1: tune the writer's prompt before any bench (operator, 2026-11-11)
+
+The advisor takes effect only if the main session's prompt steers it: when to consult, and what to ask.
+So the prompt is tuned over several iterations before the bench, and the bench runs only once the operator approves the tuned prompt.
+
+- The tuning is an iterating run (a sampler), on the small task below, so each iteration is cheap.
+- Each iteration is judged on whether the advisor is consulted at the right moments and whether the result still lands as the recorded Opus run did.
+- The task body states the exact number of iterations as a cap, and where the prompt text is kept (in the report under `docs/research/`).
+- This stage also confirms the settings key, that it takes effect in a lym tmux session, and how advisor calls show in the usage records.
+
+## Stage 2: the bench (operator, 2026-11-11)
+
+It runs after stage 1 and is its own task, filed only when the operator approves the tuned prompt.
 
 - The trial runs against work that has already run: rerun one or two darn tasks that already landed, from their base commit, with a Sonnet writer and an Opus advisor.
   Compare each with its recorded Opus run: review findings, bounces, tokens, cost and time with sleep removed.
@@ -51,7 +63,7 @@ The trial's report reads the seats result first, under `docs/research/`, and say
   - small: `reed-tab-and-attach-fixes` (`aeea549d`, about 200 changed lines).
   The run states each task's original recipe and profile from its usage record and compares against that.
 - The risk to watch: a weak writer that is sure and wrong does not ask its advisor, so the review bounces are the key measure.
-- Runs as darn `docs`; the cap is exactly three runs, one per task above, and no repeats.
+- Runs as darn `docs`; the cap is exactly three runs, one per task above, and no repeats, with the tuned prompt of stage 1 identical in all three.
 
 ## Operator view (2026-11-11)
 
