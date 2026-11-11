@@ -1,6 +1,6 @@
-# Decide how the coverage maps are kept fresh: triggers, batch, staleness and sharing across machines
+# Research how the coverage maps are kept fresh: three independent brainstorms
 
-`testmap-upkeep` · Task · enhancement, testkit, gate, dobby · draft
+`testmap-upkeep` · Task · research, testkit, gate, dobby · draft
 
 ## Seen (orch, 2026-11-09)
 
@@ -18,33 +18,32 @@ The coverage maps exist as code since project `redundancy-check` landed, but how
 
 The operator finds keeping the maps fresh this way too large a job to run again and again.
 
-## Proposal (orch)
+## Starting ideas (orch)
+
+These are ideas to weigh, not requirements; an agent may reject any of them.
 
 1. Update a map in part instead of rebuilding it whole.
    A map keys blocks by content and carries each test's source hash, so after a change only these tests need to run again:
    a test that is new or whose source changed, and a test whose recorded blocks include a block that changed or was removed.
-   A test that touched none of the changed code takes the same path as before.
-   After a landing that is usually a handful of tests, not the package.
 2. A stale or missing map never gives a wrong answer, only a slower gate:
    a gate that scopes by the maps runs the whole package when its map is missing or stale.
    That makes a lagging map harmless, so upkeep can run lazily.
 3. Build when the machine is idle, with no gate waiting, rather than holding gate slots while runs work.
-4. Drop or lengthen the weekly age rebuild: with item 2, dependency drift costs only scope, not correctness.
-   A change in a package this package imports can still change a test's path without changing the package; decide whether that needs more than the age limit.
-5. Share the maps across machines, for instance through the Bolt checkout or the records branch:
-   they are keyed by content, not by machine, so each map is built once in all.
-6. Cutting existing redundant tests (`redundancy-sweep-existing`) is a one-off that needs fresh maps only when it runs;
-   only gate scoping (`gate-scope-by-coverage-map`) needs maps kept fresh.
+4. Drop or lengthen the weekly age rebuild, and decide whether a change in an imported package needs more than the age limit.
+5. Share the maps across machines, for instance through the Bolt checkout or the records branch, since they are keyed by content, not by machine.
+6. Only gate scoping (`gate-scope-by-coverage-map`) needs maps kept fresh; cutting existing redundant tests (`redundancy-sweep-existing`) needs fresh maps only when it runs.
 
 Note `testmap-backlog-drain` is one part of the trigger question; this note owns the whole policy.
 
-## Research first
+## This task: research only
 
-Before the design, three agents brainstorm, each on its own and without seeing the others' answers,
-whether there is a smarter way to keep per-test coverage maps fresh:
-Fable, Codex astra, and Opus at high effort.
-Each reads `internal/testcover`, `internal/gatecli/testmap.go`, the prime dobby's refresh step and this note, and writes its own proposal.
-One brainstorm per agent, three in all.
-The proposals land together in one report under `docs/research/`, compared side by side, as the input for the design.
-Codex's bubblewrap sandbox failed on OSL-1046, so the research was to run on Neve.
-Since commit `9874c966`, `sandbox_mode: auto` (the template default) probes the sandbox and runs Codex without one where bubblewrap cannot start, so a Codex seat starts on OSL-1046 too; Neve is no longer required.
+The task builds nothing and decides no design.
+It asks whether there is a smarter way to keep per-test coverage maps fresh, and it runs exactly three brainstorms, each by its own agent, none seeing another's answer:
+
+- Fable 5.2 at high effort, twice, as two independent agents.
+- Opus 5.5 at high effort, once.
+- No Codex agent: Codex does not run on OSL-1046.
+
+Each agent reads `internal/testcover`, `internal/gatecli/testmap.go`, the prime dobby's refresh step and this note, and writes its own proposal.
+An agent only reads and writes its proposal; it runs no test suite and starts no further agent.
+The proposals land together in one report under `docs/research/`, compared side by side, as the input for a later design task.
