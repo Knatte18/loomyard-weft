@@ -1,6 +1,6 @@
 # Tune the darn writer prompt for an Opus advisor on one landed darn task
 
-`advisor-model-trial` · Task · research, darn, loom, shuttle, claude · running · Code-Bouncer
+`advisor-model-trial` · Task · research, darn, loom, shuttle, claude · running · Drift-Recheck
 
 Imported from [issue #109](https://github.com/Knatte18/loomyard/issues/109).
 
