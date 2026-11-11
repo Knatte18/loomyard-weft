@@ -1,35 +1,41 @@
-# heddle set and remove re-render every live worktree of the hub
+# heddle set/remove: render file targets into every live worktree
 
-`lym heddle set` and `lym heddle remove` saved the store and rendered `HEDDLE.md`,
-but left every existing worktree's rendered files (`CLAUDE.local.md`, `AGENTS.override.md`, `.claude/settings.local.json`) stale until a take-in or a hand `lym heddle render`.
-An entry an agent must follow now therefore never reached agents in running task worktrees, and nothing named the stale worktrees.
-Fixes issue #103.
+`lym heddle set` and `lym heddle remove` now render every file target into every live worktree of the hub after the save.
+Before, `CLAUDE.local.md`, `AGENTS.override.md` and `.claude/settings.local.json` stayed stale in every existing worktree
+until a take-in or a hand `lym heddle render`.
+An agent in a running task worktree therefore kept working without an instruction entry that exists because it must be followed now.
+
+Closes #103
 
 ## What changes
 
-- After a successful save, both verbs render every file target into each worktree git lists for the hub: the prime, beams and task pairs.
-  Each render seeds the worktree's exclude lines first, as the hand render does.
-  A worktree git marks prunable is skipped, since its directory is gone.
-- The output gains `rendered`, the worktrees rendered whole, and `failed`, one `{worktree, error}` per worktree whose render failed or left a file unwritten.
-  A failure's error carries its cause and the `lym heddle render <worktree>` way forward.
-  Warnings of a rendered worktree appear in `render_warnings`, each prefixed with the worktree name.
-- A failed worktree does not fail the verb: the change is saved, and the operator heals the named worktree by hand.
-- `--no-render` on `set` and `remove` skips the fan-out, for all but the last of a run of bulk edits; the output then carries neither field.
-- Running Claude sessions take the change at their next compaction, as they already did after a file render.
+- After a successful write, both verbs render into the prime, beams and task pairs, in the order git lists them.
+  This holds for `--layer lym` overrides too.
+- The verbs print `rendered` (worktrees rendered with no file left unwritten) and `failed` (each worktree whose render failed or left a file unwritten, with its cause and the `lym heddle render <worktree>` way forward).
+  `render_warnings` carries the warnings of the rendered worktrees, each opening with its worktree's name.
+  It also carries the one warning given when the hub's worktrees do not list, in which case nothing is rendered.
+- `--no-render` on both verbs saves without the fan-out, for all but the last of a run of edits.
+  The output then carries no `rendered` or `failed` field.
+- A running Claude session takes the change at its next compaction, as after any file render.
+- Skipped as not live: a worktree git marks prunable, one still being made in a worktree staging directory,
+  and one whose path is not a direct child of the hub.
+- `ChangeStore` is unchanged for other modules' verbs and renders no worktree.
+- The doc comment, help text and `pattern/PATTERN-heddle-instructions.md` describe the new behavior.
 
 ## Design decisions
 
-- The fan-out lives in `internal/heddlecli`, beside the hand render it shares `renderInto` with; rendering stays in `heddleengine`, and fabric only lists worktrees and seeds exclude lines.
-- The Bolt sync now starts after the renders rather than before.
-  Each render reads the store under the Bolt write lock, and the detached sync takes that lock to commit, so starting it last keeps the renders from waiting behind it.
-- `ChangeStore`, the write path another module's verb uses (`lym orch rules`), renders no worktree.
-  Its entries are prompt targets, which reach a session at launch and need no file render.
-- The `failed` list is always present, empty when nothing failed, so a caller can test it without a presence check.
+- A failed worktree does not fail the verb, since the change is already saved.
+  The failure is reported and exits as success.
+- The renders run after the store lock is released and before the detached Bolt sync starts, so no render waits behind the sync's hold of the lock.
+  A test pins the prime's `CLAUDE.local.md` as present when the sync starts.
+- `heddleCLI.syncWarning` is removed.
+  `syncAfterSave` returns the warning instead, so the state no longer lives on the struct.
+- `heddle render` and the fan-out share `renderInto`, so both seed the exclude lines the same way.
+- The hub comparison in `samePath` resolves symlinks and folds case on Windows.
 
-## Tests
+## To check by hand
 
-`TestHeddleCLI/WriteRendersEveryLiveWorktree` drives a hub with a prime and a pair through a set, a `--no-render` set, a remove where the pair holds an unmarked `CLAUDE.local.md` (reported in `failed` while the prime renders), and a set after the pair's directory is removed (skipped as prunable).
-
-## Docs
-
-The `heddlecli` package doc and verb help, the `heddleengine` seam comment and `pattern/PATTERN-heddle-instructions.md` name the write's render as a way file targets reach a worktree.
+- Failed-worktree branch and `render_warnings`: confirm the failure path of `renderEveryWorktree` and the `render_warnings` output behave as the new integration test `WriteRendersEveryLiveWorktree` pins them (`internal/heddlecli/cli_integration_test.go`).
+- `--no-render` and the override layer: confirm the fan-out and `--no-render` also cover `set --layer lym` and `remove --layer lym` in `internal/heddlecli/verbs.go`.
+- Staging and out-of-hub worktrees: confirm `renderEveryWorktree` in `internal/heddlecli/verbs.go` skips them as intended.
+- The regression check did not run for this task, and the change was not exercised against a hub with real running sessions.
