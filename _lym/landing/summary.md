@@ -1,37 +1,33 @@
-# Console titles put the handle first, with hub and project in brackets
+# Console titles lead with the handle, hub and project in brackets
 
-Every console window was titled `<hub>: <P#>: <T#>: <slug>`, as in `ly: P1: T2: adopt-worker-record`.
-The task handle, which the operator looks for first, sat third behind two colon-separated prefixes, and a task under root showed no project.
-Titles now read `<lead> [<hub>:<project>] <name>`:
+Console window titles were `<hub>: <P#>: <T#>: <slug>`, such as `ly: P1: T2: adopt-worker-record`.
+The task handle, which the operator looks for first, sat third, and a task under root showed no project.
+A title now reads `<lead> [<hub>:<project>] <name>`:
 
-| Window | Before | After |
-|---|---|---|
-| Task in project P1 | `ly: P1: T2: adopt-worker-record` | `T2 [ly:P1] adopt-worker-record` |
-| Task under root | `ly: T5: machine-name-file` | `T5 [ly:P0] machine-name-file` |
-| Prime (VS Code / terminal) | `ly: prime` / `ly: orch` | `ORCH [ly:P0] root` |
-| Beam P1 (VS Code / terminal) | `ly: P1: beam` / `ly: P1: orch` | `ORCH [ly:P1] adopt-takeover` |
-| Run status window of a task | `ly: P3: T4: tapestry` | `T4 [ly:P3] tapestry` |
-| Workspace file | `ly: loomyard workspace` | `[ly] loomyard workspace` |
+- A task: `T2 [ly:P1] adopt-worker-record`.
+- A task under root names root's project: `T5 [ly:P0] machine-name-file`.
+- An orch leads with `ORCH`: the prime's is `ORCH [ly:P0] root` and a beam's is `ORCH [ly:P1] adopt-takeover`.
+  The last part names the project, not the worktree.
 
-A part that does not exist is left out, and the brackets go when both the shortname and the project handle are missing.
+## Design
 
-## What changed
+- `consoletitle.Title` takes the lead first and joins lead, bracketed place and name with spaces.
+  An empty part is left out with its separator, and the brackets go when both hub and project are empty.
+  `Workspace` titles stay `[<shortname>] <name> workspace` in this form.
+- `consoletitle.OrchLead` (`ORCH`) replaces the `PrimeLabel`, `BeamLabel` and `OrchLabel` constants.
+- `boardengine.IDEWindowTitle` and `boardengine.TerminalWindowTitle` are merged into `ConsoleWindowTitle`.
+  Both windows now show the same title, so the VS Code and terminal windows of a worktree no longer differ.
+- A task with no project falls back to root's `P0`.
+  The prime is titled by the root project (`P0`, `root`), not by its worktree name.
+- A slug missing from the board is titled without handles, instead of reading an empty entry.
+- `RecipeWindowTitle` keeps the task lead and drops the lead for a beam: `T4 [ly:P3] tapestry`, `[ly:P3] tapestry`.
+- The docs, doc comments, the `open_window_command` template comment and the `reed window` help text show the new forms.
 
-- `consoletitle.Title(lead, shortname, projectHandle, name)` forms the new shape.
-  `OrchLead` (`ORCH`) replaces the `prime`, `beam` and `orch` labels.
-- `boardengine.ConsoleWindowTitle` replaces `IDEWindowTitle` and `TerminalWindowTitle`.
-  The prime's and a beam's windows are the orch's in VS Code and in a terminal alike, so the two gave the same title.
-  The prime names the root project, `P0` and `root`, from the board's `rootProject` and `RootSubject`, not the `prime` worktree.
-  A task whose project chain ends at root takes `P0`.
-- The callers in `ideengine`, `reedcli` and `battencli` call `ConsoleWindowTitle`.
-- The package docs of `consoletitle`, `boardengine`, `fabricengine`, `battenshed` and `loomcli`, the batten template comment and `docs/overview.md` describe the new form.
+Callers and tests are updated to the new names and forms.
 
-## Design decisions
+## To check by hand
 
-- A run's status window (`RecipeWindowTitle`) keeps the task's handle as its lead.
-  In a beam it has no lead, `[ly:P2] tapestry`, since the window is the run's and not the orch's.
-- A workspace file's title takes the bracket form, `[ly] loomyard workspace`, so every lym-titled window follows the same shape.
-- A task whose `project` names an entry missing from the board leaves out the project handle, `T10 [ly] orphan`, instead of claiming root.
-  A worktree off the board takes no lead, `[ly] stray`.
-- The goal's note that the Slack channel names of `slack-per-orch-activation` follow the same rule is left to that board entry, which owns the Slack channel code.
-- The `runs` window name (`TitleWithHandle`, `T4: <name>`) is a tmux window name, not a console window title, and is unchanged.
+- The `reed window` help text in `internal/reedcli/window.go` was updated to the new forms;
+  check that no old-form title (`<hub>: <P#>: ...`, `<hub>: orch`) remains in it or in the nearby docs.
+- Open a task, a beam, the prime and a task under root, and check each console window reads as above.
+  Nothing was run against live windows.
