@@ -1,6 +1,6 @@
 # machinename reads the machine name from machine.json before the hostname rule
 
-`machine-name-file` · Task · feature, config, slack · running · Worktree-Create
+`machine-name-file` · Task · feature, config, slack · running · Seed-Child
 
 Decision record: [Sketch](decision-machine-name-file.md)
 
