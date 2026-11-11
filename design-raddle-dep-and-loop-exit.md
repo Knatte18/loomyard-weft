@@ -2,8 +2,6 @@
 
 `raddle-dep-and-loop-exit` · Task · bug, shed, board, loom · running · Darn-Write
 
-Depends on: [`load-turn-retry-cap`](design-load-turn-retry-cap.md)
-
 First read what landing d1535412 (shedverbs: record how an --until-stop loop's process ended) already covers of the second note; do only what is left, and the first note whole.
 
 ## From note raddle-propose-note-deps
