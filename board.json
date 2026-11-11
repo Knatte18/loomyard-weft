@@ -559,10 +559,10 @@
     },
     {
       "id": 1269,
-      "handle": "B9",
+      "handle": "T1",
       "slug": "codex-bubblewrap-sandbox",
       "title": "Codex keeps forcing its bubblewrap sandbox, so astra fails on OSL-1046",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "codex",
@@ -573,6 +573,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nOn 2026-11-09 the operator reported that Codex has so far been mostly trouble in lym: it insists on running under its bubblewrap sandbox, which gets in the way of the work lym gives it.\nThe `astra` model (`gpt-6-astra` in `models.yaml`) fails on OSL-1046 for that reason.\n`testmap-verb`'s first Code-Review round recorded its astra assist only as `assist_ending: stopped`, with no error.\nThe operator then had astra removed from every task's `run_settings`.\n\n## Idea\n\nFind what makes Codex choose bubblewrap in a lym session and settle the sandbox mode lym launches it with, so a Codex seat runs on OSL-1046 like a Claude one.\nlym reports a Codex seat that cannot start, naming the cause, instead of ending it quietly as stopped.",
+      "status": "draft",
       "created": "2026-11-09T18:35:39Z",
       "revised": "2026-11-09T18:36:10Z",
       "project": "codex-engine-trial"
