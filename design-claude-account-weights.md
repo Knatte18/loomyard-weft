@@ -1,6 +1,6 @@
 # Two Claude accounts, each worktree on one of them by a configured weight
 
-`claude-account-weights` · Task · feature, claude, shuttle, config · running · Discussion-Bouncer
+`claude-account-weights` · Task · feature, claude, shuttle, config · awaiting · Discussion-Bouncer
 
 ## Idea (operator, 2026-11-02)
 
