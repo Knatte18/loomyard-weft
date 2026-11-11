@@ -834,6 +834,28 @@
       "body": "Imported from [issue #96](https://github.com/Knatte18/loomyard/issues/96).\n\n## Seen\n\nAfter a machine crash, the hub prime's orch (`dop:orch`) was not running: `lym reed list` showed it `live: false`.\nA beam orch posted it a request with `lym creel post dop:orch \"\u003ctext\u003e\"`.\nThe command printed only `{\"id\":224,\"ok\":true,\"sender\":\"...\"}`, with no word that the recipient was down.\nThe sender told the operator the request was on its way, and the operator found the recipient dead only by asking.\n\n## Workaround\n\nCheck `lym reed list` (or the session list) for the recipient's `live` flag before relying on a post, and ask the operator to start it.\n\n## Expected\n\n`creel post` to a strand that is not live still queues the message, but says so in its output, for example a `recipient_live: false` field and a warning line naming the strand and how to start it (`lym beam start` for an orch).\n",
       "created": "2026-11-11T06:22:45Z",
       "revised": "2026-11-11T06:22:45Z"
+    },
+    {
+      "id": 1284,
+      "handle": "B3",
+      "slug": "webster-amends-pushed-card",
+      "title": "Webster amends a card commit it already pushed, so the task branch diverges from origin",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "batten",
+        "git"
+      ],
+      "issues": [
+        97
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #97](https://github.com/Knatte18/loomyard/issues/97).\n\n## Seen\n\nIn tapestry run `models-backend` (DrillOpPlan hub), Webster committed card 3 as `8cbbf19` (\"3: models-simulator\") and pushed it at 08:43:57, then started the card's `lym gate card-verify` (a long tier).\nAfter the verify, the fixes were folded into the same card commit by amending it: local `1a8de1d` (\"3: models-simulator\", 09:14:55), same parent `fc7e5f2`.\nThe next push found the branch diverged (ahead 1, behind 1), and batten stopped Run-Shed with a question to the parent offering merge, force-push or reset.\nThe run had a machine crash and a `lym loom resume` earlier the same morning; it is unclear whether the amend comes from the resume path or from Webster's normal verify-fix path.\n\n## Workaround\n\nThe parent compared the two commits (`1a8de1d` = `8cbbf19` plus the verify fixes), force-pushed with `git push --force-with-lease=hanf/models-backend:8cbbf19 origin hanf/models-backend`, and resumed with `lym batten run models-backend`.\n\n## Expected\n\nA card commit that has been pushed is never amended: verify fixes land as a new commit, or the push waits until the card's verify passes.\nFailing that, batten recognises an amended copy of the same card commit (same parent, same subject, local a superset) and settles the divergence itself with a leased force-push instead of stopping the run.\n",
+      "created": "2026-11-11T06:22:47Z",
+      "revised": "2026-11-11T06:22:47Z"
     }
   ],
   "prime_owner": "neve",
