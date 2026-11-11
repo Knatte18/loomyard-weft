@@ -1166,6 +1166,26 @@
       "body": "Imported from [issue #113](https://github.com/Knatte18/loomyard/issues/113).\n\n## Seen\n\nA parent orch that wants an independent review of a Discussion record before the perch has no supported path.\nThe workaround today:\n\n1. `lym loom pause --after Discussion-Write` in the task worktree.\n2. The orch spawns its own read-only agent (here a Fable agent) to review the record.\n3. The accepted findings are recorded with `lym loom decision add --by parent`, then `lym loom resume`.\n\nThis takes the review outside the perch.\nIts findings arrive as parent decisions rather than as review findings, the perch runs after it rather than beside it, and the orch has to settle every finding before the perch starts.\n\n## Wanted\n\nAn option, in `loom.yaml` and in a task's `run_settings`, that adds extra reviewer fans to the Discussion perch's fan-out:\n\n- a `parent` fan: the run's parent orch reviews the record;\n- an agent fan with a named model and effort, such as a Fable agent at high effort;\n- either or both, each its own fan.\n\nThe extra fans review at the same time as the Burler-Review lenses.\nTheir findings join the round's findings like any other lens, and Burler-Fix fixes them in the same round.\nNo pause, no extra round and no parent decision is needed.\n\nThe same option could later apply to the Plan and Code perches.\n",
       "created": "2026-11-11T14:02:33Z",
       "revised": "2026-11-11T14:02:33Z"
+    },
+    {
+      "id": 1323,
+      "handle": "B11",
+      "slug": "reed-attach-non-worktree",
+      "title": "reed: lym a in the hub's _bolt directory boots a reed session there",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed"
+      ],
+      "issues": [
+        112
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #112](https://github.com/Knatte18/loomyard/issues/112).\n\n## What was seen\n\nRunning `lym a` (lym reed attach) by mistake in the hub's board checkout `_bolt`, which is no worktree of the hub, booted a tmux session named `_bolt` on the hub's reed socket with one bare shell pane.\n`lym reed list` from the prime did not show it; only `tmux ls` did.\n\n## Workaround\n\n`lym reed down` run with cwd `_bolt` removed the session.\n\n## Expected\n\n`lym reed attach` and `lym reed up` refuse a directory that is not a fabric worktree of the hub, such as `_bolt` or a weft checkout, and name the prime or a worktree to attach to instead.\n",
+      "created": "2026-11-11T14:02:35Z",
+      "revised": "2026-11-11T14:02:35Z"
     }
   ],
   "prime_owner": "neve",
