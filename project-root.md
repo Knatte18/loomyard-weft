@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-11 14:02 UTC; every age below is as of then.
+Rendered 2026-11-11 14:04 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (5)
+## Tasks (6)
 
 Concrete and claimable; only a task can run.
 
@@ -37,7 +37,15 @@ Waits only on Running, Ready or Draft entries.
 | T11 | **Remove the hub's _launchers directory: nothing in lym runs its scripts** | [`remove-launchers-dir`](design-remove-launchers-dir.md) | darn · light | T10 | 7h<br>6h | fabric, cleanup |
 | T12 | **Slack per orch: a button, machine-first channel names, no presence notice**<br>• An orch gets a Slack channel only when its own slack button is pressed; away stays machine-wide; channel names put the machine first; the presence notice goes. | [`slack-per-orch-activation`](design-slack-per-orch-activation.md) | darn · solid | T13 | 2d<br>6h | slack, reed, creel |
 
-## Notes (43)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | `draft` **Adopt takes over without hanging behind a pause, failing on lym files or replaying stale stops** | [`adopt-takeover-fixes`](design-adopt-takeover-fixes.md) | darn · solid | T11 | 37m<br>0m | fabric, tender |
+
+## Notes (40)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -49,7 +57,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Trial a Sonnet role with an Opus advisor, darn writer first, against Opus all the way** | [`advisor-model-trial`](design-advisor-model-trial.md) | 7h<br>5h | darn, loom, shuttle, claude |
 | R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 2w<br>2d | loom, stencil |
 
-### Bugs (13)
+### Bugs (10)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -58,14 +66,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **Creel repeats the same notice many times for an unchanged state**<br>• Dobby and fabric sent identical notices about 25 times during an outage | [`creel-repeat-notices`](design-creel-repeat-notices.md) | 4h<br>4h | creel, dobby, fabric |
 | B4 |  | **Creel hands the orch mail about runs and pairs that no longer exist**<br>• A day-old queue of notices about torn-down pairs reached the orch as live mail | [`creel-stale-mail-delivery`](design-creel-stale-mail-delivery.md) | 4h<br>4h | creel, orch |
 | B5 |  | **The adopt-check tab stays open and takes space after the check ends**<br>• The tab of a finished adopt check is not closed or shrunk | [`adopt-check-tab-stays`](design-adopt-check-tab-stays.md) | 3h<br>3h | reed |
-| B6 |  | **lym adopt hangs silently behind a hub-wide pause**<br>• Adopt network calls wait on a hub pause with no word; reconcile stops on a busy weft push lock | [`adopt-held-by-pause`](design-adopt-held-by-pause.md) | 35m<br>35m | tender, fabric |
-| B7 |  | **adopt --drop-local fails on an untracked lym file in the weft**<br>• reset --keep refuses over an untracked generation-record.json; the adopt ends partial | [`drop-local-untracked-weft`](design-drop-local-untracked-weft.md) | 33m<br>33m | fabric |
-| B8 |  | **lym adopt replays a stale record's stops after the operator cleared them**<br>• A partial adopt record keeps reporting gone pairs; only --discard got past it | [`adopt-stale-record-stops`](design-adopt-stale-record-stops.md) | 24m<br>24m | fabric |
-| B9 |  | **raddle splits a Sketch from its stored record and refuses a split that follows the body** | [`raddle-stale-sketch-record`](design-raddle-stale-sketch-record.md) | 0m<br>0m | shed, loom, board |
-| B10 |  | **beam merge-parent reuses the slug of a completed merge-in run** | [`merge-parent-slug-reuse`](design-merge-parent-slug-reuse.md) | 0m<br>0m | workspaces, dobby |
-| B11 |  | **reed: lym a in the hub's _bolt directory boots a reed session there** | [`reed-attach-non-worktree`](design-reed-attach-non-worktree.md) | 0m<br>0m | reed |
-| B12 |  | **Loop exit not recorded when a step's loop ends without an envelope (loop-exited)** | [`loop-exit-log-tail`](design-loop-exit-log-tail.md) | 0m<br>0m | loom, shed, friction |
-| B13 |  | **lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor** | [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md) | 0m<br>0m | shuttle, fabric |
+| B9 |  | **raddle splits a Sketch from its stored record and refuses a split that follows the body** | [`raddle-stale-sketch-record`](design-raddle-stale-sketch-record.md) | 1m<br>1m | shed, loom, board |
+| B10 |  | **beam merge-parent reuses the slug of a completed merge-in run** | [`merge-parent-slug-reuse`](design-merge-parent-slug-reuse.md) | 1m<br>1m | workspaces, dobby |
+| B11 |  | **reed: lym a in the hub's _bolt directory boots a reed session there** | [`reed-attach-non-worktree`](design-reed-attach-non-worktree.md) | 1m<br>1m | reed |
+| B12 |  | **Loop exit not recorded when a step's loop ends without an envelope (loop-exited)** | [`loop-exit-log-tail`](design-loop-exit-log-tail.md) | 1m<br>1m | loom, shed, friction |
+| B13 |  | **lym shuttle await-forks refused when cwd is a subdirectory of the fabric anchor** | [`await-forks-subdir-cwd`](design-await-forks-subdir-cwd.md) | 1m<br>1m | shuttle, fabric |
 
 ### Enhancements (13)
 
@@ -76,14 +81,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome** | [`finalize-flaky-test-gaps`](design-finalize-flaky-test-gaps.md) | 5h<br>5h | landing, gate |
 | E5 |  | **Refresh the README: outdated parts, less wall of text, the dead Autoboard link and a shorter Lineage**<br>• The README is partly outdated, too long-winded, its Autoboard link is dead, and Lineage no longer fits LoomYard | [`readme-refresh`](design-readme-refresh.md) | 2h<br>2h | docs |
 | E6 |  | **Raddle shows each part's recipe and profile as table columns**<br>• Raddle names recipe and profile only in free text; put them in the proposal table | [`raddle-table-recipe-profile`](design-raddle-table-recipe-profile.md) | 4h<br>4h | stencil, shed |
-| E7 |  | **Adopt --here: no test pins the records tag against the records branch** | [`records-tag-vs-branch-untested`](design-records-tag-vs-branch-untested.md) | 1m<br>1m | fabric, tender |
-| E8 |  | **Teardown: no test pins that the owner archive is excluded** | [`teardown-archive-untested`](design-teardown-archive-untested.md) | 1m<br>1m | fabric, tender |
+| E7 |  | **Adopt --here: no test pins the records tag against the records branch** | [`records-tag-vs-branch-untested`](design-records-tag-vs-branch-untested.md) | 2m<br>2m | fabric, tender |
+| E8 |  | **Teardown: no test pins that the owner archive is excluded** | [`teardown-archive-untested`](design-teardown-archive-untested.md) | 2m<br>2m | fabric, tender |
 | E9 |  | **heddle set/remove should re-render file targets in every live worktree of the hub** | [`heddle-render-all-worktrees`](design-heddle-render-all-worktrees.md) | 7h<br>7h | heddle |
 | E10 |  | **heddle file targets: split claude-file and codex-file, add a shared target for both** | [`heddle-split-file-targets`](design-heddle-split-file-targets.md) | 7h<br>7h | heddle |
 | E11 |  | **The hub workspace file lists every pair, beams' pairs included, named with their project handle** | [`hub-workspace-all-pairs`](design-hub-workspace-all-pairs.md) | 6h<br>6h | fabric, ide |
-| E13 |  | **Calls of the lym verb directory lack tests in an anchored hub** | [`verbdir-calls-untested`](design-verbdir-calls-untested.md) | 1m<br>1m | fabric |
-| E14 |  | **Unconverted lym steps: weft-dirty stop and upstream anchor stop have no tests** | [`anchor-stops-untested`](design-anchor-stops-untested.md) | 1m<br>1m | fabric |
-| E15 |  | **Decision records should allow editing a decision, not only appending** | [`decision-record-edit`](design-decision-record-edit.md) | 0m<br>0m | loom, board |
+| E13 |  | **Calls of the lym verb directory lack tests in an anchored hub** | [`verbdir-calls-untested`](design-verbdir-calls-untested.md) | 2m<br>2m | fabric |
+| E14 |  | **Unconverted lym steps: weft-dirty stop and upstream anchor stop have no tests** | [`anchor-stops-untested`](design-anchor-stops-untested.md) | 2m<br>2m | fabric |
+| E15 |  | **Decision records should allow editing a decision, not only appending** | [`decision-record-edit`](design-decision-record-edit.md) | 1m<br>1m | loom, board |
 
 ### Features (14)
 
@@ -94,7 +99,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F3 |  | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | 3d<br>2h | slack, creel, orch |
 | F4 |  | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | 7h<br>5h | config, fabric |
 | F5 |  | **Let the parent orch review the Discussion decision record before Plan** | [`parent-reviews-decision-record`](design-parent-reviews-decision-record.md) | 2d<br>2d | loom, orch, config |
-| F6 |  | **Extra reviewer fans at the Discussion perch: parent orch or a named agent** | [`discussion-extra-reviewer-fans`](design-discussion-extra-reviewer-fans.md) | 0m<br>0m | loom, burler, config, orch |
+| F6 |  | **Extra reviewer fans at the Discussion perch: parent orch or a named agent** | [`discussion-extra-reviewer-fans`](design-discussion-extra-reviewer-fans.md) | 1m<br>1m | loom, burler, config, orch |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 12d<br>5d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 5w<br>7d | board, ide, orch |
 | F12 |  | **Two Claude accounts, each worktree on one of them by a configured weight**<br>• A claude config lists accounts with a config directory, a weight and their limit windows; a worktree picks one at its first session by weight and current headroom | [`claude-account-weights`](design-claude-account-weights.md) | 9d<br>3d | claude, shuttle, config |

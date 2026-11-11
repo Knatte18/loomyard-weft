@@ -929,61 +929,6 @@
       "revised": "2026-11-11T11:56:59Z"
     },
     {
-      "id": 1311,
-      "handle": "B6",
-      "slug": "adopt-held-by-pause",
-      "title": "lym adopt hangs silently behind a hub-wide pause",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "tender",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Adopt network calls wait on a hub pause with no word; reconcile stops on a busy weft push lock",
-      "body": "## Seen (2026-11-11, Neve)\n\nA hub-wide `lym tender pause` set before the operator moved to another machine was still live when they came back.\n`lym adopt root` then hung: its worker's first network call logged \"held by a hub-wide pause\" and waited with no word to the operator, whose terminal showed nothing.\nLifting the hub entry alone (`lym tender resume hub`) let it go on; the deferred records push that lift spawned then held the weft push lock,\nand the adopt's origin reconcile stopped on `main-weft (busy)` after it had already set aside two pairs.\n\n## Idea\n\nAn adopt is the operator's own takeover and should pass a pause: its network calls are exempt, or the adopt call refuses at once naming the pause and `lym tender resume hub`.\nThe reconcile should wait for a short-lived weft push lock instead of stopping on it.\n",
-      "created": "2026-11-11T13:26:56Z",
-      "revised": "2026-11-11T13:26:56Z"
-    },
-    {
-      "id": 1312,
-      "handle": "B7",
-      "slug": "drop-local-untracked-weft",
-      "title": "adopt --drop-local fails on an untracked lym file in the weft",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "reset --keep refuses over an untracked generation-record.json; the adopt ends partial",
-      "body": "## Seen (2026-11-11, Neve)\n\n`lym adopt root --drop-local` archived the local tip of `push-notice-anchor-dir-weft` as `archive/push-notice-anchor-dir/5e8b95669e68`,\nthen failed to move the branch to origin's tip: `git reset --keep` refused because the untracked `_lym/reviews/code/generation-record.json` would be overwritten.\nThe file is one lym writes in the weft, so the operator has no clean way forward, and the adopt ended partial, holding back every other run under root.\n\n## Idea\n\nOnce the tip is archived, drop-local moves the weft with a reset that also clears untracked lym files the target commit tracks, since the archive tag keeps the old state.\n",
-      "created": "2026-11-11T13:29:40Z",
-      "revised": "2026-11-11T13:29:40Z"
-    },
-    {
-      "id": 1313,
-      "handle": "B8",
-      "slug": "adopt-stale-record-stops",
-      "title": "lym adopt replays a stale record's stops after the operator cleared them",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A partial adopt record keeps reporting gone pairs; only --discard got past it",
-      "body": "## Seen (2026-11-11, Neve)\n\nAfter a partial `lym adopt root --drop-local`, every later `lym adopt root` printed the same reconcile stops: pairs already removed with `lym fabric remove` and a run record cleared by `lym cleanup --apply` still showed as `gone` and `needs_replay`, and root stayed held back.\nThe call followed the unfinished adopt record instead of judging afresh.\n`lym adopt --discard`, then `lym adopt root`, went through at once.\n\n## Idea\n\nA new `lym adopt \u003csubject\u003e` call whose stops come from a finished, failed worker judges the hub again instead of replaying the old record,\nor names `lym adopt --discard` as the way forward when the stops no longer hold.\n",
-      "created": "2026-11-11T13:38:15Z",
-      "revised": "2026-11-11T13:38:15Z"
-    },
-    {
       "id": 1314,
       "handle": "T2",
       "slug": "testmap-upkeep-design",
@@ -1230,6 +1175,30 @@
       "body": "Imported from [issue #110](https://github.com/Knatte18/loomyard/issues/110).\n\nWhat happened: during a burler plan round the harness moved the session's working directory to the weft's `_lym/plan`. `lym shuttle await-forks` then failed with \"cwd is outside the recorded fabric anchor subtree\", because it accepts only the anchored directory itself rather than anything inside the anchor subtree.\n\nWhy abnormal: the message says \"subtree\", yet a directory inside the weft's own `_lym/plan` is refused. The session cannot control the harness's cwd changes. The self-check fell back to taking each fork's result as it arrived, across four turns.\n\nWhat to do: make `lym shuttle await-forks` accept a cwd anywhere under the recorded anchor, or resolve the anchor from the weft root. Otherwise make the error name the required directory.\n\nProvenance: task slug adopt-worker-record; note burler-plan-r2.md.",
       "created": "2026-11-11T14:02:40Z",
       "revised": "2026-11-11T14:02:40Z"
+    },
+    {
+      "id": 1326,
+      "handle": "T3",
+      "slug": "adopt-takeover-fixes",
+      "title": "Adopt takes over without hanging behind a pause, failing on lym files or replaying stale stops",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "fabric",
+        "tender"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "remove-launchers-dir"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Fix the three adopt faults below in one run; each note's Idea is the starting point.\n\n## From note adopt-held-by-pause\n\n## Seen (2026-11-11, Neve)\n\nA hub-wide `lym tender pause` set before the operator moved to another machine was still live when they came back.\n`lym adopt root` then hung: its worker's first network call logged \"held by a hub-wide pause\" and waited with no word to the operator, whose terminal showed nothing.\nLifting the hub entry alone (`lym tender resume hub`) let it go on; the deferred records push that lift spawned then held the weft push lock,\nand the adopt's origin reconcile stopped on `main-weft (busy)` after it had already set aside two pairs.\n\n## Idea\n\nAn adopt is the operator's own takeover and should pass a pause: its network calls are exempt, or the adopt call refuses at once naming the pause and `lym tender resume hub`.\nThe reconcile should wait for a short-lived weft push lock instead of stopping on it.\n\n## From note drop-local-untracked-weft\n\n## Seen (2026-11-11, Neve)\n\n`lym adopt root --drop-local` archived the local tip of `push-notice-anchor-dir-weft` as `archive/push-notice-anchor-dir/5e8b95669e68`,\nthen failed to move the branch to origin's tip: `git reset --keep` refused because the untracked `_lym/reviews/code/generation-record.json` would be overwritten.\nThe file is one lym writes in the weft, so the operator has no clean way forward, and the adopt ended partial, holding back every other run under root.\n\n## Idea\n\nOnce the tip is archived, drop-local moves the weft with a reset that also clears untracked lym files the target commit tracks, since the archive tag keeps the old state.\n\n## From note adopt-stale-record-stops\n\n## Seen (2026-11-11, Neve)\n\nAfter a partial `lym adopt root --drop-local`, every later `lym adopt root` printed the same reconcile stops: pairs already removed with `lym fabric remove` and a run record cleared by `lym cleanup --apply` still showed as `gone` and `needs_replay`, and root stayed held back.\nThe call followed the unfinished adopt record instead of judging afresh.\n`lym adopt --discard`, then `lym adopt root`, went through at once.\n\n## Idea\n\nA new `lym adopt \u003csubject\u003e` call whose stops come from a finished, failed worker judges the hub again instead of replaying the old record,\nor names `lym adopt --discard` as the way forward when the stops no longer hold.\n\n",
+      "status": "draft",
+      "created": "2026-11-11T13:26:56Z",
+      "revised": "2026-11-11T14:04:10Z",
+      "profile": "solid"
     }
   ],
   "prime_owner": "neve",
