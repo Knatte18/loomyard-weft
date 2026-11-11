@@ -1,0 +1,1596 @@
+diff --git a/cmd/lym/shortcuts_test.go b/cmd/lym/shortcuts_test.go
+index 196ffcef..e4aafa32 100644
+--- a/cmd/lym/shortcuts_test.go
++++ b/cmd/lym/shortcuts_test.go
+@@ -60,6 +60,7 @@ func shortcutProblems(root *cobra.Command, shortcuts []shortcutcli.Shortcut) []s
+ 	return problems
+ }
+ 
++//testtiming:keep pins the shortcut rows of the help index and the shortcut file against the root
+ func TestShortcuts_FileAndRootListing(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -125,7 +126,7 @@ func TestShortcuts_FileAndRootListing(t *testing.T) {
+ 		t.Fatalf("run(help index) = %d, output:\n%s", code, index.String())
+ 	}
+ 	for _, line := range []string{
+-		"- `s [<args>...]`: shortcut: lym beam start, then lym reed attach",
++		"- `s [<args>...]`: shortcut: lym adopt --here --no-orch, then lym beam start, then lym reed attach",
+ 		"- `a [<args>...]`: shortcut: lym reed attach",
+ 		"- `p [<args>...]`: shortcut: lym tender pause",
+ 		"- `r [<args>...]`: shortcut: lym tender resume",
+diff --git a/docs/getting-started.md b/docs/getting-started.md
+index 5f140000..428e1f5b 100644
+--- a/docs/getting-started.md
++++ b/docs/getting-started.md
+@@ -27,7 +27,7 @@ lym fabric clone --shortname <short> <records-url> <project-url>
+ 
+ ```bash
+ cd <hub>/<project>
+-lym s                                # bring up dobby and orch for the prime, then attach
++lym s                                # adopt the prime if another machine owns it, bring up dobby and orch, then attach
+ ```
+ 
+ Tell the orch what you want, or file a task yourself and release it:
+diff --git a/docs/overview.md b/docs/overview.md
+index f2893df3..8485e741 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -770,7 +770,7 @@ User-facing modules each get one `lym <module>` namespace:
+   and `lym help index [--audience <audience>]` prints a generated one-line-per-command index of the running binary, filtered by the `audience` annotation every invocable command carries (`internal/helpcli`; the renderer is `clihelp.RenderIndex`).
+   ✅ Implemented.
+   See the `internal/helpcli` package documentation.
+-- **shortcuts** — `lym a` (`lym reed attach`), `lym s` (`lym beam start`, then `lym reed attach`), `lym p` (`lym tender pause`) and `lym r` (`lym tender resume`) are top-level operator shortcuts declared in `internal/shortcutcli/shortcuts.yaml`, embedded in the binary and added only by a commit to that file;
++- **shortcuts** — `lym a` (`lym reed attach`), `lym s` (`lym adopt --here --no-orch`, then `lym beam start`, then `lym reed attach`), `lym p` (`lym tender pause`) and `lym r` (`lym tender resume`) are top-level operator shortcuts declared in `internal/shortcutcli/shortcuts.yaml`, embedded in the binary and added only by a commit to that file;
+   global verbosity flags reach every expanded command and other words the last;
+   they are not modules.
+   See the `internal/shortcutcli` package documentation.
+@@ -784,6 +784,8 @@ User-facing modules each get one `lym <module>` namespace:
+   The call runs no step itself: it validates the request, starts a hidden detached worker, `lym adopt worker`, and follows the adopt record, printing each step as it ends.
+   The worker takes `adopt.lock` and writes the adopt record, `adopt.json`, as each step ends, so a killed worker resumes from the first step not done, a re-run of the same subjects follows or resumes it, and `lym adopt --discard` removes a record no worker will finish.
+   `lym beam status` shows an unfinished adopt.
++  `lym adopt --here` adopts the subject of the worktree it runs in, `root` in the prime and the beam in a beam: it follows or resumes an unfinished adopt that takes the worktree up, and otherwise pulls Bolt and ends `owned_here` when no other machine owns the subject; `lym s` runs it with `--no-orch` before `lym beam start`.
++  `lym adopt --archives <subject>...` lists the `archive-owner/` tags the old owner pushed whose commit the slug's branch on origin lacks, and the adopt's end envelope names that call.
+   The steps run in order: the worker reconciles the hub against origin, stops a beam or a run under it whose pair holds local commits origin lacks or is live, and adds the missing pairs.
+   It pauses each moved run, and each unstarted released task of an adopted subject bar a front task, with an adopt pause entry.
+   It then records this machine as the owner of the beams and of the prime in one pushed owner write, before anything else runs.
+diff --git a/internal/adoptcli/adopt_integration_test.go b/internal/adoptcli/adopt_integration_test.go
+index 619acf43..96f0cf5a 100644
+--- a/internal/adoptcli/adopt_integration_test.go
++++ b/internal/adoptcli/adopt_integration_test.go
+@@ -22,6 +22,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -249,6 +250,49 @@ func TestCommand_RunsFromABeam(t *testing.T) {
+ 	envelope.RequireErr(t, run(h.PairCodeWorktree("p")), `"`+primeName+`"`)
+ }
+ 
++func TestCommand_HereAdoptsTheSubjectOfItsWorktree(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	boardkit.InstallReplay(t)
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{Beam: true})
++	machine, err := machinename.Name()
++	if err != nil {
++		t.Fatalf("machine name: %v", err)
++	}
++	board, err := boardengine.OpenHub(h.Path)
++	if err != nil {
++		t.Fatalf("open the hub's board: %v", err)
++	}
++	if _, err := board.UpsertTask(map[string]any{"slug": "b", "title": "b", "kind": "project", "labels": []string{"bug"}}); err != nil {
++		t.Fatalf("seed the beam project: %v", err)
++	}
++	if _, err := boardengine.SetOwners(h.BoardDir(), boardengine.OwnerRequest{Machine: machine, Slugs: []string{"b"}, Beam: true}); err != nil {
++		t.Fatalf("record this machine as the beam's owner: %v", err)
++	}
++
++	tests := []struct {
++		name        string
++		cwd         string
++		wantSubject string
++	}{
++		{"FromThePrimeTheSubjectIsRoot", h.PrimeWorktree(), boardengine.RootSubject},
++		{"FromABeamTheSubjectIsTheBeam", h.PairCodeWorktree("b"), "b"},
++	}
++	for _, tt := range tests {
++		var out bytes.Buffer
++		exit := adoptcli.RunCLIIn(tt.cwd, &out, []string{"--here"})
++		got := envelope.RequireOK(t, out.String())
++		if exit != 0 || got.Raw["outcome"] != "owned_here" || got.Raw["subject"] != tt.wantSubject {
++			t.Errorf("%s: lym adopt --here = exit %d, envelope %+v; want exit 0, outcome owned_here and subject %q", tt.name, exit, got, tt.wantSubject)
++		}
++		if _, found, err := adoptrecord.Read(h.Path); found || err != nil {
++			t.Errorf("%s: adopt record found %v, error %v; want none written", tt.name, found, err)
++		}
++	}
++}
++
+ func TestCheckCmd_FromABeamExitsZeroWhileOneRuns(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/adoptcli/archives.go b/internal/adoptcli/archives.go
+new file mode 100644
+index 00000000..29d52550
+--- /dev/null
++++ b/internal/adoptcli/archives.go
+@@ -0,0 +1,158 @@
++// archives.go lists the owner archive tags for `lym adopt --archives`.
++// They are the tags the old owner of a subject pushed whose commits the slug's branch on origin lacks.
++// It also names that call in the end envelope of an adopt whose owner write stood.
++
++package adoptcli
++
++import (
++	"errors"
++	"fmt"
++	"io"
++	"slices"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/output"
++)
++
++// archiveDeps holds the seams of `lym adopt --archives`.
++// ParentOf names the slug of the pair a slug was forked from, or "" for the prime.
++// ReadArchives returns the owner archive tags of the slugs keep admits, sorted by slug.
++// It returns only tags whose commit the slug's branch on origin does not contain.
++type archiveDeps struct {
++	ReadOwners   func() (boardengine.Owners, error)
++	ParentOf     func(slug string) (string, error)
++	ReadArchives func(keep func(slug string) bool) ([]fabricengine.OwnerArchive, error)
++}
++
++// archiveTag is one listed owner archive tag and the command that shows its commits.
++type archiveTag struct {
++	Tag    string `json:"tag"`
++	Side   string `json:"side"`
++	Commit string `json:"commit"`
++	Branch string `json:"branch"`
++	Look   string `json:"look"`
++}
++
++// archiveSlug is the listed owner archive tags of one slug, with the subject the slug moves with.
++type archiveSlug struct {
++	Slug    string       `json:"slug"`
++	Subject string       `json:"subject"`
++	Tags    []archiveTag `json:"tags"`
++}
++
++// runArchives runs `lym adopt --archives` over the subjects req names, which are beam projects or `root`.
++// It prints the list on out.
++// It refuses no subject, any flag but --archives, a slug the board does not hold and an entry that is not a beam project.
++// It runs no step, and it reads and writes no adopt record.
++// It returns the exit code.
++func runArchives(deps archiveDeps, req request, flags callFlags, out io.Writer) int {
++	if req.All || req.KeepLocal || req.DropLocal || req.NoOrch || flags.Discard || flags.Here {
++		return output.Err(out, "lym adopt: --archives only lists archives and takes no other flag: run `lym adopt --archives <subject>...` alone")
++	}
++	if len(req.Slugs) == 0 {
++		return output.Err(out, "lym adopt: --archives lists the archives of the subjects it names: name a beam project or `root`, as in `lym adopt --archives root`")
++	}
++	owners, err := deps.ReadOwners()
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("lym adopt: read the board's owners: %v", err))
++	}
++	var subjects []string
++	for _, subject := range req.Slugs {
++		if err := checkArchiveSubject(deps, owners, subject); err != nil {
++			return output.Err(out, err.Error())
++		}
++		if !slices.Contains(subjects, subject) {
++			subjects = append(subjects, subject)
++		}
++	}
++
++	subjectOf := map[string]string{}
++	var placeErr error
++	archives, err := deps.ReadArchives(func(slug string) bool {
++		subject, err := archiveSubject(deps, owners, slug)
++		if err != nil {
++			placeErr = errors.Join(placeErr, err)
++			return false
++		}
++		subjectOf[slug] = subject
++		return slices.Contains(subjects, subject)
++	})
++	if err = errors.Join(err, placeErr); err != nil {
++		return output.Err(out, fmt.Sprintf("lym adopt: read the owner archives: %v; way forward: fix the cause it names, then re-run `lym adopt --archives %s`", err, strings.Join(subjects, " ")))
++	}
++
++	listed := []archiveSlug{}
++	for _, archive := range archives {
++		if len(listed) == 0 || listed[len(listed)-1].Slug != archive.Slug {
++			listed = append(listed, archiveSlug{Slug: archive.Slug, Subject: subjectOf[archive.Slug]})
++		}
++		last := &listed[len(listed)-1]
++		last.Tags = append(last.Tags, archiveTag{
++			Tag: archive.Tag, Side: archive.Side, Commit: archive.Commit, Branch: archive.Branch,
++			Look: fmt.Sprintf("git -C %s log %s", archive.Dir, archive.Tag),
++		})
++	}
++	return output.Ok(out, map[string]any{"subjects": subjects, "archives": listed})
++}
++
++// checkArchiveSubject refuses a subject that is neither `root` nor a beam project the board holds.
++// A task or grouping project is refused naming the subject that moves it.
++func checkArchiveSubject(deps archiveDeps, owners boardengine.Owners, subject string) error {
++	if subject == boardengine.RootSubject {
++		return nil
++	}
++	entry, held := owners.Entries[subject]
++	if !held {
++		return fmt.Errorf("lym adopt: %q is not on the board: `lym board list` shows the entries", subject)
++	}
++	if entry.IsProject && entry.Beam {
++		return nil
++	}
++	mover, err := owners.AdoptSubject(subject, deps.ParentOf)
++	if err != nil {
++		return fmt.Errorf("lym adopt: read the parent of %s: %w", subject, err)
++	}
++	return fmt.Errorf("lym adopt: %q is not a beam project, so its archives are listed with the subject that moves it: run `lym adopt --archives %s`", subject, mover)
++}
++
++// archiveSubject returns the subject an archived slug moves with:
++// the slug itself for `root` and a beam project, else the nearest beam project above it, else `root`.
++// A slug the board no longer holds moves with the subject of its parent.
++func archiveSubject(deps archiveDeps, owners boardengine.Owners, slug string) (string, error) {
++	if slug == boardengine.RootSubject {
++		return slug, nil
++	}
++	if _, held := owners.Entries[slug]; held {
++		return owners.AdoptSubject(slug, deps.ParentOf)
++	}
++	parent, err := deps.ParentOf(slug)
++	if err != nil {
++		return "", fmt.Errorf("read the parent of %s: %w", slug, err)
++	}
++	if parent == "" {
++		return boardengine.RootSubject, nil
++	}
++	return owners.AdoptSubject(parent, deps.ParentOf)
++}
++
++// archivesCommand returns the `lym adopt --archives` call over the subjects whose owner write stood in result.
++// The subjects are the beams sorted and then `root`; it returns "" when none stood.
++// The old owner archives its unpushed tips only once it reads that write, so the call is one to repeat later.
++func archivesCommand(result outcome) string {
++	var subjects []string
++	for _, slug := range result.Slugs {
++		if slug.OwnerRecorded {
++			subjects = append(subjects, slug.Slug)
++		}
++	}
++	slices.Sort(subjects)
++	if result.PrimeRecorded {
++		subjects = append(subjects, boardengine.RootSubject)
++	}
++	if len(subjects) == 0 {
++		return ""
++	}
++	return "lym adopt --archives " + strings.Join(subjects, " ")
++}
+diff --git a/internal/adoptcli/archives_test.go b/internal/adoptcli/archives_test.go
+new file mode 100644
+index 00000000..9c830c8f
+--- /dev/null
++++ b/internal/adoptcli/archives_test.go
+@@ -0,0 +1,125 @@
++// archives_test.go drives `lym adopt --archives` over fake seams: which slugs a subject lists, and the refusals.
++
++package adoptcli
++
++import (
++	"bytes"
++	"encoding/json"
++	"errors"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestRunArchives(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	owners := boardengine.Owners{Prime: here, Entries: map[string]boardengine.OwnerEntry{
++		"alpha": {Owner: there, IsProject: true, Beam: true},
++		"t1":    {IsTask: true},
++		"t2":    {IsTask: true},
++	}}
++	parents := map[string]string{"t2": "alpha"}
++	archive := func(slug, side string) fabricengine.OwnerArchive {
++		tag := "archive-owner/" + slug + "/" + side
++		return fabricengine.OwnerArchive{Slug: slug, Side: side, Tag: tag, Commit: "c-" + slug, Branch: "b-" + slug, Dir: "/repo/" + side}
++	}
++	// stored is every owner archive origin holds that its branch lacks, sorted by slug as the read returns them.
++	// gone is a slug the board no longer holds, under the prime.
++	stored := []fabricengine.OwnerArchive{
++		archive("alpha", "code"), archive("gone", "code"),
++		archive("root", "code"), archive("root", "records"), archive("t1", "code"), archive("t2", "records"),
++	}
++	listing := func(slug, subject string, sides ...string) archiveSlug {
++		listed := archiveSlug{Slug: slug, Subject: subject}
++		for _, side := range sides {
++			a := archive(slug, side)
++			listed.Tags = append(listed.Tags, archiveTag{Tag: a.Tag, Side: side, Commit: a.Commit, Branch: a.Branch, Look: "git -C /repo/" + side + " log " + a.Tag})
++		}
++		return listed
++	}
++
++	tests := []struct {
++		name    string
++		req     request
++		flags   callFlags
++		stored  []fabricengine.OwnerArchive
++		readErr error
++		want    []archiveSlug
++		// wantErr lists what a refusal's message holds; a refusal reads no archive.
++		wantErr []string
++	}{
++		{
++			name: "RootListsItsOwnTagsAndThoseOfTheSlugsItMovesPerSlug", req: request{Slugs: []string{"root"}}, stored: stored,
++			want: []archiveSlug{listing("gone", "root", "code"), listing("root", "root", "code", "records"), listing("t1", "root", "code")},
++		},
++		{
++			name: "ABeamListsItsOwnTagsAndThoseOfItsMembers", req: request{Slugs: []string{"alpha"}}, stored: stored,
++			want: []archiveSlug{listing("alpha", "alpha", "code"), listing("t2", "alpha", "records")},
++		},
++		{name: "NoTagListedIsAnEmptyList", req: request{Slugs: []string{"root"}}, want: []archiveSlug{}},
++		{name: "NoSubjectIsRefused", wantErr: []string{"lym adopt --archives root"}},
++		{name: "ASlugOffTheBoardIsRefused", req: request{Slugs: []string{"nosuch"}}, wantErr: []string{"lym board list"}},
++		{name: "ATaskIsRefusedNamingItsSubject", req: request{Slugs: []string{"t2"}}, wantErr: []string{"lym adopt --archives alpha"}},
++		{name: "AnotherFlagIsRefused", req: request{Slugs: []string{"root"}, KeepLocal: true}, wantErr: []string{"no other flag"}},
++		{name: "HereBesideItIsRefused", req: request{Slugs: []string{"root"}}, flags: callFlags{Here: true}, wantErr: []string{"no other flag"}},
++		{
++			name: "AFailedReadNamesTheRerun", req: request{Slugs: []string{"root"}}, readErr: errors.New("origin did not answer"),
++			wantErr: []string{"origin did not answer", "lym adopt --archives root"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			reads := 0
++			deps := archiveDeps{
++				ReadOwners: func() (boardengine.Owners, error) { return owners, nil },
++				ParentOf:   func(slug string) (string, error) { return parents[slug], nil },
++				ReadArchives: func(keep func(slug string) bool) ([]fabricengine.OwnerArchive, error) {
++					reads++
++					var kept []fabricengine.OwnerArchive
++					for _, a := range tt.stored {
++						if keep(a.Slug) {
++							kept = append(kept, a)
++						}
++					}
++					return kept, tt.readErr
++				},
++			}
++			flags := tt.flags
++			flags.Archives = true
++			var out bytes.Buffer
++
++			exit := runArchives(deps, tt.req, flags, &out)
++
++			if len(tt.wantErr) > 0 {
++				if exit == 0 {
++					t.Fatalf("runArchives exit 0; want a refusal, output %s", out.String())
++				}
++				for _, text := range tt.wantErr {
++					if !strings.Contains(out.String(), text) {
++						t.Errorf("output = %s, want it to contain %q", out.String(), text)
++					}
++				}
++				if tt.readErr == nil && reads != 0 {
++					t.Errorf("runArchives read the archives %d times; want none for a refusal", reads)
++				}
++				return
++			}
++			var envelope struct {
++				Archives []archiveSlug `json:"archives"`
++			}
++			if exit != 0 || json.Unmarshal(out.Bytes(), &envelope) != nil {
++				t.Fatalf("runArchives exit %d, output %s; want exit 0 and an envelope", exit, out.String())
++			}
++			if !reflect.DeepEqual(envelope.Archives, tt.want) {
++				t.Errorf("runArchives archives = %+v; want %+v", envelope.Archives, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/adoptcli/caller.go b/internal/adoptcli/caller.go
+index b8c34c8a..46ecd169 100644
+--- a/internal/adoptcli/caller.go
++++ b/internal/adoptcli/caller.go
+@@ -38,9 +38,14 @@ const workerOutName = "adopt.out"
+ // Discard removes an unfinished record, reporting whether it removed one.
+ // Spawn starts a detached worker running args and returns its pid and a channel that closes when it ends.
+ // Stderr receives the line of each step that ends.
++// Worktree is the name of the worktree the call runs in.
++// PullBolt brings Bolt up to date with origin;
++// a pull that cannot, an unreachable origin among them, leaves the local Bolt and returns the skip's detail.
+ type callerDeps struct {
+ 	HubPath    string
+ 	Strand     string
++	Worktree   string
++	PullBolt   func() (skipped string, err error)
+ 	Steps      adoptDeps
+ 	ReadRecord func() (adoptrecord.Record, bool, error)
+ 	Alive      func(pid int, startTicks string) bool
+@@ -72,9 +77,20 @@ func hubCallerDeps(prime *lymcwd.Location) (callerDeps, error) {
+ 		Discard:    func() (bool, error) { return discard(hubPath) },
+ 		Spawn:      func(args []string) (int, <-chan struct{}, error) { return spawnWorker(prime, args) },
+ 		Stderr:     os.Stderr,
++		PullBolt: func() (string, error) {
++			_, detail, err := fabricengine.NewBolt(fabricengine.BoardDir(hubPath)).Pull(fabricengine.EnvSyncOptions(), fabricengine.NewMutations(hubPath))
++			return detail, err
++		},
+ 	}, nil
+ }
+ 
++// callFlags holds the flags that pick what a `lym adopt` call does, rather than what an adopt carries.
++type callFlags struct {
++	Discard  bool
++	Here     bool
++	Archives bool
++}
++
+ // runsInOrch reports whether strand, a full agent name, is an orch session, a numbered orch included.
+ // An empty or unparsable name is not.
+ func runsInOrch(strand string) bool {
+@@ -85,11 +101,12 @@ func runsInOrch(strand string) bool {
+ // runAdopt runs a `lym adopt` call.
+ // It validates req and starts a worker unless one already runs the same adopt.
+ // It then follows the record to its end and prints the end envelope on out.
+-// With discardFlag it removes an unfinished record instead.
++// With --discard it removes an unfinished record instead.
++// With --here it first resolves the subject of the call's worktree, and may end without an adopt.
+ // It returns the exit code.
+-func runAdopt(deps callerDeps, req request, discardFlag bool, out io.Writer) int {
+-	if discardFlag {
+-		if len(req.Slugs) > 0 || req.Root || req.All || req.KeepLocal || req.DropLocal || req.NoOrch {
++func runAdopt(deps callerDeps, req request, flags callFlags, out io.Writer) int {
++	if flags.Discard {
++		if len(req.Slugs) > 0 || req.Root || req.All || req.KeepLocal || req.DropLocal || req.NoOrch || flags.Here {
+ 			return output.Err(out, "lym adopt: --discard takes no subject and no other flag: run `lym adopt --discard` alone")
+ 		}
+ 		removed, err := deps.Discard()
+@@ -99,6 +116,17 @@ func runAdopt(deps callerDeps, req request, discardFlag bool, out io.Writer) int
+ 		return output.Ok(out, map[string]any{"removed": removed})
+ 	}
+ 
++	if flags.Here {
++		resolved, end, err := hereRequest(deps, req)
++		if err != nil {
++			return output.Err(out, err.Error())
++		}
++		if end != nil {
++			return output.Ok(out, end)
++		}
++		req = resolved
++	}
++
+ 	req = normalizedRequest(req)
+ 	req.NoOrch = req.NoOrch || runsInOrch(deps.Strand)
+ 	if _, _, err := validateRequest(deps.Steps, req); err != nil {
+diff --git a/internal/adoptcli/caller_test.go b/internal/adoptcli/caller_test.go
+index f1a2bac4..f65015d5 100644
+--- a/internal/adoptcli/caller_test.go
++++ b/internal/adoptcli/caller_test.go
+@@ -1,10 +1,11 @@
+ // caller_test.go drives the `lym adopt` call over fake seams.
+-// It covers the verb's branches, the discard and the worker's arguments.
++// It covers the verb's branches, the here call, the discard and the worker's arguments.
+ 
+ package adoptcli
+ 
+ import (
+ 	"bytes"
++	"errors"
+ 	"io"
+ 	"os"
+ 	"slices"
+@@ -13,6 +14,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/adoptrecord"
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -21,6 +23,19 @@ import (
+ type callerFakes struct {
+ 	spawned [][]string
+ 	caps    []string
++	pulls   int
++}
++
++// stepsThrough returns the step records of every adopt step up to and including last.
++func stepsThrough(last string) []adoptrecord.StepRecord {
++	var steps []adoptrecord.StepRecord
++	for _, step := range adoptrecord.Steps {
++		steps = append(steps, adoptrecord.StepRecord{Name: step})
++		if step == last {
++			break
++		}
++	}
++	return steps
+ }
+ 
+ func TestRunAdopt(t *testing.T) {
+@@ -52,12 +67,37 @@ func TestRunAdopt(t *testing.T) {
+ 		}
+ 	}
+ 
++	// rootRecord is an adopt of root at pid 55 that ended the steps through last and stands in state.
++	rootRecord := func(state, last string) adoptrecord.Record {
++		return adoptrecord.Record{
++			Request: adoptrecord.Request{Root: true}, Subjects: []string{"root"}, PID: 55, Start: time.Unix(6000, 0),
++			State: state, Steps: stepsThrough(last), InFlight: adoptrecord.StepDeploy,
++		}
++	}
++	// wantSpawn checks that the one spawn ran the worker with args.
++	wantSpawn := func(args ...string) func(t *testing.T, fakes *callerFakes) {
++		return func(t *testing.T, fakes *callerFakes) {
++			want := append([]string{"adopt", "worker"}, args...)
++			if len(fakes.spawned) != 1 || !slices.Equal(fakes.spawned[0], want) {
++				t.Errorf("spawned %v, want one spawn of %v", fakes.spawned, want)
++			}
++		}
++	}
++
+ 	tests := []struct {
+ 		name    string
+ 		strand  string
+ 		req     request
+ 		discard bool
+-		setup   func(t *testing.T, w *world)
++		// here passes --here from the worktree named worktree; pullSkip is the detail of a Bolt pull that could not run.
++		here      bool
++		worktree  string
++		pullSkip  string
++		pullErr   error
++		wantPulls int
++		// wantNoRecord expects the call to leave no adopt record.
++		wantNoRecord bool
++		setup        func(t *testing.T, w *world)
+ 		// afterSpawn stands for the worker the fake spawn starts; afterSleep acts at each wake of the follow, counting from one.
+ 		afterSpawn func(t *testing.T, w *world)
+ 		afterSleep func(t *testing.T, w *world, wake int)
+@@ -70,6 +110,90 @@ func TestRunAdopt(t *testing.T) {
+ 			name: "DiscardWithASubjectIsRefusedNamingDiscardAlone", req: alphaRequest, discard: true,
+ 			wantExit: 1, wantOut: []string{"lym adopt --discard"},
+ 		},
++		{
++			name: "HereInAPrimeThisMachineOwnsEndsOwnedHereWithNoWorkerOrRecord", here: true, worktree: "prime",
++			wantPulls: 1, wantNoRecord: true, wantOut: []string{`"outcome":"owned_here"`, `"subject":"root"`, `"ok":true`},
++		},
++		{
++			name: "HereOwnedHereBesideAnotherSubjectsUnfinishedRecordEndsOwnedHere", here: true, worktree: "prime",
++			setup:     func(t *testing.T, w *world) { write(t, w, 55, adoptrecord.StateStopped) },
++			wantPulls: 1, wantOut: []string{`"outcome":"owned_here"`},
++		},
++		{
++			name: "HereReadsTheLocalBoltWhenThePullCannotReachOrigin", here: true, worktree: "prime", pullSkip: "fetching origin failed",
++			wantPulls: 1, wantOut: []string{`"outcome":"owned_here"`, "fetching origin failed"},
++		},
++		{
++			name: "HereInAForeignOwnedPrimeAdoptsRoot", here: true, worktree: "prime",
++			setup:      func(t *testing.T, w *world) { w.owners.Prime = there },
++			afterSpawn: func(t *testing.T, w *world) { write(t, w, spawnPID, adoptrecord.StateDone) },
++			wantPulls:  1, wantSpawns: 1, wantOut: []string{`"ok":true`}, check: wantSpawn("root"),
++		},
++		{
++			name: "HereInAForeignOwnedBeamAdoptsTheBeam", here: true, worktree: "alpha",
++			afterSpawn: func(t *testing.T, w *world) { write(t, w, spawnPID, adoptrecord.StateDone) },
++			wantPulls:  1, wantSpawns: 1, wantOut: []string{`"ok":true`}, check: wantSpawn("alpha"),
++		},
++		{
++			name: "HereAfterAWorkerKilledAtDeployResumesTheRecordWithoutAPull", here: true, worktree: "prime",
++			setup: func(t *testing.T, w *world) {
++				writeAdoptRecord(t, w.dir, rootRecord(adoptrecord.StateRunning, adoptrecord.StepOwner))
++			},
++			afterSpawn: func(t *testing.T, w *world) { write(t, w, spawnPID, adoptrecord.StateDone) },
++			wantSpawns: 1, wantOut: []string{`"ok":true`}, check: wantSpawn("root"),
++		},
++		{
++			name: "HereInABeamWithNoOwnerOfItsOwnFollowsTheRunningRootAdopt", here: true, worktree: "gamma",
++			setup: func(t *testing.T, w *world) {
++				w.owners.Entries["gamma"] = boardengine.OwnerEntry{IsProject: true, Beam: true}
++				w.workerAlive = true
++				writeAdoptRecord(t, w.dir, rootRecord(adoptrecord.StateRunning, adoptrecord.StepPause))
++			},
++			afterSleep: func(t *testing.T, w *world, _ int) { write(t, w, 55, adoptrecord.StateDone) },
++			wantOut:    []string{`"ok":true`},
++		},
++		{
++			name: "HereOnASubjectPastCheckBesideAHeldBackProjectEndsOwnedHere", here: true, worktree: "prime",
++			setup: func(t *testing.T, w *world) {
++				record := rootRecord(adoptrecord.StateStopped, adoptrecord.StepCheck)
++				record.Request.Slugs, record.Subjects = []string{"alpha"}, []string{"alpha", "root"}
++				record.InFlight, record.Inputs = adoptrecord.StepDone, adoptrecord.Inputs{PrimeRecorded: true, HeldBack: []string{"alpha"}}
++				writeAdoptRecord(t, w.dir, record)
++			},
++			wantPulls: 1, wantOut: []string{`"outcome":"owned_here"`},
++		},
++		{
++			name: "HereInATaskWorktreeDoesNothing", here: true, worktree: "idle",
++			wantNoRecord: true, wantOut: []string{`"outcome":"no_subject"`, `"ok":true`},
++		},
++		{
++			name: "HereWithASubjectIsRefused", here: true, worktree: "prime", req: alphaRequest,
++			wantExit: 1, wantOut: []string{"--here"},
++		},
++		{
++			name: "HereWithRootIsRefused", here: true, worktree: "prime", req: request{Root: true},
++			wantExit: 1, wantOut: []string{"--here"},
++		},
++		{
++			name: "HereWithAllIsRefused", here: true, worktree: "prime", req: request{All: true},
++			wantExit: 1, wantOut: []string{"--here"},
++		},
++		{
++			name: "HereWithDiscardIsRefusedNamingDiscardAlone", here: true, discard: true, worktree: "prime",
++			wantExit: 1, wantOut: []string{"lym adopt --discard"},
++		},
++		{
++			name: "HereWhenThePullFailsIsRefusedWithNoWorkerOrRecord", here: true, worktree: "prime", pullErr: errors.New("the board clone is broken"),
++			wantPulls: 1, wantNoRecord: true, wantExit: 1, wantOut: []string{"pull Bolt", "the board clone is broken"},
++		},
++		{
++			name: "HereResumingARecordCarriesTheCallsNoOrchToTheWorker", here: true, worktree: "prime", req: request{NoOrch: true},
++			setup: func(t *testing.T, w *world) {
++				writeAdoptRecord(t, w.dir, rootRecord(adoptrecord.StateRunning, adoptrecord.StepOwner))
++			},
++			afterSpawn: func(t *testing.T, w *world) { write(t, w, spawnPID, adoptrecord.StateDone) },
++			wantSpawns: 1, wantOut: []string{`"ok":true`}, check: wantSpawn("root", "--no-orch"),
++		},
+ 		{
+ 			name: "LiveRecordOfTheSameSubjectsIsFollowedWithoutSpawning", req: alphaRequest,
+ 			setup:      func(t *testing.T, w *world) { w.workerAlive = true; write(t, w, 55, adoptrecord.StateRunning) },
+@@ -165,8 +289,13 @@ func TestRunAdopt(t *testing.T) {
+ 			now := time.Unix(5000, 0)
+ 			wakes := 0
+ 			deps := callerDeps{
+-				HubPath:    w.dir,
+-				Strand:     tt.strand,
++				HubPath:  w.dir,
++				Strand:   tt.strand,
++				Worktree: tt.worktree,
++				PullBolt: func() (string, error) {
++					fakes.pulls++
++					return tt.pullSkip, tt.pullErr
++				},
+ 				Steps:      w.deps(),
+ 				ReadRecord: func() (adoptrecord.Record, bool, error) { return adoptrecord.Read(w.dir) },
+ 				Alive:      func(int, string) bool { return w.workerAlive },
+@@ -197,11 +326,17 @@ func TestRunAdopt(t *testing.T) {
+ 			}
+ 
+ 			var out bytes.Buffer
+-			exit := runAdopt(deps, tt.req, tt.discard, &out)
++			exit := runAdopt(deps, tt.req, callFlags{Discard: tt.discard, Here: tt.here}, &out)
+ 
+ 			if (exit != 0) != (tt.wantExit != 0) || len(fakes.spawned) != tt.wantSpawns {
+ 				t.Errorf("runAdopt = exit %d after %d spawns, want exit %d after %d; output %s", exit, len(fakes.spawned), tt.wantExit, tt.wantSpawns, out.String())
+ 			}
++			if fakes.pulls != tt.wantPulls {
++				t.Errorf("runAdopt pulled Bolt %d times, want %d", fakes.pulls, tt.wantPulls)
++			}
++			if _, found, err := adoptrecord.Read(w.dir); tt.wantNoRecord && (found || err != nil) {
++				t.Errorf("adopt record after the call: found %v, error %v; want none", found, err)
++			}
+ 			for _, text := range tt.wantOut {
+ 				if !strings.Contains(out.String(), text) {
+ 					t.Errorf("output = %s, want it to contain %q", out.String(), text)
+diff --git a/internal/adoptcli/cli.go b/internal/adoptcli/cli.go
+index 17d6195d..71f6db49 100644
+--- a/internal/adoptcli/cli.go
++++ b/internal/adoptcli/cli.go
+@@ -17,7 +17,7 @@ import (
+ // Command returns the cobra command for the adopt module.
+ func Command() *cobra.Command {
+ 	var req request
+-	var discardFlag bool
++	var flags callFlags
+ 	cmd := &cobra.Command{
+ 		Use:   "adopt [<subject>...]",
+ 		Short: "take over beam projects, or root, and the runs under them from another machine",
+@@ -40,30 +40,48 @@ origin's (refused for a live pair); a project one of whose runs stops is held ba
+ --no-orch starts each dobby and leaves its orch down; an orch session passes it by default.
+ --discard removes a record no worker will finish, and takes no subject.
+ 
++--here adopts the subject of the worktree it runs in, root in the prime and the beam in a
++beam: it follows or resumes an unfinished adopt that takes the worktree up, otherwise pulls
++Bolt and ends owned_here when no other machine owns the subject; in any other worktree it does
++nothing. --archives <subject>... lists the archive-owner/ tags the old owner pushed whose
++commit the slug's branch on origin lacks, and runs no step.
++
+ The package doc holds the record, the resume and every field of the envelope.
+ 
+ Example:
+   lym adopt payments
+   lym adopt root
+-  lym adopt --all --keep-local`,
++  lym adopt --all --keep-local
++  lym adopt --here
++  lym adopt --archives root`,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+ 				return nil
+ 			}
+ 			ctx := cmd.Context()
+ 			out := cmd.OutOrStdout()
+-			prime, err := resolvePrime(ctx)
++			location, prime, err := resolveCall(ctx)
+ 			if err != nil {
+ 				clihelp.SetExit(ctx, output.Err(out, err.Error()))
+ 				return nil
+ 			}
++			req.Slugs = args
++			if flags.Archives {
++				deps, err := hubArchiveDeps(prime)
++				if err != nil {
++					clihelp.SetExit(ctx, output.Err(out, err.Error()))
++					return nil
++				}
++				clihelp.SetExit(ctx, runArchives(deps, req, flags, out))
++				return nil
++			}
+ 			deps, err := hubCallerDeps(prime)
+ 			if err != nil {
+ 				clihelp.SetExit(ctx, output.Err(out, err.Error()))
+ 				return nil
+ 			}
+-			req.Slugs = args
+-			clihelp.SetExit(ctx, runAdopt(deps, req, discardFlag, out))
++			deps.Worktree = location.WorktreeName
++			clihelp.SetExit(ctx, runAdopt(deps, req, flags, out))
+ 			return nil
+ 		},
+ 	}
+@@ -71,7 +89,9 @@ Example:
+ 	cmd.Flags().BoolVar(&req.KeepLocal, "keep-local", false, "record the owner over local commits origin lacks and over a live pair")
+ 	cmd.Flags().BoolVar(&req.DropLocal, "drop-local", false, "keep each local tip origin lacks under an archive tag and move the branches to origin's")
+ 	cmd.Flags().BoolVar(&req.NoOrch, "no-orch", false, "start each dobby and leave its orch down")
+-	cmd.Flags().BoolVar(&discardFlag, "discard", false, "remove an unfinished adopt record that no worker will finish")
++	cmd.Flags().BoolVar(&flags.Discard, "discard", false, "remove an unfinished adopt record that no worker will finish")
++	cmd.Flags().BoolVar(&flags.Here, "here", false, "adopt the subject of the worktree this runs in when another machine owns it")
++	cmd.Flags().BoolVar(&flags.Archives, "archives", false, "list the owner archive tags of the named subjects whose commits origin's branches lack")
+ 	cmd.AddCommand(workerCmd(), checkCmd())
+ 	return cmd
+ }
+@@ -97,17 +117,18 @@ func workerCmd() *cobra.Command {
+ 	return cmd
+ }
+ 
+-// resolvePrime returns the prime of the hub the command's working directory belongs to.
+-func resolvePrime(ctx context.Context) (*lymcwd.Location, error) {
++// resolveCall returns the location of the command's working directory and the prime of the hub it belongs to.
++func resolveCall(ctx context.Context) (location, prime *lymcwd.Location, err error) {
+ 	cwd, err := lymcwd.CwdFrom(ctx)
+ 	if err != nil {
+-		return nil, err
++		return nil, nil, err
+ 	}
+-	location, err := lymcwd.Resolve(cwd)
++	location, err = lymcwd.Resolve(cwd)
+ 	if err != nil {
+-		return nil, err
++		return nil, nil, err
+ 	}
+-	return battencli.ResolveBattenPrime(location)
++	prime, err = battencli.ResolveBattenPrime(location)
++	return location, prime, err
+ }
+ 
+ // driveWorker resolves the prime from the command's working directory and runs the worker for req naming args.
+@@ -119,7 +140,7 @@ func driveWorker(cmd *cobra.Command, req request, args []string) error {
+ 	ctx := cmd.Context()
+ 	out := cmd.OutOrStdout()
+ 
+-	prime, err := resolvePrime(ctx)
++	_, prime, err := resolveCall(ctx)
+ 	if err != nil {
+ 		clihelp.SetExit(ctx, output.Err(out, err.Error()))
+ 		return nil
+@@ -182,6 +203,9 @@ func adoptFields(result outcome) map[string]any {
+ 	if len(result.CheckWarnings) > 0 {
+ 		fields["check_warnings"] = result.CheckWarnings
+ 	}
++	if command := archivesCommand(result); command != "" {
++		fields["archives"] = command
++	}
+ 	return fields
+ }
+ 
+diff --git a/internal/adoptcli/cli_test.go b/internal/adoptcli/cli_test.go
+index 3a99e5d2..e63dd186 100644
+--- a/internal/adoptcli/cli_test.go
++++ b/internal/adoptcli/cli_test.go
+@@ -1,5 +1,5 @@
+ // cli_test.go pins the adopt envelope's fields that depend on the outcome of the adopt checks' start;
+-// it also pins the fields that depend on the reconcile's warnings and on the deploy.
++// it also pins the fields that depend on the reconcile's warnings, on the deploy and on the owner writes that stood.
+ 
+ package adoptcli
+ 
+@@ -24,7 +24,15 @@ func TestAdoptFields(t *testing.T) {
+ 		wantReconcile []string
+ 		wantChecks    []suiteStart
+ 		wantRuns      []runReport
++		wantArchives  string
+ 	}{
++		{
++			name: "OwnerWritesThatStoodNameTheArchivesCall",
++			result: outcome{PrimeRecorded: true, Slugs: []slugOutcome{
++				{Slug: "beta", OwnerRecorded: true}, {Slug: "gamma"}, {Slug: "alpha", OwnerRecorded: true},
++			}},
++			wantArchives: "lym adopt --archives alpha beta root",
++		},
+ 		{
+ 			name:        "StartedChecksCarryTheirMessageAndTheChecks",
+ 			result:      outcome{Checks: started, SuiteMessage: "the adopt checks run"},
+@@ -83,6 +91,9 @@ func TestAdoptFields(t *testing.T) {
+ 			if deploy, hasDeploy := fields["deploy"]; hasDeploy != (tt.result.Deploy != nil) || (hasDeploy && deploy != tt.result.Deploy) {
+ 				t.Errorf("adoptFields()[deploy] = %v, present %v; want %v", deploy, hasDeploy, tt.result.Deploy)
+ 			}
++			if archives, hasArchives := fields["archives"]; hasArchives != (tt.wantArchives != "") || (hasArchives && archives != tt.wantArchives) {
++				t.Errorf("adoptFields()[archives] = %v, present %v; want %q", archives, hasArchives, tt.wantArchives)
++			}
+ 			for _, retired := range []string{"suite", "suite_warning"} {
+ 				if _, present := fields[retired]; present {
+ 					t.Errorf("adoptFields() holds the retired field %q", retired)
+diff --git a/internal/adoptcli/deps.go b/internal/adoptcli/deps.go
+index c6204ffd..334a66b2 100644
+--- a/internal/adoptcli/deps.go
++++ b/internal/adoptcli/deps.go
+@@ -146,6 +146,24 @@ func hubDepsAs(prime *lymcwd.Location, machine func() (string, error)) (adoptDep
+ 	}, nil
+ }
+ 
++// hubArchiveDeps fills archiveDeps over the hub the prime belongs to.
++// The archives are read through fabric, with `root` naming the prime's pair.
++func hubArchiveDeps(prime *lymcwd.Location) (archiveDeps, error) {
++	config, err := fabricengine.LoadConfig(fabricengine.ConfigDirs(prime))
++	if err != nil {
++		return archiveDeps{}, err
++	}
++	topology := fabricengine.NewTopology(config)
++	boardDir := fabricengine.BoardDir(prime.HubPath)
++	return archiveDeps{
++		ReadOwners: func() (boardengine.Owners, error) { return boardengine.ReadOwners(boardDir) },
++		ParentOf:   func(slug string) (string, error) { return hubgeom.ParentOf(prime, slug) },
++		ReadArchives: func(keep func(slug string) bool) ([]fabricengine.OwnerArchive, error) {
++			return topology.ReadOwnerArchives(prime, boardengine.RootSubject, keep)
++		},
++	}, nil
++}
++
+ // hubOnlyPaused returns a pause reading that covers a slug only by a live hub-scope entry of the record at recordPath.
+ // A slug-scope entry, an owner pause among them, does not cover its slug,
+ // so a pair running under one reads live.
+diff --git a/internal/adoptcli/doc.go b/internal/adoptcli/doc.go
+index 3f91c9d7..6220f86f 100644
+--- a/internal/adoptcli/doc.go
++++ b/internal/adoptcli/doc.go
+@@ -1,5 +1,7 @@
+-// Package adoptcli is the adopt module for the verbs `lym adopt <beam>...`, `lym adopt root` and `lym adopt --all`.
+-// They take the flags `--keep-local`, `--drop-local`, `--no-orch` and `--discard`.
++// Package adoptcli is the adopt module.
++// Its verbs are `lym adopt <beam>...`, `lym adopt root` and `lym adopt --all`.
++// It also has `lym adopt --here` and `lym adopt --archives <subject>...`.
++// They take the flags `--keep-local`, `--drop-local`, `--no-orch`, `--discard`, `--here` and `--archives`.
+ // It takes over beam projects, or root, and the runs under them from the other machine of the operator.
+ // It calls each owning module's takeover function in-process, so no module learns another's state,
+ // and it has no engine package of its own.
+@@ -46,13 +48,15 @@
+ // `runAdopt` takes these branches in order:
+ //
+ //  1. `--discard` stands alone and runs `discard`, which prints whether it removed a record.
+-//  2. It sets `NoOrch` when the caller's strand name, `agentname.StrandNameEnv`, parses as an orch role.
++//  2. `--here` resolves the call's request through `hereRequest`, described under the here call below,
++//     or ends the call there.
++//  3. It sets `NoOrch` when the caller's strand name, `agentname.StrandNameEnv`, parses as an orch role.
+ //     A numbered orch counts, and an empty or unparsable name sets nothing.
+-//  3. It validates the request, reads the record and judges it with `judgeStanding`:
++//  4. It validates the request, reads the record and judges it with `judgeStanding`:
+ //     a running worker of the same subjects is followed and nothing is spawned;
+ //     an unfinished record of other subjects is refused, naming the recorded subjects, the step, the re-run and `--discard`;
+ //     any other case spawns a worker.
+-//  4. It follows the record through `follow` and prints the end:
++//  5. It follows the record through `follow` and prints the end:
+ //     the record's envelope for a `done` adopt, and an error envelope with the stop's way forward for a `stopped` one.
+ //
+ // `spawnWorker` resolves the binary through `selfexec.LymBinary`.
+@@ -88,6 +92,53 @@
+ // `runWorker` is the whole worker.
+ // It prints the end envelope: ok for `done`, an error envelope for a stop or a refusal.
+ //
++// # The here call
++//
++// `lym adopt --here` adopts the subject of the worktree it runs in:
++// `root` in the prime, the beam in an open beam project.
++// In any other worktree it ends ok with `outcome` `no_subject` and does nothing else.
++// A subject, `root` or `--all` beside it is refused.
++//
++// It first reads the adopt record.
++// An unfinished record takes the worktree up when its `check` step is not done.
++// Its subjects must also list the subject the worktree reads its owner from, through `adoptrecord.Record.TakesUp`.
++// That is the worktree's beam when the record lists it or it records an owner of its own.
++// Otherwise it is the subject above it through `hubgeom.ParentOf`, `root` at the top.
++// The call then runs the record's request with its own flags merged in by `mergeRequest`,
++// so it follows a live worker or resumes the record, whoever the owner reads as.
++// A record past `check`, such as one that stopped on a held-back project, takes up no worktree.
++//
++// With no record taking the worktree up, it pulls Bolt through `fabricengine.Bolt.Pull` and reads the subject's owner.
++// A pull that cannot bring Bolt up to date, an unreachable origin among them, reads the local Bolt,
++// and its detail is a line of `warnings`.
++// When no other machine owns the subject, the call ends ok with `outcome` `owned_here` and `subject`.
++// It spawns no worker and writes no record.
++// Otherwise it runs as `lym adopt <subject>`.
++// The `lym s` shortcut runs `lym adopt --here --no-orch` before `lym beam start`, which starts the orch.
++// So adopt starts from a plain shell on the machine taking over, and an adopt that stops starts nothing.
++//
++// Bound: every `--here` with no record taking its worktree up pays one Bolt pull.
++// A stale local Bolt that reads this machine as the owner skips the adopt;
++// the next Bolt pull that reaches origin hands the subject to the old owner's path.
++//
++// # The archives list
++//
++// `lym adopt --archives <subject>...` lists the `archive-owner/` tags the old owner of each subject pushed.
++// It lists only those whose commit the slug's branch on origin does not contain.
++// It reads them through `fabricengine.Topology.ReadOwnerArchives`.
++// It reads each repository's tags against that repository's branch of the slug:
++// the code branch for a code tag, the records branch for a records tag.
++// A tag's slug belongs to the subject `boardengine.Owners.AdoptSubject` names for it;
++// a slug the board no longer holds belongs to the subject of its parent.
++// The envelope's `archives` lists the tags per slug with its subject.
++// Each tag carries its side, commit and branch, and a `git -C <dir> log <tag>` that shows it.
++// Teardown and `--drop-local` archives carry the `archive/` prefix, so it lists none of them.
++// It runs no step, reads and writes no adopt record and brings nothing in;
++// it fetches each listed tag as a local tag, so its log shows.
++// A subject that is neither `root` nor a beam project is refused,
++// and the refusal of a task or grouping project names the subject that moves it.
++// Any other flag beside it is refused.
++//
+ // # The record
+ //
+ // `adoptrecord` holds the adopt record, `adopt.json`, and its lock, `adopt.lock`.
+@@ -528,6 +579,8 @@
+ // `warnings` covers branches the reconcile left unmoved and a deploy state that did not read.
+ // `prime_beam_steps` and `prime_beam_warning` report the prime's beam steps.
+ // `checks` and `message`, or `check_warnings`, report the adopt checks.
++// `archives` names `lym adopt --archives` over the subjects whose owner write stood.
++// The old owner archives its unpushed tips only once it reads that write.
+ // Per slug it carries what happened: a stop with its branches, a pair added and an owner recorded.
+ // It carries the pause as `adopt_paused` and `pause_standing`.
+ // It carries the run as paused by adopt, none, running here or owned elsewhere by `owned_by`.
+diff --git a/internal/adoptcli/here.go b/internal/adoptcli/here.go
+new file mode 100644
+index 00000000..216593f0
+--- /dev/null
++++ b/internal/adoptcli/here.go
+@@ -0,0 +1,102 @@
++// here.go resolves `lym adopt --here` to the adopt it runs, or to the envelope it ends with when it runs none.
++// The call's subject is the worktree it runs in: `root` in the prime, the beam in a beam.
++
++package adoptcli
++
++import (
++	"errors"
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++)
++
++// The outcomes of a `lym adopt --here` call that runs no adopt.
++const (
++	// outcomeOwnedHere ends a call whose subject no other machine owns.
++	outcomeOwnedHere = "owned_here"
++	// outcomeNoSubject ends a call from a worktree that is neither the prime nor an open beam project.
++	outcomeNoSubject = "no_subject"
++)
++
++// hereRequest resolves a `lym adopt --here` call to the request it runs, or to the envelope fields it ends with.
++// call carries the call's flags, and a subject, `root` or --all in it is refused.
++// An unfinished record that takes the call's worktree up gives the request:
++// the record's own, with the call's flags merged in, so the call follows or resumes it whoever the owner reads as.
++// Otherwise Bolt is pulled and the subject's owner is read from it.
++// A pull that cannot bring Bolt up to date reads the local Bolt, and its detail becomes a warning of the end.
++// A subject no other machine owns ends `owned_here`, and any other gives the request that adopts the subject alone.
++// A worktree that is neither the prime nor an open beam project ends `no_subject`.
++func hereRequest(deps callerDeps, call request) (request, map[string]any, error) {
++	if len(call.Slugs) > 0 || call.Root || call.All {
++		return request{}, nil, errors.New("lym adopt: --here adopts the subject of the worktree it runs in, so it takes no subject, `root` or --all: drop them, or drop --here")
++	}
++	steps := deps.Steps
++	owners, err := steps.ReadOwners()
++	if err != nil {
++		return request{}, nil, fmt.Errorf("lym adopt: read the board's owners: %w", err)
++	}
++	subject, slug, found := hereSubject(owners, steps.PrimeName, deps.Worktree)
++	if !found {
++		return request{}, map[string]any{"outcome": outcomeNoSubject, "worktree": deps.Worktree}, nil
++	}
++
++	record, recorded, err := deps.ReadRecord()
++	if err != nil {
++		return request{}, nil, err
++	}
++	if recorded {
++		takesUp, err := record.TakesUp(owners, slug, steps.ParentOf)
++		if err != nil {
++			return request{}, nil, fmt.Errorf("lym adopt: judge whether the unfinished adopt of %v takes up %s: %w", record.Subjects, subject, err)
++		}
++		if takesUp {
++			merged, _ := mergeRequest(record.Request, call.recorded())
++			return requestOf(merged), nil, nil
++		}
++	}
++
++	skipped, err := deps.PullBolt()
++	if err != nil {
++		return request{}, nil, fmt.Errorf("lym adopt: pull Bolt to read the owner of %s: %w", subject, err)
++	}
++	if owners, err = steps.ReadOwners(); err != nil {
++		return request{}, nil, fmt.Errorf("lym adopt: read the board's owners: %w", err)
++	}
++	here, err := steps.Machine()
++	if err != nil {
++		return request{}, nil, fmt.Errorf("lym adopt: read this machine's name: %w", err)
++	}
++	owner := owners.Prime
++	if slug != "" {
++		if owner, err = owners.Effective(slug, steps.ParentOf); err != nil {
++			return request{}, nil, fmt.Errorf("lym adopt: read the owner of %s: %w", subject, err)
++		}
++	}
++	if !boardengine.OwnedElsewhere(owner, here) {
++		fields := map[string]any{"outcome": outcomeOwnedHere, "subject": subject}
++		if skipped != "" {
++			fields["warnings"] = []string{"Bolt was not brought up to date, so the owner was read from the local Bolt: " + skipped}
++		}
++		return request{}, fields, nil
++	}
++	req := call
++	if slug == "" {
++		req.Root = true
++	} else {
++		req.Slugs = []string{slug}
++	}
++	return req, nil, nil
++}
++
++// hereSubject returns the subject of the worktree named worktree and its slug, empty for the prime named primeName.
++// It reports false for a worktree that is neither the prime nor an open beam project.
++func hereSubject(owners boardengine.Owners, primeName, worktree string) (subject, slug string, found bool) {
++	if worktree == primeName {
++		return boardengine.RootSubject, "", true
++	}
++	entry := owners.Entries[worktree]
++	if !entry.IsProject || !entry.Beam || entry.Done {
++		return "", "", false
++	}
++	return worktree, worktree, true
++}
+diff --git a/internal/adoptrecord/doc.go b/internal/adoptrecord/doc.go
+index 888ceae6..b4f15577 100644
+--- a/internal/adoptrecord/doc.go
++++ b/internal/adoptrecord/doc.go
+@@ -13,6 +13,9 @@
+ // and `ResumeStep` names the step a resume restarts at.
+ // `Covers` reports whether the record holds a subject under adopt:
+ // the record is unfinished, lists the subject, and records no owner write of it that stood.
++// `TakesUp` reports whether an unfinished record whose check step is not done takes up a worktree.
++// It does when the record lists the subject the worktree reads its owner from;
++// `lym adopt --here` then runs the record's request.
+ // Unknown keys of the file are tolerated on read and kept on write.
+ //
+ // `Watch` is the read-only under-adopt accessor the orch watcher and the dobby are handed.
+diff --git a/internal/adoptrecord/watch.go b/internal/adoptrecord/watch.go
+index f5c0b7ef..9271acd2 100644
+--- a/internal/adoptrecord/watch.go
++++ b/internal/adoptrecord/watch.go
+@@ -65,6 +65,24 @@ func (w *Watch) covers(slug string) (bool, error) {
+ 	return record.Covers(subject), nil
+ }
+ 
++// TakesUp reports whether the record takes up the worktree named slug, empty for the prime, for `lym adopt --here`.
++// The record must be unfinished with its check step not done.
++// Its subjects must list the subject whose owner the worktree reads:
++// the slug itself when the record lists it or it is a beam project with its own owner recorded.
++// Otherwise it is the subject of its parent, `root` above the top.
++// owners is the hub's board, and parentOf names the slug an entry was forked from, empty for the prime.
++func (r Record) TakesUp(owners boardengine.Owners, slug string, parentOf func(slug string) (string, error)) (bool, error) {
++	if !r.Unfinished() || r.Done(StepCheck) {
++		return false, nil
++	}
++	listed := func(subject string) bool { return slices.Contains(r.Subjects, subject) }
++	subject, err := ownerSubject(owners, slug, listed, parentOf)
++	if err != nil {
++		return false, err
++	}
++	return listed(subject), nil
++}
++
+ // ownerSubject returns the subject whose owner the worktree slug reads, `root` for the prime's empty slug.
+ // It is the slug itself for an entry the board does not hold.
+ // It is also the slug itself for one the adopt record lists and for a beam project with its own owner recorded.
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 3e50c212..4c507630 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -711,6 +711,10 @@
+ // `OwnerArchiveTagName` gives that name.
+ // It pushes the tag to that side's origin with no branch push.
+ // No reader of `archive/` tags matches that prefix, so such a tag never reads as an archived run.
++// `Topology.ReadOwnerArchives` is the new owner's read of those tags.
++// Per repository it lists the tags on origin whose commit the slug's branch on that origin does not contain:
++// the code branch for a code tag, and the records branch paired with it for a records tag.
++// It fetches each tag it lists as a local tag, so `git log <tag>` shows it.
+ //
+ // `Remove`, `DiscardTaskBranch` and the `Cleanup` sweep run their local steps,
+ // and they hand the remote ones to a detached teardown child (remoteteardown.go).
+diff --git a/internal/fabricengine/ownerarchive.go b/internal/fabricengine/ownerarchive.go
+index c95c2485..d96bedfa 100644
+--- a/internal/fabricengine/ownerarchive.go
++++ b/internal/fabricengine/ownerarchive.go
+@@ -1,12 +1,16 @@
+ // ownerarchive.go archives the local tips a machine keeps of a subject another machine now owns.
+ // Each tip origin lacks is tagged archive-owner/<slug>/<sha12>, and the tag is pushed to origin with no branch push,
+ // so the new owner can reach the commits it cannot see.
++// It also holds the new owner's read of those tags against each slug's branch on origin.
+ 
+ package fabricengine
+ 
+ import (
++	"cmp"
+ 	"errors"
+ 	"fmt"
++	"slices"
++	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+@@ -97,7 +101,10 @@ func archiveOwnerTip(rec *Mutations, dir, slug, side string) (string, error) {
+ 	}
+ 	repo := gitrepo.New(dir)
+ 	if _, err := repo.RemoteURL(originRemoteName); err != nil {
+-		return "", nil
++		if errors.Is(err, gitrepo.ErrRemoteNotConfigured) {
++			return "", nil
++		}
++		return "", fmt.Errorf("read the %q remote of %s: %w", originRemoteName, dir, err)
+ 	}
+ 	branch, err := repo.CurrentBranch()
+ 	if err != nil {
+@@ -135,3 +142,154 @@ func archiveOwnerTip(rec *Mutations, dir, slug, side string) (string, error) {
+ 	}
+ 	return tag, nil
+ }
++
++// The repository sides an owner archive tag sits in.
++const (
++	OwnerArchiveSideCode    = "code"
++	OwnerArchiveSideRecords = "records"
++)
++
++// OwnerArchive is one owner archive tag on origin whose commit the slug's branch on that origin does not contain.
++type OwnerArchive struct {
++	// Slug is the pair the tag archives.
++	Slug string `json:"slug"`
++	// Side is the repository the tag sits in, OwnerArchiveSideCode or OwnerArchiveSideRecords.
++	Side string `json:"side"`
++	Tag  string `json:"tag"`
++	// Commit is the full hex name of the commit the tag names.
++	Commit string `json:"commit"`
++	// Branch is the slug's branch on that side's origin the commit was judged against.
++	Branch string `json:"branch"`
++	// Dir is the local repository the tag was fetched into, where `git log <tag>` shows it.
++	Dir string `json:"dir"`
++}
++
++// ReadOwnerArchives reads the owner archive tags on the code and records origins of the hub of prime.
++// It returns those of the slugs keep admits whose commit the slug's branch on that side's origin does not contain.
++// The result is sorted by slug, side and tag.
++// primeSlug names the prime's pair in the tags, and its code branch is the branch the prime has checked out.
++// Any other slug's code branch is its pair's task branch, read locally first and then from origin.
++// A records tag is judged against the records branch paired with that code branch,
++// and a branch origin lacks contains no commit.
++// Each tag it returns is fetched into its side's repository as a local tag, so `git log <tag>` shows it there;
++// it writes nothing else but the fetched objects.
++// A repository with no origin remote holds no tag to read, and an origin that does not answer is an error.
++func (t *Topology) ReadOwnerArchives(prime *lymcwd.Location, primeSlug string, keep func(slug string) bool) ([]OwnerArchive, error) {
++	recordsDir, err := RecordsRepoRoot(prime)
++	if err != nil {
++		return nil, fmt.Errorf("resolve the records repository: %w", err)
++	}
++	codeBranches := map[string]string{}
++	codeBranchOf := func(slug string) (string, error) {
++		if branch, read := codeBranches[slug]; read {
++			return branch, nil
++		}
++		var branch string
++		var err error
++		if slug == primeSlug {
++			branch, err = gitrepo.New(prime.WorktreePath()).CurrentBranch()
++		} else {
++			branch, err = t.PairTaskBranchOrOrigin(prime, slug)
++		}
++		if err != nil {
++			return "", fmt.Errorf("read the code branch of %s: %w", slug, err)
++		}
++		codeBranches[slug] = branch
++		return branch, nil
++	}
++
++	var archives []OwnerArchive
++	for _, side := range []struct {
++		name, dir string
++		branchOf  func(codeBranch string) string
++	}{
++		{OwnerArchiveSideCode, prime.WorktreePath(), func(codeBranch string) string { return codeBranch }},
++		{OwnerArchiveSideRecords, recordsDir, RecordsBranchName},
++	} {
++		branchOf := func(slug string) (string, error) {
++			codeBranch, err := codeBranchOf(slug)
++			if err != nil {
++				return "", err
++			}
++			return side.branchOf(codeBranch), nil
++		}
++		found, err := readSideOwnerArchives(side.name, side.dir, keep, branchOf)
++		if err != nil {
++			return nil, fmt.Errorf("read the %s owner archives: %w", side.name, err)
++		}
++		archives = append(archives, found...)
++	}
++	slices.SortFunc(archives, func(a, b OwnerArchive) int {
++		return cmp.Or(strings.Compare(a.Slug, b.Slug), strings.Compare(a.Side, b.Side), strings.Compare(a.Tag, b.Tag))
++	})
++	return archives, nil
++}
++
++// readSideOwnerArchives returns the owner archive tags on the origin of the repository at dir, on side.
++// It returns those of the slugs keep admits whose commit the branch branchOf names for the slug does not contain.
++// It fetches each tag it returns as a local tag of dir.
++func readSideOwnerArchives(side, dir string, keep func(slug string) bool, branchOf func(slug string) (string, error)) ([]OwnerArchive, error) {
++	if !pathPresent(dir) {
++		return nil, nil
++	}
++	repo := gitrepo.New(dir)
++	if _, err := repo.RemoteURL(originRemoteName); err != nil {
++		if errors.Is(err, gitrepo.ErrRemoteNotConfigured) {
++			return nil, nil
++		}
++		return nil, fmt.Errorf("read the %q remote of %s: %w", originRemoteName, dir, err)
++	}
++	tags, err := remoteTagsUnder(dir, OwnerArchiveTagPrefix)
++	if err != nil {
++		return nil, fmt.Errorf("list the owner archive tags on %q: %w", originRemoteName, err)
++	}
++	var archives []OwnerArchive
++	for tag, commit := range tags {
++		slug, named := ownerArchiveSlug(tag)
++		if !named || !keep(slug) {
++			continue
++		}
++		branch, err := branchOf(slug)
++		if err != nil {
++			return nil, err
++		}
++		branchTip, err := remoteHeadTip(dir, branch)
++		if err != nil {
++			return nil, err
++		}
++		fetch := []string{originRemoteName, "refs/tags/" + tag}
++		if branchTip != "" {
++			fetch = append(fetch, branchTip)
++		}
++		if _, err := repo.FetchWithArgs(fetch...); err != nil {
++			return nil, fmt.Errorf("fetch the tag %s from %q: %w", tag, originRemoteName, err)
++		}
++		if branchTip != "" {
++			contained, err := isAncestorOrEqual(dir, commit, branchTip)
++			if err != nil {
++				return nil, fmt.Errorf("compare the tag %s with branch %q on %q: %w", tag, branch, originRemoteName, err)
++			}
++			if contained {
++				continue
++			}
++		}
++		if err := createTagAt(dir, tag, commit, side); err != nil {
++			return nil, err
++		}
++		archives = append(archives, OwnerArchive{Slug: slug, Side: side, Tag: tag, Commit: commit, Branch: branch, Dir: dir})
++	}
++	return archives, nil
++}
++
++// ownerArchiveSlug returns the slug an owner archive tag name carries, reporting false for a name of another shape.
++func ownerArchiveSlug(tag string) (string, bool) {
++	rest, prefixed := strings.CutPrefix(tag, OwnerArchiveTagPrefix)
++	if !prefixed {
++		return "", false
++	}
++	cut := strings.LastIndex(rest, "/")
++	if cut <= 0 {
++		return "", false
++	}
++	return rest[:cut], true
++}
+diff --git a/internal/fabricengine/ownerarchive_integration_test.go b/internal/fabricengine/ownerarchive_integration_test.go
+index 0ecf1b1e..d27272fe 100644
+--- a/internal/fabricengine/ownerarchive_integration_test.go
++++ b/internal/fabricengine/ownerarchive_integration_test.go
+@@ -1,4 +1,4 @@
+-// ownerarchive_integration_test.go covers ArchiveOwnerTips over the prime pair of a hubforge hub.
++// ownerarchive_integration_test.go covers ArchiveOwnerTips and ReadOwnerArchives over the prime pair of a hubforge hub.
+ // The hub's CodeBare and RecordsBare are the code and records origins.
+ // Each row builds its own hub, since a row commits to the prime or breaks its origin.
+ // Package fabricengine_test; shares the single TestMain in testmain_test.go.
+@@ -7,6 +7,7 @@ package fabricengine_test
+ 
+ import (
+ 	"errors"
++	"reflect"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -153,3 +154,129 @@ func TestArchiveOwnerTips_ATornPairDoesNotStopTheOthers(t *testing.T) {
+ 		t.Errorf("ArchiveOwnerTips() = %v; want %v, the other pair still tagged", tags, want)
+ 	}
+ }
++
++func TestReadOwnerArchives(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// archiveRecords archives a records tip instead of a code tip.
++		archiveRecords bool
++		// pushTip pushes the archived tip to its branch on origin after the archive.
++		pushTip bool
++		// keepNone admits no slug to the read.
++		keepNone bool
++		// unpublishedBranch commits on a new branch origin lacks.
++		unpublishedBranch bool
++		// teardownTag also pushes a teardown archive tag, archive/root/<tip>, naming the same tip.
++		teardownTag bool
++		wantListed  bool
++	}{
++		{name: "ACodeTagTheBranchOnOriginLacksIsListedAndFetched", wantListed: true},
++		{name: "ARecordsTagIsJudgedAgainstTheRecordsBranch", archiveRecords: true, wantListed: true},
++		{name: "ARecordsTagTheRecordsBranchHoldsIsNotListed", archiveRecords: true, pushTip: true},
++		{name: "ATagTheBranchOnOriginHoldsIsNotListed", pushTip: true},
++		{name: "ATagOfABranchAbsentOnOriginIsListed", unpublishedBranch: true, wantListed: true},
++		{name: "ATeardownArchiveTagIsNeitherListedNorFetched", teardownTag: true, wantListed: true},
++		{name: "ATagOfASlugKeepRefusesIsNotListed", keepNone: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			l := h.Location
++			recordsDir := fabricengine.RecordsWorktree(l)
++			// The fixture leaves the records prime's tip unpushed, so push it to archive one side alone.
++			gitkit.MustRun(t, recordsDir, "git", "push", "origin", "HEAD")
++			dir, side := l.WorktreePath(), fabricengine.OwnerArchiveSideCode
++			if tt.archiveRecords {
++				dir, side = recordsDir, fabricengine.OwnerArchiveSideRecords
++			}
++			if tt.unpublishedBranch {
++				gitkit.Git(t, dir, "checkout", "-b", "unpublished")
++			}
++			tip := gitkit.CommitFile(t, dir, "owner-archive.txt", "local", "local commit")
++			tags, err := fabricengine.ArchiveOwnerTips(l.HubPath, []fabricengine.OwnerArchivePair{{Slug: "root", Pair: l}})
++			if err != nil || len(tags) != 1 {
++				t.Fatalf("ArchiveOwnerTips() = %v, %v; want one tag", tags, err)
++			}
++			if tt.pushTip {
++				gitkit.Git(t, dir, "push", "origin", "HEAD")
++			}
++			// The new owner holds no local tag, so the read must fetch it.
++			gitkit.Git(t, dir, "tag", "-d", tags[0])
++			if tt.teardownTag {
++				teardown := fabricengine.ArchiveTagPrefix + "root/" + tip[:fabricengine.ArchiveTagSHALen]
++				gitkit.Git(t, dir, "tag", teardown, tip)
++				gitkit.Git(t, dir, "push", "origin", "refs/tags/"+teardown)
++				gitkit.Git(t, dir, "tag", "-d", teardown)
++			}
++			keep := func(slug string) bool { return !tt.keepNone && slug == "root" }
++
++			got, err := fabricengine.NewTopology(fabricengine.Config{}).ReadOwnerArchives(l, "root", keep)
++
++			if err != nil {
++				t.Fatalf("ReadOwnerArchives() error = %v", err)
++			}
++			var want []fabricengine.OwnerArchive
++			if tt.wantListed {
++				branch := gitkit.Git(t, dir, "rev-parse", "--abbrev-ref", "HEAD")
++				want = []fabricengine.OwnerArchive{{Slug: "root", Side: side, Tag: tags[0], Commit: tip, Branch: branch, Dir: dir}}
++			}
++			if !reflect.DeepEqual(got, want) {
++				t.Errorf("ReadOwnerArchives() = %+v; want %+v", got, want)
++			}
++			if local := gitkit.Git(t, dir, "tag", "--list", tags[0]); (local != "") != tt.wantListed {
++				t.Errorf("local tag %s after the read = %q; want it present only when listed", tags[0], local)
++			}
++			if local := gitkit.Git(t, dir, "tag", "--list", fabricengine.ArchiveTagPrefix+"*"); local != "" {
++				t.Errorf("local teardown archive tags after the read = %q; want none fetched", local)
++			}
++		})
++	}
++}
++
++func TestReadOwnerArchives_ListsEveryPairSortedBySlugSideAndTag(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{Beam: true})
++	l := h.Location
++	codeDir, recordsDir, pairDir := l.WorktreePath(), fabricengine.RecordsWorktree(l), h.PairCodeWorktree("b")
++	// The fixture leaves the records prime's tip unpushed, so push it to archive only the commits made here.
++	gitkit.MustRun(t, recordsDir, "git", "push", "origin", "HEAD")
++	pairTip := gitkit.CommitFile(t, pairDir, "owner-archive.txt", "local", "local pair commit")
++	codeTip := gitkit.CommitFile(t, codeDir, "owner-archive.txt", "local", "local code commit")
++	recordsTip := gitkit.CommitFile(t, recordsDir, "owner-archive.txt", "local", "local records commit")
++	pair, err := lymcwd.NamedWorktree(h.Path, "b")
++	if err != nil {
++		t.Fatalf("NamedWorktree() = %v; want nil", err)
++	}
++	pairs := []fabricengine.OwnerArchivePair{{Slug: "root", Pair: l}, {Slug: "b", Pair: pair}}
++	if tags, err := fabricengine.ArchiveOwnerTips(l.HubPath, pairs); err != nil || len(tags) != 3 {
++		t.Fatalf("ArchiveOwnerTips() = %v, %v; want three tags", tags, err)
++	}
++	pairTag := fabricengine.OwnerArchiveTagName("b", pairTip)
++	codeTag := fabricengine.OwnerArchiveTagName("root", codeTip)
++	recordsTag := fabricengine.OwnerArchiveTagName("root", recordsTip)
++	// The new owner holds no local tag, so the read must fetch each.
++	gitkit.Git(t, codeDir, "tag", "-d", pairTag, codeTag)
++	gitkit.Git(t, recordsDir, "tag", "-d", recordsTag)
++
++	got, err := fabricengine.NewTopology(fabricengine.Config{}).ReadOwnerArchives(l, "root", func(string) bool { return true })
++
++	if err != nil {
++		t.Fatalf("ReadOwnerArchives() error = %v", err)
++	}
++	want := []fabricengine.OwnerArchive{
++		{Slug: "b", Side: fabricengine.OwnerArchiveSideCode, Tag: pairTag, Commit: pairTip, Branch: gitkit.CurrentBranch(t, pairDir), Dir: codeDir},
++		{Slug: "root", Side: fabricengine.OwnerArchiveSideCode, Tag: codeTag, Commit: codeTip, Branch: gitkit.CurrentBranch(t, codeDir), Dir: codeDir},
++		{Slug: "root", Side: fabricengine.OwnerArchiveSideRecords, Tag: recordsTag, Commit: recordsTip, Branch: gitkit.CurrentBranch(t, recordsDir), Dir: recordsDir},
++	}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("ReadOwnerArchives() = %+v; want %+v", got, want)
++	}
++}
+diff --git a/internal/fabricengine/remoteleftover.go b/internal/fabricengine/remoteleftover.go
+index f06c90c4..29f8f89b 100644
+--- a/internal/fabricengine/remoteleftover.go
++++ b/internal/fabricengine/remoteleftover.go
+@@ -221,11 +221,21 @@ func remoteHeadTip(dir, branch string) (string, error) {
+ 
+ // remoteArchiveTags maps each archive/<slug>/* tag name on origin to its commit target, preferring a peeled ^{} line.
+ func remoteArchiveTags(weftRoot, slug string) (map[string]string, error) {
+-	prefix := "refs/tags/" + ArchiveTagPrefix + slug + "/"
+-	out, err := gitexec.Run([]string{"ls-remote", "--tags", originRemoteName, prefix + "*"}, weftRoot)
++	tags, err := remoteTagsUnder(weftRoot, ArchiveTagPrefix+slug+"/")
+ 	if err != nil {
+ 		return nil, fmt.Errorf("list archive tags of %q on %q: %w", slug, originRemoteName, err)
+ 	}
++	return tags, nil
++}
++
++// remoteTagsUnder maps each tag on dir's origin whose name starts with namePrefix to its commit.
++// It prefers a peeled ^{} line, so an annotated tag maps to the commit it names.
++func remoteTagsUnder(dir, namePrefix string) (map[string]string, error) {
++	prefix := "refs/tags/" + namePrefix
++	out, err := gitexec.Run([]string{"ls-remote", "--tags", originRemoteName, prefix + "*"}, dir)
++	if err != nil {
++		return nil, err
++	}
+ 	plain := map[string]string{}
+ 	peeled := map[string]string{}
+ 	for _, line := range strings.Split(out, "\n") {
+diff --git a/internal/gitrepo/remote.go b/internal/gitrepo/remote.go
+index a80f8347..fb8d923f 100644
+--- a/internal/gitrepo/remote.go
++++ b/internal/gitrepo/remote.go
+@@ -13,6 +13,11 @@ import (
+ // configured URL list is empty.
+ var errRemoteHasNoURLs = errors.New("remote has no configured URL")
+ 
++// ErrRemoteNotConfigured is wrapped into RemoteURL's error when the repository has no usable remote of that name.
++// The remote is absent, or it carries no URL.
++// Any other RemoteURL error is a failure to read the repository's configuration.
++var ErrRemoteNotConfigured = errors.New("remote is not configured")
++
+ // RemoteURL returns the configured URL of the remote named name, read via go-git's local config.
+ // It resolves state already on disk and spawns no git process,
+ // so it is not among the methods that `PATTERN-gitrepo-client-boundary` pins to run or runChecked.
+@@ -20,13 +25,16 @@ var errRemoteHasNoURLs = errors.New("remote has no configured URL")
+ func (r *Repo) RemoteURL(name string) (string, error) {
+ 	return readGoGit(r, func(repo *git.Repository) (string, error) {
+ 		remote, err := repo.Remote(name)
++		if errors.Is(err, git.ErrRemoteNotFound) {
++			return "", fmt.Errorf("gitrepo: read remote %q URL in %s: %w: %w", name, r.path, ErrRemoteNotConfigured, err)
++		}
+ 		if err != nil {
+ 			return "", fmt.Errorf("gitrepo: read remote %q URL in %s: %w", name, r.path, err)
+ 		}
+ 
+ 		urls := remote.Config().URLs
+ 		if len(urls) == 0 {
+-			return "", fmt.Errorf("gitrepo: read remote %q URL in %s: %w", name, r.path, errRemoteHasNoURLs)
++			return "", fmt.Errorf("gitrepo: read remote %q URL in %s: %w: %w", name, r.path, ErrRemoteNotConfigured, errRemoteHasNoURLs)
+ 		}
+ 		return urls[0], nil
+ 	})
+diff --git a/internal/gitrepo/remote_integration_test.go b/internal/gitrepo/remote_integration_test.go
+index 0f7f379a..fb10fad3 100644
+--- a/internal/gitrepo/remote_integration_test.go
++++ b/internal/gitrepo/remote_integration_test.go
+@@ -3,9 +3,11 @@
+ package gitrepo_test
+ 
+ import (
++	"errors"
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -47,6 +49,9 @@ func TestRemoteURL(t *testing.T) {
+ 			if tt.wantErr && !strings.Contains(err.Error(), tt.remote) {
+ 				t.Errorf("RemoteURL(%s) error = %q; want it to name the requested remote %q", tt.remote, err.Error(), tt.remote)
+ 			}
++			if tt.wantErr && !errors.Is(err, gitrepo.ErrRemoteNotConfigured) {
++				t.Errorf("RemoteURL(%s) error = %v; want one wrapping ErrRemoteNotConfigured", tt.remote, err)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/shortcutcli/shortcut_test.go b/internal/shortcutcli/shortcut_test.go
+index 8b46542e..30ff3f7e 100644
+--- a/internal/shortcutcli/shortcut_test.go
++++ b/internal/shortcutcli/shortcut_test.go
+@@ -216,7 +216,7 @@ func TestMount_File(t *testing.T) {
+ 			name: "the shipped file mounts exactly a, s, p and r", data: shortcutFile,
+ 			wantMounted: map[string]string{
+ 				"a": "shortcut: lym reed attach",
+-				"s": "shortcut: lym beam start, then lym reed attach",
++				"s": "shortcut: lym adopt --here --no-orch, then lym beam start, then lym reed attach",
+ 				"p": "shortcut: lym tender pause",
+ 				"r": "shortcut: lym tender resume",
+ 			},
+diff --git a/internal/shortcutcli/shortcuts.yaml b/internal/shortcutcli/shortcuts.yaml
+index 4329494c..f5f72e08 100644
+--- a/internal/shortcutcli/shortcuts.yaml
++++ b/internal/shortcutcli/shortcuts.yaml
+@@ -4,6 +4,6 @@
+ # An argv names lym words only, never a shell string: a command path, then any args and flags of that command.
+ # A shortcut is added only by a commit to this file.
+ a: [reed, attach]
+-s: [[beam, start], [reed, attach]]
++s: [[adopt, --here, --no-orch], [beam, start], [reed, attach]]
+ p: [tender, pause]
+ r: [tender, resume]
