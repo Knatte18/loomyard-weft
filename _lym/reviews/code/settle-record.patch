@@ -1,0 +1,1664 @@
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 633f0639..b4a479fa 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -15,6 +15,7 @@ import (
+ 	"github.com/spf13/cobra"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/envconfig"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/impactset"
+ )
+@@ -206,6 +207,8 @@ type testRequest struct {
+ 	coverage bool
+ 	// coverageMaps is the hub's coverage map directory; empty outside a hub.
+ 	coverageMaps string
++	// hubEnv is the hub's env.yaml variables, which the call's children run with.
++	hubEnv envconfig.Config
+ 	// root is the worktree root the tiers' dirs and a prebuild are relative to.
+ 	root string
+ 	// prebuiltStore is the hub's store of prebuilt `lym` binaries; empty outside a hub.
+diff --git a/internal/gatecli/coveragescope.go b/internal/gatecli/coveragescope.go
+index f5137d9a..e2e4e0bb 100644
+--- a/internal/gatecli/coveragescope.go
++++ b/internal/gatecli/coveragescope.go
+@@ -66,10 +66,9 @@ func coverageTier(cfg gateslot.Config, request testRequest, number int) (gateslo
+ // narrowCoverage returns share, the diff share targets derive, narrowed for the tier numbered number.
+ // It also returns the scope report's line for each package of the share.
+ // A changed package and a binary builder of targets run whole.
+-// An importing package runs the union of its Test functions of the tier that match one of four rules.
++// An importing package runs the union of its Test functions of the tier that match one of three rules.
+ // selectionOf selects the function.
+-// The map does not record it.
+-// The map marks it out of process or unresolved.
++// The map records no passing measurement for it.
+ // It carries `//lym:guard`.
+ // The union holds only the tests a run of the tier executes.
+ // Those are declared in a test file the host admits under the tier's tag.
+@@ -158,17 +157,16 @@ func importerPackage(entry coveragePackage, tagged build.Context, tiers []int, r
+ }
+ 
+ // coverageUnion returns the names of declared, sorted, that the selection selects.
+-// It adds the names its map does not record or marks out of process or unresolved, and the names guards holds.
++// It adds the names the selection does not hold as recorded, and the names guards holds.
+ func coverageUnion(declared []string, selection testcover.Selection, guards []impactset.GuardTest) []string {
+-	recorded, marked := map[string]bool{}, map[string]bool{}
++	recorded := map[string]bool{}
+ 	for _, test := range selection.Recorded {
+ 		recorded[test.Name] = true
+-		marked[test.Name] = test.Spawn.OutOfProcess || test.Spawn.Unresolved
+ 	}
+ 	var union []string
+ 	for _, name := range declared {
+ 		guarded := slices.ContainsFunc(guards, func(guard impactset.GuardTest) bool { return guard.Name == name })
+-		if guarded || !recorded[name] || marked[name] || slices.Contains(selection.Tests, name) {
++		if guarded || !recorded[name] || slices.Contains(selection.Tests, name) {
+ 			union = append(union, name)
+ 		}
+ 	}
+@@ -261,8 +259,9 @@ func coverageSelections(ctx context.Context, cfg gateslot.Config, location *lymc
+ 	}
+ }
+ 
+-// openSelector returns the selector over the hub's coverage maps and the worktree at root.
++// openSelector returns the selector over the hub's coverage maps with the worktree at root as its target.
+ // It reads the working tree's files as HEAD's tree and the uncommitted and untracked paths, through fabric.
++// Its current environment stamp holds the toolchain's Go version and platform and the digests a map build stamps.
+ // It returns instead the miss every importing package takes: outside a hub there are no maps,
+ // and a working tree or toolchain that cannot be read leaves the maps nothing to compare with.
+ func openSelector(ctx context.Context, cfg gateslot.Config, location *lymcwd.Location, root string, request testRequest) (*testcover.Selector, *testcover.Miss) {
+@@ -294,16 +293,22 @@ func openSelector(ctx context.Context, cfg gateslot.Config, location *lymcwd.Loc
+ 	if err != nil {
+ 		return unreadable(err)
+ 	}
++	reader := testcover.Toolchain{Go: request.goBinary, Env: gateEnv(os.Environ(), request.hubEnv), Dir: root, Ctx: ctx}
++	version, goos, goarch, err := reader.GoEnvironment()
++	if err != nil {
++		return unreadable(err)
++	}
++	toolchain := testcover.EnvironmentStamp{GoVersion: version, GOOS: goos, GOARCH: goarch}
+ 	return testcover.NewSelector(testcover.SelectorConfig{
+ 		MapsDir:      request.coverageMaps,
+ 		WorktreeRoot: root,
+ 		ModuleRel:    ".",
+ 		ModulePath:   modulePathOf(root),
+ 		GoRoot:       goRoot,
+-		WorkingFiles: slices.Compact(files),
+ 		Commits:      fabric,
+ 		Inert:        cfg.Inert,
+-	}), nil
++		Environment:  stampEnvironment(toolchain, mappedTierConfigs(cfg), request.hubEnv),
++	}, testcover.Target{Files: slices.Compact(files)}), nil
+ }
+ 
+ // goRootOf returns the root of the Go toolchain goBinary runs, as `go env GOROOT` prints it in dir.
+diff --git a/internal/gatecli/coveragescope_test.go b/internal/gatecli/coveragescope_test.go
+index 7c23ab48..37e03c8e 100644
+--- a/internal/gatecli/coveragescope_test.go
++++ b/internal/gatecli/coveragescope_test.go
+@@ -112,7 +112,7 @@ func guardFunc(name string) string {
+ 	return "\n//lym:guard" + testFunc(name, 0)
+ }
+ 
+-// mapTests returns a map's record of tests named names, none of them marked by the spawn scan.
++// mapTests returns a selection's recorded tests named names, each with a passing measurement.
+ func mapTests(names ...string) []testcover.MapTest {
+ 	tests := make([]testcover.MapTest, len(names))
+ 	for i, name := range names {
+@@ -145,8 +145,8 @@ func TestNarrowCoverage(t *testing.T) {
+ 	}
+ 	mixed := testFileHeader + testFunc("TestSel", 0) + testFunc("TestOther", 0) + guardFunc("TestGuard") +
+ 		testFunc("TestSpawn", 0) + testFunc("TestNew", 0) + testFunc("TestLater", 1)
+-	mixedRecord := append(mapTests("TestSel", "TestOther", "TestGuard", "TestLater"),
+-		testcover.MapTest{Name: "TestSpawn", Spawn: testcover.SpawnVerdict{OutOfProcess: true}})
++	// TestSpawn and TestNew are declared and unrecorded, as a spawn-marked or new test is.
++	mixedRecord := mapTests("TestSel", "TestOther", "TestGuard", "TestLater")
+ 	var longNames strings.Builder
+ 	longNames.WriteString(testFileHeader)
+ 	for i := range 200 {
+@@ -170,7 +170,7 @@ func TestNarrowCoverage(t *testing.T) {
+ 		labelPrefix bool
+ 	}{
+ 		{
+-			name:      "an importer runs its selected, unrecorded, out-of-process and guard tests of the tier",
++			name:      "an importer runs its selected, unrecorded and guard tests of the tier",
+ 			files:     map[string]string{"b_test.go": mixed},
+ 			selection: testcover.Selection{Tests: []string{"TestLater", "TestSel"}, Recorded: mixedRecord},
+ 			want: tierScope{
+@@ -181,7 +181,7 @@ func TestNarrowCoverage(t *testing.T) {
+ 			wantLabel: "selected 4 of 5",
+ 		},
+ 		{
+-			name:      "an importer runs its guard, out-of-process and unrecorded tests when the map selects none",
++			name:      "an importer runs its guard and unrecorded tests when the map selects none",
+ 			files:     map[string]string{"b_test.go": mixed},
+ 			selection: testcover.Selection{Recorded: mixedRecord},
+ 			want: tierScope{
+@@ -229,18 +229,6 @@ func TestNarrowCoverage(t *testing.T) {
+ 			want:      tierScope{modules: root("./internal/a", "./internal/b", "./internal/e")},
+ 			wantLabel: "whole: over budget",
+ 		},
+-		{
+-			name:  "an importer runs a recorded test the map marks unresolved",
+-			files: map[string]string{"b_test.go": testFileHeader + testFunc("TestOther", 0) + testFunc("TestUnresolved", 0)},
+-			selection: testcover.Selection{Recorded: append(mapTests("TestOther"),
+-				testcover.MapTest{Name: "TestUnresolved", Spawn: testcover.SpawnVerdict{Unresolved: true}})},
+-			want: tierScope{
+-				modules:       root("./internal/a", "./internal/e"),
+-				selected:      root("./internal/b"),
+-				selectedTests: []string{"TestUnresolved"},
+-			},
+-			wantLabel: "selected 1 of 2",
+-		},
+ 		{
+ 			name:      "an importer runs a test that opens with no tiergate.Require",
+ 			files:     map[string]string{"b_test.go": testFileHeader + "\nfunc TestPlain(t *testing.T) {}\n" + testFunc("TestOther", 0)},
+diff --git a/internal/gatecli/coveragescope_unix_integration_test.go b/internal/gatecli/coveragescope_unix_integration_test.go
+new file mode 100644
+index 00000000..2c7c3c71
+--- /dev/null
++++ b/internal/gatecli/coveragescope_unix_integration_test.go
+@@ -0,0 +1,41 @@
++//go:build !windows
++
++// coveragescope_unix_integration_test.go covers the miss a coverage scope takes when the Go toolchain cannot be read.
++// It runs against a real paired hub and a stand-in go command written as a shell script.
++
++package gatecli
++
++import (
++	"context"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestOpenSelector_ToolchainEnvironmentUnreadable(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	// The stand-in prints a GOROOT and then fails the version and platform read.
++	goBinary := filepath.Join(t.TempDir(), "go")
++	script := "#!/bin/sh\nif [ \"$2\" = GOROOT ]; then echo /goroot; exit 0; fi\necho 'go: toolchain broken' >&2\nexit 1\n"
++	if err := os.WriteFile(goBinary, []byte(script), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	request := testRequest{coverageMaps: t.TempDir(), goBinary: goBinary}
++
++	selector, miss := openSelector(context.Background(), gateslot.Config{}, h.Location, h.PrimeWorktree(), request)
++	if selector != nil {
++		t.Error("openSelector() selector != nil; want none for an unreadable toolchain")
++	}
++	if miss == nil || miss.Reason != testcover.MissMapUnreadable || !strings.Contains(miss.Detail, "go env: ") {
++		t.Errorf("openSelector() miss = %v; want a miss for %q naming the go env failure", miss, testcover.MissMapUnreadable)
++	}
++}
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index ffa34f80..50b4f347 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -376,10 +376,16 @@
+ // Nor does it narrow a tier whose command lacks `{args}` or a target placeholder, or one with `carry: false`.
+ // `impactset.ModuleTargets` keeps apart the changed packages, the binary builders and the importers.
+ // A changed package and a binary builder run every test of the tier, as under `diff`.
+-// An importing package runs, per tier, the union of four sets of tests.
+-// The first is the tests its coverage map selects through `testcover.Selector`.
+-// The next two are the tests the map does not record and those it marks out of process or unresolved.
++// An importing package runs, per tier, the union of three sets of tests.
++// The first is the tests its coverage map selects through `testcover.Selector`, with the working tree as target.
++// The second is the tests the map records no passing measurement for:
++// those it does not hold, and those whose entry records an outcome or a spawn verdict.
+ // The last is its `//lym:guard` tests.
++// The selector compares the package's own files with the map as it compares a linked package's.
++// A package the diff touches runs whole, so that narrows only a change that reached the base after the map's commit.
++// The current environment stamp the selector compares a map's with is built as `lym gate testmap` builds it.
++// It holds the Go version and platform `go env` reports under the gate's env and the worktree's go.mod and go.sum.
++// It also holds the digests of the mapped tiers and of the hub's env.yaml variables.
+ // The union holds only Test functions the tier runs, read from each one's `tiergate.Require`.
+ // They are declared in a test file `go/build` admits on the host under the tier's tag, and the watch skip drops some.
+ // A selector miss runs the package whole, and a package with an empty union runs nothing for the tier.
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 5d56809b..02731132 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -78,6 +78,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	cfg = cfg.WithDefaultDir(location.AnchorRel)
+ 	request.root = buildRoot(location, dir)
+ 	request.busyQuit = cfg.Limits().BusyQuit
++	request.hubEnv = hubEnv
+ 	if inHub {
+ 		request.coverageMaps = testcover.Dir(fabricengine.BoltDir(location.HubPath))
+ 	}
+diff --git a/internal/gatecli/testmap.go b/internal/gatecli/testmap.go
+index 93eb57ad..e3d659f8 100644
+--- a/internal/gatecli/testmap.go
++++ b/internal/gatecli/testmap.go
+@@ -247,20 +247,11 @@ func (r *testMapRun) prepare() string {
+ 	}
+ 	cfg = cfg.WithDefaultDir(r.location.AnchorRel)
+ 	root := r.location.WorktreePath()
+-	r.tiers = map[int]gateslot.Tier{}
+-	for _, number := range mappedTiers {
+-		tier, err := cfg.Tier(number)
+-		if err != nil {
+-			continue
+-		}
+-		if len(r.tiers) == 0 {
+-			r.moduleDir = resolveRunDir(root, tier.Dir)
+-		}
+-		r.tiers[number] = tier
+-	}
++	r.tiers = mappedTierConfigs(cfg)
+ 	if len(r.tiers) == 0 {
+ 		return "gate testmap: the hub declares neither tier0 nor tier1, so no test of a package can be mapped; way forward: declare them with lym config gate from the prime, then re-run the same command"
+ 	}
++	r.moduleDir = resolveRunDir(root, r.tiers[slices.Min(slices.Collect(maps.Keys(r.tiers)))].Dir)
+ 	rel, err := filepath.Rel(root, r.moduleDir)
+ 	if r.modulePath = modulePathOf(r.moduleDir); r.modulePath == "" || err != nil || !filepath.IsLocal(rel) {
+ 		return fmt.Sprintf("gate testmap: %s holds no go.mod naming a module inside the worktree; way forward: set the dir of the lowest of tier0 and tier1 to the Go module's root with lym config gate from the prime, then re-run the same command", r.moduleDir)
+diff --git a/internal/gatecli/testmappackage.go b/internal/gatecli/testmappackage.go
+index 7054363f..b276d61c 100644
+--- a/internal/gatecli/testmappackage.go
++++ b/internal/gatecli/testmappackage.go
+@@ -19,6 +19,7 @@ import (
+ 	"strings"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/envconfig"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymtemp"
+@@ -401,34 +402,38 @@ func (r *testMapRun) environmentStamp(commit string) (testcover.EnvironmentStamp
+ 		}
+ 		r.toolchain = &testcover.EnvironmentStamp{GoVersion: version, GOOS: goos, GOARCH: goarch}
+ 	}
+-	stamp := *r.toolchain
+-	for _, file := range []struct {
+-		name string
+-		hash *string
+-	}{{"go.mod", &stamp.GoModHash}, {"go.sum", &stamp.GoSumHash}} {
+-		data, found, err := r.fabric.CodeFileAt(commit, path.Join(r.moduleRel, file.name))
+-		if err != nil {
+-			return testcover.EnvironmentStamp{}, err
+-		}
+-		if found {
+-			*file.hash = testcover.ContentHash(data)
+-		}
+-	}
+-	stamp.TiersDigest = r.tiersDigest()
+-	stamp.HubEnvDigest = testcover.ContentHash([]byte(strings.Join(r.hubEnv.Entries(), "\n")))
+-	return stamp, nil
++	stamp := stampEnvironment(*r.toolchain, r.tiers, r.hubEnv)
++	return testcover.StampModuleFiles(stamp, r.moduleRel, func(rel string) ([]byte, bool, error) {
++		return r.fabric.CodeFileAt(commit, rel)
++	})
+ }
+ 
+-// tiersDigest digests each mapped tier's command and env as configured.
+-// It digests them before the `{parallel}` substitution, so a changed parallel count leaves it as it was.
+-func (r *testMapRun) tiersDigest() string {
++// stampEnvironment returns toolchain, a stamp holding the Go version and platform, with its two digests set.
++// tiers are the mapped tiers the hub declares, by number, and hubEnv the hub's env.yaml variables.
++// The tiers digest covers each tier's command and env as configured, before the `{parallel}` substitution,
++// so a changed parallel count leaves it as it was.
++// A map build and a coverage scope both stamp through it, so their stamps agree on one hub.
++func stampEnvironment(toolchain testcover.EnvironmentStamp, tiers map[int]gateslot.Tier, hubEnv envconfig.Config) testcover.EnvironmentStamp {
+ 	var lines []string
+-	for _, number := range slices.Sorted(maps.Keys(r.tiers)) {
+-		tier := r.tiers[number]
++	for _, number := range slices.Sorted(maps.Keys(tiers)) {
++		tier := tiers[number]
+ 		lines = append(lines, fmt.Sprintf("tier%d command %s", number, tier.Command))
+ 		for _, key := range slices.Sorted(maps.Keys(tier.Env)) {
+ 			lines = append(lines, fmt.Sprintf("tier%d env %s=%s", number, key, tier.Env[key]))
+ 		}
+ 	}
+-	return testcover.ContentHash([]byte(strings.Join(lines, "\n")))
++	toolchain.TiersDigest = testcover.ContentHash([]byte(strings.Join(lines, "\n")))
++	toolchain.HubEnvDigest = testcover.ContentHash([]byte(strings.Join(hubEnv.Entries(), "\n")))
++	return toolchain
++}
++
++// mappedTierConfigs returns each of mappedTiers that cfg declares, by number.
++func mappedTierConfigs(cfg gateslot.Config) map[int]gateslot.Tier {
++	tiers := map[int]gateslot.Tier{}
++	for _, number := range mappedTiers {
++		if tier, err := cfg.Tier(number); err == nil {
++			tiers[number] = tier
++		}
++	}
++	return tiers
+ }
+diff --git a/internal/gatecli/testmapstamp_test.go b/internal/gatecli/testmapstamp_test.go
+new file mode 100644
+index 00000000..0e492723
+--- /dev/null
++++ b/internal/gatecli/testmapstamp_test.go
+@@ -0,0 +1,80 @@
++// testmapstamp_test.go covers the environment stamp a coverage map build and a coverage scope both compute.
++
++package gatecli
++
++import (
++	"reflect"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/envconfig"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestStampEnvironment(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	toolchain := testcover.EnvironmentStamp{GoVersion: "go1.26.8", GOOS: "linux", GOARCH: "amd64"}
++	baseInputs := func() (map[int]gateslot.Tier, envconfig.Config) {
++		tiers := map[int]gateslot.Tier{0: {Command: "go test {args}", Env: map[string]string{"MODE": "fast"}, Parallel: 2}}
++		return tiers, envconfig.Config{Vars: map[string]string{"HUB": "one"}}
++	}
++	baseTiers, baseHubEnv := baseInputs()
++	base := stampEnvironment(toolchain, baseTiers, baseHubEnv)
++
++	tests := []struct {
++		name   string
++		change func(tiers map[int]gateslot.Tier, hubEnv *envconfig.Config)
++		// sameTiers and sameHubEnv say whether the change leaves that digest as it was.
++		sameTiers, sameHubEnv bool
++	}{
++		{name: "UnchangedInputs", change: func(map[int]gateslot.Tier, *envconfig.Config) {}, sameTiers: true, sameHubEnv: true},
++		{name: "ChangedTierCommand", sameHubEnv: true, change: func(tiers map[int]gateslot.Tier, _ *envconfig.Config) {
++			tier := tiers[0]
++			tier.Command = "go test -short {args}"
++			tiers[0] = tier
++		}},
++		{name: "ChangedTierEnvValue", sameHubEnv: true, change: func(tiers map[int]gateslot.Tier, _ *envconfig.Config) {
++			tiers[0].Env["MODE"] = "slow"
++		}},
++		{name: "ChangedTierParallel", sameTiers: true, sameHubEnv: true, change: func(tiers map[int]gateslot.Tier, _ *envconfig.Config) {
++			tier := tiers[0]
++			tier.Parallel = 8
++			tiers[0] = tier
++		}},
++		{name: "ChangedHubEnvVariable", sameTiers: true, change: func(_ map[int]gateslot.Tier, hubEnv *envconfig.Config) {
++			hubEnv.Vars["HUB"] = "two"
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			tiers, hubEnv := baseInputs()
++			tt.change(tiers, &hubEnv)
++			got := stampEnvironment(toolchain, tiers, hubEnv)
++			if (got.TiersDigest == base.TiersDigest) != tt.sameTiers {
++				t.Errorf("stampEnvironment() TiersDigest equal to the base = %t; want %t", got.TiersDigest == base.TiersDigest, tt.sameTiers)
++			}
++			if (got.HubEnvDigest == base.HubEnvDigest) != tt.sameHubEnv {
++				t.Errorf("stampEnvironment() HubEnvDigest equal to the base = %t; want %t", got.HubEnvDigest == base.HubEnvDigest, tt.sameHubEnv)
++			}
++			if got.GoVersion != toolchain.GoVersion || got.GOOS != toolchain.GOOS || got.GOARCH != toolchain.GOARCH {
++				t.Errorf("stampEnvironment() = %+v; want the toolchain's version and platform kept", got)
++			}
++		})
++	}
++}
++
++func TestMappedTierConfigs(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tier0 := gateslot.Tier{Command: "go test {args}"}
++	cfg := gateslot.Config{Tiers: map[string]gateslot.Tier{"tier0": tier0, "tier2": {Command: "dotnet test"}}}
++	want := map[int]gateslot.Tier{0: tier0}
++	if got := mappedTierConfigs(cfg); !reflect.DeepEqual(got, want) {
++		t.Errorf("mappedTierConfigs() = %v; want only the declared mapped tier %v", got, want)
++	}
++}
+diff --git a/internal/testcover/coveragemap.go b/internal/testcover/coveragemap.go
+index 7e97eaf4..d1121e57 100644
+--- a/internal/testcover/coveragemap.go
++++ b/internal/testcover/coveragemap.go
+@@ -3,6 +3,7 @@
+ package testcover
+ 
+ import (
++	"path"
+ 	"path/filepath"
+ 	"time"
+ 
+@@ -72,9 +73,23 @@ type MapTest struct {
+ 	// Funcs are indexes into Map.Funcs of the linked packages' functions the test covers.
+ 	Funcs []int `json:"funcs,omitempty"`
+ 	// Spawn is the static spawn scan's verdict on the test.
++	// An entry whose verdict marks the test out of process or unresolved records no passing measurement.
+ 	Spawn SpawnVerdict `json:"spawn"`
++	// Outcome is why the test's run alone recorded no coverage, empty for a passing measurement.
++	Outcome TestOutcome `json:"outcome,omitempty"`
+ }
+ 
++// TestOutcome is why a coverage map's entry for a test holds no coverage: its run alone did not pass covering something.
++type TestOutcome string
++
++// The outcomes an entry records instead of a passing measurement.
++const (
++	OutcomeFailed     TestOutcome = "failed"
++	OutcomeTimedOut   TestOutcome = "timed out"
++	OutcomeSkipped    TestOutcome = "skipped"
++	OutcomeNoCoverage TestOutcome = "covered nothing"
++)
++
+ // MapFormat is a coverage map's format marker: the shape the map holds and the build that wrote it.
+ type MapFormat struct {
+ 	// Version is the MapFormatVersion of the writer.
+@@ -102,6 +117,47 @@ type EnvironmentStamp struct {
+ 	HubEnvDigest string `json:"hub_env_digest"`
+ }
+ 
++// StampModuleFiles returns stamp with its GoModHash and GoSumHash set from the go.mod and go.sum of the module.
++// moduleRel is the module's worktree-relative slash directory.
++// read reads a file by worktree-relative slash path from the tree the stamp describes, found false for an absent one;
++// an absent file leaves its hash empty.
++// The error is read's.
++func StampModuleFiles(stamp EnvironmentStamp, moduleRel string, read func(rel string) (data []byte, found bool, err error)) (EnvironmentStamp, error) {
++	for _, file := range []struct {
++		name string
++		hash *string
++	}{{"go.mod", &stamp.GoModHash}, {"go.sum", &stamp.GoSumHash}} {
++		data, found, err := read(path.Join(moduleRel, file.name))
++		if err != nil {
++			return EnvironmentStamp{}, err
++		}
++		*file.hash = ""
++		if found {
++			*file.hash = ContentHash(data)
++		}
++	}
++	return stamp, nil
++}
++
++// stampDifferences returns the JSON names of the fields in which the stamps a and b differ, in field order.
++func stampDifferences(a, b EnvironmentStamp) []string {
++	var differing []string
++	for _, field := range []struct{ name, a, b string }{
++		{"go_version", a.GoVersion, b.GoVersion},
++		{"goos", a.GOOS, b.GOOS},
++		{"goarch", a.GOARCH, b.GOARCH},
++		{"go_mod_hash", a.GoModHash, b.GoModHash},
++		{"go_sum_hash", a.GoSumHash, b.GoSumHash},
++		{"tiers_digest", a.TiersDigest, b.TiersDigest},
++		{"hub_env_digest", a.HubEnvDigest, b.HubEnvDigest},
++	} {
++		if field.a != field.b {
++			differing = append(differing, field.name)
++		}
++	}
++	return differing
++}
++
+ // MapPath returns the path of the coverage map of the package pkg under the maps directory dir.
+ // pkg is a module-relative slash path.
+ func MapPath(dir, pkg string) string {
+diff --git a/internal/testcover/declcompare.go b/internal/testcover/declcompare.go
+index 2593c8ba..13fdd64e 100644
+--- a/internal/testcover/declcompare.go
++++ b/internal/testcover/declcompare.go
+@@ -141,6 +141,82 @@ func compareGoSources(rel string, before, after goSource) goFileComparison {
+ 	return comparison
+ }
+ 
++// testFileComparison is what one test file's comparison found.
++type testFileComparison struct {
++	// miss is the first change outside the file's Test functions, nil for none.
++	miss *Miss
++	// tests name each Test function the target's file holds whose declaration differs from the commit's or is new.
++	tests []string
++	// addedImports are the import paths the target's file imports and the commit's does not.
++	// removedImports are the import paths the commit's file imports and the target's does not.
++	// Whether an import change is a miss depends on the map's linked set, so the caller judges them.
++	addedImports, removedImports []string
++}
++
++// compareTestSources compares the test file rel as the map's commit stores it, before, with the target's, after.
++// It sets every top-level Test function apart and compares the rest of the file, ignoring comments and formatting.
++// Any difference in the rest but its imports is a miss: a helper, TestMain, an init or a package-level declaration.
++// It reports the imports added and removed instead of judging them.
++// A removed Test function is neither a miss nor affected.
++// Either side may be absent.
++func compareTestSources(rel string, before, after goSource) testFileComparison {
++	fileMiss := func(reason MissReason, detail string) testFileComparison {
++		return testFileComparison{miss: &Miss{Reason: reason, Detail: detail}}
++	}
++	old, err := parseFileDecls(before)
++	if err != nil {
++		return fileMiss(MissParse, fmt.Sprintf("%s at the map's commit: %v", rel, err))
++	}
++	cur, err := parseFileDecls(after)
++	if err != nil {
++		return fileMiss(MissParse, fmt.Sprintf("%s in the target: %v", rel, err))
++	}
++	if before.present && after.present && old.packageName != cur.packageName {
++		return fileMiss(MissTestFile, rel+" changes its package clause")
++	}
++	if !slices.Equal(old.directives, cur.directives) {
++		return fileMiss(MissDirective, rel+" adds, removes or changes a "+directivePrefix+" line")
++	}
++	for _, key := range sortedKeyUnion(old.values, cur.values) {
++		if !valueDeclsEqual(old.values[key], cur.values[key]) {
++			return fileMiss(MissTestFile, fmt.Sprintf("%s changes, adds or removes %s", rel, key))
++		}
++	}
++	var comparison testFileComparison
++	for _, key := range sortedKeyUnion(old.imports, cur.imports) {
++		if _, held := old.imports[key]; !held {
++			comparison.addedImports = append(comparison.addedImports, cur.imports[key])
++		} else if _, kept := cur.imports[key]; !kept {
++			comparison.removedImports = append(comparison.removedImports, old.imports[key])
++		}
++	}
++	for _, key := range sortedKeyUnion(old.funcs, cur.funcs) {
++		if syntaxListsEqual(old.funcs[key], cur.funcs[key]) {
++			continue
++		}
++		// A method's key holds a dot, so a method named like a test never counts as one.
++		if !isTestFuncName(key) || strings.Contains(key, ".") {
++			return fileMiss(MissTestFile, fmt.Sprintf("%s changes, adds or removes %s, which is no Test function", rel, key))
++		}
++		if len(cur.funcs[key]) > 0 {
++			comparison.tests = append(comparison.tests, key)
++		}
++	}
++	return comparison
++}
++
++// sortedKeyUnion returns the keys of a and b together, sorted, each once.
++func sortedKeyUnion[V any](a, b map[string]V) []string {
++	keys := map[string]struct{}{}
++	for key := range a {
++		keys[key] = struct{}{}
++	}
++	for key := range b {
++		keys[key] = struct{}{}
++	}
++	return slices.Sorted(maps.Keys(keys))
++}
++
+ // missed returns a comparison that found the miss reason with detail.
+ func missed(reason MissReason, detail string) goFileComparison {
+ 	return goFileComparison{miss: &Miss{Reason: reason, Detail: detail}}
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index 105cdc5e..131ea41d 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -41,6 +41,7 @@
+ // It keeps the block key table of the package's own files and, for each judged test, the indexes of the blocks it covers.
+ // It also keeps a function table of the other packages the test binary links.
+ // For each test it keeps the indexes of the functions it covers there and its spawn verdict.
++// An entry records a passing measurement, or instead a TestOutcome for a run alone that recorded no coverage.
+ // It holds the hashes of the package's Go files, of its other files, and of each linked package's files.
+ // Its MapFormat marker names that shape and holds the writer's commit, build time and EnvironmentStamp.
+ // A map without the marker, or whose marker's commit and time differ from the map's own, was written otherwise.
+@@ -50,18 +51,25 @@
+ // A package owns every file under its directory except those below a nested package or module.
+ // NestedPackageDirs finds those nested directories.
+ //
+-// A Selector selects an importing package's tests from its map against the working tree.
+-// It compares each linked package's files with the map's record.
+-// For a changed Go file it compares the top-level declarations at the map's commit with the working tree's,
++// A Selector selects a package's tests from its map against a Target: the working tree or a commit.
++// It compares the package's files and each linked package's files with the map's record.
++// For a changed Go file it compares the top-level declarations at the map's commit with the target's,
+ // ignoring comments and formatting.
+ // A function whose declaration differs, or that only the commit holds, is changed.
+-// The tests that covered a changed function are selected, and with them every test the spawn scan marks.
+-// A Selection also carries the map's recorded tests, so a caller can run the tests the map holds no coverage for.
++// The tests whose passing entry covered a changed function are affected:
++// a linked package's function through the entry's functions, one of the package's own through its blocks.
++// A changed test file of the package is compared with every top-level Test function set apart.
++// A Test function that changed or is new is affected, and any other change to the file is a miss.
++// A linked package's test files are in no binary the map measured, so they are not compared.
++// A Selection also carries the tests the map records a passing measurement for.
++// An entry that records an outcome or a spawn verdict is no recorded test,
++// so a caller runs it as one the map holds no coverage for.
+ // A change the map cannot speak for is a Miss, under which the caller runs the package whole.
+ // Such changes include:
+ //   - the map missing, unreadable, failed or unmarked, or its commit unreadable;
+-//   - the package's own Go files;
+-//   - a non-Go file, unless inert_paths matches it and no go:embed pattern names it,
++//   - an EnvironmentStamp that differs from the target's, whose go.mod and go.sum hashes StampModuleFiles reads;
++//   - a non-Go file, testdata and the Go files under it included,
++//     unless inert_paths matches it and no go:embed pattern names it,
+ //     the package's own test files counting as embed sources;
+ //   - a declaration outside functions, bar a few additions no unchanged code can reach;
+ //   - an import, bar an added one of a linked or standard-library package,
+diff --git a/internal/testcover/testselect.go b/internal/testcover/testselect.go
+index dde26be9..a06f9038 100644
+--- a/internal/testcover/testselect.go
++++ b/internal/testcover/testselect.go
+@@ -1,5 +1,6 @@
+-// testselect.go selects an importing package's tests from its coverage map:
+-// the tests that covered a function a linked package changed since the map's commit.
++// testselect.go selects a package's tests from its coverage map:
++// the tests that covered a function that changed since the map's commit, in the package or a linked one,
++// and the Test functions changed or added in its test files.
+ // It names instead the miss that runs the package whole when the map cannot speak for a change.
+ 
+ package testcover
+@@ -31,11 +32,11 @@ type CommitReader interface {
+ 	CodeFileAt(rev, rel string) (data []byte, found bool, err error)
+ }
+ 
+-// SelectorConfig is the working tree a Selector compares coverage maps with.
++// SelectorConfig is what a Selector reads coverage maps and its target with.
+ type SelectorConfig struct {
+ 	// MapsDir is the directory holding the per-package coverage maps.
+ 	MapsDir string
+-	// WorktreeRoot is the worktree's absolute path.
++	// WorktreeRoot is the worktree's absolute path, from which a working-tree target is read.
+ 	WorktreeRoot string
+ 	// ModuleRel is the module's slash directory relative to the worktree root, "." for the root.
+ 	ModuleRel string
+@@ -44,16 +45,27 @@ type SelectorConfig struct {
+ 	// GoRoot is the Go toolchain's root directory, whose src directory holds the standard library.
+ 	// It must be set: with it empty, no import counts as standard library.
+ 	GoRoot string
+-	// WorkingFiles are the worktree-relative slash paths of every working-tree file that git does not ignore.
+-	// It holds tracked and untracked files alike.
+-	WorkingFiles []string
+-	// Commits reads files at a map's commit.
++	// Commits reads files at a map's commit, and a commit target's files.
+ 	Commits CommitReader
+ 	// Inert reports whether a worktree-relative slash path matches the hub's inert_paths; nil matches none.
+ 	Inert func(rel string) bool
++	// Environment is the current environment stamp, bar its GoModHash and GoSumHash.
++	// The Selector reads those two from its target's go.mod and go.sum.
++	Environment EnvironmentStamp
+ }
+ 
+-// MissReason names why a coverage map cannot select an importing package's tests.
++// Target is the tree a Selector compares coverage maps with: the working tree or one commit.
++type Target struct {
++	// Commit names the commit whose tree the target is, read through SelectorConfig.Commits.
++	// It is empty for the working tree under SelectorConfig.WorktreeRoot.
++	Commit string
++	// Files are the worktree-relative slash paths of every file the target holds.
++	// For the working tree they are every file git does not ignore, tracked or untracked;
++	// for a commit, every file its tree holds.
++	Files []string
++}
++
++// MissReason names why a coverage map cannot select a package's tests.
+ type MissReason string
+ 
+ // The reasons a Selector misses for.
+@@ -62,18 +74,19 @@ const (
+ 	MissMapUnreadable    MissReason = "coverage map unreadable"
+ 	MissBuildFailure     MissReason = "coverage map records a build failure"
+ 	MissUnmarked         MissReason = "coverage map unmarked"
++	MissEnvironment      MissReason = "environment stamp differs"
+ 	MissCommitUnreadable MissReason = "map commit unreadable"
+-	MissOwnFiles         MissReason = "own Go files changed"
+ 	MissNonGoFile        MissReason = "non-Go file changed"
+ 	MissParse            MissReason = "Go file does not parse"
+ 	MissNonBody          MissReason = "change outside function declarations"
++	MissTestFile         MissReason = "test file changed outside its Test functions"
+ 	MissDirective        MissReason = "compiler directive changed"
+ 	MissMethodSet        MissReason = "method set changed"
+ 	MissInit             MissReason = "init function added"
+ 	MissPredeclared      MissReason = "predeclared name declared"
+ )
+ 
+-// Miss is why a coverage map cannot select an importing package's tests, so the package runs whole.
++// Miss is why a coverage map cannot select a package's tests, so the package runs whole.
+ type Miss struct {
+ 	Reason MissReason
+ 	// Detail names the file, declaration or failure the reason is about.
+@@ -85,28 +98,32 @@ func (m Miss) String() string {
+ 	return string(m.Reason) + ": " + m.Detail
+ }
+ 
+-// Selection is the outcome of selecting one importing package's tests.
++// Selection is the outcome of selecting one package's tests.
+ type Selection struct {
+-	// Tests are the selected tests' names, sorted, each once.
++	// Tests are the affected tests' names, sorted, each once.
+ 	Tests []string
+ 	// Miss is set when the package runs whole instead, and Tests is then empty.
+ 	Miss *Miss
+-	// Recorded are the tests the map records, in its order; empty with a Miss.
++	// Recorded are the tests the map records a passing measurement for, in its order; empty with a Miss.
++	// An entry that records an outcome or a spawn verdict instead is no recorded test.
+ 	// A caller tells from them which of the package's tests the map has no coverage for.
+ 	Recorded []MapTest
+ }
+ 
+-// Selector selects importing packages' tests from their coverage maps against one working tree.
+-// It caches the working tree's file hashes, each directory's owned files and each Go file's comparison.
+-// Selecting many importing packages then reads each file once.
+-// The working tree must not change while it is in use.
++// Selector selects packages' tests from their coverage maps against one target.
++// It caches the target's file hashes, each directory's owned files and each Go file's comparison.
++// Selecting many packages then reads each file once.
++// A working-tree target must not change while the Selector is in use.
+ // It is not safe for concurrent use.
+ type Selector struct {
+ 	config SelectorConfig
+-	// owned holds the working files each package directory owns, by slash path relative to it.
++	target Target
++	// environment is the target's environment stamp, nil until the first selection reads it.
++	environment *EnvironmentStamp
++	// owned holds the target files each package directory owns, by slash path relative to it.
+ 	owned map[string]map[string]struct{}
+-	// hashes holds each working file's hash, by worktree-relative slash path.
+-	hashes map[string]workingHash
++	// hashes holds each target file's hash, by worktree-relative slash path.
++	hashes map[string]targetHash
+ 	// compared holds each Go file's comparison, by the map's commit and the file's worktree-relative slash path.
+ 	compared map[string]goFileComparison
+ 	// embeds holds the go:embed patterns of each package directory, read with or without its test files.
+@@ -114,61 +131,83 @@ type Selector struct {
+ }
+ 
+ // embedScope keys the go:embed patterns of one package directory.
+-// withTests is set when the package's test files count, which holds for the importing package alone.
++// withTests is set when the package's test files count, which holds for the selected package alone.
+ type embedScope struct {
+ 	dir       string
+ 	withTests bool
+ }
+ 
+-// workingHash is a working file's content hash, or its absence.
+-type workingHash struct {
++// targetHash is a target file's content hash, or its absence.
++type targetHash struct {
+ 	hash  string
+ 	found bool
+ }
+ 
+-// NewSelector returns a Selector over the working tree config describes.
+-func NewSelector(config SelectorConfig) *Selector {
++// packageChange is what one package's changed files select.
++type packageChange struct {
++	// funcs are the package's functions whose declaration changed or that only the map's commit holds.
++	funcs []FuncKey
++	// tests name the Test functions of the package's test files that changed or are new.
++	tests []string
++}
++
++// NewSelector returns a Selector over target, read as config describes.
++func NewSelector(config SelectorConfig, target Target) *Selector {
+ 	return &Selector{
+ 		config:   config,
++		target:   target,
+ 		owned:    map[string]map[string]struct{}{},
+-		hashes:   map[string]workingHash{},
++		hashes:   map[string]targetHash{},
+ 		compared: map[string]goFileComparison{},
+ 		embeds:   map[embedScope][]string{},
+ 	}
+ }
+ 
+ // Select selects the tests of the package pkg, a module-relative slash path, from its coverage map.
+-// A test is selected when it covered a linked package's function that changed or was removed since the map's commit.
+-// A test the spawn scan marks is selected whenever any such function changed, since its map sees only in-process code.
+-// A change the map cannot speak for gives a Miss instead.
+-// The error reports a working file that cannot be read.
++// A recorded test is affected when it covered a function that changed or was removed since the map's commit.
++// The function belongs to the package or to a linked package.
++// A Test function whose declaration changed, or that is new, is affected whatever the map records for it.
++// A change the map cannot speak for gives a Miss instead, as does an environment stamp that differs from the target's.
++// The error reports a target file that cannot be read.
+ func (s *Selector) Select(pkg string) (Selection, error) {
+ 	m, found, err := ReadMap(s.config.MapsDir, pkg)
+ 	if miss := mapMiss(m, found, err); miss != nil {
+ 		return Selection{Miss: miss}, nil
+ 	}
+-	ownDir := path.Join(s.config.ModuleRel, pkg)
+-	if miss, err := s.ownFilesMiss(ownDir, m); miss != nil || err != nil {
++	if miss, err := s.environmentMiss(m.Format.Environment); miss != nil || err != nil {
+ 		return Selection{Miss: miss}, err
+ 	}
++	ownDir := path.Join(s.config.ModuleRel, pkg)
+ 	if miss := s.commitMiss(ownDir, m); miss != nil {
+ 		return Selection{Miss: miss}, nil
+ 	}
++	ownImportPath := s.importPath(pkg)
++	recorded := map[string]string{}
++	maps.Copy(recorded, m.OtherFiles)
++	maps.Copy(recorded, m.Files)
++	own, miss, err := s.packageChanges(m, ownImportPath, ownDir, recorded, true)
++	if miss != nil || err != nil {
++		return Selection{Miss: miss}, err
++	}
+ 	changed := map[FuncKey]bool{}
++	for _, key := range own.funcs {
++		changed[key] = true
++	}
+ 	for _, linked := range slices.Sorted(maps.Keys(m.Linked)) {
+-		funcs, miss, err := s.linkedChanges(m, linked)
++		change, miss, err := s.packageChanges(m, linked, s.importDir(linked), m.Linked[linked], false)
+ 		if miss != nil || err != nil {
+ 			return Selection{Miss: miss}, err
+ 		}
+-		for _, key := range funcs {
++		for _, key := range change.funcs {
+ 			changed[key] = true
+ 		}
+ 	}
+-	return Selection{Tests: selectTests(m, changed), Recorded: m.Tests}, nil
++	return Selection{Tests: selectTests(m, ownImportPath, changed, own.tests), Recorded: measuredTests(m)}, nil
+ }
+ 
+ // mapMiss returns the miss of a map a selection cannot use, or nil for a usable map.
+-// Unusable maps are missing, unreadable, failed to build, unmarked, or rewritten by another writer.
++// Unusable maps are missing, unreadable, failed to build with no test entry, unmarked, or rewritten by another writer.
++// A build-failure record beside test entries leaves the map usable.
+ // found and err are ReadMap's.
+ func mapMiss(m Map, found bool, err error) *Miss {
+ 	switch {
+@@ -176,7 +215,7 @@ func mapMiss(m Map, found bool, err error) *Miss {
+ 		return &Miss{Reason: MissMapUnreadable, Detail: err.Error()}
+ 	case !found:
+ 		return &Miss{Reason: MissNoMap, Detail: "no map was built for the package"}
+-	case m.BuildFailure != "":
++	case m.BuildFailure != "" && len(m.Tests) == 0:
+ 		return &Miss{Reason: MissBuildFailure, Detail: m.BuildFailure}
+ 	case m.Format == nil:
+ 		return &Miss{Reason: MissUnmarked, Detail: "the map has no format marker"}
+@@ -191,28 +230,27 @@ func mapMiss(m Map, found bool, err error) *Miss {
+ 				return &Miss{Reason: MissMapUnreadable, Detail: fmt.Sprintf("test %s names function %d of a table of %d", test.Name, index, len(m.Funcs))}
+ 			}
+ 		}
++		for _, index := range test.Blocks {
++			if index < 0 || index >= len(m.Blocks) {
++				return &Miss{Reason: MissMapUnreadable, Detail: fmt.Sprintf("test %s names block %d of a table of %d", test.Name, index, len(m.Blocks))}
++			}
++		}
+ 	}
+ 	return nil
+ }
+ 
+-// ownFilesMiss returns the miss of a package whose own Go files differ in the working tree from m's record.
+-// dir is the package's worktree-relative slash directory.
+-// Its other files that change miss as a linked package's would.
+-func (s *Selector) ownFilesMiss(dir string, m Map) (*Miss, error) {
+-	recorded := map[string]string{}
+-	maps.Copy(recorded, m.OtherFiles)
+-	maps.Copy(recorded, m.Files)
+-	changed, err := s.changedFiles(dir, recorded)
+-	if err != nil {
+-		return nil, err
+-	}
+-	for _, rel := range changed {
+-		if isGoSourceFile(rel) || isGoTestFile(rel) {
+-			return &Miss{Reason: MissOwnFiles, Detail: path.Join(dir, rel)}, nil
+-		}
+-		if miss, err := s.otherFileMiss(dir, rel, true); miss != nil || err != nil {
+-			return miss, err
++// environmentMiss returns the miss of a map whose environment stamp, recorded, differs from the target's.
++// It reads the target's go.mod and go.sum at its first call; the error reports one that cannot be read.
++func (s *Selector) environmentMiss(recorded EnvironmentStamp) (*Miss, error) {
++	if s.environment == nil {
++		current, err := StampModuleFiles(s.config.Environment, s.config.ModuleRel, s.readTargetFile)
++		if err != nil {
++			return nil, err
+ 		}
++		s.environment = &current
++	}
++	if differing := stampDifferences(recorded, *s.environment); len(differing) > 0 {
++		return &Miss{Reason: MissEnvironment, Detail: "the map's stamp differs in " + strings.Join(differing, ", ")}, nil
+ 	}
+ 	return nil, nil
+ }
+@@ -235,45 +273,66 @@ func (s *Selector) commitMiss(dir string, m Map) *Miss {
+ 	return nil
+ }
+ 
+-// linkedChanges returns the changed functions of the linked package at importPath, or the miss its changes give.
+-func (s *Selector) linkedChanges(m Map, importPath string) ([]FuncKey, *Miss, error) {
+-	dir := s.importDir(importPath)
+-	recorded := m.Linked[importPath]
+-	changed, err := s.changedFiles(dir, recorded)
++// packageChanges returns what the changed files of the package at importPath select, or the miss their changes give.
++// dir is the package's worktree-relative slash directory, and recorded its files' hashes as the map holds them.
++// own is set for the selected package, whose test files are compared and whose test files' go:embed patterns count;
++// a linked package's test files are in no binary the map measured, so they are skipped.
++func (s *Selector) packageChanges(m Map, importPath, dir string, recorded map[string]string, own bool) (packageChange, *Miss, error) {
++	changedFiles, err := s.changedFiles(dir, recorded)
+ 	if err != nil {
+-		return nil, nil, err
++		return packageChange{}, nil, err
+ 	}
+-	var funcs []FuncKey
++	var change packageChange
+ 	methodsBefore, methodsAfter := map[string][]*ast.FuncDecl{}, map[string][]*ast.FuncDecl{}
+-	for _, rel := range changed {
++	for _, rel := range changedFiles {
++		file := path.Join(dir, rel)
++		_, wasRecorded := recorded[rel]
+ 		switch {
++		case isGoTestFile(rel) && !own:
++			continue
+ 		case isGoTestFile(rel):
++			comparison, err := s.compareTestFile(m.Commit, file, wasRecorded)
++			if err != nil || comparison.miss != nil {
++				return packageChange{}, comparison.miss, err
++			}
++			for _, imported := range comparison.addedImports {
++				if imported != importPath && !s.importAllowed(m, imported) {
++					return packageChange{}, &Miss{Reason: MissTestFile, Detail: fmt.Sprintf(
++						"%s adds an import of %s, which is neither the package, in the map's linked set, nor in the standard library", file, imported)}, nil
++				}
++			}
++			for _, removed := range comparison.removedImports {
++				if removed != importPath && !s.standardLibrary(removed) {
++					return packageChange{}, &Miss{Reason: MissTestFile, Detail: fmt.Sprintf(
++						"%s removes an import of %s, which may leave the build with it", file, removed)}, nil
++				}
++			}
++			change.tests = append(change.tests, comparison.tests...)
+ 			continue
+ 		case !isGoSourceFile(rel):
+-			if miss, err := s.otherFileMiss(dir, rel, false); miss != nil || err != nil {
+-				return nil, miss, err
++			if miss, err := s.otherFileMiss(dir, rel, own); miss != nil || err != nil {
++				return packageChange{}, miss, err
+ 			}
+ 			continue
+ 		}
+-		_, wasRecorded := recorded[rel]
+-		comparison, err := s.compareGoFile(m.Commit, path.Join(dir, rel), wasRecorded)
++		comparison, err := s.compareGoFile(m.Commit, file, wasRecorded)
+ 		if err != nil || comparison.miss != nil {
+-			return nil, comparison.miss, err
++			return packageChange{}, comparison.miss, err
+ 		}
+ 		for _, imported := range comparison.addedImports {
+ 			if !s.importAllowed(m, imported) {
+-				return nil, &Miss{Reason: MissNonBody, Detail: fmt.Sprintf(
+-					"%s adds an import of %s, which is neither in the map's linked set nor in the standard library", path.Join(dir, rel), imported)}, nil
++				return packageChange{}, &Miss{Reason: MissNonBody, Detail: fmt.Sprintf(
++					"%s adds an import of %s, which is neither in the map's linked set nor in the standard library", file, imported)}, nil
+ 			}
+ 		}
+ 		for _, removed := range comparison.removedImports {
+ 			if !s.standardLibrary(removed) {
+-				return nil, &Miss{Reason: MissNonBody, Detail: fmt.Sprintf(
+-					"%s is deleted and imported %s, which may leave the build with it", path.Join(dir, rel), removed)}, nil
++				return packageChange{}, &Miss{Reason: MissNonBody, Detail: fmt.Sprintf(
++					"%s is deleted and imported %s, which may leave the build with it", file, removed)}, nil
+ 			}
+ 		}
+ 		for _, name := range comparison.changed {
+-			funcs = append(funcs, FuncKey{Package: importPath, File: rel, Func: name})
++			change.funcs = append(change.funcs, FuncKey{Package: importPath, File: rel, Func: name})
+ 		}
+ 		for key, decls := range comparison.methodsBefore {
+ 			methodsBefore[key] = append(methodsBefore[key], decls...)
+@@ -283,9 +342,9 @@ func (s *Selector) linkedChanges(m Map, importPath string) ([]FuncKey, *Miss, er
+ 		}
+ 	}
+ 	if miss := methodSetMiss(dir, methodsBefore, methodsAfter); miss != nil {
+-		return nil, miss, nil
++		return packageChange{}, miss, nil
+ 	}
+-	return funcs, nil, nil
++	return change, nil, nil
+ }
+ 
+ // changedFiles returns the sorted files that differ from recorded in the package at dir.
+@@ -301,10 +360,10 @@ func (s *Selector) changedFiles(dir string, recorded map[string]string) ([]strin
+ 	}
+ 	var changed []string
+ 	for _, rel := range slices.Sorted(maps.Keys(candidates)) {
+-		var current workingHash
+-		if _, inWorkingTree := owned[rel]; inWorkingTree {
++		var current targetHash
++		if _, inTarget := owned[rel]; inTarget {
+ 			var err error
+-			if current, err = s.workingHash(path.Join(dir, rel)); err != nil {
++			if current, err = s.targetHash(path.Join(dir, rel)); err != nil {
+ 				return nil, err
+ 			}
+ 		}
+@@ -316,7 +375,7 @@ func (s *Selector) changedFiles(dir string, recorded map[string]string) ([]strin
+ 	return changed, nil
+ }
+ 
+-// ownedFiles returns the working files that the package at the worktree-relative slash directory dir owns.
++// ownedFiles returns the target files that the package at the worktree-relative slash directory dir owns.
+ // Paths are slash paths relative to dir.
+ // A package owns the files under dir and under no directory below it that holds another package or module.
+ func (s *Selector) ownedFiles(dir string) map[string]struct{} {
+@@ -324,7 +383,7 @@ func (s *Selector) ownedFiles(dir string) map[string]struct{} {
+ 		return owned
+ 	}
+ 	var below []string
+-	for _, file := range s.config.WorkingFiles {
++	for _, file := range s.target.Files {
+ 		rel, under := file, true
+ 		if dir != "." {
+ 			rel, under = strings.CutPrefix(file, dir+"/")
+@@ -344,16 +403,16 @@ func (s *Selector) ownedFiles(dir string) map[string]struct{} {
+ 	return owned
+ }
+ 
+-// workingHash returns the hash of the working file at the worktree-relative slash path rel.
+-func (s *Selector) workingHash(rel string) (workingHash, error) {
++// targetHash returns the hash of the target file at the worktree-relative slash path rel.
++func (s *Selector) targetHash(rel string) (targetHash, error) {
+ 	if current, cached := s.hashes[rel]; cached {
+ 		return current, nil
+ 	}
+-	data, found, err := s.readWorkingFile(rel)
++	data, found, err := s.readTargetFile(rel)
+ 	if err != nil {
+-		return workingHash{}, err
++		return targetHash{}, err
+ 	}
+-	current := workingHash{found: found}
++	current := targetHash{found: found}
+ 	if found {
+ 		current.hash = ContentHash(data)
+ 	}
+@@ -361,8 +420,11 @@ func (s *Selector) workingHash(rel string) (workingHash, error) {
+ 	return current, nil
+ }
+ 
+-// readWorkingFile reads the working file at the worktree-relative slash path rel; found is false for an absent file.
+-func (s *Selector) readWorkingFile(rel string) (data []byte, found bool, err error) {
++// readTargetFile reads the target file at the worktree-relative slash path rel; found is false for an absent file.
++func (s *Selector) readTargetFile(rel string) (data []byte, found bool, err error) {
++	if s.target.Commit != "" {
++		return s.config.Commits.CodeFileAt(s.target.Commit, rel)
++	}
+ 	data, err = os.ReadFile(filepath.Join(s.config.WorktreeRoot, filepath.FromSlash(rel)))
+ 	switch {
+ 	case errors.Is(err, fs.ErrNotExist):
+@@ -373,34 +435,57 @@ func (s *Selector) readWorkingFile(rel string) (data []byte, found bool, err err
+ 	return data, true, nil
+ }
+ 
+-// compareGoFile compares the Go file at the worktree-relative slash path rel as commit stores it with the working tree's.
++// readSides reads the Go file at the worktree-relative slash path rel as commit stores it and as the target holds it.
+ // wasRecorded tells whether the map's record holds the file, and so whether the commit does.
+-func (s *Selector) compareGoFile(commit, rel string, wasRecorded bool) (goFileComparison, error) {
+-	key := commit + "\x00" + rel
+-	if comparison, cached := s.compared[key]; cached {
+-		return comparison, nil
+-	}
+-	var before goSource
++// A commit that cannot give the file returns its miss instead.
++func (s *Selector) readSides(commit, rel string, wasRecorded bool) (before, after goSource, miss *Miss, err error) {
+ 	if wasRecorded {
+ 		data, found, err := s.config.Commits.CodeFileAt(commit, rel)
+ 		switch {
+ 		case err != nil:
+-			return missed(MissCommitUnreadable, err.Error()), nil
++			return goSource{}, goSource{}, &Miss{Reason: MissCommitUnreadable, Detail: err.Error()}, nil
+ 		case !found:
+-			return missed(MissCommitUnreadable, fmt.Sprintf("%s is absent at the map's commit %s", rel, commit)), nil
++			return goSource{}, goSource{}, &Miss{Reason: MissCommitUnreadable, Detail: fmt.Sprintf("%s is absent at the map's commit %s", rel, commit)}, nil
+ 		}
+ 		before = goSource{text: data, present: true}
+ 	}
+-	data, found, err := s.readWorkingFile(rel)
++	data, found, err := s.readTargetFile(rel)
++	if err != nil {
++		return goSource{}, goSource{}, nil, err
++	}
++	return before, goSource{text: data, present: found}, nil, nil
++}
++
++// compareGoFile compares the Go file at the worktree-relative slash path rel as commit stores it with the target's.
++// wasRecorded tells whether the map's record holds the file, and so whether the commit does.
++func (s *Selector) compareGoFile(commit, rel string, wasRecorded bool) (goFileComparison, error) {
++	key := commit + "\x00" + rel
++	if comparison, cached := s.compared[key]; cached {
++		return comparison, nil
++	}
++	before, after, miss, err := s.readSides(commit, rel, wasRecorded)
+ 	if err != nil {
+ 		return goFileComparison{}, err
+ 	}
+-	comparison := compareGoSources(rel, before, goSource{text: data, present: found})
++	comparison := goFileComparison{miss: miss}
++	if miss == nil {
++		comparison = compareGoSources(rel, before, after)
++	}
+ 	s.compared[key] = comparison
+ 	return comparison, nil
+ }
+ 
+-// importAllowed reports whether a changed file of a linked package may add an import of importPath:
++// compareTestFile compares the test file at the worktree-relative slash path rel as commit stores it with the target's.
++// wasRecorded tells whether the map's record holds the file, and so whether the commit does.
++func (s *Selector) compareTestFile(commit, rel string, wasRecorded bool) (testFileComparison, error) {
++	before, after, miss, err := s.readSides(commit, rel, wasRecorded)
++	if err != nil || miss != nil {
++		return testFileComparison{miss: miss}, err
++	}
++	return compareTestSources(rel, before, after), nil
++}
++
++// importAllowed reports whether a changed Go file may add an import of importPath:
+ // a package m's linked set holds, or a standard-library package.
+ func (s *Selector) importAllowed(m Map, importPath string) bool {
+ 	if _, linked := m.Linked[importPath]; linked {
+@@ -422,7 +507,7 @@ func (s *Selector) standardLibrary(importPath string) bool {
+ // otherFileMiss returns the miss of a changed file that is no Go file directly in the package at dir.
+ // dir is a worktree-relative slash directory, and rel is the file's slash path relative to dir.
+ // A file inert_paths matches is no miss, unless a go:embed pattern of the package names it.
+-// ownPackage is set when dir is the importing package, whose test files are in its binary, so their patterns count.
++// ownPackage is set when dir is the selected package, whose test files are in its binary, so their patterns count.
+ func (s *Selector) otherFileMiss(dir, rel string, ownPackage bool) (*Miss, error) {
+ 	file := path.Join(dir, rel)
+ 	if s.config.Inert == nil || !s.config.Inert(file) {
+@@ -438,7 +523,7 @@ func (s *Selector) otherFileMiss(dir, rel string, ownPackage bool) (*Miss, error
+ 	return nil, nil
+ }
+ 
+-// embedPatterns returns the go:embed patterns of the package at dir, read from the working tree's Go files.
++// embedPatterns returns the go:embed patterns of the package at dir, read from the target's Go files.
+ // dir is a worktree-relative slash directory; withTests also reads the package's test files.
+ // A Go file that does not parse gives its miss instead.
+ func (s *Selector) embedPatterns(dir string, withTests bool) ([]string, *Miss, error) {
+@@ -452,7 +537,7 @@ func (s *Selector) embedPatterns(dir string, withTests bool) ([]string, *Miss, e
+ 			continue
+ 		}
+ 		file := path.Join(dir, rel)
+-		data, found, err := s.readWorkingFile(file)
++		data, found, err := s.readTargetFile(file)
+ 		if err != nil {
+ 			return nil, nil, err
+ 		}
+@@ -461,7 +546,7 @@ func (s *Selector) embedPatterns(dir string, withTests bool) ([]string, *Miss, e
+ 		}
+ 		parsed, err := parser.ParseFile(token.NewFileSet(), "", data, parser.ParseComments|parser.SkipObjectResolution)
+ 		if err != nil {
+-			return nil, &Miss{Reason: MissParse, Detail: fmt.Sprintf("%s in the working tree: %v", file, err)}, nil
++			return nil, &Miss{Reason: MissParse, Detail: fmt.Sprintf("%s in the target: %v", file, err)}, nil
+ 		}
+ 		for _, group := range parsed.Comments {
+ 			for _, comment := range group.List {
+@@ -530,16 +615,29 @@ func (s *Selector) importDir(importPath string) string {
+ 	return path.Join(s.config.ModuleRel, strings.TrimPrefix(importPath, s.config.ModulePath+"/"))
+ }
+ 
+-// selectTests returns the names of m's tests that covered a function of changed, sorted, each once.
+-// With any function changed, it also returns every test the spawn scan marks.
+-func selectTests(m Map, changed map[FuncKey]bool) []string {
+-	if len(changed) == 0 {
+-		return nil
++// importPath returns the import path of the module-relative slash package directory pkg.
++func (s *Selector) importPath(pkg string) string {
++	if pkg == "." {
++		return s.config.ModulePath
+ 	}
+-	var names []string
++	return s.config.ModulePath + "/" + pkg
++}
++
++// selectTests returns the affected tests' names, sorted, each once.
++// They are changedTests and each test m records a passing measurement for that covered a function of changed:
++// a linked package's function through its Funcs, or a function of the package at importPath through its Blocks.
++func selectTests(m Map, importPath string, changed map[FuncKey]bool, changedTests []string) []string {
++	names := slices.Clone(changedTests)
+ 	for _, test := range m.Tests {
+-		marked := test.Spawn.OutOfProcess || test.Spawn.Unresolved
+-		if marked || slices.ContainsFunc(test.Funcs, func(index int) bool { return changed[m.Funcs[index]] }) {
++		if !measured(test) {
++			continue
++		}
++		coversLinked := slices.ContainsFunc(test.Funcs, func(index int) bool { return changed[m.Funcs[index]] })
++		coversOwn := slices.ContainsFunc(test.Blocks, func(index int) bool {
++			block := m.Blocks[index]
++			return changed[FuncKey{Package: importPath, File: block.File, Func: block.Func}]
++		})
++		if coversLinked || coversOwn {
+ 			names = append(names, test.Name)
+ 		}
+ 	}
+@@ -547,6 +645,23 @@ func selectTests(m Map, changed map[FuncKey]bool) []string {
+ 	return slices.Compact(names)
+ }
+ 
++// measuredTests returns the tests m records a passing measurement for, in its order.
++func measuredTests(m Map) []MapTest {
++	var tests []MapTest
++	for _, test := range m.Tests {
++		if measured(test) {
++			tests = append(tests, test)
++		}
++	}
++	return tests
++}
++
++// measured reports whether a map's entry records a passing measurement:
++// no outcome, and no spawn verdict that marks the test out of process or unresolved.
++func measured(test MapTest) bool {
++	return test.Outcome == "" && !test.Spawn.OutOfProcess && !test.Spawn.Unresolved
++}
++
+ // isGoSourceFile reports whether rel, a slash path relative to a package directory, is a non-test Go file directly in it.
+ func isGoSourceFile(rel string) bool {
+ 	return path.Dir(rel) == "." && strings.HasSuffix(rel, ".go") && !strings.HasSuffix(rel, "_test.go")
+diff --git a/internal/testcover/testselect_test.go b/internal/testcover/testselect_test.go
+index 29fec4b5..827c9005 100644
+--- a/internal/testcover/testselect_test.go
++++ b/internal/testcover/testselect_test.go
+@@ -19,6 +19,9 @@ import (
+ // selectCommit is the commit every fixture map was built from.
+ const selectCommit = "c0ffee"
+ 
++// targetCommit is the commit that holds the working tree's files, for a selection whose target is a commit.
++const targetCommit = "7a9e7"
++
+ // removedFile marks a fixture file the working tree no longer holds.
+ const removedFile = "\x00removed"
+ 
+@@ -67,18 +70,50 @@ func init() {
+ }
+ `
+ 
+-// committedFiles are the module's files at the map's commit: the importing package b, the linked packages a and c.
++// ownSource is the selected package b's main file at the map's commit.
++const ownSource = "package b\n\nfunc Own() int {\n\treturn 1\n}\n\nfunc Other() int {\n\treturn 2\n}\n"
++
++// ownTestSource is b's test file of Test functions and a helper at the map's commit.
++const ownTestSource = `package b
++
++import "testing"
++
++func helper() int {
++	return 1
++}
++
++func TestOwn(t *testing.T) {
++	if Own() != helper() {
++		t.Fatal("Own")
++	}
++}
++
++func TestOther(t *testing.T) {
++	_ = Other()
++}
++`
++
++// committedFiles are the module's files at the map's commit: the selected package b, the linked packages a and c.
+ var committedFiles = map[string]string{
+-	"a/a.go":            linkedSource,
+-	"a/gone.go":         "package a\n\nimport \"strings\"\n\nfunc H() int {\n\treturn len(strings.TrimSpace(\" \"))\n}\n",
+-	"a/assets.go":       "package a\n\nimport \"embed\"\n\n//go:embed static\nvar static embed.FS\n",
+-	"a/static/page.txt": "hello\n",
+-	"a/notes.md":        "notes\n",
+-	"a/a_test.go":       "package a\n",
+-	"c/c.go":            "package c\n",
+-	"b/b.go":            "package b\n",
+-	"b/b_test.go":       "package b\n\nimport \"embed\"\n\n//go:embed note.txt\nvar note embed.FS\n",
+-	"b/note.txt":        "note\n",
++	"go.mod":                "module m\n\ngo 1.26\n",
++	"a/a.go":                linkedSource,
++	"a/gone.go":             "package a\n\nimport \"strings\"\n\nfunc H() int {\n\treturn len(strings.TrimSpace(\" \"))\n}\n",
++	"a/assets.go":           "package a\n\nimport \"embed\"\n\n//go:embed static\nvar static embed.FS\n",
++	"a/static/page.txt":     "hello\n",
++	"a/notes.md":            "notes\n",
++	"a/a_test.go":           "package a\n",
++	"c/c.go":                "package c\n",
++	"b/b.go":                ownSource,
++	"b/b_test.go":           "package b\n\nimport \"embed\"\n\n//go:embed note.txt\nvar note embed.FS\n",
++	"b/funcs_test.go":       ownTestSource,
++	"b/note.txt":            "note\n",
++	"b/testdata/in.txt":     "input\n",
++	"b/testdata/fixture.go": "package fixture\n",
++}
++
++// selectEnvironment is the current environment stamp a selection runs under, bar its module file hashes.
++var selectEnvironment = testcover.EnvironmentStamp{
++	GoVersion: "go1.26.8", GOOS: "linux", GOARCH: "amd64", TiersDigest: "tiers", HubEnvDigest: "hub-env",
+ }
+ 
+ // applyFileEdits sets each edited file's text in files, and removes a file whose text is removedFile.
+@@ -92,39 +127,52 @@ func applyFileEdits(files, edits map[string]string) {
+ 	}
+ }
+ 
+-// fakeCommits serves files at the one commit rev, and fails to read any other.
++// fakeCommits serves the files of each commit in trees, by revision, and fails to read any other revision.
+ type fakeCommits struct {
+-	rev   string
+-	files map[string]string
++	trees map[string]map[string]string
+ }
+ 
+ func (f fakeCommits) CodeFileAt(rev, rel string) ([]byte, bool, error) {
+-	if rev != f.rev {
++	files, known := f.trees[rev]
++	if !known {
+ 		return nil, false, fmt.Errorf("object %s not found", rev)
+ 	}
+-	text, found := f.files[rel]
++	text, found := files[rel]
+ 	return []byte(text), found, nil
+ }
+ 
+ // selectFixtureMap returns b's map at selectCommit, recording committed as the module's files.
+-// It holds one test per function of a that b covers, and one test the spawn scan marks.
++// It holds one measured test per function of a that b covers and one per function of b.
++// It also holds a test the spawn scan marks and a test whose entry records an outcome.
+ func selectFixtureMap(committed map[string]string) testcover.Map {
+-	hashesUnder := func(dir string) map[string]string {
++	hashesUnder := func(dir string, goFilesDirectly bool) map[string]string {
+ 		hashes := map[string]string{}
+ 		for file, text := range committed {
+-			if rel, under := strings.CutPrefix(file, dir+"/"); under {
++			rel, under := strings.CutPrefix(file, dir+"/")
++			if under && goFilesDirectly == (path.Dir(rel) == "." && path.Ext(rel) == ".go") {
+ 				hashes[rel] = testcover.ContentHash([]byte(text))
+ 			}
+ 		}
+ 		return hashes
+ 	}
++	allUnder := func(dir string) map[string]string {
++		hashes := hashesUnder(dir, true)
++		maps.Copy(hashes, hashesUnder(dir, false))
++		return hashes
++	}
++	environment := selectEnvironment
++	environment.GoModHash = testcover.ContentHash([]byte(committed["go.mod"]))
+ 	built := time.Date(2026, 11, 11, 9, 0, 0, 0, time.UTC)
+ 	return testcover.Map{
+-		Commit:  selectCommit,
+-		BuiltAt: built,
+-		Files:   hashesUnder("b"),
+-		Linked:  map[string]map[string]string{"m/a": hashesUnder("a"), "m/c": hashesUnder("c")},
+-		Blocks:  []testcover.BlockKey{{File: "b.go", Func: testcover.PackageLevelFunc, Hash: "h"}},
++		Commit:     selectCommit,
++		BuiltAt:    built,
++		Files:      hashesUnder("b", true),
++		OtherFiles: hashesUnder("b", false),
++		Linked:     map[string]map[string]string{"m/a": allUnder("a"), "m/c": allUnder("c")},
++		Blocks: []testcover.BlockKey{
++			{File: "b.go", Func: "Own", Hash: "own"},
++			{File: "b.go", Func: "Other", Hash: "other"},
++		},
+ 		Funcs: []testcover.FuncKey{
+ 			{Package: "m/a", File: "a.go", Func: "Box.Size"},
+ 			{Package: "m/a", File: "a.go", Func: "F"},
+@@ -138,14 +186,21 @@ func selectFixtureMap(committed map[string]string) testcover.Map {
+ 			{Name: "TestG", Funcs: []int{2}},
+ 			{Name: "TestInit", Funcs: []int{3}},
+ 			{Name: "TestH", Funcs: []int{4}},
+-			{Name: "TestSpawn", Blocks: []int{0}, Spawn: testcover.SpawnVerdict{OutOfProcess: true}},
++			{Name: "TestOwn", Blocks: []int{0}},
++			{Name: "TestOther", Blocks: []int{1}},
++			{Name: "TestSpawn", Funcs: []int{1}, Spawn: testcover.SpawnVerdict{OutOfProcess: true}},
++			{Name: "TestFailed", Funcs: []int{1}, Outcome: testcover.OutcomeFailed},
+ 		},
+-		Format: &testcover.MapFormat{Version: testcover.MapFormatVersion, Commit: selectCommit, BuiltAt: built},
++		Format: &testcover.MapFormat{Version: testcover.MapFormatVersion, Commit: selectCommit, BuiltAt: built, Environment: environment},
+ 	}
+ }
+ 
+-// TestSelectorSelect pins which of b's tests a change to its linked package a selects.
++// fixtureRecorded are the fixture map's tests that record a passing measurement, in its order.
++var fixtureRecorded = []string{"TestSize", "TestF", "TestG", "TestInit", "TestH", "TestOwn", "TestOther"}
++
++// TestSelectorSelect pins which of b's tests a change to b or to its linked package a selects.
+ // It also pins the changes the map cannot speak for, so b runs whole.
++// Every case gives the same verdict with the working tree as target and with a commit holding the same files.
+ func TestSelectorSelect(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -154,6 +209,9 @@ func TestSelectorSelect(t *testing.T) {
+ 	embedAssets := func(directive string) map[string]string {
+ 		return map[string]string{"a/assets.go": "package a\n\nimport \"embed\"\n\n" + directive + "\nvar static embed.FS\n"}
+ 	}
++	ownTestEdit := func(old, replacement string) map[string]string {
++		return map[string]string{"b/funcs_test.go": strings.Replace(ownTestSource, old, replacement, 1)}
++	}
+ 	pageChanged := map[string]string{"a/static/page.txt": "changed\n"}
+ 	tests := []struct {
+ 		name string
+@@ -174,14 +232,18 @@ func TestSelectorSelect(t *testing.T) {
+ 		inert     func(string) bool
+ 		want      []string
+ 		wantMiss  testcover.MissReason
++		// wantDetail, when set, is the exact detail of the miss.
++		wantDetail string
++		// unrecorded names the tests of fixtureRecorded that editMap leaves with no passing measurement.
++		unrecorded []string
+ 	}{
+ 		{name: "NoChange"},
+ 		{name: "EditInsideFunctionBody", linkedEdits: []string{"strings.ToUpper(s)", "strings.ToLower(s)"},
+-			want: []string{"TestF", "TestSpawn"}},
++			want: []string{"TestF"}},
+ 		{name: "ChangedParameterTypes", linkedEdits: []string{"func F(s string) string {", "func F(s string, _ ...int) string {"},
+-			want: []string{"TestF", "TestSpawn"}},
+-		{name: "DeletedFile", files: map[string]string{"a/gone.go": removedFile}, want: []string{"TestH", "TestSpawn"}},
+-		{name: "EditToOneOfTwoInits", linkedEdits: []string{`"two"`, `"three"`}, want: []string{"TestInit", "TestSpawn"}},
++			want: []string{"TestF"}},
++		{name: "DeletedFile", files: map[string]string{"a/gone.go": removedFile}, want: []string{"TestH"}},
++		{name: "EditToOneOfTwoInits", linkedEdits: []string{`"two"`, `"three"`}, want: []string{"TestInit"}},
+ 		{name: "CommentAndFormatting", linkedEdits: []string{
+ 			"func G() string {", "// G renders the limit.\nfunc G() string {",
+ 			"return b.N", "return b.N // the count",
+@@ -198,22 +260,84 @@ func TestSelectorSelect(t *testing.T) {
+ 		{name: "NestedPackageFile", files: map[string]string{"a/sub/s.go": "package sub\n"}},
+ 		{name: "InertFileNoGoEmbedNames", files: map[string]string{"a/notes.md": "more notes\n"}, inert: inertText},
+ 		{name: "InertFileUnderUnrelatedDirectory", files: map[string]string{"a/other/x.txt": "x\n"}, inert: inertText},
+-		{name: "EditInsideMethodBody", linkedEdits: []string{"return b.N\n", "return b.N + 1\n"}, want: []string{"TestSize", "TestSpawn"}},
++		{name: "EditInsideMethodBody", linkedEdits: []string{"return b.N\n", "return b.N + 1\n"}, want: []string{"TestSize"}},
+ 		{name: "RemovedInit", linkedEdits: []string{"\nfunc init() {\n\tregistered = append(registered, \"two\")\n}\n", ""},
+-			want: []string{"TestInit", "TestSpawn"}},
++			want: []string{"TestInit"}},
++		{name: "OwnFunctionBodyEdited", files: map[string]string{"b/b.go": strings.Replace(ownSource, "return 1", "return 3", 1)},
++			want: []string{"TestOwn"}},
++		{name: "OwnGoFileAdded", files: map[string]string{"b/extra.go": "package b\n"}},
++		{name: "OwnGoFileRemoved", files: map[string]string{"b/b.go": removedFile}, want: []string{"TestOther", "TestOwn"}},
++		{name: "OwnTestFunctionEdited", files: ownTestEdit("_ = Other()", "_ = Other() + 1"), want: []string{"TestOther"}},
++		{name: "OwnTestFunctionAdded", files: ownTestEdit("func TestOther", "func TestNew(t *testing.T) {}\n\nfunc TestOther"),
++			want: []string{"TestNew"}},
++		{name: "OwnTestFunctionRemoved", files: ownTestEdit("func TestOther(t *testing.T) {\n\t_ = Other()\n}\n", "")},
++		{name: "OwnTestFileWithOnlyTestFunctionsAdded",
++			files: map[string]string{"b/more_test.go": "package b\n\nimport \"testing\"\n\nfunc TestMore(t *testing.T) {}\n"},
++			want:  []string{"TestMore"}},
++		{name: "OwnTestFileImportingTestingRemoved",
++			committed: map[string]string{"b/more_test.go": "package b\n\nimport \"testing\"\n\nfunc TestMore(t *testing.T) {}\n"},
++			files:     map[string]string{"b/more_test.go": removedFile}},
++		{name: "OwnTestFileImportingLinkedPackageRemoved",
++			committed: map[string]string{"b/reg_test.go": "package b\n\nimport _ \"m/c\"\n\nfunc TestReg() {}\n"},
++			files:     map[string]string{"b/reg_test.go": removedFile}, wantMiss: testcover.MissTestFile},
++		{name: "ExternalTestFileImportingOwnPackageAdded",
++			files: map[string]string{"b/ext_test.go": "package b_test\n\nimport (\n\t\"testing\"\n\n\t\"m/b\"\n)\n\nfunc TestExt(t *testing.T) { _ = b.Own() }\n"},
++			want:  []string{"TestExt"}},
++		{name: "OwnTestStandardLibraryImportAdded",
++			files: ownTestEdit(`import "testing"`, "import (\n\t_ \"fmt\"\n\t\"testing\"\n)")},
++		{name: "BuildFailureBesideTestEntries", editMap: func(m *testcover.Map) { m.BuildFailure = "build failed" }},
++		{name: "SpawnMarkedTestDeclaredInNewFile", files: map[string]string{"b/spawn_test.go": "package b\n\nfunc TestSpawn(t *T) {}\n"},
++			want: []string{"TestSpawn"}},
++		{name: "OutcomeEntryIsNoRecordedTest", linkedEdits: []string{"strings.ToUpper(s)", "strings.ToLower(s)"},
++			editMap: func(m *testcover.Map) { m.Tests[1].Outcome = testcover.OutcomeTimedOut }, unrecorded: []string{"TestF"}},
+ 
+ 		{name: "NoMap", noMap: true, wantMiss: testcover.MissNoMap},
+ 		{name: "MapUnreadable", mapText: "{not json", wantMiss: testcover.MissMapUnreadable},
+-		{name: "BuildFailure", editMap: func(m *testcover.Map) { m.BuildFailure = "build failed" }, wantMiss: testcover.MissBuildFailure},
++		{name: "BuildFailureWithNoTestEntries",
++			editMap:  func(m *testcover.Map) { m.BuildFailure, m.Tests = "build failed", nil },
++			wantMiss: testcover.MissBuildFailure, wantDetail: "build failed"},
+ 		{name: "NoMarker", editMap: func(m *testcover.Map) { m.Format = nil }, wantMiss: testcover.MissUnmarked},
+ 		{name: "MarkerDiffersFromMap", editMap: func(m *testcover.Map) { m.Format.Commit = "older" }, wantMiss: testcover.MissUnmarked},
+ 		{name: "TestNamesFunctionOutsideTable", editMap: func(m *testcover.Map) { m.Tests[0].Funcs = []int{9} },
+ 			wantMiss: testcover.MissMapUnreadable},
++		{name: "TestNamesBlockOutsideTable", editMap: func(m *testcover.Map) { m.Tests[0].Blocks = []int{9} },
++			wantMiss: testcover.MissMapUnreadable},
++		{name: "ToolchainVersionDiffers", editMap: func(m *testcover.Map) { m.Format.Environment.GoVersion = "go1.25.0" },
++			wantMiss: testcover.MissEnvironment, wantDetail: "the map's stamp differs in go_version"},
++		{name: "GOOSDiffers", editMap: func(m *testcover.Map) { m.Format.Environment.GOOS = "plan9" },
++			wantMiss: testcover.MissEnvironment, wantDetail: "the map's stamp differs in goos"},
++		{name: "GOARCHDiffers", editMap: func(m *testcover.Map) { m.Format.Environment.GOARCH = "riscv64" },
++			wantMiss: testcover.MissEnvironment, wantDetail: "the map's stamp differs in goarch"},
++		{name: "TiersDigestDiffers", editMap: func(m *testcover.Map) { m.Format.Environment.TiersDigest = "other-tiers" },
++			wantMiss: testcover.MissEnvironment, wantDetail: "the map's stamp differs in tiers_digest"},
++		{name: "HubEnvDigestDiffers", editMap: func(m *testcover.Map) { m.Format.Environment.HubEnvDigest = "other-env" },
++			wantMiss: testcover.MissEnvironment, wantDetail: "the map's stamp differs in hub_env_digest"},
++		{name: "GoModChanged", files: map[string]string{"go.mod": "module m\n\ngo 1.27\n"},
++			wantMiss: testcover.MissEnvironment, wantDetail: "the map's stamp differs in go_mod_hash"},
++		{name: "GoSumAdded", files: map[string]string{"go.sum": "example.com/x v1.0.0 h1:x=\n"},
++			wantMiss: testcover.MissEnvironment, wantDetail: "the map's stamp differs in go_sum_hash"},
+ 		{name: "CommitUnreadable", commitRev: "other", wantMiss: testcover.MissCommitUnreadable},
+-		{name: "OwnTestFileEdited", files: map[string]string{"b/b_test.go": "package b\n\nvar touched int\n"},
+-			wantMiss: testcover.MissOwnFiles},
++		{name: "OwnTestHelperEdited", files: ownTestEdit("return 1", "return 2"), wantMiss: testcover.MissTestFile},
++		{name: "OwnTestMainAdded", files: ownTestEdit("func TestOwn", "func TestMain(m *testing.M) {}\n\nfunc TestOwn"),
++			wantMiss: testcover.MissTestFile},
++		{name: "OwnTestImportOutsideLinkedSetAdded",
++			files:    ownTestEdit(`import "testing"`, "import (\n\t_ \"example.com/x\"\n\t\"testing\"\n)"),
++			wantMiss: testcover.MissTestFile},
++		{name: "OwnTestPackageClauseChanged", files: ownTestEdit("package b\n", "package b_test\n"), wantMiss: testcover.MissTestFile},
++		{name: "OwnTestPackageLevelVarAdded", files: ownTestEdit("func helper", "var count int\n\nfunc helper"),
++			wantMiss: testcover.MissTestFile},
++		{name: "OwnTestMethodNamedLikeATestAdded",
++			files:    map[string]string{"b/more_test.go": "package b\n\nfunc (s TestSuite) Run() {}\n"},
++			wantMiss: testcover.MissTestFile},
++		{name: "OwnTestFileDoesNotParse", files: ownTestEdit("func TestOther(t *testing.T) {", "func TestOther(t {"),
++			wantMiss: testcover.MissParse},
++		{name: "OwnTestFileDirectiveRemoved", files: map[string]string{"b/b_test.go": "package b\n\nvar touched int\n"},
++			wantMiss: testcover.MissDirective},
+ 		{name: "AddedInitInNewFile", files: map[string]string{"a/extra.go": "package a\n\nfunc init() {}\n"},
+ 			wantMiss: testcover.MissInit},
++		{name: "OwnInitAdded", files: map[string]string{"b/extra.go": "package b\n\nfunc init() {}\n"}, wantMiss: testcover.MissInit},
++		{name: "OwnConstChanged", committed: map[string]string{"b/limits.go": "package b\n\nconst Max = 1\n"},
++			files: map[string]string{"b/limits.go": "package b\n\nconst Max = 2\n"}, wantMiss: testcover.MissNonBody},
+ 		{name: "EmbeddedFileInert", files: map[string]string{"a/static/page.txt": "changed\n"}, inert: inertText,
+ 			wantMiss: testcover.MissNonGoFile},
+ 		{name: "NonGoFileNotInert", files: map[string]string{"a/notes.md": "more notes\n"}, wantMiss: testcover.MissNonGoFile},
+@@ -273,9 +397,10 @@ func TestSelectorSelect(t *testing.T) {
+ 			wantMiss: testcover.MissMethodSet},
+ 		{name: "AddedImportOfDotlessNonStandardPath", files: map[string]string{"a/link.go": "package a\n\nimport _ \"foo/bar\"\n"},
+ 			wantMiss: testcover.MissNonBody},
+-		{name: "OwnGoFileAdded", files: map[string]string{"b/extra.go": "package b\n"}, wantMiss: testcover.MissOwnFiles},
+-		{name: "OwnGoFileRemoved", files: map[string]string{"b/b.go": removedFile}, wantMiss: testcover.MissOwnFiles},
+ 		{name: "OwnNonGoFileChanged", files: map[string]string{"b/note.txt": "changed\n"}, inert: nil, wantMiss: testcover.MissNonGoFile},
++		{name: "OwnTestdataFileChanged", files: map[string]string{"b/testdata/in.txt": "changed\n"}, wantMiss: testcover.MissNonGoFile},
++		{name: "OwnTestdataGoFileChanged", files: map[string]string{"b/testdata/fixture.go": "package fixture\n\nvar x int\n"},
++			inert: inertText, wantMiss: testcover.MissNonGoFile},
+ 		{name: "OwnTestFileEmbedsInertFile", files: map[string]string{"b/note.txt": "changed\n"}, inert: inertText,
+ 			wantMiss: testcover.MissNonGoFile},
+ 		{name: "RecordedNonGoFileRemoved", files: map[string]string{"a/notes.md": removedFile}, wantMiss: testcover.MissNonGoFile},
+@@ -328,6 +453,7 @@ func TestSelectorSelect(t *testing.T) {
+ 					t.Fatal(err)
+ 				}
+ 			}
++			slices.Sort(workingFiles)
+ 
+ 			mapsDir := t.TempDir()
+ 			switch {
+@@ -348,45 +474,73 @@ func TestSelectorSelect(t *testing.T) {
+ 					t.Fatal(err)
+ 				}
+ 			}
+-			rev := selectCommit
++			mapRev := selectCommit
+ 			if tt.commitRev != "" {
+-				rev = tt.commitRev
++				mapRev = tt.commitRev
+ 			}
+ 
+ 			goRoot := t.TempDir()
+-			for _, standard := range []string{"embed", "fmt", "strconv", "strings"} {
++			for _, standard := range []string{"embed", "fmt", "strconv", "strings", "testing"} {
+ 				if err := os.MkdirAll(filepath.Join(goRoot, "src", standard), 0o755); err != nil {
+ 					t.Fatal(err)
+ 				}
+ 			}
+-			selector := testcover.NewSelector(testcover.SelectorConfig{
++			config := testcover.SelectorConfig{
+ 				GoRoot: goRoot, MapsDir: mapsDir, WorktreeRoot: root, ModuleRel: ".", ModulePath: "m",
+-				WorkingFiles: slices.Sorted(slices.Values(workingFiles)), Commits: fakeCommits{rev: rev, files: atCommit}, Inert: tt.inert,
+-			})
+-			got, err := selector.Select("b")
+-			if err != nil {
+-				t.Fatalf("Select(b) error = %v", err)
+-			}
+-			switch {
+-			case tt.wantMiss == "" && got.Miss != nil:
+-				t.Errorf("Select(b) missed %s; want tests %v", got.Miss, tt.want)
+-			case tt.wantMiss != "" && (got.Miss == nil || got.Miss.Reason != tt.wantMiss || got.Miss.Detail == ""):
+-				t.Errorf("Select(b) = %+v, miss %v; want a miss for %q with a detail", got, got.Miss, tt.wantMiss)
+-			case !reflect.DeepEqual(got.Tests, tt.want):
+-				t.Errorf("Select(b).Tests = %v; want %v", got.Tests, tt.want)
++				Commits:     fakeCommits{trees: map[string]map[string]string{mapRev: atCommit, targetCommit: working}},
++				Inert:       tt.inert,
++				Environment: selectEnvironment,
+ 			}
+-			var gotRecorded, wantRecorded []string
+-			for _, recorded := range got.Recorded {
+-				gotRecorded = append(gotRecorded, recorded.Name)
++			var wantRecorded []string
++			if tt.wantMiss == "" {
++				wantRecorded = slices.DeleteFunc(slices.Clone(fixtureRecorded), func(name string) bool { return slices.Contains(tt.unrecorded, name) })
+ 			}
+-			if got.Miss == nil {
+-				for _, recorded := range selectFixtureMap(committed).Tests {
+-					wantRecorded = append(wantRecorded, recorded.Name)
++			for _, target := range []testcover.Target{{Files: workingFiles}, {Commit: targetCommit, Files: workingFiles}} {
++				got, err := testcover.NewSelector(config, target).Select("b")
++				if err != nil {
++					t.Fatalf("Select(b) against %q error = %v", target.Commit, err)
++				}
++				switch {
++				case tt.wantMiss == "" && got.Miss != nil:
++					t.Errorf("Select(b) against %q missed %s; want tests %v", target.Commit, got.Miss, tt.want)
++				case tt.wantMiss != "" && (got.Miss == nil || got.Miss.Reason != tt.wantMiss || got.Miss.Detail == ""):
++					t.Errorf("Select(b) against %q = %+v, miss %v; want a miss for %q with a detail", target.Commit, got, got.Miss, tt.wantMiss)
++				case tt.wantDetail != "" && got.Miss.Detail != tt.wantDetail:
++					t.Errorf("Select(b) against %q miss detail = %q; want %q", target.Commit, got.Miss.Detail, tt.wantDetail)
++				case !reflect.DeepEqual(got.Tests, tt.want):
++					t.Errorf("Select(b) against %q .Tests = %v; want %v", target.Commit, got.Tests, tt.want)
++				}
++				var gotRecorded []string
++				for _, recorded := range got.Recorded {
++					gotRecorded = append(gotRecorded, recorded.Name)
++				}
++				if !slices.Equal(gotRecorded, wantRecorded) {
++					t.Errorf("Select(b) against %q .Recorded = %v; want %v, the map's passing entries, and none with a miss",
++						target.Commit, gotRecorded, wantRecorded)
+ 				}
+-			}
+-			if !slices.Equal(gotRecorded, wantRecorded) {
+-				t.Errorf("Select(b).Recorded = %v; want %v, the map's tests, and none with a miss", gotRecorded, wantRecorded)
+ 			}
+ 		})
+ 	}
+ }
++
++// TestSelectorSelect_UnreadableTarget pins that a commit target the object store cannot read gives an error and no miss.
++func TestSelectorSelect_UnreadableTarget(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	mapsDir := t.TempDir()
++	if err := testcover.WriteMap(mapsDir, "b", selectFixtureMap(committedFiles)); err != nil {
++		t.Fatal(err)
++	}
++	config := testcover.SelectorConfig{
++		MapsDir: mapsDir, ModuleRel: ".", ModulePath: "m", Environment: selectEnvironment,
++		Commits: fakeCommits{trees: map[string]map[string]string{selectCommit: committedFiles}},
++	}
++	got, err := testcover.NewSelector(config, testcover.Target{Commit: "unknown"}).Select("b")
++	if err == nil {
++		t.Error("Select(b) against an unreadable commit error = nil; want the read failure")
++	}
++	if got.Miss != nil {
++		t.Errorf("Select(b) against an unreadable commit miss = %s; want none, with the error returned", got.Miss)
++	}
++}
