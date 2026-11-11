@@ -546,29 +546,6 @@
       "profile": "light"
     },
     {
-      "id": 1300,
-      "handle": "T5",
-      "slug": "adopt-handover-test-gaps",
-      "title": "Adopt handover: pin the beam-under-root cover, the hold's skipped steps and the owner archive rows in tests",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "dobby",
-        "fabric",
-        "tender"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (board tidy, 2026-11-11)\n\n`adopt-owner-handover` landed as `0198b955` with four findings its review left open under \"To check by hand\":\n\n- A beam with no owner recorded under an adopted `root` may not be covered by the under-adopt accessor in `internal/adoptrecord/watch.go`; the review marked it BLOCKING.\n  The accessor's comment says such a beam takes its parent's subject, `root` above the top, so it reads covered;\n  no test shows that the watcher and dobby of such a beam stay up and idle during `lym adopt root`.\n- The adopt hold in `internal/dobbyengine/handover.go` skips steps (pause, archive, pass starts) that no test pins.\n- The decision rows for which tips the owner archive takes (origin absent, equal, ahead, diverged) in `internal/fabricengine/ownerarchive.go` have no test rows.\n- The pairs the owner archive covers, in `internal/beamcli/ownerarchive.go` and `internal/fabricengine/ownerarchive.go`, are untested end to end.\n\n## Idea\n\nSettle the BLOCKING point first: a test of `adoptrecord.Watch.Covers` for a beam with no owner of its own under an unfinished `root` adopt,\nand a fix if it reads uncovered.\nThen add the missing test rows for the hold's skipped steps and the owner archive's decision rows, and one end-to-end test of the archive over a beam's pairs.\n\n## Also pin (folded in)\n\n## From note records-tag-vs-branch-untested\n\nSeen: the landing `adopt-here-archives` lists this under \"To check by hand\".\nNo test pins how `lym adopt --here` treats the records tag against the records branch.\nIdea: add a test row for each way the two differ.\n\n## From note teardown-archive-untested\n\nSeen: the landing `adopt-here-archives` lists this under \"To check by hand\".\nNo test pins the exclusion of an owner archive during teardown.\nIdea: add a test that a teardown leaves the archive out and still removes the worktree.\n\n",
-      "status": "done",
-      "created": "2026-11-11T08:49:23Z",
-      "revised": "2026-11-11T14:32:34Z",
-      "profile": "solid"
-    },
-    {
       "id": 1305,
       "handle": "T14",
       "slug": "coverage-test-select",
@@ -729,9 +706,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "adopt-handover-test-gaps"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Fix both creel faults in one run. Read first where dobby and fabric decide to send, and why mail waited in the queue.\n\n## From note creel-repeat-notices\n\n## Seen (orch, 2026-11-11)\n\nDuring a network outage on OSL-1046 (`Could not resolve host: github.com`, `EAI_AGAIN`), the orch's mail held about 25 dobby notices that read the same for `testmap-verb` and `arras-recipe-perch`: same state, same `since` time, same history length.\nFABRIC sent the same push failure for the same branch several times, for example the bolt branch `main` and the records branch of each pair.\n\n## Idea\n\nA notice whose text and run state have not changed since the last one sent to the same strand is not sent again, or is sent again only after a stated interval.\nRead first where dobby and fabric decide to send, and whether a repeat is deliberate, for instance as a reminder.\n\n## From note creel-stale-mail-delivery\n\n## Seen (orch, 2026-11-11)\n\nThe orch received creel mail more than a day old, about pairs the orch had already torn down with `lym cleanup --apply`: `terminal-titles-hub-project`, `testmap-verb` and `arras-recipe-perch`.\nIt arrived under a tool result when the orch loaded skills, long after the orch's last turn, and the senders' runs no longer existed.\nOne line asked the orch to settle a stop of a run that was gone.\n\n## Idea\n\nMail addressed about a run or pair that no longer exists is dropped or marked stale rather than handed to the orch as live.\nRead first why the mail waited in the queue, whether the orch's session was down, and whether teardown can clear the strand's pending notices.\n\n",

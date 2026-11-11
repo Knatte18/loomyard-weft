@@ -2,8 +2,6 @@
 
 `creel-notice-hygiene` · Task · bug, creel, dobby, fabric, orch · running · Darn-Write
 
-Depends on: [`adopt-handover-test-gaps`](design-adopt-handover-test-gaps.md)
-
 Fix both creel faults in one run. Read first where dobby and fabric decide to send, and why mail waited in the queue.
 
 ## From note creel-repeat-notices
