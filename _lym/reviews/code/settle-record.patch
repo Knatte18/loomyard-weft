@@ -1,0 +1,163 @@
+diff --git a/internal/landingshed/finalize_gate_test.go b/internal/landingshed/finalize_gate_test.go
+index 1fee4b4a..872eb680 100644
+--- a/internal/landingshed/finalize_gate_test.go
++++ b/internal/landingshed/finalize_gate_test.go
+@@ -21,6 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
++	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
+ 	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+@@ -243,6 +244,40 @@ func TestFinalize_FlakyGateFailureLands(t *testing.T) {
+ 	}
+ }
+ 
++// TestNewFinalize_WiresTheGateFlakyPassesIntoTheLandingTexts pins NewFinalize's wiring of its gate's flaky sink.
++// A gate failure that passes when run once more then shows in the landing texts' flaky section.
++func TestNewFinalize_WiresTheGateFlakyPassesIntoTheLandingTexts(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	deps := newTestDeps(t)
++	openFabric := func() (*fabricengine.Fabric, error) { return &fabricengine.Fabric{}, nil }
++	deps.OpenFabric, deps.OpenParentFabric = openFabric, openFabric
++	deps.Shuttle = &shedfake.MergeShuttle{}
++	fz, err := NewFinalize(deps)
++	if err != nil {
++		t.Fatalf("NewFinalize() error = %v; want nil", err)
++	}
++	g := newGateFixture(t, "finalize", gateLandingCall, nil)
++	writeVerifyLog(t, g, gateslot.FailureReportHeader+"\ntier0 (exit 1), log /runs/a.log:\n  Ns.Tests.EnumeratesTree:\n    System.UnauthorizedAccessException : denied\n"+
++		gateslot.FailedRunsPrefix+"tier0 (exit 1)\n")
++	results := []verifytree.Result{{Status: verifytree.StatusFailed, ExitCode: 1}, {Status: verifytree.StatusPassed}}
++	g.fake.onVerify = func() { g.fake.result = results[min(g.fake.verifyCalls, len(results))-1] }
++	fz.gate.command, fz.gate.paths, fz.gate.dirty, fz.gate.verify = g.gate.command, g.paths, g.fake.dirty, g.fake.verify
++
++	reason, _, err := fz.gate.check(context.Background(), finalizeName, "main")
++
++	if reason != "" || err != nil {
++		t.Fatalf("check() = (%q, %v); want a pass after the rerun", reason, err)
++	}
++	_, body, message := fz.landingTexts(summaryparser.Summary{Title: "A title", Body: "A body."}, "")
++	for name, text := range map[string]string{"body": body, "message": message} {
++		if !strings.Contains(text, flakyHeading+"\n") || !strings.Contains(text, "\n- `tier0 Ns.Tests.EnumeratesTree`") {
++			t.Errorf("%s = %q; want the flaky section naming the failure", name, text)
++		}
++	}
++}
++
+ // TestFinalize_LandingTextsListFlakyFailuresOnce pins the flaky section of the landing texts.
+ // Both the GitHub merge's body and the landing commit's message carry it.
+ // A failure two passes share is listed once.
+diff --git a/internal/landingshed/verifygate_test.go b/internal/landingshed/verifygate_test.go
+index 69fc15a2..7acbefb4 100644
+--- a/internal/landingshed/verifygate_test.go
++++ b/internal/landingshed/verifygate_test.go
+@@ -367,7 +367,7 @@ func TestVerifyGate_CheckMapsVerifyResult(t *testing.T) {
+ 
+ // TestVerifyGate_RerunsATestFailureOnce pins the rerun of a gate told onFlakyPass before it judges a failure.
+ // It pins which failures rerun, the command the rerun runs and the flaky failures reported.
+-// It also pins the log a repeated failure is judged on.
++// It also pins the log each outcome of the rerun is judged on, and that an error of the rerun is the gate's error.
+ func TestVerifyGate_RerunsATestFailureOnce(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -378,6 +378,7 @@ func TestVerifyGate_RerunsATestFailureOnce(t *testing.T) {
+ 	goFailure := report("tier0 (exit 1), log /runs/a.log:", "  example.com/m/a TestA:", "    a_test.go:3: got 1; want 2")
+ 	dotnetFailure := report("tier0 (exit 1), log /runs/a.log:", "  Ns.Tests.EnumeratesTree:", "    System.UnauthorizedAccessException : denied")
+ 	buildFailure := report("build (exit 2), log /runs/b.log:", "  its output:", "    main.go:1: syntax error")
++	outsideAnyTest := report("tier0 (exit 1), log /runs/a.log:", "  example.com/m/b"+gateslot.ReportOutsideAnyTestSuffix+":", "    b.go:3: undefined: x")
+ 	goRerun, err := gateslot.FailedTestsCall(runtime.GOOS, []gateslot.FailedTest{{Tier: 0, Package: "example.com/m/a", Test: "TestA"}})
+ 	if err != nil {
+ 		t.Fatal(err)
+@@ -396,12 +397,18 @@ func TestVerifyGate_RerunsATestFailureOnce(t *testing.T) {
+ 		// results are the verify calls' results in order.
+ 		results []verifytree.Result
+ 		// noSink builds the gate without onFlakyPass.
+-		noSink       bool
++		noSink bool
++		// unreadableLog puts a directory where each verify call's log belongs, so no log can be read.
++		unreadableLog bool
++		// rerunErr is the error the second verify call returns.
++		rerunErr     error
+ 		wantCommands []string
+ 		wantFlaky    []string
+ 		// wantReasonLog is the 1-based verify call whose log the reason names, 0 for a pass and -1 for a failure with no log.
+ 		wantReasonLog int
++		wantCrashed   bool
+ 	}{
++		{name: "a passing verify runs no rerun", log: goFailure, results: []verifytree.Result{passed}, wantCommands: []string{gateLandingCall}},
+ 		{
+ 			name: "a Go test failure reruns its tests alone, and a pass there is flaky and passes the gate", log: goFailure,
+ 			results: []verifytree.Result{failed, passed}, wantCommands: []string{gateLandingCall, goRerun}, wantFlaky: []string{"tier0 example.com/m/a TestA"},
+@@ -417,13 +424,31 @@ func TestVerifyGate_RerunsATestFailureOnce(t *testing.T) {
+ 		{name: "a build failure is not rerun", log: buildFailure, results: []verifytree.Result{failed}, wantCommands: []string{gateLandingCall}, wantReasonLog: 1},
+ 		{name: "a timed-out failure is not rerun", log: goFailure, results: []verifytree.Result{timedOut}, wantCommands: []string{gateLandingCall}, wantReasonLog: 1},
+ 		{name: "a gate told no flaky sink runs no rerun", log: goFailure, results: []verifytree.Result{failed}, noSink: true, wantCommands: []string{gateLandingCall}, wantReasonLog: 1},
+-		{name: "a runner crash is not rerun", log: goFailure, results: []verifytree.Result{crashed}, wantCommands: []string{gateLandingCall}, wantReasonLog: 1},
++		{name: "a runner crash is not rerun", log: goFailure, results: []verifytree.Result{crashed}, wantCommands: []string{gateLandingCall}, wantReasonLog: 1, wantCrashed: true},
+ 		{name: "a shell that could not start is not rerun", log: goFailure, results: []verifytree.Result{cannotStart}, wantCommands: []string{gateLandingCall}, wantReasonLog: 1},
+ 		{name: "a failure with no log is not rerun", results: []verifytree.Result{failed}, wantCommands: []string{gateLandingCall}, wantReasonLog: -1},
++		{name: "a failure whose log cannot be read is not rerun", unreadableLog: true, results: []verifytree.Result{failed}, wantCommands: []string{gateLandingCall}, wantReasonLog: 1},
++		{name: "a log with no failure report is not rerun", log: "FAIL\n", results: []verifytree.Result{failed}, wantCommands: []string{gateLandingCall}, wantReasonLog: 1},
++		{
++			name: "a package that failed outside any test is not rerun", log: outsideAnyTest,
++			results: []verifytree.Result{failed}, wantCommands: []string{gateLandingCall}, wantReasonLog: 1,
++		},
+ 		{
+ 			name: "a rerun that times out fails the gate on the rerun's log", log: dotnetFailure,
+ 			results: []verifytree.Result{failed, timedOut}, wantCommands: []string{gateLandingCall, gateLandingCall}, wantReasonLog: 2,
+ 		},
++		{
++			name: "a rerun whose runner crashes halts on the rerun's log", log: dotnetFailure,
++			results: []verifytree.Result{failed, crashed}, wantCommands: []string{gateLandingCall, gateLandingCall}, wantReasonLog: 2, wantCrashed: true,
++		},
++		{
++			name: "a rerun whose shell could not start fails the gate on the rerun's log", log: dotnetFailure,
++			results: []verifytree.Result{failed, cannotStart}, wantCommands: []string{gateLandingCall, gateLandingCall}, wantReasonLog: 2,
++		},
++		{
++			name: "a rerun the verify cannot run is the gate's error", log: dotnetFailure,
++			results: []verifytree.Result{failed}, rerunErr: errors.New("verify record unreadable"), wantCommands: []string{gateLandingCall, gateLandingCall},
++		},
+ 		{
+ 			name: "a rerun skipped over a recorded pass is flaky and passes the gate", log: dotnetFailure,
+ 			results: []verifytree.Result{failed, skipped}, wantCommands: []string{gateLandingCall, gateLandingCall}, wantFlaky: []string{"tier0 Ns.Tests.EnumeratesTree"},
+@@ -437,16 +462,31 @@ func TestVerifyGate_RerunsATestFailureOnce(t *testing.T) {
+ 			if tt.log != "" {
+ 				writeVerifyLog(t, f, tt.log)
+ 			}
+-			f.fake.onVerify = func() { f.fake.result = tt.results[min(f.fake.verifyCalls-1, len(tt.results)-1)] }
++			if tt.unreadableLog {
++				f.fake.writeLog = func(path string) {
++					if err := os.MkdirAll(path, 0o755); err != nil {
++						t.Error(err)
++					}
++				}
++			}
++			f.fake.onVerify = func() {
++				f.fake.result = tt.results[min(f.fake.verifyCalls-1, len(tt.results)-1)]
++				if f.fake.verifyCalls == 2 {
++					f.fake.verifyErr = tt.rerunErr
++				}
++			}
+ 			var flaky []flakyPass
+ 			if !tt.noSink {
+ 				f.gate.onFlakyPass = func(pass flakyPass) { flaky = append(flaky, pass) }
+ 			}
+ 
+-			reason, _, err := f.gate.check(context.Background(), "Finalize", "main")
++			reason, crashed, err := f.gate.check(context.Background(), "Finalize", "main")
+ 
+-			if err != nil {
+-				t.Fatalf("check() error = %v; want nil", err)
++			if !errors.Is(err, tt.rerunErr) {
++				t.Fatalf("check() error = %v; want %v", err, tt.rerunErr)
++			}
++			if crashed != tt.wantCrashed {
++				t.Errorf("check() crashed = %v; want %v", crashed, tt.wantCrashed)
+ 			}
+ 			if !slices.Equal(f.fake.commands, tt.wantCommands) {
+ 				t.Errorf("verify commands = %q; want %q", f.fake.commands, tt.wantCommands)
