@@ -1,6 +1,6 @@
 # The orch session starts on the provider default model because orch.model and orch.effort default to empty
 
-`orch-model-default-empty` · Note · bug, orch, config
+`orch-model-default-empty` · Task · bug, orch, config
 
 ## Seen (operator, 2026-11-11)
 
@@ -11,5 +11,6 @@ So the orch runs on whatever Claude Code's default is on that machine (a local `
 ## Wanted
 
 The orch's model and effort come from lym's config with a non-empty default in the template, so `lym s` and `lym beam start` start the orch on the configured model on every machine.
-The default is the operator's call; the operator reads the orch as needing a strong model, as the other agents are set.
+The template default is `model: opus` and `effort: medium` (operator, 2026-11-11, "for now").
+The operator has already set both in this hub's default layer; the template default makes every hub and machine start the same way.
 Check that every path that starts an orch session, `lym s` included, reads `orch.model` and `orch.effort`.
