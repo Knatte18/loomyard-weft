@@ -1,0 +1,694 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index c44cf70b..f2893df3 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -697,7 +697,7 @@ User-facing modules each get one `lym <module>` namespace:
+   The provider is swappable behind an **engine** seam;
+   the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it.
+   The registered engines are `claude` and `codex`.
+-  `codex` drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s` and `codex.yaml`'s `sandbox_mode` (`workspace-write`, or `danger-full-access` for a machine whose bubblewrap cannot create a user namespace, a machine key set in the hub's machine override) and, under `workspace-write`, as writable roots, the records checkout it is told through its config dirs (none outside a hub), the checkout's git dir and the common git dir it links to, so a session in a linked worktree can commit, and the folders of `codex.yaml`'s `writable_roots` that exist (template: the Go build cache);
++  `codex` drives the Codex CLI's TUI under one shared lym Codex home (`codex.yaml`'s `home`, linked to the operator's own login and sessions, its folder trust rendered by lym), with `-a never -s` and the mode `codex.yaml`'s `sandbox_mode` settles (`auto`, the template's, probes Codex's sandbox at each launch and runs `workspace-write` when it starts, `danger-full-access` with a warning when it refuses to start, as on a machine whose bubblewrap cannot create a user namespace, and refuses the launch when the probe itself cannot run; an explicit `workspace-write` refuses the launch there, naming the cause; a machine key the hub's machine override may pin) and, under `workspace-write`, as writable roots, the records checkout it is told through its config dirs (none outside a hub), the checkout's git dir and the common git dir it links to, so a session in a linked worktree can commit, and the folders of `codex.yaml`'s `writable_roots` that exist (template: the Go build cache);
+   it loads skills as SKILL.md files the model reads by absolute path under `codex.yaml`'s `skill_roots`, and installs the shell guard rows of the `shellguard` table as `PreToolUse` hooks matching `Bash` with Codex's own steer and notice texts (`apply_patch` in place of Read, Edit and Write), the python and publish rows following their switches and the refuse-raw row a non-empty `refuse_raw` list;
+   a Codex run in a hub carries creel's hook delivery, the mail handed over as a hook block after a tool call and at a turn end, an idle session woken by its async waiter hook through `codex queue`, and the creel trust sentence in its prompt file, while an opened Codex session stays a pane-mail strand;
+   it has no fork audit, and the model registry's `sol`, `astra` and `luna` aliases name it.
+diff --git a/internal/shuttleengine/codexengine/codexengine.go b/internal/shuttleengine/codexengine/codexengine.go
+index f4755836..e28af0f0 100644
+--- a/internal/shuttleengine/codexengine/codexengine.go
++++ b/internal/shuttleengine/codexengine/codexengine.go
+@@ -38,6 +38,9 @@ type Codex struct {
+ 	submitRedrawSettleMS int
+ 	// warn logs what a launch goes on despite; tests replace it to read the warnings of one engine.
+ 	warn func(msg string, args ...any)
++	// sandboxProbe runs executable bin under the Codex home in dir and reports why Codex's sandbox cannot start.
++	// It returns nil when the sandbox starts; tests replace it so that no test runs Codex.
++	sandboxProbe func(bin, home, dir string) error
+ }
+ 
+ var (
+@@ -48,13 +51,13 @@ var (
+ 
+ // New returns a Codex engine with the default redraw settle and no dirs, so it serves reading uses only.
+ func New() *Codex {
+-	return &Codex{submitRedrawSettleMS: defaultSubmitRedrawSettleMS, warn: logger.Warn}
++	return &Codex{submitRedrawSettleMS: defaultSubmitRedrawSettleMS, warn: logger.Warn, sandboxProbe: runSandboxProbe}
+ }
+ 
+ // NewFromConfig returns a Codex engine whose redraw settle is cfg.SubmitRedrawSettleMS.
+ // It reads codex.yaml and its anchor from dirs.
+ func NewFromConfig(cfg shuttleengine.Config, dirs configengine.Dirs) *Codex {
+-	return &Codex{dirs: dirs, submitRedrawSettleMS: cfg.SubmitRedrawSettleMS, warn: logger.Warn}
++	return &Codex{dirs: dirs, submitRedrawSettleMS: cfg.SubmitRedrawSettleMS, warn: logger.Warn, sandboxProbe: runSandboxProbe}
+ }
+ 
+ // permissionModeBypass is the permission mode every Codex launch runs in.
+@@ -85,10 +88,11 @@ func validateChoice(choice shuttleengine.ModelChoice, permissionMode string, cod
+ // Prepare readies a Codex launch for the run in runDir and returns it.
+ // Before anything is written, it validates the spec and loads the hub's gate config.
+ // A gate config that fails to load refuses the launch, and so does a checkout that Codex rules refuse.
+-// It readies the lym home and writes prompt.md into runDir.
++// It readies the lym home, settles the sandbox and writes prompt.md into runDir.
++// Under codex.yaml's workspace-write, a sandbox that cannot start on the machine refuses the launch, naming the cause.
+ // The prompt holds the deny notice, the creel trust sentence, the standing passages and the spec's prompt.
+ // The launch line carries a PreToolUse hook per installed shell guard.
+-// It runs codex.yaml's sandbox mode, and under workspace-write it turns on the sandbox's network access,
++// It runs the settled sandbox mode, and under workspace-write it turns on the sandbox's network access,
+ // so the session reaches the creel daemon's socket.
+ // Once Codex exits, the launch appends the exit record to the run's events file.
+ // A board directory adds creel's hook delivery and marks the launch CreelHooks.
+@@ -113,6 +117,10 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, err
+ 	}
++	sandboxMode, err := c.launchSandboxMode(codex, home)
++	if err != nil {
++		return shuttleengine.Launch{}, err
++	}
+ 
+ 	absRunDir, err := filepath.Abs(runDir)
+ 	if err != nil {
+@@ -140,7 +148,7 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 		Cmd: buildLaunchCmd(sh, launchLine{
+ 			bin:           codexBinary(codex),
+ 			home:          home,
+-			sandboxMode:   codex.SandboxMode,
++			sandboxMode:   sandboxMode,
+ 			writableRoots: writableRoots,
+ 			model:         spec.Model,
+ 			effort:        spec.Effort,
+@@ -156,11 +164,11 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ }
+ 
+ // OpenLaunch returns the launch of a named interactive Codex session with no prompt.
+-// It validates the model choice and the permission mode and readies the lym home.
++// It validates the model choice and the permission mode, readies the lym home and settles the sandbox as Prepare does.
+ // It refuses under Codex rules before anything is written.
+ // Its line runs Codex with no hooks and no first turn, so the session carries no shell guard and waits at its composer.
+ // When Codex exits, the pane's shell writes the exit marker, asks reed to remove the strand and exits.
+-// The line runs codex.yaml's sandbox mode, and under workspace-write it turns on the sandbox's network access,
++// The line runs the settled sandbox mode, and under workspace-write it turns on the sandbox's network access,
+ // so an opened session reaches the creel daemon's socket too.
+ // It writes nothing into the directory it is given and names no session id.
+ // It carries no creel hooks, since the session has no prompt file to hold the creel trust sentence.
+@@ -179,11 +187,15 @@ func (c *Codex) OpenLaunch(_ string, spec shuttleengine.OpenSpec, _ shuttleengin
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, err
+ 	}
++	sandboxMode, err := c.launchSandboxMode(codex, home)
++	if err != nil {
++		return shuttleengine.Launch{}, err
++	}
+ 	return shuttleengine.Launch{
+ 		Cmd: codexCommand(shell.ForGOOS(), launchLine{
+ 			bin:           codexBinary(codex),
+ 			home:          home,
+-			sandboxMode:   codex.SandboxMode,
++			sandboxMode:   sandboxMode,
+ 			writableRoots: writableRoots,
+ 			model:         spec.Model,
+ 			effort:        spec.Effort,
+diff --git a/internal/shuttleengine/codexengine/config.go b/internal/shuttleengine/codexengine/config.go
+index 0c31c446..56ca31a6 100644
+--- a/internal/shuttleengine/codexengine/config.go
++++ b/internal/shuttleengine/codexengine/config.go
+@@ -38,15 +38,21 @@ type Config struct {
+ 	Efforts []string `yaml:"efforts"`
+ 	// SkillRoots are the directories a skill is looked up under when a session loads skills.
+ 	SkillRoots []string `yaml:"skill_roots"`
+-	// SandboxMode is the Codex sandbox every launch runs in, sandboxWorkspaceWrite or sandboxFullAccess.
++	// SandboxMode is how a launch picks its Codex sandbox: sandboxAuto, sandboxWorkspaceWrite or sandboxFullAccess.
+ 	SandboxMode string `yaml:"sandbox_mode"`
+ 	// WritableRoots are folders outside the workspace that a launch's sandbox lets the session write, such as a build cache;
+ 	// a leading "~/" names the user's home directory.
+ 	WritableRoots []string `yaml:"writable_roots"`
+ }
+ 
+-// The Codex sandbox modes codex.yaml's sandbox_mode may name.
++// The modes codex.yaml's sandbox_mode may name.
++// A launch runs one of the two Codex sandbox modes, workspace-write or danger-full-access;
++// auto is lym's own and resolves to one of them at each launch.
+ const (
++	// sandboxAuto runs workspace-write when Codex's sandbox starts on the machine.
++	// It runs danger-full-access when the sandbox refuses to start.
++	// A probe that cannot run to a verdict refuses the launch.
++	sandboxAuto = "auto"
+ 	// sandboxWorkspaceWrite bounds the session's writes to the workspace, the writable roots and the temporary folders.
+ 	sandboxWorkspaceWrite = "workspace-write"
+ 	// sandboxFullAccess runs the session with no sandbox.
+@@ -57,8 +63,8 @@ const (
+ 
+ // ConfigSpec returns the layered-load spec of codex.yaml, a per-worktree module.
+ // The local layer may not set the binary or the writable roots, since a writable root widens the sandbox.
+-// The sandbox mode is a fact of the machine, whether its bubblewrap can start Codex's sandbox:
+-// the machine layer may set it, so one machine runs unsandboxed while the tracked files keep the sandbox for the rest,
++// The sandbox mode follows a fact of the machine, whether its bubblewrap can start Codex's sandbox:
++// the machine layer may set it, so one machine pins its mode while the tracked files keep auto for the rest,
+ // and the local layer may not.
+ func ConfigSpec() configengine.Spec {
+ 	return configengine.Spec{
+@@ -78,7 +84,7 @@ func ConfigSpec() configengine.Spec {
+ 
+ // LoadConfig resolves codex.yaml from the layer stack under dirs.
+ // An absent file in every layer resolves the template; a layer file that exists but is invalid is an error.
+-// A sandbox_mode other than workspace-write or danger-full-access is invalid.
++// A sandbox_mode other than auto, workspace-write or danger-full-access is invalid.
+ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	resolved, err := configengine.LoadOrTemplate(dirs, ConfigSpec())
+ 	if err != nil {
+@@ -88,8 +94,8 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	if err := yaml.Unmarshal(resolved, &cfg); err != nil {
+ 		return Config{}, configengine.MarkInvalid(fmt.Errorf("unmarshal codex config: %w", err))
+ 	}
+-	if cfg.SandboxMode != sandboxWorkspaceWrite && cfg.SandboxMode != sandboxFullAccess {
+-		return Config{}, configengine.MarkInvalid(fmt.Errorf("codex.yaml's sandbox_mode %q is neither %s nor %s", cfg.SandboxMode, sandboxWorkspaceWrite, sandboxFullAccess))
++	if cfg.SandboxMode != sandboxAuto && cfg.SandboxMode != sandboxWorkspaceWrite && cfg.SandboxMode != sandboxFullAccess {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("codex.yaml's sandbox_mode %q is none of %s, %s and %s", cfg.SandboxMode, sandboxAuto, sandboxWorkspaceWrite, sandboxFullAccess))
+ 	}
+ 	return cfg, nil
+ }
+diff --git a/internal/shuttleengine/codexengine/doc.go b/internal/shuttleengine/codexengine/doc.go
+index 959ea6c9..89a45377 100644
+--- a/internal/shuttleengine/codexengine/doc.go
++++ b/internal/shuttleengine/codexengine/doc.go
+@@ -14,12 +14,20 @@
+ // After startup the engine reads config.toml back and warns about a root Codex's own write dropped;
+ // the trust prompt's accept is the backstop.
+ //
+-// The launch line runs `-a never`, so no approval prompt shows, and `-s` with codex.yaml's sandbox_mode.
+-// The mode is workspace-write unless a layer sets danger-full-access, which runs the session with no sandbox.
+-// That serves a machine whose bubblewrap may not create a user namespace.
+-// There every shell command under workspace-write fails and the session writes no output.
++// The launch line runs `-a never`, so no approval prompt shows, and `-s` with the sandbox mode settled from sandbox_mode.
++// danger-full-access runs the session with no sandbox, as a Claude seat runs.
++// Under auto, the template's value, and under workspace-write, each launch first probes Codex's sandbox:
++// it runs `codex sandbox` with the workspace-write policy over a command that does nothing.
++// Codex's Linux sandbox is bubblewrap, and on a machine whose bubblewrap may not create a user namespace it cannot start.
++// Ubuntu's AppArmor restriction of unprivileged user namespaces does that to a bubblewrap no profile of its own covers.
++// There every shell command of a sandboxed session fails, and the session writes no output.
++// A sandbox that starts runs workspace-write.
++// One that cannot start runs danger-full-access with a warning naming the cause under auto;
++// under workspace-write it refuses the launch, naming the cause, so a seat reads as not started rather than stopped.
++// A probe may fail to run to a verdict: the executable is missing, or a timeout or a signal ends it.
++// That shows nothing about the sandbox, so it refuses the launch under both modes.
+ // The key is a machine key: the hub's machine override sets it for one machine, and a local override may not.
+-// A value other than the two refuses the load.
++// A value other than the three refuses the load.
+ // The rest of this paragraph describes the workspace-write line; a danger-full-access line carries none of it.
+ // The line adds writable roots, each symlink-resolved as the trusted roots are.
+ // The records checkout it is told through its Dirs lets the session write under the anchor's `.lym`.
+diff --git a/internal/shuttleengine/codexengine/fixture_test.go b/internal/shuttleengine/codexengine/fixture_test.go
+index 05cb3156..212d14f5 100644
+--- a/internal/shuttleengine/codexengine/fixture_test.go
++++ b/internal/shuttleengine/codexengine/fixture_test.go
+@@ -143,10 +143,12 @@ func (w *warnLog) String() string {
+ }
+ 
+ // newEngine returns an engine anchored at anchor whose warnings the returned log collects.
++// Its sandbox probe reports a sandbox that starts, so no test runs Codex.
+ func newEngine(anchor string) (*Codex, *warnLog) {
+ 	log := &warnLog{}
+ 	engine := NewFromConfig(shuttleengine.Config{SubmitRedrawSettleMS: defaultSubmitRedrawSettleMS}, configengine.Dirs{Anchor: anchor})
+ 	engine.warn = log.warn
++	engine.sandboxProbe = func(string, string, string) error { return nil }
+ 	return engine, log
+ }
+ 
+diff --git a/internal/shuttleengine/codexengine/open_test.go b/internal/shuttleengine/codexengine/open_test.go
+index b2b2aecc..19d53c43 100644
+--- a/internal/shuttleengine/codexengine/open_test.go
++++ b/internal/shuttleengine/codexengine/open_test.go
+@@ -20,10 +20,14 @@ import (
+ // TestOpenLaunch pins the launch an opened session gets and what it refuses.
+ // A valid spec gets the Codex command with the told records and the worktree's git dirs as its writable roots.
+ // The command carries the model and the effort.
++// It runs workspace-write when the sandbox probe reports a sandbox that starts.
++// It runs danger-full-access when a layer sets it, or when auto's probe reports one that cannot start.
+ // It has no hooks, no first turn, an empty resume line, no creel hooks and no session id.
+ // The lym home trusts the checkout's roots while the session directory stays unmade.
+ // The launch refuses a permission mode other than bypass and an effort codex.yaml does not list.
+-// It also refuses Codex rules in the worktree, and each refusal comes before the lym home is made.
++// It also refuses Codex rules in the worktree, and each of these refusals comes before the lym home is made.
++// It refuses a sandbox that cannot start under workspace-write, naming the cause and the way forward;
++// the probe runs under the lym home, so that refusal comes after the home is made.
+ func TestOpenLaunch(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -33,10 +37,15 @@ func TestOpenLaunch(t *testing.T) {
+ 		spec shuttleengine.OpenSpec
+ 		// setup changes the worktree before OpenLaunch.
+ 		setup func(t *testing.T, anchor string)
++		// probeErr is the sandbox probe's answer; nil means the sandbox starts.
++		probeErr error
+ 		// wantSandboxMode is the sandbox the launch line carries; empty means sandboxWorkspaceWrite.
+ 		wantSandboxMode string
+ 		// wantErr holds the texts a refusal must carry; empty means the launch goes ahead.
+ 		wantErr []string
++		// wantProbe reports whether the launch probes the sandbox, with the Codex executable, under the lym home, in the anchor.
++		// The probe runs under the home, so a refusal from it leaves the home made and skips the unmade-home check.
++		wantProbe bool
+ 	}{
+ 		{name: "BypassDefault", spec: shuttleengine.OpenSpec{Role: "explore", ModelChoice: shuttleengine.ModelChoice{Engine: "codex", Model: "gpt-6-luna", Effort: "high"}}},
+ 		{
+@@ -47,6 +56,23 @@ func TestOpenLaunch(t *testing.T) {
+ 			},
+ 			wantSandboxMode: sandboxFullAccess,
+ 		},
++		{
++			name:            "AutoSandboxCannotStart",
++			spec:            shuttleengine.OpenSpec{Role: "explore"},
++			probeErr:        errors.New("bwrap: setting up uid map: Permission denied"),
++			wantSandboxMode: sandboxFullAccess,
++			wantProbe:       true,
++		},
++		{
++			name: "WorkspaceWriteSandboxCannotStart",
++			spec: shuttleengine.OpenSpec{Role: "explore"},
++			setup: func(t *testing.T, anchor string) {
++				writeFile(t, configengine.ConfigFile(anchor, "codex"), "writable_roots: []\nsandbox_mode: "+sandboxWorkspaceWrite+"\n")
++			},
++			probeErr:  errors.New("bwrap: setting up uid map: Permission denied"),
++			wantErr:   []string{"bwrap: setting up uid map: Permission denied", "way forward"},
++			wantProbe: true,
++		},
+ 		{name: "PromptPermissionMode", spec: shuttleengine.OpenSpec{Role: "explore", PermissionMode: "prompt"}, wantErr: []string{`permission mode "prompt"`, "way forward"}},
+ 		{name: "EffortOutsideEfforts", spec: shuttleengine.OpenSpec{Role: "explore", ModelChoice: shuttleengine.ModelChoice{Effort: "xhigh"}}, wantErr: []string{`effort "xhigh"`, "way forward"}},
+ 		{
+@@ -67,10 +93,21 @@ func TestOpenLaunch(t *testing.T) {
+ 				tt.setup(t, anchor)
+ 			}
+ 			engine, _ := newEngine(anchor)
++			var probed []string
++			engine.sandboxProbe = func(bin, home, dir string) error {
++				probed = append(probed, bin, home, dir)
++				return tt.probeErr
++			}
+ 			engine.dirs.Records = records
+ 			sessionDir := filepath.Join(t.TempDir(), "session")
+ 
+ 			launch, err := engine.OpenLaunch(sessionDir, tt.spec, shuttleengine.Config{})
++
++			if tt.wantProbe {
++				if wantProbed := []string{"codex", repo.lymHome, anchor}; !reflect.DeepEqual(probed, wantProbed) {
++					t.Errorf("sandbox probe called with %q; want %q", probed, wantProbed)
++				}
++			}
+ 			if len(tt.wantErr) > 0 {
+ 				if err == nil {
+ 					t.Fatal("OpenLaunch() error = nil; want a refusal")
+@@ -80,7 +117,7 @@ func TestOpenLaunch(t *testing.T) {
+ 						t.Errorf("OpenLaunch() error %q does not contain %q", err, want)
+ 					}
+ 				}
+-				if _, statErr := os.Lstat(repo.lymHome); !errors.Is(statErr, os.ErrNotExist) {
++				if _, statErr := os.Lstat(repo.lymHome); !tt.wantProbe && !errors.Is(statErr, os.ErrNotExist) {
+ 					t.Errorf("lym home stat error = %v; want the home unmade", statErr)
+ 				}
+ 				return
+diff --git a/internal/shuttleengine/codexengine/prepare_test.go b/internal/shuttleengine/codexengine/prepare_test.go
+index 75bf684e..57be9a2b 100644
+--- a/internal/shuttleengine/codexengine/prepare_test.go
++++ b/internal/shuttleengine/codexengine/prepare_test.go
+@@ -41,7 +41,7 @@ func readRecord(t *testing.T, home string) trustRecord {
+ // The writable roots are the told records checkout (none when the engine is told none).
+ // After it come the git dirs of a linked worktree or a plain clone, then the configured roots that exist.
+ // The hooks of the run are carried, with a guard per row that the python switch and the publish guard install.
+-// The line runs codex.yaml's sandbox mode, workspace-write unless a layer sets danger-full-access.
++// The line runs the workspace-write sandbox, which the fixture's probe reports as starting.
+ // The line also carries the prompt pointer.
+ // It also pins the resume line, which exits and records the session start.
+ // An engine told no board gets no creel hooks, and the resume line has no session id.
+@@ -62,8 +62,6 @@ func TestPrepare_Launch(t *testing.T) {
+ 		configuredRoots bool
+ 		// gitDirsThroughLink reports whether the linked worktree reaches its git dir and common dir through a symlink.
+ 		gitDirsThroughLink bool
+-		// fullAccess reports whether codex.yaml's worktree layer sets the danger-full-access sandbox mode.
+-		fullAccess bool
+ 	}{
+ 		{name: "RecordsTold", toldRecords: true},
+ 		{name: "RecordsToldThroughLink", toldRecords: true, toldThroughLink: true},
+@@ -71,7 +69,6 @@ func TestPrepare_Launch(t *testing.T) {
+ 		{name: "PlainClone", plainClone: true},
+ 		{name: "ConfiguredRoots", toldRecords: true, configuredRoots: true},
+ 		{name: "GitDirsThroughLink", gitDirsThroughLink: true},
+-		{name: "DangerFullAccess", toldRecords: true, fullAccess: true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -106,11 +103,6 @@ func TestPrepare_Launch(t *testing.T) {
+ 				writeWritableRoots(t, anchor, cache+", "+filepath.Join(repo.base, "missing"))
+ 				wantRoots = append(wantRoots, cache)
+ 			}
+-			wantMode := sandboxWorkspaceWrite
+-			if tt.fullAccess {
+-				writeFile(t, configengine.ConfigFile(anchor, "codex"), "writable_roots: []\nsandbox_mode: "+sandboxFullAccess+"\n")
+-				wantMode = sandboxFullAccess
+-			}
+ 			runDir := t.TempDir()
+ 
+ 			launch, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "review the plan", DenyPublish: true, ModelChoice: shuttleengine.ModelChoice{Engine: "codex", Model: "gpt-6-astra", Effort: "medium"}}, shuttleengine.Config{DenyPython: true})
+@@ -125,7 +117,7 @@ func TestPrepare_Launch(t *testing.T) {
+ 				Cmd: buildLaunchCmd(sh, launchLine{
+ 					bin:           "codex",
+ 					home:          repo.lymHome,
+-					sandboxMode:   wantMode,
++					sandboxMode:   sandboxWorkspaceWrite,
+ 					writableRoots: wantRoots,
+ 					model:         "gpt-6-astra",
+ 					effort:        "medium",
+@@ -149,6 +141,110 @@ func TestPrepare_Launch(t *testing.T) {
+ 	}
+ }
+ 
++// TestPrepare_SandboxMode pins the sandbox a launch runs in for each sandbox_mode and probe result.
++// auto and workspace-write probe the sandbox once, with the Codex executable, under the lym home, in the anchor;
++// a sandbox that starts runs workspace-write.
++// One that cannot start runs danger-full-access under auto, with a warning naming the cause.
++// Under workspace-write it refuses the launch before the prompt file is written, naming the cause and the way forward.
++// A probe that did not run to a verdict refuses the launch under both modes.
++// danger-full-access runs no probe.
++func TestPrepare_SandboxMode(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const cause = "bwrap: setting up uid map: Permission denied"
++	tests := []struct {
++		name string
++		mode string
++		// probeErr is the probe's answer; nil means the sandbox starts.
++		probeErr error
++		// wantProbe reports whether the launch probes the sandbox.
++		wantProbe bool
++		// wantMode is the sandbox the launch line carries.
++		wantMode string
++		// wantWarn is a text the warnings must hold; empty means none.
++		wantWarn string
++		// wantErr holds the texts a refusal must carry; empty means the launch goes ahead.
++		wantErr []string
++	}{
++		{name: "AutoSandboxStarts", mode: sandboxAuto, wantProbe: true, wantMode: sandboxWorkspaceWrite},
++		{name: "AutoSandboxCannotStart", mode: sandboxAuto, probeErr: errors.New(cause), wantProbe: true, wantMode: sandboxFullAccess, wantWarn: cause},
++		{name: "WorkspaceWriteSandboxStarts", mode: sandboxWorkspaceWrite, wantProbe: true, wantMode: sandboxWorkspaceWrite},
++		{
++			name: "WorkspaceWriteSandboxCannotStart", mode: sandboxWorkspaceWrite, probeErr: errors.New(cause), wantProbe: true,
++			wantErr: []string{"codexengine:", cause, "way forward", "lym config codex --layer machine --set sandbox_mode=" + sandboxAuto},
++		},
++		{
++			name: "AutoProbeDidNotRun", mode: sandboxAuto, probeErr: fmt.Errorf("%w: %s", errSandboxProbeNotRun, cause), wantProbe: true,
++			wantErr: []string{"codexengine:", cause, "way forward"},
++		},
++		{
++			name: "WorkspaceWriteProbeDidNotRun", mode: sandboxWorkspaceWrite, probeErr: fmt.Errorf("%w: %s", errSandboxProbeNotRun, cause), wantProbe: true,
++			wantErr: []string{"codexengine:", cause, "way forward"},
++		},
++		{name: "FullAccess", mode: sandboxFullAccess, probeErr: errors.New(cause), wantMode: sandboxFullAccess},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			repo := newRepoFixture(t)
++			anchor, _ := repo.addWorktree(t, "wt")
++			writeFile(t, configengine.ConfigFile(anchor, "codex"), "writable_roots: []\nsandbox_mode: "+tt.mode+"\n")
++			engine, warnings := newEngine(anchor)
++			var probed []string
++			engine.sandboxProbe = func(bin, home, dir string) error {
++				probed = append(probed, bin, home, dir)
++				return tt.probeErr
++			}
++			runDir := t.TempDir()
++			promptPath := filepath.Join(runDir, "prompt.md")
++
++			launch, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "p"}, shuttleengine.Config{})
++
++			var wantProbed []string
++			if tt.wantProbe {
++				wantProbed = []string{"codex", repo.lymHome, anchor}
++			}
++			if !reflect.DeepEqual(probed, wantProbed) {
++				t.Errorf("sandbox probe called with %q; want %q", probed, wantProbed)
++			}
++			if len(tt.wantErr) > 0 {
++				if err == nil {
++					t.Fatal("Prepare() error = nil; want a refusal")
++				}
++				for _, want := range tt.wantErr {
++					if !strings.Contains(err.Error(), want) {
++						t.Errorf("Prepare() error %q does not contain %q", err, want)
++					}
++				}
++				if _, statErr := os.Stat(promptPath); !errors.Is(statErr, os.ErrNotExist) {
++					t.Errorf("prompt.md stat error = %v; want no prompt file", statErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("Prepare() error: %v", err)
++			}
++			eventsPath := filepath.Join(runDir, "events.jsonl")
++			want := buildLaunchCmd(shell.ForGOOS(), launchLine{
++				bin:           "codex",
++				home:          repo.lymHome,
++				sandboxMode:   tt.wantMode,
++				writableRoots: repo.wantGitDirs(anchor),
++				hooks:         hookSettings(eventsPath, installedGuards(nil, guardInputs{}), creelDelivery{}),
++				firstTurn:     launchPointer(promptPath),
++				eventsPath:    eventsPath,
++			})
++			if launch.Cmd != want {
++				t.Errorf("Prepare() launch line = %q; want %q", launch.Cmd, want)
++			}
++			if got := warnings.String(); tt.wantWarn == "" && got != "" || !strings.Contains(got, tt.wantWarn) {
++				t.Errorf("warnings = %q; want %q", got, tt.wantWarn)
++			}
++		})
++	}
++}
++
+ // TestPrepare_ExpandsHomeInWritableRoots pins that a leading ~/ in writable_roots expands to the user's home.
+ // It sets the home environment variables, so it does not run in parallel.
+ func TestPrepare_ExpandsHomeInWritableRoots(t *testing.T) {
+@@ -637,7 +733,7 @@ func TestCheckAfterStartup(t *testing.T) {
+ 
+ // TestLoadConfig_Template pins codex.yaml's template:
+ // the codex binary on PATH, the homes under ~/, the efforts low to high;
+-// the Claude plugin cache as the skill root, the workspace-write sandbox and the Go build cache as the writable root.
++// the Claude plugin cache as the skill root, the auto sandbox mode and the Go build cache as the writable root.
+ func TestLoadConfig_Template(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -646,7 +742,7 @@ func TestLoadConfig_Template(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("LoadConfig() error: %v", err)
+ 	}
+-	want := Config{Home: "~/.lym/codex", OperatorHome: "~/.codex", Efforts: []string{"low", "medium", "high"}, SkillRoots: []string{"~/.claude/plugins/cache"}, SandboxMode: sandboxWorkspaceWrite, WritableRoots: []string{"~/.cache/go-build"}}
++	want := Config{Home: "~/.lym/codex", OperatorHome: "~/.codex", Efforts: []string{"low", "medium", "high"}, SkillRoots: []string{"~/.claude/plugins/cache"}, SandboxMode: sandboxAuto, WritableRoots: []string{"~/.cache/go-build"}}
+ 	if !reflect.DeepEqual(got, want) {
+ 		t.Errorf("LoadConfig() = %+v; want %+v", got, want)
+ 	}
+diff --git a/internal/shuttleengine/codexengine/sandbox.go b/internal/shuttleengine/codexengine/sandbox.go
+new file mode 100644
+index 00000000..0c08c15a
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/sandbox.go
+@@ -0,0 +1,86 @@
++// sandbox.go settles the sandbox a Codex launch runs in.
++// It probes whether Codex's sandbox can start on this machine and resolves codex.yaml's sandbox_mode against the result.
++
++package codexengine
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"os"
++	"os/exec"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// sandboxProbeTimeout bounds one probe of Codex's sandbox; a probe that outlasts it did not run to a verdict.
++const sandboxProbeTimeout = 30 * time.Second
++
++// sandboxProbeCommand is the command the probe runs inside the sandbox: one that does nothing and exits 0.
++const sandboxProbeCommand = "true"
++
++// errSandboxProbeNotRun marks a probe that could not run to a verdict.
++// The binary may be missing or unexecutable, or a timeout or a signal may have ended the probe.
++// Such a probe shows nothing about whether the sandbox starts.
++var errSandboxProbeNotRun = errors.New("the sandbox probe did not run to a verdict")
++
++// runSandboxProbe runs `codex sandbox` with the workspace-write policy under the Codex home at home, in dir.
++// The command it runs there does nothing, so the probe reports only whether the sandbox itself starts.
++// It does not run the launch's writable roots or network setting,
++// and an empty dir runs it in the process's working directory.
++// It returns nil when the sandbox starts.
++// When the executable exits non-zero it returns an error carrying the command's output.
++// That output is, for example, bubblewrap's refusal to set up its namespace.
++// When the probe could not run to a verdict, the error wraps the did-not-run sentinel instead.
++// A caller tells the two apart with errors.Is.
++func runSandboxProbe(bin, home, dir string) error {
++	ctx, cancel := context.WithTimeout(context.Background(), sandboxProbeTimeout)
++	defer cancel()
++	cmd := exec.CommandContext(ctx, bin, "sandbox", "-c", "sandbox_mode="+tomlString(sandboxWorkspaceWrite), "--", sandboxProbeCommand)
++	cmd.Dir = dir
++	cmd.Env = append(os.Environ(), codexHomeEnvKey+"="+home)
++	logger.Info("codexengine: probing whether Codex's sandbox starts", "binary", bin, "dir", dir)
++	out, err := cmd.CombinedOutput()
++	if err != nil {
++		var exitErr *exec.ExitError
++		if ctx.Err() != nil || !errors.As(err, &exitErr) || exitErr.ExitCode() < 0 {
++			return fmt.Errorf("%w: %s sandbox: %w", errSandboxProbeNotRun, bin, err)
++		}
++		if output := strings.TrimSpace(string(out)); output != "" {
++			return fmt.Errorf("%s sandbox: %w: %s", bin, err, output)
++		}
++		return fmt.Errorf("%s sandbox: %w", bin, err)
++	}
++	logger.Info("codexengine: Codex's sandbox started", "binary", bin)
++	return nil
++}
++
++// launchSandboxMode returns the sandbox a launch runs in, from codex.yaml's sandbox_mode and the probe.
++// danger-full-access runs no probe and no sandbox.
++// Under auto and workspace-write the probe runs once, under the lym home at home, in the engine's anchor;
++// a sandbox that starts gives workspace-write.
++// One that refuses to start gives danger-full-access with a warning naming the cause under auto,
++// so a machine whose bubblewrap may not create a user namespace runs its sessions as a Claude seat runs.
++// Under workspace-write it refuses the launch and names the cause.
++// A session started there would fail every shell command.
++// A probe that did not run to a verdict refuses the launch under both modes and names the cause.
++// It shows nothing about the sandbox, so dropping the write bound on it would be unfounded.
++func (c *Codex) launchSandboxMode(codex Config, home string) (string, error) {
++	if codex.SandboxMode == sandboxFullAccess {
++		return sandboxFullAccess, nil
++	}
++	err := c.sandboxProbe(codexBinary(codex), home, c.dirs.Anchor)
++	if err == nil {
++		return sandboxWorkspaceWrite, nil
++	}
++	if errors.Is(err, errSandboxProbeNotRun) {
++		return "", fmt.Errorf("codexengine: %w; way forward: fix the Codex executable, or launch again if the cause was transient", err)
++	}
++	if codex.SandboxMode == sandboxAuto {
++		c.warn("codexengine: Codex's sandbox cannot start on this machine, so the session runs with no sandbox", "sandbox_mode", sandboxAuto, "cause", err)
++		return sandboxFullAccess, nil
++	}
++	return "", fmt.Errorf("codexengine: codex.yaml's sandbox_mode is %s, but Codex's sandbox cannot start on this machine: %w; way forward: set it for this machine with lym config codex --layer machine --set sandbox_mode=%s from the hub's prime worktree", sandboxWorkspaceWrite, err, sandboxAuto)
++}
+diff --git a/internal/shuttleengine/codexengine/sandbox_test.go b/internal/shuttleengine/codexengine/sandbox_test.go
+new file mode 100644
+index 00000000..364edc99
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/sandbox_test.go
+@@ -0,0 +1,100 @@
++// sandbox_test.go pins the sandbox probe against a fake Codex executable it runs as a real process.
++
++package codexengine
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strconv"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shell"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestRunSandboxProbe pins the probe's command and its three answers.
++// It runs `<bin> sandbox` with the workspace-write policy over the probe command, in the dir and under the home given.
++// An exit 0 reads as a sandbox that starts;
++// any other exit reads as one that cannot, with the executable's output as the cause.
++// An executable that cannot be run, or that a signal ends, gives an error wrapping errSandboxProbeNotRun.
++// It writes an executable and runs it, so it does not run in parallel:
++// a fork in a concurrent test could hold the file open for writing and fail the run with "text file busy".
++func TestRunSandboxProbe(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	const cause = "bwrap: setting up uid map: Permission denied"
++	tests := []struct {
++		name string
++		// exitCode is the fake executable's exit status; a non-zero one also prints the cause.
++		exitCode int
++		// wantErr holds the texts the probe's error must carry; empty means the probe passes.
++		wantErr []string
++		// missingBin points the probe at an executable that does not exist.
++		missingBin bool
++		// killed makes the fake executable kill itself with a signal instead of exiting.
++		killed bool
++		// wantNotRun reports whether the error must wrap errSandboxProbeNotRun.
++		wantNotRun bool
++	}{
++		{name: "SandboxStarts"},
++		{name: "SandboxCannotStart", exitCode: 1, wantErr: []string{"exit status 1", cause}},
++		{name: "ExecutableMissing", missingBin: true, wantNotRun: true},
++		{name: "ProbeSignalled", killed: true, wantErr: []string{"signal: killed"}, wantNotRun: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			dir, err := filepath.EvalSymlinks(t.TempDir())
++			if err != nil {
++				t.Fatalf("resolve temp dir: %v", err)
++			}
++			home := filepath.Join(dir, "home")
++			argsFile := filepath.Join(dir, "args")
++			bin := filepath.Join(dir, "codex")
++			script := "#!/bin/sh\nprintf '%s\\n' \"$" + codexHomeEnvKey + "\" \"$(pwd -P)\" \"$@\" > " + shell.Posix().Quote(argsFile) + "\n"
++			if tt.exitCode != 0 {
++				script += "echo '" + cause + "' >&2\n"
++			}
++			if tt.killed {
++				script += "kill -9 $$\n"
++			} else {
++				script += "exit " + strconv.Itoa(tt.exitCode) + "\n"
++			}
++			if tt.missingBin {
++				err = runSandboxProbe(filepath.Join(dir, "absent"), home, dir)
++				if !errors.Is(err, errSandboxProbeNotRun) {
++					t.Errorf("runSandboxProbe() error = %v; want it to wrap errSandboxProbeNotRun", err)
++				}
++				return
++			}
++			if err := os.WriteFile(bin, []byte(script), 0o755); err != nil {
++				t.Fatalf("write fake codex: %v", err)
++			}
++
++			err = runSandboxProbe(bin, home, dir)
++			if got := errors.Is(err, errSandboxProbeNotRun); got != tt.wantNotRun {
++				t.Errorf("runSandboxProbe() error = %v; wraps errSandboxProbeNotRun = %t; want %t", err, got, tt.wantNotRun)
++			}
++
++			if len(tt.wantErr) == 0 && err != nil {
++				t.Errorf("runSandboxProbe() error: %v; want none", err)
++			}
++			for _, want := range tt.wantErr {
++				if err == nil || !strings.Contains(err.Error(), want) {
++					t.Errorf("runSandboxProbe() error = %v; want it to contain %q", err, want)
++				}
++			}
++			raw, readErr := os.ReadFile(argsFile)
++			if readErr != nil {
++				t.Fatalf("read the fake's arguments: %v", readErr)
++			}
++			got := strings.Split(strings.TrimSuffix(string(raw), "\n"), "\n")
++			want := []string{home, dir, "sandbox", "-c", `sandbox_mode="` + sandboxWorkspaceWrite + `"`, "--", sandboxProbeCommand}
++			if !reflect.DeepEqual(got, want) {
++				t.Errorf("fake codex got CODEX_HOME, dir and arguments %q; want %q", got, want)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/template.yaml b/internal/shuttleengine/codexengine/template.yaml
+index 4b750495..7b3ba210 100644
+--- a/internal/shuttleengine/codexengine/template.yaml
++++ b/internal/shuttleengine/codexengine/template.yaml
+@@ -3,5 +3,5 @@ home: ~/.lym/codex  # the shared lym Codex home every Codex launch runs under as
+ operator_home: ~/.codex  # the operator's own Codex home, which lym never writes; the lym home links its auth.json and sessions here, so one login and its token refresh serve both
+ efforts: [low, medium, high]  # the reasoning efforts a Codex launch may take; a run whose model-spec names another effort is refused when it starts
+ skill_roots: [~/.claude/plugins/cache]  # the directories a skill <plugin>:<name> is looked up under, newest version first, when a Codex session loads skills; a leading ~/ is the user's home directory
+-sandbox_mode: workspace-write  # the sandbox every Codex launch runs in: workspace-write bounds the session's writes to the workspace, the writable roots and the temporary folders; danger-full-access runs it with no sandbox, for a machine whose bubblewrap cannot create a user namespace (every shell command fails with "bwrap: setting up uid map: Permission denied"); set it on one machine with lym config codex --layer machine from the hub's prime worktree; a local override may not set it
++sandbox_mode: auto  # the sandbox every Codex launch runs in: workspace-write bounds the session's writes to the workspace, the writable roots and the temporary folders, and refuses the launch, naming the cause, when Codex's sandbox cannot start on the machine; danger-full-access runs it with no sandbox, as a Claude seat runs; auto probes Codex's sandbox at each launch and runs workspace-write when it starts, danger-full-access with a warning when it refuses to start, and refuses the launch when the probe itself cannot run (a missing executable, a timeout), as on a machine whose bubblewrap may not create a user namespace (Ubuntu's AppArmor restriction of unprivileged user namespaces; every shell command would fail with "bwrap: setting up uid map: Permission denied"); pin it on one machine with lym config codex --layer machine from the hub's prime worktree; a local override may not set it
+ writable_roots: [~/.cache/go-build]  # folders outside the workspace every Codex session's sandbox may write, such as a build cache, besides the records checkout and the checkout's git dirs lym adds itself; a leading ~/ is the user's home directory, a folder that does not exist is left out, and a local override may not set it
