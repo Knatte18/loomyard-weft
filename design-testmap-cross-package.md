@@ -1,6 +1,6 @@
 # testmap records each test's coverage across every in-module package its binary links
 
-`testmap-cross-package` · Task · feature, gate, testkit, darn · running · Finalize
+`testmap-cross-package` · Task · feature, gate, testkit, darn · done
 
 Decision record: [Sketch](decision-testmap-cross-package.md)
 
