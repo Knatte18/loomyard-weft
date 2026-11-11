@@ -810,28 +810,6 @@
       "revised": "2026-11-11T06:22:45Z"
     },
     {
-      "id": 1284,
-      "handle": "B3",
-      "slug": "webster-amends-pushed-card",
-      "title": "Webster amends a card commit it already pushed, so the task branch diverges from origin",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "batten",
-        "git"
-      ],
-      "issues": [
-        97
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #97](https://github.com/Knatte18/loomyard/issues/97).\n\n## Seen\n\nIn tapestry run `models-backend` (DrillOpPlan hub), Webster committed card 3 as `8cbbf19` (\"3: models-simulator\") and pushed it at 08:43:57, then started the card's `lym gate card-verify` (a long tier).\nAfter the verify, the fixes were folded into the same card commit by amending it: local `1a8de1d` (\"3: models-simulator\", 09:14:55), same parent `fc7e5f2`.\nThe next push found the branch diverged (ahead 1, behind 1), and batten stopped Run-Shed with a question to the parent offering merge, force-push or reset.\nThe run had a machine crash and a `lym loom resume` earlier the same morning; it is unclear whether the amend comes from the resume path or from Webster's normal verify-fix path.\n\n## Workaround\n\nThe parent compared the two commits (`1a8de1d` = `8cbbf19` plus the verify fixes), force-pushed with `git push --force-with-lease=hanf/models-backend:8cbbf19 origin hanf/models-backend`, and resumed with `lym batten run models-backend`.\n\n## Expected\n\nA card commit that has been pushed is never amended: verify fixes land as a new commit, or the push waits until the card's verify passes.\nFailing that, batten recognises an amended copy of the same card commit (same parent, same subject, local a superset) and settles the divergence itself with a leased force-push instead of stopping the run.\n",
-      "created": "2026-11-11T06:22:47Z",
-      "revised": "2026-11-11T06:22:47Z"
-    },
-    {
       "id": 1285,
       "handle": "B4",
       "slug": "push-notice-anchor-dir",
@@ -894,28 +872,6 @@
       "revised": "2026-11-11T06:22:54Z"
     },
     {
-      "id": 1288,
-      "handle": "B5",
-      "slug": "paused-webster-acts-on-notice",
-      "title": "A paused Webster session acts on a decision notice without the run lock, and the loom row stays blocked",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "loom",
-        "creel"
-      ],
-      "issues": [
-        101
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #101](https://github.com/Knatte18/loomyard/issues/101).\n\n## What happened\n\nA tapestry run's Webster paused on the parent's order: Webster wrote `outcome: stuck`, the loom row went to `blocked · Webster`, and the outer batten driver yielded.\nThe Webster session itself stayed open: its strand (`\u003chub\u003e:\u003ctask\u003e:webster`) was still live in `lym reed list`.\n\nLater the parent recorded a decision on the run with `lym loom decision add \u003cslug\u003e --by parent`.\nThat verb notified the live Webster strand (`\"notified\":[\"\u003chub\u003e:\u003ctask\u003e:webster\"]`).\nThe idle Webster session woke on that notice and went on working in the old session, outside any `lym webster run`:\nit forked the batch, merged, committed two cards, ran the verify gate and wrote `outcome.yaml` with `outcome: done`.\n`record-batch` warned that no live `lym webster run` owned the state, because the session was not started under the run's lock.\n\n## Result\n\n`lym webster status` showed every batch done, but the loom row stayed `blocked` at Webster with the old pause reason, and `lym batten status` showed `failed` with `battencli: cannot resume`.\n`lym batten run \u003cslug\u003e` yielded with the stale blocked error.\nThe overview page showed the tapestry as blocked although its work was done.\nRunning `lym loom resume` in the task worktree was needed to get the driver to re-run Webster and move on.\nMeanwhile the parent's own `lym webster run` would have started a second Webster beside the lockless one.\n\n## Expected\n\nA Webster that reports stuck ends its session, or a session that does not hold the run's lock refuses to act on mail and says so.\n`lym loom decision add` does not wake a producer strand whose run is halted, or warns the parent that it did.\n`record-batch` without the lock refuses rather than warns, so the work and the loom row cannot drift apart.\n",
-      "created": "2026-11-11T06:22:56Z",
-      "revised": "2026-11-11T06:22:56Z"
-    },
-    {
       "id": 1289,
       "handle": "E9",
       "slug": "heddle-render-all-worktrees",
@@ -975,27 +931,6 @@
       "body": "Imported from [issue #105](https://github.com/Knatte18/loomyard/issues/105).\n\n## What happened\n\nA card created tests in a second test project (a slow-tests project), but the hub's tier0 command runs only the fast test assembly, and tier1 is empty.\n`lym gate test --gate card --card \u003ccard\u003e`, the batch gate, and an explicit `lym gate test \u003cproject\u003e -- --filter ...` all ran the fast suite instead.\nThe tier0 command holds neither `{targets}` nor `{test_targets}`, so the requested target was silently ignored.\nThe card was committed after only a compile check of the slow-tests project; its tests never ran through any gate route.\nThe tests were later found failing only because an agent ran them through `lym gate test --tier 1 --card \u003ccard\u003e -- --filter ...` by hand.\n\n## Why it is abnormal\n\nA gate that is asked for a named target and cannot pass it to the command reports a pass for different tests, with no warning.\nA card whose tests live outside the configured tier0 assembly gets no verification and nothing says so.\n\n## What to do\n\n- Refuse or warn when a gate or explicit target is requested and the tier command has no `{targets}` or `{test_targets}` placeholder.\n- Warn when a card adds or edits tests in a project that no configured tier command reaches.\n\nProvenance: task `trip-history-transfer`; notes `04-aligner-moving-junction-recovery.md`, `04-aligner-moving-junction.md`.\n",
       "created": "2026-11-11T06:23:02Z",
       "revised": "2026-11-11T06:23:02Z"
-    },
-    {
-      "id": 1292,
-      "handle": "B7",
-      "slug": "webster-gate-halt-count",
-      "title": "loom halt: 'verify gate failed after 4 attempt(s) of 3: none named' reports an off-by-one count and no failure",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "gate"
-      ],
-      "issues": [
-        106
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #106](https://github.com/Knatte18/loomyard/issues/106).\n\n## What happened\n\n`lym loom` halted blocked at the Webster row with anomaly `escalation-to-human` and the reason:\n\n`verify gate failed after 4 attempt(s) of 3: none named`\n\n## Why it is abnormal\n\n- The message counts 4 attempts against a limit of 3, which reads as an off-by-one in the retry counter or its wording.\n- \"none named\" gives no failing test, project or gate output, so the operator cannot tell what failed or whether the gate itself errored.\n- The halt note offers no way forward and names only the trace file.\n\n## What to do\n\n- Make the attempt count and the limit agree, or state that the limit counts retries after the first attempt.\n- Include the failing gate, target and the tail of its output in the halt reason, and say explicitly when the gate produced no failure to name.\n- Add a way-forward line, as other halt reasons have.\n\nProvenance: task `trip-history-transfer`; note `loom-halt.md`.\n",
-      "created": "2026-11-11T06:23:05Z",
-      "revised": "2026-11-11T06:23:05Z"
     },
     {
       "id": 1293,
@@ -1080,6 +1015,36 @@
       "body": "## Seen (operator, 2026-11-11)\n\nThe hub workspace file `\u003chub\u003e/\u003crepo\u003e.code-workspace` lists the prime, Bolt and every pair whose parent is the prime, beams included,\nbut no pair under a beam: those are only in the beam's own `\u003crepo\u003e-\u003cbeam\u003e.code-workspace`.\nThe operator rarely opens VS Code, and when they do they want to see all of a repository's code in one window,\nso a beam's tasks missing from the hub file sends them to a second window.\nA folder is named by its slug alone, such as `adopt-worker-record`, so nothing shows which project it belongs to.\n\n## Idea\n\n- The hub workspace file lists every pair of the hub, the pairs under each beam included, at any depth.\n- Each pair's folder name leads with its project's handle, `P1: adopt-worker-record`, when its board entry belongs to a project;\n  a pair with no project keeps its slug alone.\n  The handle comes from the board at regeneration, so a regeneration after a board change brings it current.\n- The beam workspace files stay as they are.\n\nThe machine restart launcher (`machine-restart-shortcut`) opens only this hub file, so it relies on it listing every pair.\n",
       "created": "2026-11-11T07:22:39Z",
       "revised": "2026-11-11T07:22:39Z"
+    },
+    {
+      "id": 1297,
+      "handle": "T2",
+      "slug": "webster-run-faults",
+      "title": "Webster: no amend of a pushed card, no lockless work on a notice, and a gate halt that counts and names its failure",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "webster",
+        "loom",
+        "creel",
+        "batten",
+        "git",
+        "gate"
+      ],
+      "issues": [
+        97,
+        101,
+        106
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Three Webster faults from issues #97, #101 and #106, fixed in one run since all three sit in Webster's run and verify path.\n\n## 1. Webster amends a card commit it already pushed (#97)\n\nIn tapestry run `models-backend` (another hub), Webster committed card 3 as `8cbbf19` (\"3: models-simulator\") and pushed it, then started the card's `lym gate card-verify` (a long tier).\nAfter the verify, the fixes were folded into the same card commit by amending it: local `1a8de1d`, same subject, same parent `fc7e5f2`.\nThe next push found the branch diverged (ahead 1, behind 1), and batten stopped Run-Shed with a question to the parent offering merge, force-push or reset.\nThe run had a machine crash and a `lym loom resume` earlier the same morning; it is unclear whether the amend comes from the resume path or from Webster's normal verify-fix path.\n\nWorkaround: the parent compared the two commits (`1a8de1d` = `8cbbf19` plus the verify fixes), force-pushed with a lease on `8cbbf19`, and resumed with `lym batten run models-backend`.\n\nExpected: a card commit that has been pushed is never amended: verify fixes land as a new commit, or the push waits until the card's verify passes.\nFailing that, batten recognises an amended copy of the same card commit (same parent, same subject, local a superset) and settles the divergence itself with a leased force-push instead of stopping the run.\n\n## 2. A paused Webster session acts on a decision notice without the run lock (#101)\n\nA tapestry run's Webster paused on the parent's order: Webster wrote `outcome: stuck`, the loom row went to `blocked · Webster`, and the outer batten driver yielded.\nThe Webster session itself stayed open: its strand (`\u003chub\u003e:\u003ctask\u003e:webster`) was still live in `lym reed list`.\n\nLater the parent recorded a decision on the run with `lym loom decision add \u003cslug\u003e --by parent`, which notified the live Webster strand.\nThe idle Webster session woke on that notice and went on working in the old session, outside any `lym webster run`:\nit forked the batch, merged, committed two cards, ran the verify gate and wrote `outcome.yaml` with `outcome: done`.\n`record-batch` warned that no live `lym webster run` owned the state.\n\nResult: `lym webster status` showed every batch done, but the loom row stayed `blocked` at Webster with the old pause reason,\nand `lym batten status` showed `failed` with `battencli: cannot resume`; `lym batten run \u003cslug\u003e` yielded with the stale blocked error.\n`lym loom resume` in the task worktree was needed to re-run Webster and move on.\nMeanwhile the parent's own `lym webster run` would have started a second Webster beside the lockless one.\n\nExpected: a Webster that reports stuck ends its session, or a session that does not hold the run's lock refuses to act on mail and says so.\n`lym loom decision add` does not wake a producer strand whose run is halted, or warns the parent that it did.\n`record-batch` without the lock refuses rather than warns, so the work and the loom row cannot drift apart.\n\n## 3. The Webster verify-gate halt miscounts and names no failure (#106)\n\n`lym loom` halted blocked at the Webster row with anomaly `escalation-to-human` and the reason\n`verify gate failed after 4 attempt(s) of 3: none named`.\n\n- The message counts 4 attempts against a limit of 3, an off-by-one in the retry counter or its wording.\n- \"none named\" gives no failing test, project or gate output, so the operator cannot tell what failed or whether the gate itself errored.\n- The halt note offers no way forward and names only the trace file.\n\nExpected:\n- The attempt count and the limit agree, or the message states that the limit counts retries after the first attempt.\n- The halt reason includes the failing gate, target and the tail of its output, and says so when the gate produced no failure to name.\n- A way-forward line, as other halt reasons have.\n\nCommit `1b6e3fca` fixed the same zero-attempt wording for darn's verify gate only; follow its form.\n",
+      "status": "draft",
+      "created": "2026-11-11T06:22:47Z",
+      "revised": "2026-11-11T07:31:25Z",
+      "profile": "solid"
     }
   ],
   "prime_owner": "neve",
