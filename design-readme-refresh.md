@@ -16,9 +16,8 @@ Refresh the README as one pass.
 Read it against the current `lym` verbs, `docs/overview.md` and `docs/getting-started.md`, and fix what no longer matches.
 
 Add Slack, with the reason a reader will ask for: why a coding-agent tool needs Slack.
-The operator's work PC carries a work licence of Claude, and no Claude client of that licence may be on a phone.
-Slack is approved for work and is on the phone, so the relay lets the operator follow the orch and answer it away from the PC.
-The section states that need and says what the relay does; it does not describe the setup, which belongs in `docs/`.
+The relay lets an operator follow the orch and answer it from a phone, through Slack, which the organisation already uses and has approved.
+The section states that need and what the relay does; it does not describe the setup, which belongs in `docs/`.
 
 In Lineage, keep Autoboard and Willie Tran as plain text without the dead link, with a note that the repository was removed.
 Shorten Lineage to the origin and the credits, now that LoomYard stands on its own.
