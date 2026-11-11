@@ -694,7 +694,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (issue #102, left out of loop-exit-not-recorded)\n\nA load turn that ends on an API `server_error` makes shuttle wait and retype (`load turn ended on an API error; the prompt waits until the load runs through`), with `apiErrors` rising each time and no cap.\nIn the reported run it rose 3, 4, 5 before the loop ended with no envelope, and the run history showed hours of idle time around the stuck step that no status line surfaced.\nThe run `loop-exit-not-recorded` made the loop record its exit status but left these two asks out.\n\n## Idea\n\n- Bound the load-turn retry on `server_error` and name the cap in the halt note, so a halt reads as an API outage rather than only `loop-exited`.\n- Show in `lym loom status` the idle time between a stuck step and the next step.",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-11T08:09:18Z",
       "revised": "2026-11-11T08:30:13Z",
       "profile": "light"
