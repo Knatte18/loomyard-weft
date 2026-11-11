@@ -1,6 +1,6 @@
 # Finalize flaky rerun: test rows for the sink wiring and each rerun guard and outcome
 
-`finalize-flaky-test-gaps` · Task · enhancement, landing, gate · running · Code-Burler-Fix
+`finalize-flaky-test-gaps` · Task · enhancement, landing, gate · running · Code-Bouncer
 
 ## Seen (board tidy, 2026-11-11)
 
