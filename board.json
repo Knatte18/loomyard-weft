@@ -960,6 +960,26 @@
       "body": "Imported from [issue #103](https://github.com/Knatte18/loomyard/issues/103).\n\nlym heddle set and lym heddle remove save the entry and render HEDDLE.md, but leave every existing worktree's rendered files (CLAUDE.local.md, AGENTS.override.md, .claude/settings.local.json) stale until the worktree is made, taken in, or rendered by hand with lym heddle render.\n\nSeen: a new repository entry with target claude-file was set from a beam worktree. CLAUDE.local.md in that worktree, in the prime worktree and in a running task worktree all lacked the entry until lym heddle render was run in each one by hand.\n\nAn instruction entry usually exists because agents must follow it now (for example, a module that is out of scope), so agents in running task worktrees keep working without it, and nothing tells the caller which worktrees are stale.\n\nProposal: after a successful set or remove, render every file target into every live code worktree of the hub (prime, beams, task pairs), and report the rendered and failed worktrees in the verb's output. Running Claude sessions then take the change at their next compaction, as today; an optional flag to skip the fan-out could cover bulk edits.",
       "created": "2026-11-11T06:22:58Z",
       "revised": "2026-11-11T06:22:58Z"
+    },
+    {
+      "id": 1290,
+      "handle": "E10",
+      "slug": "heddle-split-file-targets",
+      "title": "heddle file targets: split claude-file and codex-file, add a shared target for both",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "heddle"
+      ],
+      "issues": [
+        104
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #104](https://github.com/Knatte18/loomyard/issues/104).\n\nA heddle entry with target claude-file is rendered into both CLAUDE.local.md (Claude Code) and AGENTS.override.md (Codex). The name says Claude only, and there is no way to give an instruction to one agent family alone, although some instructions apply to Codex and not to Claude, or the other way round.\n\nProposal: three file targets.\n\n- claude-file renders into CLAUDE.local.md only.\n- codex-file renders into AGENTS.override.md only.\n- A new shared target (for example agents-file) renders into both.\n\nExisting claude-file entries keep today's behaviour by migrating to the shared target. lym heddle set --help, lym heddle list and HEDDLE.md state which files each file target renders to.",
+      "created": "2026-11-11T06:23:00Z",
+      "revised": "2026-11-11T06:23:00Z"
     }
   ],
   "prime_owner": "neve",
