@@ -129,6 +129,16 @@ Rationale: Hard-cap rule: accept when the fix in place already answers each open
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - computescope-coverage-branch-untested (class scope, severity MEDIUM, open in rounds 1)
+  - coverage-selector-setup-untested (class scope, severity MEDIUM, open in rounds 1)
+  - gateslot-doc-tier-table-scope (class consistency, severity MEDIUM, open in rounds 1)
+  - selected-run-execution-untested (class scope, severity MEDIUM, open in rounds 1)
+  - selection-recorded-unasserted (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a gate key with `scope: coverage` loads; the scope error for an unknown value names `coverage` among the allowed values.
