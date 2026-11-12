@@ -461,6 +461,25 @@
       "status": "running · Discussion-Burler-Fix",
       "created": "2026-11-12T19:05:41Z",
       "revised": "2026-11-12T19:26:41Z"
+    },
+    {
+      "id": 1346,
+      "handle": "B1",
+      "slug": "adopt-does-not-work",
+      "title": "lym adopt does not work",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "orch",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The operator reports that lym adopt fails today; the cause is not yet found",
+      "body": "## Seen (operator, 2026-11-12)\n\nThe operator says `lym adopt` does not work today; no error text was given with the report.\nThe last adopt record in Bolt (`.lym/adopt/adopt.json`) is from 2026-11-11 14:37 and its root check was green, so the failure is newer or not in that record.\n\n## Idea\n\nReproduce it first: run `lym adopt --here` (or the subject that failed), keep the output and the adopt record, and find which step stops (reconcile, pairs, pause, owner, deploy, beam, check, done).\nThen fix it as a darn task.\nThe re-parent verb (`reparent-running-task` report, `docs/research/loom/reparent-running-task-2026-11-12.md`) waits until adopt works.\n",
+      "created": "2026-11-12T19:48:30Z",
+      "revised": "2026-11-12T19:48:30Z"
     }
   ],
   "prime_owner": "neve",
