@@ -1,6 +1,6 @@
 # Commit the coverage maps instead of keeping them in .lym
 
-`testmap-checked-in` · Task · enhancement, gate, testkit, dobby · running · Discussion-Bouncer
+`testmap-checked-in` · Note · sketch, gate, testkit, dobby
 
 Decision record: [Sketch](decision-testmap-checked-in.md)
 
