@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Plan writer bench: twill against a solo Opus and a solo Fable on one plan**<br>• One bench on one landed tapestry plan: the twill run already made, a solo opus[high] writer and a solo fable[medium] writer, compared on cost, rounds, time and plan quality | [`plan-writer-context`](design-plan-writer-context.md) | darn · docs | Code-Bouncer | neve | 3w<br>1h | loom, stencil |
+| T3 | **Plan writer bench: twill against a solo Opus and a solo Fable on one plan**<br>• One bench on one landed tapestry plan: the twill run already made, a solo opus[high] writer and a solo fable[medium] writer, compared on cost, rounds, time and plan quality | [`plan-writer-context`](design-plan-writer-context.md) | darn · docs | Drift-Recheck | neve | 3w<br>1h | loom, stencil |
 
 ### Ready (0)
 
@@ -33,7 +33,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 10d<br>22h | claude, shuttle, config |
-| T4 | `draft` **Give lym shuttle run a per-run advisor option**<br>• lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench | [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md) | darn · light |  | 58m<br>58m | shuttle, claude |
+| T4 | `draft` **Give lym shuttle run a per-run advisor option**<br>• lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench | [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md) | darn · light |  | 59m<br>59m | shuttle, claude |
 | T6 | `draft` **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | darn · docs | T4 | 23h<br>58m | darn, loom, shuttle, claude |
 
 ## Notes (13)
