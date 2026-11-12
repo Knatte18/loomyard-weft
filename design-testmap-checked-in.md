@@ -1,6 +1,6 @@
 # Commit the coverage maps instead of keeping them in .lym
 
-`testmap-checked-in` · Task · sketch, gate, testkit, dobby
+`testmap-checked-in` · Task · sketch, gate, testkit, dobby · running · Worktree-Create
 
 Decision record: [Sketch](decision-testmap-checked-in.md)
 
