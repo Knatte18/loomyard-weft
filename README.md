@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-12 20:19 UTC; every age below is as of then.
+Rendered 2026-11-12 20:26 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -74,7 +74,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (3)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -86,11 +86,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | darn · docs | Darn-Write | neve | 1d<br>3h | darn, loom, shuttle, claude |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md)<br>[Sketch](decision-slack-machine-bridge.md) | raddle |  | 4d<br>0m | slack, creel, orch |
 
 #### Draft (2)
 
@@ -101,16 +103,15 @@ Not released; nothing starts it until its status is cleared.
 | T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 10d<br>1d | claude, shuttle, config |
 | T2 | `draft` **Measure what coverage-map upkeep costs, check how its state is shown, and write the operator guide**<br>• What the upkeep passes have cost, whether one call shows the maps state, and a short guide to using and keeping the maps | [`testmap-upkeep-cost-and-guide`](design-testmap-upkeep-cost-and-guide.md) | darn · docs |  | 1h<br>1h | gate, testkit, dobby |
 
-### Notes (14)
+### Notes (13)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-#### Sketches (2)
+#### Sketches (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md)<br>[Sketch](decision-slack-machine-bridge.md) | 4d<br>1h | slack, creel, orch |
-| S2 |  | **Commit the coverage maps instead of keeping them in .lym**<br>• The maps sit in an excluded .lym directory; the operator wants them checked in, which needs a design for place, size, machines and who commits | [`testmap-checked-in`](design-testmap-checked-in.md)<br>[Sketch](decision-testmap-checked-in.md) | 1h<br>0m | gate, testkit, dobby |
+| S2 |  | **Commit the coverage maps instead of keeping them in .lym**<br>• The maps sit in an excluded .lym directory; the operator wants them checked in, which needs a design for place, size, machines and who commits | [`testmap-checked-in`](design-testmap-checked-in.md)<br>[Sketch](decision-testmap-checked-in.md) | 1h<br>8m | gate, testkit, dobby |
 
 #### Research (1)
 
@@ -122,7 +123,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **lym adopt does not work**<br>• The operator reports that lym adopt fails today; the cause is not yet found | [`adopt-does-not-work`](design-adopt-does-not-work.md) | 30m<br>19m | orch, fabric |
+| B1 |  | **lym adopt does not work**<br>• The operator reports that lym adopt fails today; the cause is not yet found | [`adopt-does-not-work`](design-adopt-does-not-work.md) | 38m<br>27m | orch, fabric |
 
 #### Enhancements (3)
 
