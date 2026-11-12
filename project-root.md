@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-12 17:08 UTC; every age below is as of then.
+Rendered 2026-11-12 17:09 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (3)
+## Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Plan writer bench: twill against a solo Opus and a solo Fable on one plan**<br>• One bench on one landed tapestry plan: the twill run already made, a solo opus[high] writer and a solo fable[medium] writer, compared on cost, rounds, time and plan quality | [`plan-writer-context`](design-plan-writer-context.md) | darn · docs | Darn-Write | neve | 3w<br>1m | loom, stencil |
+| T3 | **Plan writer bench: twill against a solo Opus and a solo Fable on one plan**<br>• One bench on one landed tapestry plan: the twill run already made, a solo opus[high] writer and a solo fable[medium] writer, compared on cost, rounds, time and plan quality | [`plan-writer-context`](design-plan-writer-context.md) | darn · docs | Darn-Write | neve | 3w<br>2m | loom, stencil |
 
 ### Ready (0)
 
@@ -26,7 +26,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (2)
+### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -34,6 +34,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 10d<br>21h | claude, shuttle, config |
 | T2 | `draft` **Build the full set of coverage maps and list, per package, the tests the others already cover**<br>• Use the maps: build them all and rank the redundant-test candidates per package; no test is cut | [`test-redundancy-candidates`](design-test-redundancy-candidates.md) | darn · light | T5 | 21h<br>21h | testkit, gate |
+| T4 | `draft` **Give lym shuttle run a per-run advisor option**<br>• lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench | [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md) | darn · light |  | 0m<br>0m | shuttle, claude |
 
 ## Notes (14)
 
