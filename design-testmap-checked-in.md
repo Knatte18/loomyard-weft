@@ -10,11 +10,15 @@ The operator wants the maps checked in, not kept in `.lym`.
 
 ## Decided (operator, 2026-11-12)
 
-The maps are committed in Bolt, the hub's records repository, never in the warp (the code repository): they are lym's own data, not the project's code.
+Not in Bolt: Bolt is one branch shared by all branches, so a task's branch could not build its own maps there, and a branch should.
+A map describes the code at a commit, so it follows the branch.
 
 ## What a design has to settle
 
-- The tracked path in Bolt, since `.lym/` there is excluded, and how the code that reads the maps finds it.
+- Where a per-branch map is committed.
+  The warp holds the code and the maps are lym's data, not the project's code;
+  the weft, the records branch each pair has, is per branch and is lym's.
+  The design checks how each of them lands and merges, and how a task's maps reach its parent.
 - Size and churn: 56 MB of JSON, and a pass rewrites many files; every commit of them adds to git history.
   Whether the format should be smaller or more stable (sorted keys, one file per test, no timestamps in unchanged entries) before it is committed.
 - Machines: a map carries an `EnvironmentStamp`, and a stamp that differs from the current one is a `MissEnvironment` that rebuilds the package.
