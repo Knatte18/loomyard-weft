@@ -1,6 +1,6 @@
 # The Discussion-Review round asks the parent orch, and its chair keeps every parent finding
 
-`discussion-review-parent-seat` · Task · feature, loom, orch, config, burler · running · Drift-Recheck
+`discussion-review-parent-seat` · Task · feature, loom, orch, config, burler · running · Describe
 
 Decision record: [Sketch](decision-discussion-review-parent-seat.md)
 
