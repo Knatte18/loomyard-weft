@@ -57,7 +57,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Pilot one coverage map: build time, full-set estimate, and whether the map is usable**<br>• Build the map of one package, time and cost it, estimate the full set, and check whether the map can cut tests or scope the gate | [`test-redundancy-candidates`](design-test-redundancy-candidates.md) | darn · light | Code-Burler-Review | neve | 22h<br>26m | testkit, gate |
+| T2 | **Pilot one coverage map: build time, full-set estimate, and whether the map is usable**<br>• Build the map of one package, time and cost it, estimate the full set, and check whether the map can cut tests or scope the gate | [`test-redundancy-candidates`](design-test-redundancy-candidates.md) | darn · light | Code-Burler-Fix | neve | 22h<br>26m | testkit, gate |
 
 #### Ready (0)
 
@@ -92,7 +92,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | motif | Discussion-Write | neve | 4d<br>14m | slack, creel, orch |
+| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | motif | Discussion-Write | neve | 4d<br>15m | slack, creel, orch |
 | T4 | **Give lym shuttle run a per-run advisor option**<br>• lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench | [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md) | darn · light | Describe | neve | 1h<br>1h | shuttle, claude |
 
 #### Ready (0)
