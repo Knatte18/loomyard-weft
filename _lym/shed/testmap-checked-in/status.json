@@ -1,14 +1,31 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/testmap-checked-in/_lym/discussion/decision-record.md",
+      "at": "2026-11-12T19:36:48Z",
+      "started_at": "2026-11-12T19:26:57Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-12T19:36:18.967870309Z",
+          "end": "2026-11-12T19:36:48.210396765Z"
+        }
+      ]
+    }
+  ],
   "product": {
     "slug": "testmap-checked-in",
     "parent": "main",
