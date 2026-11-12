@@ -1,12 +1,11 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
+  "state": "done",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Bouncer → awaiting",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -177,6 +176,14 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/slack-machine-bridge/_lym/reviews/discussion/round-3-bouncer-ledger.md",
       "at": "2026-11-12T19:14:31Z",
       "started_at": "2026-11-12T19:13:56Z"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/slack-machine-bridge/_lym/reviews/discussion/round-3-bouncer-ledger.md",
+      "at": "2026-11-12T19:15:33Z",
+      "started_at": "2026-11-12T19:15:32Z",
+      "by": "shed"
     }
   ],
   "product": {
