@@ -1,6 +1,6 @@
 # Plan writer cost: a solo writer against twill-plan, and an excerpt cut
 
-`plan-writer-context` · Note · research, loom, stencil
+`plan-writer-context` · Task · research, loom, stencil · draft
 
 ## Seen
 

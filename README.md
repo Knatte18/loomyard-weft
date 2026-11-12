@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-12 17:06 UTC; every age below is as of then.
+Rendered 2026-11-12 17:07 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -82,7 +82,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (2)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -92,7 +92,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (2)
+#### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -100,18 +100,18 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 10d<br>21h | claude, shuttle, config |
 | T2 | `draft` **Build the full set of coverage maps and list, per package, the tests the others already cover**<br>• Use the maps: build them all and rank the redundant-test candidates per package; no test is cut | [`test-redundancy-candidates`](design-test-redundancy-candidates.md) | darn · light | T5 | 21h<br>21h | testkit, gate |
+| T3 | `draft` **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | darn |  | 3w<br>1m | loom, stencil |
 
-### Notes (15)
+### Notes (14)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-#### Research (3)
+#### Research (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 3d<br>3d | gate, fabric |
 | R5 |  | **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | 22h<br>22h | darn, loom, shuttle, claude |
-| R6 |  | **Plan writer cost: a solo writer against twill-plan, and an excerpt cut**<br>• The Plan writer is the costliest session type; the open questions are a solo writer against twill-plan and an excerpt cut for the exploration fan | [`plan-writer-context`](design-plan-writer-context.md) | 3w<br>1m | loom, stencil |
 
 #### Enhancements (3)
 
