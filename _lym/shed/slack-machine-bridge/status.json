@@ -1,14 +1,31 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/slack-machine-bridge/_lym/discussion/decision-record.md",
+      "at": "2026-11-12T18:36:42Z",
+      "started_at": "2026-11-12T18:23:58Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-12T18:36:11.323465962Z",
+          "end": "2026-11-12T18:36:42.148575302Z"
+        }
+      ]
+    }
+  ],
   "product": {
     "slug": "slack-machine-bridge",
     "parent": "main",
