@@ -455,15 +455,17 @@
         "claude"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [
         "shuttle-run-advisor-option"
       ],
       "isolated": false,
       "brief": "",
-      "body": "## Idea (operator, 2026-11-11)\n\nThe bench that follows `advisor-model-trial`, which tunes the darn writer's advisor prompt.\nIt is filed as a task only when the operator approves that tuned prompt.\n\n## State after the trial (board tidy, 2026-11-11)\n\n`advisor-model-trial` landed as a report only (`3671f3d4`, `docs/research/loom/advisor-model-trial-2026-11-11/report.md`).\nIt ran no iteration and made no tuned prompt, so there is no prompt to approve and this bench is not ready to run.\nThe blocker: no route sets Claude Code's advisor (`advisorModel` setting, `--advisor` flag) for one shuttle run.\nThe operator decides the way forward: a per-run advisor option on `lym shuttle run`, or another route.\nThe bench waits on that and on a tuned prompt.\n\n## What it runs\n\nRerun three landed darn tasks of different sizes from their base commits, with a Sonnet writer, an Opus advisor and the tuned prompt, identical in all three:\n\n- large: `decision-record-replace-verb` (`6d58cad7`, about 2970 changed lines);\n- middle: `adopt-takeover-fixes` (`6f8d4cff`, about 580 changed lines);\n- small: `reed-tab-and-attach-fixes` (`aeea549d`, about 200 changed lines).\n\nThe cap is exactly three runs, one per task, and no repeats.\nEach run is compared with the task's recorded Opus run, whose recipe and profile come from its usage record:\nreview findings, bounces, tokens, cost and time with sleep removed.\nIt runs as darn `docs`, and the report goes under `docs/research/`.\n\n## Not decided\n\nWhether a lym config key for the advisor, beside each role's model and effort, follows: only after the bench shows it pays.\n",
+      "body": "## Idea (operator, 2026-11-11)\n\nWhether a Sonnet darn writer with an Opus advisor matches an Opus writer on a landed darn task, at lower cost.\n`advisor-model-trial` stopped for want of a per-run advisor option on `lym shuttle run`; the task `shuttle-run-advisor-option` adds it, and this bench runs after it.\n\n## What it runs\n\n1. The advisor prompt: before any run, the task writes the prompt addition that tells the Sonnet writer when to consult the advisor and what to ask.\n   It states the prompt in full at the top of the report, and uses it unchanged for all three runs.\n   `docs/research/loom/advisor-model-trial-2026-11-11/report.md` holds the setup that trial reached (the recorded run, the base-commit checkout and the stand-in review).\n2. Rerun three landed darn tasks of different sizes from their base commits, with a Sonnet writer and an Opus advisor set through the per-run option:\n   - large: `decision-record-replace-verb` (`6d58cad7`, about 2970 changed lines);\n   - middle: `adopt-takeover-fixes` (`6f8d4cff`, about 580 changed lines);\n   - small: `reed-tab-and-attach-fixes` (`aeea549d`, about 200 changed lines).\n3. Compare each run with the task's recorded Opus run, whose recipe and profile come from its usage record:\n   review findings, bounces, tokens, cost and time with sleep removed, and how many advisor consults the writer made and what they cost.\n\n## Cap\n\nExactly three runs, one per task, and no repeats; no prompt iteration.\nThe report goes under `docs/research/`.\n\n## Not decided\n\nWhether a lym config key for the advisor, beside each role's model and effort, follows: only after the bench shows it pays.\n",
       "status": "draft",
       "created": "2026-11-11T18:38:11Z",
-      "revised": "2026-11-12T17:09:46Z"
+      "revised": "2026-11-12T17:09:46Z",
+      "profile": "docs"
     },
     {
       "id": 1343,

@@ -6,29 +6,25 @@ Depends on: [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md)
 
 ## Idea (operator, 2026-11-11)
 
-The bench that follows `advisor-model-trial`, which tunes the darn writer's advisor prompt.
-It is filed as a task only when the operator approves that tuned prompt.
-
-## State after the trial (board tidy, 2026-11-11)
-
-`advisor-model-trial` landed as a report only (`3671f3d4`, `docs/research/loom/advisor-model-trial-2026-11-11/report.md`).
-It ran no iteration and made no tuned prompt, so there is no prompt to approve and this bench is not ready to run.
-The blocker: no route sets Claude Code's advisor (`advisorModel` setting, `--advisor` flag) for one shuttle run.
-The operator decides the way forward: a per-run advisor option on `lym shuttle run`, or another route.
-The bench waits on that and on a tuned prompt.
+Whether a Sonnet darn writer with an Opus advisor matches an Opus writer on a landed darn task, at lower cost.
+`advisor-model-trial` stopped for want of a per-run advisor option on `lym shuttle run`; the task `shuttle-run-advisor-option` adds it, and this bench runs after it.
 
 ## What it runs
 
-Rerun three landed darn tasks of different sizes from their base commits, with a Sonnet writer, an Opus advisor and the tuned prompt, identical in all three:
+1. The advisor prompt: before any run, the task writes the prompt addition that tells the Sonnet writer when to consult the advisor and what to ask.
+   It states the prompt in full at the top of the report, and uses it unchanged for all three runs.
+   `docs/research/loom/advisor-model-trial-2026-11-11/report.md` holds the setup that trial reached (the recorded run, the base-commit checkout and the stand-in review).
+2. Rerun three landed darn tasks of different sizes from their base commits, with a Sonnet writer and an Opus advisor set through the per-run option:
+   - large: `decision-record-replace-verb` (`6d58cad7`, about 2970 changed lines);
+   - middle: `adopt-takeover-fixes` (`6f8d4cff`, about 580 changed lines);
+   - small: `reed-tab-and-attach-fixes` (`aeea549d`, about 200 changed lines).
+3. Compare each run with the task's recorded Opus run, whose recipe and profile come from its usage record:
+   review findings, bounces, tokens, cost and time with sleep removed, and how many advisor consults the writer made and what they cost.
 
-- large: `decision-record-replace-verb` (`6d58cad7`, about 2970 changed lines);
-- middle: `adopt-takeover-fixes` (`6f8d4cff`, about 580 changed lines);
-- small: `reed-tab-and-attach-fixes` (`aeea549d`, about 200 changed lines).
+## Cap
 
-The cap is exactly three runs, one per task, and no repeats.
-Each run is compared with the task's recorded Opus run, whose recipe and profile come from its usage record:
-review findings, bounces, tokens, cost and time with sleep removed.
-It runs as darn `docs`, and the report goes under `docs/research/`.
+Exactly three runs, one per task, and no repeats; no prompt iteration.
+The report goes under `docs/research/`.
 
 ## Not decided
 
