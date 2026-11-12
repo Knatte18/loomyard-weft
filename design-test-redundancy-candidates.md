@@ -2,8 +2,6 @@
 
 `test-redundancy-candidates` · Task · enhancement, testkit, gate · draft
 
-Depends on: [`testmap-upkeep-dobby`](design-testmap-upkeep-dobby.md)
-
 ## Idea (operator, 2026-11-11)
 
 The coverage maps exist to cut the test suite, which has far too many tests for this repository.

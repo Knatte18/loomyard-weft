@@ -416,32 +416,6 @@
       "revised": "2026-11-11T18:43:34Z"
     },
     {
-      "id": 1338,
-      "handle": "T5",
-      "slug": "testmap-upkeep-dobby",
-      "title": "The prime dobby starts an upkeep pass on remaining work, and an anchor move ends it",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "testkit",
-        "gate",
-        "dobby"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `testmap-upkeep-design`.\n\nTakes: testmap-upkeep-runs' lym gate testmap --upkeep, which registers itself as RoleTestMap and exits on a failed registration, and the exit record's planned HEAD and queued count; today's testMapStep, LandingsSinceTestMap, test_map_every and test_map_batch in dobbyengine, startTestMap in beamcli, dobbyPassInFlight in fabriccli\nDelivers: the start rule on no exit record, a moved HEAD or queued work, held off on a hub below two slots for queued work alone, while a pass or its unregistered child lives, and while an anchor move stands; the failed-registration exit logged once per episode; test_map_every, test_map_batch and the landing count retired, the landing count still readable; test_map_upkeep (CategoryNone, true by default); dobbyengine's rewrite of test_map_every: 0 to test_map_upkeep: false, run by beam's configreg Migrate and by a new configengine.Spec per-layer migrate hook that Load applies before merging and DropRetired; dobbyPassInFlight no longer counting a RoleTestMap process\nExports: the dobby key test_map_upkeep and configengine.Spec's per-layer migrate hook\n\nThe part changes these packages:\n\n- internal/dobbyengine (about 300 changed lines)\n- internal/configengine (about 120 changed lines)\n- internal/configreg (about 40 changed lines)\n- internal/beamcli (about 120 changed lines)\n- internal/fabriccli (about 40 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-11T17:02:45Z",
-      "revised": "2026-11-11T17:02:45Z",
-      "profile": "solid",
-      "project": "test-suite-trim",
-      "discussed": true,
-      "record_body_sha256": "71fabe0985adbe4799a689601a08b0b8cf52bd8eaf52d2b41809ee6c505addea"
-    },
-    {
       "id": 1339,
       "handle": "T6",
       "slug": "advisor-model-bench",
@@ -502,9 +476,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "testmap-upkeep-dobby"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Use the maps: build them all and rank the redundant-test candidates per package; no test is cut",
       "body": "## Idea (operator, 2026-11-11)\n\nThe coverage maps exist to cut the test suite, which has far too many tests for this repository.\nThis task uses them: it builds the full set of maps and lists, per package, the tests the other tests already cover.\nIt cuts nothing; a later task cuts from the list.\n\n## What it does\n\n1. Builds a map for every package that has tier 0 or tier 1 tests, by the upkeep pass or a hand call of `lym gate testmap` naming the packages, whichever finishes the set.\n   The build runs once per package; a package whose build fails is listed with its failure and skipped.\n2. Produces, per package, a candidate list: every test whose covered blocks the package's other tests already cover, with its run time.\n   It uses the judgment of the gate's redundancy step (`internal/testcover/verdict.go`) over the existing tests of a package, not only a diff's new ones.\n   Tests marked `//testtiming:keep` and spawn-marked tests are neither candidates nor covers.\n3. Writes a report under `docs/research/speed/` with the packages ranked by the run time their candidates would save, slowest first,\n   the total candidate count and run time, and the count of packages with no map and why.\n\nIf no verb gives the candidate list today, the task adds the smallest one for it, with its tests.\nIt reads no test's assertions: equal coverage does not mean equal checks, which the cut task checks, one package at a time.\n\n## Cap\n\nOne full set of maps, one candidate list per package and one report; no repeat runs.\n`internal/fabricengine` is listed last and flagged: it was swept by hand on 2026-11-08 and is being reworked.\n\n## Not in scope\n\nCutting or folding any test, and any change to the maps' format or upkeep rules.\n",
