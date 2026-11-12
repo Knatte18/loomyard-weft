@@ -1,6 +1,6 @@
 # Give lym shuttle run a per-run advisor option
 
-`shuttle-run-advisor-option` · Task · enhancement, shuttle, claude · running · PR-Review
+`shuttle-run-advisor-option` · Task · enhancement, shuttle, claude · running · Finalize
 
 ## Seen (operator, 2026-11-12)
 
