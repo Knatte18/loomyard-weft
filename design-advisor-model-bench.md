@@ -2,8 +2,6 @@
 
 `advisor-model-bench` · Task · research, darn, loom, shuttle, claude · draft
 
-Depends on: [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md)
-
 ## Idea (operator, 2026-11-11)
 
 Whether a Sonnet darn writer with an Opus advisor matches an Opus writer on a landed darn task, at lower cost.

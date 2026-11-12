@@ -410,9 +410,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "shuttle-run-advisor-option"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Idea (operator, 2026-11-11)\n\nWhether a Sonnet darn writer with an Opus advisor matches an Opus writer on a landed darn task, at lower cost.\n`advisor-model-trial` stopped for want of a per-run advisor option on `lym shuttle run`; the task `shuttle-run-advisor-option` adds it, and this bench runs after it.\n\n## What it runs\n\n1. The advisor prompt: before any run, the task writes the prompt addition that tells the Sonnet writer when to consult the advisor and what to ask.\n   It states the prompt in full at the top of the report, and uses it unchanged for all three runs.\n   `docs/research/loom/advisor-model-trial-2026-11-11/report.md` holds the setup that trial reached (the recorded run, the base-commit checkout and the stand-in review).\n2. Rerun three landed darn tasks of different sizes from their base commits, with a Sonnet writer and an Opus advisor set through the per-run option:\n   - large: `decision-record-replace-verb` (`6d58cad7`, about 2970 changed lines);\n   - middle: `adopt-takeover-fixes` (`6f8d4cff`, about 580 changed lines);\n   - small: `reed-tab-and-attach-fixes` (`aeea549d`, about 200 changed lines).\n3. Compare each run with the task's recorded Opus run, whose recipe and profile come from its usage record:\n   review findings, bounces, tokens, cost and time with sleep removed, and how many advisor consults the writer made and what they cost.\n\n## Cap\n\nExactly three runs, one per task, and no repeats; no prompt iteration.\nThe report goes under `docs/research/`.\n\n## Not decided\n\nWhether a lym config key for the advisor, beside each role's model and effort, follows: only after the bench shows it pays.\n",
@@ -465,28 +463,6 @@
       "revised": "2026-11-12T18:04:30Z",
       "profile": "light",
       "project": "test-suite-trim"
-    },
-    {
-      "id": 1345,
-      "handle": "T4",
-      "slug": "shuttle-run-advisor-option",
-      "title": "Give lym shuttle run a per-run advisor option",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "shuttle",
-        "claude"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench",
-      "body": "## Seen (operator, 2026-11-12)\n\nThe advisor trial (`docs/research/loom/advisor-model-trial-2026-11-11/report.md`) stopped because no route sets Claude Code's advisor for one shuttle run.\n`claudeengine` writes a `--settings` document for every launch (`internal/shuttleengine/claudeengine/settings.go`), but it carries hooks and scope only, and `lym shuttle run` has no flag that adds a key to it.\nHeddle's `claude-settings` target and the `binary` wrapper reach every session of a hub, so neither isolates one run.\n\n## Wanted\n\n`lym shuttle run` takes an optional advisor model for that run alone, and `claudeengine` writes it into the `--settings` document it already writes (`advisorModel`), or passes `--advisor`, whichever Claude Code accepts.\nNo advisor flag leaves every launch as it is today.\nNo lym config key is added; the option is per run only.\n\n## Check first\n\nThe trial did not confirm the setting's value form (a bare model name or a full model spec), that it takes effect in a lym tmux session, or how advisor calls show in the usage records.\nThe task confirms the first two with one short launch and records the answer in the option's help text and in the docs of the shuttle module.\nHow advisor calls show in the usage records is for the bench to read, not this task.\n\n## Not in scope\n\nA config key for the advisor beside each role's model and effort; that follows only after the bench shows it pays.\nThe advisor prompt, and the bench itself.\n",
-      "status": "done",
-      "created": "2026-11-12T17:09:40Z",
-      "revised": "2026-11-12T17:09:40Z",
-      "profile": "light"
     }
   ],
   "prime_owner": "neve",
