@@ -1,6 +1,8 @@
 # Let orchs on two machines talk through a Slack bridge channel
 
-`slack-machine-bridge` · Task · feature, slack, creel, orch · running · Discussion-Bouncer
+`slack-machine-bridge` · Note · sketch, slack, creel, orch
+
+Decision record: [Sketch](decision-slack-machine-bridge.md)
 
 ## Seen (operator, 2026-11-08)
 
