@@ -2,6 +2,8 @@
 
 `testmap-upkeep-cost-and-guide` · Task · research, gate, testkit, dobby · draft
 
+Depends on: [`testmap-maps-in-weft`](design-testmap-maps-in-weft.md)
+
 ## Idea (operator, 2026-11-12)
 
 The operator wants good control over how the coverage maps are used and kept.
