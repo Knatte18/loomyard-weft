@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-12 18:40 UTC; every age below is as of then.
+Rendered 2026-11-12 18:41 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 2d · Owner `neve`
@@ -10,9 +10,11 @@ cut existing redundant tests, and scope the verify gate to the tests that cover 
 
 ## Order (operator, 2026-11-12)
 
-1. First the way to make and keep the maps: the upkeep pass (`lym gate testmap --upkeep`, landed) and the prime dobby that starts it (task `testmap-upkeep-dobby`, running; a running task cannot join a project).
-2. Then the candidate list: `test-redundancy-candidates` builds the full set of maps and lists the redundant-test candidates per package, cutting nothing.
-3. Only then the cut stage, `redundancy-sweep-existing`, from that list.
+1. Landed: the way to make and keep the maps, the upkeep pass (`lym gate testmap --upkeep`) and the prime dobby that starts it (`36621f0e`).
+2. Landed: the pilot on one package and the verb that lists redundant-test candidates (`lym gate redundant`, `79f0eb4a`).
+   Its report is `docs/research/speed/coverage-map-pilot-2026-11-12/report.md`.
+3. Open: the cut stage, `redundancy-sweep-existing`.
+   The operator reads the candidate lists first; the pilot found that equal coverage often hides a different assertion, so the cut stays a reading filter, not a verdict.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
