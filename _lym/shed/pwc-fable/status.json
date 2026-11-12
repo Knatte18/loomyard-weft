@@ -3,6 +3,8 @@
   "state": "running",
   "error": "",
   "pause_requested": false,
+  "pause_after": "Plan-Write",
+  "pause_after_by": "orch",
   "activity": {
     "now": "Plan-Write",
     "last": "Parts-Plan-Write → skipped",
