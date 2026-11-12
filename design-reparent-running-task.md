@@ -1,6 +1,6 @@
 # Study what a re-parent of a running task has to write
 
-`reparent-running-task` · Task · research, board, batten, fabric, dobby · running · Record-Write
+`reparent-running-task` · Task · research, board, batten, fabric, dobby · running · Drift-Baseline
 
 Imported from [issue #48](https://github.com/Knatte18/loomyard/issues/48).
 
