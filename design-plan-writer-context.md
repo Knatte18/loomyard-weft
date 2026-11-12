@@ -18,6 +18,9 @@ Exploration is 46% of the writers' cost, and the lookup subagents cost about wha
 - Split writing exists as the opt-in producers `Parts-Write` and `Parts-Plan-Write`, behind the tapestry flag `plan_split`, off by default; the benches (`docs/research/loom/plan-split/`) say keep it off.
 - `relevant.md` works as a floor, not a boundary: 85% of the files it names are read, but only 28% of the files read are named (`docs/research/loom/plan-writer-audit-2026-10-24/`).
 
+- Tapestry is still used now and then, but not often, so this note has low urgency (operator, 2026-11-12).
+  The twill writers give a much better plan and Discussion, so the cost work must not trade their quality away (operator, 2026-11-12).
+
 ## Still open
 
 1. A solo writer against twill-plan: compare twill, solo Opus high and solo Fable on Plan cost, Plan rounds and Plan wall time (`lym report timing`) per run.
