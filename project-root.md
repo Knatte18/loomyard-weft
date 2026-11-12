@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md)<br>[Sketch](decision-slack-machine-bridge.md) | raddle | Open-Window | neve | 4d<br>0m | slack, creel, orch |
-| T4 | **Commit the coverage maps instead of keeping them in .lym**<br>• The maps sit in an excluded .lym directory; the operator wants them checked in, which needs a design for place, size, machines and who commits | [`testmap-checked-in`](design-testmap-checked-in.md)<br>[Sketch](decision-testmap-checked-in.md) | raddle | Seed-Child | neve | 1h<br>0m | gate, testkit, dobby |
+| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md)<br>[Sketch](decision-slack-machine-bridge.md) | raddle | Raddle-Write | neve | 4d<br>0m | slack, creel, orch |
+| T4 | **Commit the coverage maps instead of keeping them in .lym**<br>• The maps sit in an excluded .lym directory; the operator wants them checked in, which needs a design for place, size, machines and who commits | [`testmap-checked-in`](design-testmap-checked-in.md)<br>[Sketch](decision-testmap-checked-in.md) | raddle | Record-Write | neve | 1h<br>0m | gate, testkit, dobby |
 | T6 | **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | darn · docs | Darn-Write | neve | 1d<br>3h | darn, loom, shuttle, claude |
 
 ### Ready (0)

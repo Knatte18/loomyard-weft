@@ -1,6 +1,6 @@
 # Let orchs on two machines talk through a Slack bridge channel
 
-`slack-machine-bridge` · Task · sketch, slack, creel, orch · running · Open-Window
+`slack-machine-bridge` · Task · sketch, slack, creel, orch · running · Raddle-Write
 
 Decision record: [Sketch](decision-slack-machine-bridge.md)
 
