@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-12 18:09 UTC; every age below is as of then.
+Rendered 2026-11-12 18:10 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -73,7 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 2d<br>20m | testkit, gate |
+| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 2d<br>21m | testkit, gate |
 
 </details>
 
@@ -92,7 +92,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Give lym shuttle run a per-run advisor option**<br>• lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench | [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md) | darn · light | Worktree-Create | neve | 1h<br>1h | shuttle, claude |
+| T4 | **Give lym shuttle run a per-run advisor option**<br>• lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench | [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md) | darn · light | Seed-Child | neve | 1h<br>1h | shuttle, claude |
 
 #### Ready (0)
 

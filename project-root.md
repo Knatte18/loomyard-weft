@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-12 18:09 UTC; every age below is as of then.
+Rendered 2026-11-12 18:10 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Give lym shuttle run a per-run advisor option**<br>• lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench | [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md) | darn · light | Worktree-Create | neve | 1h<br>1h | shuttle, claude |
+| T4 | **Give lym shuttle run a per-run advisor option**<br>• lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench | [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md) | darn · light | Seed-Child | neve | 1h<br>1h | shuttle, claude |
 
 ### Ready (0)
 
