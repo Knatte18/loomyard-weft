@@ -1,30 +1,40 @@
-# Plan writer cost: a solo writer against twill-plan, and an excerpt cut
+# Plan writer bench: twill against a solo Opus and a solo Fable on one plan
 
 `plan-writer-context` · Task · research, loom, stencil · draft
 
-## Seen
+## Idea (operator, 2026-11-12)
 
-The Plan writer is the costliest session type: about 18% of all spend in the token audit of 2026-10-22 (`docs/research/tokens/token-audit-2026-10-22`).
-The 2026-11-08 re-measure (`docs/research/loom/writer-cost-remeasure-2026-11-08/report.md`, five tapestry runs) finds the Plan phase at $17.05 a run for the writer and its forks, 3.2 Plan rounds a run, and review and fix 51% of the phase, about $5.6 a round.
-Exploration is 46% of the writers' cost, and the lookup subagents cost about what they keep out of the writers' context (`docs/research/turns/writer-lookups-measure-2026-11-04/report.md`).
+The Plan writer is the costliest session type (`docs/research/loom/writer-cost-remeasure-2026-11-08/report.md`: $17.05 a run for the writer and its forks).
+The operator sees strong signs that the twill writer makes a far better one-shot plan in shorter time.
+Tapestry is still used now and then, so the question is answered once, on one plan, and then closed.
 
-## What stands
+## What it does
 
-- Raddle splits a Sketch into parts before any plan, and the arras recipe is planned to run Motif and raddle in a row, so the Plan writer cost is avoided, not cut, for work that goes that way.
-  Plan cost grows too slowly with size to need sub-planners per part; that idea is dropped.
-- Discussion stays a separate step; folding it into the Plan writer would add turns to the costliest session (operator, 2026-10-25).
-- A code digest instead of raw reads is rejected, and so are lens forks as fresh agents (that is the perch).
-  The writer's read-back of the plan files after `fork0` is needed and stays.
-- Split writing exists as the opt-in producers `Parts-Write` and `Parts-Plan-Write`, behind the tapestry flag `plan_split`, off by default; the benches (`docs/research/loom/plan-split/`) say keep it off.
-- `relevant.md` works as a floor, not a boundary: 85% of the files it names are read, but only 28% of the files read are named (`docs/research/loom/plan-writer-audit-2026-10-24/`).
+A bench, reported under `docs/research/loom/`, on one reference and three arms:
 
-- Tapestry is still used now and then, but not often, so this note has low urgency (operator, 2026-11-12).
-  The twill writers give a much better plan and Discussion, so the cost work must not trade their quality away (operator, 2026-11-12).
+1. Reference: one tapestry task that has landed with a twill-plan Plan-Write, whose Discussion record and base commit can still be recovered.
+   The task picks the most recent such task and names it in the report.
+2. Arm A, twill: no new run.
+   Its Plan cost, Plan rounds and Plan wall time come from the landed run (`lym report timing`, `go run ./tools/tokencount`), and its plan is the landed plan.
+3. Arm B, solo Opus: the Plan writer on `opus[high]`, no twill directive and no forks.
+4. Arm C, solo Fable: the Plan writer on `fable[medium]` (Fable 5.2), no twill directive and no forks.
 
-## Still open
+Arms B and C each run once from the reference's frozen Discussion record, on the reference's base commit, by the setup of `docs/research/twill/plan-bench/twill-plan-bench-sonnet-medium-fable/report.md` "Setup".
+Each is a hand-seeded pair stopped after Plan-Write, so it lands no code.
 
-1. A solo writer against twill-plan: compare twill, solo Opus high and solo Fable on Plan cost, Plan rounds and Plan wall time (`lym report timing`) per run.
-   The operator sees strong signs that the twill writer makes a far better one-shot plan in shorter time, and time counts as well as tokens, so the bench may only confirm it.
-   Too few runs have landed since the full twill fan to judge.
-2. The excerpt cut: the first exploration fan answers with the lines needed, so the writer reads excerpts instead of whole files.
-   The 2026-11-08 re-measure names it, with the review cost, as the larger pool; the most lookup context kept out of the writers could be worth is $5.95 of $46.94 over the 8 sessions measured.
+## Compare
+
+- Plan cost, Plan rounds and Plan wall time per arm.
+- Plan quality: the three plans graded against each other by the method of the earlier plan benches (repeated, partly, avoided), with keys drawn from the landed run's own Plan review findings.
+  State the keys before reading the solo plans.
+- One line of verdict: which arm makes the best plan, which the cheapest, and whether twill earns its cost.
+
+## Cap
+
+One reference, two new runs (one `opus[high]`, one `fable[medium]`), one report; cost cap $15; no repeat runs.
+A run that fails to start is reported with its cause and not rerun.
+
+## Not in scope
+
+Changing any default and the `plan_split` producers.
+The excerpt cut for the exploration fan is dropped: it is worth at most $5.95 of $46.94 (re-measure of 2026-11-08).
