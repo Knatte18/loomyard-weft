@@ -1,6 +1,6 @@
 # Pilot one coverage map: build time, full-set estimate, and whether the map is usable
 
-`test-redundancy-candidates` · Task · enhancement, testkit, gate · draft
+`test-redundancy-candidates` · Task · enhancement, testkit, gate · running · Worktree-Create
 
 ## Idea (operator, 2026-11-11, narrowed 2026-11-12)
 
