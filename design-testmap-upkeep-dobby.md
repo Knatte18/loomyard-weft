@@ -1,6 +1,6 @@
 # The prime dobby starts an upkeep pass on remaining work, and an anchor move ends it
 
-`testmap-upkeep-dobby` · Task · feature, testkit, gate, dobby · running · Darn-Write
+`testmap-upkeep-dobby` · Task · feature, testkit, gate, dobby · running · Drift-Verify
 
 Decision record: [Sketch](decision-testmap-upkeep-dobby.md)
 
