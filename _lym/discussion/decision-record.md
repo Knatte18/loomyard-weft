@@ -290,6 +290,15 @@ Rationale: The round is at the hard cap, so the segment can only be accepted, an
 
 None.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - bridge-archived-way-forward-impossible (class design, severity MEDIUM, open in rounds 3)
+  - bridge-channel-hold-state-has-no-home (class design, severity MEDIUM, open in rounds 3)
+  - machine-outbound-hour-has-no-owner (class design, severity BLOCKING, open in rounds 3)
+  - relay-verb-journal-form-unstated (class design, severity MEDIUM, open in rounds 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: `<machine>::<name>` parses into its machine and name; a bad machine part or a name that does not parse is refused by the parser; a post naming this machine's current or a former name with the prefix, a former name that fails the name rule included, is refused naming the bare name.
