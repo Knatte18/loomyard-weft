@@ -43,6 +43,12 @@ The excerpt cut for the exploration fan is dropped: it is worth at most $5.95 of
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-12): Two hand-seeded pairs for the solo arms
+
+Decision: The task may create two pairs from its worktree with lym fabric add and lym shed seed (solo opus[high] and solo fable[medium]), run each to a stop after Plan-Write within the 15 dollar cap, and tear them down afterwards. No other pairs and no repeat runs.
+
+Rationale: The operator released the bench knowing it hand-seeds pairs, as the plan-bench setup does; the creel answer #1263 gave the same permission.
+
 ## Constraints
 
 ## Auto-mode assumptions
