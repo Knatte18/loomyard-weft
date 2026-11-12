@@ -1,0 +1,392 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 6787050f..760ee467 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -644,6 +644,8 @@ User-facing modules each get one `lym <module>` namespace:
+   `--list-models` prints the model registry's aliases with their engine, model and default effort,
+   and the output names the engine, model and effort the session got.
+   Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts.
++  `lym shuttle run --advisor <model>` gives that one run Claude Code's advisor tool with the named model, an alias such as `opus` or a full model id;
++  no lym config key sets an advisor, and the codex engine refuses one.
+   `lym shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository;
+   its cap defaults to the caller role's keep-warm cap from `claude.yaml`.
+   `lym shuttle await-forks [--cap]` is the same capped wait over the forks the calling agent session spawned, read from its transcript through the engine:
+diff --git a/internal/shuttlecli/cli_test.go b/internal/shuttlecli/cli_test.go
+index 14fc581a..44b3a608 100644
+--- a/internal/shuttlecli/cli_test.go
++++ b/internal/shuttlecli/cli_test.go
+@@ -575,6 +575,7 @@ func TestRunCmd_FocusFlag(t *testing.T) {
+ // TestRunCmd_ModelSpec pins that run's --model takes a model spec.
+ // An alias or an escape-form spec picks the engine whose Prepare sees the run's spec, with the resolved model and effort.
+ // No --model leaves the set's default engine.
++// --advisor reaches that spec unchanged, and its absence leaves the spec's advisor empty.
+ // A spec the registry cannot resolve is refused before any engine prepares.
+ func TestRunCmd_ModelSpec(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -583,6 +584,8 @@ func TestRunCmd_ModelSpec(t *testing.T) {
+ 		name string
+ 		// model is the --model value; empty passes no flag.
+ 		model string
++		// advisor is the --advisor value; empty passes no flag.
++		advisor string
+ 		// wantEngine is the engine whose Prepare must see the spec; empty means none may.
+ 		wantEngine string
+ 		wantChoice shuttleengine.ModelChoice
+@@ -591,6 +594,7 @@ func TestRunCmd_ModelSpec(t *testing.T) {
+ 	}{
+ 		{name: "CodexAliasWithEffort", model: "luna[high]", wantEngine: "codex", wantChoice: shuttleengine.ModelChoice{Engine: "codex", Model: "gpt-6-luna", Effort: "high"}},
+ 		{name: "ClaudeAlias", model: "sonnet", wantEngine: "claude", wantChoice: shuttleengine.ModelChoice{Engine: "claude", Model: "sonnet"}},
++		{name: "ClaudeAliasWithAdvisor", model: "sonnet", advisor: "opus", wantEngine: "claude", wantChoice: shuttleengine.ModelChoice{Engine: "claude", Model: "sonnet"}},
+ 		{name: "EscapeForm", model: "claude:claude-opus-5-5[max]", wantEngine: "claude", wantChoice: shuttleengine.ModelChoice{Engine: "claude", Model: "claude-opus-5-5", Effort: "max"}},
+ 		{name: "NoModel", wantEngine: shuttlefake.EngineName},
+ 		{name: "UnknownAlias", model: "bogus[high]", wantErr: `unknown alias "bogus"`},
+@@ -615,6 +619,9 @@ func TestRunCmd_ModelSpec(t *testing.T) {
+ 			if tt.model != "" {
+ 				args = append(args, "--model", tt.model)
+ 			}
++			if tt.advisor != "" {
++				args = append(args, "--advisor", tt.advisor)
++			}
+ 			cmd.SetArgs(args)
+ 			if err := cmd.Execute(); err != nil {
+ 				t.Fatalf("cmd.Execute() error: %v; output: %s", err, out.String())
+@@ -629,6 +636,9 @@ func TestRunCmd_ModelSpec(t *testing.T) {
+ 				if got := engines[tt.wantEngine].LastSpec.ModelChoice; got != tt.wantChoice {
+ 					t.Errorf("Spec.ModelChoice = %+v; want %+v", got, tt.wantChoice)
+ 				}
++				if got := engines[tt.wantEngine].LastSpec.Advisor; got != tt.advisor {
++					t.Errorf("Spec.Advisor = %q; want %q", got, tt.advisor)
++				}
+ 				return
+ 			}
+ 			envelope := parseSingleEnvelope(t, out.Bytes())
+diff --git a/internal/shuttlecli/run.go b/internal/shuttlecli/run.go
+index d399e470..afdb692d 100644
+--- a/internal/shuttlecli/run.go
++++ b/internal/shuttlecli/run.go
+@@ -39,6 +39,7 @@ func (c *shuttleCLI) runCmd() *cobra.Command {
+ 		promptFile  string
+ 		outputFiles []string
+ 		model       string
++		advisor     string
+ 		interactive bool
+ 		role        string
+ 		round       string
+@@ -85,7 +86,10 @@ alias's default effort. Without --model the run gets shuttle.yaml's engine
+ and the provider's default model and effort.
+ A model the provider reports it does not know ends the run at once with
+ outcome api-error and the error in apiError, on an engine that reads that
+-report.`,
++report.
++
++--advisor names the model this run alone consults through Claude Code's
++advisor tool; codex refuses it.`,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			out := cmd.OutOrStdout()
+ 
+@@ -152,6 +156,7 @@ report.`,
+ 				Prompt:      promptText,
+ 				OutputFiles: outputFiles,
+ 				ModelChoice: choice,
++				Advisor:     advisor,
+ 				Interactive: interactive,
+ 				Role:        role,
+ 				Round:       round,
+@@ -195,6 +200,7 @@ report.`,
+ 	cmd.Flags().StringVar(&promptFile, "prompt-file", "", "path to a file whose contents become the task prompt")
+ 	cmd.Flags().StringArrayVar(&outputFiles, "output-file", nil, "output file the agent must write (repeatable; required at least once; must not already exist; relative paths resolve against the worktree root)")
+ 	cmd.Flags().StringVar(&model, "model", "", "model spec, <alias>[<effort>] or <engine>:<model-id>[<effort>]; empty defers to shuttle.yaml's engine and the provider default")
++	cmd.Flags().StringVar(&advisor, "advisor", "", "model this run alone consults through Claude Code's advisor tool, an alias such as opus or a full model id, at least as capable as the session's model (Claude Code 2.1.322 called it in a lym tmux run); empty sets no advisor")
+ 	cmd.Flags().BoolVar(&interactive, "interactive", false, "run interactively (the agent may ask questions); default is autonomous")
+ 	cmd.Flags().StringVar(&role, "role", "", "role token used to fill the strand-name template")
+ 	cmd.Flags().StringVar(&round, "round", "", "round token used to fill the strand-name template")
+diff --git a/internal/shuttleengine/claudeengine/claudeengine.go b/internal/shuttleengine/claudeengine/claudeengine.go
+index dfe5117a..20d02831 100644
+--- a/internal/shuttleengine/claudeengine/claudeengine.go
++++ b/internal/shuttleengine/claudeengine/claudeengine.go
+@@ -221,7 +221,7 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 
+ 	scope := c.sessionScopeFor(claude.SessionScope, spec.Skills, spec.Role)
+ 	scope.Env = subagentEffortEnv(cfg.Agents, spec.ConfigRole)
+-	settingsJSON, err := buildSettings(eventsPathForHook, spec.Interactive, cfg, claude, spec.ForkSubagents, spec.DenyPublish, spec.ContextAfterCompaction, spec.TurnHookCommand, creelFlagDirForHook, scope)
++	settingsJSON, err := buildSettings(eventsPathForHook, spec.Interactive, cfg, claude, spec.ForkSubagents, spec.DenyPublish, spec.ContextAfterCompaction, spec.TurnHookCommand, creelFlagDirForHook, spec.Advisor, scope)
+ 	if err != nil {
+ 		return shuttleengine.Launch{}, fmt.Errorf("build settings: %w", err)
+ 	}
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 52ccb2de..b8e2898b 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -230,6 +230,12 @@
+ // That covers the empty `attribution`, which keeps a landing's credit block the one credit.
+ // It also covers `promptSuggestionEnabled` false, which IdleSession needs.
+ // heddle renders that file at the session's anchor, and a session started where none is rendered goes without them.
++// A run whose Spec.Advisor names a model sets `advisorModel` to it.
++// That setting turns on Claude Code's server-side advisor tool.
++// The value is an alias such as `opus` or a full model id, and a run naming none leaves the key out.
++// The resume line names the same settings file, so a revived session keeps its advisor.
++// Bound: Claude Code 2.1.322 took `opus` from the settings in a tmux run;
++// it resolved the alias to `claude-opus-5-5` and called the advisor.
+ // An engine told a hub board directory also installs a second PostToolUse entry with no matcher, creel's mail hook;
+ // an engine told none, a standalone run, installs the stamp alone.
+ // Its command is plain POSIX `sh`.
+diff --git a/internal/shuttleengine/claudeengine/hookcmd_integration_test.go b/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+index 1e834275..d8d93e5b 100644
+--- a/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
++++ b/internal/shuttleengine/claudeengine/hookcmd_integration_test.go
+@@ -30,7 +30,7 @@ func recordingHookCommands(t *testing.T, eventsPath string) map[string]string {
+ 	t.Helper()
+ 	commands := map[string]string{}
+ 	for _, interactive := range []bool{false, true} {
+-		data, err := buildSettings(eventsPath, interactive, shuttleengine.Config{}, Config{}, false, false, "", "", "", sessionScope{})
++		data, err := buildSettings(eventsPath, interactive, shuttleengine.Config{}, Config{}, false, false, "", "", "", "", sessionScope{})
+ 		if err != nil {
+ 			t.Fatalf("buildSettings() error: %v", err)
+ 		}
+@@ -297,7 +297,7 @@ func (fx turnHookFixture) commands(t *testing.T, turnHook string, inHub bool) (p
+ 	if inHub {
+ 		flagDir = fx.flagDir
+ 	}
+-	data, err := buildSettings(fx.eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", turnHook, flagDir, sessionScope{})
++	data, err := buildSettings(fx.eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", turnHook, flagDir, "", sessionScope{})
+ 	if err != nil {
+ 		t.Fatalf("buildSettings() error: %v", err)
+ 	}
+diff --git a/internal/shuttleengine/claudeengine/scope_test.go b/internal/shuttleengine/claudeengine/scope_test.go
+index 139185c9..cbae24cd 100644
+--- a/internal/shuttleengine/claudeengine/scope_test.go
++++ b/internal/shuttleengine/claudeengine/scope_test.go
+@@ -119,7 +119,7 @@ func TestSessionScope_WrittenSettingsPerRole(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			scope := resolveSessionScope(tt.cfg, installed, tt.preloaded, tt.orch)
+-			data, err := buildSettings("/c/run/events.jsonl", tt.orch, shuttleengine.Config{}, Config{}, false, false, "", "", "", scope)
++			data, err := buildSettings("/c/run/events.jsonl", tt.orch, shuttleengine.Config{}, Config{}, false, false, "", "", "", "", scope)
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+diff --git a/internal/shuttleengine/claudeengine/settings.go b/internal/shuttleengine/claudeengine/settings.go
+index d4035177..f0c4947b 100644
+--- a/internal/shuttleengine/claudeengine/settings.go
++++ b/internal/shuttleengine/claudeengine/settings.go
+@@ -249,9 +249,11 @@ func buildOpenSettings(creelFlagDirPosix string, scope sessionScope) ([]byte, er
+ }
+ 
+ // settingsDoc is the Claude Code settings.json document written for a session:
+-// its hooks, with the session's scope following as the last keys.
++// its hooks, the run's advisor model when it names one, and the session's scope as the last keys.
+ type settingsDoc struct {
+ 	Hooks settingsHooks `json:"hooks"`
++	// AdvisorModel is Claude Code's advisorModel setting, which turns on the server-side advisor tool with that model.
++	AdvisorModel string `json:"advisorModel,omitempty"`
+ 	sessionScope
+ }
+ 
+@@ -430,8 +432,9 @@ func activityStampHook(eventsPathPosix string) []hookEntry {
+ // It runs after their recording on the same input, through turnHookStep;
+ // the prompt command still exits 0, and the Stop command exits with its recording's status.
+ // In a merged creel Stop command it runs first, before creel's delivery, whether or not mail is then handed out.
++// A non-empty advisorModel, an alias or a full model id, is written as `advisorModel`; an empty one leaves the key out.
+ // scope is the session's scope, carried as the document's last keys; the zero scope adds none.
+-func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.Config, claude Config, forkSubagents, denyPublish bool, contextAfterCompaction, turnHookCommand, creelFlagDirPosix string, scope sessionScope) ([]byte, error) {
++func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.Config, claude Config, forkSubagents, denyPublish bool, contextAfterCompaction, turnHookCommand, creelFlagDirPosix, advisorModel string, scope sessionScope) ([]byte, error) {
+ 	quotedEventsPath := shQuote(eventsPathPosix)
+ 	recordingHook := func(hookEventName string, alwaysSucceeds bool) []hookEntry {
+ 		command := recordingCommand(hookEventName, quotedEventsPath)
+@@ -462,6 +465,7 @@ func buildSettings(eventsPathPosix string, interactive bool, cfg shuttleengine.C
+ 			PreCompact:        activityStampHook(eventsPathPosix),
+ 			PostCompact:       activityStampHook(eventsPathPosix),
+ 		},
++		AdvisorModel: advisorModel,
+ 		sessionScope: scope,
+ 	}
+ 
+diff --git a/internal/shuttleengine/claudeengine/settings_test.go b/internal/shuttleengine/claudeengine/settings_test.go
+index 4569455c..77cce411 100644
+--- a/internal/shuttleengine/claudeengine/settings_test.go
++++ b/internal/shuttleengine/claudeengine/settings_test.go
+@@ -68,7 +68,7 @@ func TestBuildSettings_LeavesWorktreeSettingsOut(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, shuttleengine.Config{}, Config{}, tt.fork, false, "", "", tt.flagDir, sessionScope{})
++			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, shuttleengine.Config{}, Config{}, tt.fork, false, "", "", tt.flagDir, "", sessionScope{})
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -117,7 +117,7 @@ func TestBuildSettings_RecordingHooks(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			data, err := buildSettings(tt.eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", "", "", sessionScope{})
++			data, err := buildSettings(tt.eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", "", "", "", sessionScope{})
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -190,7 +190,7 @@ func TestBuildSettings_SessionStartHook(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			data, err := buildSettings("/c/run/events.jsonl", false, shuttleengine.Config{}, Config{}, false, false, tt.command, "", "", sessionScope{})
++			data, err := buildSettings("/c/run/events.jsonl", false, shuttleengine.Config{}, Config{}, false, false, tt.command, "", "", "", sessionScope{})
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -291,7 +291,7 @@ func TestBuildSettings_CreelMailHook(t *testing.T) {
+ 		{"Standalone", "", []string{"touch '/c/run/activity-stamp'; true"}, []stopHook{{command: recordingCommand(hookEventStop, quotedEventsPath)}}},
+ 	}
+ 	for _, tt := range tests {
+-		data, err := buildSettings(eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", "", tt.flagDir, sessionScope{})
++		data, err := buildSettings(eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", "", tt.flagDir, "", sessionScope{})
+ 		if err != nil {
+ 			t.Fatalf("buildSettings(%s) error: %v", tt.name, err)
+ 		}
+@@ -382,7 +382,7 @@ func TestBuildSettings_TurnHookCommand(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			data, err := buildSettings(eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", "lym slack hook", tt.flagDir, sessionScope{})
++			data, err := buildSettings(eventsPath, false, shuttleengine.Config{}, Config{}, false, false, "", "lym slack hook", tt.flagDir, "", sessionScope{})
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -426,7 +426,7 @@ func TestBuildSettings_DenyToggleMatrix(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			cfg := shuttleengine.Config{DenyPython: tt.pythonDeny}
+ 			claude := Config{DenyAskUserQuestion: tt.askUserDeny}
+-			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, cfg, claude, tt.fork, tt.denyPublish, "", "", "", sessionScope{})
++			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, cfg, claude, tt.fork, tt.denyPublish, "", "", "", "", sessionScope{})
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -618,7 +618,7 @@ func TestBuildSettings_NoAgentHookAndForkGuard(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, shuttleengine.Config{}, tt.claude, tt.fork, false, "", "", "", sessionScope{})
++			data, err := buildSettings("/c/run/events.jsonl", tt.interactive, shuttleengine.Config{}, tt.claude, tt.fork, false, "", "", "", "", sessionScope{})
+ 			if err != nil {
+ 				t.Fatalf("buildSettings() error: %v", err)
+ 			}
+@@ -825,6 +825,44 @@ func TestPrepare_CreelMailHookFollowsTheBoardDirectory(t *testing.T) {
+ 	}
+ }
+ 
++// TestPrepare_AdvisorReachesSettings pins that a spec's advisor lands in the run's settings.json as advisorModel,
++// and that a spec naming none leaves the key out.
++func TestPrepare_AdvisorReachesSettings(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name    string
++		advisor string
++	}{
++		{"NoAdvisor", ""},
++		{"Advisor", "opus"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			runDir := t.TempDir()
++			engine := engineWith(t, templateConfig(t))
++			if _, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "p", Advisor: tt.advisor}, shuttleengine.Config{}); err != nil {
++				t.Fatalf("Prepare() error: %v", err)
++			}
++			data, err := os.ReadFile(filepath.Join(runDir, settingsFileName))
++			if err != nil {
++				t.Fatalf("read settings.json: %v", err)
++			}
++			got, present := parseSettings(t, data)["advisorModel"]
++			if tt.advisor == "" {
++				if present {
++					t.Errorf("settings.json advisorModel = %v; want the key absent", got)
++				}
++				return
++			}
++			if got != tt.advisor {
++				t.Errorf("settings.json advisorModel = %v; want %q", got, tt.advisor)
++			}
++		})
++	}
++}
++
+ // TestPrepare_WritesArtifactsAndReturnsConsistentLaunch pins the artifacts Prepare leaves on disk.
+ // It also pins that the launch and resume lines agree with them.
+ //
+@@ -993,7 +1031,7 @@ func TestBuildDenyNotice_MatchesInstalledDenies(t *testing.T) {
+ 				for _, fork := range []bool{false, true} {
+ 					cfg := shuttleengine.Config{DenyPython: pythonDeny, RefuseRaw: sampleRefuseRaw}
+ 					claude := Config{DenyAskUserQuestion: askUserDeny}
+-					data, err := buildSettings("/c/run/events.jsonl", interactive, cfg, claude, fork, false, "", "", "", sessionScope{})
++					data, err := buildSettings("/c/run/events.jsonl", interactive, cfg, claude, fork, false, "", "", "", "", sessionScope{})
+ 					if err != nil {
+ 						t.Fatalf("buildSettings() error: %v", err)
+ 					}
+@@ -1094,7 +1132,7 @@ func TestBuildSettings_MatchesGolden(t *testing.T) {
+ 			t.Errorf("golden lacks %q", label)
+ 			continue
+ 		}
+-		settings, err := buildSettings("/c/run/events.jsonl", interactive, cfg, claude, fork, false, "", "", "", sessionScope{})
++		settings, err := buildSettings("/c/run/events.jsonl", interactive, cfg, claude, fork, false, "", "", "", "", sessionScope{})
+ 		if err != nil {
+ 			t.Fatalf("buildSettings(%s): %v", label, err)
+ 		}
+diff --git a/internal/shuttleengine/codexengine/codexengine.go b/internal/shuttleengine/codexengine/codexengine.go
+index e28af0f0..e153508d 100644
+--- a/internal/shuttleengine/codexengine/codexengine.go
++++ b/internal/shuttleengine/codexengine/codexengine.go
+@@ -65,11 +65,14 @@ func NewFromConfig(cfg shuttleengine.Config, dirs configengine.Dirs) *Codex {
+ const permissionModeBypass = "bypass"
+ 
+ // validateSpec refuses what a Codex run cannot realize, before anything is written:
+-// a resumed session, and a model choice or permission mode a Codex launch cannot realize.
++// a resumed session, an advisor, and a model choice or permission mode a Codex launch cannot realize.
+ func validateSpec(spec shuttleengine.Spec, codex Config) error {
+ 	if spec.ResumeSessionID != "" {
+ 		return fmt.Errorf("codexengine: Codex sessions cannot be resumed by a new run; way forward: start a fresh session")
+ 	}
++	if spec.Advisor != "" {
++		return fmt.Errorf("codexengine: advisor %q given, but Codex has no advisor tool; way forward: drop the advisor, or run on an engine that has one, such as claude", spec.Advisor)
++	}
+ 	return validateChoice(spec.ModelChoice, spec.PermissionMode, codex)
+ }
+ 
+diff --git a/internal/shuttleengine/codexengine/doc.go b/internal/shuttleengine/codexengine/doc.go
+index 89a45377..5811ca7e 100644
+--- a/internal/shuttleengine/codexengine/doc.go
++++ b/internal/shuttleengine/codexengine/doc.go
+@@ -51,6 +51,7 @@
+ // A `.codex/rules` folder in the worktree refuses the launch, since an allow rule there lifts the sandbox;
+ // a `.codex/config.toml` there is named in a Warn, since its hooks run unreviewed.
+ // Both are read on disk, tracked by git or not, since Codex reads them either way.
++// A spec naming an advisor refuses the launch, since Codex has no advisor tool.
+ // The first turn is the positional prompt pointer.
+ // After Codex exits the line appends an exit record to the run's events file and exits the pane's shell;
+ // so a Codex exit reads as a dead pane;
+diff --git a/internal/shuttleengine/codexengine/prepare_test.go b/internal/shuttleengine/codexengine/prepare_test.go
+index 57be9a2b..1ce951c8 100644
+--- a/internal/shuttleengine/codexengine/prepare_test.go
++++ b/internal/shuttleengine/codexengine/prepare_test.go
+@@ -563,6 +563,7 @@ func TestPrepare_RefusesBeforeWriting(t *testing.T) {
+ 		{name: "VersionPin", spec: shuttleengine.Spec{ModelChoice: shuttleengine.ModelChoice{Model: "astra", Version: "6"}}, wantErr: []string{`version "6"`, "way forward"}},
+ 		{name: "PromptPermissionMode", spec: shuttleengine.Spec{PermissionMode: "prompt"}, wantErr: []string{`permission mode "prompt"`, "way forward"}},
+ 		{name: "ResumedSession", spec: shuttleengine.Spec{ResumeSessionID: "abc"}, wantErr: []string{"cannot be resumed", "way forward"}},
++		{name: "Advisor", spec: shuttleengine.Spec{Advisor: "opus"}, wantErr: []string{`advisor "opus"`, "way forward"}},
+ 		{name: "EffortOutsideEfforts", spec: shuttleengine.Spec{ModelChoice: shuttleengine.ModelChoice{Effort: "xhigh"}}, wantErr: []string{`effort "xhigh"`, "codex.yaml's efforts", "way forward"}},
+ 		{
+ 			name: "RelativeWritableRoot",
+diff --git a/internal/shuttleengine/spec.go b/internal/shuttleengine/spec.go
+index c1970966..fbb0fe7d 100644
+--- a/internal/shuttleengine/spec.go
++++ b/internal/shuttleengine/spec.go
+@@ -48,6 +48,10 @@ type Spec struct {
+ 	// DenyPublish, when true, makes the engine install a shell guard for this one run and announce it.
+ 	// The guard refuses git push and gh calls beyond reads, comments, and title and body edits.
+ 	DenyPublish bool
++	// Advisor, when non-empty, names the model the session consults through its provider's advisor tool, for this run alone.
++	// The value is provider vocabulary and is passed through as given; Spec validation does not check it.
++	// An engine whose provider has no advisor refuses a non-empty value before it writes anything.
++	Advisor string
+ 	// PermissionMode, when non-empty, selects the run's permission mode.
+ 	// Empty defers to the engine's default, its bypass mode.
+ 	// The values are provider vocabulary; only the engine knows which ones its provider realizes.
