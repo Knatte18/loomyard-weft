@@ -1,14 +1,16 @@
 {
   "current_producer": "Plan-Write",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedverbs: step Plan-Write interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step pwc-fable --until-stop",
+  "pending_by": "orch",
+  "entered_row": "Plan-Write",
   "pause_requested": false,
   "pause_after": "Plan-Write",
   "pause_after_by": "orch",
   "activity": {
     "now": "Plan-Write",
     "last": "Parts-Plan-Write → skipped",
-    "wait": ""
+    "wait": "shedverbs: step Plan-Write interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step pwc-fable --until-stop"
   },
   "history": [
     {
