@@ -2,6 +2,8 @@
 
 `testmap-checked-in` · Task · enhancement, gate, testkit, dobby · running · Discussion-Bouncer
 
+Decision record: [Sketch](decision-testmap-checked-in.md)
+
 ## Seen (operator, 2026-11-12)
 
 The coverage maps are written to `<bolt>/.lym/testcover/<package>/map.json`, a directory the hub's `.lym/` exclude keeps out of git.
