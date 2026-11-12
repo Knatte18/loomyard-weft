@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-12 18:45 UTC; every age below is as of then.
+Rendered 2026-11-12 18:52 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | motif | Discussion-Burler-Fix | neve | 4d<br>30m | slack, creel, orch |
+| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | motif | Discussion-Bouncer | neve | 4d<br>36m | slack, creel, orch |
 
 ### Ready (0)
 
@@ -33,7 +33,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 10d<br>23h | claude, shuttle, config |
-| T4 | `draft` **Study what a re-parent of a running task has to write**<br>• A read-only study of every place a task records its parent or membership, and of what a re-parent verb would write | [`reparent-running-task`](design-reparent-running-task.md) | darn · docs |  | 7d<br>9m | board, batten, fabric, dobby |
+| T4 | `draft` **Study what a re-parent of a running task has to write**<br>• A read-only study of every place a task records its parent or membership, and of what a re-parent verb would write | [`reparent-running-task`](design-reparent-running-task.md) | darn · docs |  | 7d<br>16m | board, batten, fabric, dobby |
 | T6 | `draft` **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | darn · docs |  | 1d<br>1h | darn, loom, shuttle, claude |
 
 ## Notes (11)
@@ -51,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 5d<br>5d | heddle |
-| E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 4d<br>23h | shed, loom, darn |
+| E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 4d<br>1d | shed, loom, darn |
 | E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 1d<br>1d | testkit, gate |
 
 ### Features (7)
