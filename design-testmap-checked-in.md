@@ -8,10 +8,13 @@ The coverage maps are written to `<bolt>/.lym/testcover/<package>/map.json`, a d
 The first upkeep pass wrote 211 files, 56 MB, on 2026-11-12, started by the prime dobby because `test_map_upkeep` defaults to on; the operator had not authorised that build.
 The operator wants the maps checked in, not kept in `.lym`.
 
+## Decided (operator, 2026-11-12)
+
+The maps are committed in Bolt, the hub's records repository, never in the warp (the code repository): they are lym's own data, not the project's code.
+
 ## What a design has to settle
 
-- Where they are committed: the code repository, or the Bolt records repository.
-  Bolt is shared by the machines of a hub; the code repository is the one the maps describe.
+- The tracked path in Bolt, since `.lym/` there is excluded, and how the code that reads the maps finds it.
 - Size and churn: 56 MB of JSON, and a pass rewrites many files; every commit of them adds to git history.
   Whether the format should be smaller or more stable (sorted keys, one file per test, no timestamps in unchanged entries) before it is committed.
 - Machines: a map carries an `EnvironmentStamp`, and a stamp that differs from the current one is a `MissEnvironment` that rebuilds the package.

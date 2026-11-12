@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-12 19:09 UTC; every age below is as of then.
+Rendered 2026-11-12 19:11 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -9,7 +9,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 <details open>
 <summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (3)</strong></summary>
 
-[`codex-engine-trial`](design-codex-engine-trial.md) · Age 8d · Owner `neve`
+[`codex-engine-trial`](design-codex-engine-trial.md) · Age 9d · Owner `neve`
 
 Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
 
@@ -65,7 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 3d<br>28m | testkit, gate |
+| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 3d<br>30m | testkit, gate |
 
 </details>
 
@@ -84,7 +84,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | motif | Discussion-Burler-Fix | neve | 4d<br>53m | slack, creel, orch |
+| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | motif | Discussion-Burler-Fix | neve | 4d<br>56m | slack, creel, orch |
 
 #### Ready (0)
 
@@ -99,9 +99,9 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 10d<br>23h | claude, shuttle, config |
-| T2 | `draft` **Measure what coverage-map upkeep costs, check how its state is shown, and write the operator guide**<br>• What the upkeep passes have cost, whether one call shows the maps state, and a short guide to using and keeping the maps | [`testmap-upkeep-cost-and-guide`](design-testmap-upkeep-cost-and-guide.md) | darn · docs |  | 9m<br>9m | gate, testkit, dobby |
-| T4 | `draft` **Study what a re-parent of a running task has to write**<br>• A read-only study of every place a task records its parent or membership, and of what a re-parent verb would write | [`reparent-running-task`](design-reparent-running-task.md) | darn · docs |  | 7d<br>33m | board, batten, fabric, dobby |
-| T6 | `draft` **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | darn · docs |  | 1d<br>1h | darn, loom, shuttle, claude |
+| T2 | `draft` **Measure what coverage-map upkeep costs, check how its state is shown, and write the operator guide**<br>• What the upkeep passes have cost, whether one call shows the maps state, and a short guide to using and keeping the maps | [`testmap-upkeep-cost-and-guide`](design-testmap-upkeep-cost-and-guide.md) | darn · docs |  | 11m<br>11m | gate, testkit, dobby |
+| T4 | `draft` **Study what a re-parent of a running task has to write**<br>• A read-only study of every place a task records its parent or membership, and of what a re-parent verb would write | [`reparent-running-task`](design-reparent-running-task.md) | darn · docs |  | 7d<br>35m | board, batten, fabric, dobby |
+| T6 | `draft` **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | darn · docs |  | 1d<br>2h | darn, loom, shuttle, claude |
 
 ### Notes (12)
 
@@ -120,7 +120,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 5d<br>5d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 4d<br>1d | shed, loom, darn |
 | E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 1d<br>1d | testkit, gate |
-| E5 |  | **Commit the coverage maps instead of keeping them in .lym**<br>• The maps sit in an excluded .lym directory; the operator wants them checked in, which needs a design for place, size, machines and who commits | [`testmap-checked-in`](design-testmap-checked-in.md) | 3m<br>3m | gate, testkit, dobby |
+| E5 |  | **Commit the coverage maps instead of keeping them in .lym**<br>• The maps sit in an excluded .lym directory; the operator wants them checked in, which needs a design for place, size, machines and who commits | [`testmap-checked-in`](design-testmap-checked-in.md) | 6m<br>0m | gate, testkit, dobby |
 
 #### Features (7)
 

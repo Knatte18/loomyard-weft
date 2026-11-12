@@ -1,9 +1,9 @@
 # P2 Codexengine: every task, trial and note about the Codex engine
 
-Rendered 2026-11-12 19:09 UTC; every age below is as of then.
+Rendered 2026-11-12 19:11 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`codex-engine-trial`](design-codex-engine-trial.md) · Age 8d · Owner `neve`
+[`codex-engine-trial`](design-codex-engine-trial.md) · Age 9d · Owner `neve`
 
 Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
 
