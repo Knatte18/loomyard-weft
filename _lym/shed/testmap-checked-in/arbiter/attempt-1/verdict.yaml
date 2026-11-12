@@ -1,0 +1,14 @@
+verdict: resume
+reason: |-
+  Review escalation, cause decision, round 1, no refusal named. The only decision finding, F5, asks two things, and the board entry settles both.
+  (1) The extra branch: the board entry's Idea gives the extra weft branch one purpose, lym data meant to be merged. The operator's later Direction (2026-11-12, thought through) says a task's maps are not delivered: the task keeps its own maps in its own weft, the parent's upkeep pass carries the parent's maps forward, and a new pair's weft starts from the parent's. The existing weft branch does all three, so D1 is confirmed. This narrows the scope and does not widen it.
+  (2) The raddle split: the Idea gives the new branches as the only reason to split. Under D1 there are none, so the record fixes no split and raddle sizes the Sketch by its usual rules.
+  Both answers are recorded as arbiter decisions. Each tells the fixer to drop the matching Open-risks line, which takes another round's fix.
+  The judge's verdict was CONTINUE. The fixer's round-1 fixes for BLOCKING F1 and gating F2 to F4 have not been re-reviewed yet, and round 2's focus is already written. Round 1 is below the hard cap (each perch's rounds plus one), so continue rather than accept.
+verbs:
+  - |-
+    lym loom decision add testmap-checked-in --by arbiter --title "D1 stands: the maps use the pair's existing weft branch, with no extra branch or junction" --decision "…" --rationale "…"
+  - |-
+    lym loom decision add testmap-checked-in --by arbiter --title "The Sketch fixes no split; raddle sizes it by its usual rules" --decision "…" --rationale "…"
+  - |-
+    lym loom circling continue testmap-checked-in

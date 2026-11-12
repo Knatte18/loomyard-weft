@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 5,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-12T20:50:30.932156038+01:00",
+  "deadline": "2026-11-12T21:20:30.932156038+01:00",
+  "strand_guid": "513d7d759f2faf000c64da9bec2c9e17",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/testmap-checked-in/_lym/shed/testmap-checked-in/drive-reports/drive-envelope-20261112-205030-0c75.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/testmap-checked-in/_lym/shed/testmap-checked-in/drive-reports/drive-report-20261112-205030-7be6.md"
+}
