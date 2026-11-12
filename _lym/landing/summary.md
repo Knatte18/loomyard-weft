@@ -1,40 +1,37 @@
 # Give lym shuttle run a per-run advisor option
 
-`lym shuttle run --advisor <model>` gives one run Claude Code's server-side advisor tool with the named model.
-Until now no route set the advisor for a single run: claudeengine's `--settings` document carried hooks and scope only,
-and heddle's `claude-settings` target and the `binary` wrapper reach every session of a hub.
-The advisor bench (`advisor-model-bench`) needs this route.
+`lym shuttle run` takes a new `--advisor <model>` flag that sets Claude Code's advisor model for that one run.
+The advisor trial stopped because no route set the advisor for a single shuttle run.
+Heddle's `claude-settings` target and the `binary` wrapper reach every session of a hub, so neither isolates one run.
 
-## What changes
-
-- `shuttleengine.Spec` gains `Advisor`, a provider-vocabulary model name that Spec validation passes through unchecked.
-- claudeengine writes a non-empty `Advisor` into the run's `settings.json` as `advisorModel`.
-  An empty one leaves the key out, so a launch without `--advisor` writes the same document as before.
-  The resume line names the same settings file, so a revived session keeps its advisor.
-- codexengine refuses a spec that names an advisor before it writes anything, naming the way forward, since Codex has no advisor tool.
-- `lym shuttle run` takes `--advisor`.
-  Its flag usage states the value form, the capability rule and the Claude Code version a launch confirmed it on,
-  and its `Long` help names the flag in one sentence, under the help's byte cap.
-  No lym config key is added.
-- `buildSettings` takes the advisor as one more argument, so its existing test call sites pass `""`.
-
-## Value form and effect, confirmed
-
-Claude Code 2.1.322 documents its hidden `--advisor` flag as taking an alias or a full model id, and resolves `advisorModel` the same way.
-A `sonnet[low]` run through `lym shuttle run --advisor opus` in a lym tmux session showed `advisorModel` resolved to `claude-opus-5-5`,
-and the session called the `advisor` server tool and got its answer.
-Claude Code also requires the advisor to be at least as capable as the session's model, which the flag usage states.
-How advisor calls show in the usage records is left to the bench.
+With the flag, `claudeengine` writes `advisorModel` into the `--settings` document it already writes for every launch.
+Without it, the document and the launch are unchanged.
+The resume line names the same settings file, so a revived session keeps its advisor.
+No lym config key is added; the option is per run only.
 
 ## Design decisions
 
-- The advisor rides the `--settings` document rather than the `--advisor` flag,
-  since claudeengine already writes that document for every launch and the resume line reuses it.
-- An engine without an advisor refuses the field, the way codexengine already refuses a permission mode it cannot realize;
-  no new `Requirement` constant is added, since one engine refusing the field covers the case.
+- `shuttleengine.Spec` gains an `Advisor` string.
+  The value is provider vocabulary and is passed through as given, so Spec validation does not check it.
+- The setting is chosen over a `--advisor` argument to `claude`.
+  The settings document is the route the run already uses, and the resume line picks it up for free.
+- `codexengine` refuses a non-empty `Advisor` in `validateSpec`, before it writes anything, since Codex has no advisor tool.
+  The error names a way forward.
+- `buildSettings` takes the advisor model as a new parameter, so every caller and test call site gains an empty argument.
+  `settingsDoc` writes the key with `omitempty`, so a run naming no advisor leaves it out.
+- The value form and the tmux behaviour were confirmed with one short launch: Claude Code 2.1.322 took the alias `opus` from the settings in a lym tmux run, resolved it to `claude-opus-5-5`, and called the advisor.
+  The result is recorded in the `--advisor` help text and in the `claudeengine` package doc.
+  The help text also says the advisor must be at least as capable as the session's model.
+  How advisor calls show in the usage records is left to the bench.
 
-## Tests
+## Tests and docs
 
-- `TestPrepare_AdvisorReachesSettings` pins `advisorModel` in the written `settings.json`, and its absence when no advisor is named.
-- `TestPrepare_RefusesBeforeWriting` in codexengine gains an advisor row.
-- `TestRunCmd_ModelSpec` gains a row showing `--advisor` reaching the engine's spec unchanged.
+- `TestPrepare_AdvisorReachesSettings` pins `advisorModel` present in `settings.json` with an advisor and absent without one.
+- `TestRunCmd_ModelSpec` pins `--advisor` reaching `Spec.Advisor` unchanged and empty when the flag is absent.
+- The Codex `TestPrepare_RefusesBeforeWriting` table gains an advisor case.
+- `docs/overview.md`, the `claudeengine` and `codexengine` package docs, and the `lym shuttle run` long help describe the option.
+
+## To check by hand
+
+- No regression check ran for this task, and the live launch behind the recorded 2.1.322 result is not repeated by the tests.
+  A newer Claude Code may take the setting differently, so re-run one short `lym shuttle run --advisor opus` launch if the Claude Code version has moved.
