@@ -74,7 +74,7 @@ Decision ids below are those of the revised record.
 - Committing after each package to keep the worktree clean: many commits per full rebuild; D5's exemption is narrower.
 - Refusing a pass when no owner is recorded: a single-machine hub with no owner would never get maps.
 - Leaving `test_map_upkeep` on by default: it started an unauthorised 44-minute build.
-- Rebuilding instead of importing the existing maps: 44 minutes for maps current at `79f0eb4a`.
+- Rebuilding instead of importing the existing maps: 44 minutes for maps built at `5e41ee2b`, which has no Go change over `79f0eb4a`.
 
 ## Review rounds
 
@@ -87,9 +87,25 @@ Decision ids below are those of the revised record.
 - F5, decision: held by the parent.
 - F6 to F13: fixed in D4, D7, D8, D10, D11, Constraints and Open risks.
 
+### Round 2
+
+- F1, BLOCKING, build locks beside the exit record: fixed, D4 and the `PATTERN-lym-files` constraint put them under `.lym/locks/` through `lock.TrackedFileLockPath`.
+- F2, hand calls in a task never registered: fixed, D9 registers every call in a task under the slug, with the teardown's bound.
+- F3, arbiter-settled Open-risks lines: fixed, both dropped and D1's rationale cites "D1 stands".
+- F4, a task's code-branch push had no gate: fixed, D4 runs the run-scope origin reconcile first, with a criterion.
+- F5, uncommitted maps stopped the weft pull: fixed, D5 commits them before the weft moves, with a criterion.
+- F6 to F10: fixed in D1, D7 and D11.
+
+### Round 3
+
+- F1, D4's push verdict had no home, exceptions or hold behaviour: fixed, D4 moves the verdict on the report to one `fabricengine` function, gives the verb only the pushes-off and prime skips, and makes a hold print one line with no pause or notice.
+- F2, D5 overclaimed that the replay never stops on maps: fixed, D5 states the replay path and the live-pass bound, with a criterion.
+- F3, no criterion pinned what D4's push carries: fixed, two D4 criteria, conditioned on the push going.
+- Self-check: the verb drops loom's pause and Finalize skips, which would let a hand call push past loom's stop; a re-run that changes no map pushes a held commit.
+
 ## Question ledger
 
-- Q1 Place: extra branch or existing weft branch? Auto-pick: existing weft branch (D1); raised to the parent under Open risks.
+- Q1 Place: extra branch or existing weft branch? Auto-pick: existing weft branch (D1); raised to the parent, and the arbiter confirmed it (2026-11-12).
 - Q2 Per code branch or per pair? Moot under D1: a weft branch is per pair, and pairs map one-to-one to code branches.
 - Q3 How do two tasks touching one package merge a map? Auto-pick: they never merge; the parent's pass rebuilds (D3).
 - Q4 Format smaller or more stable? Auto-pick: skip unchanged maps (D7) and write compact JSON (D8); keep the fields.
