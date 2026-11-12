@@ -18,7 +18,12 @@ A map describes the code at a commit, so it follows the branch.
 - Not in the warp (operator, 2026-11-12): the maps are lym's, and only lym maintains them.
   They go in the weft, the records branch each pair has, which is per branch and lym's.
   Weft branches are never merged into each other (operator, 2026-11-12), so a task's maps do not travel to its parent by a merge.
-  The design settles how the parent's maps move to the landed commit instead, for example by the parent's upkeep pass carrying them forward from the landed diff, as it does for any commit.
+  Direction (operator, 2026-11-12, thought through):
+  - A task builds and keeps its own maps in its own weft and uses them for its own gate; they are not delivered.
+  - When the task lands, the parent's upkeep pass carries the parent's maps forward to the landed commit, as it does for any commit:
+    every entry is kept but those of tests the landed diff affects, which are rebuilt.
+  - A new pair's weft starts from the parent's weft, so it starts with the parent's maps.
+  The design checks that a new weft inherits the maps, what the maps cost in git per weft, and the points below.
 - Size and churn: 56 MB of JSON, and a pass rewrites many files; every commit of them adds to git history.
   Whether the format should be smaller or more stable (sorted keys, one file per test, no timestamps in unchanged entries) before it is committed.
 - Machines: a map carries an `EnvironmentStamp`, and a stamp that differs from the current one is a `MissEnvironment` that rebuilds the package.
