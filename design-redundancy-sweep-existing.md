@@ -25,7 +25,8 @@ Its approved decision record (D13) asks two changes of this note:
 
 ## Before it becomes a task
 
-It needs a full set of coverage maps, one per package; on 2026-11-09 none was built yet.
-Upkeep passes build them, not a batch of five per five landings.
-The pass itself is built: `lym gate testmap --upkeep` (commit `35f5f867`, task `testmap-upkeep-runs`) drains the backlog under a yielding gate slot and plans each map at HEAD (`eb059dd4`, task `testmap-upkeep-plan`).
-The prime dobby that starts passes is task `testmap-upkeep-dobby`, not yet landed.
+This is not the next step (operator, 2026-11-12): the way to make and keep the maps comes first.
+It needs a full set of coverage maps, one per package, and the candidate list from the task `test-redundancy-candidates`.
+The upkeep pass is built: `lym gate testmap --upkeep` (commit `35f5f867`, task `testmap-upkeep-runs`) drains the backlog under a yielding gate slot and plans each map at HEAD (`eb059dd4`, task `testmap-upkeep-plan`).
+The prime dobby that starts passes is the task `testmap-upkeep-dobby`, still running.
+File this as tasks only after both have landed and the operator has read the candidate list.
