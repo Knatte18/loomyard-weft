@@ -1,0 +1,88 @@
+{
+  "sketch": "testmap-checked-in",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "testmap-upkeep-cost-and-guide", "revised": "2026-11-12T19:00:06Z"},
+    {"slug": "test-suite-trim", "revised": "2026-11-12T18:41:51Z"},
+    {"slug": "redundancy-sweep-existing", "revised": "2026-11-12T18:40:58Z"},
+    {"slug": "selector-non-body-miss", "revised": "2026-11-11T18:43:34Z"}
+  ],
+  "parts": [
+    {
+      "slug": "testmap-maps-in-weft",
+      "title": "Keep the coverage maps in each pair's weft branch, committed and pushed by lym gate testmap",
+      "type": "enhancement",
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11"],
+      "packages": [
+        {"path": "internal/gatecli", "size": 900},
+        {"path": "internal/fabricengine", "size": 450},
+        {"path": "internal/testcover", "size": 250},
+        {"path": "internal/loomcli", "size": 200},
+        {"path": "internal/state", "size": 80},
+        {"path": "internal/beamcli", "size": 40},
+        {"path": "internal/runproc", "size": 30},
+        {"path": "internal/dobbyengine", "size": 30},
+        {"path": "internal/preflight", "size": 30},
+        {"path": "internal/lymdirs", "size": 15},
+        {"path": "pattern", "size": 15}
+      ],
+      "contract": {
+        "takes": "the maps under <bolt>/.lym/testcover/, fabricengine's scoped weft commit (CommitRecordsPaths), SpawnStatusPush, ReconcileOrigin, and loomcli's unexported push verdict in prepush.go",
+        "delivers": "maps tracked under each worktree's _lym/testcover/, written compact and only on change, committed and pushed by lym gate testmap in the prime or a task, tolerated by preflight and committed before a weft pull, with upkeep off by default and a one-time import of the bolt maps",
+        "exports": "testcover.Dir on the worktree's anchor, a scratch accessor for the exit record, a compact form of state's JSON writer, and one exported fabricengine function holding the run-scope push verdict that loomcli's pre-push check and the verb both call"
+      },
+      "depends_on": [],
+      "open_risks": [
+        "`testmap-upkeep-cost-and-guide` reads the maps' place, the upkeep default and \"which maps are at HEAD\"; D1, D7 and D10 change all three, so its guide is right only if it runs after this task lands or follows this record.",
+        "From the landing until the operator's first `lym gate testmap` in the prime, every gate reads `testcover.MissNoMap` and runs whole packages, and every new pair inherits no maps.",
+        "Each live weft worktree checks out the whole map set, about 41 MB compact; twenty pairs hold about 0.8 GB.",
+        "The prime's weft history grows by the maps each landing changes; the stores never auto-gc, and only a pair teardown runs `git gc --auto`."
+      ],
+      "criteria": [
+        "D1: the upkeep pass, the gate's coverage scope and `lym gate redundant` read and write the maps under the worktree's own `_lym/testcover/`, and none reads `<bolt>/.lym/testcover/` but D11's import.",
+        "D2: a pair added from a parent whose weft holds committed maps has the same maps in its own `_lym/testcover/`.",
+        "D3: after a task lands, the parent's pass rebuilds only the affected tests' entries, and the task's map files do not appear on the parent's weft branch.",
+        "D4: an upkeep pass and a named-package rebuild that changed maps each leave one weft commit holding only paths under `_lym/testcover/`, and the exit record and locks are untracked.",
+        "D4: a killed call's written maps are committed by the next call.",
+        "D4: a testmap call in a task whose entry the run-scope origin reconcile reads as ended, with the parent lacking its work, commits its maps and pushes nothing;\nit pauses no run, posts no notice, and prints the reason with its way forward and a re-run of the verb.",
+        "D4: a testmap call in a task whose run a pause covers, or whose run stands at Finalize, still runs the reconcile and holds the push on a stopping verdict.",
+        "D4: after a held call's reason is settled, a re-run of the verb that changes no map pushes the held commit.",
+        "D4: a testmap call in a task pair, with pushes on, that changed maps and whose verdict lets the push go spawns the detached records push;\nthat push carries the task's code branch.",
+        "D4: a testmap call in the prime, with pushes on, that changed maps spawns a records-only push, which carries no code branch.",
+        "D5: a worktree whose only uncommitted change is under `_lym/testcover/` passes preflight's clean check, and one with another uncommitted `_lym` change fails it.",
+        "D5: a prime sync whose weft has only uncommitted `_lym/testcover/` changes, and whose origin weft moved, commits those maps and replays that commit onto origin's tip with no dirty stop; with another uncommitted `_lym` change it still stops.",
+        "D5: a map rewritten by a write the test injects between the pre-pull commit and the replay's dirtiness check stops the pull with `ErrReplayDirty`;\nthe stop names `lym fabric commit` and a re-run of the pull, and no map write is lost.",
+        "D6: `lym gate testmap` on a machine that reads the entry as owned by another refuses, naming the owner and the way forward, and commits nothing.",
+        "D7: a pass at a HEAD that affects no test of a package leaves that package's `map.json` byte-for-byte unchanged, and the next pass still plans it as current.",
+        "D7: a pass that leaves a package's map unwritten still lets the audit sample that package's tests.",
+        "D8: a written map is compact JSON, and an indented map is still read.",
+        "D9: `lym gate testmap` in a task worktree plans and writes that task's maps at the task's HEAD.",
+        "D9: a hand `lym gate testmap` call in a task, with and without packages named, is ended by its pair's teardown, and a pass in a task does not block the prime's dobby pass.",
+        "D10: a prime whose layers hold no `test_map_upkeep` key gets no automatic pass from its dobby; one that sets it true gets one as today.",
+        "D11: a prime call with an empty `_lym/testcover/` and a populated `<bolt>/.lym/testcover/` imports the maps compact, commits them, and removes the old maps and locks but not the old exit record; a second call imports nothing.",
+        "D11: a call after an import killed partway imports the rest and removes no old map before its package's map is committed.",
+        "D11: a prime call on a non-owner machine imports nothing, and removes only old maps whose package has a committed map in its weft.",
+        "D11: a prime call whose maps are committed removes old maps still left in the bolt's directory.",
+        "Review: `pattern/PATTERN-test-speed.md` and the `internal/testcover` and `internal/gatecli` package docs describe the maps per worktree in the weft, not in the bolt's `.lym`."
+      ],
+      "pattern_changes": ["PATTERN-owner-machine"],
+      "expected_cost_usd": 25.4,
+      "cost_line": "tapestry/solid stored-record fit (5 runs, r 0.82): $18.86 fixed + $0.33 per 100 lines over about 2000 changed lines, tests included; the cell's mean is $37.98"
+    }
+  ],
+  "cost": {
+    "expected_usd": 25.4,
+    "line": "one tapestry/solid part of about 2000 changed lines on the stored-record fit ($18.86 fixed + $0.33 per 100 lines, 5 runs); the cell's mean run cost $37.98 and 9.7 hours",
+    "next_best": {
+      "split": "two chained darn/solid tasks: first D5, D7, D8 and D10 (fabricengine pull, preflight, testcover upkeep, state, dobbyengine), then D1 to D4, D6, D9 and D11 on top",
+      "expected_usd": 16.2,
+      "line": "darn/solid stored-record fit (16 runs, r 0.74): two fixed costs of $4.43 + $0.34 per 100 lines over the same 2000 lines; both parts share gatecli and testcover, so they run in sequence"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}

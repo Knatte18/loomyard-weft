@@ -484,6 +484,31 @@
       "body": "## Seen (operator, 2026-11-12)\n\nThe operator says `lym adopt` does not work today, and that it is a lot of trouble: much housekeeping around every use.\nNo error text was given with the report.\nThe last adopt record in Bolt (`.lym/adopt/adopt.json`) is from 2026-11-11 14:37 and its root check was green, so the failure is newer or not in that record.\n\n## Idea\n\nFind out which part is the trouble before fixing anything.\nRun `lym adopt --here` (or the subject that failed), keep the output and the adopt record, and note which step stops or needs hand work (reconcile, pairs, pause, owner, deploy, beam, check, done).\nThen decide with the operator whether to repair the failing step or to cut the verb down to fewer steps.\nThe re-parent verb (report `docs/research/loom/reparent-running-task-2026-11-12.md`) waits until adopt is settled.\n",
       "created": "2026-11-12T19:48:30Z",
       "revised": "2026-11-12T19:59:28Z"
+    },
+    {
+      "id": 1347,
+      "handle": "T5",
+      "slug": "testmap-maps-in-weft",
+      "title": "Keep the coverage maps in each pair's weft branch, committed and pushed by lym gate testmap",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "gate",
+        "testkit",
+        "dobby"
+      ],
+      "issues": [],
+      "recipe": "tapestry",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `testmap-checked-in`.\n\nTakes: the maps under \u003cbolt\u003e/.lym/testcover/, fabricengine's scoped weft commit (CommitRecordsPaths), SpawnStatusPush, ReconcileOrigin, and loomcli's unexported push verdict in prepush.go\nDelivers: maps tracked under each worktree's _lym/testcover/, written compact and only on change, committed and pushed by lym gate testmap in the prime or a task, tolerated by preflight and committed before a weft pull, with upkeep off by default and a one-time import of the bolt maps\nExports: testcover.Dir on the worktree's anchor, a scratch accessor for the exit record, a compact form of state's JSON writer, and one exported fabricengine function holding the run-scope push verdict that loomcli's pre-push check and the verb both call\n\nThe part changes these packages:\n\n- internal/gatecli (about 900 changed lines)\n- internal/fabricengine (about 450 changed lines)\n- internal/testcover (about 250 changed lines)\n- internal/loomcli (about 200 changed lines)\n- internal/state (about 80 changed lines)\n- internal/beamcli (about 40 changed lines)\n- internal/runproc (about 30 changed lines)\n- internal/dobbyengine (about 30 changed lines)\n- internal/preflight (about 30 changed lines)\n- internal/lymdirs (about 15 changed lines)\n- pattern (about 15 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-12T20:37:43Z",
+      "revised": "2026-11-12T20:37:43Z",
+      "profile": "solid",
+      "discussed": true,
+      "record_body_sha256": "04816220bbbd0e304264bfea91a6089206a5b9738f87cc5755dfc05da962fa02"
     }
   ],
   "prime_owner": "neve",
