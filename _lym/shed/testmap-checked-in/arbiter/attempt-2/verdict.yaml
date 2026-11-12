@@ -1,0 +1,15 @@
+verdict: resume
+reason: |-
+  Review escalation, cause circling, round 2. The Discussion-Review perch's hard cap resolves to 3 (discussion_hard_max_bounces, local layer), so round 2 is below it.
+  The circling comes from two design-wrong keys returning after round 1's continue: d4-lock-placement-and-exit-record-accessor (F1, BLOCKING) and d9-task-pass-hub-wide-runproc-registration (F2, MEDIUM). Neither finding is wrong. F1 rests on PATTERN-lym-files and on testMapBuildLockPath in internal/gatecli/testmap.go. F2 rests on runTestMap registering only for --upkeep and on endOwnedProcesses reaching only registered records. So accept is not the call.
+  The fix is converging. Round 1 had 13 findings and round 2 has 10. Eight round-1 keys are resolved. Each returned key is a narrower gap left by the round-1 fix, not the same defect repeated.
+  The round-2 fixer has applied all ten findings, and they are now in the decision record:
+  - D4 puts each map's build lock under .lym/locks/ through lock.TrackedFileLockPath, and the PATTERN-lym-files constraint says the same.
+  - D9 registers every lym gate testmap call in a task under the task's slug, with the teardown's bound and a reworded criterion.
+  - D4 gates the task-pair push on the run-scope origin reconcile.
+  - D5 commits uncommitted _lym/testcover/ paths before the weft pull moves.
+  - D7, D11 and D1 carry the local fixes.
+  Round 2's open findings are code-checked corrections under the record's own Constraints PATTERNs. No new design call from the board entry is needed, so no arbiter decision is recorded. Continuing lets round 3, at the hard cap, re-review the fixes.
+verbs:
+  - |-
+    lym loom circling continue testmap-checked-in
