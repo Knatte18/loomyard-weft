@@ -1,11 +1,11 @@
 {
-  "current_producer": "Motif",
+  "current_producer": "Plan-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Motif",
-    "last": "Preflight → done",
+    "now": "Plan-Write",
+    "last": "Parts-Plan-Write → skipped",
     "wait": ""
   },
   "history": [
@@ -15,6 +15,34 @@
       "output": "",
       "at": "2026-11-12T17:22:08Z",
       "started_at": "2026-11-12T17:22:08Z"
+    },
+    {
+      "producer": "Motif",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-12T17:25:00Z",
+      "reason": "bench: the frozen decision record is the run's, so the block's Discussion is passed over"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-12T17:25:01Z",
+      "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Parts-Write",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-12T17:25:02Z",
+      "reason": "tapestry.plan_split = false"
+    },
+    {
+      "producer": "Parts-Plan-Write",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-12T17:25:03Z",
+      "reason": "tapestry.plan_split = false"
     }
   ],
   "product": {
