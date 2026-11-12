@@ -169,6 +169,12 @@ Rationale: the parent is the operator's delegate, so a reviewer agent does not o
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - seed-precision-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a task whose `run_settings` sets `discussion_assist_reviewer_model: fable[high]` over a hub that sets none runs its Discussion-Review round with an assistant seat on that model; existing coverage may meet it.
