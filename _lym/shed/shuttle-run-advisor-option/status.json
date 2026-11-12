@@ -1,14 +1,22 @@
 {
-  "current_producer": "Preflight",
+  "current_producer": "Record-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Preflight",
-    "last": "",
+    "now": "Record-Write",
+    "last": "Preflight → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-12T18:10:10Z",
+      "started_at": "2026-11-12T18:10:10Z"
+    }
+  ],
   "product": {
     "slug": "shuttle-run-advisor-option",
     "parent": "main",
