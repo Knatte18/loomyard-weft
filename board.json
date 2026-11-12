@@ -443,10 +443,10 @@
     },
     {
       "id": 1339,
-      "handle": "R5",
+      "handle": "T6",
       "slug": "advisor-model-bench",
       "title": "Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "research",
         "darn",
@@ -455,12 +455,15 @@
         "claude"
       ],
       "issues": [],
-      "depends_on": [],
+      "depends_on": [
+        "shuttle-run-advisor-option"
+      ],
       "isolated": false,
       "brief": "",
       "body": "## Idea (operator, 2026-11-11)\n\nThe bench that follows `advisor-model-trial`, which tunes the darn writer's advisor prompt.\nIt is filed as a task only when the operator approves that tuned prompt.\n\n## State after the trial (board tidy, 2026-11-11)\n\n`advisor-model-trial` landed as a report only (`3671f3d4`, `docs/research/loom/advisor-model-trial-2026-11-11/report.md`).\nIt ran no iteration and made no tuned prompt, so there is no prompt to approve and this bench is not ready to run.\nThe blocker: no route sets Claude Code's advisor (`advisorModel` setting, `--advisor` flag) for one shuttle run.\nThe operator decides the way forward: a per-run advisor option on `lym shuttle run`, or another route.\nThe bench waits on that and on a tuned prompt.\n\n## What it runs\n\nRerun three landed darn tasks of different sizes from their base commits, with a Sonnet writer, an Opus advisor and the tuned prompt, identical in all three:\n\n- large: `decision-record-replace-verb` (`6d58cad7`, about 2970 changed lines);\n- middle: `adopt-takeover-fixes` (`6f8d4cff`, about 580 changed lines);\n- small: `reed-tab-and-attach-fixes` (`aeea549d`, about 200 changed lines).\n\nThe cap is exactly three runs, one per task, and no repeats.\nEach run is compared with the task's recorded Opus run, whose recipe and profile come from its usage record:\nreview findings, bounces, tokens, cost and time with sleep removed.\nIt runs as darn `docs`, and the report goes under `docs/research/`.\n\n## Not decided\n\nWhether a lym config key for the advisor, beside each role's model and effort, follows: only after the bench shows it pays.\n",
+      "status": "draft",
       "created": "2026-11-11T18:38:11Z",
-      "revised": "2026-11-11T18:43:34Z"
+      "revised": "2026-11-12T17:09:46Z"
     },
     {
       "id": 1343,
