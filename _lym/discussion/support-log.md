@@ -78,7 +78,14 @@ Decision ids below are those of the revised record.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- F1, BLOCKING, a task's pass registered hub-wide: fixed, D9 registers it under the task's slug with a same-worktree bound.
+- F2, killed import lost the rest: fixed, D11 imports per package and removes an old map only once its package's map is committed.
+- F3, machine-sharing premise: fixed, D6 and the Constraints fact name the machine env layer and the absent commit, both degrading to whole-package runs.
+- F4, the audit skipped unwritten maps: fixed, D7 moves HEAD-comparing readers to the planned HEAD.
+- F5, decision: held by the parent.
+- F6 to F13: fixed in D4, D7, D8, D10, D11, Constraints and Open risks.
 
 ## Question ledger
 
