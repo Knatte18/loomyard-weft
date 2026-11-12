@@ -17,7 +17,9 @@ A map describes the code at a commit, so it follows the branch.
 
 - Not in the warp (operator, 2026-11-12): the maps are lym's, and only lym maintains them.
   They go in the weft, the records branch each pair has, which is per branch and lym's.
-  Weft branches are never merged into each other (operator, 2026-11-12), so a task's maps do not travel to its parent by a merge.
+  Weft branches are never merged into each other (operator, 2026-11-12), and everything else on a weft branch is meant to be discarded, so a task's maps do not travel to its parent by a merge of the weft.
+  Idea (operator, 2026-11-12): an extra branch in the weft repository for the lym data that is meant to be merged, the maps among it, apart from the discarded records.
+  The design settles whether that is one branch per code branch or per pair, how it is created and forked with a pair, and how it merges, since two tasks touching one package write the same map file.
   Direction (operator, 2026-11-12, thought through):
   - A task builds and keeps its own maps in its own weft and uses them for its own gate; they are not delivered.
   - When the task lands, the parent's upkeep pass carries the parent's maps forward to the landed commit, as it does for any commit:
