@@ -511,6 +511,31 @@
       "profile": "solid",
       "discussed": true,
       "record_body_sha256": "04816220bbbd0e304264bfea91a6089206a5b9738f87cc5755dfc05da962fa02"
+    },
+    {
+      "id": 1348,
+      "handle": "T7",
+      "slug": "slack-machine-bridge-build",
+      "title": "Build the Slack bridge that carries creel mail between orchs on two machines",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "slack",
+        "creel",
+        "orch"
+      ],
+      "issues": [],
+      "recipe": "tapestry",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `slack-machine-bridge`.\n\nTakes: the Sketch's decision record, creel's cross-hub path in internal/creelengine and the Slack relay in internal/slackengine as they stand\nDelivers: orch-to-orch creel mail across two machines through a per-pair Slack bridge channel, gated by the operator's approve and revoke commands and the orchs' slack buttons, stamped (other machine, trusted orch) or untrusted on receipt\nExports: agentname's \u003cmachine\u003e::\u003cname\u003e parser; creel's machine-outbound and machine-inbound events with the program-only take, report, settle and deliver verbs and their GoClient methods; slackengine's bridge envelope formatter and parser, bridge map, bridge-notice and bridge-post records, approved-peer record and bridge poll\n\nThe part changes these packages:\n\n- internal/agentname (about 150 changed lines)\n- internal/creelengine (about 1300 changed lines)\n- internal/creelcli (about 350 changed lines)\n- internal/slackengine (about 2000 changed lines)\n- internal/slackcli (about 80 changed lines)\n- internal/hubgeom (about 20 changed lines)\n- internal/shuttleengine (about 10 changed lines)\n- cmd/lym (about 10 changed lines)\n- contracts/orchrole (about 30 changed lines)\n- contracts/stencils/parent (about 3 changed lines)\n- docs (about 30 changed lines)\n- pattern (about 17 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-12T20:37:52Z",
+      "revised": "2026-11-12T20:37:52Z",
+      "profile": "solid",
+      "discussed": true,
+      "record_body_sha256": "b0595f810525ce9818aee2b202f9e74b4082042c9bc69b7472ff12adca4611a4"
     }
   ],
   "prime_owner": "neve",
