@@ -1,6 +1,6 @@
 # Commit the coverage maps instead of keeping them in .lym
 
-`testmap-checked-in` · Task · enhancement, gate, testkit, dobby · running · Discussion-Burler-Review
+`testmap-checked-in` · Task · enhancement, gate, testkit, dobby · running · Discussion-Burler-Fix
 
 ## Seen (operator, 2026-11-12)
 
