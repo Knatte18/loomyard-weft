@@ -1,59 +1,48 @@
-# Coverage-map pilot on internal/adoptcli, and `lym gate redundant`
+# Add `lym gate redundant` and the adoptcli coverage-map pilot report
 
-This change answers the pilot's three questions for one package, `internal/adoptcli`,
-in `docs/research/speed/coverage-map-pilot-2026-11-12/report.md`.
-It also adds the one verb the pilot lacked: a candidate list over a whole package's coverage map.
+The board's coverage maps exist to cut the test suite, but nothing listed a whole package's redundancy candidates from its map.
+This change adds that verb and a pilot report that answers three questions on one package, `internal/adoptcli`:
+can a map be built, what does a full set cost, and is the map of any use for cutting tests or scoping the gate.
+No test is cut or folded, and no other package's map is built.
 
 ## What changes
 
-- **`lym gate redundant <package>`** (`internal/gatecli/redundant.go`).
-  It reads the package's coverage map from the hub and lists its redundancy candidates:
-  each test whose covered blocks the package's other judged tests cover,
-  with its tier, standalone seconds, covering tests and whether it is in the removable set.
-  It lists keep-marked tests with their reasons, and tests not judged with why.
-  It runs no test and takes no slot, and it works from any worktree of the hub.
-  It refuses outside a hub, for a missing, unreadable or build-failure-only map, and for a failed keep scan,
-  each refusal with a way forward.
-- **`testcover.JudgeMap`** judges a stored map's entries with the existing package-scoped verdict.
-  A test marked `//testtiming:keep` is neither judged nor a cover;
-  an entry recording an outcome, or one the spawn scan marks, is not judged.
-- **Report** with its scaling input `packages.tsv` and the package's candidate list.
-- **Docs**: the `gatecli` and `testcover` package docs, `docs/overview.md`, and the coverage-map section of
-  `pattern/PATTERN-test-speed.md`.
+- `lym gate redundant <package>` reads the package's coverage map and prints its redundancy candidates as JSON.
+  Each candidate carries its tier, seconds, covering tests and whether it is in the removable set.
+  The answer also lists the keep-marked tests with their reasons and the tests not judged with why,
+  and it carries the map's commit, build time and test count.
+  It prints `map_build_failure` when a later coverage build failed, and omits the key otherwise.
+  It runs no test and takes no gate slot.
+  It refuses with a way forward outside a hub, for a missing, unreadable or failed-build-only map, and for a failed keep scan.
+- `testcover.JudgeMap` judges every test of a map by the package-scoped verdict, in the map's order.
+  A `//testtiming:keep` test gets the new reason `testcover.ReasonKept` and is neither judged nor a cover.
+  An entry with a recorded outcome or a spawn-marked entry is not judged either.
+- The report is `docs/research/speed/coverage-map-pilot-2026-11-12/report.md`,
+  with `packages.tsv` (the scaling input) and `adoptcli-redundant.json` (the verb's answer for the package).
+- `docs/overview.md`, `internal/gatecli/doc.go` and `pattern/PATTERN-test-speed.md` describe the verb,
+  and `docs/research/README.md` lists the report.
 
 ## What the report finds
 
-- **Build**: one `lym gate testmap internal/adoptcli` succeeded in 34.3 s wall and 47.8 s CPU on one of three slots.
-  Most of that is bookkeeping between rounds of tests, which the verb's `run_seconds` does not count.
-- **Full set**: estimated at 45 to 165 minutes on one slot and 65 to 230 CPU-minutes.
-  The upkeep pass had already built the full set today in 44 minutes, at the low end.
-- **Cutting**: 2 of 30 judged tests are candidates, and both assert something their covers do not.
-  The map is a reading filter for cuts, not a verdict.
-- **Scoping**: over two landed commits the selector never dropped a covering test.
-  It ran no test for one commit and fell back to the whole package for the other,
-  on a one-line test-helper edit.
+- Build: one `lym gate testmap internal/adoptcli` call succeeded in 34.3 s wall and 47.8 s CPU, holding one of three gate slots.
+- Full set: an estimate of 45 to 165 minutes on one slot, 65 to 230 CPU-minutes.
+  The range turns on whether the bookkeeping between test rounds costs per test or per round.
+  The hub's upkeep pass had already built the full set in 44 minutes, at the low end.
+- Cutting: of 30 judged tests, 2 are candidates, and both assert something their covering tests do not.
+  The map is a reading filter, not a verdict.
+- Scoping: over two landed commits the selector never left out a test covering the changed code.
+  It named no test for one commit and fell back to the whole package for the other.
 
 ## Design decisions
 
-- **The verb is new rather than a mode of an existing one.**
-  The gate's `redundancy` report step judges only the tests a diff changes,
-  and `cmd/testtiming -redundancy` measures afresh instead of reading the map.
-  A read-only verb beside `testmap` is the smallest way to give the list the task asked for.
-- **The judgment lives in `testcover`.**
-  `JudgeMap` sits beside `Judge` so the verdict stays in one package and is tested at tier0;
-  the verb's tier1 test covers only hub resolution, the answer's shape and its refusals.
-- **The pilot ran although the full set already existed.**
-  The prime's dobby began building every map with `36621f0e`, before this run started.
-  The pilot ran as the board entry asks, and the report uses that pass's 44 minutes to check the estimate.
-- **The scoping comparison re-bases the pilot map instead of building maps at old commits.**
-  The task allows one build.
-  A scratch program recomputed the map's file hashes at each commit's parent and ran `testcover.Selector` with the commit as target.
-  The covering sets come from the same map at function granularity; the report states that bound.
+- `lym gate redundant` reads the keep markers from the current worktree, not from the map's commit.
+  The map is read as the last `lym gate testmap` call left it.
+- `JudgeMap` takes the keep set as an argument, so `internal/testcover` stays free of file scanning.
+- The verb takes one package and answers in under a second, so a full set costs a reader nothing once built.
 
-## Testing
+## To check
 
-- `TestJudgeMap_KeptAndUnmeasuredEntriesNeitherJudgedNorCovering` (tier0) pins that a keep-marked test neither is judged nor covers,
-  and that outcome and spawn entries are not judged.
-- `TestGateRedundant` (tier1) runs the verb over a hubforge hub with a written map.
-  It checks the answer's candidates, kept and not-judged lists,
-  and the refusals outside a hub, for a package with no map, and for a map holding only a failed build.
+- `TestGateRedundant` has no case for two of the verb's refusals: a map whose test names a block index outside its block table,
+  and a package holding a `//testtiming:keep` line with no reason.
+  Both branches are in `internal/gatecli/redundant.go`.
+- No regression check ran for this task, and the verb was not run against a package other than `internal/adoptcli`.
