@@ -1,0 +1,14 @@
+{
+  "session_id": "141e991e-385d-483c-8481-e1ae249e589b",
+  "row": "Plan-Write",
+  "role": "plan",
+  "model": "claude-fable-5-2",
+  "engine": "claude",
+  "input_tokens": 10,
+  "cache_write_tokens": 34281,
+  "cache_read_tokens": 54326,
+  "output_tokens": 822,
+  "cost_usd": null,
+  "started": "2026-11-12T17:25:37Z",
+  "ended": "2026-11-12T17:26:44Z"
+}
