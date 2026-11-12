@@ -26,7 +26,16 @@ Its approved decision record (D13) asks two changes of this note:
 ## Before it becomes a task
 
 This is not the next step (operator, 2026-11-12): the way to make and keep the maps comes first.
-It needs a full set of coverage maps, one per package, and the candidate list from the task `test-redundancy-candidates`.
-The upkeep pass is built: `lym gate testmap --upkeep` (commit `35f5f867`, task `testmap-upkeep-runs`) drains the backlog under a yielding gate slot and plans each map at HEAD (`eb059dd4`, task `testmap-upkeep-plan`).
-The prime dobby that starts passes is the task `testmap-upkeep-dobby`, still running.
-File this as tasks only after both have landed and the operator has read the candidate list.
+It needs a full set of coverage maps, one per package, and the candidate list.
+
+Built so far (board tidy, 2026-11-12):
+
+- The upkeep pass: `lym gate testmap --upkeep` (commit `35f5f867`, task `testmap-upkeep-runs`) drains the backlog under a yielding gate slot and plans each map at HEAD (`eb059dd4`, task `testmap-upkeep-plan`).
+- The prime dobby that starts passes (commit `36621f0e`, task `testmap-upkeep-dobby`) starts a pass whenever work remains; the key `test_map_upkeep` switches it off.
+- The candidate list per package: `lym gate redundant <package>` (commit `79f0eb4a`, task `test-redundancy-candidates`) prints a package's candidates from its map as JSON, with tier, seconds, covering tests and whether each is in the removable set. It omits `//testtiming:keep` tests and spawn-marked tests.
+  It runs no test and takes no gate slot.
+- The pilot report `docs/research/speed/coverage-map-pilot-2026-11-12/report.md` ran it on `internal/adoptcli` only:
+  of 30 judged tests, 2 were candidates, and both assert something their covering tests do not, so the map is a reading filter, not a verdict.
+  The hub's upkeep pass had built the full set of maps in 44 minutes.
+
+File this as tasks once the operator has read the candidate lists.
