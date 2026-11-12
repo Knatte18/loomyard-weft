@@ -65,7 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 3d<br>56m | testkit, gate |
+| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 3d<br>57m | testkit, gate |
 
 </details>
 
@@ -85,7 +85,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Commit the coverage maps instead of keeping them in .lym**<br>• The maps sit in an excluded .lym directory; the operator wants them checked in, which needs a design for place, size, machines and who commits | [`testmap-checked-in`](design-testmap-checked-in.md) | motif | Discussion-Burler-Review | neve | 32m<br>11m | gate, testkit, dobby |
-| T4 | **Study what a re-parent of a running task has to write**<br>• A read-only study of every place a task records its parent or membership, and of what a re-parent verb would write | [`reparent-running-task`](design-reparent-running-task.md) | darn · docs | Describe | neve | 7d<br>1h | board, batten, fabric, dobby |
+| T4 | **Study what a re-parent of a running task has to write**<br>• A read-only study of every place a task records its parent or membership, and of what a re-parent verb would write | [`reparent-running-task`](design-reparent-running-task.md) | darn · docs | PR-Review | neve | 7d<br>1h | board, batten, fabric, dobby |
 
 #### Ready (0)
 
