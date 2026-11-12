@@ -78,21 +78,20 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
+#### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Commit the coverage maps instead of keeping them in .lym**<br>• The maps sit in an excluded .lym directory; the operator wants them checked in, which needs a design for place, size, machines and who commits | [`testmap-checked-in`](design-testmap-checked-in.md) | motif | Discussion-Burler-Review | neve | 1h<br>41m | gate, testkit, dobby |
+| T6 | **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | darn · docs | Worktree-Create | neve | 1d<br>2h | darn, loom, shuttle, claude |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | darn · docs |  | 1d<br>2h | darn, loom, shuttle, claude |
+_None._
 
 #### Draft (2)
 
