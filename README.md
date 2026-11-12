@@ -84,7 +84,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | motif | awaiting · Discussion-Bouncer | neve | 4d<br>58m | slack, creel, orch |
+| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | motif | awaiting · Discussion-Bouncer | neve | 4d<br>59m | slack, creel, orch |
 
 #### Ready (0)
 
@@ -120,7 +120,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 5d<br>5d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 4d<br>1d | shed, loom, darn |
 | E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 1d<br>1d | testkit, gate |
-| E5 |  | **Commit the coverage maps instead of keeping them in .lym**<br>• The maps sit in an excluded .lym directory; the operator wants them checked in, which needs a design for place, size, machines and who commits | [`testmap-checked-in`](design-testmap-checked-in.md) | 8m<br>1m | gate, testkit, dobby |
+| E5 |  | **Commit the coverage maps instead of keeping them in .lym**<br>• The maps sit in an excluded .lym directory; the operator wants them checked in, which needs a design for place, size, machines and who commits | [`testmap-checked-in`](design-testmap-checked-in.md) | 9m<br>0m | gate, testkit, dobby |
 
 #### Features (7)
 
