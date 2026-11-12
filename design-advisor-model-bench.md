@@ -1,6 +1,6 @@
 # Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks
 
-`advisor-model-bench` · Task · research, darn, loom, shuttle, claude · running · Darn-Write
+`advisor-model-bench` · Task · research, darn, loom, shuttle, claude · running · Drift-Verify
 
 ## Idea (operator, 2026-11-11)
 
