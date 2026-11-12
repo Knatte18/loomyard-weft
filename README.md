@@ -78,13 +78,15 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Commit the coverage maps instead of keeping them in .lym**<br>• The maps sit in an excluded .lym directory; the operator wants them checked in, which needs a design for place, size, machines and who commits | [`testmap-checked-in`](design-testmap-checked-in.md) | motif |  | 21m<br>0m | gate, testkit, dobby |
 
-#### Draft (5)
+#### Draft (4)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -92,7 +94,6 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 10d<br>23h | claude, shuttle, config |
 | T2 | `draft` **Measure what coverage-map upkeep costs, check how its state is shown, and write the operator guide**<br>• What the upkeep passes have cost, whether one call shows the maps state, and a short guide to using and keeping the maps | [`testmap-upkeep-cost-and-guide`](design-testmap-upkeep-cost-and-guide.md) | darn · docs |  | 26m<br>26m | gate, testkit, dobby |
-| T3 | `draft` **Commit the coverage maps instead of keeping them in .lym**<br>• The maps sit in an excluded .lym directory; the operator wants them checked in, which needs a design for place, size, machines and who commits | [`testmap-checked-in`](design-testmap-checked-in.md) | darn |  | 21m<br>1m | gate, testkit, dobby |
 | T4 | `draft` **Study what a re-parent of a running task has to write**<br>• A read-only study of every place a task records its parent or membership, and of what a re-parent verb would write | [`reparent-running-task`](design-reparent-running-task.md) | darn · docs |  | 7d<br>50m | board, batten, fabric, dobby |
 | T6 | `draft` **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | darn · docs |  | 1d<br>2h | darn, loom, shuttle, claude |
 
