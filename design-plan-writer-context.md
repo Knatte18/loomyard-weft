@@ -1,6 +1,6 @@
 # Plan writer bench: twill against a solo Opus and a solo Fable on one plan
 
-`plan-writer-context` · Task · research, loom, stencil · running · Finalize
+`plan-writer-context` · Task · research, loom, stencil · done
 
 ## Idea (operator, 2026-11-12)
 
