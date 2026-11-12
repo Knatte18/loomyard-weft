@@ -1,9 +1,11 @@
 <!-- This is the burler review-file format, the one format both halves of a round point at.
-     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lym/stencils/burler/ and read
-     from there at call time by composeReviewPrompt and composeFixPrompt (prompt.go), which render it unchanged into each half's instruction directory.
+     It ships as an embedded default in contracts/stencils/stencils.go.
+     It is seeded to the Bolt checkout's `_lym/stencils/burler/`.
+     `composeReviewPrompt` and `composeFixPrompt` (internal/burlerengine/prompt.go) read it from there at call time.
+     They render it unchanged into each half's instruction directory.
      The reviewer step names its path as the format it writes; the fixer seat names its path as the format it reads.
-     It is marker-free on purpose: it states the format and carries no path of either half.
-lym-stencil: sha256=1d3c69617965dc18661f5199b70c30129d944a38a4ddf111b466db3d066022c0 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+     It carries no marker, so it names no path of either half.
+lym-stencil: sha256=5a41dc4f8fcd64eb52c2e3d96f51c625395760d391864f478e6cb6053b11486c build=32e8e32ed826c004e379e40e6215c71657c2bcb3 time=2026-11-12T17:04:48Z -->
 
 ## Review-file format
 
@@ -47,6 +49,8 @@ Frontmatter rules, all strict:
 - Omit `findings` entirely when you found nothing.
   Never invent a finding to pad the list.
 - In a cluster round, each finding also carries an `origin:` key — `lens:<name>` for a finding kept from a named fork, or `handler` for one you found yourself.
+- A finding kept from the parent orch's report carries `origin: parent` and an optional `parent_ids` list naming the report ids it covers, such as `parent_ids: [P1, P3]`.
+  No other finding carries `parent_ids`.
 
 Below the closing `---`, write prose: exactly one `### [SEVERITY] <title>` block per finding, each carrying `**Location:**` and `**Issue:**` lines.
 The change lives in the finding's `fix` key; no prose `**Fix:**` line restates it.
