@@ -74,7 +74,25 @@ Six forks returned reports; none was missing. Duplicates across lenses are merge
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1 (BLOCKING, 16 findings): every finding fixed.
+  An adopted or resync-added channel reads from its start (D4); the hour's bound past a long relay outage and a late settle (D3);
+  a bridge-post record apart from the outbox (D7); bridge-channel commands handled by one machine (D6);
+  resync trusts only pinned envelopes, uses a bridge resync hint of its own and notifies on an unpinned creator (D8);
+  the missing acceptance criteria added.
+  F4's not-delivered answer stays in bridge channels, given once by the first end's relay, since an orch channel forwards operator text.
+- Round 2 (BLOCKING, 15 findings): every finding fixed.
+  A per-channel operator cursor handles each operator message once past a held message, and threads are read (D4, D8);
+  an adopted channel skips its existing operator messages and envelopes older than creel's retention (D4, D8);
+  a hand-archived channel holds as `bridge-archived` with a rename way forward (D4); a held message creel returned is not posted (D7);
+  machine-outbound mail is an event of its own, taken at each bridge poll, carrying the sending id as reply-to (D3, D8, D10);
+  the refusal count lives in the bridge-post record and the peer app leaves the bridge map (D4, D7).
+  The once-per-pair listing of Turn 3 is corrected to its true rate (D4).
+- Round 3 (BLOCKING, 4 findings): every finding fixed.
+  A scheduler timer returns machine-outbound mail at its hour without the relay, and take never returns a message past it (D3);
+  report, settle delivered and settle returned have journal events of their own, report writing only on a changed reason (D3);
+  the bridge-archived way forward is to unarchive, and to rename only a channel no bot of the pair made, since Slack refuses renaming an archived channel (D4);
+  notice marks live in a bridge-notice record keyed by pair or channel, and an approval moves the delivery cursor past what it delivers (D4, D8).
+  The fixer's self-check added the pair-keyed marks, the unarchive-only path, the change-of-reason wording and an idempotent late settle (D3, D4).
 
 ## Question ledger
 
