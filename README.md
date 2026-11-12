@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-12 18:28 UTC; every age below is as of then.
+Rendered 2026-11-12 18:30 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -57,7 +57,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Pilot one coverage map: build time, full-set estimate, and whether the map is usable**<br>• Build the map of one package, time and cost it, estimate the full set, and check whether the map can cut tests or scope the gate | [`test-redundancy-candidates`](design-test-redundancy-candidates.md) | darn · light | Code-Burler-Review | neve | 22h<br>24m | testkit, gate |
+| T2 | **Pilot one coverage map: build time, full-set estimate, and whether the map is usable**<br>• Build the map of one package, time and cost it, estimate the full set, and check whether the map can cut tests or scope the gate | [`test-redundancy-candidates`](design-test-redundancy-candidates.md) | darn · light | Code-Burler-Review | neve | 22h<br>25m | testkit, gate |
 
 #### Ready (0)
 
@@ -73,7 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 2d<br>39m | testkit, gate |
+| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 2d<br>41m | testkit, gate |
 
 </details>
 
@@ -92,8 +92,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | motif | Discussion-Write | neve | 4d<br>13m | slack, creel, orch |
-| T4 | **Give lym shuttle run a per-run advisor option**<br>• lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench | [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md) | darn · light | Code-Burler-Review | neve | 1h<br>1h | shuttle, claude |
+| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | motif | Discussion-Write | neve | 4d<br>14m | slack, creel, orch |
+| T4 | **Give lym shuttle run a per-run advisor option**<br>• lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench | [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | shuttle, claude |
 
 #### Ready (0)
 
@@ -107,7 +107,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 10d<br>22h | claude, shuttle, config |
+| T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 10d<br>23h | claude, shuttle, config |
 | T6 | `draft` **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | darn · docs | T4 | 23h<br>1h | darn, loom, shuttle, claude |
 
 ### Notes (12)

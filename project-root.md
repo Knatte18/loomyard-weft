@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-12 18:28 UTC; every age below is as of then.
+Rendered 2026-11-12 18:30 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | motif | Discussion-Write | neve | 4d<br>13m | slack, creel, orch |
-| T4 | **Give lym shuttle run a per-run advisor option**<br>• lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench | [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md) | darn · light | Code-Burler-Review | neve | 1h<br>1h | shuttle, claude |
+| T3 | **Let orchs on two machines talk through a Slack bridge channel**<br>• A shared Slack channel where each machine's bot posts and reads, with the other machine marked as sender, never as the operator | [`slack-machine-bridge`](design-slack-machine-bridge.md) | motif | Discussion-Write | neve | 4d<br>14m | slack, creel, orch |
+| T4 | **Give lym shuttle run a per-run advisor option**<br>• lym shuttle run takes an optional advisor model for one run, written into the --settings document claudeengine already writes; unblocks the advisor bench | [`shuttle-run-advisor-option`](design-shuttle-run-advisor-option.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | shuttle, claude |
 
 ### Ready (0)
 
@@ -33,7 +33,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 10d<br>22h | claude, shuttle, config |
+| T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 10d<br>23h | claude, shuttle, config |
 | T6 | `draft` **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | darn · docs | T4 | 23h<br>1h | darn, loom, shuttle, claude |
 
 ## Notes (12)
