@@ -12,13 +12,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Plan writer bench: twill against a solo Opus and a solo Fable on one plan**<br>• One bench on one landed tapestry plan: the twill run already made, a solo opus[high] writer and a solo fable[medium] writer, compared on cost, rounds, time and plan quality | [`plan-writer-context`](design-plan-writer-context.md) | darn · docs | Worktree-Create | neve | 3w<br>0m | loom, stencil |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Plan writer bench: twill against a solo Opus and a solo Fable on one plan**<br>• One bench on one landed tapestry plan: the twill run already made, a solo opus[high] writer and a solo fable[medium] writer, compared on cost, rounds, time and plan quality | [`plan-writer-context`](design-plan-writer-context.md) | darn · docs |  | 3w<br>0m | loom, stencil |
+_None._
 
 ### Draft (2)
 
