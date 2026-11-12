@@ -1,6 +1,6 @@
 # Study what a re-parent of a running task has to write
 
-`reparent-running-task` · Task · research, board, batten, fabric, dobby · running · Worktree-Create
+`reparent-running-task` · Task · research, board, batten, fabric, dobby · running · Open-Window
 
 Imported from [issue #48](https://github.com/Knatte18/loomyard/issues/48).
 
