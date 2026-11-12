@@ -1,0 +1,903 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 6787050f..4a584b81 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -300,7 +300,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/cleanupcli/          the cleanup CLI command (`lym cleanup`, the routine cleanups of the hub prime's leftover state, a dry run by default)
+ ├── internal/fabriccli/           the fabric CLI command (git coordination of code and records)
+ ├── internal/fabricengine/        the fabric domain kernel
+-├── internal/gatecli/             the gate CLI command (`lym gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged; `lym gate status`, the holders of the hub's gate slots; `lym gate report`, the machine's run records totalled per slug and gate key; `lym gate testmap`, the per-package coverage maps rebuilt from the hub's prime worktree)
++├── internal/gatecli/             the gate CLI command (`lym gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged; `lym gate status`, the holders of the hub's gate slots; `lym gate report`, the machine's run records totalled per slug and gate key; `lym gate testmap`, the per-package coverage maps rebuilt from the hub's prime worktree; `lym gate redundant`, one package's redundancy candidates read from its coverage map)
+ ├── internal/helpcli/             the help CLI command (`lym help [<command>...]`, `lym help index`)
+ ├── internal/shortcutcli/         the top-level operator shortcuts (`lym a`, `lym s`, `lym p`, `lym r`) from one embedded file
+ ├── internal/idecli/              the ide CLI command
+@@ -931,6 +931,8 @@ User-facing modules each get one `lym <module>` namespace:
+   `--gate <key>` runs the tiers and scope `gate.yaml`'s gate key names,
+   and with `--guards` the verb also runs every `//lym:guard` test of the module under the command of the tier its file belongs to).
+   `lym gate card-verify <card id>` runs a plan card's `**Verify:**` line through the shared `internal/cardverify` runner and exits with the line's code.
++  `lym gate redundant <package>` judges one package's coverage map by the redundancy verdict and lists its candidates,
++  each with its seconds, its covering tests and whether it is in the removable set; it runs no test and takes no slot.
+   `lym gate testmap [--max <n>] [<package>...]` rebuilds the stale per-package coverage maps of `internal/testcover` from the hub's prime worktree:
+   each tier0 and tier1 test runs alone inside one gate slot, bounded by `redundancy_build_timeout_min` and `redundancy_test_timeout_sec`,
+   under a coverage binary over every in-module package its test binary links.
+diff --git a/docs/research/README.md b/docs/research/README.md
+index 61177ea9..d0a02dce 100644
+--- a/docs/research/README.md
++++ b/docs/research/README.md
+@@ -130,6 +130,7 @@ A study's script finds the repository root with `git rev-parse --show-toplevel`,
+ - [run-slowness-causes-2026-11-06](speed/run-slowness-causes-2026-11-06/report.md) — where a run's wall time goes, what made darn runs slower, and the changes that would cut it, ranked.
+ - [tier1-test-revision-2026-11-06](speed/tier1-test-revision-2026-11-06/report.md) — where a tier 1 pass goes, which levers of the fabricengine survey still stand, which tests can fold, and the changes that would cut a pass, ranked.
+ - [testmap-upkeep-2026-11-11](speed/testmap-upkeep-2026-11-11/report.md) — three independent proposals, two by Fable and one by Opus, for keeping the per-test coverage maps fresh, compared side by side.
++- [coverage-map-pilot-2026-11-12](speed/coverage-map-pilot-2026-11-12/report.md) — a pilot of the coverage map on `internal/adoptcli`: what building it costs, and whether its redundancy candidates hold up as deletable tests.
+ 
+ ## tokens — token use, cost and models
+ 
+diff --git a/docs/research/speed/coverage-map-pilot-2026-11-12/adoptcli-redundant.json b/docs/research/speed/coverage-map-pilot-2026-11-12/adoptcli-redundant.json
+new file mode 100644
+index 00000000..aff38777
+--- /dev/null
++++ b/docs/research/speed/coverage-map-pilot-2026-11-12/adoptcli-redundant.json
+@@ -0,0 +1 @@
++{"candidates":[{"name":"TestReconcileSeamWaitsOnAPushLock","tier":0,"seconds":0,"removable":true,"covering":["TestAdoptIntegration_SecondCloneTakesOver"]},{"name":"TestWorkerArgs","tier":0,"seconds":0,"removable":true,"covering":["TestRunAdopt","TestAdoptIntegration_SecondCloneTakesOver","TestCheckCmd_FromABeamExitsZeroWhileOneRuns"]}],"kept":[{"name":"TestAdoptFields","reason":"pins which envelope keys appear only when set and that runs is always present, which TestAdopt never reads from the map"},{"name":"TestTriesStore","reason":"pins that an absent tries file reads zero and a read creates no directory, which the fix-loop test covering its blocks does not assert"}],"map_built_at":"2026-11-12T19:11:33+01:00","map_commit":"384d7cb73ff010d98c1bef9a5408d9d64887db2b","not_judged":[{"name":"TestCommand_RunsFromABeam","reason":"unclassifiable call"},{"name":"TestHubCheckDeps_StaleStampRunsTheTunedFinalizeTiers","reason":"unclassifiable call"}],"ok":true,"package":"internal/adoptcli","tests":34}
+diff --git a/docs/research/speed/coverage-map-pilot-2026-11-12/packages.tsv b/docs/research/speed/coverage-map-pilot-2026-11-12/packages.tsv
+new file mode 100644
+index 00000000..5b648d1a
+--- /dev/null
++++ b/docs/research/speed/coverage-map-pilot-2026-11-12/packages.tsv
+@@ -0,0 +1,202 @@
++package	tests	tier0	tier1	linked_packages
++cmd/lym	94	82	12	186
++cmd/testtiming	21	19	2	119
++contracts/specs	3	3	0	13
++contracts/stencils	17	17	0	116
++internal/adoptcli	34	28	6	144
++internal/adoptrecord	6	6	0	37
++internal/agentconfig	8	8	0	15
++internal/agentname	11	11	0	7
++internal/arbiterstop	5	5	0	122
++internal/batcher	9	9	0	20
++internal/battencli	160	139	21	143
++internal/battenrecipe	9	9	0	122
++internal/battenshed	107	107	0	69
++internal/beamcli	52	24	28	151
++internal/boardcli	14	13	1	122
++internal/boardengine	136	134	2	37
++internal/boardengine/boardtest	3	2	1	126
++internal/buildinfo	2	2	0	8
++internal/buildvcs	3	3	0	7
++internal/burlercli	17	16	1	128
++internal/burlerengine	50	50	0	123
++internal/cardverify	2	1	1	25
++internal/cleanupcli	5	3	2	142
++internal/clihelp	14	14	0	11
++internal/cliwire	13	13	0	67
++internal/commentlint	6	5	1	20
++internal/configcli	14	12	2	118
++internal/configengine	21	21	0	34
++internal/configreg	16	16	0	104
++internal/configsync	16	16	0	103
++internal/consoletitle	3	3	0	8
++internal/creelcli	10	7	3	125
++internal/creelconfig	2	2	0	14
++internal/creelengine	21	21	0	14
++internal/darnengine	6	6	0	48
++internal/desktophook	2	1	1	15
++internal/discussionparser	37	37	0	15
++internal/dobbyengine	49	49	0	50
++internal/dotgit	6	4	2	15
++internal/dotnetimpact	4	3	1	28
++internal/driftcli	7	3	4	133
++internal/driftengine	36	32	4	68
++internal/durfmt	2	2	0	8
++internal/editdirective	4	4	0	15
++internal/entrymerge	1	1	0	7
++internal/envconfig	3	3	0	14
++internal/envsource	3	3	0	7
++internal/fabriccli	37	15	22	134
++internal/fabricengine	578	164	414	121
++internal/fabricvocab	1	1	0	8
++internal/failuretrace	3	3	0	60
++internal/friction	6	6	0	16
++internal/frictionengine	15	15	0	66
++internal/fronttask	6	4	2	139
++internal/fslink	6	6	0	7
++internal/fswatch	5	5	0	12
++internal/fsx	4	4	0	7
++internal/gatecli	73	53	20	124
++internal/gatefixer	9	9	0	48
++internal/gateslot	30	29	1	19
++internal/gitexec	9	2	7	20
++internal/githubclient	14	14	0	12
++internal/gitkit	11	3	8	15
++internal/gitrepo	58	8	50	23
++internal/gitrepo/internal/gitoracle	1	1	0	21
++internal/haltnote	4	4	0	8
++internal/heddlecli	1	0	1	0
++internal/heddleengine	16	14	2	117
++internal/helpcli	1	1	0	12
++internal/hibernatecli	4	2	2	134
++internal/hibernateengine	6	6	0	121
++internal/hubforge	13	0	13	118
++internal/hubgeom	18	16	2	118
++internal/hubissues	9	9	0	16
++internal/hubreconcile	25	5	20	120
++internal/hubregistry	4	2	2	37
++internal/idecli	2	0	2	0
++internal/ideconfig	1	1	0	14
++internal/ideengine	6	3	3	119
++internal/impactset	10	7	3	20
++internal/landingshed	88	85	3	122
++internal/languageconfig	3	3	0	14
++internal/lenses	6	6	0	16
++internal/lensreport	5	5	0	8
++internal/lock	8	8	0	7
++internal/logger	38	37	1	14
++internal/loggerconfig	3	3	0	14
++internal/loomcli	309	262	47	158
++internal/loomengine	44	44	0	61
++internal/loomrecipe	80	80	0	126
++internal/loomshed	71	63	8	91
++internal/lymcwd	28	24	4	36
++internal/lymtemp	8	8	0	8
++internal/machinecli	3	2	1	119
++internal/machinename	8	8	0	9
++internal/mergeresolve	18	18	0	67
++internal/modelspec	11	11	0	15
++internal/orchcli	53	40	13	133
++internal/orchengine	127	127	0	48
++internal/orchroute	2	1	1	118
++internal/output	6	6	0	7
++internal/pairteardown	23	19	4	126
++internal/parentdirective	4	4	0	15
++internal/parentlock	24	24	0	14
++internal/partsparser	3	3	0	49
++internal/pattern	11	11	0	16
++internal/pauserecord	15	15	0	10
++internal/pawlengine	13	13	0	14
++internal/planglyph	94	87	7	45
++internal/planparser	116	116	0	39
++internal/preflight	8	2	6	117
++internal/preflightshed	9	6	3	120
++internal/proc	26	25	1	6
++internal/pullrequest	4	4	0	13
++internal/quarrycli	7	7	0	65
++internal/raddleparser	7	7	0	9
++internal/reedcli	31	27	4	125
++internal/reedengine	197	196	1	39
++internal/reedengine/render	2	2	0	7
++internal/reportcli	6	4	2	132
++internal/reportconfig	1	1	0	14
++internal/reportengine	17	17	0	124
++internal/reviewbudget	3	3	0	15
++internal/runproc	4	4	0	14
++internal/runprofile	7	7	0	17
++internal/samplerengine	4	4	0	46
++internal/seatengine	26	26	0	123
++internal/segmentcolor	4	4	0	8
++internal/selfexec	4	4	0	13
++internal/selfreportcli	3	3	0	20
++internal/selfreportengine	5	5	0	17
++internal/shedadapters	165	165	0	66
++internal/shedarbiter	8	8	0	125
++internal/shedbuild	16	16	0	123
++internal/shedcheck	3	3	0	10
++internal/shedcli	17	16	1	148
++internal/sheddriver	21	21	0	49
++internal/shedengine	155	155	0	10
++internal/shedrecipe	99	99	0	126
++internal/shedrun	32	32	0	12
++internal/shedtransient	3	3	0	44
++internal/shedverbs	92	87	5	120
++internal/shell	16	16	0	7
++internal/shellguard	5	4	1	20
++internal/shortcutcli	2	2	0	14
++internal/shuttlecli	19	18	1	122
++internal/shuttleengine	214	214	0	42
++internal/shuttleengine/claudeengine	144	136	8	47
++internal/shuttleengine/codexengine	46	41	5	45
++internal/shuttleengines	10	10	0	48
++internal/slackcli	11	8	3	121
++internal/slackengine	16	16	0	19
++internal/sleepjournal	2	2	0	8
++internal/standalonegeom	6	6	0	68
++internal/standalonestate	8	8	0	8
++internal/state	9	9	0	8
++internal/statuscommit	6	6	0	11
++internal/statuspane	5	5	0	15
++internal/stencil	4	4	0	7
++internal/stencilcli	1	0	1	0
++internal/stencilstore	19	19	0	13
++internal/summaryparser	8	8	0	8
++internal/tendercli	14	6	8	133
++internal/tenderengine	6	6	0	42
++internal/termwindow	3	2	1	12
++internal/testcover	20	15	5	17
++internal/testkit	2	2	0	8
++internal/testkit/envelope	6	6	0	8
++internal/testkit/envkit	5	5	0	121
++internal/testkit/llmkit	1	1	0	7
++internal/testkit/locationkit	2	2	0	10
++internal/testkit/logcapture	5	5	0	11
++internal/testkit/lymbin	6	0	6	0
++internal/testkit/plankit	4	4	0	17
++internal/testkit/scankit	10	10	0	7
++internal/testkit/shedfake	9	9	0	62
++internal/testkit/shuttlefake	9	9	0	41
++internal/testkit/stencilkit	3	3	0	14
++internal/testkit/tiergate	3	3	0	6
++internal/testkit/tmuxkit	15	14	1	37
++internal/toolfloor	3	3	0	8
++internal/treadleengine	30	29	1	125
++internal/twilldirective	3	3	0	15
++internal/verifyrun	6	1	5	15
++internal/verifytree	8	3	5	24
++internal/vscode	21	21	0	11
++internal/webstercli	85	38	47	138
++internal/websterengine	210	171	39	69
++internal/weftname	1	1	0	7
++internal/yamlengine	25	25	0	10
++tools/codestats	9	9	0	7
++tools/deploy	9	9	0	12
++tools/forkaudit	4	0	4	15
++tools/godocreflow	6	6	0	7
++tools/internal/devbin	1	1	0	10
++tools/mdreflow	3	3	0	7
++tools/plandag	5	5	0	17
++tools/sandbox	28	28	0	12
++tools/tapestryrename	2	2	0	7
++tools/tokencount	24	21	3	91
++tools/wordswap	3	3	0	7
+diff --git a/docs/research/speed/coverage-map-pilot-2026-11-12/report.md b/docs/research/speed/coverage-map-pilot-2026-11-12/report.md
+new file mode 100644
+index 00000000..fc626a01
+--- /dev/null
++++ b/docs/research/speed/coverage-map-pilot-2026-11-12/report.md
+@@ -0,0 +1,205 @@
++# Coverage-map pilot on `internal/adoptcli`, 2026-11-12
++
++Board task `test-redundancy-candidates` asked three questions of one package's coverage map, in order:
++can a map be built, what does a full set cost, and is the map of any use for cutting tests or scoping the gate.
++This report answers them for `internal/adoptcli` at commit `384d7cb7`, on one machine.
++It cuts and folds no test.
++
++## Answer in brief
++
++- The map builds: one `lym gate testmap internal/adoptcli` call succeeded in 34.3 s wall and 47.8 s CPU,
++  holding one of the hub's three gate slots.
++  The verb reports 3.4 s of build and 3.0 s of run; most of the rest is bookkeeping between rounds of tests.
++- A full set is estimated at 45 to 165 minutes on one slot, 65 to 230 CPU-minutes.
++  The hub's upkeep pass had already built the full set today in 44 minutes, at the low end of the range.
++- For cutting, the map is a reading filter, not a verdict:
++  of the 30 judged tests, 2 are candidates, and both assert something their covering tests do not.
++- For scoping, the map is usable:
++  over two landed commits the selector never left out a test that covers the changed code.
++  It cut the scope to no test for one commit and fell back to the whole package for the other.
++
++## Choice of package
++
++`internal/adoptcli` holds 34 mapped tests: 28 tier0 and 6 tier1.
++The median package with mapped tests holds 8, and the largest, `internal/fabricengine`, 578.
++So it sits above the median but far from the top.
++It was chosen for three reasons:
++
++- it has tests of both mapped tiers, so the build includes the `lym` prebuild a tier1 test needs;
++- 28 commits touched it since 2026-10-20, so landed diffs exist to scope;
++- it is not `internal/fabricengine`, which the task excludes.
++
++## 1. Build
++
++| Measure | Value |
++|---|---|
++| Command | `lym gate testmap internal/adoptcli`, run from the prime's code worktree |
++| Result | success; 34 entries, 32 measured, 2 recorded unrun because the spawn scan marks them |
++| Wall time | 34.3 s (19:10:58 to 19:11:33) |
++| CPU time | 47.8 s (42.3 s user, 5.5 s system), 139 percent of one core |
++| Peak memory | 579 MiB resident |
++| Gate slots | 1 of 3, held for the whole call |
++| Verb's own counts | `build_seconds` 3.40, `run_seconds` 2.96 |
++
++The call's trace log splits the 34.3 s:
++
++| Phase | Wall |
++|---|---|
++| Start, hub and config reads, worktree status | 1.8 s |
++| `go list` of the linked packages and the package trees | 1.0 s |
++| Coverage build of the test binary | 1.7 s |
++| `lym` build into the prebuilt store, a warm Go build cache | 2.0 s |
++| 8 rounds of 4 parallel tests | 23.4 s |
++| Audit round: rebuild and re-run of the 3 oldest entries | 2.6 s |
++| Last map write and exit | 2.4 s |
++
++Each round runs its tests in 0.1 to 0.7 s,
++then spends about 2.6 s before the next starts:
++keying each profile's blocks and linked functions, reading the worktree status and HEAD, and writing the map.
++The package links 144 in-module packages, so each profile is keyed against a large function table.
++That bookkeeping, about 0.73 s of wall per test, is the build's main cost.
++`run_seconds` counts only the time inside rounds, so it under-reports a package's slot time by roughly a factor of ten.
++
++## 2. Full-set estimate
++
++The scaling input is [packages.tsv](packages.tsv):
++the 201 packages with a tier0 or tier1 test, with each one's test count, tier split and linked-package count,
++5,418 tests in all.
++
++Model, from the pilot's trace:
++
++- once per call: about 10 s for start, the `lym` build, the audit round and the exit;
++- per package: about 2.7 s for the linked-package listing and the coverage build;
++- per test: the round bookkeeping.
++
++The per-test term makes the range.
++One pilot cannot tell whether the 2.6 s between rounds is a cost per test or per round,
++nor how it scales with the number of linked packages, which averages 80 per test across the set against the pilot's 144.
++
++| Assumption | Per-test wall | Tests | Packages | Total wall |
++|---|---|---|---|---|
++| Low: cost per test, scaled to 80 linked packages | 0.41 s | 37 min | 9 min | about 45 min |
++| High: cost per round, unscaled; 43 percent of tests run one per round | 2.9 s per round, 3,200 rounds | 155 min | 9 min | about 165 min |
++
++The 43 percent is the share of top-level tests with no top-level `t.Parallel()`,
++counted by a text scan of the test files.
++
++- CPU time, at the pilot's 1.39 CPU seconds per wall second: 65 to 230 CPU-minutes.
++- Gate-slot time equals the wall, since a build holds one slot from its first package to its last:
++  45 to 165 slot-minutes.
++- The upkeep dobby's passes drain it at the same wall when the hub's gates are idle.
++  A pass takes its slot only while another stays free and gives it back once a gate needs it,
++  so on a busy hub the drain stretches by every stretch in which gates hold two or more of the three slots.
++- Assumed throughout: a warm Go build cache and a machine with nothing else heavy running.
++
++The full set already exists.
++The prime's dobby began starting upkeep passes on remaining work with `36621f0e`, landed at 18:09 today,
++and its first pass measured 5,381 entries between 18:10:50 and 18:55:06, 44 minutes on one slot.
++That puts the low assumption close to the real cost: per-test bookkeeping that shrinks with the linked set.
++After the full build, a pass re-measures only the tests a landing affects.
++
++## 3. Use
++
++### Redundancy
++
++No verb listed the redundancy candidates of a whole package's map before this task.
++The gate's `redundancy` report step judges only the tests a diff adds or changes,
++and `cmd/testtiming -redundancy` measures afresh rather than reading the map.
++This task adds `lym gate redundant <package>`.
++It reads the map, leaves out the keep-marked tests,
++and judges the rest with `internal/testcover`'s verdict through the new `testcover.JudgeMap`.
++It runs no test and answers in under a second.
++Its answer for the package is [adoptcli-redundant.json](adoptcli-redundant.json):
++
++| Group | Tests |
++|---|---|
++| Entries | 34 |
++| Not judged: the spawn scan cannot classify a call | 2: `TestCommand_RunsFromABeam`, `TestHubCheckDeps_StaleStampRunsTheTunedFinalizeTiers` |
++| Kept by `//testtiming:keep` | 2: `TestAdoptFields`, `TestTriesStore` |
++| Judged | 30 |
++| Candidates, all in the removable set | 2 |
++
++| Candidate | Tier | Map seconds | Covered by |
++|---|---|---|---|
++| `TestReconcileSeamWaitsOnAPushLock` | 0 | 0.00 | `TestAdoptIntegration_SecondCloneTakesOver` |
++| `TestWorkerArgs` | 0 | 0.00 | `TestRunAdopt`, `TestAdoptIntegration_SecondCloneTakesOver`, `TestCheckCmd_FromABeamExitsZeroWhileOneRuns` |
++
++Each candidate's linked-package functions are covered by its covering tests too,
++so a module-wide check would not tell them apart either.
++Read against their covers:
++
++- `TestReconcileSeamWaitsOnAPushLock` asserts that the reconcile seam passes a positive `PushLockWait`
++  equal to `reconcilePushLockWait`.
++  The integration test runs the seam but never reads the options, and nothing contends for the push lock there,
++  so a zero wait passes it.
++  The candidate adds that assertion.
++  It is also a tier0 test whose only cover is a tier1 test, so deleting it would trade a test that costs no measurable
++  time for reliance on a slower one.
++- `TestWorkerArgs` round-trips five request shapes, `--all`, `--keep-local`, `--drop-local` and `--no-orch` among them,
++  through `workerArgs` and the worker command's own flag parser.
++  `TestRunAdopt` asserts the spawned argument strings for `root`, `alpha` and `root --no-orch` only,
++  and never parses them back; the integration tests assert outcomes, not arguments.
++  A worker flag renamed on one side only passes every cover.
++  The candidate adds that assertion.
++
++Neither candidate is a cut, and both cost nothing measurable to run.
++Both would warrant a `//testtiming:keep` line naming what they pin; this task adds none.
++The package already carried two keep markers from an earlier prune, which may explain the low yield.
++One package says nothing about the yield elsewhere;
++with the full set built, `lym gate redundant` lists any package's candidates in under a second with no build.
++
++### Scoping
++
++For each of two landed commits that touched the package,
++the coverage selector, `testcover.Selector`, ran over the commit's diff from its parent.
++A scratch program built the selector's input from the pilot map:
++the map's entries as measured at `384d7cb7`,
++with its own, linked and environment hashes recomputed from the commit's parent.
++The commit is then the selector's target.
++The tests that cover the changed code came from the same map:
++every test with a block in a function whose lines the diff touched, in the package or a linked package,
++plus every Test function the commit changed.
++Both commits are within a day of the map's commit, and only `fixloop.go` of the package changed between them,
++so the map's coverage stands in for the coverage at each commit.
++
++| Commit | Changed | Selector names | Tests covering the change |
++|---|---|---|---|
++| `16881b21` beam merge-parent skips held slugs | `adoptcli/fixloop.go` `hubFixDeps`; 4 functions of `beamcli`; `shedrun.RunIDs` | none | none |
++| `6f8d4cff` adopt: pass pauses, wait on push locks | 7 `adoptcli` functions, 9 `fabricengine` functions, 3 Test functions, 1 test helper | all 34: miss, a test file changed outside its Test functions | 6 |
++
++- `16881b21`: no test of the package reaches `hubFixDeps`, the production wiring the change edits,
++  nor the changed `beamcli` and `shedrun` functions.
++  The selector ran nothing where a package-scoped gate runs all 34 tests; both sets are empty, so it missed nothing.
++- `6f8d4cff`: the covering tests are `TestAdopt`, `TestAdoptIntegration_SecondCloneTakesOver`,
++  `TestCommand_HereAdoptsTheSubjectOfItsWorktree`, `TestReconcileSeamWaitsOnAPushLock`,
++  `TestRunAdopt` and `TestRunWorker`.
++  The commit also added one line to the test helper `world.workerDeps`, whose only callers, `TestAdopt` and
++  `TestRunWorker`, are among the six.
++  The helper change is a `test file changed outside its Test functions` miss, so the selector ran the whole package:
++  safe, at 34 tests where 6 suffice.
++
++The selector was safe in both, and narrowed one diff to no test at all.
++Its loss was the coarse miss on a test-helper edit,
++of the same kind as the non-body miss the board note `selector-non-body-miss` proposes to narrow.
++Bound: the covering sets are function-granular and come from the map itself,
++so they cannot show a test the map fails to record; only a re-measure at each commit could.
++
++## Verdict
++
++- Cutting: usable only as a filter.
++  The map and `lym gate redundant` narrow 30 judged tests to 2 to read, at no build cost,
++  but neither candidate survives the read, because coverage cannot see assertions.
++  A cut still needs a hand read of each candidate against its covers.
++- Scoping the gate: usable.
++  Over two commits the selector never dropped a covering test,
++  and it ran no test for one of them where the package scope runs 34; its misses fall back to the whole package.
++- Cost of a full run: 45 to 165 minutes on one gate slot, 65 to 230 CPU-minutes;
++  measured at 44 minutes for today's full build by the upkeep pass, which then keeps the set current per landing.
++
++## Outside the questions
++
++- `lym gate testmap` from a non-prime worktree refuses with a way forward naming the prime's weft directory,
++  `loomyard-weft`, which holds no `go.mod`; run there, the call refuses again for that.
++  The command runs from the prime's code worktree, `loomyard`.
++- The pilot's premise, that the full set was not yet built, was overtaken by `36621f0e` before this run started.
++  The pilot ran as asked, and section 2 uses the dobby's pass as a check on the estimate.
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index b4a479fa..98dcef2e 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -133,6 +133,7 @@ Examples:
+ 	cmd.AddCommand(reportCmd())
+ 	cmd.AddCommand(cardVerifyCmd(seams))
+ 	cmd.AddCommand(testMapCmd(goBinary, timeoutUnit, pipeWaitDelay))
++	cmd.AddCommand(redundantCmd())
+ 	cmd.AddCommand(runnerCmd(func() *cobra.Command {
+ 		return newCommand(goBinary, samplePeriod, preTierCeiling, timeoutUnit, rerunDelay, pipeWaitDelay, seams)
+ 	}, seams))
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 29cfe2b4..950645c5 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -2,7 +2,8 @@
+ // Its verb `test` is the sanctioned route for running the hub's test tiers.
+ // Its verb `status` shows who holds the hub's gate slots, and its verb `report` totals the run records per gate key.
+ // Its verb `card-verify` runs a plan card's `**Verify:**` line.
+-// Its verb `testmap` keeps current the per-package coverage maps from the hub's prime worktree.
++// Its verb `testmap` keeps current the per-package coverage maps from the hub's prime worktree,
++// and its verb `redundant` lists one package's redundancy candidates from its map.
+ //
+ // The module is not standalone-capable and does not go through internal/cliwire.
+ // It has no target directory, state, plan or stencils to wire, and it resolves hub membership itself.
+@@ -1154,6 +1155,20 @@
+ // Any other call, and a `--upkeep` call that refused before reading HEAD, leaves the exit record as it was.
+ // It exits 0 once it walked its packages, and 1 for a refusal or a read, slot or write failure that ends the walk.
+ //
++// `lym gate redundant <package>` judges the map of one package and prints its redundancy candidates.
++// It runs from any worktree of the hub and resolves the module as the redundancy report step does.
++// It reads the map as it stands, runs no test and takes no slot.
++// It judges through `testcover.JudgeMap`.
++// It leaves out the tests the keep scan of the package's directory in this worktree names.
++// It prints the map's commit, build time and test count.
++// It prints `map_build_failure` with the commit and error of a later failed coverage build the map records.
++// It omits the key when the map records none.
++// It prints `candidates`, each contained test with its tier, seconds, covering tests and whether it is removable;
++// `kept`, each keep-marked test with its reason; and `not_judged`, each other unjudged test with why.
++// It refuses outside a hub.
++// It refuses for a package whose map is missing, unreadable or holds only a failed build.
++// It refuses for a failed keep scan.
++//
+ // # In-process run
+ //
+ // `RunGate(ctx, dir, gate, out, stderr, observer)` runs the gate key `gate` in `dir`.
+diff --git a/internal/gatecli/redundant.go b/internal/gatecli/redundant.go
+new file mode 100644
+index 00000000..41758906
+--- /dev/null
++++ b/internal/gatecli/redundant.go
+@@ -0,0 +1,138 @@
++// redundant.go implements `lym gate redundant`, a read-only view of one package's coverage map.
++// It lists the package's redundancy candidates: the tests whose covered blocks the package's other tests cover.
++
++package gatecli
++
++import (
++	"context"
++	"fmt"
++	"io"
++	"path"
++	"path/filepath"
++	"time"
++
++	"github.com/spf13/cobra"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/testcover"
++)
++
++// redundantCandidate is one contained test of a `lym gate redundant` answer.
++type redundantCandidate struct {
++	Name    string  `json:"name"`
++	Tier    int     `json:"tier"`
++	Seconds float64 `json:"seconds"`
++	// Removable is set for a test of the set the greedy pass can delete together while every block stays covered.
++	Removable bool `json:"removable"`
++	// Covering names the tests that together cover the candidate's blocks, largest overlap first.
++	Covering []string `json:"covering"`
++}
++
++// redundantSkip is one test a `lym gate redundant` answer did not judge, with the keep reason or why not.
++type redundantSkip struct {
++	Name   string `json:"name"`
++	Reason string `json:"reason"`
++}
++
++// redundantCmd builds `lym gate redundant`.
++func redundantCmd() *cobra.Command {
++	return &cobra.Command{
++		Use:         "redundant <package>",
++		Short:       "list the tests of one package whose covered blocks its other tests cover, from its coverage map",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Long: `redundant judges the coverage map of one package, named by its directory relative to the module root, and lists its redundancy candidates.
++A candidate is a tier0 or tier1 test whose covered blocks of the package's own files the package's other judged tests cover.
++Each comes with its standalone seconds and the tests that cover it; removable marks the set a greedy pass, slowest first, can delete together while every block stays covered.
++A test marked //testtiming:keep is neither a candidate nor a cover, and nor is a test the spawn scan marks or one whose entry records no passing run.
++It reads the map as the last lym gate testmap call left it and the keep markers from this worktree; it runs no test and takes no slot.
++It prints the map's commit and build time, map_build_failure when a later coverage build failed, the candidates, the kept tests with their reasons and the tests not judged with why.
++
++Examples:
++
++  lym gate redundant internal/foo`,
++		Args: cobra.ExactArgs(1),
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			clihelp.SetExit(cmd.Context(), runRedundant(cmd.Context(), cmd.OutOrStdout(), args[0]))
++			return nil
++		},
++	}
++}
++
++// runRedundant writes the redundancy candidates of the package pkg.
++// It reads them from the package's coverage map in the hub of the seam cwd.
++// It returns the verb's exit code.
++func runRedundant(ctx context.Context, out io.Writer, pkg string) int {
++	cwd, err := lymcwd.CwdFrom(ctx)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate redundant: cannot read the working directory: %v; way forward: re-run the same command", err))
++	}
++	location, inHub, err := resolveHub(cwd)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate redundant: %v; way forward: re-run the same command", err))
++	}
++	if !inHub {
++		return output.Err(out, fmt.Sprintf("gate redundant: %s is in no hub, and the coverage maps live in a hub; way forward: run lym gate redundant from a worktree of the hub", cwd))
++	}
++	cfg, err := gateslot.LoadConfig(fabricengine.ConfigDirs(location))
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate redundant: cannot read the hub's gate config: %v; way forward: take the step it names, then re-run the same command", err))
++	}
++	module, err := redundancyModule(cfg.WithDefaultDir(location.AnchorRel), location.WorktreePath())
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate redundant: %v; way forward: declare tier0 or tier1 with its dir at the Go module's root with lym config gate from the prime, then re-run the same command", err))
++	}
++
++	pkg = path.Clean(filepath.ToSlash(pkg))
++	rebuild := fmt.Sprintf("way forward: build it with lym gate testmap %s from the hub's prime worktree, then re-run the same command", pkg)
++	m, found, err := testcover.ReadMap(testcover.Dir(fabricengine.BoltDir(location.HubPath)), pkg)
++	if err == nil && found {
++		err = checkMapBlocks(m)
++	}
++	switch {
++	case err != nil:
++		return output.Err(out, fmt.Sprintf("gate redundant: the coverage map of %s is unreadable: %v; %s", pkg, err, rebuild))
++	case !found:
++		return output.Err(out, fmt.Sprintf("gate redundant: %s has no coverage map; %s", pkg, rebuild))
++	case m.BuildFailure != "":
++		return output.Err(out, fmt.Sprintf("gate redundant: the coverage map of %s records only a failed build: %s; %s", pkg, m.BuildFailure, rebuild))
++	}
++	keeps, err := testcover.ScanKeeps(filepath.Join(module.dir, filepath.FromSlash(pkg)))
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate redundant: the keep scan of %s failed: %v; way forward: fix the //testtiming:keep line it names, then re-run the same command", pkg, err))
++	}
++
++	candidates, kept, notJudged := []redundantCandidate{}, []redundantSkip{}, []redundantSkip{}
++	for i, verdict := range testcover.JudgeMap(m, keeps) {
++		test := m.Tests[i]
++		switch {
++		case verdict.Reason == testcover.ReasonKept:
++			kept = append(kept, redundantSkip{Name: test.Name, Reason: keeps[test.Name]})
++		case verdict.Reason != "":
++			notJudged = append(notJudged, redundantSkip{Name: test.Name, Reason: verdict.Reason})
++		case verdict.Contained:
++			candidates = append(candidates, redundantCandidate{
++				Name: test.Name, Tier: test.Tier, Seconds: test.Seconds, Removable: verdict.Removable, Covering: verdict.Covering,
++			})
++		}
++	}
++	answer := map[string]any{
++		"package":      pkg,
++		"map_commit":   m.Commit,
++		"map_built_at": m.BuiltAt.Format(time.RFC3339),
++		"tests":        len(m.Tests),
++		"candidates":   candidates,
++		"kept":         kept,
++		"not_judged":   notJudged,
++	}
++	if m.Failure != nil {
++		answer["map_build_failure"] = map[string]string{"commit": m.Failure.Commit, "error": m.Failure.Error}
++	}
++	return output.Ok(out, answer)
++}
+diff --git a/internal/gatecli/redundant_integration_test.go b/internal/gatecli/redundant_integration_test.go
+new file mode 100644
+index 00000000..2a10e2e2
+--- /dev/null
++++ b/internal/gatecli/redundant_integration_test.go
+@@ -0,0 +1,127 @@
++// redundant_integration_test.go drives `lym gate redundant` over a hubforge hub whose prime holds a small Go module.
++// It is Tier 1: it builds a real hub and spawns git.
++
++package gatecli
++
++import (
++	"bytes"
++	"encoding/json"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/plankit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestGateRedundant judges a written coverage map and refuses where no map can be judged.
++func TestGateRedundant(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	gate := "slots: 1\ntiers:\n  tier0: {command: x, timeout_min: 1, counter: go-json, env: {LYM_TEST_TIER: \"0\"}}\n"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{hubforge.TemplatePairSlug}})
++	prime := seedTestMapModule(t, h, "example.com/redundant", gate, map[string]map[string]int{
++		"cov": {"TestCovSub": 0, "TestCovSuper": 0, "TestCovFails": 0}, "nomap": {"TestNoMap": 0}, "broken": {"TestBroken": 0},
++		"badindex": {"TestBadIndex": 0}, "badkeep": {"TestBadKeep": 0},
++	})
++	plankit.WriteTree(t, prime, map[string]string{
++		"cov/kept_test.go":     "package cov\n\nimport \"testing\"\n\n//testtiming:keep pins the message\nfunc TestCovKept(t *testing.T) {}\n",
++		"badkeep/keep_test.go": "package badkeep\n\nimport \"testing\"\n\n//testtiming:keep\nfunc TestBadKeepMarked(t *testing.T) {}\n",
++	})
++	mapsDir := testcover.Dir(fabricengine.BoltDir(h.Location.HubPath))
++	key := func(ordinal int) testcover.BlockKey {
++		return testcover.BlockKey{File: "cov.go", Func: "One", Hash: "h", Ordinal: ordinal}
++	}
++	builtAt := time.Date(2026, 11, 12, 10, 0, 0, 0, time.UTC)
++	if err := testcover.WriteMap(mapsDir, "cov", testcover.Map{
++		Commit: "c0ffee", BuiltAt: builtAt, Blocks: []testcover.BlockKey{key(0), key(1)},
++		Failure: &testcover.MapFailure{Commit: "deadbeef", Error: "later build broke"},
++		Tests: []testcover.MapTest{
++			{Name: "TestCovFails", Outcome: testcover.OutcomeFailed},
++			{Name: "TestCovKept", Seconds: 3, Blocks: []int{0}},
++			{Name: "TestCovSub", Tier: 1, Seconds: 2, Blocks: []int{0}},
++			{Name: "TestCovSuper", Seconds: 1, Blocks: []int{0, 1}},
++		},
++	}); err != nil {
++		t.Fatal(err)
++	}
++	// Each map is sound except for the one fault its package's refusal row names.
++	for pkg, index := range map[string]int{"badindex": 5, "badkeep": 0} {
++		if err := testcover.WriteMap(mapsDir, pkg, testcover.Map{
++			Commit: "c0ffee", BuiltAt: builtAt, Blocks: []testcover.BlockKey{key(0)},
++			Tests: []testcover.MapTest{{Name: "Test" + pkg, Seconds: 1, Blocks: []int{index}}},
++		}); err != nil {
++			t.Fatal(err)
++		}
++	}
++	if err := testcover.WriteMap(mapsDir, "broken", testcover.Map{Commit: "c0ffee", BuildFailure: "boom"}); err != nil {
++		t.Fatal(err)
++	}
++
++	t.Run("ListsTheContainedTestsAndSetsApartTheKeptAndUnjudgedOnes", func(t *testing.T) {
++		t.Parallel()
++		var out bytes.Buffer
++		code := RunCLIIn(prime, &out, []string{"redundant", "./cov"})
++		type answer struct {
++			OK         bool                  `json:"ok"`
++			Package    string                `json:"package"`
++			MapCommit  string                `json:"map_commit"`
++			MapBuiltAt string                `json:"map_built_at"`
++			Tests      int                   `json:"tests"`
++			Failure    *testcover.MapFailure `json:"map_build_failure"`
++			Candidates []redundantCandidate  `json:"candidates"`
++			Kept       []redundantSkip       `json:"kept"`
++			NotJudged  []redundantSkip       `json:"not_judged"`
++		}
++		var got answer
++		if err := json.Unmarshal(out.Bytes(), &got); err != nil || code != 0 {
++			t.Fatalf("redundant ./cov = %d, %s; want exit 0 and a JSON envelope (%v)", code, out.Bytes(), err)
++		}
++		want := answer{
++			OK: true, Package: "cov", MapCommit: "c0ffee", MapBuiltAt: builtAt.Format(time.RFC3339), Tests: 4,
++			Failure:    &testcover.MapFailure{Commit: "deadbeef", Error: "later build broke"},
++			Candidates: []redundantCandidate{{Name: "TestCovSub", Tier: 1, Seconds: 2, Removable: true, Covering: []string{"TestCovSuper"}}},
++			Kept:       []redundantSkip{{Name: "TestCovKept", Reason: "pins the message"}},
++			NotJudged:  []redundantSkip{{Name: "TestCovFails", Reason: string(testcover.OutcomeFailed)}},
++		}
++		if diff := cmp.Diff(want, got); diff != "" {
++			t.Errorf("redundant ./cov mismatch (-want +got):\n%s", diff)
++		}
++	})
++
++	refusals := []struct {
++		name      string
++		cwd       string
++		pkg       string
++		wantError string
++	}{
++		{name: "OutsideEveryHub", cwd: t.TempDir(), pkg: "cov", wantError: "is in no hub"},
++		{name: "APackageWithNoMap", cwd: prime, pkg: "nomap", wantError: "nomap has no coverage map"},
++		{name: "AMapHoldingOnlyAFailedBuild", cwd: prime, pkg: "broken", wantError: "records only a failed build: boom"},
++		{name: "AMapNamingABlockOutsideItsTable", cwd: prime, pkg: "badindex", wantError: "is unreadable"},
++		{name: "AFailedKeepScan", cwd: prime, pkg: "badkeep", wantError: "the keep scan of"},
++	}
++	for _, tt := range refusals {
++		t.Run("Refuses"+tt.name, func(t *testing.T) {
++			t.Parallel()
++			var out bytes.Buffer
++			code := RunCLIIn(tt.cwd, &out, []string{"redundant", tt.pkg})
++			var envelope struct {
++				OK    bool   `json:"ok"`
++				Error string `json:"error"`
++			}
++			if err := json.Unmarshal(out.Bytes(), &envelope); err != nil {
++				t.Fatalf("output %q is not a JSON envelope: %v", out.String(), err)
++			}
++			if code != 1 || envelope.OK || !strings.Contains(envelope.Error, tt.wantError) || !strings.Contains(envelope.Error, "way forward") {
++				t.Errorf("redundant %s = %d, %+v; want exit 1, ok false and an error holding %q and a way forward", tt.pkg, code, envelope, tt.wantError)
++			}
++		})
++	}
++}
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index 37d92170..8a3f91e2 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -23,6 +23,7 @@
+ // It picks the removable set greedily among the contained tests, slowest first.
+ // JudgeAgainst does the same with a set of kept tests that cover blocks but are never judged or removed,
+ // so a caller judges new tests against tests a coverage map already holds.
++// JudgeMap judges the entries of one stored map the same way, leaving out the tests a keep marker names.
+ // A test that is skipped, failed or covers nothing is not judged.
+ // Nor is a test judged that the static spawn scan marks as possibly running module code in another process.
+ // Its in-process coverage cannot see that code.
+diff --git a/internal/testcover/verdict.go b/internal/testcover/verdict.go
+index 66dcfe52..471bd0f8 100644
+--- a/internal/testcover/verdict.go
++++ b/internal/testcover/verdict.go
+@@ -15,6 +15,7 @@ const (
+ 	ReasonUnresolved   = "unclassifiable call"
+ 	ReasonNoBlocks     = "no blocks"
+ 	ReasonFailed       = "failed"
++	ReasonKept         = "kept"
+ )
+ 
+ // Run is one top-level test as Judge sees it.
+@@ -116,6 +117,40 @@ func JudgeAgainst(runs, kept []Run) []Verdict {
+ 	return out[:len(runs)]
+ }
+ 
++// JudgeMap returns the verdict of every test of the coverage map m, in the map's order.
++// It judges by the blocks of the package's own files, each entry's seconds ordering the greedy pass.
++// A test that keeps names, one marked `//testtiming:keep`, is neither judged nor counted as a cover;
++// its reason is ReasonKept.
++// An entry that records a TestOutcome is not judged either, and the outcome is its reason.
++// Nor is an entry whose spawn verdict marks the test.
++// Every block index of m must lie inside its block table.
++func JudgeMap(m Map, keeps map[string]string) []Verdict {
++	out := make([]Verdict, len(m.Tests))
++	var runs []Run
++	var at []int
++	for i, test := range m.Tests {
++		out[i].Name = test.Name
++		if _, kept := keeps[test.Name]; kept {
++			out[i].Reason = ReasonKept
++			continue
++		}
++		if test.Outcome != "" {
++			out[i].Reason = string(test.Outcome)
++			continue
++		}
++		blocks := BlockSet{}
++		for _, index := range test.Blocks {
++			blocks[m.Blocks[index].String()] = struct{}{}
++		}
++		runs = append(runs, Run{Name: test.Name, Elapsed: test.Seconds, Action: ActionPass, Blocks: blocks, Spawn: test.Spawn})
++		at = append(at, i)
++	}
++	for j, verdict := range Judge(runs) {
++		out[at[j]] = verdict
++	}
++	return out
++}
++
+ // notJudgedReason returns why a run is not judged, or "" for a run that is.
+ func notJudgedReason(r Run) string {
+ 	switch {
+diff --git a/internal/testcover/verdict_test.go b/internal/testcover/verdict_test.go
+index 14be7168..aa61379b 100644
+--- a/internal/testcover/verdict_test.go
++++ b/internal/testcover/verdict_test.go
+@@ -93,6 +93,35 @@ func TestJudge(t *testing.T) {
+ 	}
+ }
+ 
++func TestJudgeMap_KeptAndUnmeasuredEntriesNeitherJudgedNorCovering(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	key := func(ordinal int) testcover.BlockKey {
++		return testcover.BlockKey{File: "f.go", Func: "F", Hash: "h", Ordinal: ordinal}
++	}
++	m := testcover.Map{
++		Blocks: []testcover.BlockKey{key(0), key(1)},
++		Tests: []testcover.MapTest{
++			{Name: "Sub", Seconds: 2, Blocks: []int{0}},
++			{Name: "Super", Seconds: 1, Blocks: []int{0, 1}},
++			{Name: "Keep", Seconds: 3, Blocks: []int{1}},
++			{Name: "Timed", Outcome: testcover.OutcomeTimedOut},
++			{Name: "Spawned", Spawn: testcover.SpawnVerdict{OutOfProcess: true}},
++		},
++	}
++	want := []testcover.Verdict{
++		{Name: "Sub", Contained: true, Removable: true, Covering: []string{"Super"}},
++		{Name: "Super"},
++		{Name: "Keep", Reason: testcover.ReasonKept},
++		{Name: "Timed", Reason: string(testcover.OutcomeTimedOut)},
++		{Name: "Spawned", Reason: testcover.ReasonOutOfProcess},
++	}
++	if got := testcover.JudgeMap(m, map[string]string{"Keep": "pins the error text"}); !reflect.DeepEqual(got, want) {
++		t.Errorf("JudgeMap = %+v\nwant       %+v", got, want)
++	}
++}
++
+ func TestJudgeAgainst_KeptRunsCoverButAreNeverJudged(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index cdb2d393..64922dcd 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -295,6 +295,9 @@ this section keeps only what is project-specific or stricter here.
+   A self-check re-measures a kept entry a fresh build cannot place, and an audit round re-measures the oldest entries.
+   While `test_map_upkeep` is on, the prime's dobby starts a `--upkeep` pass whenever work is left:
+   no exit record, a HEAD past the last pass's plan, or queued work on a hub of two or more slots.
++- `lym gate redundant <package>` judges a whole package's map by the same package-scoped verdict.
++  It lists the candidates with their seconds and covering tests, the keep-marked tests and the tests not judged.
++  It runs no test, so its candidates are evidence exactly as the report's are.
+ - A gate key whose `reports` lists `redundancy` runs the report step after its tiers and lints.
+   It takes the diff's new and changed top-level tests against the merge base with the parent branch,
+   leaving out tier2 and tier3 tests, tests marked `//testtiming:keep` and tests that may run module code in another process.
