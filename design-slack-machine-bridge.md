@@ -1,6 +1,6 @@
 # Let orchs on two machines talk through a Slack bridge channel
 
-`slack-machine-bridge` · Task · sketch, slack, creel, orch · running · Worktree-Create
+`slack-machine-bridge` · Task · sketch, slack, creel, orch · running · Seed-Child
 
 Decision record: [Sketch](decision-slack-machine-bridge.md)
 
