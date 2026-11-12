@@ -36,4 +36,5 @@ A map describes the code at a commit, so it follows the branch.
 
 ## Idea
 
+The work is several tasks, since it adds new branches to the weft repository (operator, 2026-11-12), so raddle splits it from the Sketch the Motif leaves.
 A Motif that settles the points above before the maps are committed or the upkeep pass runs again on its own.
