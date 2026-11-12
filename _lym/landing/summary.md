@@ -1,71 +1,45 @@
-# Dobby starts coverage-map upkeep on remaining work; anchor moves end it
+# Prime dobby starts coverage-map upkeep on remaining work
 
-The prime dobby used to start `lym gate testmap --max <test_map_batch>` every `test_map_every` landings.
-A backlog therefore drained only when landings came.
-It now starts an upkeep pass, `lym gate testmap --upkeep`, whenever the coverage maps have work left, and an anchor move of the prime ends a running pass instead of waiting for it.
+The prime dobby now starts a coverage-map upkeep pass whenever work remains, and an anchor move of the prime ends a running pass instead of waiting for it.
+This replaces the landing-count trigger (`test_map_every`, `test_map_batch`), so a backlog drains on its own.
 
-## The start rule (`internal/dobbyengine`)
+## What changes
 
-`testMapStep` starts a pass while `test_map_upkeep` is on and no pass is live, when any of these holds:
+- `dobbyengine` starts a pass as `lym gate testmap --upkeep` when no pass is live, no anchor move of the prime stands, and one of these holds:
+  there is no exit record, the prime's HEAD differs from the planned HEAD in the last exit record, or that record names queued work.
+- On a hub with fewer than two slots, queued work alone starts no pass, since such a pass takes no slot.
+- The dobby starts no pass while a pass it started is still its live child, registered or not.
+- A `--upkeep` call whose own registration as `runproc.RoleTestMap` fails exits before it plans.
+  The dobby logs that exit once per episode and starts a pass again on a later tick.
+- `test_map_every`, `test_map_batch` and the dobby state's landing count are retired.
+  The landing count stays readable in an old state record.
+- New dobby key `test_map_upkeep`, `configengine.CategoryNone`, true by default.
+  False switches passes off.
+- `fabriccli`'s `dobbyPassInFlight` no longer counts a `runproc.RoleTestMap` process, so `lym fabric anchor` of the prime does not wait for a pass.
+  The existing end of the prime's hub-owner processes (`EndDobbies` through `runproc.EndSparing`) ends the pass.
+- `orchcli`, `runproc` and the docs (`docs/overview.md`, package `doc.go` files, `pattern/PATTERN-test-speed.md`) follow the new wording.
 
-- no exit record exists;
-- the prime's HEAD differs from the last exit record's planned HEAD;
-- that record names queued work, and the hub has at least two gate slots.
+## Design decisions
 
-A pass on a hub with fewer than two slots takes no slot, so queued work alone starts nothing there.
-That keeps a one-slot hub from restarting passes at the same HEAD.
+- `test_map_every: 0` was the off switch, so it migrates to `test_map_upkeep: false`.
+  Any other `test_map_every` value is dropped, as is `test_map_batch`.
+- The migration is `configreg.Module.Migrate` on beam, not a `configreg.Reinterpretation`.
+  The reconcile walk's `pruneSparse` drops the units a retired key covers before reinterpretations run, so a reinterpretation never sees the key.
+  beam is per-worktree, so the same migration also covers the prime's `_lym/config/beam.yaml` and beam's local override when `configsync.ReconcileAll` reconciles them.
+- `configengine.Spec` gains a per-layer migrate hook.
+  `configengine.Load` applies it to each layer in memory before merging and before `DropRetired`.
+  A prime dobby re-exec'd onto the new binary therefore reads `test_map_every: 0` as off before any walk has run.
+  `dobbyengine` owns the rewrite: its `ConfigSpec` sets the hook, and beam's `Migrate` calls the same function.
+  The in-memory pass logs nothing; the walk logs the rewrite when it writes it.
+- A pass plans once at HEAD and ends at its next job or wake once HEAD moves; the next start plans again.
+- Queued work leaves out a package skipped for a dirty file, a package whose recorded failure names the current HEAD, and every spawn-marked test.
+  A dirty prime or a broken commit therefore does not restart passes in a loop.
+- Only a `--upkeep` call reads and writes the exit record.
+  A hand caller passing the flag runs as a pass and blocks the dobby's start while it lives.
+- A call naming no package and lacking `--upkeep` is not registered, so it can run beside a pass.
+  It wastes work, and the build lock keeps the two off the same package.
 
-A pass counts as live while a `runproc.RoleTestMap` process is registered for the hub, a hand-started `--upkeep` call included.
-It also counts as live while the pass this dobby started is still its child, registered or not.
-That closes the window between the spawn and the pass's own registration.
-The tick that reads the child's exit starts nothing, so a pass whose registration failed is started again on a later tick.
-A failed exit is logged once per episode, in `dobby.log` and at Warn, as a failed tick is, and the first clean exit ends the episode.
-The step already ran only while the tick schedules, so no pass starts while an anchor move stands.
+## To check by hand
 
-New seams carry the inputs: `StartTestMap` now returns the child's exit channel, and `TestMapExitRecord`, `PrimeHead` and `GateSlots` are added.
-Only the prime's wiring sets them.
-The state record's landing count, `landings_since_test_map`, is gone from `State`.
-An old record holding it still reads, and `UpdateState` keeps the key.
-
-## The config key and its migration
-
-`test_map_every` and `test_map_batch` are now retired keys of beam.yaml, and `test_map_upkeep` (`CategoryNone`, true by default) replaces them.
-`dobbyengine.MigrateConfig` rewrites `test_map_every: 0`, the old off switch, to `test_map_upkeep: false` in its place, and drops any other value.
-A document that already sets `test_map_upkeep` keeps that value.
-It runs in two places:
-
-- beam's `configreg.Module.Migrate`, so the reconcile walk writes and logs the rewrite.
-  This is a migration rather than a `configreg.Reinterpretation`, because the walk prunes retired keys before reinterpretations run.
-- a new `configengine.Spec.MigrateLayer` hook that `dobbyengine.ConfigSpec` sets.
-  `StackLayers`, and so `Load`, runs the hook over each present layer in memory before the merge and before `DropRetired`, discarding its lines.
-  So a prime dobby re-exec'd onto this binary over an unreconciled `beam.yaml` or local file that holds `test_map_every: 0` reads upkeep as off.
-
-## The anchor move (`internal/fabriccli`)
-
-`dobbyPassInFlight` now spares a registered `runproc.RoleTestMap` process as it spares push and sync, so the move no longer waits for a running pass.
-The move's existing `EndDobbies` (through `runproc.EndSparing`) ends the prime's hub-owner processes, the pass among them.
-The pass has no batch cap any more, so waiting for it could take a long time.
-
-## The process start (`internal/beamcli`)
-
-`startTestMap` starts `lym gate testmap --upkeep` and no longer registers the child, since the verb registers itself.
-It keeps the tail of the child's output and delivers the exit code with the error text that output carries.
-
-## Tests
-
-- `dobbyengine`: `TestTestMapStep` covers each start-rule branch, the hold on a live child and on a registered pass, the once-per-episode log, and each failed read.
-  `TestMigrateConfig` and new `TestLoadConfig` rows cover unreconciled worktree and local layers.
-  The anchor-move and adopt-hold loop tests use the new seams.
-- `configengine`: `TestLoad_MigrateLayer` covers the hook on each layer, files left unchanged, and an `ErrInvalid` failure that names the file.
-- `configreg`: a `TestPrepareRunSettings` row pins beam's Migrate.
-- `beamcli`: `TestStartTestMap` covers the command line, the exit not being delivered while the child runs, and a clean and a failed exit.
-  The wiring test checks that only the prime sets the upkeep seams.
-
-## Design decisions and bounds
-
-- A `fabriccli` test of the spared role would need a real-process harness that the package lacks, so none was added.
-  The change is one more role in the existing spare list.
-- Bound: if the dobby re-execs after a spawn but before the pass registers, the new image no longer holds the child.
-  A second start in that moment is refused by the pass's own registration check.
-- `orchcli`'s prose still calls the `RoleTestMap` process "the test-map refresh".
-  Its behavior, ending that record on the prime's stop, is unchanged.
+- Not run here: a live prime dobby over a hub whose `beam.yaml` holds `test_map_every: 0`, to see that no pass starts before any walk has run.
+- Not run here: an anchor move of the prime while a real pass is running, to see that it ends the pass and does not wait for the queue.
