@@ -1,6 +1,6 @@
 # Let orchs on two machines talk through a Slack bridge channel
 
-`slack-machine-bridge` · Task · feature, slack, creel, orch · awaiting · Discussion-Bouncer
+`slack-machine-bridge` · Task · feature, slack, creel, orch · running · Discussion-Bouncer
 
 ## Seen (operator, 2026-11-08)
 
