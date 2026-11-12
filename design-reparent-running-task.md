@@ -1,6 +1,6 @@
 # Move a running task to another parent (beam or prime)
 
-`reparent-running-task` · Note · feature, batten, board, fabric, workspaces
+`reparent-running-task` · Task · feature, batten, board, fabric, workspaces · draft
 
 Imported from [issue #48](https://github.com/Knatte18/loomyard/issues/48).
 

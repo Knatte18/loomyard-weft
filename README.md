@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-12 18:35 UTC; every age below is as of then.
+Rendered 2026-11-12 18:36 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -73,7 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 2d<br>46m | testkit, gate |
+| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 2d<br>47m | testkit, gate |
 
 </details>
 
@@ -82,7 +82,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (3)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -100,16 +100,17 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (2)
+#### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 10d<br>23h | claude, shuttle, config |
+| T4 | `draft` **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | darn |  | 7d<br>7d | batten, board, fabric, workspaces |
 | T6 | `draft` **Bench a Sonnet darn writer with an Opus advisor on three landed darn tasks** | [`advisor-model-bench`](design-advisor-model-bench.md) | darn · docs |  | 23h<br>1h | darn, loom, shuttle, claude |
 
-### Notes (12)
+### Notes (11)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -127,7 +128,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 4d<br>23h | shed, loom, darn |
 | E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 1d<br>23h | testkit, gate |
 
-#### Features (8)
+#### Features (7)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -138,6 +139,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 5w<br>8d | board, ide, orch |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 4w<br>7d | webster |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 3w<br>7d | burler, shed, orch, quarry, report |
-| F20 |  | **Move a running task to another parent (beam or prime)** | [`reparent-running-task`](design-reparent-running-task.md) | 7d<br>7d | batten, board, fabric, workspaces |
 
 </details>
