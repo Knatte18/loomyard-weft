@@ -131,6 +131,12 @@ Decision: D1 is confirmed: the maps live on each pair's existing weft branch und
 
 Rationale: The board entry's Idea gives the extra branch one purpose: holding lym data that is meant to be merged, apart from the discarded records. The operator's later Direction (2026-11-12, thought through) says a task's maps are not delivered: the task keeps its own maps in its own weft, the parent's upkeep pass carries the parent's maps forward, and a new pair's weft starts from the parent's weft. The existing weft branch does all three (fork in internal/fabricengine/forkrecords.go keeps everything but run records), so no map needs the merge the extra branch was for. Confirming D1 narrows the task and does not widen it. Any other mergeable lym data is outside this task.
 
+### Added after Discussion (arbiter, 2026-11-12): The Sketch fixes no split; raddle sizes it by its usual rules
+
+Decision: The decision record does not split the work and does not require a split. The board entry's Idea gives the new weft branches as the only reason for a split, and under D1 there are none, so that reason no longer applies. Raddle sizes the Sketch by its usual rules. The fixer drops the Open-risks line that begins 'Decision for the parent: the entry's Idea says raddle splits the work into several tasks'.
+
+Rationale: The board entry's Idea says the work is several tasks 'since it adds new branches to the weft repository'. The arbiter decision 'D1 stands' adds no branch, so that premise is gone. Splitting the work is raddle's job, not a design call the Discussion has to make, so leaving it to raddle neither widens nor narrows the task.
+
 ## Constraints
 
 - `PATTERN-lym-files`: the tracked maps go under `_lym`, the never-tracked exit record and build locks under `.lym`, at the mirrored subpath, and each map's lock under the checkout's `.lym/locks/`; only `internal/lymdirs` names either.
