@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler-Review",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler-Review",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -32,6 +32,24 @@
       "at": "2026-11-12T18:37:18Z",
       "started_at": "2026-11-12T18:36:45Z",
       "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/slack-machine-bridge/_lym/reviews/discussion/round-1-review.md",
+      "at": "2026-11-12T18:45:47Z",
+      "started_at": "2026-11-12T18:37:21Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-12T18:45:46.800148307Z",
+          "end": "2026-11-12T18:45:46.801906581Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
     }
   ],
   "product": {
