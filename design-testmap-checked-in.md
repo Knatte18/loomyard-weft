@@ -1,6 +1,6 @@
 # Commit the coverage maps instead of keeping them in .lym
 
-`testmap-checked-in` · Task · sketch, gate, testkit, dobby · running · Record-Write
+`testmap-checked-in` · Task · sketch, gate, testkit, dobby · running · Raddle-Write
 
 Decision record: [Sketch](decision-testmap-checked-in.md)
 
