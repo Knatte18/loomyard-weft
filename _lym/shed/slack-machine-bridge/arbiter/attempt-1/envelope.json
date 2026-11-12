@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "Review escalation at round 3, cause hard-cap: the round is at the hard cap, so the segment can only be accepted,\nand the arbiter accepts only when the fix in place answers each open design-wrong finding.\nIt does for all four. F1 (no owner of a machine-outbound message's hour): D3 now names a scheduler timer,\none hour from the post, armed by the post and the start scan, running without the relay, and take never returns a message past its hour,\nwith an injected-clock criterion. F2 (impossible rename of an archived channel): D4 now says unarchive (adopt when either bot made it)\nor unarchive then rename (anyone else made it), with the conversations.rename is_archived evidence and an updated criterion.\nF3 (journal form of report and settle): D3 names machine-held written only on a changed reason, machine-delivered with the Slack timestamp,\nmachine-returned, an idempotent late settle and older binaries folding them to nothing, with criteria.\nF4 (home of notice marks, cursor after approval): D4 adds a bridge-notice record keyed by pair or channel id that survives a map drop,\nand D8 moves the delivery cursor past what an approval delivers, with restart and approve-then-revoke criteria.\nThe ruling is recorded as an arbiter decision, which also settles the one residue phrase, D3's \"only reader\", as the relay's only reader.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add slack-machine-bridge --by arbiter --title \"Round 3 hard-cap ruling: the four open findings are answered in the record\" --decision \"…\" --rationale \"…\"",
+    "lym loom circling accept slack-machine-bridge"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/slack-machine-bridge/_lym/shed/slack-machine-bridge/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/slack-machine-bridge/_lym/shed/slack-machine-bridge/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step slack-machine-bridge --until-stop --arbiter-attempt 1"
+}

@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 11,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-12T20:14:33.763189529+01:00",
+  "deadline": "2026-11-12T20:44:33.763189529+01:00",
+  "strand_guid": "b02ad0b5858b9d0d97cb1c8335cdd7a1",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/slack-machine-bridge/_lym/shed/slack-machine-bridge/drive-reports/drive-envelope-20261112-201433-0563.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/slack-machine-bridge/_lym/shed/slack-machine-bridge/drive-reports/drive-report-20261112-201433-cff6.md"
+}
