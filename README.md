@@ -92,7 +92,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Plan writer bench: twill against a solo Opus and a solo Fable on one plan**<br>• One bench on one landed tapestry plan: the twill run already made, a solo opus[high] writer and a solo fable[medium] writer, compared on cost, rounds, time and plan quality | [`plan-writer-context`](design-plan-writer-context.md) | darn · docs | Preflight | neve | 3w<br>1m | loom, stencil |
+| T3 | **Plan writer bench: twill against a solo Opus and a solo Fable on one plan**<br>• One bench on one landed tapestry plan: the twill run already made, a solo opus[high] writer and a solo fable[medium] writer, compared on cost, rounds, time and plan quality | [`plan-writer-context`](design-plan-writer-context.md) | darn · docs | Record-Write | neve | 3w<br>1m | loom, stencil |
 
 #### Ready (0)
 
