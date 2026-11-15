@@ -229,11 +229,13 @@ Claude Code's own worktree isolation for agents has given the operator only trou
 - `orch-any-worktree` (landed in dd11ab09f: `lym fabric add --parent` forks a pair from a parent pair) — umbrella tasks need the same create-from-parent-pair, merge-back and teardown primitive as Weaver's per-batch pairs (orch recommendation, 2026-10-18).
 
 
-## Decision: Weaver as a Shed run with a Master Weaver (operator, 2026-11-15)
+## Decision: Weaver as a Shed run, the arbiter in Merriam's place (operator, 2026-11-15)
 
 - Weaver need not be a Go program, but a happy path with no LLM in it is likely wise.
 - Weaver reuses Shed: each batch is a producer, so the Shed driver's tackler and arbiter handle a stuck batch as they do for any recipe.
 - Webster's experience is that runs often get messy, and Master Webster (Merriam) then takes over with the whole plan and every batch in mind.
-  A cold tackler or arbiter sees one stop and lacks that context, and the Shed LLM driver (Haiku today) does not read the batchifier's plan either.
-- So a Master Weaver session is spawned when the run starts and reads the whole plan, as Merriam does; it does nothing while the run follows the happy path.
-- Open: whether it hears of each finished batch as the run goes, and what it may do when it steps in.
+  A cold tackler or arbiter that sees one stop lacks that context, and the Shed LLM driver (Haiku today) does not read the batchifier's plan either.
+- No Master Weaver session waits beside the run: one that reads the plan at start and then lies idle wakes with a cold cache,
+  so it costs a read and adds nothing a fresh agent lacks.
+- The arbiter takes Merriam's place: called at a stop the rules and the tackler leave, it reads the whole plan, every batch report and its deviations, and the merged result, and then acts.
+- Open: what the arbiter may do at a Weaver stop beyond today's goto to the halted row, such as rewrite the remaining plan, send a batch back with instructions, or write the fix itself.
