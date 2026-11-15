@@ -122,7 +122,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Darn's Code-Review reviewer should default to Opus, not Sonnet** | [`darn-code-reviewer-opus-default`](design-darn-code-reviewer-opus-default.md) | darn · light | Seed-Child | neve | 31m<br>0m | darn, profiles, loom |
+| T8 | **Darn's Code-Review reviewer should default to Opus, not Sonnet** | [`darn-code-reviewer-opus-default`](design-darn-code-reviewer-opus-default.md) | darn · light | Drift-Baseline | neve | 31m<br>0m | darn, profiles, loom |
 
 #### Ready (0)
 
@@ -159,8 +159,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B5 |  | **Agent prompt gives no way to run slow golden tests by hand; gate skips them silently** | [`gate-skipped-tests-silent`](design-gate-skipped-tests-silent.md) | 31m<br>31m | gate, dotnet, stencil |
 | B6 |  | **lym gate testmap refusal's way forward names a path that also refuses** | [`testmap-refusal-names-weft`](design-testmap-refusal-names-weft.md) | 31m<br>31m | gate, cwd |
 | B7 |  | **PR-Review deadlocks after a failed pr-review gate when continue is set** | [`pr-review-failed-gate-deadlock`](design-pr-review-failed-gate-deadlock.md) | 31m<br>31m | landing |
-| B8 |  | **Body edits on a discussed task never reach its run** | [`discussed-body-edits-lost`](design-discussed-body-edits-lost.md) | 30m<br>30m | board, loom |
-| B9 |  | **Worktree .scratch is a symlink into another worktree's .lym/scratch, breaking relative project references** | [`scratch-symlink-other-worktree`](design-scratch-symlink-other-worktree.md) | 30m<br>30m | fabric |
+| B8 |  | **Body edits on a discussed task never reach its run** | [`discussed-body-edits-lost`](design-discussed-body-edits-lost.md) | 31m<br>31m | board, loom |
+| B9 |  | **Worktree .scratch is a symlink into another worktree's .lym/scratch, breaking relative project references** | [`scratch-symlink-other-worktree`](design-scratch-symlink-other-worktree.md) | 31m<br>31m | fabric |
 | B10 |  | **Flaky gatecli tests fail the first verify run and pass on rerun** | [`gatecli-flaky-tests`](design-gatecli-flaky-tests.md) | 30m<br>30m | gate |
 | B11 |  | **beam merge-parent reuses a completed merge-in slug, so dobby refuses to start the second merge-in** | [`merge-parent-reuses-slug`](design-merge-parent-reuses-slug.md) | 30m<br>30m | dobby, workspaces |
 
@@ -172,7 +172,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 6d<br>3d | shed, loom, darn |
 | E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 3d<br>3d | testkit, gate |
 | E6 |  | **Prod code holds test-only functions: 156 unreachable from main; add a PATTERN rule** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | 31m<br>31m | pattern |
-| E7 |  | **Darn prompt forbids gate test, so a task from a reported test failure cannot cheaply check whether it still reproduces** | [`darn-reproduce-reported-failure`](design-darn-reproduce-reported-failure.md) | 30m<br>30m | darn, stencil |
+| E7 |  | **Darn prompt forbids gate test, so a task from a reported test failure cannot cheaply check whether it still reproduces** | [`darn-reproduce-reported-failure`](design-darn-reproduce-reported-failure.md) | 31m<br>31m | darn, stencil |
 
 #### Features (8)
 
