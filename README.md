@@ -112,7 +112,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B1 |  | **lym adopt does not work**<br>• The operator reports that lym adopt fails today; the cause is not yet found | [`adopt-does-not-work`](design-adopt-does-not-work.md) | 2d<br>0m | orch, fabric |
 | B2 |  | **The orch comes back as a new session, not a continuation, after the hub moves back to this machine** | [`orch-resume-after-owner-move`](design-orch-resume-after-owner-move.md) | 4m<br>4m | orch, shuttle |
 | B3 |  | **Pairs a bench or a cancelled run left behind are never torn down and stay in the workspace** | [`stale-bench-pairs-linger`](design-stale-bench-pairs-linger.md) | 0m<br>0m | batten, fabric, cleanup, workspaces |
-| B4 |  | **A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call** | [`pause-holds-operator-verbs`](design-pause-holds-operator-verbs.md) | 0m<br>0m | tender, git, batten |
+| B4 |  | **A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call** | [`pause-holds-operator-verbs`](design-pause-holds-operator-verbs.md) | 0m<br>0m | tender, git, batten, selfreport |
 | B5 |  | **Agent prompt gives no way to run slow golden tests by hand; gate skips them silently** | [`gate-skipped-tests-silent`](design-gate-skipped-tests-silent.md) | 0m<br>0m | gate, dotnet, stencil |
 | B6 |  | **lym gate testmap refusal's way forward names a path that also refuses** | [`testmap-refusal-names-weft`](design-testmap-refusal-names-weft.md) | 0m<br>0m | gate, cwd |
 | B7 |  | **PR-Review deadlocks after a failed pr-review gate when continue is set** | [`pr-review-failed-gate-deadlock`](design-pr-review-failed-gate-deadlock.md) | 0m<br>0m | landing |
