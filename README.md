@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-15 15:05 UTC; every age below is as of then.
+Rendered 2026-11-15 15:10 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -15,19 +15,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md)<br>[Sketch](decision-adopt-redesign.md) | raddle |  | 2d<br>10m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md)<br>[Sketch](decision-adopt-redesign.md) | raddle |  | 2d<br>16m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 ### Notes (0)
 
@@ -125,7 +119,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Remove test-only functions from production code and add a PATTERN rule against them** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | darn · solid | Code-Burler-Fix | neve | 3h<br>52m | pattern, testkit, cli |
+| T3 | **Remove test-only functions from production code and add a PATTERN rule against them** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | darn · solid | Code-Burler-Fix | neve | 3h<br>58m | pattern, testkit, cli |
 
 #### Ready (0)
 
