@@ -789,6 +789,26 @@
       "revised": "2026-11-15T18:08:55Z",
       "profile": "docs",
       "project": "codex-engine-trial"
+    },
+    {
+      "id": 1385,
+      "handle": "F2",
+      "slug": "orch-auto-remote-control",
+      "title": "Orch sessions turn on remote control by themselves, switchable per hub",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "orch",
+        "claude",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Every orch session lym starts or resumes turns on Claude Code remote control, unless the hub switches it off",
+      "body": "## Seen (operator, 2026-11-15)\n\nThe operator follows the orch from the phone, and turns on Claude Code's remote control by hand in each new orch session with `/remote-control`.\nA context cycle or a fresh orch session drops it, so it must be typed again.\nlym does nothing with remote control today.\n\n## Idea\n\nlym turns on remote control in every orch session it launches or resumes, the hub orch and numbered orchs alike.\nA hub setting switches it on or off per hub, so a test hub or a work machine's hub can keep it off.\nThe run's sessions (writers, reviewers, beams) are not covered.\n\n## Open\n\n- How lym turns it on: a launch flag or setting of Claude Code if one exists, else the slash command sent into the pane after start.\n- Which config file holds the switch, and its default.\n- The remote session's name: the operator named this one `ly:orch`; a name with the hub in it tells hubs apart.\n",
+      "created": "2026-11-15T18:19:56Z",
+      "revised": "2026-11-15T18:19:56Z"
     }
   ],
   "prime_owner": "neve",
