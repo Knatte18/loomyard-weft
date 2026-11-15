@@ -31,7 +31,7 @@ speed:
         loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, split_max_bounces: 0, split_hard_max_bounces: 1}
 light:
     tapestry: {loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 1, plan_hard_max_bounces: 2}, tapestry: {plan_max_bounces: 1, plan_hard_max_bounces: 2}}
-    darn: {loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_model: "opus[high]"}}
+    darn: {loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_model: 'opus[medium]'}}
     motif:
         loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2}
     pawl:
