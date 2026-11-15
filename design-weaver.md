@@ -241,6 +241,9 @@ Claude Code's own worktree isolation for agents has given the operator only trou
   Its prompt names the stop's paths and the recipe's description (`shedarbiter`), and as an agent in the worktree it reads what it needs;
   Weaver's recipe description names where the plan, the batch reports and their deviations lie.
 - The arbiter is to become a one-shot fixer that may edit, for every recipe; that is the note `arbiter-one-shot-fixer`.
-- Open (operator): Merriam gains much from living through the whole run.
-  It remembers what one batch struggled with and what a later batch must then keep in mind, which a short-lived arbiter cannot.
-  Weaver must carry that memory some other way.
+- Merriam gains much from living through the whole run:
+  it remembers what one batch struggled with and what a later batch must then keep in mind, which a short-lived arbiter cannot.
+- Weaver carries that memory in a run journal instead, with no long-lived master (operator, 2026-11-15, as a trial):
+  each batch agent ends by writing what it struggled with and what later batches must keep in mind,
+  and every later batch and the arbiter read the journal before they start.
+  The journal is pushed with the run, so it outlives a crash or a move to another machine.
