@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-15 14:03 UTC; every age below is as of then.
+Rendered 2026-11-15 14:04 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 5d · Owner `neve`
@@ -29,7 +29,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Measure whether coverage maps pay off: incremental upkeep time, load on other runs, gate time saved** | [`testmap-payoff-measure`](design-testmap-payoff-measure.md) | darn · docs | Darn-Write | neve | 1h<br>1h | gate, testkit |
+| T6 | **Measure whether coverage maps pay off: incremental upkeep time, load on other runs, gate time saved** | [`testmap-payoff-measure`](design-testmap-payoff-measure.md) | darn · docs | Darn-Write | neve | 2h<br>2h | gate, testkit |
 
 ### Ready (0)
 
