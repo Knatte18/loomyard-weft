@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md)<br>[Sketch](decision-adopt-redesign.md) | raddle | Raddle-Write | neve | 2d<br>41m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md)<br>[Sketch](decision-adopt-redesign.md) | raddle | Raddle-Write | neve | 2d<br>42m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 #### Ready (0)
 
@@ -125,7 +125,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Remove test-only functions from production code and add a PATTERN rule against them** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | darn · solid | Code-Bouncer | neve | 4h<br>1h | pattern, testkit, cli |
+| T3 | **Remove test-only functions from production code and add a PATTERN rule against them** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | darn · solid | Drift-Recheck | neve | 4h<br>1h | pattern, testkit, cli |
 
 #### Ready (0)
 
