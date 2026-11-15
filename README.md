@@ -11,11 +11,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 [`adopt-revision`](design-adopt-revision.md) · Age 4h · Owner `neve`
 
-### [P3 Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt](project-adopt-build.md) (6)
+### [P3 Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt](project-adopt-build.md) (7)
 
 [`adopt-build`](design-adopt-build.md) · Age 27m · Owner `neve`
 
-#### Tasks (6)
+#### Tasks (7)
 
 Concrete and claimable; only a task can run.
 
@@ -65,6 +65,14 @@ Starts when every entry it names under After is done.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T11 | **The prime is the root beam: parent_beam names it, never empty** | [`prime-is-root-beam`](design-prime-is-root-beam.md) | darn · solid | T10 | 16m<br>1m | board, dobby, orch |
+
+##### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T12 | `draft` **A stop button in the prime orch session that takes the whole hub down, behind a yes/no** | [`hub-stop-button`](design-hub-stop-button.md) | darn · solid | T11 | 4h<br>0m | reed, orch, tender |
 
 #### Notes (0)
 
@@ -158,11 +166,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (15)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (14)</strong></summary>
 
 Owner `neve`
 
-### Tasks (4)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -180,7 +188,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (3)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -188,7 +196,6 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P3 | 13d<br>27m | claude, shuttle, config |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 2d<br>2d | slack, creel, orch |
-| T12 | `draft` **A stop button in the prime orch session that takes the whole hub down, behind a yes/no** | [`hub-stop-button`](design-hub-stop-button.md) | darn |  | 4h<br>4h | reed, orch, tender |
 
 ### Notes (11)
 

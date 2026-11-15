@@ -2,6 +2,8 @@
 
 `hub-stop-button` · Task · feature, reed, orch, tender · draft
 
+Depends on: [`prime-is-root-beam`](design-prime-is-root-beam.md)
+
 Imported from [issue #122](https://github.com/Knatte18/loomyard/issues/122).
 
 ## Seen (operator, 2026-11-11)
