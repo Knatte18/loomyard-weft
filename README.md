@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-15 15:11 UTC; every age below is as of then.
+Rendered 2026-11-15 15:23 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md)<br>[Sketch](decision-adopt-redesign.md) | raddle | Raddle-Write | neve | 2d<br>16m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md)<br>[Sketch](decision-adopt-redesign.md) | raddle | Raddle-Write | neve | 2d<br>28m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 #### Ready (0)
 
@@ -125,7 +125,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Remove test-only functions from production code and add a PATTERN rule against them** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | darn · solid | Code-Burler-Fix | neve | 3h<br>58m | pattern, testkit, cli |
+| T3 | **Remove test-only functions from production code and add a PATTERN rule against them** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | darn · solid | Code-Bouncer | neve | 3h<br>1h | pattern, testkit, cli |
 
 #### Ready (0)
 
