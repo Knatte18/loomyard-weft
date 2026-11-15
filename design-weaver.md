@@ -256,3 +256,6 @@ The first version of Weaver runs its batches one at a time; parallel batches are
 The operator holds there is more to gain from parallel batches than the 2026-10-17 study shows, once the plan protocol and the batchifier are tuned for it,
 and that tuning comes with parallel batches in a later step.
 The study named the levers: honest per-card file lists, shared-doc edits (`doc.go`, `docs/overview.md`, `PATTERN.md`) moved to a final card, `cmd/lym/testdata/test-budget.yaml` no longer a scheduling dependency, and a DAG batchifier over glyphs instead of contiguous cards.
+
+When parallel batches come, there are no waves (operator, 2026-11-15):
+each time a batch ends and is merged, the batchifier runs again and every batch that has become ready starts at once, while the others still run.
