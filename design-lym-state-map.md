@@ -1,6 +1,6 @@
 # Map every piece of state lym keeps, where it lives and whether git holds it
 
-`lym-state-map` · Task · research, batten, tender, dobby, orch, fabric, loom · running · Drift-Recheck
+`lym-state-map` · Task · research, batten, tender, dobby, orch, fabric, loom · running · Finalize
 
 ## Goal
 
