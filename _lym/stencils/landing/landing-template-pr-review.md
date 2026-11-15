@@ -8,7 +8,7 @@
      drift_verdict (the regression check's section, or a line saying none ran),
      parent_directive (rendered by internal/parentdirective) and edit_directive (rendered by internal/editdirective).
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=04a01f371462272225c50682128cb881a9c97008f6f0421ed9a64d9d0430008c build=639e4fab72574405a035dff301755716a83bc608 time=2026-11-08T16:52:23Z -->
+lym-stencil: sha256=694e58a9793ff3b5e124bec50e96fcf8fc7e2bb94d51d0f53f4525406711944b build=57f125ebb8d49248bcd537e48f1c8d67149a92bf time=2026-11-15T12:56:51Z -->
 
 # PR-Review — discuss the pull request with the operator
 
@@ -63,3 +63,6 @@ When the operator says they are satisfied and asks you to continue:
 1. Commit or discard your work so the worktree is clean.
 2. Run `lym loom pr-continue`.
    It ends the review, and the ordinary landing then merges the pull request on GitHub, after its gate.
+3. When lym then mails a gate failure from outside the change, such as a file another process held open,
+   run `lym loom pr-continue` again: it gates the same head again.
+   Fix a failure in the change itself in a new commit instead.
