@@ -756,6 +756,29 @@
       "status": "draft",
       "created": "2026-11-12T19:48:30Z",
       "revised": "2026-11-15T11:37:54Z"
+    },
+    {
+      "id": 1366,
+      "handle": "P1",
+      "slug": "adopt-revision",
+      "title": "Revise adopt and the functions that move a hub between machines",
+      "kind": "project",
+      "labels": [
+        "feature",
+        "batten",
+        "tender",
+        "dobby",
+        "orch",
+        "fabric",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Goal\n\nRevise the adopt module and every function that moves a hub and its runs between machines, so adopt works every time.\nThe operator's requirement and decisions stand in the member `adopt-redesign`:\nevery run's state is one FSM pushed to GitHub at all times, adopt runs in the foreground,\nand nothing else happens in the hub until adopt is done and every failing test it found is fixed.\n\n## Order\n\nFirst the read-only study `lym-state-map` maps the state lym keeps.\nThen the Motif `adopt-redesign` settles the design, and raddle splits its Sketch into the build tasks of this project.\n",
+      "created": "2026-11-15T11:42:43Z",
+      "revised": "2026-11-15T11:42:43Z"
     }
   ],
   "prime_owner": "neve",
