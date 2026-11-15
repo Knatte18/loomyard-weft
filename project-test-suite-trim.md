@@ -46,12 +46,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 5d<br>4h | testkit, gate |
-| E5 |  | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | 49m<br>39m | testkit, gate, dobby |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **Study how to build and keep per-test coverage maps cheaply enough to pay off**<br>• `darn: writer fable[high]` | [`testmap-smart-build`](design-testmap-smart-build.md) | 33m<br>33m | testkit, gate, dobby |
+| E5 |  | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | 50m<br>39m | testkit, gate, dobby |
