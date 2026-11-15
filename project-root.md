@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-15 12:50 UTC; every age below is as of then.
+Rendered 2026-11-15 12:51 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -69,11 +69,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 5w<br>11d | board, ide, orch |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 5w<br>9d | webster |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>9d | burler, shed, orch, quarry, report |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T12 | **Body edits on a discussed task never reach its run** | [`discussed-body-edits-lost`](design-discussed-body-edits-lost.md) | 1h<br>44m | board, loom |
