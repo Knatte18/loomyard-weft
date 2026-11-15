@@ -1,6 +1,6 @@
 # Worktree .scratch is a symlink into another worktree's .lym/scratch, breaking relative project references
 
-`scratch-symlink-other-worktree` · Task · bug, fabric · running · Drift-Await
+`scratch-symlink-other-worktree` · Task · bug, fabric · running · Drift-Expect
 
 Imported from [issue #120](https://github.com/Knatte18/loomyard/issues/120).
 
