@@ -11,7 +11,7 @@
 - `internal/loomcli#TestStartAndResume_RefuseARunOwnedElsewhere`
 
 **Uses:**
-- `plan:internal/pairteardown#ReadRun`
+- `internal/pairteardown#ReadRun`
 - `internal/runfsm#Judge`
 - `internal/loomcli/doc.go`
 

@@ -1,7 +1,7 @@
 # Card 7 — cancel-intent
 
 **Create:**
-- `plan:internal/battencli#cancelledRunRefusal` -> `func cancelledRunRefusal(slug string) error`
+- `internal/battencli#cancelledRunRefusal`
 
 **Edit:**
 - `internal/battencli#cancelDeps`
@@ -32,7 +32,7 @@
 **Uses:**
 - `internal/shedrun#WriteCancelIntent`
 - `internal/shedrun#FinishCancel`
-- `plan:internal/pairteardown#ReadRun`
+- `internal/pairteardown#ReadRun`
 - `internal/runfsm#Judge`
 - `internal/fabricengine#OriginParentHoldsTaskWork`
 - `internal/battencli#battenCommitStatusDeps`

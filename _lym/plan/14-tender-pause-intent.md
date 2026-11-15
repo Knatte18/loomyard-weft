@@ -22,7 +22,7 @@
 - `plan:internal/boardengine#PullBolt`
 - `internal/shedrun#WritePauseIntent`
 - `internal/shedrun#ClearPauseIntent`
-- `plan:internal/pairteardown#ReadRun`
+- `internal/pairteardown#ReadRun`
 - `internal/runfsm#Judge`
 - `internal/fabricengine#OriginParentHoldsTaskWork`
 

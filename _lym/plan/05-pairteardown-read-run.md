@@ -1,12 +1,12 @@
 # Card 5 — pairteardown-read-run
 
 **Create:**
-- `plan:internal/pairteardown#ReadRun` -> `func ReadRun(prime *lymcwd.Location, slug string) (runfsm.Records, runfsm.Inputs, error)`
-- `plan:internal/pairteardown#runShedRow` -> `const runShedRow = "Run-Shed"`
-- `plan:internal/pairteardown#runReader` -> `type runReader struct`
-- `plan:internal/pairteardown#runReader.read` -> `func (r runReader) read(slug string) (runfsm.Records, runfsm.Inputs, error)`
-- `plan:internal/pairteardown#TestReadRun` -> `func TestReadRun(t *testing.T)`
-- `plan:internal/pairteardown#TestReadRun_ReadsTheSameStateWithoutTheCache` -> `func TestReadRun_ReadsTheSameStateWithoutTheCache(t *testing.T)`
+- `internal/pairteardown#ReadRun`
+- `internal/pairteardown#runShedRow`
+- `internal/pairteardown#runReader`
+- `internal/pairteardown#runReader.read`
+- `internal/pairteardown#TestReadRun`
+- `internal/pairteardown_test#TestReadRun_ReadsTheSameStateWithoutTheCache`
 
 **Edit:**
 - `internal/pairteardown#landRow`

@@ -15,7 +15,7 @@
 - `internal/battencli#TestStartFirstPass`
 
 **Uses:**
-- `plan:internal/pairteardown#ReadRun`
+- `internal/pairteardown#ReadRun`
 - `internal/runfsm#Judge`
 - `internal/runfsm#Verdict.Refusal`
 - `internal/battencli#newFakeReceiver`

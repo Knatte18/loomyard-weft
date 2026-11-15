@@ -23,7 +23,7 @@
 - `internal/beamcli#TestDobbyLandings_CountsOnlyThisMachine`
 
 **Uses:**
-- `plan:internal/pairteardown#ReadRun`
+- `internal/pairteardown#ReadRun`
 - `internal/runfsm#Judge`
 - `internal/runfsm#TransitionState`
 
