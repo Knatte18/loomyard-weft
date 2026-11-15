@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-testmap-maps-in-weft.md)
 
-Depends on: [`testmap-payoff-measure`](design-testmap-payoff-measure.md), [`gate-bug-bundle`](design-gate-bug-bundle.md)
+Depends on: [`testmap-payoff-measure`](design-testmap-payoff-measure.md)
 
 Filed from the Sketch `testmap-checked-in`.
 

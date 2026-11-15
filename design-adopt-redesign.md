@@ -2,8 +2,6 @@
 
 `adopt-redesign` · Task · feature, bug, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle · draft
 
-Depends on: [`lym-state-map`](design-lym-state-map.md)
-
 ## Goal
 
 Redesign how a hub and its runs move between machines, starting with `lym adopt`, which almost never works today despite its rework of 2026-11-11 (commits `0deeb9b9` to `90d11895`).
