@@ -35,7 +35,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | T3 | 2d<br>55m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T4 | `draft` **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | T3 | 2d<br>56m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 ### Notes (0)
 
@@ -139,7 +139,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Gate bugs: silent skips, a testmap refusal naming the weft, two flaky gatecli tests** | [`gate-bug-bundle`](design-gate-bug-bundle.md) | darn · solid | Code-Burler-Review | neve | 1h<br>32m | gate, dotnet, stencil, cwd |
+| T9 | **Gate bugs: silent skips, a testmap refusal naming the weft, two flaky gatecli tests** | [`gate-bug-bundle`](design-gate-bug-bundle.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>32m | gate, dotnet, stencil, cwd |
 | T10 | **A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call** | [`pause-holds-operator-verbs`](design-pause-holds-operator-verbs.md) | darn · solid | Darn-Write | neve | 1h<br>32m | tender, git, batten, selfreport |
 | T11 | **PR-Review deadlocks after a failed pr-review gate when continue is set** | [`pr-review-failed-gate-deadlock`](design-pr-review-failed-gate-deadlock.md) | darn · light | Code-Burler-Fix | neve | 1h<br>32m | landing |
 | T12 | **Body edits on a discussed task never reach its run** | [`discussed-body-edits-lost`](design-discussed-body-edits-lost.md) | darn · light | Code-Burler-Fix | neve | 1h<br>32m | board, loom |
