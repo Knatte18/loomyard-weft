@@ -94,7 +94,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T15 | `draft` **Codex as darn writer, replayed on a landed task, on OSL-1046** | [`codex-writer-bench-osl`](design-codex-writer-bench-osl.md) | darn · docs |  | 18m<br>18m | codex, shuttle |
+| T15 | `draft` **Codex as darn writer, replayed on a landed task, on OSL-1046** | [`codex-writer-bench-osl`](design-codex-writer-bench-osl.md) | darn · docs |  | 19m<br>18m | codex, shuttle |
 
 ### Notes (3)
 
@@ -166,7 +166,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **The arbiter becomes a one-shot fixer that may edit, not only resume the halted row** | [`arbiter-one-shot-fixer`](design-arbiter-one-shot-fixer.md) | darn · solid | Code-Bouncer | neve | 41m<br>39m | arbiter, shed |
-| T16 | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | darn · light | Drift-Recheck | neve | 7d<br>16m | shed, loom, darn |
+| T16 | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | darn · light | Describe | neve | 7d<br>16m | shed, loom, darn |
 
 #### Ready (0)
 
