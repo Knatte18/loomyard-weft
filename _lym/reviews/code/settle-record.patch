@@ -1,0 +1,271 @@
+diff --git a/internal/battencli/runsettings_test.go b/internal/battencli/runsettings_test.go
+index 637562d4..19bc8305 100644
+--- a/internal/battencli/runsettings_test.go
++++ b/internal/battencli/runsettings_test.go
+@@ -68,7 +68,7 @@ func TestPrepareRunSettings(t *testing.T) {
+ 		{
+ 			name:     "no profiles file takes the template's default for the recipe",
+ 			settings: battenshed.RunSettings{Recipe: "darn"},
+-			wantDocs: map[string]string{"loom": "code_hard_max_bounces: 2\ncode_max_bounces: 1\n"},
++			wantDocs: map[string]string{"loom": "code_hard_max_bounces: 2\ncode_max_bounces: 1\ncode_reviewer_model: opus[high]\n"},
+ 		},
+ 		{
+ 			name:     "a sampler task naming the template's light profile writes its loom values and the review on",
+diff --git a/internal/configcli/configcli_integration_test.go b/internal/configcli/configcli_integration_test.go
+index 6ab70f81..91f1cde9 100644
+--- a/internal/configcli/configcli_integration_test.go
++++ b/internal/configcli/configcli_integration_test.go
+@@ -390,11 +390,11 @@ func TestConfigOverRealHub(t *testing.T) {
+ 		}
+ 		baseFile := configengine.TemplateBaseFile(boardDir, "profiles")
+ 		baseOriginal, baseErr := os.ReadFile(baseFile)
+-		const lightDarn = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}\n"
+-		const lightDarnSolo = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: \"\"}\n"
+-		const solidDarn = "  darn:\n    loom: {code_max_bounces: 2, code_hard_max_bounces: 3}\n"
+-		const solidDarnBase = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 4}\n"
+-		const solidDarnTuned = "  darn:\n    loom: {code_max_bounces: 5, code_hard_max_bounces: 4}\n"
++		const lightDarn = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_model: \"opus[high]\"}\n"
++		const lightDarnSolo = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: \"\", code_reviewer_model: \"opus[high]\"}\n"
++		const solidDarn = "  darn:\n    loom: {code_max_bounces: 2, code_hard_max_bounces: 3, code_reviewer_model: \"opus[high]\"}\n"
++		const solidDarnBase = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 4, code_reviewer_model: \"opus[high]\"}\n"
++		const solidDarnTuned = "  darn:\n    loom: {code_max_bounces: 5, code_hard_max_bounces: 4, code_reviewer_model: \"opus[high]\"}\n"
+ 		const formerPair = "paired:\n  loom:\n    loom: {code_max_bounces: 1}\n  tapestry:\n    loom: {code_max_bounces: 2}\n"
+ 		olderTemplate := strings.Replace(runprofile.ConfigTemplate(), lightDarn, lightDarnSolo, 1)
+ 		basePlanted := strings.Replace(olderTemplate, solidDarn, solidDarnBase, 1)
+diff --git a/internal/configsync/configsync_test.go b/internal/configsync/configsync_test.go
+index 928e6f99..fcae960c 100644
+--- a/internal/configsync/configsync_test.go
++++ b/internal/configsync/configsync_test.go
+@@ -937,15 +937,18 @@ func TestReconcileHubWideAt_SeedOnlyFileFollowsItsTemplate(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	const (
+-		lightDarn            = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}\n"
+-		lightDarnSolo        = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: \"\"}\n"
+-		lightDarnOperator    = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: standard}\n"
++		lightDarn            = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_model: \"opus[high]\"}\n"
++		lightDarnSolo        = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: \"\", code_reviewer_model: \"opus[high]\"}\n"
++		lightDarnOperator    = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: standard, code_reviewer_model: \"opus[high]\"}\n"
++		lightDarnNoModel     = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}\n"
++		lightDarnOwnModel    = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_model: \"sonnet[high]\"}\n"
+ 		lightSamplerReview   = "    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}\n    sampler: {code_review: true}\n"
+ 		lightSamplerNoReview = "    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}\n"
+ 	)
+ 	template := runprofile.ConfigTemplate()
+ 	older := strings.Replace(template, lightDarn, lightDarnSolo, 1)
+ 	withoutSamplerReview := strings.Replace(template, lightSamplerReview, lightSamplerNoReview, 1)
++	withoutReviewerModel := strings.Replace(template, lightDarn, lightDarnNoModel, 1)
+ 	m, ok := configreg.Lookup(runprofile.ModuleName)
+ 	if !ok {
+ 		t.Fatalf("module %q is not registered", runprofile.ModuleName)
+@@ -990,6 +993,22 @@ func TestReconcileHubWideAt_SeedOnlyFileFollowsItsTemplate(t *testing.T) {
+ 			wantDiffers:  []string{"light.darn.loom.code_reviewer_fan: file standard, template absent"},
+ 			wantContains: []string{lightDarnOperator},
+ 		},
++		{
++			name:          "an unedited file without the reviewer model gains the template's",
++			hubFile:       withoutReviewerModel,
++			baseFile:      withoutReviewerModel,
++			wantAddedHas:  []string{"light.darn.loom.code_reviewer_model"},
++			wantContains:  []string{lightDarn},
++			wantRewritten: true,
++		},
++		{
++			name:         "an operator's own reviewer model is kept and listed",
++			hubFile:      strings.Replace(template, lightDarn, lightDarnOwnModel, 1),
++			baseFile:     withoutReviewerModel,
++			wantAdded:    []string{},
++			wantDiffers:  []string{"light.darn.loom.code_reviewer_model: file \"sonnet[high]\", template \"opus[high]\""},
++			wantContains: []string{lightDarnOwnModel},
++		},
+ 		{
+ 			name:          "a key the template added since the base is added",
+ 			hubFile:       withoutSamplerReview,
+@@ -1009,7 +1028,7 @@ func TestReconcileHubWideAt_SeedOnlyFileFollowsItsTemplate(t *testing.T) {
+ 			hubFile:       "light:\n  darn:\n    loom: {code_max_bounces: 4}\n",
+ 			wantAddedHas:  []string{"light.darn.loom.code_hard_max_bounces", "solid"},
+ 			wantDiffers:   []string{"light.darn.loom.code_max_bounces: file 4, template 1"},
+-			wantContains:  []string{"    loom: {code_max_bounces: 4, code_hard_max_bounces: 2}\n", "solid:"},
++			wantContains:  []string{"    loom: {code_max_bounces: 4, code_hard_max_bounces: 2, code_reviewer_model: ", "solid:"},
+ 			wantRewritten: true,
+ 		},
+ 		{
+diff --git a/internal/hubreconcile/ensure_integration_test.go b/internal/hubreconcile/ensure_integration_test.go
+index 3cba6d99..719c6000 100644
+--- a/internal/hubreconcile/ensure_integration_test.go
++++ b/internal/hubreconcile/ensure_integration_test.go
+@@ -1474,12 +1474,12 @@ func TestEnsure_CarriesATemplateChangeIntoASeedOnlyConfigFile(t *testing.T) {
+ 
+ 	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	geom := geometryOf(h)
+-	const lightDarn = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}\n"
+-	const lightDarnSolo = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: \"\"}\n"
+-	const solidDarn = "  darn:\n    loom: {code_max_bounces: 2, code_hard_max_bounces: 3}\n"
+-	const solidDarnBase = "  darn:\n    loom: {code_max_bounces: 3, code_hard_max_bounces: 4}\n"
+-	const solidDarnTuned = "  darn:\n    loom: {code_max_bounces: 5, code_hard_max_bounces: 4}\n"
+-	const solidDarnFollowed = "  darn:\n    loom: {code_max_bounces: 5, code_hard_max_bounces: 3}\n"
++	const lightDarn = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_model: \"opus[high]\"}\n"
++	const lightDarnSolo = "  darn:\n    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: \"\", code_reviewer_model: \"opus[high]\"}\n"
++	const solidDarn = "  darn:\n    loom: {code_max_bounces: 2, code_hard_max_bounces: 3, code_reviewer_model: \"opus[high]\"}\n"
++	const solidDarnBase = "  darn:\n    loom: {code_max_bounces: 3, code_hard_max_bounces: 4, code_reviewer_model: \"opus[high]\"}\n"
++	const solidDarnTuned = "  darn:\n    loom: {code_max_bounces: 5, code_hard_max_bounces: 4, code_reviewer_model: \"opus[high]\"}\n"
++	const solidDarnFollowed = "  darn:\n    loom: {code_max_bounces: 5, code_hard_max_bounces: 3, code_reviewer_model: \"opus[high]\"}\n"
+ 	olderTemplate := strings.Replace(strings.Replace(runprofile.ConfigTemplate(), lightDarn, lightDarnSolo, 1), solidDarn, solidDarnBase, 1)
+ 	hubProfiles := strings.Replace(olderTemplate, solidDarnBase, solidDarnTuned, 1)
+ 	gitkit.CommitFile(t, h.BoardDir(), configengine.ConfigFileRel("profiles"), hubProfiles, "fixture: profiles seeded from an older template, with solid's darn rounds tuned")
+diff --git a/internal/runprofile/doc.go b/internal/runprofile/doc.go
+index 7e2f925d..475dc628 100644
+--- a/internal/runprofile/doc.go
++++ b/internal/runprofile/doc.go
+@@ -27,6 +27,10 @@
+ // A `speed` sampler run and a sampler run naming no profile skip the Code-Review perch.
+ // `docs` and `speed`'s tapestry block run the Code-Review round solo through `loom.code_reviewer_fan: ""`.
+ // `light`, `solid`, `wide` and the rest take the hub's fan.
++// Every darn block, `docs`'s included, sets `loom.code_reviewer_model` to `opus[high]`.
++// A darn run has no Discussion or Plan review,
++// so its Code-Review reviewer also judges whether the run did what the entry asks.
++// The pawl and sampler blocks and the tapestry blocks take the hub's Code-Review model.
+ // A round count of 0 turns a perch off, since its Bouncer then settles approved with no review round.
+ //
+ // The module is hub-wide and seed-only.
+diff --git a/internal/runprofile/runprofile_test.go b/internal/runprofile/runprofile_test.go
+index 36e61a0b..7c5fc612 100644
+--- a/internal/runprofile/runprofile_test.go
++++ b/internal/runprofile/runprofile_test.go
+@@ -96,10 +96,13 @@ func TestLoad(t *testing.T) {
+ 
+ // TestTemplateLadder pins the template's ladder: each profile's review rounds and hard caps per perch for loom;
+ // the Code perch's for darn, every hard cap its rounds plus one.
+-// It also pins that each profile's sampler block carries its darn block's loom values;
++// It also pins that each profile's sampler block carries its darn block's rounds;
+ // sampler.code_review is on from light up, and sampler has no default profile.
++// Only the darn block sets the Code-Review reviewer, to opus[high].
+ // Each profile's motif block holds its tapestry block's Discussion perch and nothing else.
+ // Each profile's arras block holds that Discussion perch's rounds and the split perch's alike, with a hard cap one above.
++//
++//testtiming:keep pins the template's per-block code_reviewer_model values, which the lookup tests over a fixture file cannot see
+ func TestTemplateLadder(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -156,6 +159,13 @@ func TestTemplateLadder(t *testing.T) {
+ 			pawlKeys := pawl["loom"].(map[string]any)
+ 			got["pawl code"] = map[string]int{"max": pawlKeys["code_max_bounces"].(int), "hard": pawlKeys["code_hard_max_bounces"].(int)}
+ 			want["pawl code"] = perch(tt.darnCode)
++			sampler, err := profiles.Settings(tt.profile, "sampler")
++			if err != nil {
++				t.Fatal(err)
++			}
++			samplerLoom := sampler["loom"].(map[string]any)
++			got["sampler code"] = map[string]int{"max": samplerLoom["code_max_bounces"].(int), "hard": samplerLoom["code_hard_max_bounces"].(int)}
++			want["sampler code"] = perch(tt.darnCode)
+ 			if !reflect.DeepEqual(got, want) {
+ 				t.Errorf("Settings(%s) rounds = %v; want %v", tt.profile, got, want)
+ 			}
+@@ -178,13 +188,6 @@ func TestTemplateLadder(t *testing.T) {
+ 			if !reflect.DeepEqual(arras, wantArras) {
+ 				t.Errorf("Settings(%s, arras) = %v; want %v", tt.profile, arras, wantArras)
+ 			}
+-			sampler, err := profiles.Settings(tt.profile, "sampler")
+-			if err != nil {
+-				t.Fatal(err)
+-			}
+-			if !reflect.DeepEqual(sampler["loom"], darn["loom"]) {
+-				t.Errorf("Settings(%s, sampler) loom = %v; want darn's %v", tt.profile, sampler["loom"], darn["loom"])
+-			}
+ 			wantReview := tt.profile != "speed"
+ 			samplerKeys, _ := sampler["sampler"].(map[string]any)
+ 			if wantReview && samplerKeys["code_review"] != true {
+@@ -193,20 +196,26 @@ func TestTemplateLadder(t *testing.T) {
+ 			if !wantReview && sampler["sampler"] != nil {
+ 				t.Errorf("Settings(%s, sampler) sampler = %v; want no sampler key, leaving code_review false", tt.profile, sampler["sampler"])
+ 			}
+-			blockKeys := map[string]map[string]any{"tapestry": tapestry["loom"].(map[string]any), "darn": darnKeys, "pawl": pawlKeys}
++			blockKeys := map[string]map[string]any{"tapestry": tapestry["loom"].(map[string]any), "darn": darnKeys, "pawl": pawlKeys, "sampler": samplerLoom}
+ 			for block, keys := range blockKeys {
+ 				fan, present := keys["code_reviewer_fan"]
+ 				if wantSolo := slices.Contains(tt.solo, block); present != wantSolo || (present && fan != "") {
+ 					t.Errorf("Settings(%s, %s) code_reviewer_fan = %v, present %v; want %q present %v", tt.profile, block, fan, present, "", wantSolo)
+ 				}
++				model, present := keys["code_reviewer_model"]
++				if wantOpus := block == "darn"; present != wantOpus || (present && model != "opus[high]") {
++					t.Errorf("Settings(%s, %s) code_reviewer_model = %v, present %v; want %q present %v", tt.profile, block, model, present, "opus[high]", wantOpus)
++				}
+ 			}
+ 		})
+ 	}
+ }
+ 
+ // TestTemplateDocsProfile pins the template's darn-only docs profile:
+-// a Sonnet medium writer, one Code round with its hard cap, and drift scope off.
++// a Sonnet medium writer, one solo Code round with its hard cap and an Opus high reviewer, and drift scope off.
+ // Drift scope is off since a docs task changes no captured value.
++//
++//testtiming:keep pins the docs darn block's full settings map, including its code_reviewer_model, which the lookup tests over a fixture file cannot see
+ func TestTemplateDocsProfile(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -221,7 +230,7 @@ func TestTemplateDocsProfile(t *testing.T) {
+ 	want := map[string]any{
+ 		"darn":  map[string]any{"writer": "sonnet[medium]"},
+ 		"drift": map[string]any{"scope": "off"},
+-		"loom":  map[string]any{"code_max_bounces": 1, "code_hard_max_bounces": 2, "code_reviewer_fan": ""},
++		"loom":  map[string]any{"code_max_bounces": 1, "code_hard_max_bounces": 2, "code_reviewer_fan": "", "code_reviewer_model": "opus[high]"},
+ 	}
+ 	if !reflect.DeepEqual(got, want) {
+ 		t.Errorf("Settings(docs, darn) = %v; want %v", got, want)
+diff --git a/internal/runprofile/template.yaml b/internal/runprofile/template.yaml
+index ffe402dd..a71c2c7c 100644
+--- a/internal/runprofile/template.yaml
++++ b/internal/runprofile/template.yaml
+@@ -6,6 +6,9 @@
+ # A task names a profile in its board entry's profile field, or takes its recipe's entry under defaults when it names none;
+ # batten's Seed-Child writes the block of the recipe the task runs into the pair's local config, with the task's own run_settings layered on top.
+ # Each perch's hard cap is its rounds plus one, so `lym loom circling continue` can grant one more round.
++# Every darn block sets loom.code_reviewer_model to an Opus model-spec:
++# a darn run's Code-Review perch is its only review,
++# so it judges the entry's work items, decisions and acceptance steps as well as the diff.
+ #
+ # Seeded once when this file is absent; after that it is operator-owned.
+ # The hub reconcile after a lym upgrade carries a template change into it only where it still holds lym's earlier value, kept in profiles.template-base beside it:
+@@ -27,7 +30,7 @@ speed:
+   motif:
+     loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1}
+   darn:
+-    loom: {code_max_bounces: 0, code_hard_max_bounces: 1}
++    loom: {code_max_bounces: 0, code_hard_max_bounces: 1, code_reviewer_model: "opus[high]"}
+   pawl:
+     loom: {code_max_bounces: 0, code_hard_max_bounces: 1}
+   sampler:
+@@ -42,7 +45,7 @@ light:
+   motif:
+     loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2}
+   darn:
+-    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
++    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_model: "opus[high]"}
+   pawl:
+     loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
+   sampler:
+@@ -58,7 +61,7 @@ solid:
+   motif:
+     loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3}
+   darn:
+-    loom: {code_max_bounces: 2, code_hard_max_bounces: 3}
++    loom: {code_max_bounces: 2, code_hard_max_bounces: 3, code_reviewer_model: "opus[high]"}
+   pawl:
+     loom: {code_max_bounces: 2, code_hard_max_bounces: 3}
+   sampler:
+@@ -74,7 +77,7 @@ wide:
+   motif:
+     loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4}
+   darn:
+-    loom: {code_max_bounces: 3, code_hard_max_bounces: 4}
++    loom: {code_max_bounces: 3, code_hard_max_bounces: 4, code_reviewer_model: "opus[high]"}
+   pawl:
+     loom: {code_max_bounces: 3, code_hard_max_bounces: 4}
+   sampler:
+@@ -88,4 +91,4 @@ docs:
+   darn:
+     darn: {writer: "sonnet[medium]"}
+     drift: {scope: "off"}
+-    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: ""}
++    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: "", code_reviewer_model: "opus[high]"}
