@@ -12,20 +12,21 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Refresh the README with what landed since 2026-11-11**<br>• Coverage-map test selection, orch in decision-record review, lens forks wording, new measurement rows, a sober multi-machine claim | [`readme-refresh-nov`](design-readme-refresh-nov.md) | darn · docs |  | 0m<br>0m | docs |
 
-### Draft (3)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 13d<br>1h | claude, shuttle, config |
-| T3 | `draft` **Refresh the README with what landed since 2026-11-11**<br>• Coverage-map test selection, orch in decision-record review, lens forks wording, new measurement rows, a sober multi-machine claim | [`readme-refresh-nov`](design-readme-refresh-nov.md) | darn · docs |  | 0m<br>0m | docs |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 2d<br>2d | slack, creel, orch |
 
 ## Notes (13)

@@ -1,6 +1,6 @@
 # Refresh the README with what landed since 2026-11-11
 
-`readme-refresh-nov` · Task · enhancement, docs · draft
+`readme-refresh-nov` · Task · enhancement, docs
 
 Bring the root `README.md` up to what has landed since its last refresh (`efda1928`, 2026-11-11).
 The operator will point to LoomYard from job applications, so every claim must hold against the code and the reports it links.
