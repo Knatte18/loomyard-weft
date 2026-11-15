@@ -2,7 +2,7 @@
 
 `claude-account-pick-simple` · Task · enhancement, claude, shuttle, config · draft
 
-Depends on: [`adopt-redesign`](design-adopt-redesign.md)
+Depends on: [`adopt-foreground-leftovers`](design-adopt-foreground-leftovers.md)
 
 ## Idea (operator, 2026-11-11)
 

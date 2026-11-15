@@ -1,6 +1,6 @@
 # Redesign adopt on one FSM of run state, pushed to GitHub at all times
 
-`adopt-redesign` · Task · feature, bug, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle · running · Raddle-File
+`adopt-redesign` · Task · feature, bug, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle · done
 
 Decision record: [Sketch](decision-adopt-redesign.md)
 
