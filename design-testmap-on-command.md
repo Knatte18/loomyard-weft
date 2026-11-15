@@ -2,8 +2,6 @@
 
 `testmap-on-command` · Task · enhancement, testkit, gate, dobby · running · Darn-Write
 
-Depends on: [`testmap-miss-causes`](design-testmap-miss-causes.md)
-
 ## Seen
 
 The payoff report `docs/research/speed/testmap-payoff-2026-11-15.md` (commit `055ef994`) found that the prime dobby's coverage-map upkeep pass after a landing took 7.7 to 31 minutes

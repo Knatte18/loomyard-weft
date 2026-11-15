@@ -2,7 +2,7 @@
 
 `adopt-build-revision` · Task · research, docs, batten, dobby, orch, fabric, tender · draft
 
-Depends on: [`orch-resume-own-session`](design-orch-resume-own-session.md), [`run-fsm-tracked-records`](design-run-fsm-tracked-records.md)
+Depends on: [`run-fsm-tracked-records`](design-run-fsm-tracked-records.md)
 
 ## Why (operator, 2026-11-15)
 
