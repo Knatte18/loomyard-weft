@@ -24,6 +24,18 @@ It reuses the previous record below wherever the simple design still holds; it n
   The root worktree mostly stays on one account.
 - Usage limits stay reported and waited out, never moved (previous D8).
 
+## Accounts follow the machine (operator, 2026-11-15)
+
+The accounts differ by machine: OSL-1046 has a work account and private account 1, the home laptop only private account 1.
+So a worktree's account is a fact of the machine it runs on, never of the repository:
+
+- Each machine lists its own accounts in its machine layer (previous D1), and a worktree's chosen account is kept on that machine only.
+- A pin names a role that each machine maps to one of its own accounts, such as `orch` or `default`, never an account another machine may lack.
+  A pin whose role a machine does not map falls back to the pick.
+- When a worktree moves to another machine through adopt, it gets an account from that machine's list by the same rules.
+  Its Claude transcripts stay on the old machine in any case, so its sessions start fresh there;
+  the adopt Motif (`adopt-redesign`) settles how a run goes on after such a move.
+
 ## Keeping it small
 
 The previous design grew to about 3,900 lines mainly through D2's resume cases:
