@@ -1,6 +1,6 @@
 # Raddle cuts darn families for size and concurrency
 
-`raddle-darn-sizing` · Task · enhancement, shed, loom, darn · running · Open-Window
+`raddle-darn-sizing` · Task · enhancement, shed, loom, darn · running · Drift-Await
 
 ## Seen (darn-cost-measure, 2026-11-08)
 
