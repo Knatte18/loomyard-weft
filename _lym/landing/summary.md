@@ -1,31 +1,23 @@
 # A beam window opens no README by default
 
-The `code` button in a beam opened the beam worktree's `README.md`, which says nothing about the beam.
-`ide.yaml`'s template listed `README.md` under `open_files.beam`.
-The template now sets `open_files.beam: []`, so a window lym opens shows no file by default in any place.
-A hub that wants a file opened names it by adding an entry, for example `docs/{beam}.md`.
-A hub that already set `beam: []` in its own `ide.yaml` behaves as before.
+The `ide.yaml` template in `internal/ideconfig` listed `README.md` under `open_files.beam`.
+The `code` button in a beam therefore opened the beam worktree's README, which is of no use there.
+The template now sets `open_files.beam: []`, so no place (prime, beam or task) opens a file unless a hub adds an entry.
+A hub that wants a beam file, such as `docs/{beam}.md`, names it in its own `ide.yaml`.
 
-## Markdown preview: settings left unchanged
+Existing hubs that kept the old template's `README.md` entry in their `ide.yaml` still open it; they must remove the entry.
 
-The task also reported that a `.md` file did not render as a preview in a window lym opens.
-The cause was not found in lym's settings, so `render_markdown` and the association it writes stay as they are:
+The change also updates the `ideconfig` package doc, `docs/overview.md` and the `TestLoadConfig` expectations to match.
 
-- `vscode.markdown.preview.editor` is the custom editor that the built-in `markdown-language-features` extension registers for `*.md` in the installed VS Code (1.142).
-  So the association lym writes names a valid editor.
-- The association lands where VS Code reads it.
-  The prime's and a beam's workspace files carry it under `settings`, and a task folder's `.vscode/settings.json` carries it too.
-  `workbench.editorAssociations` is window-scoped, so workspace settings apply it.
-  No user setting overrides it.
-- Extension Bisect disables only user-installed extensions.
-  The stored bisect state lists ten user extensions and not the markdown extension.
-  So bisect could not have switched off the preview editor either.
+## Design decisions
 
-The preview was not checked in a live VS Code window.
-If it still fails once bisect has ended, the next step is to look at VS Code's own state, such as its editor-resolver cache, and not at lym's settings.
+- `render_markdown` and its `workbench.editorAssociations` `"*.md"` entry in `internal/vscode/config.go` are unchanged.
+  The report that the markdown preview does not render in a lym-opened window was not diagnosed here.
+  It showed while VS Code had an Extension Bisect running, which may have disabled the markdown extension.
+  Whether lym's settings are at fault is still open.
 
-## Changes
+## To check by hand
 
-- `internal/ideconfig/template.yaml`: `open_files.beam` is `[]`.
-- `internal/ideconfig/doc.go` and `docs/overview.md` state that the template opens nothing for any place.
-- `internal/ideconfig/config_test.go`: the template-default and local-override rows expect an empty beam list.
+- Open a window with `lym ide spawn` or `lym ide open` on a beam and confirm that no file opens.
+- Open a `.md` file in a lym-seeded window with no Extension Bisect running, and confirm whether it renders as the preview.
+  If it does not, `render_markdown` needs a follow-up task.
