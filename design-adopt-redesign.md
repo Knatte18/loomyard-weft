@@ -12,7 +12,8 @@ The operator's requirement (2026-11-15):
   on this machine or on another one after pulling the git state.
 - Today this fails: lym always drifts and complains about all sorts of things, so some state clearly lives outside git.
 
-The state map from the darn `docs` study this task depends on is the Motif's starting point.
+The Motif starts from the state map `docs/research/loom/lym-state-map-2026-11-15.md` (commit `20bde208`):
+every piece of state lym keeps, where it lives and whether git holds it.
 
 ## Operator decisions (2026-11-15)
 
