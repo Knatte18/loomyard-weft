@@ -1,6 +1,6 @@
 # Redesign adopt on one FSM of run state, pushed to GitHub at all times
 
-`adopt-redesign` · Task · feature, bug, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle
+`adopt-redesign` · Task · feature, bug, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle · running · Worktree-Create
 
 ## Goal
 
