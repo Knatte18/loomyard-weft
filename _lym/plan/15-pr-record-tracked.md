@@ -1,9 +1,9 @@
 # Card 15 — pr-record-tracked
 
 **Create:**
-- `plan:internal/shedrun#PullRequestRecordRel` -> `func PullRequestRecordRel(l *lymcwd.Location, runID string) string`
-- `plan:internal/shedrun#LegacyPullRequestRecord` -> `func LegacyPullRequestRecord(l *lymcwd.Location, runID string) string`
-- `plan:internal/loomcli#TestPullRequestDeps_CommitsTheRecord` -> `func TestPullRequestDeps_CommitsTheRecord(t *testing.T)`
+- `internal/shedrun#PullRequestRecordRel`
+- `internal/shedrun#LegacyPullRequestRecord`
+- `internal/loomcli#TestPullRequestDeps_CommitsTheRecord`
 
 **Edit:**
 - `internal/shedrun#PullRequestRecord`

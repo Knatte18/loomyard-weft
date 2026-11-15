@@ -1,7 +1,7 @@
 # Card 16 — fixer-attempts-tracked
 
 **Create:**
-- `plan:internal/landingshed#moveScratchAttempts` -> `func moveScratchAttempts(scratchDir, recordsDir, row string) error`
+- `internal/landingshed#moveScratchAttempts`
 
 **Edit:**
 - `internal/landingshed#Deps`
