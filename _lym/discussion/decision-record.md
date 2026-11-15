@@ -103,6 +103,12 @@ Rationale: Each fix in the record is the one the round 3 review proposed, and th
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - summary-describes-round-1-code (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D9: an orch start whose session is held by this worktree's own earlier orch process, its strand already removed, ends that process and resumes the same session id.
