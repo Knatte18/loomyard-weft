@@ -1,0 +1,8 @@
+{
+  "recipe": "darn",
+  "driver": "go",
+  "params": {
+    "parent": "adopt-build"
+  },
+  "started_at": "2026-11-15T16:04:46Z"
+}
