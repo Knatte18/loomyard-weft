@@ -1,6 +1,6 @@
 # Coverage maps and test-suite trimming run only on command, never per landing
 
-`testmap-on-command` · Task · enhancement, testkit, gate, dobby · running · Code-Burler-Fix
+`testmap-on-command` · Task · enhancement, testkit, gate, dobby · running · Code-Bouncer
 
 ## Seen
 
