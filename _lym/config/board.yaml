@@ -57,3 +57,4 @@ labels:
     heddle: the instruction store and its rendering, lym heddle (internal/heddlecli, heddleengine)
     tools: the developer programs under tools/, such as tokencount and forkaudit
     slack: Slack relay, login and presence (internal/slack*)
+    weaver: the weaver, a planned role or program (see entry weaver)
