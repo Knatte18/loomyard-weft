@@ -1,0 +1,1892 @@
+diff --git a/internal/fabriccli/anchor.go b/internal/fabriccli/anchor.go
+index a1b472ab..1bf62005 100644
+--- a/internal/fabriccli/anchor.go
++++ b/internal/fabriccli/anchor.go
+@@ -465,7 +465,7 @@ func moveAnchor(ctx context.Context, deps anchorDeps, location *lymcwd.Location,
+ 	releaseParentLock = release
+ 	if len(dobbies) > 0 {
+ 		relayMayBeEnded = slug == deps.Prime
+-		ended, err = deps.EndDobbies(dobbies, runproc.RolePush, runproc.RoleSync)
++		ended, err = deps.EndDobbies(dobbies, runproc.RolePush, runproc.RoleSync, runproc.RoleOrch)
+ 		if err != nil {
+ 			return fail(err)
+ 		}
+diff --git a/internal/fabriccli/anchor_test.go b/internal/fabriccli/anchor_test.go
+index 35cbfba4..6a0ddb68 100644
+--- a/internal/fabriccli/anchor_test.go
++++ b/internal/fabriccli/anchor_test.go
+@@ -512,7 +512,7 @@ func TestChangeAnchor(t *testing.T) {
+ 			"note waiting for a pass of the dobby of beam1", "wait",
+ 			"note waiting for a pass of the dobby of beam1", "wait",
+ 			"parent-lock",
+-			"end-dobbies beam1 spare " + runproc.RolePush + "," + runproc.RoleSync,
++			"end-dobbies beam1 spare " + runproc.RolePush + "," + runproc.RoleSync + "," + runproc.RoleOrch,
+ 			"reopen-log " + f.lockDir("beam1"),
+ 			"apply",
+ 			"reopen-log " + f.logsDir("beam1", "sub"),
+@@ -538,8 +538,8 @@ func TestChangeAnchor(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("changeAnchor() error = %v; want nil", err)
+ 		}
+-		if !f.did("end-dobbies prime,beam1,beam2 spare push,sync") || !f.did("ensure-dobbies prime,beam1,beam2") {
+-			t.Errorf("calls = %v; want every dobby ended with push and sync spared and ensured live after", f.calls)
++		if !f.did("end-dobbies prime,beam1,beam2 spare push,sync,orch") || !f.did("ensure-dobbies prime,beam1,beam2") {
++			t.Errorf("calls = %v; want every dobby ended with push, sync and orch spared and ensured live after", f.calls)
+ 		}
+ 	})
+ 
+diff --git a/internal/fabriccli/doc.go b/internal/fabriccli/doc.go
+index 49e46d68..9ecdd8d8 100644
+--- a/internal/fabriccli/doc.go
++++ b/internal/fabriccli/doc.go
+@@ -166,7 +166,8 @@
+ // the end of the prime's hub-owner processes below ends it.
+ // It takes the parent lock of the worktree's branch.
+ // It ends the worktree's dobby when it is a beam.
+-// For the prime it ends every dobby of the machine, sparing the push and sync roles.
++// For the prime it ends every dobby of the machine.
++// Every such end spares the push, sync and orch roles, so the worktree's orch outlives the move.
+ // It moves the trace sink to the weft's lock directory while the move record stands and calls `Apply`.
+ // It then reopens the sink at the anchor `Apply` left.
+ //
+diff --git a/internal/orchcli/cli.go b/internal/orchcli/cli.go
+index ea8795de..9988709f 100644
+--- a/internal/orchcli/cli.go
++++ b/internal/orchcli/cli.go
+@@ -19,6 +19,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
+ 	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/pairteardown"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/selfexec"
+@@ -123,6 +124,16 @@ type orchCLI struct {
+ 	endDobby func() error
+ 	// endTestMap ends the prime's coverage-map upkeep pass, and no other process; nil, as for a beam, ends none.
+ 	endTestMap func() error
++	// registerOrch registers pid as this worktree's orch provider process; nil registers none.
++	registerOrch func(pid int) error
++	// orchRegistered reports whether pid is registered as this worktree's orch; nil reads every pid as unregistered.
++	orchRegistered func(pid int) (bool, error)
++	// endOrch ends this worktree's registered orch provider process and the processes below it.
++	endOrch func() ([]runproc.Ended, error)
++	// endSubject ends every process this machine runs for the worktree's subject but its dobby.
++	// The dobby hands the subject over itself.
++	// The watcher calls it once another machine owns the worktree.
++	endSubject func() error
+ 	// reapInherited waits on the children a re-exec'd watcher inherited, which `watch` calls before it starts anything.
+ 	reapInherited func()
+ }
+@@ -284,5 +295,17 @@ func wireCLI(c *orchCLI, location *lymcwd.Location) error {
+ 			return err
+ 		}
+ 	}
++	c.registerOrch = func(pid int) error { return runproc.RegisterOrch(runProcDir, owner, pid) }
++	c.orchRegistered = func(pid int) (bool, error) { return runproc.IsRegistered(runProcDir, owner, runproc.RoleOrch, pid) }
++	c.endOrch = func() ([]runproc.Ended, error) {
++		return runproc.EndRole(runProcDir, owner, runproc.RoleOrch, os.Getpid())
++	}
++	c.endSubject = func() error {
++		prime, err := resolvePrime(location)
++		if err != nil {
++			return err
++		}
++		return pairteardown.EndSubjectProcesses(prime, owner, false)
++	}
+ 	return nil
+ }
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index b86bf923..5ead3d8d 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -58,7 +58,7 @@
+ // Shuttle loads the orch's skills before that pointer on every launch path, a resume included;
+ // the skills come from the `orch` role in agents.yaml.
+ // `BeamUp` records the orch session's id in orch's state and resumes it after a reboot, a `stop` or a dead strand.
+-// When the resume fails it falls back to the last note, else the start stencil;
++// When this machine holds no transcript of the session it launches fresh from the last note, else the start stencil;
+ // the internal/orchengine package documentation's `Continuing after a reboot` section has the detail.
+ // A context cycle asks the session for an orch note at the path it names, following `.lym/orch/note-template.md`.
+ // The note stands in for a general handoff skill.
+@@ -67,6 +67,20 @@
+ // The role's on-demand files render beside it, and the role carries no command list:
+ // it sends the session to `lym help index`.
+ //
++// # The orch's provider process
++//
++// After each launch `BeamUp` registers the session's provider process in `internal/runproc` as `runproc.RoleOrch`.
++// The record sits under the beam's slug, or `runproc.HubOwner` for the prime.
++// It outlives the strand's removal and is pruned once the process dies.
++// A resume the provider refuses because a live process holds the session reads that record.
++// When the record names the holder, `BeamUp` ends it through `runproc.EndRole` and resumes the same session.
++// A holder lym has not registered, such as an orch the pre-upgrade lym launched, refuses the start, naming its pid;
++// the way forward is to exit that session and run `lym beam start` again.
++// A resume refused because this machine holds no transcript of the session launches fresh with shuttle's carry-over,
++// and the report's warnings say so.
++// Any other failed resume fails the start, which launches nothing fresh.
++// A provider process the start could not find or register is a warning, and a later start refuses over it.
++//
+ // # The cycle request
+ //
+ // `refresh` and `distill` write a request marker the watcher acts on at the session's next idle moment.
+@@ -92,13 +106,18 @@
+ // # The watcher leaves a beam it no longer owns
+ //
+ // `watch` tells its watcher the owner read `beamOwnerElsewhere` and the strand removal.
+-// A beam another machine owns therefore loses its orch strand with its dobby.
++// A beam another machine owns therefore loses its orch strand and its processes on this machine.
+ // The read takes the prime's owner for the prime and a beam's effective owner through `hubgeom.ParentOf`.
+ // It reads from the hub's local Bolt and compares the owner with this machine's name from `machinename`.
+ // The verdict is as fresh as that Bolt.
+ // `watch` also tells it the under-adopt accessor `UnderAdoptWatch` builds.
+ // The accessor reads the hub's adopt record, its local board and `hubgeom.ParentOf`.
+ // While an adopt in flight on this machine covers the worktree, a foreign owner leaves the orch strand up.
++// Before it removes the strand, the watcher ends every process this machine runs for the worktree's subject.
++// `pairteardown.EndSubjectProcesses` first ends the runs whose adopt subject is the beam, or the root for the prime.
++// It then ends the worktree's own records, the orch's provider process among them.
++// It leaves the dobby running, since the dobby's own hand-over pauses the runs and archives the local tips.
++// The watcher removes the strand even when that end failed, so a failing end never keeps the orch up.
+ //
+ // # Status restarts a dead watcher
+ //
+diff --git a/internal/orchcli/start.go b/internal/orchcli/start.go
+index c8e25962..690b122b 100644
+--- a/internal/orchcli/start.go
++++ b/internal/orchcli/start.go
+@@ -78,7 +78,7 @@ type BeamUpReport struct {
+ 	PromptSource string `json:"prompt_source,omitempty"`
+ 	// SessionID is the session a resume continued, empty for any other launch.
+ 	SessionID string `json:"session_id,omitempty"`
+-	// AbandonedSession is the recorded session whose resume failed to start and which a fresh launch replaced.
++	// AbandonedSession is the recorded session this machine holds no transcript of, which a fresh launch replaced.
+ 	AbandonedSession string `json:"abandoned_session,omitempty"`
+ 	// Hint names the way forward when the watcher was still stopping.
+ 	Hint            string `json:"hint,omitempty"`
+@@ -168,6 +168,12 @@ type startedSession struct {
+ 	SessionID string
+ 	// Warning is the resume check's warning, empty when there is none.
+ 	Warning string
++	// HolderPID is the live provider process holding the started session, zero when none was found.
++	HolderPID int
++	// HolderErr is why the holder could not be read, nil when the read succeeded or found none.
++	HolderErr error
++	// Carried counts the operator instructions the launch carried over from an unfinished predecessor.
++	Carried int
+ }
+ 
+ // sessionStarter starts the orchestrator's shuttle run and returns its strand guid, session id and the resume check's warning.
+@@ -181,12 +187,19 @@ type runnerSessionStarter struct {
+ }
+ 
+ // StartSession delegates to Runner.Start, which returns only once the provider is past its startup gates.
++// It then reads the live provider process holding the started session.
+ func (s runnerSessionStarter) StartSession(spec shuttleengine.Spec) (startedSession, error) {
+ 	run, err := s.runner.Start(spec)
+ 	if err != nil {
+ 		return startedSession{}, err
+ 	}
+-	return startedSession{GUID: run.StrandGUID(), SessionID: run.SessionID(), Warning: run.ResumeWarning()}, nil
++	started := startedSession{GUID: run.StrandGUID(), SessionID: run.SessionID(), Warning: run.ResumeWarning(), Carried: len(run.CarriedInstructions())}
++	if pid, found, err := run.SessionHolder(); found {
++		started.HolderPID = pid
++	} else {
++		started.HolderErr = err
++	}
++	return started, nil
+ }
+ 
+ // orchSpec builds the orchestrator run's spec as an interactive, focused run that awaits the operator.
+@@ -664,6 +677,12 @@ func (c *orchCLI) startOrch(note string) (BeamUpReport, error) {
+ 		if started.Warning != "" {
+ 			report.Warnings = append(report.Warnings, started.Warning)
+ 		}
++		if abandoned != "" {
++			report.Warnings = append(report.Warnings, freshLaunchNote(abandoned, started.Carried))
++		}
++		if warning := c.registerOrchProcess(started); warning != "" {
++			report.Warnings = append(report.Warnings, warning)
++		}
+ 		next := orchengine.ResetForFreshLaunch(st, started.GUID, time.Now())
+ 		next.SessionID = started.SessionID
+ 		if err := c.saveFreshLaunch(next, firstFailure, creel, receiver); err != nil {
+@@ -700,22 +719,19 @@ func (c *orchCLI) startOrch(note string) (BeamUpReport, error) {
+ }
+ 
+ // launchOrch starts the orch session: the session st records, resumed with the reload pointer, else a fresh launch.
+-// A resume that fails to start, its transcript gone or its process not coming up live, falls back to a fresh launch.
+-// The session it gave up is named as abandoned.
++// A resume refused because this machine holds no transcript of the session launches fresh,
++// and the session it gave up is named as abandoned; every other failed resume fails the start.
+ // A fresh launch takes the last completed handoff, else the start stencil, and note joins its prompt.
+ func (c *orchCLI) launchOrch(st orchengine.State, note string) (started startedSession, source, abandoned string, err error) {
+ 	if st.SessionID != "" {
+-		reload, err := orchengine.RenderReloadPrompt(c.stencilsDir, c.paths.RolePath)
+-		if err != nil {
+-			return startedSession{}, "", "", err
+-		}
+-		spec := c.orchSpec(orchengine.WithPresence(c.paths, reload), time.Now())
+-		spec.ResumeSessionID = st.SessionID
+-		started, err := c.starter.StartSession(spec)
++		started, err := c.resumeOrch(st.SessionID)
+ 		if err == nil {
+ 			return started, orchengine.SourceResume, "", nil
+ 		}
+-		logger.Warn("orch: the recorded session could not be resumed; launching fresh", "sessionID", st.SessionID, "cause", err)
++		if !errors.Is(err, shuttleengine.ErrNoTranscript) {
++			return startedSession{}, "", "", err
++		}
++		logger.Warn("orch: this machine holds no transcript of the recorded session; launching fresh", "sessionID", st.SessionID, "cause", err)
+ 		abandoned = st.SessionID
+ 	}
+ 	prompt, source, err := orchengine.ChooseStartPrompt(c.stencilsDir, c.paths.RolePath, st, fileExists)
+@@ -730,6 +746,86 @@ func (c *orchCLI) launchOrch(st orchengine.State, note string) (started startedS
+ 	return started, source, abandoned, err
+ }
+ 
++// resumeOrch resumes the orch session sessionID with the reload pointer.
++// A resume refused for a live holder ends that holder when it is this worktree's registered orch.
++// It then resumes once more.
++// Any other holder refuses, naming its pid.
++func (c *orchCLI) resumeOrch(sessionID string) (startedSession, error) {
++	reload, err := orchengine.RenderReloadPrompt(c.stencilsDir, c.paths.RolePath)
++	if err != nil {
++		return startedSession{}, err
++	}
++	spec := c.orchSpec(orchengine.WithPresence(c.paths, reload), time.Now())
++	spec.ResumeSessionID = sessionID
++	started, err := c.starter.StartSession(spec)
++	var held *shuttleengine.SessionHeldError
++	if !errors.As(err, &held) {
++		return started, resumeFailure(sessionID, err)
++	}
++	if err := c.endOwnHolder(sessionID, held.PID); err != nil {
++		return startedSession{}, err
++	}
++	started, err = c.starter.StartSession(spec)
++	return started, resumeFailure(sessionID, err)
++}
++
++// endOwnHolder ends pid, the live process holding the orch session sessionID, when it is this worktree's registered orch.
++// Any other holder refuses with the way forward, so the start never launches fresh over a live session.
++func (c *orchCLI) endOwnHolder(sessionID string, pid int) error {
++	registered := false
++	if c.orchRegistered != nil {
++		var err error
++		if registered, err = c.orchRegistered(pid); err != nil {
++			return fmt.Errorf("orch: read whether process %d, which holds the orch session %s, is this worktree's orch: %w; way forward: repair what the error names, then run `lym beam start` again", pid, sessionID, err)
++		}
++	}
++	if !registered {
++		return fmt.Errorf("orch: the orch session %s is held by live process %d, which lym did not register as this worktree's orch, so the start launches nothing; way forward: exit the session of process %d, then run `lym beam start`", sessionID, pid, pid)
++	}
++	ended, err := c.endOrch()
++	if err != nil {
++		return fmt.Errorf("orch: end process %d, this worktree's earlier orch holding session %s: %w; way forward: exit that session, then run `lym beam start`", pid, sessionID, err)
++	}
++	logger.Info("orch: ended this worktree's earlier orch process to resume its session", "pid", pid, "sessionID", sessionID, "ended", len(ended))
++	return nil
++}
++
++// resumeFailure wraps the failed resume of sessionID with the way forward, and is nil for a resume that started.
++func resumeFailure(sessionID string, err error) error {
++	if err == nil {
++		return nil
++	}
++	return fmt.Errorf("orch: the recorded orch session %s could not be resumed: %w; way forward: fix the cause it names, such as a session that still holds it, then run `lym beam start` again", sessionID, err)
++}
++
++// freshLaunchNote says that the orch launched fresh because this machine holds no transcript of the session abandoned.
++// It counts the operator instructions the launch carried over from the session it replaced.
++func freshLaunchNote(abandoned string, carried int) string {
++	return fmt.Sprintf("this machine holds no transcript of the orch session %s, so the orch launched fresh, carrying over %d operator instruction(s) from its earlier session", abandoned, carried)
++}
++
++// registerOrchProcess registers the provider process of the started orch session as this worktree's orch,
++// so a later start that finds it holding the session ends it and resumes.
++// It returns a warning when the process could not be found or registered:
++// the launch stands, and a later start refuses while that process holds the session.
++// A receiver with no registration wired registers nothing.
++func (c *orchCLI) registerOrchProcess(started startedSession) string {
++	if c.registerOrch == nil {
++		return ""
++	}
++	if started.HolderPID == 0 {
++		cause := "the provider names no live process holding it"
++		if started.HolderErr != nil {
++			cause = started.HolderErr.Error()
++		}
++		return fmt.Sprintf("the orch's provider process is not registered as this worktree's orch (%s); a later start refuses while it holds the session", cause)
++	}
++	if err := c.registerOrch(started.HolderPID); err != nil {
++		return fmt.Sprintf("the orch's provider process %d is not registered as this worktree's orch (%v); a later start refuses while it holds the session", started.HolderPID, err)
++	}
++	return ""
++}
++
+ // adoptListedStrand binds the persisted state to the live listed orch strand.
+ // It reaches creel only when the state names another run.
+ func (c *orchCLI) adoptListedStrand(st orchengine.State, strand reedengine.StrandStatus) error {
+diff --git a/internal/orchcli/start_test.go b/internal/orchcli/start_test.go
+index 10295e25..5f149a85 100644
+--- a/internal/orchcli/start_test.go
++++ b/internal/orchcli/start_test.go
+@@ -26,6 +26,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/reedengine/render"
++	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/shell"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+@@ -36,7 +37,8 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// fakeStarter records the specs it is asked to start and answers a fixed guid and warning, and the resumed session id or else sessionID.
++// fakeStarter records the specs it is asked to start.
++// It answers a fixed guid, warning, holder pid and carry-over count, and the resumed session id or else sessionID.
+ type fakeStarter struct {
+ 	specs     []shuttleengine.Spec
+ 	guid      string
+@@ -45,6 +47,14 @@ type fakeStarter struct {
+ 	err       error
+ 	// resumeErr, when set, is returned only for a spec whose ResumeSessionID is set, so a resume fails and the fresh launch after it succeeds.
+ 	resumeErr error
++	// resumeErrs, when set, answers each resume in turn in place of resumeErr, a nil entry starting the resume.
++	resumeErrs []error
++	// holderPID is the provider process every started session reports holding it.
++	holderPID int
++	// holderErr is why every started session reports its holder unreadable.
++	holderErr error
++	// carried is the count of operator instructions every started session reports carrying over.
++	carried int
+ 	// calls, when set, receives "start" as each session starts.
+ 	calls *[]string
+ }
+@@ -54,14 +64,20 @@ func (f *fakeStarter) StartSession(spec shuttleengine.Spec) (startedSession, err
+ 		*f.calls = append(*f.calls, "start")
+ 	}
+ 	f.specs = append(f.specs, spec)
+-	if spec.ResumeSessionID != "" && f.resumeErr != nil {
+-		return startedSession{}, f.resumeErr
++	if spec.ResumeSessionID != "" {
++		err := f.resumeErr
++		if len(f.resumeErrs) > 0 {
++			err = popError(&f.resumeErrs)
++		}
++		if err != nil {
++			return startedSession{}, err
++		}
+ 	}
+ 	sessionID := f.sessionID
+ 	if spec.ResumeSessionID != "" {
+ 		sessionID = spec.ResumeSessionID
+ 	}
+-	return startedSession{GUID: f.guid, SessionID: sessionID, Warning: f.warning}, f.err
++	return startedSession{GUID: f.guid, SessionID: sessionID, Warning: f.warning, HolderPID: f.holderPID, HolderErr: f.holderErr, Carried: f.carried}, f.err
+ }
+ 
+ // scriptedCreel is a recording fake of creel whose withdraws and releases answer the errors and withdrawn messages a test scripts, one per call in call order.
+@@ -1322,6 +1338,7 @@ func TestStart_ReconcilesTheHubFirst(t *testing.T) {
+ 	}
+ }
+ 
++//testtiming:keep pins that a failed launch spawns no watcher and leaves the saved state unchanged
+ func TestStart_StarterErrorFailsAndSavesNoState(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -1334,8 +1351,8 @@ func TestStart_StarterErrorFailsAndSavesNoState(t *testing.T) {
+ 	}{
+ 		{name: "fresh launch", err: "provider never came up"},
+ 		{
+-			name: "a resume and the fresh launch after it both failing",
+-			err:  "no transcript for that session",
++			name: "a failed resume",
++			err:  "pane never came up",
+ 			seed: &orchengine.State{Phase: orchengine.PhaseIdle, SessionID: "rec-id"},
+ 		},
+ 	}
+@@ -1390,6 +1407,10 @@ func TestStart_ResumesTheRecordedSession(t *testing.T) {
+ 		stopFirst bool
+ 		// presence sets the machine's presence to slack, so the pointer the launch carries ends with the presence line.
+ 		presence bool
++		// carried is the count of operator instructions the starter reports a launch carried over.
++		carried int
++		// wantWarning is the warning the start adds beside the starter's own.
++		wantWarning string
+ 
+ 		wantStarts    int
+ 		wantResumeID  string
+@@ -1417,12 +1438,12 @@ func TestStart_ResumesTheRecordedSession(t *testing.T) {
+ 			wantStarts: 1, wantResumeID: recordedTestSessionID, wantSource: orchengine.SourceResume, wantSaved: recordedTestSessionID, wantSessionID: recordedTestSessionID,
+ 		},
+ 		{
+-			name: "a resume that fails to start falls back to a fresh launch from the last note and names the id it gave up", recorded: "old-id", note: true, resumeErr: errors.New("no transcript for that session"),
+-			wantStarts: 2, wantResumeID: "old-id", wantSource: orchengine.SourceLastHandoff, wantSaved: "minted-id", wantAbandoned: "old-id",
++			name: "a session with no transcript here launches fresh from the last note with the carry-over, names the id it gave up and says so", recorded: "old-id", note: true, resumeErr: noTranscriptErr, carried: 2,
++			wantStarts: 2, wantResumeID: "old-id", wantSource: orchengine.SourceLastHandoff, wantSaved: "minted-id", wantAbandoned: "old-id", wantWarning: freshLaunchNote("old-id", 2),
+ 		},
+ 		{
+-			name: "a resume that fails with no note falls back to the start stencil", recorded: "old-id", resumeErr: errors.New("pane never came up"),
+-			wantStarts: 2, wantResumeID: "old-id", wantSource: orchengine.SourceFresh, wantSaved: "minted-id", wantAbandoned: "old-id",
++			name: "a session with no transcript here and no note launches the start stencil", recorded: "old-id", resumeErr: noTranscriptErr,
++			wantStarts: 2, wantResumeID: "old-id", wantSource: orchengine.SourceFresh, wantSaved: "minted-id", wantAbandoned: "old-id", wantWarning: freshLaunchNote("old-id", 0),
+ 		},
+ 		{
+ 			name: "presence slack: a recorded id is resumed with the reload pointer and the presence line", strands: corpse, recorded: recordedTestSessionID, presence: true,
+@@ -1447,6 +1468,7 @@ func TestStart_ResumesTheRecordedSession(t *testing.T) {
+ 			h := newStartHarness(t, c.strands...)
+ 			h.starter.warning = c.warning
+ 			h.starter.resumeErr = c.resumeErr
++			h.starter.carried = c.carried
+ 			if c.noSessionID {
+ 				h.starter.sessionID = ""
+ 			}
+@@ -1489,8 +1511,8 @@ func TestStart_ResumesTheRecordedSession(t *testing.T) {
+ 					t.Errorf("report %s = %q (present %v); want %q", key, got, has, want)
+ 				}
+ 			}
+-			if warning := warningText(env); warning != c.warning {
+-				t.Errorf("warnings = %q; want %q", warning, c.warning)
++			if warning, want := warningText(env), joinFailures(c.warning, c.wantWarning); warning != want {
++				t.Errorf("warnings = %q; want %q", warning, want)
+ 			}
+ 			if len(h.starter.specs) != c.wantStarts || h.spawns != 1 {
+ 				t.Fatalf("starts = %d, spawns = %d; want %d and 1", len(h.starter.specs), h.spawns, c.wantStarts)
+@@ -1538,3 +1560,130 @@ func TestStart_ResumesTheRecordedSession(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// noTranscriptErr is a resume refusal for a session this machine holds no transcript of.
++var noTranscriptErr = fmt.Errorf("shuttle: resume check: claudeengine: no transcript for that session: %w", shuttleengine.ErrNoTranscript)
++
++func TestStart_ResumeOverALiveHolder(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	held := &shuttleengine.SessionHeldError{SessionID: recordedTestSessionID, PID: 4242, Err: errors.New("claudeengine: session held by live process 4242")}
++	tests := []struct {
++		name       string
++		resumeErrs []error
++		registered bool
++		// registeredErr is the error the read of who registered the holder fails with.
++		registeredErr error
++		endErr        error
++		wantCode      int
++		wantAsked     []int
++		wantEnds      int
++		wantStarts    int
++		wantError     []string
++	}{
++		{name: "ThisWorktreesOwnEarlierOrchIsEndedAndTheSameSessionResumed", resumeErrs: []error{held, nil}, registered: true, wantAsked: []int{4242}, wantEnds: 1, wantStarts: 2},
++		{name: "AHolderLymDidNotRegisterRefusesNamingItsPIDAndLaunchesNothingFresh", resumeErrs: []error{held}, wantCode: 1, wantAsked: []int{4242}, wantStarts: 1, wantError: []string{"live process 4242", "lym beam start"}},
++		{name: "AFailedEndOfTheOwnHolderRefusesAndLaunchesNothingFresh", resumeErrs: []error{held}, registered: true, endErr: errors.New("signal refused"), wantCode: 1, wantAsked: []int{4242}, wantEnds: 1, wantStarts: 1, wantError: []string{"signal refused", "lym beam start"}},
++		{name: "AResumeThatFailsForAnotherCauseLaunchesNothingFresh", resumeErrs: []error{errors.New("pane never came up")}, wantCode: 1, wantStarts: 1, wantError: []string{"pane never came up", "lym beam start"}},
++		{name: "AFailedReadOfWhoRegisteredTheHolderRefusesAndLaunchesNothingFresh", resumeErrs: []error{held}, registeredErr: errors.New("process table unreadable"), wantCode: 1, wantAsked: []int{4242}, wantStarts: 1, wantError: []string{"process table unreadable", "lym beam start"}},
++		{name: "AResumeThatFailsAfterTheOwnHolderWasEndedLaunchesNothingFresh", resumeErrs: []error{held, held}, registered: true, wantCode: 1, wantAsked: []int{4242}, wantEnds: 1, wantStarts: 2, wantError: []string{"session held by live process 4242", "lym beam start"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := newStartHarness(t)
++			h.starter.resumeErrs = tt.resumeErrs
++			var asked []int
++			h.cli.orchRegistered = func(pid int) (bool, error) {
++				asked = append(asked, pid)
++				return tt.registered, tt.registeredErr
++			}
++			ends := 0
++			h.cli.endOrch = func() ([]runproc.Ended, error) {
++				ends++
++				return nil, tt.endErr
++			}
++			saveSeedState(t, h, orchengine.State{Phase: orchengine.PhaseIdle, SessionID: recordedTestSessionID})
++
++			code, env := h.run(t)
++
++			if code != tt.wantCode {
++				t.Fatalf("exit = %d; env = %v; want exit %d", code, env, tt.wantCode)
++			}
++			msg, _ := env["error"].(string)
++			for _, want := range tt.wantError {
++				if !strings.Contains(msg, want) {
++					t.Errorf("error = %q; want it to name %q", msg, want)
++				}
++			}
++			if !slices.Equal(asked, tt.wantAsked) || ends != tt.wantEnds {
++				t.Errorf("registration asked for %v and ends = %d; want %v and %d", asked, ends, tt.wantAsked, tt.wantEnds)
++			}
++			if len(h.starter.specs) != tt.wantStarts {
++				t.Fatalf("starts = %d; want %d", len(h.starter.specs), tt.wantStarts)
++			}
++			for _, spec := range h.starter.specs {
++				if spec.ResumeSessionID != recordedTestSessionID {
++					t.Errorf("started spec resumes %q; want every start to resume %q and none to launch fresh", spec.ResumeSessionID, recordedTestSessionID)
++				}
++			}
++			if tt.wantCode != 0 {
++				return
++			}
++			if env["session_id"] != recordedTestSessionID || env["prompt_source"] != orchengine.SourceResume {
++				t.Errorf("report = %v; want the session %s resumed", env, recordedTestSessionID)
++			}
++			if st := h.state(t); st.SessionID != recordedTestSessionID {
++				t.Errorf("state session id = %q; want %q kept", st.SessionID, recordedTestSessionID)
++			}
++		})
++	}
++}
++
++func TestStart_RegistersTheLaunchedOrchProcess(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name           string
++		holderPID      int
++		holderErr      error
++		registerErr    error
++		wantRegistered []int
++		wantWarning    string
++	}{
++		{name: "TheProviderProcessIsRegistered", holderPID: 777, wantRegistered: []int{777}},
++		{name: "NoProviderProcessFoundWarns", wantWarning: "is not registered as this worktree's orch (the provider names no live process holding it)"},
++		{name: "AHolderReadFailureIsNamedInTheWarning", holderErr: errors.New("process table unreadable"), wantWarning: "is not registered as this worktree's orch (process table unreadable)"},
++		{name: "AFailedRegistrationWarns", holderPID: 777, registerErr: errors.New("disk full"), wantRegistered: []int{777}, wantWarning: "process 777 is not registered as this worktree's orch (disk full)"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := newStartHarness(t)
++			h.starter.holderPID = tt.holderPID
++			h.starter.holderErr = tt.holderErr
++			var registered []int
++			h.cli.registerOrch = func(pid int) error {
++				registered = append(registered, pid)
++				return tt.registerErr
++			}
++
++			code, env := h.run(t)
++
++			if code != 0 {
++				t.Fatalf("exit = %d; env = %v", code, env)
++			}
++			if !slices.Equal(registered, tt.wantRegistered) {
++				t.Errorf("registered = %v; want %v", registered, tt.wantRegistered)
++			}
++			warning := warningText(env)
++			if (warning == "") != (tt.wantWarning == "") || !strings.Contains(warning, tt.wantWarning) {
++				t.Errorf("warnings = %q; want %q", warning, tt.wantWarning)
++			}
++		})
++	}
++}
+diff --git a/internal/orchcli/watch.go b/internal/orchcli/watch.go
+index d1aa7863..5f273d56 100644
+--- a/internal/orchcli/watch.go
++++ b/internal/orchcli/watch.go
+@@ -174,6 +174,7 @@ A second watcher finding the first alive reports already_running and exits.`,
+ 			var buildFailures logger.Episode
+ 			watcher.WatchOwner(orchengine.OwnerWatch{
+ 				Read: func() (string, bool, error) { return beamOwnerElsewhere(c.location) },
++				End:  c.endSubject,
+ 				Stop: c.strands.RemoveStrand,
+ 				UnderAdopt: func() bool {
+ 					if underAdopt == nil {
+diff --git a/internal/orchengine/doc.go b/internal/orchengine/doc.go
+index 7a133cbd..a96456f7 100644
+--- a/internal/orchengine/doc.go
++++ b/internal/orchengine/doc.go
+@@ -125,9 +125,15 @@
+ // and the watcher exits with its reason recorded in State.WatcherExit once the cap is reached.
+ //
+ // A watcher told an OwnerWatch through WatchOwner reads its beam's owner after the strand-alive check of each tick.
+-// An owner other than this machine stops the orch strand through OwnerWatch.Stop.
+-// The watcher records `owned by machine <owner>` as the exit and ends as done.
+-// A failed stop is the tick's error, and the next tick retries it.
++// An owner other than this machine ends every process this machine runs for the beam through OwnerWatch.End.
++// The dobby is not among them.
++// The orch's provider process is among the ended ones, and the dobby is left to hand the beam over itself.
++// The watcher then stops the orch strand through OwnerWatch.Stop, records `owned by machine <owner>` and ends as done.
++// The strand is stopped even when the end failed, so a failing end never keeps the strand up.
++// The exit reason is recorded and the watcher ends as done whenever the strand was stopped, a failed end included.
++// A failed end is then logged at Warn and never retried.
++// A failed stop is the tick's error, joined with a failed end, and the tick is not done.
++// A failed stop leaves the strand, so the next tick ends and stops again.
+ // A failed read reads as not owned elsewhere and logs once per episode.
+ // A foreign owner stops nothing while OwnerWatch.UnderAdopt reports an adopt in flight here covering the beam.
+ // The watcher goes on, and the hold's start and end each log once.
+@@ -675,8 +681,13 @@
+ // After a reboot, a `lym orch stop` or a dead strand, a start resumes State.SessionID's session with the reload pointer.
+ // A start records the id of every launch and the watcher keeps it current across `/clear`,
+ // so it names the context the orchestrator last ran.
+-// A resume that fails to start falls back to a fresh launch from the last completed handoff, else the start stencil.
+-// A failure is a transcript gone or a process not coming up live, and the report names the session it gave up.
++// State lives under the worktree's `.lym/orch/`, so the id stays on the machine that ran the session.
++// No tracked record names it, and nothing carries the session's transcript to another machine.
++// A resume refused because a live process holds the session ends that process when it is this worktree's own orch.
++// The orch's start registers that process in `internal/runproc`, and a holder it did not register refuses the start.
++// A resume refused because this machine holds no transcript of the session launches fresh.
++// It takes the last completed handoff, else the start stencil, and the report names the session it gave up.
++// Every other failed resume fails the start, which launches nothing fresh.
+ // With no session recorded the start launches fresh the same way.
+ // A fresh orch otherwise comes only from `lym orch refresh` on a live orch, since `lym orch stop` keeps the recorded id.
+ // `lym orch status` shows the recorded id as `session_id`.
+diff --git a/internal/orchengine/owner.go b/internal/orchengine/owner.go
+index 0fd2a1d2..ab79759f 100644
+--- a/internal/orchengine/owner.go
++++ b/internal/orchengine/owner.go
+@@ -1,18 +1,25 @@
+ // owner.go is the orch watcher's owner check.
+-// It stops a beam's orch when another machine now owns the beam, so the beam's two parts leave the machine together.
++// When another machine now owns the beam, it ends the beam's processes on this machine and stops the beam's orch,
++// so the beam's parts leave the machine together.
+ 
+ package orchengine
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
+-// OwnerWatch is where the watcher reads the owner of the beam it serves and how it removes the orch strand.
++// OwnerWatch is where the watcher reads the owner of the beam it serves.
++// It also carries how the watcher ends the beam's processes on this machine and removes the orch strand.
+ type OwnerWatch struct {
+ 	// Read returns the owner the beam reads on the local board, and whether that owner is a machine other than this one.
+ 	Read func() (owner string, elsewhere bool, err error)
++	// End ends every process this machine runs for the beam but its dobby, the orch's provider process among them.
++	// The dobby hands the beam over itself.
++	// A nil End ends none.
++	End func() error
+ 	// Stop removes the orch strand guid.
+ 	Stop func(guid string) error
+ 	// UnderAdopt reports whether an adopt in flight on this machine covers the beam.
+@@ -27,11 +34,15 @@ func (w *Watcher) WatchOwner(o OwnerWatch) {
+ }
+ 
+ // ownerTick reads the beam's owner for this tick.
+-// ownerTick stops the orch strand and records the exit when another machine owns the beam.
+-// It does not stop it when an adopt in flight here covers the beam.
++// When another machine owns the beam, it ends the beam's processes here, stops the orch strand and records the exit.
++// It does none of that when an adopt in flight here covers the beam.
+ // While such an adopt covers it, the strand stays up, and the hold's start and end each log once.
+ // done is true once the strand is stopped.
+-// A failed stop is the tick's error and the next tick retries it.
++// The strand is stopped even when the end failed, so a failing end never keeps the strand up.
++// The exit reason is recorded whenever the strand was stopped, and done is true then too:
++// a failed end is logged at Warn and is not the tick's error, since the watcher exits at once and never retries it.
++// A failed stop is the tick's error, joined with a failed end, and done stays false.
++// A failed stop leaves the strand, so the next tick ends and stops again.
+ // A failed read reads as not owned elsewhere and logs once per episode.
+ func (w *Watcher) ownerTick(st State) (done bool, err error) {
+ 	if w.owner == nil {
+@@ -55,10 +66,24 @@ func (w *Watcher) ownerTick(st State) (done bool, err error) {
+ 	if !elsewhere || held {
+ 		return false, nil
+ 	}
++	var endErr, stopErr error
++	if w.owner.End != nil {
++		if err := w.owner.End(); err != nil {
++			endErr = fmt.Errorf("orch: end the processes of a beam owned by machine %s: %w", owner, err)
++		}
++	}
+ 	if err := w.owner.Stop(st.Strand); err != nil {
+-		return false, fmt.Errorf("orch: stop the orch strand of a beam owned by machine %s: %w", owner, err)
++		stopErr = fmt.Errorf("orch: stop the orch strand of a beam owned by machine %s: %w", owner, err)
++	}
++	if stopErr != nil {
++		return false, errors.Join(endErr, stopErr)
+ 	}
+-	logger.Info("orch: the beam is owned by another machine; the orch strand is stopped", "owner", owner, "strand", st.Strand)
+ 	st.WatcherExit = "owned by machine " + owner
+-	return true, w.save(st)
++	saveErr := w.save(st)
++	if endErr != nil {
++		logger.Warn("orch: the end of the processes of a beam owned by another machine failed; the orch strand is stopped anyway", "error", endErr)
++		return true, saveErr
++	}
++	logger.Info("orch: the beam is owned by another machine; its processes here are ended and the orch strand is stopped", "owner", owner, "strand", st.Strand)
++	return true, saveErr
+ }
+diff --git a/internal/orchengine/watcher_owner_test.go b/internal/orchengine/watcher_owner_test.go
+index 4857cfff..60c65f32 100644
+--- a/internal/orchengine/watcher_owner_test.go
++++ b/internal/orchengine/watcher_owner_test.go
+@@ -1,4 +1,5 @@
+-// watcher_owner_test.go drives the watcher's owner check over a scripted owner read and a recording strand stop.
++// watcher_owner_test.go drives the watcher's owner check.
++// It scripts the owner read and records the end and the strand stop.
+ 
+ package orchengine
+ 
+@@ -38,7 +39,7 @@ func TestWatcher_AnAdoptThatLiftsLetsTheNextTickStopTheStrand(t *testing.T) {
+ 	}
+ }
+ 
+-func TestWatcher_StopsTheOrchOfABeamOwnedElsewhere(t *testing.T) {
++func TestWatcher_EndsTheProcessesAndStopsTheOrchOfABeamOwnedElsewhere(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+@@ -48,30 +49,37 @@ func TestWatcher_StopsTheOrchOfABeamOwnedElsewhere(t *testing.T) {
+ 		elsewhere  bool
+ 		underAdopt bool
+ 		readErr    error
++		endErr     error
+ 		stopErr    error
+ 		wantDone   bool
+ 		wantErr    bool
+-		wantStops  []string
++		wantCalls  []string
+ 		wantExit   string
+ 		wantNoExit bool
+ 	}{
+-		{name: "OwnerNamingAnotherMachineStopsTheStrandOnceAndEndsTheWatcher", owner: "there", elsewhere: true, wantDone: true, wantStops: []string{"s1"}, wantExit: "owned by machine there"},
+-		{name: "OwnerNamingAnotherMachineUnderAnAdoptInFlightKeepsTheStrand", owner: "there", elsewhere: true, underAdopt: true, wantNoExit: true},
++		{name: "OwnerNamingAnotherMachineEndsTheProcessesThenStopsTheStrandAndEndsTheWatcher", owner: "there", elsewhere: true, wantDone: true, wantCalls: []string{"end", "stop s1"}, wantExit: "owned by machine there"},
++		{name: "OwnerNamingAnotherMachineUnderAnAdoptInFlightKeepsEverything", owner: "there", elsewhere: true, underAdopt: true, wantNoExit: true},
+ 		{name: "OwnerNamingThisMachineGoesOn", owner: "here", wantNoExit: true},
+ 		{name: "NoOwnerRecordedGoesOn", wantNoExit: true},
+-		{name: "FailingReadGoesOnWithNoStop", readErr: errors.New("board unreadable"), wantNoExit: true},
+-		{name: "FailingStopReturnsTheErrorAndKeepsTheWatcherRunning", owner: "there", elsewhere: true, stopErr: errors.New("reed busy"), wantErr: true, wantStops: []string{"s1"}, wantNoExit: true},
++		{name: "FailingReadGoesOnWithNoEndOrStop", readErr: errors.New("board unreadable"), wantNoExit: true},
++		{name: "FailingEndStillStopsTheStrandAndEndsTheWatcherWithTheOwnerExit", owner: "there", elsewhere: true, endErr: errors.New("survivors"), wantDone: true, wantCalls: []string{"end", "stop s1"}, wantExit: "owned by machine there"},
++		{name: "FailingEndAndStopReturnTheErrorAndKeepTheWatcherRunning", owner: "there", elsewhere: true, endErr: errors.New("survivors"), stopErr: errors.New("reed busy"), wantErr: true, wantCalls: []string{"end", "stop s1"}, wantNoExit: true},
++		{name: "FailingStopReturnsTheErrorAndKeepsTheWatcherRunning", owner: "there", elsewhere: true, stopErr: errors.New("reed busy"), wantErr: true, wantCalls: []string{"end", "stop s1"}, wantNoExit: true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+ 			e := newWatchEnv(t)
+-			var stops []string
++			var calls []string
+ 			e.w.WatchOwner(OwnerWatch{
+ 				Read: func() (string, bool, error) { return tt.owner, tt.elsewhere, tt.readErr },
++				End: func() error {
++					calls = append(calls, "end")
++					return tt.endErr
++				},
+ 				Stop: func(guid string) error {
+-					stops = append(stops, guid)
++					calls = append(calls, "stop "+guid)
+ 					return tt.stopErr
+ 				},
+ 				UnderAdopt: func() bool { return tt.underAdopt },
+@@ -85,8 +93,8 @@ func TestWatcher_StopsTheOrchOfABeamOwnedElsewhere(t *testing.T) {
+ 			if done != tt.wantDone {
+ 				t.Errorf("Tick() done = %v; want %v", done, tt.wantDone)
+ 			}
+-			if !slices.Equal(stops, tt.wantStops) {
+-				t.Errorf("Stop calls = %v; want %v", stops, tt.wantStops)
++			if !slices.Equal(calls, tt.wantCalls) {
++				t.Errorf("End and Stop calls = %v; want %v", calls, tt.wantCalls)
+ 			}
+ 			st, loadErr := LoadState(e.paths)
+ 			if loadErr != nil {
+diff --git a/internal/pairteardown/doc.go b/internal/pairteardown/doc.go
+index dc7d885d..6cf51c8f 100644
+--- a/internal/pairteardown/doc.go
++++ b/internal/pairteardown/doc.go
+@@ -48,6 +48,7 @@
+ //     runproc.End ends every process registered under the pair's slug and the processes below them.
+ //     Those include batten, the driver, the step loop and the pair's pushes.
+ //     It spares the calling process and its ancestors.
++//     It always spares the orch's provider process, which only a beam another machine now owns ends.
+ //     It always spares a teardown child.
+ //     That child holds the slug's teardown lock to run the remote steps of an earlier teardown.
+ //     It runs for a present or a gone task worktree,
+@@ -269,6 +270,16 @@
+ // It fills `Machine` with `machinename.Name` and `ParentOf` with `hubgeom.ParentOf` over the prime's location.
+ // It leaves the wake-hold fields nil, which read as no wake hold.
+ //
++// # Ending a subject owned elsewhere
++//
++// EndSubjectProcesses ends every process this machine runs for a subject another machine now owns.
++// The subject is a beam, or the hub's root for runproc.HubOwner.
++// The registered runs whose adopt subject is that subject end first, through runproc.EndSubject.
++// The subject's own processes end after them.
++// The subject's own record is never one of its runs.
++// A run whose subject cannot be resolved is left alone and logged.
++// The subject's dobby ends last, and only when endDobby is set.
++//
+ // # Quiet rule
+ //
+ // A pair is quiet when its run lock and its loop lock are free,
+@@ -293,7 +304,8 @@
+ // Not running is no Go-driver lock held, the loop lock free, no live driver strand and no registered batten alive;
+ // there is no stopped reading, since that is a reconcile verdict.
+ // It then waits for the run lock as a skipped teardown does, with the retry step `lym reed down`.
+-// Then it ends the slug's registered processes with the dobby role spared:
++// Then it ends the slug's registered processes with the dobby role spared.
++// It always spares the orch and teardown children as well.
+ // a beam's dobby runs from the hub root outside the session, and its member runs still need it, so it stays live;
+ // a teardown's own end ends a landed beam's dobby.
+ // A run that holds none of the readings is running and unpaused.
+diff --git a/internal/pairteardown/endsubject.go b/internal/pairteardown/endsubject.go
+new file mode 100644
+index 00000000..ec5c3b14
+--- /dev/null
++++ b/internal/pairteardown/endsubject.go
+@@ -0,0 +1,69 @@
++// endsubject.go ends the processes a machine runs for a subject that another machine now owns.
++
++package pairteardown
++
++import (
++	"fmt"
++	"os"
++	"slices"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/runproc"
++)
++
++// EndSubjectProcesses ends every process this machine runs for a subject another machine now owns, in the hub of prime.
++// owner is the owner the subject's own processes register under: a beam's slug, or runproc.HubOwner for the hub's root.
++// The subject's runs are the registered owners whose adopt subject is that beam, or the root for the hub's root.
++// A registered owner whose subject cannot be resolved is left alone and logged.
++// endDobby says whether the subject's dobby is ended last;
++// a caller whose dobby hands the subject over itself leaves it unset.
++// The calling process and its ancestors are never ended.
++func EndSubjectProcesses(prime *lymcwd.Location, owner string, endDobby bool) error {
++	owners, err := boardengine.ReadOwners(fabricengine.BoardDir(prime.HubPath))
++	if err != nil {
++		return fmt.Errorf("pairteardown: read the board's owners: %w", err)
++	}
++	runProcDir := fabricengine.RunProcDir(prime.HubPath)
++	registered, err := runproc.Owners(runProcDir)
++	if err != nil {
++		return err
++	}
++	slugs := make([]string, 0, len(registered))
++	for slug := range registered {
++		slugs = append(slugs, slug)
++	}
++	runs := subjectRuns(owners, slugs, owner, func(slug string) (string, error) { return hubgeom.ParentOf(prime, slug) })
++	ended, err := runproc.EndSubject(runProcDir, owner, runs, os.Getpid(), endDobby)
++	logger.Info("pairteardown: ended the processes of a subject another machine owns", "owner", owner, "runs", runs, "ended", len(ended))
++	return err
++}
++
++// subjectRuns returns, in order, the slugs of registered whose adopt subject is the subject of owner.
++// The subject is the beam named by owner, or the root when owner is runproc.HubOwner.
++// owner itself is never one of its own runs, and a slug whose subject cannot be resolved is left out and logged.
++func subjectRuns(owners boardengine.Owners, registered []string, owner string, parentOf func(slug string) (string, error)) []string {
++	subject := boardengine.RootSubject
++	if owner != runproc.HubOwner {
++		subject = owner
++	}
++	var runs []string
++	for _, slug := range registered {
++		if slug == owner {
++			continue
++		}
++		of, err := owners.AdoptSubject(slug, parentOf)
++		if err != nil {
++			logger.Warn("pairteardown: the subject of a registered run is unreadable, so its processes are left alone", "slug", slug, "error", err)
++			continue
++		}
++		if of == subject {
++			runs = append(runs, slug)
++		}
++	}
++	slices.Sort(runs)
++	return runs
++}
+diff --git a/internal/pairteardown/endsubject_test.go b/internal/pairteardown/endsubject_test.go
+new file mode 100644
+index 00000000..53a6beef
+--- /dev/null
++++ b/internal/pairteardown/endsubject_test.go
+@@ -0,0 +1,53 @@
++// endsubject_test.go pins which registered runs the end of a subject is handed.
++
++package pairteardown
++
++import (
++	"errors"
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestSubjectRuns(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	owners := boardengine.Owners{Entries: map[string]boardengine.OwnerEntry{
++		"beam":       {IsProject: true, Beam: true},
++		"beam-task":  {IsTask: true},
++		"beam-other": {IsTask: true},
++		"other":      {IsProject: true, Beam: true},
++		"other-task": {IsTask: true},
++		"root-task":  {IsTask: true},
++		"broken":     {IsTask: true},
++	}}
++	parents := map[string]string{"beam-task": "beam", "beam-other": "beam", "other-task": "other", "root-task": ""}
++	parentOf := func(slug string) (string, error) {
++		if slug == "broken" {
++			return "", errors.New("pair unreadable")
++		}
++		return parents[slug], nil
++	}
++	registered := []string{"root-task", "other-task", "other", "ghost", "broken", "beam-task", "beam-other", "beam"}
++	tests := []struct {
++		name  string
++		owner string
++		want  []string
++	}{
++		{"ABeamTakesItsOwnTasksNeverItsOwnRecordNorAnUnreadableOne", "beam", []string{"beam-other", "beam-task"}},
++		{"AnotherBeamTakesItsOwnTasksOnly", "other", []string{"other-task"}},
++		{"TheHubsRootTakesTheRootTasksOnly", runproc.HubOwner, []string{"root-task"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := subjectRuns(owners, registered, tt.owner, parentOf); !slices.Equal(got, tt.want) {
++				t.Errorf("subjectRuns(%q) = %v; want %v", tt.owner, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/pairteardown/teardown.go b/internal/pairteardown/teardown.go
+index e280eb03..99b93484 100644
+--- a/internal/pairteardown/teardown.go
++++ b/internal/pairteardown/teardown.go
+@@ -112,7 +112,8 @@ type Teardown struct {
+ 	gone    func(slug string) (bool, error)
+ 	quiet   func(slug string) (quietState, error)
+ 	refusal func(slug string, force bool) error
+-	// endOwned ends the pair's processes, sparing the caller, its ancestors, roles named in spare and teardown children.
++	// endOwned ends the pair's processes.
++	// It spares the caller, its ancestors, roles named in spare, teardown children and the orch.
+ 	endOwned func(slug string, spare ...string) ([]runproc.Ended, error)
+ 	// driverLockHeld reports whether the present task worktree's Go-driver lock is held.
+ 	driverLockHeld func(slug string) (bool, error)
+@@ -694,8 +695,10 @@ func sessionsOfOtherPairs(live, pairSessions []string) []string {
+ // Processes of the roles in spare are spared too.
+ // A teardown child holds the slug's teardown lock to run the remote steps of an earlier teardown.
+ // It is always spared; only an operator's deliberate end of it stops those steps.
++// The orch's provider process registers under the beam's slug and is always spared too:
++// only a beam another machine now owns ends its orch.
+ func (t *Teardown) endOwnedProcesses(slug string, spare ...string) ([]runproc.Ended, error) {
+-	return runproc.EndSparing(fabricengine.RunProcDir(t.prime.HubPath), slug, os.Getpid(), append(spare, runproc.RoleTeardown)...)
++	return runproc.EndSparing(fabricengine.RunProcDir(t.prime.HubPath), slug, os.Getpid(), append(spare, runproc.RoleTeardown, runproc.RoleOrch)...)
+ }
+ 
+ // driverLockHeldIn reports whether the Go-driver lock of the slug's task worktree is held.
+diff --git a/internal/runproc/doc.go b/internal/runproc/doc.go
+index 6667af8b..239b1107 100644
+--- a/internal/runproc/doc.go
++++ b/internal/runproc/doc.go
+@@ -7,7 +7,13 @@
+ // The role is one of the `Role` constants.
+ // The hub's own processes register under `HubOwner`.
+ // Their roles are `RoleSync`, `RoleSlackRelay`, `RoleTestMap` and `RoleAdopt`.
++// The prime's orch provider process also registers there, as `RoleOrch`.
+ // A fixer strand role that `internal/gatefixer` declares is also valid; its `Registrar` registers it.
++// The provider process of a worktree's orch session registers through `RegisterOrch` as `RoleOrch`.
++// Its owner is the beam's slug, or `HubOwner` for the prime.
++// The orch's start registers it, not the process itself, so the record reads the process's group from the process table.
++// `IsRegistered` reports whether a live record names a pid under a role.
++// The orch's start reads it to tell its own earlier process from any other holder of its session.
+ // Register writes `<dir>/<owner>/<pid>-<start time>.json` through `internal/state`,
+ // so a key the record does not declare survives a rewrite by an older binary.
+ // The package is told its directory and derives no path.
+@@ -24,7 +30,8 @@
+ // Where no start time can be read, as on Windows, a record with an empty start time lives while its pid runs.
+ // Owners lists every owner directory the same way.
+ //
+-// End, EndSparing and EndRole are the only ways an owner's registered processes are ended, and End is the base sequence.
++// End, EndSparing, EndRole and EndSubject are the only ways an owner's registered processes are ended;
++// End is the base sequence.
+ // For an owner's live records, leaving out the caller and its ancestors, End reads every process once.
+ // It then sends SIGTERM to three targets:
+ // each recorded leader's group;
+@@ -47,10 +54,16 @@
+ // EndRole is End for one role.
+ // It ends only the live records of that role under the owner, and the processes below them.
+ // It uses End's signals, grace, kill bound and passes, and leaves every other record and the processes below it alone.
++// EndSubject ends every process this machine runs for a subject another machine owns.
++// It ends each of the subject's runs, then the subject's own records but its dobby.
++// The dobby is ended last, and only when the caller asks.
++// It leaves every teardown child alone.
++// In the subject's own pass it also leaves alone what serves the whole hub:
++// the adopt worker, the board syncs, the detached pushes, the coverage-map pass and the Slack relay.
+ // EndProcess runs the same sequence on one unregistered pid, for the orphans `lym tender reap` ends.
+ //
+ // On Windows no start time can be read and no group can be signalled.
+-// End, EndSparing, EndRole and EndProcess therefore signal nothing.
++// End, EndSparing, EndRole, EndSubject and EndProcess therefore signal nothing.
+ //
+ // The package imports only the standard library and these internal packages:
+ // `internal/proc`, `internal/state`, `internal/logger` and `internal/lymcwd`.
+diff --git a/internal/runproc/end.go b/internal/runproc/end.go
+index 631d04ac..047559aa 100644
+--- a/internal/runproc/end.go
++++ b/internal/runproc/end.go
+@@ -1,5 +1,5 @@
+ // end.go implements the one end sequence of a run's processes:
+-// End, EndSparing and EndRole for an owner's registered processes and EndProcess for one unregistered pid.
++// End, EndSparing, EndRole and EndSubject for an owner's registered processes and EndProcess for one unregistered pid.
+ 
+ package runproc
+ 
+@@ -76,6 +76,49 @@ func EndRole(dir, owner, role string, callerPID int) ([]Ended, error) {
+ 	return productionEnder().end(dir, owner, callerPID, endsOnlyRole(role))
+ }
+ 
++// EndSubject ends every process this machine runs for a subject that another machine now owns.
++// subject is the owner the subject's own processes register under: a beam's slug, or HubOwner for the hub's root.
++// runs are the owners of the runs the subject holds.
++// It ends each run's processes first, then the subject's own processes but its dobby.
++// When endDobby is set, the dobby ends last, so no dobby pass starts a run again while the rest end.
++// A caller whose dobby hands the subject over itself leaves endDobby unset, so the hand-over runs to its end.
++// A teardown child is left alone in every pass.
++// Only an operator's deliberate end may stop the remote steps of a teardown.
++// The subject's pass also leaves alone the processes that serve the whole hub:
++// the adopt worker, the board syncs, the detached pushes, the coverage-map pass and the Slack relay.
++// It goes on past a failed end and returns every process it ended, with the failures joined;
++// errors.As still finds a *SurvivorsError among them.
++func EndSubject(dir, subject string, runs []string, callerPID int, endDobby bool) ([]Ended, error) {
++	return productionEnder().endSubject(dir, subject, runs, callerPID, endDobby)
++}
++
++var (
++	// runPassSpared lists the roles the pass over a subject's run leaves alone.
++	runPassSpared = []string{RoleTeardown}
++	// subjectPassSpared lists the roles the pass over the subject's own records leaves alone:
++	// the dobby, which the last pass ends or leaves to its own hand-over, and the roles that serve the whole hub.
++	subjectPassSpared = []string{RoleDobby, RoleTeardown, RoleAdopt, RoleSync, RolePush, RoleTestMap, RoleSlackRelay}
++)
++
++func (e ender) endSubject(dir, subject string, runs []string, callerPID int, endDobby bool) ([]Ended, error) {
++	var ended []Ended
++	var failures []error
++	collect := func(more []Ended, err error) {
++		ended = append(ended, more...)
++		if err != nil {
++			failures = append(failures, err)
++		}
++	}
++	for _, run := range runs {
++		collect(e.end(dir, run, callerPID, endsEveryRoleBut(runPassSpared)))
++	}
++	collect(e.end(dir, subject, callerPID, endsEveryRoleBut(subjectPassSpared)))
++	if endDobby {
++		collect(e.end(dir, subject, callerPID, endsOnlyRole(RoleDobby)))
++	}
++	return ended, errors.Join(failures...)
++}
++
+ func endsEveryRole(string) bool { return true }
+ 
+ func endsEveryRoleBut(spare []string) func(role string) bool {
+diff --git a/internal/runproc/end_test.go b/internal/runproc/end_test.go
+index 4ac3aeac..0e4fa89a 100644
+--- a/internal/runproc/end_test.go
++++ b/internal/runproc/end_test.go
+@@ -457,3 +457,110 @@ func TestEnd(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestEndSubject_EndsTheRunsThenTheSubjectAndItsDobbyLast(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	registered := map[string][]Record{
++		"run-a": {{PID: 10, StartTime: "100", Role: RoleDriver}},
++		"run-b": {
++			{PID: 20, StartTime: "200", Role: RoleLoop},
++			{PID: 21, StartTime: "210", Role: RoleTeardown},
++		},
++		"beam": {
++			{PID: 30, StartTime: "300", Role: RoleDobby},
++			{PID: 40, StartTime: "400", Role: RoleOrch},
++			{PID: 50, StartTime: "500", Role: RoleAdopt},
++			{PID: 60, StartTime: "600", Role: RoleSync},
++			{PID: 61, StartTime: "610", Role: RoleTeardown},
++		},
++		"other": {{PID: 70, StartTime: "700", Role: RoleLoop}},
++		HubOwner: {
++			{PID: 80, StartTime: "800", Role: RolePush},
++			{PID: 81, StartTime: "810", Role: RoleTestMap},
++			{PID: 82, StartTime: "820", Role: RoleSlackRelay},
++			{PID: 83, StartTime: "830", Role: RoleTeardown},
++			{PID: 84, StartTime: "840", Role: RoleOrch},
++			{PID: 85, StartTime: "850", Role: RoleDobby},
++		},
++	}
++	beamRuns := []string{"run-a", "run-b"}
++	tests := []struct {
++		name          string
++		subject       string
++		runs          []string
++		endDobby      bool
++		immortal      []int
++		wantSignals   []string
++		wantEnded     []Ended
++		wantSurvivors []Ended
++	}{
++		{
++			name:        "EveryProcessEnds",
++			subject:     "beam",
++			runs:        beamRuns,
++			endDobby:    true,
++			wantSignals: []string{"term pid 10", "term pid 20", "term pid 40", "term pid 30"},
++			wantEnded:   []Ended{{10, RoleDriver}, {20, RoleLoop}, {40, RoleOrch}, {30, RoleDobby}},
++		},
++		{
++			name:          "ARunProcessThatSurvivesStillLetsTheRestEnd",
++			subject:       "beam",
++			runs:          beamRuns,
++			endDobby:      true,
++			immortal:      []int{10},
++			wantSignals:   []string{"term pid 10", "kill pid 10", "term pid 20", "term pid 40", "term pid 30"},
++			wantEnded:     []Ended{{20, RoleLoop}, {40, RoleOrch}, {30, RoleDobby}},
++			wantSurvivors: []Ended{{10, RoleDriver}},
++		},
++		{
++			name:        "AnUnsetEndDobbyLeavesTheSubjectsDobbyRunning",
++			subject:     "beam",
++			runs:        beamRuns,
++			wantSignals: []string{"term pid 10", "term pid 20", "term pid 40"},
++			wantEnded:   []Ended{{10, RoleDriver}, {20, RoleLoop}, {40, RoleOrch}},
++		},
++		{
++			name:        "TheHubOwnerSubjectLeavesTheHubWidePushesTestMapSlackRelayAndTeardownAlone",
++			subject:     HubOwner,
++			endDobby:    true,
++			wantSignals: []string{"term pid 84", "term pid 85"},
++			wantEnded:   []Ended{{84, RoleOrch}, {85, RoleDobby}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			begin := time.Unix(1_000_000, 0)
++			w := &world{start: begin, clock: begin, table: map[int]proc.StatEntry{}, immortal: pidSet(tt.immortal)}
++			for owner, records := range registered {
++				for _, record := range records {
++					w.table[record.PID] = entry(record.PID, 1, 5, record.StartTime)
++					if err := Register(dir, owner, record); err != nil {
++						t.Fatalf("Register(%s, %+v): %v", owner, record, err)
++					}
++				}
++			}
++
++			ended, err := w.ender("linux", nil).endSubject(dir, tt.subject, tt.runs, 0, tt.endDobby)
++
++			var survivors *SurvivorsError
++			switch {
++			case len(tt.wantSurvivors) > 0:
++				if !errors.As(err, &survivors) || !slices.Equal(survivors.Survivors, tt.wantSurvivors) {
++					t.Errorf("endSubject error = %v; want a SurvivorsError of %v", err, tt.wantSurvivors)
++				}
++			case err != nil:
++				t.Errorf("endSubject error = %v; want none", err)
++			}
++			if !slices.Equal(ended, tt.wantEnded) {
++				t.Errorf("ended = %v; want %v", ended, tt.wantEnded)
++			}
++			if !slices.Equal(w.signals, tt.wantSignals) {
++				t.Errorf("signals = %v; want %v, with the hub-wide processes, every teardown child and the other owner left alone", w.signals, tt.wantSignals)
++			}
++		})
++	}
++}
+diff --git a/internal/runproc/record.go b/internal/runproc/record.go
+index 654c3fc3..498284ce 100644
+--- a/internal/runproc/record.go
++++ b/internal/runproc/record.go
+@@ -1,5 +1,5 @@
+-// record.go declares the owner record:
+-// the Record type, its constructors, and the Register, List and Owners functions that write and read the record files.
++// record.go declares the owner record: the Record type and its constructors.
++// Register and RegisterOrch write the record files; IsRegistered, List and Owners read them.
+ 
+ package runproc
+ 
+@@ -51,6 +51,9 @@ const (
+ 	RoleTestMap = "test-map"
+ 	// RoleAdopt is the detached worker of `lym adopt`, registered under HubOwner.
+ 	RoleAdopt = "adopt"
++	// RoleOrch is the provider process of a worktree's orch session.
++	// The orch's start registers it under the beam's slug, or HubOwner for the prime.
++	RoleOrch = "orch"
+ )
+ 
+ // Record is one registered process of a run.
+@@ -84,9 +87,16 @@ func ChildRecord(pid int, role string, argv []string) Record {
+ // Its group is recorded only when the process leads it,
+ // so a role started inside a shell's group is never group-signalled.
+ func SelfRecord(role string) Record {
+-	pid := os.Getpid()
++	record := processRecord(os.Getpid(), role)
++	record.Argv = os.Args
++	return record
++}
++
++// processRecord builds the record of the running process pid under role, with no command line.
++// Its group is recorded only when the process leads it.
++func processRecord(pid int, role string) Record {
+ 	startTime, _ := proc.StartTime(pid)
+-	record := Record{PID: pid, StartTime: startTime, Role: role, Argv: os.Args, RegisteredAt: time.Now().UTC()}
++	record := Record{PID: pid, StartTime: startTime, Role: role, RegisteredAt: time.Now().UTC()}
+ 	stats, err := proc.ListStats()
+ 	if err != nil {
+ 		return record
+@@ -99,6 +109,27 @@ func SelfRecord(role string) Record {
+ 	return record
+ }
+ 
++// RegisterOrch registers pid, the provider process of a worktree's orch session, under owner in dir as RoleOrch.
++// The process runs in its pane rather than as the caller's child, so its group is read from the process table.
++// The record outlives the orch's strand and is pruned once the process is gone.
++func RegisterOrch(dir, owner string, pid int) error {
++	return Register(dir, owner, processRecord(pid, RoleOrch))
++}
++
++// IsRegistered reports whether a live record of owner in dir names pid under role.
++func IsRegistered(dir, owner, role string, pid int) (bool, error) {
++	records, err := List(dir, owner)
++	if err != nil {
++		return false, err
++	}
++	for _, record := range records {
++		if record.PID == pid && record.Role == role {
++			return true, nil
++		}
++	}
++	return false, nil
++}
++
+ // Register writes the record of one process of owner under dir, replacing the file of the same pid and start time.
+ // dir is supplied by the caller; the record lands at <dir>/<owner>/<pid>-<start time>.json.
+ func Register(dir, owner string, rec Record) error {
+diff --git a/internal/runproc/record_test.go b/internal/runproc/record_test.go
+index 9240a4eb..3f85607c 100644
+--- a/internal/runproc/record_test.go
++++ b/internal/runproc/record_test.go
+@@ -174,3 +174,43 @@ func TestRegisterAndList(t *testing.T) {
+ 		t.Errorf("Stat(zombie record) after the reap = %v; want the file removed", err)
+ 	}
+ }
++
++func TestRegisterOrch_IsFoundByItsOwnerRoleAndPID(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	dir := t.TempDir()
++
++	if err := RegisterOrch(dir, "beam", os.Getpid()); err != nil {
++		t.Fatalf("RegisterOrch: %v", err)
++	}
++	self := SelfRecord(RoleOrch)
++	listed, err := List(dir, "beam")
++	if err != nil || len(listed) != 1 {
++		t.Fatalf("List(beam) = %+v, %v; want the one orch record", listed, err)
++	}
++	if got := listed[0]; got.PID != os.Getpid() || got.Role != RoleOrch || got.StartTime != self.StartTime || got.PGID != self.PGID || got.Argv != nil {
++		t.Errorf("List(beam)[0] = %+v; want the pid, RoleOrch, its start time, its own group only when it leads it and no command line", got)
++	}
++
++	tests := []struct {
++		name  string
++		owner string
++		role  string
++		pid   int
++		want  bool
++	}{
++		{name: "TheRegisteredPIDUnderTheOrchRole", owner: "beam", role: RoleOrch, pid: os.Getpid(), want: true},
++		{name: "AnotherRole", owner: "beam", role: RoleDobby, pid: os.Getpid()},
++		{name: "AnotherPID", owner: "beam", role: RoleOrch, pid: deadPID},
++		{name: "AnotherOwner", owner: "other", role: RoleOrch, pid: os.Getpid()},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := IsRegistered(dir, tt.owner, tt.role, tt.pid)
++			if err != nil || got != tt.want {
++				t.Errorf("IsRegistered(%s, %s, %d) = %v, %v; want %v", tt.owner, tt.role, tt.pid, got, err, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index b8e2898b..b06510aa 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -401,10 +401,13 @@
+ // the time bound keeps a limit an earlier turn already met from counting again.
+ // A session with no previous turn end counts every fork, and every failure reads as no limit.
+ //
+-// The resume check refuses a session whose registry entry names a live pid.
++// The resume check refuses a session whose registry entry names a live pid, with a `shuttleengine.SessionHeldError`.
+ // It does not refuse when the live process's start time differs from the entry's `procStart`;
+ // that difference proves the pid was reused.
+ // An unreadable start time, or an entry without `procStart`, still refuses and says the pid could not be proven reused.
++// A session with no transcript in the pane cwd's project directory refuses with `shuttleengine.ErrNoTranscript` wrapped.
++// SessionHolder names the live pid holding a session by the same rule.
++// A caller reads it to register the provider process of a session it launched.
+ //
+ // The session prober (SessionProber) reads process liveness from the same registry.
+ // A session is alive when an entry names it and the live pid's start time equals `procStart`.
+diff --git a/internal/shuttleengine/claudeengine/prober.go b/internal/shuttleengine/claudeengine/prober.go
+index 23b38a9f..e1f2e0f3 100644
+--- a/internal/shuttleengine/claudeengine/prober.go
++++ b/internal/shuttleengine/claudeengine/prober.go
+@@ -10,7 +10,6 @@ import (
+ 	"bytes"
+ 	"encoding/json"
+ 	"os"
+-	"path/filepath"
+ 	"strings"
+ 	"time"
+ 
+@@ -28,11 +27,11 @@ const interruptMarkerPrefix = "[Request interrupted by user"
+ // ProcessLiveness reports the liveness of the session's process.
+ // It reads Claude's session registry under the home directory.
+ func (c *Claude) ProcessLiveness(sessionID string) shuttleengine.Liveness {
+-	home, err := claudeHomeDir()
++	registryDir, err := sessionRegistryDir()
+ 	if err != nil {
+ 		return shuttleengine.LivenessUnproven
+ 	}
+-	return processLiveness(sessionID, filepath.Join(home, ".claude", "sessions"), proc.IsAlive, proc.StartTime)
++	return processLiveness(sessionID, registryDir, proc.IsAlive, proc.StartTime)
+ }
+ 
+ // processLiveness answers from the registry entries that name sessionID.
+diff --git a/internal/shuttleengine/claudeengine/resume.go b/internal/shuttleengine/claudeengine/resume.go
+index 66b0f2c5..59d44820 100644
+--- a/internal/shuttleengine/claudeengine/resume.go
++++ b/internal/shuttleengine/claudeengine/resume.go
+@@ -1,4 +1,5 @@
+-// resume.go implements Claude's shuttleengine.SessionResumer: the check that a new run may take over a session.
++// resume.go implements Claude's shuttleengine.SessionResumer and shuttleengine.SessionHolderFinder:
++// the check that a new run may take over a session, and the read of the live process that holds one.
+ // It reads the session's transcript under Claude's project directory for the pane cwd and Claude's session registry,
+ // and every fact about either layout stays in this file, per the Shuttle Provider-Seam Invariant.
+ 
+@@ -15,7 +16,10 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
+-var _ shuttleengine.SessionResumer = (*Claude)(nil)
++var (
++	_ shuttleengine.SessionResumer      = (*Claude)(nil)
++	_ shuttleengine.SessionHolderFinder = (*Claude)(nil)
++)
+ 
+ // registryEntry is the subset of one Claude session-registry file that the resume check reads.
+ type registryEntry struct {
+@@ -31,16 +35,34 @@ func (c *Claude) CheckResume(sessionID, workdir string) (string, error) {
+ 	if err != nil {
+ 		return "", err
+ 	}
++	registryDir, err := sessionRegistryDir()
++	if err != nil {
++		return "", err
++	}
++	return checkResumable(sessionID, projectDir, registryDir, proc.IsAlive, proc.StartTime)
++}
++
++// SessionHolder implements shuttleengine.SessionHolderFinder over Claude's session registry.
++func (c *Claude) SessionHolder(sessionID string) (int, bool, error) {
++	registryDir, err := sessionRegistryDir()
++	if err != nil {
++		return 0, false, err
++	}
++	return sessionHolder(sessionID, registryDir, proc.IsAlive, proc.StartTime)
++}
++
++// sessionRegistryDir returns Claude's session registry directory under the home directory.
++func sessionRegistryDir() (string, error) {
+ 	home, err := claudeHomeDir()
+ 	if err != nil {
+ 		return "", fmt.Errorf("claudeengine: resolve home dir: %w", err)
+ 	}
+-	registryDir := filepath.Join(home, ".claude", "sessions")
+-	return checkResumable(sessionID, projectDir, registryDir, proc.IsAlive, proc.StartTime)
++	return filepath.Join(home, ".claude", "sessions"), nil
+ }
+ 
+ // checkResumable refuses a resume unless sessionID is well-formed and has a transcript under projectDir.
+-// It also refuses while a live process in registryDir holds the session.
++// A missing transcript refuses with an error wrapping shuttleengine.ErrNoTranscript.
++// It also refuses while a live process in registryDir holds the session, with a *shuttleengine.SessionHeldError.
+ // A live pid refuses unless its start time differs from the entry's procStart, which proves the pid was reused.
+ // When either start time cannot be read, the pid still refuses, so two processes never drive one session.
+ // An unreadable registry returns a warning and the check proceeds.
+@@ -52,7 +74,7 @@ func checkResumable(sessionID, projectDir, registryDir string, alive func(pid in
+ 
+ 	transcript := filepath.Join(projectDir, sessionID+".jsonl")
+ 	if _, err := os.Stat(transcript); errors.Is(err, os.ErrNotExist) {
+-		return "", fmt.Errorf("claudeengine: no transcript for session %s in %s; only a session run from this directory can be resumed: %w", sessionID, projectDir, err)
++		return "", fmt.Errorf("claudeengine: no transcript for session %s in %s; only a session run from this directory can be resumed: %w: %w", sessionID, projectDir, shuttleengine.ErrNoTranscript, err)
+ 	} else if err != nil {
+ 		return "", fmt.Errorf("claudeengine: cannot stat the transcript of session %s: %w", sessionID, err)
+ 	}
+@@ -72,21 +94,60 @@ func checkResumable(sessionID, projectDir, registryDir string, alive func(pid in
+ 			continue
+ 		}
+ 		entry := record.Entry
+-		if entry.SessionID != sessionID || !alive(entry.PID) {
++		if entry.SessionID != sessionID {
+ 			continue
+ 		}
+-		live, readable := startTime(entry.PID)
+-		if readable && entry.ProcStart != "" {
+-			if live != entry.ProcStart {
+-				continue
+-			}
+-			return "", fmt.Errorf("claudeengine: session %s is held by live process %d (%s); exit that session first, then resume", sessionID, entry.PID, record.Path)
++		held, proven := liveHolder(entry, alive, startTime)
++		if !held {
++			continue
++		}
++		unproven := ""
++		if !proven {
++			unproven = ", and the pid could not be proven reused"
++		}
++		return "", &shuttleengine.SessionHeldError{
++			SessionID: sessionID,
++			PID:       entry.PID,
++			Err:       fmt.Errorf("claudeengine: session %s is held by live process %d (%s)%s; exit that session first, then resume", sessionID, entry.PID, record.Path, unproven),
+ 		}
+-		return "", fmt.Errorf("claudeengine: session %s is held by live process %d (%s), and the pid could not be proven reused; exit that session first, then resume", sessionID, entry.PID, record.Path)
+ 	}
+ 	return warning, nil
+ }
+ 
++// sessionHolder returns the pid of the live process a registry entry in registryDir names as holding sessionID.
++// It applies the resume check's rule, so a pid whose start time differs from the entry's procStart holds nothing.
++// Unreadable and undecodable entries are skipped, and an unreadable registry is an error.
++func sessionHolder(sessionID, registryDir string, alive func(pid int) bool, startTime func(pid int) (string, bool)) (int, bool, error) {
++	records, err := readRegistry(registryDir)
++	if err != nil {
++		return 0, false, fmt.Errorf("claudeengine: read session registry %s: %w", registryDir, err)
++	}
++	for _, record := range records {
++		if record.ReadErr != nil || record.DecodeErr != nil || record.Entry.SessionID != sessionID {
++			continue
++		}
++		if held, _ := liveHolder(record.Entry, alive, startTime); held {
++			return record.Entry.PID, true, nil
++		}
++	}
++	return 0, false, nil
++}
++
++// liveHolder reports whether entry's process is alive and may still be the one that registered.
++// It also reports whether the start time proved it.
++// A start time that differs from the entry's procStart proves the pid reused, which holds nothing.
++// An unreadable start time, or an entry with no procStart, holds unproven, so two processes never drive one session.
++func liveHolder(entry registryEntry, alive func(pid int) bool, startTime func(pid int) (string, bool)) (held, proven bool) {
++	if !alive(entry.PID) {
++		return false, false
++	}
++	live, readable := startTime(entry.PID)
++	if readable && entry.ProcStart != "" {
++		return live == entry.ProcStart, true
++	}
++	return true, false
++}
++
+ // registryRecord is one session-registry file as read.
+ // It holds the decoded entry, or the error that stopped it being read or decoded.
+ type registryRecord struct {
+diff --git a/internal/shuttleengine/claudeengine/resume_test.go b/internal/shuttleengine/claudeengine/resume_test.go
+index 51db20a0..54a94cab 100644
+--- a/internal/shuttleengine/claudeengine/resume_test.go
++++ b/internal/shuttleengine/claudeengine/resume_test.go
+@@ -1,4 +1,5 @@
+-// resume_test.go covers checkResumable: a temp project directory, a fixture session registry and a fake liveness probe.
++// resume_test.go covers checkResumable and sessionHolder.
++// It uses a temp project directory, a fixture session registry and a fake liveness probe.
+ // A malformed id, a missing or unstattable transcript and a live holder refuse.
+ // A live holder whose start time cannot be compared refuses as unproven.
+ // A dead, non-matching or pid-reused holder proceeds;
+@@ -7,12 +8,14 @@
+ package claudeengine
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -59,6 +62,10 @@ func TestCheckResumable(t *testing.T) {
+ 		start       func(int) (string, bool) // nil reads "100" for every pid
+ 		wantErr     string
+ 		wantWarning bool
++		// wantNoTranscript expects the refusal to wrap shuttleengine.ErrNoTranscript.
++		wantNoTranscript bool
++		// wantHolder is the pid a *shuttleengine.SessionHeldError refusal names, zero for any other outcome.
++		wantHolder int
+ 	}{
+ 		{
+ 			name:       "malformed id refuses before any file is read",
+@@ -68,11 +75,12 @@ func TestCheckResumable(t *testing.T) {
+ 			wantErr:    "/status",
+ 		},
+ 		{
+-			name:       "missing transcript refuses",
+-			id:         resumeTestID,
+-			transcript: false,
+-			alive:      aliveAll,
+-			wantErr:    "only a session run from this directory",
++			name:             "missing transcript refuses",
++			id:               resumeTestID,
++			transcript:       false,
++			alive:            aliveAll,
++			wantErr:          "only a session run from this directory",
++			wantNoTranscript: true,
+ 		},
+ 		{
+ 			name:       "live matching pid refuses",
+@@ -82,8 +90,9 @@ func TestCheckResumable(t *testing.T) {
+ 				writeRegistryEntry(t, dir, "a.json", fmt.Sprintf(`{"pid":4242,"sessionId":%q,"procStart":"100"}`, resumeTestID))
+ 				return dir
+ 			},
+-			alive:   aliveAll,
+-			wantErr: "live process 4242",
++			alive:      aliveAll,
++			wantErr:    "live process 4242",
++			wantHolder: 4242,
+ 		},
+ 		{
+ 			name:       "live pid with a mismatching start time is reused and proceeds",
+@@ -103,9 +112,10 @@ func TestCheckResumable(t *testing.T) {
+ 				writeRegistryEntry(t, dir, "a.json", fmt.Sprintf(`{"pid":4242,"sessionId":%q,"procStart":"99"}`, resumeTestID))
+ 				return dir
+ 			},
+-			alive:   aliveAll,
+-			start:   func(int) (string, bool) { return "", false },
+-			wantErr: "could not be proven reused",
++			alive:      aliveAll,
++			start:      func(int) (string, bool) { return "", false },
++			wantErr:    "could not be proven reused",
++			wantHolder: 4242,
+ 		},
+ 		{
+ 			name:       "live pid with no procStart refuses as unproven",
+@@ -115,8 +125,9 @@ func TestCheckResumable(t *testing.T) {
+ 				writeRegistryEntry(t, dir, "a.json", fmt.Sprintf(`{"pid":4242,"sessionId":%q}`, resumeTestID))
+ 				return dir
+ 			},
+-			alive:   aliveAll,
+-			wantErr: "and the pid could not be proven reused",
++			alive:      aliveAll,
++			wantErr:    "and the pid could not be proven reused",
++			wantHolder: 4242,
+ 		},
+ 		{
+ 			name:       "dead matching pid proceeds silently",
+@@ -176,6 +187,17 @@ func TestCheckResumable(t *testing.T) {
+ 				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+ 					t.Fatalf("err = %v, want containing %q", err, tt.wantErr)
+ 				}
++				if got := errors.Is(err, shuttleengine.ErrNoTranscript); got != tt.wantNoTranscript {
++					t.Errorf("errors.Is(err, ErrNoTranscript) = %v; want %v", got, tt.wantNoTranscript)
++				}
++				holder := 0
++				var held *shuttleengine.SessionHeldError
++				if errors.As(err, &held) {
++					holder = held.PID
++				}
++				if holder != tt.wantHolder {
++					t.Errorf("SessionHeldError pid = %d; want %d", holder, tt.wantHolder)
++				}
+ 				return
+ 			}
+ 			if err != nil {
+@@ -187,3 +209,51 @@ func TestCheckResumable(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestSessionHolder(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// entry is the one registry file's content; empty leaves the registry empty.
++		entry string
++		// missingRegistry points the read at a registry directory that does not exist.
++		missingRegistry bool
++		alive           bool
++		startReadable   bool
++		wantPID         int
++		wantFound       bool
++		wantErr         bool
++	}{
++		{name: "LiveEntryWithAMatchingStartTimeNamesItsPID", entry: `{"pid":4242,"sessionId":%q,"procStart":"100"}`, alive: true, startReadable: true, wantPID: 4242, wantFound: true},
++		{name: "LiveEntryWithAnUnreadableStartTimeStillNamesItsPID", entry: `{"pid":4242,"sessionId":%q,"procStart":"100"}`, alive: true, wantPID: 4242, wantFound: true},
++		{name: "ReusedPIDHoldsNothing", entry: `{"pid":4242,"sessionId":%q,"procStart":"99"}`, alive: true, startReadable: true},
++		{name: "DeadPIDHoldsNothing", entry: `{"pid":4242,"sessionId":%q,"procStart":"100"}`, startReadable: true},
++		{name: "AnotherSessionsEntryHoldsNothing", entry: `{"pid":4242,"sessionId":"ffffffff-ffff-4fff-8fff-ffffffffffff%.0s"}`, alive: true, startReadable: true},
++		{name: "UnreadableRegistryIsAnError", missingRegistry: true, wantErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			_, registryDir := resumeFixture(t, false)
++			if tt.entry != "" {
++				writeRegistryEntry(t, registryDir, "a.json", fmt.Sprintf(tt.entry, resumeTestID))
++			}
++			if tt.missingRegistry {
++				registryDir = filepath.Join(registryDir, "missing")
++			}
++			alive := func(int) bool { return tt.alive }
++			start := func(int) (string, bool) { return "100", tt.startReadable }
++
++			pid, found, err := sessionHolder(resumeTestID, registryDir, alive, start)
++
++			if (err != nil) != tt.wantErr {
++				t.Fatalf("sessionHolder() error = %v; want error %v", err, tt.wantErr)
++			}
++			if pid != tt.wantPID || found != tt.wantFound {
++				t.Errorf("sessionHolder() = %d, %v; want %d, %v", pid, found, tt.wantPID, tt.wantFound)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 4c0850e5..85eb75c2 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -315,6 +315,9 @@
+ // The run record reads running until a stop ends it.
+ // A resume treats the strand like any other non-live one, since an empty done-when list never drops it as finished.
+ // A Spec with ResumeSessionID resumes that session through the engine's resume capability.
++// The capability refuses a session a live process holds with a SessionHeldError naming the process.
++// It refuses a session this machine holds no transcript of with an error wrapping ErrNoTranscript.
++// Run.SessionHolder names the live provider process holding a run's session, through the engine's SessionHolderFinder.
+ // Bound: one session per call in the caller's worktree, with no timeout classification, since nothing waits on it;
+ // the caller stops it through StopStrand.
+ //
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 1dfd4fb7..63a2b362 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -5,6 +5,7 @@
+ package shuttleengine
+ 
+ import (
++	"errors"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+@@ -332,10 +333,43 @@ type SessionResumer interface {
+ 	// CheckResume answers whether a new run may resume the provider session sessionID.
+ 	// The session is recorded under the pane cwd workdir.
+ 	// A non-nil error refuses the resume.
++	// A refusal because a live process holds the session is a *SessionHeldError.
++	// A refusal because this machine holds no transcript of the session wraps ErrNoTranscript.
+ 	// A non-empty warning means the check could not confirm something, and the resume proceeds.
+ 	CheckResume(sessionID, workdir string) (warning string, err error)
+ }
+ 
++// ErrNoTranscript marks a resume a SessionResumer refused because this machine holds no transcript of the session.
++// A caller that may start the session's work over tells this refusal from every other by errors.Is.
++var ErrNoTranscript = errors.New("shuttle: this machine holds no transcript of the session")
++
++// SessionHeldError is a SessionResumer's refusal of a resume because a live process on this machine holds the session.
++// It names the holder, so a caller that launched that process itself can end it and resume again.
++type SessionHeldError struct {
++	// SessionID is the session the resume asked for.
++	SessionID string
++	// PID is the live process that holds it.
++	PID int
++	// Err is the engine's refusal in its own words.
++	Err error
++}
++
++// Error returns the engine's refusal.
++func (e *SessionHeldError) Error() string { return e.Err.Error() }
++
++// Unwrap returns the engine's refusal.
++func (e *SessionHeldError) Unwrap() error { return e.Err }
++
++// SessionHolderFinder is an optional capability of an engine:
++// the live process on this machine that holds a provider session.
++// A caller reads it to register the provider process of a session it launched,
++// so a later start knows that process as its own.
++// An engine without it names no holder.
++type SessionHolderFinder interface {
++	// SessionHolder returns the pid of the live process holding sessionID, and whether one was found.
++	SessionHolder(sessionID string) (pid int, found bool, err error)
++}
++
+ // OpenSpec describes one named session that runs with no prompt:
+ // the caller's strand role, the resolved model choice, and the segment its window is colored by.
+ // It also carries the permission mode and the skills its first turn loads.
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index 2dc90e92..a78393fe 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -982,6 +982,21 @@ func (run *Run) ResumeWarning() string {
+ 	return run.resumeWarning
+ }
+ 
++// SessionHolder returns the pid of the live provider process holding the run's session, and whether one was found.
++// It finds none for a run whose launch named no session or whose engine cannot name a holder.
++func (run *Run) SessionHolder() (pid int, found bool, err error) {
++	finder, ok := run.engine.(SessionHolderFinder)
++	if !ok || run.state.SessionID == "" {
++		return 0, false, nil
++	}
++	return finder.SessionHolder(run.state.SessionID)
++}
++
++// CarriedInstructions returns the operator instructions the run's prompt carried over from an unfinished predecessor.
++func (run *Run) CarriedInstructions() []string {
++	return run.state.CarriedInstructions
++}
++
+ // RunDir returns the directory holding this run's artifacts (prompt.md, settings.json, the events file).
+ // A caller that starts a run and never Waits on it has no other way to name that directory.
+ // A caller that reports a not-ready start names this directory so an operator can look in it.
+diff --git a/internal/shuttleengine/run_sessionholder_test.go b/internal/shuttleengine/run_sessionholder_test.go
+new file mode 100644
+index 00000000..3a664ae3
+--- /dev/null
++++ b/internal/shuttleengine/run_sessionholder_test.go
+@@ -0,0 +1,72 @@
++// run_sessionholder_test.go covers the run's read of the process holding its session and of the instructions it carried.
++
++package shuttleengine
++
++import (
++	"errors"
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// holderFakeEngine is a fakeEngine with the opt-in SessionHolderFinder capability, answering a fixed holder read.
++type holderFakeEngine struct {
++	*fakeEngine
++
++	pid   int
++	found bool
++	err   error
++}
++
++func (e *holderFakeEngine) SessionHolder(string) (int, bool, error) {
++	return e.pid, e.found, e.err
++}
++
++// holderFakeEngine is checked at compile time against SessionHolderFinder.
++var _ SessionHolderFinder = (*holderFakeEngine)(nil)
++
++func TestRun_SessionHolder(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	readFailure := errors.New("process table unreadable")
++	tests := []struct {
++		name      string
++		engine    Engine
++		sessionID string
++		wantPID   int
++		wantFound bool
++		wantErr   error
++	}{
++		{name: "EngineNamingTheHolder", engine: &holderFakeEngine{fakeEngine: &fakeEngine{}, pid: 4242, found: true}, sessionID: "sess", wantPID: 4242, wantFound: true},
++		{name: "EngineFindingNoHolder", engine: &holderFakeEngine{fakeEngine: &fakeEngine{}}, sessionID: "sess"},
++		{name: "EngineFailingTheRead", engine: &holderFakeEngine{fakeEngine: &fakeEngine{}, err: readFailure}, sessionID: "sess", wantErr: readFailure},
++		{name: "EngineWithoutTheCapability", engine: &fakeEngine{}, sessionID: "sess"},
++		{name: "RunNamingNoSessionAsksNoEngine", engine: &holderFakeEngine{fakeEngine: &fakeEngine{}, pid: 4242, found: true}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			run := &Run{engine: tt.engine, state: RunState{SessionID: tt.sessionID}}
++
++			pid, found, err := run.SessionHolder()
++
++			if pid != tt.wantPID || found != tt.wantFound || !errors.Is(err, tt.wantErr) {
++				t.Errorf("SessionHolder() = %d, %v, %v; want %d, %v, %v", pid, found, err, tt.wantPID, tt.wantFound, tt.wantErr)
++			}
++		})
++	}
++}
++
++func TestRun_CarriedInstructions(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	run := &Run{state: RunState{CarriedInstructions: []string{"keep the branch", "ask before pushing"}}}
++
++	if got, want := run.CarriedInstructions(), []string{"keep the branch", "ask before pushing"}; !slices.Equal(got, want) {
++		t.Errorf("CarriedInstructions() = %v; want %v", got, want)
++	}
++}
+diff --git a/pattern/PATTERN-child-processes.md b/pattern/PATTERN-child-processes.md
+index eae3ca48..1505fdd4 100644
+--- a/pattern/PATTERN-child-processes.md
++++ b/pattern/PATTERN-child-processes.md
+@@ -31,20 +31,23 @@ a failure that repeats each tick logs `Warn` once per episode.
+ 
+ ## Run process owner
+ 
+-Rule: A run's processes: registered in `internal/runproc`, ended only via `runproc`'s `End`, `EndSparing` or `EndRole`.
++Rule: A run's processes: registered in `internal/runproc`, ended only via `runproc`'s `End`, `EndSparing`, `EndRole` or `EndSubject`.
+ 
+ Every detached or long-lived process lym starts for a run joins one owner record,
+-and a run's processes are ended only through `runproc`'s `End`, `EndSparing` or `EndRole`.
++and a run's processes are ended only through `runproc`'s `End`, `EndSparing`, `EndRole` or `EndSubject`.
+ 
+ - The record lives in `internal/runproc`, one file per process under the run's slug.
+   A process that belongs to the hub, such as a detached board sync or the Slack relay, sits under `runproc.HubOwner`.
+ - A spawner registers a child it starts with `runproc.ChildRecord`;
+   a process that runs for a run registers itself with `runproc.SelfRecord`, under a role the package names.
+-- `End`, `EndSparing` and `EndRole` alone end the processes an owner holds,
++- The orch's start registers the provider process of the worktree's orch session with `runproc.RegisterOrch`.
++  The record sits under the beam's slug, or `runproc.HubOwner` for the prime, since that process runs in its pane.
++- `End`, `EndSparing`, `EndRole` and `EndSubject` alone end the processes an owner holds,
+   and every verb that ends or tears down a run calls one with the caller's own pid,
+   so the caller and its ancestors are spared.
+   `EndSparing` leaves named roles alone,
+   and `EndRole` ends one role's records under an owner with `End`'s sequence, so the rest of the owner's processes go on.
++  `EndSubject` ends every process this machine runs for a subject another machine owns, its runs first and, when the caller asks, its dobby last.
+ - `EndProcess` serves only the orphans `lym tender reap` ends, which no record names.
+ - No process removes its own record; the read of a record prunes the ones whose process is gone.
+ - A site that signals a run's process by any other route is a review finding.
+@@ -52,7 +55,7 @@ and a run's processes are ended only through `runproc`'s `End`, `EndSparing` or
+ ### Enforcement
+ 
+ - `internal/runproc`'s tests pin the record and the end sequence, and its leaf test pins the import set.
+-- Review covers the rest: that each spawn registers, and that each end goes through `End`, `EndSparing` or `EndRole`.
++- Review covers the rest: that each spawn registers, and that each end goes through `End`, `EndSparing`, `EndRole` or `EndSubject`.
+ 
+ ## Reap children
+ 
