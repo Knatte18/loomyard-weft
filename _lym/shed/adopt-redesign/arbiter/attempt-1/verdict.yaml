@@ -1,0 +1,20 @@
+verdict: hand-on
+reason: |-
+  Review escalation at round 2, cause `decision`, refusal none. The round-2 fixer already carried F1 to F11 and F16 to F20 into the decision record (D2 now pushes the records side first, D4 hands a landing past its merge to the new owner, and so on), so the four decision-class findings F12 to F15 are what is left.
+  Settled from the board entry and recorded as arbiter decisions:
+  - F15: no run acts offline. The operator requirement (2026-11-15) keeps the whole state on GitHub at all times, and the Direction pushes each transition before the run acts. The Open risks line goes.
+  - F13: `lym adopt --release` is dropped. The operator decision says nothing happens until adopt is done and every failing test it found is fixed. A hold whose adopter stopped is cleared when an operator-only adopt on another machine takes the hold over, and the hold still clears only at a green check. The declared PATTERN-dobby-runs change is updated to match.
+  Still open, because neither the board entry nor the record settles them:
+  - F12: may the orch's transcript go to the public weft repository? The board says nothing about where transcripts may be published, and its Direction calls a session transcript a cache.
+  - F14: may the orch be up during a hold? The operator decision says "no orch action", but the design already lets the fix task run, which is an exception to "no run starts". Whether tending that fix task counts as orch action is the reading the record asks the operator to confirm.
+  I recorded no circling outcome. The parent picks continue (the fixer still has to apply the F13 and F15 decisions and the answers to F12 and F14) once those two answers are recorded.
+verbs:
+  - |-
+    lym loom decision add adopt-redesign --by arbiter --title "No run acts while origin is unreachable" --decision … --rationale …
+  - |-
+    lym loom decision add adopt-redesign --by arbiter --title "No lym adopt --release; a hold clears only at a green check" --decision … --rationale … --pattern-entry PATTERN-dobby-runs --pattern-action changes --pattern-text …
+question: |-
+  Two decision findings from Discussion round 2 of `adopt-redesign` need an operator answer. F13 (no `--release`) and F15 (no offline progress) are already recorded as arbiter decisions.
+  1. F12: D10 mirrors the orch's whole conversation to a ref in the weft repository `Knatte18/loomyard-weft`, which is public. May orch transcripts go there? On a no, should D10 use a private repository the operator names, or drop the mirror? Dropping it means the orch comes back on another machine as a new session with the carry-over.
+  2. F14: the board's operator decision lists "no orch action" until adopt is done and every failing test it found is fixed. D8 starts the orch during an `adopt` or `adopt-fix` hold, with every run verb refused except on the fix task and on a landing past its merge, and the orch can read the fix task's halts. May the orch be up during a hold? On a no, D8 starts the orch only once the hold clears, so who handles the fix task's halts in the meantime: the operator by hand from notices?
+  Once both answers are recorded with `lym loom decision add adopt-redesign --by parent …`, run `lym loom circling continue adopt-redesign` so the fixer applies them and the arbiter's F13 and F15 decisions. Then run `lym loom resume`.
