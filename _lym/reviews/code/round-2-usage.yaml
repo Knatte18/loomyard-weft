@@ -20,4 +20,14 @@ fix:
     model: sonnet
     effort: medium
     tokens_known: false
+judge:
+    - engine: claude
+      model: sonnet
+      effort: medium
+      start: 2026-11-15T12:49:43Z
+      end: 2026-11-15T13:50:01.208425701+01:00
+      wall_seconds: 18.208425701
+      tokens_known: true
+      fresh_tokens: 25210
+      cache_read_tokens: 123260
 attempt: "2"

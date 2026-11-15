@@ -1,0 +1,435 @@
+diff --git a/contracts/stencils/darn/darn-fragment-make-change.md b/contracts/stencils/darn/darn-fragment-make-change.md
+index 7811cfb5..109aa90b 100644
+--- a/contracts/stencils/darn/darn-fragment-make-change.md
++++ b/contracts/stencils/darn/darn-fragment-make-change.md
+@@ -12,6 +12,9 @@
+    A fresh subagent sees none of this session, so each prompt names the files the subagent owns, the edits to make, and the gate rule from your system prompt with its Bash tool timeout, for the subagent to run on its own package.
+    Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
+ 3. Test with `lym gate test` after the last edit of each commit; it computes its scope from your changes, and when it answers `done: false` with exit 75 the run goes on, so run the same command again; never run a raw test command or a module-wide run.
++   A gate line saying a tier ran no test of a project means the project skipped its own tests, and the gate's pass covers none of them.
++   When your change needs those tests and the hub's `refuse_raw` does not list `dotnet test`, run them by hand as that line's way forward names, and check that the run's summary line reports them: this is the one raw test command you run.
++   When `refuse_raw` lists it, report the skipped tests to your parent, or with no parent name them in the change description.
+ 4. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
+    the repository's overview doc when a module table or execution stack it shows changes;
+    and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.
+diff --git a/contracts/stencils/webster/webster-body-implementer.md b/contracts/stencils/webster/webster-body-implementer.md
+index c47aa2d8..608dae44 100644
+--- a/contracts/stencils/webster/webster-body-implementer.md
++++ b/contracts/stencils/webster/webster-body-implementer.md
+@@ -114,6 +114,9 @@ A `lym gate test` or `lym gate card-verify` call that exits with code `75`, answ
+ It costs no self-fix attempt, never makes the report `FAILED`, and you run the same command again in a turn that does nothing else, so the prompt cache stays warm between calls; the next call prints the run's result once it ended.
+ 
+ The one route to a test run is `lym gate test` with a gate's tier list and a scope form, such as `--tier <n>` with `--card <card id>` or explicit packages, never a raw test command.
++A gate line saying a tier ran no test of a project means the project skipped its own tests, and the gate's pass covers none of them.
++When your card needs those tests and the hub's `refuse_raw` does not list `dotnet test`, run them by hand as that line's way forward names, and check that the run's summary line reports them: this is the one raw test command you run.
++When `refuse_raw` lists it, report the skipped tests to your parent.
+ The hub's tiers and gate lists follow:
+ 
+ {{.gate_tiers}}
+diff --git a/internal/fabricengine/codelocation_test.go b/internal/fabricengine/codelocation_test.go
+new file mode 100644
+index 00000000..c4eaaa43
+--- /dev/null
++++ b/internal/fabricengine/codelocation_test.go
+@@ -0,0 +1,40 @@
++// codelocation_test.go tests fabricengine.CodeLocation's paths that resolve nothing and return the location it was given.
++
++package fabricengine_test
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/weftname"
++)
++
++// TestCodeLocationReturnsTheLocationUnchanged pins the paths on which CodeLocation resolves nothing:
++// a worktree that is no weft sibling, and a weft sibling whose paired code directory is absent.
++func TestCodeLocationReturnsTheLocationUnchanged(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	hub := t.TempDir()
++	tests := []struct {
++		name     string
++		location lymcwd.Location
++	}{
++		{"NotAWeftSibling", lymcwd.Location{HubPath: hub, WorktreeName: "feat"}},
++		{"NoCodeDirectory", lymcwd.Location{HubPath: hub, WorktreeName: "gone" + weftname.Suffix}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := fabricengine.CodeLocation(&tt.location)
++			if err != nil {
++				t.Fatalf("CodeLocation() error = %v; want nil", err)
++			}
++			if got != &tt.location {
++				t.Errorf("CodeLocation() = %+v; want the location passed in, %+v", got, &tt.location)
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/weftwiring.go b/internal/fabricengine/weftwiring.go
+index 6f60dddc..0a1e62c7 100644
+--- a/internal/fabricengine/weftwiring.go
++++ b/internal/fabricengine/weftwiring.go
+@@ -55,6 +55,21 @@ func WeftWarpSlug(name string) (slug string, ok bool) {
+ 	return s, true
+ }
+ 
++// CodeLocation returns the Location of the code worktree that l, a weft sibling, pairs with.
++// A cwd reached through a worktree's .scratch link resolves to its weft sibling,
++// so a verb that acts on code takes the code worktree from here.
++// An l that is no weft sibling, or whose code worktree directory is absent, comes back unchanged.
++func CodeLocation(l *lymcwd.Location) (*lymcwd.Location, error) {
++	slug, ok := WeftWarpSlug(l.WorktreeName)
++	if !ok {
++		return l, nil
++	}
++	if info, err := os.Stat(filepath.Join(l.HubPath, slug)); err != nil || !info.IsDir() {
++		return l, nil
++	}
++	return lymcwd.NamedWorktree(l.HubPath, slug)
++}
++
+ // weftRepoExists reports whether a weft repo exists and is a valid git repository.
+ // An unresolvable weft repo root reports false, the same as an absent directory.
+ func weftRepoExists(l *lymcwd.Location) bool {
+diff --git a/internal/gatecli/detachfront_integration_test.go b/internal/gatecli/detachfront_integration_test.go
+index 4f22ef71..a7c821a3 100644
+--- a/internal/gatecli/detachfront_integration_test.go
++++ b/internal/gatecli/detachfront_integration_test.go
+@@ -998,11 +998,17 @@ func TestGateTest_DetachedRun(t *testing.T) {
+ 				t.Fatal(err)
+ 			}
+ 			rig.writePlan(verifyCard(4, "alpha", "lym gate test --wait ./pkg"))
+-			env := append([]string{helperGraceEnv + "=1s", "PATH=" + stubDir + string(os.PathListSeparator) + os.Getenv("PATH")}, holdEnv...)
++			// The grace outlasts any start of the line's child, and the test passes the lease once the tier runs:
++			// a lease that passed first would end the line before its child ever ran the tier.
++			env := append([]string{helperGraceEnv + "=1m", "PATH=" + stubDir + string(os.PathListSeparator) + os.Getenv("PATH")}, holdEnv...)
+ 
+ 			requireGoing(t, rig.cardCall("1s", env, "4"), "")
+ 			held := rig.waitInvocations(1)
+-			if exit := waitExitOf(t, rig.cardRun("4-alpha")); exit != (detachExit{Code: 1, Abandoned: true}) {
++			run := rig.cardRun("4-alpha")
++			if err := run.expireLease(time.Now()); err != nil {
++				t.Fatal(err)
++			}
++			if exit := waitExitOf(t, run); exit != (detachExit{Code: 1, Abandoned: true}) {
+ 				t.Errorf("exit file = %+v; want code 1, abandoned", exit)
+ 			}
+ 			requireEnded(t, held)
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 950645c5..cdb0c3e4 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -411,6 +411,9 @@
+ //
+ // The directory is resolved with lymcwd.ResolveWorktree.
+ // It finds the containing worktree from any directory inside it, a nested module directory included.
++// Every verb acts on code, so a directory in a records worktree resolves to the code worktree it pairs with.
++// A worktree's `.scratch` link reaches such a directory.
++// The pairing goes through `fabricengine.CodeLocation`.
+ // preflight.BoardLymPresent then reports whether the hub carries a board.
+ // It does not use the standalone-capable CLIs' mode resolution.
+ // Its anchor gate would refuse a nested module directory.
+@@ -567,6 +570,16 @@
+ // the guard step's own `-run` filter exempts nothing.
+ // A test the run's watch skip names does not count as a test the package holds.
+ // Otherwise a tier that discovers no tests passes with zero counted, as a package with only a `TestMain` does.
++// A passing `vstest` invocation whose output reported no test still passes, and prints a line to stderr and the log.
++// A test project that sets IsTestProject false unless an MSBuild property is passed builds and exits 0 this way.
++// The line names the tier, the invocation's targets, or its directory when it has none, and its class filter terms.
++// Its way forward is running the tests by hand with `dotnet test` and the property the project file names.
++// That is offered only while the hub's `refuse_raw` does not list `dotnet test`.
++// Otherwise the agent reports the skipped tests to its parent.
++// The line covers an invocation whose whole output reported no test.
++// It cannot see a disabled project beside a project that ran.
++// It cannot see a gated class in a project that ran other tests.
++// It cannot name the property behind a skip: the counter reads only each invocation's total.
+ //
+ // # Lint steps
+ //
+@@ -1026,7 +1039,7 @@
+ // A package is a directory relative to that root holding a Go file, found as `go list ./...` finds one:
+ // testdata, a directory whose name opens with a dot or an underscore, and a nested module are left out.
+ // The verb runs only in the hub's prime worktree, told by `hubgeom.IsPrime`.
+-// Elsewhere it refuses, naming the prime worktree.
++// Elsewhere it refuses, naming the prime's code worktree.
+ // It reads HEAD through `Fabric.HeadSHA` before its walk, and plans and measures every package at that HEAD.
+ // It reads HEAD again before each package job, after each round of runs and on each wake of a pass's slot wait.
+ // Once HEAD moved it ends, counting the jobs it left as queued, so the next pass plans at the new HEAD.
+diff --git a/internal/gatecli/redundancy_integration_test.go b/internal/gatecli/redundancy_integration_test.go
+index 7217846b..3516537d 100644
+--- a/internal/gatecli/redundancy_integration_test.go
++++ b/internal/gatecli/redundancy_integration_test.go
+@@ -90,15 +90,17 @@ func TestRedundancyStep(t *testing.T) {
+ 
+ 	// The pair adds tests to most packages, edits TestBetaOne, moves moved's test file and deletes gone's.
+ 	staleTestFile := judgedTestFile("stale", tieredTest("TestStaleOld", 0, ""), tieredTest("TestStaleNew", 0, ""))
++	dropsHangs := tieredTest("TestDropsHangs", 0, "")
++	dropsTestFile := judgedTestFile("drops",
++		tieredTest("TestDropsOne", 0, ""), tieredTest("TestDropsPlain", 0, ""), dropsHangs,
++		"//testtiming:keep pins the slow path on purpose\n"+tieredTest("TestDropsKept", 0, ""),
++		tieredTest("TestDropsLate", 0, ""), tieredTest("TestDropsTier1", 1, ""), tieredTest("TestDropsTier1Again", 1, ""),
++		tieredTest("TestDropsTier2", 2, ""))
+ 	plankit.WriteTree(t, pair, map[string]string{
+ 		"alpha/alpha_test.go":   judgedTestFile("alpha", tieredTest("TestAlphaBase", 0, ""), tieredTest("TestAlphaNewOne", 0, ""), tieredTest("TestAlphaNewTwo", 0, "")),
+ 		"beta/beta_test.go":     judgedTestFile("beta", tieredTest("TestBetaNewOne", 0, ""), tieredTest("TestBetaOne", 0, "\tt.Log(\"edited\")\n")),
+ 		"broken/broken_test.go": judgedTestFile("broken", tieredTest("TestBrokenOne", 0, ""), tieredTest("TestBrokenNew", 0, "")),
+-		"drops/drops_test.go": judgedTestFile("drops",
+-			tieredTest("TestDropsOne", 0, ""), tieredTest("TestDropsPlain", 0, ""), tieredTest("TestDropsHangs", 0, ""),
+-			"//testtiming:keep pins the slow path on purpose\n"+tieredTest("TestDropsKept", 0, ""),
+-			tieredTest("TestDropsLate", 0, ""), tieredTest("TestDropsTier1", 1, ""), tieredTest("TestDropsTier1Again", 1, ""),
+-			tieredTest("TestDropsTier2", 2, "")),
++		"drops/drops_test.go":   dropsTestFile,
+ 		// A test in a file built under a tier tag that runs the go command is marked out of process.
+ 		"drops/spawn_tier1_test.go": "//go:build tier1\n\npackage drops\n\nimport (\n\t\"os\"\n\t\"testing\"\n)\n\nfunc TestDropsSpawns(t *testing.T) {\n\t_, _ = os.Executable()\n}\n",
+ 		"moved/b_test.go":           seeded["moved/a_test.go"],
+@@ -484,15 +486,21 @@ func TestRedundancyStep(t *testing.T) {
+ 		writeMap(t, "alpha", mapOf(t, "alpha", testcover.MapTest{Name: "TestAlphaBase", FuncHash: "x", Seconds: 0.01, Blocks: []int{9}}))
+ 		t.Cleanup(func() { writeMap(t, "alpha", alphaMap) })
+ 		// The prebuild builds `lym` only for a worktree holding cmd/lym.
+-		plankit.WriteTree(t, pair, map[string]string{"cmd/lym/main.go": "package main\n"})
++		// TestDropsHangs is kept for the subtest, so no test runs to its timeout and the timeout can be long.
++		plankit.WriteTree(t, pair, map[string]string{
++			"cmd/lym/main.go":     "package main\n",
++			"drops/drops_test.go": strings.Replace(dropsTestFile, dropsHangs, "//testtiming:keep hangs until its timeout\n"+dropsHangs, 1),
++		})
+ 		t.Cleanup(func() {
+ 			_ = os.RemoveAll(filepath.Join(pair, "cmd", "lym"))
+ 			_ = os.Remove(filepath.Join(pair, "cmd"))
++			plankit.WriteTree(t, pair, map[string]string{"drops/drops_test.go": dropsTestFile})
+ 		})
+ 
+ 		builds := filepath.Join(t.TempDir(), "lym-builds")
+-		// The default 150 millisecond second unit gives each test 3 seconds, so a loaded machine does not time out TestBetaNewOne.
+ 		step, _ := stepAt(t, pairLocation, append(slices.Clone(environ), testMapLymBuildsEnv+"="+builds, testMapFailLymBuildEnv+"=1"), time.Minute)
++		// A test past 20 seconds times out, so no load on the machine times out TestBetaNewOne.
++		step.secondUnit = time.Second
+ 		step.run(false, true)
+ 		report := readReport(t, pairLocation)
+ 
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 02731132..5e740d1a 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -660,6 +660,7 @@ func (e *execution) writeRecord(record gateslot.RunRecord, log []byte, run strin
+ }
+ 
+ // resolveHub returns the location of the hub worktree that contains dir, and whether dir is inside a hub at all.
++// A dir in a records worktree resolves to the code worktree it pairs with, since every gate verb acts on code.
+ // A dir outside every git worktree, or in a worktree whose hub carries no board, is outside every hub.
+ func resolveHub(dir string) (*lymcwd.Location, bool, error) {
+ 	location, err := lymcwd.ResolveWorktree(dir)
+@@ -669,6 +670,9 @@ func resolveHub(dir string) (*lymcwd.Location, bool, error) {
+ 	if err != nil {
+ 		return nil, false, fmt.Errorf("resolve the worktree of %s: %w", dir, err)
+ 	}
++	if location, err = fabricengine.CodeLocation(location); err != nil {
++		return nil, false, fmt.Errorf("resolve the code worktree of %s: %w", dir, err)
++	}
+ 	if !preflight.BoardLymPresent(location) {
+ 		return nil, false, nil
+ 	}
+diff --git a/internal/gatecli/testmap_integration_test.go b/internal/gatecli/testmap_integration_test.go
+index 5dcac310..9be677d0 100644
+--- a/internal/gatecli/testmap_integration_test.go
++++ b/internal/gatecli/testmap_integration_test.go
+@@ -728,6 +728,14 @@ func TestGateTestMap(t *testing.T) {
+ 				name: "OutsideThePrime", dir: pair, args: []string{"testmap"},
+ 				want: "gate testmap: " + pair + " is not the hub's prime worktree, and a coverage map records the prime branch; way forward: run lym gate testmap from " + prime,
+ 			},
++			{
++				name: "FromAPairsRecordsSibling", dir: h.PairRecordsSibling(hubforge.TemplatePairSlug), args: []string{"testmap"},
++				want: "gate testmap: " + pair + " is not the hub's prime worktree, and a coverage map records the prime branch; way forward: run lym gate testmap from " + prime,
++			},
++			{
++				name: "FromThePrimesRecordsSiblingActsInThePrime", dir: h.PrimeRecords(), args: []string{"testmap", "nosuch"},
++				want: "gate testmap: \"nosuch\" names no package directory of the module at " + prime + "; way forward: name a package by its directory relative to the module root, such as internal/foo",
++			},
+ 			{
+ 				name: "OutsideEveryHub", dir: outsideHub, args: []string{"testmap"},
+ 				want: "gate testmap: " + outsideHub + " is in no hub, and the coverage maps live in a hub; way forward: run lym gate testmap from a hub's prime worktree",
+diff --git a/internal/gatecli/testtargets_test.go b/internal/gatecli/testtargets_test.go
+index 3d11c76f..f3026001 100644
+--- a/internal/gatecli/testtargets_test.go
++++ b/internal/gatecli/testtargets_test.go
+@@ -121,7 +121,7 @@ func TestRunInvocationsTestTargets(t *testing.T) {
+ 			}
+ 			request := testRequest{goBinary: defaultGoBinary, root: moduleDir, stderr: &stderr, pipeWaitDelay: defaultPipeWaitDelay}
+ 
+-			exit, _, _, refusal := runInvocations(context.Background(), run, counter, nil, request)
++			exit, _, _, refusal := runInvocations(context.Background(), run, counter, nil, request, func(string) {})
+ 			if err := counter.Flush(); err != nil {
+ 				t.Fatal(err)
+ 			}
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index 24559900..aa4ece0c 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -66,6 +66,7 @@ type tierResult struct {
+ // When the resulting GOFLAGS carries `-trimpath`, it logs a line saying so before the first command,
+ // and it returns that line for the caller to print.
+ // Every command's GOFLAGS then opens with gateslot.TestCacheOffFlag, so `go test` keeps no test result cache.
++// A passing `vstest` invocation that reported no test prints the line naming it to stderr and the log.
+ // A run with no invocation passes at once with nothing discovered.
+ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, request testRequest) tierResult {
+ 	started := time.Now()
+@@ -89,7 +90,11 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ 	if trimpathNote != "" {
+ 		logBuffer.WriteString(trimpathNote + "\n")
+ 	}
+-	exit, commands, capLine, refusal := runInvocations(tierCtx, run, counter, gateslot.WithTestCacheOff(tierEnv), request)
++	notice := func(line string) {
++		logBuffer.WriteString(line + "\n")
++		printLine(request.stderr, line)
++	}
++	exit, commands, capLine, refusal := runInvocations(tierCtx, run, counter, gateslot.WithTestCacheOff(tierEnv), request, notice)
+ 	if refusal != "" {
+ 		return tierResult{refusal: refusal}
+ 	}
+@@ -266,9 +271,10 @@ func retryTier(ctx context.Context, stderr io.Writer, tier string, delay time.Du
+ // It keeps the packages holding a test of the tier.
+ // An invocation left with no package runs no command, and a line on request.stderr says so.
+ // While a command runs, the process cap watches every process carrying env's run marker, when env sets one.
++// After each passing invocation it hands notice the line of noTestNotice, when that line is not empty.
+ // It returns that exit code, the commands it rendered, the process cap's line when the cap killed the run,
+ // and a refusal when a command could not be run at all.
+-func runInvocations(ctx context.Context, run tierRun, counter counter, env []string, request testRequest) (exit int, commands []string, capLine, refusal string) {
++func runInvocations(ctx context.Context, run tierRun, counter counter, env []string, request testRequest, notice func(string)) (exit int, commands []string, capLine, refusal string) {
+ 	if len(run.invocations) == 0 {
+ 		return 0, nil, "", ""
+ 	}
+@@ -307,6 +313,7 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 			return 0, commands, "", err.Error()
+ 		}
+ 		commands = append(commands, command)
++		discoveredBefore := counter.Counts().discovered
+ 
+ 		cmd := exec.CommandContext(ctx, shellName, shellFlag, command)
+ 		cmd.Dir = dir
+@@ -343,10 +350,35 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 		if exit != 0 || ctx.Err() != nil || capLine != "" {
+ 			return exit, commands, capLine, ""
+ 		}
++		if line := noTestNotice(run, invocation, dir, counter.Counts().discovered-discoveredBefore); line != "" {
++			notice(line)
++		}
+ 	}
+ 	return 0, commands, "", ""
+ }
+ 
++// noTestNotice returns the line of a passing `vstest` invocation whose output reported no test, or "" for any other.
++// discovered is the number of tests the invocation's output reported, and dir is its run directory.
++// A test project that sets IsTestProject false unless an MSBuild property is passed builds and exits 0 this way,
++// so the line names the project, the class filter the scope gave it, and how to run its tests by hand.
++// The line reads only the invocation's total, so it names no MSBuild property.
++// It sees no skip inside an invocation that ran some test.
++// The hand run is offered only while the hub's `refuse_raw` does not list `dotnet test`.
++func noTestNotice(run tierRun, inv invocation, dir string, discovered int) string {
++	if run.tier.Counter != counterVSTest || discovered > 0 {
++		return ""
++	}
++	project := dir
++	if len(inv.targets) > 0 {
++		project = strings.Join(inv.targets, " ")
++	}
++	classes := ""
++	if len(inv.terms) > 0 {
++		classes = " under the class filter " + strings.Join(inv.terms, "|")
++	}
++	return fmt.Sprintf("gate test: %s ran no test of %s%s: dotnet test exited 0 and reported no test, as a test project does that sets IsTestProject false unless an MSBuild property is passed, so the gate's pass covers none of its tests; the gate reads only the invocation's total, so it names no property and sees no skip inside an invocation that ran some test; way forward: when those tests must run and the hub's refuse_raw does not list dotnet test, run them by hand with dotnet test <project> -p:<property>=true, the property its project file's IsTestProject condition names, and check that the run's summary line reports them; otherwise report the skipped tests to your parent", tierName(run.number), project, classes)
++}
++
+ // tierTestTargets returns the packages of targets in the module at moduleDir that hold a test run's tier executes.
+ // The tiers counted are run's own and those it covers.
+ // A target that names no directory, such as an import path, is kept.
+diff --git a/internal/gatecli/tierrun_test.go b/internal/gatecli/tierrun_test.go
+index 964abe9b..8196bcdd 100644
+--- a/internal/gatecli/tierrun_test.go
++++ b/internal/gatecli/tierrun_test.go
+@@ -226,6 +226,80 @@ func TestRunTierProcessCap(t *testing.T) {
+ 	}
+ }
+ 
++// TestRunTierNoTestNotice pins the line a passing `vstest` invocation prints when its output reported no test.
++// The command reports one test for a target holding "ran" and prints only a restore line for any other.
++func TestRunTierNoTestNotice(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	if runtime.GOOS == "windows" {
++		t.Skip("the tier command is a POSIX shell case")
++	}
++
++	const summary = "Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 1 s - ran.dll (net8.0)"
++	command := "case \"{targets}\" in *ran*) echo '" + summary + "';; *bad*) exit 3;; *) echo 'Restored the project';; esac"
++	// notice builds the expected line; project "{dir}" stands for the invocation's run directory.
++	notice := func(project, classes string) string {
++		return "gate test: tier0 ran no test of " + project + classes + ": dotnet test exited 0 and reported no test, as a test project does that sets IsTestProject false unless an MSBuild property is passed, so the gate's pass covers none of its tests; the gate reads only the invocation's total, so it names no property and sees no skip inside an invocation that ran some test; way forward: when those tests must run and the hub's refuse_raw does not list dotnet test, run them by hand with dotnet test <project> -p:<property>=true, the property its project file's IsTestProject condition names, and check that the run's summary line reports them; otherwise report the skipped tests to your parent"
++	}
++	tests := []struct {
++		name        string
++		counter     string
++		invocations []invocation
++		// wantExit is the tier's exit code.
++		wantExit int
++		want     []string
++	}{
++		{name: "AProjectThatReportsATestPrintsNoLine", counter: counterVSTest, invocations: []invocation{{targets: []string{"ran.csproj"}}}},
++		{
++			name:    "ANarrowedProjectThatReportsNoTestIsNamedWithItsClassFilter",
++			counter: counterVSTest,
++			invocations: []invocation{
++				{targets: []string{"ran.csproj"}},
++				{targets: []string{"slow.csproj"}, terms: []string{"FullyQualifiedName~Ns.SlowA", "FullyQualifiedName~Ns.SlowB"}, partial: true},
++			},
++			want: []string{notice("slow.csproj", " under the class filter FullyQualifiedName~Ns.SlowA|FullyQualifiedName~Ns.SlowB")},
++		},
++		{name: "AWholeRunThatReportsNoTestIsNamed", counter: counterVSTest, invocations: []invocation{{targets: []string{"all.sln"}}}, want: []string{notice("all.sln", "")}},
++		{name: "AnInvocationWithNoTargetsNamesItsRunDirectory", counter: counterVSTest, invocations: []invocation{{}}, want: []string{notice("{dir}", "")}},
++		{name: "AFailingInvocationPrintsNoLine", counter: counterVSTest, invocations: []invocation{{targets: []string{"bad.csproj"}}}, wantExit: 3},
++		{name: "AGoJSONRunPrintsNoLine", counter: counterGoJSON, invocations: []invocation{{targets: []string{"slow"}}}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			for i := range tt.invocations {
++				tt.invocations[i].dir = dir
++			}
++			var stderr bytes.Buffer
++			request := testRequest{root: dir, stderr: &stderr, timeoutUnit: 30 * time.Second, pipeWaitDelay: defaultPipeWaitDelay}
++			run := tierRun{number: 0, tier: gateslot.Tier{Command: command, Counter: tt.counter, TimeoutMin: 1}, invocations: tt.invocations}
++
++			result := runTier(context.Background(), io.Discard, run, []string{"PATH=" + os.Getenv("PATH")}, request)
++
++			if result.refusal != "" || result.record.ExitCode != tt.wantExit {
++				t.Fatalf("runTier() = refusal %q, exit %d; want exit %d and no refusal", result.refusal, result.record.ExitCode, tt.wantExit)
++			}
++			var want []string
++			for _, line := range tt.want {
++				want = append(want, strings.ReplaceAll(line, "{dir}", dir))
++			}
++			got := strings.Split(strings.TrimSuffix(stderr.String(), "\n"), "\n")
++			if stderr.Len() == 0 {
++				got = nil
++			}
++			if !slices.Equal(got, want) {
++				t.Errorf("runTier() stderr lines = %q; want %q", got, want)
++			}
++			for _, line := range want {
++				if !strings.Contains(string(result.log), line+"\n") {
++					t.Errorf("runTier() log = %q; want it to hold %q", result.log, line)
++				}
++			}
++		})
++	}
++}
++
+ func TestFailedRunLabel(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
