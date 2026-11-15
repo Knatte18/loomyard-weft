@@ -22,4 +22,12 @@ Provenance: task slug smoke-died-driver-wording; note Darn-Write.md.
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - gated-fragment-names-scope-form-and-go-flags (class design, severity BLOCKING, open in rounds 1)
+  - reproduce-run-can-skip-test-and-read-as-pass (class design, severity BLOCKING, open in rounds 1)
+  - spec-test-pins-gated-stencil-prose (class consistency, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
