@@ -1,6 +1,6 @@
 # Remove test-only functions from production code and add a PATTERN rule against them
 
-`test-only-functions-in-prod` · Task · enhancement, pattern, testkit, cli · running · Seed-Child
+`test-only-functions-in-prod` · Task · enhancement, pattern, testkit, cli · running · Open-Window
 
 Imported from [issue #123](https://github.com/Knatte18/loomyard/issues/123).
 
