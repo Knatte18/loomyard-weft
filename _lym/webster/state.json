@@ -429,7 +429,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "8a2b99c3d5c2f215fec6fa7a21ef4844",
   "masterSessionId": "b0363183-f15a-4ce0-87b3-7c740ff517a3",
   "masterEngine": "claude",
@@ -483,6 +483,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-aa2c7da51d47555f1.jsonl"
       ]
+    },
+    "11": {
+      "slug": "dobby-pass-act",
+      "cards": [
+        "11-dobby-pass-act",
+        "12-loom-resume-act",
+        "13-shared-bolt-pull",
+        "14-tender-pause-intent"
+      ],
+      "cardHashes": {
+        "11-dobby-pass-act": "c26f66fa566bfe39b247912091cf28fd53f0b4d6fa317d1ad6ea6d48fd70a2a3",
+        "12-loom-resume-act": "66be4cdff1690d1788fa9e6854fb7878fb3b2161f30d19d1ea8aa818f540f20b",
+        "13-shared-bolt-pull": "2b041150110927938511b86d81aa6aa24ae0e265171e472d074d4f409326f39d",
+        "14-tender-pause-intent": "002057b1deb3e6e59f7a38803de119ee398b412f7a67525d13dbf44e54757d7c"
+      },
+      "startSha": "cefc3b5e4755793a99511c81acf17b6a32d452b3",
+      "kind": "fork",
+      "spawnedAt": "2026-11-15T18:05:01Z",
+      "sessionId": "b0363183-f15a-4ce0-87b3-7c740ff517a3",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "pairteardown-read-run",
