@@ -1,6 +1,6 @@
 # beam merge-parent reuses a completed merge-in slug, so dobby refuses to start the second merge-in
 
-`merge-parent-reuses-slug` · Task · bug, dobby, workspaces · running · Drift-Verify
+`merge-parent-reuses-slug` · Task · bug, dobby, workspaces · running · Code-Bouncer
 
 Imported from [issue #128](https://github.com/Knatte18/loomyard/issues/128).
 
