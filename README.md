@@ -125,7 +125,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Remove test-only functions from production code and add a PATTERN rule against them** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | darn · solid | Drift-Recheck | neve | 4h<br>1h | pattern, testkit, cli |
+| T3 | **Remove test-only functions from production code and add a PATTERN rule against them** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | darn · solid | Describe | neve | 4h<br>1h | pattern, testkit, cli |
 
 #### Ready (0)
 
