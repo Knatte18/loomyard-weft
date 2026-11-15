@@ -518,7 +518,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #119](https://github.com/Knatte18/loomyard/issues/119).\n\nWhat happened: a darn task's board entry asked for a decision based on a test failure seen on an older base. The darn prompt forbids running `lym gate test`, so the agent spent a long stretch tracing the shedverbs loop, keeper and arming code by hand without finding why the loop died. One run of the test, allowed afterwards by the parent, showed it already passes on the current base.\n\nWhy abnormal: the cheapest first step for a task that starts from a reported test failure is to check whether the failure still reproduces on its own base. The no-gate-test rule blocks that step, so the agent pays for manual diagnosis of a failure that no longer exists.\n\nWhat to do: let a darn task that starts from a reported test failure run the named test once through `lym gate test` before diagnosing, or have the darn prompt tell the agent to ask its parent for that single run up front.\n\nProvenance: task slug smoke-died-driver-wording; note Darn-Write.md.",
-      "status": "running · Worktree-Create",
+      "status": "running · Preflight",
       "created": "2026-11-15T11:34:36Z",
       "revised": "2026-11-15T14:05:26Z",
       "profile": "light"
@@ -601,27 +601,6 @@
       "revised": "2026-11-15T12:04:27Z",
       "profile": "docs",
       "project": "test-suite-trim"
-    },
-    {
-      "id": 1368,
-      "handle": "T3",
-      "slug": "readme-refresh-nov",
-      "title": "Refresh the README with what landed since 2026-11-11",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "docs"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Coverage-map test selection, orch in decision-record review, lens forks wording, new measurement rows, a sober multi-machine claim",
-      "body": "Bring the root `README.md` up to what has landed since its last refresh (`efda1928`, 2026-11-11).\nThe operator will point to LoomYard from job applications, so every claim must hold against the code and the reports it links.\n\n## Changes (operator, 2026-11-15)\n\n1. **Coverage-map test selection**, in \"Beyond the run\", under Mechanical gates:\n   the gate selects the tests of importing packages from per-package coverage maps, so a change runs the tests that reach it;\n   `lym gate redundant` lists tests other tests already cover.\n   Read `internal/testcover`, `internal/gatecli` and the pilot report `docs/research/speed/coverage-map-pilot-2026-11-12/report.md` for what holds today.\n2. **The orch in the decision-record review:** a Discussion-Review round can ask the parent orch, with a deadline, and keeps its findings (commits `32e8e32e`, `4946e478`).\n   One sentence where the review rounds are described.\n3. **Lens reviews in forks:** replace the current \"Review lenses in forks\" bullet with this text, the operator's wording:\n\n   \u003e - **Lens reviews in forks.** Writers and reviewers alike hand each lens, a focus such as missing tests, to a forked subagent.\n   \u003e   A fork inherits its parent's context and prompt cache, so it starts without re-reading what the parent read,\n   \u003e   and a lens costs far less than a new review.\n\n4. **Measurements table:** add rows, in the table's existing form and neutral wording, for\n   the coverage-map pilot (`docs/research/speed/coverage-map-pilot-2026-11-12/report.md`),\n   the plan-writer bench (`docs/research/loom/plan-writer-bench-2026-11-12/report.md`)\n   and the advisor bench (`docs/research/loom/advisor-model-bench-2026-11-12/report.md`).\n   State each finding with its sample size; a negative result is stated as such.\n5. **Several machines:** the \"Parallel tasks, beams and machines\" bullet claims several machines work on different projects at once.\n   Moving a hub between machines is being redesigned; word the claim so it promises no more than the code delivers today.\n\nNo other section changes. Follow the scribe prose rules the README already follows.\n",
-      "status": "done",
-      "created": "2026-11-15T13:59:42Z",
-      "revised": "2026-11-15T13:59:42Z",
-      "profile": "docs"
     },
     {
       "id": 1369,
