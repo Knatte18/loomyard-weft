@@ -1,9 +1,9 @@
 # P1 Revise adopt and the functions that move a hub between machines
 
-Rendered 2026-11-15 12:32 UTC; every age below is as of then.
+Rendered 2026-11-15 12:33 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`adopt-revision`](design-adopt-revision.md) · Age 49m · Owner `neve`
+[`adopt-revision`](design-adopt-revision.md) · Age 50m · Owner `neve`
 
 ## Goal
 
@@ -30,7 +30,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs |  | 54m<br>49m | batten, tender, dobby, orch, fabric, loom |
+| T3 | **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs |  | 55m<br>50m | batten, tender, dobby, orch, fabric, loom |
 
 ### Draft (1)
 

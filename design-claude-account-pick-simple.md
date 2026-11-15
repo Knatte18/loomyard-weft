@@ -35,6 +35,9 @@ So a worktree's account is a fact of the machine it runs on, never of the reposi
   The repository's tracked config holds no account setting, so each machine can spread the work its own way:
   at home everything runs on private account 1, on OSL-1046 the orchs sit on one account and the workers spread over both.
 - A machine with one account, or none listed, runs everything as today with no pick.
+- The pick runs, under the rules of the machine it runs on, every time a worktree gets work on a machine where it has no account yet:
+  a new task, a new beam, and every worktree that adopt brings onto the machine.
+  Every later session of that worktree on that machine reuses the account.
 - When a worktree moves to another machine through adopt, it gets an account from that machine's list by the same rules.
   Its Claude transcripts stay on the old machine in any case, so its sessions start fresh there;
   the adopt Motif (`adopt-redesign`) settles how a run goes on after such a move.
