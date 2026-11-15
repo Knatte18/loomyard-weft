@@ -1,6 +1,6 @@
 # Coverage maps and test-suite trimming run only on command, never per landing
 
-`testmap-on-command` · Task · enhancement, testkit, gate, dobby · running · Drift-Recheck
+`testmap-on-command` · Task · enhancement, testkit, gate, dobby · running · Describe
 
 ## Seen
 
