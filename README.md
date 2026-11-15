@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | Discussion-Burler-Fix | neve | 2d<br>35m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | Discussion-Burler-Fix | neve | 2d<br>36m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 #### Ready (0)
 
@@ -117,11 +117,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (15)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (16)</strong></summary>
 
 Owner `neve`
 
-### Tasks (2)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -131,13 +131,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (2)
+#### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 13d<br>1h | claude, shuttle, config |
+| T3 | `draft` **Refresh the README with what landed since 2026-11-11**<br>• Coverage-map test selection, orch in decision-record review, lens forks wording, new measurement rows, a sober multi-machine claim | [`readme-refresh-nov`](design-readme-refresh-nov.md) | darn · docs |  | 0m<br>0m | docs |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 2d<br>2d | slack, creel, orch |
 
 ### Notes (13)
