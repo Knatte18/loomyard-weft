@@ -20,27 +20,9 @@ Then the Motif `adopt-redesign` settles the design, and raddle splits its Sketch
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P3 Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt](project-adopt-build.md) (0)
+## [P3 Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt](project-adopt-build.md) (5)
 
 [`adopt-build`](design-adopt-build.md) · Age 0m · Owner `neve`
-
-### Tasks (0)
-
-Concrete and claimable; only a task can run.
-
-#### Ready (0)
-
-Waits on nothing open; can start now.
-
-_None._
-
-### Notes (0)
-
-Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Own entries
-
-The entries directly under this project and under none of its sub-projects.
 
 ### Tasks (5)
 
@@ -63,6 +45,24 @@ Not released; nothing starts it until its status is cleared.
 | T8 | `draft` **Every transition pushes its records before the run acts, and a takeover entry in the run's records hands it over without replay** | [`push-before-act-takeover`](design-push-before-act-takeover.md)<br>[Sketch](decision-push-before-act-takeover.md) | tapestry · solid | T6 | 0m<br>0m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 | T9 | `draft` **A machine registry and holds in Bolt, the owner pause caller retired, and a catch-up from origin after an absence** | [`bolt-holds-catch-up`](design-bolt-holds-catch-up.md)<br>[Sketch](decision-bolt-holds-catch-up.md) | tapestry · solid | T8<br>T3 | 0m<br>0m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 | T10 | `draft` **lym adopt runs in the foreground over pushed state, with --take-hold, and the dobby tears down or reports leftover pairs** | [`adopt-foreground-leftovers`](design-adopt-foreground-leftovers.md)<br>[Sketch](decision-adopt-foreground-leftovers.md) | tapestry · solid | T9 | 0m<br>0m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+
+### Notes (0)
+
+Not tasks: ideas and observations, merged into a task when one is promoted.
+
+## Own entries
+
+The entries directly under this project and under none of its sub-projects.
+
+### Tasks (0)
+
+Concrete and claimable; only a task can run.
+
+#### Ready (0)
+
+Waits on nothing open; can start now.
+
+_None._
 
 ### Notes (0)
 
