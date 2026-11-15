@@ -1,6 +1,6 @@
 # lym adopt runs in the foreground over pushed state, with --take-hold, and the dobby tears down or reports leftover pairs
 
-`adopt-foreground-leftovers` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle
+`adopt-foreground-leftovers` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle · draft
 
 Decision record: [Sketch](decision-adopt-foreground-leftovers.md)
 

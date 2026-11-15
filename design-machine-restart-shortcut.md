@@ -2,6 +2,8 @@
 
 `machine-restart-shortcut` · Task · feature, orch, reed, termwindow, shortcut · draft
 
+Depends on: [`hub-stop-button`](design-hub-stop-button.md)
+
 ## Seen (operator, 2026-11-08 and 2026-11-11)
 
 OSL-1046 and Neve crash often.
