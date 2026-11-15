@@ -3,18 +3,27 @@ lens: fix-code-correctness
 outcome: reported
 ```
 
-Lens fix-code-correctness: I checked the F1 and F2 changes in `call.go`, `edits.go`, `loomcli/arbiter.go`, `drivewiring.go`, `loomengine/arbiter.go` and `call_test.go`.
+Task: check the fix's changed code through the correctness lens (`withTaskWorktree` and the arbiter seam wiring, `TestArbiterSeam_Changes`, the `fakeWorktree` argument pins).
 
-no findings
+- **`withTaskWorktree`, `internal/battencli/drive.go`:** I found no defect.
+  - **Task worktree present:** `taskWorktreePresent` is true, `taskWorktreeLocation` resolves the task location, `Worktree` becomes `ArbiterSeam(taskLocation)`, and `Prompt.Worktree` becomes the task path. That is the ruled behaviour.
+  - **Task worktree absent:** `deps` comes back unchanged, so `Worktree` is nil, `MayEdit` is false and the prompt takes the no-fix fragment. `Prompt.Worktree` stays the prime path.
+  - **Stat error:** a failure other than "not exist" propagates out of `Judge`.
+  - **Per-call seam:** `shedarbiter.Seam` holds no state, so building it on each `Judge` call instead of caching it is safe. The `loaded` cache now holds the base `Deps`, and `withTaskWorktree` takes `Deps` by value, so nothing leaks between calls.
+  - **Callers:** `loadedArbiterDeps` and `arbiterSeam` have no callers outside `drive.go`.
+- **`TestArbiterSeam_Changes`:** it fails against each defect I tried.
+  - If untracked files were dropped, `sub/new.go` goes missing.
+  - If the path were joined wrong, the hashes read "deleted" rather than the content hashes.
+  - If keys were absolute paths, the map no longer matches.
+  - The gate log shows the test ran at tier 1.
+- **`fakeWorktree` pins:** a swapped `IsAncestor` or `CommitLog` call would give `("bbb","aaa")` and trip the `("aaa","bbb")` assertion. Guarding the check on `tt.after.Head == moved.Head` skips the rows that never reach those reads.
 
-Cases I ran through:
-- **`loomcli` `Changes`:** `WorktreeChangedFiles` returns only file paths, never directories, from go-git's status map. `hashFileOrDeleted` therefore never gets a directory, which `os.ReadFile` would reject with a non-`ErrNotExist` error. A tracked file deleted in the worktree hashes as `"deleted"`.
-- **Path root:** `filepath.Join(location.WorktreePath(), …)` uses the same root as `worktreeSnapshot`'s `codeRoot`, so the relative paths resolve to the right files.
-- **`maps.Equal`:** a nil map and an empty map compare equal, so an attempt with no uncommitted paths still matches.
-- **Callers:** `ArbiterAttempt.Changes` and `WorktreeSeam.Changes` are used only in the files above. The `ArbiterAttempt{...}` literals in other packages' tests don't set `Changes`, so the type change breaks none of them.
-- **New test rows:**
-  - The row that edits an untracked file spawns with `a.go: h1` and leaves `a.go: h2`. The old path-set compare treated that as equal and let the resume through, so the row fails without the fix.
-  - The row for an unreadable `Changes` at spawn expects a refusal and no start. With the `err` check dropped, the spawn would go ahead and the row would fail.
-  - The "untouched" row keeps equal hashes in a different insertion order and still passes.
+One finding:
 
-Tool calls: 2 reads, 1 to find where `WorktreeChangedFiles` is defined and 1 to read it (`internal/gitrepo/worktree.go`). My context didn't have what that function returns for untracked directories.
+- **LOW**, `withTaskWorktree` in `internal/battencli/drive.go`: the F1 ruling's new branches have no test.
+  - **Missing rows:** nothing pins that the task worktree gives a seam over the task path, or that an absent task worktree gives no seam and the no-fix prompt.
+  - **What would still pass:** if someone reverted the wiring to the prime, every existing test would pass.
+  - **Evidence:** the gate passed for `./internal/battencli` and the diff adds no test there.
+
+Calls made:
+1. `grep` of `func Seam` in `internal/shedarbiter` plus callers of `arbiterSeam` and `loadedArbiterDeps`: my context lacked `seam.go`, and I needed to confirm the seam is stateless and see who calls the changed functions.

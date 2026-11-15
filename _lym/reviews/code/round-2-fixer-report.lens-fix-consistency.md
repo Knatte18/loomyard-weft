@@ -3,22 +3,38 @@ lens: fix-consistency
 outcome: reported
 ```
 
-Task: check the F1/F2 change set for consistency with its surroundings.
+Task: check the round-2 change set through the fix-consistency lens, looking for stale twins and sibling disagreements.
 
-No findings that reach MEDIUM or BLOCKING. One LOW:
+Findings:
 
-- **LOW**, `internal/shedarbiter/edits.go:41`. The `readEdits` doc line reads "An uncommitted change is a tracked file or an untracked one whose path or content differs from the spawn's." That wording is loose. Tracked paths are compared through `Dirty`, and every path through `Changes`. It does not say that both maps are compared. It is no longer wrong, because it now names content as well as path, but "a tracked file" with no qualifier overstates what the first comparison covers.
+1. **MEDIUM** — `internal/battencli/drive.go`, `battenArbiterRecipe` last sentence (changed under F2): the recipe still says the arbiter works "from the hub's prime".
+   - The text reads "batten: a task worktree's whole lifecycle run from the hub's prime, in rows. ... The arbiter may make one fix of its own and commit it".
+   - It now fills `{{.recipe}}` in a prompt where the arbiter's edits and commits go to the task worktree, per the parent's ruling (the F1 change in `withTaskWorktree`).
+   - A reader can take "make one fix ... commit it" to mean the prime, the opposite of the ruling.
+   - The sentence also does not say that while the task worktree is absent the arbiter gives a verdict only; the no-fix fragment covers that case.
+   - Suggested wording: "...may make one fix of its own in the task worktree and commit it there, and otherwise re-launches, goes to the halted row or hands on."
 
-I checked these and found them consistent:
+2. **LOW** — `docs/overview.md` (two lines above the F2 edit) and `internal/loomcli/doc.go` (the F2 edit): neither says where batten's arbiter edits.
+   - The overview now reads "The arbiter may make one fix of its own, committed on the task branch." That is correct under the ruling.
+   - The `drive.go` comment on `battenCLI.tacklerDepsFor` ("A batten tackler has no worktree snapshot, since the prime has other writers") is untouched and still correct for the tackler.
+   - I found no stale "edits nothing" or "loom-engine recipe" text left in `*.go`, `*.md` or `*.yaml`: the grep was empty.
+   - The rule that batten's arbiter gets no seam while the task worktree is absent is documented only in `withTaskWorktree`'s comment and `summary.md`.
+   - `internal/shedarbiter/doc.go` ("A driver that leaves Deps.Worktree nil...") still holds.
 
-- **Seam type**: the `Changes` type is `map[string]string` in `WorktreeSeam`, `ArbiterAttempt`, the `fakeWorktree` fixture and the `loomcli` seam. The `samePaths` helper and the `slices` import are gone from `edits.go`. The only other `.Changes` callers are in unrelated packages.
-- **Docs**: the `WorktreeSeam.Changes` and `ArbiterAttempt.Changes` docs both say the map holds content hashes and "deleted".
-- **Path keys**: the keys are relative to the code worktree, as the docs say. The `loomcli` seam joins them onto `location.WorktreePath()` before hashing. `worktreeSnapshot` uses the same root for its prefix check. Both seam reads now go through the shared `hashFileOrDeleted` helper.
-- **Persisted attempts**: the old `[]string` form of `changes` in `attempt.json` cannot break reading. `main` has no `Changes` field, so no released record holds the old shape.
-- **Messages**: the new Changes-read refusal message is distinct from the `Snapshot` refusal. The existing row's `wantRefusal` substring still matches only the `Snapshot` message, so the two rows can tell the reads apart.
-- **Test**: the fixture passes `spawnChangesErr` as `changesErr`, which `onWait` only overwrites after the refusal.
-- **Missing sibling**: nothing mentions the old path-list wording in the contracts or `docs`. The summary's "What changed" bullet that F2 asked to update sits under `_lym`, which this round does not touch, so I did not check it.
+3. **LOW** — `_lym/landing/summary.md`, the "What changed" bullets: the F4 edit and the ruling edit are consistent with each other, but the stencil bullet is stale.
+   - It says the "never edit a file" lines "now defer to those rules", but the F3 change also reworked the "What you may change" lines 59, 60 and 66, which the bullet does not mention.
+   - It is still true, so this is minor.
+
+4. **LOW** — the F2 fix landed in the F1 commit.
+   - `a8f60ab8`, titled "fix F1", also carries the `battenArbiterRecipe` sentence change that belongs to F2.
+   - The F2 commit `071a006c` has only the docs.
+   - This concerns the fixer-report's accuracy, not the code. The report should say F2 spans two commits.
+
+Checks that held:
+- The F3 edits agree with the no-fix fragment and with lines 67 and 113 of the template.
+- The `call_test.go` F6 assertions match the `readEdits` argument order that `TestCall_Edits` rows already assume.
+- `shedworktree_test.go` is in the external test package, and it used `hashFileOrDeleted` only through `Changes`, so no `export_test.go` is needed.
 
 Tool calls:
-1. A `grep` over `internal`, `contracts` and `docs` for path-set wording and for other `Changes:` seam users, because my context did not show twins outside the files read.
-2. A `git grep` of `main` for `Changes` in `internal/loomengine/arbiter.go`, to see whether the `[]string` shape had ever been released.
+1. `grep` for stale phrases across `*.go`, `*.md` and `*.yaml`: my context holds only the files the fixer read, not the whole repo.
+2. `sed` and `grep` on `internal/shedarbiter/doc.go` and `internal/battencli/doc.go`: they are sibling docs the fixer did not read. `battencli/doc.go` does not exist.

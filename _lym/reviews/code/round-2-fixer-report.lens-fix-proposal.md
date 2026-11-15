@@ -3,19 +3,19 @@ lens: fix-proposal
 outcome: reported
 ```
 
-Task: challenge the two proposals the fixer carried out as proposed, F1 (name and test the spawn-time `Changes` refusal) and F2 (compare uncommitted paths by content hash).
+Task: challenge the proposals the fixer carried out as proposed (F2, F3, F4, F5, F6) from the fix-proposal lens.
 
-- **LOW** — `internal/loomcli/arbiter.go`, the new `Changes` closure, and `hashFileOrDeleted` in `internal/loomcli/drivewiring.go`.
-  - The hashing, the join of `location.WorktreePath()` with the relative path, and the "deleted" case are covered by no test.
-  - The `shedarbiter` tests use a fake seam that returns hashes directly. A wrong join root would hash a missing file as "deleted" for every path.
-  - Nothing then catches an edited untracked file, which is the defect F2 exists to close.
-  - I checked the case where a path is a directory, which would make `os.ReadFile` fail and refuse the spawn. It does not arise: `gitrepo.WorktreeChangedFiles` lists files from go-git status, not directories.
+**Findings**
 
-- **LOW** — `internal/loomengine/arbiter.go`, `ArbiterAttempt.Changes`.
-  - The JSON type changed from an array to an object. An `attempt.json` written with the earlier array form would fail `ReadArbiterAttempt` and abort `ListArbiterAttempts` for the run.
-  - This only matters if an array-form record has shipped. The field arrived in the recent branch commits, so it probably has not.
+1. **MEDIUM** — `internal/battencli/drive.go` `battenArbiterRecipe` ("The arbiter may make one fix of its own and commit it, and otherwise re-launches, goes to the halted row or hands on."), and the matching `docs/overview.md` sentence "The arbiter may make one fix of its own".
+   - **Summary:** F2's proposal states the fix as unconditional, but the parent's ruling on F1 makes it conditional. Batten's arbiter gets the no-fix fragment whenever the task worktree is absent.
+   - **Evidence:** `withTaskWorktree` returns `deps` with `Worktree == nil` when `taskWorktreePresent` is false. `call.go:246` then sets `MayEdit = false`, so the prompt carries the `## No fix of your own` fragment.
+   - **Concrete case:** a stop at Worktree-Create, or one after Worktree-Teardown has removed the pair, spawns an arbiter. Its `{{.recipe}}` says it may make a fix and commit it, and its edit rules say verdict only. That is the same two-contradictory-rules defect F2 set out to remove, now confined to the absent-worktree stops.
+   - **Suggested wording:** "The arbiter may make one fix of its own and commit it while the task worktree exists, and otherwise re-launches, goes to the halted row or hands on." Qualify the `docs/overview.md` line the same way.
 
-F1: no wrong case found. The Snapshot row still matches its own message, and the new Changes message does not contain that row's substring, so the two rows separate.
+2. No findings on F3, F4, F5 or F6.
+   - F3: line 59's "what the edit rules below let you" resolves to the no-fix fragment in no-fix mode, so it holds in both modes.
+   - F5: the test's exact-map assertion matches `CodeWorktreeChanges`' per-file listing.
+   - F6: the `tt.after.Head == moved.Head` guard fires only on rows that reach `IsAncestor`. The `CommitLog` check is additionally gated on `descends` and a nil `ancestorErr`, matching `readEdits`' flow.
 
-Further tool calls (1):
-- Read `internal/gitrepo/worktree.go` via grep, because the context lacked what `WorktreeChangedFiles` lists, to see whether a directory path could reach the hashing.
+**Tool calls:** none. The context already held every file this lens needed.

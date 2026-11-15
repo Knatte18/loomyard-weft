@@ -3,22 +3,15 @@ lens: fix-affected-set
 outcome: reported
 ```
 
-Task: check, through the fix-affected-set lens, that the fixes for F1 and F2 cover every member of their sets.
+No findings for the sets I checked.
 
-Findings:
-- F1 (set: the refusal sites in `settleFresh`). Covered. The grep of `refusal(` calls finds two before-spawn worktree sites, at `call.go:205` and `call.go:210`. Each now has its own message and its own `TestCall_Edits` row: `call_test.go:868` for the snapshot read and `call_test.go:872` for the changes read.
-- F2 (set: every user of the `Changes` type). Covered. The grep finds these users:
-  - the seam field (`edits.go`)
-  - the `readEdits` compare (`edits.go:77`)
-  - the attempt field and its settle site (`call.go:208` and `call.go:231`)
-  - the real seam wiring (`loomcli/arbiter.go:192`)
-  - the fake seam in `call_test.go`
-  Every one of them uses `map[string]string`.
-- Other callers of `fab.CodeWorktreeChanges()` (`gatecli/coveragescope.go:286` and `fabricengine/diff_integration_test.go:210`) still get `[]string`, which the fix did not change.
-- No leftover `samePaths` references remain.
-- LOW, not strictly a finding: `loomcli/arbiter.go:192` and the new `hashFileOrDeleted` in `drivewiring.go` have no test that reaches them. The only tests that touch `Changes` use the fake seam. The review did not ask for a test there, and `worktreeSnapshot` is tested the same way.
-- Unchecked: no finding was left unchecked. I did not check whether an `attempt.json` already on disk, with `changes` as a list, still loads.
+The review findings whose premise is a set:
 
-Tool calls:
-1. A grep of `Changes` users and the `samePaths` leftovers across `internal`, `contracts` and `docs`, to find every member of F2's set.
-2. A grep of `refusal(` calls and their tests in the arbiter, loomcli and battencli packages, to find every member of F1's set.
+- **F2 (sites saying the arbiter cannot fix):** I searched the Go, markdown and YAML files for the stale phrases. Those were "edits nothing", "only moves are", "loom-engine recipe" and "arbiter … cannot". No arbiter-specific hit remains outside the three sites the fixer edited. The `orch-role.md` hit is about an orchestrator fork, not the arbiter. `shedarbiter/doc.go` and `loom-fragment-arbiter-fix.md` agree with the fix.
+- **F1 (callers that build batten's arbiter deps):** `loadedArbiterDeps` has one caller, in `internal/battencli/drive.go:371`. `withTaskWorktree` sets `Worktree` and `Prompt.Worktree` before every `Judge` call. No other batten site wires `shedworktree.ArbiterSeam`.
+- **F3 (stale lines in the template):** I did not rerun a search. My context shows only the three review-named lines in `loom-template-arbiter.md` changed, and the other lines in the section already defer to the edit rules.
+- **F5, F6 (test coverage):** I did not rerun a search. Each is a single-test coverage gap, and the gate output shows `TestArbiterSeam_Changes` ran at tier 1.
+
+Tool calls (2 of 6):
+1. A grep across `.go`, `.md` and `.yaml` for stale "arbiter cannot edit" and "loom-engine only" phrasing. My context lacked a repo-wide view of F2's site set.
+2. A grep for every use of `loadedArbiterDeps`, `Deps.Worktree` and `Prompt.Worktree`. My context lacked F1's caller set.
