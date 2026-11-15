@@ -1,30 +1,32 @@
-# Prod code holds test-only functions: 156 unreachable from main; add a PATTERN rule
+# Remove test-only functions from production code and add a PATTERN rule against them
 
-`test-only-functions-in-prod` · Task · enhancement, pattern · draft
+`test-only-functions-in-prod` · Task · enhancement, pattern, testkit, cli · draft
 
 Imported from [issue #123](https://github.com/Knatte18/loomyard/issues/123).
 
 ## Seen
 
 `deadcode ./cmd/lym` (golang.org/x/tools/cmd/deadcode) on `main` at `35f5f8670` reports 156 functions in production code that the `lym` binary never reaches from `main`.
-The packages with most are `internal/fabricengine` (16), `internal/shedcheck` (9), `internal/websterengine` (8), `internal/loomcli` (6) and `internal/logger` (6).
+54 of them are `RunCLI` or `RunCLIIn` in the `*cli` packages.
+Each is a thin wrapper, `clihelp.Execute(Command(), out, args)` or `clihelp.ExecuteIn(...)`, that only tests call, often from other packages' tests.
+Others, such as `batcher.ProfileWeights` and `batcher.PeakContext`, are logic only tests call.
+`cmd/lym/main.go` has `run`, which repeats the body of `main` and is called only by tests.
 
-A spot check shows most are not dead code but helpers that only tests call, yet they sit in non-test files:
+## What to do (operator, 2026-11-15)
 
-- 54 of the 156 are `RunCLI` or `RunCLIIn` in the `*cli` packages; their callers are `_test.go` files.
-- `batcher.ProfileWeights` and `batcher.PeakContext` are called only from `batcher`'s tests and their own file.
-- `cmd/lym/main.go` has `run`, which repeats the body of `main` (build the root, set output, run, notify and sweep) and is called only by tests, so that logic exists twice.
+1. **`RunCLI` and `RunCLIIn`:** replace every call with a direct `clihelp.Execute(<pkg>.Command(), ...)` or `clihelp.ExecuteIn(...)`, then delete the wrappers.
+   The tests then run the same code they ran before.
+2. **Functions with no production caller:** delete each, together with the tests that test only it.
+   Keep one, and move it into a `_test.go` file, when it is a reference or oracle that tests of live code compare against; say which in the change description.
+3. **`cmd/lym`'s `run`:** fold it and `main` into one function both call.
+4. **The rule:** add a PATTERN entry: a function only tests call lives in a `_test.go` file or in `internal/testkit`, never in a production file.
+   Enforce it with a pattern test; a `deadcode` run that fails on a new such function is one way, and the Discussion of the run settles the way.
 
-The repository is about 376 000 lines of production Go and 546 000 of test Go; test-only helpers in production files add to the first figure without adding behaviour.
+## Safety conditions (operator, 2026-11-15)
 
-## Not known
+A function is deleted only when every one of these holds:
 
-Which of the 156 have no caller at all, tests included.
-`deadcode -test` only roots the tests of the packages named, so each package needs its own run; this report did not do that.
-
-## Idea
-
-Add a PATTERN rule: a function that only tests call lives in a `_test.go` file or in `internal/testkit`, never in a production file.
-Enforce it with a pattern test that runs `deadcode` per package, and fails on an unreachable exported or unexported function that a non-test file declares and only test files call.
-Then move the existing 156 over, starting with `RunCLI` and `RunCLIIn`, and fold `cmd/lym`'s `run` into one shared function that `main` and the tests both call.
-Run `deadcode` per package first to separate the truly dead functions from the test-only ones, and delete the dead ones.
+- `deadcode` roots every `main` package of the module, `cmd/...` and `tools/...` both, not `cmd/lym` alone.
+- It is unreachable under `GOOS=linux`, `GOOS=windows` and `GOOS=darwin` alike, since build-tagged files such as `internal/fslink`'s Windows junctions call code a Linux analysis cannot see.
+- No reflection, `go:linkname`, template function map or lookup by name reaches it; grep its name before deleting.
+- The gate is green up to tier 2 after the change.
