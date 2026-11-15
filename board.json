@@ -758,6 +758,27 @@
       "body": "Imported from [issue #118](https://github.com/Knatte18/loomyard/issues/118).\n\nWhat happened: the webster integration-suite triage recorded two tests in the gatecli package that failed the first verify run and passed or vanished on rerun, so they were classed as flaky and not as regressions.\n\n- gatecli TestGateTest_DetachedRun, subtest 'a passed lease ends a --wait gate line through its child, which kills its tiers and frees its slots'\n- gatecli TestRedundancyStep, subtest 'ABrokenLymBuildAndACorruptMapAreErrorLinesThatLeaveTheOtherTestsJudged'\n\nWhy it is abnormal: a verify run should give the same result on an unchanged tree. Both tests exercise process, lease and slot handling and a lym build, which points to timing or shared-state dependence, so they can fail a verify intermittently and cost reruns.\n\nWhat to do: run both tests repeatedly, including under load and in parallel with other gatecli tests, find the race or shared state, and make them deterministic.\n\nProvenance: task machine-name-verb; note webster-verify-triage.md.",
       "created": "2026-11-15T11:34:39Z",
       "revised": "2026-11-15T11:34:39Z"
+    },
+    {
+      "id": 1363,
+      "handle": "B11",
+      "slug": "merge-parent-reuses-slug",
+      "title": "beam merge-parent reuses a completed merge-in slug, so dobby refuses to start the second merge-in",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "dobby",
+        "workspaces"
+      ],
+      "issues": [
+        128
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #128](https://github.com/Knatte18/loomyard/issues/128).\n\n/home/AD.NORCERESEARCH.NO/hanf/Code/NORCE-DrillingAndWells/DrillOpPlan-LYMHUB/adopt-models-sim/.scratch/selfreport-merge-parent-slug.md\n\n## Issue comment, 2026-11-13\n\nOperator's expectation: a run's directory `_lym/shed/\u003cslug\u003e/` should be cleaned up when the run finishes (after Land and Worktree-Teardown). Here the first merge-in's run directory from 2026-11-10 was still in the prime with state `done`, which is what made batten refuse the slug. So the fix is that teardown removes the finished run's directory (and its task branch), not only that merge-parent picks a fresh slug.",
+      "created": "2026-11-15T11:34:44Z",
+      "revised": "2026-11-15T11:34:44Z"
     }
   ],
   "prime_owner": "neve",

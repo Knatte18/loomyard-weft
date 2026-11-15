@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (30)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (31)</strong></summary>
 
 Owner `neve`
 
@@ -95,7 +95,7 @@ Not released; nothing starts it until its status is cleared.
 | T5 | `draft` **Keep the coverage maps in each pair's weft branch, committed and pushed by lym gate testmap** | [`testmap-maps-in-weft`](design-testmap-maps-in-weft.md)<br>[Sketch](decision-testmap-maps-in-weft.md) | tapestry · solid |  | 2d<br>2d | gate, testkit, dobby |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 2d<br>2d | slack, creel, orch |
 
-### Notes (26)
+### Notes (27)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -105,7 +105,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 5d<br>5d | gate, fabric |
 
-#### Bugs (10)
+#### Bugs (11)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -119,6 +119,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B8 |  | **Body edits on a discussed task never reach its run** | [`discussed-body-edits-lost`](design-discussed-body-edits-lost.md) | 0m<br>0m | board, loom |
 | B9 |  | **Worktree .scratch is a symlink into another worktree's .lym/scratch, breaking relative project references** | [`scratch-symlink-other-worktree`](design-scratch-symlink-other-worktree.md) | 0m<br>0m | fabric |
 | B10 |  | **Flaky gatecli tests fail the first verify run and pass on rerun** | [`gatecli-flaky-tests`](design-gatecli-flaky-tests.md) | 0m<br>0m | gate |
+| B11 |  | **beam merge-parent reuses a completed merge-in slug, so dobby refuses to start the second merge-in** | [`merge-parent-reuses-slug`](design-merge-parent-reuses-slug.md) | 0m<br>0m | dobby, workspaces |
 
 #### Enhancements (6)
 
