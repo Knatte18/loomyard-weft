@@ -3,7 +3,7 @@
 Rendered 2026-11-15 12:39 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`adopt-revision`](design-adopt-revision.md) · Age 56m · Owner `neve`
+[`adopt-revision`](design-adopt-revision.md) · Age 57m · Owner `neve`
 
 ## Goal
 
@@ -30,7 +30,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs | Preflight | neve | 1h<br>56m | batten, tender, dobby, orch, fabric, loom |
+| T3 | **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs | Record-Write | neve | 1h<br>57m | batten, tender, dobby, orch, fabric, loom |
 
 ### Ready (0)
 
