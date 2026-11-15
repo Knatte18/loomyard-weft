@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-15 16:43 UTC; every age below is as of then.
+Rendered 2026-11-15 16:44 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Darn Code-Review reviewer template default to opus[medium]** | [`darn-reviewer-opus-medium`](design-darn-reviewer-opus-medium.md) | darn · docs | Worktree-Create | neve | 0m<br>0m | profiles, darn |
+| T5 | **Darn Code-Review reviewer template default to opus[medium]** | [`darn-reviewer-opus-medium`](design-darn-reviewer-opus-medium.md) | darn · docs | Seed-Child | neve | 0m<br>0m | profiles, darn |
 
 ### Ready (0)
 
