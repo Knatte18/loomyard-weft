@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -128,6 +128,48 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/arbiter-one-shot-fixer/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-15T18:39:50Z",
+      "started_at": "2026-11-15T18:32:46Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-15T18:36:22.334085371Z",
+          "end": "2026-11-15T18:36:22.344020934Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-15T18:36:46.113063241Z",
+          "end": "2026-11-15T18:36:46.12311901Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-15T18:36:22.399977264Z",
+          "end": "2026-11-15T18:36:22.591722878Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-15T18:36:23.004715496Z",
+          "end": "2026-11-15T18:36:46.080727464Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-15T18:36:46.171986438Z",
+          "end": "2026-11-15T18:39:49.200564131Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
