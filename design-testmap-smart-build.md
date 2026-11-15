@@ -1,6 +1,6 @@
 # Study how to build and keep per-test coverage maps cheaply enough to pay off
 
-`testmap-smart-build` · Task · research, testkit, gate, dobby · running · Open-Window
+`testmap-smart-build` · Task · research, testkit, gate, dobby · running · Record-Write
 
 ## Problem
 
