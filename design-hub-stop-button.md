@@ -1,6 +1,6 @@
 # A stop button in the prime orch session that takes the whole hub down, behind a yes/no
 
-`hub-stop-button` · Note · feature, reed, orch, tender
+`hub-stop-button` · Task · feature, reed, orch, tender · draft
 
 Imported from [issue #122](https://github.com/Knatte18/loomyard/issues/122).
 
