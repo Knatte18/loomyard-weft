@@ -304,9 +304,12 @@
       "brief": "",
       "body": "Builds the first full set of coverage maps, settles how they are kept fresh, and uses them to cut the test suite:\ncut existing redundant tests, and scope the verify gate to the tests that cover a diff.\n\n## Order (operator, 2026-11-12)\n\n1. Landed: the way to make and keep the maps, the upkeep pass (`lym gate testmap --upkeep`) and the prime dobby that starts it (`36621f0e`).\n2. Landed: the pilot on one package and the verb that lists redundant-test candidates (`lym gate redundant`, `79f0eb4a`).\n   Its report is `docs/research/speed/coverage-map-pilot-2026-11-12/report.md`.\n3. Open: the cut stage, `redundancy-sweep-existing`.\n   The operator reads the candidate lists first; the pilot found that equal coverage often hides a different assertion, so the cut stays a reading filter, not a verdict.\n",
       "created": "2026-11-09T20:46:47Z",
-      "revised": "2026-11-15T12:04:30Z",
+      "revised": "2026-11-15T12:25:00Z",
       "order": [
         "testmap-payoff-measure",
+        "testmap-maps-in-weft",
+        "testmap-upkeep-cost-and-guide",
+        "selector-non-body-miss",
         "redundancy-sweep-existing"
       ]
     },
@@ -348,7 +351,8 @@
       "brief": "",
       "body": "## Seen (D13 of `testmap-upkeep-design`)\n\nThe selector runs a package whole when a change is not a function body (a non-body miss).\nThe design asks for a note that proposes narrowing this miss.\n\n## Built so far (board tidy, 2026-11-11)\n\nThe selector landed as `65416136` (task `coverage-test-select`): `Selector` in `internal/testcover`, with `MissNonBody` the miss reason for \"change outside function declarations\".\nTask `gate-scope-coverage` (`cdc3522a`) now consumes it: the gate scope `coverage` runs, for a package in the diff set only because it imports a changed package, the tests the selector selects, and the whole package on any miss.\nThe scope report names such a package `miss: \u003creason\u003e`, so the non-body misses a real gate sees can be counted there.\nIt already narrows part of the non-body case: comment and formatting edits, a reordered import block,\nand added declarations no unchanged code can reach (a const outside an `iota` or implicit-value group, a var with no initializer, a type with no methods) are not misses.\nWhat still misses is the rest: a changed or removed declaration outside functions, an import added or removed other than a linked or standard-library package,\na `//go:` line change, a changed method set, an added `init`, an added predeclared name and a file that does not parse.\n\nCommit `46c3f64b` (task `testmap-selector-upkeep-rules`) changed the selector's other rules, not this miss:\n`NewSelector` takes a `Target` (the working tree or a commit);\na package's own non-test Go files are compared by function like a linked package's (`MissOwnFiles` is gone);\na package's own test files are compared per top-level `Test` function, and any other change there is `MissTestFile`\n(a test file's import change is no miss when the test binary already links the import);\na changed non-Go file under the package is a miss unless `inert_paths` exempts it;\nand a map whose `EnvironmentStamp` differs from the current one is `MissEnvironment`.\nThe non-body rules above apply to a package's own files as well as to a linked package's.\n\n## Idea\n\nFollow the names a changed declaration is referenced by, and select the tests that reach those references.\nMeasure with the miss counts that upkeep reports (D12) whether the narrowing pays before building it.\n",
       "created": "2026-11-11T15:28:17Z",
-      "revised": "2026-11-11T18:43:34Z"
+      "revised": "2026-11-15T12:25:00Z",
+      "project": "test-suite-trim"
     },
     {
       "id": 1343,
@@ -394,8 +398,9 @@
       "body": "## Idea (operator, 2026-11-12)\n\nThe operator wants good control over how the coverage maps are used and kept.\nThe upkeep pass runs on its own now (`test_map_upkeep` on, the dobby starts it), so what it costs and what it shows must be readable at any time.\nThe pilot (`docs/research/speed/coverage-map-pilot-2026-11-12/report.md`) estimated a full build at 45 to 165 minutes; the first real pass took 44 minutes on one slot.\n\n## What it does\n\n1. Cost: from the pass records and the gate's run records, report what the upkeep passes have cost since `36621f0e` landed:\n   passes started, wall time and gate-slot time per pass, packages measured, skipped and failed, the time a pass spent yielding to gates, and the audit mismatches.\n   Say how long a typical pass after one landing takes, and how long a full rebuild takes now.\n2. State: check whether one call shows the current state of the maps: which are at HEAD, which are queued and why, the miss counts by reason, the audit mismatches and the last pass.\n   If none does, propose the smallest way to show it (an existing verb with a flag, or a new read-only verb) with its size as a recipe and profile; write none of it.\n3. Use: write a short operator guide to `docs/research/speed/` (and link it from the research README):\n   how the maps are kept, when a map is rebuilt whole or by test, how to rebuild one package by hand, how to list candidates (`lym gate redundant`), how to switch the upkeep off and on, and how to tell that something is wrong.\n\n## Cap\n\nReading existing records and reports; no new full build, no repeat runs, no code change.\n\n## Not in scope\n\nCutting or folding any test, the selector's miss rules, and building the status view.\n",
       "status": "draft",
       "created": "2026-11-12T19:00:06Z",
-      "revised": "2026-11-12T20:37:47Z",
-      "profile": "docs"
+      "revised": "2026-11-15T12:24:59Z",
+      "profile": "docs",
+      "project": "test-suite-trim"
     },
     {
       "id": 1347,
