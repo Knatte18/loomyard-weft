@@ -23,6 +23,8 @@ The state map from the darn `docs` study this task depends on is the Motif's sta
   until adopt has finished and every failing test it found is fixed.
 - A machine cannot know what another machine holds uncommitted or unpushed; only what that machine has pushed is visible.
   Adopt works from pushed state alone and never asks about the other machine's local state.
+- lym detects that it has not run for a while, such as after the machine slept or hibernated or was switched off.
+  When it notices, it first checks whether ownership or any other pushed state changed meanwhile, before it acts on anything.
 
 ## Direction
 
