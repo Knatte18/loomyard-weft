@@ -593,6 +593,27 @@
       "body": "Imported from [issue #127](https://github.com/Knatte18/loomyard/issues/127).\n\n## What happened\n\nA task agent had to run a project's slow test suite by hand, because the gate's `COMMONLIB_REPO` setting makes the gate skip those tests.\n`dotnet test` on the slow-test project printed only restore lines and exited 0: no test ran and no message said why.\nThe project disables itself as a test project unless an opt-in MSBuild property is passed, so the run looked like a pass.\nFinding the property took several runs.\nNeither the agent's prompt nor the harness README mentions it.\n\n## Why it is abnormal\n\nA gate that skips a test class, plus a by-hand run that exits 0 without running anything, lets an agent believe tests passed when none ran.\nThe agent has no lym-provided signal that the gate skipped them or how to run them.\n\n## What to do\n\n- Have the gate report which test classes it skipped and why, as a visible line in its output.\n- Have the agent prompt, or the harness README, tell agents how to run gate-skipped tests by hand.\n- Consider a lym check that flags a `dotnet test` run that executed zero tests.\n\nProvenance: task `td-transient-odd-even-chatter`; note `Darn-Write.md`.\n",
       "created": "2026-11-15T11:34:21Z",
       "revised": "2026-11-15T11:34:21Z"
+    },
+    {
+      "id": 1355,
+      "handle": "B6",
+      "slug": "testmap-refusal-names-weft",
+      "title": "lym gate testmap refusal's way forward names a path that also refuses",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "cwd"
+      ],
+      "issues": [
+        126
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #126](https://github.com/Knatte18/loomyard/issues/126).\n\n## What happened\n\nRun from a task worktree, `lym gate testmap internal/adoptcli` refused because the worktree is not the prime.\nThe refusal's way forward named the prime's weft directory (`loomyard-weft`).\nRun there, the verb refused again: that directory holds no `go.mod`.\nThe call works only from the prime's code worktree (`loomyard`), which neither refusal names.\n\nThe way forward is built from `hubgeom.PrimeWorktreePath`, which returns the weft path where a code path is needed.\n\n## Why it is abnormal\n\nA refusal's way forward must be a call that succeeds.\nHere it sends the caller to a second refusal.\nThe task allowed one build and no repeats, so the misleading way forward nearly cost the pilot its only run.\n\n## What to do\n\nMake the `lym gate testmap` refusal name the prime's code worktree, not the weft.\nCheck the other refusals that take their way forward from `hubgeom.PrimeWorktreePath` for the same weft-for-code mix-up.\n\nProvenance: task `test-redundancy-candidates`; note `Darn-Write.md`.",
+      "created": "2026-11-15T11:34:23Z",
+      "revised": "2026-11-15T11:34:23Z"
     }
   ],
   "prime_owner": "neve",
