@@ -19,17 +19,9 @@ cut existing redundant tests, and scope the verify gate to the tests that cover 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (3)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
-
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Measure whether coverage maps pay off: incremental upkeep time, load on other runs, gate time saved** | [`testmap-payoff-measure`](design-testmap-payoff-measure.md) | darn · docs | Finalize | neve | 3h<br>3h | gate, testkit |
 
 ### Ready (0)
 
@@ -44,7 +36,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Measure what coverage-map upkeep costs, check how its state is shown, and write the operator guide**<br>• What the upkeep passes have cost, whether one call shows the maps state, and a short guide to using and keeping the maps | [`testmap-upkeep-cost-and-guide`](design-testmap-upkeep-cost-and-guide.md) | darn · docs | T5 | 2d<br>3h | gate, testkit, dobby |
-| T5 | `draft` **Keep the coverage maps in each pair's weft branch, committed and pushed by lym gate testmap** | [`testmap-maps-in-weft`](design-testmap-maps-in-weft.md)<br>[Sketch](decision-testmap-maps-in-weft.md) | tapestry · solid | T6 | 2d<br>3h | gate, testkit, dobby |
+| T5 | `draft` **Keep the coverage maps in each pair's weft branch, committed and pushed by lym gate testmap** | [`testmap-maps-in-weft`](design-testmap-maps-in-weft.md)<br>[Sketch](decision-testmap-maps-in-weft.md) | tapestry · solid |  | 2d<br>3h | gate, testkit, dobby |
 
 ## Notes (2)
 
@@ -56,3 +48,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 4d<br>3h | testkit, gate |
 | E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 5d<br>3h | testkit, gate |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T6 | **Measure whether coverage maps pay off: incremental upkeep time, load on other runs, gate time saved** | [`testmap-payoff-measure`](design-testmap-payoff-measure.md) | 3h<br>3h | gate, testkit |
