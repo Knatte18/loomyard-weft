@@ -125,15 +125,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (20)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (19)</strong></summary>
 
 Owner `neve`
 
-### Tasks (7)
+### Tasks (6)
 
 Concrete and claimable; only a task can run.
 
-#### Running (5)
+#### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -142,7 +142,6 @@ Held by a run; its scope is locked until the run ends.
 | T9 | **Gate bugs: silent skips, a testmap refusal naming the weft, two flaky gatecli tests** | [`gate-bug-bundle`](design-gate-bug-bundle.md) | darn · solid | Describe | neve | 1h<br>43m | gate, dotnet, stencil, cwd |
 | T10 | **A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call** | [`pause-holds-operator-verbs`](design-pause-holds-operator-verbs.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>43m | tender, git, batten, selfreport |
 | T11 | **PR-Review deadlocks after a failed pr-review gate when continue is set** | [`pr-review-failed-gate-deadlock`](design-pr-review-failed-gate-deadlock.md) | darn · light | Finalize | neve | 1h<br>43m | landing |
-| T12 | **Body edits on a discussed task never reach its run** | [`discussed-body-edits-lost`](design-discussed-body-edits-lost.md) | darn · light | Finalize | neve | 1h<br>43m | board, loom |
 | T14 | **beam merge-parent reuses a completed merge-in slug, so dobby refuses to start the second merge-in** | [`merge-parent-reuses-slug`](design-merge-parent-reuses-slug.md) | darn · light | Finalize | neve | 1h<br>43m | dobby, workspaces |
 
 #### Ready (0)
@@ -191,5 +190,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 5w<br>11d | board, ide, orch |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 5w<br>9d | webster |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>9d | burler, shed, orch, quarry, report |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T12 | **Body edits on a discussed task never reach its run** | [`discussed-body-edits-lost`](design-discussed-body-edits-lost.md) | 1h<br>43m | board, loom |
 
 </details>
