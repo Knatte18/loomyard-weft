@@ -1,6 +1,6 @@
 # Darn Code-Review reviewer template default to opus[medium]
 
-`darn-reviewer-opus-medium` · Task · enhancement, profiles, darn · running · Open-Window
+`darn-reviewer-opus-medium` · Task · enhancement, profiles, darn · running · Drift-Baseline
 
 ## Decision (operator, 2026-11-15)
 

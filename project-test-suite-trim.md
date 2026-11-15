@@ -29,8 +29,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Study how to build and keep per-test coverage maps cheaply enough to pay off**<br>• `darn: writer fable[high]` | [`testmap-smart-build`](design-testmap-smart-build.md) | darn · docs | Darn-Write | neve | 26m<br>26m | testkit, gate, dobby |
-| T4 | **Measure what sends coverage-map upkeep into whole-package rebuilds, and what a name-following selector would save** | [`testmap-miss-causes`](design-testmap-miss-causes.md) | darn · docs | Darn-Write | neve | 45m<br>45m | testkit, gate |
+| T2 | **Study how to build and keep per-test coverage maps cheaply enough to pay off**<br>• `darn: writer fable[high]` | [`testmap-smart-build`](design-testmap-smart-build.md) | darn · docs | Darn-Write | neve | 27m<br>27m | testkit, gate, dobby |
+| T4 | **Measure what sends coverage-map upkeep into whole-package rebuilds, and what a name-following selector would save** | [`testmap-miss-causes`](design-testmap-miss-causes.md) | darn · docs | Darn-Write | neve | 46m<br>46m | testkit, gate |
 
 ### Ready (0)
 

@@ -40,7 +40,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Every transition pushes its records before the run acts, and a takeover entry in the run's records hands it over without replay** | [`push-before-act-takeover`](design-push-before-act-takeover.md)<br>[Sketch](decision-push-before-act-takeover.md) | tapestry · solid | T6<br>T14 | 46m<br>10m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T8 | `draft` **Every transition pushes its records before the run acts, and a takeover entry in the run's records hands it over without replay** | [`push-before-act-takeover`](design-push-before-act-takeover.md)<br>[Sketch](decision-push-before-act-takeover.md) | tapestry · solid | T6<br>T14 | 46m<br>11m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 | T9 | `draft` **A machine registry and holds in Bolt, the owner pause caller retired, and a catch-up from origin after an absence** | [`bolt-holds-catch-up`](design-bolt-holds-catch-up.md)<br>[Sketch](decision-bolt-holds-catch-up.md) | tapestry · solid | T8<br>T3<br>T14 | 46m<br>10m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 | T10 | `draft` **lym adopt runs in the foreground over pushed state, with --take-hold, and the dobby tears down or reports leftover pairs** | [`adopt-foreground-leftovers`](design-adopt-foreground-leftovers.md)<br>[Sketch](decision-adopt-foreground-leftovers.md) | tapestry · solid | T9<br>T14 | 46m<br>10m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 | T11 | `draft` **The prime is the root beam: parent_beam names it, never empty**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`prime-is-root-beam`](design-prime-is-root-beam.md) | darn · solid | T10<br>T14 | 35m<br>10m | board, dobby, orch |
@@ -117,8 +117,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Study how to build and keep per-test coverage maps cheaply enough to pay off**<br>• `darn: writer fable[high]` | [`testmap-smart-build`](design-testmap-smart-build.md) | darn · docs | Darn-Write | neve | 26m<br>26m | testkit, gate, dobby |
-| T4 | **Measure what sends coverage-map upkeep into whole-package rebuilds, and what a name-following selector would save** | [`testmap-miss-causes`](design-testmap-miss-causes.md) | darn · docs | Darn-Write | neve | 45m<br>45m | testkit, gate |
+| T2 | **Study how to build and keep per-test coverage maps cheaply enough to pay off**<br>• `darn: writer fable[high]` | [`testmap-smart-build`](design-testmap-smart-build.md) | darn · docs | Darn-Write | neve | 27m<br>27m | testkit, gate, dobby |
+| T4 | **Measure what sends coverage-map upkeep into whole-package rebuilds, and what a name-following selector would save** | [`testmap-miss-causes`](design-testmap-miss-causes.md) | darn · docs | Darn-Write | neve | 46m<br>46m | testkit, gate |
 
 #### Ready (0)
 
@@ -154,7 +154,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Darn Code-Review reviewer template default to opus[medium]** | [`darn-reviewer-opus-medium`](design-darn-reviewer-opus-medium.md) | darn · docs | Open-Window | neve | 0m<br>0m | profiles, darn |
+| T5 | **Darn Code-Review reviewer template default to opus[medium]** | [`darn-reviewer-opus-medium`](design-darn-reviewer-opus-medium.md) | darn · docs | Drift-Baseline | neve | 0m<br>0m | profiles, darn |
 
 #### Ready (0)
 
