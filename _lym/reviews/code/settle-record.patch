@@ -1,0 +1,370 @@
+diff --git a/contracts/stencils/landing/landing-template-pr-review.md b/contracts/stencils/landing/landing-template-pr-review.md
+index a8ea0911..ee7afb31 100644
+--- a/contracts/stencils/landing/landing-template-pr-review.md
++++ b/contracts/stencils/landing/landing-template-pr-review.md
+@@ -62,3 +62,6 @@ When the operator says they are satisfied and asks you to continue:
+ 1. Commit or discard your work so the worktree is clean.
+ 2. Run `lym loom pr-continue`.
+    It ends the review, and the ordinary landing then merges the pull request on GitHub, after its gate.
++3. When lym then mails a gate failure from outside the change, such as a file another process held open,
++   run `lym loom pr-continue` again: it gates the same head again.
++   Fix a failure in the change itself in a new commit instead.
+diff --git a/docs/overview.md b/docs/overview.md
+index cd489ed5..189f1f56 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1301,7 +1301,7 @@ User-facing modules each get one `lym <module>` namespace:
+   When the resolver does not say so, the row passes.
+   The wait takes no parent lock.
+   It gates and pushes the agent's commits through the `pr-review` gate key, never onto a merged pull request.
+-  It mails a failure to the agent.
++  It mails a failure to the agent once per head, and the agent's `lym loom pr-continue` makes it gate that head again.
+   It reads the pull request at most once a minute and before each gate.
+   It ends Done when the pull request is merged or approved at the gated head.
+   It also ends Done when the operator's `lym loom pr-continue` ends the review.
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 6eefcc79..a3f88337 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -33,6 +33,8 @@
+ // A pass pushes the head and records it as gated.
+ // A failure pushes nothing.
+ // It mails the reason, naming the failing tier and log, to the PR-Review session once per head.
++// The mail names `lym loom pr-continue`, which clears the mailed head, so the next wake gates the same head again;
++// a failure from outside the change is thus retried without a new commit.
+ // A failure whose every failed run crashed its test runner mails nothing.
+ // It halts the row with LandingStopPrefix, naming the crashed runs.
+ // A head moved or a tree dirtied during the gate discards its verdict.
+@@ -71,8 +73,10 @@
+ // A start that fails transiently is an error the driver re-steps,
+ // and any other start failure is Stuck with Halt naming `lym loom resume`.
+ // The row stops the session before each read that may end the review.
+-// Such a read finds a merged pull request, an approval of the gated head or the continue flag.
++// Such a read finds a merged pull request, a recorded ending, an approval of the gated head,
++// or the continue flag on a clean tree at the gated head.
+ // The row resumes the session when that read keeps waiting.
++// The continue flag on a dirty tree or an ungated head leaves the session running while the row waits.
+ // The row stops the session at the first wake a pause covers and resumes it at the first uncovered wake.
+ // It also stops the session on every verdict, Stuck and error, and leaves it running when the context is cancelled.
+ // The wait's wakes start no session.
+diff --git a/internal/landingshed/prreview.go b/internal/landingshed/prreview.go
+index 448df657..06adf5d9 100644
+--- a/internal/landingshed/prreview.go
++++ b/internal/landingshed/prreview.go
+@@ -646,17 +646,18 @@ func (p *PRReview) wake(ctx context.Context, api pullrequest.API, state *prWaitS
+ 		}
+ 	}
+ 
+-	// The session is stopped before the read that may end the review;
++	// The session is stopped before the read that may end the review,
+ 	// so the agent cannot change the tree between the read and the verdict.
++	// A wake whose read cannot end the review leaves the session at work and judges the tree it read.
+ 	stopped := false
+-	if sessionStopWanted(status, rec) {
++	if sessionStopWanted(status, rec, head, dirty) {
+ 		if stopped, err = p.stopLiveSession(rec); err != nil {
+ 			return end("", shedengine.OutputPointer{}, err)
+ 		}
+-	}
+-	head, dirty, err = p.readTree()
+-	if err != nil {
+-		return end("", shedengine.OutputPointer{}, err)
++		head, dirty, err = p.readTree()
++		if err != nil {
++			return end("", shedengine.OutputPointer{}, err)
++		}
+ 	}
+ 	outcome, pointer, ended, err = p.judge(ctx, status, rec, head, dirty)
+ 	if err == nil && !ended && stopped {
+@@ -668,12 +669,18 @@ func (p *PRReview) wake(ctx context.Context, api pullrequest.API, state *prWaitS
+ }
+ 
+ // sessionStopWanted reports whether the read of status against rec may end the review or act on the operator's ending,
+-// so the session must be stopped before the tree is read.
+-// The cases are a merged pull request, the continue flag on any state, and an approval of the head the row gated.
+-func sessionStopWanted(status pullrequest.Status, rec pullrequest.Record) bool {
++// so the session must be stopped before the tree is read again.
++// head and dirty are the task head and uncommitted paths the wake read.
++// The cases are a merged pull request, a recorded ending, the continue flag on a clean tree at the gated head,
++// and an approval of the head the row gated.
++// The continue flag on a dirty tree or an ungated head only keeps the review waiting,
++// so the session is left at work instead of being stopped and resumed at every poll.
++func sessionStopWanted(status pullrequest.Status, rec pullrequest.Record, head string, dirty []string) bool {
+ 	switch {
+-	case status.State == pullrequest.StateMerged, rec.Continue:
++	case status.State == pullrequest.StateMerged, rec.ReviewEnded:
+ 		return true
++	case rec.Continue:
++		return len(dirty) == 0 && head == rec.GatedHead
+ 	case status.State == pullrequest.StateOpen:
+ 		return status.Approved && !status.ChangesRequested && status.HeadSHA == rec.GatedHead
+ 	}
+@@ -693,9 +700,13 @@ func (p *PRReview) readTree() (string, []string, error) {
+ 	return head, dirty, nil
+ }
+ 
++// gateRetryHint closes the mail of a gate failure, naming the agent's way to gate the same head again.
++const gateRetryHint = "; when the failure lies outside the change, such as a file another process held open, and the operator has asked you to continue, run lym loom pr-continue, which gates this head again"
++
+ // gateHead runs the pr-review gate over head, a clean tree whose head the record has not gated.
+ // A pass pushes head and records it as gated,
+ // and a failure pushes nothing and mails its reason to the PR-Review session once per head.
++// The record keeps the mailed head, which `lym loom pr-continue` clears so that the next wake gates it again.
+ // A runner crash judges no code, so it halts the row naming the crash and mails nothing;
+ // the resume gates the head again.
+ // A head moved or a tree dirtied during the gate discards the verdict.
+@@ -736,7 +747,7 @@ func (p *PRReview) gateHead(ctx context.Context, head string, rec pullrequest.Re
+ 	if rec.MailedHead == head {
+ 		return "", shedengine.OutputPointer{}, false, nil
+ 	}
+-	p.mailFailure(rec.StrandName, reason)
++	p.mailFailure(rec.StrandName, reason+gateRetryHint)
+ 	if err := p.updateRecord(func(r *pullrequest.Record) { r.MailedHead = head }); err != nil {
+ 		return "", shedengine.OutputPointer{}, true, err
+ 	}
+diff --git a/internal/landingshed/prreview_wait_test.go b/internal/landingshed/prreview_wait_test.go
+index 887467e1..986a7821 100644
+--- a/internal/landingshed/prreview_wait_test.go
++++ b/internal/landingshed/prreview_wait_test.go
+@@ -165,6 +165,7 @@ func TestPRReview_Wait(t *testing.T) {
+ 	withContinue := func(r *pullrequest.Record) { r.Continue = true }
+ 	withReviewEnded := func(r *pullrequest.Record) { r.ReviewEnded = true }
+ 	withStrand := func(r *pullrequest.Record) { r.StrandName = "pr-strand" }
++	withLiveStrand := func(r *pullrequest.Record) { r.StrandGUID = "guid-1" }
+ 	writeContinue := func(w *waitWorld) {
+ 		err := pullrequest.UpdateRecord(w.deps.PullRequest.RecordPath, w.deps.PullRequest.RecordLockPath, func(r *pullrequest.Record) error {
+ 			r.Continue = true
+@@ -229,6 +230,24 @@ func TestPRReview_Wait(t *testing.T) {
+ 		w.tree.result = verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1, Log: "/logs/gate.log"}
+ 	}
+ 
++	// recordLiveAtRead makes the world record whether the session of strand guid-1 was live at each tree read.
++	// The end of a call stops a live session whatever the wake did.
++	// Only this sequence therefore shows a stop before the re-read.
++	recordLiveAtRead := func(w *waitWorld) {
++		sessions := sessionsOf(w.deps)
++		w.deps.PullRequest.DirtyPaths = func() ([]string, error) {
++			live, _ := sessions.isLive("guid-1")
++			w.liveAtRead = append(w.liveAtRead, live)
++			return w.dirty, nil
++		}
++	}
++	assertStoppedBeforeTheReRead := func(t *testing.T, w *waitWorld) {
++		t.Helper()
++		if diff := cmp.Diff([]bool{true, false}, w.liveAtRead); diff != "" {
++			t.Errorf("session liveness at each tree read mismatch (-want +got):\n%s", diff)
++		}
++	}
++
+ 	tests := []struct {
+ 		name    string
+ 		record  *pullrequest.Record
+@@ -308,21 +327,26 @@ func TestPRReview_Wait(t *testing.T) {
+ 		},
+ 		{
+ 			name: "ContinueOnAClosedPullRequestAtTheGatedHeadIsDoneAndRecordsIt", record: seed("h1", withContinue), scripts: statusScript(closed),
++			setup:       recordLiveAtRead,
+ 			wantOutcome: shedengine.Done, wantRecord: seed("h1", withContinue, withReviewEnded),
++			check: func(t *testing.T, w *waitWorld, _ string) {
++				assertStoppedBeforeTheReRead(t, w)
++				assertSessionCounts(t, w.deps, 1, 1)
++			},
+ 		},
+ 		{
+ 			name: "ContinueOnAClosedPullRequestWithAnUngatedCleanHeadGatesItFirst", record: seed("h1", withContinue), scripts: statusScript(closed), head: "h2",
+ 			wantOutcome: shedengine.Done, wantRecord: &pullrequest.Record{Number: 7, URL: "u7", GatedHead: "h2", Continue: true, ReviewEnded: true}, gatePushes: 1,
+ 		},
+ 		{
+-			name: "ContinueOnAClosedPullRequestOnADirtyTreeKeepsWaiting", record: seed("h1", withContinue), scripts: statusScript(closed), dirty: []string{"wip.go"},
++			name: "ContinueOnAClosedPullRequestOnADirtyTreeKeepsWaitingAndLeavesTheSessionAtWork", record: seed("h1", withContinue), scripts: statusScript(closed), dirty: []string{"wip.go"},
+ 			setup:   func(w *waitWorld) { w.cancelAfter(3) },
+ 			wantErr: context.Canceled, wantCalls: []string{"Status 7"}, wantRecord: seed("h1", withContinue),
+ 			check: func(t *testing.T, w *waitWorld, _ string) {
+ 				if len(w.sleeps) != 3 {
+ 					t.Errorf("wait slept %d times; want 3 wakes before the cancel", len(w.sleeps))
+ 				}
+-				assertSessionCounts(t, w.deps, 2, 1)
++				assertSessionCounts(t, w.deps, 1, 0)
+ 			},
+ 		},
+ 		{
+@@ -339,14 +363,52 @@ func TestPRReview_Wait(t *testing.T) {
+ 			wantOutcome: shedengine.Done, wantCalls: []string{"Status 7"}, wantRecord: seed("h1", withContinue, withReviewEnded),
+ 		},
+ 		{
+-			name: "ReviewEndedOnAnOpenPullRequestOnADirtyTreeHaltsNamingTheFiles", record: seed("h1", withContinue, withReviewEnded), scripts: statusScript(open), dirty: []string{"wip.go"},
++			name: "ReviewEndedOnAnOpenPullRequestOnADirtyTreeHaltsNamingTheFiles", record: seed("h1", withContinue, withReviewEnded, withLiveStrand), scripts: statusScript(open), dirty: []string{"wip.go"},
++			setup: func(w *waitWorld) {
++				sessionsOf(w.deps).live["guid-1"] = true
++				recordLiveAtRead(w)
++			},
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"uncommitted changes: wip.go", "discard them", "lym loom resume"},
++			check: func(t *testing.T, w *waitWorld, _ string) {
++				assertStoppedBeforeTheReRead(t, w)
++				assertSessionCounts(t, w.deps, 0, 1)
++			},
+ 		},
+ 		{
+-			name:   "ContinueOnAnOpenPullRequestAtAnUngatedCleanHeadKeepsWaitingWithoutEndingTheReview",
++			name:   "ContinueOnAnOpenPullRequestAtAnUngatedCleanHeadKeepsWaitingWithoutEndingTheReviewOrStoppingTheSession",
+ 			record: seed("h1", withContinue, func(r *pullrequest.Record) { r.MailedHead = "h2" }), scripts: statusScript(open), head: "h2",
+ 			setup:   func(w *waitWorld) { w.cancelAfter(2) },
+ 			wantErr: context.Canceled, wantCalls: []string{"Status 7", editSeven},
++			check: func(t *testing.T, w *waitWorld, _ string) {
++				assertSessionCounts(t, w.deps, 1, 0)
++			},
++		},
++		{
++			name:   "ContinueAtAMailedHeadWhoseMailedHeadIsClearedGatesThatHeadAgainAndEndsTheReview",
++			record: seed("h1", withContinue, withStrand, func(r *pullrequest.Record) { r.MailedHead = "h2" }), scripts: statusScript(open), head: "h2",
++			setup: func(w *waitWorld) {
++				w.withGateCommand()
++				w.onSleep = func(w *waitWorld, n int) {
++					if n != 1 {
++						return
++					}
++					err := pullrequest.UpdateRecord(w.deps.PullRequest.RecordPath, w.deps.PullRequest.RecordLockPath, func(r *pullrequest.Record) error {
++						r.MailedHead = ""
++						return nil
++					})
++					if err != nil {
++						t.Errorf("clear the mailed head: %v", err)
++					}
++				}
++			},
++			wantOutcome: shedengine.Done, gatePushes: 1,
++			wantCalls:  []string{"Status 7", editSeven, "Status 7"},
++			wantRecord: recorded("h2", withContinue, withStrand, withReviewEnded),
++			check: func(t *testing.T, w *waitWorld, _ string) {
++				if w.tree.verifyCalls != 1 {
++					t.Errorf("the gate ran %d times; want once, after the mailed head was cleared", w.tree.verifyCalls)
++				}
++			},
+ 		},
+ 		{
+ 			name: "ContinueOnADirtyTreeKeepsWaitingWithOneStatusCallInTheFirstMinute", record: seed("h1", withContinue), scripts: statusScript(open), dirty: []string{"wip.go"},
+@@ -357,7 +419,7 @@ func TestPRReview_Wait(t *testing.T) {
+ 				if diff := cmp.Diff(want, w.sleeps); diff != "" {
+ 					t.Errorf("wake intervals mismatch (-want +got):\n%s", diff)
+ 				}
+-				assertSessionCounts(t, w.deps, 2, 1)
++				assertSessionCounts(t, w.deps, 1, 0)
+ 			},
+ 		},
+ 		{
+@@ -427,7 +489,7 @@ func TestPRReview_Wait(t *testing.T) {
+ 				if len(w.mails) != 1 {
+ 					t.Fatalf("mails = %q; want exactly one over two wakes of the failing head", w.mails)
+ 				}
+-				for _, want := range []string{"pr-strand|", "tier 1", "/logs/gate.log", "new commit"} {
++				for _, want := range []string{"pr-strand|", "tier 1", "/logs/gate.log", "new commit", "lym loom pr-continue"} {
+ 					if !strings.Contains(w.mails[0], want) {
+ 						t.Errorf("mail %q lacks %q", w.mails[0], want)
+ 					}
+diff --git a/internal/loomcli/commitrecords_test.go b/internal/loomcli/commitrecords_test.go
+index 0986276e..54029a8d 100644
+--- a/internal/loomcli/commitrecords_test.go
++++ b/internal/loomcli/commitrecords_test.go
+@@ -226,6 +226,23 @@ func TestPRContinueVerb(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("ARerunAfterAMailedGateFailureClearsTheMailedHead", func(t *testing.T) {
++		t.Parallel()
++		record, lock := newPaths(t)
++		if err := pullrequest.WriteRecord(record, lock, pullrequest.Record{Number: 7, URL: url, GatedHead: "h1", MailedHead: "h2", Continue: true}); err != nil {
++			t.Fatalf("WriteRecord() error: %v", err)
++		}
++		var out bytes.Buffer
++		if code := prContinueVerb(&out, record, lock); code != 0 {
++			t.Fatalf("prContinueVerb() = %d, %s; want 0", code, out.String())
++		}
++		got, _, err := pullrequest.ReadRecord(record, lock)
++		want := pullrequest.Record{Number: 7, URL: url, GatedHead: "h1", Continue: true}
++		if err != nil || got != want {
++			t.Errorf("record after prContinueVerb = %+v, %v; want %+v, the mailed head cleared", got, err, want)
++		}
++	})
++
+ 	t.Run("AbsentRecordIsRefused", func(t *testing.T) {
+ 		t.Parallel()
+ 		record, lock := newPaths(t)
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index bd31c1fc..30585cbc 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -575,8 +575,9 @@
+ // While a pause covers the slug the driver holds in the pause wait before any re-step, goto, agent spawn or hand-over.
+ //
+ // `lym loom pr-continue` is the PR-Review agent's verb for the operator's ending of a review:
+-// it sets the continue flag in the run's pull-request record and nothing else,
+-// and it is refused until the PR-Review row has opened the pull request.
++// it sets the continue flag in the run's pull-request record and clears the head whose gate failure the row mailed,
++// so the row gates that head again.
++// It writes nothing else, and it is refused until the PR-Review row has opened the pull request.
+ //
+ // `lym loom sampler-done` ends a sampler run's build:
+ // it sets the done flag in the Sampler-Session record to the row's current entry stamp and nothing else.
+diff --git a/internal/loomcli/prcontinue.go b/internal/loomcli/prcontinue.go
+index f7fef779..fe93ee0a 100644
+--- a/internal/loomcli/prcontinue.go
++++ b/internal/loomcli/prcontinue.go
+@@ -1,7 +1,8 @@
+ // prcontinue.go implements the `pr-continue` loom verb.
+ // The PR-Review agent runs it to tell the run the operator is satisfied with the review.
+-// The verb only sets Continue in the run's pull-request record.
++// The verb sets Continue in the run's pull-request record and clears the head whose gate failure was mailed.
+ // The PR-Review row reads that flag, records the ending and ends the row, leaving the pull request open.
++// A cleared mailed head makes the row gate that head again, so a failure from outside the change is retried.
+ // Finalize then merges the pull request on GitHub under its own gate and credit block.
+ 
+ package loomcli
+@@ -21,8 +22,9 @@ import (
+ const prContinueNoRecord = "loom: pr-continue: this run has no pull request record, so there is no review to end; way forward: wait until the PR-Review row has opened the pull request, then run lym loom pr-continue again"
+ 
+ // prContinueVerb sets Continue in the pull-request record at recordPath, under the lock at lockPath.
++// It also clears the record's mailed head, so the PR-Review row gates again a head whose gate failure it mailed.
+ // It reports a JSON envelope naming the pull request and returns the exit code.
+-// A record already carrying Continue or ReviewEnded succeeds the same way and is not written again.
++// A record carrying ReviewEnded, or Continue with no mailed head, succeeds the same way and is not written again.
+ // A run with no record is refused, and an unreadable or unwritable record is an error envelope carrying the error.
+ func prContinueVerb(out io.Writer, recordPath, lockPath string) int {
+ 	rec, found, err := pullrequest.ReadRecord(recordPath, lockPath)
+@@ -32,9 +34,10 @@ func prContinueVerb(out io.Writer, recordPath, lockPath string) int {
+ 	if !found {
+ 		return output.Err(out, prContinueNoRecord)
+ 	}
+-	if !rec.Continue && !rec.ReviewEnded {
++	if !rec.ReviewEnded && (!rec.Continue || rec.MailedHead != "") {
+ 		err := pullrequest.UpdateRecord(recordPath, lockPath, func(rec *pullrequest.Record) error {
+ 			rec.Continue = true
++			rec.MailedHead = ""
+ 			return nil
+ 		})
+ 		if errors.Is(err, pullrequest.ErrNoRecord) {
+@@ -61,8 +64,9 @@ func (c *loomCLI) prContinueCmd() *cobra.Command {
+ PR-Review agent runs it in its task worktree when the operator asks it to
+ continue. The PR-Review row then ends the review and leaves the pull request
+ open, and the run goes on through Finalize, which merges it on GitHub under its
+-own gate. It takes no arguments, and is refused until the PR-Review row has
+-opened the pull request.
++own gate. Run again after the row mailed a gate failure that lies outside the
++change, it makes the row gate the same head again. It takes no arguments, and
++is refused until the PR-Review row has opened the pull request.
+ 
+ Example:
+   lym loom pr-continue`,
+diff --git a/internal/pullrequest/record.go b/internal/pullrequest/record.go
+index 099aa5f7..e627dece 100644
+--- a/internal/pullrequest/record.go
++++ b/internal/pullrequest/record.go
+@@ -23,7 +23,8 @@ type Record struct {
+ 	Head string `json:"head,omitempty"`
+ 	// GatedHead is the head the PR-Review row last gated and pushed.
+ 	GatedHead string `json:"gated_head,omitempty"`
+-	// MailedHead is the head whose gate failure was mailed, so one failure is mailed once.
++	// MailedHead is the head whose gate failure was mailed, so one failure is mailed once and the head is not gated again.
++	// `lym loom pr-continue` clears it, so the PR-Review row gates that head again.
+ 	MailedHead string `json:"mailed_head,omitempty"`
+ 	// StrandGUID, StrandName, SessionID and Engine name the interactive PR-Review session, so a later pass resumes it.
+ 	StrandGUID string `json:"strand_guid,omitempty"`
