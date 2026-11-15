@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Darn's Code-Review reviewer should default to Opus, not Sonnet** | [`darn-code-reviewer-opus-default`](design-darn-code-reviewer-opus-default.md) | darn · light | Drift-Baseline | neve | 31m<br>0m | darn, profiles, loom |
+| T8 | **Darn's Code-Review reviewer should default to Opus, not Sonnet** | [`darn-code-reviewer-opus-default`](design-darn-code-reviewer-opus-default.md) | darn · light | Darn-Write | neve | 31m<br>0m | darn, profiles, loom |
 
 ### Ready (0)
 
@@ -57,7 +57,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B7 |  | **PR-Review deadlocks after a failed pr-review gate when continue is set** | [`pr-review-failed-gate-deadlock`](design-pr-review-failed-gate-deadlock.md) | 31m<br>31m | landing |
 | B8 |  | **Body edits on a discussed task never reach its run** | [`discussed-body-edits-lost`](design-discussed-body-edits-lost.md) | 31m<br>31m | board, loom |
 | B9 |  | **Worktree .scratch is a symlink into another worktree's .lym/scratch, breaking relative project references** | [`scratch-symlink-other-worktree`](design-scratch-symlink-other-worktree.md) | 31m<br>31m | fabric |
-| B10 |  | **Flaky gatecli tests fail the first verify run and pass on rerun** | [`gatecli-flaky-tests`](design-gatecli-flaky-tests.md) | 30m<br>30m | gate |
+| B10 |  | **Flaky gatecli tests fail the first verify run and pass on rerun** | [`gatecli-flaky-tests`](design-gatecli-flaky-tests.md) | 31m<br>31m | gate |
 | B11 |  | **beam merge-parent reuses a completed merge-in slug, so dobby refuses to start the second merge-in** | [`merge-parent-reuses-slug`](design-merge-parent-reuses-slug.md) | 30m<br>30m | dobby, workspaces |
 
 ### Enhancements (5)
