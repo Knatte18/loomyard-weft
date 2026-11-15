@@ -14,3 +14,5 @@
 
 - Drop `README.md` from the template's `open_files.beam`, so every place opens nothing by default.
 - Find why the preview association fails and fix it, or drop `render_markdown` if the association cannot work.
+  VS Code showed an "Extension Bisect" in progress at the time, which disables extensions and may have switched off the markdown extension;
+  settle whether lym's settings are at fault before changing them.
