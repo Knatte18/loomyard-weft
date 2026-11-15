@@ -1,6 +1,6 @@
 # Darn Code-Review reviewer template default to opus[medium]
 
-`darn-reviewer-opus-medium` · Task · enhancement, profiles, darn
+`darn-reviewer-opus-medium` · Task · enhancement, profiles, darn · running · Worktree-Create
 
 ## Decision (operator, 2026-11-15)
 
