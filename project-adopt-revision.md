@@ -3,7 +3,7 @@
 Rendered 2026-11-15 18:42 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`adopt-revision`](design-adopt-revision.md) · Age 6h · Owner `neve`
+[`adopt-revision`](design-adopt-revision.md) · Age 7h · Owner `neve`
 
 ## Goal
 
