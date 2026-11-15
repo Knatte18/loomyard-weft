@@ -1,9 +1,9 @@
 # P1 Revise adopt and the functions that move a hub between machines
 
-Rendered 2026-11-15 12:30 UTC; every age below is as of then.
+Rendered 2026-11-15 12:32 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`adopt-revision`](design-adopt-revision.md) · Age 48m · Owner `neve`
+[`adopt-revision`](design-adopt-revision.md) · Age 49m · Owner `neve`
 
 ## Goal
 
@@ -30,7 +30,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs |  | 52m<br>48m | batten, tender, dobby, orch, fabric, loom |
+| T3 | **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs |  | 54m<br>49m | batten, tender, dobby, orch, fabric, loom |
 
 ### Draft (1)
 
@@ -38,7 +38,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | T3 | 2d<br>47m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T4 | `draft` **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | T3 | 2d<br>49m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 ## Notes (0)
 
