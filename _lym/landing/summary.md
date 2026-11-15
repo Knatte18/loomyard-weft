@@ -1,0 +1,49 @@
+# The arbiter may make one fix of its own and commit it before it resumes
+
+The arbiter (`internal/shedarbiter`) settles a stop the shed driver's rules and tackler leave, but it could only resume with a goto or hand on.
+A stop that needed a small edit went to the orch or the operator, even when the arbiter had read enough to make it.
+A loom-engine run's arbiter may now make one fix of its own: it edits the task's code worktree, commits the edit on the task branch, and resumes the run.
+Weaver needs this to stand in for Merriam; the change is the arbiter's alone.
+
+## What changed
+
+- `shedarbiter.Deps` gains an optional `Worktree` seam: a worktree snapshot, an ancestor check and a commit log.
+  The loom CLI wires it through fabric's read-only reads, so tapestry, darn, sampler and pawl arbiters may edit.
+  Batten leaves it unset, since its worktree is the prime, which has other writers; its arbiter edits nothing, as before.
+- At spawn the call snapshots the worktree (HEAD, branch, hash of each tracked uncommitted path) into `attempt.json`.
+  When the arbiter is done, `readEdits` compares the worktree with that snapshot and lists the commits made since.
+- A resume is handed on with cause `precondition` when the arbiter switched branch, rewrote history or left uncommitted changes.
+  A resume after commits also needs a goto target.
+- `envelope.json` and the `lym loom arbiter` output gain `commits`.
+  `ArbiterOutcome.Commits` carries them to the driver, which lists them in the resume's re-step settle record (new `commits` key) and in the stop report's attempt line.
+  A hand-on's question, the agent's own or the call's, ends by naming the commits for the parent to keep or revert.
+- The arbiter stencil gains an `edit_scope` marker, filled from one of two new fragments.
+  `loom-fragment-arbiter-fix` states the fix rules and `loom-fragment-arbiter-no-fix` the verdict-only rule.
+  The "never edit a file" and "never run a mutating git command" lines now defer to those rules, and still forbid push, amend, rebase, reset and branch switches.
+
+## Design decisions
+
+The decision record left three questions open; this change settles them as follows.
+
+- **What it may edit:** the task's code, tests and docs in its own worktree.
+  The plan, the decision record and PATTERN entries still change only through the repair verbs (`lym loom decision add`, `--amends-plan`, the pattern flags), never by editing the file.
+  Nothing under `_lym/` or `.lym/`, and nothing outside the worktree.
+  A fix needing more than one focused change, a choice the board entry leaves open, or a scope change stays the parent's, as a hand-on.
+- **How an edit is committed and checked:** the arbiter commits it itself, with an `Arbiter-Attempt: <run-id>` trailer, before writing its verdict.
+  Go enforces a clean commit on the branch and HEAD it found.
+  A resume after commits must name a goto at or before the first row whose gate checks the change, so the run's own rows and gates re-check the fix.
+  Go enforces that a goto is present.
+  The trailer and which row the goto names are the stencil's instruction, not checked.
+- **How the edits show:** the commits appear in the attempt's `envelope.json`, the verb's output, the re-step settle record, the stop report's attempt line and the hand-on question.
+  On the task branch they carry the trailer.
+- A hand-on keeps the arbiter's commits on the branch rather than reverting them, since lym's code runs no mutating git outside fabric.
+  The parent decides, and the question names them.
+- No `PATTERN.md` change: the arbiter's commits are an agent's, which `PATTERN-fabric-boundary` does not bind, and the reads go through fabric.
+
+## Tests
+
+- `TestCall_Edits` covers each case: a resume with and without commits, a resume with no goto, the agent's own hand-on, uncommitted changes, a branch switch, rewritten history, a timeout after commits, an unreadable worktree at spawn, and the no-seam prompt.
+- `TestPrompt` pins the fix rules (worktree and trailer) and the no-fix rules on their own inputs.
+- `TestGoDriver_Settle` gains rows for the commits in the stop report's attempt line and in the re-step settle record.
+- `TestStencils_TopLevelMarkers` pins both fragments' markers.
+  `TestParseSettleRecords` now compares records with `reflect.DeepEqual`, since the record holds a slice.
