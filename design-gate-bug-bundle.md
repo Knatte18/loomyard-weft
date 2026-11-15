@@ -1,6 +1,6 @@
 # Gate bugs: silent skips, a testmap refusal naming the weft, two flaky gatecli tests
 
-`gate-bug-bundle` · Task · bug, gate, dotnet, stencil, cwd · running · Drift-Verify
+`gate-bug-bundle` · Task · bug, gate, dotnet, stencil, cwd · running · Code-Bouncer
 
 Three gate bugs, bundled because they all touch the gate packages (operator, 2026-11-15).
 
