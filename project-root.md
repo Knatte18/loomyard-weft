@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-15 11:27 UTC; every age below is as of then.
+Rendered 2026-11-15 11:30 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -29,7 +29,7 @@ Not released; nothing starts it until its status is cleared.
 | T5 | `draft` **Keep the coverage maps in each pair's weft branch, committed and pushed by lym gate testmap** | [`testmap-maps-in-weft`](design-testmap-maps-in-weft.md)<br>[Sketch](decision-testmap-maps-in-weft.md) | tapestry · solid |  | 2d<br>2d | gate, testkit, dobby |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 2d<br>2d | slack, creel, orch |
 
-## Notes (12)
+## Notes (13)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -39,11 +39,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 5d<br>5d | gate, fabric |
 
-### Bugs (1)
+### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **lym adopt does not work**<br>• The operator reports that lym adopt fails today; the cause is not yet found | [`adopt-does-not-work`](design-adopt-does-not-work.md) | 2d<br>2d | orch, fabric |
+| B2 |  | **The orch comes back as a new session, not a continuation, after the hub moves back to this machine** | [`orch-resume-after-owner-move`](design-orch-resume-after-owner-move.md) | 0m<br>0m | orch, shuttle |
 
 ### Enhancements (3)
 
