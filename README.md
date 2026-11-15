@@ -13,7 +13,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ### [P3 Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt](project-adopt-build.md) (9)
 
-[`adopt-build`](design-adopt-build.md) · Age 45m · Owner `neve`
+[`adopt-build`](design-adopt-build.md) · Age 46m · Owner `neve`
 
 #### Tasks (9)
 
@@ -25,8 +25,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **The orch ends its own earlier Claude process and resumes its session, never launching fresh over a live holder** | [`orch-resume-own-session`](design-orch-resume-own-session.md)<br>[Sketch](decision-orch-resume-own-session.md) | darn · solid | Code-Burler-Review | neve | 46m<br>45m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
-| T6 | **One run FSM in internal/runfsm over tracked records, with cancel and pause intents, the PR record and fixer counts tracked** | [`run-fsm-tracked-records`](design-run-fsm-tracked-records.md)<br>[Sketch](decision-run-fsm-tracked-records.md) | tapestry · solid | Plan-Burler-Review | neve | 46m<br>45m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T3 | **The orch ends its own earlier Claude process and resumes its session, never launching fresh over a live holder** | [`orch-resume-own-session`](design-orch-resume-own-session.md)<br>[Sketch](decision-orch-resume-own-session.md) | darn · solid | Code-Burler-Review | neve | 46m<br>46m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T6 | **One run FSM in internal/runfsm over tracked records, with cancel and pause intents, the PR record and fixer counts tracked** | [`run-fsm-tracked-records`](design-run-fsm-tracked-records.md)<br>[Sketch](decision-run-fsm-tracked-records.md) | tapestry · solid | Plan-Burler-Review | neve | 46m<br>46m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 ##### Ready (0)
 
@@ -41,11 +41,11 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T8 | `draft` **Every transition pushes its records before the run acts, and a takeover entry in the run's records hands it over without replay** | [`push-before-act-takeover`](design-push-before-act-takeover.md)<br>[Sketch](decision-push-before-act-takeover.md) | tapestry · solid | T6<br>T14 | 46m<br>10m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
-| T9 | `draft` **A machine registry and holds in Bolt, the owner pause caller retired, and a catch-up from origin after an absence** | [`bolt-holds-catch-up`](design-bolt-holds-catch-up.md)<br>[Sketch](decision-bolt-holds-catch-up.md) | tapestry · solid | T8<br>T3<br>T14 | 46m<br>9m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
-| T10 | `draft` **lym adopt runs in the foreground over pushed state, with --take-hold, and the dobby tears down or reports leftover pairs** | [`adopt-foreground-leftovers`](design-adopt-foreground-leftovers.md)<br>[Sketch](decision-adopt-foreground-leftovers.md) | tapestry · solid | T9<br>T14 | 46m<br>9m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
-| T11 | `draft` **The prime is the root beam: parent_beam names it, never empty**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`prime-is-root-beam`](design-prime-is-root-beam.md) | darn · solid | T10<br>T14 | 34m<br>9m | board, dobby, orch |
-| T12 | `draft` **A stop button in the prime orch session that takes the whole hub down, behind a yes/no**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hub-stop-button`](design-hub-stop-button.md) | darn · solid | T11<br>T14 | 5h<br>9m | reed, orch, tender |
-| T13 | `draft` **One desktop launcher brings back every hub and beam that was in flight after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | darn · solid | T12<br>T14 | 7d<br>9m | orch, reed, termwindow, shortcut |
+| T9 | `draft` **A machine registry and holds in Bolt, the owner pause caller retired, and a catch-up from origin after an absence** | [`bolt-holds-catch-up`](design-bolt-holds-catch-up.md)<br>[Sketch](decision-bolt-holds-catch-up.md) | tapestry · solid | T8<br>T3<br>T14 | 46m<br>10m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T10 | `draft` **lym adopt runs in the foreground over pushed state, with --take-hold, and the dobby tears down or reports leftover pairs** | [`adopt-foreground-leftovers`](design-adopt-foreground-leftovers.md)<br>[Sketch](decision-adopt-foreground-leftovers.md) | tapestry · solid | T9<br>T14 | 46m<br>10m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T11 | `draft` **The prime is the root beam: parent_beam names it, never empty**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`prime-is-root-beam`](design-prime-is-root-beam.md) | darn · solid | T10<br>T14 | 34m<br>10m | board, dobby, orch |
+| T12 | `draft` **A stop button in the prime orch session that takes the whole hub down, behind a yes/no**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hub-stop-button`](design-hub-stop-button.md) | darn · solid | T11<br>T14 | 5h<br>10m | reed, orch, tender |
+| T13 | `draft` **One desktop launcher brings back every hub and beam that was in flight after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | darn · solid | T12<br>T14 | 7d<br>10m | orch, reed, termwindow, shortcut |
 | T14 | `draft` **Revise the remaining adopt-build members against what landed and what the operator decided since the split** | [`adopt-build-revision`](design-adopt-build-revision.md) | darn · docs | T3<br>T6 | 10m<br>10m | docs, batten, dobby, orch, fabric, tender |
 
 #### Notes (0)
@@ -135,16 +135,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 5d<br>4h | testkit, gate |
-| E5 |  | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | 42m<br>32m | testkit, gate, dobby |
+| E5 |  | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | 43m<br>32m | testkit, gate, dobby |
 
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (12)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (13)</strong></summary>
 
 Owner `neve`
 
-### Tasks (2)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -154,13 +154,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (2)
+#### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P3 | 13d<br>45m | claude, shuttle, config |
+| T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P3 | 13d<br>46m | claude, shuttle, config |
+| T5 | `draft` **Darn Code-Review reviewer template default to opus[medium]** | [`darn-reviewer-opus-medium`](design-darn-reviewer-opus-medium.md) | darn · docs |  | 0m<br>0m | profiles, darn |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 2d<br>2d | slack, creel, orch |
 
 ### Notes (10)
