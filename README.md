@@ -72,13 +72,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (3)</strong></summary>
+<summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (4)</strong></summary>
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 11d · Owner `neve`
 
 Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
 
-### Tasks (1)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -88,13 +88,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | `draft` **Codex as darn writer, replayed on a landed task, on Neve** | [`codex-writer-bench-neve`](design-codex-writer-bench-neve.md) | darn · docs |  | 0m<br>0m | codex, shuttle |
+| T15 | `draft` **Codex as darn writer, replayed on a landed task, on OSL-1046** | [`codex-writer-bench-osl`](design-codex-writer-bench-osl.md) | darn · docs |  | 0m<br>0m | codex, shuttle |
 
 ### Notes (2)
 
@@ -145,11 +146,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (14)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (13)</strong></summary>
 
 Owner `neve`
 
-### Tasks (5)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -167,7 +168,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (4)
+#### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -176,7 +177,6 @@ Not released; nothing starts it until its status is cleared.
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P3 | 13d<br>2h | claude, shuttle, config |
 | T4 | `draft` **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | motif | T3 | 5w<br>10m | webster, weaver |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 2d<br>2d | slack, creel, orch |
-| T15 | `draft` **Codex as darn writer, replayed on a landed task, on OSL-1046** | [`codex-writer-bench-osl`](design-codex-writer-bench-osl.md) | darn · docs |  | 0m<br>0m | codex, shuttle |
 
 ### Notes (9)
 

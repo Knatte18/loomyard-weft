@@ -64,7 +64,7 @@ Part 2 therefore tests the probe, its three outcomes and the refusal on a real m
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -74,13 +74,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (1)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | `draft` **Codex as darn writer, replayed on a landed task, on Neve** | [`codex-writer-bench-neve`](design-codex-writer-bench-neve.md) | darn · docs |  | 0m<br>0m | codex, shuttle |
+| T15 | `draft` **Codex as darn writer, replayed on a landed task, on OSL-1046** | [`codex-writer-bench-osl`](design-codex-writer-bench-osl.md) | darn · docs |  | 0m<br>0m | codex, shuttle |
 
 ## Notes (2)
 
