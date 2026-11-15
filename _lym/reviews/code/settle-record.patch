@@ -1,0 +1,343 @@
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 1a3be806..7ef63e2d 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -657,17 +657,23 @@ Example:
+ 				if err != nil {
+ 					return outputError(out, err.Error())
+ 				}
+-				var task boardengine.Task
+-				var siblings []boardengine.Sibling
++				var result boardengine.UpsertResult
+ 				if recordFile != "" {
+-					task, siblings, err = board().UpsertTaskWithRecord(fields, record, recordsBranchLive)
++					result.Task, result.Siblings, err = board().UpsertTaskWithRecord(fields, record, recordsBranchLive)
+ 				} else {
+-					task, siblings, err = board().UpsertTaskSiblings(fields)
++					result, err = board().UpsertTaskReporting(fields)
+ 				}
+ 				if err != nil {
+ 					return outputError(out, err.Error())
+ 				}
+-				return outputSuccessWithTask(out, task, joinNotices(notice, siblingNotice(siblings), landedNotice(task, fields)))
++				envelope := map[string]any{"task": result.Task}
++				if notices := joinNotices(notice, siblingNotice(result.Siblings), landedNotice(result.Task, fields)); notices != "" {
++					envelope["notice"] = notices
++				}
++				if result.RecordWarning != "" {
++					envelope["warning"] = result.RecordWarning
++				}
++				return output.Ok(out, envelope)
+ 			})(cmd, args)
+ 		},
+ 	}
+diff --git a/internal/boardcli/cli_test.go b/internal/boardcli/cli_test.go
+index 1e047889..2a903146 100644
+--- a/internal/boardcli/cli_test.go
++++ b/internal/boardcli/cli_test.go
+@@ -141,7 +141,7 @@ func TestCLI(t *testing.T) {
+ 		{"GetBodyRoundTrip", stepGetBodyRoundTrip},
+ 		{"GetRecord", stepGetRecord},
+ 		{"UpsertRecordFile", stepUpsertRecordFile},
+-		{"PromoteWarnsOnChangedSketchBody", stepPromoteWarnsOnChangedSketchBody},
++		{"UpsertAndPromoteWarnOnChangedSketchBody", stepUpsertAndPromoteWarnOnChangedSketchBody},
+ 		{"LabelsMapShapedPrintsFileOrderWithDescriptions", stepLabelsMapShapedPrintsFileOrderWithDescriptions},
+ 		{"LabelsListShapedPrintsNamesWithEmptyDescriptions", stepLabelsListShapedPrintsNamesWithEmptyDescriptions},
+ 		{"RunSettings", stepRunSettings},
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 95f7f663..fff666bc 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -144,6 +144,9 @@
+ // any other recipe is refused, naming the plain promote.
+ // `promote` of a Sketch whose body changed after its record was stored adds a `warning` to its envelope.
+ // The warning names `upsert --record-file`; `promote` never refuses on it.
++// `upsert` without `--record-file` that changes the body of an open entry whose record is stored adds a `warning` too.
++// It stays silent when the new body is the one the record was stored against.
++// The warning names `upsert --record-file` and `lym loom decision add`; `upsert` never refuses on it.
+ //
+ // `profiles` prints `{"ok":true,"defaults":{…},"profiles":[{"name":…,"settings":{recipe:{module:{…}}}}]}`:
+ // every run profile in the hub's `profiles.yaml` in name order, with its settings per recipe.
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 051a0476..8aec5d61 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -979,6 +979,9 @@ func stepUpsertRecordFile(t *testing.T, f *cliFixture) {
+ 		if ok, _ := result["ok"].(bool); !ok {
+ 			t.Fatalf("envelope = %v; want ok", result)
+ 		}
++		if warning, present := result["warning"]; present {
++			t.Errorf("upsert --record-file warning = %v; want no warning key", warning)
++		}
+ 		if exitCode, stdout := runCLI(t, "get", `{"slug":"sketched"}`, "--record"); exitCode != 0 || stdout != valid {
+ 			t.Errorf("get --record: exit %d, stdout %q; want 0 and the file's bytes %q", exitCode, stdout, valid)
+ 		}
+@@ -991,16 +994,20 @@ func stepUpsertRecordFile(t *testing.T, f *cliFixture) {
+ // ptr returns a pointer to value.
+ func ptr[T any](value T) *T { return &value }
+ 
+-// stepPromoteWarnsOnChangedSketchBody pins the promote envelope's warning:
+-// a Sketch whose body changed after its record was stored is still promoted and the warning names --record-file,
++// stepUpsertAndPromoteWarnOnChangedSketchBody pins the upsert and promote envelopes' warning:
++// a body edit on a Sketch whose record is stored is saved and the upsert's warning names --record-file;
++// the Sketch is then still promoted and the promote's warning names --record-file,
+ // and a Sketch whose body is unchanged carries no warning key.
+-func stepPromoteWarnsOnChangedSketchBody(t *testing.T, f *cliFixture) {
++func stepUpsertAndPromoteWarnOnChangedSketchBody(t *testing.T, f *cliFixture) {
+ 	record := decisionRecordText("Goal")
+ 	seedDiscussedSketch(t, f, "changed", "v1", record)
+ 	seedDiscussedSketch(t, f, "steady", "v1", record)
+-	runJSON(t, 0, "upsert", `{"slug":"changed","body":"v2"}`)
++	result := runJSON(t, 0, "upsert", `{"slug":"changed","body":"v2"}`)
++	if warning, _ := result["warning"].(string); !strings.Contains(warning, "--record-file") {
++		t.Errorf("upsert of a body edit on a Sketch: warning = %q; want one naming --record-file", warning)
++	}
+ 
+-	result := runJSON(t, 0, "promote", `{"slug":"changed"}`)
++	result = runJSON(t, 0, "promote", `{"slug":"changed"}`)
+ 	if warning, _ := result["warning"].(string); !strings.Contains(warning, "--record-file") {
+ 		t.Errorf("promote of a Sketch with an edited body: warning = %q; want one naming --record-file", warning)
+ 	}
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index f2f34757..191859ec 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -203,8 +203,8 @@ func (b *Board) boardCriticalSection(fn func(store *Store) (any, error), afterSa
+ // UpsertTask creates or updates the task identified by fields["slug"] under the write lock;
+ // field validation (allowlist, slug shape) is the store's job.
+ func (b *Board) UpsertTask(fields map[string]any) (Task, error) {
+-	task, _, err := b.UpsertTaskSiblings(fields)
+-	return task, err
++	result, err := b.UpsertTaskReporting(fields)
++	return result.Task, err
+ }
+ 
+ // SetStatus sets or clears the status field of the task identified by idOrSlug.
+diff --git a/internal/boardengine/decision.go b/internal/boardengine/decision.go
+index f47e89fa..ac8c6a2b 100644
+--- a/internal/boardengine/decision.go
++++ b/internal/boardengine/decision.go
+@@ -81,6 +81,23 @@ func recordBodyChanged(task Task) bool {
+ 	return task.RecordBodySHA256 != "" && task.RecordBodySHA256 != bodySHA256(task.Body)
+ }
+ 
++// bodyEditRecordWarning returns the warning for a write that took an entry from before to after.
++// It is set when the write changed the body of an open, discussed entry whose record file exists,
++// and the entry's record_body_sha256 stamp is not the new body's digest, an absent stamp included.
++// It names the upsert that replaces the stored record before the run starts.
++// It also names the verb that amends the record of a started run.
++// It is empty for every other write.
++func (b *Board) bodyEditRecordWarning(before, after Task) string {
++	if before.Body == after.Body || !after.Discussed || isDone(after) ||
++		after.RecordBodySHA256 == bodySHA256(after.Body) || !b.recordStored(after.Slug) {
++		return ""
++	}
++	return fmt.Sprintf("entry %q has a stored decision record, and its run reads that record, never the body, so this body edit does not reach the run; "+
++		"before the run starts, fold the edit into the record `lym board get '{\"slug\":\"%s\"}' --record` prints and store it with `lym board upsert '{\"slug\":\"%s\"}' --record-file <record.md>`; "+
++		"once the run has a task worktree, record it with `lym loom decision add %s`",
++		after.Slug, after.Slug, after.Slug, after.Slug)
++}
++
+ // recordStored reports whether the decision record file of the entry slug exists in the board directory.
+ func (b *Board) recordStored(slug string) bool {
+ 	_, err := os.Stat(filepath.Join(b.boardPath, DecisionFileName(slug)))
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 1057d5f3..1f4c2fc7 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -564,6 +564,13 @@
+ // It answers found only when the entry exists, carries the flag and the file exists;
+ // an absent entry, an unflagged one and a flagged one with no file each answer not found.
+ // A merge that removes a flagged slug and upserts it again keeps the flag.
++// A run of a discussed entry reads its stored record and never its body.
++// Board.UpsertTaskReporting therefore warns when it changes the body of an open entry whose record file exists.
++// The write still lands.
++// It stays silent when the new body is the one the stamp records.
++// An entry with no stamp warns on any body change.
++// The warning names `lym board upsert --record-file` before the run starts.
++// It names `lym loom decision add` once the run has a task worktree.
+ // LoadConfig refuses a design_prefix that would render a design file onto a record file's name:
+ // a prefix of `decision-` or one starting with it, the empty prefix included.
+ //
+@@ -690,7 +697,7 @@
+ // A dependency that is met is not added, and a done written task is skipped.
+ // A sibling that is done or abandoned is not one; a running sibling is.
+ // A pair reached from both sides, as in a batch, is reported once with the dependencies of both sides.
+-// SetDeps, UpsertTaskSiblings, UpsertTasksBatch and MergeTasks return the siblings.
++// SetDeps, UpsertTaskReporting, UpsertTasksBatch and MergeTasks return the siblings.
+ // They are computed under the write lock from the entries as loaded and as the mutation left them.
+ // The check never refuses, never changes a stored record and returns no siblings for a refused write.
+ //
+diff --git a/internal/boardengine/siblings.go b/internal/boardengine/siblings.go
+index 8032ab24..3cae2d07 100644
+--- a/internal/boardengine/siblings.go
++++ b/internal/boardengine/siblings.go
+@@ -128,15 +128,38 @@ func (b *Board) writeReportingSiblings(fn func(store *Store) (any, error)) (any,
+ 	return result, siblings, nil
+ }
+ 
+-// UpsertTaskSiblings creates or updates the task identified by fields["slug"] under the write lock.
+-// It returns the siblings the write created beside the task.
++// UpsertResult is what an upsert wrote.
++// It holds the task, the siblings the write created, and a warning about its decision record.
++type UpsertResult struct {
++	Task     Task
++	Siblings []Sibling
++	// RecordWarning is set when the write changed the body of an entry whose decision record is stored,
++	// and the record was not stored against the new body;
++	// it names the ways to carry the edit into the record.
++	RecordWarning string
++}
++
++// UpsertTaskReporting creates or updates the task identified by fields["slug"] under the write lock.
++// It returns the task with the siblings the write created beside it.
++// It also returns a warning when the write changed the body of an open entry whose decision record is stored:
++// a run of such an entry reads the record and never the body, so the edit does not reach the run.
++// The warning never refuses the write.
+ // Field validation (allowlist, slug shape) is the store's job.
+-func (b *Board) UpsertTaskSiblings(fields map[string]any) (Task, []Sibling, error) {
++func (b *Board) UpsertTaskReporting(fields map[string]any) (UpsertResult, error) {
++	var warning string
+ 	result, siblings, err := b.writeReportingSiblings(func(store *Store) (any, error) {
+-		return store.UpsertTask(fields)
++		before, existed := store.GetTask(fields["slug"])
++		task, err := store.UpsertTask(fields)
++		if err != nil {
++			return nil, err
++		}
++		if existed {
++			warning = b.bodyEditRecordWarning(before, task)
++		}
++		return task, nil
+ 	})
+ 	if err != nil {
+-		return Task{}, nil, err
++		return UpsertResult{}, err
+ 	}
+-	return result.(Task), siblings, nil
++	return UpsertResult{Task: result.(Task), Siblings: siblings, RecordWarning: warning}, nil
+ }
+diff --git a/internal/boardengine/siblings_test.go b/internal/boardengine/siblings_test.go
+index 185969f3..3eb33cca 100644
+--- a/internal/boardengine/siblings_test.go
++++ b/internal/boardengine/siblings_test.go
+@@ -38,8 +38,8 @@ func TestWriteSiblings(t *testing.T) {
+ 	}
+ 	upsert := func(fields map[string]any) func(b *boardengine.Board) ([]boardengine.Sibling, error) {
+ 		return func(b *boardengine.Board) ([]boardengine.Sibling, error) {
+-			_, siblings, err := b.UpsertTaskSiblings(fields)
+-			return siblings, err
++			result, err := b.UpsertTaskReporting(fields)
++			return result.Siblings, err
+ 		}
+ 	}
+ 	merge := func(remove []string, fields map[string]any, status *boardengine.MergeStatusUpdate) func(b *boardengine.Board) ([]boardengine.Sibling, error) {
+diff --git a/internal/boardengine/sketch_test.go b/internal/boardengine/sketch_test.go
+index 6cd24a39..219b2813 100644
+--- a/internal/boardengine/sketch_test.go
++++ b/internal/boardengine/sketch_test.go
+@@ -266,6 +266,90 @@ func TestPromoteToRecordWarning(t *testing.T) {
+ 	}
+ }
+ 
++// TestUpsertTaskReportingRecordWarning asserts that a body edit on a task with a stored decision record warns.
++// The edit still lands.
++// The warning names the slug, `--record-file` and `lym loom decision add`.
++// The warning is empty when the write leaves the body alone.
++// It is also empty when the write restores the body the record was stored against.
++// It is also empty when the entry has no stored record, whether it was never discussed or its record file is gone.
++// It is also empty when the entry is done.
++func TestUpsertTaskReportingRecordWarning(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name        string
++		storeRecord bool
++		// clearStamp removes record_body_sha256 from board.json after the store.
++		clearStamp bool
++		// markDone sets the entry done through the board's status path after the store.
++		markDone bool
++		// removeRecordFile deletes the entry's decision record file after the store.
++		removeRecordFile bool
++		// prior is upserted before the write under test when not nil.
++		prior      map[string]any
++		fields     map[string]any
++		wantWarned bool
++	}{
++		{"BodyEditOfADiscussedTaskWarns", true, false, false, false, nil, map[string]any{"slug": "filed", "body": "second body"}, true},
++		{"BodyEditOfAnUnstampedDiscussedTaskWarns", true, true, false, false, nil, map[string]any{"slug": "filed", "body": "second body"}, true},
++		{"TitleEditOfADiscussedTaskIsSilent", true, false, false, false, nil, map[string]any{"slug": "filed", "title": "Renamed"}, false},
++		{"BodyRestoredToTheStoredBodyIsSilent", true, false, false, false, map[string]any{"slug": "filed", "body": "second body"}, map[string]any{"slug": "filed", "body": "first body"}, false},
++		{"BodyEditOfAnUndiscussedTaskIsSilent", false, false, false, false, nil, map[string]any{"slug": "filed", "body": "second body"}, false},
++		{"BodyEditOfADoneDiscussedTaskIsSilent", true, false, true, false, nil, map[string]any{"slug": "filed", "body": "second body"}, false},
++		{"BodyEditOfADiscussedTaskWithNoRecordFileIsSilent", true, false, false, true, nil, map[string]any{"slug": "filed", "body": "second body"}, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			b, boardPath := newPromotionBoard(t)
++			mustUpsertEntry(t, b, map[string]any{"slug": "filed", "title": "Filed", "kind": "task", "labels": bugLabels, "body": "first body"})
++			if tt.storeRecord {
++				if err := b.StoreDecisionRecord("filed", []byte("record\n")); err != nil {
++					t.Fatalf("StoreDecisionRecord() error = %v; want nil", err)
++				}
++			}
++			if tt.clearStamp {
++				clearRecordStamps(t, filepath.Join(boardPath, "board.json"))
++			}
++			if tt.markDone {
++				done := "done"
++				if err := b.SetStatus("filed", &done); err != nil {
++					t.Fatalf("SetStatus() error = %v; want nil", err)
++				}
++			}
++			if tt.removeRecordFile {
++				if err := os.Remove(filepath.Join(boardPath, boardengine.DecisionFileName("filed"))); err != nil {
++					t.Fatalf("remove record file: %v", err)
++				}
++			}
++			if tt.prior != nil {
++				mustUpsertEntry(t, b, tt.prior)
++			}
++
++			result, err := b.UpsertTaskReporting(tt.fields)
++
++			if err != nil {
++				t.Fatalf("UpsertTaskReporting(%v) error = %v; want nil", tt.fields, err)
++			}
++			if body, _ := tt.fields["body"].(string); body != "" && result.Task.Body != body {
++				t.Errorf("UpsertTaskReporting(%v) task body = %q; want %q written", tt.fields, result.Task.Body, body)
++			}
++			if !tt.wantWarned {
++				if result.RecordWarning != "" {
++					t.Errorf("UpsertTaskReporting(%v) RecordWarning = %q; want empty", tt.fields, result.RecordWarning)
++				}
++				return
++			}
++			for _, want := range []string{`"filed"`, "--record-file", "lym loom decision add filed"} {
++				if !strings.Contains(result.RecordWarning, want) {
++					t.Errorf("UpsertTaskReporting(%v) RecordWarning = %q; want it to contain %q", tt.fields, result.RecordWarning, want)
++				}
++			}
++		})
++	}
++}
++
+ // clearRecordStamps removes the record_body_sha256 key from every entry of the board.json file at path.
+ func clearRecordStamps(t *testing.T, path string) {
+ 	t.Helper()
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index 10b2fd79..140fac91 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -133,6 +133,9 @@ That task splits the Sketch's decision record into tasks or a project.
+ A Sketch takes no other recipe.
+ When the Sketch's body changed after its record was stored, the promote still lands and adds a `warning` key to its output.
+ The warning names `upsert --record-file`, which brings the record up to the body before the run starts.
++An `upsert` without `--record-file` adds a `warning` key when it edits the body of an open entry whose record is stored
++and was not stored against the new body.
++That warning names `upsert --record-file` and `lym loom decision add`, and the write still lands.
+ Give a Sketch's dependencies in the promotion, because it releases the task and the parent's dobby can start it before a later `set-deps` lands:
+ 
+ ```
