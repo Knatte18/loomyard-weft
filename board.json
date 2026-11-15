@@ -450,7 +450,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `adopt-redesign`.\n\nTakes: internal/orchcli/start.go's launchOrch with its fresh-launch fallback, runproc's roles and End functions, claudeengine's CheckResume, the orch watcher's owned-elsewhere read and shuttleengine's carry-over; PATTERN-test-only-code holds, so every new function has a production caller\nDelivers: the orch's Claude process registered in runproc under an orch role keyed by the worktree; an orch start that ends its own registered holder and resumes the same session id, refuses an unregistered holder naming its pid, and launches fresh with the carry-over only when no local transcript exists, saying so; the orch watcher ending every process of a subject owned elsewhere, the dobby last\nExports: runproc's orch role and its registration call, and one function that ends every process this machine runs for a subject, which the orch watcher calls here and the dobby's handover and the catch-up call in bolt-holds-catch-up\n\nThe part changes these packages:\n\n- internal/orchcli (about 350 changed lines)\n- internal/runproc (about 120 changed lines)\n- internal/orchengine (about 50 changed lines)\n- internal/shuttleengine (about 30 changed lines)\n",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-11-15T15:57:25Z",
       "revised": "2026-11-15T15:57:47Z",
       "profile": "solid",
