@@ -14,8 +14,10 @@ The operator switched upkeep off hub-wide on 2026-11-15 (`test_map_upkeep: false
 2. A built map set serves to trim the test suites: cut redundant tests and other waste, judged by what each test covers.
 3. All test-suite optimisation, trimming and map building happens only on command, never automatically per landing or on any other trigger.
 
+4. The gate stops selecting tests from the maps and always runs whole packages, since maps no upkeep keeps go stale after the first landings.
+5. The first use of the on-command build is the redundant-test cut of `redundancy-sweep-existing`.
+
 ## What the design must settle
 
-- Whether the gate still selects tests from the maps between two builds, when they go stale after the first landings, or always runs whole packages.
 - What goes: the dobby's upkeep pass and its `test_map_upkeep` key, the upkeep-only parts of `lym gate testmap`, and the planned work that only serves upkeep.
 - The command or commands the operator runs: build the maps, then report and cut redundant tests (`lym gate redundant` today).
