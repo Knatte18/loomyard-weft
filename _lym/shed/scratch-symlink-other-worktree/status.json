@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-15T12:09:24Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/scratch-symlink-other-worktree/_lym/landing/summary.md",
+      "at": "2026-11-15T12:30:05Z",
+      "started_at": "2026-11-15T12:09:35Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-15T12:11:53.903120151Z",
+          "end": "2026-11-15T12:11:53.971665281Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-15T12:11:54.210127985Z",
+          "end": "2026-11-15T12:28:21.619889229Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-15T12:28:21.88805946Z",
+          "end": "2026-11-15T12:28:22.263598162Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-15T12:28:22.496658889Z",
+          "end": "2026-11-15T12:28:22.497027748Z"
+        }
+      ]
     }
   ],
   "product": {
