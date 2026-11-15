@@ -501,7 +501,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #125](https://github.com/Knatte18/loomyard/issues/125).\n\n## Seen\n\nIn a Models hub darn run (td-known-bugs), the pr-review gate over head a8c65e38 failed for an environmental reason (an IOException from a concurrent harness run holding a file open). The PR-Review agent had already run `lym loom pr-continue`.\n\n`internal/landingshed/prreview.go`: `gateHead` (740-747) mailed the failure once and wrote the head into `mailed_head`, not `gated_head`. On every later wake `gateDue` (622) is `head != GatedHead \u0026\u0026 head != MailedHead`, so the same head is never gated again. `judge` (869-872) waits for a gated head because continue is set, and `sessionStopWanted` (673-675) stops and resumes the PR-Review session on every wake, about once a minute, without end. A push of the head to origin changes nothing, since the record reads the local head.\n\n## Workaround\n\nAn empty commit in the task worktree moves the head, so `gateDue` turns true and the row re-gates.\n\n## Expected\n\nA failed pr-review gate is retried on the same head when the agent runs `lym loom pr-continue` (or another explicit re-gate verb), and the row does not cycle the session while it waits for a gate that will never run.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-15T11:34:25Z",
       "revised": "2026-11-15T12:06:46Z",
       "profile": "light"
@@ -635,7 +635,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #128](https://github.com/Knatte18/loomyard/issues/128).\n\n/home/AD.NORCERESEARCH.NO/hanf/Code/NORCE-DrillingAndWells/DrillOpPlan-LYMHUB/adopt-models-sim/.scratch/selfreport-merge-parent-slug.md\n\n## Issue comment, 2026-11-13\n\nOperator's expectation: a run's directory `_lym/shed/\u003cslug\u003e/` should be cleaned up when the run finishes (after Land and Worktree-Teardown). Here the first merge-in's run directory from 2026-11-10 was still in the prime with state `done`, which is what made batten refuse the slug. So the fix is that teardown removes the finished run's directory (and its task branch), not only that merge-parent picks a fresh slug.",
-      "status": "running · Drift-Recheck",
+      "status": "running · Describe",
       "created": "2026-11-15T11:34:44Z",
       "revised": "2026-11-15T12:06:47Z",
       "profile": "light"
