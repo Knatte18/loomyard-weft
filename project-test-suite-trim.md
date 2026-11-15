@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-15 11:43 UTC; every age below is as of then.
+Rendered 2026-11-15 12:04 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 5d · Owner `neve`
@@ -19,7 +19,7 @@ cut existing redundant tests, and scope the verify gate to the tests that cover 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (0)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -28,6 +28,14 @@ Concrete and claimable; only a task can run.
 Waits on nothing open; can start now.
 
 _None._
+
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T6 | `draft` **Measure whether coverage maps pay off: incremental upkeep time, load on other runs, gate time saved** | [`testmap-payoff-measure`](design-testmap-payoff-measure.md) | darn · docs |  | 0m<br>0m | gate, testkit |
 
 ## Notes (1)
 

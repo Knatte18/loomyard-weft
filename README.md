@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-15 11:43 UTC; every age below is as of then.
+Rendered 2026-11-15 12:04 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -9,7 +9,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 <details open>
 <summary><strong><a href="project-adopt-revision.md">P1 Revise adopt and the functions that move a hub between machines</a> (2)</strong></summary>
 
-[`adopt-revision`](design-adopt-revision.md) · Age 0m · Owner `neve`
+[`adopt-revision`](design-adopt-revision.md) · Age 21m · Owner `neve`
 
 ### Tasks (2)
 
@@ -27,8 +27,8 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs |  | 5m<br>0m | batten, tender, dobby, orch, fabric, loom |
-| T4 | `draft` **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | T3 | 2d<br>0m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T3 | `draft` **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs |  | 26m<br>21m | batten, tender, dobby, orch, fabric, loom |
+| T4 | `draft` **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | T3 | 2d<br>21m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 ### Notes (0)
 
@@ -68,16 +68,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 12d<br>6d | shuttle, codex, loom |
+| F15 |  | **Writer lookup agents on another engine, such as Codex, spawned through shuttle as reed windows** | [`lookup-agents-through-shuttle`](design-lookup-agents-through-shuttle.md) | 12d<br>7d | shuttle, codex, loom |
 
 </details>
 
 <details open>
-<summary><strong><a href="project-test-suite-trim.md">P6 Coverage maps: build them, keep them fresh, and cut the test suite with them</a> (1)</strong></summary>
+<summary><strong><a href="project-test-suite-trim.md">P6 Coverage maps: build them, keep them fresh, and cut the test suite with them</a> (2)</strong></summary>
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 5d · Owner `neve`
 
-### Tasks (0)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -86,6 +86,14 @@ Concrete and claimable; only a task can run.
 Waits on nothing open; can start now.
 
 _None._
+
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T6 | `draft` **Measure whether coverage maps pay off: incremental upkeep time, load on other runs, gate time saved** | [`testmap-payoff-measure`](design-testmap-payoff-measure.md) | darn · docs |  | 0m<br>0m | gate, testkit |
 
 ### Notes (1)
 
@@ -139,14 +147,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B4 |  | **A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call** | [`pause-holds-operator-verbs`](design-pause-holds-operator-verbs.md) | 8m<br>8m | tender, git, batten, selfreport |
-| B5 |  | **Agent prompt gives no way to run slow golden tests by hand; gate skips them silently** | [`gate-skipped-tests-silent`](design-gate-skipped-tests-silent.md) | 8m<br>8m | gate, dotnet, stencil |
-| B6 |  | **lym gate testmap refusal's way forward names a path that also refuses** | [`testmap-refusal-names-weft`](design-testmap-refusal-names-weft.md) | 8m<br>8m | gate, cwd |
-| B7 |  | **PR-Review deadlocks after a failed pr-review gate when continue is set** | [`pr-review-failed-gate-deadlock`](design-pr-review-failed-gate-deadlock.md) | 8m<br>8m | landing |
-| B8 |  | **Body edits on a discussed task never reach its run** | [`discussed-body-edits-lost`](design-discussed-body-edits-lost.md) | 8m<br>8m | board, loom |
-| B9 |  | **Worktree .scratch is a symlink into another worktree's .lym/scratch, breaking relative project references** | [`scratch-symlink-other-worktree`](design-scratch-symlink-other-worktree.md) | 8m<br>8m | fabric |
-| B10 |  | **Flaky gatecli tests fail the first verify run and pass on rerun** | [`gatecli-flaky-tests`](design-gatecli-flaky-tests.md) | 8m<br>8m | gate |
-| B11 |  | **beam merge-parent reuses a completed merge-in slug, so dobby refuses to start the second merge-in** | [`merge-parent-reuses-slug`](design-merge-parent-reuses-slug.md) | 8m<br>8m | dobby, workspaces |
+| B4 |  | **A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call** | [`pause-holds-operator-verbs`](design-pause-holds-operator-verbs.md) | 30m<br>29m | tender, git, batten, selfreport |
+| B5 |  | **Agent prompt gives no way to run slow golden tests by hand; gate skips them silently** | [`gate-skipped-tests-silent`](design-gate-skipped-tests-silent.md) | 30m<br>30m | gate, dotnet, stencil |
+| B6 |  | **lym gate testmap refusal's way forward names a path that also refuses** | [`testmap-refusal-names-weft`](design-testmap-refusal-names-weft.md) | 30m<br>30m | gate, cwd |
+| B7 |  | **PR-Review deadlocks after a failed pr-review gate when continue is set** | [`pr-review-failed-gate-deadlock`](design-pr-review-failed-gate-deadlock.md) | 30m<br>30m | landing |
+| B8 |  | **Body edits on a discussed task never reach its run** | [`discussed-body-edits-lost`](design-discussed-body-edits-lost.md) | 29m<br>29m | board, loom |
+| B9 |  | **Worktree .scratch is a symlink into another worktree's .lym/scratch, breaking relative project references** | [`scratch-symlink-other-worktree`](design-scratch-symlink-other-worktree.md) | 29m<br>29m | fabric |
+| B10 |  | **Flaky gatecli tests fail the first verify run and pass on rerun** | [`gatecli-flaky-tests`](design-gatecli-flaky-tests.md) | 29m<br>29m | gate |
+| B11 |  | **beam merge-parent reuses a completed merge-in slug, so dobby refuses to start the second merge-in** | [`merge-parent-reuses-slug`](design-merge-parent-reuses-slug.md) | 29m<br>29m | dobby, workspaces |
 
 #### Enhancements (6)
 
@@ -155,9 +163,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 7d<br>7d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 6d<br>3d | shed, loom, darn |
 | E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 3d<br>3d | testkit, gate |
-| E5 |  | **Darn's Code-Review reviewer should default to Opus, not Sonnet** | [`darn-code-reviewer-opus-default`](design-darn-code-reviewer-opus-default.md) | 9m<br>9m | darn, profiles, loom |
-| E6 |  | **Prod code holds test-only functions: 156 unreachable from main; add a PATTERN rule** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | 8m<br>8m | pattern |
-| E7 |  | **Darn prompt forbids gate test, so a task from a reported test failure cannot cheaply check whether it still reproduces** | [`darn-reproduce-reported-failure`](design-darn-reproduce-reported-failure.md) | 8m<br>8m | darn, stencil |
+| E5 |  | **Darn's Code-Review reviewer should default to Opus, not Sonnet** | [`darn-code-reviewer-opus-default`](design-darn-code-reviewer-opus-default.md) | 30m<br>30m | darn, profiles, loom |
+| E6 |  | **Prod code holds test-only functions: 156 unreachable from main; add a PATTERN rule** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | 30m<br>30m | pattern |
+| E7 |  | **Darn prompt forbids gate test, so a task from a reported test failure cannot cheaply check whether it still reproduces** | [`darn-reproduce-reported-failure`](design-darn-reproduce-reported-failure.md) | 29m<br>29m | darn, stencil |
 
 #### Features (8)
 
@@ -166,7 +174,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>2w | burler |
 | F2 |  | **One desktop launcher brings back every hub and beam that was in flight after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | 6d<br>3d | orch, reed, termwindow, shortcut |
 | F4 |  | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | 4d<br>4d | config, fabric |
-| F5 |  | **A stop button in the prime orch session that takes the whole hub down, behind a yes/no** | [`hub-stop-button`](design-hub-stop-button.md) | 8m<br>8m | reed, orch, tender |
+| F5 |  | **A stop button in the prime orch session that takes the whole hub down, behind a yes/no** | [`hub-stop-button`](design-hub-stop-button.md) | 29m<br>29m | reed, orch, tender |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>9d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 5w<br>10d | board, ide, orch |
 | F13 | L | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 5w<br>9d | webster |
