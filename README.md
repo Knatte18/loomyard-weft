@@ -58,13 +58,13 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- |
 | T10 | **lym adopt runs in the foreground over pushed state, with --take-hold, and the dobby tears down or reports leftover pairs** | [`adopt-foreground-leftovers`](design-adopt-foreground-leftovers.md)<br>[Sketch](decision-adopt-foreground-leftovers.md) | tapestry · solid | T9 | 26m<br>26m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
-##### Draft (1)
+##### Layer D (1)
 
-Not released; nothing starts it until its status is cleared.
+Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T11 | `draft` **The prime is the root beam: parent_beam names it, never empty** | [`prime-is-root-beam`](design-prime-is-root-beam.md) | darn · solid | T10 | 15m<br>0m | board, dobby, orch |
+| T11 | **The prime is the root beam: parent_beam names it, never empty** | [`prime-is-root-beam`](design-prime-is-root-beam.md) | darn · solid | T10 | 15m<br>0m | board, dobby, orch |
 
 #### Notes (0)
 

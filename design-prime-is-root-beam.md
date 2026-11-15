@@ -1,6 +1,6 @@
 # The prime is the root beam: parent_beam names it, never empty
 
-`prime-is-root-beam` · Task · enhancement, board, dobby, orch · draft
+`prime-is-root-beam` · Task · enhancement, board, dobby, orch
 
 Depends on: [`adopt-foreground-leftovers`](design-adopt-foreground-leftovers.md)
 

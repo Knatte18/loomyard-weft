@@ -613,7 +613,7 @@
       "body": "The build tasks raddle split from the Sketch `adopt-redesign`, run in a beam so they land on `main` together (operator, 2026-11-15).\nNo state between two members landing reaches `main`, so no installed lym runs half of the redesign.",
       "status": "running · Beam-Await",
       "created": "2026-11-15T15:57:47Z",
-      "revised": "2026-11-15T15:57:50Z",
+      "revised": "2026-11-15T16:24:02Z",
       "owner_machine": "neve",
       "project": "adopt-revision",
       "order": [
@@ -621,7 +621,8 @@
         "run-fsm-tracked-records",
         "push-before-act-takeover",
         "bolt-holds-catch-up",
-        "adopt-foreground-leftovers"
+        "adopt-foreground-leftovers",
+        "prime-is-root-beam"
       ],
       "beam": true,
       "beam_color": "#7d2d6b"
@@ -711,7 +712,6 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-15)\n\n`lym board list` and `lym board get` give `parent_beam` empty for an entry whose nearest beam is the prime, and `lym board list --text` shows no `P0`,\nwhile the board view and window titles show the prime as `P0`.\nThe prime is a beam, the root one; an empty value reads as \"no beam\".\n\n## Idea\n\n- `parent_beam` names the root beam, as `P0` or its slug, for every entry under the prime, never empty.\n- `lym board list --text` shows `P0` with the other projects, so every view of the board shows the same tree.\n- Every reader of an empty `parent_beam` (orch role, dobby, board verbs) moves to the named root in the same change.",
-      "status": "draft",
       "created": "2026-11-15T16:09:02Z",
       "revised": "2026-11-15T16:24:02Z",
       "profile": "solid",
