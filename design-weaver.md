@@ -237,5 +237,7 @@ Claude Code's own worktree isolation for agents has given the operator only trou
   A cold tackler or arbiter that sees one stop lacks that context, and the Shed LLM driver (Haiku today) does not read the batchifier's plan either.
 - No Master Weaver session waits beside the run: one that reads the plan at start and then lies idle wakes with a cold cache,
   so it costs a read and adds nothing a fresh agent lacks.
-- The arbiter takes Merriam's place: called at a stop the rules and the tackler leave, it reads the whole plan, every batch report and its deviations, and the merged result, and then acts.
+- The arbiter takes Merriam's place: called at a stop the rules and the tackler leave, it finds the picture itself, as it does for any recipe.
+  Its prompt names the stop's paths and the recipe's description (`shedarbiter`), and as an agent in the worktree it reads what it needs;
+  Weaver's recipe description names where the plan, the batch reports and their deviations lie.
 - Open: what the arbiter may do at a Weaver stop beyond today's goto to the halted row, such as rewrite the remaining plan, send a batch back with instructions, or write the fix itself.
