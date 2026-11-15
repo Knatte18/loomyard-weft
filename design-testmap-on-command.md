@@ -1,6 +1,8 @@
 # Coverage maps and test-suite trimming run only on command, never per landing
 
-`testmap-on-command` · Note · enhancement, testkit, gate, dobby
+`testmap-on-command` · Task · enhancement, testkit, gate, dobby · draft
+
+Depends on: [`testmap-miss-causes`](design-testmap-miss-causes.md)
 
 ## Seen
 
