@@ -25,4 +25,5 @@ What the design must settle:
 - Whether the new run re-uses the old commits (a cherry-pick, which brings back the study's ancestry question) or only reads them.
 - Whether this is a recipe step, a `lym batten` verb, or orch guidance alone.
 
-Waits until the adopt redesign (`adopt-redesign`) has settled how run state moves.
+The adopt redesign (`adopt-redesign`) has landed; the builds of how run state moves are the members of the project `adopt-build`, still open (`run-fsm-tracked-records`, `push-before-act-takeover`).
+Waits until those have landed.
