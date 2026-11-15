@@ -1,9 +1,9 @@
 # P1 Revise adopt and the functions that move a hub between machines
 
-Rendered 2026-11-15 15:41 UTC; every age below is as of then.
+Rendered 2026-11-15 15:45 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`adopt-revision`](design-adopt-revision.md) · Age 3h · Owner `neve`
+[`adopt-revision`](design-adopt-revision.md) · Age 4h · Owner `neve`
 
 ## Goal
 
@@ -30,7 +30,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md)<br>[Sketch](decision-adopt-redesign.md) | raddle | Raddle-Write | neve | 2d<br>46m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md)<br>[Sketch](decision-adopt-redesign.md) | raddle | Raddle-Write | neve | 2d<br>50m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 ### Ready (0)
 
