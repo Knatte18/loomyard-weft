@@ -29,7 +29,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | darn · solid | PR-Review | neve | 2h<br>1h | testkit, gate, dobby |
+| T2 | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | darn · solid | Finalize | neve | 2h<br>1h | testkit, gate, dobby |
 
 ### Ready (0)
 
