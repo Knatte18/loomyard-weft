@@ -1,6 +1,8 @@
 # Weaver: a cold-start implementer beside Webster, with model escalation
 
-`weaver` · Note · feature, webster, weaver
+`weaver` · Task · feature, webster, weaver · draft
+
+Depends on: [`arbiter-one-shot-fixer`](design-arbiter-one-shot-fixer.md)
 
 ## Idea (operator, 2026-10-11)
 
