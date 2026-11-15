@@ -429,7 +429,7 @@
       }
     }
   ],
-  "currentBatch": 17,
+  "currentBatch": 0,
   "masterStrand": "8a2b99c3d5c2f215fec6fa7a21ef4844",
   "masterSessionId": "b0363183-f15a-4ce0-87b3-7c740ff517a3",
   "masterEngine": "claude",
@@ -589,8 +589,26 @@
       "spawnedAt": "2026-11-15T18:45:55Z",
       "sessionId": "b0363183-f15a-4ce0-87b3-7c740ff517a3",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "17-lym-files-pattern",
+        "status": "done",
+        "head_sha": "ad20420b1d4d8e06e4f9cd2c842d9ca8b6fa2a30",
+        "deviations": [
+          "internal/battencli/cancelcmd.go",
+          "internal/battencli/cli.go"
+        ]
+      },
+      "cardShas": [
+        "ad20420b1d4d8e06e4f9cd2c842d9ca8b6fa2a30"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-a55e272b859bd9c2b.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-a55e272b859bd9c2b.jsonl"
+      ]
     },
     "5": {
       "slug": "pairteardown-read-run",
@@ -691,6 +709,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-ac2180900f917c805.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-afc75cbba3c431132.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-ad470a8ad4afc5496.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-ab08139099531a32f.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-ab08139099531a32f.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-a55e272b859bd9c2b.jsonl"
   ]
 }
