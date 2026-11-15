@@ -240,4 +240,7 @@ Claude Code's own worktree isolation for agents has given the operator only trou
 - The arbiter takes Merriam's place: called at a stop the rules and the tackler leave, it finds the picture itself, as it does for any recipe.
   Its prompt names the stop's paths and the recipe's description (`shedarbiter`), and as an agent in the worktree it reads what it needs;
   Weaver's recipe description names where the plan, the batch reports and their deviations lie.
-- Open: what the arbiter may do at a Weaver stop beyond today's goto to the halted row, such as rewrite the remaining plan, send a batch back with instructions, or write the fix itself.
+- The arbiter is to become a one-shot fixer that may edit, for every recipe; that is the note `arbiter-one-shot-fixer`.
+- Open (operator): Merriam gains much from living through the whole run.
+  It remembers what one batch struggled with and what a later batch must then keep in mind, which a short-lived arbiter cannot.
+  Weaver must carry that memory some other way.
