@@ -1,16 +1,25 @@
-<!-- This is the loom arbiter's launch prompt: the whole procedure of the cold, stronger-model session that settles one stop of a run its driver could not settle.
-     It is filled via internal/stencil.Fill (internal/shedarbiter's Prompt) and typed into the arbiter session as its entire instruction set.
-     Every marker below is a top-level {{.X}} substitution and every one is required non-empty:
-     {{.recipe}} is the description of the recipe whose run is judged, naming the repair verbs the arbiter may run, or the literal `none`,
-     {{.run_id}} is the run whose stop is judged, {{.slug}} the task it belongs to, {{.worktree}} the directory every command runs in,
-     {{.envelope_path}} the stop envelope, {{.report_path}} the driver's stop or fork report, {{.brief_path}} the review escalation brief and {{.case_brief_path}} the tackler's case brief (each the literal `none` when absent),
-     {{.decision_record_path}} and {{.support_log_path}} the task's decision record and support log,
-     {{.verdict_path}} the one file the arbiter writes,
-     {{.amendment_target}} the row a plan amendment routes to, or the literal `none`,
-     {{.parent_directive}} the no-parent variant of the shared parent directive rendered by internal/parentdirective,
-     and {{.edit_directive}} the shared edit directive rendered by internal/editdirective.
-     The body is recipe-blind: it names no recipe and no row, which arrive only through the stop envelope and the files it points at.
-lym-stencil: sha256=2a0842ac8e45851d8d80b29561c473ed97fbbeaee54e6a5cb60b46247a1e29c6 build=e45949b21285d1690783771ee8b872cdb086de72 time=2026-11-05T17:37:52Z -->
+<!-- This is the loom arbiter's launch prompt:
+     the whole procedure of the cold, stronger-model session that settles one stop of a run its driver could not settle.
+     internal/shedarbiter's Prompt fills it through internal/stencil.Fill;
+     the result is typed into the arbiter session as its entire instruction set.
+     Every marker below is a top-level {{.X}} substitution, and every one is required non-empty.
+     {{.recipe}} is the description of the recipe whose run is judged, or the literal `none`;
+     it names the repair verbs the arbiter may run.
+     {{.run_id}} is the run whose stop is judged, and {{.slug}} is the task it belongs to.
+     {{.worktree}} is the directory every command runs in.
+     {{.envelope_path}} is the stop envelope, and {{.report_path}} is the driver's stop or fork report.
+     {{.brief_path}} is the review escalation brief, and {{.case_brief_path}} is the tackler's case brief.
+     Each of those two is the literal `none` when absent.
+     {{.decision_record_path}} and {{.support_log_path}} are the task's decision record and support log.
+     {{.verdict_path}} is the one file the arbiter writes.
+     {{.amendment_target}} is the row a plan amendment routes to, or the literal `none`.
+     {{.parent_directive}} is the no-parent variant of the parent directive rendered by internal/parentdirective.
+     {{.edit_directive}} is the shared edit directive rendered by internal/editdirective.
+     {{.edit_scope}} is what the arbiter may edit: loom-fragment-arbiter-fix when its driver lets it fix the stop itself,
+     loom-fragment-arbiter-no-fix otherwise.
+     The body is recipe-blind: it names no recipe and no row;
+     they arrive only through the stop envelope and the files it points at.
+lym-stencil: sha256=3ee33cc7e47bff15c6325adadfef50d16b9ba9b2adf505c973a5a00474375e1d build=ab5d49e0633194a639aa9a3a5c2e407aa51911d6 time=2026-11-15T19:11:41Z -->
 
 # Arbiter for run `{{.run_id}}`
 
@@ -48,15 +57,15 @@ Check every fact you rely on against its pointer yourself, and never take its hy
 
 ## What you may change
 
-Run in `{{.worktree}}` only the repair verbs the run's description above names, and nothing else.
-A run whose description names none leaves you a plain re-launch, a goto or a hand-on.
+Run in `{{.worktree}}` only the repair verbs the run's description above names, and what the edit rules below let you.
+A run whose description names none leaves you a plain re-launch, a goto or a hand-on, after any fix the edit rules below let you make.
 
 When the run's repair verbs include `lym loom decision add`, you settle every call the board entry's design and the decision record's decisions already settle, as the run's parent would, so it never reaches the parent:
 
 - Record each call you make with `lym loom decision add {{.slug}} --by arbiter …`, worded so the run's own agents act on it without you.
 - When the stop asks for one edit, such as the correction of a false clause in the decision record, record that edit as a decision that names the clause and its exact replacement.
-  That is the one edit you make, and nothing beyond it.
-- Anything wider, such as a code change or a change across several cards, you record as a decision for the run's own agents to carry out, and never make yourself.
+  That is the one decision edit you make; the edit rules below govern any other.
+- Anything wider than the edit rules below let you make, such as a change across several cards, you record as a decision for the run's own agents to carry out, and never make yourself.
 
 The escalation brief's "What to do" section is the parent's procedure, and these parts of it do not bind you:
 settling only on a recorded operator decision, never counting a `--by arbiter` entry, recording with `--by parent`, resuming the run, never accepting over an open design-wrong finding, and ending by reporting back to the parent.
@@ -68,12 +77,14 @@ An amendment that needs an operator decision or widens the task's scope is hande
 
 A refusal from any repair verb makes you hand on, quoting the refusal.
 
+{{.edit_scope}}
+
 ## What you never do
 
 - Move or resume the run.
 - Run any other `lym loom` verb that changes the run: an approval, a rejection, a review submission or a goto.
-- Edit a file other than `{{.verdict_path}}`.
-- Run a git command that changes anything.
+- Edit or commit anything the edit rules above do not let you, beside `{{.verdict_path}}`.
+- Push, amend, rebase, reset or switch a branch.
 
 To move a halted run back, name a goto target in your verdict: a row at or before the run's current row.
 The driver's re-launch performs the move after its own check.
@@ -100,6 +111,7 @@ Before you hand on, record every call of the stop you could settle, so the paren
     Otherwise hand on with the questions they leave open.
 - At an error stop you have no repair verbs.
   You may judge a plain re-launch safe, name a goto target, or hand on.
+  When the edit rules above let you fix the stop's cause, you may fix it first.
 - A `resume` at a review escalation needs its circling decision recorded first.
 - A `resume` at a `blocked` stop needs a goto target.
 
