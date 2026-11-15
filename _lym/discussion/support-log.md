@@ -87,9 +87,7 @@ Their reports are in `support-log.lens-<lens>.md`. Duplicates across lenses are 
 - Normalising machine names, such as stripping dashes: rejected for D5; `osl46` was a chosen name, not a spelling of the hostname.
 - Keeping `--keep-local` and `--drop-local`: rejected for D8; with D2 and D4 the only local-only commits are this machine's owed pushes or work another machine's takeover archives.
 - Starting the orch only after the hold clears: rejected for D8; the fix task's halts and notices need an orch to read them.
-- Committing the orch's transcript on the weft branch: rejected for D10; each mirror would add a full copy to the branch history, and a 206 MB transcript breaks GitHub's file limit.
-- Compressing the transcript mirror: rejected for D10; compressed chunks delta poorly, so each mirror would upload the whole file.
-- Carrying every agent session's transcript: rejected for D10; a run's step starts again from its pushed transition, so only the orch needs continuity.
+- Mirroring the orch's transcript to origin, in every form: dropped by the parent (2026-11-15); the orch launches fresh on another machine.
 - Removing entry-less pairs from the workspace file but leaving them standing: rejected for D11; the operator asked that they not stand.
 
 ## Review rounds
@@ -99,6 +97,16 @@ Their reports are in `support-log.lens-<lens>.md`. Duplicates across lenses are 
 - A Finalize past its parent-side merge now hands over after a takeover like any run, and its owner finishes it (D1, D4, D6, D9); Turn 5's carve-out on the old owner is gone.
 - D10 restores the orch's transcript by the session record's last launcher or resumer, no longer by the machine the mirror names.
 - A pair's transition pushes its records side before its code side, and each records commit names its code tip (D2, D4).
+
+### Round 3
+
+- A Finalize pushes its parent branch before its transition's records and its board `done`, and past-merge reads origin's parent branch (D1, D2, D4).
+- `lym adopt --release` is gone, per the arbiter; `lym adopt --take-hold` takes over a stopped adopter's hold, which clears only at a green check (D7, D8).
+- The orch transcript mirror and every cross-machine restore are gone, per the parent; the orch's session id stays machine-local (D9, D10).
+- The pair push sends its records side first for every caller (D2, D4).
+- Every path that removes a cancelled run's pair deletes its batten record (D1, D3, D11).
+- A teardown-lock wait past the push lock wait turns the push owed, and an upgrade writes a hold only when an entry became a pause intent (D2, D7).
+- Open risks are empty: the Added after Discussion entries settled each.
 
 ## Question ledger
 
