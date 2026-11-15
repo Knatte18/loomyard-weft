@@ -36,6 +36,8 @@ Only the two verbs set the new request fields; `PausePair` and `PauseOwnedElsewh
   Once the entry is on disk, an already-paused scope included, and before the grace, it calls `Record`; its error ends the pause wrapped with the way forward `fix the cause, then run "lym tender pause <slug>" again`, which records the intent over the entry that stays live, so the run's processes stay held here.
 - `ResumeRequest` gains `Verdict func() (runfsm.Verdict, error)` and `Clear func() error`.
   `Resume` asks `Verdict` first, refusing any answer but act with `Verdict.Refusal(slug, "run \"lym tender resume <slug>\" again")` and lifting nothing; then `Clear`, whose error refuses with nothing lifted and the way forward `fix the cause, then run "lym tender resume <slug>" again`; then the lift as today.
+  A terminal wait (`ReasonTerminal`) counts as act, since a resume lifts an entry and drives nothing:
+  `lym tender pause <slug>` asks no verdict, so a slug entry can stand on a landed slug whose pair is still here, and its own resume lifts it.
 
 `tendercli`:
 - `runIntents` holds the four seams, and `hubRunIntents` fills them over the hub's prime:
@@ -54,7 +56,7 @@ A resume offline commits the cleared intent and lifts its entry; the run's own v
 
 Tests:
 - `TestPause` (tier0) gains rows: an owner elsewhere refused with no entry; `Record` called once after the entry is on disk, and again for an already-paused scope; a `Record` error returned with its way forward and the entry live; nil fields as today.
-- `TestResume` (tier0) gains rows: a wait verdict refusing with nothing lifted; `Clear` called before the lift; a `Clear` error refusing with nothing lifted and its way forward.
+- `TestResume` (tier0) gains rows: a wait verdict refusing with nothing lifted; a landed terminal verdict lifting the slug's entry; `Clear` called before the lift; a `Clear` error refusing with nothing lifted and its way forward.
 - `TestPauseAndResume_WriteLiftAndRefuseOverTheHub` (tier1) gains rows over its hub: a slug with a batten record whose pause commits the intent on the prime's records side and whose resume commits it cleared;
   a slug with no batten record whose pause commits nothing;
   a slug the Bolt records as owned by another machine, with no pair here, refused naming that machine;

@@ -54,7 +54,7 @@ Callers read the tracked records and the machine-local facts and hand them in; e
 `TaskBranchOnOrigin`, `Child shedengine.Status` with `ChildFound`, and `ChildLanding` (the child is at `Finalize` or past it, or batten is at `Land` or later).
 The caller fills the row facts from the recipes, so this package names no row.
 
-`Derive` takes the first state whose condition holds, in D1's order, which `Order` returns highest precedence first:
+`Order` returns D1's states highest precedence first, and `Derive` walks `Order()` and takes the first state whose condition holds, so production reaches `Order` through `Derive`:
 1. `Landed`: batten found and `done`, or no batten record and `BoardDone`.
 2. `Cancelled`: a cancel intent with its finish.
 3. `Cancelling`: a cancel intent without a finish.
@@ -71,7 +71,8 @@ a kept pair's task branch stays on origin, so its record keeps reading `Cancelle
 
 `Inputs` holds `State`, `OwnedElsewhere` with `Owner` and `AdoptSubject`, `Held`, `PauseCovers` (this machine's pause record covers the run),
 `PushOwedOffline`, `CodeTipMissing` and `PastParentMerge` (origin's fetched parent branch holds the task's work).
-`Act` answers in D1's order, and `Verdict` carries `Answer`, `Reason` and `State`, plus `CancelMachine` and `CancelRemove`, which `Judge` copies from the record's cancel intent for the cancelling refusal:
+`Act` answers in D1's order, and `Verdict` carries `Answer`, `Reason` and `State`, plus `CancelMachine` and `CancelRemove`, which `Judge` copies from the record's cancel intent for the cancelling refusal,
+and `PausedByIntent`, which `Judge` sets when the state is `Paused` and the record still holds a pause intent once the aside is applied, for the paused refusal:
 1. `PushOwedOffline`: wait, `ReasonPushOwed`.
 2. `OwnedElsewhere`: hand over, `ReasonOwnedElsewhere`, a landing past its parent-side merge included.
 3. `CodeTipMissing`: wait, `ReasonCodeTip`.
@@ -92,9 +93,14 @@ owned elsewhere names the owner, the same verb on that machine, and `lym adopt <
 code tip names the re-run once the code push lands;
 held names the wait for the adopt that holds the hub to finish;
 pause covers names `lym tender resume <slug>` then the re-run;
-paused names `lym batten run <slug>` from the prime, which resumes the shed pause, or `lym loom resume` in the task worktree for the inner run;
+paused, with `PausedByIntent`, names `lym tender resume <slug>` then the re-run, since only that verb clears a pause intent, which a removed `.lym` or a machine that took the run over leaves with no local pause entry;
+paused without it names `lym batten run <slug>` from the prime, which resumes the shed pause, or `lym loom resume` in the task worktree for the inner run;
 cancelling names the cancel's machine (`CancelMachine`) and `lym batten cancel <slug>` run there to finish it, with `--remove` when `CancelRemove` is set, so the finish keeps the original cancel's choice;
-terminal names, for `Landed`, `lym board list` to check it, and for `Cancelled`, `lym batten cancel <slug> --remove`, which removes its record and pair before a fresh run.
+terminal names, for `Landed`, that the slug has landed and, to run it again,
+`lym batten cleanup --apply` from the prime, which removes its run directory, `lym fabric remove <slug>` if its pair still stands,
+for a task `lym board set-status '{"slug":"<slug>","status":null}'`, which releases the entry, and deleting the leftover task branch, locally and on the remote;
+or else giving the new task another slug, the one way forward for a landed beam, whose `done` status the board refuses to release;
+for `Cancelled`, `lym batten cancel <slug> --remove`, which removes its record and pair before a fresh run.
 No text names `lym adopt --take-hold`.
 
 `TransitionState` is the board display of one transition, which the status writers call (card 6): `paused` reads `Paused`, `blocked`, `failed` and `awaiting` read `Halted`; otherwise `landing` reads `Landing`, `started` reads `Running` and neither reads `Starting`.
@@ -109,7 +115,9 @@ Tests, all tier0, table-driven:
   wait for held, pause, `Paused`, `Cancelling`, an owed push offline, a missing code tip and each terminal state; act otherwise.
   Rows through `Judge` show each `Aside` field turning the matching wait into act, `PushOwed` included.
   Each wait and hand-over row asserts `Refusal`'s exact text, and the act row asserts nil;
-  the cancelling rows assert the machine named and `--remove` present for a remove intent and absent for a keep one.
+  the terminal `Landed` row's text names the run-directory cleanup, the pair removal, the task release, the branch deletion and the other slug;
+  the cancelling rows assert the machine named and `--remove` present for a remove intent and absent for a keep one;
+  two `Paused` rows through `Judge` assert each paused wording: a pause intent with no local pause entry names `lym tender resume <slug>`, and a shed state `paused` names `lym batten run <slug>`.
 - `TestTransitionState`: one row per mapping.
 
 `doc.go` states the package's place: the run's state from tracked records alone, the act rule, and that the board's `<state> · <row>` is a display of it.

@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -19,7 +19,7 @@ The origin-owed marker stays until the later part that retires it.
 1 — shed-run-intents — add the cancel and pause intent fields and the cancelled state to the batten record
 2 — shedrun-intent-writers — write and clear the intents in the batten record under its status lock
 3 — runfsm — the run states, their order, Derive, the act rule, Judge and the board display state
-4 — fabric-origin-reads — read origin's fetched parent branch and a child record from origin
+4 — fabric-origin-reads — read origin's fetched parent branch, a child record and a task branch from origin's fetched refs
 5 — pairteardown-read-run — read a run's FSM records and act inputs in one place
 6 — board-display-from-fsm — write the board's run status from the FSM state
 7 — cancel-intent — the cancel records its intent and finish, keeps or deletes the record, and asks the act rule
@@ -48,7 +48,8 @@ The origin-owed marker stays until the later part that retires it.
 - **Decision:** `lym batten run`, `lym batten step`, `lym loom start` and `lym loom resume` set aside the shed pause of the record they resume (`runfsm.Aside.ShedPause`).
   `lym batten cancel` and `lym tender resume <slug>` set it aside too, since neither drives the run: the cancel ends a run whatever its state, and the resume lifts only its pause entry.
 - **Rationale:** D1 reads a shed state `paused` as `paused` and has the act rule wait on it; the verb that resumes that shed pause would otherwise refuse its own resume, leaving no way forward.
-  The paused refusal names `lym batten run <slug>`, the verb that resumes it.
+  The decision record's Added after Discussion entry "A shed pause is an aside of the act rule" (parent, 2026-11-15) licenses this aside and names these verbs.
+  The paused refusal names `lym batten run <slug>`, the verb that resumes it, for a shed pause, and `lym tender resume <slug>` for a pause intent (card 3).
   Every other caller, the dobby's pass included, waits on it.
 - **Applies to:** cards 3, 7, 10, 12, 14
 
@@ -64,6 +65,15 @@ The origin-owed marker stays until the later part that retires it.
 - **Rationale:** D1's order puts `paused` before `landing`, and only a `landing` run past its merge acts under a hold.
 - **Applies to:** cards 10, 11
 
+### Decision: verbs-that-do-not-ask
+
+- **Decision:** `lym batten goto`, `lym loom run` and `lym loom step` do not ask the act rule.
+- **Rationale:** D1 has every verb that acts on a run ask first.
+  `goto` moves a halted run's row back and drives nothing, so the run's next driving verb asks (card 10).
+  `lym loom run` and `step` are role-audience primitives driven after `lym loom start` or `lym loom resume` asked;
+  a cancel or pause that lands mid-run stops the run through its processes, not through these verbs (card 12).
+- **Applies to:** cards 10, 12
+
 ### Decision: reader-in-pairteardown
 
 - **Decision:** `pairteardown.ReadRun` is the one reader of the FSM's inputs, and `boardengine.PullBolt` the one Bolt pull.
@@ -72,8 +82,9 @@ The origin-owed marker stays until the later part that retires it.
 
 ### Decision: fabric-origin-reads
 
-- **Decision:** Card 4 adds two reads to `internal/fabricengine`, a package the record's scope list does not name.
-- **Rationale:** D1 decides the parent-side merge from origin's fetched parent branch and reads a record from origin's branch when this machine has no pair; `PATTERN-fabric-boundary` puts every git read of warp or weft there.
+- **Decision:** Card 4 adds three reads to `internal/fabricengine`, a package the record's scope list does not name.
+- **Rationale:** D1 decides the parent-side merge from origin's fetched parent branch, reads a record from origin's branch when this machine has no pair, and reads whether a cancelled record's task branch is on origin;
+  `PATTERN-fabric-boundary` puts every git read of warp or weft there.
 - **Applies to:** cards 4, 5
 
 ### Decision: later-part-inputs

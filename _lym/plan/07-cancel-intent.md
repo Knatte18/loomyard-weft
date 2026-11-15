@@ -50,8 +50,10 @@ New `cancelDeps` seams, each filled by `hubCancelDeps`:
 
 Order in `endRunPhase`:
 1. After the reached-parent check, ask `Verdict`; any answer but act refuses with `Verdict.Refusal(slug, rerun)` before anything ends.
-   With those inputs set aside it refuses a run another machine owns and a landed run (the reached-parent check refuses that first today), and, once D4 fills it, a missing code tip.
-   Its test row feeds a hand-over verdict.
+   With those inputs set aside it refuses a landed run and, once D4 fills it, a missing code tip.
+   `judgeOrigin` already refuses a slug another machine owns, and the reached-parent check a batten `done` record, before the rule is asked,
+   so the input that reaches this refusal is a slug whose board status is `done` with no batten record, read `Landed`.
+   Its `TestCancelRun` row is that slug, refusing with the terminal wording; a hand-over row stays as an extra case.
 2. A finished cancel that kept its pair, run again without `--remove`, refuses: `<slug> is already cancelled with its pair kept; way forward: run "lym batten cancel <slug> --remove"`.
    The input that reaches it is a status whose `Cancel.Finish.Remove` is false and remove false; a `TestCancelRun` row reaches it.
 3. After the lock is taken and the Windows live-process check passes, and before `EndForCancel`, write the intent and commit it, so the intent is committed, and its push spawned, before anything ends.
@@ -68,6 +70,7 @@ Order in `endRunPhase`:
 
 `cancelReport` gains `RecordKept`, and `RecordsRemoved` is true only under `--remove`; `cancelEnvelope` adds `record_kept`.
 `cancelCmd`'s Long text, the `batten` group's Long text in `Command`, `RunLockedError.Error` and `docs/overview.md`'s batten cancel paragraph say the record is kept with its finish, or deleted with the pair under `--remove`, and drop "removes the run's records".
+`cancelCmd`'s end-only sentence says the cancel leaves its intent committed locally, where it says today that it leaves its marker.
 
 `childParentHolds` reads the parent through `fabricengine.OriginParentHoldsTaskWork`, or `ParentHoldsTaskWork` under the push skip, so the cancel's reached-parent refusal and the dobby's reached-parent reading follow origin's fetched parent branch, never the local one (D1).
 
@@ -80,7 +83,7 @@ since seeding over a standing record would resume the cancelled run's row instea
 
 Tests:
 - `cancelFake` gains fields for the four seams and `cancelFake.deps` defaults them to an act verdict and writes that succeed, each appending its name to `calls`, so existing rows run unchanged and the new rows assert order with `callsInOrder`.
-- `TestCancelRun` (tier0) gains rows: the verdict refusal; a batten-paused run cancelled (the shed pause set aside); the kept-finish re-run refusal; intent written and committed before `EndForCancel`, and none for a slug with no record;
+- `TestCancelRun` (tier0) gains rows: the verdict refusal of a board `done` slug with no batten record, with the terminal wording, and a hand-over refusal; a batten-paused run cancelled (the shed pause set aside); the kept-finish re-run refusal; intent written and committed before `EndForCancel`, and none for a slug with no record;
   a failed intent commit, and a mid-merge commit, refusing with nothing ended; end-only with the intent committed locally; keep finishing with `cancelled` and no records removal; `--remove` deleting the record after the pair.
 - `TestRunCmd_ResumeDispositions`, `TestBattenPreStep_RefusalKinds` and `TestDobbyTasks_ReadsTheStartRefusalOfAFinishedRunRecord` (tier0) gain a cancelled row asserting the refusal text.
 - The three cancel integration tests (tier1) assert a plain cancel leaves the record with state `cancelled` and its finish committed on the records side, and `--remove` deletes it.

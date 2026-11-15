@@ -7,10 +7,16 @@
 - `internal/battencli#TestWire_CreateWorktreeClaimsTheBoardEntry`
 - `internal/loomcli#newCommitStatusSeam`
 - `internal/loomcli#TestNewCommitStatusSeam_BoardStatus`
+- `internal/battencli#TestBattenIntegration_Rows`
+- `internal/battencli#battenCLI`
+- `internal/boardengine#RunStatus`
+- `internal/boardengine#runStatusSeparator`
+- `contracts/orchrole/orch-role.md`
 
 **Uses:**
 - `plan:internal/runfsm#TransitionState`
 - `internal/loomcli/doc.go`
+- `internal/boardengine/doc.go`
 
 **Intent:** The board's `<state> · <row>` status becomes a display written from the FSM state (D1), not from the shed state.
 Every writer composes it with `boardengine.RunStatus(string(runfsm.TransitionState(...)), producer)`:
@@ -20,8 +26,12 @@ Every writer composes it with `boardengine.RunStatus(string(runfsm.TransitionSta
 No decision reads the state half: `RunHolds`, `ProjectRecordHeld` and the run lock read the producer half, and `IsRunStatus` only the shape.
 The board render's `atCell` shows the producer alone for a `running` status and the whole status otherwise, so a `starting`, `landing`, `paused` or `halted` row shows its state beside the row; that is the display D1 asks for.
 The pawl and raddle writers already write `running`, which is the FSM's own word.
+The texts that state the old form follow: the `battenCLI` doc names the claim `starting · Worktree-Create`;
+`RunStatus`'s and `runStatusSeparator`'s docs call the first half the FSM state, not the shed state;
+`contracts/orchrole/orch-role.md`'s pre-loom example reads `starting · Worktree-Create`.
 
 Tests, tier0: the two board-status tests gain rows asserting the written text for a running, a halted and a paused transition, and, for loom, a Finalize one.
 `TestWire_CreateWorktreeClaimsTheBoardEntry` (tier0) asserts the claim `starting · Worktree-Create` where it asserts `running · Worktree-Create` today.
+`TestBattenIntegration_Rows` (tier1) asserts `starting · Worktree-Create` on the board entry after the refused row, where it asserts `running · Worktree-Create` today.
 
-**ImpactSummary:** Three board writers change the state word they write; readers parse only the producer half, so no reader changes, and the board render shows the new words.
+**ImpactSummary:** Three board writers change the state word they write; readers parse only the producer half, so no reader changes, and the board render shows the new words; one integration assertion, three doc comments and the orch role's example follow the claim's new word.
