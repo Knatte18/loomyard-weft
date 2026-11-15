@@ -32,7 +32,7 @@ speed:
   motif:
     loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1}
   darn:
-    loom: {code_max_bounces: 0, code_hard_max_bounces: 1, code_reviewer_model: "opus[high]"}
+    loom: {code_max_bounces: 0, code_hard_max_bounces: 1, code_reviewer_model: "opus[medium]"}
   pawl:
     loom: {code_max_bounces: 0, code_hard_max_bounces: 1}
   sampler:
@@ -47,7 +47,7 @@ light:
   motif:
     loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2}
   darn:
-    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_model: "opus[high]"}
+    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_model: "opus[medium]"}
   pawl:
     loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
   sampler:
@@ -63,7 +63,7 @@ solid:
   motif:
     loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3}
   darn:
-    loom: {code_max_bounces: 2, code_hard_max_bounces: 3, code_reviewer_model: "opus[high]"}
+    loom: {code_max_bounces: 2, code_hard_max_bounces: 3, code_reviewer_model: "opus[medium]"}
   pawl:
     loom: {code_max_bounces: 2, code_hard_max_bounces: 3}
   sampler:
@@ -79,7 +79,7 @@ wide:
   motif:
     loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4}
   darn:
-    loom: {code_max_bounces: 3, code_hard_max_bounces: 4, code_reviewer_model: "opus[high]"}
+    loom: {code_max_bounces: 3, code_hard_max_bounces: 4, code_reviewer_model: "opus[medium]"}
   pawl:
     loom: {code_max_bounces: 3, code_hard_max_bounces: 4}
   sampler:
@@ -93,4 +93,4 @@ docs:
   darn:
     darn: {writer: "sonnet[medium]"}
     drift: {scope: "off"}
-    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: "", code_reviewer_model: "opus[high]"}
+    loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: "", code_reviewer_model: "opus[medium]"}
