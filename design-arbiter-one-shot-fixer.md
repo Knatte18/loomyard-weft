@@ -1,6 +1,6 @@
 # The arbiter becomes a one-shot fixer that may edit, not only resume the halted row
 
-`arbiter-one-shot-fixer` · Task · enhancement, arbiter, shed · running · Seed-Child
+`arbiter-one-shot-fixer` · Task · enhancement, arbiter, shed · running · Open-Window
 
 ## Seen (operator, 2026-11-15)
 
