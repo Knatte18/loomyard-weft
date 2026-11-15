@@ -2,8 +2,6 @@
 
 `weaver` · Task · feature, webster, weaver · draft
 
-Depends on: [`arbiter-one-shot-fixer`](design-arbiter-one-shot-fixer.md)
-
 ## Idea (operator, 2026-10-11)
 
 Webster stays fork-based: its implementer and verify-fix forks start at once with Master's context and run on Master's model.
