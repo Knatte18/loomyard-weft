@@ -1,0 +1,81 @@
+# Lens review
+
+Every lens returned a report: coverage, row-validity, forced-edits, guard-reach, way-forward.
+Findings shared across lenses are merged, and each line lists the lenses that raised it.
+
+- way-forward 1, guard-reach 1 — BLOCKING — fixed differently: proposed `lym tender resume` setting `Hold` aside, but the hold is D7's Bolt hold, which only the cancel sets aside (D1). Instead card 5 leaves `Held` false in this part. The adopt pause is a live slug-scope entry, so `PauseCovers` already waits on it, and tender resume's `Pause` aside lifts it. Overview later-part-inputs records this.
+- guard-reach 2, coverage LOW (held landing unreachable) — MEDIUM — disputed, premise false: the criterion is about the act rule's answer to its inputs, and card 3's `TestAct` row asserts act for a held landing past its merge over `runfsm.Act`. D7 fills `Held` from the Bolt holds in a later part, per the record's Delivers line.
+- coverage BLOCKING 2, coverage MEDIUM (tender resume of a shed-paused run), way-forward 2 — BLOCKING — fixed as proposed:
+  - The cancel and `lym tender resume <slug>` set `ShedPause` aside (cards 3, 7, 14).
+  - The paused refusal names `lym batten run <slug>` or `lym loom resume` (card 3).
+  - Rows were added: a paused run cancelled in `TestCancelRun`, and a batten-paused run resumed in the tender tier1 test.
+- coverage BLOCKING 1 — BLOCKING — fixed as proposed: card 11 keeps `drivable` as the first gate before the act verdict. `TestPlanPass` gains a blocked run with an act verdict that gets no pass.
+- way-forward 3, coverage LOW (`PairParts.Any`) — BLOCKING — fixed as proposed:
+  - Card 9's probe is now `PairStands`: the local worktrees, plus the task branch on origin.
+  - A record whose pair stands only on origin is skipped, naming `lym batten cancel <slug> --remove` on the owning machine.
+  - A nil probe reads as standing, and `TestCleanup` gains the rows.
+- row-validity 1, row-validity 7 — BLOCKING — fixed as proposed:
+  - `TestBattenRun_RefusesWhileAPauseCoversTheSlug` sets `runVerdict` to `Judge` with `PauseCovers` from the pause record its rows write.
+  - The new top-level `TestBattenPreRun_AsksTheActRule` is dropped, and its rows join that test (card 10).
+- row-validity 2 — BLOCKING — fixed as proposed: cards 8 and 11 drop `TestDobbyReading`. They list the four beamcli tier1 tests that read `DobbyRuns`/`DobbyLandings` over a hub, and the new assertions go in `TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair`.
+- row-validity 3, row-validity 4 — BLOCKING — fixed as proposed: cards 8 and 9 list `fakeSubstrates.teardown`, and card 9 states that a nil `removeCancelledRecord` removes nothing.
+- forced-edits 1 — BLOCKING — fixed as proposed: card 15 makes `CommitRecord` required in `PRReview.checkWiring`, and `newTestDeps` and `NewTestDeps` set a recording fake.
+- row-validity 5, coverage MEDIUM (`.lym` removed) — MEDIUM — fixed as proposed:
+  - Card 5 adds `TestReadRun_ReadsTheSameStateWithoutTheCache` (tier1). It reads a hub's run, removes the prime's and pair's `.lym`, and reads the same derived state again.
+  - `TestDerive` drops its vacuous "no cache" claim.
+- row-validity 6, coverage MEDIUM (card 16 dirs) — MEDIUM — fixed as proposed:
+  - `TestMoveScratchAttempts` is dropped, and its rows go into `TestMergeIn_Fixer` and `TestFinalize_GateAndFixer` through `readAttempts`.
+  - `newTestDeps` and `NewTestDeps` give `RecordsDir` its own directory, so a member left on `ScratchDir` fails.
+  - The fixtures and tests that read attempts are listed.
+- row-validity 8 — LOW — fixed as proposed: card 7 lists `cancelFake` and `cancelFake.deps`. These default the four seams to act and succeed, and record calls for `callsInOrder`.
+- row-validity 9 — LOW — fixed as proposed: card 9 states that a nil `PairStands` reads as a pair standing here.
+- coverage MEDIUM (origin and other-machine criteria) — MEDIUM — fixed as proposed:
+  - Card 7's `TestCancelIntegration_KeptPairJudgeOnly` waits for the spawned push and reads the finished record from origin's records branch.
+  - `TestCancelIntegration_BlockedRunWithNoPair` reads an intent-only record from origin and derives `cancelling`.
+- coverage MEDIUM (existing readers of state and the local parent branch) — MEDIUM — fixed as proposed, with one part disputed:
+  - Card 7's `childParentHolds` and card 14's `EndOwnedElsewhere` read origin's fetched parent branch.
+  - Card 11's `DobbyRunCells.Of` names its state cell from `runfsm.TransitionState`.
+  - The `lym tender status` part is disputed, premise false: its `SessionStatus.State` is a session state, not a run state (`internal/tenderengine/resume.go:77`).
+- coverage MEDIUM (session id with absent transcript) — MEDIUM — disputed, premise false: the resume line already falls back to the fresh line (`internal/shuttleengine/claudeengine/doc.go:104`), so a session id whose transcript is absent starts fresh with no new code.
+- coverage MEDIUM (owner read in `hubRunIntents`), way-forward 4 — MEDIUM — fixed as proposed:
+  - Card 14's `pauseCmd` asks `Owner` before its no-pair check.
+  - The tier1 test gains a row: a slug owned by another machine, with no pair here, refused naming that machine.
+- coverage MEDIUM (card 8 cancelled elsewhere), way-forward 6 — MEDIUM — fixed as proposed:
+  - The cancelling refusal (card 3) and the interrupted-cancel refusal (card 8) name the intent's machine, and `--remove` when the intent set it.
+  - `Verdict` carries `CancelMachine` and `CancelRemove`.
+  - A `TestCancelMarker` row covers it.
+- way-forward 5 — MEDIUM — fixed as proposed: card 10's `refuseByAct` returns `doneSlugRefusal` for a terminal `Landed` wait with a batten record.
+- way-forward 7 — MEDIUM — fixed as proposed:
+  - `Aside` gains `PushOwed`.
+  - The cancel and both tender verbs set it aside (cards 3, 7, 14), and a new Shared Decision records this.
+- guard-reach 3 — MEDIUM — fixed as proposed: card 5 reads `PastParentMerge` true when batten is at Land or Worktree-Teardown, with `TestReadRun` rows.
+- guard-reach 4 — MEDIUM — fixed as proposed:
+  - Card 10 has `lym batten step` and `startFirstPass` ask the rule.
+  - Card 12 has `lym loom start` ask through a shared `refuseByAct`.
+  - `lym batten goto` is bounded in card 10's Intent: it drives nothing, and the next driving verb asks.
+- forced-edits 2 — MEDIUM — disputed, premise false: `boardengine` already imports `fabricengine` (`internal/boardengine/board.go`, `ownerset.go`, `sync.go`), and no production file of `internal/fabricengine` imports `boardengine`, so the move makes no cycle.
+- forced-edits 3 — MEDIUM — fixed as proposed: card 7 edits `RunLockedError.Error`, the `batten` group's Long text in `Command`, and `docs/overview.md`, and lists `internal/boardengine/doc.go` under Uses.
+- coverage LOW (missing rows) — LOW — fixed as proposed:
+  - Card 12 adds a read-error row.
+  - Card 7 adds a `TestBattenPreStep_RefusalKinds` cancelled row.
+  - Card 14 adds `Record` for an already-paused scope, and a no-record slug that commits nothing.
+  - Card 6 writes the claim as `starting · Worktree-Create` and edits `TestWire_CreateWorktreeClaimsTheBoardEntry`.
+- forced-edits 4 — LOW — fixed as proposed: cards 8 and 11 edit every comment and probe text that names the cancel marker. That covers the startguard and arm members, `shedrun/doc.go`, `pairteardown/doc.go` and the three dobbyengine members.
+- forced-edits 5 — LOW — fixed as proposed: card 6's Intent names `atCell`'s display of the new state words.
+- forced-edits 6 — LOW — fixed as proposed: card 6 lists `TestWire_CreateWorktreeClaimsTheBoardEntry`, since the claim's word changes.
+- forced-edits 7 — LOW — disputed, premise false: `internal/shedengine/doc.go` holds no count of the states (grep for "six" finds nothing there).
+- guard-reach 5 — LOW — fixed as proposed: card 10 drops the cancelling row from the batten run test, since the start guard refuses that state first.
+- guard-reach 6 — LOW — fixed as proposed: card 12's rows are now a cancelling wait, a terminal cancelled wait, a read error and act. The unreachable landed, pause and hand-over rows are gone.
+- guard-reach 7 — LOW — fixed differently:
+  - Proposed: the dobby's start follows the FSM's `queued` for a crash leftover.
+  - Card 7 keeps the start refusal instead, since seeding over a standing record would resume the cancelled run's row, not start fresh.
+  - It states the bound: the FSM reads `queued` as D1 says, and the start waits on `--remove` or cleanup to delete the record.
+  - The refusal names `--remove`, which deletes such a leftover.
+- guard-reach 8, guard-reach 9 — LOW — fixed as proposed:
+  - Card 2's `WriteCancelIntent` replaces any recorded intent whole.
+  - `FinishCancel` with no intent is a fail-loud wiring guard.
+  - The unreachable rows are gone.
+- way-forward 8 — LOW — fixed as proposed: `cancelledRunRefusal` names `releaseCommandText` and the run.
+- way-forward 9 — LOW — fixed as proposed: card 14's `Record` and `Clear` errors, and a non-reachability pull failure, each name the re-run.
+- way-forward 10 — LOW — fixed as proposed: card 9's `Run` deletes the cancelled record before the follow-up read, so no `--remove` follow-up is named for it.
+- way-forward 11 — LOW — fixed as proposed: card 7's `CommitRecord` refuses on a merge in progress rather than going through `commitRunRecords`, which skips it silently.
