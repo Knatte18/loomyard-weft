@@ -1,6 +1,6 @@
 # One desktop launcher brings back every hub and beam that was in flight after a crash or reboot
 
-`machine-restart-shortcut` · Note · feature, orch, reed, termwindow, shortcut
+`machine-restart-shortcut` · Task · feature, orch, reed, termwindow, shortcut · draft
 
 ## Seen (operator, 2026-11-08 and 2026-11-11)
 
