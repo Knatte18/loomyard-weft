@@ -10,7 +10,7 @@
      return_note is the one optional marker:
      empty on a first session, and after a return the reason of the returned filing with the path to start from.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=af5589eef9f4ec19c70274c417e79c2c8d130795109e3a1992daae7c328fa716 build=2ad39d2610630086e298bbf432879b35e8435f25 time=2026-11-09T14:23:03Z -->
+lym-stencil: sha256=c53ca1fd3c341bfa3040c535c03b4903f38e9e513dcf929f9292b52c7e9a9508 build=15bdd976f5e720f4c0b891f53aa82fd8ffcee136 time=2026-11-15T18:30:53Z -->
 
 # Raddle — split a Sketch into the entries that get approved
 
@@ -47,6 +47,12 @@ Put no design question to the operator before the proposal passes the spec's che
 
 - A tapestry's large fixed start cost often makes fewer, larger parts, or one tapestry, cheaper than many small tasks. Weigh that against what the cost report shows for each recipe and profile.
 - Order the parts by what each takes from the others, and keep two parts with no order between them off the same package.
+- Never add a part to gain concurrency: the part count stays what the work gives.
+- Of the cuts with that part count, take the one that lets the most parts run at once:
+  a short `depends_on` chain, and parts with no dependency between them touching different packages.
+- Never let a part guess at the interface of a part that runs beside it.
+  When one part builds what another uses, either chain them with `depends_on`,
+  or fix the interface in both parts' bodies.
 - When parts that share a package must be chained, order the chain by the Sketch's own order first: a part the record says waits for nothing goes first in its chain.
   Where the record states no order, put first the part with the largest stated saving, or the one the others gain from earliest.
 - List every place your order departs from an order the decision record states in the proposal's `order_departures`, with what the departure costs.
