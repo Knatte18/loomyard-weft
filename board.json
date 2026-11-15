@@ -499,49 +499,6 @@
       "revised": "2026-11-15T11:34:48Z"
     },
     {
-      "id": 1354,
-      "handle": "B5",
-      "slug": "gate-skipped-tests-silent",
-      "title": "Agent prompt gives no way to run slow golden tests by hand; gate skips them silently",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate",
-        "dotnet",
-        "stencil"
-      ],
-      "issues": [
-        127
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #127](https://github.com/Knatte18/loomyard/issues/127).\n\n## What happened\n\nA task agent had to run a project's slow test suite by hand, because the gate's `COMMONLIB_REPO` setting makes the gate skip those tests.\n`dotnet test` on the slow-test project printed only restore lines and exited 0: no test ran and no message said why.\nThe project disables itself as a test project unless an opt-in MSBuild property is passed, so the run looked like a pass.\nFinding the property took several runs.\nNeither the agent's prompt nor the harness README mentions it.\n\n## Why it is abnormal\n\nA gate that skips a test class, plus a by-hand run that exits 0 without running anything, lets an agent believe tests passed when none ran.\nThe agent has no lym-provided signal that the gate skipped them or how to run them.\n\n## What to do\n\n- Have the gate report which test classes it skipped and why, as a visible line in its output.\n- Have the agent prompt, or the harness README, tell agents how to run gate-skipped tests by hand.\n- Consider a lym check that flags a `dotnet test` run that executed zero tests.\n\nProvenance: task `td-transient-odd-even-chatter`; note `Darn-Write.md`.\n",
-      "created": "2026-11-15T11:34:21Z",
-      "revised": "2026-11-15T11:34:21Z"
-    },
-    {
-      "id": 1355,
-      "handle": "B6",
-      "slug": "testmap-refusal-names-weft",
-      "title": "lym gate testmap refusal's way forward names a path that also refuses",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate",
-        "cwd"
-      ],
-      "issues": [
-        126
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #126](https://github.com/Knatte18/loomyard/issues/126).\n\n## What happened\n\nRun from a task worktree, `lym gate testmap internal/adoptcli` refused because the worktree is not the prime.\nThe refusal's way forward named the prime's weft directory (`loomyard-weft`).\nRun there, the verb refused again: that directory holds no `go.mod`.\nThe call works only from the prime's code worktree (`loomyard`), which neither refusal names.\n\nThe way forward is built from `hubgeom.PrimeWorktreePath`, which returns the weft path where a code path is needed.\n\n## Why it is abnormal\n\nA refusal's way forward must be a call that succeeds.\nHere it sends the caller to a second refusal.\nThe task allowed one build and no repeats, so the misleading way forward nearly cost the pilot its only run.\n\n## What to do\n\nMake the `lym gate testmap` refusal name the prime's code worktree, not the weft.\nCheck the other refusals that take their way forward from `hubgeom.PrimeWorktreePath` for the same weft-for-code mix-up.\n\nProvenance: task `test-redundancy-candidates`; note `Darn-Write.md`.",
-      "created": "2026-11-15T11:34:23Z",
-      "revised": "2026-11-15T11:34:23Z"
-    },
-    {
       "id": 1356,
       "handle": "B7",
       "slug": "pr-review-failed-gate-deadlock",
@@ -664,26 +621,6 @@
       "body": "Imported from [issue #119](https://github.com/Knatte18/loomyard/issues/119).\n\nWhat happened: a darn task's board entry asked for a decision based on a test failure seen on an older base. The darn prompt forbids running `lym gate test`, so the agent spent a long stretch tracing the shedverbs loop, keeper and arming code by hand without finding why the loop died. One run of the test, allowed afterwards by the parent, showed it already passes on the current base.\n\nWhy abnormal: the cheapest first step for a task that starts from a reported test failure is to check whether the failure still reproduces on its own base. The no-gate-test rule blocks that step, so the agent pays for manual diagnosis of a failure that no longer exists.\n\nWhat to do: let a darn task that starts from a reported test failure run the named test once through `lym gate test` before diagnosing, or have the darn prompt tell the agent to ask its parent for that single run up front.\n\nProvenance: task slug smoke-died-driver-wording; note Darn-Write.md.",
       "created": "2026-11-15T11:34:36Z",
       "revised": "2026-11-15T11:34:36Z"
-    },
-    {
-      "id": 1362,
-      "handle": "B10",
-      "slug": "gatecli-flaky-tests",
-      "title": "Flaky gatecli tests fail the first verify run and pass on rerun",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate"
-      ],
-      "issues": [
-        118
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #118](https://github.com/Knatte18/loomyard/issues/118).\n\nWhat happened: the webster integration-suite triage recorded two tests in the gatecli package that failed the first verify run and passed or vanished on rerun, so they were classed as flaky and not as regressions.\n\n- gatecli TestGateTest_DetachedRun, subtest 'a passed lease ends a --wait gate line through its child, which kills its tiers and frees its slots'\n- gatecli TestRedundancyStep, subtest 'ABrokenLymBuildAndACorruptMapAreErrorLinesThatLeaveTheOtherTestsJudged'\n\nWhy it is abnormal: a verify run should give the same result on an unchanged tree. Both tests exercise process, lease and slot handling and a lym build, which points to timing or shared-state dependence, so they can fail a verify intermittently and cost reruns.\n\nWhat to do: run both tests repeatedly, including under load and in parallel with other gatecli tests, find the race or shared state, and make them deterministic.\n\nProvenance: task machine-name-verb; note webster-verify-triage.md.",
-      "created": "2026-11-15T11:34:39Z",
-      "revised": "2026-11-15T11:34:39Z"
     },
     {
       "id": 1363,
@@ -814,6 +751,34 @@
       "revised": "2026-11-15T12:04:27Z",
       "profile": "docs",
       "project": "test-suite-trim"
+    },
+    {
+      "id": 1368,
+      "handle": "T9",
+      "slug": "gate-bug-bundle",
+      "title": "Gate bugs: silent skips, a testmap refusal naming the weft, two flaky gatecli tests",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "gate",
+        "dotnet",
+        "stencil",
+        "cwd"
+      ],
+      "issues": [
+        127,
+        126,
+        118
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Three gate bugs, bundled because they all touch the gate packages (operator, 2026-11-15).\n\n## 1. The gate skips tests silently (issue #127)\n\nA task agent had to run a project's slow test suite by hand, because the gate's `COMMONLIB_REPO` setting makes the gate skip those tests.\n`dotnet test` on the slow-test project printed only restore lines and exited 0: no test ran and no message said why.\nThe project disables itself as a test project unless an opt-in MSBuild property is passed, so the run looked like a pass.\nNeither the agent's prompt nor the harness README mentions it.\n\n- Have the gate report which test classes it skipped and why, as a visible line in its output.\n- Have the agent prompt tell agents how to run gate-skipped tests by hand.\n- Consider a lym check that flags a `dotnet test` run that executed zero tests.\n\n## 2. The `lym gate testmap` refusal names the weft (issue #126)\n\nRun from a task worktree, `lym gate testmap internal/adoptcli` refused because the worktree is not the prime.\nThe refusal's way forward named the prime's weft directory (`loomyard-weft`), where the verb refused again: that directory holds no `go.mod`.\nThe way forward is built from `hubgeom.PrimeWorktreePath`, which returns the weft path where a code path is needed.\n\n- Make the refusal name the prime's code worktree.\n- Check the other refusals that take their way forward from `hubgeom.PrimeWorktreePath` for the same weft-for-code mix-up.\n\n## 3. Flaky gatecli tests (issue #118)\n\nTwo gatecli tests failed a first verify run and passed or vanished on rerun:\n\n- `TestGateTest_DetachedRun`, subtest 'a passed lease ends a --wait gate line through its child, which kills its tiers and frees its slots'\n- `TestRedundancyStep`, subtest 'ABrokenLymBuildAndACorruptMapAreErrorLinesThatLeaveTheOtherTestsJudged'\n\nBoth exercise process, lease and slot handling and a lym build, which points to timing or shared-state dependence.\nFind the race or shared state and make them deterministic.\n",
+      "status": "draft",
+      "created": "2026-11-15T11:34:21Z",
+      "revised": "2026-11-15T12:06:46Z",
+      "profile": "solid"
     }
   ],
   "prime_owner": "neve",
