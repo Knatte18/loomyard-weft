@@ -3,7 +3,7 @@
 Rendered 2026-11-15 12:04 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`adopt-revision`](design-adopt-revision.md) · Age 21m · Owner `neve`
+[`adopt-revision`](design-adopt-revision.md) · Age 22m · Owner `neve`
 
 ## Goal
 
@@ -36,7 +36,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs |  | 26m<br>21m | batten, tender, dobby, orch, fabric, loom |
+| T3 | `draft` **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs |  | 26m<br>22m | batten, tender, dobby, orch, fabric, loom |
 | T4 | `draft` **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | T3 | 2d<br>21m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 ## Notes (0)
