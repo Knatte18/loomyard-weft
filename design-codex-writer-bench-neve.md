@@ -1,6 +1,6 @@
 # Codex as darn writer, replayed on a landed task, on Neve
 
-`codex-writer-bench-neve` · Task · research, codex, shuttle
+`codex-writer-bench-neve` · Task · research, codex, shuttle · running · Worktree-Create
 
 ## Goal
 
