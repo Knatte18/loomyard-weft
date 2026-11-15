@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-15 16:23 UTC; every age below is as of then.
+Rendered 2026-11-15 16:24 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (4)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -26,15 +26,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (3)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P3 | 13d<br>25m | claude, shuttle, config |
+| T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P3 | 13d<br>26m | claude, shuttle, config |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 2d<br>2d | slack, creel, orch |
-| T11 | `draft` **The prime is the root beam: parent_beam names it, never empty** | [`prime-is-root-beam`](design-prime-is-root-beam.md) | darn · solid | P3 | 14m<br>0m | board, dobby, orch |
 
 ## Notes (12)
 
