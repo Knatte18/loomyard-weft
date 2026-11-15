@@ -786,6 +786,28 @@
       "body": "## Seen (operator, 2026-11-15)\n\nThe operator follows the orch from the phone, and turns on Claude Code's remote control by hand in each new orch session with `/remote-control`.\nA context cycle or a fresh orch session drops it, so it must be typed again.\nlym does nothing with remote control today.\n\n## Idea\n\nlym turns on remote control in every orch session it launches or resumes, the hub orch and numbered orchs alike.\nA hub setting switches it on or off per hub, so a test hub or a work machine's hub can keep it off.\nThe run's sessions (writers, reviewers, beams) are not covered.\n\n## Open\n\n- How lym turns it on: a launch flag or setting of Claude Code if one exists, else the slash command sent into the pane after start.\n- Which config file holds the switch, and its default.\n- The remote session's name: the operator named this one `ly:orch`; a name with the hub in it tells hubs apart.\n",
       "created": "2026-11-15T18:19:56Z",
       "revised": "2026-11-15T18:19:56Z"
+    },
+    {
+      "id": 1386,
+      "handle": "B1",
+      "slug": "codex-same-as-claude",
+      "title": "A Codex session gets exactly what a Claude session in the same role gets",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "codex",
+        "shuttle",
+        "stencil",
+        "heddle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one",
+      "body": "## Rule (operator, 2026-11-15)\n\nA Codex session lym gives a role gets exactly what a Claude session in that role gets:\nthe same skills, the same standing instructions, the same project instructions, the same guards and the same prompt.\nGiving it less is a bug, not a property of Codex.\n\n## Seen (`codex-writer-bench-neve`, `c0815831`)\n\nThe bench replayed the darn writer with `astra[high]` through a bare `lym shuttle run`, and its weak points trace to what the session never got:\n\n- No skills: the Claude writer loads `scribe:prose`, `scribe:code-quality` and the rest through its system prompt; the Codex session loaded none, so it hard-wrapped prose at a fixed column, pinned versions and line numbers, and wrote a change description with no design decisions.\n- The Darn-Write stencil speaks Claude's tools: Read, Edit, Write, the Agent tool, \"the subagent passage of your system prompt\". Codex has none of them by those names, so the rule against `cat` and `sed -n` read as void.\n- No guard refused its `cat`, `sed -n` and `rg`, where hooks refuse them for Claude.\n- The repository has no `AGENTS.md`; `codexengine` falls back to `CLAUDE.md`, but `CLAUDE.local.md` and the user's global `CLAUDE.md` reach a Claude session and maybe not a Codex one.\n\n## Idea\n\nFind every route by which a Claude session in a role gets instructions, and give a Codex session in that role the same, through `codexengine`:\n\n- the role's skills (`codexengine` has a skill load; check every role and recipe passes the same list to both engines);\n- heddle's standing passages for the role (they are read per engine: check the Codex set matches the Claude set);\n- the project and user instruction files;\n- the shell and edit guards the hooks apply;\n- stencil wording that names a Claude tool, made engine-neutral or given a Codex rendering.\n\nAdd a check that fails when a role's Codex launch carries less than its Claude launch.\nThen rerun the writer bench, and its OSL twin, with the full set before the operator judges level 2.\n",
+      "created": "2026-11-15T18:26:13Z",
+      "revised": "2026-11-15T18:26:13Z",
+      "project": "codex-engine-trial"
     }
   ],
   "prime_owner": "neve",
