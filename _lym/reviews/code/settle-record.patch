@@ -1,0 +1,1673 @@
+diff --git a/contracts/stencils/loom/loom-fragment-arbiter-fix.md b/contracts/stencils/loom/loom-fragment-arbiter-fix.md
+new file mode 100644
+index 00000000..852e115e
+--- /dev/null
++++ b/contracts/stencils/loom/loom-fragment-arbiter-fix.md
+@@ -0,0 +1,22 @@
++<!-- This is the arbiter's edit rules for a run whose driver lets it fix the stop itself.
++     internal/shedarbiter's Prompt fills {{.worktree}} and {{.run_id}},
++     then fills the result whole into loom-template-arbiter's edit_scope marker. -->
++
++## Your one fix
++
++You may settle the stop with one fix of your own, made and committed in `{{.worktree}}` before you write the verdict.
++
++- Fix only what the stop needs and the board entry's design and the decision record already settle, in the task's code, tests and docs.
++- Change the plan, the decision record or a PATTERN entry only through the repair verbs above, never by editing the file.
++- Never edit under `_lym/` or `.lym/`, which hold the run's records and state, nor any file outside `{{.worktree}}`.
++- Commit every edit on the branch you found, with a message whose last line is the trailer `Arbiter-Attempt: {{.run_id}}`.
++  Leave no uncommitted change behind, a new file included.
++- The only git commands you run that change anything are `git add` and `git commit`, on the branch you found.
++  Never run another git command that changes the repository, its index, its refs or its worktree.
++- A `resume` after a commit names a `goto` at or before the first row whose gate checks the change, so the run's own gates check your fix before the run goes on.
++  A resume after a commit with no `goto` is handed on.
++- A fix that needs more than one focused change, a choice the board entry leaves open, or a change of the task's scope is not yours to make: hand on.
++- When you hand on after a commit, say in the question what the commit does; the run's parent keeps or reverts it.
++
++The driver compares the worktree with the state it recorded when you spawned.
++An uncommitted change, a switched branch or rewritten history hands the stop on.
+diff --git a/contracts/stencils/loom/loom-fragment-arbiter-no-fix.md b/contracts/stencils/loom/loom-fragment-arbiter-no-fix.md
+new file mode 100644
+index 00000000..a5ccfc0e
+--- /dev/null
++++ b/contracts/stencils/loom/loom-fragment-arbiter-no-fix.md
+@@ -0,0 +1,8 @@
++<!-- This is the arbiter's edit rules for a run whose driver keeps it to a verdict.
++     internal/shedarbiter's Prompt fills it whole into loom-template-arbiter's edit_scope marker.
++     It declares no marker. -->
++
++## No fix of your own
++
++You edit no file but the verdict file, and you run no git command that changes anything.
++A fix the stop needs beyond the repair verbs above goes to the run's parent as a hand-on question.
+diff --git a/contracts/stencils/loom/loom-template-arbiter.md b/contracts/stencils/loom/loom-template-arbiter.md
+index 2b0b946a..af5ec080 100644
+--- a/contracts/stencils/loom/loom-template-arbiter.md
++++ b/contracts/stencils/loom/loom-template-arbiter.md
+@@ -15,6 +15,8 @@
+      {{.amendment_target}} is the row a plan amendment routes to, or the literal `none`.
+      {{.parent_directive}} is the no-parent variant of the parent directive rendered by internal/parentdirective.
+      {{.edit_directive}} is the shared edit directive rendered by internal/editdirective.
++     {{.edit_scope}} is what the arbiter may edit: loom-fragment-arbiter-fix when its driver lets it fix the stop itself,
++     loom-fragment-arbiter-no-fix otherwise.
+      The body is recipe-blind: it names no recipe and no row;
+      they arrive only through the stop envelope and the files it points at. -->
+ 
+@@ -54,15 +56,15 @@ Check every fact you rely on against its pointer yourself, and never take its hy
+ 
+ ## What you may change
+ 
+-Run in `{{.worktree}}` only the repair verbs the run's description above names, and nothing else.
+-A run whose description names none leaves you a plain re-launch, a goto or a hand-on.
++Run in `{{.worktree}}` only the repair verbs the run's description above names, and what the edit rules below let you.
++A run whose description names none leaves you a plain re-launch, a goto or a hand-on, after any fix the edit rules below let you make.
+ 
+ When the run's repair verbs include `lym loom decision add`, you settle every call the board entry's design and the decision record's decisions already settle, as the run's parent would, so it never reaches the parent:
+ 
+ - Record each call you make with `lym loom decision add {{.slug}} --by arbiter …`, worded so the run's own agents act on it without you.
+ - When the stop asks for one edit, such as the correction of a false clause in the decision record, record that edit as a decision that names the clause and its exact replacement.
+-  That is the one edit you make, and nothing beyond it.
+-- Anything wider, such as a code change or a change across several cards, you record as a decision for the run's own agents to carry out, and never make yourself.
++  That is the one decision edit you make; the edit rules below govern any other.
++- Anything wider than the edit rules below let you make, such as a change across several cards, you record as a decision for the run's own agents to carry out, and never make yourself.
+ 
+ The escalation brief's "What to do" section is the parent's procedure, and these parts of it do not bind you:
+ settling only on a recorded operator decision, never counting a `--by arbiter` entry, recording with `--by parent`, resuming the run, never accepting over an open design-wrong finding, and ending by reporting back to the parent.
+@@ -74,12 +76,14 @@ An amendment that needs an operator decision or widens the task's scope is hande
+ 
+ A refusal from any repair verb makes you hand on, quoting the refusal.
+ 
++{{.edit_scope}}
++
+ ## What you never do
+ 
+ - Move or resume the run.
+ - Run any other `lym loom` verb that changes the run: an approval, a rejection, a review submission or a goto.
+-- Edit a file other than `{{.verdict_path}}`.
+-- Run a git command that changes anything.
++- Edit or commit anything the edit rules above do not let you, beside `{{.verdict_path}}`.
++- Push, amend, rebase, reset or switch a branch.
+ 
+ To move a halted run back, name a goto target in your verdict: a row at or before the run's current row.
+ The driver's re-launch performs the move after its own check.
+@@ -106,6 +110,7 @@ Before you hand on, record every call of the stop you could settle, so the paren
+     Otherwise hand on with the questions they leave open.
+ - At an error stop you have no repair verbs.
+   You may judge a plain re-launch safe, name a goto target, or hand on.
++  When the edit rules above let you fix the stop's cause, you may fix it first.
+ - A `resume` at a review escalation needs its circling decision recorded first.
+ - A `resume` at a `blocked` stop needs a goto target.
+ 
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index edf5ca78..f34e213e 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -42,6 +42,8 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 		{"loom-template-parts", LoomTemplateParts, []string{"decision_record_path", "depth_block", "edit_directive", "friction_directive", "parent_directive", "parts_dir", "parts_max", "parts_path", "pattern_directive", "relevant_path", "specs_dir"}},
+ 		{"loom-fragment-parts-light", LoomFragmentPartsLight, nil},
+ 		{"loom-fragment-parts-medium", LoomFragmentPartsMedium, nil},
++		{"loom-fragment-arbiter-fix", LoomFragmentArbiterFix, []string{"run_id", "worktree"}},
++		{"loom-fragment-arbiter-no-fix", LoomFragmentArbiterNoFix, nil},
+ 		{"loom-template-part-writer", LoomTemplatePartWriter, []string{"decision_record_path", "edit_directive", "friction_directive", "overview_path", "parent_directive", "part_name", "parts_path", "pattern_directive", "plan_dir", "relevant_path", "specs_dir"}},
+ 		{"loom-template-parts-chair", LoomTemplatePartsChair, []string{"decision_record_path", "edit_directive", "friction_directive", "join_path", "overview_path", "parent_directive", "parts_dir", "parts_path", "pattern_directive", "plan_dir", "specs_dir"}},
+ 		{"seat-directive-chair", SeatDirectiveChair, []string{"advisor_names", "inputs", "output_files"}},
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index 39aab0db..11bab50e 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -185,6 +185,16 @@ var LoomTemplatePartsChair []byte
+ //go:embed loom/loom-template-arbiter.md
+ var LoomTemplateArbiter []byte
+ 
++// LoomFragmentArbiterFix is the arbiter's edit rules when its driver lets it make and commit one fix of its own.
++//
++//go:embed loom/loom-fragment-arbiter-fix.md
++var LoomFragmentArbiterFix []byte
++
++// LoomFragmentArbiterNoFix is the arbiter's edit rules when its driver keeps it to a verdict.
++//
++//go:embed loom/loom-fragment-arbiter-no-fix.md
++var LoomFragmentArbiterNoFix []byte
++
+ // LoomRubricDiscussionReview is the Discussion-Review rubric, read by every row of the Discussion-Review perch.
+ //
+ //go:embed loom/loom-rubric-discussion-review.md
+@@ -764,6 +774,8 @@ var entries = []registryEntry{
+ 	{"loom-template-part-writer", &LoomTemplatePartWriter},
+ 	{"loom-template-parts-chair", &LoomTemplatePartsChair},
+ 	{"loom-template-arbiter", &LoomTemplateArbiter},
++	{"loom-fragment-arbiter-fix", &LoomFragmentArbiterFix},
++	{"loom-fragment-arbiter-no-fix", &LoomFragmentArbiterNoFix},
+ 	{"loom-rubric-discussion-review", &LoomRubricDiscussionReview},
+ 	{"loom-rubric-plan-review", &LoomRubricPlanReview},
+ 	{"loom-rubric-raddle-review", &LoomRubricRaddleReview},
+diff --git a/docs/overview.md b/docs/overview.md
+index 0dc04a08..d45d059a 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1542,6 +1542,8 @@ User-facing modules each get one `lym <module>` namespace:
+   A message asking for a stop at a point becomes `lym shed pause <run-id> --before|--after <producer>`.
+   At a stop it cannot settle, the driver runs `lym loom arbiter`.
+   That verb spawns a cold arbiter agent and returns a verdict the driver applies or hands on.
++  While the task worktree exists, the arbiter may make one fix of its own, committed on the task branch.
++  A resume after its commits names a goto, so the run's own rows check the fix.
+   The driver re-launches the loop once after a deployed `lym`.
+   A loom-launched driver parks at a hand-back until `lym loom start` resumes it.
+   `internal/shedrun` is the sole declarer of the `shed` run-directory path segment.
+diff --git a/internal/battencli/arbiterworktree_integration_test.go b/internal/battencli/arbiterworktree_integration_test.go
+new file mode 100644
+index 00000000..a8a65706
+--- /dev/null
++++ b/internal/battencli/arbiterworktree_integration_test.go
+@@ -0,0 +1,52 @@
++// arbiterworktree_integration_test.go pins which worktree batten's arbiter edits in.
++// It is a white-box "package battencli" test on a hubforge hub, since the wiring it covers is unexported.
++
++package battencli
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/shedarbiter"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestWithTaskWorktree covers the worktree batten's arbiter may edit.
++// A present task worktree gives the arbiter a seam and a prompt worktree over the task worktree, never the prime.
++// An absent task worktree gives it no seam, so the call is verdict-only, and leaves the prompt worktree as it was.
++func TestWithTaskWorktree(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{hubforge.TemplatePairSlug}})
++	primePath := h.Location.WorktreePath()
++	base := shedarbiter.Deps{Prompt: shedarbiter.PromptInput{Worktree: primePath}}
++
++	tests := []struct {
++		name         string
++		slug         string
++		wantSeam     bool
++		wantWorktree string
++	}{
++		{"a present task worktree gives a seam over it", hubforge.TemplatePairSlug, true, h.PairCodeWorktree(hubforge.TemplatePairSlug)},
++		{"an absent task worktree gives no seam", "no-such-task", false, primePath},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			c := &battenCLI{location: h.Location, slug: tt.slug}
++
++			got, err := c.withTaskWorktree(base)
++
++			if err != nil {
++				t.Fatalf("withTaskWorktree() error = %v; want nil", err)
++			}
++			if (got.Worktree != nil) != tt.wantSeam {
++				t.Errorf("withTaskWorktree() seam set = %v; want %v", got.Worktree != nil, tt.wantSeam)
++			}
++			if got.Prompt.Worktree != tt.wantWorktree {
++				t.Errorf("withTaskWorktree() prompt worktree = %q; want %q", got.Prompt.Worktree, tt.wantWorktree)
++			}
++		})
++	}
++}
+diff --git a/internal/battencli/drive.go b/internal/battencli/drive.go
+index f2564a4c..3a9b5033 100644
+--- a/internal/battencli/drive.go
++++ b/internal/battencli/drive.go
+@@ -38,6 +38,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/shedverbs"
++	"github.com/Knatte18/loomyard/internal/shedworktree"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengines"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -55,7 +56,8 @@ const battenArbiterRecipe = "batten: a task worktree's whole lifecycle run from
+ 	"Run-Shed watches the child's own run; " +
+ 	"Land pulls the prime, deploys and prunes the board; " +
+ 	"Worktree-Teardown ends the session and removes the pair. " +
+-	"The arbiter's only moves are a plain re-launch, a goto to the halted row, or a hand-on."
++	"While the task worktree exists, the arbiter may make one fix of its own in it and commit it there; " +
++	"otherwise, and after any fix, it re-launches, goes to the halted row or hands on."
+ 
+ // battenDriveRefusal is the refusal of a second batten driver for a run one already drives.
+ // A way-forward clause follows it.
+@@ -363,7 +365,7 @@ func (c *battenCLI) runRecordsDeps() commitStatusDeps {
+ // arbiterSeam builds batten's arbiter seam, whose deps load on its first `Judge` call.
+ // A batten stop never awaits a review escalation, so `EscalationPending` answers false.
+ func (c *battenCLI) arbiterSeam(runID string) *sheddriver.ArbiterSeam {
+-	var loaded *sheddriver.ArbiterSeam
++	var loaded *shedarbiter.Deps
+ 	seam := shedarbiter.Seam(shedarbiter.Deps{}, runID, func(string) bool { return false })
+ 	seam.Judge = func(envelopePath, reportPath, caseBriefPath string) (sheddriver.ArbiterOutcome, error) {
+ 		if loaded == nil {
+@@ -371,13 +373,38 @@ func (c *battenCLI) arbiterSeam(runID string) *sheddriver.ArbiterSeam {
+ 			if err != nil {
+ 				return sheddriver.ArbiterOutcome{}, err
+ 			}
+-			loaded = shedarbiter.Seam(deps, runID, func(string) bool { return false })
++			loaded = &deps
+ 		}
+-		return loaded.Judge(envelopePath, reportPath, caseBriefPath)
++		deps, err := c.withTaskWorktree(*loaded)
++		if err != nil {
++			return sheddriver.ArbiterOutcome{}, err
++		}
++		return shedarbiter.Seam(deps, runID, func(string) bool { return false }).Judge(envelopePath, reportPath, caseBriefPath)
+ 	}
+ 	return seam
+ }
+ 
++// withTaskWorktree returns deps with the arbiter's worktree seam and prompt worktree over the task worktree.
++// The prime's HEAD and tree move under other writers, so the arbiter never edits there.
++// It is read on each call, since the task worktree appears at Worktree-Create and goes at Worktree-Teardown;
++// while it is absent the call gets no seam and gives a verdict only.
++func (c *battenCLI) withTaskWorktree(deps shedarbiter.Deps) (shedarbiter.Deps, error) {
++	present, err := taskWorktreePresent(c.location, c.slug)
++	if err != nil {
++		return shedarbiter.Deps{}, err
++	}
++	if !present {
++		return deps, nil
++	}
++	taskLocation, err := taskWorktreeLocation(c.location, c.slug)
++	if err != nil {
++		return shedarbiter.Deps{}, err
++	}
++	deps.Worktree = shedworktree.ArbiterSeam(taskLocation)
++	deps.Prompt.Worktree = taskLocation.WorktreePath()
++	return deps, nil
++}
++
+ // tacklerDepsFor fills the tackler call's seams and fixed values over settings and shuttle.
+ // A batten tackler has no worktree snapshot, since the prime has other writers,
+ // and a resume names the halted row only.
+diff --git a/internal/loomcli/arbiter.go b/internal/loomcli/arbiter.go
+index d2a1255c..eba91b37 100644
+--- a/internal/loomcli/arbiter.go
++++ b/internal/loomcli/arbiter.go
+@@ -21,6 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedarbiter"
+ 	"github.com/Knatte18/loomyard/internal/sheddriver"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/shedworktree"
+ )
+ 
+ // arbiterVerb runs `lym loom arbiter` over deps and prints its envelope to out, returning the exit code.
+@@ -42,11 +43,16 @@ func arbiterVerb(out io.Writer, deps shedarbiter.Deps, in shedarbiter.Input) int
+ }
+ 
+ // arbiterEnvelopeFields renders envelope as the verb's output keys; relaunch appears for a resume only.
++// verbs and commits render as empty lists when the envelope has none.
+ func arbiterEnvelopeFields(e loomengine.ArbiterEnvelope) map[string]any {
+ 	verbs := e.Verbs
+ 	if verbs == nil {
+ 		verbs = []string{}
+ 	}
++	commits := e.Commits
++	if commits == nil {
++		commits = []string{}
++	}
+ 	fields := map[string]any{
+ 		"verdict":      e.Verdict,
+ 		"reason":       e.Reason,
+@@ -57,6 +63,7 @@ func arbiterEnvelopeFields(e loomengine.ArbiterEnvelope) map[string]any {
+ 		"attempt":      e.Attempt,
+ 		"attempt_dir":  e.AttemptDir,
+ 		"verdict_path": e.VerdictPath,
++		"commits":      commits,
+ 	}
+ 	if e.Verdict == loomengine.ArbiterVerdictResume {
+ 		fields["relaunch"] = e.Relaunch
+@@ -73,8 +80,12 @@ func (c *loomCLI) arbiterCmd() *cobra.Command {
+ 		Long: `arbiter is run only by the run's driver, at a stop it cannot settle. It spawns
+ a cold arbiter agent, waits for its verdict file and prints the validated verdict:
+ verdict (resume or hand-on), reason, question, goto, verbs, cause (empty for the
+-agent's own verdict), attempt, attempt_dir, verdict_path and, on a resume only,
+-the relaunch line the driver runs next.
++agent's own verdict), attempt, attempt_dir, verdict_path, commits and, on a
++resume only, the relaunch line the driver runs next.
++
++The arbiter may make one fix of its own, committed on the task branch; commits
++lists those commits. A resume after them needs a goto, so the run's own rows
++check the fix.
+ 
+ A re-run for a stop an arbiter already judged spawns nothing: it returns that
+ verdict, or waits on the arbiter still running. Each refusal names its way
+@@ -157,6 +168,7 @@ func (c *loomCLI) arbiterDepsFor() (shedarbiter.Deps, error) {
+ 			SupportLogPath:     record.supportLog,
+ 		},
+ 		AmendmentTarget:    func() string { return arbiterAmendmentTarget(recipeTarget, planApproved) },
++		Worktree:           shedworktree.ArbiterSeam(location),
+ 		Shuttle:            sheddriver.RunnerShuttle{Runner: c.runner},
+ 		Now:                time.Now,
+ 		RelaunchRunID:      runID,
+diff --git a/internal/loomcli/arbiterprompt_test.go b/internal/loomcli/arbiterprompt_test.go
+index 3947f4aa..a68f03fb 100644
+--- a/internal/loomcli/arbiterprompt_test.go
++++ b/internal/loomcli/arbiterprompt_test.go
+@@ -2,11 +2,38 @@ package loomcli
+ 
+ import (
+ 	"errors"
++	"slices"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// TestArbiterEnvelopeFields asserts the verb's commits key lists the envelope's commits.
++// It is an empty list when the envelope has none.
++func TestArbiterEnvelopeFields(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		commits []string
++	}{
++		{"CommitsListed", []string{"bbb1234 fix the gate"}},
++		{"NoCommitsRenderEmptyList", nil},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			fields := arbiterEnvelopeFields(loomengine.ArbiterEnvelope{Verdict: loomengine.ArbiterVerdictHandOn, Commits: tt.commits})
++			got, ok := fields["commits"].([]string)
++			if !ok || got == nil || !slices.Equal(got, slices.Clone(tt.commits)) {
++				t.Errorf("arbiterEnvelopeFields commits = %#v; want the non-nil list %q", fields["commits"], tt.commits)
++			}
++		})
++	}
++}
++
+ // TestArbiterAmendmentTarget asserts the target is the recipe's once the plan is approved;
+ // it is none for an unapproved plan, an approval read error, or a recipe that sets none.
+ func TestArbiterAmendmentTarget(t *testing.T) {
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 30585cbc..2d7afd65 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -467,6 +467,10 @@
+ // so the attempt counts against `arbiter_max_spawns` whatever happens next.
+ // The budget is counted from those records, so a restart never resets it.
+ // The directory also holds `prompt.md`, the agent's `verdict.yaml` and the verb's validated `envelope.json`.
++// The verb wires `Deps.Worktree` through fabric's read-only reads,
++// so the arbiter may make one fix of its own, committed on the task branch.
++// `attempt.json` records the worktree snapshot and the uncommitted paths taken at spawn.
++// `envelope.json` and the verb's output list the arbiter's commits.
+ // Once the re-launch consumed a `resume`, it also holds the `applied` mark.
+ // While an arbiter may be live an ephemeral marker names the attempt, its strand and its deadline.
+ // The status commit stages the arbiter directory with the run records.
+diff --git a/internal/loomcli/drivewiring.go b/internal/loomcli/drivewiring.go
+index 7fc5a9bb..1742e35e 100644
+--- a/internal/loomcli/drivewiring.go
++++ b/internal/loomcli/drivewiring.go
+@@ -8,11 +8,8 @@ package loomcli
+ import (
+ 	"bytes"
+ 	"context"
+-	"crypto/sha256"
+-	"encoding/hex"
+ 	"errors"
+ 	"fmt"
+-	"io/fs"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
+@@ -44,6 +41,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/shedverbs"
++	"github.com/Knatte18/loomyard/internal/shedworktree"
+ )
+ 
+ // driveRefusal is the refusal of a second Go driver for a run one already drives.
+@@ -201,7 +199,7 @@ func (c *loomCLI) goDriverDepsFor(release func() error) (sheddriver.Deps, error)
+ 		AttemptDir: func(number int) string { return shedrun.TacklerAttemptDir(location, c.runID, number) },
+ 		MarkerPath: shedrun.TacklerMarker(location, c.runID),
+ 		Producers:  c.routing.Producers,
+-		Snapshot:   func() (sheddriver.WorktreeSnapshot, error) { return worktreeSnapshot(location) },
++		Snapshot:   func() (sheddriver.WorktreeSnapshot, error) { return shedworktree.Snapshot(location) },
+ 		PausedWithin: func(from, to time.Time) (time.Duration, error) {
+ 			geometry, err := pauseGeometry()
+ 			if err != nil {
+@@ -314,7 +312,7 @@ func (c *loomCLI) goDriverDepsFor(release func() error) (sheddriver.Deps, error)
+ 			},
+ 		},
+ 		Tamper: &sheddriver.TamperSeam{
+-			Snapshot: func() (sheddriver.WorktreeSnapshot, error) { return worktreeSnapshot(location) },
++			Snapshot: func() (sheddriver.WorktreeSnapshot, error) { return shedworktree.Snapshot(location) },
+ 			AttemptSnapshot: func(tacklerDir string) (sheddriver.WorktreeSnapshot, error) {
+ 				attempt, err := sheddriver.ReadTacklerAttempt(tacklerDir)
+ 				return attempt.Snapshot, err
+@@ -390,46 +388,6 @@ func writeDrivePausedNote(frictionDir, runID string, stop sheddriver.Stop) error
+ 	return nil
+ }
+ 
+-// worktreeSnapshot reads the state a tackler must leave unchanged in the task's code worktree:
+-// HEAD, branch and the SHA-256 of each dirty path.
+-// The records side is left out, since the run's own records change under every step.
+-func worktreeSnapshot(location *lymcwd.Location) (sheddriver.WorktreeSnapshot, error) {
+-	fab, err := fabricengine.Open(location)
+-	if err != nil {
+-		return sheddriver.WorktreeSnapshot{}, err
+-	}
+-	head, err := fab.HeadSHA()
+-	if err != nil {
+-		return sheddriver.WorktreeSnapshot{}, err
+-	}
+-	branch, err := fab.CurrentBranch()
+-	if err != nil {
+-		return sheddriver.WorktreeSnapshot{}, err
+-	}
+-	paths, err := fab.DirtyPaths()
+-	if err != nil {
+-		return sheddriver.WorktreeSnapshot{}, err
+-	}
+-	codeRoot := location.WorktreePath() + string(filepath.Separator)
+-	dirty := map[string]string{}
+-	for _, path := range paths {
+-		if !strings.HasPrefix(path, codeRoot) {
+-			continue
+-		}
+-		content, err := os.ReadFile(path)
+-		switch {
+-		case errors.Is(err, fs.ErrNotExist):
+-			dirty[path] = "deleted"
+-		case err != nil:
+-			return sheddriver.WorktreeSnapshot{}, fmt.Errorf("hash dirty path %s: %w", path, err)
+-		default:
+-			sum := sha256.Sum256(content)
+-			dirty[path] = hex.EncodeToString(sum[:])
+-		}
+-	}
+-	return sheddriver.WorktreeSnapshot{Head: head, Branch: branch, Dirty: dirty}, nil
+-}
+-
+ // dirtyPathsOutsideRecords lists the pair's uncommitted or untracked paths outside the run's own records directories.
+ // Both sides join onto the task worktree, since the records side reaches it through the `_lym` junction.
+ func dirtyPathsOutsideRecords(location *lymcwd.Location, runID string) ([]string, error) {
+diff --git a/internal/loomengine/arbiter.go b/internal/loomengine/arbiter.go
+index fa49a687..0e1f5cc3 100644
+--- a/internal/loomengine/arbiter.go
++++ b/internal/loomengine/arbiter.go
+@@ -61,6 +61,13 @@ type ArbiterAttempt struct {
+ 	ReportPath   string             `json:"report_path"`
+ 	// CaseBriefPath is the case brief the tackler was given, so a re-run names the same one; empty when there was none.
+ 	CaseBriefPath string `json:"case_brief_path,omitempty"`
++	// Snapshot is the task's code worktree as the arbiter found it, so the call reads what the arbiter changed;
++	// nil when the run's driver lets its arbiter edit nothing.
++	Snapshot *sheddriver.WorktreeSnapshot `json:"snapshot,omitempty"`
++	// Changes maps every uncommitted path of the task's code worktree at spawn to the SHA-256 of its content.
++	// Untracked files are included, paths are relative to the worktree, and a file that is gone maps to "deleted".
++	// The call compares it with the worktree the arbiter left, since the snapshot's dirty map never lists a new file.
++	Changes map[string]string `json:"changes,omitempty"`
+ 
+ 	// Dir is the attempt's directory, filled by the readers and never serialized.
+ 	Dir string `json:"-"`
+@@ -197,6 +204,7 @@ func ReadArbiterVerdict(path string) (ArbiterVerdict, bool, error) {
+ // ArbiterEnvelope is envelope.json, the arbiter verb's validated result for an attempt.
+ // Cause is empty for the agent's own verdict and names the failure that made the verb hand on otherwise.
+ // Relaunch is the full re-launch line a resume carries.
++// Commits lists the commits the arbiter made on the task branch, newest first, each a short SHA and its subject.
+ type ArbiterEnvelope struct {
+ 	Verdict     string   `json:"verdict"`
+ 	Reason      string   `json:"reason"`
+@@ -208,6 +216,7 @@ type ArbiterEnvelope struct {
+ 	AttemptDir  string   `json:"attempt_dir"`
+ 	VerdictPath string   `json:"verdict_path"`
+ 	Relaunch    string   `json:"relaunch"`
++	Commits     []string `json:"commits,omitempty"`
+ }
+ 
+ // WriteArbiterEnvelope writes e at path, creating its directory.
+diff --git a/internal/shedarbiter/call.go b/internal/shedarbiter/call.go
+index dbc572d3..091ef6f5 100644
+--- a/internal/shedarbiter/call.go
++++ b/internal/shedarbiter/call.go
+@@ -56,6 +56,9 @@ type Deps struct {
+ 	StencilsDir string
+ 	// AmendmentTarget is the row a plan amendment routes to, or "none"; read per spawn, as the plan is approved mid-drive.
+ 	AmendmentTarget func() string
++	// Worktree reads the task's code worktree the arbiter may edit and commit in;
++	// nil keeps the arbiter to a verdict, with no edit of its own.
++	Worktree *WorktreeSeam
+ 	// Shuttle starts, attaches to and stops the arbiter.
+ 	Shuttle sheddriver.AgentShuttle
+ 	// Now is the clock.
+@@ -194,6 +197,20 @@ func (c *Call) settleFresh(attempts []loomengine.ArbiterAttempt) (loomengine.Arb
+ 		return loomengine.ArbiterEnvelope{}, refusal(c.deps, "spawn budget spent: the run has used %d of its %d arbiter spawns", len(attempts), settings.MaxSpawns)
+ 	}
+ 
++	var snapshot *sheddriver.WorktreeSnapshot
++	var changes map[string]string
++	if c.deps.Worktree != nil {
++		read, err := c.deps.Worktree.Snapshot()
++		if err != nil {
++			return loomengine.ArbiterEnvelope{}, refusal(c.deps, "the worktree could not be read before the spawn: %v", err)
++		}
++		snapshot = &read
++		changes, err = c.deps.Worktree.Changes()
++		if err != nil {
++			return loomengine.ArbiterEnvelope{}, refusal(c.deps, "the worktree's uncommitted paths could not be read before the spawn: %v", err)
++		}
++	}
++
+ 	number := 1
+ 	if len(attempts) > 0 {
+ 		number = attempts[len(attempts)-1].Number + 1
+@@ -210,6 +227,8 @@ func (c *Call) settleFresh(attempts []loomengine.ArbiterAttempt) (loomengine.Arb
+ 		EnvelopePath:  c.in.EnvelopePath,
+ 		ReportPath:    c.in.ReportPath,
+ 		CaseBriefPath: c.in.CaseBriefPath,
++		Snapshot:      snapshot,
++		Changes:       changes,
+ 		Dir:           dir,
+ 	}
+ 	if err := loomengine.WriteArbiterAttempt(dir, attempt); err != nil {
+@@ -224,6 +243,7 @@ func (c *Call) settleFresh(attempts []loomengine.ArbiterAttempt) (loomengine.Arb
+ 	promptInput.CaseBriefPath = c.in.CaseBriefPath
+ 	promptInput.VerdictPath = loomengine.ArbiterVerdictPath(dir)
+ 	promptInput.AmendmentTarget = c.deps.AmendmentTarget()
++	promptInput.MayEdit = c.deps.Worktree != nil
+ 	prompt, err := Prompt(c.deps.StencilsDir, promptInput)
+ 	if err != nil {
+ 		return loomengine.ArbiterEnvelope{}, err
+@@ -296,6 +316,8 @@ func (c *Call) stopRunAndHandOn(attempt loomengine.ArbiterAttempt, stop func() e
+ }
+ 
+ // conclude validates the attempt's verdict file and finishes the call with it.
++// A resume is handed on when the worktree the arbiter left fails readEdits or the resume's precondition;
++// an agent's own hand-on keeps its question, followed by the arbiter's commits and any problem with the worktree.
+ func (c *Call) conclude(attempt loomengine.ArbiterAttempt) (loomengine.ArbiterEnvelope, error) {
+ 	verdict, found, err := loomengine.ReadArbiterVerdict(loomengine.ArbiterVerdictPath(attempt.Dir))
+ 	if err != nil {
+@@ -304,20 +326,28 @@ func (c *Call) conclude(attempt loomengine.ArbiterAttempt) (loomengine.ArbiterEn
+ 	if !found {
+ 		return c.handOn(attempt, sheddriver.CauseMissing, "the arbiter left no verdict")
+ 	}
++	edits := c.readEdits(attempt)
++	question := verdict.Question
+ 	if verdict.Verdict == loomengine.ArbiterVerdictResume {
+-		if problem := c.resumePrecondition(verdict); problem != "" {
+-			return c.handOn(attempt, sheddriver.CausePrecondition, problem)
++		if edits.problem != "" {
++			return c.handOnWith(attempt, edits, sheddriver.CausePrecondition, edits.problem)
++		}
++		if problem := c.resumePrecondition(verdict, edits.commits); problem != "" {
++			return c.handOnWith(attempt, edits, sheddriver.CausePrecondition, problem)
+ 		}
++	} else {
++		question = edits.appendTo(question)
+ 	}
+ 	envelope := loomengine.ArbiterEnvelope{
+ 		Verdict:     verdict.Verdict,
+ 		Reason:      verdict.Reason,
+-		Question:    verdict.Question,
++		Question:    question,
+ 		Goto:        verdict.Goto,
+ 		Verbs:       verdict.Verbs,
+ 		Attempt:     attempt.Number,
+ 		AttemptDir:  attempt.Dir,
+ 		VerdictPath: loomengine.ArbiterVerdictPath(attempt.Dir),
++		Commits:     edits.commits,
+ 	}
+ 	if verdict.Verdict == loomengine.ArbiterVerdictResume {
+ 		envelope.Relaunch = fmt.Sprintf("lym shed step %s --until-stop --arbiter-attempt %d", c.deps.RelaunchRunID, attempt.Number)
+@@ -326,7 +356,11 @@ func (c *Call) conclude(attempt loomengine.ArbiterAttempt) (loomengine.ArbiterEn
+ }
+ 
+ // resumePrecondition returns what stops a resume from being sound at the call's stop, or empty when nothing does.
+-func (c *Call) resumePrecondition(verdict loomengine.ArbiterVerdict) string {
++// commits are the arbiter's own commits: a resume after any needs a goto, so the run's own rows check them.
++func (c *Call) resumePrecondition(verdict loomengine.ArbiterVerdict, commits []string) string {
++	if len(commits) > 0 && verdict.Goto == "" {
++		return "a resume after the arbiter's commits needs a goto target, so the run's own rows check them, and the verdict names none"
++	}
+ 	switch c.status.State {
+ 	case shedengine.StateAwaiting:
+ 		pending, err := c.deps.PendingCirclingDecision(c.status.CurrentProducer)
+@@ -358,17 +392,25 @@ func (c *Call) resumePrecondition(verdict loomengine.ArbiterVerdict) string {
+ 	return ""
+ }
+ 
+-// handOn finishes the call with a hand-on the call made itself.
+-// Its question names cause and, for an API error, the error itself.
++// handOn finishes the call with a hand-on the call made itself, over the edits the arbiter left in the worktree.
+ func (c *Call) handOn(attempt loomengine.ArbiterAttempt, cause, detail string) (loomengine.ArbiterEnvelope, error) {
++	return c.handOnWith(attempt, c.readEdits(attempt), cause, detail)
++}
++
++// handOnWith finishes the call with a hand-on the call made itself.
++// Its question names cause and, for an API error, the error itself;
++// it then names the arbiter's commits and any problem with the worktree, which the envelope also lists.
++func (c *Call) handOnWith(attempt loomengine.ArbiterAttempt, edits attemptEdits, cause, detail string) (loomengine.ArbiterEnvelope, error) {
++	question := fmt.Sprintf("The arbiter could not settle this stop (%s); decide it yourself and report the choice in the stop report.", sheddriver.HandBackQuestionCause(cause, detail))
+ 	return c.finish(loomengine.ArbiterEnvelope{
+ 		Verdict:     loomengine.ArbiterVerdictHandOn,
+ 		Reason:      detail,
+-		Question:    fmt.Sprintf("The arbiter could not settle this stop (%s); decide it yourself and report the choice in the stop report.", sheddriver.HandBackQuestionCause(cause, detail)),
++		Question:    edits.appendTo(question),
+ 		Cause:       cause,
+ 		Attempt:     attempt.Number,
+ 		AttemptDir:  attempt.Dir,
+ 		VerdictPath: loomengine.ArbiterVerdictPath(attempt.Dir),
++		Commits:     edits.commits,
+ 	})
+ }
+ 
+diff --git a/internal/shedarbiter/call_test.go b/internal/shedarbiter/call_test.go
+index 84614e0d..8c6118ec 100644
+--- a/internal/shedarbiter/call_test.go
++++ b/internal/shedarbiter/call_test.go
+@@ -3,9 +3,11 @@ package shedarbiter
+ import (
+ 	"errors"
+ 	"fmt"
++	"maps"
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -115,6 +117,39 @@ type callFixture struct {
+ 	gotoGuard        shedengine.GotoGuard
+ 	amendmentTarget  func() string
+ 	wayForward       string
++	// worktree, when set, is the worktree seam the call reads; nil leaves Deps.Worktree unset.
++	worktree *fakeWorktree
++}
++
++// fakeWorktree is a scripted worktree seam over one current snapshot and changed-path list.
++// A test swaps them while the arbiter runs.
++// Each read has its own error, so a test fails the spawn read or one read after the arbiter.
++type fakeWorktree struct {
++	current     sheddriver.WorktreeSnapshot
++	changes     map[string]string
++	snapshotErr error
++	changesErr  error
++	ancestorErr error
++	logErr      error
++	descends    bool
++	commits     []string
++	// ancestorArgs and logArgs are the (sha, ref) and (from, to) pairs the last IsAncestor and CommitLog reads received.
++	ancestorArgs, logArgs [2]string
++}
++
++func (w *fakeWorktree) seam() *WorktreeSeam {
++	return &WorktreeSeam{
++		Snapshot: func() (sheddriver.WorktreeSnapshot, error) { return w.current, w.snapshotErr },
++		Changes:  func() (map[string]string, error) { return w.changes, w.changesErr },
++		IsAncestor: func(sha, ref string) (bool, error) {
++			w.ancestorArgs = [2]string{sha, ref}
++			return w.descends, w.ancestorErr
++		},
++		CommitLog: func(from, to string) ([]string, error) {
++			w.logArgs = [2]string{from, to}
++			return w.commits, w.logErr
++		},
++	}
+ }
+ 
+ const testRun = "operator-surface"
+@@ -168,7 +203,12 @@ func (f *callFixture) deps() Deps {
+ 	if amendmentTarget == nil {
+ 		amendmentTarget = func() string { return AbsentPath }
+ 	}
++	var worktree *WorktreeSeam
++	if f.worktree != nil {
++		worktree = f.worktree.seam()
++	}
+ 	return Deps{
++		Worktree: worktree,
+ 		ReadStatus: func() (shedengine.Status, bool, error) {
+ 			if f.statusErr != nil {
+ 				return shedengine.Status{}, false, f.statusErr
+@@ -709,6 +749,232 @@ func TestVerdictGate(t *testing.T) {
+ 	}
+ }
+ 
++// TestCall_Edits covers an arbiter that may edit.
++// The call snapshots the worktree at spawn and reads the commits the arbiter made since.
++// It hands on a resume over a worktree the run may not go on from.
++// With no worktree seam the arbiter is told it edits nothing and its attempt records no snapshot.
++func TestCall_Edits(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const commit = "bbb1234 fix the gate"
++	const gotoVerdict = "verdict: resume\nreason: fixed the gate\ngoto: Plan-Write\n"
++	spawn := sheddriver.WorktreeSnapshot{Head: "aaa", Branch: "task"}
++	moved := sheddriver.WorktreeSnapshot{Head: "bbb", Branch: "task"}
++
++	tests := []struct {
++		name string
++		// noSeam leaves Deps.Worktree unset.
++		noSeam bool
++		// snapshotErr is what the seam's spawn read fails with.
++		snapshotErr error
++		// spawnChanges is the uncommitted paths and their content hashes at spawn; afterChanges is those the arbiter leaves.
++		spawnChanges, afterChanges map[string]string
++		// spawnChangesErr is what the seam's spawn read of the uncommitted paths fails with.
++		spawnChangesErr error
++		// after is the worktree the arbiter leaves; descends and commits answer the commit reads.
++		after      sheddriver.WorktreeSnapshot
++		descends   bool
++		commits    []string
++		verdict    string
++		waitResult shuttleengine.Result
++		// afterSnapshotErr, afterChangesErr, ancestorErr and logErr are what each read fails with after the arbiter.
++		afterSnapshotErr, afterChangesErr, ancestorErr, logErr error
++		// viaSeam also settles the stop through Seam's Judge, whose outcome must carry the envelope's commits.
++		viaSeam bool
++
++		wantRefusal  string
++		wantVerdict  string
++		wantCause    string
++		wantCommits  []string
++		wantReason   string
++		wantQuestion []string
++		wantPrompt   string
++	}{
++		{
++			name: "a resume with no commit carries none", after: spawn, verdict: resumeVerdict,
++			wantVerdict: loomengine.ArbiterVerdictResume, wantPrompt: "## Your one fix",
++		},
++		{
++			name: "a resume after commits with a goto lists them", after: moved, descends: true, commits: []string{commit}, verdict: gotoVerdict,
++			viaSeam:     true,
++			wantVerdict: loomengine.ArbiterVerdictResume, wantCommits: []string{commit},
++		},
++		{
++			name: "a resume after commits with no goto hands on naming them", after: moved, descends: true, commits: []string{commit}, verdict: resumeVerdict,
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CausePrecondition, wantCommits: []string{commit},
++			wantReason: "needs a goto target", wantQuestion: []string{commit, "keep or revert"},
++		},
++		{
++			name: "an agent's hand-on after commits keeps its question and names them", after: moved, descends: true, commits: []string{commit}, verdict: handOnVerdict,
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCommits: []string{commit},
++			wantReason: "the design is wrong", wantQuestion: []string{"should the parent widen the task?", commit},
++		},
++		{
++			name: "a resume over uncommitted changes hands on", after: sheddriver.WorktreeSnapshot{Head: "aaa", Branch: "task", Dirty: map[string]string{"/wt/a.go": "hash"}}, verdict: gotoVerdict,
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CausePrecondition, wantReason: "uncommitted changes",
++		},
++		{
++			name: "a resume over a new untracked file hands on", after: spawn, afterChanges: map[string]string{"new.go": "h1"}, verdict: gotoVerdict,
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CausePrecondition, wantReason: "uncommitted changes",
++		},
++		{
++			name: "a resume leaving an untracked file it found untouched goes on", after: spawn, verdict: resumeVerdict,
++			spawnChanges: map[string]string{"b.go": "h2", "a.go": "h1"}, afterChanges: map[string]string{"a.go": "h1", "b.go": "h2"},
++			wantVerdict: loomengine.ArbiterVerdictResume,
++		},
++		{
++			name: "a resume over an untracked file it found and edited hands on", after: spawn, verdict: gotoVerdict,
++			spawnChanges: map[string]string{"a.go": "h1"}, afterChanges: map[string]string{"a.go": "h2"},
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CausePrecondition, wantReason: "uncommitted changes",
++		},
++		{
++			name: "a resume over uncommitted changes after commits hands on and lists the commits", descends: true, commits: []string{commit},
++			after:   sheddriver.WorktreeSnapshot{Head: "bbb", Branch: "task", Dirty: map[string]string{"/wt/a.go": "hash"}},
++			verdict: gotoVerdict, wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CausePrecondition,
++			wantCommits: []string{commit}, wantReason: "uncommitted changes", wantQuestion: []string{commit},
++		},
++		{
++			name:  "an agent's hand-on over uncommitted changes gains the worktree note",
++			after: sheddriver.WorktreeSnapshot{Head: "aaa", Branch: "task", Dirty: map[string]string{"/wt/a.go": "hash"}}, verdict: handOnVerdict,
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantReason: "the design is wrong",
++			wantQuestion: []string{"should the parent widen the task?", "Check the worktree first", "uncommitted changes"},
++		},
++		{
++			name: "a resume after a worktree that cannot be read hands on", after: spawn, afterSnapshotErr: errors.New("HEAD is detached"), verdict: gotoVerdict,
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CausePrecondition, wantReason: "could not be read after the arbiter",
++		},
++		{
++			name: "a resume after uncommitted paths that cannot be read hands on", after: spawn, afterChangesErr: errors.New("index locked"), verdict: gotoVerdict,
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CausePrecondition, wantReason: "uncommitted paths could not be read",
++		},
++		{
++			name: "a resume after a failed ancestry read hands on naming the move", after: moved, ancestorErr: errors.New("bad object"), verdict: gotoVerdict,
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CausePrecondition,
++			wantReason: "HEAD moved from aaa to bbb and the arbiter's commits could not be read",
++		},
++		{
++			name: "a resume after a failed commit log read hands on naming the move", after: moved, descends: true, logErr: errors.New("bad object"), verdict: gotoVerdict,
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CausePrecondition,
++			wantReason: "HEAD moved from aaa to bbb and the arbiter's commits could not be read", wantQuestion: []string{"HEAD moved from aaa to bbb"},
++		},
++		{
++			name: "a resume after a branch switch hands on", after: sheddriver.WorktreeSnapshot{Head: "aaa", Branch: "other"}, verdict: gotoVerdict,
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CausePrecondition, wantReason: "left branch",
++		},
++		{
++			name: "a resume over rewritten history hands on", after: moved, descends: false, verdict: gotoVerdict,
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CausePrecondition, wantReason: "rewrote the branch's history",
++		},
++		{
++			name: "a timeout after commits hands on naming them", after: moved, descends: true, commits: []string{commit},
++			waitResult:  shuttleengine.Result{Outcome: shuttleengine.OutcomeTimeout},
++			wantVerdict: loomengine.ArbiterVerdictHandOn, wantCause: sheddriver.CauseTimeout, wantCommits: []string{commit}, wantQuestion: []string{commit},
++		},
++		{
++			name: "a worktree that cannot be read at spawn refuses and spawns nothing", snapshotErr: errors.New("index locked"),
++			wantRefusal: "the worktree could not be read before the spawn",
++		},
++		{
++			name: "uncommitted paths that cannot be read at spawn refuse and spawn nothing", spawnChangesErr: errors.New("index locked"),
++			wantRefusal: "the worktree's uncommitted paths could not be read before the spawn",
++		},
++		{
++			name: "no worktree seam tells the arbiter it edits nothing", noSeam: true, verdict: resumeVerdict,
++			wantVerdict: loomengine.ArbiterVerdictResume, wantPrompt: "## No fix of your own",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			f := newCallFixture(t, loomshed.NameParentAlign, shedengine.StateFailed)
++			f.stopEnvelope = `{"kind":"producer"}`
++			worktree := &fakeWorktree{
++				current: spawn, changes: tt.spawnChanges, changesErr: tt.spawnChangesErr, snapshotErr: tt.snapshotErr,
++				descends: tt.descends, commits: tt.commits, ancestorErr: tt.ancestorErr, logErr: tt.logErr,
++			}
++			if !tt.noSeam {
++				f.worktree = worktree
++			}
++			f.fake.waitResult = tt.waitResult
++			f.fake.onWait = func(shuttleengine.Spec) {
++				worktree.current = tt.after
++				worktree.changes = tt.afterChanges
++				worktree.snapshotErr = tt.afterSnapshotErr
++				worktree.changesErr = tt.afterChangesErr
++				if tt.verdict != "" {
++					writeVerdictFile(t, f.attemptDir(1), tt.verdict)
++				}
++			}
++
++			envelope, err := f.run()
++
++			if tt.wantRefusal != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantRefusal) || !strings.Contains(err.Error(), "way forward:") {
++					t.Fatalf("Settle() error = %v; want a refusal containing %q and a way forward", err, tt.wantRefusal)
++				}
++				if len(f.fake.starts) != 0 {
++					t.Errorf("starts = %d; want none", len(f.fake.starts))
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("Settle() error = %v; want nil", err)
++			}
++			if envelope.Verdict != tt.wantVerdict || envelope.Cause != tt.wantCause {
++				t.Errorf("verdict, cause = %q, %q; want %q, %q", envelope.Verdict, envelope.Cause, tt.wantVerdict, tt.wantCause)
++			}
++			if !slices.Equal(envelope.Commits, tt.wantCommits) {
++				t.Errorf("commits = %q; want %q", envelope.Commits, tt.wantCommits)
++			}
++			if !strings.Contains(envelope.Reason, tt.wantReason) {
++				t.Errorf("reason = %q; want it to contain %q", envelope.Reason, tt.wantReason)
++			}
++			for _, want := range tt.wantQuestion {
++				if !strings.Contains(envelope.Question, want) {
++					t.Errorf("question = %q; want it to contain %q", envelope.Question, want)
++				}
++			}
++			if len(f.fake.starts) != 1 || !strings.Contains(f.fake.starts[0].Prompt, tt.wantPrompt) {
++				t.Errorf("the spawned prompt lacks %q", tt.wantPrompt)
++			}
++			saved, _, err := loomengine.ReadArbiterEnvelope(loomengine.ArbiterEnvelopePath(f.attemptDir(1)))
++			if err != nil || !slices.Equal(saved.Commits, tt.wantCommits) {
++				t.Errorf("envelope.json commits = %q, err %v; want %q", saved.Commits, err, tt.wantCommits)
++			}
++			if tt.viaSeam {
++				// The attempt is settled, so the second call returns its envelope without spawning.
++				outcome, err := Seam(f.deps(), testRun, func(string) bool { return false }).Judge(f.envelopePath, f.reportPath, f.caseBriefPath)
++				if err != nil || !slices.Equal(outcome.Commits, tt.wantCommits) {
++					t.Errorf("Judge commits = %q, err %v; want %q", outcome.Commits, err, tt.wantCommits)
++				}
++			}
++			attempt, err := loomengine.ReadArbiterAttempt(f.attemptDir(1))
++			if err != nil {
++				t.Fatalf("ReadArbiterAttempt: %v", err)
++			}
++			switch {
++			case tt.noSeam && attempt.Snapshot != nil:
++				t.Errorf("attempt snapshot = %+v; want none with no worktree seam", attempt.Snapshot)
++			case !tt.noSeam && (attempt.Snapshot == nil || !attempt.Snapshot.Equal(spawn)):
++				t.Errorf("attempt snapshot = %+v; want the worktree at spawn, %+v", attempt.Snapshot, spawn)
++			}
++			if !maps.Equal(attempt.Changes, tt.spawnChanges) {
++				t.Errorf("attempt changes = %q; want the uncommitted paths at spawn, %q", attempt.Changes, tt.spawnChanges)
++			}
++			if tt.after.Head == moved.Head {
++				wantPair := [2]string{spawn.Head, moved.Head}
++				if worktree.ancestorArgs != wantPair {
++					t.Errorf("IsAncestor(sha, ref) = %q; want the spawn HEAD and the current HEAD, %q", worktree.ancestorArgs, wantPair)
++				}
++				if tt.descends && tt.ancestorErr == nil && worktree.logArgs != wantPair {
++					t.Errorf("CommitLog(from, to) = %q; want the spawn HEAD and the current HEAD, %q", worktree.logArgs, wantPair)
++				}
++			}
++		})
++	}
++}
++
+ // TestCall_VerdictOutcomes covers how a spawned arbiter's end becomes the settled envelope.
+ func TestCall_VerdictOutcomes(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/shedarbiter/doc.go b/internal/shedarbiter/doc.go
+index 66717e63..7e3fd595 100644
+--- a/internal/shedarbiter/doc.go
++++ b/internal/shedarbiter/doc.go
+@@ -28,6 +28,21 @@
+ // The hand-on's question names the error, so the stop reaches the run's parent at once rather than at the deadline.
+ // Every refusal ends with Deps.HandBackWayForward, which names the verb that shows the stop.
+ //
++// # The fix
++//
++// A driver that sets Deps.Worktree lets its arbiter make one fix of its own:
++// it edits the task's code worktree and commits the edit on the task branch before it writes its verdict.
++// The plan, the decision record and PATTERN entries still change only through the recipe's repair verbs.
++// The call snapshots the worktree at spawn, in the attempt record.
++// When the arbiter is done, the call reads the commits it made since.
++// The arbiter must leave every change committed, on the branch and on top of the HEAD it found;
++// otherwise a resume is handed on with cause `precondition`.
++// A resume after commits needs a goto target.
++// The run's own rows, and their gates, then check the fix before the run goes on.
++// The envelope lists the commits.
++// A hand-on's question names them for the run's parent to keep or revert.
++// A driver that leaves Deps.Worktree nil keeps its arbiter to a verdict, and its prompt says so.
++//
+ // # The prompt
+ //
+ // Prompt fills the arbiter stencil over one stop's paths and the description of the recipe whose run it judges,
+diff --git a/internal/shedarbiter/edits.go b/internal/shedarbiter/edits.go
+new file mode 100644
+index 00000000..42765665
+--- /dev/null
++++ b/internal/shedarbiter/edits.go
+@@ -0,0 +1,99 @@
++// edits.go reads what an arbiter changed in the task's code worktree:
++// the commits it made since its spawn, and whether it left a worktree the run may go on from.
++
++package shedarbiter
++
++import (
++	"fmt"
++	"maps"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/sheddriver"
++)
++
++// WorktreeSeam reads the task's code worktree an arbiter may edit and commit in.
++type WorktreeSeam struct {
++	// Snapshot reads the worktree's HEAD, branch and the content hash of each tracked uncommitted path;
++	// it never lists an untracked file.
++	Snapshot func() (sheddriver.WorktreeSnapshot, error)
++	// Changes maps every uncommitted path of the worktree to the SHA-256 of its content.
++	// Untracked files are included, and a file that is gone maps to "deleted".
++	Changes func() (map[string]string, error)
++	// IsAncestor reports whether the commit sha is an ancestor of the commit ref.
++	IsAncestor func(sha, ref string) (bool, error)
++	// CommitLog lists the commits reachable from to and not from from, newest first, each a short SHA and its subject.
++	CommitLog func(from, to string) ([]string, error)
++}
++
++// attemptEdits is what an attempt's arbiter changed in the worktree.
++// problem names why the run may not go on from the worktree the arbiter left, and is empty when it may.
++type attemptEdits struct {
++	commits []string
++	problem string
++}
++
++// readEdits compares the worktree with the snapshot attempt recorded at spawn.
++// A call with no worktree seam, or an attempt with no snapshot, reads no edits.
++// The arbiter must leave every change committed on the branch it found, on top of the HEAD it found.
++// Each of these is a problem: a switched branch, an uncommitted change,
++// and a HEAD that no longer descends from the spawn HEAD.
++// An uncommitted change is any uncommitted path, tracked or untracked.
++// It counts when it was absent at spawn or its content differs from the spawn's.
++// So is a worktree the seam cannot read.
++// When HEAD moved but its commits cannot be read, the problem names the move.
++// The parent can then inspect the range.
++func (c *Call) readEdits(attempt loomengine.ArbiterAttempt) attemptEdits {
++	seam, spawned := c.deps.Worktree, attempt.Snapshot
++	if seam == nil || spawned == nil {
++		return attemptEdits{}
++	}
++	current, err := seam.Snapshot()
++	if err != nil {
++		return attemptEdits{problem: fmt.Sprintf("the worktree could not be read after the arbiter: %v", err)}
++	}
++	if current.Branch != spawned.Branch {
++		return attemptEdits{problem: fmt.Sprintf("the arbiter left branch %q for %q", spawned.Branch, current.Branch)}
++	}
++	var edits attemptEdits
++	if current.Head != spawned.Head {
++		descends, err := seam.IsAncestor(spawned.Head, current.Head)
++		if err != nil {
++			return attemptEdits{problem: fmt.Sprintf("HEAD moved from %s to %s and the arbiter's commits could not be read: %v", spawned.Head, current.Head, err)}
++		}
++		if !descends {
++			return attemptEdits{problem: fmt.Sprintf("the arbiter rewrote the branch's history: HEAD %s does not descend from %s, the HEAD it found", current.Head, spawned.Head)}
++		}
++		commits, err := seam.CommitLog(spawned.Head, current.Head)
++		if err != nil {
++			return attemptEdits{problem: fmt.Sprintf("HEAD moved from %s to %s and the arbiter's commits could not be read: %v", spawned.Head, current.Head, err)}
++		}
++		edits.commits = commits
++	}
++	changes, err := seam.Changes()
++	if err != nil {
++		edits.problem = fmt.Sprintf("the worktree's uncommitted paths could not be read after the arbiter: %v", err)
++		return edits
++	}
++	if !maps.Equal(current.Dirty, spawned.Dirty) || !maps.Equal(changes, attempt.Changes) {
++		edits.problem = "the arbiter left uncommitted changes in the worktree"
++	}
++	return edits
++}
++
++// appendTo returns question followed by what the parent must look at in the worktree:
++// the arbiter's commits to keep or revert, and the problem it left.
++// It returns question unchanged when there is neither.
++func (e attemptEdits) appendTo(question string) string {
++	var notes []string
++	if len(e.commits) > 0 {
++		notes = append(notes, "The arbiter committed on the task branch before the stop was handed on: "+strings.Join(e.commits, "; ")+"; keep or revert those commits.")
++	}
++	if e.problem != "" {
++		notes = append(notes, "Check the worktree first: "+e.problem+".")
++	}
++	if len(notes) == 0 {
++		return question
++	}
++	return question + " " + strings.Join(notes, " ")
++}
+diff --git a/internal/shedarbiter/prompt.go b/internal/shedarbiter/prompt.go
+index fa8905a4..f3548543 100644
+--- a/internal/shedarbiter/prompt.go
++++ b/internal/shedarbiter/prompt.go
+@@ -7,6 +7,7 @@ package shedarbiter
+ 
+ import (
+ 	"fmt"
++	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentconfig"
+ 	"github.com/Knatte18/loomyard/internal/editdirective"
+@@ -28,12 +29,24 @@ const AbsentPath = "none"
+ // verdictGateAttempts is how many times the verdict gate re-prompts an arbiter whose verdict file does not read.
+ const verdictGateAttempts = 2
+ 
++// The fragments the arbiter stencil's edit_scope marker carries:
++// the one-shot fix an arbiter may make and commit, or the rule that it edits nothing.
++const (
++	fixStencilName   = "loom-fragment-arbiter-fix"
++	noFixStencilName = "loom-fragment-arbiter-no-fix"
++)
++
++// editScopeMarker is the arbiter stencil's marker for the fragment that states what the arbiter may edit.
++const editScopeMarker = "edit_scope"
++
+ // PromptInput carries what the arbiter stencil's markers are filled from.
+ // Recipe, ReportPath, BriefPath, CaseBriefPath, DecisionRecordPath, SupportLogPath and AmendmentTarget may be empty.
+ // Every other field is required.
+ // Recipe is the description of the run's recipe, including the repair verbs the arbiter may run.
+ // AmendmentTarget is the row a plan amendment routes to.
++// MayEdit lets the arbiter make one fix of its own and commit it in Worktree; false keeps it to a verdict.
+ type PromptInput struct {
++	MayEdit            bool
+ 	Recipe             string
+ 	RunID              string
+ 	Slug               string
+@@ -50,6 +63,7 @@ type PromptInput struct {
+ 
+ // Prompt composes the arbiter session's launch prompt from the arbiter stencil in stencilsDir, filled with in.
+ // It renders the no-parent directive, since the verdict file is the arbiter's only channel.
++// Its edit rules are the one-shot fix fragment when in.MayEdit is set, and the no-fix fragment otherwise.
+ // An empty recipe description, report, brief, case brief, decision record, support log or amendment target is filled as the literal "none".
+ // It returns the read or fill error wrapped with the stencil's name.
+ func Prompt(stencilsDir string, in PromptInput) (string, error) {
+@@ -61,6 +75,10 @@ func Prompt(stencilsDir string, in PromptInput) (string, error) {
+ 	if err != nil {
+ 		return "", err
+ 	}
++	editScope, err := editScope(stencilsDir, in)
++	if err != nil {
++		return "", err
++	}
+ 	template, err := stencilstore.Read(stencilsDir, stencilName)
+ 	if err != nil {
+ 		return "", fmt.Errorf("loom: arbiter prompt: read stencil %q: %w", stencilName, err)
+@@ -80,6 +98,7 @@ func Prompt(stencilsDir string, in PromptInput) (string, error) {
+ 		"amendment_target":         pathOrNone(in.AmendmentTarget),
+ 		parentdirective.MarkerName: directive,
+ 		editdirective.MarkerName:   editDirective,
++		editScopeMarker:            editScope,
+ 	})
+ 	if err != nil {
+ 		return "", fmt.Errorf("loom: arbiter prompt: fill stencil %q: %w", stencilName, err)
+@@ -87,6 +106,26 @@ func Prompt(stencilsDir string, in PromptInput) (string, error) {
+ 	return string(filled), nil
+ }
+ 
++// editScope returns the arbiter's edit rules.
++// When in.MayEdit is set, they are the fix fragment filled with in's worktree and run.
++// Otherwise they are the no-fix fragment.
++// It returns the read or fill error wrapped with the fragment's name.
++func editScope(stencilsDir string, in PromptInput) (string, error) {
++	name := noFixStencilName
++	if in.MayEdit {
++		name = fixStencilName
++	}
++	template, err := stencilstore.Read(stencilsDir, name)
++	if err != nil {
++		return "", fmt.Errorf("loom: arbiter prompt: read stencil %q: %w", name, err)
++	}
++	filled, err := stencil.Fill(template, map[string]string{"worktree": in.Worktree, "run_id": in.RunID})
++	if err != nil {
++		return "", fmt.Errorf("loom: arbiter prompt: fill stencil %q: %w", name, err)
++	}
++	return strings.TrimSpace(string(filled)), nil
++}
++
+ // pathOrNone returns path, or the literal "none" for an empty one.
+ func pathOrNone(path string) string {
+ 	if path == "" {
+diff --git a/internal/shedarbiter/prompt_test.go b/internal/shedarbiter/prompt_test.go
+index 341c118d..6a462b4e 100644
+--- a/internal/shedarbiter/prompt_test.go
++++ b/internal/shedarbiter/prompt_test.go
+@@ -29,6 +29,8 @@ func seededStencils(t *testing.T) string {
+ // TestPrompt asserts the shipped stencil renders every marker value, the no-parent and edit directives.
+ // The recipe description renders too, and absent inputs render as the literal none.
+ // No marker stays unfilled, and the verdict example is one the verdict reader accepts.
++//
++//testtiming:keep pins every marker value, absent inputs reading none, the parent and edit directives, and the worktree and Arbiter-Attempt trailer filled into the fix fragment, which TestCall_Edits does not assert
+ func TestPrompt(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -47,26 +49,36 @@ func TestPrompt(t *testing.T) {
+ 		SupportLogPath:     "/hub/wt/_lym/discussion/support-log.md",
+ 		VerdictPath:        "/hub/wt/.lym/arbiter/attempt-1/verdict.yaml",
+ 		AmendmentTarget:    "Plan-Burler-Review",
++		MayEdit:            true,
+ 	}
+ 	batten := in
+ 	batten.Recipe = battenRecipe
++	batten.MayEdit = false
+ 	absent := PromptInput{RunID: in.RunID, Slug: in.Slug, Worktree: in.Worktree, EnvelopePath: in.EnvelopePath, VerdictPath: in.VerdictPath}
++	const fixHeading, noFixHeading = "## Your one fix", "## No fix of your own"
+ 	cases := []struct {
+ 		name string
+ 		in   PromptInput
+ 		want []string
+ 		// absent lists the lines that must read none.
+ 		absent []string
++		// wantNot lists text the prompt must not carry.
++		wantNot []string
+ 	}{
+ 		{
+-			name: "every marker value",
++			name: "every marker value, with the fix rules naming the worktree and the run's commit trailer",
+ 			in:   in,
+-			want: []string{in.Recipe, in.RunID, in.Slug, in.Worktree, in.EnvelopePath, in.ReportPath, in.BriefPath, in.CaseBriefPath, in.DecisionRecordPath, in.SupportLogPath, in.VerdictPath, "amendment target `" + in.AmendmentTarget + "`"},
++			want: []string{
++				in.Recipe, in.RunID, in.Slug, in.Worktree, in.EnvelopePath, in.ReportPath, in.BriefPath, in.CaseBriefPath, in.DecisionRecordPath, in.SupportLogPath, in.VerdictPath,
++				"amendment target `" + in.AmendmentTarget + "`", fixHeading, "committed in `" + in.Worktree + "`", "`Arbiter-Attempt: " + in.RunID + "`",
++			},
++			wantNot: []string{noFixHeading},
+ 		},
+ 		{
+-			name: "a batten description fills the recipe marker",
+-			in:   batten,
+-			want: []string{battenRecipe},
++			name:    "a batten description fills the recipe marker, and an arbiter that may not edit gets the no-fix rules",
++			in:      batten,
++			want:    []string{battenRecipe, noFixHeading},
++			wantNot: []string{fixHeading},
+ 		},
+ 		{
+ 			name: "absent recipe, report, brief, case brief, amendment target, decision record and support log read none",
+@@ -91,6 +103,11 @@ func TestPrompt(t *testing.T) {
+ 					t.Errorf("Prompt() does not carry %q", want)
+ 				}
+ 			}
++			for _, unwanted := range tc.wantNot {
++				if strings.Contains(got, unwanted) {
++					t.Errorf("Prompt() carries %q; want it absent", unwanted)
++				}
++			}
+ 			directive, err := parentdirective.Directive(dir, "", false)
+ 			if err != nil {
+ 				t.Fatalf("parentdirective.Directive: %v", err)
+diff --git a/internal/shedarbiter/seam.go b/internal/shedarbiter/seam.go
+index 60004fea..c42529e0 100644
+--- a/internal/shedarbiter/seam.go
++++ b/internal/shedarbiter/seam.go
+@@ -37,6 +37,7 @@ func Seam(deps Deps, runID string, escalationEligible func(producer string) bool
+ 				VerdictPath: envelope.VerdictPath,
+ 				Verdict:     envelope.Verdict,
+ 				Role:        loomengine.ArbiterRole,
++				Commits:     envelope.Commits,
+ 			}, nil
+ 		},
+ 		AttemptEnvelope: func(attemptDir string) (string, error) {
+diff --git a/internal/sheddriver/doc.go b/internal/sheddriver/doc.go
+index 3ad08550..f8f8cb14 100644
+--- a/internal/sheddriver/doc.go
++++ b/internal/sheddriver/doc.go
+@@ -111,6 +111,8 @@
+ // The line goes through `HandBackDeps.Notify`.
+ // It is sent when an orch strand is recorded and once the step has consumed the resume.
+ // The resume asks nothing and parks nothing, and a resume the step refuses hands back with no outcome line.
++// The commits an arbiter made on the task branch appear in its resume's settle record.
++// They also appear in the stop report's attempt line.
+ // Loom's, darn's and batten's drivers all wire the arbiter after the tackler.
+ // Batten's wiring uses `batten.yaml`'s arbiter overrides of `shed.yaml`.
+ // The loom CLI's wiring, shared by tapestry, darn and sampler, marks these blocked stops for the arbiter to judge first.
+diff --git a/internal/sheddriver/drive.go b/internal/sheddriver/drive.go
+index 04def8f0..aa5ce4d4 100644
+--- a/internal/sheddriver/drive.go
++++ b/internal/sheddriver/drive.go
+@@ -135,6 +135,9 @@ type ArbiterOutcome struct {
+ 	Verdict string
+ 	// Role is the role name the stop report's attempt line quotes.
+ 	Role string
++	// Commits lists the commits the arbiter made on the task branch, each a short SHA and its subject.
++	// It is empty when the arbiter made none.
++	Commits []string
+ }
+ 
+ // HandOverSeam hands the run to a fresh driver of a newer build.
+@@ -571,7 +574,7 @@ func (d *goDriver) arbitrate(ctx context.Context, stop Stop, caseBriefPath strin
+ 	if outcome.AttemptDir != before {
+ 		d.settle(stop, shedrun.SettlerArbiter, shedrun.SettleSpawn, "arbiter spawned", fmt.Sprintf("attempt-%d", outcome.Attempt))
+ 	}
+-	d.attempts = append(d.attempts, driveAttemptNote{Role: outcome.Role, Number: outcome.Attempt, Verdict: outcome.Verdict, Cause: outcome.Cause, VerdictPath: outcome.VerdictPath})
++	d.attempts = append(d.attempts, driveAttemptNote{Role: outcome.Role, Number: outcome.Attempt, Verdict: outcome.Verdict, Cause: outcome.Cause, VerdictPath: outcome.VerdictPath, Commits: outcome.Commits})
+ 
+ 	if moved, movedExit, err := d.recheckAfterVerdict(stop, reportPath, "arbiter"); err != nil || movedExit || moved.Key() != stop.Key() || moved.Restep {
+ 		if err != nil {
+@@ -581,7 +584,10 @@ func (d *goDriver) arbitrate(ctx context.Context, stop Stop, caseBriefPath strin
+ 	}
+ 
+ 	if outcome.Resume {
+-		d.settle(stop, shedrun.SettlerArbiter, shedrun.SettleRestep, "arbiter resume", outcome.Goto)
++		d.appendSettle(SettleRecord{
++			StopKey: stop.Key(), Settler: shedrun.SettlerArbiter, Action: shedrun.SettleRestep, Outcome: "arbiter resume",
++			At: d.deps.Now(), Target: outcome.Goto, Commits: outcome.Commits,
++		})
+ 		if stop.Key().State == string(shedengine.StateAwaiting) {
+ 			d.pendingNotice = &arbiterSettledNotice{stop: stop, verdictPath: outcome.VerdictPath}
+ 		}
+@@ -897,11 +903,15 @@ func (d *goDriver) holdPause(ctx context.Context) error {
+ 	}
+ }
+ 
+-// settle appends one settle record for the action taken at stop; a failed append is logged and never stops the driver.
++// settle appends one settle record for the action taken at stop.
+ func (d *goDriver) settle(stop Stop, settler, action, outcome, target string) {
+-	record := SettleRecord{StopKey: stop.Key(), Settler: settler, Action: action, Outcome: outcome, At: d.deps.Now(), Target: target}
++	d.appendSettle(SettleRecord{StopKey: stop.Key(), Settler: settler, Action: action, Outcome: outcome, At: d.deps.Now(), Target: target})
++}
++
++// appendSettle appends record to the run's settle records; a failed append is logged and never stops the driver.
++func (d *goDriver) appendSettle(record SettleRecord) {
+ 	if err := AppendSettleRecord(d.deps.SettlePath, record); err != nil {
+-		logger.Warn("sheddriver: drive: appending a settle record failed", "run", d.deps.RunID, "action", action, "error", err)
++		logger.Warn("sheddriver: drive: appending a settle record failed", "run", d.deps.RunID, "action", record.Action, "error", err)
+ 	}
+ }
+ 
+diff --git a/internal/sheddriver/drive_test.go b/internal/sheddriver/drive_test.go
+index edb2d8f4..66f7dbe6 100644
+--- a/internal/sheddriver/drive_test.go
++++ b/internal/sheddriver/drive_test.go
+@@ -136,6 +136,11 @@ func TestGoDriver_Settle(t *testing.T) {
+ 		dir := fmt.Sprintf("arbiter/%d", attempt)
+ 		return ArbiterOutcome{Resume: verdict == "resume", Verdict: verdict, Role: arbiterTestRole, Reason: "because", Question: "which way?", Attempt: attempt, AttemptDir: dir, VerdictPath: dir + "/verdict.yaml"}
+ 	}
++	const arbiterCommit = "bbb1234 fix the gate"
++	committed := func(outcome ArbiterOutcome) ArbiterOutcome {
++		outcome.Commits = []string{arbiterCommit}
++		return outcome
++	}
+ 	repairSeed := func(key StopKey) []SettleRecord {
+ 		record := SettleRecord{StopKey: key, Settler: shedrun.SettlerGoRule, Action: shedrun.SettleRestep}
+ 		return []SettleRecord{record, record}
+@@ -242,6 +247,8 @@ func TestGoDriver_Settle(t *testing.T) {
+ 		wantOrder []string
+ 		// wantBuild, when set, is the build the last settle record names.
+ 		wantBuild string
++		// wantRestepCommits, when set, is the commits the last re-step settle record lists.
++		wantRestepCommits []string
+ 	}{
+ 		{name: "done commits and exits with no park", steps: []func(*testing.T) []byte{done}, wantCalls: []string{"step", "commit-records"}, wantExit: ExitDone},
+ 		{
+@@ -413,6 +420,21 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleHandBack}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerParent},
+ 			wantReports: 2, wantParked: true, wantNotifies: 1, wantHandBack: true, wantExit: ExitHandBack, wantReportHas: map[int][]string{2: {"a row the arbiter judges first", "which way?"}},
+ 		},
++		{
++			name:  "an arbiter hand-on after its own commits names them in the stop report's attempt line",
++			steps: []func(*testing.T) []byte{blocked}, judgesFirst: "Build", arbiterReturns: committed(arbiterOutcome("hand-on", 1)),
++			wantCalls:   []string{"step", "arbiter:"},
++			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleHandBack}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerParent},
++			wantReports: 2, wantParked: true, wantHandBack: true, wantExit: ExitHandBack,
++			wantReportHas: map[int][]string{2: {"arbiter attempt 1: verdict hand-on, commits " + arbiterCommit + ", verdict file"}},
++		},
++		{
++			name:  "an arbiter resume after its own commits lists them in its re-step settle record",
++			steps: []func(*testing.T) []byte{blocked, done}, judgesFirst: "Build", arbiterReturns: committed(arbiterOutcome("resume", 1)),
++			wantCalls:   []string{"step", "arbiter:", "step:1", "commit-records"},
++			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleRestep}, wantSettlers: []string{shedrun.SettlerArbiter, shedrun.SettlerArbiter},
++			wantReports: 1, wantExit: ExitDone, wantRestepCommits: []string{arbiterCommit},
++		},
+ 		{
+ 			name:  "a blocked stop at a row the arbiter judges first by its escalate reason goes to the arbiter with no tackler call",
+ 			steps: []func(*testing.T) []byte{escalateBlocked}, judgesFirst: "Build", judgesFirstReason: "escalate: ", arbiterReturns: arbiterOutcome("hand-on", 1),
+@@ -962,6 +984,17 @@ func TestGoDriver_Settle(t *testing.T) {
+ 					t.Errorf("last settle record build = %q; want %q", last.Build, tt.wantBuild)
+ 				}
+ 			}
++			if tt.wantRestepCommits != nil {
++				var got []string
++				for _, record := range records {
++					if record.Action == shedrun.SettleRestep {
++						got = record.Commits
++					}
++				}
++				if !slices.Equal(got, tt.wantRestepCommits) {
++					t.Errorf("re-step settle record commits = %q; want %q", got, tt.wantRestepCommits)
++				}
++			}
+ 			if tt.wantHandBack {
+ 				last := records[len(records)-1]
+ 				if last.Action != shedrun.SettleHandBack || last.Settler != shedrun.SettlerParent {
+diff --git a/internal/sheddriver/drivehandback.go b/internal/sheddriver/drivehandback.go
+index 7e75dc5d..eadb03c6 100644
+--- a/internal/sheddriver/drivehandback.go
++++ b/internal/sheddriver/drivehandback.go
+@@ -25,6 +25,8 @@ type driveAttemptNote struct {
+ 	Verdict     string
+ 	Cause       string
+ 	VerdictPath string
++	// Commits are the arbiter's own commits on the task branch, each a short SHA and its subject.
++	Commits []string
+ }
+ 
+ // driveHandBack describes one hand-back.
+@@ -100,6 +102,9 @@ func (r driveReport) render() string {
+ 		if attempt.Cause != "" {
+ 			fmt.Fprintf(&b, ", cause %s", attempt.Cause)
+ 		}
++		if len(attempt.Commits) > 0 {
++			fmt.Fprintf(&b, ", commits %s", strings.Join(attempt.Commits, "; "))
++		}
+ 		fmt.Fprintf(&b, ", verdict file %s\n", attempt.VerdictPath)
+ 	}
+ 	if r.Question != "" {
+diff --git a/internal/shedrun/settle.go b/internal/shedrun/settle.go
+index 5e0d62bf..9ca673fa 100644
+--- a/internal/shedrun/settle.go
++++ b/internal/shedrun/settle.go
+@@ -37,7 +37,9 @@ const (
+ )
+ 
+ // SettleRecord is one line of the settle-records file.
+-// Build is the build identity the action was taken under and Target the row or verb it aimed at; each is omitted when empty.
++// Build is the build identity the action was taken under and Target the row or verb it aimed at.
++// Commits lists the commits the settling agent made on the task branch, each a short SHA and its subject.
++// Each of the three is omitted when empty.
+ type SettleRecord struct {
+ 	StopKey StopKey   `json:"stop_key"`
+ 	Settler string    `json:"settler"`
+@@ -46,6 +48,7 @@ type SettleRecord struct {
+ 	At      time.Time `json:"at"`
+ 	Build   string    `json:"build,omitempty"`
+ 	Target  string    `json:"target,omitempty"`
++	Commits []string  `json:"commits,omitempty"`
+ }
+ 
+ // ParseSettleRecords decodes the bytes of a settle-records file into one record per non-blank line, in order.
+diff --git a/internal/shedrun/settle_test.go b/internal/shedrun/settle_test.go
+index ed8c06e3..48e2bc63 100644
+--- a/internal/shedrun/settle_test.go
++++ b/internal/shedrun/settle_test.go
+@@ -4,6 +4,7 @@ package shedrun
+ 
+ import (
+ 	"fmt"
++	"reflect"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -69,7 +70,7 @@ func TestParseSettleRecords(t *testing.T) {
+ 				t.Fatalf("ParseSettleRecords = %d records %+v; want %d", len(got), got, len(tt.want))
+ 			}
+ 			for i := range got {
+-				if got[i] != tt.want[i] {
++				if !reflect.DeepEqual(got[i], tt.want[i]) {
+ 					t.Errorf("record %d = %+v; want %+v", i, got[i], tt.want[i])
+ 				}
+ 			}
+diff --git a/internal/shedworktree/shedworktree.go b/internal/shedworktree/shedworktree.go
+new file mode 100644
+index 00000000..1d49ca42
+--- /dev/null
++++ b/internal/shedworktree/shedworktree.go
+@@ -0,0 +1,108 @@
++// Package shedworktree reads a task's code worktree through fabric's read-only reads.
++// It serves the arbiter's worktree seam, where the arbiter may make one fix of its own,
++// and the snapshot of the worktree a tackler must leave unchanged.
++package shedworktree
++
++import (
++	"crypto/sha256"
++	"encoding/hex"
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/shedarbiter"
++	"github.com/Knatte18/loomyard/internal/sheddriver"
++)
++
++// ArbiterSeam returns the arbiter's seam over the task's code worktree at location.
++func ArbiterSeam(location *lymcwd.Location) *shedarbiter.WorktreeSeam {
++	return &shedarbiter.WorktreeSeam{
++		Snapshot: func() (sheddriver.WorktreeSnapshot, error) { return Snapshot(location) },
++		IsAncestor: func(sha, ref string) (bool, error) {
++			fab, err := fabricengine.Open(location)
++			if err != nil {
++				return false, err
++			}
++			return fab.IsAncestor(sha, ref)
++		},
++		Changes: func() (map[string]string, error) {
++			fab, err := fabricengine.Open(location)
++			if err != nil {
++				return nil, err
++			}
++			paths, err := fab.CodeWorktreeChanges()
++			if err != nil {
++				return nil, err
++			}
++			changes := make(map[string]string, len(paths))
++			for _, path := range paths {
++				hash, err := hashFileOrDeleted(filepath.Join(location.WorktreePath(), filepath.FromSlash(path)))
++				if err != nil {
++					return nil, fmt.Errorf("hash uncommitted path %s: %w", path, err)
++				}
++				changes[path] = hash
++			}
++			return changes, nil
++		},
++		CommitLog: func(from, to string) ([]string, error) {
++			fab, err := fabricengine.Open(location)
++			if err != nil {
++				return nil, err
++			}
++			return fab.CommitLog(from, to)
++		},
++	}
++}
++
++// Snapshot reads the state a session must leave unchanged in the task's code worktree:
++// HEAD, branch and the SHA-256 of each tracked dirty path.
++// The records side is left out, since the run's own records change under every step.
++func Snapshot(location *lymcwd.Location) (sheddriver.WorktreeSnapshot, error) {
++	fab, err := fabricengine.Open(location)
++	if err != nil {
++		return sheddriver.WorktreeSnapshot{}, err
++	}
++	head, err := fab.HeadSHA()
++	if err != nil {
++		return sheddriver.WorktreeSnapshot{}, err
++	}
++	branch, err := fab.CurrentBranch()
++	if err != nil {
++		return sheddriver.WorktreeSnapshot{}, err
++	}
++	paths, err := fab.DirtyPaths()
++	if err != nil {
++		return sheddriver.WorktreeSnapshot{}, err
++	}
++	codeRoot := location.WorktreePath() + string(filepath.Separator)
++	dirty := map[string]string{}
++	for _, path := range paths {
++		if !strings.HasPrefix(path, codeRoot) {
++			continue
++		}
++		hash, err := hashFileOrDeleted(path)
++		if err != nil {
++			return sheddriver.WorktreeSnapshot{}, fmt.Errorf("hash dirty path %s: %w", path, err)
++		}
++		dirty[path] = hash
++	}
++	return sheddriver.WorktreeSnapshot{Head: head, Branch: branch, Dirty: dirty}, nil
++}
++
++// hashFileOrDeleted returns the hex SHA-256 of the file at path, or "deleted" when the file does not exist.
++func hashFileOrDeleted(path string) (string, error) {
++	content, err := os.ReadFile(path)
++	switch {
++	case errors.Is(err, fs.ErrNotExist):
++		return "deleted", nil
++	case err != nil:
++		return "", err
++	}
++	sum := sha256.Sum256(content)
++	return hex.EncodeToString(sum[:]), nil
++}
+diff --git a/internal/shedworktree/shedworktree_test.go b/internal/shedworktree/shedworktree_test.go
+new file mode 100644
+index 00000000..4123ef50
+--- /dev/null
++++ b/internal/shedworktree/shedworktree_test.go
+@@ -0,0 +1,63 @@
++package shedworktree_test
++
++import (
++	"crypto/sha256"
++	"encoding/hex"
++	"maps"
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/shedworktree"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestArbiterSeam_Changes covers the arbiter seam's read of the uncommitted paths over a real checkout.
++// It lists an untracked file, a modified tracked file and a removed tracked file.
++// Each key is a slash-separated path relative to the worktree.
++// Each file is hashed from its place under the worktree, and a removed file reads as deleted.
++func TestArbiterSeam_Changes(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	hash := func(content string) string {
++		sum := sha256.Sum256([]byte(content))
++		return hex.EncodeToString(sum[:])
++	}
++	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	worktree := hub.PrimeWorktree()
++	gitkit.CommitFile(t, worktree, "kept.go", "kept", "add kept")
++	gitkit.CommitFile(t, worktree, "edited.go", "before", "add edited")
++	gitkit.CommitFile(t, worktree, "removed.go", "removed", "add removed")
++
++	seam := shedworktree.ArbiterSeam(hub.Location)
++	got, err := seam.Changes()
++	if err != nil || len(got) != 0 {
++		t.Fatalf("Changes() over a clean worktree = %v, %v; want none, nil", got, err)
++	}
++
++	if err := os.WriteFile(filepath.Join(worktree, "edited.go"), []byte("after"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.Remove(filepath.Join(worktree, "removed.go")); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.MkdirAll(filepath.Join(worktree, "sub"), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(filepath.Join(worktree, "sub", "new.go"), []byte("new"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++
++	want := map[string]string{
++		"edited.go":  hash("after"),
++		"removed.go": "deleted",
++		"sub/new.go": hash("new"),
++	}
++	got, err = seam.Changes()
++	if err != nil || !maps.Equal(got, want) {
++		t.Errorf("Changes() = %v, %v; want %v, nil", got, err, want)
++	}
++}
+diff --git a/internal/shedworktree/testmain_test.go b/internal/shedworktree/testmain_test.go
+new file mode 100644
+index 00000000..cf3100b7
+--- /dev/null
++++ b/internal/shedworktree/testmain_test.go
+@@ -0,0 +1,20 @@
++// testmain_test.go wires the package's test binary into the hermetic git test environment:
++// gitkit.HermeticGitEnv() runs once before any test, so the hub fixtures never inherit the operator's global gitconfig.
++// The binary also runs under tmux isolation through tmuxkit.Main.
++
++package shedworktree_test
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++// TestMain runs gitkit.HermeticGitEnv() before any test in this package spawns git.
++// It then runs the tests under tmuxkit.Main.
++func TestMain(m *testing.M) {
++	gitkit.HermeticGitEnv()
++	os.Exit(tmuxkit.Main(m))
++}
