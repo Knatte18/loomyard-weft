@@ -410,13 +410,15 @@
       ],
       "issues": [],
       "recipe": "tapestry",
-      "depends_on": [],
+      "depends_on": [
+        "testmap-payoff-measure"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `testmap-checked-in`.\n\nTakes: the maps under \u003cbolt\u003e/.lym/testcover/, fabricengine's scoped weft commit (CommitRecordsPaths), SpawnStatusPush, ReconcileOrigin, and loomcli's unexported push verdict in prepush.go\nDelivers: maps tracked under each worktree's _lym/testcover/, written compact and only on change, committed and pushed by lym gate testmap in the prime or a task, tolerated by preflight and committed before a weft pull, with upkeep off by default and a one-time import of the bolt maps\nExports: testcover.Dir on the worktree's anchor, a scratch accessor for the exit record, a compact form of state's JSON writer, and one exported fabricengine function holding the run-scope push verdict that loomcli's pre-push check and the verb both call\n\nThe part changes these packages:\n\n- internal/gatecli (about 900 changed lines)\n- internal/fabricengine (about 450 changed lines)\n- internal/testcover (about 250 changed lines)\n- internal/loomcli (about 200 changed lines)\n- internal/state (about 80 changed lines)\n- internal/beamcli (about 40 changed lines)\n- internal/runproc (about 30 changed lines)\n- internal/dobbyengine (about 30 changed lines)\n- internal/preflight (about 30 changed lines)\n- internal/lymdirs (about 15 changed lines)\n- pattern (about 15 changed lines)\n",
       "status": "draft",
       "created": "2026-11-12T20:37:43Z",
-      "revised": "2026-11-12T20:37:43Z",
+      "revised": "2026-11-15T12:04:27Z",
       "profile": "solid",
       "discussed": true,
       "record_body_sha256": "04816220bbbd0e304264bfea91a6089206a5b9738f87cc5755dfc05da962fa02"
