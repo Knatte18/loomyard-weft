@@ -759,6 +759,26 @@
       "body": "## Seen (operator, 2026-11-15)\n\n1. The `code` button in a beam opened `README.md` of the beam's worktree, which is of no use there.\n   The cause is `ide.yaml`'s template, whose `open_files.beam` lists `README.md` (`internal/ideconfig`).\n   The hub's default layer now sets `open_files.beam: []`; the template still opens it for every other hub.\n2. The markdown preview does not work in a window lym opens: a `.md` file does not render, the Bolt README included.\n   `render_markdown` sets `settings.json`'s `workbench.editorAssociations` `\"*.md\"` to `vscode.markdown.preview.editor` (`internal/vscode/config.go`).\n\n## Idea\n\n- Drop `README.md` from the template's `open_files.beam`, so every place opens nothing by default.\n- Find why the preview association fails and fix it, or drop `render_markdown` if the association cannot work.\n",
       "created": "2026-11-15T16:04:08Z",
       "revised": "2026-11-15T16:04:08Z"
+    },
+    {
+      "id": 1379,
+      "handle": "E6",
+      "slug": "prime-is-root-beam",
+      "title": "The prime is the root beam: parent_beam names it, never empty",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board",
+        "dobby",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-15)\n\n`lym board list` and `lym board get` give `parent_beam` empty for an entry whose nearest beam is the prime, and `lym board list --text` shows no `P0`,\nwhile the board view and window titles show the prime as `P0`.\nThe prime is a beam, the root one; an empty value reads as \"no beam\".\n\n## Idea\n\n- `parent_beam` names the root beam, as `P0` or its slug, for every entry under the prime, never empty.\n- `lym board list --text` shows `P0` with the other projects, so every view of the board shows the same tree.\n- Every reader of an empty `parent_beam` (orch role, dobby, board verbs) moves to the named root in the same change.",
+      "created": "2026-11-15T16:09:02Z",
+      "revised": "2026-11-15T16:09:02Z"
     }
   ],
   "prime_owner": "neve",
