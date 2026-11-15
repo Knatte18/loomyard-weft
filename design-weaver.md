@@ -227,3 +227,13 @@ Claude Code's own worktree isolation for agents has given the operator only trou
 - loom-plan-spec.md — already captures the cheap win (`depends-on`).
 - [quarry](https://github.com/Knatte18/quarry) — Part B's successor.
 - `orch-any-worktree` (landed in dd11ab09f: `lym fabric add --parent` forks a pair from a parent pair) — umbrella tasks need the same create-from-parent-pair, merge-back and teardown primitive as Weaver's per-batch pairs (orch recommendation, 2026-10-18).
+
+
+## Decision: Weaver as a Shed run with a Master Weaver (operator, 2026-11-15)
+
+- Weaver need not be a Go program, but a happy path with no LLM in it is likely wise.
+- Weaver reuses Shed: each batch is a producer, so the Shed driver's tackler and arbiter handle a stuck batch as they do for any recipe.
+- Webster's experience is that runs often get messy, and Master Webster (Merriam) then takes over with the whole plan and every batch in mind.
+  A cold tackler or arbiter sees one stop and lacks that context, and the Shed LLM driver (Haiku today) does not read the batchifier's plan either.
+- So a Master Weaver session is spawned when the run starts and reads the whole plan, as Merriam does; it does nothing while the run follows the happy path.
+- Open: whether it hears of each finished batch as the run goes, and what it may do when it steps in.
