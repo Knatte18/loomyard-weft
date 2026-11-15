@@ -1,11 +1,11 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Beam-Up",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Record-Write",
-    "last": "Preflight → done",
+    "now": "Beam-Up",
+    "last": "Record-Write → done",
     "wait": ""
   },
   "history": [
@@ -15,6 +15,13 @@
       "output": "",
       "at": "2026-11-15T15:58:15Z",
       "started_at": "2026-11-15T15:58:15Z"
+    },
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/adopt-build/_lym/project/adopt-build/decision-record.md",
+      "at": "2026-11-15T15:58:17Z",
+      "started_at": "2026-11-15T15:58:17Z"
     }
   ],
   "product": {
