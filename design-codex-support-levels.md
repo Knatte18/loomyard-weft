@@ -30,3 +30,15 @@ A bench of Codex as the darn writer against Claude on one or two real darn tasks
 It reads, per run: cost, review rounds, findings, wall time, and whether the run lands without a hand step.
 The run also checks the open faults on the way: a real session launched under `auto` on a machine where bwrap fails (the probe, the warning and a `danger-full-access` run), the skill load on a real session, and the extra reminder on an idle wake (`codex-idle-wake-extra-reminder`).
 It runs as a darn task with profile `docs`, at most `high` effort for Codex, and only on the operator's go-ahead.
+
+## Built since (tidy, 2026-11-15)
+
+Task `codex-writer-bench-neve` (`c0815831`) ran the first bench run on Neve: `astra[high]` as the darn writer, replayed on the landed `ide-beam-readme-preview` (`824eb2b6`) through a bare `lym shuttle run`.
+Report: `docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/`.
+
+- Its tree passes the gate on `./internal/ideconfig`, and its `template.yaml` and `config_test.go` match the landed change byte for byte.
+- It added a documentation page the entry did not ask for, and its change description names no design decisions.
+- About 4 minutes against 5 minutes 41 seconds for the landed writer, whose figure includes a 2 minute 17 second verify gate; dollar cost unknown.
+- The session ran in a scratch worktree, so no board, drift or loom check ran, and it was not a whole darn run: the "lands with no resumption" test of level 2 is still open.
+- It got no skills, no guards and Claude-worded stencils; see `codex-same-as-claude`.
+  The operator judges level 2 after that note's fix and a rerun of the bench, and its OSL twin `codex-writer-bench-osl`.

@@ -4,7 +4,7 @@
 
 ## Seen (orch, 2026-11-09)
 
-The coverage maps (`internal/testcover`, rebuilt by `lym gate testmap`) record, per package, the blocks each tier 0 and tier 1 test covers.
+The coverage maps (`internal/testcover`, built by `lym gate testmap`) record, per package, the blocks each tier 0 and tier 1 test covers.
 The gate report (the advisory redundancy step of `lym gate test`, landed as `7f21142e`) judges only the new tests of a diff against the map; nothing yet uses the maps to find redundant tests that already exist.
 The operator wants the existing ones cut, across the packages, not only kept from growing.
 
@@ -37,3 +37,9 @@ What it builds on:
   of 30 judged tests, 2 were candidates, and both assert something their covering tests do not, so the map is a reading filter, not a verdict.
 
 File it as tasks once the operator has read the candidate lists.
+
+## Built since (tidy, 2026-11-15)
+
+Task `testmap-on-command` (`72b26d1a`) retired the upkeep pass.
+No dobby or landing keeps the maps fresh now, so the 211 maps above go stale as landings change their packages.
+A sweep of a package first runs `lym gate testmap` on it by hand, as D9 says; that call now waits for the package's build lock and has no default package cap.
