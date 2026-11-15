@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-15 12:38 UTC; every age below is as of then.
+Rendered 2026-11-15 12:39 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 | T10 | **A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call** | [`pause-holds-operator-verbs`](design-pause-holds-operator-verbs.md) | darn · solid | Darn-Write | neve | 1h<br>32m | tender, git, batten, selfreport |
 | T11 | **PR-Review deadlocks after a failed pr-review gate when continue is set** | [`pr-review-failed-gate-deadlock`](design-pr-review-failed-gate-deadlock.md) | darn · light | Code-Burler-Fix | neve | 1h<br>32m | landing |
 | T12 | **Body edits on a discussed task never reach its run** | [`discussed-body-edits-lost`](design-discussed-body-edits-lost.md) | darn · light | Code-Burler-Fix | neve | 1h<br>32m | board, loom |
-| T13 | **Worktree .scratch is a symlink into another worktree's .lym/scratch, breaking relative project references** | [`scratch-symlink-other-worktree`](design-scratch-symlink-other-worktree.md) | darn · light | Drift-Recheck | neve | 1h<br>32m | fabric |
+| T13 | **Worktree .scratch is a symlink into another worktree's .lym/scratch, breaking relative project references** | [`scratch-symlink-other-worktree`](design-scratch-symlink-other-worktree.md) | darn · light | Describe | neve | 1h<br>32m | fabric |
 | T14 | **beam merge-parent reuses a completed merge-in slug, so dobby refuses to start the second merge-in** | [`merge-parent-reuses-slug`](design-merge-parent-reuses-slug.md) | darn · light | Code-Burler-Fix | neve | 1h<br>32m | dobby, workspaces |
 
 ### Ready (0)
