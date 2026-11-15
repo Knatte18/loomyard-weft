@@ -23,6 +23,12 @@ Weaver (`weaver`) needs it to stand in for Merriam, but the change is the arbite
 
 ## Decisions
 
+### Added after Discussion (operator, 2026-11-15): Batten's arbiter edits like every other arbiter
+
+Decision: The one-shot fixer applies to every use of the arbiter, batten's included: batten's arbiter gets the same worktree seam and the same edit rights and instructions as loom's, with no batten-specific arbiter instructions.
+
+Rationale: The operator ruled that the widened arbiter is the arbiter everywhere; a verdict-only arbiter in batten would split one role into two behaviours.
+
 ## Constraints
 
 ## Auto-mode assumptions
