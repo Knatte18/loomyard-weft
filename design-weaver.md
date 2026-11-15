@@ -249,3 +249,9 @@ Claude Code's own worktree isolation for agents has given the operator only trou
   each batch agent ends by writing what it struggled with and what later batches must keep in mind,
   and every later batch and the arbiter read the journal before they start.
   The journal is pushed with the run, so it outlives a crash or a move to another machine.
+
+## Parallel batches are in scope (operator, 2026-11-15)
+
+The operator holds there is more to gain from parallel batches than the 2026-10-17 study shows, once the plan protocol and the batchifier are tuned for it.
+The study named the levers: honest per-card file lists, shared-doc edits (`doc.go`, `docs/overview.md`, `PATTERN.md`) moved to a final card, `cmd/lym/testdata/test-budget.yaml` no longer a scheduling dependency, and a DAG batchifier over glyphs instead of contiguous cards.
+The Motif settles the plan protocol changes and the batchifier with Weaver, and the plan writer is told to write plans wide where the work allows.
