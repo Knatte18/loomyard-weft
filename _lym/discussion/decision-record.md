@@ -162,6 +162,12 @@ Decision: The Discussion review ends at its hard cap with round 3's findings ans
 
 Rationale: Each fix in the record is the one the round 3 review proposed, and the code it names holds: finalize.go marks the board done (line 445) before pushParent (line 786), replay.go's finalizeEntered and ParentHoldsTaskWork read local state, PushPairAnchored iterates a code and a records side, battencli removePairAndBranch discards the task branch on origin, pauserecord.Admit, fabricengine.StatusPushLockWait and pairteardown Request.Local exist. The fixer disputed and deferred nothing.
 
+### Added after Discussion (parent, 2026-11-15): A shed pause is an aside of the act rule
+
+Decision: Besides the pause intent, the cancel intent and the hold, a run whose shed state is paused is an aside of D1's act rule: lym batten run, lym batten step, lym loom start, lym loom resume, lym batten cancel and lym tender resume may act on it.
+
+Rationale: Without the aside, the act rule waits on a shed state of paused, so a shed pause's own resume verb would refuse itself and the run could never leave the pause.
+
 ## Constraints
 
 - `PATTERN-owner-machine`: the owner stays on roots and beams, written only by `boardengine`'s setter, read through `hubgeom.ParentOf`.
