@@ -1,6 +1,6 @@
 # A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call
 
-`pause-holds-operator-verbs` · Task · bug, tender, git, batten, selfreport · running · Darn-Write
+`pause-holds-operator-verbs` · Task · bug, tender, git, batten, selfreport · running · Drift-Verify
 
 Imported from [issue #129](https://github.com/Knatte18/loomyard/issues/129).
 
