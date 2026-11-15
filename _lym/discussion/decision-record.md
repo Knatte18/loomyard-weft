@@ -458,6 +458,12 @@ Decision: Drop D10's transcript mirror to the weft repository and every cross-ma
 
 Rationale: Operator, 2026-11-15: the orch shall not need to continue anything on a new machine. Also settles F12: no orch transcript goes to the public weft repository.
 
+### Added after Discussion (parent, 2026-11-15): Orch up during a hold (F14)
+
+Decision: The orch is up while an adopt or adopt-fix hold stands, as D8 has it: every verb the act rule guards refuses except on the fix task and on a landing past its parent-side merge, and the orch handles the fix task's halts. The board's 'no orch action until adopt is done' means no orch action on held runs.
+
+Rationale: Operator, 2026-11-15, answering F14: yes, the orch may be up during a hold with those refusals.
+
 ## Constraints
 
 - `PATTERN-owner-machine`: the owner stays on roots and beams, written only by `boardengine`'s setter, read through `hubgeom.ParentOf`.
