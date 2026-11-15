@@ -429,7 +429,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "8a2b99c3d5c2f215fec6fa7a21ef4844",
   "masterSessionId": "b0363183-f15a-4ce0-87b3-7c740ff517a3",
   "masterEngine": "claude",
@@ -527,6 +527,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-ac2180900f917c805.jsonl"
       ]
+    },
+    "8": {
+      "slug": "cancel-readers-intent",
+      "cards": [
+        "08-cancel-readers-intent",
+        "09-cancelled-record-cleanup",
+        "10-batten-run-act"
+      ],
+      "cardHashes": {
+        "08-cancel-readers-intent": "aeb4ea250275c0633d84a2c4038e0ab356723131194f2ea749d82a2e037ee4ac",
+        "09-cancelled-record-cleanup": "bd17fefb6d95f8595639036d11d08c57c04f1564b1a2603d55d92987b227dbd7",
+        "10-batten-run-act": "b0b40857072baf9e484b5de8dd820102dfc2c4cfc07989614c009bf973953c73"
+      },
+      "startSha": "6638ae10b604248bdea4fea1cfc659dd760ed52c",
+      "kind": "fork",
+      "spawnedAt": "2026-11-15T17:43:58Z",
+      "sessionId": "b0363183-f15a-4ce0-87b3-7c740ff517a3",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
