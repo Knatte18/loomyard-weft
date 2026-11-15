@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-15 17:08 UTC; every age below is as of then.
+Rendered 2026-11-15 17:21 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 5d · Owner `neve`
@@ -37,13 +37,13 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (1)
+### Layer A (1)
 
-Not released; nothing starts it until its status is cleared.
+Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | darn · solid | T4 | 1h<br>5m | testkit, gate, dobby |
+| T2 | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | darn · solid | T4 | 1h<br>18m | testkit, gate, dobby |
 
 ## Notes (1)
 
