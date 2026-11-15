@@ -457,31 +457,6 @@
       "record_body_sha256": "b0595f810525ce9818aee2b202f9e74b4082042c9bc69b7472ff12adca4611a4"
     },
     {
-      "id": 1350,
-      "handle": "T8",
-      "slug": "darn-code-reviewer-opus-default",
-      "title": "Darn's Code-Review reviewer should default to Opus, not Sonnet",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "darn",
-        "profiles",
-        "loom"
-      ],
-      "issues": [
-        130
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #130](https://github.com/Knatte18/loomyard/issues/130).\n\n## Seen\n\n`code_reviewer_model` defaults to `sonnet[medium]` (internal/loomengine/template.yaml), and darn's Code-Review perch uses it.\nIn a darn run the Code-Review perch is the only in-run review: darn has no Discussion or Plan review, so this reviewer has to judge whether the writer did the task the entry asks for, not only whether the diff is correct.\nIn a recent darn run (a solver bug trace against a reference model, profile wide), the perch converged after three rounds and its last round rejected a finding that the entry's trace was left open as \"not a defect\".\nThe parent's PR review then found the work incomplete, which took three more fix rounds.\nHubs currently work around this per task with `run_settings: {\"loom\":{\"code_reviewer_model\":[\"fable[high]\",\"sonnet[medium]\"]}}`.\n\n## Expected\n\nDarn's Code-Review reviewer defaults to an Opus model-spec (for example `opus[high]`), set in darn's defaults or its profiles, so the in-run review can check the entry's work items, decisions and acceptance steps as well as the code.\nTapestry's Code-Review may keep its default, since its Discussion and Plan reviews already check the scope.",
-      "status": "done",
-      "created": "2026-11-15T11:34:15Z",
-      "revised": "2026-11-15T12:05:15Z",
-      "profile": "light"
-    },
-    {
       "id": 1352,
       "handle": "T10",
       "slug": "pause-holds-operator-verbs",
