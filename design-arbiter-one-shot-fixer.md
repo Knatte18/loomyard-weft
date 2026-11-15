@@ -1,6 +1,6 @@
 # The arbiter becomes a one-shot fixer that may edit, not only resume the halted row
 
-`arbiter-one-shot-fixer` · Task · enhancement, arbiter, shed · running · Code-Burler-Review
+`arbiter-one-shot-fixer` · Task · enhancement, arbiter, shed · running · Code-Burler-Fix
 
 ## Seen (operator, 2026-11-15)
 
