@@ -1,0 +1,20 @@
+attempt: 1
+cap: 2
+command: lym gate test --wait --gate webster
+exit_code: 1
+failures:
+    - id: github.com/Knatte18/loomyard/internal/battencli.TestWire_EverySeamFilled
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/battencli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/loomcli.TestSmokeBootstrapLifecycle/malformed_status_proceeds_to_the_success_envelope_and_logs_why
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomcli
+      tail: ""
+log_path: /home/knatte/Code/loomyard-LYMHUB/run-fsm-tracked-records/.lym/verify/verify-2.log
+hint:
+    - 05-pairteardown-read-run
+    - 08-cancel-readers-intent
+    - 15-pr-record-tracked
+    - 17-lym-files-pattern
+fixer: fork
