@@ -1,35 +1,31 @@
-# Tell agents that .scratch is a link into the weft worktree
+# Document that .scratch is a link and tell agents to use absolute paths
 
-Closes #120.
+Agents were told to put scratch files under `.scratch/` in the working directory, but `.scratch` in a task worktree is a link into the weft worktree.
+A project built under it resolves relative project references from the link's target, not from the working directory, so the build fails.
+Nothing in the agent instructions said so, and an agent worked around it by copying the project into a scratchpad nested in another git repository.
 
-A task worktree's `.scratch` is a directory link into the pair's weft-side `.lym/scratch`.
-A build under it resolves a relative project reference from the link's target, not from the working directory.
-A card that asked for a no-git build of a project with relative references under `.scratch/` therefore failed.
-The agent worked around it by copying the project elsewhere.
+The edit directive (`contracts/stencils/edit/edit-directive.md`) now says two things:
 
-## What changes
+- `.scratch` is a link to a directory kept for the task alone, so a file under it stays in the agent's own task.
+- A build under `.scratch/` resolves a relative reference from the link's target, so a project built there names the working tree's files by absolute path.
 
-- The shared edit directive, `contracts/stencils/edit/edit-directive.md`, which every spawned role's opening stencil carries, now says:
-  - `.scratch` links into the task's own weft worktree, so a file under it stays in the role's own worktree;
-  - a build under `.scratch/` resolves a relative reference from the link's target;
-  - a project built there names the working tree's files by absolute path.
-- The `internal/editdirective` package doc lists the new statement among what the directive says.
-- The `internal/fabricengine` package doc's scratch-link section names this cost of the link.
+The `internal/editdirective` and `internal/fabricengine` package docs record the same fact.
+The fabric doc now lists it as a cost of the link, beside the existing reason for choosing a link.
+
+Closes #120
 
 ## Design decisions
 
-- **The link stays; `.scratch` does not become a real directory.**
-  The board entry allowed either fix.
-  The link exists so that writing scratch files leaves the `go test` cache keys of source-scan tests unchanged (#771).
-  A real directory at the anchor changes its own modification time whenever an agent creates or removes a file under it.
-  Every test that opens the module root hashes that time.
-  A real directory would turn every scratch write into a cache miss for those packages.
-- **The second concern is answered in the directive, not by moving the target.**
-  The link's target is the pair's own weft worktree, not another task's.
-  The directive now says this, so the rule to work only in your own worktree no longer reads as contradicting the link.
-- The Claude and Codex engine copies of the directive, rendered into assistant seats, are unchanged: neither tells a seat to write scratch files.
-- No test pins the new sentences; the directive's tests check its rendering, not its wording.
+- The issue offered two fixes: make `.scratch/` a real directory, or document the link.
+  This change documents it.
+  The fabric doc already explains why the link is a link: a real directory would change its modification time with every file an agent adds or removes,
+  and that time feeds the `go test` cache key of every source-scan test that opens the module root.
+  Replacing the link would bring that cache churn back.
+- The issue's second complaint, that the link puts a task's scratch files in another worktree's tree, is answered by the directive text.
+  The target is the task's own scratch directory in the weft worktree, so the "work only in your own worktree" rule is not broken.
+- The change is documentation only; no code behaviour changes.
 
 ## To check by hand
 
-- Read a freshly rendered darn or webster prompt and confirm its `## Editing files` section carries the three new lines.
+- Read the added directive lines as an agent would, and confirm that they say what to do, not only what goes wrong.
+- No regression check ran for this task, and no tests were added, since only prose and doc comments changed.
