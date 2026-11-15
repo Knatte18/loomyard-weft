@@ -18,7 +18,7 @@ defaults:
   arras: solid
 speed:
   tapestry: {loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 0, plan_hard_max_bounces: 1, code_reviewer_fan: ""}, tapestry: {plan_max_bounces: 0, plan_hard_max_bounces: 1}}
-  darn: {loom: {code_max_bounces: 0, code_hard_max_bounces: 1}}
+  darn: {loom: {code_max_bounces: 0, code_hard_max_bounces: 1, code_reviewer_model: "opus[high]"}}
   motif:
     loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1}
   pawl:
@@ -31,7 +31,7 @@ speed:
     loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, split_max_bounces: 0, split_hard_max_bounces: 1}
 light:
   tapestry: {loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 1, plan_hard_max_bounces: 2}, tapestry: {plan_max_bounces: 1, plan_hard_max_bounces: 2}}
-  darn: {loom: {code_max_bounces: 1, code_hard_max_bounces: 2}}
+  darn: {loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_model: "opus[high]"}}
   motif:
     loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2}
   pawl:
@@ -45,7 +45,7 @@ light:
     loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, split_max_bounces: 1, split_hard_max_bounces: 2}
 solid:
   tapestry: {loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 2, plan_hard_max_bounces: 3}, tapestry: {plan_max_bounces: 2, plan_hard_max_bounces: 3}}
-  darn: {loom: {code_max_bounces: 2, code_hard_max_bounces: 3}}
+  darn: {loom: {code_max_bounces: 2, code_hard_max_bounces: 3, code_reviewer_model: "opus[high]"}}
   motif:
     loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3}
   pawl:
@@ -59,7 +59,7 @@ solid:
     loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, split_max_bounces: 2, split_hard_max_bounces: 3}
 wide:
   tapestry: {loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4, code_max_bounces: 1, code_hard_max_bounces: 2, plan_max_bounces: 2, plan_hard_max_bounces: 3}, tapestry: {plan_max_bounces: 2, plan_hard_max_bounces: 3}}
-  darn: {loom: {code_max_bounces: 3, code_hard_max_bounces: 4}}
+  darn: {loom: {code_max_bounces: 3, code_hard_max_bounces: 4, code_reviewer_model: "opus[high]"}}
   motif:
     loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4}
   pawl:
@@ -72,4 +72,4 @@ wide:
   arras:
     loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4, split_max_bounces: 3, split_hard_max_bounces: 4}
 docs:
-  darn: {darn: {writer: 'sonnet[medium]'}, loom: {code_max_bounces: 0, code_hard_max_bounces: 1, code_reviewer_fan: ""}, drift: {scope: "off"}}
+  darn: {darn: {writer: 'sonnet[medium]'}, loom: {code_max_bounces: 0, code_hard_max_bounces: 1, code_reviewer_fan: "", code_reviewer_model: "opus[high]"}, drift: {scope: "off"}}
