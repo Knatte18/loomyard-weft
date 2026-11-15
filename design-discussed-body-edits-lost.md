@@ -1,6 +1,6 @@
 # Body edits on a discussed task never reach its run
 
-`discussed-body-edits-lost` · Task · bug, board, loom · running · Seed-IDE
+`discussed-body-edits-lost` · Task · bug, board, loom · running · Preflight
 
 Imported from [issue #121](https://github.com/Knatte18/loomyard/issues/121).
 
