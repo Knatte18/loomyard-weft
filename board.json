@@ -654,6 +654,28 @@
       "body": "Imported from [issue #123](https://github.com/Knatte18/loomyard/issues/123).\n\n## Seen\n\n`deadcode ./cmd/lym` (golang.org/x/tools/cmd/deadcode) on `main` at `35f5f8670` reports 156 functions in production code that the `lym` binary never reaches from `main`.\nThe packages with most are `internal/fabricengine` (16), `internal/shedcheck` (9), `internal/websterengine` (8), `internal/loomcli` (6) and `internal/logger` (6).\n\nA spot check shows most are not dead code but helpers that only tests call, yet they sit in non-test files:\n\n- 54 of the 156 are `RunCLI` or `RunCLIIn` in the `*cli` packages; their callers are `_test.go` files.\n- `batcher.ProfileWeights` and `batcher.PeakContext` are called only from `batcher`'s tests and their own file.\n- `cmd/lym/main.go` has `run`, which repeats the body of `main` (build the root, set output, run, notify and sweep) and is called only by tests, so that logic exists twice.\n\nThe repository is about 376 000 lines of production Go and 546 000 of test Go; test-only helpers in production files add to the first figure without adding behaviour.\n\n## Not known\n\nWhich of the 156 have no caller at all, tests included.\n`deadcode -test` only roots the tests of the packages named, so each package needs its own run; this report did not do that.\n\n## Idea\n\nAdd a PATTERN rule: a function that only tests call lives in a `_test.go` file or in `internal/testkit`, never in a production file.\nEnforce it with a pattern test that runs `deadcode` per package, and fails on an unreachable exported or unexported function that a non-test file declares and only test files call.\nThen move the existing 156 over, starting with `RunCLI` and `RunCLIIn`, and fold `cmd/lym`'s `run` into one shared function that `main` and the tests both call.\nRun `deadcode` per package first to separate the truly dead functions from the test-only ones, and delete the dead ones.\n",
       "created": "2026-11-15T11:34:27Z",
       "revised": "2026-11-15T11:34:27Z"
+    },
+    {
+      "id": 1358,
+      "handle": "F5",
+      "slug": "hub-stop-button",
+      "title": "A stop button in the prime orch session that takes the whole hub down, behind a yes/no",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "reed",
+        "orch",
+        "tender"
+      ],
+      "issues": [
+        122
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #122](https://github.com/Knatte18/loomyard/issues/122).\n\n## Seen (operator, 2026-11-11)\n\nTo stop everything on a machine without a reboot, the operator has to run several verbs by hand:\n`lym beam stop` for the orch and dobby of the prime and of each beam, `lym reed down` in each worktree for the tmux sessions, and `lym tender reap` for run processes no run owns.\nThe operator finds this cumbersome; it should be one simple action.\n\n## Idea\n\nA button in the reed status bar, shown only in the prime orch's session, labelled \"stop\" or similar, that takes the whole hub down.\nThe button asks for a yes/no confirmation before it does anything.\n\nRead first what the button must end: the orch and dobby of the prime and of every beam, the reed sessions of the runs' worktrees, and run processes no run owns.\nDecide whether it first pauses the hub, so a run's turn is interrupted cleanly, and what it says it will do in the confirmation.\nThe operator closes terminal windows (Konsole, the VS Code terminal) by hand.\n`machine-restart-shortcut` brings every hub and beam back after a stop or reboot, so the two belong together.\n",
+      "created": "2026-11-15T11:34:30Z",
+      "revised": "2026-11-15T11:34:30Z"
     }
   ],
   "prime_owner": "neve",
