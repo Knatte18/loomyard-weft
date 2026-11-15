@@ -1,0 +1,522 @@
+diff --git a/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/data/codex-summary.md b/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/data/codex-summary.md
+new file mode 100644
+index 00000000..d5e42e48
+--- /dev/null
++++ b/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/data/codex-summary.md
+@@ -0,0 +1,9 @@
++# Leave beam startup files empty and document preview diagnostics
++
++The IDE template now sets `open_files.beam: []`, so opening a beam no longer requests its README by default. Prime and task defaults are also empty. Explicit hub or local file lists retain their meaning, including a configured README. The existing config test and package and overview documentation reflect the new default.
++
++`render_markdown` is retained. VS Code's built-in Markdown Language Features extension registers the exact editor ID lym uses, and lym seeds the association before copying the target worktree's settings into the generated workspace. The existing beam integration check covers that workspace association. The [upstream manifest](https://github.com/microsoft/vscode/blob/1.100.0/extensions/markdown-language-features/package.json#L741) and [editor resolver](https://github.com/microsoft/vscode/blob/1.100.0/src/vs/workbench/services/editor/browser/editorResolverService.ts#L239) support this configuration. No defect was identified in that wiring.
++
++The reported runtime preview failure remains unresolved: the affected window's settings and extension state were unavailable. Ordinary Extension Bisect selects user extensions, so its presence alone does not establish that the built-in Markdown extension was disabled. The new preview diagnostics document distinguishes manual-preview failures, association precedence, existing source tabs and skipped seeding, with upstream references and concrete checks for the affected window. It does not claim that the original rendering failure is fixed.
++
++Validation: `go build ./internal/ideconfig` and `git diff --check` passed. Gate tests are reserved for the handoff verifier. Board comparison and drift validation were unavailable in this standalone checkout, which has no board configuration or `_lym/drift/expected.yaml`.
+diff --git a/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/data/codex.diff b/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/data/codex.diff
+new file mode 100644
+index 00000000..fb308620
+--- /dev/null
++++ b/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/data/codex.diff
+@@ -0,0 +1,110 @@
++diff --git a/docs/ide-markdown-preview.md b/docs/ide-markdown-preview.md
++new file mode 100644
++index 00000000..a4c98f19
++--- /dev/null
+++++ b/docs/ide-markdown-preview.md
++@@ -0,0 +1,38 @@
+++# Markdown preview in lym windows
+++
+++`ide.yaml`'s `render_markdown: true` selects VS Code's built-in preview through
+++`workbench.editorAssociations`, with `"*.md": "vscode.markdown.preview.editor"`.
+++The [Markdown Language Features manifest](https://github.com/microsoft/vscode/blob/1.100.0/extensions/markdown-language-features/package.json#L741)
+++registers that editor. Its optional priority allows an explicit association to select it.
+++There is no separate preview extension to install.
+++
+++`lym ide spawn` seeds the target worktree's settings before regenerating its workspace.
+++A prime workspace carries the prime's settings; a beam workspace carries the beam's.
+++That places the association at workspace scope, including for Bolt files opened in that window.
+++A task opens its seeded folder. `lym ide open` opens a task without reseeding it.
+++
+++The reported preview failure has not been reproduced in the affected VS Code window.
+++Source inspection establishes that the association is supported and reaches the generated workspace;
+++it does not establish the state of that window's extensions, settings or restored editors.
+++`render_markdown` therefore remains available.
+++
+++To distinguish a settings problem from a preview failure in the affected window:
+++
+++1. Open a Markdown file and run **Markdown: Open Preview**. If rendering fails there too,
+++   inspect the built-in **Markdown Language Features** extension's enablement and the extension-host log.
+++   This command tests preview independently of the default editor association.
+++2. If manual preview works, inspect `workbench.editorAssociations` in that window's workspace settings.
+++   Check for a more-specific match such as `README.md` as well as `*.md`.
+++   VS Code [merges workspace and user associations and prefers longer matching patterns](https://github.com/microsoft/vscode/blob/1.100.0/src/vs/workbench/services/editor/browser/editorResolverService.ts#L239).
+++   Use **Reopen Editor With...** to select Markdown Preview for an already-open source tab.
+++3. If the generated association is absent, check the target worktree's resolved `render_markdown` setting
+++   and the seed's warnings. A tracked `.vscode/tasks.json` makes lym leave `.vscode` untouched;
+++   undecodable settings and legacy array-form associations are also preserved.
+++   After correcting the relevant input, `lym ide spawn <slug>` reseeds the window's configuration.
+++   Direct edits to a generated `.code-workspace` file are overwritten on regeneration.
+++
+++An **Extension Bisect** notification alone does not show that the built-in Markdown extension was disabled.
+++The upstream [bisect start action](https://github.com/microsoft/vscode/blob/main/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts#L215)
+++selects user extensions, and its disable check applies only to its stored candidates.
+++Record the VS Code version, effective association, extension enablement and manual-preview result
+++before attributing the failure to bisect or changing lym's association.
++diff --git a/docs/overview.md b/docs/overview.md
++index 05675589..c74ac99e 100644
++--- a/docs/overview.md
+++++ b/docs/overview.md
++@@ -565,11 +565,13 @@ User-facing modules each get one `lym <module>` namespace:
++   The hub-wide `ide.yaml` lists them under `open_files` for the worktree's place: the prime, a beam or a task.
++   Paths are relative to the worktree's anchored directory, and `{beam}` stands for the beam's slug.
++   An entry naming no file is skipped.
++-  The template opens `README.md` for a beam and nothing for the prime or a task.
+++  The template opens no files for the prime, a beam or a task; set `open_files.beam` to opt in to beam files.
++   `ide.yaml`'s `render_markdown` is on by default.
++   With it on, a seed points the `*.md` entry of `workbench.editorAssociations` at the markdown preview,
++   so a markdown file opens rendered.
++   The entry lives in the worktree's `settings.json`, and a setting the operator holds in its array form is left as it is.
+++  Preview needs VS Code's built-in Markdown Language Features extension;
+++  see [Markdown preview diagnostics](ide-markdown-preview.md) when a file still opens as source or fails to render.
++   The generated `tasks.json` holds one on-demand `reed attach` task.
++   The `lym` path in it is stamped absolute at generation time.
++   The task is reached through "Tasks: Run Task" or the seeded `ctrl+alt+a` key binding;
++diff --git a/internal/ideconfig/config_test.go b/internal/ideconfig/config_test.go
++index e4b4d8c2..5a462d66 100644
++--- a/internal/ideconfig/config_test.go
+++++ b/internal/ideconfig/config_test.go
++@@ -29,7 +29,7 @@ func TestLoadConfig(t *testing.T) {
++ 	}{
++ 		{
++ 			name: "TemplateDefaults",
++-			want: ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{"README.md"}, Task: []string{}}, RenderMarkdown: true},
+++			want: ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{}, Task: []string{}}, RenderMarkdown: true},
++ 		},
++ 		{
++ 			name: "HubFileSetsBothKeys",
++@@ -39,7 +39,7 @@ func TestLoadConfig(t *testing.T) {
++ 		{
++ 			name:  "LocalOverrideSetsRenderMarkdown",
++ 			local: "render_markdown: false\n",
++-			want:  ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{"README.md"}, Task: []string{}}},
+++			want:  ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{}, Task: []string{}}},
++ 		},
++ 		{name: "AbsoluteEntryRefused", hub: "open_files:\n  task: [/etc/hosts]\n", wantErr: `ide config key "open_files.task" holds "/etc/hosts"`},
++ 		{name: "ClimbingEntryRefused", hub: "open_files:\n  beam: [../README.md]\n", wantErr: `ide config key "open_files.beam" holds "../README.md"`},
++diff --git a/internal/ideconfig/doc.go b/internal/ideconfig/doc.go
++index 6c9bd08a..2457604e 100644
++--- a/internal/ideconfig/doc.go
+++++ b/internal/ideconfig/doc.go
++@@ -6,7 +6,7 @@
++ // open_files holds one list per place: the prime, a beam and a task.
++ // Each entry is a path relative to the worktree's anchored directory, the folder its window shows.
++ // An entry may name the {beam} placeholder, which the opener resolves to the beam's slug.
++-// The template opens README.md for a beam and nothing for the prime or a task;
+++// The template opens no files for the prime, a beam or a task;
++ // a beam's own file, such as docs/{beam}.md, is named by adding an entry.
++ // render_markdown, on in the template, makes a markdown file open as VS Code's markdown preview rather than as source.
++ // Both keys only change what a window shows, so a worktree's local override may set them.
++diff --git a/internal/ideconfig/template.yaml b/internal/ideconfig/template.yaml
++index cb5cb259..b0b2a756 100644
++--- a/internal/ideconfig/template.yaml
+++++ b/internal/ideconfig/template.yaml
++@@ -1,6 +1,5 @@
++ open_files:  # files `lym ide spawn` and `lym ide open` open beside the folder or workspace they launch, one list per place, in order; each a path relative to the worktree's anchored directory, the folder its window shows, where {beam} stands for the beam's slug: a beam's own, a task's parent's, or the prime's name for the prime and a task forked from it; an entry naming no existing file is skipped
++   prime: []
++-  beam:
++-    - README.md
+++  beam: []
++   task: []
++ render_markdown: true  # whether a markdown file opens rendered, as VS Code's markdown preview, in a worktree `lym ide` seeds; lym then owns the "*.md" entry of workbench.editorAssociations in the worktree's settings.json, and off removes that entry while it names the preview; "Reopen Editor With..." switches one file either way
+diff --git a/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/data/landed.diff b/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/data/landed.diff
+new file mode 100644
+index 00000000..de561514
+--- /dev/null
++++ b/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/data/landed.diff
+@@ -0,0 +1,62 @@
++diff --git a/docs/overview.md b/docs/overview.md
++index 05675589..0dc04a08 100644
++--- a/docs/overview.md
+++++ b/docs/overview.md
++@@ -565,7 +565,7 @@ User-facing modules each get one `lym <module>` namespace:
++   The hub-wide `ide.yaml` lists them under `open_files` for the worktree's place: the prime, a beam or a task.
++   Paths are relative to the worktree's anchored directory, and `{beam}` stands for the beam's slug.
++   An entry naming no file is skipped.
++-  The template opens `README.md` for a beam and nothing for the prime or a task.
+++  The template opens nothing for any place.
++   `ide.yaml`'s `render_markdown` is on by default.
++   With it on, a seed points the `*.md` entry of `workbench.editorAssociations` at the markdown preview,
++   so a markdown file opens rendered.
++diff --git a/internal/ideconfig/config_test.go b/internal/ideconfig/config_test.go
++index e4b4d8c2..5a462d66 100644
++--- a/internal/ideconfig/config_test.go
+++++ b/internal/ideconfig/config_test.go
++@@ -29,7 +29,7 @@ func TestLoadConfig(t *testing.T) {
++ 	}{
++ 		{
++ 			name: "TemplateDefaults",
++-			want: ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{"README.md"}, Task: []string{}}, RenderMarkdown: true},
+++			want: ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{}, Task: []string{}}, RenderMarkdown: true},
++ 		},
++ 		{
++ 			name: "HubFileSetsBothKeys",
++@@ -39,7 +39,7 @@ func TestLoadConfig(t *testing.T) {
++ 		{
++ 			name:  "LocalOverrideSetsRenderMarkdown",
++ 			local: "render_markdown: false\n",
++-			want:  ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{"README.md"}, Task: []string{}}},
+++			want:  ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{}, Task: []string{}}},
++ 		},
++ 		{name: "AbsoluteEntryRefused", hub: "open_files:\n  task: [/etc/hosts]\n", wantErr: `ide config key "open_files.task" holds "/etc/hosts"`},
++ 		{name: "ClimbingEntryRefused", hub: "open_files:\n  beam: [../README.md]\n", wantErr: `ide config key "open_files.beam" holds "../README.md"`},
++diff --git a/internal/ideconfig/doc.go b/internal/ideconfig/doc.go
++index 6c9bd08a..92211815 100644
++--- a/internal/ideconfig/doc.go
+++++ b/internal/ideconfig/doc.go
++@@ -6,8 +6,8 @@
++ // open_files holds one list per place: the prime, a beam and a task.
++ // Each entry is a path relative to the worktree's anchored directory, the folder its window shows.
++ // An entry may name the {beam} placeholder, which the opener resolves to the beam's slug.
++-// The template opens README.md for a beam and nothing for the prime or a task;
++-// a beam's own file, such as docs/{beam}.md, is named by adding an entry.
+++// The template opens nothing for any place;
+++// a file to open, such as a beam's own docs/{beam}.md, is named by adding an entry.
++ // render_markdown, on in the template, makes a markdown file open as VS Code's markdown preview rather than as source.
++ // Both keys only change what a window shows, so a worktree's local override may set them.
++ //
++diff --git a/internal/ideconfig/template.yaml b/internal/ideconfig/template.yaml
++index cb5cb259..b0b2a756 100644
++--- a/internal/ideconfig/template.yaml
+++++ b/internal/ideconfig/template.yaml
++@@ -1,6 +1,5 @@
++ open_files:  # files `lym ide spawn` and `lym ide open` open beside the folder or workspace they launch, one list per place, in order; each a path relative to the worktree's anchored directory, the folder its window shows, where {beam} stands for the beam's slug: a beam's own, a task's parent's, or the prime's name for the prime and a task forked from it; an entry naming no existing file is skipped
++   prime: []
++-  beam:
++-    - README.md
+++  beam: []
++   task: []
++ render_markdown: true  # whether a markdown file opens rendered, as VS Code's markdown preview, in a worktree `lym ide` seeds; lym then owns the "*.md" entry of workbench.editorAssociations in the worktree's settings.json, and off removes that entry while it names the preview; "Reopen Editor With..." switches one file either way
+diff --git a/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/data/prompt.md b/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/data/prompt.md
+new file mode 100644
+index 00000000..7186409c
+--- /dev/null
++++ b/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/data/prompt.md
+@@ -0,0 +1,219 @@
++# Darn — make the change a board entry asks for, in one session
++
++You are the darn writer: one autonomous session that reads a task's decision record, makes the change it asks for in this repository, tests it, commits it on the task branch and writes the change description it lands under.
++No operator is present, so make best-judgment calls and never block on a dialog.
++
++The repository you change is the worktree at `/home/knatte/Code/loomyard-LYMHUB/codex-writer-bench-neve-weft/.lym/scratch/bench-wt`.
++Your session starts in another folder: run every command with that worktree as its working directory, and read and write files only there.
++
++## Your parent
++
++No parent is recorded for this run.
++When you are blocked, write your report and stop.
++
++## Editing files
++
++Change files with Edit or Write, never by shell.
++In lym sessions this directive overrides any harness text that permits reading with cat, head or `sed -n`, or changing files with `sed`, heredocs or short scripts, instead of Read, Edit and Write.
++Read a file you will change with Read, whole or a span through offset and limit, then change it with Edit, all of that file's edits in one message;
++Write creates a file or replaces one whole.
++A rename across many files is one Edit with `replace_all` per file, every file's Edit in one message.
++Read a file with Read and search files with grep.
++A shell guard refuses a shell edit: never `sed -i`, never `perl -i`, and never a heredoc, redirect or tee into a source file.
++A Go file's formatting is fixed with `lym loom fmt <file>`.
++Scratch files go under `.scratch/` in the working directory, never a system temp directory, and are removed by their literal path.
++`.scratch` is a link to a directory kept for your task alone, so a file under it stays in your own task.
++A build under `.scratch/` resolves a relative reference from the link's target, not from the working directory;
++a project built there names the working tree's files by absolute path.
++A scratch file with a source extension such as `.md`, `.yaml` or `.sh` is written with Write, not by a redirect.
++Work only in your own worktree: never edit, commit or push in another, and never create one, unless your parent or the operator says so for that case.
++When work belongs in another worktree, say so to your parent instead.
++## Constraints — do this before you write any code
++
++- **STOP.** These are the repo's rules; read them in full before editing a single file:
++
++# PATTERN
++
++## Code
++
++- `PATTERN-code-conventions` — Writing code: a package's `doc.go` documents only that package; a name or path that can go stale is one named constant; no language, engine or branch is hard-coded. — [background](pattern/PATTERN-code-conventions.md)
++
++## Paths and geometry
++
++- `PATTERN-cwd-resolution` — Resolving a cwd, worktree root or anchor: only `lymcwd`, from the worktree's weft-root `.lym-anchor`; only `fabricengine` writes or git-reads it; engines get absolute paths, never import lymcwd; hub containers and workspace files stay hub-reachable only. (test) — [background](pattern/PATTERN-cwd-resolution.md)
++- `PATTERN-lym-files` — Placing a file, temp dir, lock or link: tracked under `_lym`, never-tracked under `.lym`, named only by `lymdirs`; temp under `lymtemp`, lock paths via `lock`, links via `fslink`. (test) — [background](pattern/PATTERN-lym-files.md)
++- `PATTERN-leaf-packages` — Importing into a leaf package: only closed import set. — [background](pattern/PATTERN-leaf-packages.md)
++
++## CLI and config
++
++- `PATTERN-cli-cobra` — Adding or wiring a CLI module: a cobra subtree under one root in `cmd/lym/main.go`; standalone wiring only through `internal/cliwire`. (test) — [background](pattern/PATTERN-cli-cobra.md)
++- `PATTERN-config-layers` — Loading, writing or changing the meaning of config: layers only through `configengine`; a hub base file holds only tuned units; a meaning change ships a reinterpretation `hubreconcile` applies. — [background](pattern/PATTERN-config-layers.md)
++- `PATTERN-refusal-way-forward` — Adding webster, shed or loom refusal: message names the way forward and a test reaches it; no refusal, stencil or spec names a step agents' settings deny. (test) — [background](pattern/PATTERN-refusal-way-forward.md)
++
++## Fabric and git
++
++- `PATTERN-fabric-boundary` — Changing fabric or running git on warp or weft: only `internal/fabricengine`, called "fabric", which learns nothing of IDEs, shuttle, the board or heddle. (test) — [background](pattern/PATTERN-fabric-boundary.md)
++- `PATTERN-gitrepo-client-boundary` — Running git or writing remote-tracking refs: through `gitexec` and `gitrepo`, raw only at pinned sites; fetch, pull and push under the remote-refs lock. (test) — [background](pattern/PATTERN-gitrepo-client-boundary.md)
++- `PATTERN-pair-remote` — Pushing run records or tearing down a pair: the code branch goes along; a pair's remote steps hold the slug's teardown lock; teardown only via `internal/pairteardown`. (test) — [background](pattern/PATTERN-pair-remote.md)
++- `PATTERN-owner-machine` — Starting, resuming, pushing or landing a run, or picking a pair's parent: only on the entry's owner machine, read through hubgeom's one `ParentOf`. — [background](pattern/PATTERN-owner-machine.md)
++- `PATTERN-landing` — Landing on a local parent branch or deciding on a pull request: only in a run's Finalize under `internal/parentlock`'s lock; landingshed's one resolver decides the pull request. — [background](pattern/PATTERN-landing.md)
++- `PATTERN-github-auth` — Calling GitHub: auth only via internal/githubclient; no other production package runs gh; only lym selfreport create files an issue; only PR-Review, Finalize, `lym beam pr` and pair teardown open, reopen, merge or close a pull request; `lym beam pr` never merges. (test)
++
++## Shed and loom
++
++- `PATTERN-shed-recipe-registry` — Adding a producer, recipe row, block gate or loom recipe: one `shedrecipe` map, row values by key; a loom recipe declares `contract: loom`. — [background](pattern/PATTERN-shed-recipe-registry.md)
++- `PATTERN-shed-driver` — Driving or stopping a shed run: verbs in `shedverbs`, the loop in `sheddriver`, paths in `shedrun`, shared machinery in shed; one stop chain; transient marks only via `shedengine`. (test) — [background](pattern/PATTERN-shed-driver.md)
++- `PATTERN-dobby-runs` — Starting or holding a board task's run: only its parent's dobby, started with its orch bar `lym adopt --no-orch`; front tasks only via `fronttask`; an adopt pause lifts only by hand. — [background](pattern/PATTERN-dobby-runs.md)
++- `PATTERN-run-records` — Writing a run's friction note, usage record or project record: only its one writer, `internal/friction`, shed's usage writer or `lym loom decision add` or `replace`. (test) — [background](pattern/PATTERN-run-records.md)
++- `PATTERN-tolerant-records` — Go-written JSON records: never refuse an unknown key; rewrite via `internal/state`. (test) — [background](pattern/PATTERN-tolerant-records.md)
++- `PATTERN-gate-slot` — Running or clearing a gate: in held `internal/gateslot` slots, verify via `verifytree.Verify`; a cold fixer only via `gatefixer`, judged by Go's re-run. (test) — [background](pattern/PATTERN-gate-slot.md)
++- `PATTERN-sole-parsers` — Parsing an on-disk format its background lists, or classifying a plan ref: only its sole parser. (test) — [background](pattern/PATTERN-sole-parsers.md)
++
++## Agents and prompts
++
++- `PATTERN-stencil-ownership` — Reading or writing a prompt, spec or stencil: read at call time via `stencilstore`; engine text in engine blocks; a spawned role's stencil renders the parent and edit directives. (test) — [background](pattern/PATTERN-stencil-ownership.md)
++- `PATTERN-heddle-instructions` — Rendering or writing agent instructions: heddle entries only via `heddleengine`; lym's own instructions in its code, stencils, specs or heddle's shipped layer. — [background](pattern/PATTERN-heddle-instructions.md)
++- `PATTERN-reed-panes` — Spawning an agent or touching its pane: an interactive tmux session through reed, never headless; text typed only via guarded paths; the wait mark is display only. (test) — [background](pattern/PATTERN-reed-panes.md)
++- `PATTERN-agent-addressing` — Naming or messaging an agent: names only via `internal/agentname`; messages only through creel; across hubs daemon to daemon with the sender confirmed, authority only for a trusted hub's orch. (test) — [background](pattern/PATTERN-agent-addressing.md)
++- `PATTERN-shuttle-provider-seam` — Touching a provider or shuttle run: specifics only under `internal/shuttleengine/<engine>`, model-specs via `NewModelChoice`, a strand stopped via the stop verb, a negative finish after `allOutputFilesExist`. (test) — [background](pattern/PATTERN-shuttle-provider-seam.md)
++- `PATTERN-shell-guard-table` — Guarding a shell command or building a pane-shell string: only `internal/shellguard`'s table, every engine rendering every row, and `internal/shell`, importing only stdlib.
++
++## Processes and waits
++
++- `PATTERN-child-processes` — Starting or ending a process: log the spawn via `internal/logger`; its starter waits on it, bar a double fork's intermediate; a run's processes register in `internal/runproc` and end only through it; a pinned or spawned lym command names its binary via `selfexec.LymBinary`. — [background](pattern/PATTERN-child-processes.md)
++- `PATTERN-daemon-wakeups` — Waiting: an unbounded wait wakes at most once a second and backs off while idle; a wait an agent blocks on takes its cap from the keep-warm resolver. (test) — [background](pattern/PATTERN-daemon-wakeups.md)
++
++## Testing
++
++- `PATTERN-test-speed` — Writing or running a test: via `lym gate test` by gate key; one `tiergate.Require` tier, lowest that fits; it pins behavior no other test covers, which the gate's redundancy report checks; skips, clocks, `t.Parallel`, `//lym:seam` and `//lym:watch` per the background. (test) — [background](pattern/PATTERN-test-speed.md)
++- `PATTERN-test-isolation` — Testing package: hermetic git and `tmuxkit.Main`; shared support in one `internal/testkit/<kit>/`; hub fixtures via `hubforge`. (test) — [background](pattern/PATTERN-test-isolation.md)
++- `PATTERN-test-only-code` — Writing a function only tests call: it lives in a `_test.go` file or a test-support package (`internal/testkit`, `gitkit`, `hubforge`), never a production file; every other function is reachable from a `main` package. (test) — [background](pattern/PATTERN-test-only-code.md)
++
++
++
++- Read every background file under pattern/ that the entries above link to and that touches what you are about to change.
++- These constraints are BINDING: a change that violates one is wrong even if the verify command passes.
++- If a constraint conflicts with anything else in this prompt, the constraint wins — state the conflict and the entry where your output records its reasons instead of silently picking one: a `Pattern-Departure:` trailer for a commit you make (see `loom-plan-spec.md`'s `## Pattern-Departure trailer`) and `## Shared Decisions` for a plan.
++
++## Friction note — optional, only if something went wrong
++
++Writing this note is **optional**.
++An absent note is the normal outcome and never an error — most sessions produce nothing here and that is correct.
++
++Write a note **only when something actually went wrong** while you were editing code:
++a confusing instruction, a tool that misbehaved, a constraint that contradicted itself, a dead end you had to back out of,
++anything that cost you real time or nearly derailed the work.
++
++If you decide to write one, put a title line naming what you were doing,
++followed by one or two short paragraphs of freeform markdown describing the friction.
++There is no schema to follow.
++Write it to exactly this path, with no filename of your own choosing:
++
++/home/knatte/Code/loomyard-LYMHUB/codex-writer-bench-neve-weft/.lym/scratch/bench-wt/_lym/loom/friction/Darn-Write.md
++
++## Step 1 — Read the task
++
++Your scope for task `ide-beam-readme-preview` is the decision record at `/home/knatte/Code/loomyard-LYMHUB/codex-writer-bench-neve-weft/.lym/scratch/bench-wt/_lym/discussion/decision-record.md`.
++Its `## Goal` holds the board entry's body, and the `Added after Discussion` entries over it amend the body and win where they differ.
++lym wrote the record, and the support log beside it, from the board entry before this session: you never write or edit either file.
++The record's format is defined at `/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/loom/loom-discussion-spec.md`; read that spec only for the format, it is authoritative and this prompt does not restate it.
++
++## Step 2 — This spawn's work
++
++Prior work, which you continue from when it is not `(none)`:
++
++(none)
++
++When the prior work is not `(none)`, the commits already on the task branch are yours from an earlier spawn: continue from them and fix what the prior work names, never restart the change.
++When it is `(none)`, this is the first spawn and the branch holds no work of yours yet.
++
++## Step 3 — Check the entry before any code
++
++Check whether landed work, another board entry or another run overtook or contradicts the record:
++
++- Read `lym board list`, every entry that touches the task and every board note titled `Decision for ide-beam-readme-preview:` for it, and `lym loom peers` for the runs in flight and the parent's commits since the fork.
++- An ordinary misalignment you settle yourself.
++- When the entry is plainly outdated, and no `Added after Discussion` entry in the record answers it, you stop:
++  - With a parent, send it a message with `lym creel post --parent --expect-reply "<text>"` naming what overtook or contradicts the entry.
++    Ask it to record its answer with `lym loom decision add`; then end your turn to wait.
++    That verb appends an `Added after Discussion` entry to the record and types a line into your pane naming it.
++    On any message from your parent, re-read the record, and follow the entry you find over the board entry's body.
++  - With no parent, a `Decision for ide-beam-readme-preview:` note never settles the stop: an outdated entry with no `Added after Discussion` entry answering it stops you again, whatever note answers it.
++    Write the change description, your one output file, as a stop report in the final-summary spec's form, naming the outdated entry, what overtook or contradicts it, and as the way forward `lym loom decision add` and then `lym loom resume`, never a board note.
++    Then create the stop marker, an empty file, at `/home/knatte/Code/loomyard-LYMHUB/codex-writer-bench-neve-weft/.lym/scratch/bench-wt/_lym/shed/ide-beam-readme-preview/stop-marker`, and end your turn with no commit.
++- When the task's body names a stop condition and you find it holds, you stop.
++  Write the change description, your one output file, as the stop report with the content the body asks for, in the final-summary spec's form.
++  Then create the stop marker, an empty file, at `/home/knatte/Code/loomyard-LYMHUB/codex-writer-bench-neve-weft/.lym/scratch/bench-wt/_lym/shed/ide-beam-readme-preview/stop-marker`, and the condition stop marker, an empty file, at `/home/knatte/Code/loomyard-LYMHUB/codex-writer-bench-neve-weft/.lym/scratch/bench-wt/_lym/shed/ide-beam-readme-preview/condition-stop-marker`, and end your turn with no commit.
++  Stop this way only on a condition the body's own text names, never on one you infer.
++
++## Step 4 — Make the change
++
++1. When the task starts from a reported test failure, ask your parent before you diagnose it or make any edit:
++   send `lym creel post --parent --expect-reply "<text>"`, then end your turn to wait.
++   The text names the test exactly and the tier it belongs to,
++   and asks the parent to run that test once on your base through `lym gate test`.
++   When the parent reports that the run's report shows the named test ran and passed,
++   the failure no longer reproduces on your base: the entry is one that landed work overtook, and Step 3 settles it.
++   When the report does not show the named test ran, because it was skipped for another tier or matched no test,
++   diagnose the failure as usual.
++   Edit the repository to make the change.
++   Follow the existing patterns, and the PATTERN entries in this prompt.
++   Each commit is one change, with its own reads and edits.
++2. Hand work that needs no overview of the change to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "sonnet"`: a batch of lookups, and per-package work whose edits you have already decided, one subagent per package, each owning its own files.
++   Launch every subagent of a batch together in one message.
++   Give each Agent call the `effort`, and each prompt the skills, that the subagent passage of your system prompt names.
++   A fresh subagent sees none of this session, so each prompt names the files the subagent owns and the edits to make, and tells the subagent to run no `lym gate test`.
++   Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
++3. Run no `lym gate test` yourself.
++   Once you end your turn, the row's verify gate tests your committed tree, and a cold fixer clears its failures before you hear of them.
++   You are re-prompted only with what the fixer leaves: act on that alone.
++4. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
++   the repository's overview doc when a module table or execution stack it shows changes;
++   and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.
++5. Apply each bullet of the record's `## PATTERN changes` section to `PATTERN.md` in your own commits.
++6. Commit on the task branch in small, coherent commits.
++   Never push: the landing steps that follow push the branch.
++
++## Step 5 — Write the change description
++
++Write the change description to `/home/knatte/Code/loomyard-LYMHUB/codex-writer-bench-neve-weft/.lym/scratch/bench-wt/_lym/landing/summary.md`, in the format the final-summary spec defines at `/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/loom/loom-final-summary-spec.md`.
++Read that spec for the format; it is authoritative and this prompt does not restate it.
++Write the description for a reviewer who knows the codebase but has not seen this session, and never describe the session's own process.
++
++Before handing off, run `lym loom validate-description` and fix every finding it reports.
++A clean `validate-description` run is the last thing you do before you end your turn.
++
++## A scope correction from your parent
++
++Your parent records a scope correction with `lym loom decision add`, which appends an `Added after Discussion` entry to the decision record and types a line into your pane naming the new entry.
++On that line, or when a message from your parent carries a correction, re-read the record's `Added after Discussion` entries and follow them over the board entry's body.
++When the message names a correction the record does not yet hold, ask your parent to record it, follow the message meanwhile, and name it as an unrecorded parent correction in the change description's design decisions.
++You never run `lym loom decision add` yourself; the verb refuses a task session.
++
++No step changes this task's own board entry's body or scope, because the run's board lock refuses such a change.
++The landing's status write, a `run_settings` write, a step that writes another board entry and a step that changes the board module's code stay allowed.
++A follow-up you file goes on the board as a note, never as a task, and you never promote a note: only the operator decides what becomes a task, and the board refuses a run's agent that creates or promotes one.
++When the board entry or the decision record asks for such a step, leave it out from the start and ask your parent to record the drop with `lym loom decision add`.
++Until the record carries that `Added after Discussion` entry, name the omission in the change description's design decisions as an unrecorded parent correction.
++Once the entry exists, the omission is no deviation from the amended board entry.
++With no parent to ask, stop and report the step.
++The route admits a drop of an own-entry step only: no other step is left out through it.
++
++## The sealed expectation
++
++The changes the task is expected to make to the captured behavior are sealed in `_lym/drift/expected.yaml` before you start.
++Read it to see which captured values may change; you never edit it.
++The `drift` gate entry checks after each turn that every changed value of the capture is covered by the expectation, and fails naming each value outside it.
++Fix such a value in the code yourself.
++When the change is intended, leave it: only the run's parent amends the expectation, at the Stuck that follows.
++`lym drift check` runs the same check on demand.
++
++## What happens after you hand off
++
++The handoff checks the change description and re-prompts you in this same session with the findings.
++It then runs a verify scoped to your diff on the committed tree.
++When it fails, you are re-prompted in this same session with its findings: fix them with new commits, then hand off again.
++A re-prompt never starts a new session or a new branch.
++
++A refusal that names a hub-wide setting, such as the verify command, is the parent's to resolve, never the operator's.
++Report it to your parent and wait for its answer.
+diff --git a/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/report.md b/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/report.md
+new file mode 100644
+index 00000000..02e722e7
+--- /dev/null
++++ b/docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-15/report.md
+@@ -0,0 +1,92 @@
++# Codex `astra[high]` as the darn writer, replayed once on `ide-beam-readme-preview` (Neve)
++
++Bench of 2026-11-15, level 2 of `codex-support-levels` (R2): the darn writer's work only, one Codex session, nothing landed or pushed.
++Input: the darn light task `ide-beam-readme-preview`, landed as `824eb2b6`; its Claude writer's work is the answer key.
++The verdict on level 2 is the operator's; this report states what the one run showed.
++
++## Result
++
++Codex finished the work and its tree passes the gate, but it did more than the entry asked.
++
++- The three files that carry the fix (`internal/ideconfig/template.yaml`, `config_test.go`, `doc.go`) match the landed change, bar one wording choice in `doc.go`.
++  `template.yaml` and `config_test.go` are byte-identical to the landed ones.
++- It added a new page, `docs/ide-markdown-preview.md` (38 lines), and a pointer to it in `docs/overview.md`.
++  The landed writer changed neither the preview nor the docs about it, and recorded that the preview failure was left undiagnosed.
++- Its change description passes `lym loom validate-description`, but names no design decisions and no hand check, which the landed one does.
++- One session, one commit pair, no re-prompt: about 4 min of wall time against 5 min 41 s for the landed writer, whose figure includes a 2 min 17 s verify gate.
++  Codex's dollar cost is unknown (`codexengine` implements no pricer); its tokens are below.
++
++| | Landed Claude writer | Codex `astra[high]` |
++|---|---|---|
++| Diff | 4 files, +6 −7 | 5 files, +45 −6 |
++| Files beyond the landed four | none | `docs/ide-markdown-preview.md` (new) |
++| Commits | one landing commit | 2 on the scratch branch |
++| Gate on `./internal/ideconfig` | passed in the run's verify gate | tier 0: 7 targets passed; tiers 1 and 2: no target |
++| `validate-description` | clean | clean |
++| Wall time | 5 min 41 s, 2 min 17 s of it the verify gate | about 4 min 8 s, no gate |
++| Model calls | not recorded | 30 in the main session, 2 subagent sessions beside it |
++| Fresh input, cache read, output tokens | 52 (+ 75,069 cache write), 1,474,055, 12,637 | 206,791, 3,718,528, 9,511 (main plus both subagents) |
++| Cost | $0.9231 (`claude-opus-5-5`) | unknown |
++
++Codex's input is the rollout's `input_tokens` less `cached_input_tokens`; it reports no cache-write count.
++The main session alone: 95,796 fresh, 2,128,640 cached, 5,954 output.
++
++## What the run did
++
++The prompt is the Darn-Write stencil as it stood at the base `055ef994`, filled as `darnengine` fills it (`data/prompt.md`).
++A stencil diff from the base to this branch's head shows no change in the darn, parent, edit or pattern stencils.
++The decision record and support log are the landed run's, byte-identical to its archive tag `archive/ide-beam-readme-preview/afd97069da36` in the weft repository.
++
++The session read the prompt, the record, the specs and a dozen files, then spawned two subagents (`preview_lookup` and `beam_defaults`) through `spawn_agent`.
++It edited `template.yaml`, `config_test.go`, `doc.go` and `docs/overview.md` with `apply_patch`.
++It then fetched upstream VS Code sources through its web tool, wrote the new page and a longer `overview.md` sentence, committed twice and ran `lym loom validate-description`.
++`data/codex.diff` is its diff, `data/landed.diff` the landed one and `data/codex-summary.md` its change description.
++
++## Diff against the landed one
++
++- **Scope.**
++  The fix is the same.
++  The extra page is the whole difference: the record's idea says to settle whether lym's settings are at fault before changing them, and offers no documentation task.
++  Codex settled it by source reading and published the reasoning as a page, where the landed writer left it open and told the operator what to check by hand.
++- **Correctness.**
++  The page links VS Code `1.100.0` sources by line number, while the landed run's reviewer found `1.142.0` installed on the machine.
++  It also states behavior of `lym ide spawn` and `lym ide open` that this report did not audit.
++  The landed review checked its own premises against the installed VS Code and the stored bisect state; Codex's summary says the affected window's state was unavailable.
++- **Comments and prose.**
++  The `doc.go` sentence (`The template opens no files for the prime, a beam or a task;`) is accurate and in tone.
++  The new page hard-wraps mid-phrase at a fixed column, which the house prose rule forbids; the landed prose uses semantic line breaks.
++  The summary says "Gate tests are reserved for the handoff verifier", which describes the session's process; the description spec says to describe the change.
++  It pins an upstream version and line numbers, perishable specifics the prose rule says to avoid.
++- **Review rubric.**
++  The landed run's code review returned `APPROVED` with no finding.
++  This report ran no review of the Codex diff, so it makes no claim that the review would pass.
++
++## Faults on the way
++
++- **Sandbox.**
++  None seen: edits, `go build`, two commits and `lym loom validate-description` worked in the scratch worktree, which lies outside the session's own worktree.
++  This report did not read which sandbox mode `sandbox_mode: auto` resolved to.
++- **Skill load.**
++  None to fail: the prompt asks for none, and the landed writer's skills come from its system prompt, which a Codex session has no counterpart of.
++  The prompt's Agent-tool and `Edit`/`Write` wording matched no Codex tool; Codex read it as `spawn_agent` and `apply_patch`.
++- **Idle wake.**
++  None: the session never idled, so `codex-idle-wake-extra-reminder` did not come into play.
++- **Instruction drift.**
++  It read files with `cat`, `sed -n` and `rg`, which the edit directive tells a session not to use; no guard refused them.
++  It ran no `lym board list` or `lym loom peers`, the first check of Step 3.
++  It ran no `lym gate test`, as Step 4 tells it.
++
++## Setup and deviations
++
++- The scratch worktree is a detached checkout of `055ef994` on a branch of its own, under this task's `.scratch/`, with a copy of the hub's `gate.yaml` so `lym gate test` runs in it.
++  It was not a `lym` worktree, so no board, drift or loom config applied there.
++- The prompt differs from a production render in four places: a two-line preface naming the worktree, since `lym shuttle run` ran from this task's worktree; the no-parent variant of the parent directive, since no parent was live; the scratch paths; and `ide-beam-readme-preview` as the slug.
++- The run used `lym shuttle run --model 'astra[high]'` with one output file, the change description in the scratch worktree.
++- Landed-run figures come from the archive tag's `_lym/usage/session-*.json` and `status.json`.
++  Codex's come from its rollout under `~/.codex/sessions/2026/11/15/`, whose first line is at 18:12:44Z.
++- The scratch worktree and its branch are removed; production code and Bolt are untouched.
++
++## Limits
++
++One run on one small task: it shows a pass on a narrow change, and neither a rate nor how Codex fares on a change that spans packages.
++The landed writer ran with a live parent and a verify gate with a cold fixer after it; Codex had neither, so a gate failure would have shown nowhere.
