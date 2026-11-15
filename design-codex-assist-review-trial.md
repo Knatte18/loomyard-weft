@@ -73,3 +73,9 @@ No task released on OSL-1046 sets `code_assist_reviewer_model`; the settings on 
 ## Plan (operator, 2026-11-09)
 
 The trial continues on Neve with the plan of 2026-11-08: the orch there sets `{"loom":{"code_assist_reviewer_model":"astra[medium]"}}` in the `run_settings` of the next two or three darn tasks the operator releases, with the `review-code` fan, and a darn docs task then reads those rounds.
+
+## Runs chosen (operator, 2026-11-15)
+
+The three darn members of beam `adopt-build`, `prime-is-root-beam`, `hub-stop-button` and `machine-restart-shortcut`, carry
+`{"loom":{"code_assist_reviewer_model":"astra[medium]","code_assist_reviewer_fan":"review-code"}}` in their `run_settings`; they run on Neve.
+Once all three have landed, a darn docs task reads their Code-Review rounds and gives the verdict.
