@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-15 19:07 UTC; every age below is as of then.
+Rendered 2026-11-15 19:08 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -94,7 +94,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T15 | `draft` **Codex as darn writer, replayed on a landed task, on OSL-1046** | [`codex-writer-bench-osl`](design-codex-writer-bench-osl.md) | darn · docs |  | 59m<br>58m | codex, shuttle |
+| T15 | `draft` **Codex as darn writer, replayed on a landed task, on OSL-1046** | [`codex-writer-bench-osl`](design-codex-writer-bench-osl.md) | darn · docs |  | 59m<br>59m | codex, shuttle |
 
 ### Notes (3)
 
@@ -157,7 +157,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **The arbiter becomes a one-shot fixer that may edit, not only resume the halted row** | [`arbiter-one-shot-fixer`](design-arbiter-one-shot-fixer.md) | darn · solid | Code-Bouncer | neve | 1h<br>1h | arbiter, shed |
+| T3 | **The arbiter becomes a one-shot fixer that may edit, not only resume the halted row** | [`arbiter-one-shot-fixer`](design-arbiter-one-shot-fixer.md) | darn · solid | Drift-Recheck | neve | 1h<br>1h | arbiter, shed |
 
 #### Ready (0)
 
@@ -196,7 +196,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>2w | burler |
-| F2 |  | **Orch sessions turn on remote control by themselves, switchable per hub**<br>• Every orch session lym starts or resumes turns on Claude Code remote control, unless the hub switches it off | [`orch-auto-remote-control`](design-orch-auto-remote-control.md) | 47m<br>47m | orch, claude, config |
+| F2 |  | **Orch sessions turn on remote control by themselves, switchable per hub**<br>• Every orch session lym starts or resumes turns on Claude Code remote control, unless the hub switches it off | [`orch-auto-remote-control`](design-orch-auto-remote-control.md) | 48m<br>48m | orch, claude, config |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 5h<br>2h | batten, loom, board |
 | F4 |  | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | 4d<br>4d | config, fabric |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>10d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
