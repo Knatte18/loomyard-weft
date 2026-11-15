@@ -1,6 +1,6 @@
 # A machine registry and holds in Bolt, the owner pause caller retired, and a catch-up from origin after an absence
 
-`bolt-holds-catch-up` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle · draft
+`bolt-holds-catch-up` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle
 
 Decision record: [Sketch](decision-bolt-holds-catch-up.md)
 

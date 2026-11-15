@@ -1,6 +1,6 @@
 # Every transition pushes its records before the run acts, and a takeover entry in the run's records hands it over without replay
 
-`push-before-act-takeover` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle · draft
+`push-before-act-takeover` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle
 
 Decision record: [Sketch](decision-push-before-act-takeover.md)
 
