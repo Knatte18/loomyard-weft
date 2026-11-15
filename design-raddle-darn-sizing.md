@@ -1,6 +1,6 @@
 # Raddle cuts darn families for size and concurrency
 
-`raddle-darn-sizing` · Note · enhancement, shed, loom, darn
+`raddle-darn-sizing` · Task · enhancement, shed, loom, darn · draft
 
 ## Seen (darn-cost-measure, 2026-11-08)
 
