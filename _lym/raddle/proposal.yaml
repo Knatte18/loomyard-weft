@@ -1,0 +1,157 @@
+{
+  "sketch": "claude-account-weights",
+  "shape": "tasks",
+  "board_checked": [
+    {"slug": "parent-reviews-decision-record", "revised": "2026-11-11T19:07:49Z"},
+    {"slug": "codex-engine-trial", "revised": "2026-11-11T08:18:35Z"}
+  ],
+  "parts": [
+    {
+      "slug": "claude-accounts-readers",
+      "title": "claude.accounts machine-layer list, and every lym reader of Claude's config directories reads the known directories",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D1", "D6"],
+      "packages": [
+        {"path": "internal/shuttleengine/claudeengine", "size": 900},
+        {"path": "internal/configengine", "size": 80},
+        {"path": "internal/shuttleengines", "size": 120},
+        {"path": "internal/lymdirs", "size": 10},
+        {"path": "internal/loomcli", "size": 40},
+        {"path": "internal/battencli", "size": 40},
+        {"path": "internal/gatecli", "size": 20},
+        {"path": "tools/tokencount", "size": 60}
+      ],
+      "contract": {
+        "takes": "D1 and D6 of the Sketch's decision record. Today transcripts (transcriptread.go projectsRoot, audit.go claudeProjectDirFor), the session registry (resume.go CheckResume, prober.go ProcessLiveness) hard-code $HOME/.claude; only scope.go's plugin lookup honours CLAUDE_CONFIG_DIR. shuttleengines.RecordReaders builds engines with empty Dirs; its callers are loomcli, battencli, gatecli and tools/tokencount. Carry the Discussion-Review BLOCKING finding resume-live-holder-reads-default-registry: the resume check's live-holder test reads the registries of every known directory as one set by D6's combining rule, whichever directory the check resolves (D2, D6).",
+        "delivers": "the claude.accounts key classified CategoryMachine in the claude module's ConfigSpec, validated and refused from tracked layers; the worktree account record's path named in internal/lymdirs with a tolerant reader (the writer comes in claude-account-record); the known-directories set (listed accounts, existing record directories over told hub anchors, env module and process CLAUDE_CONFIG_DIR, default ~/.claude); transcript reads, plugin lookup and the resume check resolving a recorded directory or the no-record fallback; the liveness read, the live-holder test and LocateSessions reading every known directory",
+        "exports": "the accounts list loader; the record reader; the known-directories resolver; shuttleengines.RecordReaders taking the hub's Dirs and anchors"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "D1: a `claude.accounts` list in the machine layer loads with each entry's name, directory, weight and windows; a duplicate name, a relative path, two entries naming one directory after cleaning, a non-positive weight, an unknown window or a threshold outside 1 to 100 is refused.",
+        "D1: a non-empty `claude.accounts` from a tracked `claude.yaml` is refused, also when the machine file lists accounts, and the refusal names `lym config claude --layer machine`.",
+        "D6: the engine's live-session transcript read, resume check and plugin lookup for a worktree recorded on a fake directory find the files in that directory and not under `~/.claude`.",
+        "D6: the resume check refuses a resume of a session registered as held by a live process only in a listed non-default account's registry, also when the check resolved another directory, and passes one whose registry entry there is dead.",
+        "D6: the liveness read of a session id registered only under a fake account directory finds the session.",
+        "D6: a session registered dead in a listed account's registry, the default directory holding no registry directory, reads dead; one registered alive in any known directory reads alive.",
+        "D6: the session-end usage record of a session run on a listed non-default account carries its transcript's figures.",
+        "D6: `tools/tokencount` counts a landed run's sessions under every known directory, a listed non-default account's and the `env` module's included, with the run's worktree and record gone, and counts a session id found in two of them once.",
+        "D6: a record reader built for a hub finds a session under a listed account's directory with the session's worktree and its record gone."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 8.7,
+      "cost_line": "darn/solid/stored-record fit over 11 runs: $4.72 fixed plus $0.31 per 100 lines times about 1,270 changed lines, tests included; correlation 0.68"
+    },
+    {
+      "slug": "claude-account-record",
+      "title": "The worktree's account record, the weighted pick and the launch's CLAUDE_CONFIG_DIR export",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D2", "D3", "D4", "D7", "D8"],
+      "packages": [
+        {"path": "internal/shuttleengine/claudeengine", "size": 1300},
+        {"path": "internal/shuttleengine", "size": 150},
+        {"path": "internal/shuttleengines", "size": 60},
+        {"path": "internal/lymdirs", "size": 10},
+        {"path": "internal/reedengine", "size": 60},
+        {"path": "internal/orchcli", "size": 60},
+        {"path": "internal/loomshed", "size": 40},
+        {"path": "internal/landingshed", "size": 40},
+        {"path": "internal/loomcli", "size": 60},
+        {"path": "internal/battencli", "size": 40},
+        {"path": "internal/shuttlecli", "size": 40}
+      ],
+      "contract": {
+        "takes": "D2, D3, D4, D7 and D8 of the Sketch's decision record, and claude-accounts-readers' accounts loader, record reader and known-directories resolver. The owners of a resumable provider session id, settling D2's owner list: the orch state record (orchengine.State.SessionID, read with orchengine.LoadState, resumed in orchcli/start.go); the sampler row record (samplerengine.Record.SessionID, samplerengine.ReadRecord, resumed in loomshed/samplersession.go); the PR-Review session record (pullrequest.Record.SessionID, pullrequest.ReadRecord, resumed in landingshed/prsession.go); the shuttle run records (shuttleengine.FindRun, ReadSessionStates); the reed strands' opaque SessionID. The gatefixer record (gatefixer/record.go) holds a SessionID with no exported reader and no resume site found: confirm it is no owner. Dobby stores none. Carry the Discussion-Review BLOCKING finding fresh-launch-session-sources-incomplete: the fresh launch's search covers every owner above, each through its owner's exported reader, told to Prepare and OpenLaunch in the launch spec.",
+        "delivers": "the record writer under the internal/lock write lock; the hub-wide counter file and the smooth weighted pick with credentials-file candidacy and the headroom fallback (a usage file absent reads as headroom until claude-account-statusline writes one); the resume check's D2 rules; the launch, resume and open lines exporting CLAUDE_CONFIG_DIR after the env module's exports, or unsetting it for ~/.claude; ScrubbedEnv naming CLAUDE_CONFIG_DIR; the told session ids in shuttleengine.Spec and OpenSpec, wired by each engine-set caller",
+        "exports": "the record writer and the pick; the usage-file path and the headroom read that claude-account-statusline fills; the launch spec's told session ids"
+      },
+      "depends_on": ["claude-accounts-readers"],
+      "open_risks": [],
+      "criteria": [
+        "D1: with `claude.accounts` empty and no record, a session's launch command and resume command neither set nor unset `CLAUDE_CONFIG_DIR`, and a resume launch writes no record.",
+        "D2: a second session started in a worktree after the first uses the recorded directory, without a new pick.",
+        "D2: a record whose account was removed from the list, its directory still present, is kept and its directory exported.",
+        "D2: a fresh launch with a record whose directory is gone, and no transcript of the worktree in any known directory, picks again and replaces the record;\na resume launch with such a record is refused, naming the directory;\nwith `claude.accounts` empty, a fresh launch and a resume launch with such a record are both refused, naming the directory and the way forward, and neither exports nor writes anything.",
+        "D2: a resume launch in a worktree with no record, with `claude.accounts` listing an account, its transcript in the default directory, records the default directory and advances no count.",
+        "D2: a fresh launch in a worktree with no record, whose resumable sessions' transcripts sit in the default directory, records the default directory and advances no count.",
+        "D2: a fresh launch in a new worktree at a path whose earlier worktree left transcripts in the default directory, with no session of its own, picks.",
+        "D2: a resume launch with no record, its transcript found in no known directory, writes no record.",
+        "D2: a resume launch in a worktree with no record, with `claude.accounts` listing an account, its transcript under the `env` module's `CLAUDE_CONFIG_DIR`, records that directory.",
+        "D2: a resume launch with no record, its transcript in a listed non-default account's directory, passes the resume check and records that directory.",
+        "D2: a fresh launch in a prime whose orch state record names a session whose transcript is in the default directory records the default directory and makes no pick.",
+        "D2: a fresh launch in a worktree with no record, whose only resumable session id sits in a PR-Review or sampler record, its transcript in the default directory and its shuttle run directory gone, records the default directory and makes no pick.",
+        "D3: with weights 2 and 1 and both accounts eligible, six picks give the first account four and the second two, never two of the second in a row.",
+        "D3: an account with a window at or above its threshold, its reset in the future, is passed over; the same account with its reset passed is eligible.",
+        "D3: an account whose directory has no `.credentials.json` is never picked, by the weights or the fallback; with none having one, the launch fails naming the directories.",
+        "D3: with every candidate short, the pick takes the candidate whose latest blocking reset is earliest;\na candidate with two blocking windows is judged by the later of them, and a tie goes to the earlier entry.",
+        "D3: an account added to a list with existing counts has its count set to the lowest count over weight among the other accounts listed at the last pick under an unchanged weight, times its weight, never left at zero;\nan account whose weight was lowered, and a re-added account with a kept count, has its count set to that value the same way, whether that raises or lowers it; an account listed throughout under one weight is never changed.",
+        "D3: after a re-added account's count is set, or a reweighted one's, it is picked only while its count over weight is no higher than that of every other eligible account,\nand an account that gained weight takes no pick before its count over weight reaches the lowest of the others.",
+        "D3: two sessions starting at once in one worktree with no record end with one record and one counter increment.",
+        "D3: a resume and a fresh launch starting at once in one worktree with no record end with one record.",
+        "D4: a session in a worktree whose recorded directory is not the default gets a launch command and a resume command that export `CLAUDE_CONFIG_DIR` as that directory, after any `env` module value.",
+        "D4: a worktree whose recorded directory is `~/.claude` gets a launch command that unsets `CLAUDE_CONFIG_DIR`.",
+        "D4: a session opened with `lym shuttle open` in a worktree recorded on a non-default directory gets launch and resume lines that export `CLAUDE_CONFIG_DIR` as that directory.",
+        "D4: a tmux server spawned from a process whose environment holds `CLAUDE_CONFIG_DIR` carries none of it.",
+        "D7: a prime or beam worktree's orch session and dobby session run under the worktree's recorded directory.",
+        "D8: a session that hits a usage limit keeps its recorded `CLAUDE_CONFIG_DIR` across the wait and its resume."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 10.5,
+      "cost_line": "darn/solid/stored-record fit over 11 runs: $4.72 fixed plus $0.31 per 100 lines times about 1,860 changed lines, tests included; correlation 0.68, and the size runs past the cell's typical run"
+    },
+    {
+      "slug": "claude-account-statusline",
+      "title": "A status line verb records each account's headroom, and the manual check on the second account",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D5", "D9"],
+      "packages": [
+        {"path": "internal/shuttleengine/claudeengine", "size": 500},
+        {"path": "internal/shuttlecli", "size": 250},
+        {"path": "internal/lymdirs", "size": 10}
+      ],
+      "contract": {
+        "takes": "D5 and D9 of the Sketch's decision record, and claude-account-record's usage-file path, headroom read and resolved worktree record",
+        "delivers": "a hidden cobra verb under lym shuttle, wired through internal/shuttleengines as hookBatchingCmd is, that validates the account name and directory, reads the status line JSON and merges each window into the account's usage file under a write lock; the statusLine command in the session settings and the opened session's settings, naming selfexec.LymBinary and changing to the worktree first; D9's manual check on the operator's real second account, run after the operator wires it, its outcome written in the landing notes",
+        "exports": "the status line verb"
+      },
+      "depends_on": ["claude-account-record"],
+      "open_risks": [
+        "The headroom view and the share are per hub (D3), and this machine runs several hubs; a hub that rarely uses an account can pick it while another hub has spent it, until its own session sees the figures.",
+        "Claude Code may change the status line input's field names; the verb then writes nothing and every account reads as having headroom, so the pick falls back to the weights alone."
+      ],
+      "criteria": [
+        "D5: the status line verb, given an account name, its directory and input with both windows, writes that account's usage file with both windows' percentage and reset; given input without `rate_limits`, it writes nothing.",
+        "D5: the verb given a name that does not match `[a-z0-9-]+`, a name no listed account has, or a directory other than the named entry's, writes nothing.",
+        "D5: after a name moves to another directory, the first status line input for it replaces the stored windows whatever their resets.",
+        "D5: a window with `used_percentage` outside 0 to 100, or with `resets_at` more than its window's length past now, is dropped, and the other window is written.",
+        "D5: a stored window is replaced by one with a later reset or a higher percentage at the same reset, and kept against one with a lower percentage at the same reset or an earlier reset.",
+        "D5: a session whose worktree's recorded directory is a listed account's gets session settings carrying the status line command with that entry's current name and directory, after the account was renamed in the list too;\nwith no listed entry for the directory, the settings carry none; an opened session's settings follow the same rule.",
+        "D5: an account whose usage file lacks a window it lists, or has none, reads as having headroom in that window.",
+        "Review: D9's manual check on the real second account is written in the task's landing notes with its outcome."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 7.1,
+      "cost_line": "darn/solid/stored-record fit over 11 runs: $4.72 fixed plus $0.31 per 100 lines times about 760 changed lines, tests included; correlation 0.68"
+    }
+  ],
+  "cost": {
+    "expected_usd": 26.3,
+    "line": "three chained darn/solid parts of about 1,270, 1,860 and 760 changed lines on the darn/solid/stored-record fit ($4.72 + $0.31 per 100 lines, 11 runs, correlation 0.68); the second part's size runs past the cell's typical run",
+    "next_best": {
+      "split": "one tapestry/solid part building D1 to D9",
+      "expected_usd": 31.7,
+      "line": "the tapestry/solid/stored-record fit over 5 runs, $18.86 + $0.33 per 100 lines over the same 3,900 lines, correlation 0.82; the cell's mean run cost $37.98"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "solid", "stored_record": true},
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
