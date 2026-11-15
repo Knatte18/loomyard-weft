@@ -8,6 +8,12 @@ The payoff report `docs/research/speed/testmap-payoff-2026-11-15.md` (commit `05
 and saved the gate 0 to 4.2 s on the packages each diff touched.
 The operator switched upkeep off hub-wide on 2026-11-15 (`test_map_upkeep: false`).
 
+The study `docs/research/speed/testmap-smart-build-2026-11-15/report.md` (commit `b1fc64b4`) reaches the same stance:
+build on command, run no pass per landing, and leave the gate's selection off until its saving on importing packages is measured.
+It finds the cost is `lym`'s bookkeeping, not the method: 205 of 239 s of the measure loop on `internal/loomcli` went to naming covered functions per linked package.
+It estimates a lean build of the full set at about 16 CPU-minutes, about 4 minutes at four tests side by side, against the 44 minutes of the first build.
+Those figures are estimates scaled from one package; the decision is the operator's.
+
 ## Design (operator, 2026-11-15)
 
 1. Coverage maps are built only on command, never by the dobby or after a landing.
@@ -21,3 +27,4 @@ The operator switched upkeep off hub-wide on 2026-11-15 (`test_map_upkeep: false
 
 - What goes: the dobby's upkeep pass and its `test_map_upkeep` key, the upkeep-only parts of `lym gate testmap`, and the planned work that only serves upkeep.
 - The command or commands the operator runs: build the maps, then report and cut redundant tests (`lym gate redundant` today).
+- Whether the on-command build takes the lean measure loop the smart-build report recommends (read each profile once, run queued tests side by side, write once per package).
