@@ -1,6 +1,6 @@
 # Darn's Code-Review reviewer should default to Opus, not Sonnet
 
-`darn-code-reviewer-opus-default` · Note · enhancement, darn, profiles, loom
+`darn-code-reviewer-opus-default` · Task · enhancement, darn, profiles, loom · draft
 
 Imported from [issue #130](https://github.com/Knatte18/loomyard/issues/130).
 
