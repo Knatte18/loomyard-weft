@@ -41,4 +41,12 @@ Rationale: The prime's HEAD and tree move under other writers, so a read of the 
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - batten-recipe-and-overview-say-no-fix (class consistency, severity MEDIUM, open in rounds 2)
+  - batten-seam-over-prime (class decision, severity MEDIUM, open in rounds 2)
+  - template-what-you-may-change-contradicts-fix (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
