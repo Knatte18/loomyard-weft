@@ -505,6 +505,17 @@ Rationale: Each fix in the record is the one the round 3 review proposed, and th
 
 None.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - cancel-removes-record-holding-its-intent (class design, severity MEDIUM, open in rounds 1, 2, 3)
+  - landing-past-merge-stranded-under-hold (class design, severity BLOCKING, open in rounds 1, 2, 3)
+  - open-risks-restate-settled-calls (class consistency, severity MEDIUM, open in rounds 3)
+  - orch-transcripts-to-public-weft (class consistency, severity BLOCKING, open in rounds 2, 3)
+  - pair-push-code-side-before-records-side (class design, severity MEDIUM, open in rounds 2, 3)
+  - release-verb-against-operator-decision (class consistency, severity BLOCKING, open in rounds 2, 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: for each state, a fixture of tracked records alone reads that state through `internal/runfsm` (new), with every `.lym` cache absent; a fixture meeting two states' conditions reads the one earlier in the order.
