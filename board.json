@@ -817,7 +817,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Decision (operator, 2026-11-15)\n\nDarn's Code-Review reviewer is `opus[medium]`, not `opus[high]`.\nCommit `588ae6c5` set `loom.code_reviewer_model: \"opus[high]\"` in every darn block of `internal/runprofile/template.yaml`.\nThe loomyard hub's own `profiles.yaml` already reads `opus[medium]`; the template still seeds `opus[high]` into every new hub.\n\n## Change\n\n- Set `opus[medium]` in every darn block of `internal/runprofile/template.yaml`.\n- Update `internal/runprofile/doc.go` and `internal/runprofile/runprofile_test.go`, which name `opus[high]`, and any doc outside `docs/research/` that does.\n- Leave research reports as they are: they record past runs.\n- Run `lym gate test ./internal/runprofile`.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-15T16:43:55Z",
       "revised": "2026-11-15T16:43:55Z",
       "profile": "docs"
