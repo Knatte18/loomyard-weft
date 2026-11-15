@@ -2,6 +2,7 @@
   "current_producer": "Darn-Write",
   "state": "failed",
   "error": "shedadapters: Darn-Write (seats): shuttle run outcome timeout",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
