@@ -1,4 +1,4 @@
-# Two Claude accounts, the simple design: a fresh session picks by weight and headroom, a resume finds its transcript
+# Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account
 
 `claude-account-pick-simple` · Task · enhancement, claude, shuttle, config · draft
 
@@ -10,22 +10,35 @@ about 3,900 lines, mostly a per-worktree account record with its resume cases (D
 This Motif discusses the simpler design and replaces that record.
 It reuses the previous record below wherever the simple design still holds; it never starts from nothing.
 
-## The simple design (operator, 2026-11-11)
+## The design (operator, 2026-11-15)
 
-- The operator has not decided how and when to switch between accounts, and there is no fixed rule such as "orchs on one account, tasks on another".
-- No per-worktree record, no record's resume rules and no rule for sessions that started before the change.
-- A fresh session picks its account by the configured weight and the accounts' current headroom in each limit window, which the previous record's D1, D3 and D5 already design.
-- A resume does not pick: it looks for its session id in the transcripts of the known account directories (the previous D6 reader) and runs under the directory that holds it.
+- The operator logs in to two Claude accounts on one machine, more later, and decides where and when each is used.
+- The account is chosen per worktree: every session of one worktree runs under one account.
+  A worktree can be switched to another account when needed.
+- A pick algorithm chooses the account of each new worktree, by the configured weight and the accounts' headroom in each limit window
+  (the previous record's D1, D3 and D5).
+- Config can pin accounts, by these keys or their like:
+  - a whole repository to one account;
+  - every orch and beam to one account, so all orch conversations under Remote Control land in one account online,
+    while the worker sessions under them spread over the accounts.
+  The root worktree mostly stays on one account.
 - Usage limits stay reported and waited out, never moved (previous D8).
 
-## Open for the Discussion
+## Keeping it small
 
-- Whether all sessions of one worktree must share an account, and how that holds without a record, for example by a fresh session first looking for the worktree's other sessions' transcripts.
-  Which of a run's sessions read each other's transcripts decides this; the Discussion reads the code.
-- Whether an orch or a beam may be pinned to a named account by a config key: the operator says orchs and beams should preferably sit on a given account, for example.
-  This is a wish, not a rule, and the Discussion weighs it against the simplicity asked for.
-- Which of the previous record's decisions fall away, which shrink and which stay; D1, D5, D6, D8 and D9 are the likeliest to stay.
-- The cost: the previous design was about 3,900 lines over 14 packages, and the aim is a small fraction of it.
+The previous design grew to about 3,900 lines mainly through D2's resume cases:
+a fresh session searched every account directory for the transcripts of every session id that five owner modules store,
+the ids had to be passed in from about 20 places that build the engine set, and sessions started before the change had rules of their own.
+Choosing the account per worktree lets the Discussion cut those:
+
+- The account is set once, when the worktree is made or its first session starts, and every later launch, a resume included, reads it and searches nothing.
+- A worktree with no account set runs as today, under the default config directory, so sessions started before the change need no rule.
+- A switch is an explicit verb on the worktree; the Discussion settles what happens to its resumable sessions,
+  for example whether their transcripts can be copied into the new account's directory, which it checks first.
+- The adopt Motif (`adopt-redesign`) requires state to live in git; the Discussion weighs which part of the per-worktree account fits there,
+  given that account details never go into a pushed file (operator, 2026-11-07).
+
+The aim is a small fraction of the previous size; the Discussion names its estimate.
 
 ## Testing
 
@@ -477,3 +490,4 @@ The accounts and the pick stay machine-local.
 ## Not in scope
 
 Logging the accounts in, and whether the use is within the accounts' and the organisation's terms, which is the operator's to settle.
+"recipe":"motif"
