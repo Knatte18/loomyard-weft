@@ -35,14 +35,14 @@ every piece of state lym keeps, where it lives and whether git holds it.
 
 ## Bugs this design must settle
 
-- **Adopt fails (operator, 2026-11-12 and 2026-11-15):** much housekeeping around every use; no error text recorded.
-  The last adopt record in Bolt (`.lym/adopt/adopt.json`) is from 2026-11-11 14:37 with a green root check.
-- **The orch comes back as a new session:** on 2026-11-15 the hub moved back from OSL-1046 to Neve.
-  The orch watcher on Neve had exited with `owned by machine osl46` (`.lym/orch/watch.log`).
-  The prime orch then came up as a new Claude session with a fresh prompt pointing at the 2026-11-12 handoff,
-  plus the previous session's typed instructions carried over (`internal/shuttleengine/carryover.go`).
-  The previous orch session (`e7be957b…`, a 10 MB transcript on Neve) was not resumed.
+- **Adopt fails (operator, 2026-11-12 and 2026-11-15):** much housekeeping around every use.
+  The state map's section 5 lists the failures on record (A1–A14) with their error text;
+  the 2026-11-15 adopt of `root` itself ended `done` with a green check.
+- **The orch comes back as a new session (A6, A7):** on both recorded adopts the orch's resume was refused because a live process still held the previous session
+  (`session e7be957b-… is held by live process …`), so lym launched fresh with the typed instructions carried over (`internal/shuttleengine/carryover.go`).
   The operator wants the orch to come back as a continuation of its previous session, never as a new one.
+- **The owner machine has two spellings (A8):** the Neve orch watcher exited with `owned by machine osl46`, where earlier lines say `osl-1046`.
+  Owner identity is the machine name, so a second spelling reads as another machine.
 - **Left-over pairs stand forever:** the bench pairs `pwc-opus` and `pwc-fable` still stood three days after their bench landed (report `384d7cb7`).
   The root `loomyard.code-workspace` still lists them, so they show in the operator's VS Code.
   The kept pair of the cancelled raddle run `claude-account-weights` stands the same way,
