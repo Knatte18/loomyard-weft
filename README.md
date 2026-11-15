@@ -88,7 +88,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Codex as darn writer, replayed on a landed task, on Neve** | [`codex-writer-bench-neve`](design-codex-writer-bench-neve.md) | darn · docs | Open-Window | neve | 0m<br>0m | codex, shuttle |
+| T5 | **Codex as darn writer, replayed on a landed task, on Neve** | [`codex-writer-bench-neve`](design-codex-writer-bench-neve.md) | darn · docs | Drift-Await | neve | 0m<br>0m | codex, shuttle |
 
 #### Ready (0)
 
@@ -167,7 +167,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **The arbiter becomes a one-shot fixer that may edit, not only resume the halted row** | [`arbiter-one-shot-fixer`](design-arbiter-one-shot-fixer.md) | darn · solid | Darn-Write | neve | 23m<br>20m | arbiter, shed |
+| T3 | **The arbiter becomes a one-shot fixer that may edit, not only resume the halted row** | [`arbiter-one-shot-fixer`](design-arbiter-one-shot-fixer.md) | darn · solid | Darn-Write | neve | 23m<br>21m | arbiter, shed |
 
 #### Ready (0)
 
