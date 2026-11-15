@@ -285,7 +285,6 @@
       "created": "2026-11-09T20:46:47Z",
       "revised": "2026-11-15T12:25:00Z",
       "order": [
-        "testmap-payoff-measure",
         "testmap-maps-in-weft",
         "testmap-upkeep-cost-and-guide",
         "selector-non-body-miss",
@@ -397,9 +396,7 @@
       ],
       "issues": [],
       "recipe": "tapestry",
-      "depends_on": [
-        "testmap-payoff-measure"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `testmap-checked-in`.\n\nTakes: the maps under \u003cbolt\u003e/.lym/testcover/, fabricengine's scoped weft commit (CommitRecordsPaths), SpawnStatusPush, ReconcileOrigin, and loomcli's unexported push verdict in prepush.go\nDelivers: maps tracked under each worktree's _lym/testcover/, written compact and only on change, committed and pushed by lym gate testmap in the prime or a task, tolerated by preflight and committed before a weft pull, with upkeep off by default and a one-time import of the bolt maps\nExports: testcover.Dir on the worktree's anchor, a scratch accessor for the exit record, a compact form of state's JSON writer, and one exported fabricengine function holding the run-scope push verdict that loomcli's pre-push check and the verb both call\n\nThe part changes these packages:\n\n- internal/gatecli (about 900 changed lines)\n- internal/fabricengine (about 450 changed lines)\n- internal/testcover (about 250 changed lines)\n- internal/loomcli (about 200 changed lines)\n- internal/state (about 80 changed lines)\n- internal/beamcli (about 40 changed lines)\n- internal/runproc (about 30 changed lines)\n- internal/dobbyengine (about 30 changed lines)\n- internal/preflight (about 30 changed lines)\n- internal/lymdirs (about 15 changed lines)\n- pattern (about 15 changed lines)\n",
@@ -515,29 +512,6 @@
       "order": [
         "adopt-redesign"
       ]
-    },
-    {
-      "id": 1367,
-      "handle": "T6",
-      "slug": "testmap-payoff-measure",
-      "title": "Measure whether coverage maps pay off: incremental upkeep time, load on other runs, gate time saved",
-      "kind": "task",
-      "labels": [
-        "research",
-        "gate",
-        "testkit"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Goal\n\nMeasure whether coverage maps pay for themselves, before `testmap-maps-in-weft` builds their check-in.\nThe operator suspects the upkeep takes far too long, goes stale fast, and slows every other run by the load it puts on the machine (2026-11-15).\n\n## Inputs\n\nExactly three landed commits from the last two weeks that change Go code: one small (under 100 changed lines), one medium (100 to 500) and one large (over 500).\nName the three commits and their sizes in the report.\nThe maps are the ones under `\u003cbolt\u003e/.lym/testcover/`, built on 2026-11-12.\nCopy them into the task's own scratch space and work only on the copy: never write, rebuild or remove the maps under Bolt.\n\n## Measurements, one run each, no repeats\n\nFor each of the three commits:\n\n1. **Incremental upkeep:** plan the upkeep for the commit's diff the way `testcover.PlanUpkeep` does, re-measure the affected entries on the copy, and record the wall time and the number of tests and packages re-measured.\n2. **Load on a concurrent gate:** run the tier-1 gate of one package the diff touches twice, once alone and once while step 1's re-measure runs, and record both wall times.\n3. **Gate saving:** for the packages the diff touches, record the tests the maps select against the whole packages,\n   and the gate wall time of the selected tests against the whole packages.\n\nRun every gate through `lym gate test`, never a raw `go test`.\nCheck the system log for sleep windows over each measurement, and repeat a measurement that a sleep window crosses, once.\n\n## Report\n\nA report under `docs/research/speed/` with the three commits, a table of the measurements, and a short verdict:\nwhether an upkeep pass after a typical landing costs less than the gate time the maps save before the next landing,\nand how stale the maps grow when upkeep runs only by hand.\nIt names facts; the decision on `testmap-maps-in-weft` is the operator's.\n",
-      "status": "done",
-      "created": "2026-11-15T12:04:27Z",
-      "revised": "2026-11-15T12:04:27Z",
-      "profile": "docs",
-      "project": "test-suite-trim"
     },
     {
       "id": 1369,

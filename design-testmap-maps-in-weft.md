@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-testmap-maps-in-weft.md)
 
-Depends on: [`testmap-payoff-measure`](design-testmap-payoff-measure.md)
-
 Filed from the Sketch `testmap-checked-in`.
 
 Takes: the maps under <bolt>/.lym/testcover/, fabricengine's scoped weft commit (CommitRecordsPaths), SpawnStatusPush, ReconcileOrigin, and loomcli's unexported push verdict in prepush.go
