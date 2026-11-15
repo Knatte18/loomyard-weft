@@ -781,6 +781,32 @@
       "body": "Imported from [issue #128](https://github.com/Knatte18/loomyard/issues/128).\n\n/home/AD.NORCERESEARCH.NO/hanf/Code/NORCE-DrillingAndWells/DrillOpPlan-LYMHUB/adopt-models-sim/.scratch/selfreport-merge-parent-slug.md\n\n## Issue comment, 2026-11-13\n\nOperator's expectation: a run's directory `_lym/shed/\u003cslug\u003e/` should be cleaned up when the run finishes (after Land and Worktree-Teardown). Here the first merge-in's run directory from 2026-11-10 was still in the prime with state `done`, which is what made batten refuse the slug. So the fix is that teardown removes the finished run's directory (and its task branch), not only that merge-parent picks a fresh slug.",
       "created": "2026-11-15T11:34:44Z",
       "revised": "2026-11-15T11:34:44Z"
+    },
+    {
+      "id": 1364,
+      "handle": "T3",
+      "slug": "lym-state-map",
+      "title": "Map every piece of state lym keeps, where it lives and whether git holds it",
+      "kind": "task",
+      "labels": [
+        "research",
+        "batten",
+        "tender",
+        "dobby",
+        "orch",
+        "fabric",
+        "loom"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Goal\n\nMap every piece of state lym keeps for a hub and its runs, as the groundwork for the Motif that redesigns adopt.\nThis is a read-only study: it reads code and the records on this machine, runs no adopt, starts no run and changes no code.\n\n## What the report holds\n\n- Every piece of state lym keeps: what it is, the file or place it lives in (`.lym/` in the prime, Bolt, each pair and its weft, `~/.claude`, tmux, creel, `/tmp`), and the code that writes and reads it.\n- For each: whether git holds it, on which branch or repository, and whether it is pushed when it changes.\n- For each that git does not hold: what breaks when another machine lacks it, and whether lym could rebuild it from pushed state.\n- The steps `lym adopt` takes today (since the 2026-11-11 rework, commits `0deeb9b9` to `90d11895`),\n  each with the state it reads and writes, and which of them can fail when the old owner's machine is off or holds unpushed work.\n- The adopt failures on record: the adopt records under `_bolt/.lym/adopt/`, the board notes the Motif bundles, and the logs they name.\n- The states a run passes through today, as batten, loom, dobby and tender record them, as a first draft of one FSM.\n\n## Bounds\n\nThe report lands under `docs/research/` as a commit.\nIt names facts and sources; the design is the Motif's.\n",
+      "status": "draft",
+      "created": "2026-11-15T11:37:53Z",
+      "revised": "2026-11-15T11:37:53Z",
+      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
