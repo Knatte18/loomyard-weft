@@ -22,7 +22,12 @@ It reuses the previous record below wherever the simple design still holds; it n
   - every orch and beam to one account, so all orch conversations under Remote Control land in one account online,
     while the worker sessions under them spread over the accounts.
   The root worktree mostly stays on one account.
-- Usage limits stay reported and waited out, never moved (previous D8).
+- A worktree whose account runs out midway switches to another account of the machine; this replaces the previous D8.
+  Every spawn of an agent reads the worktree's account at that moment, so once the machine changes it, the next spawn runs under the new account.
+  A fresh session needs nothing more.
+  A resumed session has its transcript under the old account's directory:
+  the Discussion checks first whether a transcript copied into the new account's directory resumes, and otherwise the session starts fresh.
+  A usage limit is waited out only when no account of the machine has headroom.
 
 ## Accounts follow the machine (operator, 2026-11-15)
 
