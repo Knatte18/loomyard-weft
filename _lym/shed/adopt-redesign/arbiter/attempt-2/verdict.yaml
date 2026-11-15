@@ -1,0 +1,8 @@
+verdict: resume
+reason: |-
+  Review escalation at round 3, cause hard-cap. The open design-wrong findings (F1 landing past the parent-side merge, F2 the --release removal, F5 pair push order, F6 the cancelled record after a remove-cancel, F7 the admission bound and the upgrade hold) are each answered by the fix the round 3 fixer already made in the decision record, and F3 and F4, both mechanical, are folded in too. Each fix is the one the review proposed. The code it names holds: finalize.go marks the board done before pushParent, replay.go reads past-merge from the local parent branch, PushPairAnchored has a code side and a records side, battencli removePairAndBranch discards the task branch on origin, and pauserecord.Admit, fabricengine.StatusPushLockWait and pairteardown Request.Local exist. The fixer disputed and deferred nothing. I recorded the ruling as an arbiter decision and accepted the segment.
+verbs:
+  - |-
+    lym loom decision add adopt-redesign --by arbiter --title "Round 3 review findings answered by the round 3 fixes" --decision … --rationale …
+  - |-
+    lym loom circling accept adopt-redesign
