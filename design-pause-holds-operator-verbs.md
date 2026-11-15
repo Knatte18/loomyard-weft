@@ -55,3 +55,31 @@ Invert the default: the gate holds only the processes a pause is meant to stop, 
 - Read first which verbs outside a run call `InstallNetworkGate`, and which of them a pause is meant to hold, such as a push child of a run.
 - Add a test that a paused hub does not hold `board get`, `board list`, `machine name`, `selfreport create` and `lym s`.
 - Make a hold visible: a verb that does wait prints the held line at once instead of staying silent.
+
+
+## From issue #124
+
+Imported from [issue #124](https://github.com/Knatte18/loomyard/issues/124).
+
+## Seen
+
+With the hub under a hub-wide pause (`lym tender pause`), `lym selfreport create` does not file the issue.
+It waits and is held until the pause is lifted, with this message:
+
+```
+lym: held by a hub-wide pause since <time>; it continues after "lym tender resume"
+```
+
+Nothing is filed meanwhile, and a caller without a timeout hangs.
+Two earlier calls on the same hub hung this way, for as long as the pause stood.
+
+## Why it makes no sense
+
+A pause holds agent and network work so runs stop.
+`selfreport` is the way to report that lym is wrong, and a pause is often set because something is wrong, so the report is blocked when it is most needed.
+Filing one issue has nothing to do with the runs the pause protects.
+
+## Idea
+
+Exempt `lym selfreport` from the hub-wide pause, so it files at once while the hub is paused.
+Read first where the pause holds the call, and whether other operator verbs that only report, such as reads and `lym report`, are held the same way.
