@@ -1,6 +1,6 @@
 # Body edits on a discussed task never reach its run
 
-`discussed-body-edits-lost` · Task · bug, board, loom · running · Code-Bouncer
+`discussed-body-edits-lost` · Task · bug, board, loom · running · Code-Burler-Review
 
 Imported from [issue #121](https://github.com/Knatte18/loomyard/issues/121).
 
