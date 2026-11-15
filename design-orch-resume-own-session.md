@@ -1,6 +1,6 @@
 # The orch ends its own earlier Claude process and resumes its session, never launching fresh over a live holder
 
-`orch-resume-own-session` · Task · bug, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle · running · Code-Burler-Review
+`orch-resume-own-session` · Task · bug, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle · running · Code-Burler-Fix
 
 Decision record: [Sketch](decision-orch-resume-own-session.md)
 

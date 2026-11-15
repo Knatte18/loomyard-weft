@@ -29,8 +29,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Study how to build and keep per-test coverage maps cheaply enough to pay off**<br>• `darn: writer fable[high]` | [`testmap-smart-build`](design-testmap-smart-build.md) | darn · docs | Darn-Write | neve | 13m<br>13m | testkit, gate, dobby |
-| T4 | **Measure what sends coverage-map upkeep into whole-package rebuilds, and what a name-following selector would save** | [`testmap-miss-causes`](design-testmap-miss-causes.md) | darn · docs | Darn-Write | neve | 32m<br>32m | testkit, gate |
+| T2 | **Study how to build and keep per-test coverage maps cheaply enough to pay off**<br>• `darn: writer fable[high]` | [`testmap-smart-build`](design-testmap-smart-build.md) | darn · docs | Darn-Write | neve | 14m<br>14m | testkit, gate, dobby |
+| T4 | **Measure what sends coverage-map upkeep into whole-package rebuilds, and what a name-following selector would save** | [`testmap-miss-causes`](design-testmap-miss-causes.md) | darn · docs | Darn-Write | neve | 33m<br>33m | testkit, gate |
 
 ### Ready (0)
 
@@ -47,4 +47,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 5d<br>4h | testkit, gate |
-| E5 |  | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | 30m<br>19m | testkit, gate, dobby |
+| E5 |  | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | 31m<br>20m | testkit, gate, dobby |
