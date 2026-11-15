@@ -1,0 +1,24 @@
+# Relevant files — adopt-redesign
+
+- `docs/research/loom/lym-state-map-2026-11-15.md` — every piece of state lym keeps, adopt's steps and failures, and the first FSM draft
+- `internal/adoptcli/doc.go` — today's adopt worker, record, steps, check and fix loop, most of which D8 replaces
+- `internal/sleepjournal/doc.go` — journal-based sleep reading, used only by reports, not by the runtime
+- `pattern/PATTERN-owner-machine.md` — owner rules, origin reconcile first, passes and the origin-owed marker
+- `pattern/PATTERN-dobby-runs.md` — the adopt pause rule D7 and D8 replace
+- `pattern/PATTERN-lym-files.md` — the `_lym` and `.lym` split D3 makes hold
+- `pattern/PATTERN-pair-remote.md` — the detached per-transition push D2 retires
+- `pattern/PATTERN-shed-driver.md` — where shed transitions and the stop chain live
+- `pattern/PATTERN-run-records.md` — the run record writers the tracked moves sit beside
+- `internal/dobbyengine/state.go` `State`, `LandState`, `ReadyHoldState` — dobby state is notice memory, a cache under D3
+- `internal/boardengine/owners.go` `OwnedElsewhere` — the exact-match owner comparison D5 widens
+- `internal/boardengine/ownerset.go` `SetOwners` — the one owner writer that gains the registry and hold
+- `internal/orchcli/start.go` `BeamUp` — the orch start whose resume fallback D9 changes
+- `internal/shuttleengine/claudeengine/resume.go` `Claude.CheckResume` — the live-holder check D9 acts on
+- `internal/pauserecord/sleep.go` `SleepWatch`, `SleepTolerance` — the sleep detector D6 builds on
+- `internal/fabricengine/spawn.go` `SpawnStatusPush` — the detached push D2 retires
+- `internal/fabricengine/ownerarchive.go` `ArchiveOwnerTips` — the archive D4 and D6 reuse
+- `internal/fabricengine/destroy.go` `DropLocal` — the local-tip archive and reset adopt uses today
+- `internal/hubgeom/parentof.go` `ParentOf` — the one parent resolver every owner read goes through
+- `internal/machinename/machinename.go` `Name` — this machine's only name source
+- `internal/fronttask/fronttask.go` `File` — files the adopt fix task
+- `internal/orchengine/state.go` `State` — holds the orch's session id machine-locally today
