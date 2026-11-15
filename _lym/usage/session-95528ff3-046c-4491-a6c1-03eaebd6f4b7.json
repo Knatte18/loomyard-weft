@@ -1,0 +1,14 @@
+{
+  "session_id": "95528ff3-046c-4491-a6c1-03eaebd6f4b7",
+  "row": "Code-Burler-Review",
+  "role": "code-burler-review",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 50,
+  "cache_write_tokens": 95070,
+  "cache_read_tokens": 1172390,
+  "output_tokens": 24995,
+  "cost_usd": 0.722203,
+  "started": "2026-11-15T12:43:22Z",
+  "ended": "2026-11-15T12:45:21Z"
+}
