@@ -200,14 +200,15 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "hub-stop-button"
+        "hub-stop-button",
+        "adopt-build-revision"
       ],
       "isolated": false,
       "brief": "A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows",
       "body": "## Seen (operator, 2026-11-08 and 2026-11-11)\n\nOSL-1046 and Neve crash often.\nAfter a crash, bringing lym back takes the operator several manual steps:\nfinding every hub and project that was in flight, often three or four, with beams under them,\nand starting each orch session by hand.\nOnce an orch is up, it and its dobby take the runs up again by themselves;\na run whose step was cut off halts (`loop-exited`) and the orch settles it.\nFinding what was running is the hard part, not resuming it.\nVS Code needs nothing: on Kubuntu it reopens the windows it had open by itself.\n\n## Idea (operator)\n\nA simple way to start again every project that was in flight on the machine, such as launcher scripts lym puts on the desktop:\n\n- The launcher brings back a whole project: the hub prime and every beam under it that was live.\n  It opens the hub's one VS Code workspace file, `\u003chub\u003e/\u003crepo\u003e.code-workspace`, which lists every worktree of the hub,\n  the pairs under beams too (built by `hub-workspace-all-pairs`, commit `2409c0f7`; a pair of a project is named `P1: \u003cslug\u003e` there).\n  For the prime and each such beam it opens a terminal outside VS Code in the worktree running `lym s`,\n  which starts the worktree's dobby and orch and attaches to its reed session.\n  The operator never types `lym reed attach`; a running task's window opens from the orch or the Reed status bar's terminal button, so the launcher opens none.\n  The orchs and dobbies then take up the runs; the launcher resumes no run itself.\n- A `lym` verb does the work, so it also runs from a terminal; the desktop launcher only calls it.\n- The launcher is the form the machine's desktop runs: a `.desktop` file on Linux (the freedesktop standard, so KDE, GNOME and others), a `.cmd` file on Windows.\n  Both call the same `lym` verb.\n- lym itself adds and removes the launchers as hubs and beams come and go,\n  and removes a hub's launcher when another machine takes the hub over,\n  so a crash finds the right set already on the desktop; the operator never makes or deletes one by hand.\n\n- A launcher starts only what this machine still owns.\n  One hub, such as loomyard, is worked on from several machines:\n  when OSL-1046 crashes, the operator often goes on from Neve, which takes the hub over,\n  so starting OSL-1046 again must not bring that hub's prime or beams up there.\n  The verb reads the owner of the hub's prime and of each beam, the owner `lym adopt` writes,\n  and skips every one another machine owns, saying which machine holds it.\n\nFixed by the operator: one launcher per hub plus one that starts every hub;\nbeams are included; resuming interrupted runs is left to the orchs;\nnothing another machine owns is started; `.desktop` on Linux and `.cmd` on Windows, added and removed by lym.\n",
       "status": "draft",
       "created": "2026-11-08T14:40:16Z",
-      "revised": "2026-11-15T16:31:05Z",
+      "revised": "2026-11-15T16:33:44Z",
       "profile": "solid",
       "project": "adopt-build"
     },
@@ -384,14 +385,15 @@
       ],
       "recipe": "darn",
       "depends_on": [
-        "prime-is-root-beam"
+        "prime-is-root-beam",
+        "adopt-build-revision"
       ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #122](https://github.com/Knatte18/loomyard/issues/122).\n\n## Seen (operator, 2026-11-11)\n\nTo stop everything on a machine without a reboot, the operator has to run several verbs by hand:\n`lym beam stop` for the orch and dobby of the prime and of each beam, `lym reed down` in each worktree for the tmux sessions, and `lym tender reap` for run processes no run owns.\nThe operator finds this cumbersome; it should be one simple action.\n\n## Idea\n\nA button in the reed status bar, shown only in the prime orch's session, labelled \"stop\" or similar, that takes the whole hub down.\nThe button asks for a yes/no confirmation before it does anything.\n\nRead first what the button must end: the orch and dobby of the prime and of every beam, the reed sessions of the runs' worktrees, and run processes no run owns.\nDecide whether it first pauses the hub, so a run's turn is interrupted cleanly, and what it says it will do in the confirmation.\nThe operator closes terminal windows (Konsole, the VS Code terminal) by hand.\n`machine-restart-shortcut` brings every hub and beam back after a stop or reboot, so the two belong together.\n\n## Placement (operator, 2026-11-15)\n\nThis runs as the last member of the beam `adopt-build`, after the adopt redesign's run FSM, push-before-act, Bolt holds and foreground adopt have landed in the beam.\nBuild the stop on what they deliver: the run FSM and its pause and cancel intents, so a stop leaves every run in a pushed state another start or another machine goes on from.\nThe adopt decision record kept a hub-wide pause machine-local; this button needs no shared pause between machines either.\n",
       "status": "draft",
       "created": "2026-11-15T11:34:30Z",
-      "revised": "2026-11-15T16:25:21Z",
+      "revised": "2026-11-15T16:33:44Z",
       "profile": "solid",
       "project": "adopt-build"
     },
@@ -596,14 +598,15 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "bolt-holds-catch-up"
+        "bolt-holds-catch-up",
+        "adopt-build-revision"
       ],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `adopt-redesign`.\n\nTakes: the holds, registry, catch-up and owner setter from bolt-holds-catch-up; the takeover entry type, its reader and the synchronous pushes from push-before-act-takeover; runfsm's states; adoptcli's fix loop, check, deploy, archives and here paths; the dobby's ended-run teardown and pairteardown\nDelivers: lym adopt running hold, owner, pull, takeover, catch-up, deploy, workspace, check and green clear in the caller's process, re-runnable from tracked state, with the takeover entry writer and its rejected-push retry, and --take-hold denied to agents by a shell-guard row; the worker, adopt record and its readers, verdicts, pause step, the adopt and adopt-hold pause callers, --keep-local, --drop-local and --discard retired, with the upgrade's first read turning standing adopt entries into pause intents and one Bolt hold; the dobby tearing down landed and unkept cancelled pairs, listing kept pairs, writing kept-cancel records for pre-upgrade kept pairs, and tearing down idle orphans after the orphan grace; lym tender resume pushing no pair; the hub workspace file regenerated after each teardown\nExports: adopt's foreground step runner, the takeover entry writer and the orphan grace constant\n\nThe part changes these packages:\n\n- internal/adoptcli (about 2650 changed lines)\n- internal/adoptrecord (about 400 changed lines)\n- internal/dobbyengine (about 350 changed lines)\n- internal/fabricengine (about 150 changed lines)\n- internal/beamcli (about 150 changed lines)\n- internal/orchcli (about 80 changed lines)\n- internal/pauserecord (about 80 changed lines)\n- internal/battencli (about 60 changed lines)\n- internal/shellguard (about 30 changed lines)\n- internal/tendercli (about 30 changed lines)\n- internal/pairteardown (about 30 changed lines)\n- cmd/lym (about 10 changed lines)\n- pattern (about 10 changed lines)\n",
       "status": "draft",
       "created": "2026-11-15T15:57:25Z",
-      "revised": "2026-11-15T15:57:48Z",
+      "revised": "2026-11-15T16:33:44Z",
       "profile": "solid",
       "project": "adopt-build",
       "discussed": true,
@@ -729,14 +732,15 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "adopt-foreground-leftovers"
+        "adopt-foreground-leftovers",
+        "adopt-build-revision"
       ],
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-15)\n\n`lym board list` and `lym board get` give `parent_beam` empty for an entry whose nearest beam is the prime, and `lym board list --text` shows no `P0`,\nwhile the board view and window titles show the prime as `P0`.\nThe prime is a beam, the root one; an empty value reads as \"no beam\".\n\n## Idea\n\n- `parent_beam` names the root beam, as `P0` or its slug, for every entry under the prime, never empty.\n- `lym board list --text` shows `P0` with the other projects, so every view of the board shows the same tree.\n- Every reader of an empty `parent_beam` (orch role, dobby, board verbs) moves to the named root in the same change.",
       "status": "draft",
       "created": "2026-11-15T16:09:02Z",
-      "revised": "2026-11-15T16:24:02Z",
+      "revised": "2026-11-15T16:33:44Z",
       "profile": "solid",
       "project": "adopt-build"
     },

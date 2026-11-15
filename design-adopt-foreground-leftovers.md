@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-adopt-foreground-leftovers.md)
 
-Depends on: [`bolt-holds-catch-up`](design-bolt-holds-catch-up.md)
+Depends on: [`bolt-holds-catch-up`](design-bolt-holds-catch-up.md), [`adopt-build-revision`](design-adopt-build-revision.md)
 
 Filed from the Sketch `adopt-redesign`.
 

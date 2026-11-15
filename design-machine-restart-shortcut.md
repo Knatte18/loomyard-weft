@@ -2,7 +2,7 @@
 
 `machine-restart-shortcut` · Task · feature, orch, reed, termwindow, shortcut · draft
 
-Depends on: [`hub-stop-button`](design-hub-stop-button.md)
+Depends on: [`hub-stop-button`](design-hub-stop-button.md), [`adopt-build-revision`](design-adopt-build-revision.md)
 
 ## Seen (operator, 2026-11-08 and 2026-11-11)
 
