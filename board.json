@@ -209,6 +209,12 @@
       "status": "draft",
       "created": "2026-11-08T14:40:16Z",
       "revised": "2026-11-15T16:33:44Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
       "profile": "solid",
       "project": "adopt-build"
     },
@@ -394,6 +400,12 @@
       "status": "draft",
       "created": "2026-11-15T11:34:30Z",
       "revised": "2026-11-15T16:33:44Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
       "profile": "solid",
       "project": "adopt-build"
     },
