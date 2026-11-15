@@ -740,6 +740,28 @@
       "created": "2026-11-15T17:45:39Z",
       "revised": "2026-11-15T17:48:17Z",
       "profile": "solid"
+    },
+    {
+      "id": 1383,
+      "handle": "T5",
+      "slug": "codex-writer-bench-neve",
+      "title": "Codex as darn writer, replayed on a landed task, on Neve",
+      "kind": "task",
+      "labels": [
+        "research",
+        "codex",
+        "shuttle"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Goal\n\nLevel 2 of `codex-support-levels` (R2): can Codex do the darn writer's work on real lym code as well as Claude did?\nThe bench replays only the writer, never a whole run: no other producer runs, and nothing lands or is pushed.\n\n## Input\n\nThe darn light task `ide-beam-readme-preview`, landed as `824eb2b6`.\nIts Claude writer's work is the answer key: the landed diff, and the run's records on its records branch (writer cost, review rounds and findings).\n\n## The one run\n\n1. Check out the parent of `824eb2b6` into a scratch worktree under this task's `.scratch/`.\n2. Build the writer's prompt the way Darn-Write built it for the landed run, from the task's body as it stood then, pointed at the scratch worktree.\n3. Run it once through `lym shuttle run --model 'astra[high]'` with that prompt.\n4. In the scratch worktree, run `lym gate test` on the packages the diff touches.\n\nExactly one Codex session; no Claude run, since the landed run is the comparison.\n\n## Read\n\n- Did it finish the work, and does the gate pass on its tree?\n- Its diff against the landed one: scope, correctness, comments and prose in the house tone.\n- Cost, wall time and turns against the landed writer's.\n- Any sandbox, skill-load or idle-wake fault on the way (`sandbox_mode: auto`, `codex-idle-wake-extra-reminder`).\n\n## Bounds\n\nChange no production code and nothing under Bolt; remove the scratch worktree at the end.\nThe report goes under `docs/research/codex/`; the verdict on level 2 is the operator's.\n",
+      "status": "draft",
+      "created": "2026-11-15T18:08:22Z",
+      "revised": "2026-11-15T18:08:22Z",
+      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
