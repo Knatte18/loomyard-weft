@@ -1,6 +1,6 @@
 # Darn prompt forbids gate test, so a task from a reported test failure cannot cheaply check whether it still reproduces
 
-`darn-reproduce-reported-failure` · Task · enhancement, darn, stencil · running · Drift-Verify
+`darn-reproduce-reported-failure` · Task · enhancement, darn, stencil · running · Code-Bouncer
 
 Imported from [issue #119](https://github.com/Knatte18/loomyard/issues/119).
 
