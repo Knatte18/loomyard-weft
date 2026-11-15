@@ -525,14 +525,15 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "run-fsm-tracked-records"
+        "run-fsm-tracked-records",
+        "adopt-build-revision"
       ],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `adopt-redesign`.\n\nTakes: runfsm's Act inputs and the batten record from run-fsm-tracked-records; fabricengine's PushPairAnchored, SpawnStatusPush, teardown-lock respawn, pushclassified's rejection path and ArchiveOwnerTips; boardengine's Sync, SpawnSync and pushOwnerCommit; statuscommit and sheddriver's records commit; landingshed's Finalize; runproc's End for a slug\nDelivers: a shed transition that takes a gate admission, commits its records with the code tip it was made with and pushes records side first, code side after, before the next producer starts; an owed push retried on a backoff and shown in lym beam status, which tender's offline pause and resume intents also ride; the per-transition detached push and its teardown-lock respawn retired; synchronous Bolt writes for a run claim, a landing's done and an owner; Finalize pushing the parent branch before its transition and board done; a rejected records push that reads origin's record and hands over on another machine's takeover entry, archiving local tips and the local parent merge; the code-tip wait and its grace\nExports: the takeover entry type and its reader, tested with kit-written entries; the owed-push and code-tip facts runfsm's Act reads; fabricengine's records-first PushPairAnchored and its hand-over result\n\nThe part changes these packages:\n\n- internal/fabricengine (about 1000 changed lines)\n- internal/battencli (about 250 changed lines)\n- internal/sheddriver (about 200 changed lines)\n- internal/loomcli (about 200 changed lines)\n- internal/landingshed (about 200 changed lines)\n- internal/boardengine (about 150 changed lines)\n- internal/statuscommit (about 100 changed lines)\n- internal/shedengine (about 60 changed lines)\n- internal/beamcli (about 60 changed lines)\n- internal/fabriccli (about 40 changed lines)\n- internal/tendercli (about 40 changed lines)\n- internal/tenderengine (about 40 changed lines)\n- internal/pauserecord (about 40 changed lines)\n- pattern (about 30 changed lines)\n",
       "status": "draft",
       "created": "2026-11-15T15:57:25Z",
-      "revised": "2026-11-15T15:57:47Z",
+      "revised": "2026-11-15T16:33:11Z",
       "profile": "solid",
       "project": "adopt-build",
       "discussed": true,

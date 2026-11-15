@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-push-before-act-takeover.md)
 
-Depends on: [`run-fsm-tracked-records`](design-run-fsm-tracked-records.md)
+Depends on: [`run-fsm-tracked-records`](design-run-fsm-tracked-records.md), [`adopt-build-revision`](design-adopt-build-revision.md)
 
 Filed from the Sketch `adopt-redesign`.
 
