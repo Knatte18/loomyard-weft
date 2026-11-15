@@ -43,7 +43,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B4 |  | **A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call** | [`pause-holds-operator-verbs`](design-pause-holds-operator-verbs.md) | 30m<br>29m | tender, git, batten, selfreport |
+| B4 |  | **A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call** | [`pause-holds-operator-verbs`](design-pause-holds-operator-verbs.md) | 30m<br>30m | tender, git, batten, selfreport |
 | B5 |  | **Agent prompt gives no way to run slow golden tests by hand; gate skips them silently** | [`gate-skipped-tests-silent`](design-gate-skipped-tests-silent.md) | 30m<br>30m | gate, dotnet, stencil |
 | B6 |  | **lym gate testmap refusal's way forward names a path that also refuses** | [`testmap-refusal-names-weft`](design-testmap-refusal-names-weft.md) | 30m<br>30m | gate, cwd |
 | B7 |  | **PR-Review deadlocks after a failed pr-review gate when continue is set** | [`pr-review-failed-gate-deadlock`](design-pr-review-failed-gate-deadlock.md) | 30m<br>30m | landing |

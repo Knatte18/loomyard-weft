@@ -27,7 +27,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs |  | 26m<br>22m | batten, tender, dobby, orch, fabric, loom |
+| T3 | `draft` **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs |  | 27m<br>22m | batten, tender, dobby, orch, fabric, loom |
 | T4 | `draft` **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | T3 | 2d<br>21m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 ### Notes (0)
@@ -87,7 +87,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Measure whether coverage maps pay off: incremental upkeep time, load on other runs, gate time saved** | [`testmap-payoff-measure`](design-testmap-payoff-measure.md) | darn · docs | Open-Window | neve | 0m<br>0m | gate, testkit |
+| T6 | **Measure whether coverage maps pay off: incremental upkeep time, load on other runs, gate time saved** | [`testmap-payoff-measure`](design-testmap-payoff-measure.md) | darn · docs | Drift-Await | neve | 0m<br>0m | gate, testkit |
 
 #### Ready (0)
 
@@ -103,7 +103,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 5d<br>2d | testkit, gate |
+| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 5d<br>0m | testkit, gate |
 
 </details>
 
@@ -147,7 +147,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B4 |  | **A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call** | [`pause-holds-operator-verbs`](design-pause-holds-operator-verbs.md) | 30m<br>29m | tender, git, batten, selfreport |
+| B4 |  | **A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call** | [`pause-holds-operator-verbs`](design-pause-holds-operator-verbs.md) | 30m<br>30m | tender, git, batten, selfreport |
 | B5 |  | **Agent prompt gives no way to run slow golden tests by hand; gate skips them silently** | [`gate-skipped-tests-silent`](design-gate-skipped-tests-silent.md) | 30m<br>30m | gate, dotnet, stencil |
 | B6 |  | **lym gate testmap refusal's way forward names a path that also refuses** | [`testmap-refusal-names-weft`](design-testmap-refusal-names-weft.md) | 30m<br>30m | gate, cwd |
 | B7 |  | **PR-Review deadlocks after a failed pr-review gate when continue is set** | [`pr-review-failed-gate-deadlock`](design-pr-review-failed-gate-deadlock.md) | 30m<br>30m | landing |
