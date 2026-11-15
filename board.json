@@ -738,6 +738,26 @@
       "body": "Imported from [issue #119](https://github.com/Knatte18/loomyard/issues/119).\n\nWhat happened: a darn task's board entry asked for a decision based on a test failure seen on an older base. The darn prompt forbids running `lym gate test`, so the agent spent a long stretch tracing the shedverbs loop, keeper and arming code by hand without finding why the loop died. One run of the test, allowed afterwards by the parent, showed it already passes on the current base.\n\nWhy abnormal: the cheapest first step for a task that starts from a reported test failure is to check whether the failure still reproduces on its own base. The no-gate-test rule blocks that step, so the agent pays for manual diagnosis of a failure that no longer exists.\n\nWhat to do: let a darn task that starts from a reported test failure run the named test once through `lym gate test` before diagnosing, or have the darn prompt tell the agent to ask its parent for that single run up front.\n\nProvenance: task slug smoke-died-driver-wording; note Darn-Write.md.",
       "created": "2026-11-15T11:34:36Z",
       "revised": "2026-11-15T11:34:36Z"
+    },
+    {
+      "id": 1362,
+      "handle": "B10",
+      "slug": "gatecli-flaky-tests",
+      "title": "Flaky gatecli tests fail the first verify run and pass on rerun",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate"
+      ],
+      "issues": [
+        118
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #118](https://github.com/Knatte18/loomyard/issues/118).\n\nWhat happened: the webster integration-suite triage recorded two tests in the gatecli package that failed the first verify run and passed or vanished on rerun, so they were classed as flaky and not as regressions.\n\n- gatecli TestGateTest_DetachedRun, subtest 'a passed lease ends a --wait gate line through its child, which kills its tiers and frees its slots'\n- gatecli TestRedundancyStep, subtest 'ABrokenLymBuildAndACorruptMapAreErrorLinesThatLeaveTheOtherTestsJudged'\n\nWhy it is abnormal: a verify run should give the same result on an unchanged tree. Both tests exercise process, lease and slot handling and a lym build, which points to timing or shared-state dependence, so they can fail a verify intermittently and cost reruns.\n\nWhat to do: run both tests repeatedly, including under load and in parallel with other gatecli tests, find the race or shared state, and make them deterministic.\n\nProvenance: task machine-name-verb; note webster-verify-triage.md.",
+      "created": "2026-11-15T11:34:39Z",
+      "revised": "2026-11-15T11:34:39Z"
     }
   ],
   "prime_owner": "neve",
