@@ -1,61 +1,46 @@
-# The orch ends its own earlier Claude process and resumes its session
+# The orch ends its own earlier process and resumes its session
 
-On both recorded adopts, the orch's earlier Claude session stayed alive on the adopting machine after its strand was removed.
-It held the transcript, so the resume check refused, and `internal/orchcli/start.go` fell back to a fresh launch on any resume error.
-This change makes the orch start recognise its own earlier process, end it and resume the same session id.
-It launches fresh only when this machine holds no transcript of the session.
-It also makes the orch watcher end every process this machine runs for a subject another machine now owns (D9, D10).
+An orch start used to fall back to a fresh launch on any failed resume.
+On both recorded adopts the orch's earlier Claude process was still alive after its strand was removed and held the transcript, so the resume refused and the start launched a second orch with only the carry-over.
+Now the orch registers its Claude process, a start ends its own earlier holder and resumes the same session, and a fresh launch happens only when this machine has no transcript.
 
 ## What changes
 
-- **The orch's Claude process is registered.**
-  After each launch, `BeamUp` reads the live provider process holding the started session and registers it with `runproc.RegisterOrch` under the new `runproc.RoleOrch`.
-  The owner is the beam's slug, or `runproc.HubOwner` for the prime, the same owner the worktree's dobby uses.
-  The record outlives the strand's removal and is pruned once the process dies.
-  A process that cannot be found or registered is a warning on the report, and the launch stands.
-- **A live holder is ended only when it is ours.**
-  `claudeengine.CheckResume` now refuses a held session with a `*shuttleengine.SessionHeldError` naming the pid.
-  When `runproc.IsRegistered` names that pid as this worktree's orch, the start ends it through `runproc.EndRole` and resumes the same session id.
-  Any other holder refuses the start, naming its pid, with the way forward "exit the session of process N, then run `lym beam start`".
-  The start launches nothing fresh over it.
-  An orch the pre-upgrade lym launched is unregistered, so the first start after the upgrade refuses over it once.
-- **Fresh launch only without a local transcript.**
-  A missing transcript now refuses with an error wrapping `shuttleengine.ErrNoTranscript`.
-  Only that refusal launches fresh, through shuttle's existing carry-over.
-  The report's warnings say the launch is fresh because this machine holds no transcript, with the count of carried instructions, and `abandoned_session` names the session given up.
-  Every other failed resume fails the start with a way forward, where it used to launch fresh.
-- **The watcher ends a moved subject's processes.**
-  `orchengine.OwnerWatch` gains `End`, which `ownerTick` calls before it stops the strand; a failed end is the tick's error and the next tick retries.
-  `orchcli` wires it to `endSubjectProcesses`, which picks the registered owners whose `boardengine.AdoptSubject` is the beam, or the root for the prime.
-  It hands them to the new `runproc.EndSubject`.
-  `EndSubject` ends each run's processes, then the subject's own records with the orch's Claude process, and the dobby last.
-  It leaves the hub's adopt worker and board syncs alone, since they serve every subject.
-  The dobby's handover and the catch-up in `bolt-holds-catch-up` can call the same function.
-- **D10 holds as it was.** The session id stays in `orchengine.State` under `.lym/orch/`, which is never tracked, and nothing carries a transcript between machines.
-
-## Supporting changes
-
-- `shuttleengine` gains the optional `SessionHolderFinder` capability, which Claude implements over its session registry, plus `Run.SessionHolder` and `Run.CarriedInstructions`.
-  The registry rule now lives in one `liveHolder` helper shared by the resume check and the holder read, and `sessionRegistryDir` replaces the path the prober and the check each built.
-- `lym fabric anchor` adds `runproc.RoleOrch` to the roles its dobby end spares.
-  Without it, the new orch record under the dobby's owner would end the orch on every anchor move, which it never did before.
-- `pattern/PATTERN-child-processes.md` names `EndSubject` beside `End`, `EndSparing` and `EndRole`, and names the orch's registration.
-- Package docs of `runproc`, `orchcli`, `orchengine`, `shuttleengine`, `claudeengine` and `fabriccli` follow the behavior.
+- `runproc` gains `RoleOrch`, `RegisterOrch` and `IsRegistered`.
+  `orchcli` registers the started orch's provider process under the worktree's owner key.
+  The record outlives the strand's removal and is pruned when the process dies.
+- `launchOrch` no longer falls back to a fresh launch on any resume error.
+  When `CheckResume` refuses for a live holder:
+  - a holder registered as this worktree's orch is ended, and the start resumes the same session id once more;
+  - any other holder refuses, naming its pid and the way forward, and nothing launches fresh.
+    An orch the pre-upgrade `lym` launched is unregistered, so the first start after the upgrade refuses over it once.
+- A fresh launch with the carry-over happens only when the refusal is `shuttleengine.ErrNoTranscript`.
+  The start says so in its warnings, naming the abandoned session and the number of carried instructions.
+  The session id stays in the machine-local orch state, and no tracked record names it.
+- `claudeengine` returns a `*shuttleengine.SessionHeldError` naming the holder's pid, and wraps `ErrNoTranscript` for a missing transcript.
+  It implements the new optional `shuttleengine.SessionHolderFinder`, which `Run.SessionHolder` exposes so `orchcli` can learn the pid to register.
+- `runproc.EndSubject` and `pairteardown.EndSubjectProcesses` end every process this machine runs for a subject another machine now owns:
+  each run's processes, then the subject's own, then the dobby when the caller asks.
+  Roles that serve the whole hub (adopt, sync, push, test-map, Slack relay) and teardown children are left alone.
+- The orch watcher's owner check (`orchengine.OwnerWatch.End`) calls it without the dobby, which hands the subject over itself.
+  The strand is stopped even when the end fails, and the exit is recorded either way; a failed end is logged at Warn.
+- `pairteardown` spares `RoleOrch` when it ends a pair's processes, since only a subject another machine owns ends its orch.
+  `fabriccli`'s anchor move ends the orch role along with the dobby's push and sync roles.
 
 ## Design decisions
 
-- The way forward names `lym beam start`, the verb that brings the orch up; the record's `lym orch start` is no verb.
-- The orch record shares the dobby's owner, so `runproc.End` of a beam's slug, as a pair teardown or `tendercli.EndOwnedElsewhere` runs, now ends that beam's orch too.
-  That matches D9's "end every process of a subject owned elsewhere".
-- `EndSubject` ends the registered processes of a subject's runs.
-  A run's agent panes that registered no process stay until the run's own teardown.
+- `EndSubjectProcesses` has no caller for the dobby pass here.
+  The dobby's handover and the catch-up in `bolt-holds-catch-up` are the other callers the function is exported for.
+- A holder is registered only by `lym`.
+  An unregistered live holder is never ended, since it may be an operator's own session.
+- `claudeengine` keeps the registry layout and the holder rule in one place (`liveHolder`), shared by the resume check and the holder read.
 
-## Tests
+## To check by hand
 
-- `runproc`: `TestRegisterOrch_IsFoundByItsOwnerRoleAndPID` and `TestEndSubject_EndsTheRunsThenTheSubjectAndItsDobbyLast`, which pins the order, the spared roles and that a surviving run process still lets the rest end.
-- `claudeengine`: the resume check's rows assert the typed refusals, and `TestSessionHolder` pins the holder read.
-- `orchengine`: the owner-check rows assert that End runs before Stop and that a failed end stops nothing.
-- `orchcli`: `TestStart_ResumeOverALiveHolder` covers each acceptance line: an own holder ended and the same session resumed, and an unregistered holder refused by pid with nothing launched fresh.
-  It also covers a failed end and a resume failing for another cause.
-  The no-transcript rows of `TestStart_ResumesTheRecordedSession` assert the fresh launch, its carry-over count and the warning that says so.
-  `TestStart_RegistersTheLaunchedOrchProcess` pins the registration and its warnings.
+- Summary and doc text of the touched packages may still describe the earlier shape of this change rather than the code as it stands.
+- Start an orch, remove its strand while its Claude process stays alive, and run `lym beam start` again.
+  It should end that process and resume the same session id.
+- Start with a live Claude process on the orch's session that `lym` did not register.
+  The start should refuse, naming its pid.
+- Start on a machine with no transcript of the recorded session.
+  It should launch fresh, carry over the instructions, and say so.
