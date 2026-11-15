@@ -567,7 +567,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #121](https://github.com/Knatte18/loomyard/issues/121).\n\n## Seen\n\nA raddle filing left five tasks with `discussed: true` and a stored decision record each.\nBefore they started, the orch added sections to the board bodies of four of them through `lym board upsert --body-file` (a gate test budget and a step benchmark).\nThe upsert succeeded with no warning.\nThe first of those tasks to run planned from its stored record alone: no card carried the body's new sections, the plan review did not flag them, and the PR missed the benchmark and broke the test budget.\nThe gap surfaced only in the parent's PR review.\n\n## Workaround\n\nBefore such a task starts, `lym loom decision add` refuses (no worktree yet), so the orch filed `Decision for \u003cslug\u003e: ...` notes and plans to record the same content with `lym loom decision add` once each run exists.\n\n## Expected\n\nA body edit on a discussed entry that the stored record does not carry should either reach the run (Plan-Write and the plan review read the body beside the record) or be refused or warned about at upsert, naming `lym loom decision add` or another way to amend the stored record before the run starts.\nRelated: #116, #117.\n",
-      "status": "running · Drift-Recheck",
+      "status": "running · Describe",
       "created": "2026-11-15T11:34:32Z",
       "revised": "2026-11-15T12:06:47Z",
       "profile": "light"
