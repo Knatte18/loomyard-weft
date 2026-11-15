@@ -35,6 +35,12 @@ A function is deleted only when every one of these holds:
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-15): Test-support packages and the allowlist (code review F2)
+
+Decision: internal/gitkit and internal/hubforge count as test-support packages beside internal/testkit, since PATTERN-test-isolation's import rules bar what they do from a kit. A function only other packages' tests call may stay in its production file under an entry of the guard's allowlist, naming the tests it serves, when a _test.go file cannot serve those tests and a kit cannot hold it because it reads its package's own state or writes a record its package alone writes. The entry's rule of '_test.go or internal/testkit' is read with these two widenings; the code stays as it is.
+
+Rationale: A _test.go file cannot be imported by another package's tests, so a cross-package oracle or record writer has no home under the entry's literal rule; the board entry already keeps such oracles. The guard names each exception with its reason and fails on a stale entry, which keeps the exceptions visible and bounded.
+
 ## Constraints
 
 ## Auto-mode assumptions
