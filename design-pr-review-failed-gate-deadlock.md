@@ -1,6 +1,6 @@
 # PR-Review deadlocks after a failed pr-review gate when continue is set
 
-`pr-review-failed-gate-deadlock` · Task · bug, landing · draft
+`pr-review-failed-gate-deadlock` · Task · bug, landing
 
 Imported from [issue #125](https://github.com/Knatte18/loomyard/issues/125).
 
