@@ -1,6 +1,6 @@
 # P2 Codexengine: every task, trial and note about the Codex engine
 
-Rendered 2026-11-15 18:48 UTC; every age below is as of then.
+Rendered 2026-11-15 18:53 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 11d · Owner `neve`
@@ -80,7 +80,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T15 | `draft` **Codex as darn writer, replayed on a landed task, on OSL-1046** | [`codex-writer-bench-osl`](design-codex-writer-bench-osl.md) | darn · docs |  | 40m<br>39m | codex, shuttle |
+| T15 | `draft` **Codex as darn writer, replayed on a landed task, on OSL-1046** | [`codex-writer-bench-osl`](design-codex-writer-bench-osl.md) | darn · docs |  | 45m<br>44m | codex, shuttle |
 
 ## Notes (3)
 
@@ -91,10 +91,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 9d<br>2h | codex, shuttle |
-| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 6d<br>0m | codex, shuttle |
+| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 6d<br>4m | codex, shuttle |
 
 ### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md) | 22m<br>22m | codex, shuttle, stencil, heddle |
+| B1 |  | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md) | 27m<br>27m | codex, shuttle, stencil, heddle |
