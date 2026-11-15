@@ -1,6 +1,6 @@
 # Darn Code-Review reviewer template default to opus[medium]
 
-`darn-reviewer-opus-medium` · Task · enhancement, profiles, darn · draft
+`darn-reviewer-opus-medium` · Task · enhancement, profiles, darn
 
 ## Decision (operator, 2026-11-15)
 
