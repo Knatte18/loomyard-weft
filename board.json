@@ -720,6 +720,12 @@
       "status": "draft",
       "created": "2026-11-15T16:09:02Z",
       "revised": "2026-11-15T16:33:44Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
       "profile": "solid",
       "project": "adopt-build"
     },
