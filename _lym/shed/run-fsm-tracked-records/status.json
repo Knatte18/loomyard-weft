@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Verify",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Verify",
-    "last": "Parent-Align → done",
+    "now": "Code-Bouncer",
+    "last": "Drift-Verify → skipped",
     "wait": ""
   },
   "history": [
@@ -215,6 +215,13 @@
       "output": "",
       "at": "2026-11-15T19:08:09Z",
       "started_at": "2026-11-15T19:01:45Z"
+    },
+    {
+      "producer": "Drift-Verify",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-15T19:08:15Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
