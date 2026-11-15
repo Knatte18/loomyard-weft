@@ -195,6 +195,13 @@ Rationale: Without the aside, the act rule waits on a shed state of paused, so a
 
 ## Open risks
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - cancel-invisible-before-intent-committed (class consistency, severity MEDIUM, open in rounds 1, 2)
+  - readrun-pastparentmerge-no-pair (class scope, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: for each state, a fixture of tracked records alone reads that state through `internal/runfsm` (new), with every `.lym` cache absent; a fixture meeting two states' conditions reads the one earlier in the order.
