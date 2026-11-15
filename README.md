@@ -113,7 +113,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-test-suite-trim.md">P6 Coverage maps: build them, keep them fresh, and cut the test suite with them</a> (4)</strong></summary>
+<summary><strong><a href="project-test-suite-trim.md">P6 Coverage maps: build them, keep them fresh, and cut the test suite with them</a> (3)</strong></summary>
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 5d · Owner `neve`
 
@@ -135,15 +135,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (3)
+### Notes (2)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-#### Enhancements (3)
+#### Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 4d<br>3h | testkit, gate |
 | E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 5d<br>4h | testkit, gate |
 | E5 |  | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | 10m<br>0m | testkit, gate, dobby |
 

@@ -37,14 +37,13 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (3)
+## Notes (2)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Enhancements (3)
+### Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 4d<br>3h | testkit, gate |
 | E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 5d<br>4h | testkit, gate |
 | E5 |  | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | 10m<br>0m | testkit, gate, dobby |
