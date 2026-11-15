@@ -2,7 +2,7 @@
      the writer and its subagents run the gate themselves.
      internal/darnengine's DarnTable fills its one marker, {{.subagent_model}}, from loom.yaml's subagent_model,
      then fills the result whole into darn-template-write's make_change marker.
-lym-stencil: sha256=37346340c11c99c04a1166e004526a3b3d5153e115d7fdad446d888d0117ce49 build=e9895522a011fa6a53b58c2a4fc124e423a121ec time=2026-11-07T15:15:36Z -->
+lym-stencil: sha256=afa62950b0b58cc988323cecfe7e0d736447fa879bb0856d735653d894159a9f build=20bde20854a96db83ec9e4ff54ba96c30698c0e6 time=2026-11-15T13:00:09Z -->
 
 1. Edit the repository to make the change.
    Follow the existing patterns, and the PATTERN entries in this prompt.
@@ -13,6 +13,9 @@ lym-stencil: sha256=37346340c11c99c04a1166e004526a3b3d5153e115d7fdad446d888d0117
    A fresh subagent sees none of this session, so each prompt names the files the subagent owns, the edits to make, and the gate rule from your system prompt with its Bash tool timeout, for the subagent to run on its own package.
    Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
 3. Test with `lym gate test` after the last edit of each commit; it computes its scope from your changes, and when it answers `done: false` with exit 75 the run goes on, so run the same command again; never run a raw test command or a module-wide run.
+   A gate line saying a tier ran no test of a project means the project skipped its own tests, and the gate's pass covers none of them.
+   When your change needs those tests and the hub's `refuse_raw` does not list `dotnet test`, run them by hand as that line's way forward names, and check that the run's summary line reports them: this is the one raw test command you run.
+   When `refuse_raw` lists it, report the skipped tests to your parent, or with no parent name them in the change description.
 4. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
    the repository's overview doc when a module table or execution stack it shows changes;
    and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.
