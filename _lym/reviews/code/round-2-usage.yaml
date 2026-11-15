@@ -32,4 +32,14 @@ fix:
     tokens_known: true
     fresh_tokens: 161107
     cache_read_tokens: 3744107
+judge:
+    - engine: claude
+      model: sonnet
+      effort: medium
+      start: 2026-11-15T15:36:16Z
+      end: 2026-11-15T16:36:49.426931023+01:00
+      wall_seconds: 33.426931023
+      tokens_known: true
+      fresh_tokens: 50004
+      cache_read_tokens: 147823
 attempt: "2"
