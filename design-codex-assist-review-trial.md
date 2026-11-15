@@ -7,6 +7,10 @@
 Codex is used for review first, or as a support reviewer, not as a writer: the operator does not trust that it writes in the same tone as Claude.
 The earlier idea of a writer comparison is dropped.
 
+## Decision (operator, 2026-11-15)
+
+LoomYard is to support Codex; this trial is not finished and stays until it reaches a verdict.
+
 ## Idea
 
 `loom.yaml` already has `code_assist_reviewer_model`: an extra reviewer beside the Code-Review reviewer, whose report the reviewer consolidates and which never gates the round.
