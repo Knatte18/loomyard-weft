@@ -41,7 +41,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T8 | `draft` **Every transition pushes its records before the run acts, and a takeover entry in the run's records hands it over without replay** | [`push-before-act-takeover`](design-push-before-act-takeover.md)<br>[Sketch](decision-push-before-act-takeover.md) | tapestry · solid | T6<br>T14 | 36m<br>0m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
-| T9 | `draft` **A machine registry and holds in Bolt, the owner pause caller retired, and a catch-up from origin after an absence** | [`bolt-holds-catch-up`](design-bolt-holds-catch-up.md)<br>[Sketch](decision-bolt-holds-catch-up.md) | tapestry · solid | T8<br>T3 | 36m<br>35m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T9 | `draft` **A machine registry and holds in Bolt, the owner pause caller retired, and a catch-up from origin after an absence** | [`bolt-holds-catch-up`](design-bolt-holds-catch-up.md)<br>[Sketch](decision-bolt-holds-catch-up.md) | tapestry · solid | T8<br>T3<br>T14 | 36m<br>0m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 | T10 | `draft` **lym adopt runs in the foreground over pushed state, with --take-hold, and the dobby tears down or reports leftover pairs** | [`adopt-foreground-leftovers`](design-adopt-foreground-leftovers.md)<br>[Sketch](decision-adopt-foreground-leftovers.md) | tapestry · solid | T9 | 36m<br>35m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 | T11 | `draft` **The prime is the root beam: parent_beam names it, never empty** | [`prime-is-root-beam`](design-prime-is-root-beam.md) | darn · solid | T10 | 24m<br>9m | board, dobby, orch |
 | T12 | `draft` **A stop button in the prime orch session that takes the whole hub down, behind a yes/no** | [`hub-stop-button`](design-hub-stop-button.md) | darn · solid | T11 | 4h<br>8m | reed, orch, tender |
@@ -135,7 +135,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 5d<br>4h | testkit, gate |
-| E5 |  | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | 32m<br>22m | testkit, gate, dobby |
+| E5 |  | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | 33m<br>22m | testkit, gate, dobby |
 
 </details>
 
@@ -154,7 +154,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **A beam window opens a useless README, and markdown preview does not render** | [`ide-beam-readme-preview`](design-ide-beam-readme-preview.md) | darn · light | Finalize | neve | 29m<br>10m | ide |
+| T5 | **A beam window opens a useless README, and markdown preview does not render** | [`ide-beam-readme-preview`](design-ide-beam-readme-preview.md) | darn · light | Finalize | neve | 29m<br>11m | ide |
 
 #### Ready (0)
 

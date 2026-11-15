@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **A beam window opens a useless README, and markdown preview does not render** | [`ide-beam-readme-preview`](design-ide-beam-readme-preview.md) | darn · light | Finalize | neve | 29m<br>10m | ide |
+| T5 | **A beam window opens a useless README, and markdown preview does not render** | [`ide-beam-readme-preview`](design-ide-beam-readme-preview.md) | darn · light | Finalize | neve | 29m<br>11m | ide |
 
 ### Ready (0)
 
