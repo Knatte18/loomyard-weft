@@ -397,25 +397,6 @@
       "profile": "docs"
     },
     {
-      "id": 1346,
-      "handle": "B1",
-      "slug": "adopt-does-not-work",
-      "title": "lym adopt does not work",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "orch",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The operator reports that lym adopt fails today; the cause is not yet found",
-      "body": "## Seen (operator, 2026-11-12 and 2026-11-15)\n\nThe operator says `lym adopt` almost never works, and that it is chaos: much housekeeping around every use.\nNo error text was given with the report.\nThe last adopt record in Bolt (`.lym/adopt/adopt.json`) is from 2026-11-11 14:37 and its root check was green, so the failure is newer or not in that record.\nOn 2026-11-15 the hub came back from OSL-1046 to Neve; the root adopt check was green on tiers 0, 1 and 2,\nbut the orch came up as a new session (note `orch-resume-after-owner-move`) and finished bench pairs still stood (note `stale-bench-pairs-linger`).\n\n## Idea\n\nFind out which part is the trouble before fixing anything.\nRun `lym adopt --here` (or the subject that failed), keep the output and the adopt record, and note which step stops or needs hand work (reconcile, pairs, pause, owner, deploy, beam, check, done).\nThen decide with the operator whether to repair the failing step or to cut the verb down to fewer steps.\nThe operator's lasting fix is the note `lym-state-fsm-in-git`: with every run's state an FSM pushed to GitHub, adopt becomes pull and go on.\nThe re-parent verb (report `docs/research/loom/reparent-running-task-2026-11-12.md`) waits until adopt is settled.\n",
-      "created": "2026-11-12T19:48:30Z",
-      "revised": "2026-11-15T11:34:20Z"
-    },
-    {
       "id": 1347,
       "handle": "T5",
       "slug": "testmap-maps-in-weft",
@@ -466,25 +447,6 @@
       "record_body_sha256": "b0595f810525ce9818aee2b202f9e74b4082042c9bc69b7472ff12adca4611a4"
     },
     {
-      "id": 1349,
-      "handle": "B2",
-      "slug": "orch-resume-after-owner-move",
-      "title": "The orch comes back as a new session, not a continuation, after the hub moves back to this machine",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "orch",
-        "shuttle"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (operator, 2026-11-15)\n\nThe operator worked on OSL-1046 while Neve hibernated (2026-11-12 21:44 to 2026-11-15 12:20).\nThe hub's orch watcher on Neve had exited with `owned by machine osl46` (`.lym/orch/watch.log`).\nAfter the hub came back to Neve, the prime orch came up at 12:27 as a new Claude session (`7da34817…`).\nThat session got a fresh prompt that pointed at the 2026-11-12 handoff,\nfollowed by the previous session's typed instructions carried over (`internal/shuttleengine/carryover.go`).\nThe previous orch session (`e7be957b…`, a 10 MB transcript on Neve) was not resumed.\nThe operator wants the orch to come back as a continuation of the previous orch session, never as a new one.\n\n## Idea\n\nWhen the prime or a beam orch comes up again after an ownership move or a restart, resume its last session from the transcript on this machine.\nFall back to a fresh launch with the carry-over only when no transcript is present here, and say so in the launch line.\nFirst find which path chose the fresh launch: the watcher's exit on the ownership move, the adopt, or the orch launch itself.\n",
-      "created": "2026-11-15T11:30:23Z",
-      "revised": "2026-11-15T11:30:23Z"
-    },
-    {
       "id": 1350,
       "handle": "E5",
       "slug": "darn-code-reviewer-opus-default",
@@ -505,27 +467,6 @@
       "body": "Imported from [issue #130](https://github.com/Knatte18/loomyard/issues/130).\n\n## Seen\n\n`code_reviewer_model` defaults to `sonnet[medium]` (internal/loomengine/template.yaml), and darn's Code-Review perch uses it.\nIn a darn run the Code-Review perch is the only in-run review: darn has no Discussion or Plan review, so this reviewer has to judge whether the writer did the task the entry asks for, not only whether the diff is correct.\nIn a recent darn run (a solver bug trace against a reference model, profile wide), the perch converged after three rounds and its last round rejected a finding that the entry's trace was left open as \"not a defect\".\nThe parent's PR review then found the work incomplete, which took three more fix rounds.\nHubs currently work around this per task with `run_settings: {\"loom\":{\"code_reviewer_model\":[\"fable[high]\",\"sonnet[medium]\"]}}`.\n\n## Expected\n\nDarn's Code-Review reviewer defaults to an Opus model-spec (for example `opus[high]`), set in darn's defaults or its profiles, so the in-run review can check the entry's work items, decisions and acceptance steps as well as the code.\nTapestry's Code-Review may keep its default, since its Discussion and Plan reviews already check the scope.",
       "created": "2026-11-15T11:34:15Z",
       "revised": "2026-11-15T11:34:15Z"
-    },
-    {
-      "id": 1351,
-      "handle": "B3",
-      "slug": "stale-bench-pairs-linger",
-      "title": "Pairs a bench or a cancelled run left behind are never torn down and stay in the workspace",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "batten",
-        "fabric",
-        "cleanup",
-        "workspaces"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (operator, 2026-11-15)\n\nTwo throwaway bench pairs, `pwc-opus` and `pwc-fable`, still stand three days after their bench landed (report `384d7cb7`, 2026-11-12).\nTheir worktrees and weft checkouts sit beside the prime, and the root `loomyard.code-workspace` still lists them as folders, so they show up in the operator's VS Code.\nThe kept pair of the cancelled raddle run `claude-account-weights` stands the same way, and the `rerun` pair from the advisor trial fails to respawn on every `lym tender resume`.\nNothing tears down a pair that a bench or a cancelled run left behind, and nothing tells the operator it stands.\n\n## Idea\n\nA pair made for a bench or trial belongs to the task that made it, and that task's landing tears it down with its own pair.\nA cancelled run's kept pair is torn down after a set time unless the operator keeps it by name.\nThe workspace file drops a folder once its worktree is gone.\n",
-      "created": "2026-11-15T11:34:17Z",
-      "revised": "2026-11-15T11:34:17Z"
     },
     {
       "id": 1352,
@@ -550,29 +491,6 @@
       "body": "Imported from [issue #129](https://github.com/Knatte18/loomyard/issues/129).\n\n## Seen\n\nA `lym tender pause` holds more than runs.\nWhile a pause stands, operator verbs that are not runs wait on it.\n#124 reports this for `lym selfreport create`; it is wider than that.\n\nSeen on one machine while the hub was paused:\n\n- `lym selfreport create` was held with `lym: held by a hub-wide pause since \u003ctime\u003e; it continues after \"lym tender resume\"`.\n  `lym cleanup` hung the same way, but its held line was not seen.\n- In a pair's worktree that a run-scoped pause covered, `lym s` printed `outcome: owned_here` and then:\n\n```\nlym: held by the pause of \u003cslug\u003e since \u003ctime\u003e; it continues after \"lym tender resume\" or \"lym tender resume \u003cslug\u003e\"\n```\n\n  `lym s` is `lym adopt --here --no-orch`, then `lym beam start`, then `lym reed attach`.\n  In that worktree the first step is only an owner check, not an adopt, yet the start that follows is held.\n- `lym board get \u003chandle\u003e` and `lym machine name \u003cname\u003e` hung from the paused hub's worktree; `lym board find` and `lym board list` answered.\n  Whether the pause held those two was not confirmed: no held line was seen.\n\nA held call writes its line once, to stderr, and then sleeps.\nA caller that discards stderr or has a timeout sees only a hang or a kill; one without a timeout waits as long as the pause stands.\n\n## Why it makes no sense\n\nA pause stops runs: agent turns and the network work they do.\nIt is not meant to stop the operator's own verbs, and a pause is often set because something is wrong, which is when `selfreport`, `board get` and `machine name` are needed most.\n\n## Where it comes from\n\n`internal/tendercli/gate.go` installs one process-wide gate (`pauserecord.InstallGate`) in every lym process that runs in a hub.\nEvery git call goes through `pauserecord.Network` in `internal/gitexec/gitexec.go`, and every GitHub call through the same function in `internal/githubclient/transport.go`.\nBoth wait in `pauserecord.WaitUncovered` while any live pause entry covers the process.\nSo any verb that reaches origin, even to fetch the board before a read, waits on a pause that has nothing to do with it.\n\nThe gate has an exemption, `SetGateExemptAll`, \"for the one process an operator's explicit verb runs in\".\nOnly `lym adopt`, the fabric teardown and `lym batten cancel` call it.\nEvery other operator verb is held.\n\nA run-scoped pause is held at a second place: `internal/battenshed/innerrun_pause.go` holds the spawn of a covered run, and that wait is what `lym s` reached above.\n\n## Idea\n\nInvert the default: the gate holds only the processes a pause is meant to stop, which are the run's own processes (a strand's agents, the loop and its children), and an operator verb run from a terminal passes.\n\n- Install the gate with `ExemptAll` for a process that is not a run process, decided where `InstallNetworkGate` is called, so no verb has to opt out one by one.\n- Keep holding detached children of a run, which `DetachedChild` already marks.\n- Read first which verbs outside a run call `InstallNetworkGate`, and which of them a pause is meant to hold, such as a push child of a run.\n- Add a test that a paused hub does not hold `board get`, `board list`, `machine name`, `selfreport create` and `lym s`.\n- Make a hold visible: a verb that does wait prints the held line at once instead of staying silent.\n\n\n## From issue #124\n\nImported from [issue #124](https://github.com/Knatte18/loomyard/issues/124).\n\n## Seen\n\nWith the hub under a hub-wide pause (`lym tender pause`), `lym selfreport create` does not file the issue.\nIt waits and is held until the pause is lifted, with this message:\n\n```\nlym: held by a hub-wide pause since \u003ctime\u003e; it continues after \"lym tender resume\"\n```\n\nNothing is filed meanwhile, and a caller without a timeout hangs.\nTwo earlier calls on the same hub hung this way, for as long as the pause stood.\n\n## Why it makes no sense\n\nA pause holds agent and network work so runs stop.\n`selfreport` is the way to report that lym is wrong, and a pause is often set because something is wrong, so the report is blocked when it is most needed.\nFiling one issue has nothing to do with the runs the pause protects.\n\n## Idea\n\nExempt `lym selfreport` from the hub-wide pause, so it files at once while the hub is paused.\nRead first where the pause holds the call, and whether other operator verbs that only report, such as reads and `lym report`, are held the same way.\n",
       "created": "2026-11-15T11:34:18Z",
       "revised": "2026-11-15T11:34:48Z"
-    },
-    {
-      "id": 1353,
-      "handle": "F3",
-      "slug": "lym-state-fsm-in-git",
-      "title": "The state of every run is one FSM, pushed to GitHub at all times, so any stop can go on here or on another machine",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "batten",
-        "tender",
-        "dobby",
-        "orch",
-        "fabric",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## The operator's requirement (2026-11-15)\n\n- The state of lym and of every run in a lym hub is a finite state machine, and its whole state is stored on GitHub at all times.\n- The operator can end every run in a lym hub at any moment, shut everything down, and go on later,\n  on this machine or on another one after pulling the git state.\n- Today this fails: lym always drifts and complains about all sorts of things, so some state clearly lives outside git.\n  `lym adopt` is the clearest case: it almost never works (see the note `adopt-does-not-work`).\n\n## Seen\n\n- Machine-local state lives under `.lym/` in the prime, Bolt and each pair: the orch's `state.json`, dobby and tender records, the adopt record, coverage maps, launchers.\n- Claude session transcripts live in `~/.claude` on one machine only, so a run moved to another machine cannot resume its session.\n- A machine cannot know what another machine holds uncommitted or unpushed;\n  only what that machine has pushed is visible.\n\n## Idea\n\nMap every piece of state lym keeps: where it lives, whether git holds it, and which reader breaks when it is missing.\nDefine each run's states and transitions as one FSM whose current state is a committed and pushed record.\nEach transition writes and pushes its record before it acts, so a stop at any point leaves a state another machine can read and go on from.\nState that cannot live in git, such as a live tmux pane or a session transcript, is a cache that lym rebuilds from the pushed state,\nnever a source a resume or an adopt depends on.\nWith that in place, adopt becomes: pull, read the FSM state, and go on, with no reconciling step.\nThis is tapestry-sized: it runs as a Motif first.\n",
-      "created": "2026-11-15T11:34:20Z",
-      "revised": "2026-11-15T11:34:20Z"
     },
     {
       "id": 1354,
@@ -807,6 +725,37 @@
       "created": "2026-11-15T11:37:53Z",
       "revised": "2026-11-15T11:37:53Z",
       "profile": "docs"
+    },
+    {
+      "id": 1365,
+      "handle": "T4",
+      "slug": "adopt-redesign",
+      "title": "Redesign adopt on one FSM of run state, pushed to GitHub at all times",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "bug",
+        "batten",
+        "tender",
+        "dobby",
+        "orch",
+        "fabric",
+        "loom",
+        "cleanup",
+        "workspaces",
+        "shuttle"
+      ],
+      "issues": [],
+      "recipe": "motif",
+      "depends_on": [
+        "lym-state-map"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "## Goal\n\nRedesign how a hub and its runs move between machines, starting with `lym adopt`, which almost never works today despite its rework of 2026-11-11 (commits `0deeb9b9` to `90d11895`).\nThe operator's requirement (2026-11-15):\n\n- The state of lym and of every run in a lym hub is a finite state machine, and its whole state is stored on GitHub at all times.\n- The operator can end every run in a lym hub at any moment, shut everything down, and go on later,\n  on this machine or on another one after pulling the git state.\n- Today this fails: lym always drifts and complains about all sorts of things, so some state clearly lives outside git.\n\nThe state map from the darn `docs` study this task depends on is the Motif's starting point.\n\n## Operator decisions (2026-11-15)\n\n- Adopt runs in the foreground, in the operator's terminal, never as a detached background job.\n- Nothing else happens in the hub until adopt is done: no run starts, no dobby pass, no orch action,\n  until adopt has finished and every failing test it found is fixed.\n- A machine cannot know what another machine holds uncommitted or unpushed; only what that machine has pushed is visible.\n  Adopt works from pushed state alone and never asks about the other machine's local state.\n\n## Direction\n\n- Define each run's states and transitions as one FSM whose current state is a committed and pushed record.\n- Each transition writes and pushes its record before it acts, so a stop at any point leaves a state another machine can read and go on from.\n- State that cannot live in git, such as a live tmux pane or a session transcript, is a cache that lym rebuilds from the pushed state,\n  never a source a resume or an adopt depends on.\n- With that in place, adopt becomes: pull, read the FSM state, and go on, with no reconciling step.\n\n## Bugs this design must settle\n\n- **Adopt fails (operator, 2026-11-12 and 2026-11-15):** much housekeeping around every use; no error text recorded.\n  The last adopt record in Bolt (`.lym/adopt/adopt.json`) is from 2026-11-11 14:37 with a green root check.\n- **The orch comes back as a new session:** on 2026-11-15 the hub moved back from OSL-1046 to Neve.\n  The orch watcher on Neve had exited with `owned by machine osl46` (`.lym/orch/watch.log`).\n  The prime orch then came up as a new Claude session with a fresh prompt pointing at the 2026-11-12 handoff,\n  plus the previous session's typed instructions carried over (`internal/shuttleengine/carryover.go`).\n  The previous orch session (`e7be957b…`, a 10 MB transcript on Neve) was not resumed.\n  The operator wants the orch to come back as a continuation of its previous session, never as a new one.\n- **Left-over pairs stand forever:** the bench pairs `pwc-opus` and `pwc-fable` still stood three days after their bench landed (report `384d7cb7`).\n  The root `loomyard.code-workspace` still lists them, so they show in the operator's VS Code.\n  The kept pair of the cancelled raddle run `claude-account-weights` stands the same way,\n  and the `rerun` pair from the advisor trial fails to respawn on every `lym tender resume`.\n  Nothing tears down a pair that a bench or a cancelled run left behind, and nothing tells the operator it stands.\n\n## After this\n\nThe re-parent verb (report `docs/research/loom/reparent-running-task-2026-11-12.md`) waits until adopt is settled.\n",
+      "status": "draft",
+      "created": "2026-11-12T19:48:30Z",
+      "revised": "2026-11-15T11:37:54Z"
     }
   ],
   "prime_owner": "neve",
