@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-15 12:34 UTC; every age below is as of then.
+Rendered 2026-11-15 12:35 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -21,7 +21,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs |  | 56m<br>52m | batten, tender, dobby, orch, fabric, loom |
+| T3 | **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs |  | 57m<br>52m | batten, tender, dobby, orch, fabric, loom |
 
 #### Draft (1)
 
@@ -102,8 +102,8 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Measure what coverage-map upkeep costs, check how its state is shown, and write the operator guide**<br>• What the upkeep passes have cost, whether one call shows the maps state, and a short guide to using and keeping the maps | [`testmap-upkeep-cost-and-guide`](design-testmap-upkeep-cost-and-guide.md) | darn · docs | T5 | 2d<br>9m | gate, testkit, dobby |
-| T5 | `draft` **Keep the coverage maps in each pair's weft branch, committed and pushed by lym gate testmap** | [`testmap-maps-in-weft`](design-testmap-maps-in-weft.md)<br>[Sketch](decision-testmap-maps-in-weft.md) | tapestry · solid | T6<br>T9 | 2d<br>9m | gate, testkit, dobby |
+| T2 | `draft` **Measure what coverage-map upkeep costs, check how its state is shown, and write the operator guide**<br>• What the upkeep passes have cost, whether one call shows the maps state, and a short guide to using and keeping the maps | [`testmap-upkeep-cost-and-guide`](design-testmap-upkeep-cost-and-guide.md) | darn · docs | T5 | 2d<br>10m | gate, testkit, dobby |
+| T5 | `draft` **Keep the coverage maps in each pair's weft branch, committed and pushed by lym gate testmap** | [`testmap-maps-in-weft`](design-testmap-maps-in-weft.md)<br>[Sketch](decision-testmap-maps-in-weft.md) | tapestry · solid | T6<br>T9 | 2d<br>10m | gate, testkit, dobby |
 
 ### Notes (2)
 
@@ -113,7 +113,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 3d<br>9m | testkit, gate |
+| E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 3d<br>10m | testkit, gate |
 | E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 5d<br>30m | testkit, gate |
 
 </details>
@@ -134,7 +134,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T8 | **Darn's Code-Review reviewer should default to Opus, not Sonnet** | [`darn-code-reviewer-opus-default`](design-darn-code-reviewer-opus-default.md) | darn · light | Finalize | neve | 1h<br>29m | darn, profiles, loom |
-| T9 | **Gate bugs: silent skips, a testmap refusal naming the weft, two flaky gatecli tests** | [`gate-bug-bundle`](design-gate-bug-bundle.md) | darn · solid | Darn-Write | neve | 1h<br>28m | gate, dotnet, stencil, cwd |
+| T9 | **Gate bugs: silent skips, a testmap refusal naming the weft, two flaky gatecli tests** | [`gate-bug-bundle`](design-gate-bug-bundle.md) | darn · solid | Drift-Verify | neve | 1h<br>28m | gate, dotnet, stencil, cwd |
 | T10 | **A pause holds operator verbs, not only runs: the network gate covers every git and GitHub call** | [`pause-holds-operator-verbs`](design-pause-holds-operator-verbs.md) | darn · solid | Darn-Write | neve | 1h<br>28m | tender, git, batten, selfreport |
 | T11 | **PR-Review deadlocks after a failed pr-review gate when continue is set** | [`pr-review-failed-gate-deadlock`](design-pr-review-failed-gate-deadlock.md) | darn · light | Code-Burler-Fix | neve | 1h<br>28m | landing |
 | T12 | **Body edits on a discussed task never reach its run** | [`discussed-body-edits-lost`](design-discussed-body-edits-lost.md) | darn · light | Code-Bouncer | neve | 1h<br>28m | board, loom |
