@@ -1,0 +1,606 @@
+diff --git a/cmd/lym/main.go b/cmd/lym/main.go
+index 25a40e79..aefb0504 100644
+--- a/cmd/lym/main.go
++++ b/cmd/lym/main.go
+@@ -114,6 +114,18 @@ func detachedChild(cmd *cobra.Command) tendercli.DetachedChild {
+ 	}
+ }
+ 
++// installPauseGate installs the pause gate that holds this process's network git and GitHub calls.
++// The gate holds them only while a pause covers the process.
++// It holds only a run's own process; an operator's verb passes.
++func installPauseGate(cmd *cobra.Command) {
++	tendercli.InstallNetworkGate(cmd.Context(), pauseSlugOverride(cmd), detachedChild(cmd), runCommand(cmd))
++}
++
++// runCommand reports whether the executing command is marked as a run's own process, which a pause holds.
++func runCommand(cmd *cobra.Command) bool {
++	return cmd.Annotations[clihelp.RunProcessAnnotation] == clihelp.AnnotationEnabled
++}
++
+ // newRoot builds the lym cobra root with all module subcommands, --json flag, and JSON help.
+ func newRoot() *cobra.Command {
+ 	var verbosity int
+@@ -147,8 +159,7 @@ Shortcuts, declared in internal/shortcutcli's embedded file, are listed under th
+ 			if !testing.Testing() {
+ 				logger.MintOrAdoptAndExport()
+ 				logger.Arm()
+-				// The pause gate holds this process's network git and GitHub calls while a pause covers it.
+-				tendercli.InstallNetworkGate(cmd.Context(), pauseSlugOverride(cmd), detachedChild(cmd))
++				installPauseGate(cmd)
+ 				// A push that the origin refuses reaches the prime orch as creel mail from FABRIC, whichever process pushed.
+ 				orchcli.InstallPushNotifier(cmd.Context())
+ 				// A reconcile that rewrites or flags a reinterpreted hub config value reaches the prime orch as creel mail from RECONCILE.
+diff --git a/cmd/lym/main_integration_test.go b/cmd/lym/main_integration_test.go
+index bf2e1c8b..f9f0f36d 100644
+--- a/cmd/lym/main_integration_test.go
++++ b/cmd/lym/main_integration_test.go
+@@ -16,10 +16,15 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/testkit/envelope"
+ 	"github.com/Knatte18/loomyard/internal/testkit/lymbin"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -321,3 +326,55 @@ func TestExitSweep_QuietZeroExitNeitherArmsNorSweeps(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestInstallPauseGate_HoldsOnlyARunsOwnVerbs drives the gate the root hook installs.
++// Each command is found in the real command tree.
++// Under a live hub pause, an operator verb's gate lets the entry pass and a run command's gate is held by it.
++// It installs a process-global gate and sets the environment, so neither it nor its rows run in parallel.
++func TestInstallPauseGate_HoldsOnlyARunsOwnVerbs(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Setenv(agentname.StrandNameEnv, "")
++	t.Setenv(pauserecord.RunProcessEnv, "")
++	sentinel := pauserecord.Geometry{RecordPath: filepath.Join(t.TempDir(), pauserecord.RecordFileName)}
++	t.Cleanup(pauserecord.InstallGate(pauserecord.Gate{Geometry: sentinel}))
++
++	tests := []struct {
++		args        []string
++		wantCovered bool
++	}{
++		{[]string{"board", "get"}, false},
++		{[]string{"machine", "name"}, false},
++		{[]string{"beam", "start"}, false},
++		{[]string{"shed", "run"}, true},
++		{[]string{"beam", "dobby"}, true},
++	}
++	root := newRoot()
++	for _, tt := range tests {
++		t.Run(strings.Join(tt.args, "_"), func(t *testing.T) {
++			t.Setenv(pauserecord.RunProcessEnv, "")
++			hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			geometry, err := hubgeom.PauseGeometry(hub.Location)
++			if err != nil {
++				t.Fatal(err)
++			}
++			hubEntry := pauserecord.Entry{Scope: pauserecord.ScopeHub, Caller: "EXTERNAL", PausedAt: time.Now()}
++			if _, err := pauserecord.Update(geometry.RecordPath, time.Now(), func(r *pauserecord.Record) error {
++				r.Live = []pauserecord.Entry{hubEntry}
++				return nil
++			}); err != nil {
++				t.Fatal(err)
++			}
++			cmd, _, err := root.Find(tt.args)
++			if err != nil {
++				t.Fatalf("Find(%q): %v", tt.args, err)
++			}
++			cmd.SetContext(lymcwd.WithCwd(t.Context(), hub.PrimeWorktree()))
++
++			installPauseGate(cmd)
++
++			if got := pauserecord.GateCovered(); got != tt.wantCovered {
++				t.Errorf("GateCovered() after installPauseGate(%q) = %v; want %v", tt.args, got, tt.wantCovered)
++			}
++		})
++	}
++}
+diff --git a/cmd/lym/main_test.go b/cmd/lym/main_test.go
+index bcb69145..f34e6dfc 100644
+--- a/cmd/lym/main_test.go
++++ b/cmd/lym/main_test.go
+@@ -193,6 +193,41 @@ func TestDetachedChild(t *testing.T) {
+ 	}
+ }
+ 
++// TestRunCommand_MarksOnlyARunsOwnVerbs pins which commands the root marks as a run's own process, which a pause holds.
++// The operator verbs a pause must not hold read false, among them the three steps of the lym s shortcut.
++func TestRunCommand_MarksOnlyARunsOwnVerbs(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	root := newRoot()
++	tests := []struct {
++		args []string
++		want bool
++	}{
++		{[]string{"board", "get"}, false},
++		{[]string{"board", "list"}, false},
++		{[]string{"machine", "name"}, false},
++		{[]string{"selfreport", "create"}, false},
++		{[]string{"adopt"}, false},
++		{[]string{"beam", "start"}, false},
++		{[]string{"reed", "attach"}, false},
++		{[]string{"batten", "run"}, true},
++		{[]string{"batten", "step"}, true},
++		{[]string{"loom", "run"}, true},
++		{[]string{"shed", "run"}, true},
++		{[]string{"beam", "dobby"}, true},
++	}
++	for _, tt := range tests {
++		path := "lym " + strings.Join(tt.args, " ")
++		cmd, _, err := root.Find(tt.args)
++		if err != nil || cmd.CommandPath() != path {
++			t.Fatalf("Find(%q) = %v, %v; want the command %q", tt.args, cmd, err, path)
++		}
++		if got := runCommand(cmd); got != tt.want {
++			t.Errorf("runCommand(%s) = %v; want %v", path, got, tt.want)
++		}
++	}
++}
++
+ // ptr returns a pointer to a copy of s.
+ func ptr(s string) *string {
+ 	return &s
+diff --git a/internal/adoptcli/doc.go b/internal/adoptcli/doc.go
+index e29c8634..cc05b95c 100644
+--- a/internal/adoptcli/doc.go
++++ b/internal/adoptcli/doc.go
+@@ -71,7 +71,9 @@
+ // An adopt is the operator's own takeover, so no pause holds it.
+ // `runAdopt` and `runWorker` each set `pauserecord.SetGateExemptAll` on their own process's network gate first.
+ // They do it through the `ExemptPause` seam and restore the gate when they return.
+-// A process the worker starts, a dobby or an adopt check among them, installs its own gate, which a pause still holds.
++// A process the worker starts installs its own gate, which a pause holds only when it is a run's own process:
++// one that carries the run-process mark, a detached child or a non-orch strand's agent.
++// The dobby is marked through `beam dobby`; an adopt check is none of these and passes a pause.
+ //
+ // `follow` reads the record on each wake and prints `adopt: <step> done` on stderr for each step that ended.
+ // It returns the record of the followed worker once that reads `done` or `stopped`.
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index d8915248..d2de09b8 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -630,7 +630,7 @@ func dobbyCmd() *cobra.Command {
+ 		Use:         "dobby <worktree-root>",
+ 		Short:       "run the dobby daemon of the worktree at <worktree-root>",
+ 		Hidden:      true,
+-		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal, clihelp.RunProcessAnnotation: clihelp.AnnotationEnabled},
+ 		Long: `Runs the dobby of the hub's prime or of a local beam until it is signalled or another
+ machine owns the beam. It is launched by "lym beam start", never by hand.`,
+ 		Args: cobra.ExactArgs(1),
+diff --git a/internal/clihelp/annotations.go b/internal/clihelp/annotations.go
+index 114f92bb..7a770341 100644
+--- a/internal/clihelp/annotations.go
++++ b/internal/clihelp/annotations.go
+@@ -9,6 +9,12 @@ package clihelp
+ // A value other than "true" never opts out, so a "false" cannot silently read as an opt-out.
+ const SkipStencilSeedAnnotation = "lym.skip-stencil-seed"
+ 
++// RunProcessAnnotation is the cobra-annotation key a command sets to mark its process as a run's own.
++// A pause holds the network calls of such a process and of every lym process it starts;
++// those of any other command pass a pause.
++// Only the value "true" marks a command.
++const RunProcessAnnotation = "lym.run-process"
++
+ // AnnotationEnabled is the one value that reads as "on" for every annotation key in this package.
+ const AnnotationEnabled = "true"
+ 
+diff --git a/internal/hibernateengine/doc.go b/internal/hibernateengine/doc.go
+index 863d3fcf..e3f7fcfb 100644
+--- a/internal/hibernateengine/doc.go
++++ b/internal/hibernateengine/doc.go
+@@ -120,7 +120,7 @@
+ // The pause's `Added` callback records the entry as the request's owned entry before the grace, whatever the phase.
+ // The sequence keeps the entry in memory even when that write fails.
+ // A pause that found a live hub entry owns none, so neither the sequence nor Cancel lifts that pause.
+-// The pause holds sessions and the network calls of other processes.
++// The pause holds sessions and the network calls of a run's own processes.
+ // The dobby that carries the request is no session, and its sequence never waits on a pause.
+ // The pause it adds therefore never stops the wait.
+ // A pause lifted during its grace cancels the request.
+diff --git a/internal/pauserecord/doc.go b/internal/pauserecord/doc.go
+index 545c6671..8221f7bf 100644
+--- a/internal/pauserecord/doc.go
++++ b/internal/pauserecord/doc.go
+@@ -71,8 +71,10 @@
+ // While an admission stands, every network call of the process passes at once and stays marked in flight.
+ // It does so whichever goroutine or repository makes the call.
+ // A caller takes it before a lock other processes wait on, so a pause never holds the lock's holder.
++// `Gate.ExemptAll` lets every live entry pass; the installer sets it for every process that is no run's own.
++// `RunProcessEnv` is the environment mark of a run's own process, which every process it starts inherits.
+ // SetGateExemptAll sets `Gate.ExemptAll` on the installed gate, so its waiter lets every live entry pass.
+-// It serves the one process an explicit operator verb runs in.
++// It serves an explicit operator verb that runs in a process a pause would otherwise hold.
+ // It does nothing with no gate installed, and the returned function restores the previous value.
+ // The exemption never reaches a child, which installs its own gate.
+ // GateExemptsAll reports whether the exemption is set, so a parent can hand it to a child in the child's own input.
+diff --git a/internal/pauserecord/hold.go b/internal/pauserecord/hold.go
+index e27223cb..9f2c7788 100644
+--- a/internal/pauserecord/hold.go
++++ b/internal/pauserecord/hold.go
+@@ -26,6 +26,14 @@ const (
+ 	waitingDirName = "waiting"
+ )
+ 
++const (
++	// RunProcessEnv is the environment variable that marks a process, and every process it starts, as a run's own.
++	// A pause holds the network calls of such a process.
++	RunProcessEnv = "LYM_RUN_PROCESS"
++	// RunProcessMarked is the value a run command sets RunProcessEnv to; any non-empty value marks the process.
++	RunProcessMarked = "1"
++)
++
+ // Waiter holds the seams of a wait; its zero value waits on real timers and writes to stderr.
+ type Waiter struct {
+ 	// Notify receives the one line a wait writes when it starts; nil writes the line to stderr.
+@@ -234,7 +242,7 @@ type Gate struct {
+ 	// ExemptScope and ExemptPausedAt name the one live entry the gate lets pass; both zero means no entry passes.
+ 	ExemptScope    string
+ 	ExemptPausedAt time.Time
+-	// ExemptAll lets every live entry pass, for the one process an operator's explicit verb runs in.
++	// ExemptAll lets every live entry pass, for a process that runs an operator's verb rather than a run's own work.
+ 	ExemptAll bool
+ 	// Defer makes a call that finds a live entry covering the process hand off to the deferral SetGateDeferral stored, before any wait.
+ 	Defer bool
+@@ -343,7 +351,7 @@ func SetGateExempt(scope string, pausedAt time.Time) (restore func()) {
+ }
+ 
+ // SetGateExemptAll makes the installed gate let every live entry pass.
+-// It serves the one process an explicit operator verb runs in.
++// It serves an explicit operator verb that runs in a process a pause would otherwise hold, such as one an agent starts.
+ // It returns the function that restores the previous setting.
+ // It does nothing when no gate is installed.
+ // The exemption stays in this process: a child installs its own gate.
+diff --git a/internal/reedengine/lifecycle.go b/internal/reedengine/lifecycle.go
+index a76ff7b3..abc4a7b3 100644
+--- a/internal/reedengine/lifecycle.go
++++ b/internal/reedengine/lifecycle.go
+@@ -461,7 +461,7 @@ func (e *Engine) ensureServerAndSessionLocked() (booted bool, strippedKeys []str
+ 	// it is an engine-injected-variable diagnostic.
+ 	// LYM_TRACE_ID is neither engine-injected nor meant to be recorded there.
+ 	clean = stripTraceID(clean)
+-	clean = stripAgentNameEnv(clean)
++	clean = stripIdentityEnv(clean)
+ 	spawnSession := func() error {
+ 		if err := CheckTmuxFloor(e.cfg.Tmux); err != nil {
+ 			return fmt.Errorf("start tmux: %w", err)
+@@ -678,14 +678,17 @@ func stripTraceID(env []string) []string {
+ 	return out
+ }
+ 
+-// stripAgentNameEnv removes LYM_STRAND_NAME and LYM_PARENT from env before the tmux server inherits them.
++// stripIdentityEnv removes LYM_STRAND_NAME, LYM_PARENT and the run-process mark from env.
++// It runs before the tmux server inherits them.
+ // A server booted from inside a strand would otherwise hand that strand's name and parent to every pane it later creates,
+ // and a pane told no parent exports none of its own, so it would escalate to the booting strand's parent.
+-func stripAgentNameEnv(env []string) []string {
++// A server booted by a run's own process would otherwise mark every pane's processes as a run's own,
++// so a pause would hold an orch's verbs.
++func stripIdentityEnv(env []string) []string {
+ 	out := make([]string, 0, len(env))
+ 	for _, entry := range env {
+ 		key := strings.SplitN(entry, "=", 2)[0]
+-		if key == agentname.StrandNameEnv || key == agentname.ParentEnv {
++		if key == agentname.StrandNameEnv || key == agentname.ParentEnv || key == pauserecord.RunProcessEnv {
+ 			continue
+ 		}
+ 		out = append(out, entry)
+diff --git a/internal/reedengine/lifecycle_test.go b/internal/reedengine/lifecycle_test.go
+index 766f9e3a..4f9243dd 100644
+--- a/internal/reedengine/lifecycle_test.go
++++ b/internal/reedengine/lifecycle_test.go
+@@ -352,16 +352,16 @@ func TestServerBootEnv_ExcludesTraceID(t *testing.T) {
+ 	}
+ }
+ 
+-//testtiming:keep pins the pane env dropping exactly LYM_STRAND_NAME and LYM_PARENT and keeping a longer key sharing the prefix; its covering tests run this code without asserting it
+-func TestStripAgentNameEnv_DropsNameAndParentOnly(t *testing.T) {
++//testtiming:keep pins the pane env dropping exactly LYM_STRAND_NAME, LYM_PARENT and LYM_RUN_PROCESS and keeping a longer key sharing the prefix; its covering tests run this code without asserting it
++func TestStripIdentityEnv_DropsNameParentAndRunMarkOnly(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	env := []string{"LYM_STRAND_NAME=ly:task:driver", "LYM_PARENT=ly:orch", "LYM_PARENTAL=keep", "PATH=/bin"}
++	env := []string{"LYM_STRAND_NAME=ly:task:driver", "LYM_PARENT=ly:orch", "LYM_RUN_PROCESS=1", "LYM_PARENTAL=keep", "PATH=/bin"}
+ 
+-	got := stripAgentNameEnv(env)
++	got := stripIdentityEnv(env)
+ 
+ 	want := []string{"LYM_PARENTAL=keep", "PATH=/bin"}
+ 	if strings.Join(got, "\n") != strings.Join(want, "\n") {
+-		t.Errorf("stripAgentNameEnv(%v) = %v, want %v", env, got, want)
++		t.Errorf("stripIdentityEnv(%v) = %v, want %v", env, got, want)
+ 	}
+ }
+ 
+diff --git a/internal/shedverbs/doc.go b/internal/shedverbs/doc.go
+index 74385739..cdb4b758 100644
+--- a/internal/shedverbs/doc.go
++++ b/internal/shedverbs/doc.go
+@@ -8,6 +8,8 @@
+ // a CLI module such as internal/shedcli can import shedverbs, but shedverbs never imports back.
+ // The one resolving import it admits is internal/logger, per the Shed Verb-Set Invariant.
+ // It serves boundary logging and the two sink-location accessors.
++// run and step carry `clihelp.RunProcessAnnotation`, so a pause holds their processes and every lym process they start;
++// status, pause and goto are an operator's and pass a pause.
+ //
+ // pause with no flag requests a pause at the next producer boundary, unless the spec's BarePause hook refuses it.
+ // --before <producer> and --after <producer> record a stop condition the engine fires at that producer;
+diff --git a/internal/shedverbs/run.go b/internal/shedverbs/run.go
+index fd7ce0ec..b38ad3fc 100644
+--- a/internal/shedverbs/run.go
++++ b/internal/shedverbs/run.go
+@@ -20,7 +20,7 @@ func runCmd(texts VerbTexts, spec *Spec) *cobra.Command {
+ 		Use:         texts.Run.Use,
+ 		Short:       texts.Run.Short,
+ 		Long:        texts.Run.Long,
+-		Annotations: map[string]string{clihelp.AudienceAnnotation: texts.Run.Audience},
++		Annotations: map[string]string{clihelp.AudienceAnnotation: texts.Run.Audience, clihelp.RunProcessAnnotation: clihelp.AnnotationEnabled},
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+ 				return nil
+diff --git a/internal/shedverbs/step.go b/internal/shedverbs/step.go
+index 703371db..faf055f3 100644
+--- a/internal/shedverbs/step.go
++++ b/internal/shedverbs/step.go
+@@ -326,7 +326,7 @@ func stepCmd(texts VerbTexts, spec *Spec) *cobra.Command {
+ 		Use:         texts.Step.Use,
+ 		Short:       texts.Step.Short,
+ 		Long:        texts.Step.Long,
+-		Annotations: map[string]string{clihelp.AudienceAnnotation: texts.Step.Audience},
++		Annotations: map[string]string{clihelp.AudienceAnnotation: texts.Step.Audience, clihelp.RunProcessAnnotation: clihelp.AnnotationEnabled},
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+ 				return nil
+diff --git a/internal/shuttleengines/shuttleengines_test.go b/internal/shuttleengines/shuttleengines_test.go
+index 1cb58db2..651a110e 100644
+--- a/internal/shuttleengines/shuttleengines_test.go
++++ b/internal/shuttleengines/shuttleengines_test.go
+@@ -16,6 +16,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine"
+@@ -220,14 +221,14 @@ func TestEnvScrub_MatchesTmuxkitServerEnviron(t *testing.T) {
+ 
+ 	environ := []string{
+ 		"HOME=/home/x", "CLAUDECODE=1", "CLAUDE_CODE_ENTRYPOINT=cli", "CLAUDE_CODEX=keep", "CODEX_HOME=/home/x/.lym/codex",
+-		logger.TraceIDEnv + "=abc", "LYM_STRAND_NAME=ab:orch", "LYM_PARENT=ab:driver", "LYM_OTHER=keep", "PATH=/bin",
++		logger.TraceIDEnv + "=abc", "LYM_STRAND_NAME=ab:orch", "LYM_PARENT=ab:driver", pauserecord.RunProcessEnv + "=1", "LYM_OTHER=keep", "PATH=/bin",
+ 	}
+ 
+ 	clean, _ := EnvScrub().Apply(environ)
+ 	var want []string
+ 	for _, entry := range clean {
+ 		switch strings.SplitN(entry, "=", 2)[0] {
+-		case logger.TraceIDEnv, "LYM_STRAND_NAME", "LYM_PARENT":
++		case logger.TraceIDEnv, "LYM_STRAND_NAME", "LYM_PARENT", pauserecord.RunProcessEnv:
+ 		default:
+ 			want = append(want, entry)
+ 		}
+diff --git a/internal/tendercli/cli_test.go b/internal/tendercli/cli_test.go
+index 1dfd79ca..32214979 100644
+--- a/internal/tendercli/cli_test.go
++++ b/internal/tendercli/cli_test.go
+@@ -362,6 +362,7 @@ func TestPauseAndResume_ApplyTheCallerRules(t *testing.T) {
+ func TestInstallNetworkGate_TellsThePairsSlugAndInstallsNothingOutsideAHub(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Setenv(agentname.StrandNameEnv, "")
++	t.Setenv(pauserecord.RunProcessEnv, "")
+ 	h := newHub(t)
+ 	allAlive := func(int, string) bool { return true }
+ 	sentinel := pauserecord.Geometry{RecordPath: filepath.Join(t.TempDir(), "sentinel", pauserecord.RecordFileName)}
+@@ -372,7 +373,7 @@ func TestInstallNetworkGate_TellsThePairsSlugAndInstallsNothingOutsideAHub(t *te
+ 	agentWorktree := filepath.Join(agentWorktrees, "agent")
+ 	gitkit.Git(t, h.PrimeWorktree(), "worktree", "add", "--detach", agentWorktree)
+ 	for _, outside := range []string{t.TempDir(), agentWorktree} {
+-		InstallNetworkGate(lymcwd.WithCwd(t.Context(), outside), nil, DetachedChild{})
++		InstallNetworkGate(lymcwd.WithCwd(t.Context(), outside), nil, DetachedChild{}, false)
+ 		_, probeDone := pauserecord.Network("probe")
+ 		probeDone()
+ 	}
+@@ -384,7 +385,7 @@ func TestInstallNetworkGate_TellsThePairsSlugAndInstallsNothingOutsideAHub(t *te
+ 		t.Errorf("Stat(agent worktree's sibling Bolt checkout) error = %v; want it absent", err)
+ 	}
+ 
+-	InstallNetworkGate(lymcwd.WithCwd(t.Context(), h.PairCodeWorktree(pairSlug)), nil, DetachedChild{})
++	InstallNetworkGate(lymcwd.WithCwd(t.Context(), h.PairCodeWorktree(pairSlug)), nil, DetachedChild{}, false)
+ 	pauserecord.Network("pair-probe")
+ 	geometry, err := hubgeom.PauseGeometry(h.Location)
+ 	if err != nil {
+@@ -410,7 +411,7 @@ func TestInstallNetworkGate_TellsThePairsSlugAndInstallsNothingOutsideAHub(t *te
+ 			hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: tt.anchor})
+ 			slug := tt.pauseSlug
+ 			boardWorktree := fabricengine.BoardDir(hub.Location.HubPath)
+-			InstallNetworkGate(lymcwd.WithCwd(t.Context(), boardWorktree), &slug, DetachedChild{})
++			InstallNetworkGate(lymcwd.WithCwd(t.Context(), boardWorktree), &slug, DetachedChild{}, false)
+ 			pauserecord.Network("board-probe")
+ 			geometry, err := hubgeom.PauseGeometry(hub.Location)
+ 			if err != nil {
+@@ -423,7 +424,8 @@ func TestInstallNetworkGate_TellsThePairsSlugAndInstallsNothingOutsideAHub(t *te
+ 		})
+ 	}
+ 
+-	// A detached child's flags decide what the installed gate reads as covering it.
++	// The process's kind decides what the installed gate reads as covering it:
++	// a run's own process is held, and an operator's verb passes every live entry.
+ 	setLive := func(t *testing.T, recordPath string, entries ...pauserecord.Entry) {
+ 		t.Helper()
+ 		if _, err := pauserecord.Update(recordPath, time.Now(), func(r *pauserecord.Record) error {
+@@ -435,31 +437,53 @@ func TestInstallNetworkGate_TellsThePairsSlugAndInstallsNothingOutsideAHub(t *te
+ 	}
+ 	hubEntry := pauserecord.Entry{Scope: pauserecord.ScopeHub, Caller: "EXTERNAL", PausedAt: time.Now()}
+ 	ownerEntry := pauserecord.Entry{Scope: "child", Caller: pauserecord.OwnerCaller, PausedAt: time.Now()}
++	pairEntry := pauserecord.Entry{Scope: pairSlug, Caller: "EXTERNAL", PausedAt: time.Now()}
++	boardDir := func(hub *hubforge.Hub) string { return fabricengine.BoardDir(hub.Location.HubPath) }
++	pairDir := func(hub *hubforge.Hub) string { return hub.PairCodeWorktree(pairSlug) }
+ 	childTests := []struct {
+ 		name        string
+ 		cwd         func(hub *hubforge.Hub) string
+ 		pauseSlug   *string
+ 		child       DetachedChild
++		strand      string
++		marked      bool
++		runCommand  bool
+ 		live        []pauserecord.Entry
+ 		wantCovered bool
+ 	}{
+-		{"DeferrableUnderHubEntry", func(hub *hubforge.Hub) string { return fabricengine.BoardDir(hub.Location.HubPath) }, ptr("child"), DetachedChild{Deferrable: true}, []pauserecord.Entry{hubEntry}, true},
+-		{"ParentLockedPassesOwnerEntry", func(hub *hubforge.Hub) string { return fabricengine.BoardDir(hub.Location.HubPath) }, ptr("child"), DetachedChild{Deferrable: true, ParentLocked: true}, []pauserecord.Entry{ownerEntry}, false},
+-		{"HubScopeIgnoresTaskSlugEntry", func(hub *hubforge.Hub) string { return hub.PairCodeWorktree(pairSlug) }, nil, DetachedChild{Deferrable: true, HubScope: true}, []pauserecord.Entry{{Scope: pairSlug, Caller: "EXTERNAL", PausedAt: time.Now()}}, false},
+-		{"HubScopeHeldByHubEntry", func(hub *hubforge.Hub) string { return hub.PairCodeWorktree(pairSlug) }, nil, DetachedChild{Deferrable: true, HubScope: true}, []pauserecord.Entry{{Scope: pairSlug, Caller: "EXTERNAL", PausedAt: time.Now()}, hubEntry}, true},
++		{"DeferrableUnderHubEntry", boardDir, ptr("child"), DetachedChild{Deferrable: true}, "", false, false, []pauserecord.Entry{hubEntry}, true},
++		{"ParentLockedPassesOwnerEntry", boardDir, ptr("child"), DetachedChild{Deferrable: true, ParentLocked: true}, "", false, false, []pauserecord.Entry{ownerEntry}, false},
++		{"HubScopeIgnoresTaskSlugEntry", pairDir, nil, DetachedChild{Deferrable: true, HubScope: true}, "", false, false, []pauserecord.Entry{pairEntry}, false},
++		{"HubScopeHeldByHubEntry", pairDir, nil, DetachedChild{Deferrable: true, HubScope: true}, "", false, false, []pauserecord.Entry{pairEntry, hubEntry}, true},
++		{"OperatorVerbPassesHubEntry", pairDir, nil, DetachedChild{}, "", false, false, []pauserecord.Entry{hubEntry}, false},
++		{"OperatorVerbPassesItsPairsEntry", pairDir, nil, DetachedChild{}, "", false, false, []pauserecord.Entry{pairEntry}, false},
++		{"OrchPassesHubEntry", pairDir, nil, DetachedChild{}, "ly:orch", false, false, []pauserecord.Entry{hubEntry}, false},
++		{"AgentHeldByItsPairsEntry", pairDir, nil, DetachedChild{}, "ly:" + pairSlug + ":writer", false, false, []pauserecord.Entry{pairEntry}, true},
++		{"UnparsableStrandHeld", pairDir, nil, DetachedChild{}, "not a strand", false, false, []pauserecord.Entry{hubEntry}, true},
++		{"RunCommandHeldAndMarksItsChildren", pairDir, nil, DetachedChild{}, "", false, true, []pauserecord.Entry{hubEntry}, true},
++		{"ChildOfARunCommandHeld", pairDir, nil, DetachedChild{}, "", true, false, []pauserecord.Entry{pairEntry}, true},
+ 	}
+ 	for _, tt := range childTests {
+ 		t.Run(tt.name, func(t *testing.T) {
++			t.Setenv(agentname.StrandNameEnv, tt.strand)
++			mark := ""
++			if tt.marked {
++				mark = pauserecord.RunProcessMarked
++			}
++			t.Setenv(pauserecord.RunProcessEnv, mark)
+ 			hub := newHub(t)
+ 			geometry, err := hubgeom.PauseGeometry(hub.Location)
+ 			if err != nil {
+ 				t.Fatal(err)
+ 			}
+ 			setLive(t, geometry.RecordPath, tt.live...)
+-			InstallNetworkGate(lymcwd.WithCwd(t.Context(), tt.cwd(hub)), tt.pauseSlug, tt.child)
++			InstallNetworkGate(lymcwd.WithCwd(t.Context(), tt.cwd(hub)), tt.pauseSlug, tt.child, tt.runCommand)
+ 			if got := pauserecord.GateCovered(); got != tt.wantCovered {
+ 				t.Errorf("GateCovered() = %v; want %v", got, tt.wantCovered)
+ 			}
++			if got, want := os.Getenv(pauserecord.RunProcessEnv) != "", tt.marked || tt.runCommand; got != want {
++				t.Errorf("run-process mark set = %v after InstallNetworkGate; want %v", got, want)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/tendercli/doc.go b/internal/tendercli/doc.go
+index bea4879c..3aebe4b9 100644
+--- a/internal/tendercli/doc.go
++++ b/internal/tendercli/doc.go
+@@ -74,6 +74,13 @@
+ // # Network gate
+ //
+ // InstallNetworkGate installs the process gate that holds network git and GitHub calls while a pause covers the process.
++// A pause stops runs, so the gate holds only a run's own process.
++// That is a run command, a lym process a run command started, a detached child, or an agent of a strand.
++// A run command is one whose cobra command carries `clihelp.RunProcessAnnotation`.
++// It sets `pauserecord.RunProcessEnv`, which every process it starts inherits.
++// An orch's strand is the operator's delegate and is not held.
++// Any other process runs an operator's verb from a terminal or a script, and its gate lets every live entry pass.
++// Its network calls are still marked in flight, so a pause's grace still waits for them.
+ // It resolves the working directory and installs nothing outside a hub.
+ // A git worktree whose parent holds no board-level `_lym` is outside one.
+ // An agent worktree nested in the prime is an example.
+diff --git a/internal/tendercli/gate.go b/internal/tendercli/gate.go
+index 1406a06c..137dcb69 100644
+--- a/internal/tendercli/gate.go
++++ b/internal/tendercli/gate.go
+@@ -31,6 +31,10 @@ type DetachedChild struct {
+ }
+ 
+ // InstallNetworkGate installs the pause gate that holds the process's network git and GitHub calls during a pause.
++// Only a run's own process is held; any other process runs an operator's verb, and its gate lets every live entry pass.
++// A run's own process is a run command, a lym process a run command started, or a detached child.
++// An agent of a strand other than an orch is one too.
++// A run command marks the process environment, so every lym process it starts is held too.
+ // The hub is the one the context's working directory resolves to; outside a hub nothing is installed.
+ // A git worktree nested in a repository without a board-level _lym is outside a hub,
+ // so no in-flight marker is written under a path guessed from its parent.
+@@ -47,7 +51,11 @@ type DetachedChild struct {
+ // A child that is Deferrable and not ParentLocked defers under a pause instead of waiting.
+ // A ParentLocked child lets its own slug's owner entry pass.
+ // The parent lock it was spawned under makes it the process that must finish the run's push.
+-func InstallNetworkGate(ctx context.Context, pauseSlug *string, child DetachedChild) {
++func InstallNetworkGate(ctx context.Context, pauseSlug *string, child DetachedChild, runCommand bool) {
++	if runCommand {
++		// The key is a valid constant, so Setenv cannot fail.
++		_ = os.Setenv(pauserecord.RunProcessEnv, pauserecord.RunProcessMarked)
++	}
+ 	if pauseSlug == nil && child.HubScope {
+ 		hubSlug := ""
+ 		pauseSlug = &hubSlug
+@@ -75,11 +83,13 @@ func InstallNetworkGate(ctx context.Context, pauseSlug *string, child DetachedCh
+ 	pid := os.Getpid()
+ 	startTime, _ := proc.StartTime(pid)
+ 	locks := &parentlock.Store{Dir: parentlock.Dir(fabricengine.BoltDir(location.HubPath))}
++	strand := os.Getenv(agentname.StrandNameEnv)
+ 	pauserecord.InstallGate(pauserecord.Gate{
+ 		Geometry:         geometry,
+-		Strand:           os.Getenv(agentname.StrandNameEnv),
++		Strand:           strand,
+ 		PID:              pid,
+ 		StartTime:        startTime,
++		ExemptAll:        !heldByPause(child, strand),
+ 		Defer:            child.Deferrable && !child.ParentLocked,
+ 		OwnerEntryExempt: child.ParentLocked,
+ 		HoldsParentLock: func(slug string) bool {
+@@ -96,3 +106,19 @@ func InstallNetworkGate(ctx context.Context, pauseSlug *string, child DetachedCh
+ 		},
+ 	})
+ }
++
++// heldByPause reports whether a pause holds the network calls of this process, which is a run's own process.
++// That is a detached child, a process whose environment carries the run-process mark,
++// or an agent of the named strand when the strand is no orch.
++// A strand name that does not parse is held.
++// Every other process runs an operator's verb, which a pause never holds.
++func heldByPause(child DetachedChild, strand string) bool {
++	if child != (DetachedChild{}) || os.Getenv(pauserecord.RunProcessEnv) != "" {
++		return true
++	}
++	if strand == "" {
++		return false
++	}
++	name, err := agentname.Parse(strand)
++	return err != nil || !agentname.MatchesRole(name.Role, agentname.RoleOrch)
++}
+diff --git a/internal/testkit/tmuxkit/tmuxkit.go b/internal/testkit/tmuxkit/tmuxkit.go
+index f074c2ce..32564b80 100644
+--- a/internal/testkit/tmuxkit/tmuxkit.go
++++ b/internal/testkit/tmuxkit/tmuxkit.go
+@@ -526,7 +526,8 @@ func startServer(tmux, key string) error {
+ }
+ 
+ // ServerEnviron returns environ without the variables no pane may inherit from the process that starts the server.
+-// Those are the engines' variables, the trace id, and the agent name variables of the enclosing strand.
++// Those are the engines' variables, the trace id, the agent name variables of the enclosing strand,
++// and the mark of a run's own process.
+ // The engine filter copies the scrub the engines declare.
+ // This package cannot import the engines, because their tests import the kit.
+ // A test outside the kit pins the two copies together.
+@@ -536,7 +537,7 @@ func ServerEnviron(environ []string) []string {
+ 		key, _, _ := strings.Cut(entry, "=")
+ 		switch {
+ 		case key == "CLAUDECODE", strings.HasPrefix(key, "CLAUDE_CODE_"), strings.HasPrefix(key, "CODEX_"):
+-		case key == "LYM_TRACE_ID", key == agentname.StrandNameEnv, key == agentname.ParentEnv:
++		case key == "LYM_TRACE_ID", key == agentname.StrandNameEnv, key == agentname.ParentEnv, key == "LYM_RUN_PROCESS":
+ 		default:
+ 			clean = append(clean, entry)
+ 		}
