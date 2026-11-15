@@ -429,7 +429,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 15,
   "masterStrand": "8a2b99c3d5c2f215fec6fa7a21ef4844",
   "masterSessionId": "b0363183-f15a-4ce0-87b3-7c740ff517a3",
   "masterEngine": "claude",
@@ -531,6 +531,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-ad470a8ad4afc5496.jsonl"
       ]
+    },
+    "15": {
+      "slug": "pr-record-tracked",
+      "cards": [
+        "15-pr-record-tracked",
+        "16-fixer-attempts-tracked"
+      ],
+      "cardHashes": {
+        "15-pr-record-tracked": "4da369ca80f022dc6f1e0dfee4ca89da4811488fbc78c6fbd2fc272265e750a2",
+        "16-fixer-attempts-tracked": "b61ff54b0b0dad6e600cbbff100113499882472c7250d6de8923bd746da76328"
+      },
+      "startSha": "1edab1f167664bf52105921b784fb840696f1253",
+      "kind": "fork",
+      "spawnedAt": "2026-11-15T18:31:11Z",
+      "sessionId": "b0363183-f15a-4ce0-87b3-7c740ff517a3",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "pairteardown-read-run",
