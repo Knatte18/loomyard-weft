@@ -29,6 +29,12 @@ Decision: The one-shot fixer applies to every use of the arbiter, batten's inclu
 
 Rationale: The operator ruled that the widened arbiter is the arbiter everywhere; a verdict-only arbiter in batten would split one role into two behaviours.
 
+### Added after Discussion (parent, 2026-11-15): Batten's arbiter edits in the task worktree, never the prime
+
+Decision: Batten's arbiter seam and the prompt's Worktree name the task worktree (taskWorktreeLocation over the prime and slug), never the hub's prime. At a stop where the task worktree is absent (before it is added or after its teardown), that one call gets no worktree seam and gives a verdict only, and its prompt says so.
+
+Rationale: The prime's HEAD and tree move under other writers, so a read of the arbiter's edits there would claim their commits; the task worktree is the run's own, as it is for loom's arbiter, which keeps one arbiter behaviour everywhere the run has a tree of its own.
+
 ## Constraints
 
 ## Auto-mode assumptions
