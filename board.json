@@ -617,6 +617,26 @@
       "created": "2026-11-15T13:59:42Z",
       "revised": "2026-11-15T13:59:42Z",
       "profile": "docs"
+    },
+    {
+      "id": 1369,
+      "handle": "F3",
+      "slug": "move-task-by-handback",
+      "title": "Move a running task by hand-back and a fresh run, not a re-parent verb",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "batten",
+        "loom",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that",
+      "body": "## Seen\n\nThe study `docs/research/loom/reparent-running-task-2026-11-12.md` (commit `5e41ee2b`) finds that a verb moving a running task to another parent is feasible but wide:\ntwo durable stores written by two modules with no atomic change, a narrow board write past the run lock,\nan ancestry check on the new parent, and a cross-module tapestry run of its own.\n\n## Idea (operator, 2026-11-15)\n\nMoving a running task is rare, and a verb for it is clumsy for what it buys.\nInstead, end the run and start a new one with more information:\n\n1. The run's live writer writes back to the task's board entry everything it has learned:\n   what is done, the decisions taken, what is left, and where its commits are.\n2. The run is cancelled, and its commits are kept under an archive tag, so the new run can read them.\n3. A new task, under the new parent, starts from that body.\n\nWhat the design must settle:\n\n- Who writes the hand-back, since a held entry takes no body edits from a run: a note the operator merges, or a new verb.\n- Whether the new run re-uses the old commits (a cherry-pick, which brings back the study's ancestry question) or only reads them.\n- Whether this is a recipe step, a `lym batten` verb, or orch guidance alone.\n\nWaits until the adopt redesign (`adopt-redesign`) has settled how run state moves.\n",
+      "created": "2026-11-15T14:02:15Z",
+      "revised": "2026-11-15T14:02:15Z"
     }
   ],
   "prime_owner": "neve",
