@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Review",
+  "current_producer": "Code-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Review",
-    "last": "Code-Bouncer → bounced to Code-Burler-Review",
+    "now": "Code-Burler-Fix",
+    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -92,6 +92,36 @@
       "at": "2026-11-15T12:25:04Z",
       "started_at": "2026-11-15T12:24:33Z",
       "routed_to": "Code-Burler-Review"
+    },
+    {
+      "producer": "Code-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/merge-parent-reuses-slug/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-15T12:27:55Z",
+      "started_at": "2026-11-15T12:25:06Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-15T12:27:41.34443223Z",
+          "end": "2026-11-15T12:27:41.344777505Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-11-15T12:27:42.011874352Z",
+          "end": "2026-11-15T12:27:54.100818317Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-15T12:27:54.251186042Z",
+          "end": "2026-11-15T12:27:54.252269175Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Fix"
     }
   ],
   "product": {
