@@ -1,6 +1,6 @@
 # A beam window opens a useless README, and markdown preview does not render
 
-`ide-beam-readme-preview` · Task · bug, ide · running · Drift-Recheck
+`ide-beam-readme-preview` · Task · bug, ide · running · Describe
 
 ## Seen (operator, 2026-11-15)
 
