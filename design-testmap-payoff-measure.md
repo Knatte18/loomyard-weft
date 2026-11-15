@@ -1,6 +1,6 @@
 # Measure whether coverage maps pay off: incremental upkeep time, load on other runs, gate time saved
 
-`testmap-payoff-measure` · Task · research, gate, testkit · running · Drift-Recheck
+`testmap-payoff-measure` · Task · research, gate, testkit · running · Finalize
 
 ## Goal
 
