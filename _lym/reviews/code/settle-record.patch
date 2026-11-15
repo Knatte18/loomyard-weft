@@ -1,0 +1,42 @@
+diff --git a/contracts/stencils/edit/edit-directive.md b/contracts/stencils/edit/edit-directive.md
+index 58486f8e..b74f072e 100644
+--- a/contracts/stencils/edit/edit-directive.md
++++ b/contracts/stencils/edit/edit-directive.md
+@@ -14,6 +14,9 @@ Read a file with Read and search files with grep.
+ A shell guard refuses a shell edit: never `sed -i`, never `perl -i`, and never a heredoc, redirect or tee into a source file.
+ A Go file's formatting is fixed with `lym loom fmt <file>`.
+ Scratch files go under `.scratch/` in the working directory, never a system temp directory, and are removed by their literal path.
++`.scratch` is a link to a directory kept for your task alone, so a file under it stays in your own task.
++A build under `.scratch/` resolves a relative reference from the link's target, not from the working directory;
++a project built there names the working tree's files by absolute path.
+ A scratch file with a source extension such as `.md`, `.yaml` or `.sh` is written with Write, not by a redirect.
+ Work only in your own worktree: never edit, commit or push in another, and never create one, unless your parent or the operator says so for that case.
+ When work belongs in another worktree, say so to your parent instead.
+diff --git a/internal/editdirective/doc.go b/internal/editdirective/doc.go
+index 906a36bc..b16c18fd 100644
+--- a/internal/editdirective/doc.go
++++ b/internal/editdirective/doc.go
+@@ -13,6 +13,9 @@
+ // It states that in lym sessions it overrides any harness text that permits reading or changing files by shell.
+ // A Go file's formatting goes through `lym loom fmt`.
+ // Scratch files go under `.scratch/`, and those with a source extension are written with Write.
++// `.scratch` is a link to a directory kept for the task alone,
++// so a build there resolves a relative reference from the link's target;
++// the directive has a project built there name the working tree's files by absolute path.
+ // It also keeps a role in its own worktree:
+ // no edit, commit, push or new worktree elsewhere unless its parent or the operator says so for that case.
+ // It names the tools a role edits with and the worktree it edits in, never what the role may write.
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index f1c32f67..a37ef8ea 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -651,6 +651,9 @@
+ // A real directory would change its own modification time with every file an agent creates or removes beneath it,
+ // and every source-scan test that opens the module root hashes that time into its `go test` cache key;
+ // a link's own `Lstat` stays fixed while files change under its target.
++// The link has a cost.
++// A build under `.scratch` resolves a relative project reference from the target in the weft worktree.
++// It does not resolve it from the warp anchor.
+ // The warp `.git/info/exclude` carries `/<anchor>/.scratch` (`/.scratch` at anchor `.`) with no trailing slash;
+ // git matches a link as a file, so a directory-only pattern would not exclude it.
+ // A legacy line with the trailing slash is replaced.
