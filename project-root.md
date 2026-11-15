@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (5)
+## Tasks (6)
 
 Concrete and claimable; only a task can run.
 
@@ -26,7 +26,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (4)
+### Draft (5)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -36,6 +36,7 @@ Not released; nothing starts it until its status is cleared.
 | T4 | `draft` **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | motif | T3 | 5w<br>10m | webster, weaver |
 | T5 | `draft` **Codex as darn writer, replayed on a landed task, on Neve** | [`codex-writer-bench-neve`](design-codex-writer-bench-neve.md) | darn · docs |  | 0m<br>0m | codex, shuttle |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 2d<br>2d | slack, creel, orch |
+| T15 | `draft` **Codex as darn writer, replayed on a landed task, on OSL-1046** | [`codex-writer-bench-osl`](design-codex-writer-bench-osl.md) | darn · docs |  | 0m<br>0m | codex, shuttle |
 
 ## Notes (9)
 
