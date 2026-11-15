@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | Discussion-Burler-Fix | neve | 2d<br>36m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | Discussion-Burler-Fix | neve | 2d<br>37m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 #### Ready (0)
 
@@ -131,7 +131,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Refresh the README with what landed since 2026-11-11**<br>• Coverage-map test selection, orch in decision-record review, lens forks wording, new measurement rows, a sober multi-machine claim | [`readme-refresh-nov`](design-readme-refresh-nov.md) | darn · docs | Drift-Await | neve | 0m<br>0m | docs |
+| T3 | **Refresh the README with what landed since 2026-11-11**<br>• Coverage-map test selection, orch in decision-record review, lens forks wording, new measurement rows, a sober multi-machine claim | [`readme-refresh-nov`](design-readme-refresh-nov.md) | darn · docs | Drift-Expect | neve | 0m<br>0m | docs |
 
 #### Ready (0)
 
