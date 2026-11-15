@@ -20,8 +20,11 @@ every piece of state lym keeps, where it lives and whether git holds it.
 ## Operator decisions (2026-11-15)
 
 - Adopt runs in the foreground, in the operator's terminal, never as a detached background job.
-- Nothing else happens in the hub until adopt is done: no run starts, no dobby pass, no orch action,
+- Nothing else happens in the hub until adopt is done: no run starts, no dobby pass, no orch action on a held run,
   until adopt has finished and every failing test it found is fixed.
+  The orch is up during the hold and acts only on the fix task and on a landing past its parent-side merge.
+- The orch continues its previous session on the same machine only.
+  On another machine it starts a new session with the orch note; no orch transcript moves between machines.
 - A machine cannot know what another machine holds uncommitted or unpushed; only what that machine has pushed is visible.
   Adopt works from pushed state alone and never asks about the other machine's local state.
 - lym detects that it has not run for a while, such as after the machine slept or hibernated or was switched off.
@@ -31,7 +34,7 @@ every piece of state lym keeps, where it lives and whether git holds it.
 
 - Define each run's states and transitions as one FSM whose current state is a committed and pushed record.
 - Each transition writes and pushes its record before it acts, so a stop at any point leaves a state another machine can read and go on from.
-- State that cannot live in git, such as a live tmux pane or a session transcript, is a cache that lym rebuilds from the pushed state,
+- State that cannot live in git, such as a live tmux pane, is a cache that lym rebuilds from the pushed state,
   never a source a resume or an adopt depends on.
 - With that in place, adopt becomes: pull, read the FSM state, and go on, with no reconciling step.
 
@@ -42,7 +45,7 @@ every piece of state lym keeps, where it lives and whether git holds it.
   the 2026-11-15 adopt of `root` itself ended `done` with a green check.
 - **The orch comes back as a new session (A6, A7):** on both recorded adopts the orch's resume was refused because a live process still held the previous session
   (`session e7be957b-… is held by live process …`), so lym launched fresh with the typed instructions carried over (`internal/shuttleengine/carryover.go`).
-  The operator wants the orch to come back as a continuation of its previous session, never as a new one.
+  On the machine that holds its session, the orch shall resume that session, never launch fresh.
 - **The owner machine has two spellings (A8):** the Neve orch watcher exited with `owned by machine osl46`, where earlier lines say `osl-1046`.
   Owner identity is the machine name, so a second spelling reads as another machine.
 - **Left-over pairs stand forever:** the bench pairs `pwc-opus` and `pwc-fable` still stood three days after their bench landed (report `384d7cb7`).
