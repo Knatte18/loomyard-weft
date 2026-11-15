@@ -483,6 +483,28 @@
       "body": "## Seen (operator, 2026-11-15)\n\nThe operator worked on OSL-1046 while Neve hibernated (2026-11-12 21:44 to 2026-11-15 12:20).\nThe hub's orch watcher on Neve had exited with `owned by machine osl46` (`.lym/orch/watch.log`).\nAfter the hub came back to Neve, the prime orch came up at 12:27 as a new Claude session (`7da34817…`).\nThat session got a fresh prompt that pointed at the 2026-11-12 handoff,\nfollowed by the previous session's typed instructions carried over (`internal/shuttleengine/carryover.go`).\nThe previous orch session (`e7be957b…`, a 10 MB transcript on Neve) was not resumed.\nThe operator wants the orch to come back as a continuation of the previous orch session, never as a new one.\n\n## Idea\n\nWhen the prime or a beam orch comes up again after an ownership move or a restart, resume its last session from the transcript on this machine.\nFall back to a fresh launch with the carry-over only when no transcript is present here, and say so in the launch line.\nFirst find which path chose the fresh launch: the watcher's exit on the ownership move, the adopt, or the orch launch itself.\n",
       "created": "2026-11-15T11:30:23Z",
       "revised": "2026-11-15T11:30:23Z"
+    },
+    {
+      "id": 1350,
+      "handle": "E5",
+      "slug": "darn-code-reviewer-opus-default",
+      "title": "Darn's Code-Review reviewer should default to Opus, not Sonnet",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "darn",
+        "profiles",
+        "loom"
+      ],
+      "issues": [
+        130
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #130](https://github.com/Knatte18/loomyard/issues/130).\n\n## Seen\n\n`code_reviewer_model` defaults to `sonnet[medium]` (internal/loomengine/template.yaml), and darn's Code-Review perch uses it.\nIn a darn run the Code-Review perch is the only in-run review: darn has no Discussion or Plan review, so this reviewer has to judge whether the writer did the task the entry asks for, not only whether the diff is correct.\nIn a recent darn run (a solver bug trace against a reference model, profile wide), the perch converged after three rounds and its last round rejected a finding that the entry's trace was left open as \"not a defect\".\nThe parent's PR review then found the work incomplete, which took three more fix rounds.\nHubs currently work around this per task with `run_settings: {\"loom\":{\"code_reviewer_model\":[\"fable[high]\",\"sonnet[medium]\"]}}`.\n\n## Expected\n\nDarn's Code-Review reviewer defaults to an Opus model-spec (for example `opus[high]`), set in darn's defaults or its profiles, so the in-run review can check the entry's work items, decisions and acceptance steps as well as the code.\nTapestry's Code-Review may keep its default, since its Discussion and Plan reviews already check the scope.",
+      "created": "2026-11-15T11:34:15Z",
+      "revised": "2026-11-15T11:34:15Z"
     }
   ],
   "prime_owner": "neve",

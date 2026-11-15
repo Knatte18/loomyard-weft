@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-15 11:30 UTC; every age below is as of then.
+Rendered 2026-11-15 11:34 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (17)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (18)</strong></summary>
 
 Owner `neve`
 
@@ -95,7 +95,7 @@ Not released; nothing starts it until its status is cleared.
 | T5 | `draft` **Keep the coverage maps in each pair's weft branch, committed and pushed by lym gate testmap** | [`testmap-maps-in-weft`](design-testmap-maps-in-weft.md)<br>[Sketch](decision-testmap-maps-in-weft.md) | tapestry · solid |  | 2d<br>2d | gate, testkit, dobby |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 2d<br>2d | slack, creel, orch |
 
-### Notes (13)
+### Notes (14)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -110,15 +110,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **lym adopt does not work**<br>• The operator reports that lym adopt fails today; the cause is not yet found | [`adopt-does-not-work`](design-adopt-does-not-work.md) | 2d<br>2d | orch, fabric |
-| B2 |  | **The orch comes back as a new session, not a continuation, after the hub moves back to this machine** | [`orch-resume-after-owner-move`](design-orch-resume-after-owner-move.md) | 0m<br>0m | orch, shuttle |
+| B2 |  | **The orch comes back as a new session, not a continuation, after the hub moves back to this machine** | [`orch-resume-after-owner-move`](design-orch-resume-after-owner-move.md) | 3m<br>3m | orch, shuttle |
 
-#### Enhancements (3)
+#### Enhancements (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 7d<br>7d | heddle |
 | E2 |  | **Raddle cuts darn families for size and concurrency**<br>• Fewer, larger darn parts with a short dependency chain, so a family pays fewer fixed costs and runs more parts at once | [`raddle-darn-sizing`](design-raddle-darn-sizing.md) | 6d<br>3d | shed, loom, darn |
 | E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 3d<br>3d | testkit, gate |
+| E5 |  | **Darn's Code-Review reviewer should default to Opus, not Sonnet** | [`darn-code-reviewer-opus-default`](design-darn-code-reviewer-opus-default.md) | 0m<br>0m | darn, profiles, loom |
 
 #### Features (7)
 
