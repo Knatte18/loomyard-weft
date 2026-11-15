@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-15 14:02 UTC; every age below is as of then.
+Rendered 2026-11-15 14:03 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | Discussion-Burler-Fix | neve | 2d<br>39m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T4 | **Redesign adopt on one FSM of run state, pushed to GitHub at all times** | [`adopt-redesign`](design-adopt-redesign.md) | motif | Discussion-Burler-Fix | neve | 2d<br>40m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 #### Ready (0)
 
@@ -131,7 +131,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Refresh the README with what landed since 2026-11-11**<br>• Coverage-map test selection, orch in decision-record review, lens forks wording, new measurement rows, a sober multi-machine claim | [`readme-refresh-nov`](design-readme-refresh-nov.md) | darn · docs | Finalize | neve | 2m<br>2m | docs |
+| T3 | **Refresh the README with what landed since 2026-11-11**<br>• Coverage-map test selection, orch in decision-record review, lens forks wording, new measurement rows, a sober multi-machine claim | [`readme-refresh-nov`](design-readme-refresh-nov.md) | darn · docs | Finalize | neve | 3m<br>3m | docs |
 
 #### Ready (0)
 
@@ -173,7 +173,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>2w | burler |
 | F2 |  | **One desktop launcher brings back every hub and beam that was in flight after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | 6d<br>3d | orch, reed, termwindow, shortcut |
-| F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 0m<br>0m | batten, loom, board |
+| F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 1m<br>0m | batten, loom, board |
 | F4 |  | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | 4d<br>4d | config, fabric |
 | F5 |  | **A stop button in the prime orch session that takes the whole hub down, behind a yes/no** | [`hub-stop-button`](design-hub-stop-button.md) | 2h<br>2h | reed, orch, tender |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>9d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |

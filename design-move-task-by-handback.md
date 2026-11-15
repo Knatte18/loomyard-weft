@@ -13,14 +13,15 @@ an ancestry check on the new parent, and a cross-module tapestry run of its own.
 Moving a running task is rare, and a verb for it is clumsy for what it buys.
 Instead, end the run and start a new one with more information:
 
-1. The run's live writer writes back to the task's board entry everything it has learned:
+1. The run's live writer writes everything it has learned to a hand-back file in its run records:
    what is done, the decisions taken, what is left, and where its commits are.
-2. The run is cancelled, and its commits are kept under an archive tag, so the new run can read them.
-3. A new task, under the new parent, starts from that body.
+   The entry is held by the run and takes no body edit, so the file is the only place it can write.
+2. The run is cancelled with `lym batten cancel`, which sets the entry back to `draft` and frees it.
+   The archive tag keeps the run records, the hand-back and the commits, so the new run can read them.
+3. The orch writes the hand-back into the entry's body, or into a new task under the new parent, and releases it.
 
 What the design must settle:
 
-- Who writes the hand-back, since a held entry takes no body edits from a run: a note the operator merges, or a new verb.
 - Whether the new run re-uses the old commits (a cherry-pick, which brings back the study's ancestry question) or only reads them.
 - Whether this is a recipe step, a `lym batten` verb, or orch guidance alone.
 
