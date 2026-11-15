@@ -30,8 +30,11 @@ The accounts differ by machine: OSL-1046 has a work account and private account 
 So a worktree's account is a fact of the machine it runs on, never of the repository:
 
 - Each machine lists its own accounts in its machine layer (previous D1), and a worktree's chosen account is kept on that machine only.
-- A pin names a role that each machine maps to one of its own accounts, such as `orch` or `default`, never an account another machine may lack.
-  A pin whose role a machine does not map falls back to the pick.
+- The whole account policy lives in that machine layer, which is per hub and never tracked: the accounts, their weights, and the pins,
+  such as "orchs and beams on the work account" or "this hub only on private account 1".
+  The repository's tracked config holds no account setting, so each machine can spread the work its own way:
+  at home everything runs on private account 1, on OSL-1046 the orchs sit on one account and the workers spread over both.
+- A machine with one account, or none listed, runs everything as today with no pick.
 - When a worktree moves to another machine through adopt, it gets an account from that machine's list by the same rules.
   Its Claude transcripts stay on the old machine in any case, so its sessions start fresh there;
   the adopt Motif (`adopt-redesign`) settles how a run goes on after such a move.
