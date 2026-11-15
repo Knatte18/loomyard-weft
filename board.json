@@ -480,7 +480,6 @@
       "created": "2026-11-15T15:57:25Z",
       "revised": "2026-11-15T15:57:47Z",
       "profile": "solid",
-      "notify_on_land": true,
       "project": "adopt-build",
       "discussed": true,
       "record_body_sha256": "b8f42d09101fcaf9bd0675de22064556c5d1d0353c20af46b6d6b0c91f0fb1e0"
