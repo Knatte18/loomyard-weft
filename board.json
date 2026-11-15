@@ -459,10 +459,10 @@
     },
     {
       "id": 1357,
-      "handle": "E6",
+      "handle": "T3",
       "slug": "test-only-functions-in-prod",
       "title": "Prod code holds test-only functions: 156 unreachable from main; add a PATTERN rule",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "pattern"
@@ -474,6 +474,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #123](https://github.com/Knatte18/loomyard/issues/123).\n\n## Seen\n\n`deadcode ./cmd/lym` (golang.org/x/tools/cmd/deadcode) on `main` at `35f5f8670` reports 156 functions in production code that the `lym` binary never reaches from `main`.\nThe packages with most are `internal/fabricengine` (16), `internal/shedcheck` (9), `internal/websterengine` (8), `internal/loomcli` (6) and `internal/logger` (6).\n\nA spot check shows most are not dead code but helpers that only tests call, yet they sit in non-test files:\n\n- 54 of the 156 are `RunCLI` or `RunCLIIn` in the `*cli` packages; their callers are `_test.go` files.\n- `batcher.ProfileWeights` and `batcher.PeakContext` are called only from `batcher`'s tests and their own file.\n- `cmd/lym/main.go` has `run`, which repeats the body of `main` (build the root, set output, run, notify and sweep) and is called only by tests, so that logic exists twice.\n\nThe repository is about 376 000 lines of production Go and 546 000 of test Go; test-only helpers in production files add to the first figure without adding behaviour.\n\n## Not known\n\nWhich of the 156 have no caller at all, tests included.\n`deadcode -test` only roots the tests of the packages named, so each package needs its own run; this report did not do that.\n\n## Idea\n\nAdd a PATTERN rule: a function that only tests call lives in a `_test.go` file or in `internal/testkit`, never in a production file.\nEnforce it with a pattern test that runs `deadcode` per package, and fails on an unreachable exported or unexported function that a non-test file declares and only test files call.\nThen move the existing 156 over, starting with `RunCLI` and `RunCLIIn`, and fold `cmd/lym`'s `run` into one shared function that `main` and the tests both call.\nRun `deadcode` per package first to separate the truly dead functions from the test-only ones, and delete the dead ones.\n",
+      "status": "draft",
       "created": "2026-11-15T11:34:27Z",
       "revised": "2026-11-15T11:34:27Z"
     },

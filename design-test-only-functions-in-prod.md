@@ -1,6 +1,6 @@
 # Prod code holds test-only functions: 156 unreachable from main; add a PATTERN rule
 
-`test-only-functions-in-prod` · Note · enhancement, pattern
+`test-only-functions-in-prod` · Task · enhancement, pattern · draft
 
 Imported from [issue #123](https://github.com/Knatte18/loomyard/issues/123).
 
