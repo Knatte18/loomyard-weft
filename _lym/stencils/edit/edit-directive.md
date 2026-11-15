@@ -1,6 +1,8 @@
-<!-- This is the shared edit directive: internal/editdirective.Directive renders it unconditionally into the edit_directive marker of every spawned role's opening stencil.
-     It is its rules' only statement. It declares no marker and must stay marker-free.
-lym-stencil: sha256=4e0ca4b28b4de75d5389f958785f391f7ed1a5a85e4cf1d3c0deffef7344edc9 build=96e5aa038ced60aea8e6b1bd54295814195da0d4 time=2026-11-01T15:04:09Z -->
+<!-- This is the shared edit directive.
+     internal/editdirective.Directive renders it unconditionally into the edit_directive marker of every spawned role's
+     opening stencil.
+     It declares no marker and must stay marker-free.
+lym-stencil: sha256=3b2d71c872f7bac99c671f1666bd7978688a339b665c5398a4657ba40fe38121 build=5b612ee58eb45c3fbaca9e3bced73cac5110ca8e time=2026-11-15T12:46:46Z -->
 
 ## Editing files
 
@@ -13,6 +15,9 @@ Read a file with Read and search files with grep.
 A shell guard refuses a shell edit: never `sed -i`, never `perl -i`, and never a heredoc, redirect or tee into a source file.
 A Go file's formatting is fixed with `lym loom fmt <file>`.
 Scratch files go under `.scratch/` in the working directory, never a system temp directory, and are removed by their literal path.
+`.scratch` is a link to a directory kept for your task alone, so a file under it stays in your own task.
+A build under `.scratch/` resolves a relative reference from the link's target, not from the working directory;
+a project built there names the working tree's files by absolute path.
 A scratch file with a source extension such as `.md`, `.yaml` or `.sh` is written with Write, not by a redirect.
 Work only in your own worktree: never edit, commit or push in another, and never create one, unless your parent or the operator says so for that case.
 When work belongs in another worktree, say so to your parent instead.
