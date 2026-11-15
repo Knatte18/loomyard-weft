@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-15 16:09 UTC; every age below is as of then.
+Rendered 2026-11-15 16:10 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 5d · Owner `neve`
@@ -19,7 +19,7 @@ cut existing redundant tests, and scope the verify gate to the tests that cover 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (2)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -29,21 +29,13 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Measure what sends coverage-map upkeep into whole-package rebuilds, and what a name-following selector would save** | [`testmap-miss-causes`](design-testmap-miss-causes.md) | darn · docs | Darn-Write | neve | 11m<br>11m | testkit, gate |
+| T4 | **Measure what sends coverage-map upkeep into whole-package rebuilds, and what a name-following selector would save** | [`testmap-miss-causes`](design-testmap-miss-causes.md) | darn · docs | Darn-Write | neve | 12m<br>12m | testkit, gate |
 
 ### Ready (0)
 
 Waits on nothing open; can start now.
 
 _None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Measure what coverage-map upkeep costs, check how its state is shown, and write the operator guide**<br>• What the upkeep passes have cost, whether one call shows the maps state, and a short guide to using and keeping the maps | [`testmap-upkeep-cost-and-guide`](design-testmap-upkeep-cost-and-guide.md) | darn · docs |  | 2d<br>0m | gate, testkit, dobby |
 
 ## Notes (3)
 
@@ -55,4 +47,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E3 |  | **Narrow the coverage selector's non-body miss by following the names a changed declaration is referenced by** | [`selector-non-body-miss`](design-selector-non-body-miss.md) | 4d<br>3h | testkit, gate |
 | E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 5d<br>4h | testkit, gate |
-| E5 |  | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | 8m<br>8m | testkit, gate, dobby |
+| E5 |  | **Coverage maps and test-suite trimming run only on command, never per landing** | [`testmap-on-command`](design-testmap-on-command.md) | 9m<br>9m | testkit, gate, dobby |
