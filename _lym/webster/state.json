@@ -1,6 +1,6 @@
 {
   "runGuid": "ff1419e81331b5512eb3e7468da3cb7c",
-  "planFingerprint": "1389c3445fd8246867c63a33975e5b886642d11af691023a71640ffed3ffa3a9",
+  "planFingerprint": "501e2ad41438eff9edd1e708f6d246453ad1af2b72984cb508f1c3dc0e9a0c06",
   "planFileHashes": {
     "00-overview.md": "b8c2a4ab56e5c251fcba24731fb10724205ba6fc75b666d8a27077414f1716e1",
     "01-shed-run-intents.md": "37201750399d72c23bf5d91b002595b7aec0269b4eb232192d455c034233898c",
@@ -12,7 +12,7 @@
     "07-cancel-intent.md": "7974bf93265a7c48c8e2691e976647760a5e0758e0528df7b14f04b3e545053a",
     "08-cancel-readers-intent.md": "aeb4ea250275c0633d84a2c4038e0ab356723131194f2ea749d82a2e037ee4ac",
     "09-cancelled-record-cleanup.md": "bd17fefb6d95f8595639036d11d08c57c04f1564b1a2603d55d92987b227dbd7",
-    "10-batten-run-act.md": "b0b40857072baf9e484b5de8dd820102dfc2c4cfc07989614c009bf973953c73",
+    "10-batten-run-act.md": "b8a4d017fc96c38d15b2f700458cba7e50b60dac9240c43c6120833527ee020b",
     "11-dobby-pass-act.md": "c26f66fa566bfe39b247912091cf28fd53f0b4d6fa317d1ad6ea6d48fd70a2a3",
     "12-loom-resume-act.md": "66be4cdff1690d1788fa9e6854fb7878fb3b2161f30d19d1ea8aa818f540f20b",
     "13-shared-bolt-pull.md": "2b041150110927938511b86d81aa6aa24ae0e265171e472d074d4f409326f39d",
@@ -429,7 +429,7 @@
       }
     }
   ],
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "8a2b99c3d5c2f215fec6fa7a21ef4844",
   "masterSessionId": "b0363183-f15a-4ce0-87b3-7c740ff517a3",
   "masterEngine": "claude",
@@ -538,19 +538,49 @@
       "cardHashes": {
         "08-cancel-readers-intent": "aeb4ea250275c0633d84a2c4038e0ab356723131194f2ea749d82a2e037ee4ac",
         "09-cancelled-record-cleanup": "bd17fefb6d95f8595639036d11d08c57c04f1564b1a2603d55d92987b227dbd7",
-        "10-batten-run-act": "b0b40857072baf9e484b5de8dd820102dfc2c4cfc07989614c009bf973953c73"
+        "10-batten-run-act": "b8a4d017fc96c38d15b2f700458cba7e50b60dac9240c43c6120833527ee020b"
       },
       "startSha": "6638ae10b604248bdea4fea1cfc659dd760ed52c",
       "kind": "fork",
       "spawnedAt": "2026-11-15T17:43:58Z",
       "sessionId": "b0363183-f15a-4ce0-87b3-7c740ff517a3",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-cancel-readers-intent",
+        "status": "done",
+        "head_sha": "cefc3b5e4755793a99511c81acf17b6a32d452b3",
+        "deviations": [
+          "internal/battencli/arm.go",
+          "internal/battencli/cancel.go",
+          "internal/battencli/cancel_test.go",
+          "internal/battencli/cancelmarker.go",
+          "internal/battencli/cancelmarker_test.go",
+          "internal/battencli/cleanup.go",
+          "internal/battencli/cleanup_test.go",
+          "internal/battencli/startguard.go",
+          "internal/pairteardown/cancelledrecord_integration_test.go",
+          "internal/pairteardown/export_integration_test.go",
+          "internal/pairteardown/followup.go",
+          "internal/pairteardown/teardown.go",
+          "internal/pairteardown/teardown_test.go"
+        ]
+      },
+      "cardShas": [
+        "cefc3b5e4755793a99511c81acf17b6a32d452b3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-afc75cbba3c431132.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-afc75cbba3c431132.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-aa2c7da51d47555f1.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-ac2180900f917c805.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-ac2180900f917c805.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-afc75cbba3c431132.jsonl"
   ]
 }

@@ -1,7 +1,7 @@
 # Card 10 — batten-run-act
 
 **Create:**
-- `plan:internal/battencli#battenCLI.refuseByAct` -> `func (c *battenCLI) refuseByAct() error`
+- `internal/battencli#battenCLI.refuseByAct`
 
 **Edit:**
 - `internal/battencli#battenCLI`
