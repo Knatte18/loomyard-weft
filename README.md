@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs | Drift-Verify | neve | 1h<br>1h | batten, tender, dobby, orch, fabric, loom |
+| T3 | **Map every piece of state lym keeps, where it lives and whether git holds it** | [`lym-state-map`](design-lym-state-map.md) | darn · docs | Code-Bouncer | neve | 1h<br>1h | batten, tender, dobby, orch, fabric, loom |
 
 #### Ready (0)
 
