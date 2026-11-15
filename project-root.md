@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-15 15:23 UTC; every age below is as of then.
+Rendered 2026-11-15 15:24 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Remove test-only functions from production code and add a PATTERN rule against them** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | darn · solid | Code-Bouncer | neve | 3h<br>1h | pattern, testkit, cli |
+| T3 | **Remove test-only functions from production code and add a PATTERN rule against them** | [`test-only-functions-in-prod`](design-test-only-functions-in-prod.md) | darn · solid | Code-Burler-Review | neve | 3h<br>1h | pattern, testkit, cli |
 
 ### Ready (0)
 
