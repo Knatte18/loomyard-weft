@@ -12,7 +12,7 @@
 
 **Uses:**
 - `plan:internal/pairteardown#ReadRun`
-- `plan:internal/runfsm#Judge`
+- `internal/runfsm#Judge`
 - `internal/loomcli/doc.go`
 
 **Intent:** `lym loom start` and `lym loom resume` ask the act rule before they wake or spawn a driver (D1).

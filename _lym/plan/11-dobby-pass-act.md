@@ -24,8 +24,8 @@
 
 **Uses:**
 - `plan:internal/pairteardown#ReadRun`
-- `plan:internal/runfsm#Judge`
-- `plan:internal/runfsm#TransitionState`
+- `internal/runfsm#Judge`
+- `internal/runfsm#TransitionState`
 
 **Intent:** The dobby's pass asks the act rule first and reads each run's state from the FSM (D1).
 - `RunView` gains `Run runfsm.State` and `Verdict runfsm.Verdict`; its `CancelMarker` doc says it reads a cancel under way: an unfinished cancel intent in the record, or a cancel lock another process holds (card 8).

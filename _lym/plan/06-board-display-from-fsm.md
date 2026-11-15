@@ -14,7 +14,7 @@
 - `contracts/orchrole/orch-role.md`
 
 **Uses:**
-- `plan:internal/runfsm#TransitionState`
+- `internal/runfsm#TransitionState`
 - `internal/loomcli/doc.go`
 - `internal/boardengine/doc.go`
 

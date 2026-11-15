@@ -16,8 +16,8 @@
 
 **Uses:**
 - `plan:internal/pairteardown#ReadRun`
-- `plan:internal/runfsm#Judge`
-- `plan:internal/runfsm#Verdict.Refusal`
+- `internal/runfsm#Judge`
+- `internal/runfsm#Verdict.Refusal`
 - `internal/battencli#newFakeReceiver`
 - `internal/battencli#TestBattenPreRun_ContinuePass`
 

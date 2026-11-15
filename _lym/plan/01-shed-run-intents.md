@@ -1,10 +1,10 @@
 # Card 1 — shed-run-intents
 
 **Create:**
-- `plan:internal/shedengine#StateCancelled` -> `const StateCancelled State = "cancelled"`
-- `plan:internal/shedengine#CancelIntent` -> `type CancelIntent struct`
-- `plan:internal/shedengine#CancelFinish` -> `type CancelFinish struct`
-- `plan:internal/shedengine#PauseIntent` -> `type PauseIntent struct`
+- `internal/shedengine#StateCancelled`
+- `internal/shedengine#CancelIntent`
+- `internal/shedengine#CancelFinish`
+- `internal/shedengine#PauseIntent`
 
 **Edit:**
 - `internal/shedengine#Status`

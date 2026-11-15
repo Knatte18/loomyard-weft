@@ -18,12 +18,12 @@
 **Uses:**
 - `internal/pairteardown#ReadBattenRecord`
 - `internal/pairteardown#OwnerPauseHeld`
-- `plan:internal/fabricengine#OriginParentHoldsTaskWork`
-- `plan:internal/fabricengine#OriginRunStatus`
-- `plan:internal/fabricengine#FetchedTaskBranchOnOrigin`
+- `internal/fabricengine#OriginParentHoldsTaskWork`
+- `internal/fabricengine#OriginRunStatus`
+- `internal/fabricengine#FetchedTaskBranchOnOrigin`
 - `internal/battenshed#FinalizePastMerge`
-- `plan:internal/runfsm#Records`
-- `plan:internal/runfsm#Inputs`
+- `internal/runfsm#Records`
+- `internal/runfsm#Inputs`
 
 **Intent:** The one reader of a run's FSM inputs, which `battencli`, `loomcli` and `tendercli` all import; it sits in `pairteardown` because `tendercli` cannot import `battencli`, which imports it, and `pairteardown` already holds the batten-record and owner-pause readers.
 `ReadRun` wires a `runReader` over the hub of prime and returns its read; `runReader` holds one function field per substrate, so `TestReadRun` drives every branch with fakes.

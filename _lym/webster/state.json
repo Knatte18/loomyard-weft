@@ -1,22 +1,22 @@
 {
   "runGuid": "ff1419e81331b5512eb3e7468da3cb7c",
-  "planFingerprint": "25125fdfa2e90048d6963b856a1f6c7b0efbf4a72b00680c8dc97ab8d8f7f3f6",
+  "planFingerprint": "f6a011104000c593d9339f7f162776e8f311826661ec61fd8b137b00695ee2ac",
   "planFileHashes": {
     "00-overview.md": "b8c2a4ab56e5c251fcba24731fb10724205ba6fc75b666d8a27077414f1716e1",
-    "01-shed-run-intents.md": "9b1a22caf9491f5adf98cd968777ea5d0232e08820e9b5b709baa742ee69eae7",
-    "02-shedrun-intent-writers.md": "e095d2a5e41ce736f1e122fe17c9785f9ef5eebd2209d12c0d3b521e6f0e43b8",
-    "03-runfsm.md": "e56a190c5aef5e5f83b651f994a63fb1f5e0be86a978d6fd09fd13bbec72fe5c",
-    "04-fabric-origin-reads.md": "7692265e3e265da16904909d634f97fb96d95893bd60990bb62e34d03fef327b",
-    "05-pairteardown-read-run.md": "a3d13a5388f1ac477f65b40fcb7eac8c3c02076199603aa02e4f6c2fda89c701",
-    "06-board-display-from-fsm.md": "5e1cafe81120741b59994062ae3143f81ad3e0fe68229de9f9817c675681f1ee",
-    "07-cancel-intent.md": "63e4005ca16aace6ab410b95a363d8430878630aebf27107a314ae7c096bae98",
+    "01-shed-run-intents.md": "37201750399d72c23bf5d91b002595b7aec0269b4eb232192d455c034233898c",
+    "02-shedrun-intent-writers.md": "3397aa851a2d941abbba767d9b279e612b4eadaa4bff538cf537e7ce0cae521f",
+    "03-runfsm.md": "8c87f9bac114071b4bd063ff1d613210ff9dcf8ecef52e31fb6639994c008322",
+    "04-fabric-origin-reads.md": "1096d4360a4feda8388a754ca217c9df5d5fa0db660748113e5ad5b1351e606f",
+    "05-pairteardown-read-run.md": "f0ee168008e1f26c358998f0f72859c8c44df0e6e8c40d34b2ca262db6dc7b24",
+    "06-board-display-from-fsm.md": "e9e91fd25a46b8fade0af6aeb0881a3349772875f2bf95f88ab515e9937f0103",
+    "07-cancel-intent.md": "983755a2d4eb7d07d6f7d0e7f06e3ac12bad352132e7ad132c08a88ae6417638",
     "08-cancel-readers-intent.md": "aeb4ea250275c0633d84a2c4038e0ab356723131194f2ea749d82a2e037ee4ac",
     "09-cancelled-record-cleanup.md": "bd17fefb6d95f8595639036d11d08c57c04f1564b1a2603d55d92987b227dbd7",
-    "10-batten-run-act.md": "62c0c2e35b7f51b0585c731bdad39de01f8921ed89a642b5f2fccb28dc4edf46",
-    "11-dobby-pass-act.md": "1e6f65a8cadba3b27baf9f7b907f78f9deda87c21c6c3aa6ed907e500dab50a2",
-    "12-loom-resume-act.md": "2e7f3bb7c1ef4e333a11f6f1c9a0e6b6c0767854937b510c1215c98ab5255fb9",
+    "10-batten-run-act.md": "d3123b5d9117ae00de8ae18d310811f0ca3b8c6461d0425916e7f9a22ca4268a",
+    "11-dobby-pass-act.md": "52df54286577e525d451d6b770399033785b3a6bde86b39fcf5e278aef1b8632",
+    "12-loom-resume-act.md": "f62c4d16b7b1a4e649c0982bd6d70d5a1c779fc0a30975332ffddd7ad0e28c81",
     "13-shared-bolt-pull.md": "2b041150110927938511b86d81aa6aa24ae0e265171e472d074d4f409326f39d",
-    "14-tender-pause-intent.md": "5209cc0ea78a94165c4aded5ca9da158d97e661edfe97f41ddb1e3c4f80a1d19",
+    "14-tender-pause-intent.md": "000f90fe69ae75dd7552542011d9e0057a7b0f2c5e177c5f12d7afa2726ec981",
     "15-pr-record-tracked.md": "4da369ca80f022dc6f1e0dfee4ca89da4811488fbc78c6fbd2fc272265e750a2",
     "16-fixer-attempts-tracked.md": "b61ff54b0b0dad6e600cbbff100113499882472c7250d6de8923bd746da76328",
     "17-lym-files-pattern.md": "75bedc024a62bb79b4348c43dc8b252cc6ff7ec5853bf405c34961a78164b247"
@@ -429,7 +429,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "8a2b99c3d5c2f215fec6fa7a21ef4844",
   "masterSessionId": "b0363183-f15a-4ce0-87b3-7c740ff517a3",
   "masterEngine": "claude",
@@ -443,18 +443,49 @@
         "04-fabric-origin-reads"
       ],
       "cardHashes": {
-        "01-shed-run-intents": "9b1a22caf9491f5adf98cd968777ea5d0232e08820e9b5b709baa742ee69eae7",
-        "02-shedrun-intent-writers": "e095d2a5e41ce736f1e122fe17c9785f9ef5eebd2209d12c0d3b521e6f0e43b8",
-        "03-runfsm": "e56a190c5aef5e5f83b651f994a63fb1f5e0be86a978d6fd09fd13bbec72fe5c",
-        "04-fabric-origin-reads": "7692265e3e265da16904909d634f97fb96d95893bd60990bb62e34d03fef327b"
+        "01-shed-run-intents": "37201750399d72c23bf5d91b002595b7aec0269b4eb232192d455c034233898c",
+        "02-shedrun-intent-writers": "3397aa851a2d941abbba767d9b279e612b4eadaa4bff538cf537e7ce0cae521f",
+        "03-runfsm": "8c87f9bac114071b4bd063ff1d613210ff9dcf8ecef52e31fb6639994c008322",
+        "04-fabric-origin-reads": "1096d4360a4feda8388a754ca217c9df5d5fa0db660748113e5ad5b1351e606f"
       },
       "startSha": "055ef994e63287e8d296ca1b8d50f78cb87bdfe6",
       "kind": "fork",
       "spawnedAt": "2026-11-15T17:09:27Z",
       "sessionId": "b0363183-f15a-4ce0-87b3-7c740ff517a3",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shed-run-intents",
+        "status": "done",
+        "head_sha": "f7a5ceef0f814819802cd65875e691de222ff40e",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/fabricengine/originreads.go",
+          "internal/fabricengine/originreads_integration_test.go",
+          "internal/fabricengine/replay.go",
+          "internal/runfsm/act.go",
+          "internal/runfsm/act_test.go",
+          "internal/runfsm/state.go",
+          "internal/runfsm/state_test.go",
+          "internal/runfsm/testmain_test.go",
+          "internal/shedengine/status.go",
+          "internal/shedrun/intents.go",
+          "internal/shedrun/intents_test.go"
+        ]
+      },
+      "cardShas": [
+        "f7a5ceef0f814819802cd65875e691de222ff40e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-aa2c7da51d47555f1.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-aa2c7da51d47555f1.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-run-fsm-tracked-records/b0363183-f15a-4ce0-87b3-7c740ff517a3/subagents/agent-aa2c7da51d47555f1.jsonl"
+  ]
 }

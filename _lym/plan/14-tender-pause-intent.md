@@ -20,11 +20,11 @@
 
 **Uses:**
 - `plan:internal/boardengine#PullBolt`
-- `plan:internal/shedrun#WritePauseIntent`
-- `plan:internal/shedrun#ClearPauseIntent`
+- `internal/shedrun#WritePauseIntent`
+- `internal/shedrun#ClearPauseIntent`
 - `plan:internal/pairteardown#ReadRun`
-- `plan:internal/runfsm#Judge`
-- `plan:internal/fabricengine#OriginParentHoldsTaskWork`
+- `internal/runfsm#Judge`
+- `internal/fabricengine#OriginParentHoldsTaskWork`
 
 **Intent:** `lym tender pause <slug>` and `lym tender resume <slug>` write and clear the run-scope pause intent in the batten record, and refuse a run another machine owns (D3).
 Only the two verbs set the new request fields; `PausePair` and `PauseOwnedElsewhere`, lym's own pauses, and every hub-scope pause leave them nil, which changes nothing.

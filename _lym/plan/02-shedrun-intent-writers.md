@@ -1,11 +1,11 @@
 # Card 2 — shedrun-intent-writers
 
 **Create:**
-- `plan:internal/shedrun#WriteCancelIntent` -> `func WriteCancelIntent(l *lymcwd.Location, runID string, intent shedengine.CancelIntent) (found bool, err error)`
-- `plan:internal/shedrun#FinishCancel` -> `func FinishCancel(l *lymcwd.Location, runID string, finish shedengine.CancelFinish) (found bool, err error)`
-- `plan:internal/shedrun#WritePauseIntent` -> `func WritePauseIntent(l *lymcwd.Location, runID string, intent shedengine.PauseIntent) (found bool, err error)`
-- `plan:internal/shedrun#ClearPauseIntent` -> `func ClearPauseIntent(l *lymcwd.Location, runID string) (found bool, err error)`
-- `plan:internal/shedrun#TestRunIntents` -> `func TestRunIntents(t *testing.T)`
+- `internal/shedrun#WriteCancelIntent`
+- `internal/shedrun#FinishCancel`
+- `internal/shedrun#WritePauseIntent`
+- `internal/shedrun#ClearPauseIntent`
+- `internal/shedrun#TestRunIntents`
 
 **Extends:**
 - `internal/shedrun/doc.go`

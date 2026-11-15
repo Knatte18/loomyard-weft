@@ -2,44 +2,44 @@
 
 **Create:**
 - `internal/runfsm/doc.go`
-- `plan:internal/runfsm#State` -> `type State string`
-- `plan:internal/runfsm#Landed` -> `const Landed State = "landed"`
-- `plan:internal/runfsm#Cancelled` -> `const Cancelled State = "cancelled"`
-- `plan:internal/runfsm#Cancelling` -> `const Cancelling State = "cancelling"`
-- `plan:internal/runfsm#Paused` -> `const Paused State = "paused"`
-- `plan:internal/runfsm#Halted` -> `const Halted State = "halted"`
-- `plan:internal/runfsm#Landing` -> `const Landing State = "landing"`
-- `plan:internal/runfsm#Running` -> `const Running State = "running"`
-- `plan:internal/runfsm#Starting` -> `const Starting State = "starting"`
-- `plan:internal/runfsm#Queued` -> `const Queued State = "queued"`
-- `plan:internal/runfsm#NoRun` -> `const NoRun State = "none"`
-- `plan:internal/runfsm#Order` -> `func Order() []State`
-- `plan:internal/runfsm#Records` -> `type Records struct`
-- `plan:internal/runfsm#Reading` -> `type Reading struct`
-- `plan:internal/runfsm#Derive` -> `func Derive(r Records) Reading`
-- `plan:internal/runfsm#Inputs` -> `type Inputs struct`
-- `plan:internal/runfsm#Answer` -> `type Answer string`
-- `plan:internal/runfsm#AnswerAct` -> `const AnswerAct Answer = "act"`
-- `plan:internal/runfsm#AnswerWait` -> `const AnswerWait Answer = "wait"`
-- `plan:internal/runfsm#AnswerHandOver` -> `const AnswerHandOver Answer = "hand_over"`
-- `plan:internal/runfsm#Reason` -> `type Reason string`
-- `plan:internal/runfsm#ReasonPushOwed` -> `const ReasonPushOwed Reason = "push_owed"`
-- `plan:internal/runfsm#ReasonOwnedElsewhere` -> `const ReasonOwnedElsewhere Reason = "owned_elsewhere"`
-- `plan:internal/runfsm#ReasonCodeTip` -> `const ReasonCodeTip Reason = "code_tip"`
-- `plan:internal/runfsm#ReasonHeld` -> `const ReasonHeld Reason = "held"`
-- `plan:internal/runfsm#ReasonPauseCovers` -> `const ReasonPauseCovers Reason = "pause_covers"`
-- `plan:internal/runfsm#ReasonPaused` -> `const ReasonPaused Reason = "paused"`
-- `plan:internal/runfsm#ReasonCancelling` -> `const ReasonCancelling Reason = "cancelling"`
-- `plan:internal/runfsm#ReasonTerminal` -> `const ReasonTerminal Reason = "terminal"`
-- `plan:internal/runfsm#Verdict` -> `type Verdict struct`
-- `plan:internal/runfsm#Act` -> `func Act(in Inputs) Verdict`
-- `plan:internal/runfsm#Verdict.Refusal` -> `func (v Verdict) Refusal(slug, retry string) error`
-- `plan:internal/runfsm#Aside` -> `type Aside struct`
-- `plan:internal/runfsm#Judge` -> `func Judge(r Records, in Inputs, aside Aside) (Reading, Verdict)`
-- `plan:internal/runfsm#TransitionState` -> `func TransitionState(state shedengine.State, started, landing bool) State`
-- `plan:internal/runfsm#TestDerive` -> `func TestDerive(t *testing.T)`
-- `plan:internal/runfsm#TestAct` -> `func TestAct(t *testing.T)`
-- `plan:internal/runfsm#TestTransitionState` -> `func TestTransitionState(t *testing.T)`
+- `internal/runfsm#State`
+- `internal/runfsm#Landed`
+- `internal/runfsm#Cancelled`
+- `internal/runfsm#Cancelling`
+- `internal/runfsm#Paused`
+- `internal/runfsm#Halted`
+- `internal/runfsm#Landing`
+- `internal/runfsm#Running`
+- `internal/runfsm#Starting`
+- `internal/runfsm#Queued`
+- `internal/runfsm#NoRun`
+- `internal/runfsm#Order`
+- `internal/runfsm#Records`
+- `internal/runfsm#Reading`
+- `internal/runfsm#Derive`
+- `internal/runfsm#Inputs`
+- `internal/runfsm#Answer`
+- `internal/runfsm#AnswerAct`
+- `internal/runfsm#AnswerWait`
+- `internal/runfsm#AnswerHandOver`
+- `internal/runfsm#Reason`
+- `internal/runfsm#ReasonPushOwed`
+- `internal/runfsm#ReasonOwnedElsewhere`
+- `internal/runfsm#ReasonCodeTip`
+- `internal/runfsm#ReasonHeld`
+- `internal/runfsm#ReasonPauseCovers`
+- `internal/runfsm#ReasonPaused`
+- `internal/runfsm#ReasonCancelling`
+- `internal/runfsm#ReasonTerminal`
+- `internal/runfsm#Verdict`
+- `internal/runfsm#Act`
+- `internal/runfsm#Verdict.Refusal`
+- `internal/runfsm#Aside`
+- `internal/runfsm#Judge`
+- `internal/runfsm#TransitionState`
+- `internal/runfsm_test#TestDerive`
+- `internal/runfsm_test#TestAct`
+- `internal/runfsm_test#TestTransitionState`
 
 **Extends:**
 - `pattern/PATTERN-leaf-packages.md`

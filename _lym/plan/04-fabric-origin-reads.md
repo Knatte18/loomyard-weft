@@ -1,10 +1,10 @@
 # Card 4 — fabric-origin-reads
 
 **Create:**
-- `plan:internal/fabricengine#OriginParentHoldsTaskWork` -> `func OriginParentHoldsTaskWork(l, pairLocation *lymcwd.Location, slug string) (bool, error)`
-- `plan:internal/fabricengine#OriginRunStatus` -> `func OriginRunStatus(prime *lymcwd.Location, slug string) (status shedengine.Status, found bool, err error)`
-- `plan:internal/fabricengine#FetchedTaskBranchOnOrigin` -> `func FetchedTaskBranchOnOrigin(prime *lymcwd.Location, slug string) (bool, error)`
-- `plan:internal/fabricengine#TestOriginRunReads` -> `func TestOriginRunReads(t *testing.T)`
+- `internal/fabricengine#OriginParentHoldsTaskWork`
+- `internal/fabricengine#OriginRunStatus`
+- `internal/fabricengine#FetchedTaskBranchOnOrigin`
+- `internal/fabricengine_test#TestOriginRunReads`
 
 **Uses:**
 - `internal/fabricengine#ParentHoldsTaskWork`

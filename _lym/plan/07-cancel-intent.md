@@ -30,11 +30,11 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/shedrun#WriteCancelIntent`
-- `plan:internal/shedrun#FinishCancel`
+- `internal/shedrun#WriteCancelIntent`
+- `internal/shedrun#FinishCancel`
 - `plan:internal/pairteardown#ReadRun`
-- `plan:internal/runfsm#Judge`
-- `plan:internal/fabricengine#OriginParentHoldsTaskWork`
+- `internal/runfsm#Judge`
+- `internal/fabricengine#OriginParentHoldsTaskWork`
 - `internal/battencli#battenCommitStatusDeps`
 - `internal/boardengine/doc.go`
 
