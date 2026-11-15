@@ -1,6 +1,6 @@
 # P3 Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt
 
-Rendered 2026-11-15 19:18 UTC; every age below is as of then.
+Rendered 2026-11-15 19:19 UTC; every age below is as of then.
 Under: [P1 Revise adopt and the functions that move a hub between machines](project-adopt-revision.md).
 
 [`adopt-build`](design-adopt-build.md) · Age 3h · Owner `neve`
@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **One run FSM in internal/runfsm over tracked records, with cancel and pause intents, the PR record and fixer counts tracked** | [`run-fsm-tracked-records`](design-run-fsm-tracked-records.md)<br>[Sketch](decision-run-fsm-tracked-records.md) | tapestry · solid | Drift-Recheck | neve | 3h<br>3h | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
+| T6 | **One run FSM in internal/runfsm over tracked records, with cancel and pause intents, the PR record and fixer counts tracked** | [`run-fsm-tracked-records`](design-run-fsm-tracked-records.md)<br>[Sketch](decision-run-fsm-tracked-records.md) | tapestry · solid | Describe | neve | 3h<br>3h | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle |
 
 ### Ready (0)
 

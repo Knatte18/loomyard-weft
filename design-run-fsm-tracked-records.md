@@ -1,6 +1,6 @@
 # One run FSM in internal/runfsm over tracked records, with cancel and pause intents, the PR record and fixer counts tracked
 
-`run-fsm-tracked-records` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle · running · Drift-Recheck
+`run-fsm-tracked-records` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle · running · Describe
 
 Decision record: [Sketch](decision-run-fsm-tracked-records.md)
 
