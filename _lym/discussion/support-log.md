@@ -94,7 +94,11 @@ Their reports are in `support-log.lens-<lens>.md`. Duplicates across lenses are 
 
 ## Review rounds
 
-_No rounds yet._
+### Round 2
+
+- A Finalize past its parent-side merge now hands over after a takeover like any run, and its owner finishes it (D1, D4, D6, D9); Turn 5's carve-out on the old owner is gone.
+- D10 restores the orch's transcript by the session record's last launcher or resumer, no longer by the machine the mirror names.
+- A pair's transition pushes its records side before its code side, and each records commit names its code tip (D2, D4).
 
 ## Question ledger
 
@@ -102,7 +106,7 @@ _No rounds yet._
 - Q2, auto-pick: whether a run may act offline. Picked no (D2): the operator requires the state on GitHub at all times. Raised under Open risks.
 - Q3, auto-pick: how two machines are kept from driving one run. First picked a machine trailer judged on rejection; after the lens review, a takeover entry in the run's own record, read after a replay (D4).
 - Q4, auto-pick: the cause and fix of A8. Picked a Bolt machine registry of former names (D5).
-- Q5, auto-pick: what counts as an absence. Picked an observed sleep, a dobby start and a rejected push (D6), reusing `pauserecord.SleepTolerance`.
+- Q5, auto-pick: what counts as an absence. Picked an observed sleep, a dobby start and a hand pass (D6), reusing `pauserecord.SleepTolerance`.
 - Q6, auto-pick: what a catch-up does with this machine's commits on a run owned here. Picked pushing them as owed transitions (D6).
 - Q7, auto-pick: what happens to the local pair of a run owned elsewhere. Picked removal after archiving its tips (D6).
 - Q8, auto-pick: where the hold lives and which pauses it replaces. Picked a Bolt `holds` list of adopt kinds replacing the owner and adopt pauses; the hub-wide operator pause and hibernate stay local, and the local pause record stays the enforcement cache (D7).
