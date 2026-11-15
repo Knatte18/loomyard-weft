@@ -1,7 +1,7 @@
 # Card 13 — shared-bolt-pull
 
 **Create:**
-- `plan:internal/boardengine#PullBolt` -> `func PullBolt(boardDir string) error`
+- `internal/boardengine#PullBolt`
 
 **Edit:**
 - `internal/battencli#hubOwnerSeams`

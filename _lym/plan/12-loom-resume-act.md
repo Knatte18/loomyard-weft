@@ -1,7 +1,7 @@
 # Card 12 — loom-resume-act
 
 **Create:**
-- `plan:internal/loomcli#loomCLI.refuseByAct` -> `func (c *loomCLI) refuseByAct(ctx context.Context, out io.Writer, retry string) bool`
+- `internal/loomcli#loomCLI.refuseByAct`
 
 **Edit:**
 - `internal/loomcli#loomCLI`

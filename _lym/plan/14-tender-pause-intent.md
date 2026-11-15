@@ -1,8 +1,8 @@
 # Card 14 — tender-pause-intent
 
 **Create:**
-- `plan:internal/tendercli#runIntents` -> `type runIntents struct`
-- `plan:internal/tendercli#hubRunIntents` -> `func hubRunIntents(location *lymcwd.Location, slug string) (runIntents, error)`
+- `internal/tendercli#runIntents`
+- `internal/tendercli#hubRunIntents`
 
 **Edit:**
 - `internal/tenderengine#PauseRequest`
@@ -19,7 +19,7 @@
 - `internal/tendercli/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#PullBolt`
+- `internal/boardengine#PullBolt`
 - `internal/shedrun#WritePauseIntent`
 - `internal/shedrun#ClearPauseIntent`
 - `internal/pairteardown#ReadRun`
