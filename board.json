@@ -520,9 +520,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "testmap-any-worktree"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "One timed full lym gate testmap build and lym gate redundant on every package, reported for the operator to read before any cut",
       "body": "## Goal\n\nThe first step of `redundancy-sweep-existing`: fresh coverage maps for every package, timed,\nand each package's redundancy candidates in one report the operator reads before any cut is filed.\nThe run changes no code and no test; it lands only the report.\n\n## The runs\n\n1. One full build: `lym gate testmap` over every package of the module, once, in this task's own worktree at its own HEAD, with the maps kept in that worktree's `.lym/` or `.scratch/` so they are thrown away with it; never from the prime and never into the hub's shared maps.\n   Record its wall time and CPU time, the packages built, any that failed and why, and the time per package.\n   Set the wall time beside the smart-build report's estimate (`docs/research/speed/testmap-smart-build-2026-11-15/report.md`: about 16 CPU-minutes, about 4 minutes at four tests side by side) and the 44 minutes of the last full build on 2026-11-12.\n2. `lym gate redundant \u003cpackage\u003e` once on every package the build mapped.\n\nNo other build, repeat or test run.\n\n## The report\n\nUnder `docs/research/speed/`:\n\n- The build's timing, as above.\n- Per package with candidates, slowest package first: each candidate with its tier, seconds, covering tests, and whether it is in the removable set, with the package's total candidate seconds.\n- A table of the packages with no candidates.\n- A short read of the largest packages' candidates (at most five packages), as the pilot did for `internal/adoptcli`:\n  whether the candidate asserts something its covering tests do not, since equal coverage is not equal checks.\n  It cuts nothing.\n- Any test the side-by-side build reran alone after failing beside others, as a sign of tests that share a fixed path.\n\n## Bounds\n\nChange no production code, no test, nothing under Bolt and not the hub's shared maps.\n`internal/fabricengine` is listed but not read, as its serial-phase rework is changing it.\n",
@@ -530,29 +528,6 @@
       "created": "2026-11-16T09:09:48Z",
       "revised": "2026-11-16T09:14:49Z",
       "profile": "docs",
-      "project": "test-suite-trim"
-    },
-    {
-      "id": 1389,
-      "handle": "T8",
-      "slug": "testmap-any-worktree",
-      "title": "lym gate testmap builds in any worktree, with maps kept in that worktree",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "gate",
-        "testkit"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Build coverage maps at the HEAD of a task worktree and keep them in its .lym or .scratch, so a survey run is not cut by landings and throws the maps away after",
-      "body": "## Seen (operator, 2026-11-16)\n\n`lym gate testmap` refuses every worktree but the hub's prime, builds at the prime's HEAD, and writes the maps to the hub's board-level `.lym/testcover/` (`testcover.coveragemap.go`, `lymdirs.TestCoverDirName`).\nThe prime moves under it: other runs land while it builds, and the build ends once HEAD moves.\nSo `redundancy-candidates-survey` could not build in its own worktree, and its timing and maps would depend on what landed meanwhile.\n\n## Change\n\n- `lym gate testmap` runs in any worktree of the hub, a task worktree included, and builds at that worktree's HEAD, which only its own session moves.\n- A run that builds maps for itself writes them under its own worktree, in `.lym/` or `.scratch/`, so they are thrown away with the worktree and never touch the hub's shared maps.\n  `lym gate redundant` reads the maps from the same place, so a run's survey reads the maps that run built.\n- The hub's shared maps under the board-level `.lym/testcover/` stay as they are for a call from the prime;\n  decide in Discussion whether a call from the prime still writes there, or whether every call writes in its own worktree.\n- The rest of the build (packages, side-by-side runs, the build lock per package) stays as `testmap-on-command` left it; the lock is per worktree when the maps are.\n",
-      "status": "done",
-      "created": "2026-11-16T09:14:43Z",
-      "revised": "2026-11-16T09:14:43Z",
-      "profile": "light",
       "project": "test-suite-trim"
     }
   ],

@@ -2,8 +2,6 @@
 
 `redundancy-candidates-survey` · Task · research, gate, testkit · draft
 
-Depends on: [`testmap-any-worktree`](design-testmap-any-worktree.md)
-
 ## Goal
 
 The first step of `redundancy-sweep-existing`: fresh coverage maps for every package, timed,
