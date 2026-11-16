@@ -5,6 +5,8 @@ Under: [Board](README.md).
 
 [`adopt-build-resplit`](design-adopt-build-resplit.md) · Age 7d · Owner `neve`
 
+beam
+
 Groups the entries filed from the Sketch `adopt-build-resplit`: transition-push-takeover, machine-registry-holds-catchup, adopt-foreground, leftover-pairs-teardown, hub-stop-all, machine-start-launchers, board-prints-root-beam.
 
 ## Why (operator, 2026-11-16)
