@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-16 10:11 UTC; every age below is as of then.
+Rendered 2026-11-16 10:12 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -50,7 +50,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | 8d<br>8d | heddle |
-| E2 |  | **Claude Code Mode for writer sessions, set per role**<br>• Turn on the experimental Code Mode, which batches tool calls in one program, for heavy writer roles only, after a bench | [`claude-code-mode`](design-claude-code-mode.md) | 8m<br>8m | claude, shuttle, config |
+| E2 |  | **Claude Code Mode for writer sessions, set per role**<br>• Turn on the experimental Code Mode, which batches tool calls in one program, for heavy writer roles only, after a bench | [`claude-code-mode`](design-claude-code-mode.md) | 9m<br>0m | claude, shuttle, config |
 
 ### Features (7)
 

@@ -35,8 +35,24 @@ Code Mode as a per-role setting beside the model, off by default:
 - `tools/tokencount`, `tools/forkaudit` and the skill-load check learn the `REPL` tool's transcript rows.
 - `lym gate test` stays its own call, never inside code, because of the ten-minute stop.
 
-## First step
+## First step: a bench on the Plan writer (operator, 2026-11-16)
 
-A bench, run as a darn `docs` task through the real producer with only the setting swapped (the rule in `codex-same-as-claude`):
-two landed runs, each replayed once with Code Mode: the Discussion writer of one landed motif and the writer of one landed darn `docs` research task, each compared with the landed session on turns, cost, wall time and its output.
-It waits until the real-producer route from `codex-same-as-claude` exists.
+The Plan and Discussion writers have most to gain: they explore most before they write.
+The bench starts with the Plan writer, whose input is fixed (the approved decision record and the base commit) and which needs no operator answer;
+the Discussion writer follows only if the Plan writer shows a gain, since replaying it needs the landed run's answers.
+
+It runs as a darn `docs` task, the way `docs/research/loom/plan-writer-bench-2026-11-12/report.md` ran its arms:
+a pair seeded at the landed run's base commit with its frozen decision record, the real Plan-Write row run in it, and the pair stopped after that row.
+Only the arm's setting differs from today's Plan-Write; nothing lands, and every pair is removed at the end.
+
+- Inputs: two landed tapestry runs with a twill-free Plan-Write if any, of different sizes.
+- Arms, one Plan-Write each per input, six sessions in all:
+  - A, control: today's Plan-Write, run fresh in the same harness, since the landed session ran with a live parent and other conditions.
+  - B, Code Mode: A with `CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=1` on the writer's launch.
+  - C, pipelines: A with the edit directive's read rule lifted, so the writer may read and search with one shell pipeline per call.
+    C tells whether a gain comes from Code Mode or only from letting the writer batch in the shell.
+- Figures per session, from `tools/tokencount` and the transcript: turns, tool calls (Code Mode's `REPL` calls counted with the calls inside them), lookup subagents, cost, wall time and peak context.
+- Quality per plan: one Plan-Burler review round on it with today's reviewer, its findings by severity, the card count, and the files the plan names against the files the landed run changed.
+- What the harness needs: a way to set the arm's setting on the writer's launch only.
+  If lym has none, the bench's Discussion finds the narrowest one (a launch env for one strand) and names it; it changes no production code.
+- One sample per arm and input: a direction, not an effect size; the report says so.
