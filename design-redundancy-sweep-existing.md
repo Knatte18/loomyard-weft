@@ -8,6 +8,14 @@ The coverage maps (`internal/testcover`, built by `lym gate testmap`) record, pe
 The gate report (the advisory redundancy step of `lym gate test`, landed as `7f21142e`) judges only the new tests of a diff against the map; nothing yet uses the maps to find redundant tests that already exist.
 The operator wants the existing ones cut, across the packages, not only kept from growing.
 
+## Waits for a correct judge (operator, 2026-11-16)
+
+The cut stays wanted, but it waits for `redundancy-judge-asserts`:
+`lym gate redundant` flags tests as redundant that check different things,
+so its list is not correct until that bug is fixed.
+The survey `redundancy-candidates-survey` (`194650f0`, report `docs/research/speed/redundancy-candidates-survey-2026-11-16/`) listed 1,026 candidates in 118 packages, and every one it sampled was a false candidate.
+Once the judge is fixed, its list is a verdict, not a reading filter, and the cut runs on it.
+
 ## Idea
 
 1. A candidate list per package: every test whose covered blocks the package's other tests already cover, with its run time, using the same judgment as the gate report.
@@ -34,9 +42,7 @@ What it builds on:
 - The candidate list per package: `lym gate redundant <package>` (commit `79f0eb4a`, task `test-redundancy-candidates`) prints a package's candidates from its map as JSON, with tier, seconds, covering tests and whether each is in the removable set. It omits `//testtiming:keep` tests and spawn-marked tests.
   It runs no test and takes no gate slot.
 - The pilot report `docs/research/speed/coverage-map-pilot-2026-11-12/report.md` ran it on `internal/adoptcli` only:
-  of 30 judged tests, 2 were candidates, and both assert something their covering tests do not, so the map is a reading filter, not a verdict.
-
-File it as tasks once the operator has read the candidate lists.
+  of 30 judged tests, 2 were candidates, and both assert something their covering tests do not.
 
 ## Built since (tidy, 2026-11-15)
 
