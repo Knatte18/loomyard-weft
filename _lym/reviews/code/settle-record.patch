@@ -1,0 +1,1194 @@
+diff --git a/docs/research/README.md b/docs/research/README.md
+index 48207863..3cd670f4 100644
+--- a/docs/research/README.md
++++ b/docs/research/README.md
+@@ -105,6 +105,8 @@ A study's script finds the repository root with `git rev-parse --show-toplevel`,
+ 
+ - [lym-state-map-2026-11-15.md](loom/lym-state-map-2026-11-15.md) — every piece of state lym keeps, where it lives and whether git holds it, the steps of `lym adopt`, the adopt failures on record and a first-draft state machine of a run.
+ 
++- [adopt-build-revision-2026-11-16](loom/adopt-build-revision-2026-11-16/report.md) — what the remaining members of the beam `adopt-build` take, deliver and depend on after the run FSM and the orch's own-session resume landed, with revised bodies and decision records.
++
+ ### plan-split — splitting a plan into parts
+ 
+ - [plan-split-bench-2026-11-01](loom/plan-split/plan-split-bench-2026-11-01/report.md) — Parts-Write and Parts-Plan-Write against Plan-Write.
+diff --git a/docs/research/loom/adopt-build-revision-2026-11-16/record-adopt-foreground-leftovers.md b/docs/research/loom/adopt-build-revision-2026-11-16/record-adopt-foreground-leftovers.md
+new file mode 100644
+index 00000000..7124d950
+--- /dev/null
++++ b/docs/research/loom/adopt-build-revision-2026-11-16/record-adopt-foreground-leftovers.md
+@@ -0,0 +1,134 @@
++## Goal
++
++lym adopt runs in the foreground over pushed state, with --take-hold
++
++Takes: the holds, registry, catch-up and owner setter from bolt-holds-catch-up; the takeover entry type, its reader and the synchronous pushes from push-before-act-takeover; runfsm's states and the refusals that name `lym adopt <subject>`; adoptcli's fix loop, check, deploy, archives and here paths; the adopt record's readers in the dobby's handover and the orch watcher
++Delivers: lym adopt running hold, owner, pull, takeover, catch-up, deploy, workspace, check and green clear in the caller's process, re-runnable from tracked state, with the takeover entry's production writer and its rejected-push retry, --take-hold denied to agents by a shell-guard row, and --here keeping its owned_here and no_subject outcomes for `lym s`; the worker, adopt record and its readers, verdicts, pause step, the writers of the adopt and adopt-hold pause callers, --keep-local, --drop-local and --discard retired, the dobby's handover and the orch watcher reading a hold in the record's place; adoptcli's and adoptrecord's package docs rewritten to the foreground flow
++Exports: adopt's foreground step runner and the takeover entry writer
++
++## Scope
++
++Decision numbers are those of the Sketch `adopt-redesign`.
++The run FSM (D1, D3) and the orch's own-session resume (D9, D10) have landed,
++the synchronous push and the takeover (D2, D4) come from `push-before-act-takeover`,
++the registry, the catch-up and the holds, with the upgrade's first read, (D5 to D7) from `bolt-holds-catch-up`,
++and the leftover pairs (D11) are a part of their own.
++
++The part changes these packages:
++
++- internal/adoptcli (about 2650 changed lines)
++- internal/adoptrecord (about 400 changed lines)
++- internal/dobbyengine (about 150 changed lines)
++- internal/fabricengine (about 100 changed lines)
++- internal/beamcli (about 80 changed lines)
++- internal/orchcli (about 80 changed lines)
++- internal/pauserecord (about 80 changed lines)
++- internal/battencli (about 60 changed lines)
++- internal/shellguard (about 30 changed lines)
++- cmd/lym (about 10 changed lines)
++- pattern (about 10 changed lines)
++
++## Decisions
++
++### D8 — `lym adopt` runs in the foreground: hold, owner, pull, takeover, check
++
++`lym adopt <subject>...` runs every step in the caller's process and prints each step as it ends.
++It starts no detached worker and writes no adopt record.
++Each step reads tracked state, so a re-run after an interruption goes on from where the state stands.
++
++1. One Bolt commit writes an `adopt` hold, this machine as the subjects' owner, and this machine's registry entry, and pushes it.
++   A hold another machine wrote refuses the adopt, unless it runs with `--take-hold` (below), naming the writer machine and the hold's time,
++   and as way forward waiting for that machine's adopt to clear it, or asking the operator when that machine has stopped.
++   A rejected push reads Bolt again; an owner of these subjects, or any hold, that another machine wrote since the read
++   refuses the adopt naming that machine; otherwise it replays and pushes.
++   A registration the registry refuses refuses the adopt with the registry's way forward.
++2. For each moved run, it fetches the run's branches, archives this machine's local tips that origin lacks as the takeover's hand-over does, resets them to origin's,
++   and adds the pair from origin when this machine has none.
++3. It writes the takeover entry on each moved run's records branches and pushes it.
++   Once it lands, it fast-forwards each moved run's local records branches to origin's tips, which the takeover entry now heads,
++   and its local code branch to origin's code tip.
++   A code tip the last transition names that origin still lacks is the owner's dobby's to fast-forward to once it lands.
++4. The catch-up over the whole hub.
++5. The deploy, as today.
++6. The cache it rebuilds: the hub workspace file.
++7. The check: the hub's `adopt` gate runs in each subject's worktree, in the foreground, with its output on the terminal.
++8. A green check clears the hold and runs `orchcli.BeamUp` for each subject; the runs go on by the act rule, with no hand lift.
++   A failing check files a fix task through the existing fix loop (`internal/adoptcli/fixloop.go`, `fronttask.File`),
++   replaces the hold with an `adopt-fix` hold naming it, runs `orchcli.BeamUp`, and exits non-zero naming the task.
++   The task's landing runs the check again; green clears the hold, and failing files the next task within `adopt_fix_tries`.
++   Each subject's try count lives in the `adopt-fix` hold, rewritten with each filing,
++   so a re-check on any machine reads the same count against that subject's limit.
++   An adopt that took over an `adopt-fix` hold keeps its standing fix task instead (below).
++   At the limit the hold stays and the dobby's notice names the failing tests and the fix task;
++   the hold clears only once the failing tests are fixed and a re-run of `lym adopt` checks green.
++
++`lym adopt --take-hold <subject>...` (new) takes over a hold another machine wrote, such as one whose adopter stopped.
++Its step 1 refuses a hold another machine wrote unless that hold names exactly these subjects, naming the hold's subjects as the way forward.
++With no standing hold, or one this machine wrote, it runs as `lym adopt` does.
++Otherwise its Bolt commit rewrites the hold to name this machine, keeping its kind, fix task and try counts,
++writes this machine as the subjects' owner, and pushes; the adopt then runs steps 2 to 8.
++Under an `adopt` hold its green check clears the hold.
++Under an `adopt-fix` hold the fix task stands, a failing check files no second task,
++and the hold clears at the adopt's green check or the fix task's green re-check.
++An adopt re-reads its own hold from Bolt before each step from step 2 on,
++and stops once the hold is gone or names another machine, naming the subjects' owner it reads from that Bolt and starting nothing,
++so a taken hold leaves one adopter, and the stopped adopter's subjects go on under the adopt that took them.
++A shell-guard row denies `--take-hold` to every agent, and no refusal or notice an agent reads names it;
++adopt's help names it.
++
++Kept: `--here`, `--archives`, `--no-orch` and `--all`.
++`--here` stays behind `lym s`, now in the foreground, and keeps its fast outcomes:
++in a worktree with no subject it ends ok with `no_subject`,
++and when no other machine owns the subject it pays one Bolt pull and ends ok with `owned_here`, writing no hold and starting nothing.
++Retired: `--keep-local`, `--drop-local`, `--discard`, `lym adopt worker`, the adopt record, the held-back project verdicts, the adopt pause step,
++and every writer of the `adopt` and `adopt-hold` pause callers.
++The dobby's handover and the orch watcher, which ask the adopt record whether an adopt here covers a worktree, read a hold this machine wrote instead.
++The two caller names stay declared only for the upgrade's first read.
++
++Bound: adopt works from pushed state alone and never asks about another machine's local state;
++the old owner's unpushed work reaches the adopter only through the takeover's archive tags, which `--archives` lists,
++besides the code tip of a transition already on origin.
++While a hold stands the orch is up, but every verb the act rule guards refuses except on the fix task and a landing past its parent-side merge.
++The hold's pause entries cover only held runs,
++so the orch, adopt's deploy and check with their children, and the operator's `lym batten cancel` go on.
++`--take-hold` skips no check and lets no run go on before a green check: it moves the hold and its adopt to this machine.
++Only the operator's own shell runs it.
++
++Rationale: the operator decided adopt runs in the foreground and that nothing happens in the hub until it is done and every failing test it found is fixed.
++The synchronous push and the takeover leave no local state for adopt to reconcile, which removes the stops A2, A3, A5, A12 and A13.
++
++## Constraints
++
++- `PATTERN-owner-machine`: the owner stays on roots and beams, written only by `boardengine`'s setter, read through `hubgeom.ParentOf` and Bolt's machine registry.
++- `PATTERN-dobby-runs`: runs are still started only by the parent's dobby, which starts only with its orch bar `--no-orch`.
++- `PATTERN-lym-files`: every new tracked file sits under `_lym` and every cache under `.lym`, both named in `internal/lymdirs`.
++- `PATTERN-tolerant-records`: the takeover entry reads tolerantly and is written through `internal/state`.
++- `PATTERN-fabric-boundary` and `PATTERN-gitrepo-client-boundary`: the takeover entry's push and the archive run in `internal/fabricengine` through `gitexec` and `gitrepo`.
++- `PATTERN-refusal-way-forward`: every refusal this part adds names its way forward and a test reaches it;
++  none an agent reads names `lym adopt --take-hold`, which a shell-guard row denies agents.
++- `PATTERN-shell-guard-table`: the deny of `lym adopt --take-hold` is a row of `internal/shellguard`'s table.
++- `PATTERN-test-only-code`: the takeover entry writer, the foreground step runner and every other new function have a production caller.
++
++## Auto-mode assumptions
++
++## Open risks
++
++## Acceptance criteria
++
++- D8: `lym adopt <beam>` from a second machine's hub, with origin as the only shared state, ends with the beam's runs in the same FSM states as on the first machine and this machine as owner, with no `--keep-local` or `--drop-local`.
++- D8: an adopt run on a machine with no local pair of a moved run adds the pair from origin before it writes the takeover entry.
++- D8: two machines adopting at once end with one owner; the other's adopt refuses naming the winner.
++- D8: a failing adopt check files one fix task, leaves an `adopt-fix` hold naming it, and exits non-zero; the task's green re-check clears the hold and the runs go on with no hand lift.
++- D8: `lym adopt --take-hold` of the hold's subjects on another machine rewrites the hold to name that machine, and the hold clears only at that adopt's green check or, under `adopt-fix`, the fix task's green re-check; with other subjects it refuses naming the hold's subjects; an agent's shell is denied it.
++- D8: a hold written by a machine that then stops is taken over by `lym adopt --take-hold` on another machine, whose adopt then runs its steps and check.
++- D8: an adopt killed after its owner write goes on from the tracked state on its re-run and ends as an uninterrupted adopt does.
++- D8: a transition the old owner pushed between the adopter's fetch and its takeover is on the adopter's local branches before the run acts, and the run goes on from it.
++- D8: an adopter whose hold another machine took over stops at its next hold re-read, naming that machine, and starts no dobby.
++- D8: a registration the registry refuses at step 1 refuses the adopt with the registry's way forward, and the adopt goes on after it.
++- D8: a second adopt with `--take-hold` landing between an adopter's step 2 and step 3 stops the first adopter at its takeover retry, naming the second's machine, and the second adopter drives the runs.
++- D8: `lym adopt --here` on the machine that owns the subject ends ok with `owned_here` after one Bolt pull, writes no hold and starts no run.
++- D8: no code path writes the `adopt` or `adopt-hold` pause caller, and the dobby's handover and the orch watcher read a hold where they read the adopt record.
++
++## PATTERN changes
++
++- `PATTERN-dobby-runs` — changes: Starting or holding a board task's run: only its parent's dobby, started with its orch bar `lym adopt --no-orch`; front tasks only via `fronttask`; an adopt holds the hub through Bolt's holds until an adopt's check is green.
+diff --git a/docs/research/loom/adopt-build-revision-2026-11-16/record-bolt-holds-catch-up.md b/docs/research/loom/adopt-build-revision-2026-11-16/record-bolt-holds-catch-up.md
+new file mode 100644
+index 00000000..0b911972
+--- /dev/null
++++ b/docs/research/loom/adopt-build-revision-2026-11-16/record-bolt-holds-catch-up.md
+@@ -0,0 +1,202 @@
++## Goal
++
++A machine registry and holds in Bolt, the owner pause caller retired, and a catch-up from origin after an absence
++
++Takes: runfsm's Act rule, its `Held` and `OwnedElsewhere` inputs, `Judge` and `Aside`, and `pairteardown.ReadRun`, the one reader that fills them; the synchronous Bolt writes, the takeover reader and hand-over and the owed-push facts from push-before-act-takeover; `pairteardown.EndSubjectProcesses` and `runproc.EndSubject` from orch-resume-own-session; boardengine's owner setter and OwnedElsewhere, machinename's former names, dobbyengine's OwnedWorktrees, EnsureLive, loop and handover with its PauseOwned seam, tendercli's PauseOwnedElsewhere, pauserecord's callers and SleepWatch, battencli's origin-owed marker, pairteardown's local mode
++Delivers: board.json's machines registry and holds list written only by boardengine's setter with a synchronous push; every machine-name comparison through the registry, OwnedElsewhere's callers in every package updated, `pairteardown.ReadRun` and dobbyengine's owner filters included; lym machine name --forget-former; hold slug entries under the new pauserecord caller hold, read by every machine, and `pairteardown.ReadRun` filling runfsm's hold input with the fix task left out; the refusal of a held run naming the hold's machine; the owner caller and its writers retired into hand_over with the subject-process end, standing owner entries dropped at the first read after the upgrade, and standing adopt and adopt-hold entries turned into pause intents and one Bolt hold; the origin-owed marker retired; the catch-up from origin after a sleep, a dobby start or a hand pass, pushing owed commits, handing over runs owned elsewhere and removing their local pairs in local mode, the dobby's handover calling the subject-process end
++Exports: boardengine's registry and hold types, setters and readers, OwnedElsewhere taking the registry, and the catch-up entry point the dobby start and adopt call
++
++## Scope
++
++Decision numbers are those of the Sketch `adopt-redesign`.
++The run FSM and the tracked run decisions (D1, D3) and the orch's own-session resume and subject-process end (D9, D10) have landed.
++The synchronous push and the takeover (D2, D4) come from `push-before-act-takeover`,
++and the foreground adopt, which retires the adopt record, its worker and the adopt pause step (D8), from `adopt-foreground-leftovers`.
++
++The part changes these packages:
++
++- internal/boardengine (about 600 changed lines)
++- internal/dobbyengine (about 450 changed lines)
++- internal/pauserecord (about 120 changed lines)
++- internal/machinecli (about 150 changed lines)
++- internal/orchcli (about 120 changed lines)
++- internal/tenderengine (about 100 changed lines)
++- internal/battencli (about 140 changed lines)
++- internal/beamcli (about 100 changed lines)
++- internal/pairteardown (about 60 changed lines)
++- internal/tendercli (about 60 changed lines)
++- internal/hibernateengine (about 60 changed lines)
++- internal/adoptcli (about 40 changed lines)
++- internal/machinename (about 40 changed lines)
++- internal/loomcli (about 40 changed lines)
++- internal/runfsm (about 30 changed lines)
++- internal/battenshed (about 30 changed lines)
++- internal/landingshed (about 10 changed lines)
++- internal/fabricengine (about 10 changed lines)
++- internal/shedrecipe (about 10 changed lines)
++- internal/shedrun (about 10 changed lines)
++- internal/hibernatecli (about 10 changed lines)
++- internal/fabriccli (about 10 changed lines)
++- internal/fronttask (about 10 changed lines)
++- internal/pawlengine (about 10 changed lines)
++- pattern (about 10 changed lines)
++
++## Decisions
++
++### D5 — A machine registry in Bolt gives each machine one identity
++
++- `board.json` gains a top-level `machines` map: each registered name with the former names it replaced.
++  Only `boardengine`'s owner setter writes it, pushing synchronously.
++- A machine registers at its first owner write or `lym machine name`, copying the former names of its `machine.json`.
++  A registration whose former name is another registered machine's current name is refused, naming that machine;
++  its way forward is `lym machine name --forget-former <name>` on this machine, which drops that former name from its `machine.json`.
++- `lym machine name` records the rename there, besides its sweep of owners (`internal/machinecli/set.go`).
++- `lym machine name --forget-former <name>` (new) drops a former name from this machine's `machine.json` and its registry entry;
++  owners recorded under that name then read as the machine whose current name it is.
++- Every comparison of a recorded machine name with this machine goes through the registry:
++  a recorded name that is a former name of a registered machine reads as that machine.
++  `boardengine.OwnedElsewhere` takes the registry, and every owner write writes the current name.
++  The comparisons that name the machine directly move too:
++  `dobbyengine.OwnedWorktrees` and `EnsureLive` compare an owner with the machine's name today, and `pairteardown.ReadRun` reads the owner through `OwnedElsewhere`.
++- `internal/machinename` stays this machine's only name source.
++
++Rationale: A8's `osl46` and `osl-1046` are one machine before and after `lym machine name`;
++the former names live only in that machine's `machine.json`, so every other machine reads them as two.
++
++### D6 — After an absence, lym catches up from origin before it acts
++
++An absence is any of:
++
++- a long-lived lym process, the dobby loop or the orch watcher, observing a sleep through `pauserecord.SleepWatch` over `pauserecord.SleepTolerance`;
++- a worktree's dobby starting, as through `lym s`, `lym beam start` or a hibernate wake;
++- a hand pass, which keeps the origin reconcile `PATTERN-owner-machine` gives it, now this catch-up over its run.
++
++Before any act rule answer (D1) after an absence, the catch-up runs:
++
++1. It fetches Bolt, replays local display commits as the board sync does, and reads the owners, the registry and the holds.
++2. It fetches each local pair's branches and reads each run's record from the result.
++3. For a run this machine owns, local commits on top of origin's tip are this machine's owed pushes, and it pushes them.
++   A takeover entry naming another machine is the hand-over `push-before-act-takeover` delivers.
++4. For a run another machine owns, a `landing` past its parent-side merge included, it ends this machine's processes for the slug through `pairteardown.EndSubjectProcesses`,
++   pushes the code tip the run's last transition on origin names when origin lacks it,
++   and archives the local tips as the hand-over does, the local parent branch's unpushed merge of this run included.
++   It then removes the local pair through `internal/pairteardown`'s local mode (`Request.Local`),
++   which takes no origin step and writes no board: origin's branches and the board claim stay.
++5. It writes this machine's pause record entries from the run pause intents of the runs it owns,
++   and drops the caches of the runs it touched; each run's first pass after it is a full pass, as the dobby already owes after a sleep.
++
++The dobby's periodic Bolt pull for the owner (`internal/dobbyengine/handover.go`) stays; a hold it reads applies at once (D7).
++The dobby's own handover of a subject calls `EndSubjectProcesses` with the dobby end set, and a catch-up the dobby runs leaves it unset.
++The origin-owed marker (`internal/battencli/resumereconcile.go`, `dobbyengine`'s `OriginOwed`) retires here:
++no pass acts without origin, and this catch-up is the reconcile it stood for.
++
++Bound: a catch-up that cannot reach origin acts on nothing and retries on the owed push's backoff; `lym beam status` shows it waiting on origin.
++
++Rationale: the operator requires lym to check pushed state before acting after the machine slept, hibernated or was off.
++The dobby already detects a sleep (`internal/dobbyengine/loop.go`), but only owes full passes and pulls Bolt up to 5 minutes later.
++
++### D7 — Adopt holds live in Bolt; the owner pause entry retires
++
++- `board.json` gains a top-level `holds` list.
++  A hold has a kind, `adopt` or `adopt-fix`, the machine, the time, its adopt's subjects,
++  and for `adopt-fix` the fix task's slug and each subject's try count (D8).
++  Only `boardengine`'s setter writes it, pushing synchronously.
++- A hold covers the whole hub: while one stands, the act rule answers `wait` for every run on every machine.
++  `pairteardown.ReadRun` sets `runfsm.Inputs.Held` for a run, and leaves it false for the `adopt-fix` hold's fix task;
++  the act rule already lets a run `landing` past its parent-side merge act under a hold.
++  The refusal of a held run names the hold's machine, so `runfsm` carries it in its inputs and verdict.
++  Its way forward is waiting for the hold to clear, or asking the operator when that machine has stopped.
++- Every verb that asks the act rule outside the dobby's pass, such as `lym loom resume` and `lym tender resume <slug>`,
++  fetches Bolt first when origin answers, and reads the local Bolt only when it does not.
++- A machine that reads a hold writes no hub entry.
++  It writes a slug entry in its own pause record, under one new caller `hold`,
++  for each run of this machine the act rule answers `wait` for under the hold, and none for the `adopt-fix` hold's fix task,
++  so the network gate and the turn interruption hold those runs' processes.
++  It drops those entries once it reads no hold.
++- The `hold` entries hold nothing outside those runs.
++  The orch, `lym adopt`'s own process and the children it spawns for the deploy and the check,
++  and the operator's `lym batten cancel`, which today only a hub entry refuses, go on under a hold.
++- The `hold` entries keep apart from the operator's hub entry and hibernate's.
++  Dropping them drops only entries of the `hold` caller,
++  and the hibernate wake, which skips its reconcile under a hub entry, never reads a `hold` slug entry as one.
++  A slug that already has a live entry gets no `hold` entry, since the pause record keeps one live entry per scope.
++  `lym tender resume` lifts no `hold` entry while the Bolt hold stands;
++  when it lifts a slug's own entry under a standing hold, it writes the `hold` entry in its place.
++  `lym tender resume <slug>` of a slug only a `hold` entry covers refuses, naming the hold's machine and the way forward above.
++- A run owned by another machine is not paused: the act rule answers `hand_over`, and `pairteardown.EndSubjectProcesses` ends its processes.
++  So the `pauserecord` caller `owner` retires, with every writer of it:
++  the dobby's owner pause (`internal/dobbyengine/owned.go`, its `PauseOwned` seam),
++  `tendercli.PauseOwnedElsewhere` and the process end beside it,
++  the hibernate wake's hold of runs owned elsewhere, and the owner entries adopt's pause step reads.
++  Each becomes the act rule's `hand_over` with the subject-process end; a Finalize past its parent-side merge hands over too, and its owner finishes it.
++  The `adopt` and legacy `adopt-hold` callers stay written by today's adopt until `adopt-foreground-leftovers` retires that worker.
++- At the first read after the upgrade, a standing `adopt` or `adopt-hold` entry of a run this machine owns in a state that is not terminal
++  becomes a run pause intent (D3), so no run resumes unasked.
++  Every other standing entry of those callers, and every standing `owner` entry, is dropped.
++  When at least one entry became a pause intent or belonged to a released `queued` task, that first read also writes one Bolt `adopt` hold
++  naming this machine and the subjects of those runs and tasks, so no queued task starts;
++  a re-run of `lym adopt` of those subjects here clears it at its green check.
++  That first read posts one notice to the operator naming the hold, its machine,
++  and as the way forward a re-run of `lym adopt` on that machine of the hold's subjects.
++  A first read whose entries all belong to landed runs or runs owned elsewhere writes no hold, so every upgrade hold names subjects to re-run.
++  A first read that finds another machine's hold standing writes none, so one machine holds the hub at a time;
++  its notice names that hold's machine, and the re-run here once that hold clears.
++  Like every notice an agent reads, neither names `--take-hold`.
++  A released task's entry with no batten record is dropped, and the task stays `queued` under the hold.
++
++Bound: a machine other than the adopter learns of a hold at its next Bolt pull or catch-up:
++its dobby's pull within the dobby's pull interval, and a verb's before it asks the act rule.
++Until then its dobby goes on with its runs as before, for at most the dobby's Bolt pull interval; the takeover's bound in `push-before-act-takeover` covers the transitions it pushes.
++A verb that cannot reach origin reads the local Bolt, and any transition it leads to waits on origin.
++A run that holds its parent lock is exempt from slug entries, so the gate does not hold its step in flight;
++the act rule still starts no producer for it.
++A hold stands until a green check clears it: that of the adopt holding it, or the fix task's re-check under `adopt-fix`;
++a hold whose adopter stopped stands until the operator takes it over with `lym adopt --take-hold` on another machine (D8).
++The orch is up while a hold stands, and every verb the act rule guards refuses except on the fix task and on a landing past its parent-side merge.
++
++Rationale: the operator decided nothing happens in the hub until adopt is done and its failing tests are fixed;
++the pause record is machine-local, so no other machine sees a hold kept there (state map 3.2, 6.4 items 7 and 11).
++
++## Constraints
++
++- `PATTERN-owner-machine`: the owner stays on roots and beams, written only by `boardengine`'s setter, read through `hubgeom.ParentOf` and Bolt's machine registry.
++  The rest of a Finalize past its parent-side merge finishes on the run's owner.
++- `PATTERN-pair-remote`: a catch-up's local pair removal goes through `internal/pairteardown`'s local mode and deletes no origin branch.
++- `PATTERN-dobby-runs`: runs are still started only by the parent's dobby, which starts only with its orch bar `--no-orch`.
++- `PATTERN-lym-files`: every new tracked file sits under `_lym` and every cache under `.lym`, both named in `internal/lymdirs`.
++- `PATTERN-tolerant-records`: the Bolt `machines` and `holds` keys read tolerantly and are written through the board store.
++- `PATTERN-fabric-boundary` and `PATTERN-gitrepo-client-boundary`: the catch-up's fetches and pushes run in `internal/fabricengine` through `gitexec` and `gitrepo`.
++- `PATTERN-child-processes`: the subject-process end goes through `internal/runproc`.
++- `PATTERN-daemon-wakeups`: the catch-up's retry waits wake at most once a second and back off while idle.
++- `PATTERN-refusal-way-forward`: every refusal the act rule, the holds, the registry's clash and the owner refusal add names its way forward and a test reaches it;
++  none an agent reads names `lym adopt --take-hold`, which a shell-guard row denies agents (D8).
++- `PATTERN-test-only-code`: each exported setter and reader has a production caller in this part,
++  the hold setter's being the upgrade's first read and the catch-up entry point's the dobby start.
++
++## Auto-mode assumptions
++
++## Open risks
++
++## Acceptance criteria
++
++- D5: a registration whose former name is another machine's current name is refused naming that machine and `lym machine name --forget-former <name>`; after that verb, the registration lands.
++- D5: an owner recorded as a former name of a registered machine reads as owned here on that machine and as that machine on another, in `dobbyengine.OwnedWorktrees` and `pairteardown.ReadRun` too.
++- D5: a machine's first registration carries the former names of its `machine.json`; `lym machine name <new>` puts the old name among them on origin when it returns.
++- D6: a dobby that observes a sleep runs the catch-up before its next pass; a run another machine took meanwhile gets no pass, its processes end, and its local pair is removed with its origin branches left standing.
++- D6: a run owned here whose local records are ahead of origin with its own commits has them pushed by the catch-up, and none is reset.
++- D6: a run owned elsewhere at `Finalize` past its parent-side merge is handed over like any other run: its processes end here, and its owner finishes the Finalize.
++- D6: with origin unreachable, the catch-up acts on no run and retries.
++- D6: no code path reads or writes the origin-owed marker.
++- D7: under an `adopt` hold no queued task is claimed and no run but a landing past its parent-side merge gets a pass, on the adopting machine and on another machine after its Bolt pull; under `adopt-fix` the fix task gets passes too.
++- D7: a machine reading a hold holds its runs' processes through `hold` slug entries in its pause record, writes no hub entry, and drops only those entries once the hold clears, leaving an operator's hub pause standing.
++- D7: under an `adopt-fix` hold the fix task's agent turns and network calls pass the gate, and the orch is not interrupted.
++- D7: under a hold a run `landing` past its parent-side merge finishes, and the try count of an `adopt-fix` hold reads the same on every machine.
++- D7: a verb refused by a hold names the hold's machine and a way forward that names no `--take-hold`.
++- D7: `lym loom resume` on a worktree whose dobby is down refuses a run under a hold another machine wrote since that worktree's last Bolt pull.
++- D7: a subject read as owned elsewhere leaves no process of its runs, its orch or its dobby running on this machine, and no code path writes the `owner` caller.
++- D7: a standing `adopt` pause entry from before the upgrade becomes a pause intent on its run, which stays paused; a standing `owner` entry is dropped.
++- D7: a standing `adopt` pause entry from before the upgrade writes one Bolt `adopt` hold naming this machine and posts one notice naming the hold, its machine and a re-run of `lym adopt` there, and no notice names `--take-hold`; a landed run's standing entry is dropped, an upgrade whose standing entries all belong to landed runs or runs owned elsewhere writes no hold, one with a released queued task's entry writes a hold naming that task's subject, and a second machine's upgrade under a standing hold writes no hold.
++
++## PATTERN changes
++
++- `PATTERN-owner-machine` — changes: Starting, resuming, pushing or landing a run, a Finalize past its merge included, or picking a pair's parent: only on the entry's owner machine, read through hubgeom's one `ParentOf` and Bolt's machine registry; after an absence, a catch-up from origin first.
+diff --git a/docs/research/loom/adopt-build-revision-2026-11-16/record-leftover-pairs-teardown.md b/docs/research/loom/adopt-build-revision-2026-11-16/record-leftover-pairs-teardown.md
+new file mode 100644
+index 00000000..b1ccbcdc
+--- /dev/null
++++ b/docs/research/loom/adopt-build-revision-2026-11-16/record-leftover-pairs-teardown.md
+@@ -0,0 +1,80 @@
++## Goal
++
++The dobby tears down or reports leftover pairs
++
++Takes: runfsm's `landed` and `cancelled` states and its reading of whether a cancelled run kept its pair; the cancelled batten record that `lym batten cancel` keeps and every pair removal deletes; dobbyengine's ended-run teardown and pairteardown's teardown; the holds and registry from bolt-holds-catch-up; fabricengine's hub workspace regeneration
++Delivers: the dobby tearing down landed and unkept cancelled pairs, listing kept pairs, writing kept-cancel records for pre-upgrade kept pairs, and tearing down idle orphans after the orphan grace; lym tender resume pushing no pair; the hub workspace file regenerated after each teardown
++Exports: the orphan grace constant
++
++## Scope
++
++Decision numbers are those of the Sketch `adopt-redesign`.
++The run FSM (D1, D3) has landed, and the holds and the registry come from `bolt-holds-catch-up`.
++This part shares no code with the foreground adopt (D8).
++
++The part changes these packages:
++
++- internal/dobbyengine (about 250 changed lines)
++- internal/beamcli (about 80 changed lines)
++- internal/pairteardown (about 60 changed lines)
++- internal/fabricengine (about 50 changed lines)
++- internal/battencli (about 40 changed lines)
++- internal/tendercli (about 30 changed lines)
++- internal/shedrun (about 20 changed lines)
++
++## Decisions
++
++### D11 — Leftover pairs are torn down or reported
++
++- The dobby tears down, through `internal/pairteardown`, the pair of each run in the FSM state `landed`, or `cancelled` without keep,
++  with no pause or hold covering it and no other machine owning it.
++  A cancelled run's batten record goes in the same step.
++  This widens the ended-run teardown of `internal/dobbyengine/ended.go`,
++  whose stranded-run condition reads a board entry that ended, so it takes neither a cancelled run, whose entry is unclaimed, nor a landed run's leftover pair.
++  The widened condition reads the FSM state in place of the cancel intent and the pause record.
++- A cancelled run whose pair was kept stays: `lym beam status` lists it with its age,
++  and each dobby start posts one notice listing kept pairs and naming `lym fabric remove <slug>`.
++- A pair kept by a cancel before the upgrade has no batten record left.
++  The first dobby start after the upgrade writes, for each pair whose slug has a board entry, no batten record and no live process,
++  a batten record holding a finished cancel with keep, so the pair is listed as kept and never read as `queued` or as an orphan.
++  The board entry must be unclaimed, as a cancel leaves it, so a pair whose claim stands is never read as kept.
++- A pair with neither a board entry nor a batten record, such as a bench's or a trial's, is an orphan.
++  The dobby posts a notice at first sight saying when it goes, and tears it down no earlier than the orphan grace after that notice,
++  and only when neither branch has had a commit for the orphan grace and no process of its slug lives.
++  Uncommitted files are committed onto the archived tip first.
++- `lym tender resume` pushes no pair, since a transition's push is synchronous and leaves no deferred push for it to pay;
++  the `rerun` pair's failure on every resume ends.
++- The hub workspace file is regenerated after each teardown, so a torn-down pair leaves VS Code.
++
++Bound: an orphan in use stays while it commits or runs a process; an idle one goes after the grace, its branches kept under archive tags.
++A kept pair's batten record keeps it out of the orphans, also when its board entry is removed.
++
++Rationale: a bench pair, a kept pair and a trial pair stood for days, listed in the operator's VS Code, with nothing reporting them (A14).
++A kept pair stays because keeping it was the operator's explicit choice at the cancel.
++
++## Constraints
++
++- `PATTERN-pair-remote`: teardown goes only through `internal/pairteardown`, which holds the slug's teardown lock.
++- `PATTERN-owner-machine`: a pair another machine owns is never torn down here.
++- `PATTERN-lym-files`: every new tracked file sits under `_lym` and every cache under `.lym`, both named in `internal/lymdirs`.
++- `PATTERN-daemon-wakeups`: the orphan check wakes at most once a second and backs off while idle.
++- `PATTERN-child-processes`: a pair's processes end only through `internal/runproc`.
++- `PATTERN-code-conventions`: the orphan grace is one named constant.
++- `PATTERN-test-only-code`: every new function has a production caller.
++
++## Auto-mode assumptions
++
++- The orphan grace is 24 hours.
++
++## Open risks
++
++## Acceptance criteria
++
++- D11: a cancelled run's pair without keep is torn down by the dobby; a kept pair stays and is listed with its age in `lym beam status`, also after its board entry is removed.
++- D11: a landed run's leftover pair is torn down by the dobby, and a pair another machine owns or a pause or hold covers is not.
++- D11: a pair kept by a cancel before the upgrade is listed as kept after the first dobby start, and a pair whose claim stands is not.
++- D11: an orphan with no commit and no live process is torn down no earlier than the orphan grace after its notice, its branches archived; one with a commit inside the grace stays.
++- D11: `lym tender resume` pushes no pair.
++- D11: the hub workspace file no longer lists a pair after its teardown.
++
++## PATTERN changes
+diff --git a/docs/research/loom/adopt-build-revision-2026-11-16/record-push-before-act-takeover.md b/docs/research/loom/adopt-build-revision-2026-11-16/record-push-before-act-takeover.md
+new file mode 100644
+index 00000000..12b46501
+--- /dev/null
++++ b/docs/research/loom/adopt-build-revision-2026-11-16/record-push-before-act-takeover.md
+@@ -0,0 +1,194 @@
++## Goal
++
++Every transition pushes its records before the run acts, and a takeover entry in the run's records hands it over without replay
++
++Takes: runfsm's `Judge`, `Aside` and `Inputs`, whose `PushOwedOffline` and `CodeTipMissing` nothing fills yet, and `pairteardown.ReadRun`, the one reader of a run's inputs; the batten record's cancel and pause intents with their shedrun writers, and the detached commit-and-push that `lym tender pause`, `lym tender resume`, `lym batten cancel`, the pull-request record and the fixer attempt counts make today; fabricengine's PushPairAnchored, SpawnStatusPush, teardown-lock respawn, pushclassified's rejection path, originreads and ArchiveOwnerTips; boardengine's Sync, SpawnSync and pushOwnerCommit; statuscommit and sheddriver's records commit; landingshed's Finalize; pairteardown's EndSubjectProcesses over runproc's EndSubject
++Delivers: a shed transition that takes a gate admission, commits its records with the code tip it was made with and pushes records side first, code side after, before the next producer starts; the run intents, the pull-request record and the fixer counts pushing through the same synchronous push; an owed push retried on a backoff and shown in lym beam status, which the offline pause, resume and cancel verbs also ride; pairteardown's ReadRun filling the owed-push and code-tip inputs; the per-transition detached push and its teardown-lock respawn retired; synchronous Bolt writes for a run claim, a landing's done and an owner; Finalize pushing the parent branch before its transition and board done; a rejected records push that reads origin's record and hands over on another machine's takeover entry, ending the run's processes, archiving local tips and the local parent merge; the code-tip wait and its grace
++Exports: the takeover entry type and its reader, tested with entries a testkit writer makes; the owed-push and code-tip facts `pairteardown.ReadRun` puts into runfsm's Inputs; fabricengine's records-first PushPairAnchored and its hand-over result
++
++## Scope
++
++Decision numbers are those of the Sketch `adopt-redesign`.
++The run FSM (D1) and the tracked run decisions (D3) landed in `run-fsm-tracked-records`,
++and the orch's own-session resume and the subject-process end (D9, D10) in `orch-resume-own-session`.
++The registry, the catch-up and the holds (D5 to D7) belong to `bolt-holds-catch-up`,
++and the foreground adopt and the takeover entry's writer (D8) to `adopt-foreground-leftovers`.
++
++The part changes these packages:
++
++- internal/fabricengine (about 1000 changed lines)
++- internal/battencli (about 300 changed lines)
++- internal/sheddriver (about 200 changed lines)
++- internal/loomcli (about 200 changed lines)
++- internal/landingshed (about 250 changed lines)
++- internal/boardengine (about 150 changed lines)
++- internal/statuscommit (about 100 changed lines)
++- internal/tendercli (about 100 changed lines)
++- internal/pairteardown (about 80 changed lines)
++- internal/shedengine (about 60 changed lines)
++- internal/beamcli (about 60 changed lines)
++- internal/fabriccli (about 40 changed lines)
++- internal/tenderengine (about 40 changed lines)
++- internal/pauserecord (about 40 changed lines)
++- internal/pullrequest (about 30 changed lines)
++- pattern (about 30 changed lines)
++
++## Decisions
++
++### D2 — A transition pushes its records before the run acts
++
++- A shed transition commits its records as today, the files D3 moved into tracked records included, then pushes them synchronously:
++  both sides in a task pair, records only in the prime.
++  The records commit names the code tip the transition was made with (D4).
++  The next producer starts only once every side has landed.
++- The writes D3 moved into tracked records push through the same synchronous path:
++  the cancel intent and its finish, the run pause intent and its clearing, the pull-request record and the fixer attempt counts.
++  Today each commits and spawns a detached push (`internal/tendercli/runintents.go`, `internal/battencli/cancelcmd.go`, `internal/pullrequest/record.go`, `internal/landingshed/fixerattempts.go`).
++  `lym tender pause`, `lym tender resume` and `lym batten cancel` return with their intent on origin,
++  or with the push owed when origin is unreachable (below).
++- The pair push itself, `fabricengine.PushPairAnchored`, sends the records side first.
++  It sends the code side only once the records side has landed, and none when the records side fails or is rejected,
++  so the order holds for every caller of a pair push, a transition's and `lym loom commit-records`' among them.
++  Today that push sends the code side first.
++  A code side withheld this way is reported with the records side's failure, and the caller's next pair push sends it.
++- A Finalize's parent-side merge pushes the parent branch before its transition's records and before the landing's board `done` (D4).
++- Every detached status push (`fabricengine.SpawnStatusPush`) that carries a run transition retires:
++  the per-transition spawn behind `internal/statuscommit/statuscommit.go`,
++  and the respawn of a pair's push that exited on a held teardown lock (`internal/fabricengine/teardownlock.go`).
++  A transition's push that meets a held teardown lock waits for its release and pushes before the next producer starts.
++  A wait that outlasts the push lock wait (`fabricengine.StatusPushLockWait`) turns the push owed;
++  that releases the admission below, so a pause written meanwhile reaches the process again.
++  Fabric's pause deferral of a push no longer applies to a transition's push, which is synchronous;
++  it stays for the detached pushes below.
++  A transition takes a network gate admission (`pauserecord.Admit`) before its commit,
++  and releases it once every side has landed or its push turns owed,
++  so a pause or hold written after the commit stops the run's next producer and never that push's first attempt.
++  An owed push's retries wait at the gate like any network call, so a pause holds them, and the run waits on the owed push meanwhile.
++  `lym loom commit-records` keeps its synchronous push.
++- The anchor change's push (`internal/fabricengine/anchorchange.go`) and tender's prime push (`internal/tendercli/deps.go`) stay detached.
++  Neither carries a run transition: the first pushes a pair's anchor move,
++  and the second pushes only commits no run waits on, since every transition pushed before its run acted.
++- A push that fails for a transient reason, such as an unreachable origin, leaves the run waiting at that transition with the push owed.
++  It retries on a backoff under `PATTERN-daemon-wakeups` and starts no producer meanwhile.
++  `pairteardown.ReadRun` reads the owed push into `runfsm.Inputs.PushOwedOffline`,
++  and `lym beam status` shows the owed push and its last error; the existing failed-push record and creel notice stay.
++- With origin unreachable, `lym tender pause <slug>`, `lym tender resume <slug>` and `lym batten cancel` act here at once and owe their push,
++  as D3 says; their `runfsm.Aside` already sets an owed push aside, so the verbs themselves still run.
++- A rejected push reads origin's tip for a takeover first (D4), and replays the records as today only when it finds none.
++- A Bolt write that carries a decision pushes synchronously before its writer goes on:
++  a run claim, the board `done` of a landing, an owner, a hold (D7) and the registry (D5).
++  A board write that only displays a run status stays on the detached board sync.
++
++Bound: no run acts while origin is unreachable, and an owed push holds the run at its transition until it lands.
++Work an agent made inside a step and has not reached its transition yet is on this machine only;
++a stop there loses nothing pushed, and the step runs again from its start.
++Until an owed intent push lands, the intent is on this machine only, and another machine reads the run unpaused or not cancelled.
++
++Rationale: the operator requires the whole state on GitHub at all times, and today a push can lag or fail with nothing waiting for it (state map 1.3, 7).
++A push costs two network round trips or more (`internal/fabricengine/pushclassified.go`), small beside an agent step.
++
++### D4 — A takeover entry in the run's own records hands the run over
++
++- Adopt writes a takeover entry, naming the new owner machine, into each moved run's batten record and child record, each on its own branch, and pushes it (D8).
++  This part ships the entry type, its reader and a writer in `internal/testkit` for its own tests;
++  the production writer arrives with adopt, since `PATTERN-test-only-code` keeps a function only tests call out of a production file.
++- When a run's records push is rejected, a transition's or any other caller's of the pair push (D2),
++  lym fetches the branch and reads the run's own record from origin's fetched tip, before any replay.
++  When that record holds a takeover entry naming another machine that this machine has not yet read, the run hands over without replaying:
++  this machine pushes no code side for the rejected push,
++  ends its processes for the slug through `pairteardown.EndSubjectProcesses`, which does not end the dobby when the caller is that dobby's own run,
++  pushes the code tip the run's last transition on origin names when origin's code branch lacks it, since that transition stands,
++  archives the local tips as the old owner's archive does (`fabricengine.ArchiveOwnerTips`), with uncommitted files first committed onto the archived tip,
++  archives its local parent branch's tip the same way when this run's parent-side merge alone puts that branch ahead of its upstream,
++  and resets that branch to its upstream,
++  pushes the archive tags, and posts one notice naming the machine and any pause or cancel intent it dropped (D3).
++  It pushes nothing more for the run, so its code commits after the takeover reach origin only under the archive tags.
++  A run `landing` past its parent-side merge hands over too, and its new owner resumes the Finalize from origin's records.
++  The Finalize reads the owner from a fetched Bolt before its parent-side merge and before each later push,
++  and hands over when another machine owns the run, so the old owner writes nothing to the parent's branch after it reads the takeover.
++  After the merge into the local parent branch, the Finalize pushes the parent branch, then commits and pushes its transition,
++  then writes the board `done` (D2); today it marks the board `done` before the parent push (`internal/landingshed/finalize.go`).
++  Under the push skip, which pushes nothing, the board `done` follows the local merge.
++  So whenever origin's records or board read the run past its merge, origin's parent branch holds the task's work,
++  and the adopter reads that from its fetch (D1).
++  A takeover between the local merge and the parent push leaves origin's parent branch without the work:
++  the adopter reads the run as before its merge and merges again,
++  and the old owner's hand-over archives and resets its local parent branch as above,
++  so a later landing on that machine finds the branch level with its upstream.
++  A parent push rejected over an origin parent branch that already holds the task's work archives the local merge,
++  resets the local parent branch to origin's, and goes on past the merge.
++- Each transition's records commit names the code tip it was made with (D2).
++  After a takeover, origin's code branch therefore moves only to a tip a pushed transition names,
++  so the adopter's later code push meets no other machine's commit.
++  Until origin's code branch holds the tip the run's last transition names, the act rule answers `wait` through `Inputs.CodeTipMissing`,
++  which `pairteardown.ReadRun` fills, and `lym beam status` names the tip and the machine that owes it;
++  that machine's next hand-over or catch-up (D6) pushes it,
++  and the owner's dobby fast-forwards its local code branch to it before the run's next pass.
++  A tip still missing after the code-tip grace is given up:
++  the owner commits and pushes a records commit that returns the run to its previous transition,
++  and the step runs again from there, as D2's bound says a stopped step does.
++  A machine owing a tip pushes it only while the run's last transition on origin names it, so a given-up tip never lands.
++- A rejection whose fetched record holds no such entry, such as one over commits of other runs on a shared records branch like `main-weft`,
++  replays and pushes as today.
++- An adopter's own takeover push that is rejected fetches, then re-reads its hold and the subjects' owner from a Bolt it fetches.
++  When its hold is gone or either names another machine, it stops, naming the subjects' owner it reads from that Bolt (D8).
++  Otherwise it writes the takeover entry again onto origin's tip and pushes again;
++  it never replays its own commit over a record the old owner changed, and it never hands over.
++
++Bound: transitions the old owner pushed before the takeover landed stand, and the adopter goes on from them.
++The old owner's step in flight runs to its next transition, which the takeover rejects;
++its result is archived under a tag, not lost and on neither branch.
++A pause or cancel intent owed on the old owner when the takeover lands is dropped, and the notice names it to repeat on the owner machine.
++
++Rationale: a takeover entry in the run's own record is a compare-and-swap per run that holds on records branches many runs share,
++and needs no extra fetch per transition.
++
++## Constraints
++
++- `PATTERN-owner-machine`: the owner stays on roots and beams, written only by `boardengine`'s setter, read through `hubgeom.ParentOf`.
++  The rest of a Finalize past its parent-side merge, as origin's parent branch shows it,
++  finishes on the run's owner, the adopter after a takeover (D1, D4).
++- `PATTERN-pair-remote`: the code branch still goes along with a pair's records push, now once the records side lands (D2),
++  and a refused push still leaves a failed-push record and a notice.
++- `PATTERN-lym-files`: every new tracked file sits under `_lym` and every cache under `.lym`, both named in `internal/lymdirs`.
++- `PATTERN-tolerant-records`: the takeover entry and the other new tracked records read tolerantly and are written through `internal/state`.
++- `PATTERN-fabric-boundary` and `PATTERN-gitrepo-client-boundary`: the synchronous push, the takeover read and the archive run in `internal/fabricengine` through `gitexec` and `gitrepo`.
++- `PATTERN-child-processes`: the hand-over ends a run's processes only through `internal/runproc`, by `pairteardown.EndSubjectProcesses`.
++- `PATTERN-daemon-wakeups`: D2's retry waits wake at most once a second and back off while idle.
++- `PATTERN-refusal-way-forward`: every refusal this part adds names its way forward and a test reaches it.
++- `PATTERN-code-conventions`: the code-tip grace is one named constant.
++- `PATTERN-test-only-code`: the takeover reader has its production caller in the rejected-push path,
++  and the entry writer a test uses lives in `internal/testkit`.
++
++## Auto-mode assumptions
++
++- The code-tip grace is 30 minutes (D4).
++
++## Open risks
++
++## Acceptance criteria
++
++- D2: a shed transition in a task pair pushes its records side, then its code side once the records side landed, and starts the next producer only after both landed on origin.
++- D2: a pause written between a transition's commit and its push leaves that transition on origin, and the run's next producer does not start.
++- D2: a transition's push that waits on a held teardown lock past the push lock wait turns owed, and a pause written then holds the process's network calls.
++- D2: with origin unreachable, a transition leaves the run waiting with the push owed, starts no producer, and goes on once origin answers.
++- D2: a run claim, a landing's board `done`, an owner write and a hold write are on origin when their verb returns.
++- D2: a pull-request record write and a fixer attempt count are on origin before the next producer starts.
++- D3: `lym tender pause <slug>`, `lym tender resume <slug>` and `lym batten cancel` return with their intent on origin.
++- D3: with origin unreachable, `lym tender pause <slug>` holds the run's processes here at once, and the pause intent is on origin once origin answers.
++- D4: a records push rejected over a takeover entry naming another machine ends this machine's processes for the slug, pushes an `archive-owner/` tag holding its local commits and uncommitted files, and pushes nothing to the branch.
++- D4: a push rejected over another run's commits on a shared records branch replays and pushes, and the run goes on.
++- D4: a records push rejected over a takeover entry runs no replay, so no replay conflict stops the hand-over.
++- D4: an adopter's takeover push rejected over the old owner's later transition writes the takeover entry onto origin's tip and lands, and the adopter reads the run at that transition.
++- D4: after a takeover, a landing past its parent-side merge is driven on exactly one machine, the adopter, which finishes its Finalize.
++- D4: after a takeover, the old owner's next transition leaves origin's code branch unchanged, and its code commits are under its archive tag.
++- D4: a run whose last transition names a code tip origin's code branch lacks waits until that tip lands, then goes on from it; one still missing after the code-tip grace returns to its previous transition and runs the step again, and the owing machine's later push of that tip leaves origin's code branch unchanged.
++- D4: an old owner past its parent-side merge that reads the takeover pushes nothing more to the parent's branch, and the adopter finishes the Finalize.
++- D4: an old owner that merged into its local parent branch and was taken over before pushing it leaves origin's parent branch without the work; the adopter merges and lands the run, origin's parent branch holds the work once, and the old owner's local parent branch is level with its upstream, its merge under an archive tag.
++- D4: a Finalize's board `done` reaches origin only after its parent branch push landed.
++- D4: after a takeover, the old owner's `lym loom commit-records` hands over and leaves origin's code branch unchanged.
++
++## PATTERN changes
++
++- `PATTERN-run-fsm` — adds: Reading or acting on a run's lifecycle state: only `internal/runfsm`'s states and act rule; a transition commits and pushes before the run acts; a run whose record holds another machine's takeover hands over, never replays.
++- `PATTERN-pair-remote` — changes: Pushing run records or tearing down a pair: the code branch goes along after the records side, both before the run acts; a pair's remote steps hold the slug's teardown lock; teardown only via `internal/pairteardown`.
+diff --git a/docs/research/loom/adopt-build-revision-2026-11-16/report.md b/docs/research/loom/adopt-build-revision-2026-11-16/report.md
+new file mode 100644
+index 00000000..60886e61
+--- /dev/null
++++ b/docs/research/loom/adopt-build-revision-2026-11-16/report.md
+@@ -0,0 +1,541 @@
++# Revising the remaining adopt-build members against what landed
++
++2026-11-16, board task `adopt-build-revision`.
++A read-only study of the beam `adopt-build` at the commit this branch forked from, `973c9025`,
++after `orch-resume-own-session` and `run-fsm-tracked-records` landed.
++No test ran and no code, board entry or decision record changed.
++The board entries were read with `lym board get`, and the Sketch `adopt-redesign` and its split from the raddle record under Bolt.
++A claim marked *not read* names code this study did not open, so the member's own run has to settle it.
++
++The revised decision records sit beside this report:
++[push-before-act-takeover](record-push-before-act-takeover.md),
++[bolt-holds-catch-up](record-bolt-holds-catch-up.md),
++[adopt-foreground-leftovers](record-adopt-foreground-leftovers.md) and
++[leftover-pairs-teardown](record-leftover-pairs-teardown.md) (new).
++The darn members have no record, so their revised bodies below are their whole specification.
++
++## Short answer
++
++- The three raddle members keep their order, dependencies and recipe.
++  Their `Takes` and `Delivers` need edits where the landed code differs from what the Sketch assumed (section 1).
++- Two Sketch decisions sit in the wrong member.
++  The upgrade's first read of standing pause entries is written into both `bolt-holds-catch-up` and `adopt-foreground-leftovers`;
++  it belongs in `bolt-holds-catch-up`, since the hold setter needs a production caller there.
++  The leftover-pair teardown (D11) shares no code or decision with the foreground adopt, and I recommend splitting it into `leftover-pairs-teardown`.
++- `prime-is-root-beam` narrows to what the board prints.
++  Changing what `hubgeom.ParentOf` returns for the prime would reach every owner read the three raddle members rewrite.
++- `hub-stop-button` does not build on the run intents.
++  A per-slug `lym tender pause` now writes a tracked intent and pushes it, which a stop must not do.
++  It builds on hibernate's pause-and-confirm sequence and `beam stop`, and it has to end the orch's registered Claude process.
++- `machine-restart-shortcut` must not start a hub through `lym s`.
++  That shortcut begins with `lym adopt --here`, which takes over a hub another machine owns.
++  `lym beam start --all` already starts the prime and the beams this machine owns, and the launcher builds on it.
++- Nothing is left of the orch transcript mirror (F12) in the six members.
++  The orch staying up during a hold (F14) matters to the stop button and the restart launcher; both bodies say so.
++
++## 1. What landed, against what the plan assumed
++
++`run-fsm-tracked-records` (`973c9025`):
++
++- `internal/runfsm` declares one state more than the Sketch lists, `none` for a slug no run holds.
++  It also exports `Judge` and `Aside`: a verb names what it resolves itself (its own pause, a cancel under way, a hold, a shed pause, an owed push),
++  and `Judge` sets those aside before the act rule answers.
++  The Sketch's act rule has no such parameter.
++- The inputs are not "passed in by callers".
++  One reader, `pairteardown.ReadRun` (`internal/pairteardown/runread.go`), fills them.
++  It fills the owner, the pause coverage and the past-parent-merge fact.
++  `Inputs.Held`, `Inputs.PushOwedOffline` and `Inputs.CodeTipMissing` are declared and nothing sets them.
++  `push-before-act-takeover` and `bolt-holds-catch-up` fill them in that reader, so their `Takes` name it.
++- The owner input is `boardengine.OwnedElsewhere(owner, here)`, a string comparison.
++  `dobbyengine.OwnedWorktrees` and `EnsureLive` compare an owner with the machine's name directly, outside that function.
++  The registry sweep in `bolt-holds-catch-up` has to reach both.
++- The act rule's `Act` already lets a `landing` run past its parent-side merge act under a hold, before it tests `Held`.
++  The `adopt-fix` hold's fix task has no such case, so the reader must leave `Held` false for it.
++  The refusal for `ReasonHeld` names no machine and no "ask the operator when that machine has stopped" way forward, which the hold decision requires.
++- The pause and cancel intents commit and then spawn a detached push (`SpawnStatusPush` in `internal/tendercli/runintents.go`).
++  The landed summary says the PR record and fixer counts push "with today's pushes".
++  No owed-push record exists, and the origin-owed marker (`internal/battencli/resumereconcile.go`, `dobbyengine`'s `OriginOwed`) still stands.
++  The offline half of D3 (act here at once, owe the push) therefore needs `push-before-act-takeover`, as its `Delivers` says,
++  and the cancel path's push was *not read*.
++- `lym tender pause <slug>` now writes a tracked pause intent; the hub-wide `lym tender pause` with no slug is still a machine-local hub entry.
++  The task status bar's HALT button runs the per-slug form.
++
++`orch-resume-own-session` (`3bc33584`):
++
++- D9 and D10 are done.
++  `runproc` has `RoleOrch`, `RegisterOrch` and `IsRegistered`, and an orch start ends its own registered holder and resumes the same session.
++- The subject-process end exists as `pairteardown.EndSubjectProcesses(prime, owner, endDobby)` over `runproc.EndSubject`.
++  Only the orch watcher's owner check calls it, with the dobby end unset.
++  The dobby's handover, `tendercli.PauseOwnedElsewhere` (which pauses under the `owner` caller and ends processes by its own `endOwnedElsewhere`) and `dobbyengine`'s `PauseOwned` seam are untouched.
++  `bolt-holds-catch-up` replaces them with the landed function.
++- A registered orch Claude process outlives its strand's removal, which is why it is registered.
++  `lym beam stop` removes the strand and ends the dobby; it does not end that process.
++
++Nothing else on the board overtook the three members.
++`lym loom peers` shows no run in flight beside this one.
++
++## 2. Overlaps and gaps between the members
++
++- **The upgrade's first read.**
++  `bolt-holds-catch-up`'s D7 turns standing `adopt` and `adopt-hold` pause entries into pause intents and writes one hold;
++  `adopt-foreground-leftovers` lists the same read in its `Delivers` and carries its acceptance criteria.
++  The hold setter is a new function, and `PATTERN-test-only-code` (landed after the Sketch) forbids a function only tests call.
++  The upgrade's first read is the setter's production caller in `bolt-holds-catch-up`, because the foreground adopt, the other writer, arrives a part later.
++  The revised records put the first read and its criteria in `bolt-holds-catch-up` and leave `adopt-foreground-leftovers` the retirement of the writers and readers.
++  Today's adopt worker still writes the `adopt` caller until then.
++- **The adopt record's readers.**
++  The dobby's handover and the orch watcher read the adopt record.
++  `bolt-holds-catch-up`'s D7 told them to read a hold, but the record and its worker survive until `adopt-foreground-leftovers`.
++  The switch moves to the part that deletes the record, so each part leaves a consistent tree.
++- **The same test-only rule on exports.**
++  `push-before-act-takeover` exports a takeover entry type and reader "tested with kit-written entries".
++  The reader has a production caller in the rejected-push path, and the writer a test needs goes in `internal/testkit`;
++  the production writer is adopt's.
++- **The dobby's handover.**
++  `bolt-holds-catch-up` retires `PauseOwned` and `PauseOwnedElsewhere` into the act rule's `hand_over` and the subject-process end.
++  Its `Takes` named only "the dobby's loop and handover"; the revised body names the seam and the tender function so the plan covers both.
++- **Dead names from the Sketch.**
++  Every record cites D1 to D11 as if one record held them.
++  The revised records say once that the numbers are the Sketch's, and name the landed function where they cited a landed decision.
++- **The Added-after-Discussion entries.**
++  Each of the three records carries the same set of entries.
++  Their calls are folded into the decisions above, and the revised records carry none:
++  F15 stands in D2's bound, the dropped `--release` and the take-hold are in D8 and D7,
++  the transcript mirror is gone with D10, and the orch staying up during a hold is in D7's bound.
++  The orch applies the revised records with the fold the decision-record rules describe.
++
++## 3. push-before-act-takeover
++
++What changes and why:
++
++- `Takes` drops "runproc's End for a slug", which landed as `pairteardown.EndSubjectProcesses`, and adds what the landed work left for this part:
++  the unfilled `Inputs` fields, `ReadRun`, and the detached pushes of the intents, the PR record and the fixer counts.
++- `Delivers` adds the intents' push.
++  The Sketch said only that the offline pause and resume intents "ride" the owed push, but the cancel intent, the PR record and the fixer counts push through the same detached path today.
++- The hand-over's process end names the landed function, with the dobby end unset when the caller is that dobby's own run.
++- The takeover writer is adopt's.
++  This part ships the type, the reader and a kit writer.
++- Package list: `tendercli`, `pairteardown` and `pullrequest` join; `battencli` and `landingshed` grow for the intent and PR pushes.
++  The line counts are the Sketch's estimates adjusted by reading, not measurements.
++- Dependencies, recipe and the 30-minute code-tip grace stand.
++  The `PATTERN-run-fsm` entry is still to add: the landed part did not write it.
++
++Revised body:
++
++```markdown
++Filed from the Sketch `adopt-redesign`.
++
++Takes: runfsm's `Judge`, `Aside` and `Inputs`, whose `PushOwedOffline` and `CodeTipMissing` nothing fills yet, and `pairteardown.ReadRun`, the one reader of a run's inputs; the batten record's cancel and pause intents with their shedrun writers, and the detached commit-and-push that `lym tender pause`, `lym tender resume`, `lym batten cancel`, the pull-request record and the fixer attempt counts make today; fabricengine's PushPairAnchored, SpawnStatusPush, teardown-lock respawn, pushclassified's rejection path, originreads and ArchiveOwnerTips; boardengine's Sync, SpawnSync and pushOwnerCommit; statuscommit and sheddriver's records commit; landingshed's Finalize; pairteardown's EndSubjectProcesses over runproc's EndSubject
++Delivers: a shed transition that takes a gate admission, commits its records with the code tip it was made with and pushes records side first, code side after, before the next producer starts; the run intents, the pull-request record and the fixer counts pushing through the same synchronous push; an owed push retried on a backoff and shown in lym beam status, which the offline pause, resume and cancel verbs also ride; pairteardown's ReadRun filling the owed-push and code-tip inputs; the per-transition detached push and its teardown-lock respawn retired; synchronous Bolt writes for a run claim, a landing's done and an owner; Finalize pushing the parent branch before its transition and board done; a rejected records push that reads origin's record and hands over on another machine's takeover entry, ending the run's processes, archiving local tips and the local parent merge; the code-tip wait and its grace
++Exports: the takeover entry type and its reader, tested with entries a testkit writer makes; the owed-push and code-tip facts `pairteardown.ReadRun` puts into runfsm's Inputs; fabricengine's records-first PushPairAnchored and its hand-over result
++
++The part changes these packages:
++
++- internal/fabricengine (about 1000 changed lines)
++- internal/battencli (about 300 changed lines)
++- internal/sheddriver (about 200 changed lines)
++- internal/loomcli (about 200 changed lines)
++- internal/landingshed (about 250 changed lines)
++- internal/boardengine (about 150 changed lines)
++- internal/statuscommit (about 100 changed lines)
++- internal/tendercli (about 100 changed lines)
++- internal/pairteardown (about 80 changed lines)
++- internal/shedengine (about 60 changed lines)
++- internal/beamcli (about 60 changed lines)
++- internal/fabriccli (about 40 changed lines)
++- internal/tenderengine (about 40 changed lines)
++- internal/pauserecord (about 40 changed lines)
++- internal/pullrequest (about 30 changed lines)
++- pattern (about 30 changed lines)
++```
++
++Revised record: [record-push-before-act-takeover.md](record-push-before-act-takeover.md).
++
++## 4. bolt-holds-catch-up
++
++What changes and why:
++
++- `Takes` names the landed `Held`/`OwnedElsewhere` inputs, `ReadRun`, `Judge`, `EndSubjectProcesses`, and the dobby's `OwnedWorktrees`, `EnsureLive`, `PauseOwned` and `tendercli.PauseOwnedElsewhere`, which the retirement and the registry sweep have to reach.
++- `Delivers` takes the upgrade's first read (section 2), the hold input with the fix task left out, and the refusal that names the hold's machine.
++  It says the registry sweep covers `dobbyengine`'s owner filters and `ReadRun`.
++- The catch-up's process end is the landed function, called with the dobby end set only for the dobby's own handover.
++- The origin-owed marker retires here, where the catch-up replaces the reconcile it stood for; the Sketch left that to a sentence.
++- `Exports` names the dobby start as a caller of the catch-up, so the entry point has a production caller in this part.
++- `internal/runfsm`, `pairteardown` and `tendercli` join the package list.
++- Dependencies, recipe and order stand.
++  The part uses push-before-act's synchronous Bolt writes and its takeover hand-over.
++
++Revised body:
++
++```markdown
++Filed from the Sketch `adopt-redesign`.
++
++Takes: runfsm's Act rule, its `Held` and `OwnedElsewhere` inputs, `Judge` and `Aside`, and `pairteardown.ReadRun`, the one reader that fills them; the synchronous Bolt writes, the takeover reader and hand-over and the owed-push facts from push-before-act-takeover; `pairteardown.EndSubjectProcesses` and `runproc.EndSubject` from orch-resume-own-session; boardengine's owner setter and OwnedElsewhere, machinename's former names, dobbyengine's OwnedWorktrees, EnsureLive, loop and handover with its PauseOwned seam, tendercli's PauseOwnedElsewhere, pauserecord's callers and SleepWatch, battencli's origin-owed marker, pairteardown's local mode
++Delivers: board.json's machines registry and holds list written only by boardengine's setter with a synchronous push; every machine-name comparison through the registry, OwnedElsewhere's callers in every package updated, `pairteardown.ReadRun` and dobbyengine's owner filters included; lym machine name --forget-former; hold slug entries under the new pauserecord caller hold, read by every machine, and `pairteardown.ReadRun` filling runfsm's hold input with the fix task left out; the refusal of a held run naming the hold's machine; the owner caller and its writers retired into hand_over with the subject-process end, standing owner entries dropped at the first read after the upgrade, and standing adopt and adopt-hold entries turned into pause intents and one Bolt hold; the origin-owed marker retired; the catch-up from origin after a sleep, a dobby start or a hand pass, pushing owed commits, handing over runs owned elsewhere and removing their local pairs in local mode, the dobby's handover calling the subject-process end
++Exports: boardengine's registry and hold types, setters and readers, OwnedElsewhere taking the registry, and the catch-up entry point the dobby start and adopt call
++
++The part changes these packages:
++
++- internal/boardengine (about 600 changed lines)
++- internal/dobbyengine (about 450 changed lines)
++- internal/pauserecord (about 120 changed lines)
++- internal/machinecli (about 150 changed lines)
++- internal/orchcli (about 120 changed lines)
++- internal/tenderengine (about 100 changed lines)
++- internal/battencli (about 140 changed lines)
++- internal/beamcli (about 100 changed lines)
++- internal/pairteardown (about 60 changed lines)
++- internal/tendercli (about 60 changed lines)
++- internal/hibernateengine (about 60 changed lines)
++- internal/adoptcli (about 40 changed lines)
++- internal/machinename (about 40 changed lines)
++- internal/loomcli (about 40 changed lines)
++- internal/runfsm (about 30 changed lines)
++- internal/battenshed (about 30 changed lines)
++- internal/landingshed (about 10 changed lines)
++- internal/fabricengine (about 10 changed lines)
++- internal/shedrecipe (about 10 changed lines)
++- internal/shedrun (about 10 changed lines)
++- internal/hibernatecli (about 10 changed lines)
++- internal/fabriccli (about 10 changed lines)
++- internal/fronttask (about 10 changed lines)
++- internal/pawlengine (about 10 changed lines)
++- pattern (about 10 changed lines)
++```
++
++Revised record: [record-bolt-holds-catch-up.md](record-bolt-holds-catch-up.md).
++
++## 5. adopt-foreground-leftovers, and the split of D11
++
++What changes and why:
++
++- **Split D11 out.**
++  The leftover-pair teardown is the dobby's ended-run teardown, a kept-pair listing, an orphan sweep and a workspace regeneration.
++  It needs the run FSM and the holds, and nothing from adopt's steps, takeover or `--take-hold`.
++  Kept together, the part is the largest of the beam: `adoptcli` alone is about 2650 changed lines by the Sketch's estimate, and the title already joins two subjects.
++  The split gives each plan one subject and lets the teardown land on the holds without waiting on the adopt rewrite.
++  The cost is one more board entry and Discussion record, which this study drafts (`leftover-pairs-teardown`).
++  The adopt entry keeps its slug `adopt-foreground-leftovers`, so `depends_on` links stay valid, and takes a new title.
++  If the operator declines the split, the merged body is the body below with the leftover entry's `Delivers` and `Exports` appended,
++  and the merged record is the adopt record with D11, its constraints and its criteria appended.
++- `Takes` names the refusals of the landed act rule that say `lym adopt <subject>`, which the foreground adopt must keep true,
++  and the adopt record's readers, which this part now replaces.
++- `Delivers` keeps `--here`'s fast outcomes.
++  `lym s` runs `lym adopt --here --no-orch` first on every start, so a foreground adopt that did a hold, a pull and a check on each call would slow every start on the owner machine.
++  `--here` today ends `owned_here` after one Bolt pull when this machine owns the subject; the record now says so.
++- It also drops the upgrade's first read, which moved to `bolt-holds-catch-up`, and adds the dobby's handover and the orch watcher reading a hold.
++- The package list drops D11's share of `dobbyengine`, `beamcli`, `pairteardown`, `tendercli` and `fabricengine`.
++- Dependencies, recipe and order stand.
++
++Revised body of `adopt-foreground-leftovers`, with the new title `lym adopt runs in the foreground over pushed state, with --take-hold`:
++
++```markdown
++Filed from the Sketch `adopt-redesign`.
++
++Takes: the holds, registry, catch-up and owner setter from bolt-holds-catch-up; the takeover entry type, its reader and the synchronous pushes from push-before-act-takeover; runfsm's states and the refusals that name `lym adopt <subject>`; adoptcli's fix loop, check, deploy, archives and here paths; the adopt record's readers in the dobby's handover and the orch watcher
++Delivers: lym adopt running hold, owner, pull, takeover, catch-up, deploy, workspace, check and green clear in the caller's process, re-runnable from tracked state, with the takeover entry's production writer and its rejected-push retry, --take-hold denied to agents by a shell-guard row, and --here keeping its owned_here and no_subject outcomes for `lym s`; the worker, adopt record and its readers, verdicts, pause step, the writers of the adopt and adopt-hold pause callers, --keep-local, --drop-local and --discard retired, the dobby's handover and the orch watcher reading a hold in the record's place; adoptcli's and adoptrecord's package docs rewritten to the foreground flow
++Exports: adopt's foreground step runner and the takeover entry writer
++
++The part changes these packages:
++
++- internal/adoptcli (about 2650 changed lines)
++- internal/adoptrecord (about 400 changed lines)
++- internal/dobbyengine (about 150 changed lines)
++- internal/fabricengine (about 100 changed lines)
++- internal/beamcli (about 80 changed lines)
++- internal/orchcli (about 80 changed lines)
++- internal/pauserecord (about 80 changed lines)
++- internal/battencli (about 60 changed lines)
++- internal/shellguard (about 30 changed lines)
++- cmd/lym (about 10 changed lines)
++- pattern (about 10 changed lines)
++```
++
++Revised record: [record-adopt-foreground-leftovers.md](record-adopt-foreground-leftovers.md).
++
++### The new entry `leftover-pairs-teardown`
++
++`depends_on` is `adopt-foreground-leftovers` and `adopt-build-revision`, so the two parts that rewrite `dobbyengine` do not run together; recipe `tapestry`, with labels `feature`, `dobby`, `fabric`, `cleanup`, `workspaces`.
++Title: `The dobby tears down or reports leftover pairs`.
++The ended-run teardown's stranded-run condition today reads a board entry that ended (`strandedEnded` in `internal/dobbyengine/ended.go`), which neither a cancelled run, whose entry is unclaimed, nor a landed run's leftover pair satisfies; the record says so.
++
++Body:
++
++```markdown
++Filed from the Sketch `adopt-redesign`.
++
++Takes: runfsm's `landed` and `cancelled` states and its reading of whether a cancelled run kept its pair; the cancelled batten record that `lym batten cancel` keeps and every pair removal deletes; dobbyengine's ended-run teardown and pairteardown's teardown; the holds and registry from bolt-holds-catch-up; fabricengine's hub workspace regeneration
++Delivers: the dobby tearing down landed and unkept cancelled pairs, listing kept pairs, writing kept-cancel records for pre-upgrade kept pairs, and tearing down idle orphans after the orphan grace; lym tender resume pushing no pair; the hub workspace file regenerated after each teardown
++Exports: the orphan grace constant
++
++The part changes these packages:
++
++- internal/dobbyengine (about 250 changed lines)
++- internal/beamcli (about 80 changed lines)
++- internal/pairteardown (about 60 changed lines)
++- internal/fabricengine (about 50 changed lines)
++- internal/battencli (about 40 changed lines)
++- internal/tendercli (about 30 changed lines)
++- internal/shedrun (about 20 changed lines)
++```
++
++Revised record: [record-leftover-pairs-teardown.md](record-leftover-pairs-teardown.md).
++
++## 6. prime-is-root-beam
++
++What changes and why:
++
++- The body says every reader of an empty `parent_beam` "(orch role, dobby, board verbs) moves to the named root".
++  There are two things called the parent.
++  What the board prints is `BriefTask.ParentBeam`, set in `internal/boardengine/store.go` from `ParentBeamOf` or `hubgeom.ParentOf`,
++  and carried in the `get` envelope by `internal/boardcli/cli.go`.
++  What the code resolves is the same `""`, which `hubgeom.ParentOf`, `boardengine.ParentBeam`, `beamcli`, `battencli`'s start guard and `loomcli`'s project record take as "the prime".
++  `PATTERN-owner-machine` makes `ParentOf` the one owner reader, and all three raddle members change code that calls it.
++  Moving the code's `""` to a name would change every one of those callers for a display fix.
++  The revised body maps at the printing boundary only.
++- The agents are the readers of the printed value:
++  `contracts/orchrole/orch-role.md` (its release rule and its parent-orch address, which says `<shortname>:orch` when `parent_beam` is empty),
++  `plugins/ly/skills/board/SKILL.md` and the `boardcli` help and package doc.
++  They move in the same change.
++- The name is `root`, the slug `boardengine.RootSubject` reserves for the root project (`validateSlugNotReserved` refuses it as an entry slug),
++  which `lym adopt root` and `lym beam stop root` already take.
++  `P0` is a handle the board's files and window titles give the root project, not a slug a verb accepts.
++  The text listing shows the `P0` row.
++  The JSON `tasks` array gets no root row, since the root project has no board entry.
++- Dependencies: the change shares `boardengine` with `bolt-holds-catch-up` and nothing with the foreground adopt.
++  The chain after `adopt-foreground-leftovers` is an ordering choice, not a code dependency; I keep it (section 9).
++
++Revised body:
++
++```markdown
++## Seen (operator, 2026-11-15)
++
++`lym board list` and `lym board get` give `parent_beam` empty for an entry whose nearest beam is the prime, and `lym board list --text` shows no `P0`,
++while the board view and window titles show the prime as `P0`.
++The prime is a beam, the root one; an empty value reads as "no beam".
++
++## Idea
++
++- `lym board list` and `lym board get` print `parent_beam` as `root` for every entry under the prime, never empty.
++  `root` is the slug `boardengine.RootSubject` reserves for the root project, the word `lym adopt root` and `lym beam stop root` already take.
++- `lym board list --text` shows the root project as a `P0` row among the projects, with the title the board files give it,
++  so every view of the board shows the same tree.
++  The JSON `tasks` array gets no root row: the root project has no board entry.
++- Change what the board prints, not what the code resolves.
++  `boardengine.ParentBeam`, `Board.ParentBeamOf` and `hubgeom.ParentOf` keep returning the empty slug for the prime,
++  since every owner read, adopt subject, dobby and beam verb takes it as "the prime" and `PATTERN-owner-machine` names `ParentOf` as the one owner reader.
++  Map the empty slug to `root` where `BriefTask.ParentBeam` is set and where the `get` envelope is written.
++- The readers of the printed value are text, and they move in the same change:
++  `contracts/orchrole/orch-role.md` (the entries an orch reads and releases, and the parent orch's address),
++  `plugins/ly/skills/board/SKILL.md`, and the `boardcli` help and package doc.
++  The parent orch of an entry whose `parent_beam` is `root` is `<shortname>:orch`.
++```
++
++## 7. hub-stop-button
++
++What changes and why:
++
++- **The run intents are the wrong base.**
++  The body says a stop "builds on the run FSM and its pause and cancel intents, so a stop leaves every run in a pushed state".
++  `lym reed down` in a task pair refuses a running run until a pause covers it and names `lym tender pause <slug>`,
++  and that verb now writes a tracked pause intent and pushes it.
++  A stop that called it for every run would write and push an intent per run, which another machine reads as `paused`, and would need origin.
++  Each transition is on origin already once `push-before-act-takeover` lands, so a run cut anywhere goes on from its last transition.
++  The stop is machine-local and writes nothing tracked.
++- **A hub pause already exists, and so does the sequence to confirm it.**
++  The hub-wide `lym tender pause` is a machine-local entry that covers every pair, so `lym reed down` accepts a pair under it.
++  `hibernateengine`'s carrier pauses the hub with a grace, confirms every session idle and no network call in flight, and lifts the entry it owns by identity.
++  The body asks the writer to "decide whether it first pauses the hub"; the answer is yes, and the writer reuses that sequence instead of writing a second one.
++- **The orch's Claude process.**
++  `lym beam stop` removes the orch strand and ends the dobby.
++  Since `orch-resume-own-session`, the orch's Claude process is registered under `RoleOrch` and can outlive its strand, so the stop ends it through `runproc`.
++  After a stop, `lym beam start` resumes the orch's own session, because the transcript stays on the machine.
++- **The button exists.**
++  Reed's `prime` button group takes an entry with a `confirm` prompt.
++  A hub that sets `buttons.prime` in its own layer replaces the group whole and adds the entry by hand.
++- **The click runs inside the session it ends.**
++  The verb ends its own pane last and runs detached from the click.
++- **Placement.**
++  No code from `prime-is-root-beam` is used, so that dependency is ordering only (section 9).
++  The orch up during a hold (F14) means the stop has to work under a standing hold and leaves the hold alone.
++- **Open choice, recommended.**
++  The stop keeps its pause entry until the restart verb or `lym tender resume` lifts it, as a hibernate that keeps its wake pause does.
++  The alternative lifts the entry at once, after everything is ended.
++  What decides it is whether `lym tender resume` restarts a run whose driver was ended: *not read*.
++  If it does, keep the entry; if not, lift it at once and let the orchs settle the `loop-exited` halts as after a crash.
++  Open question 3.
++
++Revised body:
++
++```markdown
++## Seen (operator, 2026-11-11)
++
++To stop everything on a machine without a reboot, the operator has to run several verbs by hand:
++`lym beam stop` for the orch and dobby of the prime and of each beam, `lym reed down` in each worktree for the tmux sessions, and `lym tender reap` for run processes no run owns.
++The operator finds this cumbersome; it should be one simple action.
++
++## Idea
++
++A button in the `prime` group of reed's status-bar buttons, shown only in the prime orch's session, labelled "stop", that takes the whole hub down.
++The entry carries a `confirm` text, so reed asks a yes/no before it runs anything.
++It runs one verb the writer names; `lym beam stop --all`, beside `lym beam start --all`, fits.
++The operator closes terminal windows (Konsole, the VS Code terminal) by hand.
++
++The stop is machine-local and writes no tracked record.
++Every transition of a run is on origin before the run acts (`push-before-act-takeover`),
++so a run cut at any point goes on from its last pushed transition on this machine or on another.
++It writes no per-run pause intent: `lym tender pause <slug>` writes a tracked intent and pushes it, which another machine reads as `paused`.
++
++Read `hibernateengine` first and reuse its sequence: a hub pause with a grace, then a confirmation that every session is idle and no network call is in flight, with the pause entry owned and lifted by identity.
++Do not write a second pause-and-confirm.
++Under that hub pause, end in this order:
++
++1. every run's processes, through `lym reed down` of each task pair, which accepts a pair a hub pause covers;
++2. each worktree's orch strand, the orch's registered Claude process (`runproc` role orch, which can outlive its strand's removal), its dobby and the coverage-map upkeep;
++3. the reed sessions of the prime and the beams;
++4. run processes no run owns, as `lym tender reap` ends them;
++5. the session the click came from, last and detached from the click.
++
++A standing adopt hold is left as it is.
++The orch is up during a hold, and the stop works under one.
++The stop keeps its hub pause entry until `machine-restart-shortcut`'s verb or `lym tender resume` lifts it, and its output names both.
++Read what `lym tender resume` reconciles first: if it does not restart a run whose driver was ended, lift the entry at once instead.
++`machine-restart-shortcut` brings every hub and beam back after a stop or reboot, so the two belong together.
++
++## Placement (operator, 2026-11-15)
++
++This runs in the beam `adopt-build`, after the adopt redesign's run FSM, push-before-act, Bolt holds and foreground adopt have landed in it.
++The adopt decision record kept a hub-wide pause machine-local; this button needs no shared pause between machines either.
++```
++
++## 8. machine-restart-shortcut
++
++What changes and why:
++
++- **`lym s` is the wrong command in a launcher.**
++  The shortcut is `lym adopt --here --no-orch`, then `lym beam start`, then `lym reed attach` (`internal/shortcutcli/shortcuts.yaml`).
++  `--here` takes over a subject another machine owns; on the owner machine it ends `owned_here` after one Bolt pull.
++  The body's rule "starts only what this machine still owns" would break on a machine that does not own the hub.
++  The revised verb filters first and starts through `lym beam start --all`, which `dobbyengine.OwnedWorktrees` and `EnsureLive` already limit to the prime and the beams this machine owns.
++  After `bolt-holds-catch-up`, those comparisons go through the registry, so a renamed machine still reads as owner.
++- **`EnsureLive` claims a prime nobody owns for this machine.**
++  A launcher that started a hub with no recorded prime owner would claim it.
++  The revised body skips such a hub and says so.
++- **Adding and removing launchers.**
++  The body has lym remove a hub's launcher "when another machine takes the hub over".
++  Another machine cannot reach this machine's desktop.
++  The removal runs on the machine that holds the launcher: the verb removes its own launcher when it finds the hub owned elsewhere or its path gone,
++  and so does this machine's dobby or catch-up when it hands the hub over.
++  A machine that is down finds out when it next runs the launcher or reads Bolt.
++  Beams come and go with no launcher change, because the verb lists the hub's live beams when it runs; only hubs add and remove launchers.
++- **A hold a crash left.**
++  A crash in the middle of `lym adopt` leaves its hold standing on origin, and nothing but the fix task and a landing past its merge runs under it.
++  The orchs come up under it (F14), so the verb prints the hold's machine and subjects, and for this machine's own hold names the re-run `lym adopt <subjects>`.
++- **The stop's pause entry** is lifted by the verb once the dobbies are up, if the stop kept it (section 7).
++- **Recovery after a crash** is better than the body's account.
++  A dobby's start is an absence, so `bolt-holds-catch-up`'s catch-up runs first, pushes owed commits and hands over runs another machine took.
++  A run whose step was cut off halting `loop-exited` is *not re-read* here; the operator's observation stands.
++- **What the body got right.**
++  The workspace file lists every pair, named by project handle (`2409c0f7`); one launcher per hub plus one for all hubs; `.desktop` and `.cmd`; resuming left to the orchs.
++- Which hubs are "in flight" has no mark: the machine's record of hubs (`internal/hubregistry`, written when a hub's creel daemon starts) lists every hub that ran here.
++  The verb starts each listed hub whose path exists and whose prime this machine owns.
++  Open question 4 asks whether that is enough.
++
++Revised body:
++
++```markdown
++## Seen (operator, 2026-11-08 and 2026-11-11)
++
++OSL-1046 and Neve crash often.
++After a crash, bringing lym back takes the operator several manual steps:
++finding every hub and project that was in flight, often three or four, with beams under them,
++and starting each orch session by hand.
++Once an orch is up, it and its dobby take the runs up again by themselves;
++a run whose step was cut off halts (`loop-exited`) and the orch settles it.
++Finding what was running is the hard part, not resuming it.
++VS Code needs nothing: on Kubuntu it reopens the windows it had open by itself.
++
++## Idea (operator, revised 2026-11-16)
++
++A simple way to start again every project that was in flight on the machine, such as launcher scripts lym puts on the desktop:
++
++- A `lym` verb does the work, so it also runs from a terminal; the desktop launcher only calls it.
++  It starts one hub, or every hub the machine's record of hubs (`internal/hubregistry`) lists whose path still exists.
++- For a hub it starts what `lym beam start --all` starts: the prime's dobby and orch and those of every local beam this machine owns.
++  It never starts a hub through `lym s`: that shortcut begins with `lym adopt --here`, which takes over a hub another machine owns.
++- It opens the hub's one VS Code workspace file, `<hub>/<repo>.code-workspace`, which lists every worktree of the hub, the pairs under beams too.
++  For the prime and each beam it started, it opens a terminal outside VS Code in the worktree running `lym reed attach`.
++  A running task's window opens from the orch or the status bar's terminal button, so the launcher opens none.
++- The orchs and dobbies then take up the runs; the launcher resumes no run itself.
++  If `hub-stop-button` left its hub pause entry standing, the verb lifts that entry once the dobbies are up.
++- A launcher starts only what this machine still owns, through the registry's reading of the owner.
++  It skips every hub or beam another machine owns, saying which machine holds it.
++  It skips a hub with no recorded prime owner and says so, since starting one would claim it.
++- When a hold stands on the hub, the verb prints the hold's machine and subjects.
++  For a hold this machine wrote, which a crash during `lym adopt` leaves behind, it names the re-run `lym adopt <subjects>`.
++  The orchs come up under a hold; nothing else on the hub runs until the hold clears.
++- The launcher is the form the machine's desktop runs: a `.desktop` file on Linux (the freedesktop standard, so KDE, GNOME and others), a `.cmd` file on Windows.
++  Both call the same `lym` verb.
++- Fixed by the operator: one launcher per hub plus one that starts every hub; beams are included; resuming interrupted runs is left to the orchs;
++  nothing another machine owns is started; `.desktop` on Linux and `.cmd` on Windows, added and removed by lym.
++- lym adds a hub's launcher when the hub's prime dobby first starts on this machine, and the all-hubs launcher with the first hub.
++  It removes a hub's launcher when this machine's verb, dobby or catch-up finds the hub owned by another machine or its path gone,
++  and the all-hubs launcher with the last hub.
++  Beams come and go with no launcher change, since the verb lists the hub's live beams each time it runs.
++  The operator never makes or deletes one by hand.
++```
++
++## 9. Order, dependencies and recipes
++
++Order after the changes, each line `depends_on` plus `adopt-build-revision`:
++
++| Member | depends_on | Recipe | Change |
++| --- | --- | --- | --- |
++| `push-before-act-takeover` | `run-fsm-tracked-records` | tapestry | none |
++| `bolt-holds-catch-up` | `push-before-act-takeover` | tapestry | none |
++| `adopt-foreground-leftovers` | `bolt-holds-catch-up` | tapestry | retitled; D11 leaves |
++| `leftover-pairs-teardown` (new) | `adopt-foreground-leftovers` | tapestry | new, if the split is approved |
++| `prime-is-root-beam` | `leftover-pairs-teardown` | darn | follows the new entry in place of `adopt-foreground-leftovers`; with no split it keeps its dependency |
++| `hub-stop-button` | `prime-is-root-beam` | darn | none |
++| `machine-restart-shortcut` | `hub-stop-button` | darn | none |
++
++- Real code dependencies, as far as I read:
++  push before bolt (the synchronous Bolt writes and the hand-over), bolt before adopt (holds, registry, catch-up),
++  bolt before leftover pairs (hold and registry in the teardown condition),
++  stop before restart (the stop's pause entry),
++  and restart after bolt (the registry-aware owner filter).
++- Ordering only: `prime-is-root-beam` shares `boardengine` with the bolt part but no code with the rest, and `hub-stop-button` uses no code from it.
++  I keep the chain because the beam runs one member at a time and a linear order avoids conflicts in `boardengine`, `dobbyengine` and `orchcli`.
++  The operator may move `prime-is-root-beam` anywhere after `bolt-holds-catch-up`.
++- The recipes hold.
++  The three darn bodies now carry decisions the Sketch's records carry for the others, so a darn writer works from the body alone.
++  `hub-stop-button` has the most design left in it (the pause entry's lifetime, the verb's name); it stays a darn task because the body settles the rest.
++- Labels stay.
++  `leftover-pairs-teardown` takes `feature`, `dobby`, `fabric`, `cleanup`, `workspaces`.
++  `hub-stop-button` gains `dobby`, since it ends dobbies, and `machine-restart-shortcut` gains `dobby` and `fabric`.
++
++## 10. Open questions for the operator
++
++1. **Split D11 into `leftover-pairs-teardown`?**
++   Recommended: yes, for the reasons in section 5.
++   If declined, the records merge as section 5 says and nothing else in this report changes.
++2. **What does `parent_beam` print for the prime: `root` or `P0`?**
++   Recommended: `root`, the slug the code already reserves and accepts in verbs; `P0` stays the handle in the text listing.
++3. **Does the stop keep its hub pause entry until the restart or `lym tender resume`, or lift it at once?**
++   Recommended: keep it, if `lym tender resume` restarts a run whose driver was ended.
++   The writer reads that; the body tells it to choose the other way if it does not.
++4. **Which hubs does the restart verb start?**
++   Recommended: every hub in the machine's record whose path exists and whose prime this machine owns, with no separate "in flight" mark.
++   A hub never stopped or retired but long idle starts too.
++   A mark written by the stop button and the dobby would narrow it, at the cost of a new machine-local record.
++5. **Keep the linear order for the three darn members?**
++   Recommended: yes (section 9); the alternative is to move `prime-is-root-beam` up beside the bolt part.
++
++## Limits of this study
++
++- The cancel path's push, the PR record's and the fixer counts' pushes, what `lym tender resume` reconciles, and the `loop-exited` halt were *not read*.
++  Each body or record says so where it matters.
++- The changed-line counts in the package lists are the Sketch's estimates adjusted by reading the touched code, not measured.
++- The revised records change no decision's content.
++  They fold the added entries, replace cross-references to landed decisions with the landed names,
++  move the upgrade's first read to `bolt-holds-catch-up`, and add what the landed code requires of each part.
