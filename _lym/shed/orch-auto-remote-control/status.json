@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-16T09:08:07Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/orch-auto-remote-control/_lym/landing/summary.md",
+      "at": "2026-11-16T09:35:48Z",
+      "started_at": "2026-11-16T09:08:14Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-16T09:23:32.768629834Z",
+          "end": "2026-11-16T09:23:32.779807181Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-16T09:32:46.852407242Z",
+          "end": "2026-11-16T09:32:46.862323673Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-16T09:23:32.827858868Z",
+          "end": "2026-11-16T09:32:28.173320915Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-16T09:32:28.749514892Z",
+          "end": "2026-11-16T09:32:46.804503494Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-16T09:32:46.909861047Z",
+          "end": "2026-11-16T09:35:16.469299694Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-16T09:35:16.534404368Z",
+          "end": "2026-11-16T09:35:16.73620279Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-16T09:35:16.785013251Z",
+          "end": "2026-11-16T09:35:16.785206813Z"
+        }
+      ]
     }
   ],
   "product": {
