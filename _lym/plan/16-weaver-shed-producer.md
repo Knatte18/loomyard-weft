@@ -27,7 +27,7 @@
 - `claimConflict` is the plan-conflict claim `WebsterProducer.Call`'s stuck branch holds today, lifted out implementer-neutral: it claims the record in the conflict directory and returns the Stuck pointer, `Reroute` set on a new conflict, the recurrence reason on a repeat, and the plain reason when none or the claim fails (logged).
   Its reason texts read `<engine> plan conflict`, so Webster's read as they do today, `planConflictWayForward` keeps its text, and the Webster tests that pin them stay unchanged.
   `WebsterProducer.Call` calls it.
-- `WeaverProducer.Call` checks the context, runs `run` (default `weaverengine.Run`) with a `ReentryStep` naming the row, and maps:
+- `WeaverProducer.Call` checks the context, runs the injected `run` with a `ReentryStep` naming the row, and maps:
   Done to Done pointing at Weaver's `summary.md`; a Stuck result through `claimConflict`; `ErrRunBusy` and a fault in Weaver's config or state (an error wrapping `ErrActiveRefused`, a wiring error or a state read or write error) to Stuck with the error's text, which names its way forward; a cancellation to the context error, as Webster's adapter does.
 - `docs/overview.md`'s `internal/shedadapters/` line names Weaver's adapter beside Webster's.
 

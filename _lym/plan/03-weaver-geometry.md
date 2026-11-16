@@ -17,12 +17,14 @@
 - `plan:internal/weaverengine#TestPaths` -> `func TestPaths(t *testing.T)`
 - `plan:internal/hubgeom#TestWeaverGeometry` -> `func TestWeaverGeometry(t *testing.T)`
 
+**Edit:**
+- `internal/lymdirs/doc.go`
+
 **Extends:**
 - `internal/weaverengine/doc.go`
 - `internal/hubgeom/doc.go`
 
 **Uses:**
-- `internal/lymdirs/doc.go`
 - `internal/websterengine/doc.go`
 - `internal/websterengine#Git`
 - `internal/websterengine#realGit`
@@ -32,6 +34,7 @@
 **Intent:** Give Weaver its run directory, scratch directory and told geometry (D9, D11).
 
 - `lymdirs.WeaverDirName` names the `weaver` segment, so `_lym/weaver/` and `.lym/weaver/` are named through `lymdirs` and nowhere else.
+  `lymdirs/doc.go` names `WeaverDirName` beside `UsageDirName` and `RaddleDirName` as the exceptions that sit under a worktree's tracked `LymDirName`.
 - `Dir` joins `lymdirs.LymDirName` and `WeaverDirName` onto the anchor; `DirRel` is its forward-slashed `_lym/weaver`, the pathspec the per-batch commit stages.
   `ReportsDir` is `Dir/reports`; `ScratchDir` joins `lymdirs.DotLymDirName` and `WeaverDirName`; `PromptsDir` is `ScratchDir/prompts`.
   `JournalPath` is `<runDir>/journal.md` and `OutcomePath` `<runDir>/outcome.yaml`; the summary path is `summaryparser.Path(runDir)`.

@@ -17,8 +17,6 @@
 - `internal/loomcli#TestRenumberVerbs_Refusals`
 - `internal/loomcli#TestRenumberVerbs`
 - `//docs/overview.md`
-
-**Extends:**
 - `internal/loomcli/doc.go`
 
 **Uses:**

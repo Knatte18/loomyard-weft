@@ -16,22 +16,25 @@
 
 **Edit:**
 - `internal/configreg#Modules`
+- `internal/configreg#TestModules_EveryTemplateKeyClassified`
+- `pattern/PATTERN-config-layers.md`
 
 **Extends:**
-- `pattern/PATTERN-config-layers.md`
 - `//docs/overview.md`
 
 **Uses:**
 - `internal/configreg/doc.go`
 - `internal/configreg#TestRegistration_MatchesDeclarers`
-- `internal/configreg#TestModules_EveryTemplateKeyClassified`
 - `internal/websterengine#LoadConfig`
 
 **Intent:** Start `internal/weaverengine` with the `weaver.yaml` config module (D5, D10).
 
 - `template.yaml`, embedded into `configTemplate` with `//go:embed`, holds `ladder` (`sonnet[medium]`, `opus[medium]`, `opus[high]`, a Claude-only default), `fixer_timeout_min: 60` and `verify_gate: webster`, each with a one-line comment.
 - `Config` mirrors the keys: `Ladder []string`, `FixerTimeoutMin int`, `VerifyGate string`.
-- `ConfigSpec` names the module `weaver` and classifies every key `CategoryNone`; `ConfigOpenMaps` returns `ladder` and the spec carries it as `OpenMaps`, so `lym config weaver --set` carries the list whole, as tapestry's list keys are carried.
+- `ConfigSpec` names the module `weaver`, classifies `verify_gate` `configengine.CategoryGuard` and `ladder` and `fixer_timeout_min` `CategoryNone`.
+  `verify_gate` picks the gate key of the plan-level verify Weaver's Done rests on, so a narrower key would hollow that guard (PATTERN-config-layers).
+  The bound: the local layer cannot change `verify_gate`; only the tracked worktree file or the template sets it.
+  `ConfigOpenMaps` returns `ladder` and the spec carries it as `OpenMaps`, so `lym config weaver --set` carries the list whole, as tapestry's list keys are carried.
 - `LoadConfig` loads through `configengine.LoadOrTemplate`, as `websterengine.LoadConfig` does.
   It refuses, marked `configengine.MarkInvalid` and naming the key, a ladder spec `modelspec.Parse` rejects, a non-positive `fixer_timeout_min` and an empty `verify_gate`.
 - `ResolveLadder` refuses an empty ladder, and a spec the registry cannot resolve, each naming the key and `lym config weaver` as the way forward.
@@ -39,8 +42,8 @@
   The Implementer row calls it when it builds (card 18), so a bad ladder refuses there.
 - `configreg.Modules` gains the per-worktree `weaver` row with `Template`, `CheckLoad: checkLoadNamed(weaverengine.LoadConfig, "weaver")`, `OpenMaps` and `Spec`, as `webster`'s row has.
   `TestRegistration_MatchesDeclarers` then sees the new `ConfigTemplate` declarer registered;
-  every key is `CategoryNone`, so the module's derived `LocalDenied` is empty, which `TestModules_EveryTemplateKeyClassified` reads as the absent `wantLocalDenied` entry; it needs no new row.
-- `pattern/PATTERN-config-layers.md`'s list of degrading callers gains `weaverengine`.
+  the module's derived `LocalDenied` is `verify_gate`, so `TestModules_EveryTemplateKeyClassified` gains `wantLocalDenied["weaver"] = [verify_gate]`.
+- `pattern/PATTERN-config-layers.md`'s one-line set of degrading callers is rewritten with `weaverengine` added.
 - `docs/overview.md`'s package tree gains the `internal/weaverengine/` line: Weaver, the cold-start implementer with model escalation.
 - `doc.go` opens the package doc: Weaver, the `weaver` implementer of tapestry's implementer row, and its `weaver.yaml` keys.
   Later cards extend it.

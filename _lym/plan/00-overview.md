@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -35,7 +35,7 @@ Every loom reader of implementer state reads the active implementer's through on
 19 — plan-gate-reads-active — the plan gate and the rubric note read the active implementer's state
 20 — renumber-reads-active — the renumber verbs bound and lease on the active implementer
 21 — decision-notice-weaver — decision notices reach Weaver's strands and record each delivery
-22 — describe-and-rework-archive — Describe and the PR rework archive cover Weaver's run directory
+22 — describe-and-rework-archive — Describe and the PR rework archive cover Weaver's run directory, and the failure tracer reads the active implementer's state
 23 — merge-in-warning — merge-in warns of the active implementer's run in flight
 24 — arbiter-names-run-dir — the arbiter's description names the active implementer's run directory
 25 — batten-fixer-timeout — batten bounds a Weaver verify fixer by fixer_timeout_min
