@@ -742,6 +742,24 @@
       "created": "2026-11-15T18:26:13Z",
       "revised": "2026-11-15T18:26:13Z",
       "project": "codex-engine-trial"
+    },
+    {
+      "id": 1387,
+      "handle": "B2",
+      "slug": "readme-shows-run-fields",
+      "title": "The board README shows every per-task field that changes the run, pull_request included",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The entry cell lists run_settings but not pull_request, so a task with PR on looks like it has none",
+      "body": "## Seen (adopt-build beam orch, 2026-11-16; the operator saw it)\n\nThe board README's entry cell shows a task's brief and one code-span bullet per `run_settings` leaf, and nothing else a run reads.\n`internal/boardengine/render.go` `entryCell` renders `Brief` and `settingLines(t.RunSettings)` only.\nSo `adopt-build-revision`, which has `pull_request` on, shows only `loom: pr_review_ask_parent true`,\nand the operator cannot see from the README that the run opens a pull request.\n\n## Idea\n\nRender `pull_request`, and every other per-task field that changes how the run goes and that the cell omits today (such as `profile` and `recipe`), as bullets beside the run settings.\nCheck the task's field list for others of the same kind.\n",
+      "created": "2026-11-16T08:35:30Z",
+      "revised": "2026-11-16T08:35:30Z"
     }
   ],
   "prime_owner": "neve",
