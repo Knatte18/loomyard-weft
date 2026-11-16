@@ -19,7 +19,7 @@ lym does nothing with remote control today.
   so the same hub's orch on two machines, or two hubs on one machine, never share a name on the phone.
   The name comes from a template in the same config as the switch, with placeholders such as `{machine}`, `{hub}` and `{role}`,
   so the operator changes the form in config alone, never in code.
-  The operator has not chosen the form yet: `{machine}:{hub}:{role}` (`neve:ly:orch`) and `{hub}:{role}[{machine}]` (`ly:orch[neve]`) are both candidates.
+  The default template is lym's cross-machine name form, `<machine>::<name>` from `agentname.FormatMachineAddress` (`neve::ly:orch`), so the phone shows the name creel uses; the operator may still choose another form, such as `ly:orch[neve]`.
 - A reed button.
   An `RC` button on the orch session's status bar turns remote control on in a session running without it, by sending `/remote-control <name>` into the pane, with the same name as at launch.
   The button shows its state by colour: lit while remote control is on, dim while off.
