@@ -1,13 +1,13 @@
 {
-  "current_producer": "Drift-Baseline",
+  "current_producer": "Parts-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_after": "Plan-Write",
   "pause_after_by": "orch",
   "activity": {
-    "now": "Drift-Baseline",
-    "last": "Motif → skipped",
+    "now": "Parts-Write",
+    "last": "Drift-Baseline → skipped",
     "wait": ""
   },
   "history": [
@@ -24,6 +24,13 @@
       "output": "",
       "at": "2026-11-16T10:28:00Z",
       "reason": "bench: the frozen decision record is the run's, so the block's Discussion is passed over"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-16T10:28:03Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
