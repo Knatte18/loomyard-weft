@@ -38,5 +38,5 @@ Code Mode as a per-role setting beside the model, off by default:
 ## First step
 
 A bench, run as a darn `docs` task through the real producer with only the setting swapped (the rule in `codex-same-as-claude`):
-two landed darn tasks, the writer replayed once with Code Mode and compared with the landed writer on turns, cost, wall time and the diff.
+two landed runs, each replayed once with Code Mode: the Discussion writer of one landed motif and the writer of one landed darn `docs` research task, each compared with the landed session on turns, cost, wall time and its output.
 It waits until the real-producer route from `codex-same-as-claude` exists.
