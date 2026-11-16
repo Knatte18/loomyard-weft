@@ -8,14 +8,15 @@ The operator follows the orch from the phone, and turns on Claude Code's remote 
 A context cycle or a fresh orch session drops it, so it must be typed again.
 lym does nothing with remote control today.
 
-## Idea
+## Design
 
-lym turns on remote control in every orch session it launches or resumes, the hub orch and numbered orchs alike.
-A hub setting switches it on or off per hub, so a test hub or a work machine's hub can keep it off.
-The run's sessions (writers, reviewers, beams) are not covered.
+Claude Code takes `--remote-control [name]` at launch, which starts the session with remote control on and names it.
+lym passes that flag on every orch session it launches or resumes, the hub orch and numbered orchs alike,
+when a hub setting turns it on.
+The name carries the hub and the orch role, so the operator tells hubs apart on the phone.
+The run's other sessions (writers, reviewers, beams' task sessions) get no flag.
+A Codex orch gets nothing, as Codex has no remote control.
 
 ## Open
 
-- How lym turns it on: a launch flag or setting of Claude Code if one exists, else the slash command sent into the pane after start.
-- Which config file holds the switch, and its default.
-- The remote session's name: the operator named this one `ly:orch`; a name with the hub in it tells hubs apart.
+- Which config file holds the per-hub switch, and its default (on, as the operator uses it on every orch).
