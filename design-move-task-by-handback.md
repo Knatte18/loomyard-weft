@@ -25,5 +25,6 @@ What the design must settle:
 - Whether the new run re-uses the old commits (a cherry-pick, which brings back the study's ancestry question) or only reads them.
 - Whether this is a recipe step, a `lym batten` verb, or orch guidance alone.
 
-The adopt redesign (`adopt-redesign`) has landed; the builds of how run state moves are the members of the project `adopt-build`, still open (`run-fsm-tracked-records`, `push-before-act-takeover`).
+The adopt redesign (`adopt-redesign`) has landed, and so has `run-fsm-tracked-records` (`27eefef6`, one run FSM over tracked records).
+The rest of how run state moves is built by the members of the project `adopt-build-resplit`, still open (`push-before-act-takeover` among them).
 Waits until those have landed.
