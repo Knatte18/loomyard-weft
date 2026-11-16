@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-16 13:42 UTC; every age below is as of then.
+Rendered 2026-11-16 13:43 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Plan-Burler-Fix | neve | 3h<br>3h | webster, weaver |
+| T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Plan-Bouncer | neve | 3h<br>3h | webster, weaver |
 | T16 | **lym gate redundant flags tests as redundant that check different things**<br>• Equal line coverage is taken as redundancy; the verb must also prove the candidate catches no fault its covering tests miss | [`redundancy-judge-asserts`](design-redundancy-judge-asserts.md) | darn · solid | Code-Burler-Review | neve | 2h<br>2h | testkit, gate |
 
 ### Ready (0)
@@ -45,7 +45,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 7d<br>7d | gate, fabric |
-| R4 |  | **Bench Code Mode on a darn writer doing a repeated edit** | [`code-mode-darn-bench`](design-code-mode-darn-bench.md) | 30m<br>30m | claude, shuttle |
+| R4 |  | **Bench Code Mode on a darn writer doing a repeated edit** | [`code-mode-darn-bench`](design-code-mode-darn-bench.md) | 32m<br>32m | claude, shuttle |
 
 ### Enhancements (1)
 
