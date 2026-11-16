@@ -1,7 +1,8 @@
 {
   "current_producer": "Plan-Write",
-  "state": "paused",
+  "state": "running",
   "error": "",
+  "entered_row": "Plan-Write",
   "pause_requested": false,
   "pause_before": "Plan-Burler-Fix",
   "pause_before_by": "bench",
