@@ -1,6 +1,6 @@
 # Web research: how to use Claude Code Mode well
 
-`code-mode-web-research` · Task · research, claude, codex · running · PR-Review
+`code-mode-web-research` · Task · research, claude, codex · done
 
 ## Goal
 
