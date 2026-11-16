@@ -1,6 +1,6 @@
 # Web research: how to use Claude Code Mode well
 
-`code-mode-web-research` · Task · research, claude, codex · running · Darn-Write
+`code-mode-web-research` · Task · research, claude, codex · running · Drift-Verify
 
 ## Goal
 
