@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-16 09:36 UTC; every age below is as of then.
+Rendered 2026-11-16 09:38 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 6d · Owner `neve`
@@ -34,7 +34,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **lym gate testmap builds in any worktree, with maps kept in that worktree**<br>• Build coverage maps at the HEAD of a task worktree and keep them in its .lym or .scratch, so a survey run is not cut by landings and throws the maps away after | [`testmap-any-worktree`](design-testmap-any-worktree.md) | darn · light | Code-Burler-Review | neve | 21m<br>21m | gate, testkit |
+| T8 | **lym gate testmap builds in any worktree, with maps kept in that worktree**<br>• Build coverage maps at the HEAD of a task worktree and keep them in its .lym or .scratch, so a survey run is not cut by landings and throws the maps away after | [`testmap-any-worktree`](design-testmap-any-worktree.md) | darn · light | Code-Burler-Review | neve | 23m<br>23m | gate, testkit |
 
 ### Ready (0)
 
@@ -48,7 +48,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Rebuild every coverage map, time it, and list the redundant-test candidates of each package**<br>• One timed full lym gate testmap build and lym gate redundant on every package, reported for the operator to read before any cut | [`redundancy-candidates-survey`](design-redundancy-candidates-survey.md) | darn · docs | T8 | 26m<br>21m | gate, testkit |
+| T6 | `draft` **Rebuild every coverage map, time it, and list the redundant-test candidates of each package**<br>• One timed full lym gate testmap build and lym gate redundant on every package, reported for the operator to read before any cut | [`redundancy-candidates-survey`](design-redundancy-candidates-survey.md) | darn · docs | T8 | 28m<br>23m | gate, testkit |
 
 ## Notes (1)
 
