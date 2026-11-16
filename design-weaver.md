@@ -1,6 +1,8 @@
 # Weaver: a cold-start implementer beside Webster, with model escalation
 
-`weaver` · Task · feature, webster, weaver · running · Discussion-Bouncer
+`weaver` · Note · sketch, webster, weaver
+
+Decision record: [Sketch](decision-weaver.md)
 
 ## Idea (operator, 2026-10-11)
 
