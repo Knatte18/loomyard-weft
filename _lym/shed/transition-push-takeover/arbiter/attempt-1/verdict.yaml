@@ -1,0 +1,8 @@
+verdict: resume
+reason: |-
+  Hard-cap stop at Plan-Bouncer round 3. The one open design-wrong finding, F1 (code tip read from every Warp-SHA commit), is answered by the fix in place: the round-3 fixer ran after the review and the plan now adds a Run-Transition trailer (TransitionTrailerKey, card 6) written only by the transition seams (card 8) and the give-up (card 12), with cards 6, 7 and 12 selecting the newest commit whose Run-Transition names the slug. The mechanical findings F2 (SetOwedTipPushedHookForTest, card 6) and F3 (loomCommitStatusDeps doc, card 8) are fixed as proposed. The judge ruled on the review, not on the edited plan. D1 and D2 leave the trailer open, so no decision changes. Ruling recorded as an arbiter decision, then the segment accepted unconverged at the hard cap.
+verbs:
+  - |-
+    lym loom decision add transition-push-takeover --by arbiter --title "Plan review round 3 accepted at the hard cap: every finding answered in the plan" --decision … --rationale …
+  - |-
+    lym loom circling accept transition-push-takeover
