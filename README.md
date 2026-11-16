@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-16 08:35 UTC; every age below is as of then.
+Rendered 2026-11-16 08:36 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Revise the remaining adopt-build members against what landed and what the operator decided since the split**<br>• `loom: pr_review_ask_parent true` | [`adopt-build-revision`](design-adopt-build-revision.md) | darn · docs | Darn-Write | neve | 16h<br>1m | docs, batten, dobby, orch, fabric, tender |
+| T14 | **Revise the remaining adopt-build members against what landed and what the operator decided since the split**<br>• `loom: pr_review_ask_parent true` | [`adopt-build-revision`](design-adopt-build-revision.md) | darn · docs | Darn-Write | neve | 16h<br>2m | docs, batten, dobby, orch, fabric, tender |
 
 ##### Ready (0)
 
@@ -158,20 +158,21 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | motif |  | 5w<br>14h | webster, weaver |
 
-#### Draft (3)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P3 | 13d<br>16h | claude, shuttle, config |
-| T4 | `draft` **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | motif |  | 5w<br>14h | webster, weaver |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 3d<br>3d | slack, creel, orch |
 
 ### Notes (10)
