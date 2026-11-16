@@ -90,7 +90,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md)<br>[Sketch](decision-codex-same-as-claude.md) | 15h<br>9m | codex, shuttle, stencil, heddle |
+| S1 |  | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md)<br>[Sketch](decision-codex-same-as-claude.md) | 15h<br>10m | codex, shuttle, stencil, heddle |
 
 #### Research (2)
 
@@ -110,13 +110,19 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Concrete and claimable; only a task can run.
 
-#### Ready (1)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T6 | **Rebuild every coverage map, time it, and list the redundant-test candidates of each package**<br>• One timed full lym gate testmap build and lym gate redundant on every package, reported for the operator to read before any cut | [`redundancy-candidates-survey`](design-redundancy-candidates-survey.md) | darn · docs | Worktree-Create | neve | 43m<br>0m | gate, testkit |
+
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Rebuild every coverage map, time it, and list the redundant-test candidates of each package**<br>• One timed full lym gate testmap build and lym gate redundant on every package, reported for the operator to read before any cut | [`redundancy-candidates-survey`](design-redundancy-candidates-survey.md) | darn · docs |  | 43m<br>0m | gate, testkit |
+_None._
 
 ### Notes (1)
 
