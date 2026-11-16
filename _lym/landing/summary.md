@@ -1,60 +1,46 @@
-# lym gate redundant confirms each coverage candidate by mutation
+# gate redundant: confirm each redundancy candidate by mutation
 
-`lym gate redundant` called a test redundant when the package's other tests ran all its blocks.
-Running a line is not checking it, and the survey of 2026-11-16 found every sampled candidate asserting something its covering tests do not.
-The verb now keeps coverage as the first filter and confirms each candidate by mutation before listing it.
+`lym gate redundant` listed a test as redundant when other tests executed all its blocks.
+Executing a block is not checking it: two tests can run the same code and assert different results.
+Every candidate the redundancy survey sampled in the five largest packages asserted something its covering tests did not.
+The verb now keeps coverage as the cheap first filter and confirms each candidate by mutation before it lists it.
 
 ## What changes
 
-- **Mutation check.** For a package with coverage candidates, the verb takes one gate slot.
-  It builds the package's coverage binary to place the candidates' blocks in the source, then one test binary holding every mutant of those blocks.
-  A mutant negates an if or for condition or a comparison, drops a call, assignment or increment statement, or changes an integer, rune or string constant.
-  Each candidate runs with each mutant of its blocks on; each covering test runs with each mutant a candidate killed, where its entry covers that block.
-- **Verdict.** A candidate stays in `candidates` only when it kills a mutant and a covering test kills every mutant it kills, with `mutants_killed`.
-  One that kills a mutant its covers miss goes to the new `refuted` list, with those mutants' file, line and operator.
-  One that does not pass unmutated, holds no mutant or kills none goes to `not_judged` with the reason.
-  `removable` now needs both the coverage pass and a kill pass, which removes a candidate only while a test it keeps kills each mutant the candidate killed.
-- **Source checks.** A contained test marked `//lym:guard`, or one reaching `internal/testkit/scankit`, is not judged: its check reads source files no mutant changes.
-- **New refusal.** The verb refuses a map built from other Go files of the package than the worktree holds, pointing at `lym gate testmap <package>`.
-  With no contained test it still runs nothing and takes no slot.
-- **Output.** A new `mutation` object reports the mutants built and dropped, build and run seconds and the run count.
-
-## Where it lives
-
-- `internal/testcover/mutant.go`: `PlanMutants`, `MutantPlan.WriteOverlay` and `UnbuildableMutants`, the mutator over `go/ast`.
-  Every mutant sits behind a helper keyed by `LYM_TESTCOVER_MUTANT`, in one overlay for `go test -c -overlay`; no line moves, so compiler errors name the mutant.
-- `internal/testcover/mutantverdict.go`: `JudgeMutants`, the pure kill-matrix verdict.
-- `internal/testcover/sourcescan.go`: `ScanSourceReaders`.
-- `internal/testcover/runner.go`: `BuildMutantBinary` with `MutantBuildError`, `ProfileBlocks`, and `RunAlone` with no profile for a binary built without coverage.
-- `internal/gatecli/redundant.go` and `redundantmutants.go`: the verb and its slot-held check; `redundantCmd` now takes the go binary and timeout units.
-- Docs: the `testcover`, `gatecli` and `gateslot` package docs, `docs/overview.md` and `pattern/PATTERN-test-speed.md`.
+- `internal/testcover` gains a mutator over `go/ast`.
+  It takes the sites in a candidate's blocks and changes each by one operator:
+  it negates an if or for condition or a comparison, drops a call, assignment or increment statement, or changes an integer, rune or string constant.
+- Every site is wrapped in a helper that changes its value only while `LYM_TESTCOVER_MUTANT` names the mutant.
+  The changed files go to `go test -c -overlay`, so one build holds every mutant and the worktree stays untouched.
+  A mutant that does not compile, such as a constant a typed context needs, is dropped and the build runs again.
+- `lym gate redundant` runs the candidate and its covering tests against each mutant.
+  A candidate stays listed only when its covering tests kill every mutant it kills.
+- The verb reports the candidates it refuted and those it did not judge, with the reason:
+  a check that reads source files (marked `//lym:guard`, or reaching `internal/testkit/scankit`), a candidate that kills no mutant, or blocks that hold no mutant.
+- A candidate's covering tests are picked from every other judged test, largest overlap first, leaving out tests whose check reads source files.
+  The pick does not depend on which tests the coverage pass's greedy removal keeps.
+- `internal/gatecli`, `internal/gateslot`, the README, `docs/overview.md` and `pattern/PATTERN-test-speed.md` describe the confirmed verb.
 
 ## Design decisions
 
-- **Own mutator, one build per package.** Existing Go mutation tools build each mutant and report whether any test killed it.
-  The check needs which test killed which mutant, so a schema with all mutants in one binary keeps builds at three per package and adds no dependency.
-- **Unbuildable mutants are dropped, not predicted.** A constant behind the generic helper fails in a typed context such as `5 * time.Second`.
-  The build retries up to `mutantBuildRounds` times, each time dropping the mutants on the lines the compiler names; 23 of 1,151 dropped in the measurement.
-- **Covering tests are the set cover the coverage verdict picks** among every other judged test (`testcover.CoveringTests`), run only on mutants a candidate killed.
-  The coverage pass's own `covering` list for a removable test comes from the tests its greedy pass kept, so it varies with the tests' seconds and could miss the test that kills the same mutant.
-  Source-checking tests are no covers, since they kill no mutant.
-  A wider pool of every test sharing a block confirmed two of the survey's sampled candidates, so the check keeps to the board entry's covering tests.
-- **Mutant timeouts** are ten times the test's unmutated seconds, at least 10 s, within `redundancy_test_timeout_sec`, so an endless loop ends early; a timeout counts as a kill.
-- **Scope.** The gate's `redundancy` report step and `cmd/testtiming -redundancy` still judge by coverage alone; their output stays evidence for review, as PATTERN-test-speed says.
+- The mutator is lym's own, not go-mutesting or gremlins.
+  The check needs a kill matrix (which test fails with which mutant), which those tools do not give without a build and a run per mutant, plus a new dependency.
+- The covering set is a pick, not every test that shares a block.
+  With the wider pool, `TestEnsure_PairDirectoryDeletedIsSkippedAsRemoved` and `TestStart_NeverAttaches` came back confirmed, since some unrelated test killed each of their mutants.
+- A confirmed candidate is evidence, not proof: the operators cannot reach every check, such as one on another package's result.
+- A candidate's kill beside other runs is not rerun alone, so a run another one disturbs can refute it falsely.
+  A covering test's kill is rerun alone, and that run stands.
+- The verb runs on command per package inside one gate slot, as `lym gate testmap` does, not on every gate.
 
-## Measurement
+## Measured
 
-`docs/research/speed/redundancy-mutation-check-2026-11-16/report.md` records the run on the survey's five packages.
-All six candidates the survey named are dropped: three refuted, two source scans, one with no mutant in its blocks.
-Of 120 coverage candidates, 37 stay listed, 65 are refuted and 18 are not judged.
-The check cost 13.3 minutes of wall over the five, from 3 s for `internal/gitkit` to 8.6 minutes for `internal/loomcli`.
+`docs/research/speed/redundancy-mutation-check-2026-11-16/report.md` holds the measurement, with raw output in its `data/`.
+On the survey's five packages, 120 candidates gave 37 confirmed, 65 refuted and 18 not judged, in 13.3 minutes of wall (3 s for `internal/gitkit`, 8.6 minutes for `internal/loomcli`).
+All six candidates the survey named are dropped: three refuted by a mutant their covering tests miss, two source scans, and one with no mutant in its blocks.
 
-## Tests
+## To check by hand
 
-- `TestPlanMutants`, `TestMutantPlan_WriteOverlay` and `TestMutantPlan_UnbuildableMutants` pin the sites, the overlay text and the drop mapping (tier 0).
-- `TestJudgeMutants` pins the verdict and the kill-pass removable set; `TestScanSourceReaders_MarksTestsReachingTheScanKit` the scan;
-  `TestCoveringTests_TakesTheLargestOverlapFirstAndSkipsARunAddingNothing` the covering pick (tier 0).
-- `TestGateTestMapInATaskWorktreeKeepsItsOwnMaps` keeps one test in its stand-in module, so the verb reads the map with nothing to build.
-- `TestBuildMutantBinary`, `TestProfileBlocks` and a no-profile `TestRunAlone` row pin the runner's commands against the stand-in (tier 1).
-- `TestGateRedundant` now builds a real fixture module with `lym gate testmap` and the real go command.
-  It checks a confirmed pair, a refuted test with its mutants, a test that kills nothing, a source scan, and the new stale-map refusal (tier 1).
+- `redundant-test-waits-real-timeouts` (blocking, open): the redundant verb's tests wait out real timeouts, as the cost run suggests for `internal/loomcli`, whose runs mostly waited.
+  Check that the test bounds in `internal/gatecli/redundant_integration_test.go` and the mutant run bound in `internal/gatecli/redundantmutants.go` do not slow the gate.
+- The cost run did not record which `internal/loomcli` runs timed out; its 518 s wall on 293 CPU-seconds is the likeliest sign of mutants that hang a test until its bound.
+- No regression check ran, and the cost figures are one run per package on a shared machine.
