@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-16T08:43:17Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/readme-shows-run-fields/_lym/landing/summary.md",
+      "at": "2026-11-16T08:50:36Z",
+      "started_at": "2026-11-16T08:43:19Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-16T08:44:51.845285987Z",
+          "end": "2026-11-16T08:44:51.858040954Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-16T08:47:58.110212444Z",
+          "end": "2026-11-16T08:47:58.124112646Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-16T08:44:51.902844995Z",
+          "end": "2026-11-16T08:47:44.581912395Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-16T08:47:45.030112727Z",
+          "end": "2026-11-16T08:47:58.060587342Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-16T08:47:58.176851111Z",
+          "end": "2026-11-16T08:50:04.858412289Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-16T08:50:04.902052755Z",
+          "end": "2026-11-16T08:50:05.098467674Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-16T08:50:05.165531298Z",
+          "end": "2026-11-16T08:50:05.165680678Z"
+        }
+      ]
     }
   ],
   "product": {
