@@ -1,6 +1,6 @@
 # Claude Code Mode for writer sessions, set per role
 
-`claude-code-mode` · Note · enhancement, claude, shuttle, config
+`claude-code-mode` · Task · enhancement, claude, shuttle, config · draft
 
 ## Seen (operator, 2026-11-16)
 
