@@ -47,7 +47,8 @@ the developer instructions reach `codex` as one argument under Linux's 128 KiB p
 - leanness, D2 term list undefined: fixed, the closed list is named.
 - board-scope, parity per role, not per seat: fixed, D1's test runs every seat in `seatengine`'s tables and every other producer of a launch spec.
 - board-scope, `codex-writer-bench-osl` left contradicting itself: fixed, D11 lifts its replay bounds and says its route is redesigned before it reruns.
-- board-scope, the assist trial's seat changes mid-trial: kept as an open risk for the parent, since only the parent schedules those runs.
+- board-scope, the assist trial's seat changes mid-trial: kept as an open risk for the parent, since only the parent schedules those runs;
+  later dropped by the decision record's `Added after Discussion` entry of 2026-11-16 (Q14).
 - interactions, single-engine heddle targets against "no exemption": fixed, D1 keys them to their engine and does not compare them.
 - interactions, the shared edit directive's fate: fixed, D3 removes it, moves the guard's exemption, and Constraints name the background change.
 - interactions, hook identity against output: fixed, the manifest keys contexts by plugin and hook, the run record marks delivery, and D10 says so.
@@ -113,4 +114,5 @@ _No rounds yet._
 - Q11 (resolved by research): do shell guards reach Codex subagents? Yes, `PreToolUse` fires for children (twill spike, 0.164.0).
 - Q12 (resolved by research): does Codex add a commit trailer under lym? No: `codex_git_commit` removed and false in 0.164.0, no such trailer in history.
 - Q13 (auto-pick): Claude's batching nudge and question deny reach Codex through `PostToolUse` and `PreToolUse`, with the nudge's settings in codex.yaml.
-- Q14 (open, for the parent): should `codex-assist-review-trial`'s three runs all run before this lands, or all after?
+- Q14 (resolved): should `codex-assist-review-trial`'s three runs all run before this lands, or all after?
+  Settled by the decision record's `Added after Discussion` entry of 2026-11-16: those runs no longer exist, so this task takes no scheduling call.
