@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-16 12:04 UTC; every age below is as of then.
+Rendered 2026-11-16 12:05 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Move Webster's batch machinery and run-plan state into a package both implementers import** | [`implementer-shared-run-plan`](design-implementer-shared-run-plan.md)<br>[Sketch](decision-implementer-shared-run-plan.md) | darn · solid | landing · Finalize | neve | 1h<br>1h | webster, weaver |
 | T6 | **Claude Code Mode for writer sessions, set per role**<br>• Turn on the experimental Code Mode, which batches tool calls in one program, for heavy writer roles only, after a bench | [`claude-code-mode`](design-claude-code-mode.md) | darn · docs | Darn-Write | neve | 2h<br>1h | claude, shuttle, config |
-| T16 | **lym gate redundant flags tests as redundant that check different things**<br>• Equal line coverage is taken as redundancy; the verb must also prove the candidate catches no fault its covering tests miss | [`redundancy-judge-asserts`](design-redundancy-judge-asserts.md) | darn · solid | Darn-Write | neve | 40m<br>34m | testkit, gate |
+| T16 | **lym gate redundant flags tests as redundant that check different things**<br>• Equal line coverage is taken as redundancy; the verb must also prove the candidate catches no fault its covering tests miss | [`redundancy-judge-asserts`](design-redundancy-judge-asserts.md) | darn · solid | Darn-Write | neve | 41m<br>35m | testkit, gate |
 
 ### Ready (0)
 
@@ -66,11 +66,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>10d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 6w<br>2h | board, ide, orch |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>10d | burler, shed, orch, quarry, report |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T17 | **lym beam pr open opens a beam PR that conflicts with its parent**<br>• A beam pull request must not be opened before its conflicts with the parent are fixed | [`beam-pr-opens-dirty`](design-beam-pr-opens-dirty.md) | 36m<br>34m | batten, fabric |
