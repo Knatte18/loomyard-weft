@@ -1,0 +1,8 @@
+{
+  "recipe": "tapestry",
+  "driver": "go",
+  "params": {
+    "parent": "claude-code-mode"
+  },
+  "started_at": "2026-11-16T11:12:00Z"
+}
