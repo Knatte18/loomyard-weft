@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-16 11:14 UTC; every age below is as of then.
+Rendered 2026-11-16 11:15 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Merge main into the beam adopt-build**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-merge-in`](design-adopt-build-merge-in.md) | darn | Open-Window | neve | 0m<br>0m | batten, tender, dobby, orch, fabric, loom |
+| T14 | **Merge main into the beam adopt-build**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-merge-in`](design-adopt-build-merge-in.md) | darn | Drift-Baseline | neve | 0m<br>0m | batten, tender, dobby, orch, fabric, loom |
 
 ##### Ready (0)
 
@@ -122,7 +122,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **A transition pushes its records before the run acts, and a takeover entry in the run's records hands the run over** | [`transition-push-takeover`](design-transition-push-takeover.md)<br>[Sketch](decision-transition-push-takeover.md) | tapestry · solid | P3 | 52m<br>0m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
+| T3 | `draft` **A transition pushes its records before the run acts, and a takeover entry in the run's records hands the run over** | [`transition-push-takeover`](design-transition-push-takeover.md)<br>[Sketch](decision-transition-push-takeover.md) | tapestry · solid | P3 | 52m<br>1m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 | T4 | `draft` **A machine registry and adopt holds in Bolt, and a catch-up from origin after every absence** | [`machine-registry-holds-catchup`](design-machine-registry-holds-catchup.md)<br>[Sketch](decision-machine-registry-holds-catchup.md) | tapestry · solid | T3 | 52m<br>52m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 | T8 | `draft` **lym adopt runs in the foreground over pushed state: hold, owner, pull, takeover, check, with --take-hold** | [`adopt-foreground`](design-adopt-foreground.md)<br>[Sketch](decision-adopt-foreground.md) | tapestry · solid | T4 | 52m<br>52m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 | T9 | `draft` **The dobby tears down or reports leftover pairs** | [`leftover-pairs-teardown`](design-leftover-pairs-teardown.md)<br>[Sketch](decision-leftover-pairs-teardown.md) | darn · solid | T8 | 52m<br>52m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
