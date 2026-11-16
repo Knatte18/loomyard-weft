@@ -70,12 +70,8 @@ The operator says this happens all the time with Codex.
 Codex runs on Neve, where its sandbox works, and not on OSL-1046, where `kernel.apparmor_restrict_unprivileged_userns` is `1` and `bwrap` cannot set up its user namespace.
 No task released on OSL-1046 sets `code_assist_reviewer_model`; the settings on `testmap-verb`, `arras-recipe-perch` and `gate-redundancy-report` were removed.
 
-## Plan (operator, 2026-11-09)
+## Runs chosen (operator, 2026-11-16)
 
-The trial continues on Neve with the plan of 2026-11-08: the orch there sets `{"loom":{"code_assist_reviewer_model":"astra[medium]"}}` in the `run_settings` of the next two or three darn tasks the operator releases, with the `review-code` fan, and a darn docs task then reads those rounds.
-
-## Runs chosen (operator, 2026-11-15)
-
-The three darn members of beam `adopt-build`, `prime-is-root-beam`, `hub-stop-button` and `machine-restart-shortcut`, carry
+The three darn parts the beam `adopt-build`'s resplit filed, `board-prints-root-beam`, `hub-stop-all` and `machine-start-launchers`, carry
 `{"loom":{"code_assist_reviewer_model":"astra[medium]","code_assist_reviewer_fan":"review-code"}}` in their `run_settings`; they run on Neve.
 Once all three have landed, a darn docs task reads their Code-Review rounds and gives the verdict.
