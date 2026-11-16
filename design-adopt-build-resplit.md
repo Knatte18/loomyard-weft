@@ -1,6 +1,6 @@
 # Merge the remaining adopt-build members into one design and split it again on what landed
 
-`adopt-build-resplit` · Project · feature, enhancement, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut · starting · Worktree-Create
+`adopt-build-resplit` · Project · feature, enhancement, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut · starting · Seed-Child
 
 Decision record: [Sketch](decision-adopt-build-resplit.md)
 
