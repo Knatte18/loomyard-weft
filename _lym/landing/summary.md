@@ -1,14 +1,30 @@
-# One run FSM over tracked records, and the orch resumes its own session
+# Merge main into the beam adopt-build
 
-A run's lifecycle state is derived by one package, `internal/runfsm`, from tracked records alone,
-with cancel and pause intents, the PR record and the fixer counts tracked.
-An orch start ends the orch's own earlier Claude process and resumes its session on the same machine,
-never launching fresh over a live holder.
-`docs/research/loom/adopt-build-revision-2026-11-16/report.md` records how the rest of the adopt redesign reads against these two parts;
-that rest is the project `adopt-build-resplit`, which builds on this branch after it lands.
+Brings `main` (up to 194650f0) into the beam `adopt-build` as one merge commit, 4153c5ef.
+Three paths conflicted, and two more files needed changes because the beam used a constant that `main` deleted.
 
-## Members
+## Conflict resolutions
 
-- 3bc33584dbf8 The orch ends its own earlier process and resumes its session
-- 973c9025036f One run FSM over tracked records, with cancel and pause intents
-- #131 Report: revise the remaining adopt-build members against what landed
+- `internal/orchcli/cli.go`: kept both sides' new `orchCLI` fields and their wiring.
+  That is the beam's `registerOrch`, `orchRegistered`, `endOrch` and `endSubject`, and `main`'s `machineName` and `injectRemoteControl`.
+  Dropped `endTestMap` and its wiring, since `main` removed the coverage-map upkeep pass and its `runproc.RoleTestMap`.
+- `internal/orchcli/start.go`: the resume path keeps the beam's `resumeOrch`, which ends this worktree's own earlier orch process and resumes again.
+  `resumeOrch` now also takes `main`'s `remoteControlName` and passes it to `orchSpec`,
+  so a resumed session gets remote control as `main` intended.
+- `internal/runproc/doc.go`: the hub roles list follows `main` (no `RoleTestMap`), and the beam's line on the prime's `RoleOrch` registration stays.
+
+## Fixes the merge needed outside the conflicts
+
+`main` deleted `runproc.RoleTestMap`, but the beam's `EndSubject` added a reference to it after the merge base:
+
+- `internal/runproc/end.go`: removed `RoleTestMap` from `subjectPassSpared`, and removed the coverage-map pass from `EndSubject`'s doc comment.
+- `internal/runproc/doc.go`: the same doc fix for the `EndSubject` paragraph.
+- `internal/runproc/end_test.go`: removed the `RoleTestMap` record from the `TestEndSubject_EndsTheRunsThenTheSubjectAndItsDobbyLast` fixture.
+  No row expected that record to be signalled or ended.
+
+These fixes are part of the merge commit, not separate commits after it.
+
+## Checks
+
+`go build ./cmd/lym` and `go vet` pass on `orchcli`, `runproc` and every other package both sides changed.
+The gate has not run yet.
