@@ -1,6 +1,6 @@
 # A Codex session gets exactly what a Claude session in the same role gets
 
-`codex-same-as-claude` · Task · bug, codex, shuttle, stencil, heddle · running · Discussion-Bouncer
+`codex-same-as-claude` · Task · bug, codex, shuttle, stencil, heddle · running · Discussion-Burler-Review
 
 ## Rule (operator, 2026-11-15)
 
