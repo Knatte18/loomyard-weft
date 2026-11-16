@@ -35,6 +35,12 @@ lym does nothing with remote control today.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-16): A click on a lit RC button sends nothing
+
+Decision: turnOnRemoteControl refuses while orchengine.RemoteControlOn reads on for the live strand and sends nothing into the pane; the refusal's way forward names /remote-control typed by hand in the orch pane, for a session whose remote control was turned off inside Claude Code. No verification run of Claude Code's answer to a second /remote-control is needed.
+
+Rationale: What Claude Code shows on a second /remote-control is unverified and may be a panel with no input box, which would block the orch pane and creel mail into it; refusing costs only a hand-typed command in the rare case the record is stale.
+
 ## Constraints
 
 ## Auto-mode assumptions
