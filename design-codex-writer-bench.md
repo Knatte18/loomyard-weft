@@ -12,7 +12,7 @@ The bench replays only the writer, never a whole run: no other producer runs, an
 ## Why again (operator, 2026-11-16)
 
 The earlier bench on Neve does not count: its Codex session did not get the starting point Claude's writer got.
-This bench runs only once the project `codex-parity` (from the Sketch `codex-same-as-claude`) has landed,
+This bench runs only once the Codex parity tasks of the project `codexengine` (from the Sketch `codex-same-as-claude`) have landed,
 so the Codex writer gets exactly what a Claude writer gets.
 It runs on Neve; the OSL-1046 run and its sandbox fallback check are dropped.
 
