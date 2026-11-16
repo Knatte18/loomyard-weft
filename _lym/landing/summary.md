@@ -12,3 +12,4 @@ that rest is the project `adopt-build-resplit`, which builds on this branch afte
 - 3bc33584dbf8 The orch ends its own earlier process and resumes its session
 - 973c9025036f One run FSM over tracked records, with cancel and pause intents
 - #131 Report: revise the remaining adopt-build members against what landed
+- 384a97824f06 Merge main into the beam, settling its conflicts
