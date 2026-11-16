@@ -1,0 +1,23 @@
+verdict: resume
+reason: |-
+  Review escalation at round 2, cause circling. The returning keys are d12-codex-breach-rules-undefined (F1, now
+  BLOCKING), d12-question-tool-name-unverified (F2) and d1-parity-test-misses-non-seatengine-producers (F3).
+  Each came back on new evidence rather than the same complaint: Codex exec cells, request_user_input_async, and
+  several spec literals in one package. None of them is wrong, so accept does not apply.
+  The fix is converging. Round 1 had 15 findings and round 2 resolved eleven of those keys. The round-2 fixer report
+  answers all eleven round-2 findings, with nothing disputed or deferred, and the committed decision record carries
+  each fix:
+  - D12 states the exec-cell call shape and that PostToolUse fires once per nested call. It names tool_name Bash and
+    apply_patch, uses parsed_cmd reads for the read-again rule, and keys the count by transcript_path. It cites a lym
+    run rollout from 2026-11-15 and a codex exec hook spike from 2026-11-16; both rollout files exist on this machine.
+  - The deny covers request_user_input_async and joins the one hooks.PreToolUse setting.
+  - D1 keys the producer scan by enclosing function, compares the shared heddle targets, and keeps a lasting
+    manifests copy.
+  - D4 resolves the default engine through a new shuttleengine call.
+  - Open risks reads None and Q14 is resolved.
+  The board entry and the record already settle every returned finding, so there is no separate ruling to record.
+  The judge's verdict was CONTINUE, and round 3's focus already restates the open keys for a fresh review of the new
+  D12 and D1 text. The continue verb accepted round 2 as below the hard cap.
+verbs:
+  - |-
+    lym loom circling continue codex-same-as-claude
