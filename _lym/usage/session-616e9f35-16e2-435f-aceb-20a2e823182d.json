@@ -1,0 +1,14 @@
+{
+  "session_id": "616e9f35-16e2-435f-aceb-20a2e823182d",
+  "row": "Raddle-Bouncer",
+  "role": "split-bouncer-seed",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 14,
+  "cache_write_tokens": 52828,
+  "cache_read_tokens": 137587,
+  "output_tokens": 3669,
+  "cost_usd": 0.19630540000000002,
+  "started": "2026-11-16T10:07:29Z",
+  "ended": "2026-11-16T10:08:08Z"
+}

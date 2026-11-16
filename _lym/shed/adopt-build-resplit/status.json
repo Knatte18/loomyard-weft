@@ -1,11 +1,11 @@
 {
-  "current_producer": "Raddle-Bouncer",
+  "current_producer": "Raddle-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Raddle-Bouncer",
-    "last": "Raddle-Write → done",
+    "now": "Raddle-Burler-Review",
+    "last": "Raddle-Bouncer → bounced to Raddle-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -205,6 +205,14 @@
           "end": "2026-11-16T10:07:17.860664308Z"
         }
       ]
+    },
+    {
+      "producer": "Raddle-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-16T10:08:08Z",
+      "started_at": "2026-11-16T10:07:29Z",
+      "routed_to": "Raddle-Burler-Review"
     }
   ],
   "product": {
