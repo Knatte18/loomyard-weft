@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-16 08:59 UTC; every age below is as of then.
+Rendered 2026-11-16 09:00 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -95,7 +95,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one<br>• `loom: discussion opus[high]` | [`codex-same-as-claude`](design-codex-same-as-claude.md) | motif | Discussion-Write | neve | 14h<br>17m | codex, shuttle, stencil, heddle |
+| T2 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one<br>• `loom: discussion opus[high]` | [`codex-same-as-claude`](design-codex-same-as-claude.md) | motif | Discussion-Write | neve | 14h<br>18m | codex, shuttle, stencil, heddle |
 
 #### Ready (0)
 
@@ -167,7 +167,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **The board README shows every per-task field that changes the run, pull_request included**<br>• The entry cell lists run_settings but not pull_request, so a task with PR on looks like it has none | [`readme-shows-run-fields`](design-readme-shows-run-fields.md) | darn · light | Finalize | neve | 24m<br>17m | board |
-| T4 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | motif | Discussion-Bouncer | neve | 5w<br>15h | webster, weaver |
+| T4 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | motif | Discussion-Burler-Review | neve | 5w<br>15h | webster, weaver |
 
 #### Ready (0)
 
