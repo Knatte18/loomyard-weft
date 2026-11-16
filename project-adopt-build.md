@@ -13,15 +13,17 @@ No state between two members landing reaches `main`, so no installed lym runs ha
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (0)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T14 | **Merge main into the beam adopt-build**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-merge-in`](design-adopt-build-merge-in.md) | darn |  | 0m<br>0m | batten, tender, dobby, orch, fabric, loom |
 
 ## Notes (0)
 
