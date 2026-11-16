@@ -1,0 +1,510 @@
+{
+  "runGuid": "45b4e49a9a211d85332a2d7a26384f31",
+  "planFingerprint": "86e1277750f7d22d224ad0926997422ef4d29c8895e3de6dff2348aee712d1be",
+  "planFileHashes": {
+    "00-overview.md": "0b8a5fdcf988f5ce83784df19dbfb70fe959f9055eb2dab5f9f6a7231211bf7b",
+    "01-runfsm-push-owed.md": "40b7b492d9dd9805233435e3c6375fc27856b515a9905c3a4c7efed552decc64",
+    "02-takeover-entry.md": "46f2b0a5874b0358115010917c321cb9a6aa2bbddf4e92c971564d5b0df36cd6",
+    "03-pair-push-records-first.md": "356ec2ae5437402011b6781d48d2026467a19d15d9192c77a33602525b1ac2ab",
+    "04-detached-records-first.md": "4e548909e660e28b3a9a7b378c1fe109acb1626fdc7d0e3ab85b5ebf720a727c",
+    "05-rejected-push-takeover-read.md": "a833bf271d20dd091f7a25b731778bcc246d4a83d259f04caced401c98543b87",
+    "06-run-hand-over.md": "d33fcd1a79763f4579026a0867e6e37d2796726c3b07ec87f4661984e6bb421a",
+    "07-read-run-owed-and-tip.md": "bd0969b00b35cfaec064f6179d3e8ae63b57e232a2cf6228c087b225f4e95bb9",
+    "08-transition-sync-push.md": "7bdfadabb685ae7643a9776593c7f62f2546c09650407650cddbc7b28e522d4f",
+    "09-intent-sync-push.md": "1fe9470d036004a7e2b1aa8df062bc691778bf8d72c775a8c114823f95336658",
+    "10-board-done-pushed.md": "77cd4fd84dd60d75e865337366b2af2d8fc6208e6b9dd9114f1258c4b57e7641",
+    "11-finalize-push-order.md": "ce4e37072918491219326db3b60857bfcebbf2e7f55047fe65b3afa63734fc39",
+    "12-code-tip-grace.md": "a42e09949d819510bc039cbee510872100d44c741d7f634a7d76556042f78941",
+    "13-status-shows-owed.md": "a2fad818d85810eab83cabcfd08f1168752ae46e69cdfc6de8e826f206ee25e3",
+    "14-pattern-run-fsm.md": "abba2a821d7a3325c1f17c018798f612ab75b38e2fd8fb21c583a8f883ef46ab"
+  },
+  "planOverviewFrameHash": "a1ebee8ab816a6237826b682bffde56fee355b4336f1dd1f65b893eb9a448f10",
+  "partition": [
+    {
+      "cards": [
+        "01-runfsm-push-owed",
+        "02-takeover-entry"
+      ],
+      "profile": "wide",
+      "estimate": 127392,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 55120,
+        "read_union": 24764,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 540,
+            "reads": {
+              "file:internal/runfsm/doc.go": 132,
+              "package:internal/battencli": 2000,
+              "package:internal/runfsm": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/runfsm": 2000
+            },
+            "messages": 91,
+            "written": 27840
+          },
+          {
+            "card": 2,
+            "card_text": 468,
+            "reads": {
+              "file:internal/lymdirs/doc.go": 132,
+              "file:internal/shedengine/doc.go": 3348,
+              "file:internal/testkit/doc.go": 144,
+              "package:internal/lymdirs": 2000,
+              "package:internal/shedengine": 2000,
+              "package:internal/testkit/takeoverkit": 2000,
+              "tests:internal/lymdirs": 2000,
+              "tests:internal/shedengine": 2000,
+              "tests:internal/testkit/takeoverkit": 2000
+            },
+            "messages": 64,
+            "written": 19668
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-pair-push-records-first"
+      ],
+      "profile": "wide",
+      "estimate": 265596,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 62120,
+        "read_union": 75820,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 1056,
+            "reads": {
+              "file:internal/beamcli/doc.go": 5760,
+              "file:internal/fabriccli/doc.go": 2700,
+              "file:internal/fabricengine/doc.go": 28344,
+              "file:internal/loomcli/doc.go": 9960,
+              "package:internal/adoptcli": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/cleanupcli": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/cleanupcli": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 422,
+            "written": 127656
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-detached-records-first",
+        "05-rejected-push-takeover-read"
+      ],
+      "profile": "wide",
+      "estimate": 255188,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 69120,
+        "read_union": 40556,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 540,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 28344,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 200.5,
+            "written": 60690
+          },
+          {
+            "card": 5,
+            "card_text": 972,
+            "reads": {
+              "file:internal/fabriccli/doc.go": 2700,
+              "file:internal/fabricengine/doc.go": 28344,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 279.5,
+            "written": 84822
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-run-hand-over"
+      ],
+      "profile": "wide",
+      "estimate": 257864,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 76120,
+        "read_union": 62620,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 1524,
+            "reads": {
+              "file:internal/fabriccli/doc.go": 2700,
+              "file:internal/fabricengine/doc.go": 28344,
+              "file:internal/loomcli/doc.go": 9960,
+              "file:internal/pairteardown/doc.go": 4092,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/pairteardown": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/pairteardown": 2000
+            },
+            "messages": 392,
+            "written": 119124
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-read-run-owed-and-tip"
+      ],
+      "profile": "wide",
+      "estimate": 199282,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 83120,
+        "read_union": 41324,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 888,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 28344,
+              "file:internal/pairteardown/doc.go": 4092,
+              "package:internal/fabricengine": 2000,
+              "package:internal/pairteardown": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/pairteardown": 2000
+            },
+            "messages": 246.5,
+            "written": 74838
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-transition-sync-push"
+      ],
+      "profile": "wide",
+      "estimate": 291410,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 90120,
+        "read_union": 59672,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 1368,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 28344,
+              "file:internal/loomcli/doc.go": 9960,
+              "package:cmd/lym": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/statuscommit": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/statuscommit": 2000
+            },
+            "messages": 467.5,
+            "written": 141618
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-intent-sync-push",
+        "10-board-done-pushed"
+      ],
+      "profile": "wide",
+      "estimate": 228122,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 97120,
+        "read_union": 37924,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 696,
+            "reads": {
+              "file:internal/loomcli/doc.go": 9960,
+              "file:internal/tendercli/doc.go": 1356,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/tendercli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/tendercli": 2000
+            },
+            "messages": 191.5,
+            "written": 58146
+          },
+          {
+            "card": 10,
+            "card_text": 432,
+            "reads": {
+              "file:internal/boardengine/doc.go": 9480,
+              "file:internal/loomcli/doc.go": 9960,
+              "package:internal/boardengine": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 115,
+            "written": 34932
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-finalize-push-order"
+      ],
+      "profile": "wide",
+      "estimate": 266130,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 104120,
+        "read_union": 63268,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 1092,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 28344,
+              "file:internal/landingshed/doc.go": 7872,
+              "file:internal/loomcli/doc.go": 9960,
+              "package:internal/fabricengine": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 325.5,
+            "written": 98742
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-code-tip-grace",
+        "13-status-shows-owed",
+        "14-pattern-run-fsm"
+      ],
+      "profile": "wide",
+      "estimate": 263650,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 111120,
+        "read_union": 55504,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 852,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 28344,
+              "package:internal/battencli": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 210,
+            "written": 63852
+          },
+          {
+            "card": 13,
+            "card_text": 420,
+            "reads": {
+              "file:internal/beamcli/doc.go": 5760,
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 83.5,
+            "written": 25470
+          },
+          {
+            "card": 14,
+            "card_text": 504,
+            "reads": {
+              "file:PATTERN.md": 672,
+              "file:pattern/PATTERN-daemon-wakeups.md": 1620,
+              "file:pattern/PATTERN-pair-remote.md": 1332,
+              "package:.": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 24,
+            "written": 7704
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "runfsm-push-owed",
+      "cards": [
+        "01-runfsm-push-owed",
+        "02-takeover-entry"
+      ],
+      "cardHashes": {
+        "01-runfsm-push-owed": "40b7b492d9dd9805233435e3c6375fc27856b515a9905c3a4c7efed552decc64",
+        "02-takeover-entry": "46f2b0a5874b0358115010917c321cb9a6aa2bbddf4e92c971564d5b0df36cd6"
+      },
+      "startSha": "27eefef6507a52c70d90f808c10092e67186d729",
+      "kind": "fork",
+      "spawnedAt": "2026-11-16T13:55:29Z",
+      "sessionId": "a823923f-7348-4ce9-a1d7-ac8a5677e1bf",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "13630fce5704e03fd908560054a969a3",
+  "masterSessionId": "a823923f-7348-4ce9-a1d7-ac8a5677e1bf",
+  "masterEngine": "claude"
+}
