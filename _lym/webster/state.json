@@ -1,20 +1,20 @@
 {
   "runGuid": "45b4e49a9a211d85332a2d7a26384f31",
-  "planFingerprint": "86e1277750f7d22d224ad0926997422ef4d29c8895e3de6dff2348aee712d1be",
+  "planFingerprint": "b92821be66fcbc6bdbacd2950a4ae4ceeb857230d5371d16db1477c40f29ec77",
   "planFileHashes": {
     "00-overview.md": "0b8a5fdcf988f5ce83784df19dbfb70fe959f9055eb2dab5f9f6a7231211bf7b",
-    "01-runfsm-push-owed.md": "40b7b492d9dd9805233435e3c6375fc27856b515a9905c3a4c7efed552decc64",
-    "02-takeover-entry.md": "46f2b0a5874b0358115010917c321cb9a6aa2bbddf4e92c971564d5b0df36cd6",
+    "01-runfsm-push-owed.md": "a8e7ef45b0320677b8ace15a393b142d8cea0c2b49920205882bf46ca68bc0b8",
+    "02-takeover-entry.md": "32f6898608c5cdc0dd2a5c5b71fc2a059b46ed8a83f22b204fe7efa5c7af3908",
     "03-pair-push-records-first.md": "356ec2ae5437402011b6781d48d2026467a19d15d9192c77a33602525b1ac2ab",
     "04-detached-records-first.md": "4e548909e660e28b3a9a7b378c1fe109acb1626fdc7d0e3ab85b5ebf720a727c",
-    "05-rejected-push-takeover-read.md": "a833bf271d20dd091f7a25b731778bcc246d4a83d259f04caced401c98543b87",
-    "06-run-hand-over.md": "d33fcd1a79763f4579026a0867e6e37d2796726c3b07ec87f4661984e6bb421a",
+    "05-rejected-push-takeover-read.md": "96439d2c6d906555f358fe57f445a76846616f50062396c36444ef8e70eeebb7",
+    "06-run-hand-over.md": "530ac8d1dce48d4da06ead5aa75a4f9fd79211dc49f778560b39e12c18a49644",
     "07-read-run-owed-and-tip.md": "bd0969b00b35cfaec064f6179d3e8ae63b57e232a2cf6228c087b225f4e95bb9",
     "08-transition-sync-push.md": "7bdfadabb685ae7643a9776593c7f62f2546c09650407650cddbc7b28e522d4f",
     "09-intent-sync-push.md": "1fe9470d036004a7e2b1aa8df062bc691778bf8d72c775a8c114823f95336658",
     "10-board-done-pushed.md": "77cd4fd84dd60d75e865337366b2af2d8fc6208e6b9dd9114f1258c4b57e7641",
     "11-finalize-push-order.md": "ce4e37072918491219326db3b60857bfcebbf2e7f55047fe65b3afa63734fc39",
-    "12-code-tip-grace.md": "a42e09949d819510bc039cbee510872100d44c741d7f634a7d76556042f78941",
+    "12-code-tip-grace.md": "4e0557c2e982bbb018a7cf33aa8dc599bc3120e1cafe7f4cbcc7272c9e4eec6f",
     "13-status-shows-owed.md": "a2fad818d85810eab83cabcfd08f1168752ae46e69cdfc6de8e826f206ee25e3",
     "14-pattern-run-fsm.md": "abba2a821d7a3325c1f17c018798f612ab75b38e2fd8fb21c583a8f883ef46ab"
   },
@@ -491,20 +491,37 @@
         "02-takeover-entry"
       ],
       "cardHashes": {
-        "01-runfsm-push-owed": "40b7b492d9dd9805233435e3c6375fc27856b515a9905c3a4c7efed552decc64",
-        "02-takeover-entry": "46f2b0a5874b0358115010917c321cb9a6aa2bbddf4e92c971564d5b0df36cd6"
+        "01-runfsm-push-owed": "a8e7ef45b0320677b8ace15a393b142d8cea0c2b49920205882bf46ca68bc0b8",
+        "02-takeover-entry": "32f6898608c5cdc0dd2a5c5b71fc2a059b46ed8a83f22b204fe7efa5c7af3908"
       },
       "startSha": "27eefef6507a52c70d90f808c10092e67186d729",
       "kind": "fork",
       "spawnedAt": "2026-11-16T13:55:29Z",
       "sessionId": "a823923f-7348-4ce9-a1d7-ac8a5677e1bf",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-runfsm-push-owed",
+        "status": "done",
+        "head_sha": "ec2702dd19398c60e2925170f81cc49355503b5c"
+      },
+      "cardShas": [
+        "ec2702dd19398c60e2925170f81cc49355503b5c"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/a823923f-7348-4ce9-a1d7-ac8a5677e1bf/subagents/agent-ad260d26386e4ac54.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/a823923f-7348-4ce9-a1d7-ac8a5677e1bf/subagents/agent-ad260d26386e4ac54.jsonl"
+      ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "13630fce5704e03fd908560054a969a3",
   "masterSessionId": "a823923f-7348-4ce9-a1d7-ac8a5677e1bf",
-  "masterEngine": "claude"
+  "masterEngine": "claude",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/a823923f-7348-4ce9-a1d7-ac8a5677e1bf/subagents/agent-ad260d26386e4ac54.jsonl"
+  ]
 }

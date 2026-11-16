@@ -13,7 +13,7 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/runfsm#CodeTipGrace`
+- `internal/runfsm#CodeTipGrace`
 - `plan:internal/fabricengine#OriginCodeTip`
 - `plan:internal/fabricengine#TransitionTrailerKey`
 - `internal/fabricengine#CommitAnchoredPaths`

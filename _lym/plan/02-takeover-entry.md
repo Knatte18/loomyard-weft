@@ -1,9 +1,9 @@
 # Card 2 — takeover-entry
 
 **Create:**
-- `plan:internal/shedengine#Takeover` -> `type Takeover struct`
-- `plan:internal/lymdirs#HandOverDirName` -> `const HandOverDirName = "hand-over"`
-- `plan:internal/testkit/takeoverkit#WriteTakeover` -> `func WriteTakeover(statusPath string, entry shedengine.Takeover) error`
+- `internal/shedengine#Takeover`
+- `internal/lymdirs#HandOverDirName`
+- `internal/testkit/takeoverkit#WriteTakeover`
 - `internal/testkit/takeoverkit/doc.go`
 
 **Edit:**

@@ -41,7 +41,7 @@
 - `internal/fabricengine#ArchiveOwnerTips`
 - `plan:internal/fabricengine#ReadUpstreamTakeover`
 - `plan:internal/fabricengine#ReadHandOverMark`
-- `plan:internal/testkit/takeoverkit#WriteTakeover`
+- `internal/testkit/takeoverkit#WriteTakeover`
 - `internal/loomcli#primeOfHub`
 - `internal/loomcli/doc.go`
 - `internal/fabriccli/doc.go`

@@ -12,7 +12,7 @@
 - `internal/battencli#TestCancelVerdict`
 
 **Create:**
-- `plan:internal/runfsm#CodeTipGrace` -> `const CodeTipGrace = 30 * time.Minute`
+- `internal/runfsm#CodeTipGrace`
 
 **Intent:**
 Rename `Inputs.PushOwedOffline` to `Inputs.PushOwed`: true while a push of the run is owed, for an unreachable origin, a deferred records side or a held teardown lock alike (D1).

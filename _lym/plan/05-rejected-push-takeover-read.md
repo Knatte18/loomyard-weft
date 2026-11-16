@@ -30,7 +30,7 @@
 - `internal/fabricengine#TestDetachedPush_CoveredChildExitsBeforeItsFlags`
 
 **Uses:**
-- `plan:internal/testkit/takeoverkit#WriteTakeover`
+- `internal/testkit/takeoverkit#WriteTakeover`
 - `internal/fabricengine_test#newPairFixtureAt`
 - `internal/fabriccli/doc.go`
 
