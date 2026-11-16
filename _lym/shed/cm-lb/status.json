@@ -1,14 +1,13 @@
 {
-  "current_producer": "Plan-Write",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
-  "entered_row": "Plan-Write",
   "pause_requested": false,
   "pause_before": "Plan-Burler-Fix",
   "pause_before_by": "bench",
   "activity": {
-    "now": "Plan-Write",
-    "last": "Parts-Plan-Write → skipped",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Write → done",
     "wait": ""
   },
   "history": [
@@ -46,6 +45,22 @@
       "output": "",
       "at": "2026-11-16T11:12:05Z",
       "reason": "tapestry.plan_split = false"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/cm-lb/_lym/plan/00-overview.md",
+      "at": "2026-11-16T11:34:45Z",
+      "started_at": "2026-11-16T11:17:23Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-16T11:33:35.379082989Z",
+          "end": "2026-11-16T11:34:44.450171063Z"
+        }
+      ]
     }
   ],
   "product": {
