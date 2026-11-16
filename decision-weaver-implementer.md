@@ -265,6 +265,12 @@ Decision: D10's bound stands: a verify fixer runs through gatefixer with no shut
 
 Rationale: implementer-spec.md pins the implementer's Done as 'the plan is built and the plan-level verify passed', which D1 keeps and D10's Rationale cites; the row's gates entries are not part of that contract. PATTERN-gate-slot, as the record's Constraints line states it, runs a cold verify fixer only through gatefixer, so the review's option (b) would need a PATTERN change the record chose against in round 3. The one gates entry the shipped tapestry recipe gives the implementer row, drift, is repeated downstream by the Drift-Verify row after Parent-Align as the guarantee (contracts/recipes/tapestry-recipe.yaml), so a drift the fixer's commit causes is still caught before review. An extra gated strand over each fixer commit would add a spawn and its own crash and retry rules to a path the review just closed.
 
+### Added after Discussion (arbiter, 2026-11-16): Round-3 plan review accepted at the hard cap: the same-rung retry fix is in place
+
+Decision: The open design-wrong finding retry-allowance-spans-ladder-cycles (round 3 F1) is answered by the plan as it stands: card 5 (weaver-state) gives AttemptState and FixerState a Reentry marker and StopRecord a Reentered flag; card 12 (run-loop) counts lost attempts and lost fixers on a rung from the latest Reentry record on, or from the first when none is marked; card 13 (run-reentry-and-resume) uses the same count in resumeStrands step 4, marks only the stop's first re-entry attempt or fixer, and its TestRun_Reentry row covers a batch stopped after two last-rung losses whose re-entry attempt is lost, plus a crash during that retry. The mechanical findings F2-F5 (stale outcome.yaml and summary.md removed at Run entry, batchGateCalls shared by batchGateSpec and checkStoppedBatch, outcomeRecord and writeOutcome shared by cards 12 and 23, st.Stop set and saved before every Stuck return) are fixed in cards 9, 12, 13 and 23. The review segment is accepted on round 3; implementers build the cards as written.
+
+Rationale: Hard-cap rule: accept only when the fix in place already answers the open design-wrong finding. The round-3 fixer report and a read of cards 5, 9, 12, 13 and 23 show every round-3 finding answered as the review proposed, with the crash-resets-the-count hole closed by Stop.Reentered.
+
 ## Constraints
 
 - PATTERN-shed-recipe-registry: the `Implementer` entry's closed table is the one exception to the registry map; Weaver joins that table and adds no registry entry.
