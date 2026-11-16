@@ -1,0 +1,21 @@
+# Relevant files
+
+- `internal/shuttleengine/claudeengine/subagents.go` `subagentPassage`, `subagentEffortEnv` — the subagent passage and effort fallback Codex lacks
+- `internal/shuttleengine/codexengine/codexengine.go` `Codex.Prepare`, `promptText` — puts the notices and passages in the prompt file today
+- `internal/shuttleengine/codexengine/capabilities.go` `Codex.HookInput` — Codex hook parsing; its doc claims no subagent reaches the hooks
+- `internal/shuttleengine/codexengine/guards.go` `denyNotice` — the Codex deny notice D5 moves to developer instructions
+- `internal/shuttleengine/codexengine/template.yaml` — codex.yaml defaults; `skill_roots` points at Claude's plugin cache; the thread-cap key joins it
+- `internal/shuttleengine/codexengine/config.go` `Config` — codex.yaml's fields
+- `internal/shuttleengine/passages.go` `StandingPassages` — heddle passages per engine and role
+- `internal/editdirective/editdirective.go` `Directive`, `EngineDirective` — shared versus per-engine edit directive
+- `internal/seatengine/prompt.go` `Prompts` — the only caller of the per-engine edit directive; renders every seat's prompt without a session
+- `contracts/stencils/edit/edit-directive.md` — the shared, Claude-worded edit directive
+- `contracts/stencils/engine/codex/edit-directive.md` — the thinner Codex copy
+- `contracts/stencils/darn/darn-fragment-make-change.md` — Agent-tool and system-prompt wording outside an engine block
+- `internal/heddleengine/shipped.json` — shipped entries; `lym-batching` and `lym-plan-edits-before-gate` target `claude-file`
+- `internal/orchcli/start.go` `orchCLI.orchSpec` — the orch launch has no engine choice
+- `docs/research/codex/codex-twill-spike-2026-10-24/report.md` — Codex 0.164.0 forks, thread cap and guard hooks on children
+- `internal/shuttleengine/claudeengine/doc.go` — the batching nudge hook, the AskUserQuestion deny and the session scope that decides Claude's skill listing
+- `internal/shuttleengine/codexengine/command.go` `codexCommand` — the Codex launch command, a shell string that carries the `-c` values
+- `internal/shuttleengine/spec.go` `Spec` — the launch spec that gains the prompt engine; documents the spec-level denies
+- `internal/shuttleengine/engine.go` `Launch` — what `Prepare` returns, the source a manifest is read back from
