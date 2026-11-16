@@ -33,10 +33,11 @@ Autonomous run: no operator answered, so each turn below is a self-made pick, re
 
 Six forks, one per lens; every fork returned a report.
 While checking the findings, the writer found two more gaps, now D12: Claude's batching-nudge hook and its AskUserQuestion deny have no Codex counterpart.
-The Codex launch command is a shell string composed through `internal/shell` (`internal/shuttleengine/codexengine/command.go`), which settled the launch-length risk.
+The Codex launch command is a shell string composed through `internal/shell` (`internal/shuttleengine/codexengine/command.go`);
+the developer instructions reach `codex` as one argument under Linux's 128 KiB per-argument cap, which D5 bounds.
 
 - leanness, D2 hit list: fixed, list and its plan note cut.
-- leanness, open risk on launch length: fixed, settled from the launch code and stated as D5's last sentence; the hook-environment risk was cut as a restatement of D8's bound.
+- leanness, open risk on launch length: fixed, D5 bounds the one argument the developer instructions ride as; the hook-environment risk was cut as a restatement of D8's bound.
 - leanness, auto-mode assumptions restate decisions: fixed, reduced to pointers with the reasoning.
 - leanness, machine facts in D8 and D9 bounds: fixed, those bounds are gone (imports expanded, files above the root carried).
 - leanness, scribe example in D8: fixed, moved to turn 1.
@@ -44,7 +45,7 @@ The Codex launch command is a shell string composed through `internal/shell` (`i
 - leanness, `default_subagent_model` fact: fixed, cut.
 - leanness, Scope "In" duplicates the decisions: fixed, one line.
 - leanness, D2 term list undefined: fixed, the closed list is named.
-- board-scope, parity per role, not per seat: fixed, D1's test runs every seat in `seatengine`'s tables.
+- board-scope, parity per role, not per seat: fixed, D1's test runs every seat in `seatengine`'s tables and every other producer of a launch spec.
 - board-scope, `codex-writer-bench-osl` left contradicting itself: fixed, D11 lifts its replay bounds and says its route is redesigned before it reruns.
 - board-scope, the assist trial's seat changes mid-trial: kept as an open risk for the parent, since only the parent schedules those runs.
 - interactions, single-engine heddle targets against "no exemption": fixed, D1 keys them to their engine and does not compare them.
@@ -99,7 +100,7 @@ _No rounds yet._
 
 ## Question ledger
 
-- Q1 (auto-pick): how is parity tested? A manifest read back from each engine's launch, per seat in `seatengine`'s tables, Codex ⊇ Claude over compared channels, at `tier0` on fixtures.
+- Q1 (auto-pick): how is parity tested? A manifest read back from each engine's launch, per seat in `seatengine`'s tables and per other producer of a launch spec, Codex ⊇ Claude over compared channels, at `tier0` on fixtures.
 - Q2 (auto-pick): which text is swept? Every stencil and spec under `contracts/` and production Go literals, bar the orch places; held by a scan with a closed term list.
 - Q3 (auto-pick): where do Codex's standing items go? `developer_instructions`, Claude's appended-prompt order first.
 - Q4 (auto-pick): the edit directive: one full copy per engine, replacing the shared stencil and the thin assist copies.
