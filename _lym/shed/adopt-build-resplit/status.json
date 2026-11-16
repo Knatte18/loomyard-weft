@@ -1,12 +1,11 @@
 {
-  "current_producer": "Raddle-Bouncer",
+  "current_producer": "Raddle-File",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Raddle-Bouncer",
-    "last": "Raddle-Bouncer → awaiting",
+    "now": "Raddle-File",
+    "last": "Raddle-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -314,6 +313,14 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit/_lym/reviews/split/round-2-bouncer-ledger.md",
       "at": "2026-11-16T10:20:59Z",
       "started_at": "2026-11-16T10:20:31Z"
+    },
+    {
+      "producer": "Raddle-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit/_lym/reviews/split/round-2-bouncer-ledger.md",
+      "at": "2026-11-16T10:22:16Z",
+      "started_at": "2026-11-16T10:22:16Z",
+      "by": "shed"
     }
   ],
   "product": {
