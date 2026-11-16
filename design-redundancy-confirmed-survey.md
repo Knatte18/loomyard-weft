@@ -1,6 +1,6 @@
 # Survey the mutation-confirmed redundancy candidates across every package
 
-`redundancy-confirmed-survey` · Task · research, testkit, gate · starting · Seed-Child
+`redundancy-confirmed-survey` · Task · research, testkit, gate · starting · Open-Window
 
 ## Goal
 
