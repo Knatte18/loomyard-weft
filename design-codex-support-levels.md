@@ -28,7 +28,7 @@ Level 2 below is where that doubt is tested, and the bench is its first work.
 
 A bench of Codex as the darn writer against Claude on one or two real darn tasks, each run once per writer.
 It reads, per run: cost, review rounds, findings, wall time, and whether the run lands without a hand step.
-The run also checks the open faults on the way: a real session launched under `auto` on a machine where bwrap fails (the probe, the warning and a `danger-full-access` run), the skill load on a real session, and the extra reminder on an idle wake (`codex-idle-wake-extra-reminder`).
+The run also checks the open faults on the way: the skill load on a real session, and the extra reminder on an idle wake (`codex-idle-wake-extra-reminder`).
 It runs as a darn task with profile `docs`, at most `high` effort for Codex, and only on the operator's go-ahead.
 
 ## Built since (tidy, 2026-11-15)
@@ -40,5 +40,5 @@ Report: `docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-1
 - It added a documentation page the entry did not ask for, and its change description names no design decisions.
 - About 4 minutes against 5 minutes 41 seconds for the landed writer, whose figure includes a 2 minute 17 second verify gate; dollar cost unknown.
 - The session ran in a scratch worktree, so no board, drift or loom check ran, and it was not a whole darn run: the "lands with no resumption" test of level 2 is still open.
-- It got no skills, no guards and Claude-worded stencils; see `codex-same-as-claude`.
-  The operator judges level 2 after that note's fix and a rerun of the bench, and its OSL twin `codex-writer-bench-osl`.
+- It got no skills, no guards and Claude-worded stencils, so it does not count (operator, 2026-11-16).
+  The operator judges level 2 after the Codex parity tasks of project `codexengine` land and the bench `codex-writer-bench` reruns on Neve, through the real producer; the OSL-1046 run is dropped.
