@@ -1,0 +1,55 @@
+# Lens review
+
+Every lens returned a report; each is saved beside this file as `lens-review.lens-<lens>.md`.
+Duplicates across lenses are merged into the first line that names them.
+
+- coverage, MEDIUM, F1 pause between commit and push: fixed differently. Proposed a row writing a real pause; card 8's `TestNew_OwedPushRetriesBehindTheGate` now asserts the first push runs under the admission and every retry with none, and `pauserecord.Network`'s own `TestNetwork` pins that an unadmitted call waits under a pause. No gate is installed in a test binary (`internal/pauserecord/doc.go:63`), so a real pause cannot hold a tier0 call.
+- coverage, MEDIUM, F2 owed push turns pausable: fixed differently, with F1's row (no admission held during retries) and card 3's `teardown_lock` row joined through card 8's `IsPushOwed` rows.
+- coverage, MEDIUM, F3 `IsPushOwed` branches untested: fixed as proposed, card 8 creates `TestIsPushOwed` with a row per class.
+- coverage, MEDIUM, F4 teardown wait that succeeds: fixed as proposed, card 3 adds the released-inside-the-wait row.
+- coverage, MEDIUM, F5 anchor change criterion: fixed differently. Proposed driving `AnchorChange.Finish`; its child cannot spawn in a test binary (`SpawnDetachedPush` returns `ErrSpawnUnderTest`, `internal/fabricengine/spawn.go:71`), so card 5's row runs the child's body over the exact request `statusPushRequest(pair, "")` builds for it.
+- coverage, MEDIUM, F6 fixer attempt counts: fixed as proposed, card 8's `TestCommitStatusSeam_Real` row asserts a fixer attempts file under the durable directory is on origin when the seam returns.
+- coverage, MEDIUM, F7 owed pause intent landing: fixed differently. The overview's out-of-part decision states the owed commit lands with the prime records branch's next push, `lym fabric push` or D4's catch-up (the arbiter's entry); card 9 prints that to stderr and tests the owed branch at tier0 (`TestOwedIntentPush`), since a real unreachable origin waits out `gitrepo.PushBackoffDelays`.
+- coverage, MEDIUM, F8 cancel offline (with way-forward BLOCKING 2, row-validity 3, guard-reach 6): fixed as proposed. Card 8's `commitCancelRecord` treats an owed push as committed and returns nil; card 9 has `endRunPhase` write and commit the intent on the end-only path before `EndForCancel`, with `TestCancelRun` rows asserting `WriteIntent`, `CommitRecord`, `EndForCancel` and the re-run.
+- coverage, MEDIUM, F9 parent pair never handed to the hand-over (with guard-reach BLOCKING 3): fixed as proposed, card 6's `RunPush` carries `Parent`, card 11 sets it in `HandOver`, `PushRecords` and `PushTask`, and the owner-check row asserts the parent pair is passed.
+- coverage, MEDIUM, F10 adopter merges again, origin holds the work once: fixed as proposed, card 11's `TestArchiveParentMerge` asserts origin's parent branch holds the task's merge once.
+- coverage, MEDIUM, F11 dropped-intent notice has no source: fixed as proposed, card 6 adds `droppedIntents` over the local and origin batten records, with notice rows in both hand-over tests.
+- coverage, MEDIUM, F12 Finalize cut between merge and push: fixed as proposed, card 11 extends `TestFinalize_TransportPushFailure_ReturnsClassifiedError` with the re-step row.
+- coverage, MEDIUM, F13 `resetUnnamedTip` operand and rows (with guard-reach BLOCKING 2): fixed as proposed, card 7 compares against the tip the last transition on origin names, drops the merge-base condition, and adds the keeps-the-rejection row.
+- coverage, LOW, F14 card 12 branches: fixed as proposed, rows for a false give-up, a failed give-up push and a failed read; card 12 states `DobbyRuns` leaves the run out of the tick on error.
+- coverage, LOW, F15 unreached branches: fixed as proposed, card 5 adds zero names, a mark naming another machine and no upstream; card 6 adds a refused tag push leaving no mark; card 9's `TestOwedIntentPush` returns a non-owed error; card 13 adds the unreadable verdict row.
+- coverage, LOW, F16 inert batten `TeardownWait` and unrecorded `ErrPairPushRunning` (with guard-reach 11): fixed as proposed, card 8 drops batten's `TeardownWait` and `IsPushOwed` no longer counts a bare `ErrPairPushRunning`; card 9's pull-request push passes a positive `TeardownWait`.
+- coverage, LOW, F17 `EndDobby` with no caller: fixed differently. Proposed naming a caller; card 6 drops the field and passes false, since every caller in this part is a run its parent's dobby drives (`PATTERN-dobby-runs`), never a dobby.
+- way-forward, BLOCKING, owed-push way forward cannot progress (with guard-reach 9): fixed as proposed. Card 3 adds `FailedPush.Run`, card 7 counts only records naming the slug, and card 1's refusal names `lym fabric push` in the owed worktree, whose landing clears the record; card 5 gives that verb's synchronous push the names and slug.
+- way-forward, MEDIUM, single-transition give-up waits for ever: fixed differently. Proposed naming a next step in the refusal; card 12 states the first transition names the pair's creation tip, so nothing earlier can stand in, and on a false give-up logs a Warn naming the owing machine and `lym fabric push` there, the step card 1's `code_tip` refusal already names; a row covers it.
+- way-forward, MEDIUM, `adopterFirstRepair` names a Go function: fixed as proposed, card 11 no longer edits it and keeps its runnable by-hand steps for a rejection whose origin lacks the work.
+- way-forward, MEDIUM, unreachable owner read has no way forward: fixed as proposed, card 11 states the error names the read and the re-step once origin answers, retried as a transient failure, with a row.
+- way-forward, LOW, Finalize mark `At` mismatch (with guard-reach 5): fixed as proposed, card 5 matches the mark on the machine alone, since an adopt naming this machine drops the marks (D2).
+- way-forward, LOW, tender owed push not told: fixed as proposed, card 9's `owedIntentPush` writes one stderr line naming the owed push and where it lands.
+- way-forward, LOW, inside-pair removal left for the parent: fixed as proposed, card 6's error says the pair is left standing for the parent's dobby.
+- row-validity, MEDIUM, 1 tender row cannot re-run `Record` and names no slug: fixed as proposed, card 9's tier1 row pauses a slug whose batten record the test seeds, and the offline step leaves that row.
+- row-validity, MEDIUM, 2 tender offline row waits out the push backoff: fixed as proposed, the owed branch moves to tier0 in `TestOwedIntentPush`.
+- row-validity, MEDIUM, 4 no hook between the owed tip's push and its re-read: fixed as proposed, card 6 creates `owedTipPushedHook`, nil in production.
+- row-validity, MEDIUM, 5 flagged-code row holds the lock raw: fixed as proposed, card 4's row holds it with a real records-only `CoalescePushRequest`.
+- row-validity, LOW, 6 deferral rows repeat `NeitherPushed` and never reach the step: fixed as proposed, card 4 drops them and extends `TestCoalescePushRequest_CoveredCallDefers`, which drives the real step.
+- row-validity, MEDIUM, 7 nil meaning of the new landing seams (with forced-edits BLOCKING 2): fixed as proposed, card 11 states each nil meaning, adds the four paths to envkit's `nilLegal` and lists the seam-marked tests under `Uses`.
+- row-validity, MEDIUM, 8 `DobbyRuns` call untested and beamcli tests unlisted: fixed differently. Proposed listing and seaming `DobbyRuns`; card 12 lists the three beamcli tests under `Uses` and states they pass over the real deps, their runs reading no `code_tip` verdict and level branches, while `TestSettleCodeTip` drives every branch.
+- row-validity, LOW, 9 single-transition row missing: fixed as proposed, in `TestReturnToPreviousTransition`.
+- row-validity, LOW, 10 parent-merge rows repeat: fixed differently. Proposed dropping the hand-over row; card 11's `TestArchiveParentMerge` drops its ahead-of-upstream row instead and keeps the origin-holds-the-work input the hand-over row does not reach.
+- row-validity, LOW, 11 former-name row repeats card 5's: fixed as proposed, dropped from `TestPushRun_HandsOverOnATakeover`.
+- row-validity, LOW, 12 guard row on the wrong surface: fixed as proposed, moved to `TestPushPairAnchored_PushesBothSidesRetriesAndReportsEachSide`.
+- row-validity, LOW, 13 mark written before its writer exists: fixed as proposed, card 5 says the test writes the JSON at `HandOverMarkPath`.
+- row-validity, LOW, 14 vacuous no-sync assertion: fixed as proposed, card 10 drops it and keeps origin holding the status.
+- row-validity, LOW, 15 other `NewDobbyRunCells` tier0 callers: fixed as proposed, card 13 lists `TestDobbyRunCells_ResolvesTheChildPairAgainInEachRunShedSpell` and sets a fake verdict seam.
+- row-validity, LOW, 16 nil meanings in `statuscommit.Deps`: fixed as proposed, card 8 states each.
+- guard-reach, BLOCKING, 1 a deferred records side still sends the code side: fixed differently. Proposed having `pushClassified` tell a deferral apart; cards 3 and 4 instead count the records side landed only when the worktree then holds nothing unpushed, which leaves `pushClassified`'s other callers unchanged, with a deferred-records row.
+- guard-reach, MEDIUM, 4 the hand-over before the merge is preempted by `ownerChecks`: fixed as proposed, card 11 edits `Finalize.ownerChecks` so a run owned elsewhere hands over there, and `handOverIfOwnedElsewhere` runs only after the merge.
+- guard-reach, MEDIUM, 7 a missing-path origin is classed `other`: fixed as proposed, the offline tender row moved to tier0 with a transport-class error (`internal/gitexec/transport.go:22-31`).
+- guard-reach, MEDIUM, 8 a stale fetched code ref triggers the give-up: fixed as proposed, card 12 fetches the code and records branches and re-reads before any give-up, with a row.
+- guard-reach, MEDIUM, 10 a failed pushed `done` is swallowed: fixed as proposed, card 11 returns it so the driver re-steps, with a row.
+- guard-reach, LOW, 12 `CoalescePushBothAt` zero names: no defect reported; no change.
+- forced-edits, BLOCKING, 1 `TestCommitStatusSeam_Real` still swaps the deleted var: fixed as proposed, card 8 drops the swap and its comment.
+- forced-edits, MEDIUM, 3 pawl's `SpawnPush`: fixed as proposed, the overview states it pushes the beam pair a beam-up made (`internal/pawlengine/beamup.go:55`), no transition, and stays detached.
+- forced-edits, LOW, 4 battencli package comment says the push is spawned: fixed as proposed, card 8 rewrites it.
+- forced-edits, LOW, 5 `CoalescePushBothAt` doc names the respawn: fixed as proposed, card 4 lists the member and drops the sentence.
+- forced-edits, LOW, 6 the daemon-wakeups guard does not scan the new wait: fixed as proposed, card 8 adds `internal/statuscommit/statuscommit.go` to `cmd/lym#unboundedWaitFiles`; `acquireTeardownShared` is a bounded wait under a minute, outside the rule.
