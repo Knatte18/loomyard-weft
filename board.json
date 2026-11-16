@@ -895,7 +895,6 @@
         }
       },
       "pull_request": "merge-in",
-      "notify_on_land": true,
       "project": "adopt-build"
     },
     {
