@@ -39,8 +39,8 @@
 - `internal/pairteardown#Teardown.RemovePair`
 - `internal/pairteardown#ReadBattenRecord`
 - `internal/fabricengine#ArchiveOwnerTips`
-- `plan:internal/fabricengine#ReadUpstreamTakeover`
-- `plan:internal/fabricengine#ReadHandOverMark`
+- `internal/fabricengine#ReadUpstreamTakeover`
+- `internal/fabricengine#ReadHandOverMark`
 - `internal/testkit/takeoverkit#WriteTakeover`
 - `internal/loomcli#primeOfHub`
 - `internal/loomcli/doc.go`

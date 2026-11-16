@@ -1,16 +1,16 @@
 # Card 5 — rejected-push-takeover-read
 
 **Create:**
-- `plan:internal/fabricengine#MachineNames.Holds` -> `func (n MachineNames) Holds(name string) bool`
-- `plan:internal/fabricengine#TakeoverError` -> `type TakeoverError struct`
-- `plan:internal/fabricengine#TakeoverError.Error` -> `func (e *TakeoverError) Error() string`
-- `plan:internal/fabricengine#ErrHandedOver` -> `var ErrHandedOver = errors.New("fabricengine: the run was handed over to another machine, so nothing more is pushed for it")`
-- `plan:internal/fabricengine#ReadUpstreamTakeover` -> `func ReadUpstreamTakeover(l *lymcwd.Location, weftPath, slug string) (entry shedengine.Takeover, found bool, err error)`
-- `plan:internal/fabricengine#HandOverMark` -> `type HandOverMark struct`
-- `plan:internal/fabricengine#HandOverMarkPath` -> `func HandOverMarkPath(hubPath, slug string) string`
-- `plan:internal/fabricengine#ReadHandOverMark` -> `func ReadHandOverMark(hubPath, slug string) (mark HandOverMark, found bool, err error)`
-- `plan:internal/fabricengine#takeoverStop` -> `func takeoverStop(l *lymcwd.Location, weftPath, slug string, here MachineNames) error`
-- `plan:internal/fabricengine_test#TestRejectedRecordsPush_ReadsTheTakeover` -> `func TestRejectedRecordsPush_ReadsTheTakeover(t *testing.T)`
+- `internal/fabricengine#MachineNames.Holds`
+- `internal/fabricengine#TakeoverError`
+- `internal/fabricengine#TakeoverError.Error`
+- `internal/fabricengine#ErrHandedOver`
+- `internal/fabricengine#ReadUpstreamTakeover`
+- `internal/fabricengine#HandOverMark`
+- `internal/fabricengine#HandOverMarkPath`
+- `internal/fabricengine#ReadHandOverMark`
+- `internal/fabricengine#takeoverStop`
+- `internal/fabricengine_test#TestRejectedRecordsPush_ReadsTheTakeover`
 
 **Edit:**
 - `internal/fabricengine#retryWeftPush` -> `func retryWeftPush(rec *Mutations, hubPath, weftPath, slug string, here MachineNames) (deferred bool, err error)`
