@@ -1,6 +1,6 @@
 # Rebuild every coverage map, time it, and list the redundant-test candidates of each package
 
-`redundancy-candidates-survey` · Task · research, gate, testkit · running · Describe
+`redundancy-candidates-survey` · Task · research, gate, testkit · running · PR-Review
 
 ## Goal
 
