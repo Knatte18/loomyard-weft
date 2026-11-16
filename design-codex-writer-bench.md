@@ -2,7 +2,7 @@
 
 `codex-writer-bench` · Task · research, codex, shuttle · draft
 
-Depends on: [`codex-same-as-claude`](design-codex-same-as-claude.md)
+Depends on: [`launch-manifest-parity`](design-launch-manifest-parity.md)
 
 ## Goal
 

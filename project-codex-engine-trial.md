@@ -1,6 +1,6 @@
 # P2 Codexengine: every task, trial and note about the Codex engine
 
-Rendered 2026-11-16 13:55 UTC; every age below is as of then.
+Rendered 2026-11-16 13:56 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 12d · Owner `neve`
@@ -64,11 +64,45 @@ Part 2 therefore tests the probe, its three outcomes and the refusal on a real m
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (2)
+## [P1 A Codex session gets exactly what a Claude session in the same role gets](project-codex-parity.md) (5)
+
+[`codex-parity`](design-codex-parity.md) · Age 0m · Owner `neve`
+
+### Tasks (5)
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+#### Ready (0)
+
+Waits on nothing open; can start now.
+
+_None._
+
+#### Draft (5)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T6 | `draft` **Every producer renders its prompt and edit directive for the engine its launch resolves to** | [`prompt-engine-per-launch`](design-prompt-engine-per-launch.md)<br>[Sketch](decision-prompt-engine-per-launch.md) | darn · solid | T5 | 0m<br>0m | codex, shuttle, stencil, heddle |
+| T13 | `draft` **A Codex session gets Claude's standing items, user setup, instruction files and subagent terms in its developer instructions** | [`codex-standing-instructions`](design-codex-standing-instructions.md)<br>[Sketch](decision-codex-standing-instructions.md) | tapestry · solid | T6 | 0m<br>0m | codex, shuttle, stencil, heddle |
+| T17 | `draft` **Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan** | [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)<br>[Sketch](decision-codex-wording-engine-blocks.md) | darn · solid | T13 | 0m<br>0m | codex, shuttle, stencil, heddle |
+| T18 | `draft` **A Codex session gets the question-tool deny and the batching nudge Claude runs** | [`codex-question-deny-nudge`](design-codex-question-deny-nudge.md)<br>[Sketch](decision-codex-question-deny-nudge.md) | darn · solid | T13 | 0m<br>0m | codex, shuttle, stencil, heddle |
+| T19 | `draft` **Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both** | [`launch-manifest-parity`](design-launch-manifest-parity.md)<br>[Sketch](decision-launch-manifest-parity.md) | tapestry · solid | T17<br>T18 | 0m<br>0m | codex, shuttle, stencil, heddle |
+
+### Notes (0)
+
+Not tasks: ideas and observations, merged into a task when one is promoted.
+
+## Own entries
+
+The entries directly under this project and under none of its sub-projects.
+
+### Tasks (2)
+
+Concrete and claimable; only a task can run.
+
+#### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -76,25 +110,25 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T14 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md)<br>[Sketch](decision-codex-same-as-claude.md) | raddle | Raddle-File | neve | 19h<br>1h | codex, shuttle, stencil, heddle |
 
-### Ready (0)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
 _None._
 
-### Draft (1)
+#### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T15 | `draft` **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | T14 | 19h<br>1h | codex, shuttle |
+| T15 | `draft` **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | T19 | 19h<br>0m | codex, shuttle |
 
-## Notes (2)
+### Notes (2)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Research (2)
+#### Research (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |

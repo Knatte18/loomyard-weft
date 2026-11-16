@@ -1,0 +1,13 @@
+{
+  "created": "2026-11-15T18:26:13Z",
+  "hash": "630657754fa3d42397b06cee3d27c62bfc3fd1bf8699815be4597bfd9dfe98c6",
+  "filed": [
+    "codex-parity",
+    "prompt-engine-per-launch",
+    "codex-standing-instructions",
+    "codex-wording-engine-blocks",
+    "codex-question-deny-nudge",
+    "launch-manifest-parity"
+  ],
+  "project": "codex-parity"
+}
