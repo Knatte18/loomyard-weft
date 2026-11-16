@@ -1,4 +1,5 @@
 {
   "parent_branch": "main",
-  "parent_worktree": "loomyard"
+  "parent_worktree": "loomyard",
+  "beam": true
 }
