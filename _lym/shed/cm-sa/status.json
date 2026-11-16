@@ -1,9 +1,9 @@
 {
   "current_producer": "Plan-Write",
-  "state": "paused",
+  "state": "running",
   "error": "",
+  "entered_row": "Plan-Write",
   "pause_requested": false,
-  "pause_reason": "bench: seeded at Plan-Write",
   "activity": {
     "now": "Plan-Write",
     "last": "Parts-Plan-Write → skipped",
