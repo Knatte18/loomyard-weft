@@ -1,0 +1,17 @@
+verdict: resume
+reason: |-
+  The cause is hard-cap: round 3 is at the solid motif profile's discussion hard cap of 3, so the only option is accept.
+  I checked each design-wrong finding still open in round 3 against the current decision record and the code. The round-3 fixer's changes answer every one:
+  F1 (verify fixer outside gatefixer): the fixer took option (a). D10 runs the fixer through gatefixer.SpawnOrAttach and gatefixer.Await with a Weaver-owned Store, as Webster's verifyfixer.go does. Its reply file is its only output file and it carries no gates. D12 records the fixer number before the spawn and probes the reply path through ProbeGated, which closes the spawn-to-record window. A verify runner crash gets no fixer, and the PATTERN-gate-slot constraint line matches.
+  F2 (reset's live-strand check): D2 probes every attempt and fixer strand, whatever its outcome, by its recorded output file through ProbeGated. The probe runs before anything is moved, archived or cleared, and --stop-strand stops what the probes find.
+  F3 (attach error, failed stop): D12 returns Stuck on an AttachGated or ProbeGated error and spawns nothing. D6 returns Stuck naming the guid and `lym reed remove` on a failed stop, with the outcome already recorded.
+  F4 (corrupt-state restore): D1 allows the restore only when HEAD is the restored version's last batch end commit and reed lists no live Weaver strand. D9 records that end commit. Otherwise the way forward is reset.
+  F7 (reset archive): D2 renames the files under stamped names inside _lym/weaver/, named through lymdirs. No reader reads them, and they are committed with the plan restore through fabric.
+  The fixer's own F1 fix left one open question for the parent under Open risks (Q18): whether the row's gates entries must run over a verify fixer's commit.
+  The record already settles it. implementer-spec.md defines the implementer's Done as "the plan-level verify passed", which D1 keeps and D10's Rationale cites. PATTERN-gate-slot sends a cold verify fixer only through gatefixer. The shipped row's one gates entry, drift, is checked again downstream by the Drift-Verify row.
+  I recorded that ruling as an arbiter decision, so the record holds no open question, and then accepted.
+verbs:
+  - |-
+    lym loom decision add weaver --by arbiter --title "The row's gates entries need not run over a verify fixer's commit (answers Q18)" --decision "D10's bound stands: ... the plan writer builds D10 as written and adds no extra spawn for the row's gates." --rationale "implementer-spec.md pins the implementer's Done as the plan-level verify passed ... Drift-Verify repeats the drift check downstream ..."
+  - |-
+    lym loom circling accept weaver
