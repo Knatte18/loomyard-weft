@@ -167,6 +167,12 @@ Decision: D2's owner guard is narrowed: when the owner's code-side push is rejec
 
 Rationale: A given-up tip stays named by the transition the give-up returned from, so D2's text (a tip that no transition of the run on origin names) would never reset it and would leave the given-up tip on origin, against D2's own aim. An ancestor of the last named tip is origin lagging behind, which the owner's push moves forward without a reset.
 
+### Added after Discussion (arbiter, 2026-11-16): Plan review round 3 accepted at the hard cap: every finding answered in the plan
+
+Decision: The plan review's round-3 findings are each answered by the round-3 fixer's edits now in _lym/plan, and the Plan-Bouncer segment is accepted unconverged at the hard cap. F1 (code-tip-read-from-every-warp-sha-commit): the overview's code-tip-is-warp-sha decision adds a Run-Transition trailer (fabricengine.TransitionTrailerKey, card 6 Create) that only the two transition seams (card 8, valued shedrun.ResolveRunID, which is the slug for a task pair's run) and card 12's give-up write; card 6's lastTransitionCodeTip, card 7's OriginCodeTip and card 12's ReturnToPreviousTransition select the newest commit whose Run-Transition names the slug, skipping fabric's other Warp-SHA weft commits, with test rows for a newer lym fabric commit style commit. F2 (owed-tip-pushed-hook-unreachable-from-external-test): card 6 creates SetOwedTipPushedHookForTest in export_test.go, used by TestHandOverTips' give-up row. F3 (loomcommitstatusdeps-doc-describes-removed-spawn): card 8 edits internal/loomcli#loomCommitStatusDeps and rewrites its Spawn doc lines.
+
+Rationale: The round is at the perch's hard cap with F1 open as design-wrong in the ledger, but the fixer ran after the review (review 14:47, fixer report and plan edits 14:51-14:52, judge 14:53), so the judge ruled on the review's findings, not the edited plan. Checked against the plan and the code: the cards carry the fixes above, and ResolveRunID returns the worktree name for SelfRunID and the run id unchanged otherwise, so a task pair's transition writes the slug the readers match. D1 and D2 ask only that a transition's records commit names its code tip and leave the trailer open, so a second trailer changes no decision.
+
 ## Constraints
 
 - `PATTERN-owner-machine`: owners stay on roots and beams, written only by `boardengine`'s setter, read through `hubgeom.ParentOf` and the registry (D3).
