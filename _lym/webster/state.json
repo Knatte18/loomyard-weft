@@ -705,9 +705,33 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/a0ce39e9-3fe4-40c0-a911-9648bcc05e28/subagents/agent-a0305a9080972ac6a.jsonl"
       ]
+    },
+    "8": {
+      "slug": "weaver-stencils",
+      "cards": [
+        "08-weaver-stencils",
+        "09-batch-attempt-strand",
+        "10-batch-record",
+        "11-plan-verify-and-fixer",
+        "12-run-loop"
+      ],
+      "cardHashes": {
+        "08-weaver-stencils": "146d03a5f7a84152ea796653d7535c95d30d51f54f6c4970ba9c18fe0ca0adab",
+        "09-batch-attempt-strand": "be3e16e09a9278bbaf370bdac5686c881fa13c919b37ff616f9032fd3fa32d4f",
+        "10-batch-record": "fc02bab4e3f92a100b0bd13cf248342a6f24684f412cc5ae92353acd264db7ed",
+        "11-plan-verify-and-fixer": "e8d59e52e61399ffe1cf8f42fc411654615470e3a3ddc3e8814d5c3d7c260dfd",
+        "12-run-loop": "4a261f60406bf32b18c480555d200cd482974a48d1d082b23a764bd22ad8dcbc"
+      },
+      "startSha": "8850ad93c21dce4c2f3542b89a848824842fc6fe",
+      "kind": "fork",
+      "spawnedAt": "2026-11-16T14:38:30Z",
+      "sessionId": "a0ce39e9-3fe4-40c0-a911-9648bcc05e28",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "60b743ca5b0e8e733aa6a90899b71a7a",
   "masterSessionId": "a0ce39e9-3fe4-40c0-a911-9648bcc05e28",
   "masterEngine": "claude",
