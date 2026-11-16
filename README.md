@@ -168,20 +168,21 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | motif | Discussion-Write | neve | 5w<br>14h | webster, weaver |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | **The board README shows every per-task field that changes the run, pull_request included**<br>• The entry cell lists run_settings but not pull_request, so a task with PR on looks like it has none | [`readme-shows-run-fields`](design-readme-shows-run-fields.md) | darn · light |  | 7m<br>0m | board |
 
-#### Draft (3)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P3 | 13d<br>16h | claude, shuttle, config |
-| T3 | `draft` **The board README shows every per-task field that changes the run, pull_request included**<br>• The entry cell lists run_settings but not pull_request, so a task with PR on looks like it has none | [`readme-shows-run-fields`](design-readme-shows-run-fields.md) | darn |  | 7m<br>7m | board |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 3d<br>3d | slack, creel, orch |
 
 ### Notes (9)
