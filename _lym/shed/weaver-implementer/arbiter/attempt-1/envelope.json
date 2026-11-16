@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap escalation at plan review round 3. The one open design-wrong finding, retry-allowance-spans-ladder-cycles (F1), is already answered by the plan in place:\ncard 5 (weaver-state) adds Reentry to AttemptState and FixerState and Reentered to StopRecord;\ncard 12 (run-loop) counts lost attempts and fixers on a rung from the latest Reentry record on;\ncard 13 (run-reentry-and-resume) uses the same count, marks only the stop's first re-entry attempt, and TestRun_Reentry covers a re-entry after two last-rung losses and a crash during its retry.\nThe mechanical findings F2-F5 are fixed in cards 9, 12, 13 and 23, as the round-3 fixer report states and the cards confirm.\nThe ruling is recorded as an arbiter decision and the segment is accepted.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add weaver-implementer --by arbiter --title \"Round-3 plan review accepted at the hard cap: the same-rung retry fix is in place\" --decision … --rationale …",
+    "lym loom circling accept weaver-implementer"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/weaver-implementer/_lym/shed/weaver-implementer/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/weaver-implementer/_lym/shed/weaver-implementer/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step weaver-implementer --until-stop --arbiter-attempt 1"
+}
