@@ -299,6 +299,14 @@ Rationale: Hard-cap rule: accept only when the fix in place already answers the 
 
 - Under D10 a verify fixer runs through `gatefixer`, which gates no strand, so the row's `gates` entries do not run over a fixer's commit. The row can then return Done with a row gate failing at HEAD, when that gate checks something the verify gate does not. Question for the parent: accept that bound; spawn the fixer through shuttle with the row's gates under a PATTERN changes entry for PATTERN-gate-slot; or run one gated last-rung strand over a fixer's commit before Done, as D7 does for a stopped batch?
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
+  - retry-allowance-spans-ladder-cycles (class design, severity BLOCKING, open in rounds 3)
+  - stale-outcome-survives-restep (class scope, severity MEDIUM, open in rounds 3)
+  - stopped-batch-gate-calls-unrendered (class design, severity MEDIUM, open in rounds 3)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - With `tapestry.implementer: weaver`, the tapestry recipe builds the Webster row with Weaver, the row accepts its `gates` key, and its Done, reroute and Stuck routes match Webster's (D1).
