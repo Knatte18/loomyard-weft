@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -208,6 +208,30 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/orch-auto-remote-control/_lym/reviews/code/round-2-review.md",
+      "at": "2026-11-16T10:01:26Z",
+      "started_at": "2026-11-16T09:56:10Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-16T09:58:04.541948327Z",
+          "end": "2026-11-16T09:58:04.556380779Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-16T09:58:04.628282544Z",
+          "end": "2026-11-16T10:01:25.47772801Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
