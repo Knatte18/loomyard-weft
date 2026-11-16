@@ -26,8 +26,10 @@ What the page says that bears on lym:
 Code Mode as a per-role setting beside the model, off by default:
 
 - lym sets the variable on the launch command of a session whose role turns it on, as it sets `CODEX_HOME` for Codex; never in user settings.
-- Candidates: the roles that read and edit much, such as the darn writer and Webster's batch implementers.
-  Not the orch, which keeps Remote Control (`orch-auto-remote-control`), nor reviewers and other light roles.
+- Candidates: the deep exploration roles first (operator, 2026-11-16), such as the Discussion and Plan writers, their lookup subagents, and darn `docs` writers of research tasks; then the roles that read and edit much, such as the darn writer and Webster's batch implementers.
+  Whether a subagent spawned through the Agent tool runs in Code Mode with its session is not on the page; the bench checks it.
+  Not the orch: it reads much in its talks with the operator, but Code Mode rules out the Remote Control it keeps (`orch-auto-remote-control`).
+  Nor reviewers and other light roles.
 - A resume relaunches with the same setting as the session's launch, or Claude Code refuses to resume.
 - Shuttle handles the first-use confirmation dialog, or a setup step answers it once.
 - `tools/tokencount`, `tools/forkaudit` and the skill-load check learn the `REPL` tool's transcript rows.
