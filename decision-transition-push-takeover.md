@@ -161,6 +161,12 @@ Decision: The split review's round-2 findings are each answered by the round-2 f
 
 Rationale: The round reached the perch's hard cap with both findings open in the ledger, but the fixer ran after the review (review 11:17, proposal and fixer report 11:20, judge 11:20:48), so the judge ruled on the review's findings, not on the edited proposal. Checked against the code: holds.go's readTries and writeTries import only fmt, path/filepath and internal/state, so internal/fixtries forms no cycle. Only internal/beamcli and cmd/lym import internal/adoptcli, and internal/adoptcli imports internal/dobbyengine, so the first read could not call into adoptcli; the new package removes that route. The dobby start as the first read's place matches the record's export line, which pairs the hold setter with the upgrade's first read and the catch-up with the dobby start. The record does not fix D5's reader package, so moving it changes no decision.
 
+### Added after Discussion (parent, 2026-11-16): The owner's guard resets a code tip off the run's last transition's line
+
+Decision: D2's owner guard is narrowed: when the owner's code-side push is rejected, it resets origin's code branch with a lease at that tip, then pushes, when origin's tip is neither the tip the run's last transition on origin names nor an ancestor of it. A tip named only by an older transition no longer counts as named.
+
+Rationale: A given-up tip stays named by the transition the give-up returned from, so D2's text (a tip that no transition of the run on origin names) would never reset it and would leave the given-up tip on origin, against D2's own aim. An ancestor of the last named tip is origin lagging behind, which the owner's push moves forward without a reset.
+
 ## Constraints
 
 - `PATTERN-owner-machine`: owners stay on roots and beams, written only by `boardengine`'s setter, read through `hubgeom.ParentOf` and the registry (D3).
