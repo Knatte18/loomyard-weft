@@ -1,6 +1,6 @@
 # Revise the remaining adopt-build members against what landed and what the operator decided since the split
 
-`adopt-build-revision` · Task · research, docs, batten, dobby, orch, fabric, tender · running · Darn-Write
+`adopt-build-revision` · Task · research, docs, batten, dobby, orch, fabric, tender · running · Drift-Verify
 
 Depends on: [`run-fsm-tracked-records`](design-run-fsm-tracked-records.md)
 
