@@ -7,27 +7,21 @@ Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
 <details open>
-<summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (4)</strong></summary>
-
-[`codex-engine-trial`](design-codex-engine-trial.md) · Age 12d · Owner `neve`
-
-Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
-
-### [P1 A Codex session gets exactly what a Claude session in the same role gets](project-codex-parity.md) (5)
+<summary><strong><a href="project-codex-parity.md">P1 A Codex session gets exactly what a Claude session in the same role gets</a> (5)</strong></summary>
 
 [`codex-parity`](design-codex-parity.md) · Age 12m · Owner `neve`
 
-#### Tasks (5)
+### Tasks (5)
 
 Concrete and claimable; only a task can run.
 
-##### Ready (0)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
 _None._
 
-##### Draft (5)
+#### Draft (5)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -39,25 +33,30 @@ Not released; nothing starts it until its status is cleared.
 | T18 | `draft` **A Codex session gets the question-tool deny and the batching nudge Claude runs** | [`codex-question-deny-nudge`](design-codex-question-deny-nudge.md)<br>[Sketch](decision-codex-question-deny-nudge.md) | darn · solid | T13 | 12m<br>12m | codex, shuttle, stencil, heddle |
 | T19 | `draft` **Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both** | [`launch-manifest-parity`](design-launch-manifest-parity.md)<br>[Sketch](decision-launch-manifest-parity.md) | tapestry · solid | T17<br>T18 | 12m<br>12m | codex, shuttle, stencil, heddle |
 
-#### Notes (0)
+### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Own entries
+</details>
 
-The entries directly under this project and under none of its sub-projects.
+<details open>
+<summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (3)</strong></summary>
 
-#### Tasks (1)
+[`codex-engine-trial`](design-codex-engine-trial.md) · Age 12d · Owner `neve`
+
+Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
+
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
-##### Ready (0)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
 _None._
 
-##### Draft (1)
+#### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -65,11 +64,11 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T15 | `draft` **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | T19 | 19h<br>12m | codex, shuttle |
 
-#### Notes (2)
+### Notes (2)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-##### Research (2)
+#### Research (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |

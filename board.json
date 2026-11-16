@@ -760,8 +760,7 @@
       "brief": "",
       "body": "Groups the entries filed from the Sketch `codex-same-as-claude`: prompt-engine-per-launch, codex-standing-instructions, codex-wording-engine-blocks, codex-question-deny-nudge, launch-manifest-parity.\n",
       "created": "2026-11-16T13:56:13Z",
-      "revised": "2026-11-16T13:56:13Z",
-      "project": "codex-engine-trial",
+      "revised": "2026-11-16T14:08:23Z",
       "discussed": true,
       "record_body_sha256": "83fe175e9930f7013b1cf97e916436a99b50e452c460f86049b4da9d55aec4c6"
     },

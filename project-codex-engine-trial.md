@@ -64,51 +64,17 @@ Part 2 therefore tests the probe, its three outcomes and the refusal on a real m
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P1 A Codex session gets exactly what a Claude session in the same role gets](project-codex-parity.md) (5)
-
-[`codex-parity`](design-codex-parity.md) · Age 12m · Owner `neve`
-
-### Tasks (5)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (5)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Every producer renders its prompt and edit directive for the engine its launch resolves to** | [`prompt-engine-per-launch`](design-prompt-engine-per-launch.md)<br>[Sketch](decision-prompt-engine-per-launch.md) | darn · solid | T5 | 12m<br>12m | codex, shuttle, stencil, heddle |
-| T13 | `draft` **A Codex session gets Claude's standing items, user setup, instruction files and subagent terms in its developer instructions** | [`codex-standing-instructions`](design-codex-standing-instructions.md)<br>[Sketch](decision-codex-standing-instructions.md) | tapestry · solid | T6 | 12m<br>12m | codex, shuttle, stencil, heddle |
-| T17 | `draft` **Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan** | [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)<br>[Sketch](decision-codex-wording-engine-blocks.md) | darn · solid | T13 | 12m<br>12m | codex, shuttle, stencil, heddle |
-| T18 | `draft` **A Codex session gets the question-tool deny and the batching nudge Claude runs** | [`codex-question-deny-nudge`](design-codex-question-deny-nudge.md)<br>[Sketch](decision-codex-question-deny-nudge.md) | darn · solid | T13 | 12m<br>12m | codex, shuttle, stencil, heddle |
-| T19 | `draft` **Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both** | [`launch-manifest-parity`](design-launch-manifest-parity.md)<br>[Sketch](decision-launch-manifest-parity.md) | tapestry · solid | T17<br>T18 | 12m<br>12m | codex, shuttle, stencil, heddle |
-
-### Notes (0)
-
-Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Own entries
-
-The entries directly under this project and under none of its sub-projects.
-
-### Tasks (1)
-
-Concrete and claimable; only a task can run.
-
-#### Ready (0)
-
-Waits on nothing open; can start now.
-
-_None._
-
-#### Draft (1)
+### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -116,11 +82,11 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T15 | `draft` **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | T19 | 19h<br>12m | codex, shuttle |
 
-### Notes (2)
+## Notes (2)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-#### Research (2)
+### Research (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
