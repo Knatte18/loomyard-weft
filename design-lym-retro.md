@@ -35,7 +35,9 @@ lym already looks back in two ways, neither of them one command:
    A stamped report under `docs/research/retro/` with the figures and the proposals, most severe first, each traced to a moment in a named run.
    The operator picks which proposals become board notes; the run files none itself.
 
-## Open
+## For the run to settle (operator, 2026-11-16)
+
+The operator leaves these to the task's own research; its Discussion reads the past audits and their scripts and decides.
 
 - The question set and its scripts: which of the past audits' scripts become the command's own, and in which package or tool they live.
 - How `lym retro` knows the last retro: the latest report's stamp, or a record.
