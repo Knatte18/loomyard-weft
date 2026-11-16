@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-16 09:02 UTC; every age below is as of then.
+Rendered 2026-11-16 09:03 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -79,7 +79,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one<br>• `loom: discussion opus[high]` | [`codex-same-as-claude`](design-codex-same-as-claude.md) | motif | Discussion-Burler-Review | neve | 14h<br>20m | codex, shuttle, stencil, heddle |
+| T2 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one<br>• `loom: discussion opus[high]` | [`codex-same-as-claude`](design-codex-same-as-claude.md) | motif | Discussion-Burler-Review | neve | 14h<br>21m | codex, shuttle, stencil, heddle |
 
 #### Ready (0)
 
@@ -188,19 +188,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>2w | burler |
-| F2 |  | **Orch sessions turn on remote control by themselves, switchable per hub**<br>• Every orch session lym starts or resumes turns on Claude Code remote control, unless the hub switches it off | [`orch-auto-remote-control`](design-orch-auto-remote-control.md) | 14h<br>10m | orch, claude, config, reed |
-| F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 18h<br>16h | batten, loom, board |
+| F2 |  | **Orch sessions turn on remote control by themselves, switchable per hub**<br>• Every orch session lym starts or resumes turns on Claude Code remote control, unless the hub switches it off | [`orch-auto-remote-control`](design-orch-auto-remote-control.md) | 14h<br>12m | orch, claude, config, reed |
+| F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 19h<br>16h | batten, loom, board |
 | F4 |  | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | 5d<br>5d | config, fabric |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>10d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 6w<br>11d | board, ide, orch |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>10d | burler, shed, orch, quarry, report |
-
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T3 | **The board README shows every per-task field that changes the run, pull_request included**<br>• The entry cell lists run_settings but not pull_request, so a task with PR on looks like it has none | [`readme-shows-run-fields`](design-readme-shows-run-fields.md) | 26m<br>19m | board |
 
 </details>
