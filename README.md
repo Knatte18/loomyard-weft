@@ -7,7 +7,7 @@ Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
 <details open>
-<summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (5)</strong></summary>
+<summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (4)</strong></summary>
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 12d · Owner `neve`
 
@@ -47,17 +47,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 The entries directly under this project and under none of its sub-projects.
 
-#### Tasks (2)
+#### Tasks (1)
 
 Concrete and claimable; only a task can run.
-
-##### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md)<br>[Sketch](decision-codex-same-as-claude.md) | raddle | Raddle-File | neve | 19h<br>1h | codex, shuttle, stencil, heddle |
 
 ##### Ready (0)
 
@@ -83,6 +75,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 10d<br>3h | codex, shuttle |
 | R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 7d<br>19h | codex, shuttle |
+
+#### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T14 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md)<br>[Sketch](decision-codex-same-as-claude.md) | 19h<br>1h | codex, shuttle, stencil, heddle |
 
 </details>
 
@@ -193,7 +193,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Plan-Bouncer | neve | 3h<br>3h | webster, weaver |
+| T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Plan-Burler-Review | neve | 3h<br>3h | webster, weaver |
 
 #### Ready (0)
 
