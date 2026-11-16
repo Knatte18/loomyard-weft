@@ -1,6 +1,6 @@
 # lym gate testmap builds in any worktree, with maps kept in that worktree
 
-`testmap-any-worktree` · Task · enhancement, gate, testkit · running · Record-Write
+`testmap-any-worktree` · Task · enhancement, gate, testkit · running · Drift-Baseline
 
 ## Seen (operator, 2026-11-16)
 
