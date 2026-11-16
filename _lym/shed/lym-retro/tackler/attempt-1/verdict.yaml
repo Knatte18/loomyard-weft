@@ -1,0 +1,12 @@
+verdict: resume
+reason: >-
+  Blocked at Worktree-Create (first stop, history length 1) on a board push deferred by a held board lock:
+  the board is ahead of origin and the stop reason names the fix, `lym board sync`, then re-run the verb.
+  Trace f07f6d44bcc8e0e2 (steps/f07f6d44bcc8e0e2.trace.log lines 45-51) shows the detached sync (pid 2305247)
+  and push (pid 2305267) spawned at 15:06:34, and both were still running when I checked. Read-only
+  `git -C /home/knatte/Code/loomyard-LYMHUB/_bolt status -sb` reports main ahead of origin/main by 1, so the
+  stop is unsettled, not a remote absence. The cause is named and the named fix is a plain re-launch from
+  Worktree-Create, so resume. Caveat: the re-launch should wait until those two processes have exited; the
+  _bolt working tree also shows uncommitted changes to README.md and board.json, which the sync may need
+  to see settled.
+goto: Worktree-Create
