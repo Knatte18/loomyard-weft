@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-16T09:17:30Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/testmap-any-worktree/_lym/landing/summary.md",
+      "at": "2026-11-16T09:33:51Z",
+      "started_at": "2026-11-16T09:17:38Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-16T09:21:25.890554811Z",
+          "end": "2026-11-16T09:21:25.898823641Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-16T09:29:23.596781315Z",
+          "end": "2026-11-16T09:29:23.61103733Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-16T09:21:25.955920005Z",
+          "end": "2026-11-16T09:29:03.900371798Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-16T09:29:04.480872329Z",
+          "end": "2026-11-16T09:29:23.51847809Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-16T09:29:23.702907773Z",
+          "end": "2026-11-16T09:32:56.583474958Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-16T09:32:56.674134279Z",
+          "end": "2026-11-16T09:32:56.96762979Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-16T09:32:57.057151938Z",
+          "end": "2026-11-16T09:32:57.057334449Z"
+        }
+      ]
     }
   ],
   "product": {
