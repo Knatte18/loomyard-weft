@@ -1,6 +1,6 @@
 # Codex as darn writer, replayed on a landed task, on OSL-1046
 
-`codex-writer-bench-osl` · Task · research, codex, shuttle · draft
+`codex-writer-bench` · Task · research, codex, shuttle · draft
 
 ## Goal
 

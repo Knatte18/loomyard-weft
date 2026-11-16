@@ -328,7 +328,7 @@
     {
       "id": 1384,
       "handle": "T15",
-      "slug": "codex-writer-bench-osl",
+      "slug": "codex-writer-bench",
       "title": "Codex as darn writer, replayed on a landed task, on OSL-1046",
       "kind": "task",
       "labels": [
