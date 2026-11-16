@@ -2,6 +2,8 @@
 
 `redundancy-candidates-survey` · Task · research, gate, testkit · draft
 
+Depends on: [`testmap-any-worktree`](design-testmap-any-worktree.md)
+
 ## Goal
 
 The first step of `redundancy-sweep-existing`: fresh coverage maps for every package, timed,
@@ -10,7 +12,7 @@ The run changes no code and no test; it lands only the report.
 
 ## The runs
 
-1. One full build: `lym gate testmap` over every package of the module, from the prime worktree as the command requires, once.
+1. One full build: `lym gate testmap` over every package of the module, once, in this task's own worktree at its own HEAD, with the maps kept in that worktree's `.lym/` or `.scratch/` so they are thrown away with it; never from the prime and never into the hub's shared maps.
    Record its wall time and CPU time, the packages built, any that failed and why, and the time per package.
    Set the wall time beside the smart-build report's estimate (`docs/research/speed/testmap-smart-build-2026-11-15/report.md`: about 16 CPU-minutes, about 4 minutes at four tests side by side) and the 44 minutes of the last full build on 2026-11-12.
 2. `lym gate redundant <package>` once on every package the build mapped.
@@ -31,5 +33,5 @@ Under `docs/research/speed/`:
 
 ## Bounds
 
-Change no production code, no test and nothing under Bolt.
+Change no production code, no test, nothing under Bolt and not the hub's shared maps.
 `internal/fabricengine` is listed but not read, as its serial-phase rework is changing it.
