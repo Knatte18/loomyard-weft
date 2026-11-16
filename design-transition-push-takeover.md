@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-transition-push-takeover.md)
 
-Depends on: [`adopt-build`](design-adopt-build.md), [`adopt-revision`](design-adopt-revision.md)
+Depends on: [`adopt-revision`](design-adopt-revision.md)
 
 Filed from the Sketch `adopt-build-resplit`.
 

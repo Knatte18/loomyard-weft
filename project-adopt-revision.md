@@ -1,6 +1,6 @@
 # P1 Revise adopt and the functions that move a hub between machines
 
-Rendered 2026-11-16 11:54 UTC; every age below is as of then.
+Rendered 2026-11-16 11:55 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`adopt-revision`](design-adopt-revision.md) · Age 1d · Owner `neve`
@@ -33,11 +33,3 @@ _None._
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| P3 | **[Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt](project-adopt-build.md)** | [`adopt-build`](design-adopt-build.md) | 19h<br>2h | batten, tender, dobby, orch, fabric, loom |
