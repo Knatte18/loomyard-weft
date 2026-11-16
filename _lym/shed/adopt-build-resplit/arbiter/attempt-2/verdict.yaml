@@ -1,0 +1,17 @@
+verdict: resume
+reason: |-
+  The stop is a hard-cap review escalation at round 2 of Discussion-Bouncer. The judge's ledger leaves design-wrong findings open, but the round-2 fixer ran after the review (fixer report written at 10:56, the record changed at 10:56, the judge at 10:58), and its edits are in the decision record now.
+  I read each open finding against the record and the code it cites. The fix in place answers every one:
+  F1: D1 moves the records-first order and the takeover read into coalescePushSides, the step the detached pushes run (coalesce.go:107; coalesceFlagged/runHeld in pendingflags.go). It also adds an anchor-change criterion.
+  F2: D5 says pauserecord's readers read a bolt-hold entry as a hold, and that CoveredError never names lym tender resume. There is a criterion for this. The dropped Coverage.Held clause is correct to drop: its only reader is battencli/dobbyreads.go:179, which feeds the owner probe in dobbyengine/passes.go:193, and that probe retires.
+  F3 to F6: D3 now compares by machine id, gives the id a lifetime, refuses a copied file, refuses a machine with no config directory, and states what --forget-former lets through. D2 passes this machine's set of names to fabricengine. Each has a criterion.
+  F7: the ordering claim is dropped. The hold no longer holds an owed push, D4 step 4 pushes owed commits records first, and D2's bound covers the remaining case.
+  F8: D6 step 2 uses the hold's recorded owner from before the adopt, with a criterion.
+  F11, F12, F15, F16 and F17 are each stated, and the mechanical findings F9, F10, F13 and F14 are applied.
+  I recorded one arbiter decision to keep this ruling in the record. It also settles the fixer's one deferred LOW: the parent entry's "pushed state" is read as D9's "pushed or owed".
+  Then I accepted the segment. No code was changed and nothing was committed.
+verbs:
+  - |-
+    lym loom decision add adopt-build-resplit --by arbiter --title "Round-2 review accepted at the hard cap: every finding answered in the record" --decision "..." --rationale "..."
+  - |-
+    lym loom circling accept adopt-build-resplit
