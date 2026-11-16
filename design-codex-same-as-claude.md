@@ -29,3 +29,27 @@ Find every route by which a Claude session in a role gets instructions, and give
 
 Add a check that fails when a role's Codex launch carries less than its Claude launch.
 Then rerun the writer bench, and its OSL twin, with the full set before the operator judges level 2.
+
+## How parity is kept (operator, 2026-11-16)
+
+The benches so far were bespoke: the orchestrating Claude session assembled Codex's input by hand,
+and each time Codex started from less than Claude, never the other way round.
+So parity is built into lym, never left to whoever sets up a run:
+
+- One launch for both engines.
+  A role's launch spec (prompt, skills, standing passages, instruction files, guards) is built once, engine-blind;
+  the engine only renders it.
+  A Codex launch can then differ from a Claude launch only where an engine renders the same item its own way.
+- A parity test.
+  For each role and recipe, the test builds the launch for both engines and fails when the Codex launch lacks an item the Claude launch carries.
+- Engine-neutral stencils.
+  No stencil names a Claude-only tool;
+  where a tool must be named, the engine supplies its own name for it.
+- A Codex session runs through the production route.
+  The model alias alone picks the engine, such as `{"darn":{"writer":"astra[high]"}}` in a task's `run_settings`,
+  and the same producer builds the same launch.
+  Codex goes nowhere through a bare `lym shuttle run` with a hand-written prompt.
+- The bench rule follows from it.
+  A Codex bench runs the real producer with only the model swapped;
+  it never hand-builds Codex's prompt.
+  Its report opens with what each engine's session got, from the launch records, so an unequal start shows before any result.
