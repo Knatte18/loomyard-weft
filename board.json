@@ -196,6 +196,7 @@
         "gate"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [
         "redundancy-judge-asserts"
       ],
@@ -205,6 +206,7 @@
       "status": "draft",
       "created": "2026-11-09T18:47:33Z",
       "revised": "2026-11-16T12:11:50Z",
+      "profile": "solid",
       "project": "test-suite-trim"
     },
     {
