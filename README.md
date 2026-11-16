@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Revise the remaining adopt-build members against what landed and what the operator decided since the split**<br>• `loom: pr_review_ask_parent true` | [`adopt-build-revision`](design-adopt-build-revision.md) | darn · docs | Darn-Write | neve | 16h<br>7m | docs, batten, dobby, orch, fabric, tender |
+| T14 | **Revise the remaining adopt-build members against what landed and what the operator decided since the split**<br>• `loom: pr_review_ask_parent true` | [`adopt-build-revision`](design-adopt-build-revision.md) | darn · docs | Darn-Write | neve | 16h<br>8m | docs, batten, dobby, orch, fabric, tender |
 
 ##### Ready (0)
 
@@ -156,7 +156,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (3)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -174,16 +174,17 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (2)
+#### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P3 | 13d<br>16h | claude, shuttle, config |
+| T3 | `draft` **The board README shows every per-task field that changes the run, pull_request included**<br>• The entry cell lists run_settings but not pull_request, so a task with PR on looks like it has none | [`readme-shows-run-fields`](design-readme-shows-run-fields.md) | darn |  | 7m<br>7m | board |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 3d<br>3d | slack, creel, orch |
 
-### Notes (10)
+### Notes (9)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -192,12 +193,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 6d<br>6d | gate, fabric |
-
-#### Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B2 |  | **The board README shows every per-task field that changes the run, pull_request included**<br>• The entry cell lists run_settings but not pull_request, so a task with PR on looks like it has none | [`readme-shows-run-fields`](design-readme-shows-run-fields.md) | 6m<br>6m | board |
 
 #### Enhancements (1)
 
