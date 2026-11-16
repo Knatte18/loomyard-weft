@@ -1,6 +1,6 @@
 # Weaver: a cold-start implementer beside Webster, with model escalation
 
-`weaver` · Task · sketch, webster, weaver · running · Seed-Child
+`weaver` · Task · sketch, webster, weaver · running · Seed-IDE
 
 Decision record: [Sketch](decision-weaver.md)
 
