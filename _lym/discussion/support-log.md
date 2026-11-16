@@ -38,7 +38,7 @@ Six forks reviewed the record; every one returned a report.
 - interactions (MEDIUM): re-entry after a verify stop was undefined — fixed in D7.
 - interactions (MEDIUM): a relaunched gated strand could be attached before its finished report is recorded — fixed: D12 records a finished report first (revised in review round 2: D12 attaches first and records a report only from the attach's result, so a strand still fixing a gate is awaited).
 - bound-breaker (MEDIUM): a crash between spawn and state write could spawn twice — fixed: D12 records the attempt before spawning and attaches through `FindRun` (revised in review round 1: the attach finds the run by its recorded report path).
-- walkthrough + bound-breaker + interactions (MEDIUM/LOW): the row's `gates` entries had no runner — fixed: D4 and D10 attach them to every batch and fixer strand; D1 says the constructor takes `gates`.
+- walkthrough + bound-breaker + interactions (MEDIUM/LOW): the row's `gates` entries had no runner — fixed: D4 and D10 attach them to every batch and fixer strand; D1 says the constructor takes `gates` (revised in review round 3: the verify fixer runs through `gatefixer` and carries none; the gap is under Open risks).
 - bound-breaker (MEDIUM): switching implementer mid-run was unguarded — fixed: D1's guard.
 - bound-breaker (MEDIUM): machinery losses climbed the ladder — fixed: D6 retries once on the same rung.
 - existing-paths (MEDIUM): the per-batch commit left out the plan directory — fixed in D9.
@@ -46,7 +46,7 @@ Six forks reviewed the record; every one returned a report.
 - existing-paths (MEDIUM): no `summary.md` lost Describe's triage and fix items — fixed: D10 has Go write `summary.md`; Q11 reversed.
 - existing-paths (LOW): decision notices treated only Merriam as the implementer — fixed in D13.
 - existing-paths (LOW): reportengine's timing phase and failuretrace are Webster-keyed — partly fixed: the verify-failure record is shared under D11; the timing phase rejected, since a report gap does not change a run.
-- board-scope (MEDIUM, decision): nothing pushes the journal mid-row — kept as an Open risk, rephrased as a question for the parent.
+- board-scope (MEDIUM, decision): nothing pushes the journal mid-row — kept as an Open risk, rephrased as a question for the parent (answered after Discussion by the arbiter's added decision; the Open risk was dropped in review round 3).
 - board-scope (LOW): the arbiter description was swapped for the Stuck reason — fixed: D8 has the description name the active implementer's run directory; the Open risk is dropped.
 - bound-breaker (LOW): implementer-spec's Stuck wording says the run halts for a human — fixed: D1's spec edit names the stop chain.
 - interactions (LOW): the spec says the run directory is committed only at Done — fixed: D1's spec edit.
@@ -84,7 +84,7 @@ _No rounds yet._
 
 ## Question ledger
 
-- Q1 (auto-pick): Where does the loop over batches live? In the row's producer, in Go; stops reach shed's chain. Why: fixed recipes and `Yield`'s semantics rule out a row per batch, and a nested run adds machinery for nothing. Raised under Open risks for the parent.
+- Q1 (auto-pick): Where does the loop over batches live? In the row's producer, in Go; stops reach shed's chain. Why: fixed recipes and `Yield`'s semantics rule out a row per batch, and a nested run adds machinery for nothing. Settled by the added decision that answers Q17.
 - Q2 (auto-pick): Fixed partition or batches formed as the run goes? Formed one at a time from the remaining cards with the active batcher. Why: the board's idea, and renames rewrite pending cards between batches.
 - Q3 (auto-pick): Worktree per batch? No; the task worktree, sequentially. Why: parallel batches are out of scope, and a worktree buys nothing without them.
 - Q4 (auto-pick): The ladder's shape and default? A list of model specs in `weaver.yaml`, default `sonnet[medium]`, `opus[medium]`, `opus[high]`, one attempt per rung. Why: the board's example ladder; a list fits batches and fixer alike.
@@ -92,12 +92,13 @@ _No rounds yet._
 - Q6 (auto-pick, revised after the lens review and review round 2): What happens when the row re-enters after a stop? The plan is re-read and the recorded partition mapped onto it; after a `NEEDS_PARENT` stop the ladder resumes at the rung that asked; after any other batch stop, the full post-batch checks run against the batch's start commit, with the card gates at HEAD (D7); pass records done when the row has no `gates` entries, and otherwise the batch gets one last-rung attempt. Why: the arbiter's fix must be judged by the run's own checks, and a question is not a model failure.
 - Q7 (auto-pick): Journal format and writer? A `journal` report field Go appends to `_lym/weaver/journal.md`. Why: one writer.
 - Q8 (auto-pick): When is the run directory committed? After each batch. Why: the journal must outlive a crash.
-- Q9 (auto-pick, revised after the lens review): Which verify gate? `verifytree.Verify` with `weaver.yaml`'s `verify_gate`, default `webster`; the row's gates entries ride every batch and fixer strand as shuttle gates (D4, D10). Why: no new hub config, and a gates entry needs a strand to re-prompt.
+- Q9 (auto-pick, revised after the lens review): Which verify gate? `verifytree.Verify` with `weaver.yaml`'s `verify_gate`, default `webster`; the row's gates entries ride every batch strand as shuttle gates, and the verify fixer, run through `gatefixer`, carries none (D4, D10). Why: no new hub config, a gates entry needs a strand to re-prompt, and PATTERN-gate-slot has Go's re-run judge a fixer.
 - Q10 (auto-pick, revised after the lens review): How does the arbiter find the plan, reports and journal? The arbiter's description of a tapestry run names the active implementer's run directory (D8). Why: a stop on another row, or one the tackler escalates, reaches the arbiter without the Stuck reason.
 - Q11 (auto-pick, revised after the lens review): Does Weaver write a `summary.md`? Yes, written by Go from state and the verify record. Why: Describe reads the triage and verify-fix sections from it.
 - Q12 (auto-pick): How do loom's readers of Webster state see Weaver's? Through one seam over the active implementer, and a shared plan-conflict path (D13). Why: a reroute must freeze built cards and see the conflict.
 - Q13 (auto-pick): May a run switch implementer mid-run? No; the row refuses while the other implementer has begun batches (D1). Why: switching would rebuild or misread built work.
 - Q14 (auto-pick): Does a machinery loss climb the ladder? No; one same-rung retry first (D6). Why: the model did not fail.
-- Q15 (auto-pick): Where do the row's `gates` entries run? On every batch and fixer strand as shuttle gates (D4, D10). Why: a gates entry is a strand gate; Weaver has no long-lived strand.
-- Q16 (open, for the parent): Is the journal pushed mid-row, and by whom? Under Open risks.
-- Q17 (open, for the parent): Is "each batch is a producer" met by one producer running every batch? Under Open risks.
+- Q15 (auto-pick, revised in review round 3): Where do the row's `gates` entries run? On every batch strand as shuttle gates (D4); the verify fixer carries none, and the verify's re-run judges it (D10). Why: a gates entry is a strand gate; Weaver has no long-lived strand; a cold fixer runs only through `gatefixer`, which gates no strand.
+- Q16 (answered): Is the journal pushed mid-row, and by whom? Answered by the added decision "The journal is pushed with the run at each shed transition": the run's own push at the row's end carries it (D9).
+- Q17 (answered): Is "each batch is a producer" met by one producer running every batch? Answered by the added decision "One producer runs every batch": yes (D2).
+- Q18 (open, for the parent): Should the row's `gates` entries run over a verify fixer's commit, and how? Under Open risks.
