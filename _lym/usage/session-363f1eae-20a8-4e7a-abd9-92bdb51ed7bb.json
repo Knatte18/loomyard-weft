@@ -1,0 +1,14 @@
+{
+  "session_id": "363f1eae-20a8-4e7a-abd9-92bdb51ed7bb",
+  "row": "Discussion-Bouncer",
+  "role": "discussion-bouncer-seed",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 14,
+  "cache_write_tokens": 30999,
+  "cache_read_tokens": 117817,
+  "output_tokens": 2150,
+  "cost_usd": 0.1225889,
+  "started": "2026-11-16T09:01:33Z",
+  "ended": "2026-11-16T09:01:57Z"
+}
