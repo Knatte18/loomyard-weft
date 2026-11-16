@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Worktree-Create",
+    "history_length": 1,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-16T13:01:39.416248288+01:00",
+  "deadline": "2026-11-16T13:11:39.416248288+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/transition-push-takeover/drive-reports/drive-envelope-20261116-130139-125a.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/transition-push-takeover/drive-reports/drive-report-20261116-130139-f7a3.md",
+  "strand_guid": "a3dd22c594c0cf341444967dfef54f59"
+}
