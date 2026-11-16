@@ -74,7 +74,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one<br>• `loom: discussion opus[high]` | [`codex-same-as-claude`](design-codex-same-as-claude.md) | motif | Discussion-Burler-Fix | neve | 14h<br>27m | codex, shuttle, stencil, heddle |
+| T2 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one<br>• `loom: discussion opus[high]` | [`codex-same-as-claude`](design-codex-same-as-claude.md) | motif | Discussion-Burler-Fix | neve | 14h<br>28m | codex, shuttle, stencil, heddle |
 
 #### Ready (0)
 
@@ -118,7 +118,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Rebuild every coverage map, time it, and list the redundant-test candidates of each package**<br>• One timed full lym gate testmap build and lym gate redundant on every package, reported for the operator to read before any cut | [`redundancy-candidates-survey`](design-redundancy-candidates-survey.md) | darn · docs | Worktree-Create | neve | 0m<br>0m | gate, testkit |
+| T6 | **Rebuild every coverage map, time it, and list the redundant-test candidates of each package**<br>• One timed full lym gate testmap build and lym gate redundant on every package, reported for the operator to read before any cut | [`redundancy-candidates-survey`](design-redundancy-candidates-survey.md) | darn · docs | Seed-Child | neve | 0m<br>0m | gate, testkit |
 
 #### Ready (0)
 

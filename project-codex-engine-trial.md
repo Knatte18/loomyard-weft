@@ -74,7 +74,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one<br>• `loom: discussion opus[high]` | [`codex-same-as-claude`](design-codex-same-as-claude.md) | motif | Discussion-Burler-Fix | neve | 14h<br>27m | codex, shuttle, stencil, heddle |
+| T2 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one<br>• `loom: discussion opus[high]` | [`codex-same-as-claude`](design-codex-same-as-claude.md) | motif | Discussion-Burler-Fix | neve | 14h<br>28m | codex, shuttle, stencil, heddle |
 
 ### Ready (0)
 
