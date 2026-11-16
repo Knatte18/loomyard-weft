@@ -1,14 +1,31 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/weaver/_lym/discussion/decision-record.md",
+      "at": "2026-11-16T08:46:57Z",
+      "started_at": "2026-11-16T08:37:09Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-16T08:46:11.606756982Z",
+          "end": "2026-11-16T08:46:57.024245526Z"
+        }
+      ]
+    }
+  ],
   "product": {
     "slug": "weaver",
     "parent": "main",
