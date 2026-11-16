@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Await",
+  "current_producer": "Drift-Expect",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Await",
-    "last": "Plan-Bouncer → done",
+    "now": "Drift-Expect",
+    "last": "Drift-Await → skipped",
     "wait": ""
   },
   "history": [
@@ -207,6 +207,13 @@
       "at": "2026-11-16T14:09:53Z",
       "started_at": "2026-11-16T14:09:53Z",
       "by": "shed"
+    },
+    {
+      "producer": "Drift-Await",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-16T14:09:56Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
