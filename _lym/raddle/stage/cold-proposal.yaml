@@ -1,0 +1,117 @@
+{
+  "sketch": "weaver",
+  "shape": "tasks",
+  "board_checked": [
+    {"slug": "codex-same-as-claude", "revised": "2026-11-16T08:41:54Z"},
+    {"slug": "testmap-any-worktree", "revised": "2026-11-16T09:14:43Z"}
+  ],
+  "parts": [
+    {
+      "slug": "implementer-shared-run-plan",
+      "title": "Move Webster's batch machinery and run-plan state into a package both implementers import",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D11"],
+      "packages": [
+        {"path": "internal/runplan", "size": 1600},
+        {"path": "internal/websterengine", "size": 900},
+        {"path": "internal/webstercli", "size": 200},
+        {"path": "internal/loomshed", "size": 80},
+        {"path": "internal/loomcli", "size": 80},
+        {"path": "internal/shedadapters", "size": 60},
+        {"path": "internal/failuretrace", "size": 30},
+        {"path": "internal/hubgeom", "size": 20},
+        {"path": "internal/standalonegeom", "size": 20},
+        {"path": "tools/tokencount", "size": 20}
+      ],
+      "contract": {
+        "takes": "Webster's batch machinery as it stands in internal/websterengine: report.go, digest.go, fingerprint.go, the plan-conflict refusal of beginbatch.go and conflictrecord.go, postBatchChecks in recordbatch.go, suspect.go, cardgate.go, awaitbatch.go and strand.go, verifygatereport.go and verifyparse.go, and the run-plan fields of state.go's State and BatchState",
+        "delivers": "a new package internal/runplan holding the run-plan state (plan fingerprint, plan file hashes, overview frame hash, recorded partition, batch records) that websterengine.State embeds beside its Master fields, with every Webster-only batch-record field kept in websterengine or optional; the batch report contract and parser with an optional journal field; the plan fingerprint and plan-conflict refusal; the post-batch checks; the suspect-path checks; the failure digest; card gate rendering; strand await; and the verify-failure record. Each shared piece takes the implementer's run, reports, prompts and scratch directories and its state-mutation lease from a geometry the caller passes, and each shared refusal takes its way-forward text from the caller, so Webster passes its own and its behaviour and existing tests stay unchanged",
+        "exports": "package internal/runplan: the run-plan state type and batch-record type both implementers' state files embed, the report type with Journal and its parser, the post-batch check entry point taking a recorded partition mapped onto the current plan, the suspect check, the digest, the card gate renderer, the strand await, the verify-failure record, the plan-conflict error and record, and the implementer geometry type; websterengine keeps aliases for the names it moved so its importers compile unchanged"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "Webster's existing tests pass unchanged after the shared machinery and its state types move (D11)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 13.8,
+      "cost_line": "darn/solid with a stored record over 15 runs: fixed $6.88 plus $0.23 per 100 changed lines at about 3000 lines, a move counted once; the fit's correlation is 0.59"
+    },
+    {
+      "slug": "weaver-implementer",
+      "title": "Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam",
+      "type": "feature",
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D13"],
+      "packages": [
+        {"path": "internal/weaverengine", "size": 5000},
+        {"path": "internal/weavercli", "size": 800},
+        {"path": "internal/runplan", "size": 120},
+        {"path": "internal/websterengine", "size": 120},
+        {"path": "internal/shedrecipe", "size": 120},
+        {"path": "internal/loomshed", "size": 300},
+        {"path": "internal/loomcli", "size": 350},
+        {"path": "internal/shedadapters", "size": 100},
+        {"path": "internal/landingshed", "size": 30},
+        {"path": "internal/fabriccli", "size": 50},
+        {"path": "internal/configreg", "size": 10},
+        {"path": "internal/lymdirs", "size": 40},
+        {"path": "internal/hubgeom", "size": 60},
+        {"path": "internal/standalonegeom", "size": 60},
+        {"path": "cmd/lym", "size": 10},
+        {"path": "contracts/stencils/weaver", "size": 250},
+        {"path": "contracts/specs", "size": 30},
+        {"path": "contracts/recipes", "size": 10}
+      ],
+      "contract": {
+        "takes": "internal/runplan as implementer-shared-run-plan delivers it: the run-plan state and batch records Weaver's state file embeds, the report contract with journal, the post-batch checks, suspect checks, digest, card gate rendering, strand await and verify-failure record, each driven by the geometry and way-forward text Weaver passes",
+        "delivers": "the weaver value of tapestry's implementer row: its engine package, the weaver.yaml config module, its stencils, _lym/weaver/ and .lym/weaver/ named through lymdirs, the lym weaver reset verb, the active-implementer seam every loom reader of implementer state goes through, the implementer-neutral plan-conflict path, and the implementer-spec updates",
+        "exports": "internal/weaverengine with its row producer and reset; internal/weavercli with lym weaver reset; the active-implementer seam the D1 guard, plan gate, renumber verbs, decision-notice guard, Describe, the PR rework archive and merge-in read"
+      },
+      "depends_on": ["implementer-shared-run-plan"],
+      "open_risks": [
+        "Under D10 a verify fixer runs through `gatefixer`, which gates no strand, so the row's `gates` entries do not run over a fixer's commit. The row can then return Done with a row gate failing at HEAD, when that gate checks something the verify gate does not. Question for the parent: accept that bound; spawn the fixer through shuttle with the row's gates under a PATTERN changes entry for PATTERN-gate-slot; or run one gated last-rung strand over a fixer's commit before Done, as D7 does for a stopped batch?"
+      ],
+      "criteria": [
+        "With `tapestry.implementer: weaver`, the tapestry recipe builds the Webster row with Weaver, the row accepts its `gates` key, and its Done, reroute and Stuck routes match Webster's (D1).",
+        "The row refuses when the other implementer has begun batches in the current generation, naming `lym webster reset --to start` or `lym weaver reset` by direction; a test runs each named step and the row then proceeds; a corrupt state file of either implementer refuses, naming its repair; for Weaver's it names restoring the last committed version only while the task branch's HEAD is that version's last batch end commit and no Weaver batch or fixer strand is live, and `lym weaver reset` otherwise (D1, D2).",
+        "`lym weaver reset` refuses while Weaver's run lock is held, and, before it changes anything, while a probe by recorded output file finds the run of a batch attempt or fixer, naming each way forward and stopping no strand it finds; the probe removes the strand of an attempt whose outcome is recorded but which was not yet stopped, and finds one whose spawn returned with no guid recorded; over a corrupt state file it refuses while reed lists a live Weaver batch or fixer strand; with `--stop-strand` it stops every strand it finds and then resets; otherwise it moves the task branch back to the run's start commit, restores the plan directory in the weft so the plan's pending cards read as at the run's start, renames the run record's files under stamped names inside `_lym/weaver/` that no reader reads, and commits both through fabric, leaving Webster's directory untouched (D2).",
+        "A three-card plan the batcher splits in two runs two batch strands in order, each on the first rung, and the row returns Done after the verify passes, with no other LLM spawned (D2, D4, D10).",
+        "After a batch that reports a rename, the next batch is partitioned from the rewritten pending cards; done cards are matched by slug; a batch's card set stays fixed across its attempts (D3, D11).",
+        "A batch that removes a symbol a pending card names is refused by the later-reference check under Weaver, and only the run's last batch renders as the last batch (D3, D11).",
+        "A batch prompt names the batch's cards, the decision record and the journal; a retry's prompt adds the failure digest and uncommitted paths; the strand carries the card gates and the row's gates (D4, D8).",
+        "A failed attempt starts the next attempt on the next rung's model; a failure on the last rung returns Stuck whose reason names the batch, the state file, the report and the journal (D2, D5, D6).",
+        "A `FAILED` report, a failing gate and an unclean tree each climb the ladder; every attempt that ends without being recorded done has its outcome recorded and then its strand stopped before the next attempt starts or the row returns, and a machinery-loss retry and a Stuck return on a Weaver fault each find the attempt's strand stopped, also when the state write fails; a machinery loss retries once on the same rung, for a batch attempt, a re-entry attempt and a fixer strand alike; a failed stop returns Stuck naming the strand's guid and `lym reed remove`, and starts no next attempt; a `NEEDS_PARENT` report returns Stuck at once with its need (D6).",
+        "An empty ladder or an unresolvable spec refuses at row build, naming `lym config weaver` (D5).",
+        "Re-entering after a batch stop whose batch passes the post-batch checks records it done with no spawn when the row has no `gates` entries, also after the arbiter edits a pending card; one that fails, or whose row has `gates` entries, gets one last-rung attempt, which carries an edit to the stopped batch's own card text; a plan that lost a recorded card or gained one no batch records refuses, naming its ways forward; re-entering after a `NEEDS_PARENT` stop starts the next attempt on the rung that asked and never records the batch done with no spawn; re-entering after a verify stop reruns the verify (D7).",
+        "Each batch's journal entry, failed attempts' included, is appended to the journal once, also when a crash falls between the append and the state write; `_lym/weaver/` and the plan directory are committed after each batch (D8, D9).",
+        "The arbiter's description of a run with Weaver active names Weaver's run directory and journal (D8).",
+        "A verify failure starts one fixer through `gatefixer` on the ladder, under `fixer_timeout_min`, and reruns the verify after every fixer, a lost one included, before the next spawns; a tree a fixer left unclean hands its uncommitted paths to the next fixer; a verify runner crash starts no fixer; a failure after the last rung returns Stuck; `summary.md` carries the triage and fixes sections (D10).",
+        "A call after a crash stops the live strand of an attempt or fixer whose outcome is recorded; attaches through the recorded output file to a live run of a batch attempt recorded in flight, even when state never recorded its guid; records a report only from the attach's result, and counts a report found on disk with no run behind it as a machinery loss; sends the attached strand the decisions recorded since its attempt began and not yet delivered to it; and never spawns a second agent for one attempt; a crash while a strand is re-prompted on a failing gate attaches to that strand, and the batch is not recorded done until its gates pass; a crash during a fixer attaches to its live `gatefixer` record, and a crash between a fixer's spawn and its record stops the strand its reply path finds and reruns the verify, so neither spawns a second fixer beside a live one; an attach or probe error returns Stuck naming it and spawns nothing; a same-rung retry and a re-entry attempt each get a new attempt number (D12).",
+        "With Weaver active, the plan gate freezes Weaver's done cards, also after `tapestry.implementer` is flipped to `webster`; the renumber verbs stop at Weaver's last begun card and a renumber racing a Weaver batch begin is serialized by the state-mutation lease; a plan conflict reaches Plan-Burler-Review; a decision notice is held back from a halted run's leftover Weaver strand; a corrupt Webster state file under a Weaver run blocks neither a decision notice nor merge-in's warning (D13).",
+        "With Weaver active, Describe reads Weaver's `summary.md` and its archived prior-generation records, a PR rework round archives `_lym/weaver/` into `prior-generation/weaver`, and `lym fabric merge-in` warns of a Weaver run in flight and not of one whose `outcome.yaml` reads done (D9, D10, D13).",
+        "Review: `contracts/specs/implementer-spec.md` lists `weaver`, allows commits during the run and names the stop chain; the tapestry Plan-Review text names the shared plan-conflict path; Weaver's package doc states its loop, ladder, journal and run directory (D1, D2, D5, D8, D9, D13)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "tapestry/solid with a stored record reads too few runs (3), so no figure; about 7,500 changed lines, most of them in the new engine and its tests"
+    }
+  ],
+  "order_departures": [],
+  "cost": {
+    "expected_usd": null,
+    "line": "a darn/solid part at about $13.80, then a tapestry/solid part whose cell reads too few runs, so the total has no figure",
+    "next_best": {
+      "split": "one tapestry part that builds every decision, the D11 move in its first batches",
+      "expected_usd": null,
+      "line": "one tapestry/solid part; its cell reads too few runs, so no figure; it saves the darn's $6.88 fixed cost, but the move then runs through tapestry's batches and Code-Review together with the new engine, about 10,500 lines in one review"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "solid", "stored_record": true},
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
