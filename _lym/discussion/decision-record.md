@@ -459,6 +459,19 @@ Rationale: The round is at the perch's hard cap; an accept is allowed where the 
 
 None.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-2-review.md; fixer report: _lym/reviews/discussion/round-2-fixer-report.md.
+  - adopt-rerun-resets-adopt-fix-hold (class design, severity MEDIUM, open in rounds 1, 2)
+  - bolt-hold-read-as-operator-pause (class design, severity BLOCKING, open in rounds 2)
+  - forget-former-hands-records-to-another-machine (class design, severity MEDIUM, open in rounds 2)
+  - hold-freezes-owed-pushes-unstated (class design, severity MEDIUM, open in rounds 1, 2)
+  - machine-id-has-no-lifetime (class design, severity MEDIUM, open in rounds 2)
+  - pending-flag-respawn-pushes-code-alone (class design, severity BLOCKING, open in rounds 1, 2)
+  - registry-lets-two-machines-claim-one-name (class design, severity MEDIUM, open in rounds 1, 2)
+  - takeover-read-cannot-see-former-names (class design, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: a shed transition in a task pair pushes its records side, then its code side once the records side landed, and starts the next producer only after both landed on origin.
