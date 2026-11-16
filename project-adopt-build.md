@@ -1,6 +1,6 @@
 # P3 Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt
 
-Rendered 2026-11-16 11:34 UTC; every age below is as of then.
+Rendered 2026-11-16 11:39 UTC; every age below is as of then.
 Under: [P1 Revise adopt and the functions that move a hub between machines](project-adopt-revision.md).
 
 [`adopt-build`](design-adopt-build.md) · Age 19h · Owner `neve`
@@ -13,17 +13,9 @@ No state between two members landing reaches `main`, so no installed lym runs ha
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Merge main into the beam adopt-build**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-merge-in`](design-adopt-build-merge-in.md) | darn | Finalize | neve | 20m<br>20m | batten, tender, dobby, orch, fabric, loom |
 
 ### Ready (0)
 
@@ -34,3 +26,11 @@ _None._
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T14 | **Merge main into the beam adopt-build**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-merge-in`](design-adopt-build-merge-in.md) | 24m<br>24m | batten, tender, dobby, orch, fabric, loom |
