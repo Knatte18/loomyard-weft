@@ -43,3 +43,7 @@ File it as tasks once the operator has read the candidate lists.
 Task `testmap-on-command` (`72b26d1a`) retired the upkeep pass.
 No dobby or landing keeps the maps fresh now, so the 211 maps above go stale as landings change their packages.
 A sweep of a package first runs `lym gate testmap` on it by hand, as D9 says; that call now waits for the package's build lock and has no default package cap.
+
+Task `testmap-any-worktree` (`894abe59`) lets `lym gate testmap` run in any worktree of the hub.
+From the prime it still writes the hub's shared maps; from any other worktree it builds at that worktree's HEAD and keeps its own maps under the worktree's `.lym/testcover/`, which never touch the shared ones.
+`lym gate redundant` reads the maps from the place the same worktree's `lym gate testmap` writes them, so a sweep task builds and reads its own maps.
