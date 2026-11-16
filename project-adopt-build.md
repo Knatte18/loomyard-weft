@@ -17,13 +17,15 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T14 | **Revise the remaining adopt-build members against what landed and what the operator decided since the split**<br>• `loom: pr_review_ask_parent true` | [`adopt-build-revision`](design-adopt-build-revision.md) | darn · docs |  | 16h<br>0m | docs, batten, dobby, orch, fabric, tender |
 
-### Draft (7)
+### Draft (6)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -35,7 +37,6 @@ Not released; nothing starts it until its status is cleared.
 | T11 | `draft` **The prime is the root beam: parent_beam names it, never empty**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`prime-is-root-beam`](design-prime-is-root-beam.md) | darn · solid | T10<br>T14 | 16h<br>16h | board, dobby, orch |
 | T12 | `draft` **A stop button in the prime orch session that takes the whole hub down, behind a yes/no**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hub-stop-button`](design-hub-stop-button.md) | darn · solid | T11<br>T14 | 20h<br>16h | reed, orch, tender |
 | T13 | `draft` **One desktop launcher brings back every hub and beam that was in flight after a crash or reboot**<br>• A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`machine-restart-shortcut`](design-machine-restart-shortcut.md) | darn · solid | T12<br>T14 | 7d<br>16h | orch, reed, termwindow, shortcut |
-| T14 | `draft` **Revise the remaining adopt-build members against what landed and what the operator decided since the split**<br>• `loom: pr_review_ask_parent true` | [`adopt-build-revision`](design-adopt-build-revision.md) | darn · docs |  | 16h<br>0m | docs, batten, dobby, orch, fabric, tender |
 
 ## Notes (0)
 
