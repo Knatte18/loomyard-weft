@@ -1,10 +1,10 @@
 # Card 3 — pair-push-records-first
 
 **Create:**
-- `plan:internal/fabricengine#MachineNames` -> `type MachineNames struct`
-- `plan:internal/fabricengine#PairPush` -> `type PairPush struct`
-- `plan:internal/fabricengine#PushFailureTeardownLock` -> `const PushFailureTeardownLock PushFailureClass = "teardown_lock"`
-- `plan:internal/fabricengine#acquireTeardownShared` -> `func acquireTeardownShared(hubPath, slug string, wait time.Duration) (release func(), acquired bool, err error)`
+- `internal/fabricengine#MachineNames`
+- `internal/fabricengine#PairPush`
+- `internal/fabricengine#PushFailureTeardownLock`
+- `internal/fabricengine#acquireTeardownShared`
 
 **Edit:**
 - `internal/fabricengine#PushPairAnchored` -> `func PushPairAnchored(l *lymcwd.Location, opts SyncOptions, push PairPush) (res PushResult, err error)`
