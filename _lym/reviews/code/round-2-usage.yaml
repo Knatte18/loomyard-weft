@@ -1,0 +1,19 @@
+round: 2
+fan: ""
+fix_fan: fix-code
+fans_recorded: true
+review:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-11-16T09:52:38Z
+    end: 2026-11-16T10:56:03.633444164+01:00
+    wall_seconds: 205.633444164
+    tokens_known: true
+    fresh_tokens: 168458
+    cache_read_tokens: 3053197
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
+attempt: "2"
