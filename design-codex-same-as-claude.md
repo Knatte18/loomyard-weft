@@ -2,6 +2,8 @@
 
 `codex-same-as-claude` · Task · bug, codex, shuttle, stencil, heddle · running · Discussion-Bouncer
 
+Decision record: [Sketch](decision-codex-same-as-claude.md)
+
 ## Rule (operator, 2026-11-15)
 
 A Codex session lym gives a role gets exactly what a Claude session in that role gets:

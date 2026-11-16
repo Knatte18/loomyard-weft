@@ -473,7 +473,9 @@
           "discussion": "opus[high]"
         }
       },
-      "project": "codex-engine-trial"
+      "project": "codex-engine-trial",
+      "discussed": true,
+      "record_body_sha256": "8d22fad402d036d6dcd20496f3269171f170c6ccba83e331b76fde7c8db3d889"
     },
     {
       "id": 1387,
