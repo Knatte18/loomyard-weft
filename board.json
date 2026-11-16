@@ -505,7 +505,9 @@
       "created": "2026-11-08T14:40:16Z",
       "revised": "2026-11-16T09:04:09Z",
       "profile": "light",
-      "project": "adopt-build"
+      "project": "adopt-build",
+      "discussed": true,
+      "record_body_sha256": "070aaf541c1375d57d0fffad6bd9c3d796a031c50aa9567b112460fa052c7a3e"
     },
     {
       "id": 1388,

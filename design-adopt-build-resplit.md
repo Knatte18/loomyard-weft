@@ -2,6 +2,8 @@
 
 `adopt-build-resplit` · Task · feature, enhancement, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut · running · Discussion-Bouncer
 
+Decision record: [Sketch](decision-adopt-build-resplit.md)
+
 ## Why (operator, 2026-11-16)
 
 Raddle split the Sketch `adopt-redesign` into the members of the beam `adopt-build` before any of them ran.
