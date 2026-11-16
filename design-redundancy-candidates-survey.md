@@ -1,6 +1,6 @@
 # Rebuild every coverage map, time it, and list the redundant-test candidates of each package
 
-`redundancy-candidates-survey` · Task · research, gate, testkit · running · Drift-Expect
+`redundancy-candidates-survey` · Task · research, gate, testkit · running · Darn-Write
 
 ## Goal
 
