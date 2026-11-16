@@ -1,14 +1,22 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Raddle-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Record-Write",
-    "last": "",
+    "now": "Raddle-Write",
+    "last": "Record-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/codex-same-as-claude/_lym/discussion/decision-record.md",
+      "at": "2026-11-16T12:02:02Z",
+      "started_at": "2026-11-16T12:02:02Z"
+    }
+  ],
   "product": {
     "slug": "codex-same-as-claude",
     "parent": "main",
