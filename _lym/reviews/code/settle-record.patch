@@ -1,0 +1,449 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index c5f7c082..d9fec347 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -300,7 +300,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/cleanupcli/          the cleanup CLI command (`lym cleanup`, the routine cleanups of the hub prime's leftover state, a dry run by default)
+ ├── internal/fabriccli/           the fabric CLI command (git coordination of code and records)
+ ├── internal/fabricengine/        the fabric domain kernel
+-├── internal/gatecli/             the gate CLI command (`lym gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged; `lym gate status`, the holders of the hub's gate slots; `lym gate report`, the machine's run records totalled per slug and gate key; `lym gate testmap`, the per-package coverage maps built on command from the hub's prime worktree; `lym gate redundant`, one package's redundancy candidates read from its coverage map)
++├── internal/gatecli/             the gate CLI command (`lym gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged; `lym gate status`, the holders of the hub's gate slots; `lym gate report`, the machine's run records totalled per slug and gate key; `lym gate testmap`, the per-package coverage maps built on command at the HEAD of the worktree it runs in; `lym gate redundant`, one package's redundancy candidates read from its coverage map)
+ ├── internal/helpcli/             the help CLI command (`lym help [<command>...]`, `lym help index`)
+ ├── internal/shortcutcli/         the top-level operator shortcuts (`lym a`, `lym s`, `lym p`, `lym r`) from one embedded file
+ ├── internal/idecli/              the ide CLI command
+@@ -931,7 +931,8 @@ User-facing modules each get one `lym <module>` namespace:
+   `lym gate card-verify <card id>` runs a plan card's `**Verify:**` line through the shared `internal/cardverify` runner and exits with the line's code.
+   `lym gate redundant <package>` judges one package's coverage map by the redundancy verdict and lists its candidates,
+   each with its seconds, its covering tests and whether it is in the removable set; it runs no test and takes no slot.
+-  `lym gate testmap [--max <n>] [<package>...]` builds the stale per-package coverage maps of `internal/testcover` from the hub's prime worktree, only on command:
++  `lym gate testmap [--max <n>] [<package>...]` builds the stale per-package coverage maps of `internal/testcover` at the HEAD of the worktree it runs in, only on command,
++  the hub's shared maps from the prime and a worktree's own, under its `.lym`, from any other worktree:
+   each tier0 and tier1 test runs alone in its own process, up to the tier0 parallel side by side inside one gate slot,
+   bounded by `redundancy_build_timeout_min` and `redundancy_test_timeout_sec`,
+   under a coverage binary over every in-module package its test binary links; the gate selects no test from the maps.
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 354c83ce..fbdb1db7 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -2,7 +2,7 @@
+ // Its verb `test` is the sanctioned route for running the hub's test tiers.
+ // Its verb `status` shows who holds the hub's gate slots, and its verb `report` totals the run records per gate key.
+ // Its verb `card-verify` runs a plan card's `**Verify:**` line.
+-// Its verb `testmap` builds the per-package coverage maps on command from the hub's prime worktree,
++// Its verb `testmap` builds the per-package coverage maps on command at the HEAD of the worktree it runs in,
+ // and its verb `redundant` lists one package's redundancy candidates from its map.
+ //
+ // The module is not standalone-capable and does not go through internal/cliwire.
+@@ -986,14 +986,20 @@
+ //
+ // # Coverage maps
+ //
+-// `lym gate testmap [--max <n>] [<package>...]` builds the `internal/testcover` maps at the prime's HEAD.
++// `lym gate testmap [--max <n>] [<package>...]` builds the `internal/testcover` maps.
++// It builds them at the HEAD of the worktree it runs in.
+ // It runs only on command: no dobby, landing or gate starts it, and the gate selects no test from the maps.
+ // The operator runs it before `lym gate redundant`, and over the whole module before a sweep of redundant tests.
+ // The module root is the dir of the lowest declared of tier0 and tier1, and its go.mod names the import path.
+ // A package is a directory relative to that root holding a Go file, found as `go list ./...` finds one:
+ // testdata, a directory whose name opens with a dot or an underscore, and a nested module are left out.
+-// The verb runs only in the hub's prime worktree, told by `hubgeom.IsPrime`.
+-// Elsewhere it refuses, naming the prime's code worktree.
++// The verb runs in any worktree of the hub and refuses outside every hub.
++// From the hub's prime, told by `hubgeom.IsPrime`, it reads and writes the hub's shared maps.
++// Those are `testcover.Dir` of the board directory.
++// From any other worktree it reads and writes that worktree's own maps.
++// Those are `testcover.Dir` of its anchor; they go with the worktree and never touch the shared maps.
++// A task's call therefore builds at the HEAD only its own session moves.
++// The build lock of a package lies beside its map, so it is per worktree as the maps are.
+ // It reads HEAD through `Fabric.HeadSHA` before its walk, and plans and measures every package at that HEAD.
+ // It reads HEAD again before each package job and once a job's tests ran.
+ // Once HEAD moved it ends, counting the jobs it left as queued, so the next call plans at the new HEAD.
+@@ -1116,7 +1122,9 @@
+ //
+ // `lym gate redundant <package>` judges the map of one package and prints its redundancy candidates.
+ // It runs from any worktree of the hub and resolves the module as the redundancy report step does.
+-// It reads the map as it stands, runs no test and takes no slot.
++// It reads the map as it stands where `lym gate testmap` from the same worktree writes it.
++// It runs no test and takes no slot.
++// The redundancy report step reads the hub's shared maps from every worktree.
+ // It judges through `testcover.JudgeMap`.
+ // It leaves out the tests the keep scan of the package's directory in this worktree names.
+ // It prints the map's commit, build time and test count.
+diff --git a/internal/gatecli/redundant.go b/internal/gatecli/redundant.go
+index 41758906..cf9477ae 100644
+--- a/internal/gatecli/redundant.go
++++ b/internal/gatecli/redundant.go
+@@ -48,7 +48,8 @@ func redundantCmd() *cobra.Command {
+ A candidate is a tier0 or tier1 test whose covered blocks of the package's own files the package's other judged tests cover.
+ Each comes with its standalone seconds and the tests that cover it; removable marks the set a greedy pass, slowest first, can delete together while every block stays covered.
+ A test marked //testtiming:keep is neither a candidate nor a cover, and nor is a test the spawn scan marks or one whose entry records no passing run.
+-It reads the map as the last lym gate testmap call left it and the keep markers from this worktree; it runs no test and takes no slot.
++It reads the map as the last lym gate testmap call from this worktree left it: the hub's shared maps from the prime, this worktree's own elsewhere.
++It reads the keep markers from this worktree; it runs no test and takes no slot.
+ It prints the map's commit and build time, map_build_failure when a later coverage build failed, the candidates, the kept tests with their reasons and the tests not judged with why.
+ 
+ Examples:
+@@ -66,7 +67,7 @@ Examples:
+ }
+ 
+ // runRedundant writes the redundancy candidates of the package pkg.
+-// It reads them from the package's coverage map in the hub of the seam cwd.
++// It reads them from the package's coverage map where `lym gate testmap` from the worktree of the seam cwd writes it.
+ // It returns the verb's exit code.
+ func runRedundant(ctx context.Context, out io.Writer, pkg string) int {
+ 	cwd, err := lymcwd.CwdFrom(ctx)
+@@ -89,9 +90,14 @@ func runRedundant(ctx context.Context, out io.Writer, pkg string) int {
+ 		return output.Err(out, fmt.Sprintf("gate redundant: %v; way forward: declare tier0 or tier1 with its dir at the Go module's root with lym config gate from the prime, then re-run the same command", err))
+ 	}
+ 
++	mapsDir, err := coverageMapsDir(location)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate redundant: %v; way forward: re-run the same command", err))
++	}
++
+ 	pkg = path.Clean(filepath.ToSlash(pkg))
+-	rebuild := fmt.Sprintf("way forward: build it with lym gate testmap %s from the hub's prime worktree, then re-run the same command", pkg)
+-	m, found, err := testcover.ReadMap(testcover.Dir(fabricengine.BoltDir(location.HubPath)), pkg)
++	rebuild := fmt.Sprintf("way forward: build it with lym gate testmap %s from this worktree, then re-run the same command", pkg)
++	m, found, err := testcover.ReadMap(mapsDir, pkg)
+ 	if err == nil && found {
+ 		err = checkMapBlocks(m)
+ 	}
+diff --git a/internal/gatecli/testmap.go b/internal/gatecli/testmap.go
+index 1c99c3f3..287193b1 100644
+--- a/internal/gatecli/testmap.go
++++ b/internal/gatecli/testmap.go
+@@ -1,6 +1,6 @@
+ // testmap.go holds `lym gate testmap`.
+-// It builds the per-package coverage maps on command from the hub's prime worktree.
+-// It refuses a call outside the prime, plans the packages at HEAD, then measures the queued ones and audits.
++// It builds the per-package coverage maps on command at the HEAD of the worktree it runs in.
++// It picks the worktree's maps directory, plans the packages at HEAD, then measures the queued ones and audits.
+ // It prints what it measured, skipped and failed with its plan's counts.
+ 
+ package gatecli
+@@ -76,17 +76,18 @@ func testMapCmd(goBinary string, minuteUnit, grace time.Duration) *cobra.Command
+ 	var maxPackages int
+ 	cmd := &cobra.Command{
+ 		Use:         "testmap [<package>...]",
+-		Short:       "build the per-package coverage maps at the HEAD of the hub's prime worktree, on command",
++		Short:       "build the per-package coverage maps at the HEAD of this worktree, on command",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+-		Long: `testmap builds the coverage map of every package at the prime's HEAD, or rebuilds each named package's map whole.
+-Nothing else builds the maps: run it before lym gate redundant, and run it over the whole module before a sweep of redundant tests.
+-A map records, for each tier0 and tier1 test of the package run alone under coverage, the blocks it covers of the package's own files and the functions it covers of the linked packages.
++		Long: `testmap builds the coverage map of every package at this worktree's HEAD, or rebuilds each named package's map whole.
++It runs in any worktree of the hub: from the prime it writes the hub's shared maps, from any other its own under .lym.
++Nothing else builds the maps: run it before lym gate redundant, which reads the same worktree's maps.
++A map records, for each tier0 and tier1 test run alone under coverage, the blocks it covers of the package's own files and the functions it covers of linked packages.
+ With no package named, it first plans every package at HEAD, building nothing, by comparing each map with HEAD through the coverage selector.
+ A map moves to HEAD keeping every entry but those of affected tests and of tests no longer declared; the affected ones are queued.
+ A map the selector misses for stays as it is, and its package is queued for a whole rebuild.
+ It then measures the queued packages, all of them unless --max caps the count: first those the gate's run records show costliest, then the rest in import path order.
+-It waits for one gate slot and holds it to its end, and it ends once HEAD moves.
+-Named packages also wait for each package's map build lock, and are rebuilt whole.
++It holds one gate slot to its end, and ends once HEAD moves.
++Named packages wait for each map build lock and are rebuilt whole.
+ Each test runs alone in its own process, up to the slot's tier0 parallel side by side; a test that fails beside others runs once more alone.
+ A test that fails, times out, skips or covers nothing gets an entry naming that outcome; a test the spawn scan marks is never run.
+ Once nothing is left queued, it re-measures the oldest passing entries if a gate slot is free at once, counting each difference as an audit mismatch.
+@@ -166,7 +167,7 @@ type testMapRun struct {
+ 	pool     *gateslot.Pool
+ 	// tiers holds each mapped tier the hub declares, by number.
+ 	tiers map[int]gateslot.Tier
+-	// mapsDir is the hub's coverage map directory.
++	// mapsDir is the coverage map directory the call reads and writes.
+ 	mapsDir string
+ 	// moduleDir is the module root, moduleRel its worktree-relative slash path and modulePath its import path.
+ 	moduleDir, moduleRel, modulePath string
+@@ -183,7 +184,7 @@ type testMapRun struct {
+ 
+ 	// The fields below fill as the call goes.
+ 
+-	// head is the prime's HEAD the call plans and measures at, read once before its walk.
++	// head is the worktree's HEAD the call plans and measures at, read once before its walk.
+ 	head string
+ 	// headMoved is set once a later read of HEAD differs from head, which ends the call.
+ 	headMoved bool
+@@ -238,7 +239,7 @@ func runTestMap(ctx context.Context, out io.Writer, request testMapRequest) int
+ 	if err != nil {
+ 		return output.Err(out, fmt.Sprintf("gate testmap: cannot read the working directory: %v; way forward: re-run the same command", err))
+ 	}
+-	location, refusal := testMapLocation(cwd)
++	location, mapsDir, refusal := testMapLocation(cwd)
+ 	if refusal != "" {
+ 		return output.Err(out, refusal)
+ 	}
+@@ -246,9 +247,8 @@ func runTestMap(ctx context.Context, out io.Writer, request testMapRequest) int
+ 	runCtx, caught, stop := catchTerminatingSignals(ctx)
+ 	defer stop()
+ 	run := &testMapRun{
+-		ctx: runCtx, request: request, location: location,
+-		mapsDir: testcover.Dir(fabricengine.BoltDir(location.HubPath)),
+-		built:   []string{}, skipped: []testMapSkip{}, failed: []testMapFailure{}, timedOut: []string{},
++		ctx: runCtx, request: request, location: location, mapsDir: mapsDir,
++		built: []string{}, skipped: []testMapSkip{}, failed: []testMapFailure{}, timedOut: []string{},
+ 		measures: []testMapMeasure{},
+ 	}
+ 	defer run.close()
+@@ -280,27 +280,36 @@ func runTestMap(ctx context.Context, out io.Writer, request testMapRequest) int
+ 	})
+ }
+ 
+-// testMapLocation resolves the hub worktree cwd lies in, and refuses one outside every hub or other than the hub's prime.
+-func testMapLocation(cwd string) (*lymcwd.Location, string) {
++// testMapLocation resolves the hub worktree cwd lies in and the coverage map directory of a call from it.
++// It returns a refusal for a cwd outside every hub.
++func testMapLocation(cwd string) (*lymcwd.Location, string, string) {
+ 	location, inHub, err := resolveHub(cwd)
+ 	if err != nil {
+-		return nil, fmt.Sprintf("gate testmap: %v; way forward: re-run the same command", err)
++		return nil, "", fmt.Sprintf("gate testmap: %v; way forward: re-run the same command", err)
+ 	}
+ 	if !inHub {
+-		return nil, fmt.Sprintf("gate testmap: %s is in no hub, and the coverage maps live in a hub; way forward: run lym gate testmap from a hub's prime worktree", cwd)
++		return nil, "", fmt.Sprintf("gate testmap: %s is in no hub, and the coverage maps live in a hub; way forward: run lym gate testmap from a worktree of a hub", cwd)
+ 	}
++	mapsDir, err := coverageMapsDir(location)
++	if err != nil {
++		return nil, "", fmt.Sprintf("gate testmap: %v; way forward: re-run the same command", err)
++	}
++	return location, mapsDir, ""
++}
++
++// coverageMapsDir returns the coverage map directory that `lym gate testmap` and `lym gate redundant` use in location.
++// The hub's prime uses the hub's shared maps under its board directory.
++// Any other worktree keeps its own under its anchor,
++// so its maps record the HEAD only its own session moves and go with the worktree.
++func coverageMapsDir(location *lymcwd.Location) (string, error) {
+ 	prime, err := hubgeom.IsPrime(location)
+ 	if err != nil {
+-		return nil, fmt.Sprintf("gate testmap: %v; way forward: re-run the same command", err)
++		return "", err
+ 	}
+ 	if prime {
+-		return location, ""
+-	}
+-	primePath, err := hubgeom.PrimeWorktreePath(location)
+-	if err != nil {
+-		primePath = "the hub's prime worktree"
++		return testcover.Dir(fabricengine.BoltDir(location.HubPath)), nil
+ 	}
+-	return nil, fmt.Sprintf("gate testmap: %s is not the hub's prime worktree, and a coverage map records the prime branch; way forward: run lym gate testmap from %s", location.WorktreePath(), primePath)
++	return testcover.Dir(location.AnchorPath()), nil
+ }
+ 
+ // prepare loads the hub's gate and env config, finds the Go module and reads the uncommitted and untracked files.
+@@ -533,7 +542,7 @@ func (r *testMapRun) orderJobs(jobs []testMapJob) []testMapJob {
+ 	return ordered
+ }
+ 
+-// readHead reads the prime's HEAD and sets headMoved once it differs from the HEAD the call planned at.
++// readHead reads the worktree's HEAD and sets headMoved once it differs from the HEAD the call planned at.
+ func (r *testMapRun) readHead() error {
+ 	current, err := r.fabric.HeadSHA()
+ 	if err != nil {
+diff --git a/internal/gatecli/testmap_integration_test.go b/internal/gatecli/testmap_integration_test.go
+index f4756db1..de074942 100644
+--- a/internal/gatecli/testmap_integration_test.go
++++ b/internal/gatecli/testmap_integration_test.go
+@@ -631,6 +631,59 @@ func readTestMap(t *testing.T, mapsDir, pkg string) testcover.Map {
+ 	return m
+ }
+ 
++// TestGateTestMapInATaskWorktreeKeepsItsOwnMaps builds a map from a task worktree at that worktree's HEAD.
++// The call writes the map under the worktree's own `.lym` and leaves the hub's shared maps alone,
++// and `lym gate redundant` from the same worktree reads the map it wrote.
++func TestGateTestMapInATaskWorktreeKeepsItsOwnMaps(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "backend", Pairs: []string{hubforge.TemplatePairSlug}})
++	pair := h.PairCodeWorktree(hubforge.TemplatePairSlug)
++	anchor := filepath.Join(pair, "backend")
++	const module = "example.com/tasked"
++	gate := "slots: 1\nredundancy_build_timeout_min: 1\nredundancy_test_timeout_sec: 20\ntiers:\n" +
++		"  tier0: {command: x, timeout_min: 1, counter: go-json, env: {LYM_TEST_TIER: \"0\"}}\n"
++	if err := os.WriteFile(configengine.ConfigFile(h.BoardDir(), "gate"), []byte(gate), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	plankit.WriteTree(t, anchor, map[string]string{
++		"go.mod":            "module " + module + "\n\ngo 1.21\n",
++		"solo/solo.go":      testMapSource("solo"),
++		"solo/solo_test.go": testMapTestFile("solo", map[string]int{"TestSoloOne": 0, "TestSoloTwo": 0}),
++	})
++	gitkit.Git(t, pair, "add", "backend")
++	gitkit.Git(t, pair, "commit", "-q", "-m", "seed the tasked module")
++	head := gitkit.RevParse(t, pair, "HEAD")
++	standIn, err := os.Executable()
++	if err != nil {
++		t.Fatal(err)
++	}
++	env := append(os.Environ(), helperEnv+"="+helperRoleTestMapGo, testMapModuleEnv+"="+module)
++
++	got := callTestMap(t, pair, standIn, env, time.Minute, 10)
++	if diff := cmp.Diff(testMapOutcome{Built: []string{"solo"}}, got, cmpopts.EquateEmpty()); diff != "" {
++		t.Errorf("runTestMap() from the task worktree mismatch (-want +got):\n%s", diff)
++	}
++	// The worktree's own maps lie under its anchor's `.lym`, not under the worktree root's.
++	if m := readTestMap(t, testcover.Dir(anchor), "solo"); m.Commit != head {
++		t.Errorf("the task worktree's map of solo has commit %s; want the worktree's HEAD %s", m.Commit, head)
++	}
++	if _, found, err := testcover.ReadMap(testcover.Dir(fabricengine.BoltDir(h.Location.HubPath)), "solo"); err != nil || found {
++		t.Errorf("ReadMap(solo) in the hub's shared maps = found %v, err %v; want no map", found, err)
++	}
++
++	var out bytes.Buffer
++	code := clihelp.ExecuteIn(Command(), pair, &out, []string{"redundant", "solo"})
++	var answer struct {
++		OK        bool   `json:"ok"`
++		MapCommit string `json:"map_commit"`
++	}
++	if err := json.Unmarshal(out.Bytes(), &answer); err != nil || code != 0 || !answer.OK || answer.MapCommit != head {
++		t.Errorf("redundant solo from the task worktree = %d, %s; want exit 0 and map_commit %s", code, out.Bytes(), head)
++	}
++}
++
+ // TestGateTestMap runs `lym gate testmap` calls in order over one hub.
+ // Each call builds on the maps and HEAD the last one left.
+ // Its subtests share that state and run in sequence, so none is parallel.
+@@ -639,7 +692,7 @@ func TestGateTestMap(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{hubforge.TemplatePairSlug}})
+-	prime, pair := h.PrimeWorktree(), h.PairCodeWorktree(hubforge.TemplatePairSlug)
++	prime := h.PrimeWorktree()
+ 	const module = "example.com/mapped"
+ 	// A test past 20 seconds of 150 milliseconds each times out: 3 seconds, long enough for a stand-in to start under load.
+ 	// tierFields adds fields to the flow mapping of tier0 and tier1.
+@@ -779,21 +832,13 @@ func TestGateTestMap(t *testing.T) {
+ 			// setup, when set, changes the hub's gate config for the row.
+ 			setup func(t *testing.T)
+ 		}{
+-			{
+-				name: "OutsideThePrime", dir: pair, args: []string{"testmap"},
+-				want: "gate testmap: " + pair + " is not the hub's prime worktree, and a coverage map records the prime branch; way forward: run lym gate testmap from " + prime,
+-			},
+-			{
+-				name: "FromAPairsRecordsSibling", dir: h.PairRecordsSibling(hubforge.TemplatePairSlug), args: []string{"testmap"},
+-				want: "gate testmap: " + pair + " is not the hub's prime worktree, and a coverage map records the prime branch; way forward: run lym gate testmap from " + prime,
+-			},
+ 			{
+ 				name: "FromThePrimesRecordsSiblingActsInThePrime", dir: h.PrimeRecords(), args: []string{"testmap", "nosuch"},
+ 				want: "gate testmap: \"nosuch\" names no package directory of the module at " + prime + "; way forward: name a package by its directory relative to the module root, such as internal/foo",
+ 			},
+ 			{
+ 				name: "OutsideEveryHub", dir: outsideHub, args: []string{"testmap"},
+-				want: "gate testmap: " + outsideHub + " is in no hub, and the coverage maps live in a hub; way forward: run lym gate testmap from a hub's prime worktree",
++				want: "gate testmap: " + outsideHub + " is in no hub, and the coverage maps live in a hub; way forward: run lym gate testmap from a worktree of a hub",
+ 			},
+ 			{
+ 				name: "MaxBelowOne", dir: prime, args: []string{"testmap", "--max", "0"},
+diff --git a/internal/gatecli/testmapplan.go b/internal/gatecli/testmapplan.go
+index 92599587..7983e1be 100644
+--- a/internal/gatecli/testmapplan.go
++++ b/internal/gatecli/testmapplan.go
+@@ -1,4 +1,4 @@
+-// testmapplan.go plans `lym gate testmap`'s packages at the prime's HEAD, building nothing and running no test.
++// testmapplan.go plans `lym gate testmap`'s packages at the worktree's HEAD, building nothing and running no test.
+ // It asks the coverage selector what changed since each map's commit.
+ // It writes what still holds at HEAD, and queues the tests and packages left to measure.
+ 
+diff --git a/internal/hubgeom/hubgeom.go b/internal/hubgeom/hubgeom.go
+index 16fd915b..6eb3c780 100644
+--- a/internal/hubgeom/hubgeom.go
++++ b/internal/hubgeom/hubgeom.go
+@@ -56,20 +56,6 @@ func IsPrime(l *lymcwd.Location) (bool, error) {
+ 	return isPrimeWorktree(l.WorktreePath())
+ }
+ 
+-// PrimeWorktreePath returns the root of the prime worktree of l's hub.
+-// The error reports a hub whose prime worktree cannot be found.
+-func PrimeWorktreePath(l *lymcwd.Location) (string, error) {
+-	name, err := fabricengine.PrimeName(l)
+-	if err != nil {
+-		return "", err
+-	}
+-	prime, err := lymcwd.NamedWorktree(l.HubPath, name)
+-	if err != nil {
+-		return "", err
+-	}
+-	return prime.WorktreePath(), nil
+-}
+-
+ // gitEntryName is the entry at every git worktree's root.
+ const gitEntryName = ".git"
+ 
+diff --git a/internal/lymdirs/dirs.go b/internal/lymdirs/dirs.go
+index 1fd2965b..8528780c 100644
+--- a/internal/lymdirs/dirs.go
++++ b/internal/lymdirs/dirs.go
+@@ -51,8 +51,9 @@ const FrontTaskDirName = "fronttask"
+ // Each task's snapshot of its checkouts is taken before the drift judge runs.
+ const DriftJudgeDirName = "drift-judge"
+ 
+-// TestCoverDirName is the directory under the hub's board-level `.lym` that holds the per-package coverage maps.
+-// Every worktree of the hub on the machine shares them.
++// TestCoverDirName is the directory under a `.lym` that holds per-package coverage maps.
++// Under the hub's board-level `.lym` it holds the maps every worktree of the hub on the machine shares;
++// under a worktree's `.lym` it holds the maps that worktree builds for itself.
+ const TestCoverDirName = "testcover"
+ 
+ // BeamDirName is the directory under a worktree's `.lym` that holds dobby's lock, state record and markers.
+diff --git a/internal/testcover/coveragemap.go b/internal/testcover/coveragemap.go
+index 3d6de9fe..9830725a 100644
+--- a/internal/testcover/coveragemap.go
++++ b/internal/testcover/coveragemap.go
+@@ -21,10 +21,11 @@ const mapFileName = "map.json"
+ // It also holds each test's spawn verdict.
+ const MapFormatVersion = 2
+ 
+-// Dir returns the directory under the board directory boardDir that holds the coverage maps and the exit record.
+-// Every worktree of the hub on the machine shares it.
+-func Dir(boardDir string) string {
+-	return filepath.Join(boardDir, lymdirs.DotLymDirName, lymdirs.TestCoverDirName)
++// Dir returns the coverage map directory under the `.lym` of the directory root.
++// Under the hub's board directory it holds the maps every worktree of the hub on the machine shares;
++// under a worktree's anchor it holds the maps that worktree keeps for itself, which go with the worktree.
++func Dir(root string) string {
++	return filepath.Join(root, lymdirs.DotLymDirName, lymdirs.TestCoverDirName)
+ }
+ 
+ // Map is one package's coverage map.
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index 6265e8c6..e2ff81a1 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -54,7 +54,8 @@
+ // Map.FailedAt tells either from the commit.
+ // Its MapFormat marker names that shape and holds the writer's commit, build time and EnvironmentStamp.
+ // A map without the marker, or whose marker's commit and time differ from the map's own, was written otherwise.
+-// The maps live under Dir, one directory per package, shared by every worktree of the hub on the machine.
++// The maps live under Dir, one directory per package:
++// the hub's shared maps under its board directory, or a worktree's own maps under its anchor.
+ // A package owns every file under its directory except those below a nested package or module.
+ // NestedPackageDirs finds those nested directories.
+ //
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index ea4d92e0..d79e00c1 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -218,7 +218,8 @@ so every run takes its slots, its timeout and its log.
+ - Tests run only through `lym gate test` over `gate.yaml`'s tiers.
+   Two things run outside it: a card `**Verify:**` line and `cmd/testtiming`'s runs in every mode.
+ - Two coverage runs take a tier's `env` and a gate slot as a tier run does:
+-  `lym gate testmap`, which rebuilds the per-package coverage maps from the hub's prime worktree,
++  `lym gate testmap`, which rebuilds the per-package coverage maps at the HEAD of the worktree it runs in,
++  into the hub's shared maps from the prime and into the worktree's anchor `.lym` elsewhere,
+   and the `redundancy` report step a gate key's `reports` lists, which runs after the key's tiers released their slots.
+   Each runs every test alone under a coverage binary, since coverage counters are process-wide.
+ - A card `**Verify:**` line runs through the shared `internal/cardverify` runner,
+@@ -289,7 +290,7 @@ this section keeps only what is project-specific or stricter here.
+   the functions it covers of each other in-module package its test binary links, and its spawn scan verdict.
+   It also records the hashes of the package's files and of each linked package's files at the commit it was built from.
+   The maps are built only on command: no dobby, landing or gate builds them, and the gate selects no test from them.
+-  A call naming no package plans every map at the prime's HEAD through the coverage selector, building nothing:
++  A call naming no package plans every map at the HEAD of the worktree it runs in through the coverage selector, building nothing:
+   a current map moves to HEAD with its entries, an affected one drops the affected tests' entries, which are re-measured,
+   and a miss rebuilds the package whole.
+   A failed build keeps the map's entries and is not retried at the same HEAD.
