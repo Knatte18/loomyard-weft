@@ -67,6 +67,12 @@ Decision: The writer picks the two landed tapestry inputs and posts the orch (ly
 
 Rationale: A task session cannot run lym fabric add; the 2026-11-12 Plan-writer bench ran its pairs the same way. The operator told the orch to get the bench going.
 
+### Added after Discussion (operator, 2026-11-16): The writer runs the bench sessions in pairs the orch made
+
+Decision: This replaces the decision that the orch's helper runs the sessions. The orch made six pairs from this task's worktree: cm-sa, cm-sb, cm-sc (small input, arms A, B, C) and cm-la, cm-lb, cm-lc (large input), under /home/knatte/Code/loomyard-LYMHUB/. The writer sets each up, runs its Plan-Write and one Plan-Burler round, collects the figures, and tells the orch when the pairs can be removed; the orch removes them.
+
+Rationale: Operator, 2026-11-16: the orch makes the worktrees from the task's worktree, the task agent does the rest, the orch deletes them.
+
 ## Constraints
 
 ## Auto-mode assumptions
