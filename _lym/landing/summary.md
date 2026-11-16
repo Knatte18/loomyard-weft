@@ -1,46 +1,38 @@
-# lym gate testmap builds in any worktree and keeps its maps there
+# lym gate testmap builds in any worktree, with maps kept there
 
-`lym gate testmap` used to refuse every worktree but the hub's prime.
-It built at the prime's HEAD and wrote the maps to the hub's board-level `.lym/testcover/`.
-Other runs land on the prime while a build runs, and the build ends once HEAD moves.
-So a survey run such as `redundancy-candidates-survey` could not build in its own worktree,
-and its timing and maps depended on what landed meanwhile.
+`lym gate testmap` no longer refuses every worktree but the hub's prime.
+It runs in any worktree of the hub and builds at that worktree's HEAD, which only its own session moves.
+Before, a task could not build maps for itself:
+the prime moves as other runs land, and a build ends once HEAD moves, so a survey's timing and maps depended on what landed meanwhile.
 
 ## What changes
 
-- `lym gate testmap` runs in any worktree of the hub and plans and measures at that worktree's HEAD.
-  It still refuses a directory outside every hub, and the refusal now points at any worktree of a hub.
-- A new `coverageMapsDir` in `internal/gatecli/testmap.go` picks the maps directory.
-  From the prime, told by `hubgeom.IsPrime`, it is the hub's shared `testcover.Dir(BoltDir(hub))`, as before.
-  From any other worktree it is `testcover.Dir(location.AnchorPath())`, the worktree's own `.lym/testcover/`.
-  Those maps are thrown away with the worktree and never touch the shared maps.
-- A package's build lock already lies beside its map, so it is now per worktree whenever the maps are.
-  The rest of the build (package planning, side-by-side runs, the slot, the audit round) is unchanged.
-- `lym gate redundant` reads its map through the same `coverageMapsDir`,
+- From the prime, `lym gate testmap` reads and writes the hub's shared maps under the board-level `.lym/testcover/`, as before.
+- From any other worktree, it reads and writes that worktree's own maps under its anchor's `.lym/testcover/`.
+  They go with the worktree and never touch the shared maps.
+- `lym gate redundant` reads the maps from the same place as `lym gate testmap` from the same worktree writes them,
   so a run's survey reads the maps that run built.
-  Its rebuild hint now says to run `lym gate testmap <pkg>` from this worktree.
-- `testcover.Dir` takes any root now, a board directory or a worktree anchor, and its doc says which holds which.
-  The stale mention of an "exit record" there is gone.
-- `hubgeom.PrimeWorktreePath` is deleted: the testmap refusal that named the prime was its last caller.
+  Its rebuild hint now says to build from this worktree.
+- The build itself is unchanged: packages, side-by-side runs, the per-package build lock.
+  The lock lies beside the map, so it is per worktree as the maps are.
+- The call refuses only outside every hub, and the refusal now says to run from a worktree of a hub.
+
+Closes no issue.
 
 ## Design decisions
 
-- The body left one question for Discussion: should a call from the prime still write the shared maps?
-  It does.
-  The gate's advisory redundancy report step reads the shared maps from every worktree.
-  If the prime wrote into its own worktree too, nothing would feed those maps.
-- The redundancy report step in `lym gate test` keeps reading the shared maps.
-  The entry asks only that `lym gate redundant` follow the worktree.
+- A call from the prime still writes the hub's shared maps; every other call writes its own.
+  The choice is one function, `coverageMapsDir` in `internal/gatecli/testmap.go`, which both verbs use, so they cannot disagree.
+- `testcover.Dir` now takes the directory whose `.lym` holds the maps, a board directory or a worktree anchor, instead of only a board directory.
+  `lymdirs.TestCoverDirName` and the docs describe both uses.
+- `hubgeom.PrimeWorktreePath` is removed: only the old refusal used it.
+- The redundancy report step still reads the hub's shared maps from every worktree.
+  Only the two `lym gate` verbs follow the worktree.
 
-## Docs
+## To check
 
-The `internal/gatecli` and `internal/testcover` package docs, the `TestCoverDirName` doc in `internal/lymdirs`, and the `lym gate testmap` lines of `docs/overview.md` now describe where each worktree's maps live.
-
-## Tests
-
-- `TestGateTestMap`'s refusal table drops the two rows that refused a pair worktree and its records sibling.
-  Its outside-every-hub row carries the new way forward.
-- New `TestGateTestMapInATaskWorktreeKeepsItsOwnMaps` commits a module in a pair's code worktree.
-  It runs `lym gate testmap` there and checks three things:
-  the package is built, its map lies under the pair's own `.lym` at the pair's HEAD, and the hub's shared maps hold none.
-  It then checks that `lym gate redundant` from the pair reads that map.
+- `pattern/PATTERN-test-speed.md` named the prime as the only place the maps are built, in its coverage-run bullet and in its testmap description.
+  Both now say the worktree's HEAD and the two map locations; check that no other prime-only wording remains there.
+- Not run by hand: `lym gate testmap` from a real task worktree against a real module.
+  The new integration test `TestGateTestMapInATaskWorktreeKeepsItsOwnMaps` covers a stand-in build from a task worktree,
+  and `lym gate redundant` reading its map.
