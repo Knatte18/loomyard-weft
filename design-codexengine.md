@@ -1,6 +1,6 @@
 # codexengine
 
-`codexengine` · Project · feature, codex, shuttle, stencil, heddle
+`codexengine` · Project · feature, research, codex, shuttle, stencil, heddle
 
 Decision record: [Sketch](decision-codexengine.md)
 

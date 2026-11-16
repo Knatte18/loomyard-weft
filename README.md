@@ -48,29 +48,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (0)</strong></summary>
-
-[`codex-engine-trial`](design-codex-engine-trial.md) · Age 12d · Owner `neve`
-
-Real Codex launches through lym shuttle check home, sandbox, hooks, guards, pane, skills and load
-
-### Tasks (0)
-
-Concrete and claimable; only a task can run.
-
-#### Ready (0)
-
-Waits on nothing open; can start now.
-
-_None._
-
-### Notes (0)
-
-Not tasks: ideas and observations, merged into a task when one is promoted.
-
-</details>
-
-<details open>
 <summary><strong><a href="project-adopt-build-resplit.md">P4 Merge the remaining adopt-build members into one design and split it again on what landed</a> (7)</strong></summary>
 
 [`adopt-build-resplit`](design-adopt-build-resplit.md) · Age 7d · Owner `neve`
