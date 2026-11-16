@@ -1,6 +1,6 @@
 # lym gate redundant flags tests as redundant that check different things
 
-`redundancy-judge-asserts` · Note · bug, testkit, gate
+`redundancy-judge-asserts` · Task · bug, testkit, gate · draft
 
 ## Seen (operator, 2026-11-16)
 
