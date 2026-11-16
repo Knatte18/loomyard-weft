@@ -1,6 +1,6 @@
 # The board README shows every per-task field that changes the run, pull_request included
 
-`readme-shows-run-fields` · Task · bug, board · running · Drift-Verify
+`readme-shows-run-fields` · Task · bug, board · running · Code-Bouncer
 
 ## Seen (adopt-build beam orch, 2026-11-16; the operator saw it)
 
