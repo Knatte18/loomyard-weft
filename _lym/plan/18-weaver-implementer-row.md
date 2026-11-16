@@ -26,7 +26,7 @@
 
 **Uses:**
 - `internal/shedrecipe#resolveGateSpec`
-- `plan:internal/weaverengine#ResolveLadder`
+- `internal/weaverengine#ResolveLadder`
 - `internal/testkit/envkit#TestFullEnv_PathFieldsAbsoluteUnderOneRoot`
 - `internal/testkit/envkit#TestNilSeams_ReportsExactPaths`
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`

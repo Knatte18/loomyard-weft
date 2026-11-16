@@ -4,15 +4,15 @@
 - `internal/weaverengine/doc.go`
 - `internal/weaverengine/template.yaml`
 - `internal/weaverengine/testmain_test.go`
-- `plan:internal/weaverengine#configTemplate` -> `var configTemplate string`
-- `plan:internal/weaverengine#Config` -> `type Config struct`
-- `plan:internal/weaverengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/weaverengine#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/weaverengine#ConfigOpenMaps` -> `func ConfigOpenMaps() []string`
-- `plan:internal/weaverengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs, module string) (Config, error)`
-- `plan:internal/weaverengine#ResolveLadder` -> `func ResolveLadder(cfg Config, reg modelspec.Registry) ([]shuttleengine.ModelChoice, error)`
-- `plan:internal/weaverengine#TestLoadConfig` -> `func TestLoadConfig(t *testing.T)`
-- `plan:internal/weaverengine#TestResolveLadder` -> `func TestResolveLadder(t *testing.T)`
+- `internal/weaverengine#configTemplate`
+- `internal/weaverengine#Config`
+- `internal/weaverengine#ConfigSpec`
+- `internal/weaverengine#ConfigTemplate`
+- `internal/weaverengine#ConfigOpenMaps`
+- `internal/weaverengine#LoadConfig`
+- `internal/weaverengine#ResolveLadder`
+- `internal/weaverengine_test#TestLoadConfig`
+- `internal/weaverengine_test#TestResolveLadder`
 
 **Edit:**
 - `internal/configreg#Modules`

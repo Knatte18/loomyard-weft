@@ -1,9 +1,9 @@
 # Card 1 — shared-plan-conflict-path
 
 **Create:**
-- `plan:internal/lymdirs#ImplementerDirName` -> `const ImplementerDirName = "implementer"`
-- `plan:internal/runplan#ConflictDir` -> `func ConflictDir(anchorRoot string) string`
-- `plan:internal/websterengine#Geometry.ConflictDir` -> `func (g Geometry) ConflictDir() string`
+- `internal/lymdirs#ImplementerDirName`
+- `internal/runplan#ConflictDir`
+- `internal/websterengine#Geometry.ConflictDir`
 
 **Edit:**
 - `internal/runplan#Geometry`

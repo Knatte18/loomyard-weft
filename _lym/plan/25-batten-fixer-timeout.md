@@ -6,7 +6,7 @@
 
 **Uses:**
 - `plan:internal/weaverengine#ActiveOrSetting`
-- `plan:internal/weaverengine#LoadConfig`
+- `internal/weaverengine#LoadConfig`
 - `plan:internal/weaverengine#SaveState`
 
 **Intent:** Batten's watch bounds a Weaver run's verify-fixer strand by `weaver.yaml`'s `fixer_timeout_min` (D10).

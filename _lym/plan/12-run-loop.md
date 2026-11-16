@@ -19,7 +19,7 @@
 - `internal/runplan#ResolveAtDispatch`
 - `internal/runplan#WriteConflictRecord`
 - `internal/runplan#RemoveConflictRecord`
-- `plan:internal/runplan#ConflictDir`
+- `internal/runplan#ConflictDir`
 - `plan:internal/runplan#PendingPartition`
 - `plan:internal/runplan#RecordBeginPartition`
 - `internal/runplan#AcquireStateMutation`

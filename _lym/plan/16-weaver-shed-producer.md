@@ -20,7 +20,7 @@
 - `internal/shedadapters#TestWebsterProducer_ConflictRerouteCapThenRepeatHalts`
 - `internal/shedadapters#planConflictWayForward`
 - `internal/runplan#ClaimConflictRoute`
-- `plan:internal/runplan#ConflictDir`
+- `internal/runplan#ConflictDir`
 
 **Intent:** Map Weaver's run onto the shed producer contract, with the same Done, reroute and Stuck routes as Webster's (D1, D2, D6).
 
