@@ -788,6 +788,33 @@
       "revised": "2026-11-16T11:29:44Z",
       "profile": "solid",
       "notify_on_land": true
+    },
+    {
+      "id": 1403,
+      "handle": "T6",
+      "slug": "code-mode-web-research",
+      "title": "Web research: how to use Claude Code Mode well",
+      "kind": "task",
+      "labels": [
+        "research",
+        "claude",
+        "codex"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Gather web and Reddit tips on using Code Mode well, and judge each against the bench result",
+      "body": "## Goal\n\nThe bench `claude-code-mode` (report `docs/research/claude/code-mode-bench-2026-11-16/report.md`) found no gain from Claude Code's experimental Code Mode on the Plan writer:\nit batched twice the tool calls, but saved few turns, since each `REPL` call needs a `Poll` call.\nThis task finds out from the web how people use Code Mode well, and whether any of it would change that result for lym's sessions.\n\n## What to find\n\n- What Code Mode is meant for, from Anthropic's own docs, changelogs and issues.\n- How users get gains from it: prompt wording, task kinds, settings, the `REPL` and `Poll` pattern, subagents.\n- Where users report it costs more or helps nothing.\n- For each tip: whether lym's writers could use it, and how a later bench would test it.\n\n## Sources\n\n- The web, through the session's own search and fetch tools.\n- Reddit, which Claude's fetch refuses: fetch Reddit threads through Codex with `lym shuttle run --model 'astra[high]'`,\n  having the Codex session download the threads and save their text under this task's `.scratch/`, then read them yourself.\n  Cap: at most 3 Codex sessions in all.\n- Record each source's URL and date in the report.\n\n## Bounds\n\nRead and fetch only; change no production code and nothing under Bolt, and run no bench.\nThe report goes under `docs/research/claude/`, beside the bench report.\n",
+      "status": "draft",
+      "created": "2026-11-16T12:15:27Z",
+      "revised": "2026-11-16T12:15:27Z",
+      "run_settings": {
+        "darn": {
+          "writer": "opus[high]"
+        }
+      },
+      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
