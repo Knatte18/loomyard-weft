@@ -1,6 +1,6 @@
 # Merge main into the beam adopt-build
 
-`adopt-build-merge-in` · Task · feature, batten, tender, dobby, orch, fabric, loom · running · Darn-Write
+`adopt-build-merge-in` · Task · feature, batten, tender, dobby, orch, fabric, loom · running · Drift-Verify
 
 Merge in from parent: bring the parent branch main into the beam adopt-build.
 This task's branch forks from the beam, so its landing carries the merge into the beam, as a true merge with no pull request.
