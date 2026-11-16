@@ -1,6 +1,6 @@
 # Claude Code Mode for writer sessions, set per role
 
-`claude-code-mode` · Task · research, claude, shuttle, config · running · Describe
+`claude-code-mode` · Task · research, claude, shuttle, config · running · PR-Review
 
 ## Seen (operator, 2026-11-16)
 
