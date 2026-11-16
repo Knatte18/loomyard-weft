@@ -1,11 +1,11 @@
 {
-  "current_producer": "Raddle-Burler-Fix",
+  "current_producer": "Raddle-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Raddle-Burler-Fix",
-    "last": "Raddle-Burler-Review → bounced to Raddle-Burler-Fix",
+    "now": "Raddle-Bouncer",
+    "last": "Raddle-Burler-Fix → bounced to Raddle-Bouncer",
     "wait": ""
   },
   "history": [
@@ -231,6 +231,24 @@
       ],
       "budget_exempt": true,
       "routed_to": "Raddle-Burler-Fix"
+    },
+    {
+      "producer": "Raddle-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit/_lym/reviews/split/round-1-review.md",
+      "at": "2026-11-16T10:13:41Z",
+      "started_at": "2026-11-16T10:11:43Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "raddle",
+          "kind": "gate",
+          "start": "2026-11-16T10:13:40.818477825Z",
+          "end": "2026-11-16T10:13:40.830735124Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Raddle-Bouncer"
     }
   ],
   "product": {

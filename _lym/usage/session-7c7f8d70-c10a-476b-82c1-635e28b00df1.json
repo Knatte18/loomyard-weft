@@ -1,0 +1,14 @@
+{
+  "session_id": "7c7f8d70-c10a-476b-82c1-635e28b00df1",
+  "row": "Raddle-Burler-Fix",
+  "role": "split-burler-fix",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 24,
+  "cache_write_tokens": 50763,
+  "cache_read_tokens": 385671,
+  "output_tokens": 13046,
+  "cost_usd": 0.5919652,
+  "started": "2026-11-16T10:11:43Z",
+  "ended": "2026-11-16T10:13:40Z"
+}
