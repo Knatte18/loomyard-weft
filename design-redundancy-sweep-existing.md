@@ -2,8 +2,6 @@
 
 `redundancy-sweep-existing` · Task · enhancement, testkit, gate · draft
 
-Depends on: [`redundancy-judge-asserts`](design-redundancy-judge-asserts.md)
-
 ## Seen (orch, 2026-11-09)
 
 The coverage maps (`internal/testcover`, built by `lym gate testmap`) record, per package, the blocks each tier 0 and tier 1 test covers.
