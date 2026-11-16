@@ -1,15 +1,22 @@
 {
-  "current_producer": "Motif",
+  "current_producer": "Discussion-Write",
   "state": "running",
   "error": "",
-  "entered_row": "Motif",
   "pause_requested": false,
   "activity": {
-    "now": "Motif",
-    "last": "",
+    "now": "Discussion-Write",
+    "last": "Motif → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Motif",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-16T09:04:30Z",
+      "started_at": "2026-11-16T09:04:30Z"
+    }
+  ],
   "product": {
     "slug": "adopt-build-resplit",
     "parent": "adopt-build",
