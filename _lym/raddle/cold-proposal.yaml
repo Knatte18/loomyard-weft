@@ -1,0 +1,218 @@
+{
+  "sketch": "codex-same-as-claude",
+  "shape": "project",
+  "project": {
+    "slug": "codex-parity",
+    "title": "A Codex session gets exactly what a Claude session in the same role gets",
+    "type": "feature"
+  },
+  "board_checked": [
+    {"slug": "transition-push-takeover", "revised": "2026-11-16T11:57:13Z"},
+    {"slug": "claude-code-mode", "revised": "2026-11-16T10:15:37Z"},
+    {"slug": "machine-registry-holds-catchup", "revised": "2026-11-16T10:22:19Z"},
+    {"slug": "adopt-foreground", "revised": "2026-11-16T10:22:19Z"},
+    {"slug": "leftover-pairs-teardown", "revised": "2026-11-16T10:22:19Z"},
+    {"slug": "board-prints-root-beam", "revised": "2026-11-16T10:22:19Z"},
+    {"slug": "hub-stop-all", "revised": "2026-11-16T10:22:19Z"},
+    {"slug": "machine-start-launchers", "revised": "2026-11-16T10:22:19Z"},
+    {"slug": "claude-account-pick-simple", "revised": "2026-11-15T15:57:51Z"},
+    {"slug": "codex-writer-bench-osl", "revised": "2026-11-15T18:08:55Z"},
+    {"slug": "codex-engine-trial", "revised": "2026-11-11T08:18:35Z"},
+    {"slug": "adopt-build-resplit", "revised": "2026-11-16T11:13:59Z"}
+  ],
+  "parts": [
+    {
+      "slug": "prompt-engine-per-launch",
+      "title": "Every producer renders its prompt and edit directive for the engine its launch resolves to",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D3", "D4"],
+      "packages": [
+        {"path": "internal/shuttleengine", "size": 120},
+        {"path": "internal/shuttleengine/claudeengine", "size": 40},
+        {"path": "internal/shuttleengine/codexengine", "size": 40},
+        {"path": "internal/shuttleengines", "size": 150},
+        {"path": "internal/shuttlecli", "size": 40},
+        {"path": "internal/orchcli", "size": 20},
+        {"path": "internal/editdirective", "size": 40},
+        {"path": "contracts/stencils", "size": 250},
+        {"path": "internal/seatengine", "size": 40},
+        {"path": "internal/sheddriver", "size": 30},
+        {"path": "internal/treadleengine", "size": 60},
+        {"path": "internal/samplerengine", "size": 40},
+        {"path": "internal/websterengine", "size": 120},
+        {"path": "internal/landingshed", "size": 40},
+        {"path": "internal/gatefixer", "size": 30},
+        {"path": "internal/loomcli", "size": 30},
+        {"path": "internal/dobbyengine", "size": 30},
+        {"path": "internal/shedarbiter", "size": 30},
+        {"path": "internal/frictionengine", "size": 40},
+        {"path": "internal/mergeresolve", "size": 40},
+        {"path": "internal/shedadapters", "size": 120}
+      ],
+      "contract": {
+        "takes": "nothing from another part",
+        "delivers": "a launch spec that carries its prompt engine, or the hand-written mark from lym shuttle run alone; a shuttleengine call that returns the engine name a model choice resolves to; Prepare refusing a mismatched or unset prompt engine; the orch spec pinned to Claude; one full edit directive per engine block with the shared stencil removed; the D4 scan over production launch-spec literals",
+        "exports": "for every producer outside seatengine, one prompt render function that takes the engine name and needs no session, split out of its launching function where that function fills the prompt inline (bouncer.go judgeCall and runSeedSpawn, websterengine, treadleengine, samplerengine, landingshed, frictionengine, mergeresolve); launch-manifest-parity's producer table calls these, and editdirective.Directive takes the engine"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "Every producer's prompt for a Codex launch holds the Codex edit directive, an assist seat gets the full directive, and no stencil named `edit-directive` remains outside the engine blocks (D3).",
+        "Review: each engine's edit directive carries every rule of the shared directive it replaces (D3).",
+        "A producer whose model choice names no engine sets the default engine's name as its prompt engine and renders for it;\n`Prepare` refuses a spec whose prompt engine differs from its own or is unset, naming the way forward; a hand-written `lym shuttle run` spec, from inline text or a file, launches with its manifest saying so; a production launch-spec literal setting neither, and a hand-written mark outside `internal/shuttlecli`, fail the scan; the orch launches on Claude under a Codex default engine (D4)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 10.0,
+      "cost_line": "darn solid with a stored record, 15 runs: fixed $6.88 plus $0.23 per 100 lines over about 1,350 lines; the fit's correlation is 0.59"
+    },
+    {
+      "slug": "codex-standing-instructions",
+      "title": "A Codex session gets Claude's standing items, user setup, instruction files and subagent terms in its developer instructions",
+      "type": "feature",
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D5", "D6", "D7", "D8", "D9"],
+      "packages": [
+        {"path": "internal/shuttleengine/codexengine", "size": 600},
+        {"path": "internal/shuttleengine/claudeengine", "size": 400},
+        {"path": "internal/shuttleengine", "size": 120},
+        {"path": "internal/shuttleengines", "size": 60},
+        {"path": "internal/claudeimports", "size": 150},
+        {"path": "internal/heddleengine", "size": 350},
+        {"path": "internal/heddlecli", "size": 30},
+        {"path": "internal/hubreconcile", "size": 80}
+      ],
+      "contract": {
+        "takes": "prompt-engine-per-launch's prompt engine on the spec, so Prepare knows the launch renders for Codex",
+        "delivers": "Codex developer_instructions in D5's order with the 128 KiB refusal; the agents table's subagent effort and thread cap; the Claude user setup (global file, CLAUDE.md files above the root, skill listing, plugin session-start contexts) resolved in claudeengine and handed to codexengine through a shuttleengine seam; the leaf @-import expander that claudeengine and heddle share; project_doc_max_bytes and AGENTS.override.md carrying both files; the agents-prompt target, the two shipped entries on agents-file and the hub reconcile rendering file targets",
+        "exports": "the plugin session-start hook runner and Codex's sandbox probe as injectable seams of Prepare, so launch-manifest-parity can pass a faked runner and probe and a runner that lists each hook unrun; Codex text it adds in Go literals names none of D2's closed terms"
+      },
+      "depends_on": ["prompt-engine-per-launch"],
+      "open_risks": [],
+      "criteria": [
+        "A Codex launch passes its standing items as `developer_instructions` in the stated order, its prompt file holds only the prompt, and an empty set omits the key;\n`Prepare` refuses a launch whose `developer_instructions` argument passes 128 KiB, naming its size, its largest item and the way forward (D5).",
+        "A Codex launch sets the subagent effort from agents.yaml and the thread cap from codex.yaml (D6).",
+        "`lym-batching` and `lym-plan-edits-before-gate` render into both agent files, an `agents-prompt` entry reaches a Claude and a Codex session, `lym heddle show agents-prompt` is refused with its way forward, and the hub reconcile re-renders the file targets of a live worktree (D7).",
+        "Review: the two shipped entries name no Claude tool (D7).",
+        "A Codex launch's developer instructions carry the user's global file, a CLAUDE.md above the repository root, the session scope's skill listing with SKILL.md paths, and a plugin's session-start output; a failing hook is left out with a warning; an `@` import is expanded to its target's text (D8).",
+        "A Codex launch's instruction-file cap is at least the size of the files it reads, the override file carries both `AGENTS.md` and `CLAUDE.md` when both exist, and a CLAUDE.md below the working directory, or in a directory that also holds an `AGENTS.md`, is named in the developer instructions;\nan edit to a file inside the worktree that the repository CLAUDE.md imports re-renders `AGENTS.override.md` (D9)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "tapestry solid with a stored record reads too few runs, so no figure; about 1,790 lines"
+    },
+    {
+      "slug": "codex-wording-engine-blocks",
+      "title": "Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan",
+      "type": "enhancement",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D2"],
+      "packages": [
+        {"path": "contracts/stencils", "size": 1400},
+        {"path": "contracts/specs", "size": 150},
+        {"path": "internal/loomengine", "size": 120},
+        {"path": "internal/websterengine", "size": 80},
+        {"path": "internal/driftengine", "size": 40},
+        {"path": "internal/burlerengine", "size": 40},
+        {"path": "internal/darnengine", "size": 20},
+        {"path": "internal/planparser", "size": 40},
+        {"path": "internal/batcher", "size": 20},
+        {"path": "internal/shellguard", "size": 40},
+        {"path": "internal/seatengine", "size": 20},
+        {"path": "internal/loomcli", "size": 20}
+      ],
+      "contract": {
+        "takes": "prompt-engine-per-launch's engine-aware renders, so an engine block resolves for the launch's engine; codex-standing-instructions' final heddle and codexengine text, which the scan then judges as landed",
+        "delivers": "every stencil and spec passage naming a closed-list term in a Claude engine block with a Codex copy; mode_rules and plan-gate finding text chosen per engine or worded for any; the D2 scan over stencils, specs and production Go literals, with orch places skipped, an allowlist with reasons for literals that never reach a Codex session, and a check that every engine block has a copy for every registered engine",
+        "exports": "nothing another part calls"
+      },
+      "depends_on": ["codex-standing-instructions"],
+      "open_risks": [],
+      "criteria": [
+        "A term from the closed list in a stencil, spec or production Go literal outside the Claude engine's places fails the scan, the orch places are skipped, and an engine block with no copy for a registered engine fails (D2).",
+        "Review: each Codex engine block and each per-engine Go text says what its Claude copy says, in Codex's terms (D2)."
+      ],
+      "pattern_changes": ["PATTERN-stencil-ownership"],
+      "expected_cost_usd": 11.47,
+      "cost_line": "darn solid with a stored record, 15 runs: fixed $6.88 plus $0.23 per 100 lines over about 1,990 lines, mostly stencil prose; the fit's correlation is 0.59"
+    },
+    {
+      "slug": "codex-question-deny-nudge",
+      "title": "A Codex session gets the question-tool deny and the batching nudge Claude runs",
+      "type": "feature",
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D12"],
+      "packages": [
+        {"path": "internal/shuttleengine/codexengine", "size": 800},
+        {"path": "internal/shuttleengine/claudeengine", "size": 80},
+        {"path": "internal/shuttleengine/bashlookup", "size": 280},
+        {"path": "internal/shuttlecli", "size": 60},
+        {"path": "internal/shuttleengines", "size": 40}
+      ],
+      "contract": {
+        "takes": "codex-standing-instructions' codexengine launch line, whose one hooks.PreToolUse and hooks.PostToolUse settings these entries join",
+        "delivers": "the request_user_input deny on an autonomous Codex launch; the Codex batching nudge reading the rollout's top-level calls and exec cells, judged by Claude's rules and keyed by transcript_path; the read-only lookup check moved out of claudeengine into a package both engines import; codex.yaml's batching_nudge block",
+        "exports": "the moved lookup check's package under internal/shuttleengine"
+      },
+      "depends_on": ["codex-standing-instructions"],
+      "open_risks": [],
+      "criteria": [
+        "An autonomous Codex launch denies a call whose payload tool name ends in `request_user_input` or in `request_user_input_async`,\nthrough its entry in the one `hooks.PreToolUse` setting beside the guard rows (D12).",
+        "Under codex.yaml's `batching_nudge` thresholds, a Codex chain of `lookup_run` single-lookup `exec` cells,\na `Bash` line-range read of a file under `slice_lines` lines or of one an earlier `Bash` call read and unchanged since, its path given relative,\nor `edit_run` `apply_patch`-only `exec` cells gets the nudge line as additional context, without the call being marked failed;\na top-level `function_call` such as `spawn_agent` ends a `lookup_run` or `edit_run` chain;\neach chain's count and `max_nudges` cap are its own, keyed by `transcript_path` (D12)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 9.79,
+      "cost_line": "darn solid with a stored record, 15 runs: fixed $6.88 plus $0.23 per 100 lines over about 1,260 lines; the fit's correlation is 0.59"
+    },
+    {
+      "slug": "launch-manifest-parity",
+      "title": "Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both",
+      "type": "feature",
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D10", "D11"],
+      "packages": [
+        {"path": "internal/shuttleengine", "size": 300},
+        {"path": "internal/shuttleengine/claudeengine", "size": 200},
+        {"path": "internal/shuttleengine/codexengine", "size": 200},
+        {"path": "internal/shuttlecli", "size": 200},
+        {"path": "internal/shuttleparity", "size": 600}
+      ],
+      "contract": {
+        "takes": "prompt-engine-per-launch's per-producer render functions taking the engine; codex-standing-instructions' injectable hook runner and sandbox probe; every Codex delivery of codex-standing-instructions and codex-question-deny-nudge, which the parity test then finds present; codex-wording-engine-blocks' engine blocks, which the test renders per engine",
+        "delivers": "the launch manifest read back from each engine's Prepare, written as a record into the run directory and as a copy into the run-directory root's manifests directory, skipped by the orphan sweep and the run lookup by strand; the parity test with its producer table and the scan for unlisted launch-spec literals; the lym shuttle manifest verb; the bench rule on codex-engine-trial and codex-writer-bench-osl",
+        "exports": "the manifest record and the lym shuttle manifest verb, which the Codex benches read"
+      },
+      "depends_on": ["codex-wording-engine-blocks", "codex-question-deny-nudge"],
+      "open_risks": [],
+      "criteria": [
+        "For every seat in `seatengine`'s tables and every other producer of a launch spec, the Codex manifest holds every compared item of the Claude manifest, and dropping any one Codex delivery from `Prepare` fails the test;\na production launch-spec literal whose enclosing function has no entry in the producer table fails the scan, and a spec literal that sets no `Prompt` is skipped (D1, D5, D7, D8, D12).",
+        "An item from a shared heddle target (`agents-file`, `agents-prompt`) is compared, so dropping its Codex delivery fails the test;\nan entry stored under a single-engine target is not compared, and a plugin context omitted at run time makes the run record's verdict fail (D1).",
+        "`Prepare` writes the manifest record into the run directory for both engines and its copy into the `manifests` directory, the copy remains after a done run's cleanup,\nand a record with an unknown key still reads (D1).",
+        "`lym shuttle manifest` prints both engines' manifests for a seat, exits non-zero naming a missing item, passes with plugin contexts listed unrun,\nand writes nothing outside a temporary run directory it removes and the Codex home, no lasting manifest copy included (D10).",
+        "Review: the `codex-engine-trial` and `codex-writer-bench-osl` entries state the bench rule (D11)."
+      ],
+      "pattern_changes": ["PATTERN-engine-parity"],
+      "expected_cost_usd": null,
+      "cost_line": "tapestry solid with a stored record reads too few runs, so no figure; about 1,500 lines"
+    }
+  ],
+  "order_departures": [],
+  "cost": {
+    "expected_usd": null,
+    "line": "five parts; the three darn solid parts come to $31.26 on the darn solid stored-record cell (15 runs, correlation 0.59), and the two tapestry solid parts rest on a cell that reads too few runs, so the total has no figure",
+    "next_best": {
+      "split": "the same five parts all run as darn solid",
+      "expected_usd": 52.61,
+      "line": "five darn solid parts over about 7,900 lines on the darn solid stored-record cell (15 runs, fixed $6.88 plus $0.23 per 100 lines, correlation 0.59)"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "solid", "stored_record": true},
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
