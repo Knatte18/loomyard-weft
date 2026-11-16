@@ -1,13 +1,13 @@
 {
-  "current_producer": "Plan-Burler-Review",
+  "current_producer": "Plan-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Plan-Burler-Fix",
   "pause_before_by": "bench",
   "activity": {
-    "now": "Plan-Burler-Review",
-    "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
+    "now": "Plan-Burler-Fix",
+    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -69,6 +69,36 @@
       "at": "2026-11-16T11:23:23Z",
       "started_at": "2026-11-16T11:22:49Z",
       "routed_to": "Plan-Burler-Review"
+    },
+    {
+      "producer": "Plan-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/cm-sc/_lym/reviews/plan/round-1-review.md",
+      "at": "2026-11-16T11:31:00Z",
+      "started_at": "2026-11-16T11:23:25Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-16T11:30:34.756711716Z",
+          "end": "2026-11-16T11:30:34.75720063Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-11-16T11:30:35.359910427Z",
+          "end": "2026-11-16T11:30:59.470669241Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-16T11:30:59.704463802Z",
+          "end": "2026-11-16T11:30:59.708154769Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Burler-Fix"
     }
   ],
   "product": {
