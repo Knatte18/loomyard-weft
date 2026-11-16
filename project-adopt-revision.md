@@ -34,7 +34,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Merge main into the beam adopt-build**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-merge-in`](design-adopt-build-merge-in.md) | darn | Drift-Expect | neve | 0m<br>0m | batten, tender, dobby, orch, fabric, loom |
+| T14 | **Merge main into the beam adopt-build**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-merge-in`](design-adopt-build-merge-in.md) | darn | Darn-Write | neve | 0m<br>0m | batten, tender, dobby, orch, fabric, loom |
 
 #### Ready (0)
 
