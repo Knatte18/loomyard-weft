@@ -34,7 +34,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **lym gate testmap builds in any worktree, with maps kept in that worktree**<br>• Build coverage maps at the HEAD of a task worktree and keep them in its .lym or .scratch, so a survey run is not cut by landings and throws the maps away after | [`testmap-any-worktree`](design-testmap-any-worktree.md) | darn · light | Code-Burler-Fix | neve | 28m<br>28m | gate, testkit |
+| T8 | **lym gate testmap builds in any worktree, with maps kept in that worktree**<br>• Build coverage maps at the HEAD of a task worktree and keep them in its .lym or .scratch, so a survey run is not cut by landings and throws the maps away after | [`testmap-any-worktree`](design-testmap-any-worktree.md) | darn · light | Code-Burler-Fix | neve | 29m<br>29m | gate, testkit |
 
 ### Ready (0)
 
@@ -48,7 +48,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Rebuild every coverage map, time it, and list the redundant-test candidates of each package**<br>• One timed full lym gate testmap build and lym gate redundant on every package, reported for the operator to read before any cut | [`redundancy-candidates-survey`](design-redundancy-candidates-survey.md) | darn · docs | T8 | 33m<br>28m | gate, testkit |
+| T6 | `draft` **Rebuild every coverage map, time it, and list the redundant-test candidates of each package**<br>• One timed full lym gate testmap build and lym gate redundant on every package, reported for the operator to read before any cut | [`redundancy-candidates-survey`](design-redundancy-candidates-survey.md) | darn · docs | T8 | 34m<br>29m | gate, testkit |
 
 ## Notes (1)
 
