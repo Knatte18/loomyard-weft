@@ -1,33 +1,32 @@
 # Board README entry cell shows pull_request and on_land
 
-The board README's entry cell rendered a task's brief and one code-span bullet per `run_settings` leaf, and nothing else a run reads.
-A task with `pull_request` on therefore looked like one with no pull-request override.
+The board README's entry cell showed a task's brief and its run settings, and nothing else a run reads.
+A task with `pull_request` on, such as `adopt-build-revision`, looked like it opens no pull request.
 
-`entryCell` in `internal/boardengine/render.go` now stacks one code-span bullet per run-changing entry field the task sets,
-between the brief and the run settings, in a fixed order:
+The entry cell now adds one code-span bullet per run field the entry sets, between the brief and the run settings:
 
-- `pull_request: <on|off|merge-in>`, which decides whether the landing opens a pull request;
-- `on_land: <key>`, the action a front task runs once it lands.
+- `pull_request: <value>`
+- `on_land: <key>`
 
-A field left empty adds no bullet, so an entry that sets neither renders as before.
+A field left empty gives no bullet.
+The bullets stack in the title cell, so the table gains no column.
 
 ## Design decisions
 
-- **Recipe and profile get no bullet.**
-  The board entry names them as examples, but the Running, Ready, layer and Draft tables already show both in the Recipe column, as `recipe · profile`.
-  A bullet would repeat them.
-- **Fields left out.**
-  I checked every `Task` field.
-  `notify_on_land` only asks the dobby to post a line once the run ends, and the dobby clears it after posting, so it doesn't change how the run goes.
-  `isolated` and `depends_on` already decide the section and the After cell.
-  `owner_machine` already shows in the Owner column.
-  `front` only orders lym's own filing.
-- **Line form.**
-  Each line is `<board.json key>: <value>`.
-  This is the same shape a run setting takes when it is a leaf directly under its module name.
+- `runFieldLines` in `internal/boardengine/render.go` builds the lines in a fixed order, `pull_request` first.
+- `profile` and `recipe` get no bullet, because the Recipe cell already shows them.
+  The package doc in `doc.go` now says the profile sits in the Recipe cell, not the entry cell.
+- Run fields were checked against the task's field list.
+  `pull_request` and `on_land` are the ones that change how a run goes and that the cell omitted.
+- The board.json keys `pull_request` and `on_land` are now the constants `pullRequestKey` and `onLandKey` in `task.go`.
+  The renderer, `replay.go`, `store.go` and `front.go` use them.
 
 ## Tests
 
-`TestRenderReadmeGolden`'s fixture now gives one draft task a `merge-in` pull request and an `on_land` key, and gives an isolated task `pull_request: on`.
-The golden pins the bullet order: brief, then `pull_request`, then `on_land`, then the sorted settings.
-The package doc in `doc.go` describes the new bullets.
+The README golden fixture in `render_test.go` now sets `pull_request` and `on_land` on two tasks.
+The golden tables pin the bullet order and their place between the brief and the settings.
+
+## To check by hand
+
+- `run-field-key-literals`: confirm no bare `"pull_request"` or `"on_land"` literal is left in `internal/boardengine` outside `task.go`, tests and doc comments.
+  Some keys in the `replay.go` table and the `UpsertPayloadKeys` list use the constants now, but the rest of the package was not swept.
