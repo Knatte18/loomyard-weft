@@ -1,6 +1,6 @@
 # Claude Code Mode for writer sessions, set per role
 
-`claude-code-mode` · Task · research, claude, shuttle, config · running · Drift-Verify
+`claude-code-mode` · Task · research, claude, shuttle, config · running · Code-Bouncer
 
 ## Seen (operator, 2026-11-16)
 
