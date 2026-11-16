@@ -19,6 +19,7 @@ Operator 2026-10-04: the board needs an interactive view with filters, reachable
   Since `project-design-link` (`ffb53ae1`, 2026-11-01) a project's body renders to `design-<slug>.md` and the project's facts line links its slug to that file, in `README.md` and in project files alike.
   Since `project-body-in-render` (`9cf88e2a`, 2026-11-04) `project-<slug>.md` also shows the project's body under its brief, with the body's headings shifted so the shallowest sits at level two; `design-<slug>.md` and the link stay, and `README.md`'s project sections stay without the body.
   Since `readme-shows-discussed` (`1bbcc3b1`, 2026-11-03) a row for a discussed entry stacks a `Sketch` link to `decision-<slug>.md` under its slug, in every table of every board file.
+  Since `readme-shows-run-fields` (`d385d53e`, 2026-11-16) a task's entry cell adds a code-span bullet for each of `pull_request` and `on_land` it sets, between the brief and the run settings; `profile` and `recipe` get none, since the Recipe cell shows them.
   The priority column is headed `Prio` and belongs to Notes tables only.
 
 Builds on `board-model`'s kind and labels.
