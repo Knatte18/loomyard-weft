@@ -155,21 +155,20 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
+#### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T4 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md)<br>[Sketch](decision-weaver.md) | raddle | Worktree-Create | neve | 5w<br>0m | webster, weaver |
 | T5 | **Orch sessions turn on remote control by themselves, switchable per hub**<br>• Every orch session lym starts or resumes turns on Claude Code remote control, unless the hub switches it off | [`orch-auto-remote-control`](design-orch-auto-remote-control.md) | darn · solid | Code-Burler-Review | neve | 15h<br>30m | orch, claude, config, reed |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md)<br>[Sketch](decision-weaver.md) | raddle |  | 5w<br>0m | webster, weaver |
+_None._
 
 #### Draft (2)
 
