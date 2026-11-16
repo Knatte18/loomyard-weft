@@ -1,26 +1,31 @@
-# A filed arras run resumes under its family's project and tears down
+# Let a filed arras run resume past Run-Shed and tear down
 
-A family filing turns the run's own board entry into the family's grouping project.
-Batten's start guard refused any run or step of a non-beam project with "grouping project, only a beam project runs".
-So every pass after the filing was refused at Run-Shed, and the run never reached Land or Worktree-Teardown.
-The workaround was `lym batten cancel <slug> --remove`.
+After an arras family filing, the filing turns the run's own board entry into that family's grouping project.
+Every later `lym batten run` or `step` pass for that slug was then refused with "grouping project, only a beam project runs".
+The run never reached Land or Worktree-Teardown, and the only way out was `lym batten cancel <slug> --remove`.
+This was seen on `adopt-build-resplit`, where the inner loom run was done and batten stayed stuck at Run-Shed.
+The bug is not specific to beams.
 
-`refuseProject` in `internal/battencli/startguard.go` now reads the run's filing mark through a new `FilingMarked` guard seam, wired to `shedrun.FilingMarked` in the prime.
-A grouping project whose run is on record and whose filing mark stands is handed to the task checks as a resume, which pass it past Worktree-Create.
-A failed read of the mark refuses naming the probe and the re-run.
+`startGuard.refuseProject` in `internal/battencli/startguard.go` now lets a grouping project through when its run is on record and carries a filing mark.
+The guard then judges that resume with the task checks, as it would a task's.
+A grouping project with no run on record, or whose run filed nothing, is still refused with the `lym beam create` way forward.
 
 ## Design decisions
 
-- The pass needs both a status file and the mark.
-  A fresh run of a grouping project is still refused even if a stray mark is on disk, so the mark lets through only the run that wrote it.
-- The guard lets the run through rather than having the filing finish it.
-  The run's remaining rows, Land and Worktree-Teardown, then run as they do for any task, and `ClearMotifRun` removes the done arras run as before.
+- The guard reads the mark through a new `startGuard.FilingMarked` seam, wired in `hubStartGuard` to `shedrun.FilingMarked`.
+  A nil seam reads every run as one that filed nothing, so existing guards keep their behavior.
+- The mark only counts when the run is on record.
+  A stray mark on a slug with no run does not unlock a grouping project.
+- A failed read of the mark is refused, naming the probe and the rerun to try, like the guard's other probe failures.
+- The change takes the first option from the board entry's idea, a guard that lets the filed run through.
+  It does not make the filing finish the batten run.
 
-## Tests
+Closes the board entry `filed-arras-stuck-at-run-shed`; it has no linked GitHub issue.
 
-`TestStartGuard_Refuse` gains rows for:
+## To check by hand
 
-- a filed run resuming under its family's project, dirty source and left pair parts included;
-- an unfiled run of a grouping project, still refused;
-- a filing mark with no run on record, still refused;
-- a failed mark read, which refuses naming the probe.
+- The hub wiring of `FilingMarked` in `hubStartGuard`.
+  The unit table drives the seam directly, so the real `shedrun.FilingMarked` call is covered only by the new subtest in `internal/battencli/beamland_integration_test.go`, `GroupingProjectWhoseRunFiledItsFamilyResumesOnlyWithTheFilingMark`.
+  That test is an integration test and was not run as part of this description.
+- A real filed arras run past Run-Shed, resumed with `lym batten run`, reaching Land and Worktree-Teardown.
+  This end-to-end path was not exercised.
