@@ -22,6 +22,7 @@ Facts the design rests on:
 - A row with no `on_stuck` that returns Stuck goes to the tackler, the arbiter, then the parent; the arbiter may now commit one fix and must name a goto target.
 - No model ladder exists anywhere; burler's per-round model list is the nearest shape.
 - The kick-start pack was removed; only stale config keys remain.
+- Webster's batch pieces read its state model, which is why D11 moves the state types with them (evidence for D11): `postBatchInputs` carries `*State`, `*BatchState` and `Geometry`, `checkRecoveredSuspects` takes `(geom, st, bs, …)`, `failureDigestBlock` takes `*BatchState`, and the fingerprint helpers that compare or restamp the baseline take `*State` and the run directory.
 
 ### Turn 3 — auto-picks
 
@@ -35,8 +36,8 @@ Six forks reviewed the record; every one returned a report.
 - bound-breaker + interactions + walkthrough (BLOCKING/MEDIUM): D7 recorded a stopped batch done on card gates alone — fixed: D7 runs the full post-batch checks against the batch's start commit, and says what an arbiter fix without renames meets.
 - interactions (MEDIUM): D5's attempt bound ignored D7's re-entry attempt — fixed: D5's bound counts it.
 - interactions (MEDIUM): re-entry after a verify stop was undefined — fixed in D7.
-- interactions (MEDIUM): a relaunched gated strand could be attached before its finished report is recorded — fixed: D12 records a finished report first.
-- bound-breaker (MEDIUM): a crash between spawn and state write could spawn twice — fixed: D12 records the attempt before spawning and attaches through `FindRun`.
+- interactions (MEDIUM): a relaunched gated strand could be attached before its finished report is recorded — fixed: D12 records a finished report first (revised in review round 2: D12 attaches first and records a report only from the attach's result, so a strand still fixing a gate is awaited).
+- bound-breaker (MEDIUM): a crash between spawn and state write could spawn twice — fixed: D12 records the attempt before spawning and attaches through `FindRun` (revised in review round 1: the attach finds the run by its recorded report path).
 - walkthrough + bound-breaker + interactions (MEDIUM/LOW): the row's `gates` entries had no runner — fixed: D4 and D10 attach them to every batch and fixer strand; D1 says the constructor takes `gates`.
 - bound-breaker (MEDIUM): switching implementer mid-run was unguarded — fixed: D1's guard.
 - bound-breaker (MEDIUM): machinery losses climbed the ladder — fixed: D6 retries once on the same rung.
@@ -88,11 +89,11 @@ _No rounds yet._
 - Q3 (auto-pick): Worktree per batch? No; the task worktree, sequentially. Why: parallel batches are out of scope, and a worktree buys nothing without them.
 - Q4 (auto-pick): The ladder's shape and default? A list of model specs in `weaver.yaml`, default `sonnet[medium]`, `opus[medium]`, `opus[high]`, one attempt per rung. Why: the board's example ladder; a list fits batches and fixer alike.
 - Q5 (auto-pick): Does `NEEDS_PARENT` climb the ladder? No, it stops the row at once. Why: a question is not a model failure.
-- Q6 (auto-pick): What happens when the row re-enters after a stop? Card gates at HEAD first; pass records done, fail gets one last-rung attempt. Why: the arbiter's fix must be judged by the run's own gates.
+- Q6 (auto-pick, revised after the lens review and review round 2): What happens when the row re-enters after a stop? The plan is re-read and the recorded partition mapped onto it; after a `NEEDS_PARENT` stop the ladder resumes at the rung that asked; after any other batch stop, the full post-batch checks run against the batch's start commit, with the card gates at HEAD (D7); pass records done when the row has no `gates` entries, and otherwise the batch gets one last-rung attempt. Why: the arbiter's fix must be judged by the run's own checks, and a question is not a model failure.
 - Q7 (auto-pick): Journal format and writer? A `journal` report field Go appends to `_lym/weaver/journal.md`. Why: one writer.
 - Q8 (auto-pick): When is the run directory committed? After each batch. Why: the journal must outlive a crash.
-- Q9 (auto-pick): Which verify gate? `verifytree.Verify` with `weaver.yaml`'s `verify_gate`, default `webster`, then the row's gates entries. Why: no new hub config.
-- Q10 (auto-pick): How does the arbiter find the plan, reports and journal? The Stuck reason names them. Why: tapestry's arbiter description is shared by every implementer. Raised under Open risks.
+- Q9 (auto-pick, revised after the lens review): Which verify gate? `verifytree.Verify` with `weaver.yaml`'s `verify_gate`, default `webster`; the row's gates entries ride every batch and fixer strand as shuttle gates (D4, D10). Why: no new hub config, and a gates entry needs a strand to re-prompt.
+- Q10 (auto-pick, revised after the lens review): How does the arbiter find the plan, reports and journal? The arbiter's description of a tapestry run names the active implementer's run directory (D8). Why: a stop on another row, or one the tackler escalates, reaches the arbiter without the Stuck reason.
 - Q11 (auto-pick, revised after the lens review): Does Weaver write a `summary.md`? Yes, written by Go from state and the verify record. Why: Describe reads the triage and verify-fix sections from it.
 - Q12 (auto-pick): How do loom's readers of Webster state see Weaver's? Through one seam over the active implementer, and a shared plan-conflict path (D13). Why: a reroute must freeze built cards and see the conflict.
 - Q13 (auto-pick): May a run switch implementer mid-run? No; the row refuses while the other implementer has begun batches (D1). Why: switching would rebuild or misread built work.
