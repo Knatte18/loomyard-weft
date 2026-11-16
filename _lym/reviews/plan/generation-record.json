@@ -2,8 +2,8 @@
   "number": 1,
   "judge_subject": {
     "kind": "document",
-    "hash": "d2f67af9d93339dbb152bc593be8af647dbbf93049fcf7c51bfcb1aec643a4a7"
+    "hash": "7e4b7ae0fc135567b3679e5f9f01cf46ba86fc5f748f30130ed98ef3e3ec204e"
   },
-  "judge_base": "07a90d6dbecdf513e6e9663b3b2f3048a4b1a756",
-  "judge_at": "2026-11-16T13:41:33Z"
+  "judge_base": "243365fb48705bf175c8fb0581d9fdcc1064c2c1",
+  "judge_at": "2026-11-16T13:53:02Z"
 }
