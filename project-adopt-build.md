@@ -1,6 +1,6 @@
 # P3 Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt
 
-Rendered 2026-11-16 08:58 UTC; every age below is as of then.
+Rendered 2026-11-16 08:59 UTC; every age below is as of then.
 Under: [P1 Revise adopt and the functions that move a hub between machines](project-adopt-revision.md).
 
 [`adopt-build`](design-adopt-build.md) · Age 17h · Owner `neve`
