@@ -1,0 +1,57 @@
+# Lens review
+
+Every lens fork returned a report: coverage, row-validity, forced-edits, guard-reach and way-forward.
+Duplicates across lenses are merged into one line naming each lens.
+
+- coverage 1, BLOCKING — failed attempts lose their journal entry and per-batch commit: fixed as proposed; card 10's `endAttempt` now ends every attempt (journal, outcome, end commit, commit), card 12 sends every verdict through it, and `TestEndAttempt` and `TestRun` gain the failed-attempt rows.
+- coverage 2, MEDIUM — the strand carries the `batch` gate, not the card gates, and nothing pins the gate set: fixed as proposed; card 9's `batchGateSpec` carries one `card` entry per card, then `batch`, then the row's gates, and the new `TestBatchGateSpec` pins order, the last-batch main packages and the missing-key refusals.
+- coverage 3 and row-validity 8, MEDIUM/LOW — the guard test plants state instead of running the named steps, and the setting step has no row: fixed differently; the proposal to drive the full `weaverengine.Reset` from loomshed needs its unexported fakes, so `TestImplementerGuard` runs `websterengine.ArchiveRunAfterReset` and `weaverengine.ArchiveRunRecord`, the record-archiving step of each reset, then the row, and adds the setting-back row (card 17).
+- coverage 4, MEDIUM — D3's rename repartition, fixed card set and start, and `PlanWeftCommit` have no row: fixed as proposed; `TestRun` gains the three rows (card 12).
+- coverage 5, MEDIUM — no last versus non-last batch row: fixed as proposed in `TestRenderBatchPrompt` (card 8) and `TestBatchGateSpec` (card 9).
+- coverage 6, MEDIUM — a re-entry attempt's machinery-loss retry and a fixer's failed stop have no row: fixed as proposed; card 13's re-entry retries once on the last rung with a row, and card 12 names the fixer's failed stop as Stuck with a row.
+- coverage 7, MEDIUM — a failed stop at entry has no row: fixed as proposed in `TestRun_Resume` (card 13).
+- coverage 8, MEDIUM — verify re-entry's fixer and the no-spawn clean-tree condition have no row: fixed as proposed in `TestRun_Reentry` (card 13).
+- coverage 9, MEDIUM — no failed-attempt journal row: fixed as proposed in `TestEndAttempt` (card 10).
+- coverage 10, MEDIUM — `TestReset` misses the probe error, a live verify-fixer, Webster's untouched directory and the scratch clear: fixed as proposed (card 14).
+- coverage 11, row-validity 6, MEDIUM — Describe's active run record and the rework archive's Weaver slot are untested: fixed as proposed; card 22 moves both closures into `archiveRunRecords` and `activeRunRecordPath`, tested by `TestImplementerRunRecords`.
+- coverage 12, MEDIUM — the Done row does not assert `outcome.yaml` and the commit: fixed as proposed (card 12).
+- coverage 13, MEDIUM — merge-in has no corrupt-Webster row: fixed as proposed in `TestCommand_MergeScenario` (card 23).
+- coverage 14, row-validity 4, MEDIUM — the renumber rows fake the seam and never pin the lease directory: fixed as proposed; card 20 adds `renumberDepsFor` and `TestRenumberDepsFor` over planted states, asserting the lease under `.lym/weaver/` or `.lym/webster/`, and drops the two repeated rows.
+- coverage 15, LOW — Weaver's plan-conflict way forward is unstated: fixed as proposed; card 12 states it names the plan-review reroute and no `lym webster` verb, with a row.
+- coverage 16, LOW — the verify-fixer notice and a fixer's delivery match have no row: fixed as proposed (card 21).
+- coverage 17, LOW — `Active`'s setting branches have no row and "last batch end" is undefined: fixed as proposed; card 5 adds `LastEnd`, and card 6's rows cover the setting error and unknown value.
+- coverage 18, LOW — unrowed branches on cards 15, 16, 17, 24, 25: fixed as proposed; each card gains its row (outside-hub refusal, state fault, zero anchor, Webster note through `TestArbiterNote`, seam fallback).
+- coverage 19, way-forward 7, guard-reach 5, MEDIUM — `Reset` has no mid-merge or foreign-dirt refusal, and `ResetPairCode` refuses the run's own uncommitted paths: fixed as proposed; card 5 records each attempt's `Uncommitted` paths, card 14's `Reset` refuses a merge in progress and foreign dirt naming `git checkout -- <path>`, and passes the run's own paths to `ResetCode`.
+- row-validity 1, guard-reach 3, way-forward (outside lens), BLOCKING — deliveries are keyed by guid but the notice loop holds strand names: fixed as proposed; card 5 records `StrandName`, card 21's `RecordDelivery` matches by name, and `decisionDeps` gains a `recordDelivery` seam its fake records.
+- row-validity 2, MEDIUM — the attach's not-found answer cannot reach `classifyAttempt`: fixed as proposed; card 9 drops that verdict, card 13 judges a not-found probe itself, with rows for both report-on-disk and no-report.
+- row-validity 3, MEDIUM — `TestDoneCards` repeats the existing begun tests: fixed as proposed; card 4 drops it, and the delegates keep `TestLastBegunCard` and `TestEditedDoneCards` covering the moved bodies.
+- row-validity 5, MEDIUM — the batten rows pass whichever key is read: fixed as proposed; card 25 plants a begun Weaver state and a `weaver.yaml` of 10 minutes against Webster's 60, with a step between the bounds.
+- row-validity 7, MEDIUM — `ArbiterNote` has no test: fixed as proposed with `TestArbiterNote` (card 24).
+- row-validity 9, LOW — the plan gate's setting read would fail in a tier0 anchor: fixed differently; the proposal adds a told setting seam to `ValidatePlan`, which would re-sign the gate and its callers, so card 6's `Active` reads the setting only when neither implementer is begun, a nil `Setting` answers `webster`, and card 19 passes nil, since with neither begun no card is frozen whichever implementer the setting names.
+- row-validity 10, LOW — the `LocalDenied` claim is unconfirmed: fixed as proposed; card 2 states the empty derived set matches the absent entry.
+- forced-edits 1, BLOCKING — six card 1 glyphs name `websterengine` instead of `websterengine_test`: fixed as proposed, each glyph confirmed with `lym quarry resolve`.
+- forced-edits 2, BLOCKING — the `NewWebsterProducer` re-sign misses callers: fixed as proposed; card 17 lists `TestBatcherRows_StuckSurfacesTheBatcherError`, `TestCancellation_RealProducersReturnErrorNotStuck` and `internal/loomrecipe#wantProducerTable` (the call at `shape_test.go:100` sits in that var, not `frictionReflectProducerType`).
+- forced-edits 3, guard-reach 4, BLOCKING — the plan commit leaves Weaver's archive deletions unstaged: fixed as proposed; card 22 widens `planCommitPathspecWith` with rows in `TestPlanCommitPathspec`.
+- forced-edits 4, MEDIUM — deleting `TestArchivedWebsterDirs` stales a keep reason: fixed as proposed; card 22 edits `TestInterruptPolicies_ClosedVocabulary`'s reason.
+- forced-edits 5, MEDIUM — card 16's reworded reasons break Webster's tests: fixed differently; rather than listing the tests to reword, card 16 keeps the texts (`<engine> plan conflict` reads "webster plan conflict" for Webster) and `planConflictWayForward` as is, so the pinned assertions at `internal/shedadapters/webster_test.go:180,190,560` stay true.
+- forced-edits 6, MEDIUM — batten's and envkit's seam-marked tests miss the new markers: fixed as proposed; card 18 lists both under `Edit` with the three markers.
+- forced-edits 7, MEDIUM — renumber help, comment and `docs/overview.md` still name Webster: fixed as proposed (card 20).
+- forced-edits 8, LOW — `gatefixer`'s role docs go stale: fixed as proposed (card 11).
+- forced-edits 9, LOW — `docs/overview.md`'s package tree omits the new packages: fixed as proposed; cards 2 and 15 extend it, and card 16 edits the shedadapters line.
+- forced-edits 10, LOW — `fixPlanCmd`'s help may name the old path: disputed, premise false; `internal/webstercli/fixplan.go:50` and `:71` say "plan-conflict record the latest begin-batch refusal left" and name no path.
+- forced-edits 11, LOW — `failuretrace.NewTracer` still reads Webster's state only: disputed, every fix worse; D13 lists its readers (`_lym/discussion/decision-record.md:238-246`) and the record's scope (`decision-record.md:11-30`) holds no `internal/failuretrace`, so a card would add scope the answer key does not license; it is a follow-up for the parent.
+- guard-reach 1, BLOCKING — `AttachGated` waits before any delivery can run: fixed as proposed; card 9's `StrandRunner` drops `AttachGated`, and card 13 probes with `ProbeGated`, delivers, then waits on the handle.
+- guard-reach 2, BLOCKING — nothing fills `Deliver`: fixed as proposed; card 21 adds `weaverDeliver`, sets it in `loomCLI.wire` and drops it from `nilLegal`.
+- guard-reach 6, way-forward 5, MEDIUM — a plan-conflict stop then re-entry is unspecified and would refuse Plan-Review's fix: fixed as proposed; cards 5, 12 and 13 state a conflict Stuck records no `StopRecord`, and the next call begins afresh from the current plan, with a row.
+- guard-reach 7, LOW — Webster's CLI path is unguarded: disputed, every fix worse; D1 puts the guard on the row (`decision-record.md:40`, "Guard: the row refuses"), and `internal/webstercli` is outside the record's scope list (`decision-record.md:11-30`), so guarding its verbs adds unlicensed scope.
+- guard-reach 8, LOW — the finished-with-no-report row tests a state shuttle cannot produce: fixed as proposed; card 9 folds it into "a result with no report file", rowed through an `OutcomeTimeout`.
+- guard-reach 9, LOW — the strict head check fails short SHAs and clean merges: fixed as proposed; card 10 resolves an abbreviated head and accepts a clean parent merge through `Git.MergeRejection`, with `RunDeps.ParentBranch` (cards 11, 18) and rows.
+- way-forward 1, MEDIUM — a corrupt Webster state names a reset that fails on the same file: fixed differently; the proposal's "remove the file" drops Webster's begun record, so card 6 names repairing the file or restoring its committed version with git, which D1 names as the way forward.
+- way-forward 2, MEDIUM — both begun names a setting step that cannot clear it: fixed as proposed; card 6 names the resets alone.
+- way-forward 3, MEDIUM — the history read carries no commit: fixed as proposed; cards 6, 14, 15 and 18 read `AnchoredFileFirstParentHistory` into `StateVersion`, which carries its commit.
+- way-forward 4, MEDIUM — a seam refusal maps to the raw-I/O transient re-run: fixed as proposed; card 20 adds `errRenumberSeam` with its own row.
+- way-forward 6, MEDIUM — a commit failure after the archive leaves no way forward: fixed as proposed; card 14's re-run over an absent state commits a pending restore, and the failure names the re-run.
+- way-forward 8, LOW — no refusal for an absent state or no begun batch: fixed as proposed (card 14).
+- way-forward 9, LOW — a failed `--stop-strand` stop has no outcome: fixed as proposed; card 14 refuses naming `lym reed remove <guid>`.
+- way-forward 10, LOW — `ErrRunBusy` and commit failures name no way forward: fixed as proposed; cards 10 and 12 name the re-step.
+- way-forward 11, LOW — the outside-hub refusal names no way forward: fixed as proposed; card 15's `outsideHubRefusal` names it, with a row.
