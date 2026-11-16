@@ -1,0 +1,14 @@
+{
+  "session_id": "75f8c180-6c7b-42b6-828a-30138d61bba0",
+  "row": "Plan-Write",
+  "role": "plan",
+  "model": "opus",
+  "engine": "claude",
+  "input_tokens": null,
+  "cache_write_tokens": null,
+  "cache_read_tokens": null,
+  "output_tokens": null,
+  "cost_usd": null,
+  "started": "2026-11-16T10:28:18Z",
+  "ended": "2026-11-16T10:29:55Z"
+}
