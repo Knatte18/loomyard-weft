@@ -1,9 +1,9 @@
 # P4 Merge the remaining adopt-build members into one design and split it again on what landed
 
-Rendered 2026-11-16 14:35 UTC; every age below is as of then.
+Rendered 2026-11-16 14:45 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`adopt-build-resplit`](design-adopt-build-resplit.md) · Age 7d · Owner `neve`
+[`adopt-build-resplit`](design-adopt-build-resplit.md) · Age 8d · Owner `neve`
 
 beam
 
