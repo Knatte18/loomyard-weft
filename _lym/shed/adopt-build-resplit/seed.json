@@ -1,0 +1,8 @@
+{
+  "recipe": "arras",
+  "driver": "go",
+  "params": {
+    "parent": "adopt-build"
+  },
+  "started_at": "2026-11-16T09:04:20Z"
+}
