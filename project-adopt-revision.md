@@ -1,6 +1,6 @@
 # P1 Revise adopt and the functions that move a hub between machines
 
-Rendered 2026-11-16 09:57 UTC; every age below is as of then.
+Rendered 2026-11-16 09:58 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`adopt-revision`](design-adopt-revision.md) · Age 22h · Owner `neve`
@@ -22,7 +22,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P3 Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt](project-adopt-build.md) (1)
 
-[`adopt-build`](design-adopt-build.md) · Age 17h · Owner `neve`
+[`adopt-build`](design-adopt-build.md) · Age 18h · Owner `neve`
 
 ### Tasks (1)
 
@@ -34,7 +34,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Merge the remaining adopt-build members into one design and split it again on what landed** | [`adopt-build-resplit`](design-adopt-build-resplit.md) | arras · light | Discussion-Bouncer | neve | 7d<br>53m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
+| T3 | **Merge the remaining adopt-build members into one design and split it again on what landed** | [`adopt-build-resplit`](design-adopt-build-resplit.md) | arras · light | awaiting · Discussion-Bouncer | neve | 7d<br>54m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 
 #### Ready (0)
 
