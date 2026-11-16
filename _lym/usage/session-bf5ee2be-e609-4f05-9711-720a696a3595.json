@@ -1,0 +1,14 @@
+{
+  "session_id": "bf5ee2be-e609-4f05-9711-720a696a3595",
+  "row": "Raddle-Burler-Review",
+  "role": "split-burler-review",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 24,
+  "cache_write_tokens": 96585,
+  "cache_read_tokens": 562375,
+  "output_tokens": 17978,
+  "cost_usd": 0.955056,
+  "started": "2026-11-16T10:08:11Z",
+  "ended": "2026-11-16T10:11:39Z"
+}
