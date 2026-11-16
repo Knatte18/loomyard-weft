@@ -1,6 +1,6 @@
 # P2 Codexengine: every task, trial and note about the Codex engine
 
-Rendered 2026-11-16 12:12 UTC; every age below is as of then.
+Rendered 2026-11-16 12:15 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 12d · Owner `neve`
@@ -74,7 +74,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md)<br>[Sketch](decision-codex-same-as-claude.md) | raddle | Raddle-Write | neve | 17h<br>11m | codex, shuttle, stencil, heddle |
+| T14 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md)<br>[Sketch](decision-codex-same-as-claude.md) | raddle | Raddle-Write | neve | 17h<br>13m | codex, shuttle, stencil, heddle |
 
 ### Ready (0)
 
@@ -88,7 +88,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T15 | `draft` **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | T14 | 18h<br>0m | codex, shuttle |
+| T15 | `draft` **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | T14 | 18h<br>2m | codex, shuttle |
 
 ## Notes (2)
 
