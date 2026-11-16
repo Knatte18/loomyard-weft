@@ -116,7 +116,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Rebuild every coverage map, time it, and list the redundant-test candidates of each package**<br>• One timed full lym gate testmap build and lym gate redundant on every package, reported for the operator to read before any cut | [`redundancy-candidates-survey`](design-redundancy-candidates-survey.md) | darn · docs | Darn-Write | neve | 52m<br>9m | gate, testkit |
+| T6 | **Rebuild every coverage map, time it, and list the redundant-test candidates of each package**<br>• One timed full lym gate testmap build and lym gate redundant on every package, reported for the operator to read before any cut | [`redundancy-candidates-survey`](design-redundancy-candidates-survey.md) | darn · docs | Darn-Write | neve | 53m<br>9m | gate, testkit |
 
 #### Ready (0)
 
@@ -152,7 +152,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md)<br>[Sketch](decision-weaver.md) | raddle | Raddle-Write | neve | 5w<br>24m | webster, weaver |
-| T5 | **Orch sessions turn on remote control by themselves, switchable per hub**<br>• Every orch session lym starts or resumes turns on Claude Code remote control, unless the hub switches it off | [`orch-auto-remote-control`](design-orch-auto-remote-control.md) | darn · solid | PR-Review | neve | 15h<br>55m | orch, claude, config, reed |
+| T5 | **Orch sessions turn on remote control by themselves, switchable per hub**<br>• Every orch session lym starts or resumes turns on Claude Code remote control, unless the hub switches it off | [`orch-auto-remote-control`](design-orch-auto-remote-control.md) | darn · solid | Finalize | neve | 15h<br>55m | orch, claude, config, reed |
 
 #### Ready (0)
 

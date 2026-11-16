@@ -1,6 +1,6 @@
 # Orch sessions turn on remote control by themselves, switchable per hub
 
-`orch-auto-remote-control` · Task · feature, orch, claude, config, reed · running · PR-Review
+`orch-auto-remote-control` · Task · feature, orch, claude, config, reed · running · Finalize
 
 ## Seen (operator, 2026-11-15)
 
