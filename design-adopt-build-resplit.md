@@ -1,8 +1,10 @@
 # Merge the remaining adopt-build members into one design and split it again on what landed
 
-`adopt-build-resplit` · Task · feature, enhancement, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut · running · Raddle-File
+`adopt-build-resplit` · Project · feature, enhancement, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut
 
 Decision record: [Sketch](decision-adopt-build-resplit.md)
+
+Groups the entries filed from the Sketch `adopt-build-resplit`: transition-push-takeover, machine-registry-holds-catchup, adopt-foreground, leftover-pairs-teardown, hub-stop-all, machine-start-launchers, board-prints-root-beam.
 
 ## Why (operator, 2026-11-16)
 
