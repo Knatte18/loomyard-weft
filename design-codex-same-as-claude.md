@@ -10,46 +10,29 @@ Giving it less is a bug, not a property of Codex.
 
 ## Seen (`codex-writer-bench-neve`, `c0815831`)
 
-The bench replayed the darn writer with `astra[high]` through a bare `lym shuttle run`, and its weak points trace to what the session never got:
+The bench did not use lym's production route.
+It hand-built the Darn-Write prompt, rendered Claude's edit directive into it, loaded no skills, and launched it through a bare `lym shuttle run`.
+Its weak points (fixed-column prose, pinned versions, no design decisions in the description, `cat` and `sed -n` unrefused) trace to that.
+The benches so far were all bespoke in this way, and each gave Codex less than Claude (operator, 2026-11-16).
 
-- No skills: the Claude writer loads `scribe:prose`, `scribe:code-quality` and the rest through its system prompt; the Codex session loaded none, so it hard-wrapped prose at a fixed column, pinned versions and line numbers, and wrote a change description with no design decisions.
-- The Darn-Write stencil speaks Claude's tools: Read, Edit, Write, the Agent tool, "the subagent passage of your system prompt". Codex has none of them by those names, so the rule against `cat` and `sed -n` read as void.
-- No guard refused its `cat`, `sed -n` and `rg`, where hooks refuse them for Claude.
-- The repository has no `AGENTS.md`; `codexengine` falls back to `CLAUDE.md`, but `CLAUDE.local.md` and the user's global `CLAUDE.md` reach a Claude session and maybe not a Codex one.
+## What lym already has
 
-## Idea
+- A seat is built engine-blind in `seatengine`: the darn writer's seat carries the role's skills and the hub's language skills, whichever engine runs it.
+- Engine blocks (`contracts/stencils/engine/<engine>/`, `{{template "engine-<block>"}}`) give a stencil engine-specific text; the edit directive has a Codex copy that names `apply_patch` and the shell guard.
+- `codexengine` loads skills by reading each `SKILL.md`, runs shell guards, and falls back to `CLAUDE.md` when a directory has no `AGENTS.md`.
 
-Find every route by which a Claude session in a role gets instructions, and give a Codex session in that role the same, through `codexengine`:
+## The gaps to close
 
-- the role's skills (`codexengine` has a skill load; check every role and recipe passes the same list to both engines);
-- heddle's standing passages for the role (they are read per engine: check the Codex set matches the Claude set);
-- the project and user instruction files;
-- the shell and edit guards the hooks apply;
-- stencil wording that names a Claude tool, made engine-neutral or given a Codex rendering.
+- Stencil text outside the engine blocks that names Claude-only things.
+  Seen: darn's make-change fragments (`darn-fragment-make-change.md`, `-gated.md`) name the Agent tool, `subagent_type`, and "the subagent passage of your system prompt".
+  Sweep every stencil a Codex seat can render for the same and move each such passage into an engine block.
+- Standing passages: heddle reads them per engine; check the Codex set gives what the Claude set gives.
+- Instruction files: check whether `CLAUDE.local.md` and the user's global `CLAUDE.md` reach a Codex session, and give it their content if not.
+- A parity test: for each seat a Codex model may run, render the launch for both engines and fail when the Codex one lacks a skill, passage or instruction the Claude one has.
 
-Add a check that fails when a role's Codex launch carries less than its Claude launch.
-Then rerun the writer bench, and its OSL twin, with the full set before the operator judges level 2.
+## The bench rule
 
-## How parity is kept (operator, 2026-11-16)
-
-The benches so far were bespoke: the orchestrating Claude session assembled Codex's input by hand,
-and each time Codex started from less than Claude, never the other way round.
-So parity is built into lym, never left to whoever sets up a run:
-
-- One launch for both engines.
-  A role's launch spec (prompt, skills, standing passages, instruction files, guards) is built once, engine-blind;
-  the engine only renders it.
-  A Codex launch can then differ from a Claude launch only where an engine renders the same item its own way.
-- A parity test.
-  For each role and recipe, the test builds the launch for both engines and fails when the Codex launch lacks an item the Claude launch carries.
-- Engine-neutral stencils.
-  No stencil names a Claude-only tool;
-  where a tool must be named, the engine supplies its own name for it.
-- A Codex session runs through the production route.
-  The model alias alone picks the engine, such as `{"darn":{"writer":"astra[high]"}}` in a task's `run_settings`,
-  and the same producer builds the same launch.
-  Codex goes nowhere through a bare `lym shuttle run` with a hand-written prompt.
-- The bench rule follows from it.
-  A Codex bench runs the real producer with only the model swapped;
-  it never hand-builds Codex's prompt.
-  Its report opens with what each engine's session got, from the launch records, so an unequal start shows before any result.
+A Codex bench runs the real producer with only the model swapped, such as `{"darn":{"writer":"astra[high]"}}` in `run_settings`,
+and never hand-builds Codex's prompt.
+Its report opens with what each engine's session got, so an unequal start shows before any result.
+The writer bench and its OSL twin rerun this way once this lands.
