@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Merge main into the beam adopt-build**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-merge-in`](design-adopt-build-merge-in.md) | darn | Code-Burler-Fix | neve | 14m<br>14m | batten, tender, dobby, orch, fabric, loom |
+| T14 | **Merge main into the beam adopt-build**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-merge-in`](design-adopt-build-merge-in.md) | darn | Code-Burler-Fix | neve | 15m<br>15m | batten, tender, dobby, orch, fabric, loom |
 
 ##### Ready (0)
 
@@ -168,7 +168,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (7)
+### Tasks (8)
 
 Concrete and claimable; only a task can run.
 
@@ -181,13 +181,16 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **Move Webster's batch machinery and run-plan state into a package both implementers import** | [`implementer-shared-run-plan`](design-implementer-shared-run-plan.md)<br>[Sketch](decision-implementer-shared-run-plan.md) | darn · solid | Darn-Write | neve | 1h<br>1h | webster, weaver |
 | T6 | **Claude Code Mode for writer sessions, set per role**<br>• Turn on the experimental Code Mode, which batches tool calls in one program, for heavy writer roles only, after a bench | [`claude-code-mode`](design-claude-code-mode.md) | darn · docs | Darn-Write | neve | 1h<br>1h | claude, shuttle, config |
 
-#### Ready (0)
+#### Ready (2)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T16 | **lym gate redundant flags tests as redundant that check different things**<br>• Equal line coverage is taken as redundancy; the verb must also prove the candidate catches no fault its covering tests miss | [`redundancy-judge-asserts`](design-redundancy-judge-asserts.md) | darn · solid |  | 5m<br>0m | testkit, gate |
+| T17 | **lym beam pr open opens a beam PR that conflicts with its parent**<br>• A beam pull request must not be opened before its conflicts with the parent are fixed | [`beam-pr-opens-dirty`](design-beam-pr-opens-dirty.md) | darn · light |  | 1m<br>0m | batten, fabric |
 
-#### Draft (5)
+#### Draft (4)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -197,9 +200,8 @@ Not released; nothing starts it until its status is cleared.
 | T5 | `draft` **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | T2 | 1h<br>1h | webster, weaver |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 3d<br>3d | slack, creel, orch |
 | T13 | `draft` **A filed arras run is refused at Run-Shed and never tears down**<br>• After an arras family filing, batten refuses the run as a grouping project, so it never reaches Land or Worktree-Teardown | [`filed-arras-stuck-at-run-shed`](design-filed-arras-stuck-at-run-shed.md) | darn |  | 1h<br>1h | batten |
-| T16 | `draft` **lym gate redundant flags tests as redundant that check different things**<br>• Equal line coverage is taken as redundancy; the verb must also prove the candidate catches no fault its covering tests miss | [`redundancy-judge-asserts`](design-redundancy-judge-asserts.md) | darn |  | 5m<br>5m | testkit, gate |
 
-### Notes (10)
+### Notes (9)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -208,12 +210,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 6d<br>6d | gate, fabric |
-
-#### Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B2 |  | **lym beam pr open opens a beam PR that conflicts with its parent**<br>• A beam pull request must not be opened before its conflicts with the parent are fixed | [`beam-pr-opens-dirty`](design-beam-pr-opens-dirty.md) | 1m<br>1m | batten, fabric |
 
 #### Enhancements (1)
 
