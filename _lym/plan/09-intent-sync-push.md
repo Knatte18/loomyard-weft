@@ -11,7 +11,6 @@
 - `internal/tendercli/doc.go`
 - `internal/battencli#cancelDeps`
 - `internal/battencli#hubCancelDeps`
-- `internal/battencli#endRunPhase`
 - `internal/battencli#clearRunPhase`
 - `internal/battencli#cancelFake.deps`
 - `internal/battencli#TestCancelRun`
@@ -39,9 +38,8 @@ With origin unreachable the pause entry is already written when `Record` runs, s
 The owed intent's commit lands with the prime's records branch's next push (overview, "out-of-part").
 The `runIntents` field docs say the intent is pushed and waited for.
 
-`lym batten cancel`: with origin unreachable, `judgeOrigin` answers end-only (`cancel.go:604`, `:609`), and today `endRunPhase` then stops with nothing written.
-`endRunPhase` now writes the cancel intent and commits it on the end-only path too, before `EndForCancel`; the commit's push is owed (card 8's `commitCancelRecord`), and the cancel goes on to end the run's processes here at once.
-It then stops end-only as today, its output naming the re-run of `lym batten cancel <slug>` once origin answers, which pushes the intent and finishes the cancel (D1).
+`lym batten cancel`: with origin unreachable, `judgeOrigin` answers end-only (`cancel.go:604`, `:609`).
+The end-only path already writes and commits the intent before `EndForCancel` (`cancel.go:370-379`); with card 8, `commitCancelRecord` owes that commit's push, and the output names the re-run of `lym batten cancel <slug>` as today.
 `cancelDeps.SpawnPush` becomes `PushRecords func() (owed bool, err error)`, which `hubCancelDeps` fills with the same `PushRun` over the prime, reading `IsPushOwed`.
 `clearRunPhase` calls it after the lifts; an owed push makes the output name that same re-run.
 
@@ -53,9 +51,8 @@ Tests:
   The owed branch is driven here at tier0, since a real unreachable origin waits out the push backoff (`gitrepo.PushBackoffDelays`), which no test may.
 - `TestPauseAndResume_WriteLiftAndRefuseOverTheHub` (tier1): a slug pause over a slug with a batten record (the test seeds one) leaves origin's prime records branch holding the pause intent once the verb returns, and its resume leaves origin holding the cleared record.
 - `TestCancelRun` (tier0) through `cancelFake.deps`: its `SpawnPush` calls become `PushRecords`;
-  the unreachable-origin rows now expect `WriteIntent`, `CommitRecord` and `EndForCancel` and the output naming `lym batten cancel <slug>` as the re-run, with `PushRecords` not called;
-  an owed `PushRecords` row after the lifts asserts the same re-run.
+  an owed `PushRecords` row after the lifts asserts the output naming `lym batten cancel <slug>` as the re-run.
 - `TestPullRequestDeps_CommitsTheRecord` (tier1): origin's records branch holds the record once the committer returns.
 - `TestPrePushCheckGuardedSeams` (tier0) drops its spawn row.
 
-**ImpactSummary:** Moves three intent writers and the pull-request record from a detached spawn to a synchronous push and lets an offline cancel write its intent; the verbs' outputs change only when the push is owed, and two loomcli helpers lose their last caller.
+**ImpactSummary:** Moves three intent writers and the pull-request record from a detached spawn to a synchronous push; the verbs' outputs change only when the push is owed, and two loomcli helpers lose their last caller.

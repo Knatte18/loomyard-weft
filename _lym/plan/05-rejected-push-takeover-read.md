@@ -15,6 +15,7 @@
 **Edit:**
 - `internal/fabricengine#retryWeftPush` -> `func retryWeftPush(rec *Mutations, hubPath, weftPath, slug string, here MachineNames) (deferred bool, err error)`
 - `internal/fabricengine#rejectionRetryKind`
+- `internal/fabricengine#pushClassified`
 - `internal/fabricengine#PushPairAnchored`
 - `internal/fabricengine#coalescePushSides` -> `func coalescePushSides(req PushSpawn, opts SyncOptions, here MachineNames, caller string, acquire func(lockPath string) (*lock.FileLock, bool, error)) (res PushResult, err error)`
 - `internal/fabricengine#CoalescePushBothAt`
@@ -45,7 +46,8 @@ Otherwise it reads the run's own record from the fetched upstream tip through `R
   an adopt that names this machine drops its marks of the slug (D2, adopt's part), so a run that comes back is never skipped by a stale mark.
 - Any other entry naming another machine: a `*TakeoverError` carrying the slug, the entry and the records worktree.
 
-`rejectionRetryKind` names both as non-retryable, so `settleRejection` returns them at once and `pushClassified` returns them unrecorded: a takeover is no failed push.
+`rejectionRetryKind` names both as non-retryable, so `settleRejection` returns them at once;
+`pushClassified` returns a `*TakeoverError` or an error wrapping `ErrHandedOver` from `settleRejection` as it is, before `classifyFailure` and `fail`, so no failed-push record or notice is written, and `pushSideDetached` returns it rather than logging it as a recorded failure: a takeover is no failed push.
 `TakeoverError.Error` names the slug and the new owner machine; `Unwrap` is not needed, callers match it with `errors.As`.
 
 `ReadUpstreamTakeover` reads, at the records worktree's fetched upstream tip, the status file of `slug` under the anchor that tip records (`treeAnchor` over `RepoWiredNames(l)`), falling back to the legacy `self` run directory, as `originStatusAtTip` does.

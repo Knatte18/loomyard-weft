@@ -32,7 +32,7 @@ The line that only `commit-records` pushes synchronously goes.
 
 `pattern/PATTERN-run-fsm.md` is the new background:
 the states and act rule live in `internal/runfsm`, and `pairteardown.ReadRun` is their one input reader;
-a transition takes the gate admission, commits naming its code tip through the `Warp-SHA` trailer, and pushes records then code before the next producer starts;
+a transition takes the gate admission, commits naming its code tip through the `Warp-SHA` trailer and marked a transition by its `Run-Transition` trailer, and pushes records then code before the next producer starts;
 an owed push holds the run at its transition, and `ReadRun` reads it from the failed-push records naming the run into `PushOwed`, whose refusal names `lym fabric push` in the owed worktree;
 a rejected records push reads the run's record at origin's fetched tip, and another machine's takeover entry hands the run over through `pairteardown.HandOver`, never replaying;
 a hand-over mark under the hub's `.lym` stops a second hand-over;

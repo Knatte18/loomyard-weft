@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -32,10 +32,14 @@ A code tip the run's last transition names but origin lacks makes the run wait, 
 
 ### Decision: code-tip-is-warp-sha
 
-- **Decision:** the records commit names its code tip through the `Warp-SHA` trailer fabric already writes into every records commit, the code HEAD it was made at.
-  "The tip the run's last transition on origin names" is the `Warp-SHA` of the newest commit carrying one on origin's fetched records branch of the slug.
-- **Rationale:** D1 asks the commit to name its code tip; the trailer does already, so no second key can disagree with it.
-- **Applies to:** cards 6, 7, 12, 14
+- **Decision:** the records commit of a transition names its code tip through the `Warp-SHA` trailer, the code HEAD it was made at, and carries a second trailer `Run-Transition: <run id>` (`fabricengine.TransitionTrailerKey`, card 6).
+  Both transition seams commit through fabric's trailer commit (`CommitAnchoredPathsWithTrailers`, card 8), which writes `Warp-SHA` and the `Run-Transition` trailer they pass;
+  card 12's give-up commit writes both itself, its `Warp-SHA` being the previous transition's.
+  "The tip the run's last transition on origin names" is the `Warp-SHA` of the newest commit on origin's fetched records branch of the slug whose `Run-Transition` names the slug.
+- **Rationale:** D1 asks the commit to name its code tip, and `Warp-SHA` already names it.
+  Fabric's other weft commits carry `Warp-SHA` too (`commitWeftLocked`'s commits, made by `lym fabric commit` and `lym fabric sync`, and the anchor re-anchor commit), so the newest `Warp-SHA` commit need not be a transition;
+  `Run-Transition`, written only by the transition seams and the give-up, marks which commits are.
+- **Applies to:** cards 6, 7, 8, 12, 14
 
 ### Decision: hand-over-split
 
@@ -53,8 +57,8 @@ A code tip the run's last transition names but origin lacks makes the run wait, 
 
 ### Decision: owed-is-a-failed-push-record
 
-- **Decision:** an owed push is a failed-push record of class `transport` or the new `teardown_lock`; `ReadRun` reads it into `PushOwed` with its error and worktree, and `fabricengine.IsPushOwed` tells a seam to retry.
-  The record carries the run it serves (`FailedPush.Run`), so an owed push of the prime's records branch holds only the run that wrote it.
+- **Decision:** an owed push is a failed-push record of class `transport`, `deferred` or the new `teardown_lock`; `ReadRun` reads it into `PushOwed` with its error and worktree, and `fabricengine.IsPushOwed` tells a seam to retry.
+  The record carries the runs it serves (`FailedPush.Runs`, unioned across failures), so an owed push of the prime's records branch holds only the runs whose pushes failed it.
   The refusal's way forward is `lym fabric push` in the owed worktree, which lands the side and clears the record, then the verb's re-run.
   Any other failure halts the run at the transition with its record and notice.
 - **Rationale:** the record and its creel notice already exist per side and branch and are cleared by a landing push, so the owed state survives a restart with no new file.
@@ -66,6 +70,8 @@ A code tip the run's last transition names but origin lacks makes the run wait, 
   The run claim and the owner already push synchronously through `SetOwners`, so card 10 adds only the landing's `done`.
   `internal/pauserecord`, `internal/pullrequest` and `internal/tenderengine` need no change: `pauserecord.Admit` serves as is, the pull-request record's push is its committer's (card 9), and tender's pause already holds the run's processes through its pause entry before the intent's push.
   Pawl's `SpawnPush` (`internal/pawlengine/beamup.go:55`, "spawn the beam's push") pushes the beam pair a beam-up just made, as `add`'s spawn does, and carries no run transition, so it stays detached.
+  `Teardown.removeCancelledRunRecord`'s `SpawnStatusPush` (`internal/pairteardown/followup.go:107`) removes the record of a run whose cancel finished, so it carries no transition a run acts on, and it stays detached.
+  Tender's hub-resume spawns, `tendercli.HubDeps`' `PushPair` and `PushPrimeRecords` (`internal/tenderengine/resume.go:247-254`), push what was committed before the pause once it lifts and write no transition of their own, so they stay detached.
   An owed intent push of the prime's records branch lands with that branch's next push: any run's transition push, `lym fabric push` from the prime, or D4's catch-up at the next dobby start (the arbiter's reading of D9's bound).
 - **Rationale:** each function added has a production caller in this part (`PATTERN-test-only-code`).
 - **Applies to:** all cards

@@ -10,7 +10,7 @@
 - `internal/landingshed#Finalize.ownerChecks`
 - `internal/landingshed#Finalize.landUnderLock`
 - `internal/landingshed#Finalize.pushParent`
-- `internal/landingshed#Finalize.markTaskDone`
+- `internal/landingshed#Finalize.markTaskDone` -> `func (fz *Finalize) markTaskDone() error`
 - `internal/landingshed/doc.go`
 - `internal/landingshed#TestFinalize_MergeMarkPushOrderAndVerdict`
 - `internal/landingshed#TestFinalize_MergeInRequiredRetry`
@@ -23,6 +23,7 @@
 
 **Uses:**
 - `plan:internal/fabricengine#archiveParentMerge`
+- `plan:internal/fabricengine#resetKeepUnderArchive`
 - `plan:internal/pairteardown#HandOver`
 - `plan:internal/pairteardown#PushRun`
 - `plan:internal/pairteardown#ThisMachine`
@@ -72,6 +73,7 @@ The `MergeInRequired` retry path takes the same order.
 
 `ArchiveParentMerge` wraps card 6's `archiveParentMerge` over the parent pair's code worktree: it fetches, tags the local tip `archive-owner/<slug>/<sha12>`, pushes the tag and resets the local parent branch to origin's tip with `git reset --keep`.
 A local parent branch level with origin archives nothing and returns an empty tag.
+The `git reset --keep` runs only through card 6's `resetKeepUnderArchive`, the executor in `internal/fabricengine/destroy.go` that checks containment, ownership, dirtiness and force in that order (`PATTERN-fabric-boundary`) and refuses unless the archive tag is on origin at the tip being left.
 
 The landing doc's order section is rewritten to the new order; the fabric doc gains `ArchiveParentMerge`.
 
