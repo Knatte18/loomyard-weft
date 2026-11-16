@@ -1,0 +1,168 @@
+diff --git a/internal/battencli/beamland_integration_test.go b/internal/battencli/beamland_integration_test.go
+index 9ba8bc23..a7ca858e 100644
+--- a/internal/battencli/beamland_integration_test.go
++++ b/internal/battencli/beamland_integration_test.go
+@@ -2,6 +2,7 @@
+ // It covers the start guard and Worktree-Create's skip for beams made the two ways.
+ // It also covers the unreadable-pair refusal and the promote refusal judged from the board.
+ // It also covers a sub-beam under an open beam, and the landing refusal over a beam with members.
++// It also covers a filed run resuming under its family's grouping project.
+ 
+ package battencli
+ 
+@@ -19,6 +20,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -128,6 +130,19 @@ func TestBeamLanding_ReachesWorktreeCreateSkip(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("GroupingProjectWhoseRunFiledItsFamilyResumesOnlyWithTheFilingMark", func(t *testing.T) {
++		err := hubStartGuard(h.Location, "g").refuse("g", "run", runShed, true, true)
++		if err == nil || !strings.Contains(err.Error(), "grouping project") {
++			t.Fatalf("start guard for g before its filing mark = %v; want the grouping project refusal", err)
++		}
++		if err := shedrun.WriteFilingMark(h.Location, "g"); err != nil {
++			t.Fatalf("write the filing mark of g: %v", err)
++		}
++		if err := hubStartGuard(h.Location, "g").refuse("g", "run", runShed, true, true); err != nil {
++			t.Errorf("start guard for g with its filing mark = %v; want it passed", err)
++		}
++	})
++
+ 	t.Run("MemberHoldsAPairOnlyThroughARegisteredWorktree", func(t *testing.T) {
+ 		// c is a registered worktree; t gets a plain directory at its task worktree path.
+ 		if err := os.MkdirAll(filepath.Join(fabricengine.WorktreePath(h.Location, "t"), "obj"), 0o755); err != nil {
+diff --git a/internal/battencli/startguard.go b/internal/battencli/startguard.go
+index a046d15c..8e22f5a4 100644
+--- a/internal/battencli/startguard.go
++++ b/internal/battencli/startguard.go
+@@ -51,6 +51,9 @@ type startGuard struct {
+ 	// Project reads whether the slug's board entry is a project, and whether its beam flag is set.
+ 	// A nil Project reads every entry as a task.
+ 	Project func() (project, beam bool, err error)
++	// FilingMarked reports whether the slug's run filed a family, which turned the slug's entry into that family's project.
++	// A nil FilingMarked reads every run as one that filed nothing.
++	FilingMarked func() (bool, error)
+ 	// PairMark reads the origin record of the slug's local pair.
+ 	// found is false when the pair has no readable record; marked says whether it carries the beam mark.
+ 	PairMark func() (marked, found bool, err error)
+@@ -119,6 +122,7 @@ func hubStartGuard(location *lymcwd.Location, slug string) startGuard {
+ 			entry := owners.Entries[slug]
+ 			return entry.IsProject, entry.Beam, nil
+ 		},
++		FilingMarked: func() (bool, error) { return shedrun.FilingMarked(location, slug) },
+ 		PairMark: func() (bool, bool, error) {
+ 			origin, found, err := fabricengine.ReadOriginFor(location, slug)
+ 			if err != nil {
+@@ -264,6 +268,7 @@ func raddleStartRefusal(entry boardengine.Task, recordStored bool, store boarden
+ // A task that forks from a beam skips that check:
+ // its pair forks from the beam's last commit, not from the source worktree.
+ // A run or step of a project entry is judged by the project check.
++// A resume of a run that filed a family is judged as a task's, since the filing made its entry a grouping project.
+ // A resume past Worktree-Create passes over all the checks.
+ // A marked beam pair passes over the dirty-source and left-pair checks.
+ // A beam project with no marked pair here is left to the checks of a task.
+@@ -374,7 +379,9 @@ func (g startGuard) refuse(slug, verb string, status shedengine.Status, found, t
+ // beam reports whether the entry is a beam project.
+ // judged is false for an entry that is not a project, which the task checks then judge.
+ // It is also false for a beam project with no marked pair here, which they judge as a fresh start.
+-// A grouping project is refused naming the create that makes it a beam.
++// It is false too for a grouping project whose run is on record and filed its family:
++// the filing made the run's own entry that family's project, and the run still has its landing and teardown to drive.
++// Any other grouping project is refused naming the create that makes it a beam.
+ // A resume past Worktree-Create passes.
+ // A beam pair here with no readable origin record is refused.
+ // A marked one passes the dirty-source and left-pair checks, as the legacy beam's or the resumed run's own pair.
+@@ -387,6 +394,15 @@ func (g startGuard) refuseProject(slug, rerun string, status shedengine.Status,
+ 		return false, false, nil
+ 	}
+ 	if !beamFlag {
++		if found && g.FilingMarked != nil {
++			filed, err := g.FilingMarked()
++			if err != nil {
++				return false, true, probeRefusal("the run's filing mark", slug, rerun, err)
++			}
++			if filed {
++				return false, false, nil
++			}
++		}
+ 		return false, true, fmt.Errorf("%s is a grouping project, and only a beam project runs; way forward: run \"lym beam create %s\" to make it a beam, then %s", slug, slug, rerun)
+ 	}
+ 	if found && status.CurrentProducer != battenrecipe.NameWorktreeCreate {
+diff --git a/internal/battencli/startguard_test.go b/internal/battencli/startguard_test.go
+index 2b4239e3..3b467c0d 100644
+--- a/internal/battencli/startguard_test.go
++++ b/internal/battencli/startguard_test.go
+@@ -59,6 +59,9 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 		// project and beam feed the Project seam; marked and unreadable feed the PairMark seam.
+ 		project, beam, marked, unreadable bool
+ 		projectErr                        error
++		// filed is what the FilingMarked seam reads: the run filed a family.
++		filed    bool
++		filedErr error
+ 		// unreleased is the board status of a task no run starts; it is empty for a released entry.
+ 		unreleased    string
+ 		unreleasedErr error
+@@ -281,6 +284,40 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 			project:    true,
+ 			wantErrors: []string{"grouping project", `run "lym beam create some-slug"`},
+ 		},
++		{
++			name:       "GroupingProjectWithAFilingMarkButNoRunIsRefused",
++			verbs:      []string{"run", "step"},
++			project:    true,
++			filed:      true,
++			wantErrors: []string{"grouping project", `run "lym beam create some-slug"`},
++		},
++		{
++			name:     "FiledRunUnderItsFamilysProjectResumes",
++			verbs:    []string{"run", "step"},
++			project:  true,
++			filed:    true,
++			found:    true,
++			producer: battenrecipe.NameRunShed,
++			dirty:    []string{"a.txt"},
++			parts:    fabricengine.PairParts{TaskWorktree: true, RecordsWorktree: true, RecordsBranch: true},
++		},
++		{
++			name:       "UnfiledRunOfAGroupingProjectIsRefused",
++			verbs:      []string{"run", "step"},
++			project:    true,
++			found:      true,
++			producer:   battenrecipe.NameRunShed,
++			wantErrors: []string{"grouping project", `run "lym beam create some-slug"`},
++		},
++		{
++			name:       "FilingMarkProbeErrorRefusesNamingTheProbeAndTheRerun",
++			verbs:      []string{"run", "step"},
++			project:    true,
++			filedErr:   errors.New("run dir unreadable"),
++			found:      true,
++			producer:   battenrecipe.NameRunShed,
++			wantErrors: []string{"the run's filing mark", "run dir unreadable", `run "lym batten {verb} some-slug" again`},
++		},
+ 		{
+ 			name:    "FreshBeamProjectWithNoPairPassesOverACleanPrime",
+ 			verbs:   []string{"run", "step"},
+@@ -405,10 +442,11 @@ func TestStartGuard_Refuse(t *testing.T) {
+ 						ReachedParent: func(shedengine.Status, bool) (bool, error) {
+ 							return tt.reached, tt.reachedErr
+ 						},
+-						Project:    func() (bool, bool, error) { return tt.project, tt.beam, tt.projectErr },
+-						PairMark:   func() (bool, bool, error) { return tt.marked, !tt.unreadable, nil },
+-						Unreleased: func() (string, error) { return tt.unreleased, tt.unreleasedErr },
+-						Raddle:     tt.raddle,
++						Project:      func() (bool, bool, error) { return tt.project, tt.beam, tt.projectErr },
++						FilingMarked: func() (bool, error) { return tt.filed, tt.filedErr },
++						PairMark:     func() (bool, bool, error) { return tt.marked, !tt.unreadable, nil },
++						Unreleased:   func() (string, error) { return tt.unreleased, tt.unreleasedErr },
++						Raddle:       tt.raddle,
+ 					}
+ 				}
+ 
