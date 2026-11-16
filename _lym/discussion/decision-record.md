@@ -205,6 +205,12 @@ Decision: The record's reading stands: one Weaver row whose producer loops over 
 
 Rationale: The operator's decision names its purpose: the Shed driver's tackler and arbiter handle a stuck batch as for any recipe, which D2's per-batch Stuck returns give. The board's own 'Weaver as a Shed run' idea lists one batch producer looping over the batch index, as the Burler round loops over rounds, as a way to meet it; the 2026-10-17 operator view puts the batchifier inside Weaver rather than in rows of its own; the implementer seam pins one row with fixed edges, and recipes are fixed files.
 
+### Added after Discussion (arbiter, 2026-11-16): The journal is pushed with the run at each shed transition (answers F10, Q16)
+
+Decision: Weaver keeps the implementer contract: it never pushes, and no push is added inside the producer. Its per-batch commits of _lym/weaver/ and the plan directory (D9), the journal included, and the batches' code commits are pushed by the run's own push at the row's end, the push every shed transition makes, Done or Stuck alike. The writer states this in D9 after 'Weaver never pushes', drops the second Open risks line and marks Q16 answered by this decision. push-before-act-takeover's scope is not changed.
+
+Rationale: The board says the journal is pushed with the run, that is by the run's push alongside the code it describes, and outlives a crash or a move to another machine. A crash keeps the per-batch commits locally, and a move to another machine goes through a stop: the adopt redesign's run FSM leaves every stopped run in a pushed state another machine goes on from, and a Weaver stop is a shed transition that pushes both sides. A push from Weaver would break implementer-spec's never-pushes line, and a push inside a producer would widen push-before-act-takeover, another task's scope.
+
 ## Constraints
 
 - PATTERN-shed-recipe-registry: the `Implementer` entry's closed table is the one exception to the registry map; Weaver joins that table and adds no registry entry.
