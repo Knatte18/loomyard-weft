@@ -1,6 +1,6 @@
 # A transition pushes its records before the run acts, and a takeover entry in the run's records hands the run over
 
-`transition-push-takeover` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut · running · Drift-Await
+`transition-push-takeover` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut · running · Drift-Expect
 
 Decision record: [Sketch](decision-transition-push-takeover.md)
 
