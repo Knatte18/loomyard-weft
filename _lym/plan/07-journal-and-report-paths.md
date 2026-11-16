@@ -1,11 +1,11 @@
 # Card 7 — journal-and-report-paths
 
 **Create:**
-- `plan:internal/weaverengine#AttemptReportPath` -> `func AttemptReportPath(reportsDir string, number int, slug string, attempt int) string`
-- `plan:internal/weaverengine#FixerReplyPath` -> `func FixerReplyPath(reportsDir string, fixer int) string`
-- `plan:internal/weaverengine#JournalHeading` -> `func JournalHeading(batch string, attempt int) string`
-- `plan:internal/weaverengine#AppendJournal` -> `func AppendJournal(path, heading, text string) error`
-- `plan:internal/weaverengine#TestAppendJournal` -> `func TestAppendJournal(t *testing.T)`
+- `internal/weaverengine#AttemptReportPath`
+- `internal/weaverengine#FixerReplyPath`
+- `internal/weaverengine#JournalHeading`
+- `internal/weaverengine#AppendJournal`
+- `internal/weaverengine_test#TestAppendJournal`
 
 **Extends:**
 - `internal/weaverengine/doc.go`

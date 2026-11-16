@@ -24,8 +24,8 @@
 - `internal/weaverengine/doc.go`
 
 **Uses:**
-- `plan:internal/weaverengine#ActiveOrSetting`
-- `plan:internal/weaverengine#BatchStrandRole`
+- `internal/weaverengine#ActiveOrSetting`
+- `internal/weaverengine#BatchStrandRole`
 - `internal/gatefixer#RoleVerifyFixer`
 - `internal/loomcli#decisionNoticeLine`
 - `internal/loomcli#liveRunStrands`

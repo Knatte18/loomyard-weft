@@ -8,9 +8,9 @@
 - `internal/loomshed/doc.go`
 
 **Uses:**
-- `plan:internal/weaverengine#Active`
-- `plan:internal/runplan#DoneCards`
-- `plan:internal/runplan#EditedDoneCards`
+- `internal/weaverengine#Active`
+- `internal/runplan#DoneCards`
+- `internal/runplan#EditedDoneCards`
 
 **Intent:** The plan gate's done-card freeze and the Plan-Review rubric's frozen-card note read the active implementer's state (D13).
 

@@ -1,0 +1,6 @@
+status: OK
+head_sha: 8850ad93c21dce4c2f3542b89a848824842fc6fe
+renames:
+  - old: internal/weaverengine#State.PlanWeftCommit
+    new: internal/weaverengine#State.PlanRecordsCommit
+    reason: the fabric-vocabulary guard bans the bare weft token in Go source, so the field and its JSON key name the records-repository commit

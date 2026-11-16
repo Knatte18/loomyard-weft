@@ -1,21 +1,21 @@
 # Card 3 — weaver-geometry
 
 **Create:**
-- `plan:internal/lymdirs#WeaverDirName` -> `const WeaverDirName = "weaver"`
-- `plan:internal/weaverengine#Dir` -> `func Dir(anchorRoot string) string`
-- `plan:internal/weaverengine#DirRel` -> `func DirRel() string`
-- `plan:internal/weaverengine#ReportsDir` -> `func ReportsDir(anchorRoot string) string`
-- `plan:internal/weaverengine#ScratchDir` -> `func ScratchDir(anchorRoot string) string`
-- `plan:internal/weaverengine#PromptsDir` -> `func PromptsDir(anchorRoot string) string`
-- `plan:internal/weaverengine#JournalPath` -> `func JournalPath(runDir string) string`
-- `plan:internal/weaverengine#OutcomePath` -> `func OutcomePath(runDir string) string`
-- `plan:internal/weaverengine#Geometry` -> `type Geometry struct`
-- `plan:internal/weaverengine#Geometry.runPlan` -> `func (g Geometry) runPlan() runplan.Geometry`
-- `plan:internal/weaverengine#Geometry.git` -> `func (g Geometry) git() websterengine.Git`
-- `plan:internal/websterengine#NewGit` -> `func NewGit() Git`
-- `plan:internal/hubgeom#WeaverGeometry` -> `func WeaverGeometry(l *lymcwd.Location) weaverengine.Geometry`
-- `plan:internal/weaverengine#TestPaths` -> `func TestPaths(t *testing.T)`
-- `plan:internal/hubgeom#TestWeaverGeometry` -> `func TestWeaverGeometry(t *testing.T)`
+- `internal/lymdirs#WeaverDirName`
+- `internal/weaverengine#Dir`
+- `internal/weaverengine#DirRel`
+- `internal/weaverengine#ReportsDir`
+- `internal/weaverengine#ScratchDir`
+- `internal/weaverengine#PromptsDir`
+- `internal/weaverengine#JournalPath`
+- `internal/weaverengine#OutcomePath`
+- `internal/weaverengine#Geometry`
+- `internal/weaverengine#Geometry.runPlan`
+- `internal/weaverengine#Geometry.git`
+- `internal/websterengine#NewGit`
+- `internal/hubgeom#WeaverGeometry`
+- `internal/weaverengine_test#TestPaths`
+- `internal/hubgeom#TestWeaverGeometry`
 
 **Edit:**
 - `internal/lymdirs/doc.go`

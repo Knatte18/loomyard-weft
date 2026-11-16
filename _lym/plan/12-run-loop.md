@@ -20,8 +20,8 @@
 - `internal/runplan#WriteConflictRecord`
 - `internal/runplan#RemoveConflictRecord`
 - `internal/runplan#ConflictDir`
-- `plan:internal/runplan#PendingPartition`
-- `plan:internal/runplan#RecordBeginPartition`
+- `internal/runplan#PendingPartition`
+- `internal/runplan#RecordBeginPartition`
 - `internal/runplan#AcquireStateMutation`
 
 **Intent:** The row's producer body: every batch in Go, then the plan-level verify (D2, D3, D4, D5, D6).

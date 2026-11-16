@@ -1,12 +1,12 @@
 # Card 4 — runplan-shared-readers
 
 **Create:**
-- `plan:internal/runplan#DoneCards` -> `func DoneCards(plan *planparser.Plan, st *State) []planparser.Card`
-- `plan:internal/runplan#EditedDoneCards` -> `func EditedDoneCards(plan *planparser.Plan, st *State) ([]string, error)`
-- `plan:internal/runplan#LastBegunCard` -> `func LastBegunCard(st *State) int`
-- `plan:internal/runplan#PendingPartition` -> `func PendingPartition(plan *planparser.Plan, st *State, b batcher.Batcher, sizes batcher.SizeSource) ([]PartitionBatch, []batcher.Batch, error)`
-- `plan:internal/runplan#RecordBeginPartition` -> `func RecordBeginPartition(st *State, done []PartitionBatch, fresh []batcher.Batch)`
-- `plan:internal/runplan#TestPendingPartition` -> `func TestPendingPartition(t *testing.T)`
+- `internal/runplan#DoneCards`
+- `internal/runplan#EditedDoneCards`
+- `internal/runplan#LastBegunCard`
+- `internal/runplan#PendingPartition`
+- `internal/runplan#RecordBeginPartition`
+- `internal/runplan#TestPendingPartition`
 
 **Edit:**
 - `internal/websterengine#DoneCards`

@@ -13,7 +13,7 @@
 - `internal/weaverengine/doc.go`
 
 **Uses:**
-- `plan:internal/weaverengine#ActiveOrSetting`
+- `internal/weaverengine#ActiveOrSetting`
 - `internal/loomcli/doc.go`
 
 **Intent:** The arbiter's description of a tapestry run names the active implementer's run directory, so a stop on any row reaches the plan, state, reports and journal (D8).

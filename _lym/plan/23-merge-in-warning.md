@@ -15,7 +15,7 @@
 - `internal/weaverengine/doc.go`
 
 **Uses:**
-- `plan:internal/weaverengine#ActiveOrSetting`
+- `internal/weaverengine#ActiveOrSetting`
 - `plan:internal/weaverengine#outcomeRecord`
 - `internal/websterengine#RunInFlight`
 - `internal/fabriccli_test#seedWebsterState`

@@ -30,9 +30,9 @@
 
 **Uses:**
 - `plan:internal/weaverengine#ArchiveRunRecord`
-- `plan:internal/weaverengine#Active`
-- `plan:internal/weaverengine#RunDirs`
-- `plan:internal/weaverengine#DirRel`
+- `internal/weaverengine#Active`
+- `internal/weaverengine#RunDirs`
+- `internal/weaverengine#DirRel`
 - `internal/websterengine#ArchiveRunRecord`
 - `internal/loomcli/doc.go`
 

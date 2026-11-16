@@ -1,19 +1,19 @@
 # Card 6 — active-implementer-seam
 
 **Create:**
-- `plan:internal/weaverengine#Implementer` -> `type Implementer string`
-- `plan:internal/weaverengine#ImplementerWebster` -> `const ImplementerWebster Implementer = "webster"`
-- `plan:internal/weaverengine#ImplementerWeaver` -> `const ImplementerWeaver Implementer = "weaver"`
-- `plan:internal/weaverengine#BatchStrandRole` -> `const BatchStrandRole = "weaver"`
-- `plan:internal/weaverengine#ErrImplementerConflict` -> `var ErrImplementerConflict = errors.New("weaver: the run's implementers disagree")`
-- `plan:internal/weaverengine#ErrActiveRefused` -> `var ErrActiveRefused = errors.New("weaver: the run's active implementer cannot be read")`
-- `plan:internal/weaverengine#StateVersion` -> `type StateVersion struct`
-- `plan:internal/weaverengine#ActiveDeps` -> `type ActiveDeps struct`
-- `plan:internal/weaverengine#Active` -> `func Active(deps ActiveDeps) (Implementer, *runplan.State, error)`
-- `plan:internal/weaverengine#ActiveOrSetting` -> `func ActiveOrSetting(deps ActiveDeps) (Implementer, *runplan.State, string)`
-- `plan:internal/weaverengine#RunDirs` -> `func RunDirs(impl Implementer, anchorRoot string) (runDir, scratchDir string)`
-- `plan:internal/weaverengine#restorableVersion` -> `func restorableVersion(deps ActiveDeps) (StateVersion, bool)`
-- `plan:internal/weaverengine#TestActive` -> `func TestActive(t *testing.T)`
+- `internal/weaverengine#Implementer`
+- `internal/weaverengine#ImplementerWebster`
+- `internal/weaverengine#ImplementerWeaver`
+- `internal/weaverengine#BatchStrandRole`
+- `internal/weaverengine#ErrImplementerConflict`
+- `internal/weaverengine#ErrActiveRefused`
+- `internal/weaverengine#StateVersion`
+- `internal/weaverengine#ActiveDeps`
+- `internal/weaverengine#Active`
+- `internal/weaverengine#ActiveOrSetting`
+- `internal/weaverengine#RunDirs`
+- `internal/weaverengine#restorableVersion`
+- `internal/weaverengine_test#TestActive`
 
 **Extends:**
 - `internal/weaverengine/doc.go`

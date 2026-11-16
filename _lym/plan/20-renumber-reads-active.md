@@ -20,9 +20,9 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/weaverengine#Active`
-- `plan:internal/weaverengine#RunDirs`
-- `plan:internal/runplan#LastBegunCard`
+- `internal/weaverengine#Active`
+- `internal/weaverengine#RunDirs`
+- `internal/runplan#LastBegunCard`
 - `internal/runplan#AcquireStateMutation`
 
 **Intent:** The renumber verbs bound at the active implementer's last begun card, under its state-mutation lease (D3, D13).

@@ -1,15 +1,15 @@
 # Card 5 — weaver-state
 
 **Create:**
-- `plan:internal/weaverengine#State` -> `type State struct`
-- `plan:internal/weaverengine#AttemptState` -> `type AttemptState struct`
-- `plan:internal/weaverengine#FixerState` -> `type FixerState struct`
-- `plan:internal/weaverengine#StopRecord` -> `type StopRecord struct`
-- `plan:internal/weaverengine#LoadState` -> `func LoadState(runDir, scratchDir string) (*State, error)`
-- `plan:internal/weaverengine#SaveState` -> `func SaveState(runDir, scratchDir string, st *State) error`
-- `plan:internal/weaverengine#StateRel` -> `func StateRel() string`
-- `plan:internal/weaverengine#BegunBatches` -> `func BegunBatches(st *State) bool`
-- `plan:internal/weaverengine#TestState` -> `func TestState(t *testing.T)`
+- `internal/weaverengine#State`
+- `internal/weaverengine#AttemptState`
+- `internal/weaverengine#FixerState`
+- `internal/weaverengine#StopRecord`
+- `internal/weaverengine#LoadState`
+- `internal/weaverengine#SaveState`
+- `internal/weaverengine#StateRel`
+- `internal/weaverengine#BegunBatches`
+- `internal/weaverengine_test#TestState`
 
 **Extends:**
 - `internal/weaverengine/doc.go`

@@ -22,7 +22,7 @@
 - `internal/loomshed/doc.go`
 
 **Uses:**
-- `plan:internal/weaverengine#Active`
+- `internal/weaverengine#Active`
 - `internal/websterengine#ArchiveRunAfterReset`
 - `plan:internal/weaverengine#ArchiveRunRecord`
 
