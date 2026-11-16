@@ -668,8 +668,14 @@
       "body": "## Why (operator, 2026-11-15)\n\nThe beam `adopt-build` was split by raddle from the Sketch `adopt-redesign`, and the plan has changed a lot since:\nthe orch continues its own session on the same machine only, with no transcript mirror (F12);\nthe orch stays up during an adopt hold (F14);\n`prime-is-root-beam`, `hub-stop-button` and `machine-restart-shortcut` joined the beam as darn tasks.\nThe two first members, `orch-resume-own-session` and `run-fsm-tracked-records`, land in the beam before this runs,\nand what they built may differ from what the later members' bodies assume.\n\n## Task\n\nRevise every member of the beam that has not run, so each body and decision record matches what stands now:\n`push-before-act-takeover`, `bolt-holds-catch-up`, `adopt-foreground-leftovers`, `prime-is-root-beam`, `hub-stop-button`, `machine-restart-shortcut`.\n\nRead:\n\n- the beam's branch as it stands after the two landings, and their decision records (`lym board get \u003cslug\u003e --record`);\n- each remaining member's body and, where it has one, its decision record;\n- the raddle split's record under Bolt's `raddle/adopt-redesign`.\n\nFor each remaining member, settle:\n\n- what its `Takes` names that the landed members built differently, renamed or left out, and what it now takes instead;\n- what the operator's later decisions above change in it, such as anything left from the transcript mirror or a cross-machine orch resume;\n- overlap or gaps between members, the three darn members included: `hub-stop-button` builds on the run FSM and its pause and cancel intents;\n- whether its `depends_on`, recipe and package list still hold, and whether two members should merge or one should split.\n\n## Bounds\n\n- A study: read code, records and the board; run no tests and change no production code.\n- Change no board entry and no decision record: the orch applies the result after the operator approves it.\n- The result is a report under `docs/research/` with one section per remaining member:\n  what changes and why, the revised body in full ready to write to the board,\n  and a revised decision record where the member has one and it changes.\n  It ends with any change to order, dependencies or recipes, and the open questions for the operator.\n",
       "status": "draft",
       "created": "2026-11-15T16:33:07Z",
-      "revised": "2026-11-15T16:33:07Z",
+      "revised": "2026-11-16T08:34:22Z",
+      "run_settings": {
+        "loom": {
+          "pr_review_ask_parent": true
+        }
+      },
       "profile": "docs",
+      "pull_request": "on",
       "project": "adopt-build"
     },
     {
