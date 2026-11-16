@@ -1,6 +1,8 @@
 # Cut the existing redundant tests of every package, found by the coverage maps
 
-`redundancy-sweep-existing` · Note · enhancement, testkit, gate
+`redundancy-sweep-existing` · Task · enhancement, testkit, gate · draft
+
+Depends on: [`redundancy-judge-asserts`](design-redundancy-judge-asserts.md)
 
 ## Seen (orch, 2026-11-09)
 

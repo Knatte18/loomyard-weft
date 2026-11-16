@@ -186,23 +186,25 @@
     },
     {
       "id": 1270,
-      "handle": "E4",
+      "handle": "T2",
       "slug": "redundancy-sweep-existing",
       "title": "Cut the existing redundant tests of every package, found by the coverage maps",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "testkit",
         "gate"
       ],
       "issues": [],
-      "priority": "high",
-      "depends_on": [],
+      "depends_on": [
+        "redundancy-judge-asserts"
+      ],
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-09)\n\nThe coverage maps (`internal/testcover`, built by `lym gate testmap`) record, per package, the blocks each tier 0 and tier 1 test covers.\nThe gate report (the advisory redundancy step of `lym gate test`, landed as `7f21142e`) judges only the new tests of a diff against the map; nothing yet uses the maps to find redundant tests that already exist.\nThe operator wants the existing ones cut, across the packages, not only kept from growing.\n\n## Waits for a correct judge (operator, 2026-11-16)\n\nThe cut stays wanted, but it waits for `redundancy-judge-asserts`:\n`lym gate redundant` flags tests as redundant that check different things,\nso its list is not correct until that bug is fixed.\nThe survey `redundancy-candidates-survey` (`194650f0`, report `docs/research/speed/redundancy-candidates-survey-2026-11-16/`) listed 1,026 candidates in 118 packages, and every one it sampled was a false candidate.\nOnce the judge is fixed, its list is a verdict, not a reading filter, and the cut runs on it.\n\n## Idea\n\n1. A candidate list per package: every test whose covered blocks the package's other tests already cover, with its run time, using the same judgment as the gate report.\n   Tests marked `//testtiming:keep` are left out.\n2. Cut tasks on that list, slowest packages first, each run delegating the per-test reading to subagents:\n   a candidate is cut or folded into another test only when its assertions add nothing the covering tests check, since equal coverage does not mean equal checks.\n3. `internal/fabricengine` was swept by hand on 2026-11-08 and is being reworked by its serial-phase tasks, so it comes last or not at all.\n\n## Changed by the Sketch `testmap-upkeep-design` (board tidy, 2026-11-11)\n\nIts approved decision record (D13) asks two changes of this note:\n\n- Before judging a package, the sweep runs a hand call of `lym gate testmap` naming it (D9), which rebuilds that package's map whole.\n- Spawn-marked tests (D4) are neither candidates nor covers.\n\n## Uses today's maps, now (operator, 2026-11-15)\n\nThe cut does not wait for the maps' check-in (`testmap-maps-in-weft`) or for the payoff measurement (`testmap-payoff-measure`).\nIt uses the maps that exist today, stored beside the repository under `\u003cbolt\u003e/.lym/testcover/`:\na full set of 211 maps, built on 2026-11-12 by the upkeep pass in 44 minutes.\n\nWhat it builds on:\n\n- The candidate list per package: `lym gate redundant \u003cpackage\u003e` (commit `79f0eb4a`, task `test-redundancy-candidates`) prints a package's candidates from its map as JSON, with tier, seconds, covering tests and whether each is in the removable set. It omits `//testtiming:keep` tests and spawn-marked tests.\n  It runs no test and takes no gate slot.\n- The pilot report `docs/research/speed/coverage-map-pilot-2026-11-12/report.md` ran it on `internal/adoptcli` only:\n  of 30 judged tests, 2 were candidates, and both assert something their covering tests do not.\n\n## Built since (tidy, 2026-11-15)\n\nTask `testmap-on-command` (`72b26d1a`) retired the upkeep pass.\nNo dobby or landing keeps the maps fresh now, so the 211 maps above go stale as landings change their packages.\nA sweep of a package first runs `lym gate testmap` on it by hand, as D9 says; that call now waits for the package's build lock and has no default package cap.\n\nTask `testmap-any-worktree` (`894abe59`) lets `lym gate testmap` run in any worktree of the hub.\nFrom the prime it still writes the hub's shared maps; from any other worktree it builds at that worktree's HEAD and keeps its own maps under the worktree's `.lym/testcover/`, which never touch the shared ones.\n`lym gate redundant` reads the maps from the place the same worktree's `lym gate testmap` writes them, so a sweep task builds and reads its own maps.\n",
+      "status": "draft",
       "created": "2026-11-09T18:47:33Z",
-      "revised": "2026-11-16T11:28:36Z",
+      "revised": "2026-11-16T12:11:50Z",
       "project": "test-suite-trim"
     },
     {
