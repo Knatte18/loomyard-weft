@@ -591,9 +591,25 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/a823923f-7348-4ce9-a1d7-ac8a5677e1bf/subagents/agent-a9d83c62ae0609357.jsonl"
       ]
+    },
+    "6": {
+      "slug": "run-hand-over",
+      "cards": [
+        "06-run-hand-over"
+      ],
+      "cardHashes": {
+        "06-run-hand-over": "4166f625a990604b1b08b9083da9a6c1065cbbba171425fbbcfa0d39992b6067"
+      },
+      "startSha": "1134155f67beba9e0223a99cfac2fc1c5f4559bf",
+      "kind": "fork",
+      "spawnedAt": "2026-11-16T14:34:40Z",
+      "sessionId": "a823923f-7348-4ce9-a1d7-ac8a5677e1bf",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "13630fce5704e03fd908560054a969a3",
   "masterSessionId": "a823923f-7348-4ce9-a1d7-ac8a5677e1bf",
   "masterEngine": "claude",
