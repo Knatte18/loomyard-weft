@@ -905,6 +905,29 @@
       "project": "codex-parity",
       "discussed": true,
       "record_body_sha256": "a45e2c333881a072f678b68e78f82249d76c92ff66cd9ea763d16a284c9a1c2c"
+    },
+    {
+      "id": 1410,
+      "handle": "T14",
+      "slug": "redundancy-confirmed-survey",
+      "title": "Survey the mutation-confirmed redundancy candidates across every package",
+      "kind": "task",
+      "labels": [
+        "research",
+        "testkit",
+        "gate"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Run the fixed lym gate redundant on every package and measure how many confirmed candidates are false",
+      "body": "## Goal\n\nTask `redundancy-judge-asserts` (`e97e2474`) made `lym gate redundant` confirm each coverage candidate by mutation:\na test stays listed only when its covering tests kill every mutant it kills.\nBefore the cut `redundancy-sweep-existing` relies on that list, this survey checks it across the repository, as `redundancy-candidates-survey` (`194650f0`) did for the old judge.\n\n## The runs\n\n1. Build the maps in this task's worktree with one `lym gate testmap` over every package, as the earlier survey did.\n2. Run `lym gate redundant` once on each package that has a candidate, and record per package:\n   candidates, confirmed, refuted, not judged with its reasons, and wall time.\n3. Read a sample of exactly 30 confirmed candidates, spread over the packages with the most confirmed ones,\n   using subagents; for each, judge whether it checks something its covering tests do not.\n   Name the kind of check the mutator missed for each one it did, such as a check on another package's result.\n\n## Read\n\n- How many confirmed candidates in all, and their total run time: what the cut could save.\n- The share of the sample that is a false confirmation, and which kinds of check cause it.\n  That share decides how much `redundancy-sweep-existing` must read before it cuts.\n- Packages where the verb is slow or a mutant hangs a test until its bound (`internal/loomcli` took 8.6 minutes in the landing's measurement).\n\n## Bounds\n\nChange no production code and no test, and nothing under Bolt.\nThe report goes under `docs/research/speed/`.\n",
+      "status": "draft",
+      "created": "2026-11-16T14:05:35Z",
+      "revised": "2026-11-16T14:05:35Z",
+      "profile": "docs",
+      "project": "test-suite-trim"
     }
   ],
   "prime_owner": "neve",
