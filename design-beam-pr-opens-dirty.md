@@ -1,6 +1,6 @@
 # lym beam pr open opens a beam PR that conflicts with its parent
 
-`beam-pr-opens-dirty` · Task · bug, batten, fabric · landing · Finalize
+`beam-pr-opens-dirty` · Task · bug, batten, fabric · done
 
 ## Seen (adopt-build beam orch, 2026-11-16)
 
