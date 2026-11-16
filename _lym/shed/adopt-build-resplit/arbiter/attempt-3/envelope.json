@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "The stop is a hard-cap review escalation at round 2 of Raddle-Bouncer, the split review. The ledger leaves two design findings open, F1 (BLOCKING, mechanical) and F2 (MEDIUM, design-wrong).\nThe round-2 fixer ran after the review (review 11:17, proposal and fixer report 11:20, judge 11:20:48), and its edits are in _lym/raddle/proposal.yaml now. I read each finding against the proposal and the code, and the fix in place answers both.\nF1: the three bullets now sit in the parts that deliver their behavior, and each of those parts has transition-push-takeover on its depends_on path: the D1 hold-write bullet in machine-registry-holds-catchup, the D2 rejected-takeover-push bullet in adopt-foreground, and the D2 in-loop hand-over pair bullet in leftover-pairs-teardown.\nF2: machine-registry-holds-catchup moves the tries reader and writer into a new internal/fixtries as fixtries.Read and fixtries.Write, importing only internal/state. It runs the upgrade's first read at the dobby start in internal/dobbyengine, adds fixtries to dobbyengine's import allowlist, and exports both functions with their production callers. adopt-foreground names the same package and functions.\nholds.go's readTries and writeTries import only fmt, path/filepath and internal/state, so no import cycle forms. The record leaves the reader's package open, and its export line pairs the first read with the dobby start's catch-up, so the move changes no decision.\nI recorded one arbiter decision so the ruling stays in the record, then accepted the segment. No code was changed and nothing was committed.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add adopt-build-resplit --by arbiter --title \"Split review round 2 accepted at the hard cap: both findings answered in the proposal\" --decision \"...\" --rationale \"...\"",
+    "lym loom circling accept adopt-build-resplit"
+  ],
+  "cause": "",
+  "attempt": 3,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit/_lym/shed/adopt-build-resplit/arbiter/attempt-3",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit/_lym/shed/adopt-build-resplit/arbiter/attempt-3/verdict.yaml",
+  "relaunch": "lym shed step adopt-build-resplit --until-stop --arbiter-attempt 3"
+}

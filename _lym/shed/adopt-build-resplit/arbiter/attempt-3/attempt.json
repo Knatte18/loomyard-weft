@@ -1,0 +1,20 @@
+{
+  "number": 3,
+  "stop_key": {
+    "current_producer": "Raddle-Bouncer",
+    "history_length": 19,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-16T11:21:02.743351931+01:00",
+  "deadline": "2026-11-16T11:51:02.743351931+01:00",
+  "strand_guid": "a5077647e58bbd50c645d305f39bff89",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit/_lym/shed/adopt-build-resplit/drive-reports/drive-envelope-20261116-112102-262d.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit/_lym/shed/adopt-build-resplit/drive-reports/drive-report-20261116-112102-3563.md",
+  "snapshot": {
+    "head": "e784a54eac2e63b00649d1d2ebac85d620b90ddf",
+    "branch": "adopt-build-resplit",
+    "dirty": {}
+  }
+}

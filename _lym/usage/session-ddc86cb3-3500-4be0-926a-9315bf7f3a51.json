@@ -1,0 +1,14 @@
+{
+  "session_id": "ddc86cb3-3500-4be0-926a-9315bf7f3a51",
+  "row": "Raddle-Bouncer",
+  "role": "arbiter",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 20,
+  "cache_write_tokens": 59226,
+  "cache_read_tokens": 393263,
+  "output_tokens": 6148,
+  "cost_usd": 0.4978226,
+  "started": "2026-11-16T10:21:02Z",
+  "ended": "2026-11-16T10:22:04Z"
+}
