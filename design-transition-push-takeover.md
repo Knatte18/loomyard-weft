@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-transition-push-takeover.md)
 
-Depends on: [`adopt-revision`](design-adopt-revision.md)
-
 Filed from the Sketch `adopt-build-resplit`.
 
 Takes: runfsm's Judge, Aside and Inputs, whose PushOwedOffline and CodeTipMissing nothing fills; pairteardown.ReadRun, the one reader of a run's inputs, and EndSubjectProcesses; the detached commit-and-push of lym tender pause, lym tender resume, lym batten cancel, the pull-request record and the fixer attempt counts; fabricengine's PushPairAnchored (code side first today), coalescePushSides, coalesceFlagged and respawnForeignFlags, the teardown-lock respawn, pushclassified's rejection path, anchorchange's push and ArchiveOwnerTips; statuscommit's per-transition spawn; boardengine's Sync, SpawnSync and owner commit; landingshed's Finalize; machinename.Names; PATTERN-test-only-code holds, so every new function has a production caller in this part
