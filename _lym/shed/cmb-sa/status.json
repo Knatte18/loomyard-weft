@@ -1,11 +1,13 @@
 {
-  "current_producer": "Motif",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
   "pause_requested": false,
+  "pause_after": "Plan-Burler-Review",
+  "pause_after_by": "orch",
   "activity": {
-    "now": "Motif",
-    "last": "Preflight → done",
+    "now": "Drift-Baseline",
+    "last": "Motif → skipped",
     "wait": ""
   },
   "history": [
@@ -15,6 +17,13 @@
       "output": "",
       "at": "2026-11-16T10:27:07Z",
       "started_at": "2026-11-16T10:27:06Z"
+    },
+    {
+      "producer": "Motif",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-16T10:28:00Z",
+      "reason": "bench: the frozen decision record is the run's, so the block's Discussion is passed over"
     }
   ],
   "product": {
