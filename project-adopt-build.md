@@ -1,6 +1,6 @@
 # P3 Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt
 
-Rendered 2026-11-16 08:53 UTC; every age below is as of then.
+Rendered 2026-11-16 08:54 UTC; every age below is as of then.
 Under: [P1 Revise adopt and the functions that move a hub between machines](project-adopt-revision.md).
 
 [`adopt-build`](design-adopt-build.md) · Age 16h · Owner `neve`
@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Revise the remaining adopt-build members against what landed and what the operator decided since the split**<br>• `loom: pr_review_ask_parent true` | [`adopt-build-revision`](design-adopt-build-revision.md) | darn · docs | PR-Review | neve | 16h<br>19m | docs, batten, dobby, orch, fabric, tender |
+| T14 | **Revise the remaining adopt-build members against what landed and what the operator decided since the split**<br>• `loom: pr_review_ask_parent true` | [`adopt-build-revision`](design-adopt-build-revision.md) | darn · docs | PR-Review | neve | 16h<br>20m | docs, batten, dobby, orch, fabric, tender |
 
 ### Ready (0)
 
