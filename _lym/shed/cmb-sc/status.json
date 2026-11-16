@@ -2,6 +2,7 @@
   "current_producer": "Plan-Write",
   "state": "running",
   "error": "",
+  "entered_row": "Plan-Write",
   "pause_requested": false,
   "pause_after": "Plan-Write",
   "pause_after_by": "orch",
