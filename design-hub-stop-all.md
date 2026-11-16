@@ -1,6 +1,6 @@
 # lym beam stop --all takes the hub down on this machine, behind a stop button
 
-`hub-stop-all` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut · draft
+`hub-stop-all` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut
 
 Decision record: [Sketch](decision-hub-stop-all.md)
 

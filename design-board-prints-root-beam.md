@@ -1,6 +1,6 @@
 # The board prints the prime as the root beam `root`
 
-`board-prints-root-beam` · Task · enhancement, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut · draft
+`board-prints-root-beam` · Task · enhancement, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut
 
 Decision record: [Sketch](decision-board-prints-root-beam.md)
 
