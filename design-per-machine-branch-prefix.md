@@ -20,7 +20,7 @@ On a hub shared by several people, or one person on several machines with differ
 - Review which other keys are personal rather than hub-wide and give them the same layer, for example:
   the identity a pull request is opened under or assigned to, the Slack operator, the default model or effort a session opens with, and editor or window settings such as `batten.open_ide`.
 
-## When (operator, 2026-11-11)
+## When (operator, 2026-11-16)
 
-Not yet: the hub-wide `branch_prefix` is enough for now.
-Kept for when a hub is shared across users or machines with different conventions.
+Planned after the beam `adopt-build` lands, as it reworks how a hub moves between machines and touches fabric and the config layers.
+Then it becomes a task: the per-machine or per-user layer for `branch_prefix`, and the review of the other personal keys above, built on what the beam left.
