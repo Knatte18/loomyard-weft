@@ -1,6 +1,6 @@
 # A Codex session gets exactly what a Claude session in the same role gets
 
-`codex-same-as-claude` · Note · sketch, codex, shuttle, stencil, heddle
+`codex-same-as-claude` · Task · sketch, codex, shuttle, stencil, heddle
 
 Decision record: [Sketch](decision-codex-same-as-claude.md)
 
