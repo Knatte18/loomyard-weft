@@ -858,7 +858,7 @@
       "isolated": false,
       "brief": "After an arras family filing, batten refuses the run as a grouping project, so it never reaches Land or Worktree-Teardown",
       "body": "## Seen (adopt-build beam orch, 2026-11-16)\n\nAfter an arras family filing, the batten run whose pass ended at Run-Shed is refused on every later pass with \"grouping project, only a beam project runs\", so it never reaches Land or Worktree-Teardown.\nSeen on `adopt-build-resplit`: the inner loom run was done, batten stuck at Run-Shed.\nThe workaround was `lym batten cancel \u003cslug\u003e --remove` from the beam; the task branch had no commits.\n\n## Cause\n\n`internal/battencli/startguard.go` `refuseProject` refuses any non-beam project entry and never checks the run's filing mark (`shedrun.FilingMarked`),\nthough `cleanup.go` `ClearMotifRun` expects a filed arras run to finish.\nNot beam-specific.\n\n## Idea\n\n`refuseProject` lets a slug with a standing filing mark through so the done run tears down, or the filing itself finishes the batten run.\n",
-      "status": "running · Record-Write",
+      "status": "running · Drift-Baseline",
       "created": "2026-11-16T10:25:26Z",
       "revised": "2026-11-16T10:25:26Z"
     }
