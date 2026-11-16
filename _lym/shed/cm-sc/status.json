@@ -1,0 +1,55 @@
+{
+  "current_producer": "Plan-Write",
+  "state": "paused",
+  "error": "",
+  "pause_requested": false,
+  "pause_before": "Plan-Burler-Fix",
+  "pause_before_by": "bench",
+  "activity": {
+    "now": "Plan-Write",
+    "last": "Parts-Plan-Write → skipped",
+    "wait": ""
+  },
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-16T11:12:01Z",
+      "started_at": "2026-11-16T11:12:01Z"
+    },
+    {
+      "producer": "Motif",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-16T11:12:02Z",
+      "reason": "bench: the frozen decision record is the run's, so the block's Discussion is passed over"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-16T11:12:03Z",
+      "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Parts-Write",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-16T11:12:04Z",
+      "reason": "tapestry.plan_split = false"
+    },
+    {
+      "producer": "Parts-Plan-Write",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-16T11:12:05Z",
+      "reason": "tapestry.plan_split = false"
+    }
+  ],
+  "product": {
+    "slug": "cm-sc",
+    "parent": "claude-code-mode",
+    "start_sha": null
+  }
+}
