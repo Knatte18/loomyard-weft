@@ -1,6 +1,6 @@
 # Web research: how to use Claude Code Mode well
 
-`code-mode-web-research` · Task · research, claude, codex · starting · Worktree-Create
+`code-mode-web-research` · Task · research, claude, codex · starting · Seed-Child
 
 ## Goal
 
