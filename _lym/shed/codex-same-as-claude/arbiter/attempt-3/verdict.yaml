@@ -1,0 +1,25 @@
+verdict: resume
+reason: |-
+  Review escalation at round 3, cause hard-cap, so the only option is accept, and it is allowed only when the open
+  design-wrong findings are wrong or the fix in place already answers them. The round-3 fixer's text in the decision
+  record answers all three open keys:
+  - F1 (d12-non-exec-calls-outside-cell-model): D12 now treats a model call as one top-level rollout call item. It
+    names the collaboration spawn_agent and send_message calls as function_call items and scopes the payload and
+    latest-cell sentences to nested calls. A payload whose tool_name is neither Bash nor apply_patch gets no nudge
+    and the rollout is left unread for it. A function_call ends a lookup_run or edit_run chain, and the acceptance
+    criterion covers that case. I checked the cited 2026-11-15 rollout: it holds 21 custom_tool_call exec items and
+    4 collaboration function_call items (2 spawn_agent, 2 send_message), as D12 now states. The skipped spike does
+    not affect the design, because the rule holds whether or not the hook fires.
+  - F2 (d1-scan-reaches-probe-literals): D1 defines a launch-spec literal as a Spec literal that sets Prompt. D1's
+    scan, D4's scan and the producer table skip the attach probes. A producer that fills its prompt inline gets its
+    render split out, and the Notes match. I checked bouncer.go: the awaitLiveJudge and awaitLiveSeed literals set
+    only OutputFiles, Role, Segment and Round, while runSeedSpawn and judgeCall set Prompt.
+  - F3 (mechanical): D12 resolves both paths against each call's CommandExecution cwd and applies the
+    modification-time test. The spike rollout shows that cwd as a file:// URL and parsed_cmd paths as written.
+  I recorded the ruling as an arbiter decision so the plan writer reads these findings as answered, not as
+  unconverged gaps. Then I accepted round 3.
+verbs:
+  - |-
+    lym loom decision add codex-same-as-claude --by arbiter --title "Round-3 review findings are answered by the record as it stands" --decision "Treat the round-3 findings ... as answered by D1, D4 and D12 as written ..." --rationale "The Discussion review reached its hard cap at round 3 ..."
+  - |-
+    lym loom circling accept codex-same-as-claude

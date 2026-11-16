@@ -1,0 +1,20 @@
+{
+  "number": 3,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 13,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-16T10:41:57.86413558+01:00",
+  "deadline": "2026-11-16T11:11:57.86413558+01:00",
+  "strand_guid": "b4a9b8712d8851ee518f7f1e379ef2a2",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/codex-same-as-claude/_lym/shed/codex-same-as-claude/drive-reports/drive-envelope-20261116-104157-6c10.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/codex-same-as-claude/_lym/shed/codex-same-as-claude/drive-reports/drive-report-20261116-104157-2edd.md",
+  "snapshot": {
+    "head": "ab5d49e0633194a639aa9a3a5c2e407aa51911d6",
+    "branch": "codex-same-as-claude",
+    "dirty": {}
+  }
+}
