@@ -202,6 +202,13 @@ Rationale: The round is at the perch's hard cap with F1 open as design-wrong in 
 
 ## Open risks
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
+  - code-tip-read-from-every-warp-sha-commit (class design, severity BLOCKING, open in rounds 3)
+  - owed-tip-pushed-hook-unreachable-from-external-test (class scope, severity MEDIUM, open in rounds 3)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: a shed transition in a task pair pushes its records side, then its code side once the records side landed, and starts the next producer only after both landed on origin.
