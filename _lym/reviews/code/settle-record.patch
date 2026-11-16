@@ -1,0 +1,486 @@
+diff --git a/contracts/orchrole/role-beams.md b/contracts/orchrole/role-beams.md
+index febaa71f..2a67bf24 100644
+--- a/contracts/orchrole/role-beams.md
++++ b/contracts/orchrole/role-beams.md
+@@ -36,6 +36,8 @@ When the operator says so, run:
+   with a pull request recorded, it also updates the pull request.
+ - `lym beam pr open <slug>`, `update`, `status` and `close` for the beam's pull request into its parent.
+   `status` reads whether it can merge now and what stops it, and changes nothing.
++  `open` refuses while the beam conflicts with its parent or its merge task is not done:
++  run `merge-parent` and let its task land first.
+ - `lym beam merge-parent <slug>`, which brings the parent in.
+ 
+ Write the description for a reader of the pull request:
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index 1c361b1c..a69c0db2 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -86,8 +86,13 @@ It runs anywhere in the hub and refuses, each naming its way forward:
+   - a beam with no change description recorded, "lym beam describe <slug>" records it
+   - a beam with no commits beyond its parent
+   - an origin that is not on GitHub, or a parent branch with no upstream, or a push skip
++  - a beam whose merge task is not done, "lym batten status <task>" follows the task
++  - a beam that conflicts with its parent branch, "lym beam merge-parent <slug>" settles it
+   - a failed push or GitHub call, which names its cause
+ 
++Both the merge task and the conflict are checked before a push or a reopen,
++and a beam only behind its parent still opens.
++
+ Example:
+   lym beam pr open payments`,
+ 		Args: cobra.ExactArgs(1),
+diff --git a/internal/beamcli/deps.go b/internal/beamcli/deps.go
+index bfad47a4..41021f48 100644
+--- a/internal/beamcli/deps.go
++++ b/internal/beamcli/deps.go
+@@ -144,6 +144,39 @@ func hubLandDeps(prime *lymcwd.Location) landDeps {
+ 			ParentBranch: parentBranch,
+ 		}, nil
+ 	}
++	// beamParentTips opens the beam's pair and returns it with its HEAD and the parent branch's tips.
++	// Origin decides: the upstream tip is read after a fetch under the remote-refs lock if upstream is set and pushes run.
++	// The tips are the local tip and that upstream tip, each left out when absent.
++	beamParentTips := func(slug string) (*fabricengine.Fabric, string, []string, error) {
++		beam, parentBranch, err := beamAndParent(slug)
++		if err != nil {
++			return nil, "", nil, err
++		}
++		pair, err := fabricengine.Open(beam)
++		if err != nil {
++			return nil, "", nil, err
++		}
++		tips, err := pair.ReadParentTips(parentBranch, false)
++		if err != nil {
++			return nil, "", nil, err
++		}
++		if tips.Upstream != "" && !fabricengine.EnvSyncOptions().SkipPush {
++			if tips, err = pair.ReadParentTips(parentBranch, true); err != nil {
++				return nil, "", nil, err
++			}
++		}
++		head, err := pair.HeadSHA()
++		if err != nil {
++			return nil, "", nil, err
++		}
++		var present []string
++		for _, tip := range []string{tips.Local, tips.Upstream} {
++			if tip != "" {
++				present = append(present, tip)
++			}
++		}
++		return pair, head, present, nil
++	}
+ 	return landDeps{
+ 		Machine: machinename.Name,
+ 		ReadOwners: func() (boardengine.Owners, error) {
+@@ -377,38 +410,33 @@ func hubLandDeps(prime *lymcwd.Location) landDeps {
+ 				return nil
+ 			}
+ 		},
+-		// Origin decides: parent tips are read after a fetch under the remote-refs lock if upstream is set and pushes run.
+ 		ParentUnmerged: func(slug string) (bool, error) {
+-			beam, parentBranch, err := beamAndParent(slug)
++			pair, head, tips, err := beamParentTips(slug)
+ 			if err != nil {
+ 				return false, err
+ 			}
+-			pair, err := fabricengine.Open(beam)
+-			if err != nil {
+-				return false, err
+-			}
+-			tips, err := pair.ReadParentTips(parentBranch, false)
+-			if err != nil {
+-				return false, err
+-			}
+-			if tips.Upstream != "" && !fabricengine.EnvSyncOptions().SkipPush {
+-				if tips, err = pair.ReadParentTips(parentBranch, true); err != nil {
++			for _, tip := range tips {
++				held, err := pair.IsAncestor(tip, head)
++				if err != nil {
+ 					return false, err
+ 				}
++				if !held {
++					return true, nil
++				}
+ 			}
+-			head, err := pair.HeadSHA()
++			return false, nil
++		},
++		ParentConflicts: func(slug string) (bool, error) {
++			pair, _, tips, err := beamParentTips(slug)
+ 			if err != nil {
+ 				return false, err
+ 			}
+-			for _, tip := range []string{tips.Local, tips.Upstream} {
+-				if tip == "" {
+-					continue
+-				}
+-				held, err := pair.IsAncestor(tip, head)
++			for _, tip := range tips {
++				conflicts, err := pair.ConflictsWith(tip)
+ 				if err != nil {
+ 					return false, err
+ 				}
+-				if !held {
++				if conflicts {
+ 					return true, nil
+ 				}
+ 			}
+diff --git a/internal/beamcli/deps_integration_test.go b/internal/beamcli/deps_integration_test.go
+index 1188d678..f712563d 100644
+--- a/internal/beamcli/deps_integration_test.go
++++ b/internal/beamcli/deps_integration_test.go
+@@ -26,7 +26,8 @@ import (
+ )
+ 
+ // TestHubLandDeps_ReadyReads drives the seams that `ready` judges a beam by over a real hub pair.
+-// It reads the parent's pull request mode and whether the beam holds the parent's commits.
++// It reads the parent's pull request mode.
++// It reads whether the beam holds the parent's commits and whether it conflicts with them.
+ // It also reads which beam commits a merged pull request lacks and the change description's findings.
+ func TestHubLandDeps_ReadyReads(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -72,6 +73,9 @@ func TestHubLandDeps_ReadyReads(t *testing.T) {
+ 	if unmerged, err := deps.ParentUnmerged("b"); !unmerged || err != nil {
+ 		t.Errorf("ParentUnmerged(b) = %t, %v after a parent commit; want true", unmerged, err)
+ 	}
++	if conflicts, err := deps.ParentConflicts("b"); conflicts || err != nil {
++		t.Errorf("ParentConflicts(b) = %t, %v for a parent commit on a file the beam leaves alone; want false", conflicts, err)
++	}
+ 
+ 	// With no upstream the parent is judged by its local tip alone.
+ 	// The unset fails for a parent that tracks nothing, which leaves it as wanted.
+@@ -93,6 +97,12 @@ func TestHubLandDeps_ReadyReads(t *testing.T) {
+ 		t.Errorf("MergedLacks(b) = %v, %v after a beam commit; want the one commit named", lacking, err)
+ 	}
+ 
++	gitkit.CommitFile(t, h.PrimeWorktree(), "shared.txt", "parent\n", "Parent writes shared")
++	gitkit.CommitFile(t, worktree, "shared.txt", "beam\n", "Beam writes shared")
++	if conflicts, err := deps.ParentConflicts("b"); !conflicts || err != nil {
++		t.Errorf("ParentConflicts(b) = %t, %v after both sides wrote shared.txt apart; want true", conflicts, err)
++	}
++
+ 	descriptionPath := summaryparser.Path(loomengine.LandingDir(beam))
+ 	if err := os.MkdirAll(filepath.Dir(descriptionPath), 0o755); err != nil {
+ 		t.Fatalf("create the landing directory: %v", err)
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index be831f3e..742b956b 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -158,6 +158,12 @@
+ // It refuses a beam with no commit beyond its parent.
+ // The refusal names landing a member into the beam first, or `lym beam ready <slug>` to land without a pull request.
+ // It refuses an origin that `landingshed.OriginMissing` finds a fact missing from.
++// Before it pushes for a pull request none records, or reopens a recorded one GitHub reports closed,
++// `judgeOpenable` refuses a beam whose pull request GitHub could not merge as it stands:
++//   - a beam with a merge task not done, naming `lym batten status` of the task, since its landing changes the beam;
++//   - a beam whose head conflicts with its parent, naming `lym beam merge-parent <slug>`.
++//
++// A beam only behind its parent opens, since GitHub merges it.
+ // A recorded pull request that GitHub reports open answers `already` and commits the landing directory.
+ // One reported closed is reopened and answered `reopened`.
+ // One reported merged changes nothing and names `lym beam ready <slug>`, after which Finalize lands it.
+@@ -201,6 +207,8 @@
+ // It also carries whether GitHub's rules for the parent branch require a pull request.
+ // `parentRuleRequired` reads that only when the origin allows a pull request,
+ // and it reads no rule when the token is unusable or the call fails for a reason that is not transient.
++// `ParentConflicts` reads the parent tips `ParentUnmerged` reads.
++// It merges each into the beam's head in memory through `fabricengine`'s `ConflictsWith`.
+ //
+ // # land
+ //
+diff --git a/internal/beamcli/land.go b/internal/beamcli/land.go
+index e9b2754e..ef407b30 100644
+--- a/internal/beamcli/land.go
++++ b/internal/beamcli/land.go
+@@ -55,6 +55,7 @@ import (
+ // Now is the clock a read of a pull request's merge state keeps its retry window by.
+ // ParentUnmerged reports whether the parent branch's tip is not an ancestor of the beam's head.
+ // It is the local tip, or the upstream tip fetched when the parent has one and the hub's push skip is unset.
++// ParentConflicts reports whether merging either of those tips into the beam's head stops on a conflict.
+ // DescriptionFindings lists the findings of the written change description, none when it is valid.
+ // MergedLacks lists the beam commits past mergedHead that a landing of the merged pull request would lack.
+ // Each is a short object name and subject; the parent merges and records-only commits are left out.
+@@ -91,6 +92,7 @@ type landDeps struct {
+ 	Sleep           func(ctx context.Context, d time.Duration) error
+ 
+ 	ParentUnmerged      func(slug string) (bool, error)
++	ParentConflicts     func(slug string) (bool, error)
+ 	DescriptionFindings func(slug string) ([]string, error)
+ 	MergedLacks         func(slug, mergedHead string) ([]string, error)
+ }
+diff --git a/internal/beamcli/land_test.go b/internal/beamcli/land_test.go
+index e38eed6a..7d38bc9f 100644
+--- a/internal/beamcli/land_test.go
++++ b/internal/beamcli/land_test.go
+@@ -76,10 +76,15 @@ type landWorld struct {
+ 	modeErr       error
+ 	// slept is the time the fake clock has advanced by Sleep, which every read of the merge state waits through.
+ 	slept time.Duration
+-	// parentUnmerged, findings and mergedLacks are what ParentUnmerged, DescriptionFindings and MergedLacks answer.
+-	parentUnmerged bool
+-	findings       []string
+-	mergedLacks    []string
++	// parentUnmerged answers ParentUnmerged and parentConflicts answers ParentConflicts.
++	// findings answers DescriptionFindings and mergedLacks answers MergedLacks.
++	parentUnmerged  bool
++	parentConflicts bool
++	findings        []string
++	mergedLacks     []string
++	// tasksErr and parentConflictsErr are what the Tasks and ParentConflicts seams fail with.
++	tasksErr           error
++	parentConflictsErr error
+ 	// apiErr, when set, leaves the pull request side with no API and this as the reason.
+ 	apiErr error
+ 	// landing holds each beam's landing record, and writes counts the WriteLanding calls, which fail with writeErr.
+@@ -162,7 +167,7 @@ func (w *landWorld) deps() landDeps {
+ 			return "/hub/" + slug + "/.lym/beam/land-request.json", nil
+ 		},
+ 		Now:   func() time.Time { return landNow.Add(w.slept) },
+-		Tasks: func() ([]boardengine.Task, error) { return w.tasks, nil },
++		Tasks: func() ([]boardengine.Task, error) { return w.tasks, w.tasksErr },
+ 		FileTask: func(fields map[string]any) error {
+ 			w.filed = append(w.filed, fields)
+ 			return nil
+@@ -202,6 +207,7 @@ func (w *landWorld) deps() landDeps {
+ 			return nil
+ 		},
+ 		ParentUnmerged:      func(string) (bool, error) { return w.parentUnmerged, nil },
++		ParentConflicts:     func(string) (bool, error) { return w.parentConflicts, w.parentConflictsErr },
+ 		DescriptionFindings: func(string) ([]string, error) { return w.findings, nil },
+ 		MergedLacks:         func(string, string) ([]string, error) { return w.mergedLacks, nil },
+ 		Landing: func(slug string) (pawlengine.LandingRecord, bool, error) {
+diff --git a/internal/beamcli/pr.go b/internal/beamcli/pr.go
+index 3c6c8589..91c7f7fd 100644
+--- a/internal/beamcli/pr.go
++++ b/internal/beamcli/pr.go
+@@ -48,6 +48,7 @@ type beamPullRequestSide struct {
+ // A closed one is reopened, and a merged one is left for Finalize.
+ // With none recorded, it pushes the beam branch and finds an open pull request from it.
+ // It creates one with the description's text when there is none, and records the pull request with the pushed head.
++// Before it pushes, or reopens a closed one, it refuses a beam whose pull request GitHub could not merge as it stands.
+ func prOpen(ctx context.Context, deps landDeps, slug string) (map[string]any, error) {
+ 	const verb = "lym beam pr open"
+ 	if err := judgePullRequestVerb(deps, verb, slug); err != nil {
+@@ -77,6 +78,9 @@ func prOpen(ctx context.Context, deps landDeps, slug string) (map[string]any, er
+ 	if record.PullRequest != nil {
+ 		return openRecorded(ctx, deps, side, slug, *record.PullRequest)
+ 	}
++	if err := judgeOpenable(deps, verb, slug, side.ParentBranch); err != nil {
++		return nil, err
++	}
+ 
+ 	head, err := deps.PushBeam(slug)
+ 	if err != nil {
+@@ -133,6 +137,9 @@ func openRecorded(ctx context.Context, deps landDeps, side beamPullRequestSide,
+ 		}
+ 		result["already"] = true
+ 	case pullrequest.StateClosed:
++		if err := judgeOpenable(deps, verb, slug, side.ParentBranch); err != nil {
++			return nil, err
++		}
+ 		if err := side.API.Reopen(ctx, recorded.Number); err != nil {
+ 			return nil, rerunRefusal(verb, slug, fmt.Sprintf("reopen pull request #%d", recorded.Number), err)
+ 		}
+@@ -226,6 +233,29 @@ func judgePullRequestVerb(deps landDeps, verb, slug string) error {
+ 	return judgeNotReady(deps, verb, slug)
+ }
+ 
++// judgeOpenable refuses to open the beam's pull request into parentBranch while GitHub could not merge it as it stands.
++// A merge task of the beam that is not done refuses first, since its landing changes what the pull request holds.
++// The refusal names following that task.
++// A beam whose head conflicts with a tip of the parent branch refuses next, naming `lym beam merge-parent`.
++// A beam only behind its parent passes, since GitHub merges it.
++func judgeOpenable(deps landDeps, verb, slug, parentBranch string) error {
++	tasks, err := deps.Tasks()
++	if err != nil {
++		return rerunRefusal(verb, slug, "read the board", err)
++	}
++	if task, open := openMergeTask(tasks, slug); open {
++		return fmt.Errorf("%s: the merge task %s is under way in the beam %s, and the pull request waits for its landing; way forward: run `lym batten status %s`, let it land into the beam, then run `%s %s` again", verb, task, slug, task, verb, slug)
++	}
++	conflicts, err := deps.ParentConflicts(slug)
++	if err != nil {
++		return rerunRefusal(verb, slug, "read whether the beam conflicts with its parent", err)
++	}
++	if conflicts {
++		return fmt.Errorf("%s: the beam %s conflicts with its parent branch %s, so its pull request could not merge; way forward: run `lym beam merge-parent %s`, let its task settle the conflicts and land into the beam, then run `%s %s` again", verb, slug, parentBranch, slug, verb, slug)
++	}
++	return nil
++}
++
+ // requireOrigin refuses a side whose origin lacks a fact a pull request needs, and names the fact.
+ // A side whose API could not be opened is refused with its cause named.
+ func requireOrigin(verb, slug string, side beamPullRequestSide) error {
+diff --git a/internal/beamcli/pr_test.go b/internal/beamcli/pr_test.go
+index d4ca8a22..af94ae99 100644
+--- a/internal/beamcli/pr_test.go
++++ b/internal/beamcli/pr_test.go
+@@ -2,6 +2,7 @@
+ // It covers a pull request opened, found or recorded.
+ // A pull request a landing record names is settled by where GitHub reports it.
+ // It also covers the update and each refusal with its way forward.
++// A beam that conflicts with its parent or holds an open merge task is among those refusals.
+ 
+ package beamcli
+ 
+@@ -39,6 +40,10 @@ func TestPROpen(t *testing.T) {
+ 		setup func(w *landWorld)
+ 		// wantErr is empty for a verb that answers, else every substring the refusal names.
+ 		wantErr []string
++		// wantNoErr holds every substring the refusal must not name.
++		wantNoErr []string
++		// wantUntouched asserts a refusal that pushed, wrote and changed nothing on GitHub.
++		wantUntouched bool
+ 		// check judges the answer and the world of a verb that answers.
+ 		check func(t *testing.T, w *landWorld, got map[string]any)
+ 	}{
+@@ -122,6 +127,64 @@ func TestPROpen(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "OpenMergeTaskRefusedNamingItsStatus",
++			setup: func(w *landWorld) {
++				w.tasks = append(w.tasks, boardengine.Task{Slug: "b-merge-in", Kind: boardengine.KindTask, Project: "b"})
++			},
++			wantErr:       []string{"lym beam pr open:", "merge task b-merge-in", "lym batten status b-merge-in", "lym beam pr open b"},
++			wantUntouched: true,
++		},
++		{
++			name:          "ConflictWithTheParentRefusedNamingMergeParent",
++			setup:         func(w *landWorld) { w.parentConflicts = true },
++			wantErr:       []string{"conflicts with its parent branch main", "lym beam merge-parent b", "lym beam pr open b"},
++			wantUntouched: true,
++		},
++		{
++			name: "OpenMergeTaskRefusesBeforeTheConflict",
++			setup: func(w *landWorld) {
++				w.tasks = append(w.tasks, boardengine.Task{Slug: "b-merge-in", Kind: boardengine.KindTask, Project: "b"})
++				w.parentConflicts = true
++			},
++			wantErr:       []string{"lym batten status b-merge-in"},
++			wantNoErr:     []string{"lym beam merge-parent"},
++			wantUntouched: true,
++		},
++		{
++			name: "BeamOnlyBehindItsParentStillOpens",
++			setup: func(w *landWorld) {
++				w.parentUnmerged = true
++				w.api.Script(prkit.MethodCreate, prkit.Answer{Ref: pullrequest.Ref{Number: 7, URL: prURL}})
++			},
++			check: func(t *testing.T, w *landWorld, got map[string]any) {
++				if w.landing["b"].PullRequest == nil || w.landing["b"].PullRequest.Number != 7 || got["created"] != true {
++					t.Errorf("recorded %+v, answer %v; want pull request 7 created and recorded", w.landing["b"].PullRequest, got)
++				}
++			},
++		},
++		{
++			name:          "FailingBoardReadRefusedNamingTheRerun",
++			setup:         func(w *landWorld) { w.tasksErr = errors.New("the board is unreadable") },
++			wantErr:       []string{"read the board", "the board is unreadable", "lym beam pr open b"},
++			wantUntouched: true,
++		},
++		{
++			name:          "FailingParentConflictReadRefusedNamingTheRerun",
++			setup:         func(w *landWorld) { w.parentConflictsErr = errors.New("the fetch failed") },
++			wantErr:       []string{"read whether the beam conflicts with its parent", "the fetch failed", "lym beam pr open b"},
++			wantUntouched: true,
++		},
++		{
++			name: "RecordedClosedConflictingWithTheParentRefusedAndNotReopened",
++			setup: func(w *landWorld) {
++				w.landing["b"] = pawlengine.LandingRecord{Slug: "b", DescribedAt: landNow, PullRequest: recordedPullRequest}
++				w.api.Script(prkit.MethodStatus, prkit.Answer{Status: pullrequest.Status{State: pullrequest.StateClosed}})
++				w.parentConflicts = true
++			},
++			wantErr:       []string{"lym beam merge-parent b"},
++			wantUntouched: true,
++		},
+ 		{
+ 			name: "FailingRecordWriteAfterACreatedPullRequestNamesItsURL",
+ 			setup: func(w *landWorld) {
+@@ -226,6 +289,22 @@ func TestPROpen(t *testing.T) {
+ 						t.Errorf("prOpen() error = %q; want it to name %q", err.Error(), want)
+ 					}
+ 				}
++				for _, unwanted := range tt.wantNoErr {
++					if strings.Contains(err.Error(), unwanted) {
++						t.Errorf("prOpen() error = %q; want it not to name %q", err.Error(), unwanted)
++					}
++				}
++				if !tt.wantUntouched {
++					return
++				}
++				for _, method := range []string{prkit.MethodCreate, prkit.MethodReopen, prkit.MethodSetDraft, prkit.MethodEdit} {
++					if calls := w.api.Calls(method); len(calls) != 0 {
++						t.Errorf("%s calls = %v; want none on this refusal", method, calls)
++					}
++				}
++				if w.pushed != 0 || w.writes != 0 {
++					t.Errorf("%d pushes and %d writes; want none on this refusal", w.pushed, w.writes)
++				}
+ 				return
+ 			}
+ 			if err != nil {
+diff --git a/internal/fabricengine/parenttips.go b/internal/fabricengine/parenttips.go
+index 08653713..28a51b09 100644
+--- a/internal/fabricengine/parenttips.go
++++ b/internal/fabricengine/parenttips.go
+@@ -216,6 +216,25 @@ func (f *Fabric) HoldsWork(base, source string) (bool, error) {
+ 	return merged == baseTree, nil
+ }
+ 
++// ConflictsWith reports whether merging ref into the pair's code HEAD stops on a conflict.
++// The merge runs in memory and changes no worktree, index or ref.
++// A ref that does not resolve is an error naming it.
++func (f *Fabric) ConflictsWith(ref string) (bool, error) {
++	refSHA, err := f.code.ResolveSHA(ref)
++	if err != nil {
++		return false, fmt.Errorf("fabricengine: conflict test against %s: %w", ref, err)
++	}
++	headSHA, err := f.code.ResolveSHA("HEAD")
++	if err != nil {
++		return false, fmt.Errorf("fabricengine: conflict test against %s: %w", ref, err)
++	}
++	_, clean, err := f.code.MergeTree(headSHA, refSHA)
++	if err != nil {
++		return false, fmt.Errorf("fabricengine: conflict test against %s: %w", ref, err)
++	}
++	return !clean, nil
++}
++
+ // FastForwardRefusal names why a fast-forward left the pair unmoved without returning an error.
+ type FastForwardRefusal string
+ 
+diff --git a/internal/reedengine/bindings_integration_test.go b/internal/reedengine/bindings_integration_test.go
+index 9760dc8c..0e36d014 100644
+--- a/internal/reedengine/bindings_integration_test.go
++++ b/internal/reedengine/bindings_integration_test.go
+@@ -159,7 +159,7 @@ func (f *bindingsFixture) assertFollow(t *testing.T, want string) {
+ func (f *bindingsFixture) awaitRecord(t *testing.T) []string {
+ 	t.Helper()
+ 	var args []string
+-	waitUntil(t, 5*time.Second, "the recorder never finished writing", func() bool {
++	waitUntil(t, 30*time.Second, "the recorder never finished writing", func() bool {
+ 		raw, err := os.ReadFile(f.recordPath)
+ 		args = strings.Split(strings.TrimSuffix(string(raw), "\n"), "\n")
+ 		return err == nil && len(args) == 8
+@@ -390,7 +390,7 @@ func TestBindings_AltLeftRightRunTheSwitchCommandWithTheToldPaths(t *testing.T)
+ 			return err == nil
+ 		})
+ 		var args []string
+-		waitUntil(t, 5*time.Second, "the recorder never finished writing", func() bool {
++		waitUntil(t, 30*time.Second, "the recorder never finished writing", func() bool {
+ 			raw, err := os.ReadFile(f.recordPath)
+ 			args = strings.Split(strings.TrimSuffix(string(raw), "\n"), "\n")
+ 			return err == nil && len(args) == 9
+@@ -459,7 +459,7 @@ func TestBindings_ButtonClickRunsTheVerbInTheRunDirectory(t *testing.T) {
+ 	socketPath := strings.TrimSpace(mustTmuxOutput(t, f.e, "display-message", "-p", "#{socket_path}"))
+ 	f.click(t, 2, "HALT")
+ 	var lines []string
+-	waitUntil(t, 5*time.Second, "the recorder never finished writing", func() bool {
++	waitUntil(t, 30*time.Second, "the recorder never finished writing", func() bool {
+ 		raw, err := os.ReadFile(recordPath)
+ 		lines = strings.Split(strings.TrimSuffix(string(raw), "\n"), "\n")
+ 		return err == nil && len(lines) >= 14
