@@ -1,0 +1,32 @@
+{
+  "session_id": "5ee30e8a-8dca-4fb1-9784-4ac31c356221",
+  "row": "Plan-Bouncer",
+  "role": "plan-bouncer-seed",
+  "model": "\u003csynthetic\u003e",
+  "engine": "claude",
+  "input_tokens": 18,
+  "cache_write_tokens": 46069,
+  "cache_read_tokens": 184358,
+  "output_tokens": 3269,
+  "cost_usd": 0.18477010000000002,
+  "started": "2026-11-16T11:21:43Z",
+  "ended": "2026-11-16T11:22:26Z",
+  "models": [
+    {
+      "model": "\u003csynthetic\u003e",
+      "input_tokens": 0,
+      "cache_write_tokens": 0,
+      "cache_read_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "input_tokens": 18,
+      "cache_write_tokens": 46069,
+      "cache_read_tokens": 184358,
+      "output_tokens": 3269,
+      "cost_usd": 0.18477010000000002
+    }
+  ]
+}
