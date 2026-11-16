@@ -1,30 +1,25 @@
 # Merge main into the beam adopt-build
 
-Brings `main` (up to 194650f0) into the beam `adopt-build` as one merge commit, 4153c5ef.
-Three paths conflicted, and two more files needed changes because the beam used a constant that `main` deleted.
+Brings the parent branch `main` into the beam `adopt-build` as a true merge.
+The merge carries main's changes since the beam last merged it; it adds no change of its own beyond the fixes below.
 
-## Conflict resolutions
+The incoming work, as a reviewer will see it in the diff:
 
-- `internal/orchcli/cli.go`: kept both sides' new `orchCLI` fields and their wiring.
-  That is the beam's `registerOrch`, `orchRegistered`, `endOrch` and `endSubject`, and `main`'s `machineName` and `injectRemoteControl`.
-  Dropped `endTestMap` and its wiring, since `main` removed the coverage-map upkeep pass and its `runproc.RoleTestMap`.
-- `internal/orchcli/start.go`: the resume path keeps the beam's `resumeOrch`, which ends this worktree's own earlier orch process and resumes again.
-  `resumeOrch` now also takes `main`'s `remoteControlName` and passes it to `orchSpec`,
-  so a resumed session gets remote control as `main` intended.
-- `internal/runproc/doc.go`: the hub roles list follows `main` (no `RoleTestMap`), and the beam's line on the prime's `RoleOrch` registration stays.
+- `orchcli` and `orchengine`: orch sessions turn on remote control themselves, switchable per hub.
+- `gatecli`, `gateslot`, `dobbyengine`, `testcover`, `impactset`: the test-map build is reworked, and the coverage-scope and yield code is removed.
+- `shedarbiter`, `loomcli`, `loomengine`, `contracts/stencils`: arbiter calls gain a fix path with its prompt fragments.
+- `reedengine`, `shuttleengine`, `claudeengine`, `boardengine`, `creelcli`: smaller feature and doc changes.
+- `docs/research`: new research reports and captured data for the test-map work.
 
-## Fixes the merge needed outside the conflicts
+Two files conflicted and were settled by hand, and two follow-up commits fix what the merge left behind:
 
-`main` deleted `runproc.RoleTestMap`, but the beam's `EndSubject` added a reference to it after the merge base:
+- `internal/orchcli/start.go`: the conflict resolution keeps both sides' changes; a follow-up reflows the wrapped `resumeOrch` doc comment at sentence boundaries.
+- `internal/runproc/end_test.go`: the `HubOwner` subtest name still referred to `TestMap`, which main removed; the name now drops it.
 
-- `internal/runproc/end.go`: removed `RoleTestMap` from `subjectPassSpared`, and removed the coverage-map pass from `EndSubject`'s doc comment.
-- `internal/runproc/doc.go`: the same doc fix for the `EndSubject` paragraph.
-- `internal/runproc/end_test.go`: removed the `RoleTestMap` record from the `TestEndSubject_EndsTheRunsThenTheSubjectAndItsDobbyLast` fixture.
-  No row expected that record to be signalled or ended.
+No issue is closed by this task.
 
-These fixes are part of the merge commit, not separate commits after it.
+## To check
 
-## Checks
-
-`go build ./cmd/lym` and `go vet` pass on `orchcli`, `runproc` and every other package both sides changed.
-The gate has not run yet.
+- Read the conflict resolutions in `internal/orchcli/start.go` and `internal/runproc/end_test.go`.
+  They are the only merge content that is not main's own commits.
+- No regression check ran for this task, and the gate was not re-run by hand after the last fix.
