@@ -1,0 +1,22 @@
+{
+  "current_producer": "Worktree-Create",
+  "state": "blocked",
+  "error": "battencli: claim the board entry of \"beam-pr-opens-dirty\": board: origin is unreachable, so the owner write was not pushed: gitrepo: git push: gitrepo: push retries exhausted after 4 attempts: git push https://github.com/Knatte18/loomyard-weft.git refs/heads/main:refs/heads/main: exit 1: To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]       main -\u003e main (cannot lock ref 'refs/heads/main': is at 26e27aab1a099dfa593c8c885c36f44465a8568e but expected e2dec378222f1b4936a8fbb52420d5b2a83637a9) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'; way forward: run `lym board sync` from the prime worktree to retry the push",
+  "pause_requested": false,
+  "activity": {
+    "now": "Worktree-Create",
+    "last": "Worktree-Create → stuck",
+    "wait": "battencli: claim the board entry of \"beam-pr-opens-dirty\": board: origin is unreachable, so the owner write was not pushed: gitrepo: git push: gitrepo: push retries exhausted after 4 attempts: git push https://github.com/Knatte18/loomyard-weft.git refs/heads/main:refs/heads/main: exit 1: To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]       main -\u003e main (cannot lock ref 'refs/heads/main': is at 26e27aab1a099dfa593c8c885c36f44465a8568e but expected e2dec378222f1b4936a8fbb52420d5b2a83637a9) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'; way forward: run `lym board sync` from the prime worktree to retry the push"
+  },
+  "history": [
+    {
+      "producer": "Worktree-Create",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-16T11:30:41Z",
+      "started_at": "2026-11-16T11:29:53Z",
+      "budget_exempt": true,
+      "machine": "neve"
+    }
+  ]
+}
