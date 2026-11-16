@@ -739,8 +739,7 @@
       "status": "done",
       "created": "2026-11-16T11:24:02Z",
       "revised": "2026-11-16T11:29:44Z",
-      "profile": "solid",
-      "notify_on_land": true
+      "profile": "solid"
     },
     {
       "id": 1403,
