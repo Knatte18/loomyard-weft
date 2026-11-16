@@ -1,6 +1,6 @@
 # A filed arras run is refused at Run-Shed and never tears down
 
-`filed-arras-stuck-at-run-shed` · Task · bug, batten · running · Seed-Child
+`filed-arras-stuck-at-run-shed` · Task · bug, batten · running · Preflight
 
 ## Seen (adopt-build beam orch, 2026-11-16)
 
