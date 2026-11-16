@@ -98,7 +98,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 9d<br>16h | codex, shuttle |
+| R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 9d<br>17h | codex, shuttle |
 | R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 6d<br>14h | codex, shuttle |
 
 </details>
@@ -118,7 +118,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **lym gate testmap builds in any worktree, with maps kept in that worktree**<br>• Build coverage maps at the HEAD of a task worktree and keep them in its .lym or .scratch, so a survey run is not cut by landings and throws the maps away after | [`testmap-any-worktree`](design-testmap-any-worktree.md) | darn · light | Code-Burler-Review | neve | 23m<br>23m | gate, testkit |
+| T8 | **lym gate testmap builds in any worktree, with maps kept in that worktree**<br>• Build coverage maps at the HEAD of a task worktree and keep them in its .lym or .scratch, so a survey run is not cut by landings and throws the maps away after | [`testmap-any-worktree`](design-testmap-any-worktree.md) | darn · light | Code-Burler-Fix | neve | 23m<br>23m | gate, testkit |
 
 #### Ready (0)
 
@@ -162,7 +162,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md)<br>[Sketch](decision-weaver.md) | raddle | Worktree-Create | neve | 5w<br>0m | webster, weaver |
-| T5 | **Orch sessions turn on remote control by themselves, switchable per hub**<br>• Every orch session lym starts or resumes turns on Claude Code remote control, unless the hub switches it off | [`orch-auto-remote-control`](design-orch-auto-remote-control.md) | darn · solid | Code-Burler-Review | neve | 15h<br>30m | orch, claude, config, reed |
+| T5 | **Orch sessions turn on remote control by themselves, switchable per hub**<br>• Every orch session lym starts or resumes turns on Claude Code remote control, unless the hub switches it off | [`orch-auto-remote-control`](design-orch-auto-remote-control.md) | darn · solid | Code-Burler-Review | neve | 15h<br>31m | orch, claude, config, reed |
 
 #### Ready (0)
 
