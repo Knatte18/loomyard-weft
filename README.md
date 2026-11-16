@@ -1,59 +1,37 @@
 # Board
 
-Rendered 2026-11-16 11:49 UTC; every age below is as of then.
+Rendered 2026-11-16 11:54 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
 <details open>
-<summary><strong><a href="project-adopt-revision.md">P1 Revise adopt and the functions that move a hub between machines</a> (1)</strong></summary>
+<summary><strong><a href="project-adopt-revision.md">P1 Revise adopt and the functions that move a hub between machines</a> (0)</strong></summary>
 
 [`adopt-revision`](design-adopt-revision.md) · Age 1d · Owner `neve`
 
-### [P3 Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt](project-adopt-build.md) (0)
-
-[`adopt-build`](design-adopt-build.md) · Age 19h · Owner `neve`
-
-#### Tasks (0)
+### Tasks (0)
 
 Concrete and claimable; only a task can run.
 
-##### Ready (0)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
 _None._
 
-#### Notes (0)
+### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-#### Done (1)
+### Done (1)
 
 Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T14 | **Merge main into the beam adopt-build**<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-merge-in`](design-adopt-build-merge-in.md) | 34m<br>34m | batten, tender, dobby, orch, fabric, loom |
-
-### Own entries
-
-The entries directly under this project and under none of its sub-projects.
-
-#### Tasks (0)
-
-Concrete and claimable; only a task can run.
-
-##### Ready (0)
-
-Waits on nothing open; can start now.
-
-_None._
-
-#### Notes (0)
-
-Not tasks: ideas and observations, merged into a task when one is promoted.
+| P3 | **[Build the adopt redesign in a beam: run FSM, push before act, Bolt holds, foreground adopt](project-adopt-build.md)** | [`adopt-build`](design-adopt-build.md) | 19h<br>2h | batten, tender, dobby, orch, fabric, loom |
 
 </details>
 
@@ -122,7 +100,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **A transition pushes its records before the run acts, and a takeover entry in the run's records hands the run over** | [`transition-push-takeover`](design-transition-push-takeover.md)<br>[Sketch](decision-transition-push-takeover.md) | tapestry · solid | P3<br>P1 | 1h<br>32m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
+| T3 | `draft` **A transition pushes its records before the run acts, and a takeover entry in the run's records hands the run over** | [`transition-push-takeover`](design-transition-push-takeover.md)<br>[Sketch](decision-transition-push-takeover.md) | tapestry · solid |  | 1h<br>38m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 | T4 | `draft` **A machine registry and adopt holds in Bolt, and a catch-up from origin after every absence** | [`machine-registry-holds-catchup`](design-machine-registry-holds-catchup.md)<br>[Sketch](decision-machine-registry-holds-catchup.md) | tapestry · solid | T3 | 1h<br>1h | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 | T8 | `draft` **lym adopt runs in the foreground over pushed state: hold, owner, pull, takeover, check, with --take-hold** | [`adopt-foreground`](design-adopt-foreground.md)<br>[Sketch](decision-adopt-foreground.md) | tapestry · solid | T4 | 1h<br>1h | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 | T9 | `draft` **The dobby tears down or reports leftover pairs** | [`leftover-pairs-teardown`](design-leftover-pairs-teardown.md)<br>[Sketch](decision-leftover-pairs-teardown.md) | darn · solid | T8 | 1h<br>1h | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
@@ -159,7 +137,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 6d<br>20m | testkit, gate |
+| E4 | H | **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | 6d<br>25m | testkit, gate |
 
 </details>
 
@@ -180,8 +158,8 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Move Webster's batch machinery and run-plan state into a package both implementers import** | [`implementer-shared-run-plan`](design-implementer-shared-run-plan.md)<br>[Sketch](decision-implementer-shared-run-plan.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>1h | webster, weaver |
 | T6 | **Claude Code Mode for writer sessions, set per role**<br>• Turn on the experimental Code Mode, which batches tool calls in one program, for heavy writer roles only, after a bench | [`claude-code-mode`](design-claude-code-mode.md) | darn · docs | Darn-Write | neve | 1h<br>1h | claude, shuttle, config |
-| T16 | **lym gate redundant flags tests as redundant that check different things**<br>• Equal line coverage is taken as redundancy; the verb must also prove the candidate catches no fault its covering tests miss | [`redundancy-judge-asserts`](design-redundancy-judge-asserts.md) | darn · solid | Darn-Write | neve | 25m<br>19m | testkit, gate |
-| T17 | **lym beam pr open opens a beam PR that conflicts with its parent**<br>• A beam pull request must not be opened before its conflicts with the parent are fixed | [`beam-pr-opens-dirty`](design-beam-pr-opens-dirty.md) | darn · light | Code-Burler-Fix | neve | 21m<br>19m | batten, fabric |
+| T16 | **lym gate redundant flags tests as redundant that check different things**<br>• Equal line coverage is taken as redundancy; the verb must also prove the candidate catches no fault its covering tests miss | [`redundancy-judge-asserts`](design-redundancy-judge-asserts.md) | darn · solid | Darn-Write | neve | 30m<br>24m | testkit, gate |
+| T17 | **lym beam pr open opens a beam PR that conflicts with its parent**<br>• A beam pull request must not be opened before its conflicts with the parent are fixed | [`beam-pr-opens-dirty`](design-beam-pr-opens-dirty.md) | darn · light | Code-Burler-Fix | neve | 26m<br>24m | batten, fabric |
 
 #### Ready (0)
 
@@ -195,7 +173,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P3 | 13d<br>19h | claude, shuttle, config |
+| T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 13d<br>19h | claude, shuttle, config |
 | T5 | `draft` **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | T2 | 1h<br>1h | webster, weaver |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 3d<br>3d | slack, creel, orch |
 | T13 | `draft` **A filed arras run is refused at Run-Shed and never tears down**<br>• After an arras family filing, batten refuses the run as a grouping project, so it never reaches Land or Worktree-Teardown | [`filed-arras-stuck-at-run-shed`](design-filed-arras-stuck-at-run-shed.md) | darn |  | 1h<br>1h | batten |
@@ -222,7 +200,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>2w | burler |
 | F2 |  | **lym retro: one command that audits recent runs from their transcripts and proposes fixes**<br>• Turn the hand-set transcript audits into one command with a fixed lym-scoped question set, routing each finding to a check, a rubric line or a deletion | [`lym-retro`](design-lym-retro.md) | 1h<br>1h | friction, report, tools |
-| F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 21h<br>18h | batten, loom, board |
+| F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 21h<br>19h | batten, loom, board |
 | F4 |  | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | 5d<br>2h | config, fabric |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>10d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 6w<br>2h | board, ide, orch |
