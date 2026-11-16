@@ -1,0 +1,14 @@
+{
+  "session_id": "66587ae6-3251-49e3-a478-48a6c844be3e",
+  "row": "Describe",
+  "role": "describe",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 18,
+  "cache_write_tokens": 39722,
+  "cache_read_tokens": 192407,
+  "output_tokens": 3177,
+  "cost_usd": 0.1695924,
+  "started": "2026-11-16T10:02:12Z",
+  "ended": "2026-11-16T10:02:44Z"
+}
