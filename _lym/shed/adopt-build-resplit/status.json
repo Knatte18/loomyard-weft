@@ -1,10 +1,11 @@
 {
-  "current_producer": "",
+  "current_producer": "Motif",
   "state": "running",
   "error": "",
+  "entered_row": "Motif",
   "pause_requested": false,
   "activity": {
-    "now": "",
+    "now": "Motif",
     "last": "",
     "wait": ""
   },
