@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-16T09:53:58Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/redundancy-candidates-survey/_lym/landing/summary.md",
+      "at": "2026-11-16T10:05:22Z",
+      "started_at": "2026-11-16T09:54:04Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-16T10:04:35.038211796Z",
+          "end": "2026-11-16T10:04:35.058667802Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-16T10:04:35.166111255Z",
+          "end": "2026-11-16T10:04:35.191237656Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-16T10:04:35.277579758Z",
+          "end": "2026-11-16T10:04:35.688293224Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-16T10:04:35.800346209Z",
+          "end": "2026-11-16T10:04:35.800481892Z"
+        }
+      ]
     }
   ],
   "product": {
