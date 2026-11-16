@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-weaver-implementer.md)
 
-Depends on: [`implementer-shared-run-plan`](design-implementer-shared-run-plan.md)
-
 Filed from the Sketch `weaver`.
 
 Takes: internal/runplan as implementer-shared-run-plan delivers it: the run-plan state and batch records Weaver's state file embeds, the report contract with journal, the post-batch checks, suspect checks, digest, card gate rendering, strand await and verify-failure record, each driven by the geometry and way-forward text Weaver passes
