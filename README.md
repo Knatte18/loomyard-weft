@@ -7,27 +7,6 @@ Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
 <details open>
-<summary><strong><a href="project-adopt-revision.md">P1 Revise adopt and the functions that move a hub between machines</a> (0)</strong></summary>
-
-[`adopt-revision`](design-adopt-revision.md) · Age 1d · Owner `neve`
-
-### Tasks (0)
-
-Concrete and claimable; only a task can run.
-
-#### Ready (0)
-
-Waits on nothing open; can start now.
-
-_None._
-
-### Notes (0)
-
-Not tasks: ideas and observations, merged into a task when one is promoted.
-
-</details>
-
-<details open>
 <summary><strong><a href="project-codex-engine-trial.md">P2 Codexengine: every task, trial and note about the Codex engine</a> (4)</strong></summary>
 
 [`codex-engine-trial`](design-codex-engine-trial.md) · Age 12d · Owner `neve`
