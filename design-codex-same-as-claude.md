@@ -1,6 +1,6 @@
 # A Codex session gets exactly what a Claude session in the same role gets
 
-`codex-same-as-claude` · Task · bug, codex, shuttle, stencil, heddle · running · Seed-Child
+`codex-same-as-claude` · Task · bug, codex, shuttle, stencil, heddle · running · Open-IDE
 
 ## Rule (operator, 2026-11-15)
 
