@@ -67,7 +67,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **A transition pushes its records before the run acts, and a takeover entry in the run's records hands the run over** | [`transition-push-takeover`](design-transition-push-takeover.md)<br>[Sketch](decision-transition-push-takeover.md) | tapestry · solid | Plan-Write | neve | 1h<br>17m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
+| T3 | **A transition pushes its records before the run acts, and a takeover entry in the run's records hands the run over** | [`transition-push-takeover`](design-transition-push-takeover.md)<br>[Sketch](decision-transition-push-takeover.md) | tapestry · solid | Plan-Write | neve | 1h<br>18m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 
 #### Ready (0)
 
@@ -160,7 +160,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Plan-Write | neve | 1h<br>1h | webster, weaver |
-| T13 | **A filed arras run is refused at Run-Shed and never tears down**<br>• After an arras family filing, batten refuses the run as a grouping project, so it never reaches Land or Worktree-Teardown | [`filed-arras-stuck-at-run-shed`](design-filed-arras-stuck-at-run-shed.md) | darn · light | Drift-Verify | neve | 1h<br>5m | batten |
+| T13 | **A filed arras run is refused at Run-Shed and never tears down**<br>• After an arras family filing, batten refuses the run as a grouping project, so it never reaches Land or Worktree-Teardown | [`filed-arras-stuck-at-run-shed`](design-filed-arras-stuck-at-run-shed.md) | darn · light | Code-Bouncer | neve | 1h<br>5m | batten |
 | T16 | **lym gate redundant flags tests as redundant that check different things**<br>• Equal line coverage is taken as redundancy; the verb must also prove the candidate catches no fault its covering tests miss | [`redundancy-judge-asserts`](design-redundancy-judge-asserts.md) | darn · solid | Darn-Write | neve | 51m<br>45m | testkit, gate |
 
 #### Ready (0)
