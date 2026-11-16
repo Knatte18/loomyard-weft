@@ -1,6 +1,6 @@
 # Claude Code Mode for writer sessions, set per role
 
-`claude-code-mode` · Task · research, claude, shuttle, config · running · Record-Write
+`claude-code-mode` · Task · research, claude, shuttle, config · running · Drift-Baseline
 
 ## Seen (operator, 2026-11-16)
 

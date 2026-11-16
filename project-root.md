@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Claude Code Mode for writer sessions, set per role**<br>• Turn on the experimental Code Mode, which batches tool calls in one program, for heavy writer roles only, after a bench | [`claude-code-mode`](design-claude-code-mode.md) | darn · docs | Record-Write | neve | 13m<br>0m | claude, shuttle, config |
+| T6 | **Claude Code Mode for writer sessions, set per role**<br>• Turn on the experimental Code Mode, which batches tool calls in one program, for heavy writer roles only, after a bench | [`claude-code-mode`](design-claude-code-mode.md) | darn · docs | Drift-Baseline | neve | 13m<br>0m | claude, shuttle, config |
 
 ### Ready (0)
 
@@ -33,8 +33,8 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P3 | 13d<br>18h | claude, shuttle, config |
-| T2 | `draft` **Move Webster's batch machinery and run-plan state into a package both implementers import** | [`implementer-shared-run-plan`](design-implementer-shared-run-plan.md)<br>[Sketch](decision-implementer-shared-run-plan.md) | darn · solid |  | 0m<br>0m | webster, weaver |
-| T5 | `draft` **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | T2 | 0m<br>0m | webster, weaver |
+| T2 | `draft` **Move Webster's batch machinery and run-plan state into a package both implementers import** | [`implementer-shared-run-plan`](design-implementer-shared-run-plan.md)<br>[Sketch](decision-implementer-shared-run-plan.md) | darn · solid |  | 1m<br>1m | webster, weaver |
+| T5 | `draft` **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | T2 | 1m<br>1m | webster, weaver |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 3d<br>3d | slack, creel, orch |
 
 ## Notes (9)
@@ -58,11 +58,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>2w | burler |
-| F2 |  | **lym retro: one command that audits recent runs from their transcripts and proposes fixes**<br>• Turn the hand-set transcript audits into one command with a fixed lym-scoped question set, routing each finding to a check, a rubric line or a deletion | [`lym-retro`](design-lym-retro.md) | 18m<br>16m | friction, report, tools |
+| F2 |  | **lym retro: one command that audits recent runs from their transcripts and proposes fixes**<br>• Turn the hand-set transcript audits into one command with a fixed lym-scoped question set, routing each finding to a check, a rubric line or a deletion | [`lym-retro`](design-lym-retro.md) | 18m<br>17m | friction, report, tools |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 20h<br>17h | batten, loom, board |
 | F4 |  | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | 5d<br>32m | config, fabric |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>10d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
-| F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 6w<br>26m | board, ide, orch |
+| F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 6w<br>27m | board, ide, orch |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>10d | burler, shed, orch, quarry, report |
 
 ## Done (1)
