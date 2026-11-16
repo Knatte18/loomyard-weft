@@ -68,13 +68,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one<br>• `loom: discussion opus[high]` | [`codex-same-as-claude`](design-codex-same-as-claude.md) | motif | Worktree-Create | neve | 14h<br>0m | codex, shuttle, stencil, heddle |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one<br>• `loom: discussion opus[high]` | [`codex-same-as-claude`](design-codex-same-as-claude.md) | motif |  | 14h<br>0m | codex, shuttle, stencil, heddle |
+_None._
 
 ### Draft (1)
 
