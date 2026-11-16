@@ -61,6 +61,12 @@ Only the arm's setting differs from today's Plan-Write; nothing lands, and every
 
 ## Decisions
 
+### Added after Discussion (operator, 2026-11-16): The orch's helper runs the bench sessions; the writer specifies and reports
+
+Decision: The writer picks the two landed tapestry inputs and posts the orch (ly:orch) a run spec: for each input its slug, base commit and frozen decision record path; the narrowest way to set CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=1 on one Plan-Write launch (arm B); and the exact edit-directive text arm C lifts. The orch's helper then creates the pairs, runs the six Plan-Write sessions and one Plan-Burler round per plan, removes the pairs, and posts the writer the usage and transcript paths per session. The writer writes the report from them and lands only the report.
+
+Rationale: A task session cannot run lym fabric add; the 2026-11-12 Plan-writer bench ran its pairs the same way. The operator told the orch to get the bench going.
+
 ## Constraints
 
 ## Auto-mode assumptions
