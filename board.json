@@ -761,7 +761,7 @@
       "isolated": false,
       "brief": "After an arras family filing, batten refuses the run as a grouping project, so it never reaches Land or Worktree-Teardown",
       "body": "## Seen (adopt-build beam orch, 2026-11-16)\n\nAfter an arras family filing, the batten run whose pass ended at Run-Shed is refused on every later pass with \"grouping project, only a beam project runs\", so it never reaches Land or Worktree-Teardown.\nSeen on `adopt-build-resplit`: the inner loom run was done, batten stuck at Run-Shed.\nThe workaround was `lym batten cancel \u003cslug\u003e --remove` from the beam; the task branch had no commits.\n\n## Cause\n\n`internal/battencli/startguard.go` `refuseProject` refuses any non-beam project entry and never checks the run's filing mark (`shedrun.FilingMarked`),\nthough `cleanup.go` `ClearMotifRun` expects a filed arras run to finish.\nNot beam-specific.\n\n## Idea\n\n`refuseProject` lets a slug with a standing filing mark through so the done run tears down, or the filing itself finishes the batten run.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-16T10:25:26Z",
       "revised": "2026-11-16T12:09:47Z",
       "profile": "light"
@@ -806,7 +806,7 @@
       "isolated": false,
       "brief": "Gather web and Reddit tips on using Code Mode well, and judge each against the bench result",
       "body": "## Goal\n\nThe bench `claude-code-mode` (report `docs/research/claude/code-mode-bench-2026-11-16/report.md`) found no gain from Claude Code's experimental Code Mode on the Plan writer:\nit batched twice the tool calls, but saved few turns, since each `REPL` call needs a `Poll` call.\nThis task finds out from the web how people use Code Mode well, and whether any of it would change that result for lym's sessions.\n\n## What to find\n\n- What Code Mode is meant for, from Anthropic's own docs, changelogs and issues.\n- How users get gains from it: prompt wording, task kinds, settings, the `REPL` and `Poll` pattern, subagents.\n- Where users report it costs more or helps nothing.\n- For each tip: whether lym's writers could use it, and how a later bench would test it.\n\n## Sources\n\n- The web, through the session's own search and fetch tools.\n- Reddit, which Claude's fetch refuses: fetch Reddit threads through Codex with `lym shuttle run --model 'astra[high]'`,\n  having the Codex session download the threads and save their text under this task's `.scratch/`, then read them yourself.\n  Cap: at most 3 Codex sessions in all.\n- Record each source's URL and date in the report.\n\n## Bounds\n\nRead and fetch only; change no production code and nothing under Bolt, and run no bench.\nThe report goes under `docs/research/claude/`, beside the bench report.\n",
-      "status": "starting · Seed-Child",
+      "status": "starting · Open-Window",
       "created": "2026-11-16T12:15:27Z",
       "revised": "2026-11-16T12:15:27Z",
       "run_settings": {
