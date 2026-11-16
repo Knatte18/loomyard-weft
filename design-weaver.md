@@ -1,6 +1,6 @@
 # Weaver: a cold-start implementer beside Webster, with model escalation
 
-`weaver` · Task · sketch, webster, weaver · running · Raddle-Write
+`weaver` · Task · sketch, webster, weaver · running · Raddle-File
 
 Decision record: [Sketch](decision-weaver.md)
 
