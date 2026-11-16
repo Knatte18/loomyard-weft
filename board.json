@@ -423,30 +423,6 @@
       "project": "codex-engine-trial"
     },
     {
-      "id": 1385,
-      "handle": "T5",
-      "slug": "orch-auto-remote-control",
-      "title": "Orch sessions turn on remote control by themselves, switchable per hub",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "orch",
-        "claude",
-        "config",
-        "reed"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Every orch session lym starts or resumes turns on Claude Code remote control, unless the hub switches it off",
-      "body": "## Seen (operator, 2026-11-15)\n\nThe operator follows the orch from the phone, and turns on Claude Code's remote control by hand in each new orch session with `/remote-control`.\nA context cycle or a fresh orch session drops it, so it must be typed again.\nlym does nothing with remote control today.\n\n## Design (operator, 2026-11-16)\n\n- At launch.\n  Claude Code takes `--remote-control [name]`, which starts the session with remote control on and names it.\n  lym passes that flag on every orch session it launches or resumes, the hub orch and numbered orchs alike, when a per-hub setting turns it on.\n  The run's other sessions (writers, reviewers, task sessions) get no flag; a Codex orch gets nothing, as Codex has no remote control.\n- The name.\n  The remote session's name carries the machine, the hub and the orch role,\n  so the same hub's orch on two machines, or two hubs on one machine, never share a name on the phone.\n  The name comes from a template in the same config as the switch, with placeholders such as `{machine}`, `{hub}` and `{role}`,\n  so the operator changes the form in config alone, never in code.\n  The default template is lym's cross-machine name form, `\u003cmachine\u003e::\u003cname\u003e` from `agentname.FormatMachineAddress` (`neve::ly:orch`), so the phone shows the name creel uses; the operator may still choose another form, such as `ly:orch[neve]`.\n- A reed button.\n  An `RC` button on the orch session's status bar turns remote control on in a session running without it, by sending `/remote-control \u003cname\u003e` into the pane, with the same name as at launch.\n  The button shows its state by colour: lit while remote control is on, dim while off.\n\n## Open\n\n- Which config file holds the per-hub switch and the name template, and their defaults (the switch on, as the operator uses it on every orch).\n- Where lym reads whether remote control is on, for the button's colour: a launch with the flag or a click sets it, but the operator can also turn it off inside Claude Code.\n  Find a signal Claude Code gives (transcript, status line payload, session files); if none, the colour shows what lym last set.\n- Whether reed's status-bar buttons can change colour today, or need that added.\n",
-      "status": "done",
-      "created": "2026-11-15T18:19:56Z",
-      "revised": "2026-11-16T09:07:26Z",
-      "profile": "solid"
-    },
-    {
       "id": 1386,
       "handle": "S1",
       "slug": "codex-same-as-claude",
@@ -508,29 +484,6 @@
       "project": "adopt-build",
       "discussed": true,
       "record_body_sha256": "070aaf541c1375d57d0fffad6bd9c3d796a031c50aa9567b112460fa052c7a3e"
-    },
-    {
-      "id": 1388,
-      "handle": "T6",
-      "slug": "redundancy-candidates-survey",
-      "title": "Rebuild every coverage map, time it, and list the redundant-test candidates of each package",
-      "kind": "task",
-      "labels": [
-        "research",
-        "gate",
-        "testkit"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "One timed full lym gate testmap build and lym gate redundant on every package, reported for the operator to read before any cut",
-      "body": "## Goal\n\nThe first step of `redundancy-sweep-existing`: fresh coverage maps for every package, timed,\nand each package's redundancy candidates in one report the operator reads before any cut is filed.\nThe run changes no code and no test; it lands only the report.\n\n## The runs\n\n1. One full build: `lym gate testmap` over every package of the module, once, in this task's own worktree at its own HEAD, with the maps kept in that worktree's `.lym/` or `.scratch/` so they are thrown away with it; never from the prime and never into the hub's shared maps.\n   Record its wall time and CPU time, the packages built, any that failed and why, and the time per package.\n   Set the wall time beside the smart-build report's estimate (`docs/research/speed/testmap-smart-build-2026-11-15/report.md`: about 16 CPU-minutes, about 4 minutes at four tests side by side) and the 44 minutes of the last full build on 2026-11-12.\n2. `lym gate redundant \u003cpackage\u003e` once on every package the build mapped.\n\nNo other build, repeat or test run.\n\n## The report\n\nA bench report under `docs/research/speed/`, with its raw output beside it under `data/`.\nThe maps it builds serve this report only: they go with the worktree, and each later cut task rebuilds its own package's map at its own HEAD.\n\n### The build (bench)\n\n- Wall time, CPU time and peak memory of the one full build, from `/usr/bin/time -v`.\n- Its scope: packages built, tests run per tier, tests skipped (spawn-marked, `//testtiming:keep`) and why, packages that failed and why.\n- Time per package, build and run apart, with the ten slowest named.\n- The wall time beside the smart-build report's estimate (`docs/research/speed/testmap-smart-build-2026-11-15/report.md`: about 16 CPU-minutes, about 4 minutes at four tests side by side) and the 44 minutes of the last full build on 2026-11-12; where it misses the estimate, where the time went.\n- Any test the side-by-side build reran alone after failing beside others, as a sign of tests that share a fixed path.\n\n### What the maps offer: how much, and how\n\n- Per package with candidates, slowest package first: each candidate with its tier, seconds, covering tests, and whether it is in the removable set, with the package's total candidate seconds.\n- A table of the packages with no candidates.\n- A short read of the largest packages' candidates (at most five packages), as the pilot did for `internal/adoptcli`:\n  for each, whether it asserts something its covering tests do not, since equal coverage is not equal checks,\n  and which way it would go: cut, folded into a covering test as an extra assertion, or kept.\n  It cuts nothing.\n- The payoff, from those reads and the lists:\n  the candidates' summed seconds per tier against the suite's own time per tier (from the gate's run records),\n  the share the read found cuttable, applied to the whole list as an estimate with its spread stated,\n  and what that would take off a full `lym gate test` run and off a typical darn verify gate, in seconds and in percent.\n- A recommendation: whether the cut is worth tasks, which packages first, and the cut-task shape (one darn per package or per group of small packages).\n\n## Bounds\n\nChange no production code, no test, nothing under Bolt and not the hub's shared maps.\n`internal/fabricengine` is listed but not read, as its serial-phase rework is changing it.\n",
-      "status": "done",
-      "created": "2026-11-16T09:09:48Z",
-      "revised": "2026-11-16T09:53:06Z",
-      "profile": "docs",
-      "project": "test-suite-trim"
     },
     {
       "id": 1389,
