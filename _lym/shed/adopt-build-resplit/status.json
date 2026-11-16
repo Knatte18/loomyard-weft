@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add adopt-build-resplit`, then decide with `lym loom circling accept adopt-build-resplit` or `lym loom circling continue adopt-build-resplit`, then run `lym loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `adopt-build-resplit` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit/_lym/reviews/discussion/round-1-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add adopt-build-resplit`, then decide with `lym loom circling accept adopt-build-resplit` or `lym loom circling continue adopt-build-resplit`, then run `lym loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -90,6 +91,14 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer",
+      "block": "Motif"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit/_lym/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-11-16T09:34:13Z",
+      "started_at": "2026-11-16T09:33:41Z",
       "block": "Motif"
     }
   ],
