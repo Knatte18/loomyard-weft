@@ -1,6 +1,6 @@
 # Move Webster's batch machinery and run-plan state into a package both implementers import
 
-`implementer-shared-run-plan` · Task · enhancement, webster, weaver · running · Drift-Verify
+`implementer-shared-run-plan` · Task · enhancement, webster, weaver · running · Code-Bouncer
 
 Decision record: [Sketch](decision-implementer-shared-run-plan.md)
 
