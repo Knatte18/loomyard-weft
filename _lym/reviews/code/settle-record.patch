@@ -1,0 +1,2572 @@
+diff --git a/internal/creelcli/delivery.go b/internal/creelcli/delivery.go
+index ec60f809..f66900c6 100644
+--- a/internal/creelcli/delivery.go
++++ b/internal/creelcli/delivery.go
+@@ -126,10 +126,12 @@ type sessionCommands interface {
+ 	ReloadPlugins(guid string) error
+ 	TypeColor(guid string, color segmentcolor.Color) error
+ 	LoadSkills(guid string, skills []string) error
++	TurnOnRemoteControl(guid, name string) error
+ }
+ 
+ // runSessionCommand runs command through ops.
+-// compact takes its argument as the focus, color as the segment color, and load-skills as a space-separated skill list.
++// compact takes its argument as the focus, color as the segment color, and load-skills as a space-separated skill list;
++// remote-control takes it as the remote session's name.
+ // A command outside the closed set is refused.
+ func runSessionCommand(ops sessionCommands, guid string, command creelengine.Command) error {
+ 	switch command.Name {
+@@ -143,6 +145,8 @@ func runSessionCommand(ops sessionCommands, guid string, command creelengine.Com
+ 		return ops.TypeColor(guid, segmentcolor.Color(command.Argument))
+ 	case creelengine.CommandLoadSkills:
+ 		return ops.LoadSkills(guid, strings.Fields(command.Argument))
++	case creelengine.CommandRemoteControl:
++		return ops.TurnOnRemoteControl(guid, command.Argument)
+ 	default:
+ 		return fmt.Errorf("creel: unknown command %q", command.Name)
+ 	}
+diff --git a/internal/creelcli/delivery_test.go b/internal/creelcli/delivery_test.go
+index d4bf1d0e..624fb855 100644
+--- a/internal/creelcli/delivery_test.go
++++ b/internal/creelcli/delivery_test.go
+@@ -101,6 +101,11 @@ func (r *recordingCommands) LoadSkills(guid string, skills []string) error {
+ 	return nil
+ }
+ 
++func (r *recordingCommands) TurnOnRemoteControl(guid, name string) error {
++	r.called = "TurnOnRemoteControl(" + guid + "," + name + ")"
++	return nil
++}
++
+ // restoringPane is a pane drawn like Claude's across an interrupt.
+ // It shows a running turn over an empty box until the Escape.
+ // After the Escape it shows the stopped turn's prompt in the box until a C-u deletes it.
+@@ -441,6 +446,7 @@ func TestHubDelivery(t *testing.T) {
+ 			{creelengine.Command{Name: creelengine.CommandReloadPlugins}, "ReloadPlugins(guid-orch)"},
+ 			{creelengine.Command{Name: creelengine.CommandColor, Argument: "blue"}, "TypeColor(guid-orch,blue)"},
+ 			{creelengine.Command{Name: creelengine.CommandLoadSkills, Argument: "scribe:prose scribe:testing"}, "LoadSkills(guid-orch,scribe:prose+scribe:testing)"},
++			{creelengine.Command{Name: creelengine.CommandRemoteControl, Argument: "neve::ly:orch"}, "TurnOnRemoteControl(guid-orch,neve::ly:orch)"},
+ 		}
+ 		for _, tt := range tests {
+ 			recorder := &recordingCommands{}
+diff --git a/internal/creelcli/doc.go b/internal/creelcli/doc.go
+index b73c0db9..a1d7fdf0 100644
+--- a/internal/creelcli/doc.go
++++ b/internal/creelcli/doc.go
+@@ -155,8 +155,9 @@
+ // The hub delivery in this package implements the engine's delivery seam.
+ // It works over the hub's worktrees, reed's persisted state and shuttle.
+ // Its Command operation runs a command inject through the worktree's shuttle runner.
+-// The commands are clear, reload-plugins, compact, color and load-skills.
++// The commands are clear, reload-plugins, compact, color, load-skills and remote-control.
+ // The argument is the focus for compact, the segment color for color, and the space-separated skills for load-skills.
++// It is the remote session's name for remote-control.
+ // Shuttle's busy and not-confirmed answers map onto the engine's ErrBusy and ErrNotLanded, as they do for a typed line.
+ // A command the provider took as a prompt fails as a plain send error.
+ // Creel then requeues the inject and types it again once the session is idle.
+diff --git a/internal/creelengine/command.go b/internal/creelengine/command.go
+index 81e0b4a0..0358f6be 100644
+--- a/internal/creelengine/command.go
++++ b/internal/creelengine/command.go
+@@ -25,6 +25,8 @@ const (
+ 	CommandColor CommandName = "color"
+ 	// CommandLoadSkills loads the skills its space-separated argument lists into the receiver's session.
+ 	CommandLoadSkills CommandName = "load-skills"
++	// CommandRemoteControl turns on remote control in the receiver's session, under the session name its argument holds.
++	CommandRemoteControl CommandName = "remote-control"
+ )
+ 
+ // Command is one command inject: a name from the closed set and the argument that name takes.
+@@ -51,8 +53,12 @@ func (c Command) validate() error {
+ 		if c.Argument == "" {
+ 			return fmt.Errorf("creel: the %s command needs an argument", c.Name)
+ 		}
++	case CommandRemoteControl:
++		if c.Argument == "" || strings.IndexFunc(c.Argument, unicode.IsControl) >= 0 {
++			return errors.New("creel: the remote-control command takes a session name without control characters")
++		}
+ 	default:
+-		return fmt.Errorf("creel: unknown command %q; the commands are clear, compact, reload-plugins, color and load-skills", c.Name)
++		return fmt.Errorf("creel: unknown command %q; the commands are clear, compact, reload-plugins, color, load-skills and remote-control", c.Name)
+ 	}
+ 	return nil
+ }
+diff --git a/internal/creelengine/doc.go b/internal/creelengine/doc.go
+index ec9dae27..40b2a9e7 100644
+--- a/internal/creelengine/doc.go
++++ b/internal/creelengine/doc.go
+@@ -413,13 +413,14 @@
+ // inject --interrupt first sends the guarded interrupt and queues the line at the head.
+ //
+ // A command inject carries a Command instead of a line: a neutral name and the argument that name takes.
+-// The name comes from the closed set clear, compact, reload-plugins, color and load-skills.
++// The name comes from the closed set clear, compact, reload-plugins, color, load-skills and remote-control.
+ // The engine knows no slash spelling or key name;
+ // the Delivery seam's Command operation maps the name onto the provider.
+ // It has the same ErrBusy and ErrNotLanded contract as the typing of a line.
+ // A command the provider took as a prompt fails as a plain send error.
+ // Creel then requeues the inject and types it again once the session is idle.
+-// compact takes a one-line focus, color a segment color, and load-skills a space-separated skill list.
++// compact takes a one-line focus, color a segment color, and load-skills a space-separated skill list;
++// remote-control takes the one-line session name the remote session shows.
+ // clear and reload-plugins take no argument.
+ // Store.InjectCommand queues one under every rule of a text inject:
+ // TTL, hold, pause, queue order and dormant receivers.
+diff --git a/internal/creelengine/verbs_test.go b/internal/creelengine/verbs_test.go
+index 518be780..563000a3 100644
+--- a/internal/creelengine/verbs_test.go
++++ b/internal/creelengine/verbs_test.go
+@@ -1228,6 +1228,8 @@ func TestStore_InjectAndHold(t *testing.T) {
+ 				{creelengine.Command{Name: creelengine.CommandLoadSkills}, "needs an argument"},
+ 				{creelengine.Command{Name: creelengine.CommandClear, Argument: "x"}, "takes no argument"},
+ 				{creelengine.Command{Name: creelengine.CommandReloadPlugins, Argument: "x"}, "takes no argument"},
++				{creelengine.Command{Name: creelengine.CommandRemoteControl}, "remote-control"},
++				{creelengine.Command{Name: creelengine.CommandRemoteControl, Argument: "neve::ly:orch\nx"}, "remote-control"},
+ 			} {
+ 				_, err := e.store.InjectCommand(program(batten), orch, tt.command, 0)
+ 				wantErr(t, err, tt.want)
+diff --git a/internal/orchcli/cli.go b/internal/orchcli/cli.go
+index edfbf071..50222902 100644
+--- a/internal/orchcli/cli.go
++++ b/internal/orchcli/cli.go
+@@ -17,6 +17,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+@@ -123,6 +124,10 @@ type orchCLI struct {
+ 	endDobby func() error
+ 	// reapInherited waits on the children a re-exec'd watcher inherited, which `watch` calls before it starts anything.
+ 	reapInherited func()
++	// machineName answers this machine's name, which the remote session's name carries.
++	machineName func() (string, error)
++	// injectRemoteControl queues creel's remote-control command with name into the orch strand receiver.
++	injectRemoteControl func(receiver, name string) error
+ }
+ 
+ // Command returns the cobra command tree for the orch module.
+@@ -140,11 +145,12 @@ strand of the hub's prime worktree or of a beam's. A detached watcher reads each
+ turn's context usage and, past a threshold and while the session is idle, has the
+ session write a handoff, clears it and resumes it from that handoff.
+ "lym beam start" brings the orchestrator up and "lym beam stop" takes it down.
+-Every verb runs from the hub's prime worktree or from a beam.`,
++Every verb but the hidden rc-bar runs from the hub's prime worktree or from a beam.`,
+ 		RunE: clihelp.GroupRunE,
+ 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+-			// The bare group and its unknown-subcommand path need no repository.
+-			if cmd.Name() == "orch" {
++			// The bare group and its unknown-subcommand path need no repository,
++			// and the RC button's state verb resolves its own directory.
++			if cmd.Name() == "orch" || cmd.Name() == remoteControlBarVerb {
+ 				return nil
+ 			}
+ 			ctx := cmd.Context()
+@@ -170,7 +176,8 @@ Every verb runs from the hub's prime worktree or from a beam.`,
+ 		},
+ 	}
+ 
+-	parent.AddCommand(c.statusCmd(), c.refreshCmd(), c.distillCmd(), c.withdrawCmd(), c.stopCmd(), c.rulesCmd(), c.watchCmd(), c.resumeContextCmd())
++	parent.AddCommand(c.statusCmd(), c.refreshCmd(), c.distillCmd(), c.withdrawCmd(), c.stopCmd(), c.rulesCmd(), c.watchCmd(), c.resumeContextCmd(),
++		remoteControlBarCmd(), c.remoteControlOnCmd())
+ 	return parent
+ }
+ 
+@@ -244,6 +251,10 @@ func wireCLI(c *orchCLI, location *lymcwd.Location) error {
+ 		}
+ 		return creelSeam{client: client}, nil
+ 	}
++	c.machineName = machinename.Name
++	c.injectRemoteControl = func(receiver, name string) error {
++		return injectRemoteControlCommand(location, receiver, name)
++	}
+ 	c.spawnWatcher = c.spawnWatcherProcess
+ 	c.startLockWait = stopStartLockWait
+ 	c.sleep = time.Sleep
+diff --git a/internal/orchcli/cli_test.go b/internal/orchcli/cli_test.go
+index b3295e73..3dd5e982 100644
+--- a/internal/orchcli/cli_test.go
++++ b/internal/orchcli/cli_test.go
+@@ -125,6 +125,9 @@ func newTestCLI(t *testing.T, fake *fakeStrands) *orchCLI {
+ 			StartLockPath:    filepath.Join(dir, "start.lock"),
+ 			CycleRequestPath: filepath.Join(dir, "cycle-request"),
+ 			PrimeRoot:        filepath.Dir(dir),
++
++			RemoteControlPath:     filepath.Join(dir, "remote-control.json"),
++			RemoteControlLockPath: filepath.Join(dir, "remote-control.json.lock"),
+ 		},
+ 	}
+ }
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 37380aa2..8012e186 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -252,6 +252,33 @@
+ // It also writes the delivery mark the watcher reads.
+ // A failure prints the JSON error envelope and writes no mark, so the watcher types the pointer itself.
+ //
++// # Remote control
++//
++// A launch, fresh or resumed, names the remote session on the orch run's spec.
++// It does so only when orch.yaml's `remote_control` is on and the orch's engine has the provider's remote control.
++// A Codex orch gets nothing.
++// The name is formed from the strand name the launch takes:
++// the listed strand's, else the fixed `<shortname>:orch` or `<shortname>:<slug>:orch`.
++// A name that cannot be formed is logged, and the session launches without remote control.
++// The launch records the new strand's remote control, on or off, for reed's RC button.
++// An orch on an engine with no remote control records nothing, so the button is not drawn for it.
++// A start that finds a live orch strand already running records it off when the record does not name it,
++// so the button is drawn and a click can turn remote control on.
++// Two hidden verbs serve the button.
++// `lym orch rc-bar --dir <dir>` prints rc-on or rc-off for the strand the orch state at dir records.
++// It does so only while the remote-control record names that strand, and it prints nothing otherwise.
++// It skips the orch wiring, which would refuse a task pair's session.
++// `lym orch rc-on` is the click.
++// It queues creel's remote-control command into the worktree's live orch strand.
++// It signs the command as the REMOTECONTROL program.
++// The name is the one a launch would pass, whatever the switch says.
++// It then records the strand's remote control on and redraws the clicking client's bar.
++// A click refuses and sends nothing when the record already reads on.
++// Claude Code's answer to a second command in a session with remote control on is unverified.
++// The refusal names `/remote-control` typed by hand in the orch pane for a session turned off inside Claude Code.
++// A record write that fails after the command is queued leaves the click a success carrying a warning field.
++// A worktree with several orch strands refuses too, naming them and `lym reed remove`.
++//
+ // # Reaching the orch from another module
+ //
+ // `PrimePaths` is the one accessor other modules use for the orch's told paths,
+diff --git a/internal/orchcli/remotecontrol.go b/internal/orchcli/remotecontrol.go
+new file mode 100644
+index 00000000..b93ccfcf
+--- /dev/null
++++ b/internal/orchcli/remotecontrol.go
+@@ -0,0 +1,282 @@
++// remotecontrol.go holds the orch's remote control.
++// It forms the session name a launch passes.
++// It also holds the two hidden verbs behind reed's RC button.
++// `rc-bar` prints the button's state, and `rc-on` is what a click runs.
++
++package orchcli
++
++import (
++	"errors"
++	"fmt"
++	"strings"
++	"time"
++
++	"github.com/spf13/cobra"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/creelcli"
++	"github.com/Knatte18/loomyard/internal/creelengine"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/orchengine"
++	"github.com/Knatte18/loomyard/internal/orchroute"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++const (
++	// remoteControlBarVerb is the name of the hidden verb reed's status bar runs for the RC button's state.
++	// It skips the orch wiring, which refuses every worktree but the prime and a beam.
++	// The bar runs it from every session, a task pair's included.
++	remoteControlBarVerb = reedengine.RemoteControlBarVerb
++	// remoteControlOnVerb is the name of the hidden verb a click on reed's RC button runs.
++	remoteControlOnVerb = reedengine.RemoteControlOnVerb
++	// remoteControlProgram is the program name the RC click signs its creel command with.
++	remoteControlProgram = "REMOTECONTROL"
++)
++
++// orchModelChoice returns the engine, model and effort the orch session runs on.
++func (c *orchCLI) orchModelChoice() shuttleengine.ModelChoice {
++	return shuttleengine.ModelChoice{Model: c.cfg.Model, Effort: c.cfg.Effort}
++}
++
++// orchHasRemoteControl reports whether the engine the orch session runs on has the provider's remote control.
++func (c *orchCLI) orchHasRemoteControl() bool {
++	engine, err := c.engines.Lookup(c.orchModelChoice().Engine)
++	if err != nil {
++		return false
++	}
++	_, ok := engine.(shuttleengine.RemoteController)
++	return ok
++}
++
++// remoteControlSessionName returns the remote session's name of the orch strand strandName on this machine.
++// It fills orch.yaml's remote_control_name.
++func (c *orchCLI) remoteControlSessionName(strandName string) (string, error) {
++	parsed, err := agentname.Parse(strandName)
++	if err != nil {
++		return "", fmt.Errorf("orch: the orch strand name %q does not parse: %w", strandName, err)
++	}
++	machine, err := c.machineName()
++	if err != nil {
++		return "", fmt.Errorf("orch: read this machine's name for the remote session's name: %w", err)
++	}
++	return c.cfg.RemoteControlSessionName(machine, parsed), nil
++}
++
++// launchRemoteControlName returns the remote session name a launch of the orch strand passes.
++// The name is empty when orch.yaml switches remote control off or the orch's engine has none.
++// The strand is listed when hasStrand holds; otherwise it takes the fixed name of this worktree's orch.
++// A name that cannot be formed is logged at Warn and the session launches without remote control,
++// so the switch never stops a bring-up.
++func (c *orchCLI) launchRemoteControlName(listed reedengine.StrandStatus, hasStrand bool) string {
++	if !c.cfg.RemoteControl || !c.orchHasRemoteControl() {
++		return ""
++	}
++	strandName := listed.Name
++	if !hasStrand {
++		fixed, err := orchroute.FixedStrandName(c.location)
++		if err != nil {
++			logger.Warn("orch: launching the orch session without remote control, since its strand name is unknown", "err", err)
++			return ""
++		}
++		strandName = fixed
++	}
++	name, err := c.remoteControlSessionName(strandName)
++	if err != nil {
++		logger.Warn("orch: launching the orch session without remote control", "err", err)
++		return ""
++	}
++	return name
++}
++
++// recordRemoteControl records the remote control a launch set for the strand guid, for reed's RC button.
++// An orch whose engine has no remote control records nothing, so reed draws no RC button for it.
++// A failed write is logged at Warn and never fails the caller, since the record is display only.
++func (c *orchCLI) recordRemoteControl(guid string, on bool) {
++	if !c.orchHasRemoteControl() {
++		return
++	}
++	if err := orchengine.WriteRemoteControl(c.paths, orchengine.RemoteControlRecord{Strand: guid, On: on, At: time.Now()}); err != nil {
++		logger.Warn("orch: could not record the orch session's remote control for the RC button", "strandGUID", guid, "err", err)
++	}
++}
++
++// recordUnrecordedRemoteControl records remote control off for the live strand guid when the record does not name it.
++// A start that finds the strand already running did not launch it, so what lym knows of its remote control is nothing.
++// Off keeps the RC button drawn, and a click turns remote control on.
++func (c *orchCLI) recordUnrecordedRemoteControl(guid string) {
++	if _, recorded, err := orchengine.ReadRemoteControl(c.paths, guid); err != nil || recorded {
++		return
++	}
++	c.recordRemoteControl(guid, false)
++}
++
++// turnOnRemoteControl queues the remote-control command into this worktree's live orch strand through creel.
++// The name is the one a launch passes, whatever orch.yaml's switch says.
++// It records the strand's remote control on.
++// A failed record write is logged and the click still succeeds with a warning field, since the command is already queued.
++// It refuses a worktree with no live orch strand and a worktree with several orch strands.
++// It refuses an orch whose engine has no remote control, and a strand whose record already reads on.
++// The last sends nothing.
++// What Claude Code shows for a second command in a session with remote control on is unverified.
++func (c *orchCLI) turnOnRemoteControl() (map[string]any, error) {
++	if !c.orchHasRemoteControl() {
++		return nil, errors.New("orch: the orch runs on an engine with no remote control; way forward: run the orch on the claude engine")
++	}
++	strands, err := c.strands.Strands()
++	if err != nil {
++		return nil, err
++	}
++	named := orchStrands(strands)
++	if len(named) > 1 {
++		guids := make([]string, len(named))
++		for i, s := range named {
++			guids[i] = s.GUID
++		}
++		return nil, fmt.Errorf("orch: %d strands are named %q (%s); way forward: remove the extras with `lym reed remove` and click RC again", len(named), orchStrandName, strings.Join(guids, ", "))
++	}
++	if len(named) == 0 || !named[0].Live {
++		return nil, errors.New("orch: this worktree runs no live orch strand; way forward: run `lym beam start`, whose launch turns remote control on")
++	}
++	strand := named[0]
++	if on, err := orchengine.RemoteControlOn(c.paths, strand.GUID); err == nil && on {
++		return nil, fmt.Errorf("orch: remote control is already on for %s, so nothing was sent; way forward: when you turned it off inside Claude Code, type `/remote-control` by hand in the orch pane", strand.Name)
++	}
++	name, err := c.remoteControlSessionName(strand.Name)
++	if err != nil {
++		return nil, err
++	}
++	if err := c.injectRemoteControl(strand.Name, name); err != nil {
++		return nil, fmt.Errorf("orch: queue the remote-control command for %s: %w; way forward: repair what the error names and click RC again", strand.Name, err)
++	}
++	fields := map[string]any{"strand": strand.Name, "remote_control_name": name}
++	if err := orchengine.WriteRemoteControl(c.paths, orchengine.RemoteControlRecord{Strand: strand.GUID, On: true, At: time.Now()}); err != nil {
++		logger.Warn("orch: could not record the orch session's remote control for the RC button", "strandGUID", strand.GUID, "err", err)
++		fields["warning"] = fmt.Sprintf("the command is queued, but recording it failed (%v); the RC button stays dim, and another click would queue the command again", err)
++	}
++	return fields, nil
++}
++
++// injectRemoteControlCommand queues creel's remote-control command with name into the orch strand receiver.
++// It signs the command as the RC click's program.
++func injectRemoteControlCommand(location *lymcwd.Location, receiver, name string) error {
++	client, err := creelcli.NewProgramClient(location, remoteControlProgram)
++	if err != nil {
++		return err
++	}
++	_, err = client.InjectCommand(receiver, creelengine.Command{Name: creelengine.CommandRemoteControl, Argument: name}, 0)
++	return err
++}
++
++// remoteControlBarCmd returns the hidden `orch rc-bar` verb.
++func remoteControlBarCmd() *cobra.Command {
++	var dir string
++	cmd := &cobra.Command{
++		Use:         remoteControlBarVerb,
++		Short:       "print the remote-control state for reed's RC button",
++		Hidden:      true,
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
++		Long: `rc-bar prints the RC button's state on one line for reed's status bar. When
++--dir names a worktree whose orch state records an orch strand, and the
++worktree's remote-control record names that strand, it prints rc-on while lym
++last turned the strand's remote control on, by a launch or a click on RC, and
++rc-off otherwise. For any other directory, and for a strand with no record, as
++an orch on an engine with no remote control has, it prints nothing, so the bar
++draws no RC button there. Claude Code tells lym nothing of the state, so a
++session whose remote control was turned off inside Claude Code still prints
++rc-on. A record it cannot read prints as rc-off. reed's status bar runs it at
++each redraw.`,
++		Args: cobra.NoArgs,
++		RunE: func(cmd *cobra.Command, args []string) error {
++			fmt.Fprintln(cmd.OutOrStdout(), remoteControlBarWord(dir))
++			return nil
++		},
++	}
++	cmd.Flags().StringVar(&dir, "dir", "", "run directory of the session whose bar is drawn")
++	return cmd
++}
++
++// remoteControlBarWord returns the RC word of the worktree at dir, empty when dir resolves to no worktree.
++func remoteControlBarWord(dir string) string {
++	if dir == "" {
++		return ""
++	}
++	location, err := lymcwd.Resolve(dir)
++	if err != nil {
++		return ""
++	}
++	return remoteControlBarWordAt(orchroute.Paths(location))
++}
++
++// remoteControlBarWordAt returns the RC word of the orch whose files paths name.
++// An orch state that records no strand, or none at all, gives no word, so the bar draws no RC button.
++// So does a strand the remote-control record does not name, such as an orch on an engine with no remote control.
++// A recorded strand that reads on gives RemoteControlLit.
++// A recorded strand that reads off, or whose record cannot be read, gives RemoteControlUnlit.
++func remoteControlBarWordAt(paths orchengine.Paths) string {
++	st, found, err := orchengine.PeekState(paths)
++	if err != nil || !found || st.Strand == "" {
++		return ""
++	}
++	rec, recorded, err := orchengine.ReadRemoteControl(paths, st.Strand)
++	switch {
++	case err != nil:
++		return reedengine.RemoteControlUnlit
++	case !recorded:
++		return ""
++	case rec.On:
++		return reedengine.RemoteControlLit
++	}
++	return reedengine.RemoteControlUnlit
++}
++
++// remoteControlOnCmd returns the hidden `orch rc-on` verb.
++func (c *orchCLI) remoteControlOnCmd() *cobra.Command {
++	var tmuxPath, socketPath, client string
++	cmd := &cobra.Command{
++		Use:         remoteControlOnVerb + " --socket <path> --tmux <path> --client <name>",
++		Short:       "turn on remote control in the orch session, as a click on reed's RC button asks",
++		Hidden:      true,
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
++		Long: `rc-on is what a click on reed's RC button runs, from the clicked session's
++worktree. It queues creel's remote-control command into the worktree's live orch
++strand, under the name orch.yaml's remote_control_name forms, whether or not
++remote_control is on, and records the strand's remote control on. The command
++is typed once the session is idle. A worktree with no live orch strand or with
++several, an orch on an engine with no remote control, and a strand whose record
++already reads on, refuse and send nothing. A session whose remote control was
++turned off inside Claude Code takes /remote-control typed by hand in its pane.
++
++It then redraws the clicking client's status bar on the server at --socket,
++showing the refusal there first when the click failed.`,
++		Args: cobra.NoArgs,
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			out := cmd.OutOrStdout()
++			fields, err := c.turnOnRemoteControl()
++			message := ""
++			if err != nil {
++				message = "lym: " + err.Error()
++			}
++			reedengine.ShowToggleOutcome(tmuxPath, socketPath, client, message)
++			if err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
++			clihelp.SetExit(cmd.Context(), output.Ok(out, fields))
++			return nil
++		},
++	}
++	cmd.Flags().StringVar(&socketPath, "socket", "", "socket path of the tmux server whose bar was clicked")
++	cmd.Flags().StringVar(&tmuxPath, "tmux", "", "path of the tmux binary")
++	cmd.Flags().StringVar(&client, "client", "", "the clicking tmux client")
++	for _, flag := range []string{"socket", "tmux", "client"} {
++		_ = cmd.MarkFlagRequired(flag)
++	}
++	return cmd
++}
+diff --git a/internal/orchcli/remotecontrol_integration_test.go b/internal/orchcli/remotecontrol_integration_test.go
+new file mode 100644
+index 00000000..31e3947a
+--- /dev/null
++++ b/internal/orchcli/remotecontrol_integration_test.go
+@@ -0,0 +1,29 @@
++// remotecontrol_integration_test.go proves over a real hub the remote session's name of an unlisted orch strand.
++// The name forms from the worktree's fixed strand name.
++
++package orchcli
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestLaunchRemoteControlName_UnlistedStrandTakesTheFixedStrandName pins the name a launch passes.
++// Reed lists no orch strand in this case.
++func TestLaunchRemoteControlName_UnlistedStrandTakesTheFixedStrandName(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	c := newTestCLI(t, &fakeStrands{})
++	c.cfg.RemoteControl, c.cfg.RemoteControlName = true, remoteControlTemplate
++	c.machineName = func() (string, error) { return "neve", nil }
++	c.location = h.Location
++
++	if got, want := c.launchRemoteControlName(reedengine.StrandStatus{}, false), "neve::"+hubforge.TestShortname+":orch"; got != want {
++		t.Errorf("launchRemoteControlName() = %q; want %q", got, want)
++	}
++}
+diff --git a/internal/orchcli/remotecontrol_test.go b/internal/orchcli/remotecontrol_test.go
+new file mode 100644
+index 00000000..3b9eee6f
+--- /dev/null
++++ b/internal/orchcli/remotecontrol_test.go
+@@ -0,0 +1,240 @@
++// remotecontrol_test.go covers the orch's remote control without a live session:
++// the name a launch passes and records, the RC click over a fake strandOps and inject, and the RC button's state word.
++
++package orchcli
++
++import (
++	"bytes"
++	"errors"
++	"os"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/orchengine"
++	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// remoteControlTemplate is orch.yaml's template value of remote_control_name.
++const remoteControlTemplate = "{machine}::{name}"
++
++// TestStart_LaunchPassesAndRecordsRemoteControl pins the name a relaunch passes on the orch spec.
++// It also pins the remote control the relaunch records for the new strand, as the RC button's state word shows it.
++func TestStart_LaunchPassesAndRecordsRemoteControl(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name     string
++		switchOn bool
++		// noRemoteControl runs the orch on an engine set whose default has no remote control.
++		noRemoteControl bool
++		// unlisted launches with no listed orch strand, so the name forms from the worktree's fixed strand name.
++		// The harness hub is no git repository, so that name cannot be formed and the launch goes without remote control.
++		unlisted bool
++		// machineErr fails the machine name the remote session's name carries.
++		machineErr error
++		// recordedSession seeds the orch state with this session id, so the launch resumes it.
++		recordedSession string
++		wantName        string
++		wantWord        string
++	}{
++		{name: "SwitchOn", switchOn: true, wantName: "neve::tst:orch", wantWord: reedengine.RemoteControlLit},
++		{name: "SwitchOff", wantWord: reedengine.RemoteControlUnlit},
++		{name: "EngineWithoutRemoteControl", switchOn: true, noRemoteControl: true},
++		{name: "NoListedStrandWithoutAFixedName", switchOn: true, unlisted: true, wantWord: reedengine.RemoteControlUnlit},
++		{name: "MachineNameFails", switchOn: true, machineErr: errors.New("no hostname"), wantWord: reedengine.RemoteControlUnlit},
++		{name: "ResumedSession", switchOn: true, recordedSession: "sess-1", wantName: "neve::tst:orch", wantWord: reedengine.RemoteControlLit},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var listed []reedengine.StrandStatus
++			if !tt.unlisted {
++				listed = append(listed, reedengine.StrandStatus{GUID: "old-guid", Name: "tst:orch"})
++			}
++			h := newStartHarness(t, listed...)
++			h.cli.cfg.RemoteControl, h.cli.cfg.RemoteControlName = tt.switchOn, remoteControlTemplate
++			h.cli.machineName = func() (string, error) { return "neve", tt.machineErr }
++			if tt.noRemoteControl {
++				h.cli.engines = shuttleengine.NewEngineSet("none", nil)
++			}
++			if tt.recordedSession != "" {
++				saveSeedState(t, h, orchengine.State{Phase: orchengine.PhaseIdle, Strand: "old-guid", SessionID: tt.recordedSession})
++			}
++
++			if code, env := h.run(t); code != 0 {
++				t.Fatalf("beamUp exit %d, env %v; want 0", code, env)
++			}
++
++			if len(h.starter.specs) != 1 {
++				t.Fatalf("started %d sessions; want 1", len(h.starter.specs))
++			}
++			spec := h.starter.specs[0]
++			if spec.RemoteControlName != tt.wantName {
++				t.Errorf("orch spec RemoteControlName = %q; want %q", spec.RemoteControlName, tt.wantName)
++			}
++			if spec.ResumeSessionID != tt.recordedSession {
++				t.Errorf("orch spec ResumeSessionID = %q; want %q", spec.ResumeSessionID, tt.recordedSession)
++			}
++			if got := remoteControlBarWordAt(h.cli.paths); got != tt.wantWord {
++				t.Errorf("remoteControlBarWordAt() = %q; want %q", got, tt.wantWord)
++			}
++		})
++	}
++}
++
++// TestTurnOnRemoteControl pins the RC click:
++// it queues the command under the launch's name into the live orch strand and records the strand on,
++// and every refusal queues nothing and leaves the record as it was.
++func TestTurnOnRemoteControl(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	liveOrch := reedengine.StrandStatus{GUID: "g1", Name: "tst:orch", Live: true}
++	injectFailed := errors.New("creel is down")
++	tests := []struct {
++		name            string
++		strands         []reedengine.StrandStatus
++		noRemoteControl bool
++		// recordedOn seeds the record of g1 as on.
++		recordedOn bool
++		// blockRecord makes the record file unwritable.
++		blockRecord bool
++		injectErr   error
++		wantInject  string
++		wantErr     string
++		wantOn      bool
++		// wantWarning expects the success to carry a warning field.
++		wantWarning bool
++	}{
++		{name: "QueuesAndRecords", strands: []reedengine.StrandStatus{liveOrch}, wantInject: "tst:orch neve::tst:orch", wantOn: true},
++		{name: "NoLiveOrch", strands: []reedengine.StrandStatus{{GUID: "g1", Name: "tst:orch"}}, wantErr: "no live orch strand"},
++		{name: "NoOrch", wantErr: "no live orch strand"},
++		{name: "TwoOrchStrands", strands: []reedengine.StrandStatus{liveOrch, {GUID: "g2", Name: "tst:orch", Live: true}}, wantErr: "remove the extras with `lym reed remove`"},
++		{name: "EngineWithoutRemoteControl", strands: []reedengine.StrandStatus{liveOrch}, noRemoteControl: true, wantErr: "no remote control"},
++		{name: "AlreadyOn", strands: []reedengine.StrandStatus{liveOrch}, recordedOn: true, wantErr: "already on", wantOn: true},
++		{name: "FailedInject", strands: []reedengine.StrandStatus{liveOrch}, injectErr: injectFailed, wantInject: "tst:orch neve::tst:orch", wantErr: injectFailed.Error()},
++		{name: "FailedRecordWriteStillSucceeds", strands: []reedengine.StrandStatus{liveOrch}, blockRecord: true, wantInject: "tst:orch neve::tst:orch", wantWarning: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			c := newTestCLI(t, &fakeStrands{strands: tt.strands})
++			c.cfg.RemoteControlName = remoteControlTemplate
++			c.machineName = func() (string, error) { return "neve", nil }
++			if tt.noRemoteControl {
++				c.engines = shuttleengine.NewEngineSet("none", nil)
++			}
++			if tt.recordedOn {
++				if err := orchengine.WriteRemoteControl(c.paths, orchengine.RemoteControlRecord{Strand: "g1", On: true}); err != nil {
++					t.Fatalf("WriteRemoteControl: %v", err)
++				}
++			}
++			if tt.blockRecord {
++				if err := os.MkdirAll(c.paths.RemoteControlPath, 0o755); err != nil {
++					t.Fatalf("block the record file: %v", err)
++				}
++			}
++			var injected []string
++			c.injectRemoteControl = func(receiver, name string) error {
++				injected = append(injected, receiver+" "+name)
++				return tt.injectErr
++			}
++
++			fields, err := c.turnOnRemoteControl()
++
++			if _, hasWarning := fields["warning"]; hasWarning != tt.wantWarning {
++				t.Errorf("fields = %v; want a warning field: %v", fields, tt.wantWarning)
++			}
++			if tt.wantErr == "" && err != nil {
++				t.Fatalf("turnOnRemoteControl() = %v; want nil", err)
++			}
++			if tt.wantErr != "" && (err == nil || !strings.Contains(err.Error(), tt.wantErr)) {
++				t.Errorf("turnOnRemoteControl() = %v; want an error containing %q", err, tt.wantErr)
++			}
++			if got := strings.Join(injected, "; "); got != tt.wantInject {
++				t.Errorf("injected %q; want %q", got, tt.wantInject)
++			}
++			if tt.blockRecord {
++				return
++			}
++			on, readErr := orchengine.RemoteControlOn(c.paths, "g1")
++			if readErr != nil || on != tt.wantOn {
++				t.Errorf("RemoteControlOn(g1) = %v, %v; want %v, nil", on, readErr, tt.wantOn)
++			}
++		})
++	}
++}
++
++// TestRemoteControlBarWordAt pins the RC button's state word:
++// none without a recorded strand or a record naming it.
++// Lit for a strand recorded on, and unlit for a strand recorded off or whose record cannot be read.
++func TestRemoteControlBarWordAt(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name   string
++		state  *orchengine.State
++		record *orchengine.RemoteControlRecord
++		// rawRecord, when set, is written as the record file's bytes.
++		rawRecord string
++		want      string
++	}{
++		{name: "NoState"},
++		{name: "NoStrand", state: &orchengine.State{Phase: orchengine.PhaseIdle}},
++		{name: "NoRecord", state: &orchengine.State{Strand: "g1"}},
++		{name: "RecordedOn", state: &orchengine.State{Strand: "g1"}, record: &orchengine.RemoteControlRecord{Strand: "g1", On: true}, want: reedengine.RemoteControlLit},
++		{name: "RecordedOff", state: &orchengine.State{Strand: "g1"}, record: &orchengine.RemoteControlRecord{Strand: "g1"}, want: reedengine.RemoteControlUnlit},
++		{name: "RecordedOnForAnOldStrand", state: &orchengine.State{Strand: "g2"}, record: &orchengine.RemoteControlRecord{Strand: "g1", On: true}},
++		{name: "UnreadableRecord", state: &orchengine.State{Strand: "g1"}, rawRecord: "{not json", want: reedengine.RemoteControlUnlit},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			paths := newTestCLI(t, &fakeStrands{}).paths
++			if tt.state != nil {
++				if err := orchengine.SaveState(paths, *tt.state); err != nil {
++					t.Fatalf("SaveState: %v", err)
++				}
++			}
++			if tt.record != nil {
++				if err := orchengine.WriteRemoteControl(paths, *tt.record); err != nil {
++					t.Fatalf("WriteRemoteControl: %v", err)
++				}
++			}
++			if tt.rawRecord != "" {
++				if err := os.WriteFile(paths.RemoteControlPath, []byte(tt.rawRecord), 0o644); err != nil {
++					t.Fatalf("write the record file: %v", err)
++				}
++			}
++			if got := remoteControlBarWordAt(paths); got != tt.want {
++				t.Errorf("remoteControlBarWordAt() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
++// TestRemoteControlBarVerb_PrintsNothingForNoWorktree pins what the rc-bar verb prints, and it skips the orch wiring.
++// It prints an empty line and exits 0 for no directory and for a directory that is no worktree.
++func TestRemoteControlBarVerb_PrintsNothingForNoWorktree(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		args []string
++	}{
++		{"NoDir", []string{remoteControlBarVerb}},
++		{"UnresolvableDir", []string{remoteControlBarVerb, "--dir", t.TempDir()}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var out bytes.Buffer
++			code := clihelp.ExecuteIn(Command(), t.TempDir(), &out, tt.args)
++			if code != 0 || out.String() != "\n" {
++				t.Errorf("rc-bar exit %d, output %q; want exit 0 and an empty line", code, out.String())
++			}
++		})
++	}
++}
+diff --git a/internal/orchcli/start.go b/internal/orchcli/start.go
+index c8e25962..fd23d636 100644
+--- a/internal/orchcli/start.go
++++ b/internal/orchcli/start.go
+@@ -197,12 +197,13 @@ func (s runnerSessionStarter) StartSession(spec shuttleengine.Spec) (startedSess
+ // Its turn hook is the Slack hook.
+ // It switches the presence back on the operator's typed line.
+ // While away, it forwards each turn's final reply to the orch's channel.
+-func (c *orchCLI) orchSpec(prompt string, now time.Time) shuttleengine.Spec {
++// A non-empty remoteControlName starts the session with remote control on under that name.
++func (c *orchCLI) orchSpec(prompt string, now time.Time, remoteControlName string) shuttleengine.Spec {
+ 	sentinel := filepath.Join(c.paths.Dir, "session-"+now.UTC().Format("20060102T150405Z")+".never")
+ 	return shuttleengine.Spec{
+ 		Prompt:         prompt,
+ 		OutputFiles:    []string{sentinel},
+-		ModelChoice:    shuttleengine.ModelChoice{Model: c.cfg.Model, Effort: c.cfg.Effort},
++		ModelChoice:    c.orchModelChoice(),
+ 		Interactive:    true,
+ 		PermissionMode: c.cfg.PermissionMode,
+ 		ForkSubagents:  true,
+@@ -217,6 +218,7 @@ func (c *orchCLI) orchSpec(prompt string, now time.Time) shuttleengine.Spec {
+ 
+ 		ContextAfterCompaction: resumeContextCommand(c.location.AnchorPath()),
+ 		TurnHookCommand:        slackengine.HookCommand,
++		RemoteControlName:      remoteControlName,
+ 	}
+ }
+ 
+@@ -655,11 +657,13 @@ func (c *orchCLI) startOrch(note string) (BeamUpReport, error) {
+ 		if err := orchengine.RenderRoleFile(c.paths.RolePath); err != nil {
+ 			return report, err
+ 		}
+-		started, source, abandoned, err := c.launchOrch(st, note)
++		remoteControlName := c.launchRemoteControlName(strand, hasStrand)
++		started, source, abandoned, err := c.launchOrch(st, note, remoteControlName)
+ 		report.AbandonedSession = abandoned
+ 		if err != nil {
+ 			return report, err
+ 		}
++		c.recordRemoteControl(started.GUID, remoteControlName != "")
+ 		report.Strand = started.GUID
+ 		if started.Warning != "" {
+ 			report.Warnings = append(report.Warnings, started.Warning)
+@@ -681,6 +685,7 @@ func (c *orchCLI) startOrch(note string) (BeamUpReport, error) {
+ 		if err := c.adoptListedStrand(st, strand); err != nil {
+ 			return report, err
+ 		}
++		c.recordUnrecordedRemoteControl(strand.GUID)
+ 		logger.Info("orch: restarted a dead watcher", "strandGUID", strand.GUID, "previousExit", st.WatcherExit)
+ 		if err := c.spawnWatcher(); err != nil {
+ 			return report, err
+@@ -690,6 +695,7 @@ func (c *orchCLI) startOrch(note string) (BeamUpReport, error) {
+ 		if err := c.adoptListedStrand(st, strand); err != nil {
+ 			return report, err
+ 		}
++		c.recordUnrecordedRemoteControl(strand.GUID)
+ 		report.Action = actionAlreadyRunning
+ 	}
+ 	if watcherLive && st.WatcherStopping {
+@@ -703,13 +709,14 @@ func (c *orchCLI) startOrch(note string) (BeamUpReport, error) {
+ // A resume that fails to start, its transcript gone or its process not coming up live, falls back to a fresh launch.
+ // The session it gave up is named as abandoned.
+ // A fresh launch takes the last completed handoff, else the start stencil, and note joins its prompt.
+-func (c *orchCLI) launchOrch(st orchengine.State, note string) (started startedSession, source, abandoned string, err error) {
++// Either launch starts with remote control on under remoteControlName when it is non-empty.
++func (c *orchCLI) launchOrch(st orchengine.State, note, remoteControlName string) (started startedSession, source, abandoned string, err error) {
+ 	if st.SessionID != "" {
+ 		reload, err := orchengine.RenderReloadPrompt(c.stencilsDir, c.paths.RolePath)
+ 		if err != nil {
+ 			return startedSession{}, "", "", err
+ 		}
+-		spec := c.orchSpec(orchengine.WithPresence(c.paths, reload), time.Now())
++		spec := c.orchSpec(orchengine.WithPresence(c.paths, reload), time.Now(), remoteControlName)
+ 		spec.ResumeSessionID = st.SessionID
+ 		started, err := c.starter.StartSession(spec)
+ 		if err == nil {
+@@ -726,7 +733,7 @@ func (c *orchCLI) launchOrch(st orchengine.State, note string) (started startedS
+ 	if note != "" {
+ 		prompt += "\n\n" + note
+ 	}
+-	started, err = c.starter.StartSession(c.orchSpec(prompt, time.Now()))
++	started, err = c.starter.StartSession(c.orchSpec(prompt, time.Now(), remoteControlName))
+ 	return started, source, abandoned, err
+ }
+ 
+diff --git a/internal/orchcli/start_test.go b/internal/orchcli/start_test.go
+index 10295e25..dd4b4cf3 100644
+--- a/internal/orchcli/start_test.go
++++ b/internal/orchcli/start_test.go
+@@ -634,12 +634,24 @@ func TestStart_LiveStrand(t *testing.T) {
+ 		wantStrandAtCalls []string
+ 		// withdrawErr fails the first withdraw: start then binds nothing and reports creel's error.
+ 		withdrawErr error
++		// seedRecord, when set, is the remote-control record written before start runs.
++		seedRecord *orchengine.RemoteControlRecord
++		// wantLit expects a lit RC button once start has run.
++		// Every other row expects an unlit one, since a live strand the record does not name is recorded off.
++		wantLit bool
+ 	}{
+ 		{
+ 			name: "with a watcher does nothing", watcher: true, wantAction: actionAlreadyRunning,
+ 			wantCreelCalls:    []string{"withdraw:orch", "release:orch", "withdraw:orch", "release:orch"},
+ 			wantStrandAtCalls: []string{"", "", "g1", "g1"},
+ 		},
++		{
++			name: "an already-running strand the record names keeps its recorded remote control", watcher: true, wantAction: actionAlreadyRunning,
++			seedRecord:        &orchengine.RemoteControlRecord{Strand: "g1", On: true},
++			wantCreelCalls:    []string{"withdraw:orch", "release:orch", "withdraw:orch", "release:orch"},
++			wantStrandAtCalls: []string{"", "", "g1", "g1"},
++			wantLit:           true,
++		},
+ 		{
+ 			name: "without a watcher spawns the watcher only", wantAction: actionSpawnedWatcher, wantSpawns: 1,
+ 			wantCreelCalls:    []string{"withdraw:orch", "release:orch", "withdraw:orch", "release:orch"},
+@@ -660,6 +672,25 @@ func TestStart_LiveStrand(t *testing.T) {
+ 			seed:        &orchengine.State{Phase: orchengine.PhaseIdle, Strand: "old", SessionID: "old-id"},
+ 			withdrawErr: errors.New("creel: the daemon did not start"),
+ 		},
++		{
++			name:              "a live strand other than the recorded one does not take over the recorded one's remote control",
++			seed:              &orchengine.State{Phase: orchengine.PhaseIdle, Strand: "old", SessionID: "old-id"},
++			seedRecord:        &orchengine.RemoteControlRecord{Strand: "old", On: true},
++			wantAction:        actionSpawnedWatcher,
++			wantSpawns:        1,
++			wantCreelCalls:    []string{"withdraw:orch", "release:orch", "withdraw:orch", "release:orch"},
++			wantStrandAtCalls: []string{"old", "old", "g1", "g1"},
++		},
++		{
++			name:              "a live strand the record already names keeps its recorded remote control",
++			seed:              &orchengine.State{Phase: orchengine.PhaseIdle, Strand: "old", SessionID: "old-id"},
++			seedRecord:        &orchengine.RemoteControlRecord{Strand: "g1", On: true},
++			wantAction:        actionSpawnedWatcher,
++			wantSpawns:        1,
++			wantCreelCalls:    []string{"withdraw:orch", "release:orch", "withdraw:orch", "release:orch"},
++			wantStrandAtCalls: []string{"old", "old", "g1", "g1"},
++			wantLit:           true,
++		},
+ 	}
+ 	for _, c := range cases {
+ 		t.Run(c.name, func(t *testing.T) {
+@@ -675,6 +706,11 @@ func TestStart_LiveStrand(t *testing.T) {
+ 					t.Fatal(err)
+ 				}
+ 			}
++			if c.seedRecord != nil {
++				if err := orchengine.WriteRemoteControl(h.cli.paths, *c.seedRecord); err != nil {
++					t.Fatal(err)
++				}
++			}
+ 			if c.watcher {
+ 				if err := os.MkdirAll(h.cli.paths.Dir, 0o755); err != nil {
+ 					t.Fatal(err)
+@@ -737,6 +773,13 @@ func TestStart_LiveStrand(t *testing.T) {
+ 					t.Errorf("state strand = %q, session id = %q; want the adopted g1 and %q", st.Strand, st.SessionID, c.wantSessionID)
+ 				}
+ 			}
++			wantWord := reedengine.RemoteControlUnlit
++			if c.wantLit {
++				wantWord = reedengine.RemoteControlLit
++			}
++			if got := remoteControlBarWordAt(h.cli.paths); got != wantWord {
++				t.Errorf("remoteControlBarWordAt() = %q; want %q", got, wantWord)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/orchengine/config.go b/internal/orchengine/config.go
+index db098b84..d0458a4c 100644
+--- a/internal/orchengine/config.go
++++ b/internal/orchengine/config.go
+@@ -7,8 +7,11 @@ package orchengine
+ 
+ import (
+ 	"fmt"
++	"strings"
+ 	"time"
++	"unicode"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/yamlengine"
+@@ -59,8 +62,21 @@ type Config struct {
+ 	IdleGraceS          int `yaml:"idle_grace_s"`          // Seconds idle after the newest event before acting.
+ 	HandoffTimeoutS     int `yaml:"handoff_timeout_s"`     // Seconds the session gets to write its handoff.
+ 	PollIntervalMS      int `yaml:"poll_interval_ms"`      // Watcher tick interval in milliseconds.
++
++	// RemoteControl reports whether every orch session lym launches or resumes starts with the provider's remote control on.
++	RemoteControl bool `yaml:"remote_control"`
++	// RemoteControlName is the template of the remote session's name; read it through RemoteControlSessionName.
++	RemoteControlName string `yaml:"remote_control_name"`
+ }
+ 
++// The placeholders remote_control_name fills.
++const (
++	remoteControlMachinePlaceholder = "{machine}"
++	remoteControlHubPlaceholder     = "{hub}"
++	remoteControlRolePlaceholder    = "{role}"
++	remoteControlNamePlaceholder    = "{name}"
++)
++
+ // ConfigSpec returns orch's layered-load spec.
+ // It carries the template and the per-key classification that decides which keys a local override may hold.
+ func ConfigSpec() configengine.Spec {
+@@ -78,6 +94,8 @@ func ConfigSpec() configengine.Spec {
+ 			"idle_grace_s":          configengine.CategoryNone,
+ 			"handoff_timeout_s":     configengine.CategoryNone,
+ 			"poll_interval_ms":      configengine.CategoryNone,
++			"remote_control":        configengine.CategoryNone,
++			"remote_control_name":   configengine.CategoryNone,
+ 		},
+ 	}
+ }
+@@ -111,6 +129,12 @@ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 	default:
+ 		return Config{}, fmt.Errorf("orch config: permission_mode %q is not accepted; set permission_mode: bypass or remove the key", cfg.PermissionMode)
+ 	}
++	if strings.IndexFunc(cfg.RemoteControlName, unicode.IsControl) >= 0 {
++		return Config{}, fmt.Errorf("orch config: remote_control_name %q holds a control character; set it to one line", cfg.RemoteControlName)
++	}
++	if cfg.RemoteControl && strings.TrimSpace(cfg.RemoteControlName) == "" {
++		return Config{}, fmt.Errorf("orch config: remote_control is on but remote_control_name is empty; set remote_control_name, such as %q, or set remote_control: false", remoteControlMachinePlaceholder+agentname.MachineAddressSeparator+remoteControlNamePlaceholder)
++	}
+ 
+ 	if time.Duration(cfg.PollIntervalMS)*time.Millisecond < pollFloor {
+ 		logger.Warn("orch config: poll_interval_ms is below the floor and is raised to it", "key", "poll_interval_ms", "value", cfg.PollIntervalMS, "floor_ms", pollFloor.Milliseconds())
+@@ -134,6 +158,20 @@ func MigrateConfig(existing []byte) ([]byte, []string, error) {
+ 	return rewritten, []string{line}, nil
+ }
+ 
++// RemoteControlSessionName returns the remote session's name of the orch strand named name on machine.
++// It fills remote_control_name in one pass.
++// {machine} takes machine and {hub} the hub's shortname.
++// {role} takes the strand's role and {name} its full name.
++// Other brace text stays literal.
++func (c Config) RemoteControlSessionName(machine string, name agentname.Name) string {
++	return strings.NewReplacer(
++		remoteControlMachinePlaceholder, machine,
++		remoteControlHubPlaceholder, name.Shortname,
++		remoteControlRolePlaceholder, name.Role,
++		remoteControlNamePlaceholder, name.String(),
++	).Replace(c.RemoteControlName)
++}
++
+ // Mode returns the cycle mode, resolving an empty value to CycleCompact.
+ func (c Config) Mode() string {
+ 	if c.CycleMode == "" {
+diff --git a/internal/orchengine/config_test.go b/internal/orchengine/config_test.go
+index 337e0c70..c7fc2d2b 100644
+--- a/internal/orchengine/config_test.go
++++ b/internal/orchengine/config_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
+@@ -209,6 +210,69 @@ func TestLoadConfig_PermissionMode(t *testing.T) {
+ 	}
+ }
+ 
++func TestLoadConfig_RemoteControl(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name      string
++		content   string
++		wantOn    bool
++		wantName  string
++		wantError string
++	}{
++		{"the template is on with the cross-machine address", "model: opus\n", true, "{machine}::{name}", ""},
++		{"switched off with an empty name loads", "remote_control: false\nremote_control_name: \"\"\n", false, "", ""},
++		{"on with an empty name is refused", "remote_control_name: \" \"\n", false, "", "remote_control_name is empty"},
++		{"a control character is refused", "remote_control_name: \"a\\tb\"\n", false, "", "control character"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			tmpDir := t.TempDir()
++			seedLymConfig(t, tmpDir, "orch", tt.content)
++			cfg, err := orchengine.LoadConfig(configengine.Dirs{Anchor: tmpDir}, "orch")
++			if tt.wantError != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantError) {
++					t.Errorf("LoadConfig(%q) error = %v; want it to contain %q", tt.content, err, tt.wantError)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("LoadConfig(%q): %v", tt.content, err)
++			}
++			if cfg.RemoteControl != tt.wantOn || cfg.RemoteControlName != tt.wantName {
++				t.Errorf("LoadConfig(%q) remote control = %v, %q; want %v, %q", tt.content, cfg.RemoteControl, cfg.RemoteControlName, tt.wantOn, tt.wantName)
++			}
++		})
++	}
++}
++
++func TestConfig_RemoteControlSessionName(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	beamOrch := agentname.Name{Shortname: "ly", Slug: "b", Role: "orch"}
++	tests := []struct {
++		name     string
++		template string
++		orch     agentname.Name
++		want     string
++	}{
++		{"the template's form is the cross-machine address", "{machine}::{name}", beamOrch, agentname.FormatMachineAddress("neve", beamOrch.String())},
++		{"every placeholder fills", "{hub}:{role}[{machine}]", beamOrch, "ly:orch[neve]"},
++		{"other brace text stays literal", "{machine} {slug}", beamOrch, "neve {slug}"},
++		{"a value is never filled again", "{name}", agentname.Name{Shortname: "ly", Role: "orch"}, "ly:orch"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			cfg := orchengine.Config{RemoteControlName: tt.template}
++			if got := cfg.RemoteControlSessionName("neve", tt.orch); got != tt.want {
++				t.Errorf("RemoteControlSessionName(neve, %s) with %q = %q; want %q", tt.orch, tt.template, got, tt.want)
++			}
++		})
++	}
++}
++
+ func TestConfig_AccessorsFloorNonPositive(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	for _, v := range []int{0, -1} {
+diff --git a/internal/orchengine/doc.go b/internal/orchengine/doc.go
+index 7a133cbd..f02354da 100644
+--- a/internal/orchengine/doc.go
++++ b/internal/orchengine/doc.go
+@@ -109,6 +109,18 @@
+ // The trigger selection, gates and re-read under "Idle rules" are shared;
+ // the two machines follow under "The four-phase cycle (clear mode)" and "The compact cycle (compact mode)".
+ //
++// # Remote control
++//
++// `remote_control` in orch.yaml is on in the template.
++// While it is on, every orch session lym launches or resumes starts with the provider's remote control on.
++// `remote_control_name` is the template of the remote session's name.
++// Config.RemoteControlSessionName fills {machine}, {hub}, {role} and {name} from the machine and the orch strand's name;
++// the template's `{machine}::{name}` is the cross-machine address creel uses.
++// LoadConfig refuses a name holding a control character, and an empty name while the switch is on.
++// RemoteControlRecord holds what lym last set for the orch strand, which the status bar's RC button shows.
++// Claude Code gives lym no reading of the state,
++// so a session whose remote control the operator turned off inside Claude Code still reads on.
++//
+ // # The watcher
+ //
+ // Watcher.Run polls at the configured interval, calling Tick once per poll.
+diff --git a/internal/orchengine/remotecontrol.go b/internal/orchengine/remotecontrol.go
+new file mode 100644
+index 00000000..3ea38e33
+--- /dev/null
++++ b/internal/orchengine/remotecontrol.go
+@@ -0,0 +1,66 @@
++// remotecontrol.go holds the record of the remote control lym last set for the orch strand.
++// The RC button on reed's status bar shows it.
++
++package orchengine
++
++import (
++	"encoding/json"
++	"errors"
++	"fmt"
++	"os"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++// RemoteControlRecord is what lym last set of an orch strand's remote control.
++// Claude Code gives lym no reading of the state, so the record holds what a launch or an RC click set:
++// a session whose remote control the operator turned off inside Claude Code still reads on.
++type RemoteControlRecord struct {
++	// Strand is the guid of the orch strand the record is about.
++	Strand string `json:"strand"`
++	// On reports that a launch with the provider's flag or an RC click turned remote control on.
++	On bool `json:"on"`
++	// At is when the record was written.
++	At time.Time `json:"at"`
++}
++
++// WriteRemoteControl writes rec, creating p.Dir first.
++func WriteRemoteControl(p Paths, rec RemoteControlRecord) error {
++	if err := os.MkdirAll(p.Dir, 0o755); err != nil {
++		return fmt.Errorf("orch: create state dir: %w", err)
++	}
++	if err := state.WriteJSON(p.RemoteControlPath, p.RemoteControlLockPath, rec); err != nil {
++		return fmt.Errorf("orch: save the remote-control record: %w", err)
++	}
++	return nil
++}
++
++// ReadRemoteControl returns the record and true when the record file names strand.
++// An absent record, or one naming another strand, reports false.
++// It reads without the lock and creates nothing, so the status bar's redraw never blocks a writer;
++// internal/state writes the file atomically.
++func ReadRemoteControl(p Paths, strand string) (RemoteControlRecord, bool, error) {
++	data, err := os.ReadFile(p.RemoteControlPath)
++	if errors.Is(err, os.ErrNotExist) {
++		return RemoteControlRecord{}, false, nil
++	}
++	if err != nil {
++		return RemoteControlRecord{}, false, fmt.Errorf("orch: read the remote-control record: %w", err)
++	}
++	var rec RemoteControlRecord
++	if err := json.Unmarshal(data, &rec); err != nil {
++		return RemoteControlRecord{}, false, fmt.Errorf("orch: read the remote-control record: %w", err)
++	}
++	if rec.Strand != strand {
++		return RemoteControlRecord{}, false, nil
++	}
++	return rec, true, nil
++}
++
++// RemoteControlOn reports whether the record names strand and reads on.
++// An absent record, or one naming another strand, reads off.
++func RemoteControlOn(p Paths, strand string) (bool, error) {
++	rec, recorded, err := ReadRemoteControl(p, strand)
++	return recorded && rec.On, err
++}
+diff --git a/internal/orchengine/state.go b/internal/orchengine/state.go
+index f8ae6366..986e17f5 100644
+--- a/internal/orchengine/state.go
++++ b/internal/orchengine/state.go
+@@ -41,6 +41,11 @@ type Paths struct {
+ 
+ 	// SlackPresencePath is the machine's presence record, which every rendered pointer reads; empty means no presence line.
+ 	SlackPresencePath string
++
++	// RemoteControlPath is the record of the remote control lym last set for the orch strand.
++	RemoteControlPath string
++	// RemoteControlLockPath is the advisory lock guarding RemoteControlPath.
++	RemoteControlLockPath string
+ }
+ 
+ // PendingStep is one post or inject the watcher persisted before sending it to creel.
+diff --git a/internal/orchengine/state_test.go b/internal/orchengine/state_test.go
+index 3fefb475..f1caac1a 100644
+--- a/internal/orchengine/state_test.go
++++ b/internal/orchengine/state_test.go
+@@ -27,6 +27,49 @@ func testPaths(t *testing.T) Paths {
+ 		RolePath:         filepath.Join(dir, "role.md"),
+ 		NoteTemplatePath: filepath.Join(dir, "note-template.md"),
+ 		PrimeRoot:        filepath.Dir(dir),
++
++		RemoteControlPath:     filepath.Join(dir, "remote-control.json"),
++		RemoteControlLockPath: filepath.Join(dir, "remote-control.json.lock"),
++	}
++}
++
++// TestRemoteControlOn pins the record's reading.
++// It reads off while the record is absent.
++// It reads on only for the strand the record names while the record reads on.
++// An undecodable record is an error.
++func TestRemoteControlOn(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	p := testPaths(t)
++	at := time.Date(2026, 11, 16, 9, 0, 0, 0, time.UTC)
++
++	if on, err := RemoteControlOn(p, "g1"); on || err != nil {
++		t.Errorf("RemoteControlOn(g1) of an absent record = %v, %v; want false, nil", on, err)
++	}
++	tests := []struct {
++		name   string
++		record RemoteControlRecord
++		strand string
++		want   bool
++	}{
++		{"OnForItsStrand", RemoteControlRecord{Strand: "g1", On: true, At: at}, "g1", true},
++		{"OnForAnotherStrand", RemoteControlRecord{Strand: "g1", On: true, At: at}, "g2", false},
++		{"OffForItsStrand", RemoteControlRecord{Strand: "g1", On: false, At: at}, "g1", false},
++	}
++	for _, tt := range tests {
++		if err := WriteRemoteControl(p, tt.record); err != nil {
++			t.Fatalf("%s: WriteRemoteControl: %v", tt.name, err)
++		}
++		if on, err := RemoteControlOn(p, tt.strand); on != tt.want || err != nil {
++			t.Errorf("%s: RemoteControlOn(%s) = %v, %v; want %v, nil", tt.name, tt.strand, on, err, tt.want)
++		}
++	}
++
++	if err := os.WriteFile(p.RemoteControlPath, []byte("{not json"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	if _, err := RemoteControlOn(p, "g1"); err == nil {
++		t.Error("RemoteControlOn of undecodable JSON returned no error")
+ 	}
+ }
+ 
+diff --git a/internal/orchengine/template.yaml b/internal/orchengine/template.yaml
+index f2b2adbf..14cc6efd 100644
+--- a/internal/orchengine/template.yaml
++++ b/internal/orchengine/template.yaml
+@@ -8,3 +8,5 @@ threshold_tokens: 200000  # hard cap: context-token count at which the watcher c
+ idle_grace_s: 30  # seconds the session must stay idle after its newest event before the watcher acts; non-positive is floored back to 30
+ handoff_timeout_s: 600  # seconds the session gets to write its handoff before the cycle aborts; non-positive is floored back to 600
+ poll_interval_ms: 2000  # milliseconds between watcher polls; a value below 1000 is floored to 1000 with one warning (an unfloored 0 would busy-spin the watcher)
++remote_control: true  # whether every orch session lym launches or resumes starts with Claude Code's remote control on; a Codex orch never does; the RC button on the orch session's status bar turns it on in a session running without it
++remote_control_name: "{machine}::{name}"  # the remote session's name as the phone shows it, also used by the RC button; {machine} is this machine's name, {hub} the hub's shortname, {role} the orch strand's role and {name} its full name, so the default is the cross-machine address creel uses, such as neve::ly:orch
+diff --git a/internal/orchroute/paths.go b/internal/orchroute/paths.go
+index 62abe0ff..9f7930f5 100644
+--- a/internal/orchroute/paths.go
++++ b/internal/orchroute/paths.go
+@@ -32,6 +32,8 @@ func Paths(location *lymcwd.Location) orchengine.Paths {
+ 		NoteTemplatePath: filepath.Join(dir, "note-template.md"),
+ 		PrimeRoot:        location.WorktreePath(),
+ 
+-		RetiredNoticeLogPath: filepath.Join(dotLym, "notices.log"),
++		RetiredNoticeLogPath:  filepath.Join(dotLym, "notices.log"),
++		RemoteControlPath:     filepath.Join(dir, "remote-control.json"),
++		RemoteControlLockPath: filepath.Join(dir, "remote-control.json.lock"),
+ 	}
+ }
+diff --git a/internal/orchroute/walk.go b/internal/orchroute/walk.go
+index cd006d65..88bc5433 100644
+--- a/internal/orchroute/walk.go
++++ b/internal/orchroute/walk.go
+@@ -41,23 +41,29 @@ func StrandOf(worktree *lymcwd.Location) (name string, recorded bool, err error)
+ 			}
+ 		}
+ 	}
++	fixed, err := FixedStrandName(worktree)
++	if err != nil {
++		return "", false, err
++	}
++	return fixed, true, nil
++}
++
++// FixedStrandName answers the name the orch strand of worktree takes when reed holds none for it:
++// `<shortname>:orch` for the prime and `<shortname>:<slug>:orch` for a beam.
++func FixedStrandName(worktree *lymcwd.Location) (string, error) {
+ 	shortname, found := fabricengine.ReadShortname(fabricengine.BoltDir(worktree.HubPath))
+ 	if !found {
+-		return "", false, fmt.Errorf("orch: the hub of %s has no usable shortname record to name the orch strand; way forward: run `lym fabric shortname <shortname>`", worktree.WorktreePath())
++		return "", fmt.Errorf("orch: the hub of %s has no usable shortname record to name the orch strand; way forward: run `lym fabric shortname <shortname>`", worktree.WorktreePath())
+ 	}
+ 	primeName, err := fabricengine.PrimeName(worktree)
+ 	if err != nil {
+-		return "", false, err
++		return "", err
+ 	}
+ 	slug := worktree.WorktreeName
+ 	if slug == primeName {
+ 		slug = ""
+ 	}
+-	fixed, err := agentname.Format(shortname, slug, agentname.RoleOrch)
+-	if err != nil {
+-		return "", false, err
+-	}
+-	return fixed, true, nil
++	return agentname.Format(shortname, slug, agentname.RoleOrch)
+ }
+ 
+ // Prime resolves the prime worktree of the hub that location's worktree belongs to.
+diff --git a/internal/reedengine/attach_test.go b/internal/reedengine/attach_test.go
+index 35204561..d968a212 100644
+--- a/internal/reedengine/attach_test.go
++++ b/internal/reedengine/attach_test.go
+@@ -247,9 +247,9 @@ func TestAttachArgv_PreflightOnAKnownGoodSession(t *testing.T) {
+ 	// They also include the window-size pin, the follow-command and button-command pins, and the build-stamp unset.
+ 	// Each of the follow-command and button-command pins is set, or unset when its line cannot be composed.
+ 	// They also include the window marker and the strand pane's two options.
+-	// They also include the status interval and the unset of the two Slack toggle pins.
++	// They also include the status interval and the unset of the two Slack toggle pins and the two RC pins.
+ 	// The console marker goes on the recorded Selvage pane.
+-	wantSetOptionCalls := 19 + wantShellPins
++	wantSetOptionCalls := 21 + wantShellPins
+ 	if setOptions := fake.ArgvFor("set-option"); len(setOptions) != wantSetOptionCalls {
+ 		t.Fatalf("AttachArgv() issued %d set-option calls, want %d: %v", len(setOptions), wantSetOptionCalls, setOptions)
+ 	}
+diff --git a/internal/reedengine/bar.go b/internal/reedengine/bar.go
+index 7a8bc5c6..40d09633 100644
+--- a/internal/reedengine/bar.go
++++ b/internal/reedengine/bar.go
+@@ -11,10 +11,12 @@
+ // Line 2 lists the session carrying @lym_prime_session first, then every other session in the #{S:} loop's own order.
+ // Line 2 ends with the current session's check mark, before the clock.
+ // The check mark is read from the session user options @lym_check, @lym_check_state and @lym_check_start.
+-// Line 3 is the follow button, then the slack and away toggles, then the action row.
++// Line 3 is the follow button, then the slack toggle, the RC button and the away toggle, then the action row.
+ // The slack toggle is the button of the orch whose session it is, drawn only in a prime's or a beam's session.
+ // The toggles read the Slack state from a `#()` job, which the session's run directory names the orch to.
+ // The server-global @lym_slack_state_command holds the job's line.
++// The RC button shows the remote control of that orch, drawn only while the session's worktree records an orch strand.
++// It reads its state from a `#()` job of its own, whose line the server-global @lym_rc_state_command holds.
+ // The action row is read from the session user options @lym_buttons_plain and @lym_buttons_agent.
+ // No Go decision reads @strand_color, @lym_unseen or @lym_prime_session.
+ // Neither does one read a check mark's options or the action row's options.
+@@ -35,6 +37,22 @@ const (
+ 	AwayToggleLit    = "away-on"
+ )
+ 
++// The words of the remote-control state line the RC button reads.
++// RemoteControlLit draws the RC button lit and RemoteControlUnlit draws it unlit.
++// A line with neither draws no RC button.
++// The state line is what the command in @lym_rc_state_command prints.
++const (
++	RemoteControlLit   = "rc-on"
++	RemoteControlUnlit = "rc-off"
++)
++
++// The names of the two hidden `orch` verbs behind the RC button.
++// RemoteControlBarVerb prints the state line the button reads, and RemoteControlOnVerb is what a click runs.
++const (
++	RemoteControlBarVerb = "rc-bar"
++	RemoteControlOnVerb  = "rc-on"
++)
++
+ const (
+ 	// strandColorFormat expands to a strand pane's @strand_color, or white when the pane has none.
+ 	strandColorFormat = "#{?#{@strand_color},#{@strand_color},white}"
+@@ -160,13 +178,42 @@ const (
+ 	// awayToggleFormat is the away toggle: a user range labelled away, lit green while the state line holds AwayToggleLit.
+ 	awayToggleFormat = "#[range=user|" + awayToggleRange + " #{?#{m:*" + AwayToggleLit + "*," + slackStateJob + "},bg=green fg=black bold," + unlitButtonStyle + "}] " + awayToggleRange + " #[norange list=on default] "
+ 
+-	// statusFormatActions is status-format[2]: the follow button, the slack and away toggles, then the action row.
++	// remoteControlStateCommandOption is the server-global user option holding the shell line the RC button's state job runs.
++	// Like the bar's other options it is display only, and no Go decision reads it.
++	remoteControlStateCommandOption = "@lym_rc_state_command"
++
++	// remoteControlRange names the user range of the RC button, which a click dispatches on.
++	remoteControlRange = "rc"
++
++	// remoteControlLabel is the text drawn on the RC button.
++	remoteControlLabel = "RC"
++
++	// remoteControlStateJob is the `#()` job the RC button reads: the line remoteControlStateCommandOption holds.
++	// tmux expands the option's value as a format, so the session's options in the line resolve per session.
++	// It runs the job again at a redraw a second or more after its last run.
++	// Its output is only matched, never drawn, so an unset option or a job not yet run draws no RC button.
++	remoteControlStateJob = "#(#{E:" + remoteControlStateCommandOption + "})"
++
++	// remoteControlShownCondition is true while the state line holds RemoteControlLit or RemoteControlUnlit:
++	// the session's worktree records an orch strand.
++	remoteControlShownCondition = "#{||:#{m:*" + RemoteControlLit + "*," + remoteControlStateJob + "},#{m:*" + RemoteControlUnlit + "*," + remoteControlStateJob + "}}"
++
++	// remoteControlButtonFormat is the drawn RC button: a user range labelled RC.
++	// It is lit green while the state line holds RemoteControlLit.
++	remoteControlButtonFormat = "#[range=user|" + remoteControlRange + " #{?#{m:*" + RemoteControlLit + "*," + remoteControlStateJob + "},bg=green fg=black bold," + unlitButtonStyle + "}] " + remoteControlLabel + " #[norange list=on default] "
++
++	// remoteControlToggleFormat is the RC button of the session's orch.
++	// It is drawn only while remoteControlShownCondition holds.
++	remoteControlToggleFormat = "#{?" + remoteControlShownCondition + "," + remoteControlButtonFormat + ",}"
++
++	// statusFormatActions is status-format[2].
++	// It holds the follow button, the slack toggle, the RC button and the away toggle, then the action row.
+ 	// A window whose active pane carries @strand draws the row in buttonRowAgentOption;
+ 	// every other window draws the row in buttonRowPlainOption.
+ 	// Both options are unset until the render sets them, so the row is empty until then.
+-	statusFormatActions = listPrologueFormat + followButtonFormat + slackToggleFormat + awayToggleFormat + "#{?#{@strand},#{E:" + buttonRowAgentOption + "},#{E:" + buttonRowPlainOption + "}}"
++	statusFormatActions = listPrologueFormat + followButtonFormat + slackToggleFormat + remoteControlToggleFormat + awayToggleFormat + "#{?#{@strand},#{E:" + buttonRowAgentOption + "},#{E:" + buttonRowPlainOption + "}}"
+ 
+ 	// statusIntervalSeconds is the bar's redraw interval in seconds.
+-	// The Slack toggles' state job runs again at each redraw, so a change made by any route shows within it.
++	// The toggles' state jobs run again at each redraw, so a change made by any route shows within it.
+ 	statusIntervalSeconds = "5"
+ )
+diff --git a/internal/reedengine/bar_test.go b/internal/reedengine/bar_test.go
+index dd6fa72c..eaf6d8f9 100644
+--- a/internal/reedengine/bar_test.go
++++ b/internal/reedengine/bar_test.go
+@@ -38,18 +38,21 @@ func sessionLoopTwoFormats(format string, loopStart int) int {
+ 	return -1
+ }
+ 
+-// TestStatusFormatActions_SlackAndAwayTogglesFollowTheFollowButton pins line 3's two toggles.
++// TestStatusFormatActions_TogglesFollowTheFollowButton pins line 3's slack toggle, RC button and away toggle.
+ // They come after the follow button and before the action row.
+-// Each is a user range with its own label, and each lights green only on its own word of the state job's output.
+-// The slack toggle is drawn only while the state line holds slack-on or slack-off.
++// Each is a user range with its own label, and each lights green only on its own word of its state job's output.
++// The slack toggle is drawn only while the Slack state line holds slack-on or slack-off,
++// and the RC button only while its own state line holds rc-on or rc-off.
+ // A line with neither word, such as a bare away-on, draws no slack toggle.
+ // The away toggle is always drawn.
+-func TestStatusFormatActions_SlackAndAwayTogglesFollowTheFollowButton(t *testing.T) {
++func TestStatusFormatActions_TogglesFollowTheFollowButton(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	const stateJob = "#(#{E:@lym_slack_state_command})"
+-	markers := []string{"#[range=user|follow ", "#[range=user|slack ", "#[range=user|away ", "#{?#{@strand},"}
++	const slackJob = "#(#{E:@lym_slack_state_command})"
++	const rcJob = "#(#{E:@lym_rc_state_command})"
++	rcShownWhen := "#{?#{||:#{m:*rc-on*," + rcJob + "},#{m:*rc-off*," + rcJob + "}},"
++	markers := []string{"#[range=user|follow ", "#[range=user|slack ", rcShownWhen, "#[range=user|rc ", "#[range=user|away ", "#{?#{@strand},"}
+ 	at := make([]int, len(markers))
+ 	for i, marker := range markers {
+ 		at[i] = strings.Index(statusFormatActions, marker)
+@@ -57,13 +60,14 @@ func TestStatusFormatActions_SlackAndAwayTogglesFollowTheFollowButton(t *testing
+ 			t.Fatalf("statusFormatActions = %q, want it to hold %q", statusFormatActions, marker)
+ 		}
+ 		if i > 0 && at[i] <= at[i-1] {
+-			t.Fatalf("%q at %d, %q at %d, want line 3 in the order follow, slack, away, action row", markers[i-1], at[i-1], marker, at[i])
++			t.Fatalf("%q at %d, %q at %d, want line 3 in the order follow, slack, RC, away, action row", markers[i-1], at[i-1], marker, at[i])
+ 		}
+ 	}
+ 
+ 	tests := []struct {
+ 		name      string
+ 		segment   string
++		stateJob  string
+ 		label     string
+ 		litWord   string
+ 		unlitWord string
+@@ -71,10 +75,11 @@ func TestStatusFormatActions_SlackAndAwayTogglesFollowTheFollowButton(t *testing
+ 		tail      string
+ 	}{
+ 		{
+-			"Slack", statusFormatActions[at[1]:at[2]], "slack", "slack-on", "away-on",
+-			"#{?#{||:#{m:*slack-on*," + stateJob + "},#{m:*slack-off*," + stateJob + "}},", ",}",
++			"Slack", statusFormatActions[at[1]:at[2]], slackJob, "slack", "slack-on", "away-on",
++			"#{?#{||:#{m:*slack-on*," + slackJob + "},#{m:*slack-off*," + slackJob + "}},", ",}",
+ 		},
+-		{"Away", statusFormatActions[at[2]:at[3]], "away", "away-on", "slack-on", "", ""},
++		{"RC", statusFormatActions[at[3]:at[4]], rcJob, "RC", "rc-on", "slack-on", rcShownWhen, ",}"},
++		{"Away", statusFormatActions[at[4]:at[5]], slackJob, "away", "away-on", "slack-on", "", ""},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -82,7 +87,7 @@ func TestStatusFormatActions_SlackAndAwayTogglesFollowTheFollowButton(t *testing
+ 			if !strings.Contains(statusFormatActions, tt.shownWhen+tt.segment) {
+ 				t.Errorf("%s toggle = %q, want it directly after the condition %q", tt.name, tt.segment, tt.shownWhen)
+ 			}
+-			wantLit := "#{?#{m:*" + tt.litWord + "*," + stateJob + "},bg=green fg=black bold,"
++			wantLit := "#{?#{m:*" + tt.litWord + "*," + tt.stateJob + "},bg=green fg=black bold,"
+ 			if !strings.Contains(tt.segment, wantLit) {
+ 				t.Errorf("%s toggle = %q, want it lit by %q", tt.name, tt.segment, wantLit)
+ 			}
+diff --git a/internal/reedengine/bindings.go b/internal/reedengine/bindings.go
+index fea72d93..318958bb 100644
+--- a/internal/reedengine/bindings.go
++++ b/internal/reedengine/bindings.go
+@@ -3,7 +3,7 @@
+ // Alt+Up and Alt+Down step across windows in index order,
+ // and a left click on the shell button returns to the strands' window.
+ // The click dispatches on the shell, window and session ranges.
+-// It also dispatches on the follow button, the Slack toggles and the button ranges.
++// It also dispatches on the follow button, the Slack toggles, the RC button and the button ranges.
+ // The builder is pure.
+ // pinBindingsLocked issues its argvs, each non-fatal.
+ // Its caller is the geometry pin path that boot and the attach pre-flight run.
+@@ -58,6 +58,10 @@ const slackToggleCommandOption = "@lym_slack_toggle_command"
+ // slackToggleCondition is true for a click on either Slack toggle.
+ const slackToggleCondition = "#{||:#{==:#{mouse_status_range}," + slackToggleRange + "},#{==:#{mouse_status_range}," + awayToggleRange + "}}"
+ 
++// remoteControlClickCommandOption is the server-global user option holding the shell line a click on the RC button runs.
++// The click reads it through `#{E:...}` inside run-shell, like followCommandOption.
++const remoteControlClickCommandOption = "@lym_rc_click_command"
++
+ // bindingsBuildOption is the server-global user option naming the build whose bindings the server holds.
+ // Its value is the build's VCS commit time in RFC 3339 UTC, a space, then its revision label.
+ // It is unset when no build pinned them, or when the one that did carries no VCS stamp.
+@@ -144,8 +148,9 @@ func followClickCommand(followJump bool) string {
+ // When buttonClick holds, a click on a range named by buttonRangePrefix runs the button branch.
+ // That branch runs the line pinned in buttonCommandOption, resolved through the session's own options.
+ // When slackClick holds, a click on a Slack toggle then runs the line pinned in slackToggleCommandOption the same way.
++// When remoteControlClick holds, a click on the RC button then runs the line pinned in remoteControlClickCommandOption.
+ // Each reports that its line is pinned; when false its branch is not bound.
+-func bindingArgvs(switchPrev, switchNext string, followJump, buttonClick, slackClick bool) [][]string {
++func bindingArgvs(switchPrev, switchNext string, followJump, buttonClick, slackClick, remoteControlClick bool) [][]string {
+ 	argvs := [][]string{
+ 		{"unbind-key", "-n", "M-z"},
+ 		{"bind-key", "-n", "M-Up", "set-option", followSessionOption, "off", `\;`, "previous-window", `\;`, "if-shell", "-F", "-t", ":", hiddenWindowCondition, selectStrandsWindowCommand},
+@@ -172,6 +177,9 @@ func bindingArgvs(switchPrev, switchNext string, followJump, buttonClick, slackC
+ 	if slackClick {
+ 		click = append(click, `\;`, "if-shell", "-F", slackToggleCondition, `run-shell -b "#{E:`+slackToggleCommandOption+`}"`)
+ 	}
++	if remoteControlClick {
++		click = append(click, `\;`, "if-shell", "-F", "#{==:#{mouse_status_range},"+remoteControlRange+"}", `run-shell -b "#{E:`+remoteControlClickCommandOption+`}"`)
++	}
+ 	return append(argvs, click)
+ }
+ 
+@@ -200,16 +208,20 @@ func (e *Engine) pinGlobalLineLocked(option, line, what string) {
+ // so a stale line never outlives the binary that pinned it.
+ // The button click line is set in buttonCommandOption and unset the same way.
+ // The Slack toggle click line in slackToggleCommandOption is set and unset the same way.
+-// So is the Slack state line in slackStateCommandOption.
++// The Slack state line in slackStateCommandOption is set and unset the same way.
++// The RC click line in remoteControlClickCommandOption is too.
++// So is the RC state line in remoteControlStateCommandOption.
+ // This binary's build stamp is then set in bindingsBuildOption, ahead of the bindings themselves.
+ // It is unset for a binary with no VCS stamp.
+ // Assumes the op lock is already held.
+ func (e *Engine) pinBindingsLocked() {
+-	switchPrev, switchNext, follow, button, slackToggle, slackState := e.switchBindingCommandsLocked()
+-	e.pinGlobalLineLocked(followCommandOption, follow, "the follow jump line")
+-	e.pinGlobalLineLocked(buttonCommandOption, button, "the button click line")
+-	e.pinGlobalLineLocked(slackToggleCommandOption, slackToggle, "the Slack toggle click line")
+-	e.pinGlobalLineLocked(slackStateCommandOption, slackState, "the Slack state line")
++	lines := e.bindingLinesLocked()
++	e.pinGlobalLineLocked(followCommandOption, lines.follow, "the follow jump line")
++	e.pinGlobalLineLocked(buttonCommandOption, lines.button, "the button click line")
++	e.pinGlobalLineLocked(slackToggleCommandOption, lines.slackToggle, "the Slack toggle click line")
++	e.pinGlobalLineLocked(slackStateCommandOption, lines.slackState, "the Slack state line")
++	e.pinGlobalLineLocked(remoteControlClickCommandOption, lines.remoteControlClick, "the RC click line")
++	e.pinGlobalLineLocked(remoteControlStateCommandOption, lines.remoteControlState, "the RC state line")
+ 	if stamp := bindingsBuildStamp(e.build); stamp != "" {
+ 		if err := e.tmux.run("set-option", "-g", bindingsBuildOption, stamp); err != nil {
+ 			logger.Warn("reed: failed to stamp the bindings' build", "socket", e.Socket(), "session", e.SessionName(), "err", err)
+@@ -217,7 +229,7 @@ func (e *Engine) pinBindingsLocked() {
+ 	} else if err := e.tmux.run("set-option", "-gu", bindingsBuildOption); err != nil {
+ 		logger.Warn("reed: failed to unset the bindings' build stamp", "socket", e.Socket(), "session", e.SessionName(), "err", err)
+ 	}
+-	for _, argv := range bindingArgvs(switchPrev, switchNext, follow != "", button != "", slackToggle != "") {
++	for _, argv := range bindingArgvs(lines.switchPrev, lines.switchNext, lines.follow != "", lines.button != "", lines.slackToggle != "", lines.remoteControlClick != "") {
+ 		if err := e.tmux.run(argv...); err != nil {
+ 			logger.Warn("reed: failed to pin a key binding", "socket", e.Socket(), "session", e.SessionName(), "binding", argv[2], "err", err)
+ 		}
+@@ -250,18 +262,29 @@ func (e *Engine) repinStaleBindingsLocked() {
+ 	e.pinBindingsLocked()
+ }
+ 
+-// switchBindingCommandsLocked returns the shell lines for M-Left, M-Right and the follow button's jump.
+-// It also returns the lines of a button click, a Slack toggle click and the Slack toggles' state job.
+-// All six are empty when the socket path or the tmux path cannot be resolved.
+-// The first four are empty together when this binary cannot be resolved.
++// bindingLines holds the shell lines the bindings run and the toggles' state jobs read; an empty one is not pinned.
++type bindingLines struct {
++	// switchPrev and switchNext are the lines of M-Left and M-Right, and follow the follow button's jump.
++	switchPrev, switchNext, follow string
++	// button is the line of a click on a button range.
++	button string
++	// slackToggle is the line of a click on a Slack toggle, and slackState the Slack toggles' state job.
++	slackToggle, slackState string
++	// remoteControlClick is the line of a click on the RC button, and remoteControlState the RC button's state job.
++	remoteControlClick, remoteControlState string
++}
++
++// bindingLinesLocked returns the shell lines the bindings run and the toggles' state jobs read.
++// Every line is empty when the socket path or the tmux path cannot be resolved.
++// The switch, follow and button lines are empty together when this binary cannot be resolved.
+ // The two Slack lines are empty together when either cannot be composed, as under a test binary,
+-// and the other four are still returned then.
+-func (e *Engine) switchBindingCommandsLocked() (prev, next, follow, button, slackToggle, slackState string) {
++// and so are the two RC lines; the other lines are still returned then.
++func (e *Engine) bindingLinesLocked() bindingLines {
+ 	socketPath, err := e.tmux.output("display-message", "-p", "#{socket_path}")
+ 	socketPath = strings.TrimSpace(socketPath)
+ 	if err != nil || socketPath == "" {
+ 		logger.Warn("reed: could not read the server's socket path, pinning no session-switch binding", "socket", e.Socket(), "err", err)
+-		return "", "", "", "", "", ""
++		return bindingLines{}
+ 	}
+ 	tmuxPath, err := exec.LookPath(e.cfg.Tmux)
+ 	if err == nil {
+@@ -269,20 +292,26 @@ func (e *Engine) switchBindingCommandsLocked() (prev, next, follow, button, slac
+ 	}
+ 	if err != nil {
+ 		logger.Warn("reed: could not resolve the tmux binary, pinning no session-switch binding", "tmux", e.cfg.Tmux, "err", err)
+-		return "", "", "", "", "", ""
++		return bindingLines{}
+ 	}
+ 	sh := shell.ForGOOS()
++	var lines bindingLines
+ 	slackToggle, slackToggleOK := composeSlackToggleCommand(sh, e.executablePath, socketPath, tmuxPath)
+ 	slackState, slackStateOK := composeSlackStateCommand(sh, e.executablePath)
+-	if !slackToggleOK || !slackStateOK {
+-		slackToggle, slackState = "", ""
++	if slackToggleOK && slackStateOK {
++		lines.slackToggle, lines.slackState = slackToggle, slackState
++	}
++	remoteControlClick, remoteControlClickOK := composeRemoteControlClickCommand(sh, e.executablePath, socketPath, tmuxPath)
++	remoteControlState, remoteControlStateOK := composeRemoteControlStateCommand(sh, e.executablePath)
++	if remoteControlClickOK && remoteControlStateOK {
++		lines.remoteControlClick, lines.remoteControlState = remoteControlClick, remoteControlState
+ 	}
+ 	prev, prevOK := composeSwitchCommand(sh, e.executablePath, false, socketPath, tmuxPath)
+ 	next, nextOK := composeSwitchCommand(sh, e.executablePath, true, socketPath, tmuxPath)
+ 	follow, followOK := composeFollowCommand(sh, e.executablePath, socketPath, tmuxPath)
+ 	button, buttonOK := composeButtonCommand(sh, e.executablePath, socketPath, tmuxPath)
+-	if !prevOK || !nextOK || !followOK || !buttonOK {
+-		return "", "", "", "", slackToggle, slackState
++	if prevOK && nextOK && followOK && buttonOK {
++		lines.switchPrev, lines.switchNext, lines.follow, lines.button = prev, next, follow, button
+ 	}
+-	return prev, next, follow, button, slackToggle, slackState
++	return lines
+ }
+diff --git a/internal/reedengine/bindings_integration_test.go b/internal/reedengine/bindings_integration_test.go
+index 5ef1f1e0..9760dc8c 100644
+--- a/internal/reedengine/bindings_integration_test.go
++++ b/internal/reedengine/bindings_integration_test.go
+@@ -53,8 +53,9 @@ func newBindingsFixture(t *testing.T) *bindingsFixture {
+ 	}
+ 	recordPath := filepath.Join(t.TempDir(), "recorded-args")
+ 	scriptPath := filepath.Join(scriptDir, "lym-recorder")
+-	// The bar's Slack state job also runs this script, as `slack bar`, at every redraw; it records nothing for that.
+-	script := "#!/bin/sh\n[ \"$1\" = slack ] && exit 0\nprintf '%s\\n' \"$@\" > " + recordPath + "\n"
++	// The bar's state jobs also run this script, as `slack bar` and `orch rc-bar`, at every redraw.
++	// It records nothing for those.
++	script := "#!/bin/sh\ncase \"$1\" in slack|orch) exit 0;; esac\nprintf '%s\\n' \"$@\" > " + recordPath + "\n"
+ 	if err := os.WriteFile(scriptPath, []byte(script), 0o755); err != nil {
+ 		t.Fatalf("write recorder script: %v", err)
+ 	}
+diff --git a/internal/reedengine/bindings_test.go b/internal/reedengine/bindings_test.go
+index 0d69394d..51a18fb9 100644
+--- a/internal/reedengine/bindings_test.go
++++ b/internal/reedengine/bindings_test.go
+@@ -20,6 +20,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++//testtiming:keep pins the exact bind-key argvs, branch order and separator count that the pin test only checks for presence
+ func TestBindingArgvs_BindsTheFiveAltKeysAndTheStatusClickInTheRootTableOnly(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -37,7 +38,7 @@ func TestBindingArgvs_BindsTheFiveAltKeysAndTheStatusClickInTheRootTableOnly(t *
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			argvs := bindingArgvs(tt.prev, tt.next, false, true, true)
++			argvs := bindingArgvs(tt.prev, tt.next, false, true, true, true)
+ 			if want := []string{"unbind-key", "-n", "M-z"}; !slices.Equal(argvs[0], want) {
+ 				t.Fatalf("first binding argv = %q, want %q ahead of every bind-key", argvs[0], want)
+ 			}
+@@ -58,7 +59,7 @@ func TestBindingArgvs_BindsTheFiveAltKeysAndTheStatusClickInTheRootTableOnly(t *
+ 		t.Parallel()
+ 
+ 		got := map[string][]string{}
+-		for _, argv := range bindingArgvs(prev, next, true, true, true) {
++		for _, argv := range bindingArgvs(prev, next, true, true, true, true) {
+ 			got[argv[2]] = argv
+ 		}
+ 		if want := []string{"bind-key", "-n", "M-Left", "run-shell", "-b", prev}; !slices.Equal(got["M-Left"], want) {
+@@ -73,7 +74,7 @@ func TestBindingArgvs_BindsTheFiveAltKeysAndTheStatusClickInTheRootTableOnly(t *
+ 		t.Parallel()
+ 
+ 		got := map[string][]string{}
+-		for _, argv := range bindingArgvs(prev, next, true, true, true) {
++		for _, argv := range bindingArgvs(prev, next, true, true, true, true) {
+ 			got[argv[2]] = argv
+ 		}
+ 		want := map[string][]string{
+@@ -90,9 +91,9 @@ func TestBindingArgvs_BindsTheFiveAltKeysAndTheStatusClickInTheRootTableOnly(t *
+ 	t.Run("the status click dispatches on every range type", func(t *testing.T) {
+ 		t.Parallel()
+ 
+-		click := clickArgv(t, bindingArgvs(prev, next, true, true, true))
++		click := clickArgv(t, bindingArgvs(prev, next, true, true, true, true))
+ 		joined := strings.Join(click, " ")
+-		for _, rangeType := range []string{"shell", "window", "session", "follow"} {
++		for _, rangeType := range []string{"shell", "window", "session", "follow", "rc"} {
+ 			if !strings.Contains(joined, "#{==:#{mouse_status_range},"+rangeType+"}") {
+ 				t.Errorf("status click binding %q does not dispatch on range %q", joined, rangeType)
+ 			}
+@@ -100,33 +101,35 @@ func TestBindingArgvs_BindsTheFiveAltKeysAndTheStatusClickInTheRootTableOnly(t *
+ 		if strings.Contains(joined, "mouse_status_range},pane}") {
+ 			t.Errorf("status click binding %q dispatches on the retired pane range", joined)
+ 		}
+-		// The listed branches, the follow branch, the button branch and the Slack toggle branch are joined by separators.
++		// Separators join the listed, follow, button, Slack toggle and RC branches.
+ 		// There is one separator fewer than there are branches.
+-		if got := strings.Count(joined, `\;`); got != len(statusClickBranches)+2 {
+-			t.Errorf("status click binding joins its branches with %d escaped separators, want %d", got, len(statusClickBranches)+2)
++		if got := strings.Count(joined, `\;`); got != len(statusClickBranches)+3 {
++			t.Errorf("status click binding joins its branches with %d escaped separators, want %d", got, len(statusClickBranches)+3)
+ 		}
+ 	})
+ 
+-	t.Run("the button and Slack toggle branches each end the click only when its line is pinned", func(t *testing.T) {
++	t.Run("the button, Slack toggle and RC branches each end the click only when its line is pinned", func(t *testing.T) {
+ 		t.Parallel()
+ 
+ 		buttonBranch := []string{`\;`, "if-shell", "-F", "#{m:lymbtn*,#{mouse_status_range}}", `run-shell -b "#{E:@lym_button_command}"`}
+ 		slackBranch := []string{`\;`, "if-shell", "-F", "#{||:#{==:#{mouse_status_range},slack},#{==:#{mouse_status_range},away}}", `run-shell -b "#{E:@lym_slack_toggle_command}"`}
++		rcBranch := []string{`\;`, "if-shell", "-F", "#{==:#{mouse_status_range},rc}", `run-shell -b "#{E:@lym_rc_click_command}"`}
+ 		tests := []struct {
+-			name                    string
+-			buttonClick, slackClick bool
+-			wantTail                []string
++			name                             string
++			buttonClick, slackClick, rcClick bool
++			wantTail                         []string
+ 		}{
+-			{"Both", true, true, slices.Concat(buttonBranch, slackBranch)},
+-			{"ButtonOnly", true, false, buttonBranch},
+-			{"SlackOnly", false, true, slackBranch},
+-			{"Neither", false, false, nil},
++			{"All", true, true, true, slices.Concat(buttonBranch, slackBranch, rcBranch)},
++			{"ButtonOnly", true, false, false, buttonBranch},
++			{"SlackOnly", false, true, false, slackBranch},
++			{"RCOnly", false, false, true, rcBranch},
++			{"None", false, false, false, nil},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+ 				t.Parallel()
+ 
+-				click := clickArgv(t, bindingArgvs(prev, next, true, tt.buttonClick, tt.slackClick))
++				click := clickArgv(t, bindingArgvs(prev, next, true, tt.buttonClick, tt.slackClick, tt.rcClick))
+ 				followAt := slices.Index(click, followClickCommand(true))
+ 				if followAt < 0 {
+ 					t.Fatalf("click binding %q holds no follow branch", click)
+@@ -141,7 +144,7 @@ func TestBindingArgvs_BindsTheFiveAltKeysAndTheStatusClickInTheRootTableOnly(t *
+ 	t.Run("the shell and window clicks write follow off first and the session click does not", func(t *testing.T) {
+ 		t.Parallel()
+ 
+-		click := clickArgv(t, bindingArgvs(prev, next, true, true, true))
++		click := clickArgv(t, bindingArgvs(prev, next, true, true, true, true))
+ 		for _, rangeType := range []string{"shell", "window"} {
+ 			if got := clickBranchCommand(t, click, rangeType); !strings.HasPrefix(got, "set-option @lym_follow off ; ") {
+ 				t.Errorf("%s click command = %q, want it to start with the follow-off write", rangeType, got)
+@@ -155,13 +158,13 @@ func TestBindingArgvs_BindsTheFiveAltKeysAndTheStatusClickInTheRootTableOnly(t *
+ 	t.Run("the follow click toggles the state and runs the jump line only when it is pinned", func(t *testing.T) {
+ 		t.Parallel()
+ 
+-		withJump := clickBranchCommand(t, clickArgv(t, bindingArgvs(prev, next, true, true, true)), "follow")
++		withJump := clickBranchCommand(t, clickArgv(t, bindingArgvs(prev, next, true, true, true, true)), "follow")
+ 		wantWithJump := `if-shell -F '#{==:#{@lym_follow},off}' 'set-option @lym_follow on ; run-shell -b "#{E:@lym_follow_command}"' 'set-option @lym_follow off'`
+ 		if withJump != wantWithJump {
+ 			t.Errorf("follow click command with the jump pinned = %q, want %q", withJump, wantWithJump)
+ 		}
+ 
+-		withoutJump := clickBranchCommand(t, clickArgv(t, bindingArgvs(prev, next, false, true, true)), "follow")
++		withoutJump := clickBranchCommand(t, clickArgv(t, bindingArgvs(prev, next, false, true, true, true)), "follow")
+ 		wantWithoutJump := `if-shell -F '#{==:#{@lym_follow},off}' 'set-option @lym_follow on' 'set-option @lym_follow off'`
+ 		if withoutJump != wantWithoutJump {
+ 			t.Errorf("follow click command without the jump = %q, want %q", withoutJump, wantWithoutJump)
+@@ -237,12 +240,12 @@ func TestPinGlobalLineLocked(t *testing.T) {
+ 	}
+ }
+ 
+-// TestPinBindingsLocked_PinsTheSlackLinesOnlyWhenEverythingResolves pins the two Slack options.
+-// It also pins the click's toggle branch.
+-// A resolved socket, tmux binary and executable pin the toggle click line and the state line and bind the toggle branch.
+-// Any one failing to resolve unsets both lines and binds no toggle branch.
+-// An executable that resolves to this test binary unsets both lines too and pins no button line.
+-func TestPinBindingsLocked_PinsTheSlackLinesOnlyWhenEverythingResolves(t *testing.T) {
++// TestPinBindingsLocked_PinsTheToggleLinesOnlyWhenEverythingResolves pins the two Slack options and the two RC options.
++// It also pins the click's toggle branches.
++// A resolved socket, tmux binary and executable pin each toggle's click line and state line and bind its branch.
++// Any one failing to resolve unsets every toggle line and binds no toggle branch.
++// An executable that resolves to this test binary unsets them too and pins no button line.
++func TestPinBindingsLocked_PinsTheToggleLinesOnlyWhenEverythingResolves(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	if runtime.GOOS == "windows" {
+@@ -280,16 +283,24 @@ func TestPinBindingsLocked_PinsTheSlackLinesOnlyWhenEverythingResolves(t *testin
+ 			sh := shell.ForGOOS()
+ 			wantToggle, _ := composeSlackToggleCommand(sh, tt.executable, socketPath, tmuxPath)
+ 			wantState, _ := composeSlackStateCommand(sh, tt.executable)
+-			var wantToggleCall, wantStateCall []string
+-			if tt.wantResolved {
+-				wantToggleCall = []string{"set-option", "-g", slackToggleCommandOption, wantToggle}
+-				wantStateCall = []string{"set-option", "-g", slackStateCommandOption, wantState}
+-			} else {
+-				wantToggleCall = []string{"set-option", "-gu", slackToggleCommandOption}
+-				wantStateCall = []string{"set-option", "-gu", slackStateCommandOption}
++			wantRCClick, _ := composeRemoteControlClickCommand(sh, tt.executable, socketPath, tmuxPath)
++			wantRCState, _ := composeRemoteControlStateCommand(sh, tt.executable)
++			lines := []struct{ option, line string }{
++				{slackToggleCommandOption, wantToggle},
++				{slackStateCommandOption, wantState},
++				{remoteControlClickCommandOption, wantRCClick},
++				{remoteControlStateCommandOption, wantRCState},
++			}
++			var wantCalls [][]string
++			for _, line := range lines {
++				if tt.wantResolved {
++					wantCalls = append(wantCalls, []string{"set-option", "-g", line.option, line.line})
++				} else {
++					wantCalls = append(wantCalls, []string{"set-option", "-gu", line.option})
++				}
+ 			}
+ 			setOptions := fake.ArgvFor("set-option")
+-			for _, want := range [][]string{wantToggleCall, wantStateCall} {
++			for _, want := range wantCalls {
+ 				if !slices.ContainsFunc(setOptions, func(call []string) bool { return slices.Equal(call, want) }) {
+ 					t.Errorf("pinBindingsLocked set-option calls = %q; want %q among them", setOptions, want)
+ 				}
+@@ -316,8 +327,10 @@ func TestPinBindingsLocked_PinsTheSlackLinesOnlyWhenEverythingResolves(t *testin
+ 				}
+ 			}
+ 			joinedClick := strings.Join(clickArgv(t, fake.ArgvFor("bind-key")), " ")
+-			if got := strings.Contains(joinedClick, "#{E:"+slackToggleCommandOption+"}"); got != tt.wantResolved {
+-				t.Errorf("click binding %q holds the Slack toggle branch = %v; want %v", joinedClick, got, tt.wantResolved)
++			for _, option := range []string{slackToggleCommandOption, remoteControlClickCommandOption} {
++				if got := strings.Contains(joinedClick, "#{E:"+option+"}"); got != tt.wantResolved {
++					t.Errorf("click binding %q holds the branch running %s = %v; want %v", joinedClick, option, got, tt.wantResolved)
++				}
+ 			}
+ 		})
+ 	}
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index 5dbeb7ed..6e40c3f3 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -188,7 +188,7 @@
+ // It renders as the plain window-button style.
+ // A window carrying @lym_hidden gets no button, and no Go decision reads @strand_color or @lym_unseen.
+ // Line 2 lists the sessions, then, right-aligned, the check mark and the time.
+-// Line 3 starts with the follow button, then the slack and away toggles, then the action row.
++// Line 3 starts with the follow button, then the slack toggle, the RC button and the away toggle, then the action row.
+ // The follow button is a range=user|follow button labelled follow.
+ // It is lit green while the current session's @lym_follow is not off and unlit while it is.
+ // The toggles are range=user|slack and range=user|away buttons, each lit green while its state is on.
+@@ -199,6 +199,9 @@
+ // The geometry pins set the redraw interval (status-interval) to five seconds.
+ // So a change made by any route, a Slack text or a hook included, shows within that interval.
+ // A toggle's click redraws its client's bar at once.
++// The RC button is a range=user|rc button labelled RC.
++// It is drawn while its state line holds RemoteControlLit or RemoteControlUnlit, and lit green on RemoteControlLit.
++// It reads its own `#()` job: the line `lym orch rc-bar` that the server-global option @lym_rc_state_command holds.
+ //
+ // The navigation bindings (bindings.go) are root-table bindings on the hub's reed server.
+ // pinBindingsLocked issues them at the end of the geometry pins, so boot and every attach pre-flight pin them.
+@@ -233,13 +236,16 @@
+ // a session button switches the client to that session;
+ // the follow button toggles the follow state;
+ // a button range named by buttonRangePrefix runs `lym reed button`;
+-// and a Slack toggle runs `lym slack toggle slack|away` from the session's run directory.
+-// That line (panebin.go's composeSlackToggleCommand) rides the server-global option @lym_slack_toggle_command.
++// a Slack toggle runs `lym slack toggle slack|away` from the session's run directory;
++// and the RC button runs `lym orch rc-on` from there.
++// The Slack line (panebin.go's composeSlackToggleCommand) rides the server-global option @lym_slack_toggle_command.
+ // It is pinned and unset together with the Slack state line, apart from the other lines.
+-// It carries the socket, tmux and client the verb redraws through ShowToggleOutcome.
+-// Neither Slack line is pinned when the resolved binary is a running test binary.
+-// tmux runs the state job at every redraw.
+-// A test binary given `slack bar` runs its whole suite, whose sessions would pin the same job again.
++// The RC line (panebin.go's composeRemoteControlClickCommand) rides @lym_rc_click_command.
++// It is pinned and unset together with the RC state line the same way.
++// Each toggle line carries the socket, tmux and client the verb redraws through ShowToggleOutcome.
++// Neither the Slack nor the RC lines are pinned when the resolved binary is a running test binary.
++// tmux runs the state jobs at every redraw.
++// A test binary given `slack bar` or `orch rc-bar` runs its whole suite, whose sessions would pin the same job again.
+ // The button line (panebin.go's composeButtonCommand) rides the server-global option @lym_button_command.
+ // The option is set when the line resolves and unset otherwise,
+ // and the one global binding resolves it through `#{E:...}` with the session's own options.
+diff --git a/internal/reedengine/panebin.go b/internal/reedengine/panebin.go
+index 190214fd..e9edaae4 100644
+--- a/internal/reedengine/panebin.go
++++ b/internal/reedengine/panebin.go
+@@ -263,6 +263,47 @@ func composeSlackStateCommand(sh shell.Shell, executablePath func() (string, err
+ 	return strings.ReplaceAll(sh.Invoke(exe), "#", "##") + " slack bar --dir #{" + buttonDirOption + "}", true
+ }
+ 
++// composeRemoteControlClickCommand returns the shell line the click binding runs for the RC button, on sh's dialect.
++// It changes into the session's run directory, as composeButtonCommand's line does.
++// Then it runs the absolute path of this binary with `orch rc-on`.
++// The line also carries the told socket and tmux paths and the clicking client, so the verb can redraw its bar.
++// Every pinned token is quoted once and then has each # doubled, since the click format-expands the line.
++// #{q:client_name} is left for that expansion as its own word.
++// The output of both steps is discarded and the line ends with status zero, so tmux opens no view mode.
++// An executable path that does not resolve, or names the running test binary, logs a named logger.Warn.
++// It then returns false, so the caller pins no RC click.
++func composeRemoteControlClickCommand(sh shell.Shell, executablePath func() (string, error), socketPath, tmuxPath string) (string, bool) {
++	exe, err := selfexec.ResolveLymBinary(executablePath)
++	if err != nil {
++		logger.Warn("reed: could not resolve this binary, pinning no RC click", "err", err)
++		return "", false
++	}
++	pinned := func(token string) string { return strings.ReplaceAll(token, "#", "##") }
++	words := []string{
++		pinned(sh.Invoke(exe)), "orch", RemoteControlOnVerb,
++		"--socket", pinned(sh.Quote(socketPath)),
++		"--tmux", pinned(sh.Quote(tmuxPath)),
++		"--client", "#{q:client_name}",
++	}
++	return sh.Chain(sh.DiscardOutput(sh.ChangeDirToWord("#{"+buttonDirOption+"}")), sh.DiscardOutput(strings.Join(words, " ")), sh.ExitSuccess()), true
++}
++
++// composeRemoteControlStateCommand returns the shell line the RC button's state job runs, on sh's dialect:
++// the absolute path of this binary with `orch rc-bar --dir` and the session's run directory.
++// It prints the remote control lym last set for the orch strand that the worktree there records.
++// The job's format expands the line once more, so the run directory's session option is left for that expansion,
++// and the pinned path has each # doubled.
++// An executable path that does not resolve, or names the running test binary, logs a named logger.Warn.
++// It then returns false, so no RC button is drawn.
++func composeRemoteControlStateCommand(sh shell.Shell, executablePath func() (string, error)) (string, bool) {
++	exe, err := selfexec.ResolveLymBinary(executablePath)
++	if err != nil {
++		logger.Warn("reed: could not resolve this binary, pinning no RC state line", "err", err)
++		return "", false
++	}
++	return strings.ReplaceAll(sh.Invoke(exe), "#", "##") + " orch " + RemoteControlBarVerb + " --dir #{" + buttonDirOption + "}", true
++}
++
+ // The flags a button's prompt re-enters the click verb with.
+ // buttonStageAnswered is passed after the ask prompt, and buttonStageConfirmed after a yes to the confirm prompt.
+ const (
+diff --git a/internal/reedengine/panebin_test.go b/internal/reedengine/panebin_test.go
+index 1eabb85f..a0776db1 100644
+--- a/internal/reedengine/panebin_test.go
++++ b/internal/reedengine/panebin_test.go
+@@ -391,6 +391,8 @@ func TestStageLaunchScript_WriteFailureDegrades(t *testing.T) {
+ // The pinned tokens are quoted once and have every # doubled.
+ // #{q:client_name} or #{q:session_name} stays an unquoted word; an unresolvable executable pins nothing.
+ // It captures the process-global logger, so it does not run in parallel.
++//
++//testtiming:keep pins the exact composed shell lines per dialect and the named warning of each unresolvable executable
+ func TestComposeSwitchCommand(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	const (
+@@ -510,6 +512,34 @@ func TestComposeSwitchCommand(t *testing.T) {
+ 			composeSlackStateCommand,
+ 			`& '/opt/it''s##here/lym' slack bar --dir #{@lym_button_dir}`,
+ 		},
++		{
++			"rc click/posix",
++			shell.Posix(),
++			func(sh shell.Shell, executablePath func() (string, error)) (string, bool) {
++				return composeRemoteControlClickCommand(sh, executablePath, socketPath, tmuxPath)
++			},
++			`cd #{@lym_button_dir} >/dev/null 2>&1; '/opt/it'\''s##here/lym' orch rc-on --socket '/tmp/tmux-1000/it'\''s##socket' --tmux '/usr/local/it'\''s##bin/tmux' --client #{q:client_name} >/dev/null 2>&1; exit 0`,
++		},
++		{
++			"rc click/pwsh",
++			shell.Pwsh(),
++			func(sh shell.Shell, executablePath func() (string, error)) (string, bool) {
++				return composeRemoteControlClickCommand(sh, executablePath, socketPath, tmuxPath)
++			},
++			`Set-Location -LiteralPath #{@lym_button_dir} *> $null; & '/opt/it''s##here/lym' orch rc-on --socket '/tmp/tmux-1000/it''s##socket' --tmux '/usr/local/it''s##bin/tmux' --client #{q:client_name} *> $null; exit 0`,
++		},
++		{
++			"rc state/posix",
++			shell.Posix(),
++			composeRemoteControlStateCommand,
++			`'/opt/it'\''s##here/lym' orch rc-bar --dir #{@lym_button_dir}`,
++		},
++		{
++			"rc state/pwsh",
++			shell.Pwsh(),
++			composeRemoteControlStateCommand,
++			`& '/opt/it''s##here/lym' orch rc-bar --dir #{@lym_button_dir}`,
++		},
+ 	}
+ 	for _, tt := range slackTests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -542,6 +572,20 @@ func TestComposeSwitchCommand(t *testing.T) {
+ 			},
+ 			"pinning no Slack state line",
+ 		},
++		{
++			"rc click",
++			func(executablePath func() (string, error)) (string, bool) {
++				return composeRemoteControlClickCommand(shell.Posix(), executablePath, socketPath, tmuxPath)
++			},
++			"pinning no RC click",
++		},
++		{
++			"rc state",
++			func(executablePath func() (string, error)) (string, bool) {
++				return composeRemoteControlStateCommand(shell.Posix(), executablePath)
++			},
++			"pinning no RC state line",
++		},
+ 	}
+ 	for _, tt := range slackUnresolvable {
+ 		t.Run(tt.name+" with an unresolvable executable pins nothing", func(t *testing.T) {
+diff --git a/internal/reedengine/windowsize_test.go b/internal/reedengine/windowsize_test.go
+index 5fcc4229..04538210 100644
+--- a/internal/reedengine/windowsize_test.go
++++ b/internal/reedengine/windowsize_test.go
+@@ -27,7 +27,7 @@ func resizedUnpinCount() int {
+ // With no session-switch command and no follow jump, that is every binding argv but the Alt+z unbind.
+ func bindKeyArgvCount() int {
+ 	count := 0
+-	for _, argv := range bindingArgvs("", "", false, false, false) {
++	for _, argv := range bindingArgvs("", "", false, false, false, false) {
+ 		if argv[0] == "bind-key" {
+ 			count++
+ 		}
+@@ -88,6 +88,8 @@ func TestPinGeometryOptionsLocked(t *testing.T) {
+ 			{"set-option", "-gu", "@lym_button_command"},
+ 			{"set-option", "-gu", "@lym_slack_toggle_command"},
+ 			{"set-option", "-gu", "@lym_slack_state_command"},
++			{"set-option", "-gu", "@lym_rc_click_command"},
++			{"set-option", "-gu", "@lym_rc_state_command"},
+ 			// The test binary carries no VCS stamp, so the bindings' build stamp is unset.
+ 			{"set-option", "-gu", "@lym_bindings_build"},
+ 		}
+@@ -114,6 +116,8 @@ func TestPinGeometryOptionsLocked(t *testing.T) {
+ 			{"set-option", "-gu", "@lym_button_command"},
+ 			{"set-option", "-gu", "@lym_slack_toggle_command"},
+ 			{"set-option", "-gu", "@lym_slack_state_command"},
++			{"set-option", "-gu", "@lym_rc_click_command"},
++			{"set-option", "-gu", "@lym_rc_state_command"},
+ 			{"set-option", "-gu", "@lym_bindings_build"},
+ 		}
+ 		if len(calls) < len(wantTail)+len(wantLast) {
+@@ -175,7 +179,7 @@ func TestPinGeometryOptionsLocked(t *testing.T) {
+ 		}
+ 		// The follow branch lives inside the one click argv, so only the argv itself shows that no jump is bound.
+ 		var wantClick []string
+-		for _, argv := range bindingArgvs("", "", false, false, false) {
++		for _, argv := range bindingArgvs("", "", false, false, false, false) {
+ 			if argv[2] == "MouseDown1Status" {
+ 				wantClick = argv
+ 			}
+@@ -272,8 +276,8 @@ func TestPinGeometryOptionsLocked(t *testing.T) {
+ 			wantCalls int
+ 			wantWarn  string
+ 		}{
+-			{"Pair", false, func(call int, _ []string) bool { return call == 1 }, 14, ""},
+-			{"PrimeMark", true, func(_ int, args []string) bool { return slices.Contains(args, primeSessionOption) }, 15, primeSessionOption},
++			{"Pair", false, func(call int, _ []string) bool { return call == 1 }, 16, ""},
++			{"PrimeMark", true, func(_ int, args []string) bool { return slices.Contains(args, primeSessionOption) }, 17, primeSessionOption},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+@@ -331,8 +335,8 @@ func TestPinGeometryOptionsLocked(t *testing.T) {
+ 
+ 		e.pinGeometryOptionsLocked(exactSessionWindowTarget(e.SessionName()), "")
+ 
+-		if got := fake.Count("set-option"); got != 14 {
+-			t.Errorf("set-option calls = %d, want 14 (every pin still attempted)", got)
++		if got := fake.Count("set-option"); got != 16 {
++			t.Errorf("set-option calls = %d, want 16 (every pin still attempted)", got)
+ 		}
+ 		if got, want := fake.Count("bind-key"), bindKeyArgvCount(); got != want {
+ 			t.Errorf("bind-key calls = %d, want all %d still issued", got, want)
+diff --git a/internal/shuttleengine/claudeengine/claudeengine.go b/internal/shuttleengine/claudeengine/claudeengine.go
+index 20d02831..62712ff6 100644
+--- a/internal/shuttleengine/claudeengine/claudeengine.go
++++ b/internal/shuttleengine/claudeengine/claudeengine.go
+@@ -268,8 +268,8 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 		launchArg, promptLine = skillLoadMessage, pointer
+ 	}
+ 	return shuttleengine.Launch{
+-		Cmd:        buildLaunchCmd(sh, bin, launchArg, settingsPath, sessionID, resolvedModel, spec.Effort, appendPromptPath, envFilePath, promptCacheTTL, resume, skipPermissions, spec.ForkSubagents),
+-		ResumeCmd:  buildResumeCmd(sh, bin, settingsPath, sessionID, resolvedModel, spec.Effort, appendPromptPath, envFilePath, promptCacheTTL, skipPermissions, spec.ForkSubagents),
++		Cmd:        buildLaunchCmd(sh, bin, launchArg, settingsPath, sessionID, resolvedModel, spec.Effort, appendPromptPath, envFilePath, promptCacheTTL, spec.RemoteControlName, resume, skipPermissions, spec.ForkSubagents),
++		ResumeCmd:  buildResumeCmd(sh, bin, settingsPath, sessionID, resolvedModel, spec.Effort, appendPromptPath, envFilePath, promptCacheTTL, spec.RemoteControlName, skipPermissions, spec.ForkSubagents),
+ 		SessionID:  sessionID,
+ 		PromptLine: promptLine,
+ 
+diff --git a/internal/shuttleengine/claudeengine/command.go b/internal/shuttleengine/claudeengine/command.go
+index 4fc9b46c..820522c6 100644
+--- a/internal/shuttleengine/claudeengine/command.go
++++ b/internal/shuttleengine/claudeengine/command.go
+@@ -326,8 +326,9 @@ func envFileContentFor(goos string) string {
+ // It names the session with --name as a reference to LYM_STRAND_NAME, not a value.
+ // Shuttle builds this line before reed forms the strand's name,
+ // so the pane shell expands the reference from the export that reed's launch script makes.
++// A non-empty remoteControlName adds --remote-control naming it, so the session starts with remote control on.
+ // It wraps the finished line in the envFileKey assignment naming envFilePath, so that assignment leads the line.
+-func buildLaunchCmd(sh shell.Shell, bin, pointer, settingsPath, sessionID, model, effort, appendPromptPath, envFilePath, promptCacheTTL string, resume, skipPermissions, forkSubagents bool) string {
++func buildLaunchCmd(sh shell.Shell, bin, pointer, settingsPath, sessionID, model, effort, appendPromptPath, envFilePath, promptCacheTTL, remoteControlName string, resume, skipPermissions, forkSubagents bool) string {
+ 	sessionFlag := " --session-id "
+ 	if resume {
+ 		sessionFlag = " --resume "
+@@ -350,6 +351,9 @@ func buildLaunchCmd(sh shell.Shell, bin, pointer, settingsPath, sessionID, model
+ 	if appendPromptPath != "" {
+ 		cmd += " --append-system-prompt-file " + sh.Quote(appendPromptPath)
+ 	}
++	if remoteControlName != "" {
++		cmd += " --remote-control " + sh.Quote(remoteControlName)
++	}
+ 	if forkSubagents {
+ 		cmd = sh.WithEnv(forkSubagentEnvKey, "1", cmd)
+ 	}
+@@ -537,13 +541,15 @@ var _ shuttleengine.SessionOpener = (*Claude)(nil)
+ // It carries --name as a reference to agentname.StrandNameEnv, not a value:
+ // the strand's name is formed after the line is built, so the pane shell expands the variable at run time.
+ // A session rebuild replays this string verbatim, so a line without --name would bring Claude back unnamed.
++// A non-empty remoteControlName adds --remote-control naming it, as the launch line does,
++// so a rebuilt session comes back with remote control on.
+ // When forkSubagents is true, the line is wrapped to keep the fork-subagent capability.
+ // It carries the promptCacheTTLEnvKey assignment too, since the resumed claude inherits nothing from the launch:
+ // without it the session falls back to Claude Code's default TTL.
+ // It carries the bashMaxTimeoutEnvKey assignment too, for the same reason.
+ // It leads with the envFileKey assignment naming envFilePath:
+ // a resumed session keeps the default stdin of its Bash tool.
+-func buildResumeCmd(sh shell.Shell, bin, settingsPath, sessionID, model, effort, appendPromptPath, envFilePath, promptCacheTTL string, skipPermissions, forkSubagents bool) string {
++func buildResumeCmd(sh shell.Shell, bin, settingsPath, sessionID, model, effort, appendPromptPath, envFilePath, promptCacheTTL, remoteControlName string, skipPermissions, forkSubagents bool) string {
+ 	cmd := sh.Invoke(bin) + " --resume " + sh.Quote(sessionID) + " --settings " + sh.Quote(settingsPath) +
+ 		" --name " + sh.EnvRef(agentname.StrandNameEnv)
+ 	if model != "" {
+@@ -558,6 +564,9 @@ func buildResumeCmd(sh shell.Shell, bin, settingsPath, sessionID, model, effort,
+ 	if appendPromptPath != "" {
+ 		cmd += " --append-system-prompt-file " + sh.Quote(appendPromptPath)
+ 	}
++	if remoteControlName != "" {
++		cmd += " --remote-control " + sh.Quote(remoteControlName)
++	}
+ 	if forkSubagents {
+ 		cmd = sh.WithEnv(forkSubagentEnvKey, "1", cmd)
+ 	}
+diff --git a/internal/shuttleengine/claudeengine/command_test.go b/internal/shuttleengine/claudeengine/command_test.go
+index 8f1dbd74..d8d5d750 100644
+--- a/internal/shuttleengine/claudeengine/command_test.go
++++ b/internal/shuttleengine/claudeengine/command_test.go
+@@ -64,9 +64,22 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 		interactive      bool
+ 		forkSubagents    bool
+ 		// promptCacheTTL defaults to 5m when empty.
+-		promptCacheTTL string
+-		want           string
++		promptCacheTTL    string
++		remoteControlName string
++		want              string
+ 	}{
++		{
++			// The remote session's name is quoted as one argument, separators and all.
++			name:              "remote_control_posix",
++			sh:                shell.Posix(),
++			bin:               "claude",
++			promptPath:        "/run/prompt.md",
++			settingsPath:      "/run/settings.json",
++			sessionID:         "abc-123",
++			interactive:       true,
++			remoteControlName: "neve::ly:orch",
++			want:              posixEnvLead + `'claude' 'Read /run/prompt.md in full first; it is your complete, authoritative instructions.' --session-id 'abc-123' --settings '/run/settings.json' --name "${LYM_STRAND_NAME}" --remote-control 'neve::ly:orch'`,
++		},
+ 		{
+ 			name:           "prompt_cache_ttl_one_hour",
+ 			bin:            "claude",
+@@ -327,7 +340,7 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 			if promptCacheTTL == "" {
+ 				promptCacheTTL = "5m"
+ 			}
+-			got := buildLaunchCmd(sh, tt.bin, launchPointer(tt.promptPath), tt.settingsPath, tt.sessionID, tt.model, tt.effort, tt.appendPromptPath, envFilePath, promptCacheTTL, false, !tt.interactive, tt.forkSubagents)
++			got := buildLaunchCmd(sh, tt.bin, launchPointer(tt.promptPath), tt.settingsPath, tt.sessionID, tt.model, tt.effort, tt.appendPromptPath, envFilePath, promptCacheTTL, tt.remoteControlName, false, !tt.interactive, tt.forkSubagents)
+ 			if got != tt.want {
+ 				t.Errorf("buildLaunchCmd(...) = %q; want %q", got, tt.want)
+ 			}
+@@ -758,29 +771,35 @@ func TestBuildResumeCmd(t *testing.T) {
+ 	// it stalls at its first tool dialog with no operator present, which shuttle can only classify as a timeout,
+ 	// and it comes back on the provider default model rather than the pinned one.
+ 	tests := []struct {
+-		name             string
+-		model            string
+-		effort           string
+-		appendPromptPath string
+-		interactive      bool
+-		forkSubagents    bool
+-		ttl              string
+-		want             string
++		name              string
++		model             string
++		effort            string
++		appendPromptPath  string
++		interactive       bool
++		forkSubagents     bool
++		ttl               string
++		remoteControlName string
++		want              string
+ 	}{
+-		{"autonomous_bare", "", "", "", false, false, "5m", pwshEnvLead + `& 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME" --dangerously-skip-permissions`},
+-		{"interactive_bare", "", "", "", true, false, "5m", pwshEnvLead + `& 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME"`},
+-		{"model_and_effort_pinned", "haiku", "low", "", false, false, "5m", pwshEnvLead + `& 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME" --model 'haiku' --effort 'low' --dangerously-skip-permissions`},
+-		{"prompt_file_on_resume", "", "", `C:\run\append-system-prompt.txt`, false, false, "5m", pwshEnvLead + `& 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME" --dangerously-skip-permissions --append-system-prompt-file 'C:\run\append-system-prompt.txt'`},
++		{"autonomous_bare", "", "", "", false, false, "5m", "", pwshEnvLead + `& 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME" --dangerously-skip-permissions`},
++		{"interactive_bare", "", "", "", true, false, "5m", "", pwshEnvLead + `& 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME"`},
++		{"model_and_effort_pinned", "haiku", "low", "", false, false, "5m", "", pwshEnvLead + `& 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME" --model 'haiku' --effort 'low' --dangerously-skip-permissions`},
++		{"prompt_file_on_resume", "", "", `C:\run\append-system-prompt.txt`, false, false, "5m", "", pwshEnvLead + `& 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME" --dangerously-skip-permissions --append-system-prompt-file 'C:\run\append-system-prompt.txt'`},
+ 		{
+ 			// A resumed fork-mode session must keep the fork-subagent capability it launched with.
+-			"fork_mode_on", "", "", "", true, true, "5m",
++			"fork_mode_on", "", "", "", true, true, "5m", "",
+ 			pwshEnvLead + `$env:CLAUDE_CODE_FORK_SUBAGENT = '1'; & 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME"`,
+ 		},
+-		{"prompt_cache_ttl_one_hour", "", "", "", true, false, "1h", `$env:CLAUDE_ENV_FILE = 'C:\run\bash-env.sh'; $env:BASH_MAX_TIMEOUT_MS = '3600000'; $env:CLAUDE_CODE_PROMPT_CACHE_TTL = '1h'; & 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME"`},
++		{"prompt_cache_ttl_one_hour", "", "", "", true, false, "1h", "", `$env:CLAUDE_ENV_FILE = 'C:\run\bash-env.sh'; $env:BASH_MAX_TIMEOUT_MS = '3600000'; $env:CLAUDE_CODE_PROMPT_CACHE_TTL = '1h'; & 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME"`},
++		{
++			// A revived session must come back with the remote control it launched with.
++			"remote_control_on_resume", "", "", "", true, false, "5m", "neve::ly:orch",
++			pwshEnvLead + `& 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME" --remote-control 'neve::ly:orch'`,
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			got := buildResumeCmd(shell.Pwsh(), "claude", `C:\run\settings.json`, "abc-123", tt.model, tt.effort, tt.appendPromptPath, pwshEnvFilePath, tt.ttl, !tt.interactive, tt.forkSubagents)
++			got := buildResumeCmd(shell.Pwsh(), "claude", `C:\run\settings.json`, "abc-123", tt.model, tt.effort, tt.appendPromptPath, pwshEnvFilePath, tt.ttl, tt.remoteControlName, !tt.interactive, tt.forkSubagents)
+ 			if got != tt.want {
+ 				t.Errorf("buildResumeCmd(...) = %q; want %q", got, tt.want)
+ 			}
+@@ -799,7 +818,7 @@ func TestBuildResumeCmd_NoticePosix(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	want := posixEnvLead + `CLAUDE_CODE_FORK_SUBAGENT='1' 'claude' --resume 'abc-123' --settings '/run/settings.json' --name "${LYM_STRAND_NAME}" --dangerously-skip-permissions --append-system-prompt-file '/run/append-system-prompt.txt'`
+ 
+-	got := buildResumeCmd(shell.Posix(), "claude", "/run/settings.json", "abc-123", "", "", "/run/append-system-prompt.txt", posixEnvFilePath, "5m", true, true)
++	got := buildResumeCmd(shell.Posix(), "claude", "/run/settings.json", "abc-123", "", "", "/run/append-system-prompt.txt", posixEnvFilePath, "5m", "", true, true)
+ 	if got != want {
+ 		t.Errorf("buildResumeCmd(...) = %q; want %q", got, want)
+ 	}
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index b8e2898b..07352609 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -503,6 +503,8 @@
+ // The settings set `CLAUDE_CODE_SUBAGENT_EFFORT` to the role's effort on a model the efforts table does not name,
+ // so a subagent whose call names no effort still gets the role's effort instead of Claude Code's default.
+ // A launch whose model-spec names no effort takes `--effort` from the same table, by config role and model alias.
++// A spec that names a remote-control session adds `--remote-control` with that name to the launch and resume lines.
++// RemoteControlSequence types `/remote-control` with a name into a live session.
+ // The standing passages heddle's layers hold for the claude engine follow it, each after a blank line and in order.
+ // They are read through the process-wide passage reader that shuttleengine installs a seam for.
+ // The one-line rule applies to lym's own sentences alone, since passages may span lines,
+diff --git a/internal/shuttleengine/claudeengine/session.go b/internal/shuttleengine/claudeengine/session.go
+index c1aee9bf..d10ffa78 100644
+--- a/internal/shuttleengine/claudeengine/session.go
++++ b/internal/shuttleengine/claudeengine/session.go
+@@ -418,6 +418,20 @@ func (c *Claude) ReloadPluginsSequence() []shuttleengine.PaneInput {
+ 	}
+ }
+ 
++// RemoteControlSequence returns /remote-control with name and its Enter.
++// It has no leading Escape:
++// the caller has just read the input box empty and empties any whitespace in it before the paste.
++// There is no pause between the text and the Enter: the paste path submits them in one tmux invocation.
++func (c *Claude) RemoteControlSequence(name string) []shuttleengine.PaneInput {
++	return []shuttleengine.PaneInput{
++		{Text: "/remote-control " + name},
++		{Key: "Enter"},
++	}
++}
++
++// Compile-time proof that Claude can turn on remote control in a live session.
++var _ shuttleengine.RemoteController = (*Claude)(nil)
++
+ // defaultSkillLoadTimeout bounds one load turn of the whole skill list: a load turn is one short model turn.
+ const defaultSkillLoadTimeout = 2 * time.Minute
+ 
+diff --git a/internal/shuttleengine/claudeengine/session_test.go b/internal/shuttleengine/claudeengine/session_test.go
+index 2effdcb4..61c36cf2 100644
+--- a/internal/shuttleengine/claudeengine/session_test.go
++++ b/internal/shuttleengine/claudeengine/session_test.go
+@@ -379,6 +379,17 @@ func TestReloadPluginsSequence(t *testing.T) {
+ 	}
+ }
+ 
++func TestRemoteControlSequence(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	got := New().RemoteControlSequence("neve::ly:orch")
++	want := []shuttleengine.PaneInput{{Text: "/remote-control neve::ly:orch"}, {Key: "Enter"}}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("RemoteControlSequence(%q) = %#v; want %#v", "neve::ly:orch", got, want)
++	}
++}
++
+ func TestClearInputSequence(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 4c0850e5..3b3bd399 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -450,6 +450,8 @@
+ // Runner.TypeColor sends the same sequence into a live shuttle strand for a caller that colors its own session.
+ // It returns a held color's error, wrapping ErrSessionBusy, so the caller may retry.
+ // Runner.ClearSession, Runner.CompactSession and Runner.ReloadPlugins send their slash commands through the same path.
++// So does Runner.TurnOnRemoteControl.
++// Remote control is the optional RemoteController capability, and an engine without it types nothing for it.
+ // A draft in the box or an active operator holds them with ErrSessionBusy,
+ // so a caller's earlier idle probe never lets them type.
+ // The idle reading takes a box of whitespace as empty, and a provider takes a command behind whitespace as a prompt,
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 1dfd4fb7..79ca5cf8 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -588,3 +588,13 @@ type SessionCycler interface {
+ 	// The sequence starts no turn.
+ 	ReloadPluginsSequence() []PaneInput
+ }
++
++// RemoteController is an optional engine capability:
++// the provider's command that turns on remote control in a live session.
++// An engine without it has no remote control, so a request to turn it on types nothing.
++type RemoteController interface {
++	// RemoteControlSequence returns the key choreography that turns on remote control in a live session under name.
++	// The caller guarantees name is a single line.
++	// The sequence starts no turn.
++	RemoteControlSequence(name string) []PaneInput
++}
+diff --git a/internal/shuttleengine/enginedispatch_test.go b/internal/shuttleengine/enginedispatch_test.go
+index 9675a9bb..aba6de00 100644
+--- a/internal/shuttleengine/enginedispatch_test.go
++++ b/internal/shuttleengine/enginedispatch_test.go
+@@ -124,6 +124,11 @@ func (e *dispatchEngine) ReloadPluginsSequence() []PaneInput {
+ 	return []PaneInput{{Text: "/reload-" + e.name, Submit: true}}
+ }
+ 
++func (e *dispatchEngine) RemoteControlSequence(name string) []PaneInput {
++	e.record("RemoteControlSequence")
++	return []PaneInput{{Text: "/remote-control-" + e.name + " " + name, Submit: true}}
++}
++
+ func (e *dispatchEngine) SkillLoadMessage(skills []string) string {
+ 	e.record("SkillLoadMessage")
+ 	return "LOAD-" + e.name + ":" + strings.Join(skills, ",")
+@@ -151,6 +156,7 @@ func (e *dispatchEngine) OpenLaunch(string, OpenSpec, Config) (Launch, error) {
+ 
+ var (
+ 	_ SessionCycler       = (*dispatchEngine)(nil)
++	_ RemoteController    = (*dispatchEngine)(nil)
+ 	_ SkillLoader         = (*dispatchEngine)(nil)
+ 	_ SessionSignalParser = (*dispatchEngine)(nil)
+ 	_ SessionOpener       = (*dispatchEngine)(nil)
+@@ -261,6 +267,7 @@ func dispatchOps() []dispatchOp {
+ 		{"Runner.LoadSkills", func(r *dispatchRig) error { return r.fx.Runner.LoadSkills("strand-1", []string{"s"}) }, "SkillLoadMessage", ""},
+ 		{"Runner.TypeColor", func(r *dispatchRig) error { return r.fx.Runner.TypeColor("strand-1", segmentcolor.Green) }, "ColorSequence", ""},
+ 		{"Runner.ClearSession", func(r *dispatchRig) error { return r.fx.Runner.ClearSession("strand-1") }, "ClearSessionSequence", ""},
++		{"Runner.TurnOnRemoteControl", func(r *dispatchRig) error { return r.fx.Runner.TurnOnRemoteControl("strand-1", "name") }, "RemoteControlSequence", ""},
+ 		{"Runner.InterruptSettle", func(r *dispatchRig) error {
+ 			got, err := r.fx.Runner.InterruptSettle("strand-1")
+ 			if err == nil && got != 9*time.Millisecond {
+diff --git a/internal/shuttleengine/session.go b/internal/shuttleengine/session.go
+index 2633a021..d40ea58d 100644
+--- a/internal/shuttleengine/session.go
++++ b/internal/shuttleengine/session.go
+@@ -366,6 +366,28 @@ func (r *Runner) ReloadPlugins(guid string) error {
+ 	return r.sendSessionSequence(guid, "", SessionCycler.ReloadPluginsSequence)
+ }
+ 
++// TurnOnRemoteControl sends the provider's remote-control command into the live pane of the run identified by guid.
++// The command carries the session name name.
++// An engine without the RemoteController capability types nothing.
++// It waits for an idle session first,
++// and it fails with ErrSessionBusy while the session or its input box is held.
++// It refuses a name containing a newline, since the name is sent as one line.
++func (r *Runner) TurnOnRemoteControl(guid, name string) error {
++	if r.toldErr != nil {
++		return r.toldErr
++	}
++	if strings.ContainsAny(name, "\r\n") {
++		return fmt.Errorf("shuttle: remote-control name for strand %q spans several lines; it is typed as one line, so join it into one", guid)
++	}
++	return r.sendSessionSequence(guid, "", func(cycler SessionCycler) []PaneInput {
++		controller, ok := cycler.(RemoteController)
++		if !ok {
++			return nil
++		}
++		return controller.RemoteControlSequence(name)
++	})
++}
++
+ // TypeColor sends the provider's color command for color into the live pane of the run identified by guid.
+ // It suits a caller that colors the session itself.
+ // A provider with no color command, or none for color, types nothing.
+diff --git a/internal/shuttleengine/session_test.go b/internal/shuttleengine/session_test.go
+index 9b144a30..e71fe399 100644
+--- a/internal/shuttleengine/session_test.go
++++ b/internal/shuttleengine/session_test.go
+@@ -570,6 +570,10 @@ func (e *slashPasteEngine) ReloadPluginsSequence() []PaneInput {
+ 	return []PaneInput{{Text: "/reload-plugins", Submit: true}}
+ }
+ 
++func (e *slashPasteEngine) RemoteControlSequence(name string) []PaneInput {
++	return []PaneInput{{Text: "/remote-control " + name, Submit: true}}
++}
++
+ func (e *slashPasteEngine) CompactSessionSequence(focus string) []PaneInput {
+ 	return []PaneInput{{Text: "/compact " + focus, Submit: true}}
+ }
+@@ -583,13 +587,14 @@ func (e *slashPasteEngine) ColorSequence(color segmentcolor.Color) []PaneInput {
+ 
+ // parserlessPasteEngine is a paste-path engine with no SessionSignalParser:
+ // it exposes only the capabilities of the engine it wraps that the paste path reads.
+-// Those are Engine, TextPaster, InputBoxReader, InputBoxClearer and SessionCycler.
++// Those are Engine, TextPaster, InputBoxReader, InputBoxClearer, SessionCycler and RemoteController.
+ type parserlessPasteEngine struct {
+ 	Engine
+ 	TextPaster
+ 	InputBoxReader
+ 	InputBoxClearer
+ 	SessionCycler
++	RemoteController
+ }
+ 
+ // clearlessPasteEngine is a paste-path engine with no InputBoxClearer.
+@@ -598,6 +603,7 @@ type clearlessPasteEngine struct {
+ 	TextPaster
+ 	InputBoxReader
+ 	SessionCycler
++	RemoteController
+ }
+ 
+ // pasteEngineShape names which capabilities of the slash paste engine a test hides from the runner.
+@@ -640,9 +646,9 @@ func newSlashPasteRunnerAppending(t *testing.T, box string, active, noColor bool
+ 	var engine Engine = slash
+ 	switch shape {
+ 	case parserlessPasteShape:
+-		engine = parserlessPasteEngine{Engine: slash, TextPaster: slash, InputBoxReader: slash, InputBoxClearer: slash, SessionCycler: slash}
++		engine = parserlessPasteEngine{Engine: slash, TextPaster: slash, InputBoxReader: slash, InputBoxClearer: slash, SessionCycler: slash, RemoteController: slash}
+ 	case clearlessPasteShape:
+-		engine = clearlessPasteEngine{Engine: slash, TextPaster: slash, InputBoxReader: slash, SessionCycler: slash}
++		engine = clearlessPasteEngine{Engine: slash, TextPaster: slash, InputBoxReader: slash, SessionCycler: slash, RemoteController: slash}
+ 	}
+ 	cfg := Config{SubmitSettleMS: 100, SubmitConfirmTimeoutS: 30, SendReadyTimeoutS: 60}
+ 	fx := newFixture(t, appending, engine, withConfig(cfg), withStrand("strand-1"), withClock(clock))
+@@ -929,6 +935,57 @@ func TestRunner_TypeColor_PlaysTheSequenceAndWaitsItOut(t *testing.T) {
+ 	}
+ }
+ 
++// TestRunner_TurnOnRemoteControl_PastesTheNamedCommandThroughTheGuardedSend sends the remote-control command.
++// It goes into a live strand.
++// A pasted `/remote-control <name>` goes through the guarded send path.
++// A name spanning several lines is refused with nothing typed.
++// An engine without the capability types nothing and returns nil.
++// A runner with unusable told paths returns that error before reed is touched.
++func TestRunner_TurnOnRemoteControl_PastesTheNamedCommandThroughTheGuardedSend(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const name = "neve::tst:orch"
++	checkPastedSessionCommand(t, "/remote-control "+name, func(r *Runner) error { return r.TurnOnRemoteControl("strand-1", name) })
++
++	t.Run("a name spanning several lines is refused and nothing is typed", func(t *testing.T) {
++		t.Parallel()
++		for _, multiLine := range []string{"a\nb", "a\r\nb"} {
++			runner, reed, _ := newSlashPasteRunner(t, "", false, false)
++			if err := runner.TurnOnRemoteControl("strand-1", multiLine); err == nil {
++				t.Errorf("TurnOnRemoteControl(%q) = nil error", multiLine)
++			}
++			if len(reed.PasteSubmitCalls) != 0 || len(sentCalls(reed)) != 0 {
++				t.Errorf("typed despite refusal of %q: pastes %+v, sent %v", multiLine, reed.PasteSubmitCalls, sentCalls(reed))
++			}
++		}
++	})
++
++	t.Run("an engine without the capability types nothing", func(t *testing.T) {
++		t.Parallel()
++		reed := &fakeReed{StatusQueue: liveStrandStatus(true), CaptureQueue: []string{"IDLE"}}
++		runner := newFixture(t, reed, readyCyclerEngine(), withStrand("strand-1")).Runner
++		if err := runner.TurnOnRemoteControl("strand-1", name); err != nil {
++			t.Errorf("TurnOnRemoteControl() = %v, want nil", err)
++		}
++		if len(reed.PasteSubmitCalls) != 0 || len(sentCalls(reed)) != 0 {
++			t.Errorf("typed without the capability: pastes %+v, sent %v", reed.PasteSubmitCalls, sentCalls(reed))
++		}
++	})
++
++	t.Run("unusable told paths are returned before reed is touched", func(t *testing.T) {
++		t.Parallel()
++		reed := &fakeReed{StatusQueue: liveStrandStatus(true)}
++		runner := NewRunner(reed, singleEngineSet(&fakeEngine{}), "", t.TempDir(), Config{RunTimeoutMin: 5})
++		if err := runner.TurnOnRemoteControl("strand-1", name); err == nil || !strings.Contains(err.Error(), "empty path") {
++			t.Errorf("TurnOnRemoteControl() = %v, want an error naming the empty path", err)
++		}
++		if len(reed.CallLog) != 0 {
++			t.Errorf("reed touched: %v", reed.CallLog)
++		}
++	})
++}
++
+ func TestRunner_CompactSession_PlaysSequenceForFocus(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/shuttleengine/spec.go b/internal/shuttleengine/spec.go
+index fbb0fe7d..e4658054 100644
+--- a/internal/shuttleengine/spec.go
++++ b/internal/shuttleengine/spec.go
+@@ -159,6 +159,10 @@ type Spec struct {
+ 	// Its output and exit status are discarded, so it never steers the session.
+ 	// An engine that installs no hook for it ignores it.
+ 	TurnHookCommand string
++	// RemoteControlName, when non-empty, starts the session with the provider's remote control on, under this session name.
++	// The launch and the resume line both carry it, so a revived session comes back with it on.
++	// An engine whose provider has no remote control ignores it.
++	RemoteControlName string
+ 	// Requires lists what the run requires of its engine, from the closed set of Requirement constants.
+ 	// Start refuses an unknown entry and an engine that does not meet every entry.
+ 	// Attach checks the engine the run's record names in the same way.
