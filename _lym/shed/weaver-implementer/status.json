@@ -1,12 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Drift-Await",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Bouncer → awaiting",
+    "now": "Drift-Await",
+    "last": "Plan-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -200,6 +199,14 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/weaver-implementer/_lym/reviews/plan/round-3-bouncer-ledger.md",
       "at": "2026-11-16T14:08:56Z",
       "started_at": "2026-11-16T14:08:18Z"
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/weaver-implementer/_lym/reviews/plan/round-3-bouncer-ledger.md",
+      "at": "2026-11-16T14:09:53Z",
+      "started_at": "2026-11-16T14:09:53Z",
+      "by": "shed"
     }
   ],
   "product": {
