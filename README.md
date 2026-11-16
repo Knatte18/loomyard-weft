@@ -165,7 +165,7 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (2)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -173,14 +173,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Move Webster's batch machinery and run-plan state into a package both implementers import** | [`implementer-shared-run-plan`](design-implementer-shared-run-plan.md)<br>[Sketch](decision-implementer-shared-run-plan.md) | darn · solid | Darn-Write | neve | 54m<br>54m | webster, weaver |
 | T6 | **Claude Code Mode for writer sessions, set per role**<br>• Turn on the experimental Code Mode, which batches tool calls in one program, for heavy writer roles only, after a bench | [`claude-code-mode`](design-claude-code-mode.md) | darn · docs | Darn-Write | neve | 1h<br>54m | claude, shuttle, config |
+| T13 | **A filed arras run is refused at Run-Shed and never tears down**<br>• After an arras family filing, batten refuses the run as a grouping project, so it never reaches Land or Worktree-Teardown | [`filed-arras-stuck-at-run-shed`](design-filed-arras-stuck-at-run-shed.md) | darn | Worktree-Create | neve | 44m<br>44m | batten |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T13 | **A filed arras run is refused at Run-Shed and never tears down**<br>• After an arras family filing, batten refuses the run as a grouping project, so it never reaches Land or Worktree-Teardown | [`filed-arras-stuck-at-run-shed`](design-filed-arras-stuck-at-run-shed.md) | darn |  | 44m<br>44m | batten |
+_None._
 
 #### Draft (3)
 
