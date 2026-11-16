@@ -1,8 +1,0 @@
-{
-  "recipe": "pawl",
-  "driver": "go",
-  "params": {
-    "parent": "main"
-  },
-  "started_at": "2026-11-15T15:58:09Z"
-}
