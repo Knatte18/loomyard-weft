@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-16 08:42 UTC; every age below is as of then.
+Rendered 2026-11-16 08:43 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -166,7 +166,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **The board README shows every per-task field that changes the run, pull_request included**<br>• The entry cell lists run_settings but not pull_request, so a task with PR on looks like it has none | [`readme-shows-run-fields`](design-readme-shows-run-fields.md) | darn · light | Record-Write | neve | 7m<br>0m | board |
+| T3 | **The board README shows every per-task field that changes the run, pull_request included**<br>• The entry cell lists run_settings but not pull_request, so a task with PR on looks like it has none | [`readme-shows-run-fields`](design-readme-shows-run-fields.md) | darn · light | Drift-Expect | neve | 7m<br>0m | board |
 | T4 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | motif | Discussion-Write | neve | 5w<br>14h | webster, weaver |
 
 #### Ready (0)
