@@ -1,6 +1,6 @@
 # P1 A Codex session gets exactly what a Claude session in the same role gets
 
-Rendered 2026-11-16 14:09 UTC; every age below is as of then.
+Rendered 2026-11-16 14:10 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codex-parity`](design-codex-parity.md) · Age 13m · Owner `neve`
