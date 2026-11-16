@@ -3,6 +3,7 @@
   "state": "awaiting",
   "error": "bouncer Discussion-Bouncer: round 2 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/weaver/_lym/reviews/discussion/round-2-escalation.md; record the answer with `lym loom decision add weaver`, then decide with `lym loom circling accept weaver` or `lym loom circling continue weaver`, then run `lym loom resume` in the task worktree to resume",
   "parent_notice": "Review segment of task `weaver` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/weaver/_lym/reviews/discussion/round-2-escalation.md` with a one-shot fork.",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
