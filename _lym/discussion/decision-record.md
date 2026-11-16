@@ -47,4 +47,12 @@ Rationale: What Claude Code shows on a second /remote-control is unverified and 
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - already-running-adopt-record-untested (class design, severity MEDIUM, open in rounds 2)
+  - rc-verb-names-repeated-as-literals (class consistency, severity BLOCKING, open in rounds 2)
+  - summary-contradicts-click-codex-button (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
