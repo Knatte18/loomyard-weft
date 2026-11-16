@@ -17,13 +17,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T14 | **Revise the remaining adopt-build members against what landed and what the operator decided since the split**<br>• `loom: pr_review_ask_parent true` | [`adopt-build-revision`](design-adopt-build-revision.md) | darn · docs | Worktree-Create | neve | 16h<br>0m | docs, batten, dobby, orch, fabric, tender |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Revise the remaining adopt-build members against what landed and what the operator decided since the split**<br>• `loom: pr_review_ask_parent true` | [`adopt-build-revision`](design-adopt-build-revision.md) | darn · docs |  | 16h<br>0m | docs, batten, dobby, orch, fabric, tender |
+_None._
 
 ### Draft (6)
 
