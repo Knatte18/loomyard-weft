@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md)<br>[Sketch](decision-codex-same-as-claude.md) | raddle | Raddle-Write | neve | 17h<br>0m | codex, shuttle, stencil, heddle |
+| T14 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md)<br>[Sketch](decision-codex-same-as-claude.md) | raddle | Raddle-Write | neve | 17h<br>1m | codex, shuttle, stencil, heddle |
 
 #### Ready (0)
 
@@ -67,7 +67,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **A transition pushes its records before the run acts, and a takeover entry in the run's records hands the run over** | [`transition-push-takeover`](design-transition-push-takeover.md)<br>[Sketch](decision-transition-push-takeover.md) | tapestry · solid | starting · Open-Window | neve | 1h<br>5m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
+| T3 | **A transition pushes its records before the run acts, and a takeover entry in the run's records hands the run over** | [`transition-push-takeover`](design-transition-push-takeover.md)<br>[Sketch](decision-transition-push-takeover.md) | tapestry · solid | Motif | neve | 1h<br>5m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 
 #### Ready (0)
 
