@@ -1,0 +1,14 @@
+verdict: resume
+reason: |-
+  Cause decision, refusal none, round 2 below the solid motif profile's discussion hard cap of 3.
+  The board entry settles both decision findings.
+  F11: the operator's 2026-11-15 decision names its purpose (the tackler and arbiter handle a stuck batch), which one producer returning Stuck per batch meets; the board's own "Weaver as a Shed run" idea lists one batch producer looping over the batch index as a way to meet it, and the 2026-10-17 view puts the batchifier inside Weaver.
+  F10: the journal is "pushed with the run"; every shed transition, Done or Stuck, pushes both sides, and a move to another machine goes through a stop, so no mid-row push is needed and neither the implementer contract nor push-before-act-takeover's scope changes.
+  Both answers need the writer to fold them into D2 and D9 and drop the Open risks lines and Q16/Q17, so another round runs. The BLOCKING F1 and the other round-2 design findings already show fixes in the record, which round 3's reviewers re-check.
+verbs:
+  - |-
+    lym loom decision add weaver --by arbiter --title "One producer runs every batch (answers F11, Q17)" --decision … --rationale …
+  - |-
+    lym loom decision add weaver --by arbiter --title "The journal is pushed with the run at each shed transition (answers F10, Q16)" --decision … --rationale …
+  - |-
+    lym loom circling continue weaver
