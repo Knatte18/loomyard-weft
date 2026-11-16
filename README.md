@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md)<br>[Sketch](decision-codex-same-as-claude.md) | raddle | Raddle-Write | neve | 17h<br>8m | codex, shuttle, stencil, heddle |
+| T14 | **A Codex session gets exactly what a Claude session in the same role gets**<br>• Skills, standing passages, instruction files, guards and prompt wording reach a Codex session in a role the same as a Claude one | [`codex-same-as-claude`](design-codex-same-as-claude.md)<br>[Sketch](decision-codex-same-as-claude.md) | raddle | Raddle-Write | neve | 17h<br>9m | codex, shuttle, stencil, heddle |
 
 #### Ready (0)
 
@@ -158,8 +158,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Plan-Write | neve | 1h<br>1h | webster, weaver |
-| T6 | **Claude Code Mode for writer sessions, set per role**<br>• Turn on the experimental Code Mode, which batches tool calls in one program, for heavy writer roles only, after a bench | [`claude-code-mode`](design-claude-code-mode.md) | darn · docs | PR-Review | neve | 2h<br>1h | claude, shuttle, config |
-| T13 | **A filed arras run is refused at Run-Shed and never tears down**<br>• After an arras family filing, batten refuses the run as a grouping project, so it never reaches Land or Worktree-Teardown | [`filed-arras-stuck-at-run-shed`](design-filed-arras-stuck-at-run-shed.md) | darn · light | starting · Open-Window | neve | 1h<br>0m | batten |
+| T6 | **Claude Code Mode for writer sessions, set per role**<br>• Turn on the experimental Code Mode, which batches tool calls in one program, for heavy writer roles only, after a bench | [`claude-code-mode`](design-claude-code-mode.md) | darn · docs | landing · Finalize | neve | 2h<br>1h | claude, shuttle, config |
+| T13 | **A filed arras run is refused at Run-Shed and never tears down**<br>• After an arras family filing, batten refuses the run as a grouping project, so it never reaches Land or Worktree-Teardown | [`filed-arras-stuck-at-run-shed`](design-filed-arras-stuck-at-run-shed.md) | darn · light | Record-Write | neve | 1h<br>0m | batten |
 | T16 | **lym gate redundant flags tests as redundant that check different things**<br>• Equal line coverage is taken as redundancy; the verb must also prove the candidate catches no fault its covering tests miss | [`redundancy-judge-asserts`](design-redundancy-judge-asserts.md) | darn · solid | Darn-Write | neve | 46m<br>40m | testkit, gate |
 
 #### Ready (0)
