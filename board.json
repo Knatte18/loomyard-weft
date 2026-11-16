@@ -803,7 +803,8 @@
       "status": "running · Darn-Write",
       "created": "2026-11-16T11:24:02Z",
       "revised": "2026-11-16T11:29:44Z",
-      "profile": "solid"
+      "profile": "solid",
+      "notify_on_land": true
     }
   ],
   "prime_owner": "neve",
