@@ -1,9 +1,9 @@
 # P1 Revise adopt and the functions that move a hub between machines
 
-Rendered 2026-11-16 11:41 UTC; every age below is as of then.
+Rendered 2026-11-16 11:42 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`adopt-revision`](design-adopt-revision.md) · Age 23h · Owner `neve`
+[`adopt-revision`](design-adopt-revision.md) · Age 1d · Owner `neve`
 
 ## Goal
 
@@ -44,7 +44,7 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T14 | **Merge main into the beam adopt-build**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-merge-in`](design-adopt-build-merge-in.md) | 26m<br>26m | batten, tender, dobby, orch, fabric, loom |
+| T14 | **Merge main into the beam adopt-build**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-merge-in`](design-adopt-build-merge-in.md) | 28m<br>28m | batten, tender, dobby, orch, fabric, loom |
 
 ## Own entries
 
