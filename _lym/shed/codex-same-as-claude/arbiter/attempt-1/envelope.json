@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "Review escalation at round 1, cause decision, no refusal named. The one decision finding, F8 (Q14), asked whether\ncodex-assist-review-trial's three chosen runs go before or after this task lands. The board settles it: those three\ntasks (prime-is-root-beam, hub-stop-button, machine-restart-shortcut) were merged into adopt-build-resplit by the\noperator on 2026-11-16 to be split again, and that entry carries no code_assist_reviewer_model setting. No board\nentry other than the trial note names the setting. So no Codex assist run is queued and the risk has no subject.\nI recorded that ruling as an arbiter decision telling the writer to drop the open risk and close Q14. Choosing\nfuture trial runs is the trial note's business, so this does not widen the task's scope.\nI chose continue rather than accept. The ruling needs a record fix, and round 1's fixer changed six gating\ndesign-wrong findings (F1, F2, F3, F4, F5, F6) that need a fresh review. The judge's verdict was CONTINUE, and round 1\nis below the hard cap (rounds plus one).",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add codex-same-as-claude --by arbiter --title \"The assist-trial schedule risk has no subject\" --decision \"Drop the open risk on codex-assist-review-trial and close Q14 as answered: ...\" --rationale \"Q14 asked whether the three chosen runs go before or after this task lands. ...\"",
+    "lym loom circling continue codex-same-as-claude"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/codex-same-as-claude/_lym/shed/codex-same-as-claude/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/codex-same-as-claude/_lym/shed/codex-same-as-claude/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step codex-same-as-claude --until-stop --arbiter-attempt 1"
+}
