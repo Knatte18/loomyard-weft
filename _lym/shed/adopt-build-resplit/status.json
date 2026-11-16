@@ -1,11 +1,11 @@
 {
-  "current_producer": "Raddle-Burler-Fix",
+  "current_producer": "Raddle-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Raddle-Burler-Fix",
-    "last": "Raddle-Burler-Review → bounced to Raddle-Burler-Fix",
+    "now": "Raddle-Bouncer",
+    "last": "Raddle-Burler-Fix → bounced to Raddle-Bouncer",
     "wait": ""
   },
   "history": [
@@ -276,6 +276,36 @@
       ],
       "budget_exempt": true,
       "routed_to": "Raddle-Burler-Fix"
+    },
+    {
+      "producer": "Raddle-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit/_lym/reviews/split/round-2-review.md",
+      "at": "2026-11-16T10:20:19Z",
+      "started_at": "2026-11-16T10:17:20Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "raddle",
+          "kind": "gate",
+          "start": "2026-11-16T10:19:41.215075484Z",
+          "end": "2026-11-16T10:19:41.228001362Z"
+        },
+        {
+          "gate": "raddle",
+          "kind": "rework",
+          "start": "2026-11-16T10:19:41.657947889Z",
+          "end": "2026-11-16T10:20:18.762915265Z"
+        },
+        {
+          "gate": "raddle",
+          "kind": "gate",
+          "start": "2026-11-16T10:20:18.789282744Z",
+          "end": "2026-11-16T10:20:18.799958528Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Raddle-Bouncer"
     }
   ],
   "product": {
