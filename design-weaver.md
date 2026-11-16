@@ -1,6 +1,6 @@
 # Weaver: a cold-start implementer beside Webster, with model escalation
 
-`weaver` · Task · feature, webster, weaver
+`weaver` · Task · feature, webster, weaver · running · Worktree-Create
 
 ## Idea (operator, 2026-10-11)
 
