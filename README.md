@@ -7,9 +7,9 @@ Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
 <details open>
-<summary><strong><a href="project-codex-parity.md">P1 A Codex session gets exactly what a Claude session in the same role gets</a> (5)</strong></summary>
+<summary><strong><a href="project-codexengine.md">P1 A Codex session gets exactly what a Claude session in the same role gets</a> (5)</strong></summary>
 
-[`codex-parity`](design-codex-parity.md) · Age 13m · Owner `neve`
+[`codexengine`](design-codexengine.md) · Age 14m · Owner `neve`
 
 ### Tasks (5)
 
@@ -27,11 +27,11 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Every producer renders its prompt and edit directive for the engine its launch resolves to** | [`prompt-engine-per-launch`](design-prompt-engine-per-launch.md)<br>[Sketch](decision-prompt-engine-per-launch.md) | darn · solid | T5 | 13m<br>13m | codex, shuttle, stencil, heddle |
-| T13 | `draft` **A Codex session gets Claude's standing items, user setup, instruction files and subagent terms in its developer instructions** | [`codex-standing-instructions`](design-codex-standing-instructions.md)<br>[Sketch](decision-codex-standing-instructions.md) | tapestry · solid | T6 | 13m<br>13m | codex, shuttle, stencil, heddle |
-| T17 | `draft` **Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan** | [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)<br>[Sketch](decision-codex-wording-engine-blocks.md) | darn · solid | T13 | 13m<br>13m | codex, shuttle, stencil, heddle |
-| T18 | `draft` **A Codex session gets the question-tool deny and the batching nudge Claude runs** | [`codex-question-deny-nudge`](design-codex-question-deny-nudge.md)<br>[Sketch](decision-codex-question-deny-nudge.md) | darn · solid | T13 | 13m<br>13m | codex, shuttle, stencil, heddle |
-| T19 | `draft` **Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both** | [`launch-manifest-parity`](design-launch-manifest-parity.md)<br>[Sketch](decision-launch-manifest-parity.md) | tapestry · solid | T17<br>T18 | 13m<br>13m | codex, shuttle, stencil, heddle |
+| T6 | `draft` **Every producer renders its prompt and edit directive for the engine its launch resolves to** | [`prompt-engine-per-launch`](design-prompt-engine-per-launch.md)<br>[Sketch](decision-prompt-engine-per-launch.md) | darn · solid | T5 | 14m<br>14m | codex, shuttle, stencil, heddle |
+| T13 | `draft` **A Codex session gets Claude's standing items, user setup, instruction files and subagent terms in its developer instructions** | [`codex-standing-instructions`](design-codex-standing-instructions.md)<br>[Sketch](decision-codex-standing-instructions.md) | tapestry · solid | T6 | 14m<br>14m | codex, shuttle, stencil, heddle |
+| T17 | `draft` **Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan** | [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)<br>[Sketch](decision-codex-wording-engine-blocks.md) | darn · solid | T13 | 14m<br>14m | codex, shuttle, stencil, heddle |
+| T18 | `draft` **A Codex session gets the question-tool deny and the batching nudge Claude runs** | [`codex-question-deny-nudge`](design-codex-question-deny-nudge.md)<br>[Sketch](decision-codex-question-deny-nudge.md) | darn · solid | T13 | 14m<br>14m | codex, shuttle, stencil, heddle |
+| T19 | `draft` **Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both** | [`launch-manifest-parity`](design-launch-manifest-parity.md)<br>[Sketch](decision-launch-manifest-parity.md) | tapestry · solid | T17<br>T18 | 14m<br>14m | codex, shuttle, stencil, heddle |
 
 ### Notes (0)
 
@@ -62,7 +62,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T15 | `draft` **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | T19 | 20h<br>13m | codex, shuttle |
+| T15 | `draft` **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | T19 | 20h<br>14m | codex, shuttle |
 
 ### Notes (2)
 
@@ -193,7 +193,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Webster | neve | 3h<br>3h | webster, weaver |
-| T16 | **lym retro: one command that audits recent runs from their transcripts and proposes fixes**<br>• Turn the hand-set transcript audits into one command with a fixed lym-scoped question set, routing each finding to a check, a rubric line or a deletion | [`lym-retro`](design-lym-retro.md) | darn · solid | Darn-Write | neve | 4h<br>3m | friction, report, tools |
+| T16 | **lym retro: one command that audits recent runs from their transcripts and proposes fixes**<br>• Turn the hand-set transcript audits into one command with a fixed lym-scoped question set, routing each finding to a check, a rubric line or a deletion | [`lym-retro`](design-lym-retro.md) | darn · solid | Darn-Write | neve | 4h<br>4m | friction, report, tools |
 
 #### Ready (0)
 

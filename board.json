@@ -744,7 +744,7 @@
     {
       "id": 1404,
       "handle": "P1",
-      "slug": "codex-parity",
+      "slug": "codexengine",
       "title": "A Codex session gets exactly what a Claude session in the same role gets",
       "kind": "project",
       "labels": [
@@ -789,7 +789,7 @@
       "created": "2026-11-16T13:56:13Z",
       "revised": "2026-11-16T13:56:13Z",
       "profile": "solid",
-      "project": "codex-parity",
+      "project": "codexengine",
       "discussed": true,
       "record_body_sha256": "a8313727a5c2dc4ec7f0fb86bc4aed85facc25b693bee3c50aa777d49b68a326"
     },
@@ -818,7 +818,7 @@
       "created": "2026-11-16T13:56:13Z",
       "revised": "2026-11-16T13:56:13Z",
       "profile": "solid",
-      "project": "codex-parity",
+      "project": "codexengine",
       "discussed": true,
       "record_body_sha256": "66bdd26c298491d07dda4a82e415215414253cc64ae4693cb37bbb17f0cec54c"
     },
@@ -847,7 +847,7 @@
       "created": "2026-11-16T13:56:13Z",
       "revised": "2026-11-16T13:56:13Z",
       "profile": "solid",
-      "project": "codex-parity",
+      "project": "codexengine",
       "discussed": true,
       "record_body_sha256": "d1c1941de3068cba1c839b10018320680748d41ae63d75e3f191111a50be57fd"
     },
@@ -876,7 +876,7 @@
       "created": "2026-11-16T13:56:13Z",
       "revised": "2026-11-16T13:56:13Z",
       "profile": "solid",
-      "project": "codex-parity",
+      "project": "codexengine",
       "discussed": true,
       "record_body_sha256": "fbc96f8281044eb0c461840369283d75e1c6223507f564642f4c858bc8b1192d"
     },
@@ -906,7 +906,7 @@
       "created": "2026-11-16T13:56:13Z",
       "revised": "2026-11-16T13:56:13Z",
       "profile": "solid",
-      "project": "codex-parity",
+      "project": "codexengine",
       "discussed": true,
       "record_body_sha256": "a45e2c333881a072f678b68e78f82249d76c92ff66cd9ea763d16a284c9a1c2c"
     },
