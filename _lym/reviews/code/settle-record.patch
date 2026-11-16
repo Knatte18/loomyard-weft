@@ -1,0 +1,195 @@
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index bd632ac7..998328ea 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -138,7 +138,7 @@
+ // `internal/runprofile` reads that file.
+ // Seed-Child writes the profile's block for the task's recipe under the task's run_settings.
+ // A write of an empty string clears it, and the task then takes its recipe's default profile.
+-// The README entry cell names only a profile the task carries.
++// The README's Recipe cell names only a profile the task carries.
+ // Like run_settings, a profile change is never a scope change.
+ //
+ // # Owners
+@@ -363,7 +363,8 @@
+ // A row opens with the entry's handle.
+ // A Notes row adds the Prio column after it: H for a high priority, L for a low one and blank for normal.
+ // The title cell holds the bold title, with the brief as a `• ` bullet under it.
+-// It then holds one `• ` bullet per run setting, sorted, so the settings stack in height and add no column.
++// It then holds one `• ` code-span bullet per run field the entry sets: `pull_request: on` and then `on_land: <key>`.
++// One `• ` bullet per run setting follows, sorted, so the fields and settings stack in height and add no column.
+ // A run setting is a code span such as `loom: code_max_bounces 1`, with a nested key as its dotted path.
+ // The slug cell links the slug to its design doc when the entry has a body.
+ // A `Sketch` link to its decision record file sits under the slug when the entry carries the discussed flag.
+diff --git a/internal/boardengine/front.go b/internal/boardengine/front.go
+index 5565ef71..555adfaa 100644
+--- a/internal/boardengine/front.go
++++ b/internal/boardengine/front.go
+@@ -30,11 +30,11 @@ func checkFrontPayload(s *Store, fields map[string]any) error {
+ 		}
+ 		delete(fields, "front")
+ 	}
+-	if value, carried := fields["on_land"]; carried {
++	if value, carried := fields[onLandKey]; carried {
+ 		if proposed, isString := value.(string); !isString || proposed != stored.OnLand {
+ 			return frontPayloadRefusal(slug)
+ 		}
+-		delete(fields, "on_land")
++		delete(fields, onLandKey)
+ 	}
+ 	if !stored.Front {
+ 		return nil
+@@ -54,7 +54,7 @@ func checkFrontPayload(s *Store, fields map[string]any) error {
+ // Only the front-task package calls it: no board edit can set either field.
+ func (b *Board) FileFrontTask(fields map[string]any, onLand string) (Task, error) {
+ 	slug, _ := fields["slug"].(string)
+-	for _, key := range []string{"front", "on_land"} {
++	for _, key := range []string{"front", onLandKey} {
+ 		if _, carried := fields[key]; carried {
+ 			return Task{}, frontPayloadRefusal(slug)
+ 		}
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index 385c85ec..85f5e470 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -856,7 +856,8 @@ func ageCell(t Task, now time.Time) string {
+ }
+ 
+ // entryCell is the bold title, led by a `draft` code span for a draft task.
+-// The brief follows as one bullet when there is one, then one code-span bullet per run setting.
++// The brief follows as one bullet when there is one.
++// Then come one code-span bullet per run field the entry sets and one per run setting.
+ func entryCell(t Task) string {
+ 	cell := "**" + cellText(t.Title) + "**"
+ 	if isDraft(t) {
+@@ -865,12 +866,28 @@ func entryCell(t Task) string {
+ 	if t.Brief != "" {
+ 		cell += cellBullet + cellText(t.Brief)
+ 	}
+-	for _, setting := range settingLines(t.RunSettings) {
+-		cell += cellBullet + codeSpan(cellText(setting))
++	for _, line := range append(runFieldLines(t), settingLines(t.RunSettings)...) {
++		cell += cellBullet + codeSpan(cellText(line))
+ 	}
+ 	return cell
+ }
+ 
++// runFieldLines is one `<key>: <value>` line per field of t that changes how its run goes, in a fixed order.
++// It leaves out the run settings and the Recipe cell.
++// pull_request decides whether the landing opens a pull request.
++// on_land names the action that runs once the task lands.
++// A field left empty gives no line.
++func runFieldLines(t Task) []string {
++	var lines []string
++	if t.PullRequest != "" {
++		lines = append(lines, pullRequestKey+": "+t.PullRequest)
++	}
++	if t.OnLand != "" {
++		lines = append(lines, onLandKey+": "+t.OnLand)
++	}
++	return lines
++}
++
+ // settingLines is one `<module>: <key path> <value>` line per leaf of a task's run settings.
+ // Nested keys join with dots, and the lines come back sorted.
+ func settingLines(settings map[string]any) []string {
+diff --git a/internal/boardengine/render_test.go b/internal/boardengine/render_test.go
+index bb32bac6..b53f0d0c 100644
+--- a/internal/boardengine/render_test.go
++++ b/internal/boardengine/render_test.go
+@@ -247,13 +247,13 @@ func TestRenderToDiskManifestCleanup(t *testing.T) {
+ var readmeTypes = []string{"bug", "enhancement", "research"}
+ 
+ // readmeFixture returns the tasks and notes the README golden tests render.
+-// They mix labels, dates, priorities, dependencies, bodies, profiles, recipes, and run settings.
++// They mix labels, dates, priorities, dependencies, bodies, profiles, recipes, run fields and run settings.
+ func readmeFixture() []boardengine.Task {
+ 	task, note := boardengine.KindTask, boardengine.KindNote
+ 	return []boardengine.Task{
+-		{ID: 1, Handle: "T1", Slug: "base", Title: "Base work", Kind: task, Labels: []string{"enhancement"}, Status: stringPtr(boardengine.StatusDraft), Brief: "The foundation.", Created: renderTime.AddDate(0, 0, -40), Revised: renderTime.AddDate(0, 0, -3), RunSettings: map[string]any{"loom": map[string]any{"review_max_bounces": 2.0, "review_hard_max_bounces": 3.0}}},
++		{ID: 1, Handle: "T1", Slug: "base", Title: "Base work", Kind: task, Labels: []string{"enhancement"}, Status: stringPtr(boardengine.StatusDraft), Brief: "The foundation.", Created: renderTime.AddDate(0, 0, -40), Revised: renderTime.AddDate(0, 0, -3), PullRequest: boardengine.PullRequestMergeIn, OnLand: "refresh", RunSettings: map[string]any{"loom": map[string]any{"review_max_bounces": 2.0, "review_hard_max_bounces": 3.0}}},
+ 		{ID: 2, Handle: "T2", Slug: "top", Title: "Top | work", Kind: task, Labels: []string{"bug", "area"}, Status: stringPtr("running"), Profile: "a|b", Brief: "Builds on base.\nSecond brief line.", Body: "Design.\nSecond line.", DependsOn: []string{"base", "shipped"}, RunSettings: map[string]any{"darn": map[string]any{"models": map[string]any{"writer": "opus|fast"}, "skip": []any{"a&b", "<c>"}, "note": "use `x`"}}},
+-		{ID: 6, Handle: "T3", Slug: "alone", Title: "Alone work", Kind: task, Labels: []string{"enhancement"}, Isolated: true, Recipe: "darn", Profile: "docs", RunSettings: map[string]any{"darn": map[string]any{"review_max_bounces": 1.0}}},
++		{ID: 6, Handle: "T3", Slug: "alone", Title: "Alone work", Kind: task, Labels: []string{"enhancement"}, Isolated: true, Recipe: "darn", Profile: "docs", PullRequest: "on", RunSettings: map[string]any{"darn": map[string]any{"review_max_bounces": 1.0}}},
+ 		{ID: 3, Handle: "E2", Slug: "idea", Title: "An idea", Kind: note, Labels: []string{"enhancement", "undecided"}, Priority: boardengine.PriorityLow},
+ 		{ID: 8, Handle: "E1", Slug: "plain", Title: "Plain idea", Kind: note, Labels: []string{"enhancement"}},
+ 		{ID: 9, Handle: "R1", Slug: "measure", Title: "A measurement", Kind: note, Labels: []string{"research"}},
+@@ -276,6 +276,8 @@ func readmeFixture() []boardengine.Task {
+ // so each row stays one table row.
+ // It pins that each run setting stacks as a sorted code-span bullet in the entry cell after any brief;
+ // a nested key appears as its dotted path, a non-string value as JSON, a pipe is escaped, and no column is added.
++// It pins that a pull_request and an on_land the task sets stack as code-span bullets in that order.
++// Both bullets sit between the brief and the settings.
+ // Every Tasks table pins a Recipe column after the slug, when the task names one.
+ // The column holds the fixture's default recipe for an empty recipe and the stored name otherwise;
+ // it is followed by ` · ` and the profile, with a pipe escaped.
+@@ -372,7 +374,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"\n" +
+ 				"| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |\n" +
+ 				"| --- | --- | --- | --- | --- | --- | --- |\n" +
+-				"| T3 | **Alone work**<br>• `darn: review_max_bounces 1` | `alone` | darn · docs |  |  |  |\n" +
++				"| T3 | **Alone work**<br>• `pull_request: on`<br>• `darn: review_max_bounces 1` | `alone` | darn · docs |  |  |  |\n" +
+ 				"\n" +
+ 				"#### Draft (1)\n" +
+ 				"\n" +
+@@ -380,7 +382,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"\n" +
+ 				"| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |\n" +
+ 				"| --- | --- | --- | --- | --- | --- | --- |\n" +
+-				"| T1 | `draft` **Base work**<br>• The foundation.<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | `base` | tapestry |  | 5w<br>3d |  |\n" +
++				"| T1 | `draft` **Base work**<br>• The foundation.<br>• `pull_request: merge-in`<br>• `on_land: refresh`<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | `base` | tapestry |  | 5w<br>3d |  |\n" +
+ 				"\n" +
+ 				"### Notes (5)\n" +
+ 				"\n" +
+diff --git a/internal/boardengine/replay.go b/internal/boardengine/replay.go
+index cb42b254..b29441dd 100644
+--- a/internal/boardengine/replay.go
++++ b/internal/boardengine/replay.go
+@@ -204,14 +204,14 @@ var replayFields = entrymerge.Table[Task]{
+ 		{Name: "short_name", Get: func(t Task) any { return t.ShortName }, Set: func(dst *Task, src Task) { dst.ShortName = src.ShortName }},
+ 		{Name: "run_settings", Get: func(t Task) any { return orNilSettings(t.RunSettings) }, Set: func(dst *Task, src Task) { dst.RunSettings = cloneSettings(src.RunSettings) }},
+ 		{Name: "profile", Get: func(t Task) any { return t.Profile }, Set: func(dst *Task, src Task) { dst.Profile = src.Profile }},
+-		{Name: "pull_request", Get: func(t Task) any { return t.PullRequest }, Set: func(dst *Task, src Task) { dst.PullRequest = src.PullRequest }},
++		{Name: pullRequestKey, Get: func(t Task) any { return t.PullRequest }, Set: func(dst *Task, src Task) { dst.PullRequest = src.PullRequest }},
+ 		{Name: "notify_on_land", Get: func(t Task) any { return t.NotifyOnLand }, Set: func(dst *Task, src Task) { dst.NotifyOnLand = src.NotifyOnLand }},
+ 		{Name: "owner_machine", Get: func(t Task) any { return t.OwnerMachine }, Set: func(dst *Task, src Task) { dst.OwnerMachine = src.OwnerMachine }},
+ 		{Name: "project", Get: func(t Task) any { return t.Project }, Set: func(dst *Task, src Task) { dst.Project = src.Project }},
+ 		{Name: "order", Get: func(t Task) any { return orEmpty(t.Order) }, Set: func(dst *Task, src Task) { dst.Order = slices.Clone(src.Order) }},
+ 		{Name: "beam", Get: func(t Task) any { return t.Beam }, Set: func(dst *Task, src Task) { dst.Beam = src.Beam }},
+ 		{Name: "front", Get: func(t Task) any { return t.Front }, Set: func(dst *Task, src Task) { dst.Front = src.Front }},
+-		{Name: "on_land", Get: func(t Task) any { return t.OnLand }, Set: func(dst *Task, src Task) { dst.OnLand = src.OnLand }},
++		{Name: onLandKey, Get: func(t Task) any { return t.OnLand }, Set: func(dst *Task, src Task) { dst.OnLand = src.OnLand }},
+ 		{Name: "discussed", Get: func(t Task) any { return t.Discussed }, Set: func(dst *Task, src Task) { dst.Discussed = src.Discussed }},
+ 		{Name: "record_body_sha256", Get: func(t Task) any { return t.RecordBodySHA256 }, Set: func(dst *Task, src Task) { dst.RecordBodySHA256 = src.RecordBodySHA256 }},
+ 		{Name: "beam_color", Get: func(t Task) any { return t.BeamColor }, Set: func(dst *Task, src Task) { dst.BeamColor = src.BeamColor }},
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index ae44dade..4cc1ad98 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -497,7 +497,7 @@ type MergeStatusUpdate struct {
+ // and an upsert naming it is refused as an unknown field.
+ // "record_body_sha256" is output only in the same way: a write that stores the entry's decision record stamps it.
+ func UpsertPayloadKeys() (required, optional []string) {
+-	return []string{"slug"}, []string{"title", "brief", "body", "depends_on", "isolated", "status", "kind", "labels", "recipe", "priority", "short_name", "issues", "created", "revised", "run_settings", "profile", "pull_request", "notify_on_land", "owner_machine", "project", "order", "beam", "front", "on_land", "discussed"}
++	return []string{"slug"}, []string{"title", "brief", "body", "depends_on", "isolated", "status", "kind", "labels", "recipe", "priority", "short_name", "issues", "created", "revised", "run_settings", "profile", pullRequestKey, "notify_on_land", "owner_machine", "project", "order", "beam", "front", onLandKey, "discussed"}
+ }
+ 
+ // upsertAllowedKeys is the set of field names every upsert path accepts, enforced at the store boundary.
+diff --git a/internal/boardengine/task.go b/internal/boardengine/task.go
+index 665810a7..4bb8a96c 100644
+--- a/internal/boardengine/task.go
++++ b/internal/boardengine/task.go
+@@ -79,6 +79,13 @@ type Task struct {
+ 	Unknown map[string]json.RawMessage `json:"-"`
+ }
+ 
++const (
++	// pullRequestKey is the board.json key of Task.PullRequest.
++	pullRequestKey = "pull_request"
++	// onLandKey is the board.json key of Task.OnLand.
++	onLandKey = "on_land"
++)
++
+ // taskKeys is the set of lower-cased JSON keys Task declares; a decoded key outside it is kept in Unknown.
+ var taskKeys = jsonKeySet(reflect.TypeFor[Task]())
+ 
