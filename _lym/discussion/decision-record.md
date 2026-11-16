@@ -14,7 +14,7 @@ Out:
 
 - What landed: `internal/runfsm`'s states, act rule, `runfsm.Judge` and `runfsm.Aside`; the tracked cancel and pause intents in the batten record;
   the orch's own-session resume, `runproc.RegisterOrch` and the subject-process end.
-  A decision below fills or calls them and never redesigns them.
+  A decision below fills or calls them and never redesigns them, bar D1's rename of one input and the wording of its refusal.
 - The orch transcript mirror and every cross-machine carry of an orch session (operator, 2026-11-15).
 - A hub-wide pause shared between machines: `lym tender pause` with no slug, hibernate's pause and the hub stop stay machine-local.
 - The split itself: raddle proposes it from this record.
@@ -42,6 +42,10 @@ Out:
   A transition's push that meets a held teardown lock waits for its release.
   A wait past `fabricengine.StatusPushLockWait` turns the push owed, which releases the admission below.
   The detached pushes that stay lose the respawn too; the pair's next synchronous push carries their branch.
+- The pending-flag respawn of fabric's records push lock retires too (`respawnForeignFlags`, run by `coalesceFlagged` in `internal/fabricengine/pendingflags.go`),
+  so no side is pushed alone after a holder's release.
+  A flag the holder does not owe stays on disk for its worktree's next push:
+  in a pair, the owed retry of the push that set it, which sends both sides through `fabricengine.PushPairAnchored`, records first, with D2's takeover read.
 - A transition takes a network gate admission (`pauserecord.Admit`) before its commit and releases it once every side has landed or its push turns owed,
   so a pause or hold written after the commit stops the next producer and never that push's first attempt.
   Fabric's pause deferral no longer applies to a transition's push; it stays for the detached pushes below.
@@ -49,8 +53,11 @@ Out:
   neither carries a run transition.
 - A push that fails for a transient reason, such as an unreachable origin, leaves the run waiting at that transition with the push owed.
   It retries on a backoff and waits at the gate like any network call, so a pause holds it.
-  `pairteardown.ReadRun` reads the owed push into `runfsm.Inputs`' `PushOwedOffline`, which nothing fills today,
-  and `lym beam status` shows the owed push and its last error; the failed-push record and its creel notice stay.
+  `pairteardown.ReadRun` reads the owed push, offline or on a held teardown lock, into `runfsm.Inputs`' `PushOwed`, renamed from `PushOwedOffline`, which nothing fills today;
+  its place in the act rule stays.
+  Its refusal names the owed push and its last error, which `runfsm` carries in its inputs and verdict, and its way forward is a re-run once the owed push lands,
+  in place of today's text that origin is unreachable and its re-run once origin answers.
+  `lym beam status` shows the owed push and its last error; the failed-push record and its creel notice stay.
 - With origin unreachable, `lym tender pause <slug>`, `lym tender resume <slug>` and `lym batten cancel` act here at once and owe their push;
   `runfsm.Aside` already sets an owed push aside for them.
   `lym batten cancel`'s output then names a re-run of `lym batten cancel <slug>` once origin answers, which pushes the intent and finishes the cancel.
@@ -69,14 +76,20 @@ A push costs two network round trips or more (`internal/fabricengine/pushclassif
 
 - Adopt (D6) writes a takeover entry, naming the new owner machine, into each moved run's batten record and child record, each on its own branch, and pushes it.
 - When a run's records push is rejected, for any caller of the pair push, lym fetches the branch and reads the run's own record from origin's fetched tip before any replay.
-  When it holds a takeover entry naming another machine that this machine has not yet read, the run hands over without replaying:
+  When it holds a takeover entry naming another machine that no hand-over mark of this machine names, the run hands over without replaying:
   - it pushes no code side for the rejected push;
   - it ends its processes for the slug through `pairteardown.EndSubjectProcesses`, with the dobby end unset when the caller is that dobby's own run;
   - it pushes the code tip the run's last transition on origin names when origin's code branch lacks it, since that transition stands;
   - it archives the local tips as `fabricengine.ArchiveOwnerTips` does, uncommitted files first committed onto the archived tip,
     and its local parent branch's tip when this run's parent-side merge alone puts that branch ahead of its upstream, then resets that branch to its upstream;
-  - it pushes the archive tags and posts one notice naming the machine and any pause or cancel intent it dropped.
+  - it pushes the archive tags and posts one notice naming the machine and any pause or cancel intent it dropped;
+  - it removes the local pair through `internal/pairteardown`'s local mode once its tips are archived, as D4 step 4 does;
+    when the caller runs inside the pair, it leaves the removal to the parent's dobby (D7);
+  - it writes this machine's hand-over mark, naming the slug and the takeover entry, once the steps above finish:
+    a machine-local file under `.lym`, named in `internal/lymdirs`.
+    An adopt's takeover entry naming this machine (D6 step 3) drops this machine's hand-over marks of that slug.
   It pushes nothing more for the run.
+  A later rejection reading a takeover entry a hand-over mark names skips the hand-over and pushes nothing for the run.
 - A run `landing` past its parent-side merge hands over too, and its new owner resumes the Finalize from origin's records.
   The Finalize reads the owner from a fetched Bolt before its parent-side merge and before each later push, and hands over when another machine owns the run.
   After the merge into the local parent branch, the Finalize pushes the parent branch, then commits and pushes its transition, then writes the board `done`;
@@ -89,7 +102,11 @@ A push costs two network round trips or more (`internal/fabricengine/pushclassif
   `lym beam status` names the tip and the machine that owes it.
   That machine's next hand-over or catch-up (D4) pushes it, and the owner's dobby fast-forwards its local code branch to it before the run's next pass.
   A tip still missing after the code-tip grace is given up: the owner commits and pushes a records commit that returns the run to its previous transition, and the step runs again.
-  A machine owing a tip pushes it only while the run's last transition on origin names it, so a given-up tip never lands.
+  A machine owing a tip pushes it only while the run's last transition on origin names it, and with a lease on origin's code branch at the value it read with the records.
+  After the push it reads the records tip again;
+  when the run's last transition no longer names the tip, it resets origin's code branch with a lease to the value it read, so a given-up tip does not stay on origin.
+  The owner guards it too: its code-side push rejected over a tip that no transition of the run on origin names resets origin's code branch with a lease at that tip, then pushes,
+  so a tip left by an owing machine that died before its re-read goes too.
 - A rejection whose fetched record holds no takeover entry, such as one over other runs' commits on a shared records branch like `main-weft`, replays and pushes as today.
 - An adopter's own takeover push that is rejected fetches, then re-reads its hold and the subjects' owner from a fetched Bolt.
   When its hold is gone or either names another machine, it stops, naming the subjects' owner.
@@ -103,18 +120,23 @@ Rationale: a takeover entry in the run's own record is a compare-and-swap per ru
 
 ### D3 — A machine registry in Bolt gives each machine one identity
 
-- `board.json` gains a top-level `machines` map: each registered name with the former names it replaced.
-  Only `boardengine`'s owner setter writes it, pushing synchronously.
+- `board.json` gains a top-level `machines` map, keyed by machine id: each registered machine's current name and the former names it replaced.
+  A machine id is a random id lym writes into `machine.json` beside the name at the machine's first registration; it tells two machines apart whatever they are named.
+  Only `boardengine`'s owner setter writes the map, pushing synchronously.
 - A machine registers at its first owner write or `lym machine name`, copying the former names of its `machine.json`.
   A registration whose former name is another registered machine's current name is refused, naming that machine;
   its way forward is `lym machine name --forget-former <name>` (new) on this machine, which drops that former name from its `machine.json` and its registry entry.
-- `lym machine name` records the rename in the registry, besides its sweep of owners (`internal/machinecli/set.go`).
+  A registration whose current name is a former name of another registered machine is refused, naming that machine;
+  its way forward is `lym machine name <new>` on this machine, which records a name a registration refused among none of this machine's former names.
+  A registration whose current name is another registered machine's current name is refused the same way.
+- `lym machine name` records the rename in the registry under the same refusals, besides its sweep of owners (`internal/machinecli/set.go`).
 - Every comparison of a recorded machine name with this machine goes through the registry: a former name of a registered machine reads as that machine.
   `boardengine.OwnedElsewhere` takes the registry, every owner write writes the current name,
   and the comparisons that name the machine directly move too: `dobbyengine.OwnedWorktrees` and `dobbyengine.EnsureLive`.
 - `internal/machinename` stays this machine's only name source.
 
 Bound: `--forget-former` changes only this machine's own file and entry; a registration clash refuses and never overwrites another machine's entry.
+A machine whose `machine.json` was lost gets a new id, so its old entry refuses its old name: it registers under a new name and adopts its own subjects again, and its old entry stays.
 
 Rationale: `osl46` and `osl-1046` are one machine before and after `lym machine name`, and only that machine's `machine.json` knows it.
 
@@ -129,8 +151,8 @@ Before any act rule answer after an absence, the catch-up runs:
 2. It fetches each local pair's branches and reads each run's record from the result.
 3. For a run this machine owns, local commits on top of origin's tip are owed pushes, and it pushes them; a takeover entry naming another machine is D2's hand-over.
 4. For a run another machine owns, a `landing` past its parent-side merge included, it ends this machine's processes for the slug through `pairteardown.EndSubjectProcesses`,
-   pushes the code tip the run's last transition on origin names when origin lacks it, archives the local tips as D2 does,
-   and removes the local pair through `internal/pairteardown`'s local mode, which takes no origin step and writes no board.
+   pushes the code tip the run's last transition on origin names when origin lacks it, archives the local tips as D2 does and pushes the archive tags,
+   posts D2's one notice naming the machine and any pause or cancel intent it dropped, and removes the local pair through `internal/pairteardown`'s local mode, which takes no origin step and writes no board.
 5. It writes this machine's pause record entries from the pause intents of the runs it owns, and drops the caches of the runs it touched; each run's next pass is a full pass.
 
 - The dobby's periodic Bolt pull (`internal/dobbyengine/handover.go`) stays, and a hold it reads applies at once (D5).
@@ -153,28 +175,36 @@ the dobby detects a sleep today (`internal/dobbyengine/loop.go`) but only owes f
   its way forward is waiting for the hold to clear, or asking the operator when that machine has stopped.
 - Every verb that asks the act rule outside the dobby's pass, such as `lym loom resume` and `lym tender resume <slug>`, fetches Bolt first when origin answers.
 - A machine that reads a hold writes no hub entry.
-  It writes a slug entry under one new `pauserecord` caller `hold` for each of its runs the act rule answers `wait` for under the hold,
+  It writes a slug entry under one new `pauserecord` caller `bolt-hold` for each of its runs the act rule answers `wait` for under the hold,
   none for the `adopt-fix` hold's fix task, and drops those entries once it reads no hold.
-- The `hold` entries hold only those runs: the orch, `lym adopt`'s own process and its deploy and check children, and the operator's `lym batten cancel` go on.
+  The caller's constant is `pauserecord.BoltHoldCaller` (new), apart from the legacy `pauserecord.HoldCaller` (`adopt-hold`) the upgrade still reads.
+- A run whose push is owed (D1) gets no `bolt-hold` entry, so its owed push passes the gate and lands before an adopter's takeover reads origin;
+  the act rule still answers `wait` for it, so no producer starts.
+- The `bolt-hold` entries hold only those runs: the orch, `lym adopt`'s own process and its deploy and check children, and the operator's `lym batten cancel` go on.
   The orch is up while a hold stands (operator, 2026-11-15).
-- The `hold` entries keep apart from the operator's hub entry and hibernate's: dropping them drops only the `hold` caller's,
-  and the hibernate wake never reads a `hold` slug entry as a hub entry.
-  A slug with a live entry gets no `hold` entry.
-  `lym tender resume` lifts no `hold` entry while the Bolt hold stands; lifting a slug's own entry under a standing hold writes the `hold` entry in its place.
-  `lym tender resume <slug>` of a slug only a `hold` entry covers refuses, naming the hold's machine and the way forward above.
+- The `bolt-hold` entries keep apart from the operator's hub entry and hibernate's: dropping them drops only the `bolt-hold` caller's,
+  and the hibernate wake never reads a `bolt-hold` slug entry as a hub entry.
+  A slug with a live entry gets no `bolt-hold` entry.
+  `lym tender resume` lifts no `bolt-hold` entry while the Bolt hold stands; lifting a slug's own entry under a standing hold writes the `bolt-hold` entry in its place.
+  `lym tender resume <slug>` of a slug only a `bolt-hold` entry covers refuses, naming the hold's machine and the way forward above.
 - A run another machine owns is not paused: the act rule answers `hand_over`, and `pairteardown.EndSubjectProcesses` ends its processes.
   The `owner` caller retires with every writer: the dobby's owner pause (`internal/dobbyengine/owned.go`), `tendercli.PauseOwnedElsewhere` and the process end beside it,
   and the hibernate wake's hold of runs owned elsewhere.
   The `adopt` and legacy `adopt-hold` callers' writers retire with adopt's pause step (D6); the two names stay declared only for the upgrade's first read.
 - At the first read after the upgrade, a standing `adopt` or `adopt-hold` entry of a run this machine owns in a state that is not terminal becomes a run pause intent, so no run resumes unasked.
   Every other entry of those callers, and every `owner` entry, is dropped.
-  When at least one entry became a pause intent or belonged to a released `queued` task, the first read writes one Bolt `adopt` hold naming this machine and the subjects of those runs and tasks,
-  and posts one notice naming the hold, its machine and, as way forward, a re-run of `lym adopt` of those subjects there.
+  When at least one entry became a pause intent or belonged to a released `queued` task, the first read writes one Bolt hold, `adopt` or `adopt-fix` (below), naming this machine and the subjects of those runs and tasks,
+  and posts one notice naming the hold, its machine and, as way forward, a re-run of `lym adopt` of those subjects there,
+  then, once that adopt's check is green, `lym tender resume <slug>` there for each run whose entry became a pause intent.
+  When the first read finds an open adopt fix task of one of those subjects, the hold is `adopt-fix` naming it,
+  each subject's try count read from `internal/adoptcli`'s local tries file (`fix-tries.json`).
   A first read that finds another machine's hold writes none, and its notice names that hold's machine.
 - The dobby's handover and the orch watcher, which ask the adopt record whether an adopt here covers a worktree, read a hold this machine wrote instead, once D6 retires the record.
 
 Bound: a machine other than the adopter learns of a hold at its next Bolt pull or catch-up; until then its dobby goes on for at most the dobby's pull interval, and D2's bound covers the transitions it pushes.
 A run holding its parent lock gets no slug entry, so the gate does not hold its step in flight; the act rule still starts no producer for it.
+A Finalize cut between its local merge and its parent push (D2) waits out a hold with its merge local, since `PastParentMerge` reads origin's parent branch;
+its parent push follows once the hold clears, so no merge the adopt's check did not see lands under the hold.
 A hold stands until a green check clears it, the adopt's or, under `adopt-fix`, the fix task's re-check;
 a hold whose adopter stopped stands until the operator takes it over with `lym adopt --take-hold` (D6).
 No refusal or notice an agent reads names `--take-hold`.
@@ -190,13 +220,17 @@ It starts no detached worker and writes no adopt record; each step reads tracked
    A hold another machine wrote refuses the adopt, unless `--take-hold`, naming the writer machine and the hold's time, with D5's way forward.
    A rejected push reads Bolt again: an owner of these subjects or any hold another machine wrote since refuses naming that machine; otherwise it replays and pushes.
    A registration D3 refuses refuses the adopt with D3's way forward.
+   A hold this machine wrote for the same subjects stays as it stands, its kind, fix task and try counts included: the commit writes only the owner and the registry entry, and the adopt goes on from step 2.
+   One this machine wrote for other subjects refuses the adopt, naming the hold's subjects; its way forward is `lym adopt <hold's subjects>` first.
+   Under its own `adopt-fix` hold, as under `--take-hold`, a failing check files no second task while the fix task stands.
 2. For each moved run it fetches the run's branches, archives local tips origin lacks as D2 does, resets them to origin's, and adds the pair from origin when this machine has none.
 3. It writes the takeover entry on each moved run's records branches and pushes it (D2), then fast-forwards the local records branches and code branch to origin's tips.
 4. The catch-up (D4) over the whole hub.
 5. The deploy, as today.
 6. The hub workspace file regenerated.
 7. The check: the hub's `adopt` gate in each subject's worktree, in the foreground, its output on the terminal.
-8. A green check clears the hold, drops this machine's `hold` pause entries at once, and runs `orchcli.BeamUp` for each subject; the runs go on by the act rule.
+8. A green check clears the hold, drops this machine's `bolt-hold` pause entries at once, and runs `orchcli.BeamUp` for each subject; the runs go on by the act rule,
+   bar a run a pause intent holds, such as one the upgrade paused (D5), which waits for `lym tender resume <slug>`.
    A failing check files a fix task through the fix loop (`internal/adoptcli/fixloop.go`, `fronttask.File`), replaces the hold with an `adopt-fix` hold naming it,
    runs `orchcli.BeamUp`, and exits non-zero naming the task.
    The task's landing runs the check again: green clears the hold, failing files the next task within `adopt_fix_tries`.
@@ -209,15 +243,21 @@ Otherwise its Bolt commit rewrites the hold to name this machine, keeping kind, 
 Under `adopt-fix` the fix task stands and a failing check files no second task.
 Every adopt re-reads its own hold from Bolt before each step from step 2 on, and stops once the hold is gone or names another machine, naming the subjects' owner and starting nothing.
 A shell-guard row denies `--take-hold` to every agent; adopt's help names it.
+The row's steer and notice say only that an adopt's takeover of another machine's hold is the operator's, the steer naming asking the operator as the way forward, and neither spells the flag;
+its pattern and its `Forms` entry, which the no-denied-recovery scan reads and no agent is shown, are the only places the row names it.
 
 Kept: `--archives`, `--no-orch`, `--all` and `--here`.
 `--here` stays behind `lym s` and keeps its fast outcomes: `no_subject` in a worktree with no subject,
 and `owned_here` after one Bolt pull when no other machine owns the subject, writing no hold and starting nothing.
 Retired: `--keep-local`, `--drop-local`, `--discard`, `lym adopt worker`, the adopt record, the held-back project verdicts, the adopt pause step and every writer of the `adopt` and `adopt-hold` callers.
 `internal/adoptcli`'s and `internal/adoptrecord`'s package docs are rewritten to the foreground flow, or the package removed with the record.
+`lym beam status` replaces its adopt section, read today from the adopt record (`internal/beamcli/cli.go`), with the Bolt hold:
+its kind, machine, time and subjects, the fix task and try counts under `adopt-fix`, and for this machine's own hold the `lym adopt <subjects>` re-run.
 
 Bound: adopt works from pushed state alone; the old owner's unpushed work reaches the adopter only through D2's archive tags, which `--archives` lists.
-`--take-hold` skips no check and lets no run go on before a green check: it moves the hold and its adopt to this machine, and only the operator's own shell runs it.
+`--take-hold` skips no check and lets no run go on before a green check: it moves the hold and its adopt to this machine.
+The shell-guard row denies the plain command form to agents, but it is a guardrail over static text that a written script or a quoted command substitution passes (`internal/shellguard/doc.go`);
+a bypass is bounded by the rest: no check skipped, no run before a green check, and the old adopter stopping at its next hold re-read, naming this machine.
 
 Rationale: the operator decided adopt runs in the foreground and that nothing happens in the hub until it is done and every failing test it found is fixed;
 D1 and D2 leave no local state for adopt to reconcile.
@@ -228,11 +268,12 @@ D1 and D2 leave no local state for adopt to reconcile.
   with no pause or hold covering it and no other machine owning it; a cancelled run's batten record goes in the same step.
   This widens the ended-run teardown of `internal/dobbyengine/ended.go`, whose stranded-run condition reads a board entry that ended and so takes neither case today;
   the widened condition reads the FSM state.
+- The dobby also removes, through `internal/pairteardown`'s local mode, the local pair of a run a hand-over mark of this machine names (D2) while another machine owns the run,
+  under a hold too, since the local mode takes no origin step.
 - A cancelled run whose pair was kept stays: `lym beam status` lists it with its age, and each dobby start posts one notice listing kept pairs and naming `lym fabric remove <slug>`.
-- A pair kept by a cancel before the upgrade has no batten record.
-  The first dobby start after the upgrade writes, for each pair whose slug has a board entry with an empty status, no batten record and no live process,
-  a batten record holding a finished cancel with keep.
-  An entry with the status `done` gets none, so a landed run's leftover pair reads `landed` and is torn down.
+- A run cancelled with keep before the upgrade keeps its batten record while its pair stands (`internal/battencli/cleanup.go`), in shed state `cancelled` with no cancel intent;
+  `runfsm.Derive` reads `Cancelled` only from a cancel intent with a finish (`internal/runfsm/state.go`), so such a run reads neither cancelled nor kept.
+  The first dobby start after the upgrade gives each such record whose pair stands here a finished cancel intent with keep, naming this machine, pushed through D1's synchronous path.
 - A pair with neither a board entry nor a batten record is an orphan.
   The dobby posts a notice at first sight saying when it goes, and tears it down no earlier than the orphan grace after that notice,
   only when neither branch has had a commit for the orphan grace and no process of its slug lives; uncommitted files are committed onto the archived tip first.
@@ -310,15 +351,27 @@ The stop lifts its own entry because hub-wide `lym tender resume` restarts nothi
 - When a hold stands on the hub it prints the hold's machine and subjects, and for this machine's own hold the re-run `lym adopt <subjects>`.
 - Desktop launchers call the verb: one per hub and one for every hub.
   A new package `internal/desktoplauncher` (new) writes them: a `.desktop` file in the freedesktop desktop directory on Linux, a `.cmd` file on the Windows desktop, which under WSL runs the verb through `wsl.exe`.
-  lym adds a hub's launcher, and the all-hubs one with the first hub, when this machine's prime dobby starts.
+  lym adds a hub's launcher, and the all-hubs one with the first such hub, when any dobby of the hub starts on this machine for a worktree this machine owns.
   It removes a hub's launcher when this machine's verb, dobby or catch-up (D4) finds that this machine owns nothing in the hub,
   and the verb removes each launcher on disk whose hub `hubregistry.Live` no longer lists; the all-hubs one goes with the last hub.
-  Beams need no launcher change.
+  A beam gets no launcher of its own.
 
 Bound: the verb starts only what this machine owns, and never claims a prime; it writes no tracked record.
 A launcher's removal waits until this machine next runs the verb or a dobby, since no other machine reaches this desktop.
 
 Rationale: after a crash the operator finds the hubs and beams that were in flight by hand, and starting them is what the orchs and dobbies cannot do for themselves.
+
+### Added after Discussion (parent, 2026-11-16): The hub stop writes no per-run pause or cancel intent
+
+Decision: D9 stands as written: the hub stop (lym beam stop --all) writes no per-run pause or cancel intent, and its guarantee that every run is left in a pushed state rests on D1's synchronous pushes. Drop the Open risks line on this.
+
+Rationale: Operator decision in chat, 2026-11-16. A pushed per-run intent would read as paused on every other machine, against the entry's statement that the stop needs no shared pause between machines.
+
+### Added after Discussion (parent, 2026-11-16): Only the printed parent_beam names the prime root
+
+Decision: D8 stands as written: the prime maps to root only where parent_beam is printed (lym board list and get, the --text P0 row) and in its prose readers (orch-role contract, board skill, boardcli help); the code reads through boardengine.ParentBeam, Board.ParentBeamOf and hubgeom.ParentOf keep the empty slug for the prime.
+
+Rationale: Operator decision in chat, 2026-11-16. The operator's complaint was what the board shows; moving the internal value would change every owner reader for a display fix.
 
 ## Constraints
 
@@ -332,7 +385,7 @@ Rationale: after a crash the operator finds the hubs and beams that were in flig
 - `PATTERN-child-processes`: every process end goes through `internal/runproc`; the stop's detached re-start and the restart's `lym beam start` child name their binary through `selfexec` and log the spawn.
 - `PATTERN-daemon-wakeups`: the owed push's and the catch-up's retry waits wake at most once a second and back off while idle.
 - `PATTERN-refusal-way-forward`: every refusal added names its way forward and a test reaches it; none an agent reads names `lym adopt --take-hold`.
-- `PATTERN-shell-guard-table`: the deny of `lym adopt --take-hold` is a row of `internal/shellguard`'s table.
+- `PATTERN-shell-guard-table`: the deny of `lym adopt --take-hold` is a row of `internal/shellguard`'s table, whose steer and notice never spell the flag (D6).
 - `PATTERN-cli-cobra`: `lym machine start`, `lym machine name --forget-former` and `lym beam stop --all` sit in their modules' cobra subtrees.
 - `PATTERN-test-only-code`: every new function has a production caller in the part that adds it: the takeover reader in the rejected-push path, its test writer in `internal/testkit`,
   its production writer with adopt; the hold setter in the upgrade's first read; the catch-up at the dobby start.
@@ -359,42 +412,58 @@ Rationale: after a crash the operator finds the hubs and beams that were in flig
 - D1: a pause written between a transition's commit and its push leaves that transition on origin, and the run's next producer does not start.
 - D1: a transition's push that waits on a held teardown lock past the push lock wait turns owed, and a pause written then holds the process's network calls.
 - D1: with origin unreachable, a transition leaves the run waiting with the push owed, starts no producer, shows in `lym beam status`, and goes on once origin answers.
+- D1: a push owed on a held teardown lock is refused naming the owed push and its last error, not an unreachable origin.
+- D1: a code side flagged by a push whose lock wait gave up never reaches origin before its records side, nor after a takeover entry naming another machine.
 - D1: a run claim, a landing's board `done`, an owner write and a hold write are on origin when their verb returns.
 - D1: `lym tender pause <slug>`, `lym tender resume <slug>` and `lym batten cancel` return with their intent on origin, and a pull-request record write and a fixer attempt count are on origin before the next producer starts.
 - D1: with origin unreachable, `lym tender pause <slug>` holds the run's processes here at once, and the pause intent is on origin once origin answers.
 - D2: a records push rejected over a takeover entry naming another machine runs no replay, ends this machine's processes for the slug, pushes an `archive-owner/` tag holding its local commits and uncommitted files, and pushes nothing to the branch.
+- D2: after an in-loop hand-over no local pair of the slug stands, at once or, for a caller inside the pair, after the parent dobby's next pass;
+  a later rejection over the same takeover entry runs no hand-over and pushes nothing for the run.
 - D2: a push rejected over another run's commits on a shared records branch replays and pushes, and the run goes on.
 - D2: an adopter's takeover push rejected over the old owner's later transition writes the takeover entry onto origin's tip and lands, and the adopter reads the run at that transition.
 - D2: after a takeover, a landing past its parent-side merge is driven on exactly one machine, the adopter, and the old owner pushes nothing more to the parent's branch.
 - D2: an old owner that merged into its local parent branch and was taken over before pushing it leaves origin's parent branch without the work; the adopter lands the run, origin's parent branch holds the work once, and the old owner's local parent branch is level with its upstream, its merge under an archive tag.
 - D2: a Finalize's board `done` reaches origin only after its parent branch push landed.
-- D2: a run whose last transition names a code tip origin lacks waits until it lands, then goes on; one still missing after the code-tip grace returns to its previous transition, and the owing machine's later push leaves origin's code branch unchanged.
+- D2: a run whose last transition names a code tip origin lacks waits until it lands, then goes on; one still missing after the code-tip grace returns to its previous transition, and the owing machine's later push leaves origin's code branch unchanged;
+  a tip given up between the owing machine's read and its push does not stay on origin's code branch, also when the owing machine dies before its re-read, and the owner's next code-side push lands.
 - D2: after a takeover, the old owner's next transition and its `lym loom commit-records` leave origin's code branch unchanged.
 - D3: a registration whose former name is another machine's current name is refused naming that machine and `lym machine name --forget-former <name>`; after that verb, the registration lands.
+- D3: a registration whose current name is another registered machine's former name, or its current name, is refused naming that machine and `lym machine name <new>`;
+  after that verb with a free name, the registration lands, with the refused name among none of this machine's former names.
 - D3: an owner recorded as a former name of a registered machine reads as owned here on that machine and as that machine on another, in `dobbyengine.OwnedWorktrees` and `pairteardown.ReadRun` too.
 - D3: `lym machine name <new>` puts the old name among the registry's former names on origin when it returns.
-- D4: a dobby that observes a sleep runs the catch-up before its next pass; a run another machine took meanwhile gets no pass, its processes end, and its local pair is removed with its origin branches left standing.
+- D4: a dobby that observes a sleep runs the catch-up before its next pass; a run another machine took meanwhile gets no pass, its processes end, its archive tags reach origin with one notice naming any dropped intent,
+  and its local pair is removed with its origin branches left standing.
 - D4: a run owned here whose local records are ahead of origin with its own commits has them pushed by the catch-up, and none is reset.
 - D4: a run owned elsewhere at `Finalize` past its parent-side merge has its processes end here, and its owner finishes the Finalize.
 - D4: with origin unreachable, the catch-up acts on no run and retries; no code path reads or writes the origin-owed marker.
 - D4: a hand pass's catch-up fetches only its own run's branches.
 - D5: under an `adopt` hold no queued task is claimed and no run but a landing past its parent-side merge gets a pass, on the adopting machine and on another after its Bolt pull; under `adopt-fix` the fix task gets passes, and its agent turns and network calls pass the gate.
-- D5: a machine reading a hold holds its runs' processes through `hold` slug entries, writes no hub entry, and drops only those entries once the hold clears, leaving an operator's hub pause standing.
+- D5: a machine reading a hold holds its runs' processes through `bolt-hold` slug entries, writes no hub entry, and drops only those entries once the hold clears, leaving an operator's hub pause standing.
+- D5: under a hold, a run whose push is owed on a machine other than the adopter's gets no `bolt-hold` entry, its owed push lands once origin answers, and it starts no producer until the hold clears.
+- D5: a Finalize cut between its local merge and its parent push leaves origin's parent branch unchanged under a hold, and pushes it at its first pass after the hold clears.
+- D7: a dobby whose machine re-adopted a run it had handed over keeps the run's pair.
+- D6: a plain `lym adopt` of other subjects under this machine's own hold refuses, naming the hold's subjects.
 - D5: a verb refused by a hold names the hold's machine and a way forward that names no `--take-hold`; `lym loom resume` refuses a run under a hold another machine wrote since the worktree's last Bolt pull.
 - D5: a subject read as owned elsewhere leaves no process of its runs, its orch or its dobby on this machine, and no code path writes the `owner` caller.
-- D5: at the upgrade's first read a standing `adopt` entry becomes a pause intent and writes one Bolt `adopt` hold with one notice naming it; a standing `owner` entry or a landed run's entry is dropped; an upgrade whose entries all belong to landed runs or runs owned elsewhere writes no hold; a second machine's upgrade under a standing hold writes none.
+- D5: at the upgrade's first read a standing `adopt` entry becomes a pause intent and writes one Bolt `adopt` hold with one notice naming it and `lym tender resume` of each run it paused;
+  with an open adopt fix task the hold is `adopt-fix` naming it, with the local try count; a standing `owner` entry or a landed run's entry is dropped; an upgrade whose entries all belong to landed runs or runs owned elsewhere writes no hold; a second machine's upgrade under a standing hold writes none.
 - D6: `lym adopt <beam>` from a second machine's hub, with origin as the only shared state, ends with the beam's runs in the same FSM states as on the first machine and this machine as owner.
 - D6: an adopt on a machine with no local pair of a moved run adds the pair from origin before it writes the takeover entry.
 - D6: two machines adopting at once end with one owner; the other's adopt refuses naming the winner.
-- D6: a green adopt check leaves no `hold` pause entry on the adopting machine when the adopt returns.
+- D6: a green adopt check leaves no `bolt-hold` pause entry on the adopting machine when the adopt returns.
+- D6: a plain `lym adopt` re-run under this machine's own `adopt-fix` hold keeps the hold's kind, fix task and try count, and a failing check files no second task.
+- D6: `lym beam status` under a hold shows its kind, machine, time and subjects, under `adopt-fix` its fix task and try counts, and for this machine's own hold the `lym adopt <subjects>` re-run;
+  no code path reads the adopt record.
 - D6: a failing adopt check files one fix task, leaves an `adopt-fix` hold naming it and exits non-zero; the task's green re-check clears the hold and the runs go on with no hand lift; the try count reads the same on every machine.
-- D6: `lym adopt --take-hold` of the hold's subjects on another machine rewrites the hold to name that machine and runs its steps and check; with other subjects it refuses naming the hold's subjects; an agent's shell is denied it.
+- D6: `lym adopt --take-hold` of the hold's subjects on another machine rewrites the hold to name that machine and runs its steps and check; with other subjects it refuses naming the hold's subjects; an agent's shell is denied it, and the row's steer and notice name no `--take-hold`.
 - D6: an adopter whose hold another machine took over stops at its next hold re-read, naming that machine, and starts no dobby.
 - D6: an adopt killed after its owner write goes on from tracked state on its re-run and ends as an uninterrupted adopt does.
 - D6: `lym adopt --here` on the machine that owns the subject ends ok with `owned_here` after one Bolt pull, writes no hold and starts nothing.
 - D6: no code path writes the `adopt` or `adopt-hold` caller, and the dobby's handover and the orch watcher read a hold where they read the adopt record.
 - D7: a landed run's pair and a cancelled run's pair without keep are torn down by the dobby; one another machine owns or a pause or hold covers is not; a kept pair stays and is listed with its age in `lym beam status`, also after its board entry is removed.
-- D7: a pair kept by a cancel before the upgrade is listed as kept after the first dobby start; a pair whose claim stands, or whose entry is `done`, is not.
+- D7: a pair kept by a cancel before the upgrade, its batten record in shed state `cancelled` with no cancel intent, is listed as kept after the first dobby start and is not torn down.
 - D7: an orphan with no commit and no live process is torn down no earlier than the orphan grace after its notice, its branches archived; one with a commit inside the grace stays.
 - D7: `lym tender resume` spawns no pair push when no pause deferred one, and still pays a deferred anchor-change push; the hub workspace file no longer lists a pair after its teardown.
 - D8: `lym board list` and `lym board get` print `parent_beam` `root` for an entry under the prime and the beam's slug under a beam; `lym board list --text` shows a `P0` row; `hubgeom.ParentOf` still returns the empty slug for the prime.
@@ -407,7 +476,7 @@ Rationale: after a crash the operator finds the hubs and beams that were in flig
 - D9: hibernate's pause-and-confirm and the stop's run through the same function.
 - D10: `lym machine start` starts the prime and owned beams of a hub this machine owns; under a prime another machine owns, or one with no recorded owner, it starts only the beams owned here, names the prime's machine, and claims no prime.
 - D10: with a hold standing, `lym machine start` prints the hold's machine and subjects, and for this machine's own hold the `lym adopt <subjects>` re-run.
-- D10: a hub's launcher is written at its prime dobby's first start on this machine, stays while this machine owns anything in the hub, and is removed when it owns nothing there or the hub leaves `hubregistry.Live`; the all-hubs launcher goes with the last hub.
+- D10: a hub's launcher is written at the first start on this machine of a dobby of a worktree this machine owns, a beam under a prime another machine owns included, stays while this machine owns anything in the hub, and is removed when it owns nothing there or the hub leaves `hubregistry.Live`; the all-hubs launcher goes with the last hub.
 - D10: where no terminal launcher resolves, `lym machine start` prints each worktree's attach command.
 
 ## PATTERN changes
