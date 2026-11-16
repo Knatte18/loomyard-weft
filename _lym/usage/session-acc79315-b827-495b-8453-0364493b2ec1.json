@@ -1,0 +1,14 @@
+{
+  "session_id": "acc79315-b827-495b-8453-0364493b2ec1",
+  "row": "Discussion-Bouncer",
+  "role": "arbiter",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 12,
+  "cache_write_tokens": 69033,
+  "cache_read_tokens": 213008,
+  "output_tokens": 8843,
+  "cost_usd": 0.5646746,
+  "started": "2026-11-16T09:34:17Z",
+  "ended": "2026-11-16T09:35:47Z"
+}
