@@ -15,19 +15,28 @@ lym already looks back in two ways, neither of them one command:
   Each was a research task the orch set up by hand, with its own scope and scripts.
   They are scoped narrower than Pocock's: where turns, tokens and money go, and whether a stencil sentence changed behaviour.
 
-## Idea
+## Design (operator, 2026-11-16)
 
-A `lym retro` command that runs such an audit without a hand-written task:
+`lym retro` files and releases a darn `docs` task; the darn does the audit in two parts.
 
-- Input: the runs landed since the last retro by default, or named slugs or a date range.
-- It reads the runs' transcripts and records with `tokencount` and `forkaudit` and a fixed set of lym-scoped questions, such as:
-  turns and cost per producer against their medians; serial single reads and searches; commands a guard refused; verify-gate failures and fixer rounds; review rounds and recurring finding kinds; instructions in stencils, heddle passages and `CLAUDE.local.md` that the transcripts show had no effect (no-ops).
-- It routes each finding as Pocock does: a mechanical fault becomes a check (a guard, a lint, a test), a judgement call a reviewer rubric line, a no-op a deletion; never a new sentence in a prompt by default.
-- It writes a report under `docs/research/retro/` with a stamp, and proposes board notes, most severe first; the operator picks which to file.
-- It runs as a darn docs task the command files and releases itself, so it lands its report like any audit, with an exact cap on what it reads.
+1. The command.
+   `lym retro` with no argument covers the runs landed since the last retro; it also takes slugs or a date range.
+   It files one darn `docs` task from a stencil, with the runs, an exact cap on what it reads, and the question set below, and releases it.
+2. The scripted part.
+   The darn writer first runs the retro scripts over the runs' transcripts and records:
+   `tools/tokencount`, `tools/forkaudit`, and the scripts of the past audits that become the command's own.
+   They give the figures: turns and cost per producer against their medians; serial single reads and searches; commands a guard refused; verify-gate failures and fixer rounds; review rounds and recurring finding kinds.
+3. The LLM part.
+   The writer then reads what the figures point at, in the transcripts, stencils, heddle passages and `CLAUDE.local.md`,
+   and decides what should change and where it goes, as Pocock routes it:
+   a mechanical fault becomes a check (a guard, a lint, a test), a judgement call a reviewer rubric line, an instruction with no effect a deletion;
+   never a new prompt sentence by default.
+4. The output.
+   A stamped report under `docs/research/retro/` with the figures and the proposals, most severe first, each traced to a moment in a named run.
+   The operator picks which proposals become board notes; the run files none itself.
 
 ## Open
 
-- Whether the command files the task (and the operator still approves the notes), or runs one agent in place.
-- The fixed question set and its scripts: which of the past audits' scripts become the command's own.
+- The question set and its scripts: which of the past audits' scripts become the command's own, and in which package or tool they live.
+- How `lym retro` knows the last retro: the latest report's stamp, or a record.
 - How Friction-Reflect relates: kept as it is, or folded in.
