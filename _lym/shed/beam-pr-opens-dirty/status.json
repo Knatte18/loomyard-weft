@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-16T11:32:29Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/beam-pr-opens-dirty/_lym/landing/summary.md",
+      "at": "2026-11-16T11:42:59Z",
+      "started_at": "2026-11-16T11:32:31Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-16T11:36:40.241282088Z",
+          "end": "2026-11-16T11:36:40.265508689Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-16T11:36:40.346598047Z",
+          "end": "2026-11-16T11:42:27.396678894Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-16T11:42:27.482790072Z",
+          "end": "2026-11-16T11:42:27.698719538Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-16T11:42:27.753142828Z",
+          "end": "2026-11-16T11:42:27.753281267Z"
+        }
+      ]
     }
   ],
   "product": {
