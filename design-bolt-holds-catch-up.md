@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-bolt-holds-catch-up.md)
 
-Depends on: [`push-before-act-takeover`](design-push-before-act-takeover.md), [`adopt-build-revision`](design-adopt-build-revision.md)
+Depends on: [`push-before-act-takeover`](design-push-before-act-takeover.md)
 
 Filed from the Sketch `adopt-redesign`.
 

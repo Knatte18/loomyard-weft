@@ -182,8 +182,7 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "hub-stop-button",
-        "adopt-build-revision"
+        "hub-stop-button"
       ],
       "isolated": false,
       "brief": "A lym verb and a .desktop launcher that start each live hub orch and reopen the reed windows",
@@ -373,8 +372,7 @@
       ],
       "recipe": "darn",
       "depends_on": [
-        "prime-is-root-beam",
-        "adopt-build-revision"
+        "prime-is-root-beam"
       ],
       "isolated": false,
       "brief": "",
@@ -435,38 +433,6 @@
       "revised": "2026-11-15T16:51:23Z"
     },
     {
-      "id": 1371,
-      "handle": "T6",
-      "slug": "run-fsm-tracked-records",
-      "title": "One run FSM in internal/runfsm over tracked records, with cancel and pause intents, the PR record and fixer counts tracked",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "batten",
-        "tender",
-        "dobby",
-        "orch",
-        "fabric",
-        "loom",
-        "cleanup",
-        "workspaces",
-        "shuttle"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `adopt-redesign`.\n\nTakes: shedengine.Status as the batten and child run record, boardengine's run status helpers, battencli's cancel marker, tenderengine's pause and resume, pullrequest's record and landingshed's fixer attempt counts, all as they stand; PATTERN-test-only-code holds, so every new function has a production caller\nDelivers: internal/runfsm deriving every run state of D1 from tracked records alone and answering the act rule from its inputs, with the owner, hold, owed-push and code-tip inputs passed in by callers; the dobby's pass, lym batten run, lym loom resume and lym tender resume asking it; the cancel intent with its finish and the run pause intent in the batten record, committed and pushed with today's pushes; a cancelled run's record deleted with its pair; the PR record and fixer counts in the pair's records; the origin-owed marker stays until bolt-holds-catch-up\nExports: runfsm's State type and order, its Derive over tracked records and its Act rule with an inputs struct that later parts fill; the batten record's cancel and pause intent fields and their writers under shedrun's tracked paths\n\nThe part changes these packages:\n\n- internal/runfsm (about 900 changed lines)\n- internal/battencli (about 450 changed lines)\n- internal/dobbyengine (about 230 changed lines)\n- internal/landingshed (about 250 changed lines)\n- internal/loomcli (about 150 changed lines)\n- internal/tenderengine (about 150 changed lines)\n- internal/tendercli (about 60 changed lines)\n- internal/shedrun (about 80 changed lines)\n- internal/pullrequest (about 60 changed lines)\n- internal/shedengine (about 40 changed lines)\n- internal/boardengine (about 40 changed lines)\n- internal/pairteardown (about 40 changed lines)\n- internal/lymdirs (about 10 changed lines)\n- pattern (about 10 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-15T15:57:25Z",
-      "revised": "2026-11-15T15:57:47Z",
-      "profile": "solid",
-      "project": "adopt-build",
-      "discussed": true,
-      "record_body_sha256": "f545d773eea3df16a65c79f019f1d1fa29d44cee9568a8e0e0a4f25b9953bd2b"
-    },
-    {
       "id": 1372,
       "handle": "T8",
       "slug": "push-before-act-takeover",
@@ -486,10 +452,7 @@
       ],
       "issues": [],
       "recipe": "tapestry",
-      "depends_on": [
-        "run-fsm-tracked-records",
-        "adopt-build-revision"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `adopt-redesign`.\n\nTakes: runfsm's Act inputs and the batten record from run-fsm-tracked-records; fabricengine's PushPairAnchored, SpawnStatusPush, teardown-lock respawn, pushclassified's rejection path and ArchiveOwnerTips; boardengine's Sync, SpawnSync and pushOwnerCommit; statuscommit and sheddriver's records commit; landingshed's Finalize; runproc's End for a slug\nDelivers: a shed transition that takes a gate admission, commits its records with the code tip it was made with and pushes records side first, code side after, before the next producer starts; an owed push retried on a backoff and shown in lym beam status, which tender's offline pause and resume intents also ride; the per-transition detached push and its teardown-lock respawn retired; synchronous Bolt writes for a run claim, a landing's done and an owner; Finalize pushing the parent branch before its transition and board done; a rejected records push that reads origin's record and hands over on another machine's takeover entry, archiving local tips and the local parent merge; the code-tip wait and its grace\nExports: the takeover entry type and its reader, tested with kit-written entries; the owed-push and code-tip facts runfsm's Act reads; fabricengine's records-first PushPairAnchored and its hand-over result\n\nThe part changes these packages:\n\n- internal/fabricengine (about 1000 changed lines)\n- internal/battencli (about 250 changed lines)\n- internal/sheddriver (about 200 changed lines)\n- internal/loomcli (about 200 changed lines)\n- internal/landingshed (about 200 changed lines)\n- internal/boardengine (about 150 changed lines)\n- internal/statuscommit (about 100 changed lines)\n- internal/shedengine (about 60 changed lines)\n- internal/beamcli (about 60 changed lines)\n- internal/fabriccli (about 40 changed lines)\n- internal/tendercli (about 40 changed lines)\n- internal/tenderengine (about 40 changed lines)\n- internal/pauserecord (about 40 changed lines)\n- pattern (about 30 changed lines)\n",
@@ -522,8 +485,7 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "push-before-act-takeover",
-        "adopt-build-revision"
+        "push-before-act-takeover"
       ],
       "isolated": false,
       "brief": "",
@@ -557,8 +519,7 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "bolt-holds-catch-up",
-        "adopt-build-revision"
+        "bolt-holds-catch-up"
       ],
       "isolated": false,
       "brief": "",
@@ -598,8 +559,6 @@
       "owner_machine": "neve",
       "project": "adopt-revision",
       "order": [
-        "run-fsm-tracked-records",
-        "adopt-build-revision",
         "push-before-act-takeover",
         "bolt-holds-catch-up",
         "adopt-foreground-leftovers",
@@ -625,8 +584,7 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "adopt-foreground-leftovers",
-        "adopt-build-revision"
+        "adopt-foreground-leftovers"
       ],
       "isolated": false,
       "brief": "",
@@ -641,41 +599,6 @@
         }
       },
       "profile": "solid",
-      "project": "adopt-build"
-    },
-    {
-      "id": 1381,
-      "handle": "T14",
-      "slug": "adopt-build-revision",
-      "title": "Revise the remaining adopt-build members against what landed and what the operator decided since the split",
-      "kind": "task",
-      "labels": [
-        "research",
-        "docs",
-        "batten",
-        "dobby",
-        "orch",
-        "fabric",
-        "tender"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [
-        "run-fsm-tracked-records"
-      ],
-      "isolated": false,
-      "brief": "",
-      "body": "## Why (operator, 2026-11-15)\n\nThe beam `adopt-build` was split by raddle from the Sketch `adopt-redesign`, and the plan has changed a lot since:\nthe orch continues its own session on the same machine only, with no transcript mirror (F12);\nthe orch stays up during an adopt hold (F14);\n`prime-is-root-beam`, `hub-stop-button` and `machine-restart-shortcut` joined the beam as darn tasks.\nThe two first members, `orch-resume-own-session` and `run-fsm-tracked-records`, land in the beam before this runs,\nand what they built may differ from what the later members' bodies assume.\n\n## Task\n\nRevise every member of the beam that has not run, so each body and decision record matches what stands now:\n`push-before-act-takeover`, `bolt-holds-catch-up`, `adopt-foreground-leftovers`, `prime-is-root-beam`, `hub-stop-button`, `machine-restart-shortcut`.\n\nRead:\n\n- the beam's branch as it stands after the two landings, and their decision records (`lym board get \u003cslug\u003e --record`);\n- each remaining member's body and, where it has one, its decision record;\n- the raddle split's record under Bolt's `raddle/adopt-redesign`.\n\nFor each remaining member, settle:\n\n- what its `Takes` names that the landed members built differently, renamed or left out, and what it now takes instead;\n- what the operator's later decisions above change in it, such as anything left from the transcript mirror or a cross-machine orch resume;\n- overlap or gaps between members, the three darn members included: `hub-stop-button` builds on the run FSM and its pause and cancel intents;\n- whether its `depends_on`, recipe and package list still hold, and whether two members should merge or one should split.\n\n## Bounds\n\n- A study: read code, records and the board; run no tests and change no production code.\n- Change no board entry and no decision record: the orch applies the result after the operator approves it.\n- The result is a report under `docs/research/` with one section per remaining member:\n  what changes and why, the revised body in full ready to write to the board,\n  and a revised decision record where the member has one and it changes.\n  It ends with any change to order, dependencies or recipes, and the open questions for the operator.\n",
-      "status": "done",
-      "created": "2026-11-15T16:33:07Z",
-      "revised": "2026-11-16T08:34:22Z",
-      "run_settings": {
-        "loom": {
-          "pr_review_ask_parent": true
-        }
-      },
-      "profile": "docs",
-      "pull_request": "on",
       "project": "adopt-build"
     },
     {

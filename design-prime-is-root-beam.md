@@ -2,7 +2,7 @@
 
 `prime-is-root-beam` · Task · enhancement, board, dobby, orch · draft
 
-Depends on: [`adopt-foreground-leftovers`](design-adopt-foreground-leftovers.md), [`adopt-build-revision`](design-adopt-build-revision.md)
+Depends on: [`adopt-foreground-leftovers`](design-adopt-foreground-leftovers.md)
 
 ## Seen (operator, 2026-11-15)
 

@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-push-before-act-takeover.md)
 
-Depends on: [`run-fsm-tracked-records`](design-run-fsm-tracked-records.md), [`adopt-build-revision`](design-adopt-build-revision.md)
-
 Filed from the Sketch `adopt-redesign`.
 
 Takes: runfsm's Act inputs and the batten record from run-fsm-tracked-records; fabricengine's PushPairAnchored, SpawnStatusPush, teardown-lock respawn, pushclassified's rejection path and ArchiveOwnerTips; boardengine's Sync, SpawnSync and pushOwnerCommit; statuscommit and sheddriver's records commit; landingshed's Finalize; runproc's End for a slug
