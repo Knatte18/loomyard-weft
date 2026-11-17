@@ -323,6 +323,24 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-rounds-converge-build/81b1c802-12a0-4e4e-8251-243f37bc1227/subagents/agent-a5fa96202e39c217b.jsonl"
       ]
     },
+    "11": {
+      "slug": "stalemate-settlers",
+      "cards": [
+        "11-stalemate-settlers",
+        "12-wiring"
+      ],
+      "cardHashes": {
+        "11-stalemate-settlers": "c121f112da4d104fdc0e99254ec6b85fbb990bd22c53b9679c19f7064e5b783b",
+        "12-wiring": "5dd261d34820af7e9d42ceb2634107995ac88a2144623f5e8c8162a52a6c5a27"
+      },
+      "startSha": "f93c0fa76d092944a42f3935c6547c567893ad42",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T15:24:15Z",
+      "sessionId": "81b1c802-12a0-4e4e-8251-243f37bc1227",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "5": {
       "slug": "review-round-checks",
       "cards": [
@@ -375,7 +393,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "2e9733407d4e886b0330ebdbcbfec9de",
   "masterSessionId": "81b1c802-12a0-4e4e-8251-243f37bc1227",
   "masterEngine": "claude",
