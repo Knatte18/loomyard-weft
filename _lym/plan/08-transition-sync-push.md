@@ -1,10 +1,10 @@
 # Card 8 — transition-sync-push
 
 **Create:**
-- `plan:internal/fabricengine#IsPushOwed` -> `func IsPushOwed(err error) bool`
-- `plan:internal/fabricengine_test#TestIsPushOwed` -> `func TestIsPushOwed(t *testing.T)`
-- `plan:internal/statuscommit#owedRetryCeiling` -> `const owedRetryCeiling = time.Minute`
-- `plan:internal/statuscommit#TestNew_OwedPushRetriesBehindTheGate` -> `func TestNew_OwedPushRetriesBehindTheGate(t *testing.T)`
+- `internal/fabricengine#IsPushOwed`
+- `internal/fabricengine_test#TestIsPushOwed`
+- `internal/statuscommit#owedRetryCeiling`
+- `internal/statuscommit#TestNew_OwedPushRetriesBehindTheGate`
 
 **Edit:**
 - `internal/statuscommit#Deps`

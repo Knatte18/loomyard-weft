@@ -24,7 +24,7 @@
 
 **Uses:**
 - `internal/pairteardown#PushRun`
-- `plan:internal/fabricengine#IsPushOwed`
+- `internal/fabricengine#IsPushOwed`
 - `internal/battencli#judgeOrigin`
 - `internal/loomcli/doc.go`
 
