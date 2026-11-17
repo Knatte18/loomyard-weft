@@ -1,13 +1,13 @@
 {
   "current_producer": "Code-Burler-Review",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedverbs: step Code-Burler-Review interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step lym-retro --until-stop",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Code-Burler-Review",
     "last": "Code-Bouncer → bounced to Code-Burler-Review",
-    "wait": ""
+    "wait": "shedverbs: step Code-Burler-Review interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step lym-retro --until-stop"
   },
   "history": [
     {
