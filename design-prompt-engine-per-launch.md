@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-prompt-engine-per-launch.md)
 
-Depends on: [`weaver-implementer`](design-weaver-implementer.md)
-
 Filed from the Sketch `codex-same-as-claude`.
 
 Takes: nothing from another part; it waits for the board task weaver-implementer, which also changes internal/websterengine, so the two never run side by side
