@@ -8,12 +8,12 @@
 - `plan:internal/shuttleparity#TestLaunchSpecLiterals_AreListed` -> `func TestLaunchSpecLiterals_AreListed(t *testing.T)`
 
 **Uses:**
-- `plan:internal/shuttleparity#newParityFixture`
-- `plan:internal/shuttleparity#parityFixture`
-- `plan:internal/shuttleparity#parityFixture.addSkills`
-- `plan:internal/shuttleparity#PrepareEach`
-- `plan:internal/shuttleparity#Compare`
-- `plan:internal/shuttleparity#seatTables`
+- `internal/shuttleparity#newParityFixture`
+- `internal/shuttleparity#parityFixture`
+- `internal/shuttleparity#parityFixture.addSkills`
+- `internal/shuttleparity#PrepareEach`
+- `internal/shuttleparity#Compare`
+- `internal/shuttleparity#seatTables`
 - `internal/sheddriver#tacklerSpec`
 - `internal/treadleengine#runJudgeCall`
 - `internal/treadleengine#runTargeting`

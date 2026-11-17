@@ -7,9 +7,9 @@
 - `internal/shuttleengine/codexengine#TestPrepare_UserSetup`
 
 **Create:**
-- `plan:internal/shuttleengine/codexengine#codexManifest` -> `func codexManifest(in manifestInputs) shuttleengine.Manifest`
-- `plan:internal/shuttleengine/codexengine#manifestInputs` -> `type manifestInputs struct`
-- `plan:internal/shuttleengine/codexengine#TestPrepare_WritesTheManifest` -> `func TestPrepare_WritesTheManifest(t *testing.T)`
+- `internal/shuttleengine/codexengine#codexManifest`
+- `internal/shuttleengine/codexengine#manifestInputs`
+- `internal/shuttleengine/codexengine#TestPrepare_WritesTheManifest`
 
 **Uses:**
 - `internal/shuttleengine#WriteManifest`

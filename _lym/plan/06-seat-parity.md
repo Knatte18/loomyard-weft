@@ -2,28 +2,28 @@
 
 **Create:**
 - `internal/shuttleparity/doc.go`
-- `plan:internal/shuttleparity#UnrunHooks` -> `func UnrunHooks(run shuttleengine.HookRun) ([]byte, error)`
-- `plan:internal/shuttleparity#ConfiguredSandbox` -> `func ConfiguredSandbox(bin, home, dir string) error`
-- `plan:internal/shuttleparity#PromptItems` -> `func PromptItems(stencilsDir, engine, prompt string) []shuttleengine.ManifestItem`
-- `plan:internal/shuttleparity#Unmet` -> `func Unmet(engine shuttleengine.Engine, spec shuttleengine.Spec) []shuttleengine.Requirement`
-- `plan:internal/shuttleparity#PrepareEach` -> `func PrepareEach(engines shuttleengine.EngineSet, specs map[string]shuttleengine.Spec, stencilsDir, dir string, cfg shuttleengine.Config) (map[string]shuttleengine.Manifest, error)`
-- `plan:internal/shuttleparity#Compare` -> `func Compare(engines shuttleengine.EngineSet, manifests map[string]shuttleengine.Manifest) []shuttleengine.ManifestItem`
-- `plan:internal/shuttleparity#SeatEnv` -> `type SeatEnv struct`
-- `plan:internal/shuttleparity#Seat` -> `type Seat struct`
-- `plan:internal/shuttleparity#seatsOf` -> `func seatsOf(env SeatEnv, tables []seatTable) ([]Seat, []error)`
-- `plan:internal/shuttleparity#seatTables` -> `var seatTables []seatTable`
-- `plan:internal/shuttleparity#seatTable` -> `type seatTable struct`
-- `plan:internal/seatengine#Specs` -> `func Specs(geom Geometry, table Table) (map[string]shuttleengine.Spec, error)`
-- `plan:internal/landingshed#FixReviewSeatTable` -> `func FixReviewSeatTable(stencilsDir string, languageSkills []string, cfg Config, reg modelspec.Registry) (seatengine.Table, error)`
-- `plan:internal/burlerengine#Engine.SeatTables` -> `func (e *Engine) SeatTables(p *Profile, opts RunOpts) []seatengine.Table`
-- `plan:internal/seatengine#TestSpecs_MatchTheStartedSpecs` -> `func TestSpecs_MatchTheStartedSpecs(t *testing.T)`
-- `plan:internal/shuttleparity#TestCompare` -> `func TestCompare(t *testing.T)`
-- `plan:internal/shuttleparity#TestSeats_CodexManifestHoldsClaudes` -> `func TestSeats_CodexManifestHoldsClaudes(t *testing.T)`
-- `plan:internal/shuttleparity#newParityFixture` -> `func newParityFixture(t *testing.T) parityFixture`
-- `plan:internal/shuttleparity#parityFixture` -> `type parityFixture struct`
-- `plan:internal/shuttleparity#parityFixture.addSkills` -> `func (fx parityFixture) addSkills(t *testing.T, names []string)`
-- `plan:internal/shuttleparity#manifestEngine` -> `type manifestEngine struct`
-- `plan:internal/shuttleparity#TestMain` -> `func TestMain(m *testing.M)`
+- `internal/shuttleparity#UnrunHooks`
+- `internal/shuttleparity#ConfiguredSandbox`
+- `internal/shuttleparity#PromptItems`
+- `internal/shuttleparity#Unmet`
+- `internal/shuttleparity#PrepareEach`
+- `internal/shuttleparity#Compare`
+- `internal/shuttleparity#SeatEnv`
+- `internal/shuttleparity#Seat`
+- `internal/shuttleparity#seatsOf`
+- `internal/shuttleparity#seatTables`
+- `internal/shuttleparity#seatTable`
+- `internal/seatengine#Specs`
+- `internal/landingshed#FixReviewSeatTable`
+- `internal/burlerengine#Engine.SeatTables`
+- `internal/seatengine#TestSpecs_MatchTheStartedSpecs`
+- `internal/shuttleparity#TestCompare`
+- `internal/shuttleparity#TestSeats_CodexManifestHoldsClaudes`
+- `internal/shuttleparity#newParityFixture`
+- `internal/shuttleparity#parityFixture`
+- `internal/shuttleparity#parityFixture.addSkills`
+- `internal/shuttleparity#manifestEngine`
+- `internal/shuttleparity#TestMain`
 
 **Edit:**
 - `cmd/lym#testOnlyCodeAllowed`
@@ -56,7 +56,7 @@
 - `internal/loomengine#PartsPlanTable`
 - `internal/loomengine#DiscussionTable`
 - `internal/loomengine#RaddleTable`
-- `plan:internal/shuttleengines#NewWithSeams`
+- `internal/shuttleengines#NewWithSeams`
 - `internal/shuttleengine#MissingItems`
 - `internal/shuttleengine#ReadManifest`
 - `internal/shuttleengine#ErrHookUnrun`

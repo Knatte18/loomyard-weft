@@ -1,9 +1,9 @@
 # Card 5 — Build the engine set with a given hook runner and sandbox probe
 
 **Create:**
-- `plan:internal/shuttleengines#LaunchSeams` -> `type LaunchSeams struct`
-- `plan:internal/shuttleengines#NewWithSeams` -> `func NewWithSeams(cfg shuttleengine.Config, dirs configengine.Dirs, seams LaunchSeams) (shuttleengine.EngineSet, error)`
-- `plan:internal/shuttleengines#TestNewWithSeams_CodexTakesTheGivenSeams` -> `func TestNewWithSeams_CodexTakesTheGivenSeams(t *testing.T)`
+- `internal/shuttleengines#LaunchSeams`
+- `internal/shuttleengines#NewWithSeams`
+- `internal/shuttleengines#TestNewWithSeams_CodexTakesTheGivenSeams`
 
 **Edit:**
 - `internal/shuttleengines#constructor` -> `type constructor func(cfg shuttleengine.Config, dirs configengine.Dirs, seams LaunchSeams) shuttleengine.Engine`

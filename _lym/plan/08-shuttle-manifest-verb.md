@@ -20,16 +20,16 @@
 - `//docs/overview.md`
 
 **Uses:**
-- `plan:internal/shuttleparity#PrepareEach`
-- `plan:internal/shuttleparity#Compare`
-- `plan:internal/shuttleparity#seatsOf`
-- `plan:internal/shuttleparity#seatTables`
-- `plan:internal/shuttleparity#seatTable`
-- `plan:internal/shuttleparity#manifestEngine`
-- `plan:internal/shuttleparity#Unmet`
-- `plan:internal/shuttleparity#UnrunHooks`
-- `plan:internal/shuttleparity#ConfiguredSandbox`
-- `plan:internal/shuttleengines#NewWithSeams`
+- `internal/shuttleparity#PrepareEach`
+- `internal/shuttleparity#Compare`
+- `internal/shuttleparity#seatsOf`
+- `internal/shuttleparity#seatTables`
+- `internal/shuttleparity#seatTable`
+- `internal/shuttleparity#manifestEngine`
+- `internal/shuttleparity#Unmet`
+- `internal/shuttleparity#UnrunHooks`
+- `internal/shuttleparity#ConfiguredSandbox`
+- `internal/shuttleengines#NewWithSeams`
 - `internal/shuttlecli#TestOpenCmd_ListModels`
 
 **Intent:**
