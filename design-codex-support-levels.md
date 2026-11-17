@@ -42,3 +42,15 @@ Report: `docs/research/codex/darn-writer/codex-darn-writer-replay-neve-2026-11-1
 - The session ran in a scratch worktree, so no board, drift or loom check ran, and it was not a whole darn run: the "lands with no resumption" test of level 2 is still open.
 - It got no skills, no guards and Claude-worded stencils, so it does not count (operator, 2026-11-16).
   The operator judges level 2 after the Codex parity tasks of project `codexengine` land and the bench `codex-writer-bench` reruns on Neve, through the real producer; the OSL-1046 run is dropped.
+
+## Built since (tidy, 2026-11-17)
+
+Three of the Codex parity tasks have landed, which answers most of what the 2026-11-15 replay lacked:
+
+- `codex-standing-instructions` (`f8cc499c`): a Codex launch carries Claude's standing items (subagent passage, deny notice, creel trust sentence, heddle passages), the user's instruction files, the skill listing and the plugin session-start contexts as `developer_instructions`.
+  Its by-hand checks, a real launch with the order and content confirmed, are still open.
+- `codex-question-deny-nudge` (`b2cd8150`): an autonomous Codex launch denies the question tool and gets the batching nudge through `hooks.PreToolUse` and `hooks.PostToolUse`.
+- `codex-wording-engine-blocks` (`40c66912`): Claude-only wording in stencils, specs and agent-read Go text now has a Codex copy in an engine block.
+
+So a Codex seat now gets skills, guards and Codex-worded stencils.
+None of this is proven on a real run: the rerun of `codex-writer-bench` through the real producer is still the test, and `launch-manifest-parity` is still open.
