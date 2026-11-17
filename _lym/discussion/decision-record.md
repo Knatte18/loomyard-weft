@@ -311,6 +311,16 @@ Rationale: Round 3's F5 asked D6 to place the stalemate check against softCapRul
 - An in-flight run that crosses the binary change has rounds with no snapshot record or fixer-report frontmatter:
   by D2 and D6 its next round is full and counts as changed, so it reviews and bounces as today until it holds a complete new-format round.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - carries-bypasses-bound (class design, severity MEDIUM, open in rounds 1, 2, 3)
+  - resolved-status-unbounded (class design, severity MEDIUM, open in rounds 3)
+  - routed-fact-unreachable (class design, severity MEDIUM, open in rounds 3)
+  - stalemate-vs-softcap-autoaccept (class design, severity MEDIUM, open in rounds 1, 3)
+  - validate-review-worktree-resolution (class design, severity MEDIUM, open in rounds 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: a fixer-report whose dispositions miss a finding the fixer owns, repeat one, or name an id the review lacks is refused by the fix check;
