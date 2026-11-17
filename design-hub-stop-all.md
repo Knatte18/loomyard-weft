@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-hub-stop-all.md)
 
-Depends on: [`leftover-pairs-teardown`](design-leftover-pairs-teardown.md)
-
 Filed from the Sketch `adopt-build-resplit`.
 
 Takes: hibernate's pause-and-confirm inline in carry (internal/hibernateengine/watch.go) with awaitConfirmation; beamcli's stop command and its start --all; orchcli.BeamDown and its callers (beam stop, a beam's cancel, pawl's Beam-Down row); runproc.EndSubject and RoleOrch; lym reed down's pair end (internal/reedcli/up.go); tenderengine.Reap and Lift; selfexec.LymBinary and fabricengine's logged detached spawn as the pattern; reed's prime button group in both templates; D1's pushed-or-owed transitions

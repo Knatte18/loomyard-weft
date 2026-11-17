@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-machine-start-launchers.md)
 
-Depends on: [`leftover-pairs-teardown`](design-leftover-pairs-teardown.md)
-
 Filed from the Sketch `adopt-build-resplit`.
 
 Takes: machinecli's cobra subtree and deps seams; hubregistry.Live and Lookup; dobbyengine.OwnedWorktrees and EnsureLive with their registry-aware owner reads and the catch-up from machine-registry-holds-catchup, run at the dobby start, after a sleep and on a hand pass; the Bolt hold reader; lym beam start --all as a child process named through selfexec.LymBinary; termwindow.Resolve and OpenAttach; fabricengine.HubWorkspacePath and vscode.Launch

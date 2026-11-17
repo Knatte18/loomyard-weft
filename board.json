@@ -330,7 +330,6 @@
       "revised": "2026-11-16T11:13:59Z",
       "owner_machine": "neve",
       "order": [
-        "leftover-pairs-teardown",
         "hub-stop-all",
         "machine-start-launchers"
       ],
@@ -338,36 +337,6 @@
       "beam_color": "#7d2d6b",
       "discussed": true,
       "record_body_sha256": "744ee6078ac045281f4b9d725ed32fba0f21d1c5f7c98aea70b00ad5f4b8d311"
-    },
-    {
-      "id": 1396,
-      "handle": "T9",
-      "slug": "leftover-pairs-teardown",
-      "title": "The dobby tears down or reports leftover pairs",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "dobby",
-        "workspaces",
-        "landing",
-        "fabric",
-        "batten",
-        "tender",
-        "shed"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `adopt-build-resplit`.\n\nTakes: runfsm's landed and cancelled states and runfsm.Derive's reading of a cancel intent with its finish; dobbyengine's ended-run teardown (strandedEnded in internal/dobbyengine/ended.go); pairteardown's teardown and local mode; the hand-over mark from transition-push-takeover and its drop at adopt's takeover write from adopt-foreground; the holds, registry and owner reads from machine-registry-holds-catchup; D1's synchronous push for the kept-cancel intent; lym tender resume's pair push; fabricengine.RegenerateHubWorkspace\nDelivers: the dobby tearing down landed pairs and cancelled pairs without keep, by FSM state, with no pause, hold or other owner covering them, a cancelled run's batten record going in the same step; the dobby removing in local mode the pair of a run its hand-over mark names while another machine owns it; kept pairs listed with their age in lym beam status and in one notice per dobby start naming lym fabric remove \u003cslug\u003e; a finished keep cancel intent for each pre-upgrade kept-cancel record at the first dobby start; orphans noticed, their first-sight time in a machine-local file named in internal/lymdirs, and torn down idle after the orphan grace with their branches archived; lym tender resume spawning no pair push for a transition; the hub workspace file regenerated after each teardown\nExports: the orphan grace constant and the first-sight file's path\n\nThe part changes these packages:\n\n- internal/dobbyengine (about 250 changed lines)\n- internal/beamcli (about 80 changed lines)\n- internal/pairteardown (about 60 changed lines)\n- internal/fabricengine (about 50 changed lines)\n- internal/battencli (about 40 changed lines)\n- internal/tendercli (about 30 changed lines)\n- internal/shedrun (about 20 changed lines)\n- internal/lymdirs (about 10 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-16T10:22:19Z",
-      "revised": "2026-11-17T11:06:42Z",
-      "profile": "solid",
-      "project": "adopt-build-resplit",
-      "discussed": true,
-      "record_body_sha256": "61dfdc349f81bdfd358ccf41cf8555fc8f62d4e9472c43611e22e0f78acc3c48"
     },
     {
       "id": 1397,
@@ -384,9 +353,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "leftover-pairs-teardown"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `adopt-build-resplit`.\n\nTakes: hibernate's pause-and-confirm inline in carry (internal/hibernateengine/watch.go) with awaitConfirmation; beamcli's stop command and its start --all; orchcli.BeamDown and its callers (beam stop, a beam's cancel, pawl's Beam-Down row); runproc.EndSubject and RoleOrch; lym reed down's pair end (internal/reedcli/up.go); tenderengine.Reap and Lift; selfexec.LymBinary and fabricengine's logged detached spawn as the pattern; reed's prime button group in both templates; D1's pushed-or-owed transitions\nDelivers: hibernate's pause-and-confirm as one exported function hibernate's carrier and the stop both call, owning only an entry it added; lym beam stop --all re-starting itself detached with a logged spawn and running D9's sequence: hub pause and confirm, each task pair's processes and reed session through reed down's path, orchcli.BeamDown for the prime and each local beam, the beams' reed sessions, unowned run processes as Reap ends them, its own pause entry lifted through Lift, the prime's reed session last; orchcli.BeamDown ending the orch's registered Claude process through runproc as its last step for every caller; a stop entry with a confirm text in reed's prime button group of both templates; no tracked record, no per-run intent, a standing Bolt hold left as it is\nExports: hibernateengine's exported pause-and-confirm function; beamcli's stop --all; BeamDown's added end of the orch's Claude process. It touches no internal/dobbyengine, internal/machinecli or internal/termwindow code, which machine-start-launchers changes beside it\n\nThe part changes these packages:\n\n- internal/hibernateengine (about 180 changed lines)\n- internal/beamcli (about 120 changed lines)\n- internal/orchcli (about 70 changed lines)\n- internal/reedcli (about 40 changed lines)\n- internal/reedengine (about 15 changed lines)\n",
@@ -417,9 +384,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "leftover-pairs-teardown"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `adopt-build-resplit`.\n\nTakes: machinecli's cobra subtree and deps seams; hubregistry.Live and Lookup; dobbyengine.OwnedWorktrees and EnsureLive with their registry-aware owner reads and the catch-up from machine-registry-holds-catchup, run at the dobby start, after a sleep and on a hand pass; the Bolt hold reader; lym beam start --all as a child process named through selfexec.LymBinary; termwindow.Resolve and OpenAttach; fabricengine.HubWorkspacePath and vscode.Launch\nDelivers: lym machine start [\u003cshortname\u003e] starting the prime and owned beams of one hub or every live hub through lym beam start in the hub's prime, skipping a prime another machine owns or one with no recorded owner and saying so, never through lym s; the hub's workspace file opened and one terminal per started worktree running lym reed attach, or each attach command printed where no launcher resolves; a standing hold printed with its machine, subjects and, for this machine's own, the lym adopt \u003csubjects\u003e re-run; native Windows (wt.exe) in termwindow; internal/desktoplauncher writing .desktop files on Linux and .cmd files on the Windows desktop, through wsl.exe under WSL; the launcher added at the dobby start and removed by every catch-up, the dobby start's included, that finds this machine owns nothing in the hub, in internal/dobbyengine, and added and removed by the verb, never in internal/beamcli\nExports: internal/desktoplauncher's add and remove functions and machinecli's start verb\n\nThe part changes these packages:\n\n- internal/machinecli (about 420 changed lines)\n- internal/desktoplauncher (about 380 changed lines)\n- internal/termwindow (about 90 changed lines)\n- internal/dobbyengine (about 80 changed lines)\n",
