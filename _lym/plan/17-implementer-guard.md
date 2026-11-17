@@ -1,11 +1,11 @@
 # Card 17 — implementer-guard
 
 **Create:**
-- `plan:internal/loomshed#implementerGuard` -> `func implementerGuard(this weaverengine.Implementer, active weaverengine.ActiveDeps) (string, bool, error)`
-- `plan:internal/loomshed#weaverProducer` -> `type weaverProducer struct`
-- `plan:internal/loomshed#NewWeaverProducer` -> `func NewWeaverProducer(name string, dirs configengine.Dirs, run shedadapters.WeaverRunner, deps weaverengine.RunDeps, active weaverengine.ActiveDeps) shedengine.ShedProducer`
-- `plan:internal/loomshed#weaverProducer.Call` -> `func (w *weaverProducer) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/loomshed#TestImplementerGuard` -> `func TestImplementerGuard(t *testing.T)`
+- `internal/loomshed#implementerGuard`
+- `internal/loomshed#weaverProducer`
+- `internal/loomshed#NewWeaverProducer`
+- `internal/loomshed#weaverProducer.Call`
+- `internal/loomshed#TestImplementerGuard`
 
 **Edit:**
 - `internal/loomshed#websterProducer.Call`

@@ -1,9 +1,9 @@
 # Card 18 — weaver-implementer-row
 
 **Create:**
-- `plan:internal/shedrecipe#weaverEntry` -> `func weaverEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#TestWeaverEntry` -> `func TestWeaverEntry(t *testing.T)`
-- `plan:internal/testkit/shedfake#WeaverSeams` -> `func WeaverSeams() weaverengine.RunDeps`
+- `internal/shedrecipe#weaverEntry`
+- `internal/shedrecipe#TestWeaverEntry`
+- `internal/testkit/shedfake#WeaverSeams`
 
 **Edit:**
 - `internal/shedrecipe#implementers`
