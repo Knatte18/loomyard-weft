@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-17 10:49 UTC; every age below is as of then.
+Rendered 2026-11-17 10:51 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | darn · light | Darn-Write | neve | 1h<br>8m | loom, board, stencil |
-| T6 | **Sweep read-only leftovers a killed test leaves under the scratch root** | [`readonly-test-leftovers`](design-readonly-test-leftovers.md) | darn · light | Darn-Write | neve | 16m<br>8m | cleanup, testkit, webster |
+| T5 | **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | darn · light | Drift-Verify | neve | 1h<br>10m | loom, board, stencil |
+| T6 | **Sweep read-only leftovers a killed test leaves under the scratch root** | [`readonly-test-leftovers`](design-readonly-test-leftovers.md) | darn · light | Darn-Write | neve | 18m<br>10m | cleanup, testkit, webster |
 
 ### Ready (0)
 

@@ -1,6 +1,6 @@
 # raddle: each filed part carries its own module labels, not the Sketch's whole set
 
-`raddle-part-labels` · Task · bug, loom, board, stencil · running · Darn-Write
+`raddle-part-labels` · Task · bug, loom, board, stencil · running · Drift-Verify
 
 ## Seen (operator, 2026-11-17)
 
