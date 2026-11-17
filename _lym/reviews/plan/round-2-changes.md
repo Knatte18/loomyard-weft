@@ -1,0 +1,11 @@
+_lym/plan/01-machine-address-parser.md
+_lym/plan/02-machine-mail-journal.md
+_lym/plan/03-machine-outbound-post.md
+_lym/plan/04-machine-relay-verbs.md
+_lym/plan/05-machine-inbound-deliver.md
+_lym/plan/06-creel-bridge-wiring.md
+_lym/plan/07-bridge-envelope-and-name.md
+_lym/plan/08-bridge-records-and-calls.md
+_lym/plan/09-approve-and-revoke.md
+_lym/plan/10-bridge-sending.md
+_lym/plan/11-bridge-receiving.md

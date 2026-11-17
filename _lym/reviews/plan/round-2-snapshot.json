@@ -1,0 +1,13 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/plan"
+  ],
+  "target_id": "263409ab8c95139d606906232a081034f2c3e6b1d776a88e58456434a112fc0e",
+  "added_decisions": [
+    {
+      "title": "Round 3 hard-cap ruling: the four open findings are answered in the record",
+      "digest": "6c8cfeeaf368b3ef25be47d4497776c4e84a3f601a07e15ecb8c2d17be97a73e"
+    }
+  ]
+}
