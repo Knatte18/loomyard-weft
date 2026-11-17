@@ -74,7 +74,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md)<br>[Sketch](decision-review-rounds-converge.md) | raddle | starting · Open-Window | neve | 2h<br>0m | burler, shed, stencil |
+| T3 | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md)<br>[Sketch](decision-review-rounds-converge.md) | raddle | starting · Seed-IDE | neve | 2h<br>0m | burler, shed, stencil |
 
 #### Ready (0)
 
@@ -199,7 +199,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>23m | claude, shuttle, config |
+| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>24m | claude, shuttle, config |
 
 #### Draft (1)
 
