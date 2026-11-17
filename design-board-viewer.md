@@ -1,6 +1,6 @@
 # Interactive board view: a regenerated HTML file and a phone-friendly README
 
-`board-viewer` · Note · sketch, board, ide, orch
+`board-viewer` · Task · sketch, board, ide, orch
 
 Decision record: [Sketch](decision-board-viewer.md)
 
