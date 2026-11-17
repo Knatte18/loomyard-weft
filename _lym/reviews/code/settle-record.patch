@@ -1,0 +1,1962 @@
+diff --git a/cmd/lym/main.go b/cmd/lym/main.go
+index 02f10dfc..e255891a 100644
+--- a/cmd/lym/main.go
++++ b/cmd/lym/main.go
+@@ -40,6 +40,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/quarrycli"
+ 	"github.com/Knatte18/loomyard/internal/reedcli"
+ 	"github.com/Knatte18/loomyard/internal/reportcli"
++	"github.com/Knatte18/loomyard/internal/retrocli"
+ 	"github.com/Knatte18/loomyard/internal/selfreportcli"
+ 	"github.com/Knatte18/loomyard/internal/shedcli"
+ 	"github.com/Knatte18/loomyard/internal/shortcutcli"
+@@ -142,7 +143,7 @@ envelope: what it did, each error and warning, and each way forward, with long
+ lists collapsed to a count. --envelope prints the full envelope instead; any
+ output that is no terminal, as an agent's or a script's, gets the envelope.
+ 
+-Available modules: board, config, ide, reed, fabric, selfreport, shuttle, burler, webster, stencil, loom, quarry, batten, shed, orch, cleanup, adopt, beam, report, tender, hibernate, drift, gate, creel, slack, heddle, machine, help.
++Available modules: board, config, ide, reed, fabric, selfreport, shuttle, burler, webster, stencil, loom, quarry, batten, shed, orch, cleanup, adopt, beam, report, retro, tender, hibernate, drift, gate, creel, slack, heddle, machine, help.
+ Shortcuts, declared in internal/shortcutcli's embedded file, are listed under their own heading in lym --help.`,
+ 		SilenceUsage:  true,
+ 		SilenceErrors: true,
+@@ -210,6 +211,7 @@ Shortcuts, declared in internal/shortcutcli's embedded file, are listed under th
+ 		adoptcli.Command(),
+ 		beamcli.Command(),
+ 		reportcli.Command(),
++		retrocli.Command(),
+ 		tendercli.Command(),
+ 		hibernatecli.Command(),
+ 		driftcli.Command(),
+diff --git a/cmd/lym/sandbox_coverage_test.go b/cmd/lym/sandbox_coverage_test.go
+index 6d5a3358..15edea0c 100644
+--- a/cmd/lym/sandbox_coverage_test.go
++++ b/cmd/lym/sandbox_coverage_test.go
+@@ -63,6 +63,10 @@ var excludedModules = []scankit.Entry{
+ 		Key: "machine",
+ 		Why: "name <name> rewrites the per-user machine file and the owners on every hub of the machine record, which no sandbox scenario may do; exercised by internal/machinecli's own tests instead",
+ 	},
++	{
++		Key: "retro",
++		Why: "files a darn task on the board and releases it, so the hub's dobby starts a run, which no sandbox scenario may do; exercised by internal/retrocli's own tests instead",
++	},
+ 	{
+ 		Key: "slack",
+ 		Why: "its relay calls the live Slack Web API with the machine's bot token, which no sandbox scenario may reach; exercised by internal/slackcli's and internal/slackengine's own tests instead",
+diff --git a/contracts/stencils/retro/retro-template-task.md b/contracts/stencils/retro/retro-template-task.md
+new file mode 100644
+index 00000000..0cfc5082
+--- /dev/null
++++ b/contracts/stencils/retro/retro-template-task.md
+@@ -0,0 +1,73 @@
++## Goal
++
++Audit the landed runs below from their records and transcripts,
++and propose changes to lym's agent environment, most severe first.
++Write one report and its line in the research index, and change nothing else: no production code, no test, no stencil and nothing under Bolt.
++File nothing on the board and no issue; the operator picks which proposals become board notes.
++
++## The runs
++
++The runs landed after {{.from}} and up to {{.until}}:
++
++{{.runs}}
++
++## 1. The figures
++
++Run each of these once from the repository root, before you read anything else:
++
++- `{{.tools_dir}}/retro.sh {{.report_dir}} {{.run_slugs}}`
++  writes `figures.md` and the tables behind it into the report directory.
++  Its header names each table and column.
++- `tools/tokencount/tokencount.sh -out {{.report_dir}}/tokencount.md {{.run_slugs}}`
++  writes each run's cost per segment and part.
++- `tools/forkaudit/forkaudit.sh --runs {{.run_list}} --out {{.report_dir}}/forkaudit.md --work .scratch/forkaudit`
++  writes what the Webster implementer forks read; a run with no Webster fork matches none.
++
++Keep every file they write beside the report, and remove `.scratch/forkaudit` after.
++When a script fails, say so in the report with its error, and work from the figures the others gave.
++
++## 2. The reading
++
++Read what the figures point at, and nothing they do not.
++Read at most {{.read_cap}} moments in all.
++A moment is one span of at most 30 turns of one session's transcript,
++or one stencil, heddle passage or section of `CLAUDE.local.md` that a span showed an agent acting on.
++A session's transcript is `<session>.jsonl` under the run's directory in `~/.claude/projects`,
++and a fork's lies under `<session>/subagents/`; read a span with `jq`, never the whole file.
++
++Answer each question for the runs, with the moment that shows the answer:
++
++- Which producer's turns or cost stand out against its median, and what in the session made it so?
++- Which serial single lookups could have shared a turn, and which instruction failed to batch them?
++- Which commands did a guard refuse, and what led the agent to try them?
++- Which verify gate failures went to a fixer or back to the writer, and could a check have caught the fault earlier?
++- Which review findings recur across runs or rounds, and of which kind?
++- Which instruction had no effect: a sentence the sessions broke, or one they never needed?
++- Where did an agent search for something it should have been told: a path, a command, a format?
++
++## 3. The proposals
++
++Route each proposal by the fault it fixes:
++
++- A mechanical fault becomes a check: a shell guard row, a lint, a gate or a test.
++- A judgement call becomes a reviewer rubric line.
++- An instruction with no effect becomes a deletion.
++- A new prompt sentence is the last resort: propose one only when no check, rubric line or deletion fits, and say why.
++
++Each proposal names the file it changes, the route, and the moment it traces to:
++the run's slug, the session's first eight characters and the turn.
++
++## 4. The report
++
++Write `{{.report_dir}}/report.md`, and keep the directory's name as it is:
++the next `lym retro` reads its stamp from it.
++The report holds:
++
++- the runs and the window above;
++- the figures that matter to a proposal, cut from `figures.md`, which stays beside the report whole;
++- the proposals, most severe first, each with its severity, route, file and moment;
++- the questions above that the runs gave no answer to, one line each.
++
++Add one line for the report under a `retro` section of `{{.research_index}}`,
++creating the section when it has none.
++Every report under `{{.retro_dir}}` is listed there.
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index 11bab50e..cb30a60d 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -590,6 +590,12 @@ var TwillJudgePlain []byte
+ //go:embed beam/beam-template-board-tidy.md
+ var BeamTemplateBoardTidy []byte
+ 
++// RetroTemplateTask is the retro task's shipped-default board body.
++// It is the goal of the darn task `lym retro` files: the scripts to run, the reading cap, the questions and the report.
++//
++//go:embed retro/retro-template-task.md
++var RetroTemplateTask []byte
++
+ // SeatDirectiveChair is the chair seat block's shipped default:
+ // the channel rules a multi-seat step's chair works under, pulled into a seat stencil as an include.
+ //
+@@ -865,6 +871,7 @@ var entries = []registryEntry{
+ 	{"engine/claude/edit-directive", &EngineClaudeEditDirective},
+ 	{"engine/codex/edit-directive", &EngineCodexEditDirective},
+ 	{"beam-template-board-tidy", &BeamTemplateBoardTidy},
++	{"retro-template-task", &RetroTemplateTask},
+ 	{"gatefix-frame-cold", &GatefixFrameCold},
+ 	{"gatefix-body-darn", &GatefixBodyDarn},
+ 	{"gatefix-body-plan", &GatefixBodyPlan},
+diff --git a/docs/overview.md b/docs/overview.md
+index 0650c4b5..46eac70b 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -312,6 +312,8 @@ github.com/Knatte18/loomyard/
+ ├── internal/reedengine/render/   pure display-vocabulary leaf (Anchor, Display, ValidateDisplay)
+ ├── internal/reportcli/           the report CLI command (`lym report convergence`, the read-only convergence report, `lym report timing`, the read-only timing report, `lym report cost`, the read-only cost report, `lym report raddle`, the read-only predicted-against-actual cost of each filed Sketch, and `lym report replies`, the read-only count of creel's expected replies, prime only)
+ ├── internal/reportengine/        the report domain kernel (finished runs, wakes, stops, repairs, review rounds and landings for convergence, per-run time, waits, attempts and stop settlers for timing, per-cell dollars, hours and cost fits from the runs' usage records for cost, each filed Sketch's predicted cost against its parts' actual cost from the raddle store for raddle, read from git objects, and the per-role count of creel's expected replies, read from the creel log)
++├── internal/retrocli/            the retro CLI command (`lym retro`, filing and releasing the darn task that audits landed runs from their transcripts, prime only)
++├── internal/retroengine/         the retro domain kernel (the last retro's stamp, the landed runs a retro covers under its cap, and the retro task's body and board fields)
+ ├── internal/orchcli/             the orch CLI command
+ ├── internal/orchengine/          the orch domain kernel (config, stencil renders, persisted state, cycle state machine)
+ ├── internal/orchroute/           the orch lookups below `orchcli`: the orch paths, the liveness of a worktree's orch, its strand name and the walk to the nearest live orch (`Asker`)
+@@ -839,6 +841,16 @@ User-facing modules each get one `lym <module>` namespace:
+   The replies report counts, per receiver role over the creel journal's seven days, the replies creel was asked for, the replies it got, the chases it sent and the messages left unanswered.
+   Convergence and timing cover tapestry and darn runs, each tagged with its recipe, and read records lym already writes.
+   ✅ Implemented. See the `internal/reportengine` package documentation.
++- **retro** — one command that audits recent runs and proposes fixes (`internal/retrocli` + `internal/retroengine`; `lym retro [<slug>...] [--since <date>] [--until <date>] [--max-runs <n>]`, prime only).
++  It files one darn task on the `docs` profile from the `retro-template-task` stencil and releases it.
++  With no slug it covers the runs landed since the last retro, the newest stamp among the report directories under `docs/research/retro` and the retro tasks on the board, up to a cap of runs;
++  past the cap it keeps the oldest, and the next retro starts after them.
++  The task's writer runs `tools/retro/retro.sh`, `tools/tokencount` and `tools/forkaudit` over the runs' records and transcripts,
++  reads at most a fixed number of moments the figures point at,
++  and writes a report under `docs/research/retro/<slug>/` of proposals, most severe first, each routed to a check, a rubric line or a deletion.
++  The run files nothing on the board: the operator picks which proposals become notes.
++  Friction-Reflect stays as it is, a per-run step that files lym issues from the notes agents chose to write.
++  ✅ Implemented. See the `internal/retrocli` package documentation.
+ - **tender** — the one ordered pause that makes the hub safe to suspend within seconds (`internal/tendercli` + `internal/tenderengine`; `lym tender pause [<slug>] [--grace <seconds>]`, `lym tender resume [<slug>]`, `lym tender revive [<slug>]`, `lym tender status` and `lym tender reap`, from any worktree of the hub; `lym p` and `lym r` are shortcuts for the first two verbs).
+   `lym tender pause` records an entry, waits a short grace for busy agent sessions and network operations to finish, interrupts every covered session still in a running turn with Esc and holds every path that would start agent or network work;
+   the orchestrator is interrupted by its own watcher at the grace end.
+diff --git a/internal/reportcli/cli.go b/internal/reportcli/cli.go
+index 0a1d7790..f324f49d 100644
+--- a/internal/reportcli/cli.go
++++ b/internal/reportcli/cli.go
+@@ -123,7 +123,7 @@ Example:
+ 				return fail(err)
+ 			}
+ 
+-			geometry, err := primeGeometry(location)
++			geometry, err := PrimeGeometry(location)
+ 			if err != nil {
+ 				return fail(err)
+ 			}
+@@ -181,8 +181,8 @@ func parseOptions(since string, freshDays int, format string, now time.Time) (re
+ 	return options, nil
+ }
+ 
+-// primeGeometry resolves the checkouts and branches the report reads from the prime worktree's location.
+-func primeGeometry(location *lymcwd.Location) (reportengine.Geometry, error) {
++// PrimeGeometry resolves the checkouts and branches a report reads from the prime worktree's location.
++func PrimeGeometry(location *lymcwd.Location) (reportengine.Geometry, error) {
+ 	codeRepo := location.WorktreePath()
+ 	parentBranch, err := gitrepo.New(codeRepo).CurrentBranch()
+ 	if err != nil {
+diff --git a/internal/reportcli/cost.go b/internal/reportcli/cost.go
+index e10a5a0e..3f88bfad 100644
+--- a/internal/reportcli/cost.go
++++ b/internal/reportcli/cost.go
+@@ -62,7 +62,7 @@ Example:
+ 				return fail(err)
+ 			}
+ 			options.MinRuns = config.CostMinRuns
+-			geometry, err := primeGeometry(location)
++			geometry, err := PrimeGeometry(location)
+ 			if err != nil {
+ 				return fail(err)
+ 			}
+diff --git a/internal/reportcli/raddle.go b/internal/reportcli/raddle.go
+index 50d36ed9..ee0afaae 100644
+--- a/internal/reportcli/raddle.go
++++ b/internal/reportcli/raddle.go
+@@ -50,7 +50,7 @@ Example:
+ 			if err != nil {
+ 				return fail(err)
+ 			}
+-			geometry, err := primeGeometry(location)
++			geometry, err := PrimeGeometry(location)
+ 			if err != nil {
+ 				return fail(err)
+ 			}
+diff --git a/internal/reportcli/timing.go b/internal/reportcli/timing.go
+index 8c7dbc3b..8962f0b6 100644
+--- a/internal/reportcli/timing.go
++++ b/internal/reportcli/timing.go
+@@ -71,7 +71,7 @@ Example:
+ 			if err != nil {
+ 				return fail(err)
+ 			}
+-			geometry, err := primeGeometry(location)
++			geometry, err := PrimeGeometry(location)
+ 			if err != nil {
+ 				return fail(err)
+ 			}
+diff --git a/internal/retrocli/cli.go b/internal/retrocli/cli.go
+new file mode 100644
+index 00000000..03df5e52
+--- /dev/null
++++ b/internal/retrocli/cli.go
+@@ -0,0 +1,253 @@
++// cli.go builds `lym retro`, which files and releases the darn task that audits landed runs.
++
++// Package retrocli provides `lym retro`.
++// The verb finds the last retro and picks the landed runs the new one covers through `retroengine`.
++// It renders the task body from the retro stencil and files the task on the board.
++// It then releases the task, so the hub's dobby starts it as a darn run.
++// It runs from the hub's prime worktree only, in a repository that holds the retro's scripts.
++// The board write carries the caller's strand name, so a run's agent is refused a new task as on `lym board`.
++package retrocli
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"io"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"slices"
++	"time"
++
++	"github.com/spf13/cobra"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/reportcli"
++	"github.com/Knatte18/loomyard/internal/reportengine"
++	"github.com/Knatte18/loomyard/internal/retroengine"
++)
++
++// dateLayout is the form --since and --until take.
++const dateLayout = "2006-01-02"
++
++// Command returns the `lym retro` verb.
++func Command() *cobra.Command {
++	var since, until string
++	var maxRuns int
++	cmd := &cobra.Command{
++		Use:         "retro [<slug>...]",
++		Short:       "file and release a darn task that audits landed runs from their transcripts and proposes fixes",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Long: fmt.Sprintf(`retro files one darn task that audits landed runs, and releases it.
++With no slug it covers the runs landed since the last retro: the newest stamp
++among the report directories under %[1]s and the retro tasks on
++the board. With no earlier retro it covers the last %[2]d days. Named slugs
++cover exactly those runs, each landed within the last %[3]d days.
++
++The task's writer runs the scripts under %[4]s over the runs' records
++and transcripts, reads what the figures point at, and writes a stamped report
++of proposals, most severe first, under %[1]s. It files nothing
++on the board.
++
++  --since <date>     UTC date (YYYY-MM-DD) after which a run is covered, in
++                     place of the last retro; not with slugs
++  --until <date>     UTC date (YYYY-MM-DD) up to which a run is covered
++                     (default: now); not with slugs
++  --max-runs <n>     the most runs one retro covers (default %[5]d); past it the
++                     oldest are kept and the next retro starts after them
++
++It runs from the hub's prime worktree only.
++
++Example:
++  lym retro`,
++			retroengine.ReportDirRel, int(retroengine.DefaultWindow.Hours()/24), int(retroengine.NamedLookback.Hours()/24),
++			retroengine.ToolsDirRel, retroengine.DefaultMaxRuns),
++		Args: cobra.ArbitraryArgs,
++		RunE: clihelp.WrapRunCtx(func(ctx context.Context, out io.Writer, args []string) int {
++			window, err := parseWindow(args, since, until, maxRuns, time.Now().UTC())
++			if err != nil {
++				return output.Err(out, err.Error())
++			}
++			return fileRetro(ctx, out, window)
++		}),
++	}
++	cmd.Flags().StringVar(&since, "since", "", "UTC date (YYYY-MM-DD) after which a run is covered, in place of the last retro")
++	cmd.Flags().StringVar(&until, "until", "", "UTC date (YYYY-MM-DD) up to which a run is covered (default: now)")
++	cmd.Flags().IntVar(&maxRuns, "max-runs", retroengine.DefaultMaxRuns, "the most runs one retro covers; at least 1")
++	return cmd
++}
++
++// parseWindow validates the arguments and flags before anything is read.
++// Each refusal names the flag, the value given and the form accepted.
++func parseWindow(slugs []string, since, until string, maxRuns int, now time.Time) (retroengine.Window, error) {
++	window := retroengine.Window{Slugs: slugs, Now: now, MaxRuns: maxRuns}
++	if len(slugs) > 0 && (since != "" || until != "") {
++		return retroengine.Window{}, errors.New("retro: named runs take no --since or --until: name the runs, or give the window, not both")
++	}
++	if maxRuns < 1 {
++		return retroengine.Window{}, fmt.Errorf("retro: --max-runs %d is too small: expected an integer of at least 1", maxRuns)
++	}
++	for _, flag := range []struct {
++		name  string
++		value string
++		into  *time.Time
++	}{{"--since", since, &window.Since}, {"--until", until, &window.Until}} {
++		if flag.value == "" {
++			continue
++		}
++		parsed, err := time.ParseInLocation(dateLayout, flag.value, time.UTC)
++		if err != nil {
++			return retroengine.Window{}, fmt.Errorf("retro: %s %q is not a date: expected YYYY-MM-DD in UTC", flag.name, flag.value)
++		}
++		*flag.into = parsed
++	}
++	// A retro stamped after now would hide the runs that land between the filing and that stamp from the next retro.
++	if window.Until.After(now) {
++		return retroengine.Window{}, fmt.Errorf("retro: --until %q is later than now: omit --until, or give a date no later than today", until)
++	}
++	return window, nil
++}
++
++// fileRetro plans the retro over window from the prime the context's cwd resolves to, then files and releases its task.
++func fileRetro(ctx context.Context, out io.Writer, window retroengine.Window) int {
++	location, err := resolvePrime(ctx)
++	if err != nil {
++		return output.Err(out, err.Error())
++	}
++	worktree := location.WorktreePath()
++	if _, err := os.Stat(filepath.Join(worktree, retroengine.ToolsDirRel)); err != nil {
++		return output.Err(out, fmt.Sprintf("retro: this repository holds no %s, the retro's scripts: run lym retro on the hub of a repository that has them", retroengine.ToolsDirRel))
++	}
++
++	tasks, err := boardengine.ReadTasks(fabricengine.BoardDir(location.HubPath))
++	if err != nil {
++		return output.Err(out, err.Error())
++	}
++	names, err := reportDirNames(filepath.Join(worktree, retroengine.ReportDirRel))
++	if err != nil {
++		return output.Err(out, err.Error())
++	}
++	for _, task := range tasks {
++		names = append(names, task.Slug)
++	}
++	last, hasLast := retroengine.LastRetro(names)
++
++	landed, err := landedRuns(location, window.Start(last, hasLast))
++	if err != nil {
++		return output.Err(out, err.Error())
++	}
++	plan, err := retroengine.Select(landed, last, hasLast, window)
++	if err != nil {
++		return output.Err(out, err.Error())
++	}
++	if slices.ContainsFunc(tasks, func(task boardengine.Task) bool { return task.Slug == plan.Slug }) {
++		return output.Err(out, fmt.Sprintf("retro: the board already holds an entry %s: "+
++			"a retro ending now can be filed again a second later; a retro ending at a landing needs a different set of runs, or --since and --until",
++			plan.Slug))
++	}
++
++	body, err := plan.Body(fabricengine.StencilsDir(location.HubPath))
++	if err != nil {
++		return output.Err(out, err.Error())
++	}
++	board, err := openBoard(location)
++	if err != nil {
++		return output.Err(out, err.Error())
++	}
++	if _, err := board.UpsertTask(plan.TaskFields(body)); err != nil {
++		return output.Err(out, fmt.Sprintf("retro: file the task %s: %v", plan.Slug, err))
++	}
++	// The board gives a new task the draft status, so the filing releases it with a second write.
++	if err := board.SetStatus(plan.Slug, nil); err != nil {
++		return output.Err(out, fmt.Sprintf("retro: the task %s was filed but not released and stands as a draft with no run: release it with `lym board set-status` and a null status: %v", plan.Slug, err))
++	}
++	return output.Ok(out, map[string]any{
++		"slug":       plan.Slug,
++		"runs":       plan.Slugs(),
++		"from":       plan.From.UTC().Format(time.RFC3339),
++		"until":      plan.Until.UTC().Format(time.RFC3339),
++		"report_dir": plan.ReportDir(),
++	})
++}
++
++// resolvePrime resolves the context's cwd to the hub's prime worktree, refusing any other worktree.
++func resolvePrime(ctx context.Context) (*lymcwd.Location, error) {
++	cwd, err := lymcwd.CwdFrom(ctx)
++	if err != nil {
++		return nil, err
++	}
++	location, err := lymcwd.Resolve(cwd)
++	if err != nil {
++		return nil, err
++	}
++	if err := fabricengine.RequireDrivableWorktree(location); err != nil {
++		return nil, fmt.Errorf("retro: lym retro runs from the hub's prime worktree only: %w", err)
++	}
++	primeName, err := fabricengine.PrimeName(location)
++	if err != nil {
++		return nil, fmt.Errorf("retro: cannot verify this is the hub's prime worktree: %w", err)
++	}
++	if location.WorktreeName != primeName {
++		return nil, fmt.Errorf("retro: lym retro runs from the hub's prime worktree only; %q is not the prime worktree (%q is): re-run it from there",
++			location.WorktreeName, primeName)
++	}
++	return location, nil
++}
++
++// reportDirNames returns the names of the entries under dir, none when dir does not exist.
++func reportDirNames(dir string) ([]string, error) {
++	entries, err := os.ReadDir(dir)
++	if errors.Is(err, fs.ErrNotExist) {
++		return nil, nil
++	}
++	if err != nil {
++		return nil, fmt.Errorf("retro: list the retro reports: %w", err)
++	}
++	names := make([]string, len(entries))
++	for i, entry := range entries {
++		names[i] = entry.Name()
++	}
++	return names, nil
++}
++
++// landedRuns returns the runs landed on the prime's parent branch from since on, each with its landing commit's time.
++// A landing no finished run claims is left out.
++func landedRuns(location *lymcwd.Location, since time.Time) ([]retroengine.Run, error) {
++	geometry, err := reportcli.PrimeGeometry(location)
++	if err != nil {
++		return nil, err
++	}
++	sources, err := reportengine.Open(geometry)
++	if err != nil {
++		return nil, err
++	}
++	report, err := reportengine.Compute(sources, reportengine.Options{Since: since, FreshDays: 1})
++	if err != nil {
++		return nil, err
++	}
++	var runs []retroengine.Run
++	for _, landing := range report.Landings {
++		if landing.Slug != "" {
++			runs = append(runs, retroengine.Run{Slug: landing.Slug, Landed: landing.Committed})
++		}
++	}
++	return runs, nil
++}
++
++// openBoard opens the hub's board with the caller's strand name,
++// so the board's guard judges a new task as it does on `lym board`.
++func openBoard(location *lymcwd.Location) (*boardengine.Board, error) {
++	cfg, err := boardengine.LoadConfig(fabricengine.ConfigDirs(location), "board")
++	if err != nil {
++		return nil, err
++	}
++	cfg.Path = fabricengine.BoardDir(location.HubPath)
++	cfg = boardengine.ApplySkipEnv(cfg)
++	cfg.StrandName = os.Getenv(agentname.StrandNameEnv)
++	return boardengine.New(cfg), nil
++}
+diff --git a/internal/retrocli/cli_test.go b/internal/retrocli/cli_test.go
+new file mode 100644
+index 00000000..f7bba49a
+--- /dev/null
++++ b/internal/retrocli/cli_test.go
+@@ -0,0 +1,47 @@
++// cli_test.go covers the refusals of `lym retro` that come before any cwd resolution or read.
++
++package retrocli_test
++
++import (
++	"bytes"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/retrocli"
++	"github.com/Knatte18/loomyard/internal/testkit/envelope"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestRetro_RefusesBadArguments(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		args []string
++		want []string
++	}{
++		{"named runs with a since", []string{"a", "--since", "2026-11-01"}, []string{"--since or --until", "not both"}},
++		{"named runs with an until", []string{"a", "--until", "2026-11-01"}, []string{"--since or --until", "not both"}},
++		{"a since that is no date", []string{"--since", "yesterday"}, []string{"--since", "yesterday", "YYYY-MM-DD"}},
++		{"an until with no such month", []string{"--until", "2026-13-01"}, []string{"--until", "2026-13-01", "YYYY-MM-DD"}},
++		{"an until later than now", []string{"--until", "2999-01-01"}, []string{"--until", "2999-01-01", "later than now", "omit --until"}},
++		{"a cap of zero runs", []string{"--max-runs", "0"}, []string{"--max-runs", "0", "at least 1"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			// A temp directory is no git checkout, so only a refusal that precedes cwd resolution can name the flag.
++			var out bytes.Buffer
++			code := clihelp.ExecuteIn(retrocli.Command(), t.TempDir(), &out, tt.args)
++
++			if code != 1 {
++				t.Errorf("exit code = %d; want 1", code)
++			}
++			for _, text := range tt.want {
++				envelope.RequireErr(t, out.String(), text)
++			}
++		})
++	}
++}
+diff --git a/internal/retrocli/fileretro_integration_test.go b/internal/retrocli/fileretro_integration_test.go
+new file mode 100644
+index 00000000..019abbc0
+--- /dev/null
++++ b/internal/retrocli/fileretro_integration_test.go
+@@ -0,0 +1,223 @@
++// fileretro_integration_test.go drives `lym retro` through clihelp.ExecuteIn over a hubforge hub.
++// It covers the prime-only and missing-scripts refusals, the parsed window, and the filing and release of the task.
++// It also covers the duplicate-slug refusal, and the last retro read from both the board and the report directories.
++
++package retrocli_test
++
++import (
++	"bytes"
++	"encoding/json"
++	"fmt"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strconv"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/battenrecipe"
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/loomshed"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/retrocli"
++	"github.com/Knatte18/loomyard/internal/retroengine"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/testkit/envelope"
++	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func writeFile(t *testing.T, path, content string) {
++	t.Helper()
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatalf("MkdirAll: %v", err)
++	}
++	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++		t.Fatalf("WriteFile: %v", err)
++	}
++}
++
++func marshalStatus(t *testing.T, status shedengine.Status) string {
++	t.Helper()
++	data, err := json.Marshal(status)
++	if err != nil {
++		t.Fatalf("marshal status: %v", err)
++	}
++	return string(data)
++}
++
++// seedLandedRun lands the hub's template pair as a finished run, the way a landing leaves it.
++// It returns the landing commit's time.
++func seedLandedRun(t *testing.T, h *hubforge.Hub, slug string) time.Time {
++	t.Helper()
++
++	runStart := time.Now().UTC().Truncate(time.Second).Add(-3 * time.Hour)
++	stamp := func(hours int) string { return runStart.Add(time.Duration(hours) * time.Hour).Format(time.RFC3339) }
++
++	board, err := boardengine.OpenHub(h.Path)
++	if err != nil {
++		t.Fatalf("open the hub board: %v", err)
++	}
++	if _, err := board.UpsertTask(map[string]any{"slug": slug, "title": slug, "kind": "task", "labels": []string{"bug"}}); err != nil {
++		t.Fatalf("seed the board entry: %v", err)
++	}
++	commitBoardIfDirty(t, h, "board: seed the entry")
++
++	battenStatus := shedengine.Status{State: shedengine.StateDone, CurrentProducer: battenrecipe.NameWorktreeTeardown, History: []shedengine.HistoryEntry{
++		{Producer: battenrecipe.NameWorktreeCreate, Outcome: shedengine.Done, At: stamp(0)},
++		{Producer: battenrecipe.NameLand, Outcome: shedengine.Done, At: stamp(2)},
++	}}
++	writeFile(t, shedrun.StatusFile(h.Location, slug), marshalStatus(t, battenStatus))
++	if _, committed, err := fabricengine.CommitAnchoredPaths(fabricengine.NewMutations(""), h.Location, []string{shedrun.StatusRel(h.Location, slug)}, "test: batten record", fabricengine.SyncOptions{SkipPush: true}); err != nil || !committed {
++		t.Fatalf("commit the batten record: committed=%v err=%v", committed, err)
++	}
++
++	pairCode := h.PairCodeWorktree(slug)
++	writeFile(t, filepath.Join(pairCode, "fixed.txt"), "fixed\n")
++	gitkit.Git(t, pairCode, "add", "fixed.txt")
++	gitkit.Git(t, pairCode, "commit", "-m", "fix: repair the thing")
++	taskCommit := gitkit.Git(t, pairCode, "rev-parse", "HEAD")
++
++	pairLocation, err := lymcwd.Resolve(pairCode)
++	if err != nil {
++		t.Fatalf("resolve the pair: %v", err)
++	}
++	loomStatus := shedengine.Status{State: shedengine.StateDone, History: []shedengine.HistoryEntry{{Producer: loomshed.NameFinalize, Outcome: shedengine.Done, At: stamp(1)}}}
++	writeFile(t, shedrun.SeedFile(pairLocation, slug), fmt.Sprintf(`{"recipe":%q,"driver":"go","started_at":%q}`, shedrun.RecipeTapestry, stamp(0)))
++	writeFile(t, shedrun.StatusFile(pairLocation, slug), marshalStatus(t, loomStatus))
++	fabric, err := fabricengine.Open(pairLocation)
++	if err != nil {
++		t.Fatalf("open the pair's fabric: %v", err)
++	}
++	finished := []string{shedrun.SeedRel(pairLocation, slug), shedrun.StatusRel(pairLocation, slug)}
++	if _, err := fabric.Commit(finished, "records: the finished run", nil, fabricengine.SyncOptions{SkipPush: true}); err != nil {
++		t.Fatalf("commit the finished run: %v", err)
++	}
++
++	pairRecords := h.PairRecordsSibling(slug)
++	tipSHA := gitkit.Git(t, pairRecords, "rev-parse", "HEAD")
++	gitkit.Git(t, pairRecords, "tag", fabricengine.ArchiveTagPrefix+slug+"/"+tipSHA[:12], tipSHA)
++	gitkit.Git(t, h.PrimeWorktree(), "merge", "--ff-only", taskCommit)
++
++	seconds, err := strconv.ParseInt(gitkit.Git(t, h.PrimeWorktree(), "log", "-1", "--format=%ct"), 10, 64)
++	if err != nil {
++		t.Fatalf("parse the landing time: %v", err)
++	}
++	return time.Unix(seconds, 0).UTC()
++}
++
++// commitBoardIfDirty commits what a test wrote into the hub's board checkout, so the next board write starts clean.
++func commitBoardIfDirty(t *testing.T, h *hubforge.Hub, message string) {
++	t.Helper()
++	if gitkit.GitStatusPorcelain(t, h.BoardDir()) != "" {
++		gitkit.Git(t, h.BoardDir(), "add", "-A")
++		gitkit.Git(t, h.BoardDir(), "commit", "-m", message)
++	}
++}
++
++func TestRetro_FilesAndReleasesTheTaskOfALandedRun(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	slug := hubforge.TemplatePairSlug
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{slug}})
++	prime := h.PrimeWorktree()
++	// The hub's own board vocabulary lists the retro task's type label.
++	boltDir := fabricengine.BoltDir(h.Path)
++	writeFile(t, configengine.ConfigFile(boltDir, "board"), "types: [bug, "+retroengine.TaskLabel+"]\n")
++	if _, _, err := fabricengine.NewBolt(boltDir).Commit("test: the board vocabulary", fabricengine.SyncOptions{SkipPush: true}); err != nil {
++		t.Fatalf("commit the board vocabulary: %v", err)
++	}
++	run := func(cwd string, args ...string) (string, int) {
++		var out bytes.Buffer
++		code := clihelp.ExecuteIn(retrocli.Command(), cwd, &out, args)
++		return out.String(), code
++	}
++	requireRefused := func(cwd string, want []string, args ...string) {
++		t.Helper()
++		out, code := run(cwd, args...)
++		if code != 1 {
++			t.Errorf("retro %v from %s: exit %d, output %s; want a refusal with exit 1", args, cwd, code, out)
++		}
++		for _, text := range want {
++			envelope.RequireErr(t, out, text)
++		}
++	}
++
++	primeName, err := fabricengine.PrimeName(h.Location)
++	if err != nil {
++		t.Fatalf("prime name: %v", err)
++	}
++	requireRefused(h.PairCodeWorktree(slug), []string{"prime worktree only", primeName})
++	requireRefused(prime, []string{retroengine.ToolsDirRel})
++
++	if err := os.MkdirAll(filepath.Join(prime, filepath.FromSlash(retroengine.ToolsDirRel)), 0o755); err != nil {
++		t.Fatalf("create the scripts directory: %v", err)
++	}
++	stencilkit.SeedInto(t, fabricengine.StencilsDir(h.Path))
++	commitBoardIfDirty(t, h, "board: seed the stencils")
++	landed := seedLandedRun(t, h, slug)
++	retroSlug := retroengine.SlugPrefix + landed.Format("20060102-150405")
++
++	// A window of two days in the year 2000 holds no landing, and its refusal names both parsed ends.
++	requireRefused(prime, []string{"no run landed after 2000-01-01T00:00:00Z and up to 2000-01-02T00:00:00Z"}, "--since", "2000-01-01", "--until", "2000-01-02")
++
++	out, code := run(prime, slug)
++	filed := envelope.RequireOK(t, out)
++	if code != 0 {
++		t.Fatalf("retro %s: exit %d, output %s", slug, code, out)
++	}
++	for key, want := range map[string]any{
++		"slug":       retroSlug,
++		"runs":       []any{slug},
++		"from":       landed.Add(-time.Second).Format(time.RFC3339),
++		"until":      landed.Format(time.RFC3339),
++		"report_dir": retroengine.ReportDirRel + "/" + retroSlug,
++	} {
++		if !reflect.DeepEqual(filed.Raw[key], want) {
++			t.Errorf("envelope %s = %v; want %v", key, filed.Raw[key], want)
++		}
++	}
++
++	tasks, err := boardengine.ReadTasks(h.BoardDir())
++	if err != nil {
++		t.Fatalf("read the board: %v", err)
++	}
++	var task *boardengine.Task
++	for i := range tasks {
++		if tasks[i].Slug == retroSlug {
++			task = &tasks[i]
++		}
++	}
++	if task == nil {
++		t.Fatalf("the board holds no entry %s: %+v", retroSlug, tasks)
++	}
++	if task.Status != nil {
++		t.Errorf("task status = %q; want it released, a null status", *task.Status)
++	}
++	if task.Recipe != shedrun.RecipeDarn || task.Profile != retroengine.TaskProfile || !reflect.DeepEqual(task.Labels, []string{retroengine.TaskLabel}) {
++		t.Errorf("task recipe, profile, labels = %q, %q, %v; want a darn task on the %s profile labelled %s",
++			task.Recipe, task.Profile, task.Labels, retroengine.TaskProfile, retroengine.TaskLabel)
++	}
++	if !strings.Contains(task.Body, "- `"+slug+"`, landed "+landed.Format(time.RFC3339)) {
++		t.Errorf("task body does not list the landed run:\n%s", task.Body)
++	}
++
++	requireRefused(prime, []string{"already holds an entry " + retroSlug}, slug)
++
++	// The board's retro task is the last retro, and the run it covers is not after it.
++	requireRefused(prime, []string{"no run landed after " + landed.Format(time.RFC3339)})
++
++	// A newer report directory is the last retro over the older board entry.
++	if err := os.MkdirAll(filepath.Join(prime, filepath.FromSlash(retroengine.ReportDirRel), "retro-29990101-000000"), 0o755); err != nil {
++		t.Fatalf("create a report directory: %v", err)
++	}
++	requireRefused(prime, []string{"no run landed after 2999-01-01T00:00:00Z"})
++}
+diff --git a/internal/retrocli/testmain_test.go b/internal/retrocli/testmain_test.go
+new file mode 100644
+index 00000000..5c51f56e
+--- /dev/null
++++ b/internal/retrocli/testmain_test.go
+@@ -0,0 +1,18 @@
++// testmain_test.go runs the package's tests under the hermetic git environment and tmuxkit.Main,
++// so the hub-backed test never reaches the operator's gitconfig,
++// and every temp file lives in the process run directory.
++
++package retrocli_test
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++func TestMain(m *testing.M) {
++	gitkit.HermeticGitEnv()
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/internal/retroengine/doc.go b/internal/retroengine/doc.go
+new file mode 100644
+index 00000000..4a25e532
+--- /dev/null
++++ b/internal/retroengine/doc.go
+@@ -0,0 +1,13 @@
++// Package retroengine plans a retro:
++// the landed runs it covers, the stamp that names it and the board task that audits them.
++//
++// A retro is one darn task.
++// Its writer runs the retro's scripts over the runs' records and transcripts.
++// It reads what their figures point at and writes a report of proposals under the retro report directory.
++// The task's slug and the report's directory share one name, the slug prefix and the UTC end of the window covered.
++// So the newest such name, among the report directories and the board's entries, is the last retro,
++// and a retro still in flight counts as one.
++//
++// The engine reads nothing itself: a caller hands it the landed runs, the names to search for the last retro,
++// and the stencils directory the task body renders from.
++package retroengine
+diff --git a/internal/retroengine/retro.go b/internal/retroengine/retro.go
+new file mode 100644
+index 00000000..cfbf7992
+--- /dev/null
++++ b/internal/retroengine/retro.go
+@@ -0,0 +1,274 @@
++// retro.go chooses the runs a retro covers, finds the last retro, and renders the retro task's board fields.
++
++package retroengine
++
++import (
++	"fmt"
++	"path"
++	"slices"
++	"strconv"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/stencil"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
++)
++
++const (
++	// ReportDirRel is the worktree-relative directory holding one report directory per retro, named by its slug.
++	ReportDirRel = "docs/research/retro"
++
++	// ResearchIndexRel is the worktree-relative index that lists every research report, the retro reports included.
++	ResearchIndexRel = "docs/research/README.md"
++
++	// ToolsDirRel is the worktree-relative directory of the retro's own scripts.
++	ToolsDirRel = "tools/retro"
++
++	// SlugPrefix opens the slug of every retro task and the name of every retro report directory.
++	SlugPrefix = "retro-"
++
++	// stampLayout is the form of the UTC time that follows SlugPrefix: the end of the window a retro covers.
++	stampLayout = "20060102-150405"
++
++	// StencilName names the stencil the retro task's body renders from.
++	StencilName = "retro-template-task"
++
++	// TaskProfile is the run profile of the retro task, the darn profile for prose work.
++	TaskProfile = "docs"
++
++	// TaskLabel is the type label of the retro task.
++	TaskLabel = "research"
++
++	// DefaultMaxRuns is the most runs one retro covers when the caller sets no cap.
++	DefaultMaxRuns = 10
++
++	// ReadCap is the most transcript spans, stencils and instruction passages the retro's writer reads.
++	ReadCap = 12
++
++	// DefaultWindow is how far back a retro reaches when it has no earlier retro and no start of its own.
++	DefaultWindow = 7 * 24 * time.Hour
++
++	// NamedLookback is how far back a named run may have landed.
++	NamedLookback = 60 * 24 * time.Hour
++)
++
++// Run is one landed run: its slug and the time of the commit that landed it on the parent branch.
++type Run struct {
++	Slug   string
++	Landed time.Time
++}
++
++// Window says which runs a retro covers: the named runs, or the runs landed in a span of time.
++type Window struct {
++	// Slugs names the runs to cover; when it holds any, Since and Until are zero.
++	Slugs []string
++
++	// Since is the time after which a landed run is covered; zero means after the last retro.
++	Since time.Time
++
++	// Until is the time up to which a landed run is covered; zero means Now.
++	Until time.Time
++
++	// Now is the time the retro is filed.
++	Now time.Time
++
++	// MaxRuns is the most runs the retro covers, at least one.
++	MaxRuns int
++}
++
++// Plan is one retro: its slug, the window it covers and the runs in it, oldest first.
++type Plan struct {
++	Slug  string
++	From  time.Time
++	Until time.Time
++	Runs  []Run
++}
++
++// LastRetro returns the newest stamp among names that carry the retro form, SlugPrefix and then a stamp.
++// The bool is false when no name does.
++func LastRetro(names []string) (time.Time, bool) {
++	var newest time.Time
++	found := false
++	for _, name := range names {
++		rest, ok := strings.CutPrefix(name, SlugPrefix)
++		if !ok {
++			continue
++		}
++		stamp, err := time.ParseInLocation(stampLayout, rest, time.UTC)
++		if err != nil {
++			continue
++		}
++		if !found || stamp.After(newest) {
++			newest, found = stamp, true
++		}
++	}
++	return newest, found
++}
++
++// Start returns the earliest landing time the window can cover, given the last retro's stamp when hasLast holds.
++// A caller reads the landings from this time on.
++func (w Window) Start(last time.Time, hasLast bool) time.Time {
++	switch {
++	case len(w.Slugs) > 0:
++		return w.Now.Add(-NamedLookback)
++	case !w.Since.IsZero():
++		return w.Since
++	case hasLast:
++		return last
++	default:
++		return w.end().Add(-DefaultWindow)
++	}
++}
++
++// end returns the time up to which the window covers runs.
++func (w Window) end() time.Time {
++	if w.Until.IsZero() {
++		return w.Now
++	}
++	return w.Until
++}
++
++// Select chooses the runs a retro covers from landed, the runs landed on the parent branch, and names the retro.
++// last is the stamp of the newest earlier retro, and hasLast reports whether one exists.
++// Named slugs are covered exactly, and the retro's stamp is the newest one's landing;
++// its window starts a second before the oldest one's landing, so every named run landed after it.
++// A name with no landing within NamedLookback is refused, and so are more names than MaxRuns.
++// Otherwise the retro covers the runs landed after the window's start and up to its end.
++// Past MaxRuns it keeps the oldest and ends its window at the last kept landing,
++// so the next retro starts with the first run left out;
++// runs landed in the same second as the first one left out are left out too, so no second is split across retros,
++// and a cap that falls inside the oldest landing's second keeps that whole second.
++// A window with no run in it is refused.
++func Select(landed []Run, last time.Time, hasLast bool, w Window) (Plan, error) {
++	newest := map[string]time.Time{}
++	for _, run := range landed {
++		if at, ok := newest[run.Slug]; !ok || run.Landed.After(at) {
++			newest[run.Slug] = run.Landed
++		}
++	}
++
++	if len(w.Slugs) > 0 {
++		var runs []Run
++		for _, slug := range w.Slugs {
++			at, ok := newest[slug]
++			if !ok {
++				return Plan{}, fmt.Errorf("retro: run %q has no landing on the parent branch within the last %d days, since %s: "+
++					"name only runs landed within them (a misspelt slug and an unlanded run have none), or cover an older run with --since and --until",
++					slug, int(NamedLookback.Hours()/24), w.Start(last, hasLast).UTC().Format(time.RFC3339))
++			}
++			if !slices.ContainsFunc(runs, func(r Run) bool { return r.Slug == slug }) {
++				runs = append(runs, Run{Slug: slug, Landed: at})
++			}
++		}
++		if len(runs) > w.MaxRuns {
++			return Plan{}, fmt.Errorf("retro: %d runs named, more than the cap of %d: name fewer runs, or raise --max-runs", len(runs), w.MaxRuns)
++		}
++		sortByLanding(runs)
++		return newPlan(runs[0].Landed.Add(-time.Second), runs[len(runs)-1].Landed, runs), nil
++	}
++
++	from, until := w.Start(last, hasLast), w.end()
++	var runs []Run
++	for slug, at := range newest {
++		if at.After(from) && !at.After(until) {
++			runs = append(runs, Run{Slug: slug, Landed: at})
++		}
++	}
++	if len(runs) == 0 {
++		return Plan{}, fmt.Errorf("retro: no run landed after %s and up to %s: name the runs to cover, or pass an earlier --since",
++			from.UTC().Format(time.RFC3339), until.UTC().Format(time.RFC3339))
++	}
++	sortByLanding(runs)
++	if len(runs) > w.MaxRuns {
++		// The next retro starts after the last kept landing.
++		// A run landed in the first left-out run's second must not be split from it, so those runs are all kept or all left out.
++		firstLeftOut := runs[w.MaxRuns].Landed
++		cut := w.MaxRuns
++		for cut > 0 && runs[cut-1].Landed.Equal(firstLeftOut) {
++			cut--
++		}
++		if cut == 0 {
++			// The cap falls inside the oldest landing's second, so that whole second is kept, past the cap.
++			for cut < len(runs) && runs[cut].Landed.Equal(firstLeftOut) {
++				cut++
++			}
++		}
++		runs = runs[:cut]
++		until = runs[len(runs)-1].Landed
++	}
++	return newPlan(from, until, runs), nil
++}
++
++// sortByLanding orders runs oldest landing first, and by slug between runs landed at the same time.
++func sortByLanding(runs []Run) {
++	slices.SortFunc(runs, func(a, b Run) int {
++		if c := a.Landed.Compare(b.Landed); c != 0 {
++			return c
++		}
++		return strings.Compare(a.Slug, b.Slug)
++	})
++}
++
++// newPlan names the retro over runs by the end of its window.
++func newPlan(from, until time.Time, runs []Run) Plan {
++	return Plan{Slug: SlugPrefix + until.UTC().Format(stampLayout), From: from, Until: until, Runs: runs}
++}
++
++// ReportDir returns the worktree-relative directory the retro's report goes in.
++func (p Plan) ReportDir() string {
++	return path.Join(ReportDirRel, p.Slug)
++}
++
++// Slugs returns the covered runs' slugs, oldest landing first.
++func (p Plan) Slugs() []string {
++	slugs := make([]string, len(p.Runs))
++	for i, run := range p.Runs {
++		slugs[i] = run.Slug
++	}
++	return slugs
++}
++
++// Body renders the board body of the retro task from the retro stencil under stencilsDir.
++func (p Plan) Body(stencilsDir string) (string, error) {
++	template, err := stencilstore.Read(stencilsDir, StencilName)
++	if err != nil {
++		return "", err
++	}
++	lines := make([]string, len(p.Runs))
++	for i, run := range p.Runs {
++		lines[i] = fmt.Sprintf("- `%s`, landed %s", run.Slug, run.Landed.UTC().Format(time.RFC3339))
++	}
++	slugs := p.Slugs()
++	body, err := stencil.Fill(template, map[string]string{
++		"runs":           strings.Join(lines, "\n"),
++		"run_slugs":      strings.Join(slugs, " "),
++		"run_list":       strings.Join(slugs, ","),
++		"from":           p.From.UTC().Format(time.RFC3339),
++		"until":          p.Until.UTC().Format(time.RFC3339),
++		"report_dir":     p.ReportDir(),
++		"retro_dir":      ReportDirRel,
++		"research_index": ResearchIndexRel,
++		"tools_dir":      ToolsDirRel,
++		"read_cap":       strconv.Itoa(ReadCap),
++	})
++	if err != nil {
++		return "", fmt.Errorf("retro: render stencil %q: %w", StencilName, err)
++	}
++	return strings.TrimSpace(stencil.StripLeadingComment(string(body))) + "\n", nil
++}
++
++// TaskFields returns the board fields of the retro task with body: a darn task on the docs profile.
++func (p Plan) TaskFields(body string) map[string]any {
++	return map[string]any{
++		"slug":    p.Slug,
++		"title":   fmt.Sprintf("Retro of %d landed runs up to %s", len(p.Runs), p.Until.UTC().Format(time.RFC3339)),
++		"brief":   "Audit the runs from their records and transcripts, and propose fixes, most severe first",
++		"kind":    boardengine.KindTask,
++		"recipe":  shedrun.RecipeDarn,
++		"profile": TaskProfile,
++		"labels":  []string{TaskLabel},
++		"body":    body,
++	}
++}
+diff --git a/internal/retroengine/retro_test.go b/internal/retroengine/retro_test.go
+new file mode 100644
+index 00000000..fdb3e82c
+--- /dev/null
++++ b/internal/retroengine/retro_test.go
+@@ -0,0 +1,248 @@
++// retro_test.go covers how a retro finds the last retro, chooses its runs and renders its task body.
++
++package retroengine_test
++
++import (
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/contracts/stencils"
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/retroengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// at returns the UTC time of day on 2026-11-16 for hour, minute and second.
++func at(hour, minute, second int) time.Time {
++	return time.Date(2026, 11, 16, hour, minute, second, 0, time.UTC)
++}
++
++func TestLastRetro(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name      string
++		names     []string
++		want      time.Time
++		wantFound bool
++	}{
++		{"no names", nil, time.Time{}, false},
++		{"no retro form among the names", []string{"lym-retro", "retro-notes", "retro-2026-11-16"}, time.Time{}, false},
++		{"the newest stamp wins over older and foreign names", []string{"retro-20261110-090000", "board-task", "retro-20261116-140550", "retro-20261112-235959"}, at(14, 5, 50), true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, found := retroengine.LastRetro(tt.names)
++			if !got.Equal(tt.want) || found != tt.wantFound {
++				t.Errorf("LastRetro(%v) = %v, %v; want %v, %v", tt.names, got, found, tt.want, tt.wantFound)
++			}
++		})
++	}
++}
++
++func TestSelect(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	landed := []retroengine.Run{
++		{Slug: "old", Landed: at(8, 0, 0)},
++		{Slug: "a", Landed: at(10, 0, 0)},
++		{Slug: "b", Landed: at(11, 0, 0)},
++		{Slug: "relanded", Landed: at(9, 0, 0)},
++		{Slug: "relanded", Landed: at(12, 0, 0)},
++		{Slug: "late", Landed: at(15, 0, 0)},
++	}
++	now := at(14, 0, 0)
++	tests := []struct {
++		name string
++		// landed replaces the shared landings when set.
++		landed   []retroengine.Run
++		last     time.Time
++		hasLast  bool
++		window   retroengine.Window
++		want     retroengine.Plan
++		wantErrs []string
++	}{
++		{
++			name:    "after the last retro and up to now, each run at its newest landing",
++			last:    at(9, 30, 0),
++			hasLast: true,
++			window:  retroengine.Window{Now: now, MaxRuns: 10},
++			want: retroengine.Plan{Slug: "retro-20261116-140000", From: at(9, 30, 0), Until: now,
++				Runs: []retroengine.Run{{Slug: "a", Landed: at(10, 0, 0)}, {Slug: "b", Landed: at(11, 0, 0)}, {Slug: "relanded", Landed: at(12, 0, 0)}}},
++		},
++		{
++			name:   "with no earlier retro, the default window before now",
++			window: retroengine.Window{Now: at(14, 0, 0).Add(retroengine.DefaultWindow - 5*time.Hour), MaxRuns: 10},
++			want: retroengine.Plan{Slug: "retro-20261123-090000", From: at(9, 0, 0), Until: at(14, 0, 0).Add(retroengine.DefaultWindow - 5*time.Hour),
++				Runs: []retroengine.Run{{Slug: "a", Landed: at(10, 0, 0)}, {Slug: "b", Landed: at(11, 0, 0)}, {Slug: "relanded", Landed: at(12, 0, 0)}, {Slug: "late", Landed: at(15, 0, 0)}}},
++		},
++		{
++			name:    "a given since and until replace the last retro and now",
++			last:    at(11, 30, 0),
++			hasLast: true,
++			window:  retroengine.Window{Since: at(7, 0, 0), Until: at(10, 0, 0), Now: now, MaxRuns: 10},
++			want: retroengine.Plan{Slug: "retro-20261116-100000", From: at(7, 0, 0), Until: at(10, 0, 0),
++				Runs: []retroengine.Run{{Slug: "old", Landed: at(8, 0, 0)}, {Slug: "a", Landed: at(10, 0, 0)}}},
++		},
++		{
++			name:    "past the cap the oldest runs are kept and the window ends at the last kept landing",
++			last:    at(7, 0, 0),
++			hasLast: true,
++			window:  retroengine.Window{Now: now, MaxRuns: 2},
++			want: retroengine.Plan{Slug: "retro-20261116-100000", From: at(7, 0, 0), Until: at(10, 0, 0),
++				Runs: []retroengine.Run{{Slug: "old", Landed: at(8, 0, 0)}, {Slug: "a", Landed: at(10, 0, 0)}}},
++		},
++		{
++			name: "a cap between runs landed in one second leaves that second to the next retro",
++			landed: []retroengine.Run{
++				{Slug: "x", Landed: at(8, 0, 0)}, {Slug: "y", Landed: at(10, 0, 0)}, {Slug: "z", Landed: at(10, 0, 0)}, {Slug: "w", Landed: at(11, 0, 0)},
++			},
++			last:    at(7, 0, 0),
++			hasLast: true,
++			window:  retroengine.Window{Now: now, MaxRuns: 2},
++			want: retroengine.Plan{Slug: "retro-20261116-080000", From: at(7, 0, 0), Until: at(8, 0, 0),
++				Runs: []retroengine.Run{{Slug: "x", Landed: at(8, 0, 0)}}},
++		},
++		{
++			name:    "a cap inside the oldest landing's second keeps that whole second",
++			landed:  []retroengine.Run{{Slug: "a", Landed: at(10, 0, 0)}, {Slug: "b", Landed: at(10, 0, 0)}, {Slug: "c", Landed: at(10, 0, 0)}, {Slug: "d", Landed: at(11, 0, 0)}},
++			last:    at(7, 0, 0),
++			hasLast: true,
++			window:  retroengine.Window{Now: now, MaxRuns: 2},
++			want: retroengine.Plan{Slug: "retro-20261116-100000", From: at(7, 0, 0), Until: at(10, 0, 0),
++				Runs: []retroengine.Run{{Slug: "a", Landed: at(10, 0, 0)}, {Slug: "b", Landed: at(10, 0, 0)}, {Slug: "c", Landed: at(10, 0, 0)}}},
++		},
++		{
++			name:    "a cap inside a second that holds every run keeps them all",
++			landed:  []retroengine.Run{{Slug: "a", Landed: at(10, 0, 0)}, {Slug: "b", Landed: at(10, 0, 0)}},
++			last:    at(7, 0, 0),
++			hasLast: true,
++			window:  retroengine.Window{Now: now, MaxRuns: 1},
++			want: retroengine.Plan{Slug: "retro-20261116-100000", From: at(7, 0, 0), Until: at(10, 0, 0),
++				Runs: []retroengine.Run{{Slug: "a", Landed: at(10, 0, 0)}, {Slug: "b", Landed: at(10, 0, 0)}}},
++		},
++		{
++			name:    "named runs are covered exactly, whatever the last retro, from just before the oldest landing",
++			last:    at(13, 0, 0),
++			hasLast: true,
++			window:  retroengine.Window{Slugs: []string{"late", "old", "late"}, Now: now, MaxRuns: 2},
++			want: retroengine.Plan{Slug: "retro-20261116-150000", From: at(7, 59, 59), Until: at(15, 0, 0),
++				Runs: []retroengine.Run{{Slug: "old", Landed: at(8, 0, 0)}, {Slug: "late", Landed: at(15, 0, 0)}}},
++		},
++		{
++			name:     "a named run with no landing within the lookback is refused with the lookback's start",
++			window:   retroengine.Window{Slugs: []string{"a", "never-landed"}, Now: now, MaxRuns: 10},
++			wantErrs: []string{`"never-landed"`, "within the last 60 days", "since 2026-09-17T14:00:00Z", "--since and --until"},
++		},
++		{
++			name:     "more named runs than the cap are refused",
++			window:   retroengine.Window{Slugs: []string{"a", "b", "old"}, Now: now, MaxRuns: 2},
++			wantErrs: []string{"3 runs named", "cap of 2", "--max-runs"},
++		},
++		{
++			name:     "a window with no landed run is refused",
++			last:     at(12, 0, 0),
++			hasLast:  true,
++			window:   retroengine.Window{Now: now, MaxRuns: 10},
++			wantErrs: []string{"no run landed after 2026-11-16T12:00:00Z and up to 2026-11-16T14:00:00Z", "--since"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			runs := landed
++			if tt.landed != nil {
++				runs = tt.landed
++			}
++			got, err := retroengine.Select(runs, tt.last, tt.hasLast, tt.window)
++			if len(tt.wantErrs) > 0 {
++				if err == nil {
++					t.Fatalf("Select() = %+v, nil; want an error", got)
++				}
++				for _, want := range tt.wantErrs {
++					if !strings.Contains(err.Error(), want) {
++						t.Errorf("Select() error = %q; want it to contain %q", err, want)
++					}
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("Select() = _, %v; want nil error", err)
++			}
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("Select() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
++
++func TestPlan_TaskFieldsFilesOneDarnTaskOnTheDocsProfile(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	plan := retroengine.Plan{Slug: "retro-20261116-140000", From: at(9, 0, 0), Until: at(14, 0, 0),
++		Runs: []retroengine.Run{{Slug: "a", Landed: at(10, 0, 0)}, {Slug: "b", Landed: at(11, 0, 0)}}}
++
++	got := plan.TaskFields("the body\n")
++
++	for key, want := range map[string]any{
++		"slug":    "retro-20261116-140000",
++		"title":   "Retro of 2 landed runs up to 2026-11-16T14:00:00Z",
++		"kind":    boardengine.KindTask,
++		"recipe":  shedrun.RecipeDarn,
++		"profile": "docs",
++		"labels":  []string{"research"},
++		"body":    "the body\n",
++	} {
++		if !reflect.DeepEqual(got[key], want) {
++			t.Errorf("TaskFields()[%q] = %v; want %v", key, got[key], want)
++		}
++	}
++}
++
++func TestPlan_BodyFillsTheShippedStencil(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	dir := t.TempDir()
++	shipped, ok := stencils.Registry().Default(retroengine.StencilName)
++	if !ok {
++		t.Fatalf("stencil %q is not registered", retroengine.StencilName)
++	}
++	file := stencilstore.Path(dir, retroengine.StencilName)
++	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(file, shipped, 0o644); err != nil {
++		t.Fatal(err)
++	}
++	plan := retroengine.Plan{Slug: "retro-20261116-140000", From: at(9, 0, 0), Until: at(14, 0, 0),
++		Runs: []retroengine.Run{{Slug: "a", Landed: at(10, 0, 0)}, {Slug: "b", Landed: at(11, 0, 0)}}}
++
++	body, err := plan.Body(dir)
++	if err != nil {
++		t.Fatalf("Body() = _, %v; want nil error", err)
++	}
++	for _, want := range []string{
++		"- `a`, landed 2026-11-16T10:00:00Z\n- `b`, landed 2026-11-16T11:00:00Z",
++		"`tools/retro/retro.sh docs/research/retro/retro-20261116-140000 a b`",
++		"--runs a,b ",
++		"docs/research/retro/retro-20261116-140000/report.md",
++	} {
++		if !strings.Contains(body, want) {
++			t.Errorf("Body() does not contain %q:\n%s", want, body)
++		}
++	}
++	if strings.Contains(body, "{{") || strings.Contains(body, "<no value>") {
++		t.Errorf("Body() left a marker unfilled:\n%s", body)
++	}
++}
+diff --git a/internal/retroengine/testmain_test.go b/internal/retroengine/testmain_test.go
+new file mode 100644
+index 00000000..47a6329d
+--- /dev/null
++++ b/internal/retroengine/testmain_test.go
+@@ -0,0 +1,15 @@
++// testmain_test.go runs the package's tests under tmuxkit.Main,
++// so their temp files live in the process run directory and go with it.
++
++package retroengine_test
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++func TestMain(m *testing.M) {
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/tools/retro/facts.awk b/tools/retro/facts.awk
+new file mode 100644
+index 00000000..6b885c1c
+--- /dev/null
++++ b/tools/retro/facts.awk
+@@ -0,0 +1,25 @@
++# facts.awk reads one review perch's newest round facts file and prints its figures, tab-separated:
++#   F  round column value   one row per cell of the rounds table, the Round cell left out
++#   K  key rounds           one row per ledger key listed under the recurring keys heading
++# The rounds table's header row opens with "| Round |", and every data row opens with a round number.
++
++/^\| *Round *\|/ {
++  ncols = split($0, header, "|")
++  for (i = 2; i < ncols; i++) gsub(/^ +| +$/, "", header[i])
++  next
++}
++/^\| *[0-9]+ *\|/ && ncols > 0 {
++  n = split($0, cell, "|")
++  round = cell[2]; gsub(/ /, "", round)
++  for (i = 3; i < n && i < ncols; i++) {
++    value = cell[i]; gsub(/^ +| +$/, "", value)
++    print "F\t" round "\t" header[i] "\t" value
++  }
++  next
++}
++/^## / { recurring = ($0 ~ /^## Recurring keys/); next }
++recurring && /^- `[^`]+`: rounds / {
++  key = $0; sub(/^- `/, "", key); sub(/`.*$/, "", key)
++  rounds = $0; sub(/^.*: rounds /, "", rounds)
++  print "K\t" key "\t" rounds
++}
+diff --git a/tools/retro/figures.jq b/tools/retro/figures.jq
+new file mode 100644
+index 00000000..91dbcf1e
+--- /dev/null
++++ b/tools/retro/figures.jq
+@@ -0,0 +1,74 @@
++# figures.jq renders the retro figures as markdown from the files retro.sh writes,
++# each passed slurped under its own name: $sessions, $refusals, $rows, $facts, $keys, $missing and $usage.
++# A producer's outlier is a session of a row with at least three sessions,
++# whose turns or cost reach twice the row's median.
++
++def median: sort | if length == 0 then 0 elif length % 2 == 1 then .[length / 2 | floor] else (.[length / 2 - 1] + .[length / 2]) / 2 end;
++def money: . * 100 | round / 100 | tostring | "$" + .;
++def cell: tostring | gsub("\\|"; "\\|");
++
++($sessions | map(select(.kind == "main"))) as $main
++| ([$sessions[].slug, $rows[].slug, $usage[].slug] | unique) as $slugs
++| "# Retro figures",
++  "",
++  "## Runs",
++  "",
++  "| Run | Sessions | Forks | Cost | Verify gate runs | Verify reworks | Gate-fixer sessions | Review rounds |",
++  "| --- | --- | --- | --- | --- | --- | --- | --- |",
++  ($slugs[] as $s
++   | ([$facts[] | select(.slug == $s)] | group_by(.perch) | map("\(.[0].perch) \(map(.round) | max)") | join(", ")) as $rounds
++   | "| \($s) | \([$main[] | select(.slug == $s)] | length) | \([$sessions[] | select(.slug == $s and .kind == "fork")] | length)"
++     + " | \([$usage[] | select(.slug == $s) | .cost] | add // 0 | money)"
++     + " | \([$rows[] | select(.slug == $s) | .verify_runs] | add // 0) | \([$rows[] | select(.slug == $s) | .verify_reworks] | add // 0)"
++     + " | \([$main[] | select(.slug == $s and (.title | endswith(":gate-fixer")))] | length) | \(if $rounds == "" then "none" else $rounds end) |"),
++  "",
++  "## Producers against their medians",
++  "",
++  "| Row | Sessions | Median turns | Median cost | Outliers |",
++  "| --- | --- | --- | --- | --- |",
++  ($main | map(select(.row != "")) | group_by(.row)[]
++   | (map(.turns) | median) as $mt | (map(.cost) | median) as $mc
++   | (if length >= 3 then [.[] | select(.turns >= 2 * $mt or .cost >= 2 * $mc) | "\(.slug) \(.session[0:8]) (\(.turns) turns, \(.cost | money))"] else [] end) as $out
++   | "| \(.[0].row) | \(length) | \($mt) | \($mc | money) | \(if ($out | length) == 0 then "-" else $out | join("; ") end) |"),
++  "",
++  "## Serial single lookups",
++  "",
++  "Turns that made one read or search right after a turn that did the same, per session with any.",
++  "",
++  "| Run | Session | Kind | Title | Turns | Lookup turns | Serial |",
++  "| --- | --- | --- | --- | --- | --- | --- |",
++  ($sessions | map(select(.serial_saved > 0)) | sort_by(-.serial_saved)[]
++   | "| \(.slug) | \(.session[0:8]) | \(.kind) | \(.title | cell) | \(.turns) | \(.lookup_turns) | \(.serial_saved) |"),
++  "",
++  "## Refused commands",
++  "",
++  "| Refusal | Count |",
++  "| --- | --- |",
++  ($refusals | group_by(.refusal[0:60]) | sort_by(-length)[] | "| \(.[0].refusal[0:60] | cell) | \(length) |"),
++  "",
++  "| Run | Session | Kind | Turn | Tool | Refusal |",
++  "| --- | --- | --- | --- | --- | --- |",
++  ($refusals[] | "| \(.slug) | \(.session[0:8]) | \(.kind) | \(.turn) | \(.tool) | \(.refusal | cell) |"),
++  "",
++  "## Agent gate runs",
++  "",
++  "| Run | Session | Title | Gate runs | Failed |",
++  "| --- | --- | --- | --- | --- |",
++  ($sessions | map(select(.gate_runs > 0))[] | "| \(.slug) | \(.session[0:8]) | \(.title | cell) | \(.gate_runs) | \(.gate_fails) |"),
++  "",
++  "## Review findings by column",
++  "",
++  "Each review perch's rounds summed over the runs; a column is a severity or a finding kind of the facts table.",
++  "",
++  "| Perch | Column | Total |",
++  "| --- | --- | --- |",
++  ($facts | map(select(.value | test("^[0-9]+$"))) | group_by([.perch, .column])[]
++   | "| \(.[0].perch) | \(.[0].column) | \(map(.value | tonumber) | add) |"),
++  "",
++  "## Ledger keys open in more than one round",
++  "",
++  ($keys[] | "- \(.slug) \(.perch): `\(.key)`, rounds \(.rounds)"),
++  "",
++  "## Missing records",
++  "",
++  ($missing[] | "- \(.slug): no \(.what)")
+diff --git a/tools/retro/retro.sh b/tools/retro/retro.sh
+new file mode 100755
+index 00000000..60183e62
+--- /dev/null
++++ b/tools/retro/retro.sh
+@@ -0,0 +1,121 @@
++#!/usr/bin/env bash
++# Usage: retro.sh <out-dir> <slug>...
++# Reads the records and the Claude Code transcripts of the named landed runs and writes the retro figures to <out-dir>:
++#   sessions.jsonl  one object per session and fork: slug session kind title row model cost
++#                   turns calls lookup_turns serial_saved refusals gate_runs gate_fails
++#   refusals.jsonl  one object per refused call: slug session kind turn tool refusal
++#   rows.jsonl      one object per recipe row a run went through: slug idx producer outcome
++#                   gate_attempts verify_runs verify_reworks routed_to
++#   facts.jsonl     one object per review round cell: slug perch round column value
++#   keys.jsonl      one object per ledger key that recurred across a perch's rounds: slug perch key rounds
++#   missing.jsonl   one object per run with no archive tag or no transcript directory: slug what
++#   usage.jsonl     one object per usage record of a session: slug session row role model cost
++#   figures.md      the tables figures.jq renders from the files above
++# A run's records are read at its newest archive tag; its transcripts from the transcript directory of its worktree.
++# The transcript layout is Claude Code's:
++# a run on another agent engine has no such directory and is listed in missing.jsonl.
++# A session's row, model and cost come from the run's usage record of that session, and stay empty for a fork.
++# Environment: PROJECTS names the transcript root (default ~/.claude/projects);
++# HUB the directory holding the runs' worktrees (default: the parent of the prime worktree);
++# RECORDS the records repository holding the archive tags (default: the prime worktree's path with -weft appended).
++# Needs bash, jq, awk and git; writes only under <out-dir>.
++set -euo pipefail
++# The records' paths, inside an archive tag.
++USAGE_DIR=_lym/usage
++SHED_DIR=_lym/shed
++REVIEWS_DIR=_lym/reviews
++if [ $# -lt 2 ]; then
++  echo "usage: retro.sh <out-dir> <slug>..." >&2
++  exit 2
++fi
++out=$1
++shift
++here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
++projects=${PROJECTS:-$HOME/.claude/projects}
++if [ -z "${HUB:-}" ] || [ -z "${RECORDS:-}" ]; then
++  prime=$(git -C "$here" worktree list --porcelain | awk 'NR == 1 { print $2 }')
++fi
++hub=${HUB:-$(dirname "$prime")}
++records=${RECORDS:-$prime-weft}
++
++mkdir -p "$out"
++for name in sessions refusals rows facts keys missing usage; do
++  : > "$out/$name.jsonl"
++done
++
++# encode turns a worktree path into the name of its directory under the transcript root.
++encode() { printf '%s' "$1" | sed 's/[^A-Za-z0-9]/-/g'; }
++
++# transcript appends the rows of one transcript file to sessions.jsonl and refusals.jsonl.
++transcript() { # file slug session kind
++  local file=$1 slug=$2 session=$3 kind=$4
++  jq -rs -f "$here/transcript.jq" "$file" |
++    jq -cR --arg slug "$slug" --arg session "$session" --arg kind "$kind" --slurpfile usage "$out/usage.jsonl" '
++      split("\t") as $f
++      | ([$usage[] | select(.session == $session)] | first // {}) as $u
++      | if $f[0] == "S" then
++          {slug: $slug, session: $session, kind: $kind, title: $f[1], row: ($u.row // ""), model: ($u.model // ""), cost: ($u.cost // 0),
++           turns: ($f[2] | tonumber), calls: ($f[3] | tonumber), lookup_turns: ($f[4] | tonumber), serial_saved: ($f[5] | tonumber),
++           refusals: ($f[6] | tonumber), gate_runs: ($f[7] | tonumber), gate_fails: ($f[8] | tonumber)}
++        else
++          {slug: $slug, session: $session, kind: $kind, turn: ($f[1] | tonumber), tool: $f[2], refusal: $f[3]}
++        end' |
++    while IFS= read -r line; do
++      if [[ $line == *'"refusal":'* ]]; then printf '%s\n' "$line" >> "$out/refusals.jsonl"; else printf '%s\n' "$line" >> "$out/sessions.jsonl"; fi
++    done
++}
++
++for slug in "$@"; do
++  tag=$(git -C "$records" for-each-ref --sort=-creatordate --format='%(refname:short)' "refs/tags/archive/$slug/" | head -n 1)
++  if [ -z "$tag" ]; then
++    jq -cn --arg slug "$slug" '{slug: $slug, what: "archive tag"}' >> "$out/missing.jsonl"
++  else
++    git -C "$records" ls-tree -r --name-only "$tag" -- "$USAGE_DIR" | { grep -E '/session-[^/]*\.json$' || true; } |
++      while read -r path; do
++        git -C "$records" show "$tag:$path" |
++          jq -c --arg slug "$slug" '{slug: $slug, session: .session_id, row: (.row // ""), role: (.role // ""), model: (.model // ""), cost: (.cost_usd // 0)}'
++      done >> "$out/usage.jsonl"
++    if status=$(git -C "$records" show "$tag:$SHED_DIR/$slug/status.json" 2>/dev/null); then
++      jq -c --arg slug "$slug" '
++        [.history[]? | select(.at != null)] | to_entries[] | .key as $i | .value as $r
++        | {slug: $slug, idx: $i, producer: $r.producer, outcome: $r.outcome, gate_attempts: ($r.gate_attempts // 0),
++           verify_runs: ([$r.gate_spans[]? | select(.gate == "verify" and .kind == "gate")] | length),
++           verify_reworks: ([$r.gate_spans[]? | select(.gate == "verify" and .kind == "rework")] | length),
++           routed_to: ($r.routed_to // "")}' <<< "$status" >> "$out/rows.jsonl"
++    fi
++    # A facts file lists every round up to its own, so the newest file of a perch holds them all.
++    git -C "$records" ls-tree -r --name-only "$tag" -- "$REVIEWS_DIR" | { grep -E '/round-[0-9]+-facts\.md$' || true; } |
++      awk -F/ '{ dir = $0; sub(/\/[^\/]*$/, "", dir); n = $NF; gsub(/[^0-9]/, "", n); if (n + 0 >= best[dir] + 0) { best[dir] = n; path[dir] = $0 } } END { for (dir in path) print path[dir] }' |
++      while read -r path; do
++        perch=$(basename "$(dirname "$path")")
++        git -C "$records" show "$tag:$path" | awk -f "$here/facts.awk" |
++          jq -cR --arg slug "$slug" --arg perch "$perch" '
++            split("\t") as $f
++            | if $f[0] == "F" then {slug: $slug, perch: $perch, round: ($f[1] | tonumber), column: $f[2], value: $f[3]}
++              else {slug: $slug, perch: $perch, key: $f[1], rounds: $f[2]} end' |
++          while IFS= read -r line; do
++            if [[ $line == *'"key":'* ]]; then printf '%s\n' "$line" >> "$out/keys.jsonl"; else printf '%s\n' "$line" >> "$out/facts.jsonl"; fi
++          done
++      done
++  fi
++
++  dir=$projects/$(encode "$hub/$slug")
++  if [ ! -d "$dir" ]; then
++    jq -cn --arg slug "$slug" '{slug: $slug, what: "transcript directory (Claude Code layout)"}' >> "$out/missing.jsonl"
++    continue
++  fi
++  for f in "$dir"/*.jsonl; do
++    [ -e "$f" ] || continue
++    sid=$(basename "$f" .jsonl)
++    transcript "$f" "$slug" "$sid" main
++    for sub in "$dir/$sid"/subagents/*.jsonl; do
++      [ -e "$sub" ] || continue
++      transcript "$sub" "$slug" "$(basename "$sub" .jsonl)" fork
++    done
++  done
++done
++
++jq -rn -f "$here/figures.jq" \
++  --slurpfile sessions "$out/sessions.jsonl" --slurpfile refusals "$out/refusals.jsonl" --slurpfile rows "$out/rows.jsonl" \
++  --slurpfile facts "$out/facts.jsonl" --slurpfile keys "$out/keys.jsonl" --slurpfile missing "$out/missing.jsonl" \
++  --slurpfile usage "$out/usage.jsonl" > "$out/figures.md"
+diff --git a/tools/retro/retro_integration_test.go b/tools/retro/retro_integration_test.go
+new file mode 100644
+index 00000000..1a0fbead
+--- /dev/null
++++ b/tools/retro/retro_integration_test.go
+@@ -0,0 +1,241 @@
++//go:build !windows
++
++// retro_integration_test.go runs retro.sh over a fixture records repository and transcript root.
++// It checks the tables the script writes and a row of the figures it renders.
++
++package retro
++
++import (
++	"bufio"
++	"bytes"
++	"encoding/json"
++	"os"
++	"os/exec"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// session is one row of sessions.jsonl.
++type session struct {
++	Slug        string  `json:"slug"`
++	Session     string  `json:"session"`
++	Kind        string  `json:"kind"`
++	Title       string  `json:"title"`
++	Row         string  `json:"row"`
++	Model       string  `json:"model"`
++	Cost        float64 `json:"cost"`
++	Turns       int     `json:"turns"`
++	Calls       int     `json:"calls"`
++	LookupTurns int     `json:"lookup_turns"`
++	SerialSaved int     `json:"serial_saved"`
++	Refusals    int     `json:"refusals"`
++	GateRuns    int     `json:"gate_runs"`
++	GateFails   int     `json:"gate_fails"`
++}
++
++// writeFile writes content to path, creating its directory.
++func writeFile(t *testing.T, path, content string) {
++	t.Helper()
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++		t.Fatal(err)
++	}
++}
++
++// readLines returns the lines of path, failing the test when it cannot be read.
++func readLines(t *testing.T, path string) []string {
++	t.Helper()
++	content, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatal(err)
++	}
++	var lines []string
++	scanner := bufio.NewScanner(bytes.NewReader(content))
++	for scanner.Scan() {
++		lines = append(lines, scanner.Text())
++	}
++	return lines
++}
++
++// buildRecords makes a records repository with an archive tag for run-a.
++// The tag holds three usage records of one row, a shed status and two review facts files.
++func buildRecords(t *testing.T, dir string) {
++	t.Helper()
++	gitkit.Git(t, dir, "init", "-b", "main")
++	// s1 is an outlier on turns alone and s3 on cost alone, so the rule must be turns or cost.
++	writeFile(t, filepath.Join(dir, lymdirs.LymDirName, "usage", "session-s1.json"),
++		`{"session_id":"s1","row":"Darn-Write","role":"darn","model":"claude-opus-5-5","cost_usd":0.6}`)
++	writeFile(t, filepath.Join(dir, lymdirs.LymDirName, "usage", "session-s2.json"),
++		`{"session_id":"s2","row":"Darn-Write","role":"darn","model":"claude-opus-5-5","cost_usd":0.5}`)
++	writeFile(t, filepath.Join(dir, lymdirs.LymDirName, "usage", "session-s3.json"),
++		`{"session_id":"s3","row":"Darn-Write","role":"darn","model":"claude-opus-5-5","cost_usd":1.2}`)
++	writeFile(t, filepath.Join(dir, lymdirs.LymDirName, "shed", "run-a", "status.json"), `{"history":[
++		{"producer":"Darn-Write","outcome":"done","at":"2026-11-10T11:00:00Z","gate_attempts":2,"gate_spans":[
++			{"gate":"verify","kind":"gate","start":"2026-11-10T10:00:00Z","end":"2026-11-10T10:05:00Z"},
++			{"gate":"verify","kind":"rework","start":"2026-11-10T10:05:00Z","end":"2026-11-10T10:20:00Z"},
++			{"gate":"verify","kind":"gate","start":"2026-11-10T10:20:00Z","end":"2026-11-10T10:25:00Z"}]},
++		{"producer":"Finalize","outcome":"done","at":"2026-11-10T12:00:00Z"}]}`)
++	writeFile(t, filepath.Join(dir, lymdirs.LymDirName, "reviews", "code", "round-1-facts.md"), "# Round 1 facts\n\n"+
++		"| Round | Findings | BLOCKING | design | Gating |\n| --- | --- | --- | --- | --- |\n| 1 | 9 | 9 | 9 | 9 |\n")
++	writeFile(t, filepath.Join(dir, lymdirs.LymDirName, "reviews", "code", "round-2-facts.md"), "# Round 2 facts\n\n"+
++		"| Round | Findings | BLOCKING | design | Gating |\n| --- | --- | --- | --- | --- |\n"+
++		"| 1 | 3 | 1 | 2 | 1 |\n| 2 | 1 | 0 | 1 | 0 |\n\n"+
++		"## Recurring keys (ledger rounds each key was open in)\n\n- `stale-doc`: rounds 1, 2\n\n"+
++		"## Keys open in an earlier round (ledger rounds each key was open in)\n\n- `other-key`: rounds 1\n")
++	gitkit.Git(t, dir, "add", "-A")
++	gitkit.Git(t, dir, "commit", "-m", "run-a records")
++	gitkit.Git(t, dir, "tag", "archive/run-a/abc123")
++}
++
++// transcriptLines returns the lines of a transcript whose session made the given calls.
++// Each call takes one turn and is answered by the matching result.
++func transcriptLines(title string, calls []map[string]any, results []string) string {
++	var lines []string
++	if title != "" {
++		line, _ := json.Marshal(map[string]any{"type": "custom-title", "customTitle": title})
++		lines = append(lines, string(line))
++	}
++	for i, call := range calls {
++		id := "t" + string(rune('a'+i))
++		call["type"], call["id"] = "tool_use", id
++		stamp := "2026-11-10T10:0" + string(rune('0'+i)) + ":00Z"
++		turn, _ := json.Marshal(map[string]any{"type": "assistant", "timestamp": stamp,
++			"message": map[string]any{"id": "m" + id, "content": []any{call}}})
++		result, _ := json.Marshal(map[string]any{"type": "user", "timestamp": stamp,
++			"message": map[string]any{"content": []any{map[string]any{"type": "tool_result", "tool_use_id": id, "content": results[i]}}}})
++		lines = append(lines, string(turn), string(result))
++	}
++	return strings.Join(lines, "\n") + "\n"
++}
++
++func TestRetroScript_WritesTheFiguresOfEachRun(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	for _, tool := range []string{"jq", "awk", "bash"} {
++		if _, err := exec.LookPath(tool); err != nil {
++			t.Fatalf("retro.sh tests need %s on PATH: %v", tool, err)
++		}
++	}
++
++	root := t.TempDir()
++	records, projects, hub, out := filepath.Join(root, "records"), filepath.Join(root, "projects"), filepath.Join(root, "hub"), filepath.Join(root, "out")
++	if err := os.MkdirAll(records, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	buildRecords(t, records)
++	runDir := filepath.Join(projects, strings.Map(func(r rune) rune {
++		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') {
++			return r
++		}
++		return '-'
++	}, filepath.Join(hub, "run-a")))
++	// The sixth call, a gate run moved to the background, fails only in the task notification that follows it.
++	notification, _ := json.Marshal(map[string]any{"type": "queue-operation",
++		"content": "<task-notification><tool-use-id>tf</tool-use-id><summary>Background command failed (exit code 1)</summary></task-notification>"})
++	writeFile(t, filepath.Join(runDir, "s1.jsonl"), transcriptLines("ly:run-a:darn",
++		[]map[string]any{
++			{"name": "Read", "input": map[string]any{"file_path": "/w/a.go"}},
++			{"name": "Bash", "input": map[string]any{"command": "grep -rn Foo internal/"}},
++			{"name": "Bash", "input": map[string]any{"command": "rm -rf $DIR"}},
++			{"name": "Bash", "input": map[string]any{"command": "lym gate test ./internal/x"}},
++			{"name": "Edit", "input": map[string]any{"file_path": "/w/a.go"}},
++			{"name": "Bash", "input": map[string]any{"command": "lym gate test ./internal/y"}},
++		},
++		[]string{"package a", "a.go:1:Foo", "PreToolUse:Bash hook error: rm on a computed path is refused here", "Exit code 1\nFAIL", "ok",
++			"Command was moved to the background with ID: b1"})+string(notification)+"\n")
++	edit := []map[string]any{{"name": "Edit", "input": map[string]any{"file_path": "/w/a.go"}}}
++	writeFile(t, filepath.Join(runDir, "s2.jsonl"), transcriptLines("ly:run-a:darn", append(edit, edit...), []string{"ok", "ok"}))
++	writeFile(t, filepath.Join(runDir, "s3.jsonl"), transcriptLines("ly:run-a:darn", edit, []string{"ok"}))
++	writeFile(t, filepath.Join(runDir, "s4.jsonl"), transcriptLines("ly:run-a:gate-fixer", edit, []string{"ok"}))
++	writeFile(t, filepath.Join(runDir, "s1/subagents/agent-f1.jsonl"), transcriptLines("",
++		[]map[string]any{{"name": "Glob", "input": map[string]any{"pattern": "*.go"}}}, []string{"a.go"}))
++
++	script, err := filepath.Abs("retro.sh")
++	if err != nil {
++		t.Fatal(err)
++	}
++	cmd := exec.Command("bash", script, out, "run-a", "run-gone")
++	cmd.Dir = root
++	cmd.Env = append(os.Environ(), "PROJECTS="+projects, "HUB="+hub, "RECORDS="+records)
++	if output, err := cmd.CombinedOutput(); err != nil {
++		t.Fatalf("retro.sh = %v; want success:\n%s", err, output)
++	}
++
++	var got []session
++	for _, line := range readLines(t, filepath.Join(out, "sessions.jsonl")) {
++		var row session
++		if err := json.Unmarshal([]byte(line), &row); err != nil {
++			t.Fatalf("sessions.jsonl line %q: %v", line, err)
++		}
++		got = append(got, row)
++	}
++	want := []session{
++		{Slug: "run-a", Session: "s1", Kind: "main", Title: "ly:run-a:darn", Row: "Darn-Write", Model: "claude-opus-5-5", Cost: 0.6,
++			Turns: 6, Calls: 6, LookupTurns: 2, SerialSaved: 1, Refusals: 1, GateRuns: 2, GateFails: 2},
++		{Slug: "run-a", Session: "agent-f1", Kind: "fork", Turns: 1, Calls: 1, LookupTurns: 1},
++		{Slug: "run-a", Session: "s2", Kind: "main", Title: "ly:run-a:darn", Row: "Darn-Write", Model: "claude-opus-5-5", Cost: 0.5, Turns: 2, Calls: 2},
++		{Slug: "run-a", Session: "s3", Kind: "main", Title: "ly:run-a:darn", Row: "Darn-Write", Model: "claude-opus-5-5", Cost: 1.2, Turns: 1, Calls: 1},
++		{Slug: "run-a", Session: "s4", Kind: "main", Title: "ly:run-a:gate-fixer", Turns: 1, Calls: 1},
++	}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("sessions.jsonl = %+v; want %+v", got, want)
++	}
++
++	tables := []struct {
++		file string
++		want []string
++	}{
++		{"refusals.jsonl", []string{`{"slug":"run-a","session":"s1","kind":"main","turn":3,"tool":"Bash","refusal":"rm on a computed path is refused here"}`}},
++		{"rows.jsonl", []string{
++			`{"slug":"run-a","idx":0,"producer":"Darn-Write","outcome":"done","gate_attempts":2,"verify_runs":2,"verify_reworks":1,"routed_to":""}`,
++			`{"slug":"run-a","idx":1,"producer":"Finalize","outcome":"done","gate_attempts":0,"verify_runs":0,"verify_reworks":0,"routed_to":""}`,
++		}},
++		{"facts.jsonl", []string{
++			`{"slug":"run-a","perch":"code","round":1,"column":"Findings","value":"3"}`,
++			`{"slug":"run-a","perch":"code","round":1,"column":"BLOCKING","value":"1"}`,
++			`{"slug":"run-a","perch":"code","round":1,"column":"design","value":"2"}`,
++			`{"slug":"run-a","perch":"code","round":1,"column":"Gating","value":"1"}`,
++			`{"slug":"run-a","perch":"code","round":2,"column":"Findings","value":"1"}`,
++			`{"slug":"run-a","perch":"code","round":2,"column":"BLOCKING","value":"0"}`,
++			`{"slug":"run-a","perch":"code","round":2,"column":"design","value":"1"}`,
++			`{"slug":"run-a","perch":"code","round":2,"column":"Gating","value":"0"}`,
++		}},
++		{"usage.jsonl", []string{
++			`{"slug":"run-a","session":"s1","row":"Darn-Write","role":"darn","model":"claude-opus-5-5","cost":0.6}`,
++			`{"slug":"run-a","session":"s2","row":"Darn-Write","role":"darn","model":"claude-opus-5-5","cost":0.5}`,
++			`{"slug":"run-a","session":"s3","row":"Darn-Write","role":"darn","model":"claude-opus-5-5","cost":1.2}`,
++		}},
++		{"keys.jsonl", []string{`{"slug":"run-a","perch":"code","key":"stale-doc","rounds":"1, 2"}`}},
++		{"missing.jsonl", []string{`{"slug":"run-gone","what":"archive tag"}`, `{"slug":"run-gone","what":"transcript directory (Claude Code layout)"}`}},
++	}
++	for _, table := range tables {
++		if got := readLines(t, filepath.Join(out, table.file)); !reflect.DeepEqual(got, table.want) {
++			t.Errorf("%s = %q; want %q", table.file, got, table.want)
++		}
++	}
++
++	figures := readLines(t, filepath.Join(out, "figures.md"))
++	for _, want := range []string{
++		"| run-a | 4 | 1 | $2.3 | 2 | 1 | 1 | code 2 |",
++		"| Darn-Write | 3 | 2 | $0.6 | run-a s1 (6 turns, $0.6); run-a s3 (1 turns, $1.2) |",
++		"| code | Findings | 4 |",
++		"| code | design | 3 |",
++		"- run-a code: `stale-doc`, rounds 1, 2",
++	} {
++		found := false
++		for _, line := range figures {
++			found = found || line == want
++		}
++		if !found {
++			t.Errorf("figures.md has no line %q:\n%s", want, strings.Join(figures, "\n"))
++		}
++	}
++}
+diff --git a/tools/retro/testmain_test.go b/tools/retro/testmain_test.go
+new file mode 100644
+index 00000000..6577d024
+--- /dev/null
++++ b/tools/retro/testmain_test.go
+@@ -0,0 +1,18 @@
++// testmain_test.go wires the package's test binary into the hermetic git environment and tmux isolation.
++// It follows PATTERN-test-isolation.
++
++package retro
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++// TestMain runs gitkit.HermeticGitEnv() before any test spawns git, then runs the tests under tmuxkit.Main.
++func TestMain(m *testing.M) {
++	gitkit.HermeticGitEnv()
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/tools/retro/transcript.jq b/tools/retro/transcript.jq
+new file mode 100644
+index 00000000..42c520fb
+--- /dev/null
++++ b/tools/retro/transcript.jq
+@@ -0,0 +1,67 @@
++# transcript.jq reads one Claude Code session transcript, slurped, and prints its retro rows, tab-separated:
++#   S  title turns calls lookup_turns serial_saved refusals gate_runs gate_fails
++#   R  turn tool refusal
++# A turn is one assistant message id.
++# A lookup turn makes exactly one call, and that call reads or searches.
++# serial_saved counts the lookup turns that directly follow another lookup turn: each could have shared the earlier turn.
++# An R row is a call a PreToolUse hook refused, with the first words of the refusal.
++# A gate run is a `lym gate test` call.
++# It failed when its result opens with a nonzero exit code,
++# or when the task notification of a call moved to the background reports one.
++
++# segwords splits a shell command into its segments,
++# with quoted text, redirects of descriptors and leading assignments removed.
++def segwords($cmd):
++  [ $cmd
++    | gsub("\"[^\"]*\""; "Q") | gsub("'[^']*'"; "Q")
++    | gsub("[0-9]*>&[0-9]"; "") | gsub("[0-9]*>>?\\s*/dev/null"; "")
++    | split("[;&|\\n]+"; "g")[]
++    | gsub("^\\s+|\\s+$"; "")
++    | gsub("^((for|while|if|then|do|else|elif)\\s+)+"; "")
++    | gsub("^([A-Za-z_][A-Za-z0-9_]*=(\"[^\"]*\"|\\S*)\\s*)+"; "")
++    | select(length > 0) ];
++
++# lookup_bash reports whether a shell command only reads: every segment runs a read-only program and nothing is written.
++def lookup_bash($cmd):
++  ($cmd | gsub("[0-9]*>&[0-9]"; "") | gsub("[0-9]*>>?\\s*/dev/null"; "")) as $c
++  | ($c | test("sed -i|perl -[0-9a-z]*i|\\btee\\b|<<|(^|\\s)>>?\\s*[^&\\s=]") | not)
++    and (segwords($cmd) | length > 0)
++    and (segwords($cmd) | all(
++      test("^(cd|echo|printf|pwd|true|test|\\[|done|fi|basename|dirname|export|set)\\b")
++      or test("^(cat|head|tail|sed|nl|wc|cut|sort|uniq|column|tr|diff|jq|stat|file|grep|rg|find|ls|tree|awk|xargs|readlink|realpath)\\b")
++      or test("^git( -C \\S+)? (status|log|diff|show|rev-parse|branch|ls-files|ls-tree|blame|cat-file|merge-base)\\b")
++      or test("^lym (quarry|board (get|list|find)|loom (peers|show)|[a-z]+ (status|list|show|get))\\b")));
++
++# lookup reports whether a call reads or searches.
++def lookup($call):
++  if $call.name == "Read" or $call.name == "Grep" or $call.name == "Glob" then true
++  elif $call.name == "Bash" then lookup_bash(($call.input.command // "") | tostring)
++  else false end;
++
++def restext: (.content | if type == "array" then map(.text? // "") | join(" ") else (. // "") | tostring end);
++
++. as $all
++| ([$all[] | select(.type == "custom-title") | .customTitle] | last // "") as $title
++| ([$all[] | select(.type == "assistant" and .message.id != null)]
++   | group_by(.message.id) | map(sort_by(.timestamp)) | sort_by(.[0].timestamp)
++   | map([.[] | .message.content[]? | select(.type == "tool_use")] | unique_by(.id))) as $turns
++| ([range(0; $turns | length) as $n | $turns[$n][] | {key: .id, value: {turn: ($n + 1), name: .name, command: ((.input.command // "") | tostring)}}] | from_entries) as $call
++| ([$all[] | select(.type == "user") | (.message.content | arrays | .[]) | select(.type == "tool_result")
++    | {key: .tool_use_id, value: restext}] | from_entries) as $res
++# exit codes of calls that ran in the background, from the task notifications that report them,
++# keyed by the call's tool use id
++| ([$all[] | select(.type == "user" or .type == "queue-operation") | .. | strings | select(contains("<task-notification>"))
++    | capture("<tool-use-id>(?<id>[^<]+)</tool-use-id>.*?exit code (?<code>[0-9]+)\\)"; "s") | {key: .id, value: (.code | tonumber)}] | from_entries) as $background
++| [$turns[] | (length == 1 and lookup(.[0]))] as $lookups
++| ([range(1; $lookups | length) | select($lookups[.] and $lookups[. - 1])] | length) as $serial
++| [$call | to_entries[] | .key as $id | .value as $c | $res[$id] as $r
++   | select($r != null and ($r | test("^PreToolUse:[A-Za-z]+ hook error")))
++   | {turn: $c.turn, tool: $c.name,
++      refusal: ($r | sub("^PreToolUse:[A-Za-z]+ hook error:?\\s*"; "") | gsub("[\\t\\n\\r]+"; " ") | .[0:100])}] as $refused
++| [$call | to_entries[] | .key as $id | .value as $c
++   | select($c.name == "Bash" and ($c.command | test("lym gate test")))
++   | $res[$id] as $r
++   | if $r == null or ($r | test("^Command was moved to the background|\"done\":false")) then ($background[$id] // 0) != 0
++     else ($r | test("^([Ee]xit code|exit) [1-9]")) end] as $gates
++| ( "S\t\($title)\t\($turns | length)\t\([$turns[] | length] | add // 0)\t\([$lookups[] | select(.)] | length)\t\($serial)\t\($refused | length)\t\($gates | length)\t\([$gates[] | select(.)] | length)",
++    ($refused[] | "R\t\(.turn)\t\(.tool)\t\(.refusal)") )
