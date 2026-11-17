@@ -1,54 +1,42 @@
-# gate redundant: mutate package-level data and delete boolean clauses
+# testcover: mutate data literals and delete boolean-chain operands
 
-`lym gate redundant` listed tests as redundant when the only check they add pins data or a single clause.
-The check of five `internal/boardengine` candidates (`docs/research/speed/redundant-candidates-check-2026-11-17/report.md`) found every one false.
-The mutation check never changed a package-level value, and it never deleted one operand of a boolean chain.
-This change adds both to `testcover.PlanMutants`.
+`lym gate redundant` listed tests as redundant when they alone pin a data literal or one operand of a `&&`/`||` chain.
+The check of five `boardengine` candidates (`docs/research/speed/redundant-candidates-check-2026-11-17/report.md`) found all five false.
+Its mutants only changed conditions and operators, so a test that alone asserts a string, a list member, a map entry or one clause had no mutant to kill.
+The fix is in the mutant code of `internal/testcover`.
+The candidates were `TestConfigTemplate_ResolvesToDefaults`, `TestRunHolds`, `TestRunLock_BeamKindAndBeamChange`,
+`TestRunLock_SketchExemptionIsTheWholeNetChange` and `TestReadRaddleStore`.
 
-## New mutants
+## What changes
 
-- **Delete clause** (`OperatorDeleteClause`): each operand of a `&&` or `||` chain in a function body passes through a helper.
-  When that mutant is on, the helper returns the chain's identity: `true` under `&&`, `false` under `||`.
-  Negating a clause such as `before.Kind != now.Kind` in `checkRunLocks` breaks every accepted row of the cover.
-  Deleting it fails only the test that feeds a kind change alone.
-- **Package-level variable literals**: each integer, rune or string literal in a package-level `var` value is a site.
-  Composite keys and array lengths stay.
-  This reaches the members of `holdFreeProducers` and the entries of a map literal.
-- **Uses of package-level constants**: each use in a function body of a constant whose value is a literal is a site, changed as that literal would be.
-  This reaches `raddleStoreDirName` in the `git checkout` path that `TestReadRaddleStore` pins exactly.
-- **Embedded lines** (`OperatorChangeEmbeddedLine`): a use of a string variable that a `//go:embed` directive fills from one file is a site for each non-blank line of that file.
-  When that mutant is on, the line gets a `~` after its indentation, so a YAML key or value changes while the file still parses.
-  This reaches `template.yaml` behind `ConfigTemplate`.
-
-A local or parameter named after a package-level constant or variable shadows it in its whole function, which then holds no use of that name.
-This errs toward fewer mutants without type information, and it avoids the deprecated `ast.Object` resolution.
-Files with no coverage block, such as a file holding only `var` declarations, are now parsed too, picked by `build.Default.MatchFile`.
-
-## Blocks of a mutant
-
-`Mutant.Block` becomes `Mutant.Blocks`.
-A literal of a package-level variable's value lies in no coverage block, so it belongs to every block that names the variable.
-It is planned when one of those blocks is a target.
-`Mutant.InBlocks` answers whether a test's block set reaches the mutant.
-`internal/gatecli`'s mutation check uses it to pick a candidate's mutants and the covering tests that run one.
-
-## Nesting on one site
-
-A comparison operand of a chain is now both a negated comparison and a deleted clause on the same span.
-`applyMutants` used to emit both closings in plan order, which gave each helper the other mutant's ID.
-Ties now open in plan order and close in reverse, so the earlier mutant is the outer call.
+- A new operator, `OperatorDeleteClause`, replaces each operand of a `&&` or `||` chain with the value that ignores it:
+  an operand of `&&` turns true and one of `||` turns false.
+  The operand is still evaluated and only its value is replaced, so its side effects stay.
+- The constant-changing operator now reaches data literals, including a string used as a map key.
+  It also changes a use of a package-level constant holding a literal.
+- A literal in a package-level variable's value is now a site.
+  It belongs to each block that names the variable, and to each block that names a variable whose value names it, however many variables lie between.
+- At a use of a string variable that an `//go:embed` directive fills from one file,
+  one mutant per non-blank line of that file changes that line.
+- `Mutant.Block` becomes `Mutant.Blocks`, and `Mutant.InBlocks` reports whether a run of the given blocks reaches the mutant.
+  `internal/gatecli` uses it in place of the single-block lookup, both when it picks a candidate's mutants and when it picks the covering tests to run with a mutant on.
+  `doc.go` of both packages states the new rule.
 
 ## Design decisions
 
-- The literal fix adds mutants rather than listing a candidate only when its covers assert every literal.
-  Adding mutants keeps one verdict rule: a unique kill refutes.
-- A mutant that does not compile in a typed context is left to the existing unbuildable-drop rounds, as literal mutants already were.
-  An example is an untyped constant passed where a named type is needed.
-- The `Done when` run of `lym gate redundant internal/boardengine` is not part of this change's tests.
-  It needs a coverage map and a `lym` built from this change, which takes about 22 minutes.
-  The new sites cover each of the five candidates' unique checks; the run after landing confirms the lists.
+- A package-level variable has no block of its own, so its literals are attributed to every block that reads it.
+  A mutant of such a literal is judged by the tests covering any of those blocks.
+- Composite-literal keys stay fixed except string literals, which only a map key can be.
+  Literals of a constant declaration, an array length and a field tag stay, since they must be constant.
+- Package parsing reads the files the default build context takes.
+  A build tag set through `GOFLAGS` is not read, so a file gated by one may be skipped or its alternative scanned.
+- An identifier a function declares itself shadows a package-level name there, so a use of that local is never counted as a use of the package-level one.
 
-## Tests
+## To check by hand
 
-`TestPlanMutants` gains rows for clause deletion, a package variable's literals and their block, a constant use, embedded lines and a shadowing parameter.
-`TestMutantPlan_WriteOverlay` pins the mutated text, including two mutants nested on one span.
+- `lym gate redundant internal/boardengine` was not run to confirm it no longer lists the five candidates above.
+  The `internal/gatecli` redundant integration test was extended to drive the new mutants.
+- Three review findings were left open:
+  a file with no coverage blocks, and a mutant with several blocks, are only partly pinned by tests in `internal/testcover/mutant_test.go`;
+  the string keys of a map literal are mutated, and the test that pins this may not cover every key shape;
+  and the mutant helpers are driven through the redundant fixture rather than switched on directly in a unit test.
