@@ -165,7 +165,7 @@ Held by a run; its scope is locked until the run ends.
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Webster | neve | 20h<br>20h | webster, weaver |
 | T16 | **Retro of 10 landed runs up to 2026-11-16T11:54:11Z**<br>• Audit the runs from their records and transcripts, and propose fixes, most severe first | [`retro-20261116-115411`](design-retro-20261116-115411.md) | darn · docs | Darn-Write | neve | 3m<br>3m |  |
 | T20 | **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice<br>• `darn: writer fable` | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | darn · light | Darn-Write | neve | 41m<br>28m | gate |
-| T21 | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | sampler | Drift-Expect | neve | 9d<br>0m | heddle |
+| T21 | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | sampler | Sampler-Session | neve | 9d<br>0m | heddle |
 | T22 | **lym retro: run the retro task's writer on Opus**<br>• The retro task's writer judges transcripts and routes proposals; give it Opus instead of the docs default | [`retro-writer-opus`](design-retro-writer-opus.md) | darn · docs | Drift-Await | neve | 1m<br>0m | report, darn |
 
 #### Ready (0)
