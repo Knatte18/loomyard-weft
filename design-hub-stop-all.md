@@ -1,6 +1,6 @@
 # lym beam stop --all takes the hub down on this machine, behind a stop button
 
-`hub-stop-all` · Task · feature, hibernate, workspaces, orch, reed
+`hub-stop-all` · Task · feature, hibernate, workspaces, orch, reed · starting · Worktree-Create
 
 Decision record: [Sketch](decision-hub-stop-all.md)
 
