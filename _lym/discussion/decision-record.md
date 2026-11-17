@@ -185,6 +185,12 @@ Decision: The phone part's collapsible blocks per body are not built in this tas
 
 Rationale: The board entry itself records that bodies render to design-<slug>.md (project-design-link, ffb53ae1) and that README.md's project sections stay without the body (project-body-in-render, 9cf88e2a), so the README holds no task or note body to fold.
 
+### Added after Discussion (arbiter, 2026-11-17): No launch.json; the window title line's premise is stale
+
+Decision: lym writes no launch.json, as the entry's Was ide-prime-setup part asks and Scope Out states. The entry's note that internal/vscode/config.go writes the bare slug as the window title no longer holds: since b0e9f535 the VS Code window title is boardengine.ConsoleWindowTitle, the same title as the worktree's terminal window. F8's open question narrows to whether the entry's LY: <name> title form and the prime's folderOpen chain (reed up then reed attach), both reversed by landed work, are still wanted.
+
+Rationale: The entry says No launch.json outright. b0e9f535 merged IDEWindowTitle and TerminalWindowTitle into ConsoleWindowTitle so both windows show one title, and 6b037083 (closes #633) dropped every folderOpen chain so that opening a worktree starts nothing; reinstating either reverses a landed design, which the entry does not say it wants.
+
 ## Constraints
 
 - `PATTERN-cwd-resolution`: nothing is linked or junctioned into a worktree; the hub path is resolved in lym.
