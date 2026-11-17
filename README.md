@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 17:02 UTC; every age below is as of then.
+Rendered 2026-11-17 17:03 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -151,7 +151,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Fix lym gate redundant kill counting and the map defects the trial found** | [`redundant-timeout-not-kill`](design-redundant-timeout-not-kill.md) | darn · light | Code-Bouncer | neve | 2h<br>19m | gate, testkit |
+| T3 | **Fix lym gate redundant kill counting and the map defects the trial found** | [`redundant-timeout-not-kill`](design-redundant-timeout-not-kill.md) | darn · light | Code-Burler-Review | neve | 2h<br>19m | gate, testkit |
 | T4 | **Edit-loop notices fire on a fixer editing one file**<br>• Fixers and one-document writers edit one file many times by design, so the edit-loop watch reports ordinary work as a loop | [`edit-loop-fixer-noise`](design-edit-loop-fixer-noise.md) | darn · light | Darn-Write | neve | 4h<br>19m | shuttle |
 | T5 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md)<br>[Sketch](decision-board-viewer.md) | raddle | Raddle-Write | neve | 6w<br>19m | board, ide, orch |
 | T7 | **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid | Plan-Write | neve | 4d<br>4d | slack, creel, orch |
