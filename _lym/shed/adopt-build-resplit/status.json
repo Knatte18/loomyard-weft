@@ -1,13 +1,13 @@
 {
   "current_producer": "Beam-Await",
-  "state": "failed",
-  "error": "shedverbs: step Beam-Await interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step adopt-build-resplit --until-stop",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Beam-Await",
     "last": "Beam-Up → done",
-    "wait": "shedverbs: step Beam-Await interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step adopt-build-resplit --until-stop"
+    "wait": ""
   },
   "history": [
     {
