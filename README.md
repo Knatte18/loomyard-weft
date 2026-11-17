@@ -99,7 +99,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md)<br>[Sketch](decision-review-rounds-converge.md) | 1h<br>36m | burler, shed, stencil |
+| S1 |  | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md)<br>[Sketch](decision-review-rounds-converge.md) | 1h<br>37m | burler, shed, stencil |
 
 #### Features (1)
 
@@ -124,7 +124,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **A machine registry and adopt holds in Bolt, and a catch-up from origin after every absence** | [`machine-registry-holds-catchup`](design-machine-registry-holds-catchup.md)<br>[Sketch](decision-machine-registry-holds-catchup.md) | tapestry · solid | Code-Bouncer | neve | 1d<br>1d | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
+| T4 | **A machine registry and adopt holds in Bolt, and a catch-up from origin after every absence** | [`machine-registry-holds-catchup`](design-machine-registry-holds-catchup.md)<br>[Sketch](decision-machine-registry-holds-catchup.md) | tapestry · solid | Code-Burler-Review | neve | 1d<br>1d | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 
 #### Ready (0)
 
@@ -179,7 +179,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T23 | **Build the coverage maps with lym gate test --map, one process per test in parallel, and retire lym gate testmap** | [`gate-test-map-mode`](design-gate-test-map-mode.md)<br>[Sketch](decision-gate-test-map-mode.md) | tapestry · solid | Plan-Burler-Review | neve | 36m<br>36m | gate, testkit, dobby, docs, pattern |
+| T23 | **Build the coverage maps with lym gate test --map, one process per test in parallel, and retire lym gate testmap** | [`gate-test-map-mode`](design-gate-test-map-mode.md)<br>[Sketch](decision-gate-test-map-mode.md) | tapestry · solid | Plan-Burler-Review | neve | 37m<br>37m | gate, testkit, dobby, docs, pattern |
 
 #### Ready (0)
 
