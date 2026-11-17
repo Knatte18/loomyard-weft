@@ -1,0 +1,23 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "d5a6b21082c4059eb38fba45778d30b615478626",
+  "added_decisions": [
+    {
+      "title": "The hub stop writes no per-run pause or cancel intent",
+      "digest": "55650e25f75c7a9043f6f9058e6429ead933640d1d4a3f725ad920ac685fc92a"
+    },
+    {
+      "title": "Only the printed parent_beam names the prime root",
+      "digest": "0cd036d633f1731319826c8f7be294557068f46f780646498e814343352ffe01"
+    },
+    {
+      "title": "Round-2 review accepted at the hard cap: every finding answered in the record",
+      "digest": "664bb23c46349e187761afed571e1bfdd29692c99ea389029b522d78756cd792"
+    },
+    {
+      "title": "Split review round 2 accepted at the hard cap: both findings answered in the proposal",
+      "digest": "5cb3ec022921a9e778016ee5e61fb5f1dc8fe64e275339b03fa530ef1a1f46ae"
+    }
+  ]
+}
