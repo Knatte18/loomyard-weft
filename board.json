@@ -758,7 +758,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-17)\n\nNothing stops an agent that edits the same file again and again without progress; only the run's time budget ends it.\nWeaver's cold attempts and longer unattended runs make such a loop costlier.\nShuttle already gets every `PostToolUse` hook event (`shuttle-hook-signals`).\nSource: the survey F17 (`orchestrator-survey-ideas`), from Bernstein, which kills an agent that edits the same file four or more times within five minutes.\n\n## Idea\n\n- Shuttle counts edits per file per agent session from its `PostToolUse` events.\n- Past a set count in a set window, it raises a friction note to the run's parent, without killing the session.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-17T10:49:22Z",
       "revised": "2026-11-17T11:42:04Z",
       "profile": "light",
