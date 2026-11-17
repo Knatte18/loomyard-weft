@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 19:12 UTC; every age below is as of then.
+Rendered 2026-11-17 19:13 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -105,7 +105,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **lym gate redundant: mutate data literals and delete boolean clauses**<br>• Add literal and clause-deletion mutants so tests pinning a literal or a clause stop being listed redundant<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-literal-clause-mutants`](design-redundant-literal-clause-mutants.md) | darn · light | Darn-Write | neve | 1h<br>12m | gate |
+| T5 | **lym gate redundant: mutate data literals and delete boolean clauses**<br>• Add literal and clause-deletion mutants so tests pinning a literal or a clause stop being listed redundant<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-literal-clause-mutants`](design-redundant-literal-clause-mutants.md) | darn · light | Darn-Write | neve | 1h<br>13m | gate |
 
 #### Ready (0)
 
@@ -119,7 +119,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid | T5 | 8d<br>12m | testkit, gate |
+| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid | T5 | 8d<br>13m | testkit, gate |
 
 ### Notes (0)
 
@@ -143,7 +143,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Record Codex edits for the edit-loop watch**<br>• Codex runs record no edits, so the edit-loop watch never notifies their parent<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`codex-edit-loop-recorder`](design-codex-edit-loop-recorder.md) | darn · light | Darn-Write | neve | 6h<br>8m | codex, shuttle |
-| T7 | **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid | Describe | neve | 4d<br>4d | slack, creel, orch |
+| T7 | **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid | PR-Review | neve | 4d<br>4d | slack, creel, orch |
 | T8 | **An old driver fails on board stencils a landing installed mid-run**<br>• A blocked hand-over leaves the old binary rendering new board copies whose includes it lacks<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`stale-driver-new-stencils`](design-stale-driver-new-stencils.md) | darn · light | Darn-Write | neve | 4h<br>8m | stencil, shed |
 
 #### Ready (0)
@@ -166,7 +166,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 1h<br>8m | board, ide, fabric |
+| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 1h<br>9m | board, ide, fabric |
 
 ### Notes (6)
 
