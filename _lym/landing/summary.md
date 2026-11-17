@@ -1,0 +1,67 @@
+# Claude-only wording moves into engine blocks with a Codex copy
+
+Stencils told every agent to use Claude Code's tools: the Agent tool with `subagent_type`, the Read, Write and Edit tools, `AskUserQuestion`, the Bash tool's `timeout`, and "your system prompt".
+Go-filled prompt text said the same.
+A session launched on Codex got wording for tools it does not have.
+Now each such passage lives in an engine block with a Claude copy and a Codex copy, and the render picks the launch engine's copy.
+Text that needs no tool name is worded for any engine.
+A scan keeps the wording from coming back.
+
+## What changes
+
+- `stencilstore.ReadForEngine` reads a stencil with each bare `{{template "engine-<block>"}}` replaced by the launch engine's copy.
+  It is for a producer that fills a stencil or a fragment with no include map.
+  `ReadSet` now also writes engine blocks in place inside a plain include, so a seat directive such as `seat-directive-assistant-chair` can carry one.
+  An engine block is read without its file's final newline, so a block can stand inside a sentence.
+- Eight new engine blocks, each with a Claude and a Codex copy under `contracts/stencils/engine/`:
+  `fork-spawn`, `fork-wait`, `foreground-timeout`, `standing-instructions`, `absolute-paths`, `subagent-lookups`, `darn-subagents` and `question-tool`.
+  The Codex copies use `spawn_agent` with `fork_turns: "none"` or `"all"`, `wait_agent`, `apply_patch`, `request_user_input`, "your developer instructions" and the shell command timeout.
+- The twill, burler, darn, gatefix, webster, weaver, loom, raddle and seat stencils pull the blocks in.
+  Passages that need no tool name are reworded for any engine, such as "spawn no fork or subagent of your own" and "before its lens spawn call".
+- These producers now read their stencils for the engine their model choice resolves to:
+  darn's Step 4 list (`DarnTable`, from the writer's resolved model spec), the gate fixers (`gatefixer.RenderPrompt`), weaver's batch prompt, every webster prompt, and the twill directive.
+  The twill directive's engine comes from `twilldirective.Values.Engine`, which loom fills from the lead seat's choice.
+  Webster's begin-batch renders the fork prompt for the engine Master runs on, through the new `BeginDeps.Engine`.
+  The verify-fix fork prompt uses the same engine.
+- Go-filled text is worded for any engine:
+  - loom's `mode_rules` and the drift judge's operator mode forbid "a tool that opens a question dialog";
+  - the `verify-module-wide` plan finding names the gate rule "in your standing instructions";
+  - the burler and webster fork audits report a "nested spawn call";
+  - the twill fixer refusal says the fan "needs forks";
+  - the help of `lym shuttle await`, `lym shuttle await-forks` and `lym loom parent-review await` asks for a shell command timeout.
+- `contracts/stencils/engineterms_test.go` holds the rule over a closed term list.
+  It fails on a term in a stencil or spec outside `engine/claude/`, or in a production Go string literal outside `internal/shuttleengine/claudeengine/`.
+  It skips the orch's places and `internal/testkit/`.
+  An allowlist with a reason per entry admits four Go literals that never reach a Codex session: shellguard's Claude row texts and heddle's help and HEDDLE.md place titles.
+  The test also fails on an engine block that some engine in `modelspec.EngineNames()` has no copy of.
+- `stencilkit.SeedEngineBlockCopies` replaces `SeedEditDirectiveCopies`.
+  For a fake engine name it now copies every Claude engine block, not only the edit directive.
+- `PATTERN-stencil-ownership` now reads "one engine's wording only in its engine blocks, rendered for the launch's engine".
+  Its background states the rule, the Codex vocabulary and the scan.
+
+## Design decisions
+
+- Engine blocks resolve by text substitution in `ReadForEngine`, so each producer swaps one `Read` call and keeps its `Fill`.
+  Fragments that Go fills into a marker value, such as darn's Step 4 list, therefore resolve before the seat render.
+  The resolver that reads a block's copy is still the one `readInclude`.
+- Where a passage needs no tool name, it is worded for any engine instead of going into a block.
+  This applies to a fork's ban on spawning and the read of the reviewed files "each in full", and also to Go text such as `mode_rules`.
+  Engine-specific text in Go would need a per-engine table outside the engine packages.
+- A file tool counts as a term only when the text names it as a tool ("the Read tool", "with Write").
+  So the imperative "Write the report" and the plan cards' `Edit` label do not count.
+  The scan reads each Go literal on its own, so a term split across two concatenated literals is not seen.
+- The Codex subagent copies omit `model`, since the Codex developer instructions tell a fresh `spawn_agent` to leave it unset.
+  Only the Claude copies declare the `{{.subagent_model}}` marker.
+- The Codex `fork-spawn` copy sets no `model` or `reasoning_effort`, since a `fork_turns: "all"` fork accepts neither (codex-cli 0.164.0 spike report).
+- `MerriamBase` counts the Master stencil's lines from the raw file, so each engine-block include counts as one line.
+
+## Behavior to know
+
+- A hub that edited its seeded copy of a changed stencil keeps its edit, because `stencilstore` never overwrites an edited copy.
+  Such a copy keeps the old Claude wording on every engine.
+- A producer whose engine has no copy of a block it renders now fails with `MissingEngineBlockError`, which names the block, the engine and the file.
+
+## To check by hand
+
+- Review: each Codex engine block and each reworded Go text says what its Claude copy says, in Codex's terms (D2).
+- No live Codex session was launched on the new copies.
