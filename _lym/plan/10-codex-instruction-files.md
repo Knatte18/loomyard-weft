@@ -1,11 +1,11 @@
 # Card 10 — codex-instruction-files
 
 **Create:**
-- `plan:internal/shuttleengine/codexengine#defaultProjectDocMaxBytes` -> `const defaultProjectDocMaxBytes = 32 * 1024`
-- `plan:internal/shuttleengine/codexengine#projectDocMaxBytes` -> `func projectDocMaxBytes(found checkout, workDir string) (int, error)`
-- `plan:internal/shuttleengine/codexengine#Codex.unreadClaudeFiles` -> `func (c *Codex) unreadClaudeFiles(found checkout, workDir string) []string`
-- `plan:internal/shuttleengine/codexengine#instructionPointers` -> `func instructionPointers(paths []string) string`
-- `plan:internal/shuttleengine/codexengine#TestPrepare_InstructionFiles` -> `func TestPrepare_InstructionFiles(t *testing.T)`
+- `internal/shuttleengine/codexengine#defaultProjectDocMaxBytes`
+- `internal/shuttleengine/codexengine#projectDocMaxBytes`
+- `internal/shuttleengine/codexengine#Codex.unreadClaudeFiles`
+- `internal/shuttleengine/codexengine#instructionPointers`
+- `internal/shuttleengine/codexengine#TestPrepare_InstructionFiles`
 
 **Edit:**
 - `internal/shuttleengine/codexengine#launchLine`
@@ -24,7 +24,7 @@
 **Uses:**
 - `internal/claudeimports#Expand`
 - `internal/heddleengine#Marker`
-- `plan:internal/shuttleengine/codexengine#Seams`
+- `internal/shuttleengine/codexengine#Seams`
 - `internal/shuttleengine/codexengine#instructionFallbackFile`
 - `internal/shuttleengine/codexengine#repoFixture.addWorktree`
 - `internal/shuttleengine/codexengine#repoFixture.writeCodexLayer`

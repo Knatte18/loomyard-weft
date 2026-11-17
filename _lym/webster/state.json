@@ -1,6 +1,6 @@
 {
   "runGuid": "1537b0f62dee1bdda4b3704a320b26dd",
-  "planFingerprint": "98a10cfd23aeb4fe10b5bfc51df7639d5622d69d7db2ccdabd780ccc2ad4b97b",
+  "planFingerprint": "eac993a2872e9e52088a30314f1b947f4b37c8c6fe0959f800e7afd8d6b90a6c",
   "planFileHashes": {
     "00-overview.md": "a9b668b33785239b29afaf269d001e6fe238f6c01e24061380f0d21adee7ac31",
     "01-claude-imports-leaf.md": "c97974e754286019051721e5f039ebb0040444bc0f3970469aa07456446e19fa",
@@ -10,9 +10,9 @@
     "05-codex-developer-instructions.md": "dfb2ab93b41dc074474aaf47da554f63f836fd289830e851b448c62203f121a6",
     "06-codex-subagent-terms.md": "0b588358ae81c0e226481a6f543c4c204e947a79512bfd739d3019b21fbdfcd3",
     "07-claude-user-setup-source.md": "7961462e3b96fb5d35994c338b57cf542430508ce5d12a0164a6fc5422d7c9c7",
-    "08-plugin-session-start-contexts.md": "d8784eff060b623f37cf1786606aa481f994225c538a702051f58ed6ab2e42f1",
-    "09-codex-takes-user-setup.md": "3b4fb285bab847d744eb8888fb97a382379d37e4ffb4989c6aac799b0e5f6c38",
-    "10-codex-instruction-files.md": "de2853235c386289b9ac015bc8da3a3a12fe9e1fccff84e45c8239b4071d1fa6"
+    "08-plugin-session-start-contexts.md": "aeba144d3d8c71cd44df4eeae708f686b878547815216b03f666c6c7f63c18fe",
+    "09-codex-takes-user-setup.md": "edfaf1d17b6e08bced144f265240b3a2432ab85293a477732a188cf0314c1a84",
+    "10-codex-instruction-files.md": "d0fffb8763339481b1d71b73ea573edc57a71152af3058ec8b80e9aeec5f4689"
   },
   "planOverviewFrameHash": "dc3ecd5c251676a41c9292b1fd1987bdaa49d60a4046a140720c619442ea850b",
   "partition": [
@@ -336,25 +336,50 @@
         "10-codex-instruction-files"
       ],
       "cardHashes": {
-        "08-plugin-session-start-contexts": "d8784eff060b623f37cf1786606aa481f994225c538a702051f58ed6ab2e42f1",
-        "09-codex-takes-user-setup": "3b4fb285bab847d744eb8888fb97a382379d37e4ffb4989c6aac799b0e5f6c38",
-        "10-codex-instruction-files": "de2853235c386289b9ac015bc8da3a3a12fe9e1fccff84e45c8239b4071d1fa6"
+        "08-plugin-session-start-contexts": "aeba144d3d8c71cd44df4eeae708f686b878547815216b03f666c6c7f63c18fe",
+        "09-codex-takes-user-setup": "edfaf1d17b6e08bced144f265240b3a2432ab85293a477732a188cf0314c1a84",
+        "10-codex-instruction-files": "d0fffb8763339481b1d71b73ea573edc57a71152af3058ec8b80e9aeec5f4689"
       },
       "startSha": "48435b58451e38872e6e9a8e3714275739cd9257",
       "kind": "fork",
       "spawnedAt": "2026-11-17T12:06:58Z",
       "sessionId": "dade0374-6cc2-4614-952f-8187cdaeda61",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-plugin-session-start-contexts",
+        "status": "done",
+        "head_sha": "9c007c7097e2fa7b25c1a860114b19bc877dca3e",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/heddlecli/verbs.go",
+          "internal/shuttleengine/claudeengine/pluginhook.go",
+          "internal/shuttleengine/claudeengine/pluginhook_integration_test.go",
+          "internal/shuttleengine/claudeengine/usersetup_test.go",
+          "internal/shuttleengine/codexengine/instructionfiles.go",
+          "internal/shuttleengine/codexengine/usersetup.go",
+          "internal/shuttleengine/codexengine/usersetup_test.go"
+        ]
+      },
+      "cardShas": [
+        "9c007c7097e2fa7b25c1a860114b19bc877dca3e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-codex-standing-instructions/dade0374-6cc2-4614-952f-8187cdaeda61/subagents/agent-a4609d65d09c8d7f4.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-codex-standing-instructions/dade0374-6cc2-4614-952f-8187cdaeda61/subagents/agent-a4609d65d09c8d7f4.jsonl"
+      ]
     }
   },
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "6b47512bc45f11042d24d5f0352cca06",
   "masterSessionId": "dade0374-6cc2-4614-952f-8187cdaeda61",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-codex-standing-instructions/dade0374-6cc2-4614-952f-8187cdaeda61/subagents/agent-a4e70a4082b15ec66.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-codex-standing-instructions/dade0374-6cc2-4614-952f-8187cdaeda61/subagents/agent-aceab501b6a5632f1.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-codex-standing-instructions/dade0374-6cc2-4614-952f-8187cdaeda61/subagents/agent-aceab501b6a5632f1.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-codex-standing-instructions/dade0374-6cc2-4614-952f-8187cdaeda61/subagents/agent-a4609d65d09c8d7f4.jsonl"
   ]
 }

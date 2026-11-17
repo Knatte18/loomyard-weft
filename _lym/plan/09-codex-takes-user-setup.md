@@ -1,9 +1,9 @@
 # Card 9 — codex-takes-user-setup
 
 **Create:**
-- `plan:internal/shuttleengine/codexengine#Seams` -> `type Seams struct`
-- `plan:internal/shuttleengine/codexengine#TestPrepare_UserSetup` -> `func TestPrepare_UserSetup(t *testing.T)`
-- `plan:internal/shuttleengines#TestNew_CodexLaunchCarriesTheClaudeUserSetup` -> `func TestNew_CodexLaunchCarriesTheClaudeUserSetup(t *testing.T)`
+- `internal/shuttleengine/codexengine#Seams`
+- `internal/shuttleengine/codexengine#TestPrepare_UserSetup`
+- `internal/shuttleengines#TestNew_CodexLaunchCarriesTheClaudeUserSetup`
 
 **Edit:**
 - `internal/shuttleengine/codexengine#NewFromConfig` -> `func NewFromConfig(cfg shuttleengine.Config, dirs configengine.Dirs, seams Seams) *Codex`
@@ -29,7 +29,7 @@
 - `internal/shuttleengine#UserSetupSource`
 - `internal/shuttleengine#UserSetupRequest`
 - `internal/shuttleengine/claudeengine#NewUserSetupSource`
-- `plan:internal/shuttleengine/claudeengine#RunPluginHook`
+- `internal/shuttleengine/claudeengine#RunPluginHook`
 - `internal/shuttleengine/codexengine#repoFixture.addWorktree`
 - `internal/shuttleengine/codexengine#warnLog`
 

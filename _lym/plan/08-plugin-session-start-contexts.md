@@ -1,14 +1,14 @@
 # Card 8 — plugin-session-start-contexts
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#RunPluginHook` -> `func RunPluginHook(run shuttleengine.HookRun) ([]byte, error)`
-- `plan:internal/shuttleengine/claudeengine#setHookProcessGroup` -> `func setHookProcessGroup(cmd *exec.Cmd)`
-- `plan:internal/shuttleengine/claudeengine#hookWaitDelay` -> `const hookWaitDelay = 2 * time.Second`
-- `plan:internal/shuttleengine/claudeengine#sessionStartHooks` -> `func sessionStartHooks(pluginID, root string) ([]pluginHook, error)`
-- `plan:internal/shuttleengine/claudeengine#pluginHook` -> `type pluginHook struct`
-- `plan:internal/shuttleengine/claudeengine#pluginHookContext` -> `func pluginHookContext(stdout []byte) string`
-- `plan:internal/shuttleengine/claudeengine#TestUserSetup_PluginSessionStartContexts` -> `func TestUserSetup_PluginSessionStartContexts(t *testing.T)`
-- `plan:internal/shuttleengine/claudeengine#TestRunPluginHook` -> `func TestRunPluginHook(t *testing.T)`
+- `internal/shuttleengine/claudeengine#RunPluginHook`
+- `internal/shuttleengine/claudeengine#setHookProcessGroup`
+- `internal/shuttleengine/claudeengine#hookWaitDelay`
+- `internal/shuttleengine/claudeengine#sessionStartHooks`
+- `internal/shuttleengine/claudeengine#pluginHook`
+- `internal/shuttleengine/claudeengine#pluginHookContext`
+- `internal/shuttleengine/claudeengine#TestUserSetup_PluginSessionStartContexts`
+- `internal/shuttleengine/claudeengine#TestRunPluginHook`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#UserSetupSource.UserSetup`
