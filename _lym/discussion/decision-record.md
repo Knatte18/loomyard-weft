@@ -113,6 +113,12 @@ Decision: The guard item webster-fork-deny belongs to fork support: it is compar
 
 Rationale: A Codex fork deny cannot be built now: Codex runs no fork subagent and its hook input carries no subagent marker, so the deny would guard nothing. Keying the item to claude would hide the gap for good; gating it on the fork requirement keeps the rest of every seat compared and makes the gap fail loudly the day Codex can fork.
 
+### Added after Discussion (arbiter, 2026-11-17): Plan review round 3 closes at the hard cap with every finding fixed in place
+
+Decision: The plan review ends unconverged on round 3 and the plan stands as the round-3 fixer left it. Card 6 (06-seat-parity) Seat.Specs gives each engine a spec whose ModelChoice is ModelChoice{Engine: engine} alone, with Model, Effort and Version cleared, and TestCompare's seatsOf row pins it; card 6 creates TestMain in internal/shuttleparity's testmain_test.go; cards 2, 5 and 6 (02-manifest-record, 05-engines-with-seams, 06-seat-parity) add interim testOnlyCodeAllowed entries that card 8 (08-shuttle-manifest-verb) deletes; card 5's build glyph carries its re-sign arrow; card 6 declares the reference and compared engine names as exported constants of internal/shuttleparity. Implement the cards as written.
+
+Rationale: The one design-wrong finding, seat-specs-keeps-claude-model-params, is answered by the fix in place: codexengine.validateChoice refuses only a non-empty Version, an unlisted non-empty Effort or a non-bypass permission mode; claudeengine's validateEffort accepts an empty effort and resolveModelID returns the empty model when no version is given. Model and Effort reach only the launch command settings (buildLaunchCmd, Codex's model and effort args), which D1 lists and does not compare, so clearing them changes no compared item. The other four open keys are mechanical and the plan carries each fix as the review worded it.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's user-setup resolution, session scope and file locations stay in `claudeengine`, and reach `codexengine` only through `shuttleengine` interfaces wired in `internal/shuttleengines`; the rollout reading for the batching nudge stays in `codexengine`, and the read-only lookup check both engines' nudges use sits in its own package under `internal/shuttleengine`.
