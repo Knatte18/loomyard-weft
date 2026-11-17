@@ -53,4 +53,11 @@ The operator leaves these to the task's own research; its Discussion reads the p
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - retro-test-inline-lym-paths (class consistency, severity BLOCKING, open in rounds 2)
+  - select-widening-panics (class design, severity BLOCKING, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
