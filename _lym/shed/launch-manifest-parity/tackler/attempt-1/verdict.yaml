@@ -1,0 +1,17 @@
+verdict: hand-back
+reason: |
+  The stop is a blocked Plan-Write row. Two things are true, and the second one decides the verdict.
+
+  1. The reed strand 7607bc3bbc115195586bf06a8f38d487 was already unknown to reed when this step attached (driver.log 15:40:39.623 "shuttle: run attached", then 15:40:39.634 and 15:40:39.652 "unknown strand"). `lym reed status` now lists only the loom-status and tackler strands, so the chair strand is gone. A plain re-launch would not be stopped by this alone, but it is the cause of the gate's missing re-prompt.
+
+  2. The plan gate still fails after the gate fixer's pass, and the failure is a scope choice the fixer itself left for the parent. The last gate run (driver.log 15:43:16.470) has one blocking finding: glyph-not-found/10-bench-rule on "board:codex-writer-bench#" and "board:codexengine#". Card 10 writes only to the board, outside the worktree, so no ref can resolve. The fixer's reply (gate-findings/Plan-Write.md, "Left") says the fix is a choice the plan does not make: a different card shape, a real file target, or a validator exemption for board refs.
+
+  A re-run of Plan-Write with the strand restored would hit the same blocking finding on card 10 and stop again. So a resume does not settle it. The cause is named, but the fix is a design or scope choice for the run's parent, which is a hand-back, not a resume.
+
+  Earlier drive (driver.log 15:39:32) failed on a different error, a missing "engine-absolute-paths" stencil include. That is not the current stop and I did not rule on it.
+question: |
+  Plan-Write's plan gate fails on one blocking finding that the gate fixer could not resolve: card 10 (bench-rule) targets "board:codex-writer-bench#" and "board:codexengine#", which do not resolve because card 10 writes only to the board, outside the worktree.
+
+  Which should it be: (a) reshape card 10 to a real file target in the worktree, (b) keep the board-only card and give board refs a validator exemption, or (c) drop card 10 from the plan?
+
+  The chair strand 7607bc3bbc115195586bf06a8f38d487 was also already missing from reed when this step attached (driver.log 15:40:39), so a re-launch of Plan-Write will need the strand recreated as well.

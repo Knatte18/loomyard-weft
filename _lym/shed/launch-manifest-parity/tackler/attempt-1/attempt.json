@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Plan-Write",
+    "history_length": 6,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "40c66912c08839dc8d46483f325e6474c3062a7d",
+    "branch": "launch-manifest-parity",
+    "dirty": {}
+  },
+  "spawned_at": "2026-11-17T15:43:18.863787652+01:00",
+  "deadline": "2026-11-17T15:53:18.863787652+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/launch-manifest-parity/_lym/shed/launch-manifest-parity/drive-reports/drive-envelope-20261117-154318-be4a.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/launch-manifest-parity/_lym/shed/launch-manifest-parity/drive-reports/drive-report-20261117-154318-7f5a.md",
+  "strand_guid": "ae3d3ed80d1b673bf75fef33d837652e"
+}
