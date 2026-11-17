@@ -94,6 +94,12 @@ the case recurs on each board write by the older binary until that machine is up
   It is kept only when it then has the scheme `http` or `https`, compared case-insensitively,
   or has no scheme and does not open with two characters that are each a slash or a backslash.
   Every other target, `javascript:`, `data:`, `//host` and `/\host` among them, renders as plain text.
+- Every other value the page renders from `window.BOARD` is inserted as text, never as markup,
+  among them the header's render time and owner, each project's handle, title, brief and labels,
+  each entry's handle, slug, title, brief, status and labels, the facts line, section names,
+  and the design and decision file names.
+  A design or decision file name reaches a link only as its `href` attribute set through the DOM, never through markup,
+  and only as a relative path opening with `./`.
 - Light and dark follow `prefers-color-scheme`.
 - A header shows the render time and the prime owner.
 - When `window.BOARD` is undefined, because `board-data.js` is missing or did not parse, the page shows one line naming `lym board rerender`.
@@ -221,6 +227,12 @@ Rationale: PATTERN-fabric-boundary says that a change touching fabric's existing
 
 ## Open risks
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - d4-other-fields-unescaped (class design, severity MEDIUM, open in rounds 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: a render's file map holds `board-data.js`; stripping its `window.BOARD = ` prefix and `;` suffix leaves JSON that decodes,
@@ -234,6 +246,7 @@ Rationale: PATTERN-fabric-boundary says that a change touching fabric's existing
 - D3: `FabricReplay.Claims` claims `board-data.js` and `board.html`.
 - D4: Review: the viewer filters by kind, type and area with OR inside a group and AND across groups, searches text case-insensitively,
   nests projects and sections like the README with counts, expands an entry to its brief, facts and body, escapes HTML in bodies,
+  renders a title or brief holding an HTML tag as literal text, links design and decision files by a `./` relative path,
   keeps only `http`, `https` and scheme-less relative links, renders `javascript:`, `data:`, `//host` and `/\host` targets as plain text,
   follows the colour scheme, and shows the `lym board rerender` line when the data is missing.
 - D5: `lym board open` with no `board.html` refuses naming `lym board rerender` and the anchored directory to run it from, and starts no process.
