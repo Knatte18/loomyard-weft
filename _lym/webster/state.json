@@ -1,6 +1,6 @@
 {
   "runGuid": "0a70db7d32410364f4950a18b6f9fff8",
-  "planFingerprint": "3449701e50fdc754dd196231e11b3a61521052322ae45088c923a123b0951e90",
+  "planFingerprint": "8b4d579b506dac28f38ba333ff2a5077356211b7c44d53c976a24e49a9e736f9",
   "planFileHashes": {
     "00-overview.md": "5e14089f251704197709230f55363b5ad4b3d07cc39f870a17921296fce63a2e",
     "01-board-replay-holds.md": "ba334222277c262aa0b0abb9dc027724524638e4ddf786e6bb21ad50eb7544be",
@@ -11,7 +11,7 @@
     "06-beam-status-hold.md": "66113aabb3efda0ae1366877a7905b3cbd541873e926baf0b85318ab73e8cbf4",
     "07-batten-hub-run-slugs.md": "4335cba8b61fdda71d363a7b050bb89d2f7bea07cb35fcc3fc41db52d42bf4f1",
     "08-adopt-check-ends-on-hold.md": "1427857ecc77891b1e1c520a89f508e3e3ecb94f2b06314268c0dff0675daecf",
-    "09-adopt-foreground.md": "3523ad56078c1273043ebf089206f2e67fdddb554a5c61afa344c88ae238576d",
+    "09-adopt-foreground.md": "cb632662bf9d2d376319137af4a121aa0a44133466376182da7ed2006828a272",
     "10-retired-adopt-wording.md": "6c954ee15ef35065df26ccf2e5fd0a454436339fab140b82854a56e668329c50"
   },
   "planOverviewFrameHash": "9c993205f17167da8d1a1540ae310175d4ea9da737b86dc223dfeddf32cf3dc3",
@@ -468,24 +468,48 @@
         "09-adopt-foreground"
       ],
       "cardHashes": {
-        "09-adopt-foreground": "3523ad56078c1273043ebf089206f2e67fdddb554a5c61afa344c88ae238576d"
+        "09-adopt-foreground": "cb632662bf9d2d376319137af4a121aa0a44133466376182da7ed2006828a272"
       },
       "startSha": "31f8630b77364b79dbfcf5d1152622d85cbb8670",
       "kind": "fork",
       "spawnedAt": "2026-11-17T15:09:58Z",
       "sessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "09-adopt-foreground",
+        "status": "done",
+        "head_sha": "6cf07256219710f002a150df559a5ec6143b5f68",
+        "deviations": [
+          "internal/adoptcli/adopt.go",
+          "internal/adoptcli/adopt_integration_test.go",
+          "internal/adoptcli/adopt_test.go",
+          "internal/adoptcli/caller_test.go",
+          "internal/adoptcli/deps.go",
+          "internal/adoptcli/foreground.go",
+          "internal/adoptcli/refusal.go"
+        ]
+      },
+      "cardShas": [
+        "6cf07256219710f002a150df559a5ec6143b5f68"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-a63b7a7371afad32b.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-a63b7a7371afad32b.jsonl"
+      ]
     }
   },
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "f343e6f1dd8159caa6135f3dabefbab4",
   "masterSessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-a13cef7449a7a3986.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-ac8ad1743cc5d2198.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-a571337e1c2df4e7b.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-a571337e1c2df4e7b.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-a63b7a7371afad32b.jsonl"
   ]
 }

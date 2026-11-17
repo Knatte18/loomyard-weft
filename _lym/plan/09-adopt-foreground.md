@@ -1,10 +1,10 @@
 # Card 9 — `lym adopt` runs in the foreground
 
 **Create:**
-- `plan:internal/adoptcli#runForeground` -> `func runForeground(deps adoptDeps, req request, steps io.Writer) (outcome, error)`
-- `plan:internal/adoptcli#holdStands` -> `func holdStands(deps adoptDeps, identity machinename.Identity, subjects []string) error`
-- `plan:internal/adoptcli#movedRun` -> `func movedRun(hold boardengine.Hold, registry boardengine.Registry, identity machinename.Identity, subject, slug string, takeover *shedengine.Takeover) bool`
-- `plan:internal/adoptcli#takeOverRuns` -> `func takeOverRuns(deps adoptDeps, hold boardengine.Hold, owners boardengine.Owners, identity machinename.Identity, adopted []string, rootAdopted bool, outcomes map[string]*slugOutcome) error`
+- `internal/adoptcli#runForeground`
+- `internal/adoptcli#holdStands`
+- `internal/adoptcli#movedRun`
+- `internal/adoptcli#takeOverRuns`
 
 **Edit:**
 - `internal/adoptcli#request`
