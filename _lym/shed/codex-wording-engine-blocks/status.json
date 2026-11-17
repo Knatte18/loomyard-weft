@@ -1,12 +1,12 @@
 {
   "current_producer": "Worktree-Create",
-  "state": "blocked",
-  "error": "battencli: claim the board entry of \"codex-wording-engine-blocks\": board: a held board lock deferred the push of the owner commit, and the board is still ahead of origin: run `lym board sync`, then re-run the verb",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Create",
-    "last": "Worktree-Create → stuck",
-    "wait": "battencli: claim the board entry of \"codex-wording-engine-blocks\": board: a held board lock deferred the push of the owner commit, and the board is still ahead of origin: run `lym board sync`, then re-run the verb"
+    "last": "Worktree-Create → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -17,6 +17,12 @@
       "started_at": "2026-11-17T13:09:21Z",
       "budget_exempt": true,
       "machine": "neve"
+    },
+    {
+      "producer": "Worktree-Create",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-11-17T13:10:00Z"
     }
   ]
 }
