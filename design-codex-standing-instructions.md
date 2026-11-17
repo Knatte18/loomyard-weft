@@ -1,6 +1,6 @@
 # A Codex session gets Claude's standing items, user setup, instruction files and subagent terms in its developer instructions
 
-`codex-standing-instructions` · Task · feature, codex, shuttle, stencil, heddle · running · Preflight
+`codex-standing-instructions` · Task · feature, codex, shuttle, stencil, heddle · running · Motif
 
 Decision record: [Sketch](decision-codex-standing-instructions.md)
 
