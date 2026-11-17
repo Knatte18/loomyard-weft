@@ -1,6 +1,6 @@
 # Build the coverage maps as a mode of the gate run, one process per test in parallel
 
-`gate-builds-testmap` · Task · enhancement, gate, testkit · starting · Seed-Child
+`gate-builds-testmap` · Task · enhancement, gate, testkit · starting · Open-Window
 
 ## Seen (operator, 2026-11-17)
 
