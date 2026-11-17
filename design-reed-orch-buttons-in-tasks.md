@@ -1,6 +1,6 @@
 # reed: an RC button per agent, and Slack only in the orch's session
 
-`reed-orch-buttons-in-tasks` · Task · bug, reed, orch, slack · starting · Open-IDE
+`reed-orch-buttons-in-tasks` · Task · bug, reed, orch, slack · running · Preflight
 
 ## Seen (operator, 2026-11-17)
 
