@@ -1,13 +1,13 @@
 {
-  "current_producer": "Drift-Expect",
+  "current_producer": "Darn-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Drift-Verify",
   "pause_before_by": "codex-writer-bench",
   "activity": {
-    "now": "Drift-Expect",
-    "last": "Drift-Await → skipped",
+    "now": "Darn-Write",
+    "last": "Drift-Expect → skipped",
     "wait": ""
   },
   "history": [
@@ -37,6 +37,13 @@
       "outcome": "skipped",
       "output": "",
       "at": "2026-11-17T17:32:01Z",
+      "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Drift-Expect",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-17T17:32:03Z",
       "reason": "drift.enabled = false"
     }
   ],
