@@ -1,6 +1,6 @@
 # gate redundant: a runaway mutant eats all memory and freezes the machine
 
-`redundant-mutant-memory-cap` · Task · bug, gate · running · Drift-Await
+`redundant-mutant-memory-cap` · Task · bug, gate · running · Drift-Expect
 
 ## Seen (2026-11-16 and 2026-11-17, Neve)
 
