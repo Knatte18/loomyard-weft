@@ -307,6 +307,16 @@ Rationale: Hard-cap rule: accept only when the fix in place already answers the 
   - stopped-batch-gate-calls-unrendered (class design, severity MEDIUM, open in rounds 3)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - failed-stop-records-batch-kind-for-needs-parent (class design, severity MEDIUM, open in rounds 1)
+  - rename-through-weaver-untested (class design, severity MEDIUM, open in rounds 1)
+  - reset-foreign-path-check-before-strand-probe (class design, severity MEDIUM, open in rounds 1)
+  - state-write-failure-after-outcome-untested (class design, severity MEDIUM, open in rounds 1)
+  - true-last-batch-rendering-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - With `tapestry.implementer: weaver`, the tapestry recipe builds the Webster row with Weaver, the row accepts its `gates` key, and its Done, reroute and Stuck routes match Webster's (D1).
