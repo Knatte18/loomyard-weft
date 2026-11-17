@@ -550,33 +550,6 @@
       "record_body_sha256": "d1c1941de3068cba1c839b10018320680748d41ae63d75e3f191111a50be57fd"
     },
     {
-      "id": 1408,
-      "handle": "T18",
-      "slug": "codex-question-deny-nudge",
-      "title": "A Codex session gets the question-tool deny and the batching nudge Claude runs",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "codex",
-        "shuttle",
-        "stencil",
-        "heddle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `codex-same-as-claude`.\n\nTakes: codex-standing-instructions' codexengine launch line, whose one hooks.PreToolUse and hooks.PostToolUse settings these entries join\nDelivers: the request_user_input deny on an autonomous Codex launch; the Codex batching nudge reading the rollout's top-level calls and exec cells, judged by Claude's rules and keyed by transcript_path; the read-only lookup check moved out of claudeengine into a package both engines import; codex.yaml's batching_nudge block\nExports: the moved lookup check's package under internal/shuttleengine\n\nThe part changes these packages:\n\n- internal/shuttleengine/codexengine (about 800 changed lines)\n- internal/shuttleengine/claudeengine (about 80 changed lines)\n- internal/shuttleengine/bashlookup (about 280 changed lines)\n- internal/shuttlecli (about 60 changed lines)\n- internal/shuttleengines (about 40 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-16T13:56:13Z",
-      "revised": "2026-11-16T13:56:13Z",
-      "profile": "solid",
-      "project": "codexengine",
-      "discussed": true,
-      "record_body_sha256": "fbc96f8281044eb0c461840369283d75e1c6223507f564642f4c858bc8b1192d"
-    },
-    {
       "id": 1409,
       "handle": "T19",
       "slug": "launch-manifest-parity",
@@ -592,8 +565,7 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "codex-wording-engine-blocks",
-        "codex-question-deny-nudge"
+        "codex-wording-engine-blocks"
       ],
       "isolated": false,
       "brief": "",

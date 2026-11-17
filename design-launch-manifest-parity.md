@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-launch-manifest-parity.md)
 
-Depends on: [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md), [`codex-question-deny-nudge`](design-codex-question-deny-nudge.md)
+Depends on: [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)
 
 Filed from the Sketch `codex-same-as-claude`.
 
