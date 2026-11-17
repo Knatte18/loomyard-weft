@@ -10,7 +10,7 @@
 - `internal/shuttleengines#entry`
 - `internal/shuttleengines#registry`
 - `internal/shuttleengines#New`
-- `internal/shuttleengines#build`
+- `internal/shuttleengines#build` -> `func build(cfg shuttleengine.Config, dirs configengine.Dirs, constructors map[string]constructor, seams LaunchSeams) (shuttleengine.EngineSet, error)`
 - `internal/shuttleengines#keepWarmWith`
 - `internal/shuttleengines#KeepWarm`
 - `internal/shuttleengines#SessionNamers`
@@ -21,6 +21,7 @@
 - `internal/shuttleengines#TestKeepWarm`
 - `internal/shuttleengines#TestNew`
 - `internal/shuttleengines/doc.go`
+- `cmd/lym#testOnlyCodeAllowed`
 
 **Extends:**
 - `//pattern/PATTERN-shuttle-provider-seam.md`
@@ -39,6 +40,9 @@ The registry's `constructor` type takes the seams as a third parameter: the Code
 `keepWarmWith`, `KeepWarm`, `SessionNamers`, `RecordReaders`, `ToolBoundaryRenderer`, `BatchingNudger` and `EditRecorder` call their constructors with zero seams, and the constructor literals in `TestKeepWarm` and `TestNew` take the new parameter.
 Bound: the seams change only what a set built by `NewWithSeams` runs; nothing in a real launch path calls it.
 
+`testOnlyCodeAllowed` in `cmd/lym/testonlycode_linux_test.go` gains the entry `internal/shuttleengines.NewWithSeams`, its `Why` saying it has no caller until `lym shuttle manifest` lands and that card removes the entry, as the `internal/runfsm.Order` entry does for its own later card.
+No main package calls `NewWithSeams` before card 8, so without the entry a batch gate ending before card 8 fails `PATTERN-test-only-code`'s guard.
+
 `pattern/PATTERN-shuttle-provider-seam.md`'s bullet on `codexengine.Seams` gains a sentence: `shuttleengines.NewWithSeams` is the one entry point that builds the set with a caller's hook runner and sandbox probe, for `lym shuttle manifest` and the parity test.
 
 Test, tier0, setting `CLAUDE_CONFIG_DIR` and `HOME` through `newCodexLaunchFixture`'s fixture, so not parallel:
@@ -47,6 +51,6 @@ It builds the set with `NewWithSeams`, a hook runner that records its calls and 
 `Prepare` of the Codex engine calls both, and its launch carries the runner's context.
 The nil-seam fallbacks are not reached at tier0: `claudeengine.RunPluginHook` and Codex's own probe spawn `sh` and `codex`.
 
-**ImpactSummary:** The package-private constructor type gains a parameter: every constructor call site and literal in `shuttleengines` and its two tests changes, and every exported entry point keeps its signature.
+**ImpactSummary:** The package-private constructor type gains a parameter: every constructor call site and literal in `shuttleengines` and its two tests changes, and every exported entry point keeps its signature; `testOnlyCodeAllowed` gains an interim entry for `NewWithSeams`, which card 8 removes.
 
 **Commit:** 5: Build the engine set with a given hook runner and sandbox probe

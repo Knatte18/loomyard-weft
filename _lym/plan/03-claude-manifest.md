@@ -18,11 +18,13 @@
 - `plan:internal/shuttleengine#WriteManifest`
 - `plan:internal/shuttleengine#ReadManifest`
 - `plan:internal/shuttleengine#Manifest`
+- `plan:internal/shuttleengine#WebsterForkDenyKey`
 - `internal/shuttleengine/claudeengine#engineWithAnchor`
 - `internal/shuttleengine/claudeengine#instructionFiles`
 - `internal/shuttleengine/claudeengine#buildDenyNotice`
 - `internal/shuttleengine/claudeengine#appendPromptText`
 - `internal/heddleengine#Marker`
+- `internal/dotgit#FindRoot`
 - `internal/shuttleengine/claudeengine#writePluginInstalls`
 - `internal/shuttleengine/claudeengine#writeUserSetupFile`
 - `internal/shuttleengine/claudeengine#writeSkillFile`
@@ -40,11 +42,12 @@ D1 reads the manifest back from the launch.
   the user's global CLAUDE.md and each CLAUDE.md above the repository root, from the same `instructionFiles` resolution the user-setup source uses, key the absolute path;
   each CLAUDE.md on the path from the repository root to the working directory, key its root-relative path;
   each `Standing.FileEntries` entry, key `heddle-file/<slug>`, `Engine` the entry's own, delivered only when the anchor's `CLAUDE.local.md` opens with `heddleengine.Marker` and holds the entry's text.
-  The working directory is the engine's anchor resolved with `filepath.EvalSymlinks`, as Codex resolves it, and the repository root is the nearest directory at or above it holding a `.git` entry, so both engines key the same files the same way.
+  The working directory is the engine's anchor resolved with `filepath.EvalSymlinks`, as Codex resolves it, and the repository root is the root `dotgit.FindRoot` returns for the anchor, resolved with `filepath.EvalSymlinks`, as `codexengine`'s `readCheckout` derives it, so both engines key the same files the same way.
+  An anchor with no repository above it, where `FindRoot` returns `dotgit.ErrNotRepository`, has no root: only the working directory's CLAUDE.md is listed, key `CLAUDE.md`, and the launch goes on.
 - `skill-load`, one per spec skill the launch line's load message names, key the skill name.
 - `skill-listing`, native, one per `ListedSkills` name of the engine's own `UserSetupSource` resolution for the spec's skills and role.
 - `plugin-context`, native, one per session-start hook of a plugin the scope turns on, key `<plugin>/<hook command>`; the resolution runs with no hook runner, so no hook runs.
-- `guard`, one per PreToolUse deny the written `settings.json` carries, key the shellguard row name, `question-deny` for the AskUserQuestion deny and `webster-fork-deny` for the `lym webster` fork deny.
+- `guard`, one per PreToolUse deny the written `settings.json` carries, key the shellguard row name, `question-deny` for the AskUserQuestion deny and `shuttleengine.WebsterForkDenyKey` for the `lym webster` fork deny.
 - `batching-nudge`, key `batching-nudge`, when the written settings carry its PostToolUse hook.
 - `notice`, keys `deny-notice` (when the notice is non-empty), `creel-trust` (always) and `subagent-passage` (when non-empty), each when the appended prompt holds it.
 - `settings`, keyed to `claude`, one item naming the settings document with its byte size in `Detail`.
@@ -54,12 +57,12 @@ D1 reads the manifest back from the launch.
 A write failure of the manifest refuses the launch with the path, as the other artifact writes do.
 
 Tests, all tier0:
-`TestPrepare_WritesTheManifest` is a table on `engineWithAnchor` whose rows set the engine's `claudeDir` to a fixture config directory holding a global CLAUDE.md, an installed plugin with one session-start hook and a user skill, and write a CLAUDE.md at the anchor and a marked `CLAUDE.local.md`.
+`TestPrepare_WritesTheManifest` is a table on `engineWithAnchor` whose rows set the engine's `claudeDir` to a fixture config directory holding a global CLAUDE.md, an installed plugin with one session-start hook and a user skill, and write a `.git` directory, a CLAUDE.md and a marked `CLAUDE.local.md` at the anchor, so the anchor is its own repository root.
 The fixture is written with `writeUserSetupFile`, `writePluginInstalls` and `writeSkillFile`.
 The plugin is a user-scope install that also ships a skill, and the autonomous row's spec loads that skill, so the session scope turns the plugin on, as `scope_test.go`'s rows turn a plugin on through a spec skill.
 Each row reads the record back with `ReadManifest` and asserts its items by channel and key:
 - an autonomous spec with skills holds `prompt-engine`, the question deny, every unswitched guard row, each skill load, the `deny-notice`, `creel-trust` and `subagent-passage` notices, the native global CLAUDE.md and anchor CLAUDE.md sources, the listed skills and the plugin's context keyed `<plugin>/<hook command>` as `native`;
-  its record's `Omitted` verdict is empty, so a hook the resolution reports as not run never becomes an omitted item;
+  its record's `Verdict` is empty, so a hook the resolution reports as not run never becomes an omitted item;
 - a hand-written prompt holds `prompt-engine` under key `hand-written`;
 - an interactive spec holds no `question-deny`;
 - a spec with `ForkSubagents` holds `webster-fork-deny` with an empty `Engine`;

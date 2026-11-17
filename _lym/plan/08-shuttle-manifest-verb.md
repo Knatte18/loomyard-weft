@@ -7,13 +7,13 @@
 - `plan:internal/shuttleparity#LookupSeat` -> `func LookupSeat(seats []Seat, errs []error, name string) (Seat, error)`
 - `plan:internal/shuttlecli#shuttleCLI.manifestCmd` -> `func (c *shuttleCLI) manifestCmd() *cobra.Command`
 - `plan:internal/shuttleparity#TestReport` -> `func TestReport(t *testing.T)`
-- `plan:internal/shuttleparity#manifestEngine` -> `type manifestEngine struct`
 - `plan:internal/shuttlecli#TestManifestCmd` -> `func TestManifestCmd(t *testing.T)`
 
 **Edit:**
 - `internal/shuttlecli#shuttleCLI`
 - `internal/shuttlecli#Command`
 - `internal/shuttlecli#TestCommand_PositionalArgValidation`
+- `cmd/lym#testOnlyCodeAllowed`
 
 **Extends:**
 - `internal/shuttleparity/doc.go`
@@ -25,6 +25,7 @@
 - `plan:internal/shuttleparity#seatsOf`
 - `plan:internal/shuttleparity#seatTables`
 - `plan:internal/shuttleparity#seatTable`
+- `plan:internal/shuttleparity#manifestEngine`
 - `plan:internal/shuttleparity#Unmet`
 - `plan:internal/shuttleparity#UnrunHooks`
 - `plan:internal/shuttleparity#ConfiguredSandbox`
@@ -44,10 +45,12 @@ A name no built seat holds is refused naming the catalog's seat names and every 
 `shuttleCLI` gains a field `manifestReport func(name string) (shuttleparity.ManifestReport, error)`, set by `PersistentPreRunE`.
 Its production closure builds the seat environment of the current worktree (the hub's stencils and specs directories, the worktree's layout, config dirs and model registry) and the engine set from `shuttleengines.NewWithSeams(c.cfg, c.configDirs, LaunchSeams{RunHook: shuttleparity.UnrunHooks, SandboxProbe: shuttleparity.ConfiguredSandbox})`, then calls `Report`.
 `lym shuttle manifest <seat>` (audience operator, one required positional argument) calls the field and prints its answer.
-- With nothing missing and no unmet requirement it prints `output.Ok` with both manifests and the verdict, plugin contexts listed unrun.
+- With nothing missing it prints `output.Ok` with both manifests and the parity verdict, `Missing`, plugin contexts listed unrun, and exits zero.
+  The printed verdict is `Missing` alone: each record's stored `Verdict` lists every plugin context as omitted, since `UnrunHooks` runs none, so only a real launch's record verdict says whether a context was delivered.
+- With an engine that cannot start the seat, the `output.Ok` report names that engine on a line of its own with its unmet requirements from `shuttleparity.Unmet`, and the exit stays zero when nothing is missing.
+  Every seat is compared, a seat Codex cannot start included, so an unmet requirement is reported and never fails the verb.
 - With an item missing it prints `output.Err` naming each missing item as `<channel> <key>`, with the report, and exits non-zero, with the way forward: give the Codex engine a delivery for each missing item in `internal/shuttleengine/codexengine`, and run no Codex bench of this seat until the verb passes.
-- With an engine that cannot start the seat it prints `output.Err` naming the engine and its unmet requirements, with the report, and exits non-zero, since that engine's `Start` refuses the seat.
-  The way forward: the seat cannot run on that engine until its engine package meets each requirement through `shuttleengine.RequirementSupporter`, so no bench of the seat runs on it; the other engine's printed manifest still stands for a report.
+  A missing compared item is the verb's only non-zero exit besides an error from `Report`, as D10 says.
 `Long` states the bounds: it starts no session and runs no plugin hook or sandbox probe;
 it writes nothing outside its temporary directory but the Codex home a Codex `Prepare` readies (its links, trust record and `config.toml`), and keeps no manifest copy, since it never calls `Runner.launch`;
 plugin contexts are listed by plugin and hook unrun, and only a run's record says whether one was delivered;
@@ -55,19 +58,22 @@ the developer-instructions size check leaves out plugin contexts, so a seat it p
 `Command` adds `manifestCmd`, and its doc comment names the verb; the verb takes the strict cwd gate of every other verb.
 `shuttleparity`'s `doc.go` names `Report`, and `docs/overview.md` adds the verb to its shuttle verb list and `internal/shuttleparity` to its package tree.
 
+The entries `internal/seatengine.Prompts`, `internal/shuttleengine.MissingItems` (card 2), `internal/shuttleengines.NewWithSeams` (card 5), and `internal/seatengine.Specs`, `internal/landingshed.FixReviewSeatTable` and `internal/burlerengine.Engine.SeatTables` (card 6) of `testOnlyCodeAllowed` in `cmd/lym/testonlycode_linux_test.go` are deleted.
+`shuttlecli` now reaches each of them: `NewWithSeams` from the production closure, `MissingItems` through `Report` and `Compare`, and the rest through `shuttleparity.Report`, `seatsOf`, the catalog's `Build` functions and `seatengine.Specs`, so every entry would match no unreachable function and the stale-entry check of `PATTERN-test-only-code` would fail.
+
 Tests, tier0:
-- `TestReport` calls `report` over a fake engine set of two `manifestEngine` fakes, whose `Prepare` writes a given manifest, on a catalog of fixture `seatTable` entries: matching manifests give no `Missing`; a Codex manifest lacking a compared item gives exactly that item; a Codex plugin context omitted as unrun gives none;
+- `TestReport` calls `report` over a fake engine set of two of card 6's `manifestEngine` fakes on a catalog of fixture `seatTable` entries: matching manifests give no `Missing`; a Codex manifest lacking a compared item gives exactly that item; a Codex plugin context omitted as unrun gives none;
   a Codex fake meeting no requirement gives `Unmet` for a forks seat; an unknown seat name is refused naming the seats;
   with a second fixture entry whose `Build` fails, the first entry's seat still reports, and the failing entry's seat name is refused naming that builder and its error;
-  a fake whose `Prepare` fails returns an error naming the engine, and one that writes no record returns the error naming the engine and `shuttleengine.WriteManifest`;
   after each row the temporary directory is gone, so no `manifests` copy survives anywhere.
 - `TestManifestCmd` builds `shuttleCLI` by hand, as `TestOpenCmd_ListModels` builds its receiver, with a `manifestReport` stub returning a hand-built `ManifestReport` or error per seat name, and runs `manifestCmd`:
   a matching seat prints `ok` with both manifests and exits zero;
   a seat with a missing Codex item prints the error naming `<channel> <key>` and exits non-zero;
-  a seat with an unmet Codex requirement prints the error naming `codex` and the requirement and exits non-zero;
+  a seat with an unmet Codex requirement and nothing missing prints `ok` naming `codex` and the requirement and exits zero;
+  the stub's map keys and the expected engine name come from card 6's exported engine-name constants of `internal/shuttleparity`, never a literal;
   an error from the stub prints it and exits non-zero.
 - `TestCommand_PositionalArgValidation` gains a row: `lym shuttle manifest` with no argument is refused by the positional check.
 
-**ImpactSummary:** One new verb in shuttle's subtree; `shuttleCLI` gains one field and `Command` one `AddCommand` entry; no existing verb changes.
+**ImpactSummary:** One new verb in shuttle's subtree; `shuttleCLI` gains one field and `Command` one `AddCommand` entry; no existing verb changes; `testOnlyCodeAllowed` loses its `internal/seatengine.Prompts` entry and the interim entries cards 2, 5 and 6 added.
 
 **Commit:** 8: Add lym shuttle manifest

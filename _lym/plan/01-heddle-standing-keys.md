@@ -26,7 +26,6 @@
 - `plan:internal/heddleengine#TestRenderer_EntryKeys` -> `func TestRenderer_EntryKeys(t *testing.T)`
 - `plan:internal/shuttleengine#Passage` -> `type Passage struct`
 - `plan:internal/shuttleengine#Standing` -> `type Standing struct`
-- `plan:internal/shuttleengine#TestStandingPassages` -> `func TestStandingPassages(t *testing.T)`
 
 **Uses:**
 - `internal/heddleengine#promptTargetsFor`
@@ -58,11 +57,11 @@ Tests, all tier0:
 - `TestRenderer_EntryKeys` is a table over a fixture store with one entry per target kind and one entry aimed at both `agents-prompt` and `claude-prompt`.
   It asserts each returned `Passage`'s `Slug` and `Engine` from both `Passages` and `FileEntries` for each engine, the double-aimed entry once with an empty `Engine`, and that `FileEntries` returns none for an unknown engine.
 - `TestShowAndPassagesReadTheShippedLayerFirst` and `TestRender` read the texts off the returned `Passage` values; their expectations keep the same texts.
-- `TestStandingPassages` is a table: an empty Bolt dir, no installed reader and a reader that errors each give the zero `Standing`; an installed reader's `Standing` comes back whole.
-  It installs the process reader, so it does not run in parallel.
 - Both `TestPrepare_AppendsStandingPassages` tests install readers returning a `Standing` and keep their assertions on the launch text.
+  The Claude test's `outside_hub`, `no_reader` and `reader_error` rows keep pinning, through `Prepare`, that an empty Bolt dir, no installed reader and a reader error each give the zero `Standing`;
+  the `reader_error` row also keeps pinning the Warn log.
   The Codex test's oversize-refusal row changes its expected item name from `heddle passage 1` to `heddle passage <slug>` with its reader's slug.
 
-**ImpactSummary:** One seam type re-signed with three production callers (two engine Prepares and `cmd/lym`'s install) and five tests; launch text is unchanged and only the Codex refusal's item name changes.
+**ImpactSummary:** One seam type re-signed with three production callers (two engine Prepares and `cmd/lym`'s install) and the tests that pin them; launch text is unchanged and only the Codex refusal's item name changes.
 
 **Commit:** 1: Standing passages and heddle file entries carry their slug

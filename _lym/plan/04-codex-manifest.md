@@ -55,7 +55,7 @@ Each row reads the record back with `ReadManifest` and asserts its items by chan
 - a batching-nudge-on config holds `batching-nudge` and an off one holds none;
 - a CLAUDE.md Codex reads itself and one only a pointer names each give a delivered `instruction-source` item;
 - the file entry appears as `heddle-file/<slug>` under a marked `AGENTS.override.md` and has no item under an unmarked one;
-- the delivered and the omitted plugin hook give a delivered and an omitted `plugin-context` item, and the record's `Omitted` verdict names the omitted one;
+- the delivered and the omitted plugin hook give a delivered and an omitted `plugin-context` item, and the record's `Verdict` names the omitted one;
 - the `settings` items carry `codex` and the sandbox mode.
 
 `TestPrepare_UserSetup` gains a row beside `OmittedHookAndWarningReachTheWarnings`: an omitted hook whose reason is `shuttleengine.ErrHookUnrun`'s text adds nothing to the `warnings` buffer.
