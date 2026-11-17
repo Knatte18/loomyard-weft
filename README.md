@@ -151,7 +151,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 7d<br>8m | testkit, gate |
+| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 7d<br>9m | testkit, gate |
 
 ### Notes (0)
 
@@ -168,21 +168,22 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (2)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | darn · light |  | 1h<br>0m | loom, board, stencil |
+| T6 | **Sweep read-only leftovers a killed test leaves under the scratch root** | [`readonly-test-leftovers`](design-readonly-test-leftovers.md) | darn · light |  | 8m<br>0m | cleanup, testkit, webster |
 
-#### Draft (4)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>22h | claude, shuttle, config |
-| T5 | `draft` **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | darn · light |  | 1h<br>0m | loom, board, stencil |
-| T6 | `draft` **Sweep read-only leftovers a killed test leaves under the scratch root** | [`readonly-test-leftovers`](design-readonly-test-leftovers.md) | darn · light |  | 8m<br>0m | cleanup, testkit, webster |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 4d<br>4d | slack, creel, orch |
 
 ### Notes (8)
