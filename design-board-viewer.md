@@ -1,6 +1,6 @@
 # Interactive board view: a regenerated HTML file and a phone-friendly README
 
-`board-viewer` · Task · sketch, board, ide, orch · running · Raddle-File
+`board-viewer` · Task · sketch, board, ide, orch · done
 
 Decision record: [Sketch](decision-board-viewer.md)
 
