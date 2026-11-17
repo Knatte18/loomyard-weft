@@ -429,9 +429,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-ab6f7c16cac28f64b.jsonl"
       ]
+    },
+    "6": {
+      "slug": "creel-bridge-wiring",
+      "cards": [
+        "06-creel-bridge-wiring",
+        "07-bridge-envelope-and-name",
+        "08-bridge-records-and-calls"
+      ],
+      "cardHashes": {
+        "06-creel-bridge-wiring": "da9268f7684105febb52add0159295b7ef825252fb647db9c2db06544d5389b5",
+        "07-bridge-envelope-and-name": "b0efea3b528fdbc7d044b1d81f061353a85aa10209cf1ffca3c23c665fe0fbdb",
+        "08-bridge-records-and-calls": "f7a01dea813cae977f0fdcd8ed895adcaa6d9b9b7f0db3b0c579b5295d55302d"
+      },
+      "startSha": "0643efca8c2cc963fc3dfd9664384f610a8b367f",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T17:58:21Z",
+      "sessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "255015dbb2c93bc97dff12a121147be8",
   "masterSessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
   "masterEngine": "claude",
