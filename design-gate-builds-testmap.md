@@ -1,6 +1,6 @@
 # Build the coverage maps as a mode of the gate run, one process per test in parallel
 
-`gate-builds-testmap` · Task · sketch, gate, testkit
+`gate-builds-testmap` · Task · sketch, gate, testkit · starting · Worktree-Create
 
 Decision record: [Sketch](decision-gate-builds-testmap.md)
 
