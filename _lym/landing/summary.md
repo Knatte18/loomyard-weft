@@ -1,71 +1,57 @@
-# Render each prompt and edit directive for the engine it launches on
+# Render every producer's prompt and edit directive for its launch engine
 
-Before this change, only the assist seats read an engine's own copy of the edit directive.
-Every other producer rendered the Claude-worded shared directive whatever engine ran the seat,
+Before this change, only the assist seats rendered the edit directive in the launch engine's own wording.
+Every other producer rendered the Claude-worded shared directive on any engine,
 and both engine copies lacked rules the shared one had.
-Nothing stopped a prompt worded for one engine from launching on another.
+A prompt could also be rendered for one engine and launched on another with nothing to catch it.
+Now each producer renders its prompt and edit directive for the engine its model choice resolves to,
+and `Prepare` refuses a launch whose prompt was rendered for a different engine.
 
 ## What changes
 
-**One edit directive per engine (D3).**
-The shared `contracts/stencils/edit/edit-directive.md` is removed.
-Its text becomes the Claude copy, `engine/claude/edit-directive`,
-and the Codex copy, `engine/codex/edit-directive`, now carries every rule in Codex's wording:
-`apply_patch` for every change, `lym loom fmt` for Go formatting, the scratch-file rules, renames, and the own-worktree rule.
-`editdirective.Directive(stencilsDir, engine)` takes the engine and replaces `EngineDirective`,
-so an assist seat and every other seat read the same full copy for their engine.
-The edit-rule guard in `contracts/stencils/parentdirective_test.go` exempts the engine copies by their engine-block name.
-
-**A launch spec carries its prompt engine (D4).**
-`shuttleengine.Spec` gains `PromptEngine`, the engine the prompt was rendered for,
-and `HandWrittenPrompt`, which only `lym shuttle run` sets for its `--prompt` or `--prompt-file` text.
-`EngineSet.EngineName` and `Runner.EngineName` return the engine a model choice launches on, the set's default for a choice naming none;
-`shuttleengine.EngineNamer` is that one-method seam.
-`shuttleengine.CheckPromptEngine` runs first in the Claude and Codex `Prepare`.
-It refuses a spec whose prompt engine is another engine's or unset, naming both engines and the producer's model setting as the way forward.
-The orch spec names the Claude engine and prompt engine explicitly, so a Codex default engine never takes the orch role;
-the same choice now drives the orch's remote-control check.
-
-**Every producer renders for its launch's engine.**
-Each producer resolves the engine through the shuttle seam it already holds, now extended with `EngineName`,
-renders its prompt for that engine and sets the same name as `PromptEngine`.
-Where a launching function filled its prompt inline, the render is split out into an exported function that takes the engine name and needs no session:
-`Bouncer.RenderSeedPrompt` and `Bouncer.RenderJudgePrompt` (shedadapters),
-`RenderCirclingJudgePrompt`, `RenderMilestoneJudgePrompt` and `RenderTargetingPrompt` (treadleengine),
-`RenderSessionPrompt` (samplerengine), `RenderPRReviewPrompt` (landingshed),
-`RenderReflectionPrompt` (frictionengine) and `RenderConflictPrompt` (mergeresolve).
-websterengine's `RenderRecoveryPrompt`, `RenderPlanFixPrompt` and `RenderMasterPrompt`,
-sheddriver's `RenderTacklerPrompt`, shedarbiter's `Prompt`, dobbyengine's `TidyPrompt`
-and weaverengine's `RenderBatchPrompt` gain the engine.
-`gatefixer.PromptInputs.Engine` and `gatefixer.Spec.PromptEngine` carry it for every cold fixer:
-webster's verify fixer, loom's row fixer, the gate's card fixer and weaver's fixer.
-A seat's prompt engine is its engine, else the geometry's default, as its engine blocks already were.
-The weaver's engine follows the ladder rung each attempt runs on.
-
-**The scan.**
-`TestPromptEngineRule` fails on a production `shuttleengine.Spec` literal that sets `Prompt` but neither `PromptEngine` nor `HandWrittenPrompt`,
-and on `HandWrittenPrompt` set outside `internal/shuttlecli`.
-A literal that sets no `Prompt`, such as an attach probe's, is skipped.
-
-`PATTERN.md`'s provider-seam entry, its background's new "Prompt engine" section,
-and the stencil-ownership background's edit-directive section state the new rules.
+- `shuttleengine.Spec` gains `PromptEngine`, the engine its `Prompt` was rendered for, and `HandWrittenPrompt`.
+- `CheckPromptEngine` runs first in the Claude and Codex `Prepare`.
+  It refuses a spec whose `PromptEngine` differs from the engine's name, or is unset.
+  The error names both engines and the producer's model setting as the way forward.
+- `EngineSet.EngineName` and `Runner.EngineName` (the `EngineNamer` interface) return the engine a model choice resolves to,
+  the set's default name for an empty choice.
+  Producers pass that name to their renderer and set it on the spec.
+- Every producer outside `seatengine` has one prompt render function that takes the engine name and needs no session.
+  Where the launching function filled the prompt inline, the render is split out of it.
+  This covers `shedadapters` (`judgeCall`, `runSeedSpawn`), `websterengine`, `treadleengine`, `samplerengine`,
+  `landingshed`, `frictionengine`, `mergeresolve`, `sheddriver`, `gatefixer`, `loomcli`, `dobbyengine`, `shedarbiter` and `weaverengine`.
+- `editdirective.Directive` takes the engine; `EngineDirective` is gone.
+- The shared `edit-directive` stencil is removed.
+  Each engine's block copy now carries every rule of the shared directive:
+  `lym loom fmt` for Go, the scratch-file rules, renames, and other-worktree work only when the parent or operator says so.
+  The Claude copy is the old shared text, and assist seats now get the full directive.
+- `lym shuttle run` marks its spec `HandWrittenPrompt` for inline `--prompt` text or a `--prompt-file`.
+  Such a spec is not refused, and its manifest names the prompt hand-written.
+- The orch spec names the Claude engine and its prompt engine through the `orchEngine` constant in `internal/orchcli`,
+  so a Codex default engine never takes the orch role.
 
 ## Design decisions
 
-- The prompt-engine check sits in each engine's `Prepare`, through one `shuttleengine` function, as the record names it.
-  Runner-level tests over the fake engine therefore keep running specs that name no prompt engine.
-- Producers get `EngineName` from the shuttle seam they already hold, so production wiring changes only where an adapter wraps the runner:
-  loom's driver starter and beam's board-tidy shuttle.
-  The sampler, which builds its spec without a seam, takes an `Engines` namer in its inputs.
-- loomcli's driver prompt and the gate card fixer's renderer stay unexported:
-  they live in CLI packages, which the record's export list does not name.
-- weaverengine, which landed after the record was written, is treated as one more producer.
-- The record says a hand-written spec's manifest names its prompt hand-written.
-  No launch manifest exists yet; launch-manifest-parity builds it,
-  so this change carries the mark on the spec for that task to record.
+- The `orchEngine` literal is a recorded exception to the rule that a caller never names an engine, and no orch config key is added.
+  The orch relies on Claude-only features (remote control, hooks, the reed RC button),
+  so a key whose only valid value is `claude` would be a knob that breaks the orch when turned.
+- A scan in `internal/shuttleengine` (`promptengine_enforcement_test.go`) fails on a production `Spec` literal that sets `Prompt`
+  but neither `PromptEngine` nor `HandWrittenPrompt`.
+  It also fails on `HandWrittenPrompt` set outside `internal/shuttlecli`.
+  A literal that sets no `Prompt`, such as an attach probe's, is skipped.
+  The scan is syntactic, so it does not see a spec filled field by field.
+- `PATTERN-shuttle-provider-seam` and `PATTERN-stencil-ownership` are updated: the engine copies are the edit directive's only statement.
 
-## Bound
+## Behavior to know
 
-A hub that edited its seeded copy of the shared directive loses that edit, since nothing reads the shared stencil any more.
-A hub that edited its seeded engine copy keeps it as it is, without the rules this change adds,
-since `stencilstore` never overwrites an edited stencil.
+- A hub that edited its seeded copy of the shared edit directive loses that edit, since nothing reads the shared stencil now.
+- A hub that edited its seeded engine copy keeps it as is, without the rules the shared directive adds,
+  because `stencilstore` never overwrites an edited stencil.
+
+## To check by hand
+
+- Producer edit-directive copy untested: a producer-level test that its prompt carries the launch engine's directive copy
+  may be missing in some producer.
+  Check each producer's render test.
+- A real launch of one producer under a Codex default engine, and one `lym shuttle run` with `--prompt` and with `--prompt-file`,
+  were not run against live sessions.
