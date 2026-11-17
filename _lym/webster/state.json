@@ -383,6 +383,22 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-a13cef7449a7a3986.jsonl"
       ]
     },
+    "10": {
+      "slug": "retired-adopt-wording",
+      "cards": [
+        "10-retired-adopt-wording"
+      ],
+      "cardHashes": {
+        "10-retired-adopt-wording": "6c954ee15ef35065df26ccf2e5fd0a454436339fab140b82854a56e668329c50"
+      },
+      "startSha": "6cf07256219710f002a150df559a5ec6143b5f68",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T15:27:26Z",
+      "sessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "4": {
       "slug": "shellguard-take-hold",
       "cards": [
@@ -502,7 +518,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "f343e6f1dd8159caa6135f3dabefbab4",
   "masterSessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
   "masterEngine": "claude",
