@@ -1,6 +1,6 @@
 # Refuse a commit that adds a secret file
 
-`sensitive-path-commit-guard` · Task · feature, webster, fabric · running · Code-Burler-Fix
+`sensitive-path-commit-guard` · Task · feature, webster, fabric · running · Code-Bouncer
 
 ## Seen (orch, 2026-11-17)
 
