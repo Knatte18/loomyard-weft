@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 13:49 UTC; every age below is as of then.
+Rendered 2026-11-17 13:51 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T17 | **Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan** | [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)<br>[Sketch](decision-codex-wording-engine-blocks.md) | darn · solid | Code-Burler-Fix | neve | 23h<br>23h | codex, shuttle, stencil, heddle |
-| T18 | **A Codex session gets the question-tool deny and the batching nudge Claude runs** | [`codex-question-deny-nudge`](design-codex-question-deny-nudge.md)<br>[Sketch](decision-codex-question-deny-nudge.md) | darn · solid | Code-Burler-Fix | neve | 23h<br>23h | codex, shuttle, stencil, heddle |
+| T18 | **A Codex session gets the question-tool deny and the batching nudge Claude runs** | [`codex-question-deny-nudge`](design-codex-question-deny-nudge.md)<br>[Sketch](decision-codex-question-deny-nudge.md) | darn · solid | Code-Bouncer | neve | 23h<br>23h | codex, shuttle, stencil, heddle |
 
 #### Ready (0)
 
@@ -62,7 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 <details open>
 <summary><strong><a href="project-borrowed-orchestrator-ideas.md">P2 Ideas borrowed from comparable agent orchestrators</a> (2)</strong></summary>
 
-[`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 2h · Owner `neve`
+[`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 3h · Owner `neve`
 
 ### Tasks (1)
 
@@ -74,7 +74,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Review rounds converge: parsed fixer rebuttals, incremental re-review with round checks, and a Go stalemate escalation** | [`review-rounds-converge-build`](design-review-rounds-converge-build.md)<br>[Sketch](decision-review-rounds-converge-build.md) | tapestry · solid | Plan-Write | neve | 2m<br>2m | burler, shed, stencil, fabric, loom, arbiter, cwd |
+| T4 | **Review rounds converge: parsed fixer rebuttals, incremental re-review with round checks, and a Go stalemate escalation** | [`review-rounds-converge-build`](design-review-rounds-converge-build.md)<br>[Sketch](decision-review-rounds-converge-build.md) | tapestry · solid | Plan-Write | neve | 4m<br>4m | burler, shed, stencil, fabric, loom, arbiter, cwd |
 
 #### Ready (0)
 
@@ -90,7 +90,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>2h | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>3h | burler, shed, orch, quarry, report |
 
 </details>
 
@@ -199,7 +199,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>51m | claude, shuttle, config |
+| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>53m | claude, shuttle, config |
 
 #### Draft (1)
 
@@ -217,7 +217,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S2 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md)<br>[Sketch](decision-board-viewer.md) | 6w<br>42m | board, ide, orch |
+| S2 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md)<br>[Sketch](decision-board-viewer.md) | 6w<br>44m | board, ide, orch |
 
 #### Research (1)
 
@@ -230,7 +230,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Record Codex edits for the edit-loop watch**<br>• Codex runs record no edits, so the edit-loop watch never notifies their parent | [`codex-edit-loop-recorder`](design-codex-edit-loop-recorder.md) | 1h<br>1h | codex, shuttle |
-| B2 |  | **Edit-loop notices fire on a fixer editing one file**<br>• Fixers and one-document writers edit one file many times by design, so the edit-loop watch reports ordinary work as a loop | [`edit-loop-fixer-noise`](design-edit-loop-fixer-noise.md) | 53m<br>53m | shuttle |
+| B2 |  | **Edit-loop notices fire on a fixer editing one file**<br>• Fixers and one-document writers edit one file many times by design, so the edit-loop watch reports ordinary work as a loop | [`edit-loop-fixer-noise`](design-edit-loop-fixer-noise.md) | 55m<br>55m | shuttle |
 
 #### Features (3)
 
