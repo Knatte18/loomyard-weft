@@ -830,7 +830,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `gate-builds-testmap`.\n\nTakes: the per-package measure loop of internal/gatecli/testmappackage.go and the testcover map reader, writer and profile reduction as they stand\nDelivers: lym gate test --map over tiers 0 and 1 writing each package's map whole, with the verb lym gate testmap, its planning, audit, build lock, wait, --max, run-record ordering and lym build removed, the testcover code only that planning reached deleted, and every live doc, background and lym gate redundant refusal naming the flag\nExports: the --map flag of lym gate test and its detached-call key word; no new Go API outside internal/gatecli\n\nThe part changes these packages:\n\n- internal/gatecli (about 3700 changed lines)\n- internal/testcover (about 2050 changed lines)\n- internal/gateslot (about 20 changed lines)\n- internal/dobbyengine (about 5 changed lines)\n- cmd/lym (about 2 changed lines)\n- docs (about 20 changed lines)\n- pattern (about 60 changed lines)\n- README.md (about 20 changed lines)\n",
-      "status": "running · Drift-Baseline",
+      "status": "running · Plan-Write",
       "created": "2026-11-17T11:51:13Z",
       "revised": "2026-11-17T11:51:13Z",
       "profile": "solid",
