@@ -1,0 +1,944 @@
+diff --git a/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/codex-summary.md b/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/codex-summary.md
+new file mode 100644
+index 00000000..e3b3c5a0
+--- /dev/null
++++ b/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/codex-summary.md
+@@ -0,0 +1,24 @@
++# Open no beam files by default and clarify Markdown preview requirements
++
++The `ide.yaml` template now sets `open_files.beam: []`, so opening a beam no longer opens its README by default.
++Every place defaults to an empty file list; explicit hub and local file choices still apply.
++The existing configuration test expectations and package and overview documentation follow the new default.
++
++`render_markdown` remains enabled by default.
++Its `*.md` association uses the editor ID that [VS Code documents](https://code.visualstudio.com/docs/languages/markdown#_set-the-markdown-preview-as-the-default-editor).
++The installed Markdown extension declares that ID, and the hub workspace carries the association.
++The launcher passes the workspace or folder and requested files without disabling extensions.
++There is no evidence here that the association itself needs replacing or removal.
++
++The reported window failure was not reproduced, so its cause remains unconfirmed.
++[VS Code's bisect implementation](https://github.com/microsoft/vscode/blob/main/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts) selects enabled user extensions.
++The bisect notification alone therefore does not establish that the built-in Markdown provider was disabled.
++The overview now explains checking Markdown Language Features, ending an active bisect, and reopening a source tab as preview.
++
++The existing `TestLoadConfig` rows cover empty defaults, local overrides, and explicit hub file lists.
++`go build ./internal/ideconfig`, `go vet ./internal/ideconfig`, formatting, and whitespace checks passed.
++The `darn-write` gate reported tier0, tier1, and tier2 passing before the final comment-only corrections.
++
++Go comments flagged by the gate now use shorter sentences and sentence boundaries instead of fixed-column wrapping.
++These corrections change no executable code or test assertions.
++`lym loom lint-comments` passes on the corrected tree.
+diff --git a/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/codex.diff b/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/codex.diff
+new file mode 100644
+index 00000000..fe979a32
+--- /dev/null
++++ b/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/codex.diff
+@@ -0,0 +1,446 @@
++diff --git a/docs/overview.md b/docs/overview.md
++index 05675589..ea7c5609 100644
++--- a/docs/overview.md
+++++ b/docs/overview.md
++@@ -565,11 +565,15 @@ User-facing modules each get one `lym <module>` namespace:
++   The hub-wide `ide.yaml` lists them under `open_files` for the worktree's place: the prime, a beam or a task.
++   Paths are relative to the worktree's anchored directory, and `{beam}` stands for the beam's slug.
++   An entry naming no file is skipped.
++-  The template opens `README.md` for a beam and nothing for the prime or a task.
+++  The template opens no files for any place; add entries to opt in.
++   `ide.yaml`'s `render_markdown` is on by default.
++   With it on, a seed points the `*.md` entry of `workbench.editorAssociations` at the markdown preview,
++   so a markdown file opens rendered.
++   The entry lives in the worktree's `settings.json`, and a setting the operator holds in its array form is left as it is.
+++  Preview requires the built-in **Markdown Language Features** extension to be enabled.
+++  If preview is unavailable, check that extension in the affected window.
+++  End an active Extension Bisect with **Help: Stop Extension Bisect**, then check preview again after the reload.
+++  For a file already open as source, use **View: Reopen Editor With...** and choose **Markdown Preview**.
++   The generated `tasks.json` holds one on-demand `reed attach` task.
++   The `lym` path in it is stamped absolute at generation time.
++   The task is reached through "Tasks: Run Task" or the seeded `ctrl+alt+a` key binding;
++diff --git a/internal/battencli/pausehold_test.go b/internal/battencli/pausehold_test.go
++index 4557f12c..13cd6b8b 100644
++--- a/internal/battencli/pausehold_test.go
+++++ b/internal/battencli/pausehold_test.go
++@@ -22,8 +22,8 @@ import (
++ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++ )
++ 
++-// TestBattenRun_RefusesWhileAPauseCoversTheSlug runs the run verb's driveRun over a prime whose record holds a live entry:
++-// a covering entry refuses the run, naming `lym tender resume <slug>`, with nothing seeded and the covered exit code.
+++// TestBattenRun_RefusesWhileAPauseCoversTheSlug covers a run refused by a covering pause.
+++// A covering entry refuses the run, naming `lym tender resume <slug>`, with nothing seeded and the covered exit code.
++ // An entry for another slug seeds as before.
++ func TestBattenRun_RefusesWhileAPauseCoversTheSlug(t *testing.T) {
++ 	tiergate.Require(t, 0)
++diff --git a/internal/burlerengine/review.go b/internal/burlerengine/review.go
++index 46e2a551..7f03b58f 100644
++--- a/internal/burlerengine/review.go
+++++ b/internal/burlerengine/review.go
++@@ -65,7 +65,8 @@ type ReviewResult struct {
++ // ErrReviewChanged reports that the review file no longer holds the bytes the review half accepted, so the fix half refuses to act on it.
++ var ErrReviewChanged = errors.New("burler: the review file changed after it was accepted")
++ 
++-// reviewTable builds the review half's one-seat table for p under opts: the reviewer as the chair, gated by the review-parse entry alone.
+++// reviewTable builds the review half's one-seat table for p under opts.
+++// The seat is the reviewer as the chair, gated by the review-parse entry alone.
++ // The reviewer writes the review file alone and may fork exactly when p names a cluster fan.
++ // values carries the marker values the seat's stencil is filled from, and skills names the skills the seat loads.
++ func (p *Profile) reviewTable(opts RunOpts, values map[string]string, skills []string) seatengine.Table {
++diff --git a/internal/dobbyengine/passes.go b/internal/dobbyengine/passes.go
++index 07b1f608..63ec96d2 100644
++--- a/internal/dobbyengine/passes.go
+++++ b/internal/dobbyengine/passes.go
++@@ -66,7 +66,8 @@ type RunView struct {
++ 	ReachedParent bool
++ }
++ 
++-// drivable reports whether batten's state lets dobby give run a pass: running, or paused with its work already on its parent.
+++// drivable reports whether batten's state lets dobby give run a pass.
+++// A run is drivable when running, or when paused with its work already on its parent.
++ // Such a paused run has nothing left to decide, and only its landing and teardown finish it.
++ func drivable(run RunView) bool {
++ 	return run.State == runStateRunning || (run.State == runStatePaused && run.ReachedParent)
++@@ -226,7 +227,8 @@ func (d *daemon) drivePasses(ctx context.Context, now time.Time) error {
++ 	return nil
++ }
++ 
++-// runLabel is the state a run's log lines name: batten's state, with the producer for a state other than running and done.
+++// runLabel is the state a run's log lines name: batten's state.
+++// A state other than running and done also names the producer.
++ func runLabel(run RunView) string {
++ 	if run.State == runStateRunning || run.State == runStateDone {
++ 		return run.State
++diff --git a/internal/ideconfig/config_test.go b/internal/ideconfig/config_test.go
++index e4b4d8c2..5a462d66 100644
++--- a/internal/ideconfig/config_test.go
+++++ b/internal/ideconfig/config_test.go
++@@ -29,7 +29,7 @@ func TestLoadConfig(t *testing.T) {
++ 	}{
++ 		{
++ 			name: "TemplateDefaults",
++-			want: ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{"README.md"}, Task: []string{}}, RenderMarkdown: true},
+++			want: ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{}, Task: []string{}}, RenderMarkdown: true},
++ 		},
++ 		{
++ 			name: "HubFileSetsBothKeys",
++@@ -39,7 +39,7 @@ func TestLoadConfig(t *testing.T) {
++ 		{
++ 			name:  "LocalOverrideSetsRenderMarkdown",
++ 			local: "render_markdown: false\n",
++-			want:  ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{"README.md"}, Task: []string{}}},
+++			want:  ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{}, Task: []string{}}},
++ 		},
++ 		{name: "AbsoluteEntryRefused", hub: "open_files:\n  task: [/etc/hosts]\n", wantErr: `ide config key "open_files.task" holds "/etc/hosts"`},
++ 		{name: "ClimbingEntryRefused", hub: "open_files:\n  beam: [../README.md]\n", wantErr: `ide config key "open_files.beam" holds "../README.md"`},
++diff --git a/internal/ideconfig/doc.go b/internal/ideconfig/doc.go
++index 6c9bd08a..2813f6a3 100644
++--- a/internal/ideconfig/doc.go
+++++ b/internal/ideconfig/doc.go
++@@ -6,8 +6,8 @@
++ // open_files holds one list per place: the prime, a beam and a task.
++ // Each entry is a path relative to the worktree's anchored directory, the folder its window shows.
++ // An entry may name the {beam} placeholder, which the opener resolves to the beam's slug.
++-// The template opens README.md for a beam and nothing for the prime or a task;
++-// a beam's own file, such as docs/{beam}.md, is named by adding an entry.
+++// The template opens no files for any place.
+++// Add entries to opt in, such as docs/{beam}.md for a beam's own file.
++ // render_markdown, on in the template, makes a markdown file open as VS Code's markdown preview rather than as source.
++ // Both keys only change what a window shows, so a worktree's local override may set them.
++ //
++diff --git a/internal/ideconfig/template.yaml b/internal/ideconfig/template.yaml
++index cb5cb259..b0b2a756 100644
++--- a/internal/ideconfig/template.yaml
+++++ b/internal/ideconfig/template.yaml
++@@ -1,6 +1,5 @@
++ open_files:  # files `lym ide spawn` and `lym ide open` open beside the folder or workspace they launch, one list per place, in order; each a path relative to the worktree's anchored directory, the folder its window shows, where {beam} stands for the beam's slug: a beam's own, a task's parent's, or the prime's name for the prime and a task forked from it; an entry naming no existing file is skipped
++   prime: []
++-  beam:
++-    - README.md
+++  beam: []
++   task: []
++ render_markdown: true  # whether a markdown file opens rendered, as VS Code's markdown preview, in a worktree `lym ide` seeds; lym then owns the "*.md" entry of workbench.editorAssociations in the worktree's settings.json, and off removes that entry while it names the preview; "Reopen Editor With..." switches one file either way
++diff --git a/internal/loomshed/generation_test.go b/internal/loomshed/generation_test.go
++index 79bd2850..6a4c493c 100644
++--- a/internal/loomshed/generation_test.go
+++++ b/internal/loomshed/generation_test.go
++@@ -188,7 +188,8 @@ func TestArchivedWebsterDirs(t *testing.T) {
++ 	}
++ }
++ 
++-// TestArchivedWebsterDirs_UnreadableDirErrors covers a rework directory that cannot be listed: an error, never a silently empty list.
+++// TestArchivedWebsterDirs_UnreadableDirErrors covers a rework directory that cannot be listed.
+++// It yields an error, never a silently empty list.
++ func TestArchivedWebsterDirs_UnreadableDirErrors(t *testing.T) {
++ 	tiergate.Require(t, 0)
++ 	notADir := filepath.Join(t.TempDir(), "rework")
++diff --git a/internal/orchcli/start_test.go b/internal/orchcli/start_test.go
++index 10295e25..6d559cf8 100644
++--- a/internal/orchcli/start_test.go
+++++ b/internal/orchcli/start_test.go
++@@ -36,7 +36,8 @@ import (
++ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++ )
++ 
++-// fakeStarter records the specs it is asked to start and answers a fixed guid and warning, and the resumed session id or else sessionID.
+++// fakeStarter records the specs it is asked to start and answers a fixed guid and warning.
+++// It answers the resumed session id, or else sessionID.
++ type fakeStarter struct {
++ 	specs     []shuttleengine.Spec
++ 	guid      string
++diff --git a/internal/pairteardown/teardown_test.go b/internal/pairteardown/teardown_test.go
++index cd353106..6f70d0fc 100644
++--- a/internal/pairteardown/teardown_test.go
+++++ b/internal/pairteardown/teardown_test.go
++@@ -1259,7 +1259,8 @@ func TestLoopTeardown_LockMarkAndRunLockWait(t *testing.T) {
++ 	})
++ }
++ 
++-// TestRegisteredBattenAlive_ReadsADobbyDrivenRun pins that the gap between two batten passes reads as a live lifecycle owner only while a dobby of the run's parent stands and batten's status reads running with no cancel marker.
+++// TestRegisteredBattenAlive_ReadsADobbyDrivenRun covers ownership between batten passes.
+++// It does so only while a dobby of the run's parent stands and batten's status reads running with no cancel marker.
++ func TestRegisteredBattenAlive_ReadsADobbyDrivenRun(t *testing.T) {
++ 	tiergate.Require(t, 0)
++ 	t.Parallel()
++diff --git a/internal/shedrun/settle.go b/internal/shedrun/settle.go
++index 5e0d62bf..9d115414 100644
++--- a/internal/shedrun/settle.go
+++++ b/internal/shedrun/settle.go
++@@ -37,7 +37,8 @@ const (
++ )
++ 
++ // SettleRecord is one line of the settle-records file.
++-// Build is the build identity the action was taken under and Target the row or verb it aimed at; each is omitted when empty.
+++// Build is the build identity the action was taken under and Target the row or verb it aimed at.
+++// Each is omitted when empty.
++ type SettleRecord struct {
++ 	StopKey StopKey   `json:"stop_key"`
++ 	Settler string    `json:"settler"`
++diff --git a/internal/shuttlecli/cli.go b/internal/shuttlecli/cli.go
++index 8b9a24f4..8ed1e123 100644
++--- a/internal/shuttlecli/cli.go
+++++ b/internal/shuttlecli/cli.go
++@@ -48,7 +48,8 @@ type shuttleCLI struct {
++ // Command returns the cobra command tree for the shuttle module.
++ // The parent command carries a PersistentPreRunE that resolves geometry and engines, skipping
++ // resolution when the group command itself is invoked (no git repo required).
++-// The await verb skips it too and needs no hub, reading only the keep-warm config inside a git worktree, and so does the hidden hook-batching verb.
+++// The await verb skips it too and needs no hub, reading only the keep-warm config inside a git worktree.
+++// So does the hidden hook-batching verb.
++ func Command() *cobra.Command {
++ 	c := &shuttleCLI{}
++ 
++diff --git a/internal/shuttleengine/claudeengine/bashlookup.go b/internal/shuttleengine/claudeengine/bashlookup.go
++index 9113dc5f..25ff508b 100644
++--- a/internal/shuttleengine/claudeengine/bashlookup.go
+++++ b/internal/shuttleengine/claudeengine/bashlookup.go
++@@ -1,5 +1,6 @@
++-// bashlookup.go classes a Bash tool call's command as a read-only lookup or not, for the batching nudge's single-lookup chain:
++-// a quote-aware scan splits the command into its pipe and chain segments, and a table keyed by command name judges each segment.
+++// bashlookup.go classifies Bash commands for the batching nudge's read-only lookup chain.
+++// A quote-aware scan splits the command into its pipe and chain segments.
+++// A table keyed by command name judges each segment.
++ 
++ package claudeengine
++ 
++diff --git a/internal/shuttleengine/claudeengine/batchingnudge.go b/internal/shuttleengine/claudeengine/batchingnudge.go
++index 29978b2d..abdc824a 100644
++--- a/internal/shuttleengine/claudeengine/batchingnudge.go
+++++ b/internal/shuttleengine/claudeengine/batchingnudge.go
++@@ -336,7 +336,8 @@ func (c *Claude) awaitCallInTranscript(transcriptPath, toolUseID string, sidecha
++ 	}
++ }
++ 
++-// readTranscriptTail returns the complete lines of the last budget bytes of the transcript at transcriptPath, the whole file when it is smaller.
+++// readTranscriptTail returns the complete lines of the last budget bytes of the transcript at transcriptPath.
+++// It returns the whole file when the file is smaller.
++ // The window's first line is dropped unless the window starts the file, since it may be cut.
++ func readTranscriptTail(transcriptPath string, budget int64) ([]byte, error) {
++ 	f, err := os.Open(transcriptPath)
++@@ -549,7 +550,8 @@ func sliceBreach(settings BatchingNudgeConfig, messages []tailMessage, current i
++ 	return ""
++ }
++ 
++-// countLinesUpTo counts the lines of the file at filePath, stopping once the count reaches limit; a last line without its newline counts.
+++// countLinesUpTo counts the lines of the file at filePath, stopping once the count reaches limit.
+++// A last line without its newline counts.
++ func countLinesUpTo(filePath string, limit int) (int, error) {
++ 	f, err := os.Open(filePath)
++ 	if err != nil {
++diff --git a/internal/websterengine/audit.go b/internal/websterengine/audit.go
++index f6dba781..53477148 100644
++--- a/internal/websterengine/audit.go
+++++ b/internal/websterengine/audit.go
++@@ -249,9 +249,8 @@ func dirSpellings(dir string) ([]string, error) {
++ 	return dirs, nil
++ }
++ 
++-// resolveWritePath canonicalizes a transcript-recorded write path: cleaned,
++-// and — when relative — resolved against workdir. This prevents false matches
++-// when agents mix absolute and relative spellings for the same file.
+++// resolveWritePath canonicalizes a transcript-recorded write path: cleaned, and resolved against workdir when relative.
+++// This prevents false matches when agents mix absolute and relative spellings for the same file.
++ func resolveWritePath(workdir, path string) string {
++ 	cleaned := filepath.Clean(path)
++ 	if isTranscriptPathAbsolute(path) {
++diff --git a/internal/websterengine/beginbatch.go b/internal/websterengine/beginbatch.go
++index c22e5b41..5a45166e 100644
++--- a/internal/websterengine/beginbatch.go
+++++ b/internal/websterengine/beginbatch.go
++@@ -25,8 +25,7 @@ import (
++ 	"github.com/Knatte18/loomyard/internal/summaryparser"
++ )
++ 
++-// ErrFingerprintMismatch is the sentinel BeginBatch returns when the on-disk plan's recomputed
++-// fingerprint disagrees with State.PlanFingerprint.
+++// ErrFingerprintMismatch reports that the on-disk plan differs from the recorded fingerprint.
++ // It guards a crashed or resumed run against a plan edited since the run recorded its fingerprint.
++ var ErrFingerprintMismatch = errors.New("webster: on-disk plan fingerprint does not match this run's recorded state")
++ 
++diff --git a/internal/websterengine/fingerprint.go b/internal/websterengine/fingerprint.go
++index 5448a8c3..c99313d9 100644
++--- a/internal/websterengine/fingerprint.go
+++++ b/internal/websterengine/fingerprint.go
++@@ -82,7 +82,8 @@ func planFileHashes(planDir string) (map[string]string, error) {
++ 
++ // overviewFrameHash returns the hex SHA-256 of planDir's 00-overview.md with its Card Index section cut out.
++ // It is the frame that State.PlanOverviewFrameHash records.
++-// A plan directory without an overview has no frame and hashes to "", the value that makes Rebaseline refuse any overview change.
+++// A plan directory without an overview has no frame and hashes to "".
+++// That value makes Rebaseline refuse any overview change.
++ func overviewFrameHash(planDir string) (string, error) {
++ 	data, err := os.ReadFile(filepath.Join(planDir, planOverviewFile))
++ 	if errors.Is(err, fs.ErrNotExist) {
++@@ -109,7 +110,7 @@ func overviewFrameHashOf(overview []byte) (string, error) {
++ 	return hex.EncodeToString(sum[:]), nil
++ }
++ 
++-// changedPlanFiles returns the plan file names whose current hash differs from st.PlanFileHashes, plus files added or removed since, sorted.
+++// changedPlanFiles returns sorted names of plan files added, removed or changed since the recorded hashes.
++ func changedPlanFiles(st *State, planDir string) ([]string, error) {
++ 	now, err := planFileHashes(planDir)
++ 	if err != nil {
++@@ -130,7 +131,8 @@ func changedPlanFiles(st *State, planDir string) ([]string, error) {
++ 	return changed, nil
++ }
++ 
++-// PlanEditError returns nil when the plan on disk fingerprints to st.PlanFingerprint, and otherwise the ErrFingerprintMismatch wrap naming the way forward.
+++// PlanEditError returns nil when the plan on disk fingerprints to st.PlanFingerprint.
+++// Otherwise it returns the ErrFingerprintMismatch wrap naming the way forward.
++ // Callers that rewrite the plan call it before their own rewrites,
++ // so any difference it sees is someone else's edit rather than webster's own.
++ func PlanEditError(st *State, planDir, websterDir string) error {
++@@ -144,7 +146,8 @@ func PlanEditError(st *State, planDir, websterDir string) error {
++ 	return nil
++ }
++ 
++-// batchCardEditError returns nil when every card of b still hashes to the content bs recorded at begin-batch, or when bs recorded none.
+++// batchCardEditError reports changes to cards whose hashes were recorded when the batch began.
+++// It returns nil when no hashes were recorded or every recorded hash still matches.
++ // Otherwise it returns an ErrFingerprintMismatch wrap naming each card that changed since its batch was begun.
++ func batchCardEditError(st *State, bs *BatchState, b batcher.Batch, planDir, websterDir string) error {
++ 	if len(bs.CardHashes) == 0 {
++@@ -205,7 +208,8 @@ func restampFingerprint(st *State, planDir, websterDir string) error {
++ 	return nil
++ }
++ 
++-// restampBaseline records planDir's fingerprint, per-file hashes, overview frame hash and stored baseline into st, and touches no batch record.
+++// restampBaseline records planDir's fingerprint, per-file hashes, overview frame hash and stored baseline into st.
+++// It touches no batch record.
++ func restampBaseline(st *State, planDir, websterDir string) error {
++ 	fp, err := fingerprint(planDir)
++ 	if err != nil {
++@@ -251,7 +255,7 @@ func moveBegunCardHashes(st *State, before, after map[string]string) {
++ 	}
++ }
++ 
++-// RestampPlanBaseline re-baselines the plan fingerprint for a caller that has rewritten the plan and must record the new baseline.
+++// RestampPlanBaseline records a new baseline after a caller rewrites the plan.
++ func RestampPlanBaseline(st *State, planDir, websterDir string) error {
++ 	return restampFingerprint(st, planDir, websterDir)
++ }
++diff --git a/internal/websterengine/fingerprint_test.go b/internal/websterengine/fingerprint_test.go
++index 3f59d6ad..42e642fb 100644
++--- a/internal/websterengine/fingerprint_test.go
+++++ b/internal/websterengine/fingerprint_test.go
++@@ -211,8 +211,10 @@ func TestFingerprint(t *testing.T) {
++ 	}
++ }
++ 
++-// TestMoveBegunCardHashes proves a begun card's recorded hash moves only when it equals the pre-rewrite file hash,
++-// a mismatching one keeps its old hash, a file absent from either map is left alone, and empty PlanFileHashes is a no-op.
+++// TestMoveBegunCardHashes proves a begun card's recorded hash moves only when it equals the pre-rewrite file hash.
+++// A mismatching hash stays unchanged.
+++// A file absent from either map is left alone.
+++// Empty PlanFileHashes is a no-op.
++ func TestMoveBegunCardHashes(t *testing.T) {
++ 	tiergate.Require(t, 0)
++ 	t.Parallel()
++diff --git a/internal/websterengine/partition.go b/internal/websterengine/partition.go
++index 00e9cd8e..9e8845e8 100644
++--- a/internal/websterengine/partition.go
+++++ b/internal/websterengine/partition.go
++@@ -132,7 +132,8 @@ func mapPartition(plan *planparser.Plan, partition []PartitionBatch) ([]batcher.
++ 		ErrPartitionMismatch, strings.Join(problems, "; "))
++ }
++ 
++-// RecordPartition writes the batches' card ids, profiles, estimates and estimate breakdowns into st.Partition, replacing any partition it held.
+++// RecordPartition writes the batches' card ids, profiles, estimates and estimate breakdowns into st.Partition.
+++// It replaces any partition st held.
++ func RecordPartition(st *State, batches []batcher.Batch) {
++ 	partition := make([]PartitionBatch, len(batches))
++ 	for i, b := range batches {
++diff --git a/internal/websterengine/recordbatch.go b/internal/websterengine/recordbatch.go
++index 60790638..2e79525a 100644
++--- a/internal/websterengine/recordbatch.go
+++++ b/internal/websterengine/recordbatch.go
++@@ -1004,16 +1004,14 @@ func rereadCards(plan *planparser.Plan, cards []planparser.Card) []planparser.Ca
++ // They are informational and never join the warnings.
++ // When the delta cannot be computed, there are no deviations, and the could-not-run warning is returned instead.
++ //
++-// It is one function rather than two because a batch that reached done through recover-batch is
++-// exactly as done as one that reached it through record-batch:
++-// its Create targets have to resolve, its plan: handles have to bind,
++-// and the drift its work caused has to be repaired or reported.
+++// A recovered batch needs the same completion checks as a recorded batch.
+++// Its Create targets must resolve and its plan: handles must bind.
+++// Any drift its work caused must be repaired or reported.
++ // Skipping this pass for a recovered batch would leave its plan: handles unbound.
++ // Every later card would then reference an unbound handle.
++ // Drift detection would not see those references, since its reference index keys on the ref as the card spells it.
++ //
++-// Findings about the batch's own cards (done-checks, blocking bind findings) are returned as an
++-// ErrCardNotDone-wrapped error.
+++// Findings about the batch's own cards return an ErrCardNotDone-wrapped error.
++ // Drift findings concern later cards, so they become `later card:` warnings recorded once on in.Batch.
++ // Informational findings ride out on warnings too.
++ // Warnings come back alongside any error, so a caller never loses them.
++@@ -1156,8 +1154,8 @@ func postBatchChecks(in postBatchInputs) (deviations, warnings []string, err err
++ 		sort.Strings(deviations)
++ 	}
++ 
++-	// Drift detection runs after binding and before the digest is persisted, on the delta's own
++-	// deleted-symbols-still-referenced signal.
+++	// Drift detection runs after binding and before the digest is persisted.
+++	// It uses the delta's deleted-symbols-still-referenced signal.
++ 	// HeadSHA is the triggering SHA that every exact-tier repair's own amendment records.
++ 	// Drift runs against the remaining plan:
++ 	// the delta's deleted symbols intersected with what the plan still has to do.
++diff --git a/internal/websterengine/render.go b/internal/websterengine/render.go
++index 6be42803..a18642c8 100644
++--- a/internal/websterengine/render.go
+++++ b/internal/websterengine/render.go
++@@ -110,7 +110,8 @@ func renderCardPointers(cards []planparser.Card, planDirDisplay string) string {
++ 	return strings.Join(bullets, "\n")
++ }
++ 
++-// cardPointerPath returns c's card file path re-rooted onto planDirDisplay: the path its pointer bullet and its card gate bullet both spell.
+++// cardPointerPath returns c's card file path re-rooted onto planDirDisplay.
+++// It is the path its pointer bullet and its card gate bullet both spell.
++ func cardPointerPath(c planparser.Card, planDirDisplay string) string {
++ 	return planDirDisplay + "/" + filepath.Base(c.SourcePath)
++ }
++diff --git a/internal/websterengine/state.go b/internal/websterengine/state.go
++index 86149559..ea93bf41 100644
++--- a/internal/websterengine/state.go
+++++ b/internal/websterengine/state.go
++@@ -98,8 +98,8 @@ func AcquireStateMutation(scratchDir string) (*lock.FileLock, error) {
++ 	return l, nil
++ }
++ 
++-// State is the durable run state persisted at <websterDir>/state.json: run identity,
++-// plan-fingerprint, batch records, and Master strand/session.
+++// State is the durable run state persisted at <websterDir>/state.json.
+++// It holds the run identity, plan-fingerprint, batch records, and Master strand/session.
++ type State struct {
++ 	// RunGUID identifies this webster run, minted once at first init.
++ 	RunGUID string `json:"runGuid"`
++diff --git a/internal/websterengine/suspect.go b/internal/websterengine/suspect.go
++index dc01aa12..0aa5dedc 100644
++--- a/internal/websterengine/suspect.go
+++++ b/internal/websterengine/suspect.go
++@@ -121,7 +121,8 @@ func pickByAncestry(git Git, worktree string, shas []string, oldest bool) (strin
++ 	return "", nil
++ }
++ 
++-// missingCommitsClause names the recorded commits absent from the repository and the way forward, or "" for an empty list.
+++// missingCommitsClause names the recorded commits absent from the repository and the way forward.
+++// It returns "" for an empty list.
++ func missingCommitsClause(missing []string) string {
++ 	if len(missing) == 0 {
++ 		return ""
++diff --git a/internal/websterengine/verifygatereport.go b/internal/websterengine/verifygatereport.go
++index 81a45b0c..fd209603 100644
++--- a/internal/websterengine/verifygatereport.go
+++++ b/internal/websterengine/verifygatereport.go
++@@ -60,7 +60,8 @@ type VerifyGateReport struct {
++ 	FixCommits []string `yaml:"fix_commits,omitempty"`
++ 	// Fixer names the fixer this failure goes to, FixerFork or FixerCold.
++ 	Fixer string `yaml:"fixer,omitempty"`
++-	// Entry names the run-level gate entry other than the verify entry whose failure this report records, and is empty for a verify failure.
+++	// Entry names the run-level gate entry other than the verify entry whose failure this report records.
+++	// It is empty for a verify failure.
++ 	Entry string `yaml:"entry,omitempty"`
++ 	// Findings is the failed Entry's own findings text, and is empty for a verify failure.
++ 	Findings string `yaml:"findings,omitempty"`
+diff --git a/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/landed.diff b/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/landed.diff
+new file mode 100644
+index 00000000..c24ff01c
+--- /dev/null
++++ b/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/landed.diff
+@@ -0,0 +1,94 @@
++commit 824eb2b60fba2fc63f09fe4d18dcbdcc2d5b81c5
++Author: Henrik Anfinsen <henrik.anfinsen@gmail.com>
++Date:   Sun Nov 15 17:36:37 2026 +0100
++
++    A beam window opens no README by default
++    
++    The `ide.yaml` template in `internal/ideconfig` listed `README.md` under `open_files.beam`.
++    The `code` button in a beam therefore opened the beam worktree's README, which is of no use there.
++    The template now sets `open_files.beam: []`, so no place (prime, beam or task) opens a file unless a hub adds an entry.
++    A hub that wants a beam file, such as `docs/{beam}.md`, names it in its own `ide.yaml`.
++    
++    Existing hubs that kept the old template's `README.md` entry in their `ide.yaml` still open it; they must remove the entry.
++    
++    The change also updates the `ideconfig` package doc, `docs/overview.md` and the `TestLoadConfig` expectations to match.
++    
++    ## Design decisions
++    
++    - `render_markdown` and its `workbench.editorAssociations` `"*.md"` entry in `internal/vscode/config.go` are unchanged.
++      The report that the markdown preview does not render in a lym-opened window was not diagnosed here.
++      It showed while VS Code had an Extension Bisect running, which may have disabled the markdown extension.
++      Whether lym's settings are at fault is still open.
++    
++    ## To check by hand
++    
++    - Open a window with `lym ide spawn` or `lym ide open` on a beam and confirm that no file opens.
++    - Open a `.md` file in a lym-seeded window with no Extension Bisect running, and confirm whether it renders as the preview.
++      If it does not, `render_markdown` needs a follow-up task.
++    
++    Created using
++     - LoomYard https://github.com/Knatte18/loomyard
++     - Claude Code <noreply@anthropic.com>
++
++diff --git a/docs/overview.md b/docs/overview.md
++index 05675589..0dc04a08 100644
++--- a/docs/overview.md
+++++ b/docs/overview.md
++@@ -565,7 +565,7 @@ User-facing modules each get one `lym <module>` namespace:
++   The hub-wide `ide.yaml` lists them under `open_files` for the worktree's place: the prime, a beam or a task.
++   Paths are relative to the worktree's anchored directory, and `{beam}` stands for the beam's slug.
++   An entry naming no file is skipped.
++-  The template opens `README.md` for a beam and nothing for the prime or a task.
+++  The template opens nothing for any place.
++   `ide.yaml`'s `render_markdown` is on by default.
++   With it on, a seed points the `*.md` entry of `workbench.editorAssociations` at the markdown preview,
++   so a markdown file opens rendered.
++diff --git a/internal/ideconfig/config_test.go b/internal/ideconfig/config_test.go
++index e4b4d8c2..5a462d66 100644
++--- a/internal/ideconfig/config_test.go
+++++ b/internal/ideconfig/config_test.go
++@@ -29,7 +29,7 @@ func TestLoadConfig(t *testing.T) {
++ 	}{
++ 		{
++ 			name: "TemplateDefaults",
++-			want: ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{"README.md"}, Task: []string{}}, RenderMarkdown: true},
+++			want: ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{}, Task: []string{}}, RenderMarkdown: true},
++ 		},
++ 		{
++ 			name: "HubFileSetsBothKeys",
++@@ -39,7 +39,7 @@ func TestLoadConfig(t *testing.T) {
++ 		{
++ 			name:  "LocalOverrideSetsRenderMarkdown",
++ 			local: "render_markdown: false\n",
++-			want:  ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{"README.md"}, Task: []string{}}},
+++			want:  ideconfig.Config{OpenFiles: ideconfig.OpenFiles{Prime: []string{}, Beam: []string{}, Task: []string{}}},
++ 		},
++ 		{name: "AbsoluteEntryRefused", hub: "open_files:\n  task: [/etc/hosts]\n", wantErr: `ide config key "open_files.task" holds "/etc/hosts"`},
++ 		{name: "ClimbingEntryRefused", hub: "open_files:\n  beam: [../README.md]\n", wantErr: `ide config key "open_files.beam" holds "../README.md"`},
++diff --git a/internal/ideconfig/doc.go b/internal/ideconfig/doc.go
++index 6c9bd08a..92211815 100644
++--- a/internal/ideconfig/doc.go
+++++ b/internal/ideconfig/doc.go
++@@ -6,8 +6,8 @@
++ // open_files holds one list per place: the prime, a beam and a task.
++ // Each entry is a path relative to the worktree's anchored directory, the folder its window shows.
++ // An entry may name the {beam} placeholder, which the opener resolves to the beam's slug.
++-// The template opens README.md for a beam and nothing for the prime or a task;
++-// a beam's own file, such as docs/{beam}.md, is named by adding an entry.
+++// The template opens nothing for any place;
+++// a file to open, such as a beam's own docs/{beam}.md, is named by adding an entry.
++ // render_markdown, on in the template, makes a markdown file open as VS Code's markdown preview rather than as source.
++ // Both keys only change what a window shows, so a worktree's local override may set them.
++ //
++diff --git a/internal/ideconfig/template.yaml b/internal/ideconfig/template.yaml
++index cb5cb259..b0b2a756 100644
++--- a/internal/ideconfig/template.yaml
+++++ b/internal/ideconfig/template.yaml
++@@ -1,6 +1,5 @@
++ open_files:  # files `lym ide spawn` and `lym ide open` open beside the folder or workspace they launch, one list per place, in order; each a path relative to the worktree's anchored directory, the folder its window shows, where {beam} stands for the beam's slug: a beam's own, a task's parent's, or the prime's name for the prime and a task forked from it; an entry naming no existing file is skipped
++   prime: []
++-  beam:
++-    - README.md
+++  beam: []
++   task: []
++ render_markdown: true  # whether a markdown file opens rendered, as VS Code's markdown preview, in a worktree `lym ide` seeds; lym then owns the "*.md" entry of workbench.editorAssociations in the worktree's settings.json, and off removes that entry while it names the preview; "Reopen Editor With..." switches one file either way
+diff --git a/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/manifest-codex-launch-record.json b/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/manifest-codex-launch-record.json
+new file mode 100644
+index 00000000..da5d71fc
+--- /dev/null
++++ b/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/manifest-codex-launch-record.json
+@@ -0,0 +1,212 @@
++{
++  "engine": "codex",
++  "role": "darn",
++  "promptEngine": "codex",
++  "items": [
++    {
++      "channel": "prompt-engine",
++      "key": "prompt-engine",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "instruction-source",
++      "key": "heddle-file/lym-batching",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "instruction-source",
++      "key": "heddle-file/lym-plan-edits-before-gate",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "instruction-source",
++      "key": "heddle-file/nicknames",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "notice",
++      "key": "deny-notice",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "notice",
++      "key": "creel-trust",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "notice",
++      "key": "subagent-passage",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "guard",
++      "key": "question-deny",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "guard",
++      "key": "python",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "guard",
++      "key": "raw-go",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "guard",
++      "key": "refuse-raw",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "guard",
++      "key": "shell-edit",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "guard",
++      "key": "computed-rm",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "guard",
++      "key": "machine-sleep",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "guard",
++      "key": "headless-claude",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "batching-nudge",
++      "key": "batching-nudge",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-load",
++      "key": "scribe:prose",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-load",
++      "key": "scribe:code-quality",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-load",
++      "key": "scribe:testing",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-load",
++      "key": "scribe:golang-comments",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-load",
++      "key": "scribe:golang-testing",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "instruction-source",
++      "key": "/home/knatte/.claude/CLAUDE.md",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "ladder-run",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:code-quality",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:conversation",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:csharp-build",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:csharp-comments",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:csharp-testing",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:golang-build",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:golang-comments",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:golang-testing",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:handoff",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:prose",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:python-build",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:python-comments",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:python-testing",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "skill-listing",
++      "key": "scribe:testing",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "plugin-context",
++      "key": "scribe@scribe/echo 'Load the scribe:conversation skill now -- it governs how you write in this session and builds on scribe:prose, which governs the style of everything written: chat replies, markdown, code comments, docstrings. Load both.'",
++      "delivery": "delivered"
++    },
++    {
++      "channel": "settings",
++      "key": "sandbox-mode",
++      "engine": "codex",
++      "delivery": "delivered",
++      "detail": "workspace-write"
++    },
++    {
++      "channel": "settings",
++      "key": "developer-instructions",
++      "engine": "codex",
++      "delivery": "delivered",
++      "detail": "7051 bytes"
++    }
++  ],
++  "verdict": null
++}
+\ No newline at end of file
+diff --git a/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/manifest-preview-darn.json b/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/manifest-preview-darn.json
+new file mode 100644
+index 00000000..48fe1e7e
+--- /dev/null
++++ b/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/data/manifest-preview-darn.json
+@@ -0,0 +1 @@
++{"manifests":{"claude":{"engine":"claude","role":"darn","promptEngine":"claude","items":[{"channel":"prompt-engine","key":"prompt-engine","delivery":"delivered"},{"channel":"instruction-source","key":"heddle-file/lym-batching","delivery":"delivered"},{"channel":"instruction-source","key":"heddle-file/lym-plan-edits-before-gate","delivery":"delivered"},{"channel":"instruction-source","key":"heddle-file/nicknames","delivery":"delivered"},{"channel":"notice","key":"deny-notice","delivery":"delivered"},{"channel":"notice","key":"creel-trust","delivery":"delivered"},{"channel":"notice","key":"subagent-passage","delivery":"delivered"},{"channel":"guard","key":"question-deny","delivery":"delivered"},{"channel":"guard","key":"python","delivery":"delivered"},{"channel":"guard","key":"raw-go","delivery":"delivered"},{"channel":"guard","key":"refuse-raw","delivery":"delivered"},{"channel":"guard","key":"shell-edit","delivery":"delivered"},{"channel":"guard","key":"computed-rm","delivery":"delivered"},{"channel":"guard","key":"machine-sleep","delivery":"delivered"},{"channel":"guard","key":"headless-claude","delivery":"delivered"},{"channel":"batching-nudge","key":"batching-nudge","delivery":"delivered"},{"channel":"skill-load","key":"scribe:prose","delivery":"delivered"},{"channel":"skill-load","key":"scribe:code-quality","delivery":"delivered"},{"channel":"skill-load","key":"scribe:testing","delivery":"delivered"},{"channel":"skill-load","key":"scribe:golang-comments","delivery":"delivered"},{"channel":"skill-load","key":"scribe:golang-testing","delivery":"delivered"},{"channel":"instruction-source","key":"/home/knatte/.claude/CLAUDE.md","delivery":"native"},{"channel":"skill-listing","key":"ladder-run","delivery":"native"},{"channel":"skill-listing","key":"scribe:code-quality","delivery":"native"},{"channel":"skill-listing","key":"scribe:conversation","delivery":"native"},{"channel":"skill-listing","key":"scribe:csharp-build","delivery":"native"},{"channel":"skill-listing","key":"scribe:csharp-comments","delivery":"native"},{"channel":"skill-listing","key":"scribe:csharp-testing","delivery":"native"},{"channel":"skill-listing","key":"scribe:golang-build","delivery":"native"},{"channel":"skill-listing","key":"scribe:golang-comments","delivery":"native"},{"channel":"skill-listing","key":"scribe:golang-testing","delivery":"native"},{"channel":"skill-listing","key":"scribe:handoff","delivery":"native"},{"channel":"skill-listing","key":"scribe:prose","delivery":"native"},{"channel":"skill-listing","key":"scribe:python-build","delivery":"native"},{"channel":"skill-listing","key":"scribe:python-comments","delivery":"native"},{"channel":"skill-listing","key":"scribe:python-testing","delivery":"native"},{"channel":"skill-listing","key":"scribe:testing","delivery":"native"},{"channel":"plugin-context","key":"scribe@scribe/echo 'Load the scribe:conversation skill now -- it governs how you write in this session and builds on scribe:prose, which governs the style of everything written: chat replies, markdown, code comments, docstrings. Load both.'","delivery":"native"},{"channel":"settings","key":"settings","engine":"claude","delivery":"delivered","detail":"16364 bytes"},{"channel":"edit-directive","key":"edit-directive","delivery":"delivered"}],"verdict":null},"codex":{"engine":"codex","role":"darn","promptEngine":"codex","items":[{"channel":"prompt-engine","key":"prompt-engine","delivery":"delivered"},{"channel":"instruction-source","key":"heddle-file/lym-batching","delivery":"delivered"},{"channel":"instruction-source","key":"heddle-file/lym-plan-edits-before-gate","delivery":"delivered"},{"channel":"instruction-source","key":"heddle-file/nicknames","delivery":"delivered"},{"channel":"notice","key":"deny-notice","delivery":"delivered"},{"channel":"notice","key":"creel-trust","delivery":"delivered"},{"channel":"notice","key":"subagent-passage","delivery":"delivered"},{"channel":"guard","key":"question-deny","delivery":"delivered"},{"channel":"guard","key":"python","delivery":"delivered"},{"channel":"guard","key":"raw-go","delivery":"delivered"},{"channel":"guard","key":"refuse-raw","delivery":"delivered"},{"channel":"guard","key":"shell-edit","delivery":"delivered"},{"channel":"guard","key":"computed-rm","delivery":"delivered"},{"channel":"guard","key":"machine-sleep","delivery":"delivered"},{"channel":"guard","key":"headless-claude","delivery":"delivered"},{"channel":"batching-nudge","key":"batching-nudge","delivery":"delivered"},{"channel":"skill-load","key":"scribe:prose","delivery":"delivered"},{"channel":"skill-load","key":"scribe:code-quality","delivery":"delivered"},{"channel":"skill-load","key":"scribe:testing","delivery":"delivered"},{"channel":"skill-load","key":"scribe:golang-comments","delivery":"delivered"},{"channel":"skill-load","key":"scribe:golang-testing","delivery":"delivered"},{"channel":"instruction-source","key":"/home/knatte/.claude/CLAUDE.md","delivery":"delivered"},{"channel":"skill-listing","key":"ladder-run","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:code-quality","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:conversation","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:csharp-build","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:csharp-comments","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:csharp-testing","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:golang-build","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:golang-comments","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:golang-testing","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:handoff","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:prose","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:python-build","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:python-comments","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:python-testing","delivery":"delivered"},{"channel":"skill-listing","key":"scribe:testing","delivery":"delivered"},{"channel":"plugin-context","key":"scribe@scribe/echo 'Load the scribe:conversation skill now -- it governs how you write in this session and builds on scribe:prose, which governs the style of everything written: chat replies, markdown, code comments, docstrings. Load both.'","delivery":"omitted","reason":"shuttle: the plugin hook is listed unrun"},{"channel":"settings","key":"sandbox-mode","engine":"codex","delivery":"delivered","detail":"workspace-write"},{"channel":"settings","key":"developer-instructions","engine":"codex","delivery":"delivered","detail":"6828 bytes"},{"channel":"edit-directive","key":"edit-directive","delivery":"delivered"}],"verdict":null}},"missing":[],"ok":true,"seat":"darn","unmet":{},"unrun":{"codex":["plugin-context scribe@scribe/echo 'Load the scribe:conversation skill now -- it governs how you write in this session and builds on scribe:prose, which governs the style of everything written: chat replies, markdown, code comments, docstrings. Load both.'"]}}
+diff --git a/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/report.md b/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/report.md
+new file mode 100644
+index 00000000..5d6e095d
+--- /dev/null
++++ b/docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/report.md
+@@ -0,0 +1,130 @@
++# Codex `astra[high]` as the darn writer through the real producer, replayed once on `ide-beam-readme-preview` (Neve)
++
++Bench of 2026-11-17, level 2 of `codex-support-levels` (R2): the darn writer's work only, one Codex session, nothing landed or pushed.
++Input: the darn light task `ide-beam-readme-preview`, landed as `824eb2b6`; its Claude writer's work is the answer key.
++The earlier Neve bench (`codex-darn-writer-replay-neve-2026-11-15`) hand-built its prompt; this one ran the real `Darn-Write` row of the darn recipe.
++The verdict on level 2 is the operator's; this report states what the one run showed.
++
++## Manifests
++
++Both records are for the `darn` seat.
++`data/manifest-preview-darn.json` is the output of `lym shuttle manifest darn` before the run, both engines.
++`data/manifest-codex-launch-record.json` is the record the real Codex launch wrote.
++
++| Channel | Claude (preview) | Codex (preview) | Codex (launch record) |
++|---|---|---|---|
++| `prompt-engine`, `notice`, `guard`, `batching-nudge`, `edit-directive` | delivered | delivered | delivered |
++| `instruction-source`: three heddle files | delivered | delivered | delivered |
++| `instruction-source`: `~/.claude/CLAUDE.md` | native | delivered | delivered |
++| `skill-load`: the five scribe skills | delivered | delivered | delivered |
++| `skill-listing`: fifteen skills | native | delivered | delivered |
++| `plugin-context`: the `scribe` conversation hook | native | omitted, hook listed unrun | delivered |
++| `settings` | `settings`, 16,364 bytes | `sandbox-mode` `workspace-write`, `developer-instructions` 6,828 bytes | same, `developer-instructions` 7,051 bytes |
++
++The verb exited 0 with `missing: []`: the Codex manifest holds every item of Claude's.
++The only difference the verb reported is the unrun plugin hook, which the real launch record shows delivered.
++Neither record's `verdict` is set.
++
++## Result
++
++Codex finished the work in one session, its tree passes the gate, and the fix is the landed fix.
++It also rewrote the comments of 20 files the entry never touches; the cause is the bench's setup, not the writer (see Diff).
++
++| | Landed Claude writer | Codex `astra[high]` |
++|---|---|---|
++| Diff | 4 files, +6 −7 | 24 files, +68 −48; 20 files are comment rewrites only |
++| `template.yaml`, `config_test.go` | landed | byte-identical to landed |
++| `doc.go`, `docs/overview.md` | landed | same fix, other wording; `overview.md` gains four preview-troubleshooting lines |
++| Commits | one landing commit | 3 (`4cc19245`, `7d474afa`, `3217bd79`) |
++| Verify gate | 0 attempts, one pass, 2 min 17 s | 1 attempt: gate 5 min 41 s, fix turn 2 min 49 s, gate 3 min 4 s |
++| Session wall time | 5 min 41 s, gate included | 13 min 5 s from the first prompt, gate included |
++| `Darn-Write` row | 6 min 17 s | 16 min 57 s |
++| Fresh input, cache read, output tokens | 52 (+ 75,069 cache write), 1,474,055, 12,637 | 258,983, 4,848,640, 13,638 (main plus six subagents) |
++| Cost | $0.9231 (`claude-opus-5-5`) | unknown: `codexengine` has no pricer |
++
++Codex's fresh input is `input_tokens` less `cached_input_tokens`, summed over the rollouts; it reports no cache-write count.
++The main session alone: 130,295 fresh, 4,183,552 cached, 8,801 output, 36 tool calls, 4 turns.
++The turns were the skill load (14 s), the prompt (10 s, see Faults), the orch's go-ahead (4 min 3 s) and the gate-findings re-prompt (2 min 49 s).
++The landed run recorded no turn or call counts.
++Run cost beyond the writer is not in the table: the cold gate fixer (Claude) ran at 18:13Z and its usage was not read.
++
++## Diff against the landed one
++
++- **Scope, the fix.**
++  The three files that carry the fix match the landed change in substance.
++  `template.yaml` and `config_test.go` are byte-identical (same blob hashes).
++  The `doc.go` sentence reads "The template opens no files for any place. Add entries to opt in, such as docs/{beam}.md for a beam's own file." and is accurate.
++- **Scope, the extra documentation.**
++  Codex added four lines to `docs/overview.md`: the preview needs the built-in Markdown Language Features extension, how to end an Extension Bisect, how to reopen a tab as preview.
++  The record's idea says to settle whether lym's settings are at fault; the landed writer left it open and listed a hand check, Codex concluded from upstream docs that they are not and documented recovery.
++  The menu names (`Help: Stop Extension Bisect`, `View: Reopen Editor With...`) were not audited against the installed VS Code.
++- **Scope, the 20 comment rewrites.**
++  The verify gate's comment lint scopes to the diff from the merge base with the pair's parent branch.
++  The bench pair's parent is the T15 task branch at `3bbc92a0`, ahead of `055ef994`; the forward commit `8df0f732` that restored the base tree made the lint see 1,418 changed files.
++  The gate listed comments in 20 files outside the entry as fixed-column wraps; Codex fixed them with four subagents, at one gate round's cost.
++  A real darn run forks from its parent's tip and would not have this diff.
++  Every hunk is a comment line: the diff changes no code or assertion.
++- **Correctness of the rewrites.**
++  Most are clean one-sentence-per-line splits.
++  A few read worse than the original: `TestRegisteredBattenAlive_ReadsADobbyDrivenRun` now says "It does so only while a dobby of the run's parent stands", whose subject is lost; `reviewTable` gained "The seat is the reviewer as the chair".
++  `ErrFingerprintMismatch` lost its note that `BeginBatch` returns it.
++- **Change description.**
++  It passed the run's description gate.
++  It narrates verification ("`go build ./internal/ideconfig`, `go vet ...` ... passed", "The `darn-write` gate reported tier0, tier1, and tier2 passing"), which the description spec says to leave out, and links an upstream VS Code file on `main`, a perishable pointer.
++  It has no `Design decisions` or `To check by hand` section, which the landed one has; it states the preview failure "was not reproduced" in prose instead.
++- **Review.**
++  The landed run's code review returned `APPROVED` with no finding.
++  This bench stopped before `Code-Review` and ran none on the Codex diff, so it claims nothing about that outcome.
++
++## Gate
++
++`lym gate test` on the touched packages (`internal/ideconfig` and the ten comment-only ones) answered `carried`: this exact tree had already passed each tier, so the call ran no test.
++The runs that passed on it are the writer's last verify gate, over the parent-diff scope:
++
++| Tier | Discovered | Passed | Failed | Skipped | Wall |
++|---|---|---|---|---|---|
++| 0 | 28,784 | 27,777 | 0 | 1,007 | 46.9 s |
++| 1 | 6,725 | 4,292 | 0 | 2,433 | 68.8 s |
++| 2 | 959 | 280 | 0 | 679 | 46.5 s |
++
++The `drift` and `description` gate entries also passed.
++The landed run's gate passed once, with no re-prompt.
++
++## Faults on the way
++
++- **Skill load.**
++  None.
++  The first turn read the five skill files and answered `ok scribe:prose, ...` in 14 s, as the launch's loader instruction asks.
++  The `scribe` plugin context shows delivered in the launch record.
++- **Idle wake.**
++  None in the run that counts: each of its four turns began from a delivered message or a gate re-prompt, and no extra reminder text appears in its rollout.
++  The first Codex session, started on the wrong tree, went `idle-stalled` twice (17:33:37Z, 17:34:21Z) and was ended; its shuttle history is the only idle record read, and `codex-idle-wake-extra-reminder` is not shown by it either way.
++- **Prompt noise from the setup, which the Claude writer would also have met.**
++  The prompt names `_lym/drift/expected.yaml`, which this bench never sealed, so the session reported the file absent and carried on.
++  The orch's earlier "stop and wait" line was carried into the fresh session's prompt; its second turn ended "Stopped. No edits made", and the orch's go-ahead started the work.
++  The 10 s turn and the extra message are the only cost; the prompt otherwise ran as rendered.
++- **Subagents.**
++  The launch carries a `multi_agent_mode` line telling the session not to spawn subagents unless asked, and the prompt asks it to.
++  It spawned six: two lookups, then four comment fixers.
++- **Instruction drift.**
++  It read files with `cat` and `rg`, which the shell guard did not refuse, and ran `lym board get` from Step 3's checks.
++  It ran no `lym gate test`, as Step 4 tells it.
++
++## Setup and deviations
++
++- The bench pair `cwb-codex` was made by the orch from this task's worktree; the run's driver was `go`, recipe `darn`, profile `docs` in `usage/run.json`, writer `astra[high]` through the pair's local `darn.writer`.
++- The board has no entry for the pair's slug, so `lym loom start` first seeded `tapestry` and ran its `Discussion-Write` before a Discussion agent stopped; that run was cleared, the record restored byte-identical to the landed run's record, and the run re-seeded with `lym shed seed self --recipe darn`.
++  Its two small Claude `tackler` sessions cost $0.0103 in all.
++  The record is the landed run's, so it carries the task's body as it stood then; the board entry itself is gone.
++- The first reset of the pair to `055ef994` was undone by the run's sync, which took origin's `3bbc92a0`; the first Codex session therefore read the wrong tree and wrote nothing.
++  The branch was not rewritten: `8df0f732` is a forward commit whose tree equals `055ef994`, and the run restarted from `Darn-Write` with a fresh session.
++- The pause `--before Drift-Verify` stopped the run after the writer; `Describe` and `Finalize` never ran and nothing was pushed.
++- Landed-run figures come from the archive tag `archive/ide-beam-readme-preview/afd97069da36` in the weft repository.
++  Codex's come from the rollouts under `~/.codex/sessions/2026/11/17/` that begin at 19:09:10 to 19:20:51 local time.
++- Production code and Bolt are untouched.
++
++## Limits
++
++One run on one small task: it shows the writer finishing a narrow change on the real producer path, and neither a rate nor how Codex fares on a change that spans packages.
++The extra comment work comes from the bench's parent branch, so the table's diff size and gate scope say little about Codex itself; the fix's own files are the comparison.
++The Claude run had no gate re-prompt; whether Codex alone would have triggered one is not shown.
