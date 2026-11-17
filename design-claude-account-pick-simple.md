@@ -1,6 +1,6 @@
 # Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account
 
-`claude-account-pick-simple` · Task · enhancement, claude, shuttle, config · draft
+`claude-account-pick-simple` · Task · enhancement, claude, shuttle, config
 
 Depends on: [`adopt-build-resplit`](design-adopt-build-resplit.md)
 
