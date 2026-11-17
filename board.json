@@ -819,6 +819,28 @@
       "created": "2026-11-17T10:32:44Z",
       "revised": "2026-11-17T10:40:45Z",
       "profile": "light"
+    },
+    {
+      "id": 1416,
+      "handle": "P2",
+      "slug": "borrowed-orchestrator-ideas",
+      "title": "Ideas borrowed from comparable agent orchestrators",
+      "kind": "project",
+      "labels": [
+        "feature",
+        "burler",
+        "shed",
+        "shuttle",
+        "orch",
+        "report"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Ideas from the October 2026 survey of comparable agent orchestrators that lym has not built.\nThe note orchestrator-survey-ideas holds the remaining leads; each other member is one idea picked as most worth doing (orch, 2026-11-17).",
+      "created": "2026-11-17T10:49:21Z",
+      "revised": "2026-11-17T10:49:21Z"
     }
   ],
   "prime_owner": "neve",
