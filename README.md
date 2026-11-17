@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 11:05 UTC; every age below is as of then.
+Rendered 2026-11-17 11:06 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -82,9 +82,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md) | motif | Discussion-Write | neve | 16m<br>8m | burler, shed, stencil |
-| T16 | **A review lens that flags changes no decision asked for** | [`unrequested-scope-lens`](design-unrequested-scope-lens.md) | darn · light | Darn-Write | neve | 16m<br>8m | lenses, burler |
-| T20 | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | darn · light | Darn-Write | neve | 16m<br>8m | webster, fabric |
+| T14 | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md) | motif | Discussion-Write | neve | 16m<br>9m | burler, shed, stencil |
+| T16 | **A review lens that flags changes no decision asked for** | [`unrequested-scope-lens`](design-unrequested-scope-lens.md) | darn · light | Drift-Verify | neve | 16m<br>9m | lenses, burler |
+| T20 | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | darn · light | Darn-Write | neve | 16m<br>9m | webster, fabric |
 
 #### Ready (0)
 
@@ -176,7 +176,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Build the coverage maps as a mode of the gate run, one process per test in parallel** | [`gate-builds-testmap`](design-gate-builds-testmap.md) | motif | Discussion-Burler-Fix | neve | 34m<br>28m | gate, testkit |
+| T3 | **Build the coverage maps as a mode of the gate run, one process per test in parallel** | [`gate-builds-testmap`](design-gate-builds-testmap.md) | motif | Discussion-Burler-Fix | neve | 35m<br>28m | gate, testkit |
 
 #### Ready (0)
 
@@ -190,7 +190,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 7d<br>33m | testkit, gate |
+| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 7d<br>34m | testkit, gate |
 
 ### Notes (0)
 
@@ -213,7 +213,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Sweep read-only leftovers a killed test leaves under the scratch root** | [`readonly-test-leftovers`](design-readonly-test-leftovers.md) | darn · light | Code-Burler-Fix | neve | 32m<br>24m | cleanup, testkit, webster |
+| T6 | **Sweep read-only leftovers a killed test leaves under the scratch root** | [`readonly-test-leftovers`](design-readonly-test-leftovers.md) | darn · light | Code-Burler-Fix | neve | 33m<br>25m | cleanup, testkit, webster |
 
 #### Ready (0)
 
@@ -246,7 +246,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>3w | burler |
-| F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 1d<br>22h | batten, loom, board |
+| F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 1d<br>23h | batten, loom, board |
 | F4 |  | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | 6d<br>1d | config, fabric |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>11d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 6w<br>1d | board, ide, orch |
@@ -257,6 +257,6 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T5 | **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | 1h<br>24m | loom, board, stencil |
+| T5 | **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | 1h<br>25m | loom, board, stencil |
 
 </details>
