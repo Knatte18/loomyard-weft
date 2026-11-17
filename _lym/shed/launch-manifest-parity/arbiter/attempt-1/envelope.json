@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "Plan review round 3 escalated at cause hard-cap with one design-wrong finding open, seat-specs-keeps-claude-model-params (F3). The fix in place answers it: card 6's Seat.Specs now gives each engine ModelChoice{Engine: engine} alone, and checked against the code, codexengine.validateChoice and claudeengine's validateEffort and resolveModelID all accept an empty Model, Effort and Version. Model and Effort reach only the launch-line settings, which D1 lists and does not compare. The four other open keys are mechanical, and the plan carries each fix as worded (TestMain in card 6, interim testOnlyCodeAllowed entries in cards 2, 5 and 6 that card 8 deletes, the build re-sign arrow in card 5, and the engine-name constants in card 6). I recorded the ruling as an arbiter decision and accepted the segment, which ends it unconverged on round 3.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add launch-manifest-parity --by arbiter --title \"Plan review round 3 closes at the hard cap with every finding fixed in place\" --decision \"...\" --rationale \"...\"",
+    "lym loom circling accept launch-manifest-parity"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/launch-manifest-parity/_lym/shed/launch-manifest-parity/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/launch-manifest-parity/_lym/shed/launch-manifest-parity/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step launch-manifest-parity --until-stop --arbiter-attempt 1"
+}
