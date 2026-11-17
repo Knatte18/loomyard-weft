@@ -1,6 +1,6 @@
 # A Codex session gets the question-tool deny and the batching nudge Claude runs
 
-`codex-question-deny-nudge` · Task · feature, codex, shuttle, stencil, heddle · starting · Worktree-Create
+`codex-question-deny-nudge` · Task · feature, codex, shuttle, stencil, heddle · starting · Seed-Child
 
 Decision record: [Sketch](decision-codex-question-deny-nudge.md)
 

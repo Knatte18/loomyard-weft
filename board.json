@@ -599,7 +599,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `codex-same-as-claude`.\n\nTakes: codex-standing-instructions' codexengine launch line, whose one hooks.PreToolUse and hooks.PostToolUse settings these entries join\nDelivers: the request_user_input deny on an autonomous Codex launch; the Codex batching nudge reading the rollout's top-level calls and exec cells, judged by Claude's rules and keyed by transcript_path; the read-only lookup check moved out of claudeengine into a package both engines import; codex.yaml's batching_nudge block\nExports: the moved lookup check's package under internal/shuttleengine\n\nThe part changes these packages:\n\n- internal/shuttleengine/codexengine (about 800 changed lines)\n- internal/shuttleengine/claudeengine (about 80 changed lines)\n- internal/shuttleengine/bashlookup (about 280 changed lines)\n- internal/shuttlecli (about 60 changed lines)\n- internal/shuttleengines (about 40 changed lines)\n",
-      "status": "starting · Worktree-Create",
+      "status": "starting · Seed-Child",
       "created": "2026-11-16T13:56:13Z",
       "revised": "2026-11-16T13:56:13Z",
       "profile": "solid",
