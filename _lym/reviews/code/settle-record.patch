@@ -1,0 +1,387 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index 9873e4c0..aa203942 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -11,7 +11,7 @@ You are the hub orchestrator, running in the hub's prime worktree or in a beam.
+ You run the task loop for the operator:
+ you release approved tasks, settle their escalations and stops, and keep the board.
+ You read and release only the board entries whose `parent_beam` is your own worktree:
+-the prime's orch those with an empty `parent_beam`, a beam's orch those naming its beam.
++the prime's orch those whose `parent_beam` is `root`, the prime, a beam's orch those naming its beam.
+ You start runs only in this hub:
+ that hub's own orch starts another hub's runs,
+ and you set up another hub or write its board only when the operator asks.
+@@ -324,7 +324,7 @@ A beam's orch writes the board only under its own beam, and nothing lets it writ
+ When work belongs outside the beam, such as a project a beam's motif spins out,
+ pass the wish to the beam's parent orch yourself, so the operator gives the order once.
+ The parent orch is `<shortname>:<parent_beam>:orch`, with `parent_beam` from `lym board get <your beam>`,
+-or `<shortname>:orch` when `parent_beam` is empty;
++or `<shortname>:orch` when `parent_beam` is `root`, the prime;
+ send it with `lym creel post <parent orch> --expect-reply "<wish>"`.
+ 
+ - The wish says what should be made and why; it is no finished order.
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 98aaeb78..635f8685 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -97,7 +97,7 @@ a task can be claimed and depend on other tasks; a note is an idea or observatio
+ entries: a task or note joins it through its "project" field, the project lists its members' plan
+ order in "order", and its "beam" flag, set only by "lym beam create", makes it
+ a long-lived pair that runs its members. "get" and "list" carry an entry's "parent_beam", the slug of
+-the beam above it, empty when the prime is its parent. A task carries at least
++the beam above it, "root" when the prime is its parent. A task carries at least
+ one type label, a note exactly one, and every label must be configured in board.yaml. Every entry
+ carries a handle the board assigns, T and a number for a task, P and a number for a project, a
+ note's type letter and a number for a note, such as T4 or B2. The README renders tasks split into dependency layers and notes grouped by
+@@ -930,6 +930,9 @@ A task's "owner_machine" is its effective owner, its beam's or root's; only a be
+ With --text, print a "prime owner: <machine>" line ("none" when none is recorded),
+ then the compact one-line-per-task listing (handle, kind, priority, age, time since last revision, slug, title, labels, [status])
+ instead of JSON; errors stay JSON.
++Without --label, the --text listing shows the root project, the prime, as a P0 row with slug root
++before the first project, note or done entry, and last under --sort; the JSON "tasks" array holds no root row.
++An entry's "parent_beam" is the slug of the beam above it, "root" when the prime is its parent.
+ --label <name> keeps only entries carrying that label; repeat it to require several (AND).
+ A label that is in neither the types nor the labels list of board.yaml and that no entry carries is refused.
+ --sort age lists the oldest entries first, --sort revised the longest unrevised first;
+@@ -955,6 +958,15 @@ Examples:
+ 			if !listText {
+ 				return output.Ok(out, map[string]any{"prime_owner": primeOwner, "tasks": tasks})
+ 			}
++			// A label filter keeps only entries carrying the label, and the root carries none.
++			// The root has no dates, so a date-sorted listing puts it last, as it does any undated entry.
++			if len(listLabels) == 0 {
++				if listSort != "" {
++					tasks = append(tasks, boardengine.RootProjectBrief())
++				} else {
++					tasks = withRootProjectRow(tasks)
++				}
++			}
+ 			if _, err := io.WriteString(out, primeOwnerLine(primeOwner)+RenderCompact(tasks, time.Now())); err != nil {
+ 				return outputError(out, err.Error())
+ 			}
+@@ -1361,11 +1373,15 @@ func outputSuccessWithTask(out io.Writer, task boardengine.Task, notice string)
+ 
+ // outputGetTask writes {"ok":true,"task":{...},"parent_beam":"..."} with task as a pointer.
+ // A nil task writes null and omits parent_beam.
+-// parentBeam is the slug of the beam the entry belongs to, empty when the prime is its parent.
++// parentBeam is the slug of the beam the entry belongs to, empty when the prime is its parent;
++// the envelope prints the prime as boardengine.RootSubject, since an empty value reads as no beam.
+ // The task carries "discussed": true when its run's Discussion was approved, and no discussed key otherwise.
+ func outputGetTask(out io.Writer, task *boardengine.Task, parentBeam string) int {
+ 	envelope := map[string]any{"task": task}
+ 	if task != nil {
++		if parentBeam == "" {
++			parentBeam = boardengine.RootSubject
++		}
+ 		envelope["parent_beam"] = parentBeam
+ 	}
+ 	return output.Ok(out, envelope)
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index fff666bc..c0423bc7 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -43,9 +43,11 @@
+ // `upsert` refuses a payload naming it as an unknown field.
+ // `upsert` takes `front`, `on_land` and `discussed` only as the entry's stored values, since only lym writes them.
+ // `get` carries the entry's `parent_beam` beside `task` in its envelope:
+-// the slug of the beam above the entry, empty when the prime is its parent.
++// the slug of the beam above the entry, `root` (`boardengine.RootSubject`) when the prime is its parent.
+ // `get` gives a project its effective owner as it gives a task's.
+-// `list` carries `parent_beam` on each entry that has one.
++// `list` carries `parent_beam` on each entry the same way, and leaves it out when the parent cannot be resolved.
++// The prime becomes `root` only where the value is printed:
++// `boardengine.Board.ParentBeamOf` still answers the empty slug for the prime.
+ //
+ // A payload argument that is a bare handle, in either letter case, reads as `{"handle":…}`.
+ // So `lym board get B4` works, and a verb that needs further keys refuses it as missing them.
+@@ -62,8 +64,12 @@
+ // `list` names the machine that owns the hub's prime beside its entries.
+ // The envelope carries it as the `prime_owner` key, empty when none is recorded.
+ // With `--text`, a `prime owner: <machine>` line, `none` when none is recorded, comes before the entry lines.
++// `list --text` without `--label` shows the root project, the prime, as a row from `boardengine.RootProjectBrief`:
++// handle `P0`, slug `root` and the title the board files give it, placed before the first project, note or done entry.
++// The JSON `tasks` array holds no root row.
+ // `list` takes `--sort age` to list the oldest entries first and `--sort revised` the longest unrevised first.
+ // An entry lacking the date comes last, and ties stay in README order.
++// The root row has no dates, so it comes last under `--sort`.
+ //
+ // `upsert` takes `--body-file <path>` to read `body` from a file, or from stdin when the path is `-`.
+ // It is refused when the payload also carries `body`, and when the payload argument is itself `-`.
+diff --git a/internal/boardcli/text.go b/internal/boardcli/text.go
+index ef0bd7bf..4650a9e3 100644
+--- a/internal/boardcli/text.go
++++ b/internal/boardcli/text.go
+@@ -1,9 +1,10 @@
+ // text.go renders the compact listing that "list --text" and "find --text" print instead of JSON.
+-// It also renders the prime-owner line that opens the "list --text" listing.
++// It also renders the prime-owner line that opens the "list --text" listing and places its root project row.
+ 
+ package boardcli
+ 
+ import (
++	"slices"
+ 	"strings"
+ 	"time"
+ 	"unicode/utf8"
+@@ -85,6 +86,18 @@ func primeOwnerLine(primeOwner string) string {
+ 	return "prime owner: " + primeOwner + "\n"
+ }
+ 
++// withRootProjectRow returns tasks with the root project's P0 row inserted before the first project, note or done entry.
++// The row goes at the end when there is none, so that in README order it leads the projects.
++func withRootProjectRow(tasks []boardengine.BriefTask) []boardengine.BriefTask {
++	at := slices.IndexFunc(tasks, func(t boardengine.BriefTask) bool {
++		return t.Kind == boardengine.KindProject || t.Kind == boardengine.KindNote || t.IsDone()
++	})
++	if at < 0 {
++		at = len(tasks)
++	}
++	return slices.Insert(tasks, at, boardengine.RootProjectBrief())
++}
++
+ // pad right-pads s with spaces to width characters, so a multi-byte character counts as one column.
+ func pad(s string, width int) string {
+ 	return s + strings.Repeat(" ", width-utf8.RuneCountInString(s))
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 8aec5d61..e7fdecae 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -343,9 +343,11 @@ func stepListAndFindText(t *testing.T, f *cliFixture) {
+ 	mustUpsert(t, `{"slug":"soon","title":"Soon thing","kind":"task","labels":["bug"]}`)
+ 	runJSON(t, 0, "set-status", `{"slug":"soon","status":"active"}`)
+ 
++	// The root project's P0 row stands before the first project, note or done entry, with no dates.
+ 	wantList := "prime owner: none\n" +
+-		"T1  task  0m  0m  soon   Soon thing   bug                    [active]\n" +
+-		"E1  note  0m  0m  later  Later thing  enhancement,undecided\n"
++		"T1  task     0m  0m  soon   Soon thing                      bug                    [active]\n" +
++		"P0  project          root   Root: entries under no project\n" +
++		"E1  note     0m  0m  later  Later thing                     enhancement,undecided\n"
+ 	exitCode, stdout := runCLI(t, "list", "--text")
+ 	if exitCode != 0 || stdout != wantList {
+ 		t.Fatalf("list --text: exit %d, stdout %q, want %q", exitCode, stdout, wantList)
+@@ -360,6 +362,14 @@ func stepListAndFindText(t *testing.T, f *cliFixture) {
+ 		t.Fatalf("find --text: exit %d, stdout %q, want %q", exitCode, stdout, wantFind)
+ 	}
+ 
++	// A label filter keeps only entries carrying the label, so the root row is left out.
++	wantLabelled := "prime owner: none\n" +
++		"T1  task  0m  0m  soon  Soon thing  bug  [active]\n"
++	exitCode, stdout = runCLI(t, "list", "--text", "--label", "bug")
++	if exitCode != 0 || stdout != wantLabelled {
++		t.Fatalf("list --text --label bug: exit %d, stdout %q, want %q", exitCode, stdout, wantLabelled)
++	}
++
+ 	// A backfilled creation date reorders --sort age, oldest first, and leaves --sort revised in README order.
+ 	// Both entries get the same revised stamp, since the upserts above can fall in different whole seconds.
+ 	mustUpsert(t, `{"slug":"soon","revised":"2026-02-03T04:05:06Z"}`)
+@@ -373,6 +383,18 @@ func stepListAndFindText(t *testing.T, f *cliFixture) {
+ 	if result := runJSON(t, 1, "list", "--sort", "newest"); !strings.Contains(fmt.Sprint(result["error"]), "newest") {
+ 		t.Fatalf("list --sort newest: result = %v, want a refusal naming the value", result)
+ 	}
++
++	// The root row goes last under --sort, and ahead of the done entries when no open project or note stands.
++	_, stdout = runCLI(t, "list", "--text", "--sort", "age")
++	if lines := strings.Split(strings.TrimRight(stdout, "\n"), "\n"); !strings.HasPrefix(lines[len(lines)-1], "P0 ") {
++		t.Errorf("list --text --sort age = %q; want the P0 row last", stdout)
++	}
++	runJSON(t, 0, "set-status", `{"slug":"later","status":"done"}`)
++	runJSON(t, 0, "set-status", `{"slug":"soon","status":"done"}`)
++	_, stdout = runCLI(t, "list", "--text")
++	if lines := strings.Split(strings.TrimRight(stdout, "\n"), "\n"); len(lines) != 4 || !strings.HasPrefix(lines[1], "P0 ") {
++		t.Errorf("list --text with only done entries = %q; want the P0 row ahead of them", stdout)
++	}
+ }
+ 
+ // stepListShowsASketch asserts the hub's board takes a note of the built-in sketch type, whatever its board.yaml lists,
+@@ -577,7 +599,7 @@ func stepProjectRelease(t *testing.T, f *cliFixture) {
+ 
+ // stepProjects drives the project kind through a seeded hub:
+ // list and get carry parent_beam.
+-// It is empty under a grouping project, and it names the beam once the project is hand-marked a beam.
++// It is root under a grouping project, and it names the beam once the project is hand-marked a beam.
+ // A task slug ending in the records suffix, or one equal to a configured junction name, is refused with fabric's reason.
+ // A member's project change is refused while a worktree stands at its pair path;
+ // the refusal names `lym batten cancel <slug> --remove`.
+@@ -595,11 +617,11 @@ func stepProjects(t *testing.T, f *cliFixture) {
+ 		t.Fatalf("list: no entry %q", slug)
+ 		return nil
+ 	}
+-	if got := runJSON(t, 0, "get", `{"slug":"member"}`)["parent_beam"]; got != "" {
+-		t.Errorf("get member under a grouping project: parent_beam = %v, want empty", got)
++	if got := runJSON(t, 0, "get", `{"slug":"member"}`)["parent_beam"]; got != boardengine.RootSubject {
++		t.Errorf("get member under a grouping project: parent_beam = %v, want %s", got, boardengine.RootSubject)
+ 	}
+-	if got := parentBeamOfListed("member"); got != nil {
+-		t.Errorf("list member under a grouping project: parent_beam = %v, want none", got)
++	if got := parentBeamOfListed("member"); got != boardengine.RootSubject {
++		t.Errorf("list member under a grouping project: parent_beam = %v, want %s", got, boardengine.RootSubject)
+ 	}
+ 
+ 	seedBoardFile(t, f.cwd, `{"version":1,"entries":[`+
+@@ -612,8 +634,8 @@ func stepProjects(t *testing.T, f *cliFixture) {
+ 	if got := parentBeamOfListed("member"); got != "proj" {
+ 		t.Errorf("list member of a beam: parent_beam = %v, want proj", got)
+ 	}
+-	if got := runJSON(t, 0, "get", `{"slug":"proj"}`)["parent_beam"]; got != "" {
+-		t.Errorf("get the beam itself: parent_beam = %v, want empty", got)
++	if got := runJSON(t, 0, "get", `{"slug":"proj"}`)["parent_beam"]; got != boardengine.RootSubject {
++		t.Errorf("get the beam itself: parent_beam = %v, want %s", got, boardengine.RootSubject)
+ 	}
+ 
+ 	if err := os.WriteFile(configengine.ConfigFile(fabricengine.BoardDir(filepath.Dir(f.cwd)), "fabric"), []byte("branch_prefix: \"\"\npathspec: docs\n"), 0o644); err != nil {
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 68515abd..47b6267e 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -167,7 +167,10 @@
+ // It walks an entry's project links upward and returns the nearest open project that is a beam, "" meaning the prime.
+ // The list view carries it as parent_beam, taken from Config.ParentOf when that seam is set.
+ // Otherwise it comes from ParentBeam over the board's own entries, and it is empty when the seam fails.
++// The list view prints the prime as RootSubject, `root`, since an empty value reads as no beam.
+ // Board.ParentBeamOf answers it for one slug.
++// ParentBeam and Board.ParentBeamOf keep the empty slug for the prime.
++// Every owner read and beam verb takes that empty slug as the prime.
+ // Board.BeamUnder answers it for an entry not yet written, from the project link it will carry.
+ // ReadTasks reads the entries of a local board.json for a reader outside a Board.
+ // An owner change is never a scope change, so the run lock lets a run-held entry take it.
+@@ -332,6 +335,7 @@
+ // The root, the entries whose project is empty, is a project like the others.
+ // It renders with the handle `P0` and the title `Root: entries under no project`.
+ // Board project handles start at 1, so `P0` names no board entry.
++// RootProjectBrief gives the root as one listing row, with the slug RootSubject.
+ // Every write renders README.md, the overview of every project, and one board file per project.
+ // Every project, open or done, renders to project-<slug>.md beside it, and the root to project-root.md.
+ // The split is rendering only: every entry stays in the one store, and handles stay numbered across the hub.
+diff --git a/internal/boardengine/parentbeam_test.go b/internal/boardengine/parentbeam_test.go
+index d1812cca..8a5aa1ff 100644
+--- a/internal/boardengine/parentbeam_test.go
++++ b/internal/boardengine/parentbeam_test.go
+@@ -89,12 +89,15 @@ func TestParentBeam(t *testing.T) {
+ 		for _, brief := range listed {
+ 			got[brief.Slug] = brief.ParentBeam
+ 		}
+-		if got["a"] != "beam" || got["b"] != "" {
+-			t.Errorf("listed parent_beam = %v; want a under beam and b under the prime", got)
++		if got["a"] != "beam" || got["b"] != boardengine.RootSubject {
++			t.Errorf("listed parent_beam = %v; want a under beam and b under %s", got, boardengine.RootSubject)
+ 		}
+ 		if beam, err := b.ParentBeamOf("a"); err != nil || beam != "beam" {
+ 			t.Errorf("ParentBeamOf(a) = %q, %v; want beam", beam, err)
+ 		}
++		if beam, err := b.ParentBeamOf("b"); err != nil || beam != "" {
++			t.Errorf("ParentBeamOf(b) = %q, %v; want the empty slug for the prime", beam, err)
++		}
+ 	})
+ 
+ 	t.Run("BoardWithoutASeamReadsItsOwnEntries", func(t *testing.T) {
+@@ -113,7 +116,7 @@ func TestParentBeam(t *testing.T) {
+ 			t.Fatalf("ListTasksBrief() error = %v; want nil", err)
+ 		}
+ 		for _, brief := range listed {
+-			if want := map[string]string{"a": "beam", "beam": ""}[brief.Slug]; brief.ParentBeam != want {
++			if want := map[string]string{"a": "beam", "beam": boardengine.RootSubject}[brief.Slug]; brief.ParentBeam != want {
+ 				t.Errorf("listed parent_beam of %s = %q; want %q", brief.Slug, brief.ParentBeam, want)
+ 			}
+ 		}
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index 85f5e470..795c39be 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -182,6 +182,13 @@ const rootTitle = "Board"
+ // Its empty slug names the root wherever a project is looked up, and it has no board entry, so no design file.
+ var rootProject = Task{Handle: projectHandleLetter + "0", Title: "Root: entries under no project"}
+ 
++// RootProjectBrief returns the root project as one listing row.
++// The row has handle P0, slug RootSubject and the title the board files give the root.
++// The root is no board entry, so the row carries no labels, dates or owner.
++func RootProjectBrief() BriefTask {
++	return BriefTask{Handle: rootProject.Handle, Slug: RootSubject, Title: rootProject.Title, Kind: KindProject, Layer: projectLayer}
++}
++
+ // rootProjectFile is the name of the root project's own board file.
+ var rootProjectFile = projectFileName(RootSubject)
+ 
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index a7ea024b..f01d0052 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -55,10 +55,16 @@ type BriefTask struct {
+ 	HasProposal bool      `json:"has_proposal"`
+ 	// OwnerMachine is the effective owner, recorded or read through the parent; empty for a note or when unresolved.
+ 	OwnerMachine string `json:"owner_machine,omitempty"`
+-	// ParentBeam is the slug of the beam the entry belongs to; empty for the prime or when the beam cannot be resolved.
++	// ParentBeam is the slug of the beam the entry belongs to, RootSubject for the prime;
++	// empty when the beam cannot be resolved.
+ 	ParentBeam string `json:"parent_beam,omitempty"`
+ }
+ 
++// IsDone reports whether the entry is done, the state that sorts it after every open entry.
++func (t BriefTask) IsDone() bool {
++	return t.Layer == doneLayer
++}
++
+ const (
+ 	// boardFile names the one store file a board directory holds.
+ 	boardFile = "board.json"
+@@ -764,14 +770,18 @@ func (s *Store) ListTasksBrief(labels []string) []BriefTask {
+ 			// A resolver error leaves the cell empty: a list never fails on a parent it cannot read.
+ 			owner, _ = owners.Effective(t.Slug, parentOf)
+ 		}
++		// The listing prints the prime as RootSubject, since an empty value reads as no beam.
+ 		// A resolver error leaves the cell empty, as for the owner.
+ 		parentBeam := ParentBeam(s.tasks, t.Slug)
++		var parentErr error
+ 		if s.parentOf != nil {
+-			resolved, err := s.parentOf(t.Slug)
+-			parentBeam = resolved
+-			if err != nil {
+-				parentBeam = ""
+-			}
++			parentBeam, parentErr = s.parentOf(t.Slug)
++		}
++		switch {
++		case parentErr != nil:
++			parentBeam = ""
++		case parentBeam == "":
++			parentBeam = RootSubject
+ 		}
+ 		brief := BriefTask{
+ 			ID:           t.ID,
+diff --git a/internal/boardengine/store_test.go b/internal/boardengine/store_test.go
+index 749f5526..9a946f15 100644
+--- a/internal/boardengine/store_test.go
++++ b/internal/boardengine/store_test.go
+@@ -1018,7 +1018,8 @@ func TestListTasksBriefLayerAndProposal(t *testing.T) {
+ 		t.Errorf("listed layers = %v; want %v", layers, want)
+ 	}
+ 
+-	// With no parent seam, each listed entry's parent beam is computed from the store's own entries.
++	// With no parent seam, each listed entry's parent beam is computed from the store's own entries,
++	// and the prime lists as RootSubject.
+ 	beamDir := t.TempDir()
+ 	beamBoard := `{"version":1,"entries":[` +
+ 		`{"id":0,"slug":"beamer","title":"B","kind":"project","labels":["bug"],"beam":true},` +
+@@ -1035,7 +1036,7 @@ func TestListTasksBriefLayerAndProposal(t *testing.T) {
+ 	for _, b := range beamStore.ListTasksBrief(nil) {
+ 		parentBeams[b.Slug] = b.ParentBeam
+ 	}
+-	if want := map[string]string{"beamer": "", "member": "beamer", "loose": ""}; !maps.Equal(parentBeams, want) {
++	if want := map[string]string{"beamer": boardengine.RootSubject, "member": "beamer", "loose": boardengine.RootSubject}; !maps.Equal(parentBeams, want) {
+ 		t.Errorf("listed parent beams = %v; want %v", parentBeams, want)
+ 	}
+ 
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index 140fac91..55c2c283 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -24,7 +24,8 @@ Every entry carries a `kind`:
+   A project's `beam` field marks it a beam, a long-lived pair that spawns its members from its own worktree;
+   it is set only by `lym beam create`, never by a board write.
+   `lym board list` and `lym board get` carry an entry's `parent_beam`:
+-  the slug of the nearest beam above it, empty when the prime is its parent.
++  the slug of the nearest beam above it, `root` when the prime is its parent.
++  `lym board list --text` shows the prime as the root project's `P0` row.
+ 
+ A new entry without `kind` lands as a note, so claimable work must pass `kind: "task"`.
+ A note stays as written until the operator decides to build it;
