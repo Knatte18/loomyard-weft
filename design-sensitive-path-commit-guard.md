@@ -1,6 +1,6 @@
 # Refuse a commit that adds a secret file
 
-`sensitive-path-commit-guard` · Task · feature, webster, fabric · running · Drift-Baseline
+`sensitive-path-commit-guard` · Task · feature, webster, fabric · running · Drift-Await
 
 ## Seen (orch, 2026-11-17)
 
