@@ -1,26 +1,26 @@
 # Card 4 — machine-relay-verbs
 
 **Create:**
-- `plan:internal/creelengine#BridgeProgram` -> `const BridgeProgram = "SLACK"`
-- `plan:internal/creelengine#VerbMachineTake` -> `const VerbMachineTake = "machine-take"`
-- `plan:internal/creelengine#VerbMachineReport` -> `const VerbMachineReport = "machine-report"`
-- `plan:internal/creelengine#VerbMachineSettle` -> `const VerbMachineSettle = "machine-settle"`
-- `plan:internal/creelengine#MachineUnsettled` -> `const MachineUnsettled = "bridge-unsettled"`
-- `plan:internal/creelengine#MachineOutbound` -> `type MachineOutbound struct`
-- `plan:internal/creelengine#IsDaemonRefusal` -> `func IsDaemonRefusal(err error) bool`
-- `plan:internal/creelengine#ErrDaemonRefusal` -> `var ErrDaemonRefusal = errors.New("creel: the daemon refused the request")`
-- `plan:internal/creelengine#daemonRefusal.Is` -> `func (e *daemonRefusal) Is(target error) bool`
-- `plan:internal/creelengine#Store.requireBridgeProgram` -> `func (s *Store) requireBridgeProgram(sender Sender, verb string) error`
-- `plan:internal/creelengine#Store.TakeMachineOutbound` -> `func (s *Store) TakeMachineOutbound(sender Sender) ([]MachineOutbound, error)`
-- `plan:internal/creelengine#Store.ReportMachineHold` -> `func (s *Store) ReportMachineHold(sender Sender, id int64, reason string) error`
-- `plan:internal/creelengine#Store.SettleMachineDelivered` -> `func (s *Store) SettleMachineDelivered(sender Sender, id int64, slackTS string) error`
-- `plan:internal/creelengine#Store.SettleMachineReturned` -> `func (s *Store) SettleMachineReturned(sender Sender, id int64, reason string) error`
-- `plan:internal/creelengine#Store.returnMachineLocked` -> `func (s *Store) returnMachineLocked(entry *machineOutboundEntry, reason string, listing strandListing) error`
-- `plan:internal/creelengine#Store.returnDueMachine` -> `func (s *Store) returnDueMachine() (time.Time, bool, error)`
-- `plan:internal/creelengine#Store.SetMachineHook` -> `func (s *Store) SetMachineHook(hook func())`
-- `plan:internal/creelengine#Scheduler.machineHourLoop` -> `func (s *Scheduler) machineHourLoop()`
-- `plan:internal/creelengine#Scheduler.wakeMachineHour` -> `func (s *Scheduler) wakeMachineHour()`
-- `plan:internal/creelengine_test#TestStore_MachineOutbound` -> `func TestStore_MachineOutbound(t *testing.T)`
+- `internal/creelengine#BridgeProgram`
+- `internal/creelengine#VerbMachineTake`
+- `internal/creelengine#VerbMachineReport`
+- `internal/creelengine#VerbMachineSettle`
+- `internal/creelengine#MachineUnsettled`
+- `internal/creelengine#MachineOutbound`
+- `internal/creelengine#IsDaemonRefusal`
+- `internal/creelengine#ErrDaemonRefusal`
+- `internal/creelengine#daemonRefusal.Is`
+- `internal/creelengine#Store.requireBridgeProgram`
+- `internal/creelengine#Store.TakeMachineOutbound`
+- `internal/creelengine#Store.ReportMachineHold`
+- `internal/creelengine#Store.SettleMachineDelivered`
+- `internal/creelengine#Store.SettleMachineReturned`
+- `internal/creelengine#Store.returnMachineLocked`
+- `internal/creelengine#Store.returnDueMachine`
+- `internal/creelengine#Store.SetMachineHook`
+- `internal/creelengine#Scheduler.machineHourLoop`
+- `internal/creelengine#Scheduler.wakeMachineHour`
+- `internal/creelengine_test#TestStore_MachineOutbound`
 
 **Edit:**
 - `internal/creelengine#Request`

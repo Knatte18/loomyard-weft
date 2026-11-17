@@ -1,19 +1,19 @@
 {
   "runGuid": "c115a07435ef17df56118bc29bf674c7",
-  "planFingerprint": "b73138669e7adb508198bc0e63ec3f892797065e39e4bb1e31fc4c08a08737db",
+  "planFingerprint": "849c2226785e5be9f0552465f63c3a179aaf0f9c6f5cc14235f882e852d43128",
   "planFileHashes": {
     "00-overview.md": "9e58e89a087a04e18eda194d6a2bc67ac84acbd42a3222a9de19788bce669076",
     "01-machine-address-parser.md": "c6684b2f769ddc8cfc6e883ad6768046ea6526fb3594f745f1779b659c74d59b",
     "02-machine-mail-journal.md": "aa2f204dc97f8b06830a5b45d3d4c2e56876b1735a596358df9b73f449990028",
     "03-machine-outbound-post.md": "e9cf423390bb64d001b5ea23847a8eecf3a10d11a5aadd82665edfe6ba76841b",
-    "04-machine-relay-verbs.md": "0d25e3e8da491ab0a55d5a90a9ff12b03ed0605da4c60cb616a17e69ae40ecf1",
-    "05-machine-inbound-deliver.md": "34e978304baa8b73d9bda767eb5811f13c59e217b3637ea25803a006da974412",
-    "06-creel-bridge-wiring.md": "7f45660e7a5d591c38a7b77f91e69cda7f7db4473f83428ed2c2a9b9bbec8801",
+    "04-machine-relay-verbs.md": "c36690e1eb0d6327218f0dbc628fe9590fcfc1758347a5e8237be4240c8e490c",
+    "05-machine-inbound-deliver.md": "143d737af6b59fef7a042e7843e4cc2676e1ae9e66975d72eb9f9255b8c924d1",
+    "06-creel-bridge-wiring.md": "da9268f7684105febb52add0159295b7ef825252fb647db9c2db06544d5389b5",
     "07-bridge-envelope-and-name.md": "b0efea3b528fdbc7d044b1d81f061353a85aa10209cf1ffca3c23c665fe0fbdb",
     "08-bridge-records-and-calls.md": "f7a01dea813cae977f0fdcd8ed895adcaa6d9b9b7f0db3b0c579b5295d55302d",
     "09-approve-and-revoke.md": "f9d671187dd81159ddb7e34938bcdf60e8ddcce69428401871c3fd2cef20b8f9",
-    "10-bridge-sending.md": "4963043ed81865ca57b02fed1fb5c43f6aebcc77b3732034f673697be3234093",
-    "11-bridge-receiving.md": "757b15b50dc44a6ac24dd9cf4eeca8ab8c516332ce176959d373c3a4472bedb3",
+    "10-bridge-sending.md": "f191c36f90dda01743dbe462c9a35212daa8c40890d6a0df5b1df0354be77aa2",
+    "11-bridge-receiving.md": "ee03feb502da9cdd33541e6dde330642d736d83d25b29b1c4148ef59803c03a5",
     "12-bridge-channel-upkeep.md": "4102c6d0640251f1c1f1f583f4b65f41a77317f6fc5ea52c5403f76087cd7557"
   },
   "planOverviewFrameHash": "c44d669f07d71673cd871cd1cc2101546d03212888d750c5a215bb3e6d1de255",
@@ -397,23 +397,46 @@
         "05-machine-inbound-deliver"
       ],
       "cardHashes": {
-        "04-machine-relay-verbs": "0d25e3e8da491ab0a55d5a90a9ff12b03ed0605da4c60cb616a17e69ae40ecf1",
-        "05-machine-inbound-deliver": "34e978304baa8b73d9bda767eb5811f13c59e217b3637ea25803a006da974412"
+        "04-machine-relay-verbs": "c36690e1eb0d6327218f0dbc628fe9590fcfc1758347a5e8237be4240c8e490c",
+        "05-machine-inbound-deliver": "143d737af6b59fef7a042e7843e4cc2676e1ae9e66975d72eb9f9255b8c924d1"
       },
       "startSha": "d3a9ab5a61d4c8687c5af62c77703ba6a8b4ca20",
       "kind": "fork",
       "spawnedAt": "2026-11-17T17:43:57Z",
       "sessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-machine-relay-verbs",
+        "status": "done",
+        "head_sha": "0643efca8c2cc963fc3dfd9664384f610a8b367f",
+        "deviations": [
+          "internal/creelengine/crossmachine.go",
+          "internal/creelengine/machinemail.go",
+          "internal/creelengine/machinemail_test.go",
+          "internal/creelengine/outbound.go",
+          "internal/creelengine/server_test.go",
+          "internal/creelengine/verbs_test.go"
+        ]
+      },
+      "cardShas": [
+        "0643efca8c2cc963fc3dfd9664384f610a8b367f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-ab6f7c16cac28f64b.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-ab6f7c16cac28f64b.jsonl"
+      ]
     }
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "255015dbb2c93bc97dff12a121147be8",
   "masterSessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
   "masterEngine": "claude",
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a3f4ea1e36ca7ed3c.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a3f4ea1e36ca7ed3c.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-ab6f7c16cac28f64b.jsonl"
   ]
 }

@@ -27,10 +27,10 @@
 
 **Uses:**
 - `internal/creelengine#MachineBridge`
-- `plan:internal/creelengine#VerbMachineTake`
-- `plan:internal/creelengine#VerbMachineReport`
-- `plan:internal/creelengine#VerbMachineSettle`
-- `plan:internal/creelengine#VerbMachineDeliver`
+- `internal/creelengine#VerbMachineTake`
+- `internal/creelengine#VerbMachineReport`
+- `internal/creelengine#VerbMachineSettle`
+- `internal/creelengine#VerbMachineDeliver`
 - `internal/slackengine#ForwardingOn`
 - `internal/slackengine#RequireConfigured`
 - `internal/machinename#Names`

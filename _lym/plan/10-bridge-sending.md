@@ -55,8 +55,8 @@
 - `plan:internal/creelcli#GoClient.SettleMachineDelivered`
 - `plan:internal/creelcli#GoClient.SettleMachineReturned`
 - `plan:internal/creelcli#GoClient.DeliverMachine`
-- `plan:internal/creelengine#IsDaemonRefusal`
-- `plan:internal/creelengine#ErrDaemonRefusal`
+- `internal/creelengine#IsDaemonRefusal`
+- `internal/creelengine#ErrDaemonRefusal`
 - `plan:internal/slackengine#FormatBridgeMessage`
 - `plan:internal/slackengine#BridgeChannelName`
 - `plan:internal/slackengine#ReadPeers`

@@ -1,11 +1,11 @@
 # Card 5 — machine-inbound-deliver
 
 **Create:**
-- `plan:internal/creelengine#VerbMachineDeliver` -> `const VerbMachineDeliver = "machine-deliver"`
-- `plan:internal/creelengine#MachineMail` -> `type MachineMail struct`
-- `plan:internal/creelengine#MachineInboundRetention` -> `const MachineInboundRetention = journalRetention`
-- `plan:internal/creelengine#Store.DeliverMachine` -> `func (s *Store) DeliverMachine(sender Sender, mail MachineMail) (int64, error)`
-- `plan:internal/creelengine_test#TestStore_MachineInbound` -> `func TestStore_MachineInbound(t *testing.T)`
+- `internal/creelengine#VerbMachineDeliver`
+- `internal/creelengine#MachineMail`
+- `internal/creelengine#MachineInboundRetention`
+- `internal/creelengine#Store.DeliverMachine`
+- `internal/creelengine_test#TestStore_MachineInbound`
 
 **Edit:**
 - `internal/creelengine#Request`
@@ -32,8 +32,8 @@
 - `internal/creelengine#eventMachineOutbound`
 - `internal/creelengine#StampMachineTrusted`
 - `internal/creelengine#StampMachineUntrusted`
-- `plan:internal/creelengine#Store.requireBridgeProgram`
-- `plan:internal/creelengine#Store.TakeMachineOutbound`
+- `internal/creelengine#Store.requireBridgeProgram`
+- `internal/creelengine#Store.TakeMachineOutbound`
 - `internal/creelengine#widestMachineLine`
 - `internal/creelengine#Store.checkReceiverLocked`
 - `internal/creelengine#Store.deliverMailLocked`

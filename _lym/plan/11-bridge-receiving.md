@@ -48,10 +48,10 @@
 - `plan:internal/slackengine#bridgePollCeiling`
 - `plan:internal/slackengine#parsePeerCommand`
 - `plan:internal/slackengine#inbound.runPeerCommand`
-- `plan:internal/creelengine#MachineMail`
-- `plan:internal/creelengine#MachineInboundRetention`
-- `plan:internal/creelengine#IsDaemonRefusal`
-- `plan:internal/creelengine#ErrDaemonRefusal`
+- `internal/creelengine#MachineMail`
+- `internal/creelengine#MachineInboundRetention`
+- `internal/creelengine#IsDaemonRefusal`
+- `internal/creelengine#ErrDaemonRefusal`
 - `internal/slackengine#retryWindow`
 - `internal/slackengine#ReadChannelMap`
 - `internal/slackengine#ForwardingOn`
