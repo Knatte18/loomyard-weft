@@ -1,9 +1,9 @@
 # Card 9 — approve-and-revoke
 
 **Create:**
-- `plan:internal/slackengine#peerCommand` -> `type peerCommand struct`
-- `plan:internal/slackengine#parsePeerCommand` -> `func parsePeerCommand(text string) (peerCommand, bool)`
-- `plan:internal/slackengine#inbound.runPeerCommand` -> `func (in *inbound) runPeerCommand(ctx context.Context, command peerCommand) (string, error)`
+- `internal/slackengine#peerCommand`
+- `internal/slackengine#parsePeerCommand`
+- `internal/slackengine#inbound.runPeerCommand`
 
 **Edit:**
 - `internal/slackengine#Hub`

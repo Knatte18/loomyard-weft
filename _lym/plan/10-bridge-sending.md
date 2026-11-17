@@ -1,41 +1,41 @@
 # Card 10 — bridge-sending
 
 **Create:**
-- `plan:internal/slackengine#bridgePosts` -> `type bridgePosts struct`
-- `plan:internal/slackengine#bridgeNotices` -> `type bridgeNotices struct`
-- `plan:internal/slackengine#markBridgeNotice` -> `func markBridgeNotice(path, key string) (bool, error)`
-- `plan:internal/slackengine#clearBridgeNotice` -> `func clearBridgeNotice(path, key string) error`
-- `plan:internal/slackengine#peerUnapprovedReason` -> `const peerUnapprovedReason = "peer-unapproved"`
-- `plan:internal/slackengine#buttonOffReason` -> `const buttonOffReason = "button-off"`
-- `plan:internal/slackengine#bridgeNameTakenReason` -> `const bridgeNameTakenReason = "bridge-name-taken"`
-- `plan:internal/slackengine#bridgeArchivedReason` -> `const bridgeArchivedReason = "bridge-archived"`
-- `plan:internal/slackengine#bridgeSender` -> `type bridgeSender struct`
-- `plan:internal/slackengine#newBridgeSender` -> `func newBridgeSender(geom Geometry, mailbox Mailbox, slack SlackClient, clock Clock, keeper *channelKeeper) *bridgeSender`
-- `plan:internal/slackengine#bridgeSender.settleAccepted` -> `func (s *bridgeSender) settleAccepted() error`
-- `plan:internal/slackengine#bridgeSender.send` -> `func (s *bridgeSender) send(ctx context.Context) (bool, error)`
-- `plan:internal/slackengine#bridgeSender.sendOne` -> `func (s *bridgeSender) sendOne(ctx context.Context, message creelengine.MachineOutbound, posts *bridgePosts) (bool, error)`
-- `plan:internal/slackengine#bridgeSender.hold` -> `func (s *bridgeSender) hold(ctx context.Context, message creelengine.MachineOutbound, reason, noticeKey, line string) error`
-- `plan:internal/slackengine#channelKeeper.ensureBridge` -> `func (k *channelKeeper) ensureBridge(ctx context.Context, localOrch string, peer agentname.MachineAddress, pin Peer) (string, string, error)`
-- `plan:internal/slackengine#bridgePollBase` -> `const bridgePollBase = 5 * time.Second`
-- `plan:internal/slackengine#bridgePollCeiling` -> `const bridgePollCeiling = 60 * time.Second`
-- `plan:internal/slackengine#bridgePoll` -> `type bridgePoll struct`
-- `plan:internal/slackengine#newBridgePoll` -> `func newBridgePoll(clock Clock) *bridgePoll`
-- `plan:internal/slackengine#bridgePoll.wake` -> `func (p *bridgePoll) wake()`
-- `plan:internal/slackengine#bridgePoll.run` -> `func (p *bridgePoll) run(ctx context.Context, round func(ctx context.Context) bool)`
-- `plan:internal/slackcli#programMailbox.TakeMachine` -> `func (m *programMailbox) TakeMachine() ([]creelengine.MachineOutbound, error)`
-- `plan:internal/slackcli#programMailbox.ReportMachine` -> `func (m *programMailbox) ReportMachine(id int64, reason string) error`
-- `plan:internal/slackcli#programMailbox.SettleMachineDelivered` -> `func (m *programMailbox) SettleMachineDelivered(id int64, slackTS string) error`
-- `plan:internal/slackcli#programMailbox.SettleMachineReturned` -> `func (m *programMailbox) SettleMachineReturned(id int64, reason string) error`
-- `plan:internal/slackcli#programMailbox.DeliverMachine` -> `func (m *programMailbox) DeliverMachine(mail creelengine.MachineMail) (int64, error)`
-- `plan:internal/slackengine#NewBridgeSender` -> `func NewBridgeSender(geom Geometry, mailbox Mailbox, slack SlackClient, clock Clock, keeper *ChannelKeeper) *BridgeSender`
-- `plan:internal/slackengine#BridgeSender` -> `type BridgeSender = bridgeSender`
-- `plan:internal/slackengine#BridgeSender.Send` -> `func (s *BridgeSender) Send(ctx context.Context) (bool, error)`
-- `plan:internal/slackengine#BridgeSender.SettleAccepted` -> `func (s *BridgeSender) SettleAccepted() error`
-- `plan:internal/slackengine#NewBridgePoll` -> `func NewBridgePoll(clock Clock) *BridgePoll`
-- `plan:internal/slackengine#BridgePoll` -> `type BridgePoll = bridgePoll`
-- `plan:internal/slackengine#BridgePoll.Run` -> `func (p *BridgePoll) Run(ctx context.Context, round func(ctx context.Context) bool)`
-- `plan:internal/slackengine#BridgePoll.Wake` -> `func (p *BridgePoll) Wake()`
-- `plan:internal/slackengine_test#TestBridgeSend` -> `func TestBridgeSend(t *testing.T)`
+- `internal/slackengine#bridgePosts`
+- `internal/slackengine#bridgeNotices`
+- `internal/slackengine#markBridgeNotice`
+- `internal/slackengine#clearBridgeNotice`
+- `internal/slackengine#peerUnapprovedReason`
+- `internal/slackengine#buttonOffReason`
+- `internal/slackengine#bridgeNameTakenReason`
+- `internal/slackengine#bridgeArchivedReason`
+- `internal/slackengine#bridgeSender`
+- `internal/slackengine#newBridgeSender`
+- `internal/slackengine#bridgeSender.settleAccepted`
+- `internal/slackengine#bridgeSender.send`
+- `internal/slackengine#bridgeSender.sendOne`
+- `internal/slackengine#bridgeSender.hold`
+- `internal/slackengine#channelKeeper.ensureBridge`
+- `internal/slackengine#bridgePollBase`
+- `internal/slackengine#bridgePollCeiling`
+- `internal/slackengine#bridgePoll`
+- `internal/slackengine#newBridgePoll`
+- `internal/slackengine#bridgePoll.wake`
+- `internal/slackengine#bridgePoll.run`
+- `internal/slackcli#programMailbox.TakeMachine`
+- `internal/slackcli#programMailbox.ReportMachine`
+- `internal/slackcli#programMailbox.SettleMachineDelivered`
+- `internal/slackcli#programMailbox.SettleMachineReturned`
+- `internal/slackcli#programMailbox.DeliverMachine`
+- `internal/slackengine#NewBridgeSender`
+- `internal/slackengine#BridgeSender`
+- `internal/slackengine#BridgeSender.Send`
+- `internal/slackengine#BridgeSender.SettleAccepted`
+- `internal/slackengine#NewBridgePoll`
+- `internal/slackengine#BridgePoll`
+- `internal/slackengine#BridgePoll.Run`
+- `internal/slackengine#BridgePoll.Wake`
+- `internal/slackengine_test#TestBridgeSend`
 
 **Edit:**
 - `internal/slackengine#Mailbox`

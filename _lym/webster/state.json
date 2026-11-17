@@ -1,6 +1,6 @@
 {
   "runGuid": "c115a07435ef17df56118bc29bf674c7",
-  "planFingerprint": "018308bd7dfbc3bf2731bf92c6ff78011d9acf6ed27f294730870de9aa8c7d1f",
+  "planFingerprint": "8d7fa5b3ccf55953e4ff3122ec0581e84cfc4824eac10af326a961f72bd876f5",
   "planFileHashes": {
     "00-overview.md": "9e58e89a087a04e18eda194d6a2bc67ac84acbd42a3222a9de19788bce669076",
     "01-machine-address-parser.md": "c6684b2f769ddc8cfc6e883ad6768046ea6526fb3594f745f1779b659c74d59b",
@@ -11,9 +11,9 @@
     "06-creel-bridge-wiring.md": "52e827c0f3692ec3ebd7c3c63e147d6006ff29dde9283ca62670c8dd5a1d7fa6",
     "07-bridge-envelope-and-name.md": "2836932bc2628d4227fbb89bc59ed7a4c44bfca29af8c730f21a5e20d7e4b140",
     "08-bridge-records-and-calls.md": "d089f97dc8de9af968a803171bcc7ef1fbd3ceaf9c25d39ab0892f76a76c03ca",
-    "09-approve-and-revoke.md": "2430f8625455ba5e31c4eadcff96269a941aa3c1c64a088393229900f8f5d256",
-    "10-bridge-sending.md": "2b7c46cceae0c084cb1e05e14ff28f28b9752bb572f16923687aad2dab5b4577",
-    "11-bridge-receiving.md": "1e44eeb4ab21b3a33730963b33c945b380b9ea3724da1b27b0031d8541c746a9",
+    "09-approve-and-revoke.md": "88ba07d56a7e592820824f65d5878ce786e018336b884b7884993bf7fd58631b",
+    "10-bridge-sending.md": "6f0ed1cb4ac0996a0ecee5cec5e9c6a048e67a7ee1f7a38ff19542fe3b80665c",
+    "11-bridge-receiving.md": "466f5e4dd898e8b467796e79704a03dfb1b4cb90fee869bb3a8c80a9abceb833",
     "12-bridge-channel-upkeep.md": "cdc883bffbef6fd2a5e4d8f4ab5948841ab3adcd5121e04089950a04179e292a"
   },
   "planOverviewFrameHash": "c44d669f07d71673cd871cd1cc2101546d03212888d750c5a215bb3e6d1de255",
@@ -481,14 +481,34 @@
         "10-bridge-sending"
       ],
       "cardHashes": {
-        "09-approve-and-revoke": "2430f8625455ba5e31c4eadcff96269a941aa3c1c64a088393229900f8f5d256",
-        "10-bridge-sending": "2b7c46cceae0c084cb1e05e14ff28f28b9752bb572f16923687aad2dab5b4577"
+        "09-approve-and-revoke": "88ba07d56a7e592820824f65d5878ce786e018336b884b7884993bf7fd58631b",
+        "10-bridge-sending": "6f0ed1cb4ac0996a0ecee5cec5e9c6a048e67a7ee1f7a38ff19542fe3b80665c"
       },
       "startSha": "6b89d7ab5b77bcd8d5789e23954d2e80c3f53011",
       "kind": "recovery",
       "spawnedAt": "2026-11-17T18:29:14Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "09-approve-and-revoke",
+        "status": "done",
+        "head_sha": "7c83dc09097405aac144b88834cd687186d493bf",
+        "deviations": [
+          "internal/slackengine/bridgechannel.go",
+          "internal/slackengine/bridgeout.go",
+          "internal/slackengine/bridgeout_test.go",
+          "internal/slackengine/bridgepoll.go",
+          "internal/slackengine/bridgerecords.go",
+          "internal/slackengine/inbound.go",
+          "internal/slackengine/inbound_test.go",
+          "internal/slackengine/keeper.go",
+          "internal/slackengine/peercommand.go",
+          "internal/slackengine/relay_test.go"
+        ]
+      },
+      "cardShas": [
+        "7c83dc09097405aac144b88834cd687186d493bf"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a92ac1239bdc5a567.jsonl"
       ],
@@ -506,7 +526,7 @@
       "recoveryStartSha": "9c7f2f0bb0c0c3aeddc56d6847347aed78616e38"
     }
   },
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "255015dbb2c93bc97dff12a121147be8",
   "masterSessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
   "masterEngine": "claude",
