@@ -14,6 +14,7 @@
 
 **Edit:**
 - `internal/testcover/doc.go`
+- `cmd/lym#testOnlyCodeAllowed`
 
 **Intent:** Remove the `internal/testcover` code that only the retired map planning reached, per `PATTERN-test-only-code` (the Scope's testcover bullet, D9).
 Card 1 removed its last callers: `testMapRun.planLockedPackage`, `testMapRun.headSelector` and `testMapRun.headTree` called the selector, `testcover.PlanUpkeep` and `Toolchain.GoRoot`, and the planning and audit called `Map.FailedAt`.
@@ -22,7 +23,8 @@ Their tests go with them: `upkeep_test.go`, `testselect_test.go` with its fixtur
 `coveragemap.go` loses `Map.FailedAt` and `stampDifferences`, which only `Selector.environmentMiss` called; `coveragemap_test.go` loses `TestMapFailedAt` and keeps `TestWriteMapReadMap`.
 `runner.go` loses `Toolchain.GoRoot`, which no test covers.
 `NestedPackageDirs`, `StampModuleFiles`, `MapTest.Measured` and the map I/O stay: the map run and `lym gate redundant` still call them.
-`internal/testcover/doc.go` drops the `PlanUpkeep` and `Selector` paragraphs and the `Map.FailedAt` sentence.
+`internal/testcover/doc.go` drops the `PlanUpkeep` and `Selector` paragraphs, the `Map.FailedAt` sentence and the `ProfiledFuncs` sentence of the function card 1 deleted, and its `GoEnvironment` line drops "and GoRoot its root directory".
+`cmd/lym#testOnlyCodeAllowed` loses the entries card 1 added for these functions, since an entry that matches no unreachable function fails the guard.
 No behavior changes; the remaining tests of the package cover what stays.
 
-**ImpactSummary:** Testcover-local deletes with no production caller left after card 1; no other package references the removed symbols, and the map format and its readers are untouched.
+**ImpactSummary:** Testcover-local deletes with no production caller left after card 1; outside testcover only `cmd/lym`'s test-only-code allowlist names the removed symbols and loses those entries, and the map format and its readers are untouched.

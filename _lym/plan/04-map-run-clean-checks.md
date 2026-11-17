@@ -42,6 +42,7 @@
   - a test or spawn scan failure before any build is checked over the package's own tree before its failure is written;
   - a failed coverage build is checked over the linked trees, or over the module when the listing failed, before its failure is written;
   - a failure while the tests run, such as a profile that cannot be reduced, is checked over the linked trees before its failure is written.
+    This path shares `checkClean`'s call inside `writeFailed` with the failed-build path, which `AFailedBuildOverADirtyLinkedFileWritesNoMap` reaches, and no separate input reaches it.
 - `testMapRun.mapPackage` also runs `checkClean` over the linked trees once the coverage build ended and compiled, before the tests run, so a package dirty at that point runs no test.
 - `testMapRun.endJob` runs `checkClean` over the linked trees after the tests ran, in place of its first-dirty-file read and its HEAD comparison through `changedFiles`; its write then goes through `write`'s own check.
   `changedFiles` and `changedName` go, and `testmaptree.go`'s file comment drops "which of them changed between two commits".

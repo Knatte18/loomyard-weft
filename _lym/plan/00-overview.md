@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -30,6 +30,6 @@ The map format, its location and its consumers stay as they are.
 
 ### Decision: package-set-from-scope
 
-- **Decision:** the package set reads the scope's own shares (`scope.forTier`) and explicit targets, never `scopeInvocations`, and keeps the packages inside the module of the lowest of tier0 and tier1 that have a map, or that track a Go file at HEAD and hold a tier0 or tier1 test; an explicit target left out is listed under `left_out` with its reason.
+- **Decision:** the package set reads the scope's own shares (`scope.forTier`) and explicit targets, never `scopeInvocations`, takes every package of the module for a whole scope or a whole tier0 or tier1 share, and keeps the packages inside the module of the lowest of tier0 and tier1 that have a map, or that track a Go file at HEAD and hold a tier0 or tier1 test; an explicit target left out is listed under `left_out` with its reason.
 - **Rationale:** `scopeInvocations` runs a tier whole when its command holds no targets, and D1 makes map mode ignore the tiers' commands.
 - **Applies to:** card 1
