@@ -1,0 +1,3271 @@
+diff --git a/cmd/lym/sandbox_coverage_test.go b/cmd/lym/sandbox_coverage_test.go
+index 6d5a3358..599ab95f 100644
+--- a/cmd/lym/sandbox_coverage_test.go
++++ b/cmd/lym/sandbox_coverage_test.go
+@@ -61,7 +61,7 @@ var excludedModules = []scankit.Entry{
+ 	},
+ 	{
+ 		Key: "machine",
+-		Why: "name <name> rewrites the per-user machine file and the owners on every hub of the machine record, which no sandbox scenario may do; exercised by internal/machinecli's own tests instead",
++		Why: "name <name> rewrites the per-user machine file and the owners on every hub of the machine record, and start spawns lym beam start children, opens windows and writes desktop launchers, none of which a sandbox scenario may do; exercised by internal/machinecli's own tests instead",
+ 	},
+ 	{
+ 		Key: "slack",
+diff --git a/docs/overview.md b/docs/overview.md
+index 5f2898e9..8312ab53 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -340,6 +340,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/failuretrace/        traces a failed Parent-Align or Finalize verify log to the plan cards, batch commit ranges and untraced locations the landing failure record carries
+ ├── internal/darnengine/          the darn recipe's hub-wide `darn.yaml` config and the verify command every darn verify reads
+ ├── internal/desktophook/         the hub-wide `desktop.yaml` config and the machine's window command, run after `lym reed window` and `lym ide` open a window, and the machine's added status-bar buttons
++├── internal/desktoplauncher/     the desktop launchers that run `lym machine start`, one per hub and one for every hub: a `.desktop` file on Linux, a `.cmd` file on the Windows desktop, through `wsl.exe` under WSL, and the sole namer of where they live
+ ├── internal/samplerengine/       the sampler recipe's hub-wide `sampler.yaml` config
+ ├── internal/heddleengine/        heddle's instruction layers, the one lym ships in its binary and the repository's `heddle.json`, their rendering into a worktree's CLAUDE and AGENTS files, its `.claude/settings.local.json` and a session's system prompt, the Bolt checkout's `HEDDLE.md` overview of every entry, and the hub-wide `heddle.yaml` that turns the hub's overrides of shipped entries on
+ ├── internal/driftengine/         regression around a task: the hub-wide `drift.yaml` config, the drift paths and records, the capture and compare runs and the Drift rows' producers
+@@ -360,7 +361,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/durfmt/              the duration formats the status panes and the timing report share, minute-resolution for growing times and second-resolution for closed spans, a stdlib-only leaf
+ ├── internal/consoletitle/        the one join of a console window's title, `<T#> [<hub shortname>:<P#>] <name>` or `ORCH [...]` with a missing part left out, shared by VS Code and terminal windows, a stdlib-only leaf
+ ├── internal/machinename/         this machine's name, read from the machine file in the per-user config directory before the hostname rule (the hostname cut at the first dot and lowercased), the sole reader of the hostname and of that file, a leaf over the standard library and `internal/standalonestate`
+-├── internal/machinecli/          the `lym machine name` command, its seams and the owner sweep
++├── internal/machinecli/          the `lym machine name` command, its seams and the owner sweep, and `lym machine start`, which brings back what this machine owns in every live hub and keeps the desktop launchers
+ ├── internal/sleepjournal/        the machine's suspends and hibernates read from systemd-sleep's journal entries, spawning no process, a stdlib-only leaf
+ ├── internal/lymdirs/             the two directory-name tokens (`_lym` durable, `.lym` ephemeral), a zero-import leaf
+ ├── internal/buildinfo/           the ldflags-stamped build channel, a zero-import leaf
+@@ -863,6 +864,11 @@ User-facing modules each get one `lym <module>` namespace:
+ - **machine** — this machine's name (`internal/machinecli` + `internal/machinename`; `lym machine name [<name>]`: show, or set and sweep owners on every live hub and the hub of the working directory, from any directory).
+   The show gives the name, whether it comes from the machine file or the hostname rule, the file's path and the former names the file records.
+   The set writes the machine file and rewrites the owners recorded under the former names, on each swept hub, to the new name.
++  `lym machine start [<shortname>]` brings back what this machine owns in every live hub, or the one named, from any directory:
++  it starts the owned prime and beams through `lym beam start` in each hub's prime, skipping and naming what another machine owns or no owner claims,
++  then opens the hub's workspace file and a terminal per started worktree, and prints a standing adopt hold.
++  The desktop launchers that run it, one per hub and one for every hub, are written by `internal/desktoplauncher`:
++  a dobby start adds a hub's launcher for a worktree this machine owns, and the verb or a catch-up removes it once this machine owns nothing there.
+   ✅ Implemented. See the `internal/machinecli` package documentation.
+ - **creel** — the per-hub message daemon, the one way to reach an agent:
+   mail to a Claude strand shuttle launched with creel's hooks arrives in full through those hooks, while every other strand, a hand-added one or a session launched without those hooks included, gets a typed notice or reminder and pulls its mail with `lym creel read`, and lines are injected into a pane (`internal/creelcli` + `internal/creelengine` + `internal/creelconfig`; `lym creel post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold`, `release` and `hubs`, from any worktree of the hub, and the hidden `lym creel daemon`, `lym creel hook-read` and `lym creel hook-wait`).
+diff --git a/internal/battencli/catchup.go b/internal/battencli/catchup.go
+index 2b34c48f..0356f8e9 100644
+--- a/internal/battencli/catchup.go
++++ b/internal/battencli/catchup.go
+@@ -119,8 +119,13 @@ func (c *battenCLI) ownerAndSubject() (owner, subject string, ok bool) {
+ // A pair directory that is no registered linked worktree is a run with no pair here, and no git command runs in it.
+ // ReadRun reads the run's owner and whether this machine holds commits of it origin lacks.
+ // PushOwed pushes the prime's records and then the pair, and a push that hands the run over reads as done.
++// Launcher names the hub's board directory and recorded shortname.
++// The catch-up removes the hub's desktop launcher once this machine owns nothing there.
++// A hub with no shortname keeps none.
+ func HubCatchUp(prime *lymcwd.Location, runs func() ([]string, error)) dobbyengine.CatchUpDeps {
++	shortname, _ := fabricengine.ReadShortname(fabricengine.BoltDir(prime.HubPath))
+ 	return dobbyengine.CatchUpDeps{
++		Launcher:          dobbyengine.Launcher{BoardDir: fabricengine.BoardDir(prime.HubPath), Shortname: shortname},
+ 		PullBolt:          func() error { return pullBoltForCatchUp(prime) },
+ 		Register:          func() error { return registerThisMachine(prime) },
+ 		Runs:              runs,
+diff --git a/internal/battencli/catchup_integration_test.go b/internal/battencli/catchup_integration_test.go
+index d692e481..47d17895 100644
+--- a/internal/battencli/catchup_integration_test.go
++++ b/internal/battencli/catchup_integration_test.go
+@@ -125,6 +125,17 @@ func TestHubCatchUp(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("The_launcher_names_the_hubs_board_directory_and_recorded_shortname", func(t *testing.T) {
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++
++		got := HubCatchUp(h.Location, func() ([]string, error) { return nil, nil }).Launcher
++
++		want := dobbyengine.Launcher{BoardDir: fabricengine.BoardDir(h.Location.HubPath), Shortname: hubforge.TestShortname}
++		if got != want {
++			t.Errorf("HubCatchUp().Launcher = %+v; want %+v", got, want)
++		}
++	})
++
+ 	t.Run("HubRunSlugsOfAHubWithNoRunListsNone", func(t *testing.T) {
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 		hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{SkipPush: true, Beam: true})
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index 112e7c2c..258de354 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -30,6 +30,9 @@ import (
+ 	"github.com/spf13/cobra"
+ )
+ 
++// NoPrimeClaimFlag is the hidden `beam start` flag that leaves a prime with no recorded owner unclaimed.
++const NoPrimeClaimFlag = "no-prime-claim"
++
+ // Command returns the root cobra command of the beam module, with its verb groups attached.
+ func Command() *cobra.Command {
+ 	beam := &cobra.Command{
+@@ -458,7 +461,7 @@ type startEntry struct {
+ 
+ // startCmd returns the `beam start` verb.
+ func startCmd() *cobra.Command {
+-	var all bool
++	var all, noPrimeClaim bool
+ 	cmd := &cobra.Command{
+ 		Use:         "start [<slug>]",
+ 		Short:       "bring a beam up: its dobby and its orch",
+@@ -495,18 +498,21 @@ Example:
+ 			if len(args) == 1 {
+ 				slug = args[0]
+ 			}
+-			result, err := start(cmd, slug, all)
++			result, err := start(cmd, slug, all, noPrimeClaim)
+ 			return finishVerb(cmd, result, err)
+ 		},
+ 	}
+ 	cmd.Flags().BoolVar(&all, "all", false, "start the prime and every local beam this machine owns")
++	cmd.Flags().BoolVar(&noPrimeClaim, NoPrimeClaimFlag, false, "leave a prime with no recorded owner unclaimed")
++	_ = cmd.Flags().MarkHidden(NoPrimeClaimFlag)
+ 	return cmd
+ }
+ 
+ // start runs `beam start` for slug, or for every owned beam with all.
+ // It resolves its targets before the reconcile, so a refusal of the target touches no state.
+ // A nil result is a refusal made before any beam was tried.
+-func start(cmd *cobra.Command, slug string, all bool) (*startResult, error) {
++// With noPrimeClaim the bring-up claims no prime that has no recorded owner.
++func start(cmd *cobra.Command, slug string, all, noPrimeClaim bool) (*startResult, error) {
+ 	if all && slug != "" {
+ 		return nil, fmt.Errorf("lym beam start: a slug and --all are exclusive; way forward: drop the slug to start every owned beam, or drop --all to start %s alone", slug)
+ 	}
+@@ -526,7 +532,7 @@ func start(cmd *cobra.Command, slug string, all bool) (*startResult, error) {
+ 		}
+ 	}
+ 	result, err := startBeams(targets, func(target beamTarget, prepare bool) (orchcli.BeamUpReport, error) {
+-		return orchcli.BeamUp(target.Location, orchcli.BeamUpOptions{Prepare: prepare, ArchiveOwned: ownerArchiveBeforeRefusal(target)})
++		return orchcli.BeamUp(target.Location, startOptions(target, prepare, noPrimeClaim))
+ 	})
+ 	if err != nil {
+ 		return &result, fmt.Errorf("lym beam start: %w; way forward: fix the cause each names, then run `lym beam start` again", err)
+@@ -534,6 +540,12 @@ func start(cmd *cobra.Command, slug string, all bool) (*startResult, error) {
+ 	return &result, nil
+ }
+ 
++// startOptions returns the bring-up options of `beam start` for target.
++// prepare runs the hub-scope steps, and noPrimeClaim leaves the prime claim out of them.
++func startOptions(target beamTarget, prepare, noPrimeClaim bool) orchcli.BeamUpOptions {
++	return orchcli.BeamUpOptions{Prepare: prepare, NoPrimeClaim: noPrimeClaim, ArchiveOwned: ownerArchiveBeforeRefusal(target)}
++}
++
+ // startTargets resolves what `beam start` brings up: every beam this machine owns with all, else the one beam slug names.
+ func startTargets(location *lymcwd.Location, slug string, all bool) ([]beamTarget, error) {
+ 	if !all {
+diff --git a/internal/beamcli/start_test.go b/internal/beamcli/start_test.go
+index fce30841..8d445806 100644
+--- a/internal/beamcli/start_test.go
++++ b/internal/beamcli/start_test.go
+@@ -15,6 +15,22 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++func TestStartCmd_HiddenNoPrimeClaimFlagReachesTheBringUpOptions(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	flag := startCmd().Flags().Lookup(NoPrimeClaimFlag)
++	if flag == nil || !flag.Hidden {
++		t.Fatalf("flag %s = %+v; want a hidden flag on beam start", NoPrimeClaimFlag, flag)
++	}
++	for _, noPrimeClaim := range []bool{false, true} {
++		got := startOptions(beamTarget{Label: "prime"}, true, noPrimeClaim)
++		if !got.Prepare || got.NoPrimeClaim != noPrimeClaim {
++			t.Errorf("startOptions(prepare, %v) = Prepare %v, NoPrimeClaim %v; want both carried", noPrimeClaim, got.Prepare, got.NoPrimeClaim)
++		}
++	}
++}
++
+ func TestStartBeams(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/desktoplauncher/desktoplauncher.go b/internal/desktoplauncher/desktoplauncher.go
+new file mode 100644
+index 00000000..172c2e59
+--- /dev/null
++++ b/internal/desktoplauncher/desktoplauncher.go
+@@ -0,0 +1,218 @@
++// desktoplauncher.go names, writes, removes and lists the launcher files on a located desktop.
++
++package desktoplauncher
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/shell"
++	"github.com/Knatte18/loomyard/internal/standalonestate"
++)
++
++// Form is the kind of launcher file a desktop takes.
++type Form string
++
++const (
++	// FormFreedesktop is a `.desktop` file that runs the verb in a terminal on Linux.
++	FormFreedesktop Form = "freedesktop"
++	// FormWindowsWSL is a `.cmd` file on the Windows desktop that runs the verb in a WSL distribution through wsl.exe.
++	FormWindowsWSL Form = "windows-wsl"
++	// FormWindows is a `.cmd` file that runs the verb on native Windows.
++	FormWindows Form = "windows"
++)
++
++const (
++	// hubPrefix leads the file name of a hub's launcher, before the hub's shortname and the extension.
++	hubPrefix = "lym-hub-"
++	// allHubsName is the file name of the all-hubs launcher, before the extension.
++	allHubsName = "lym-hubs"
++)
++
++// Desktop is this machine's desktop directory and the form of the launchers written there.
++type Desktop struct {
++	// Dir is the absolute desktop directory, as a path this process opens.
++	Dir string
++	// Form is the form every launcher in Dir takes.
++	Form Form
++	// Distro is the WSL distribution a FormWindowsWSL launcher runs the verb in; empty runs wsl.exe's default one.
++	Distro string
++}
++
++// Add writes the launcher of the hub shortname and the all-hubs launcher, each running `<lymPath> machine start`.
++// It rewrites a launcher that stands, so one naming a lym binary that moved names the current one.
++// A lym path a `.cmd` launcher under WSL cannot quote is an error, and nothing is written.
++// Both writes happen under the desktop's lock, so a concurrent Remove never sees one without the other.
++func (d Desktop) Add(lymPath, shortname string) error {
++	hub, err := d.content(lymPath, "start the hub "+shortname, shortname)
++	if err != nil {
++		return err
++	}
++	all, err := d.content(lymPath, "start every hub", "")
++	if err != nil {
++		return err
++	}
++	held, err := d.acquireLock()
++	if err != nil {
++		return err
++	}
++	defer func() { _ = held.Release() }()
++	for path, content := range map[string]string{d.hubPath(shortname): hub, d.allHubsPath(): all} {
++		if err := os.WriteFile(path, []byte(content), d.fileMode()); err != nil {
++			return fmt.Errorf("desktoplauncher: write the launcher %s: %w", path, err)
++		}
++	}
++	return nil
++}
++
++// Remove removes the launcher of the hub shortname, and the all-hubs launcher once no hub's launcher stands.
++// A launcher already gone is no error.
++// The removal, the read of the launchers left and the all-hubs removal happen under the desktop's lock,
++// so another process's Add never lands between them.
++func (d Desktop) Remove(shortname string) error {
++	held, err := d.acquireLock()
++	if err != nil {
++		return err
++	}
++	defer func() { _ = held.Release() }()
++	if err := removeIfPresent(d.hubPath(shortname)); err != nil {
++		return err
++	}
++	left, err := d.Shortnames()
++	if err != nil || len(left) > 0 {
++		return err
++	}
++	return removeIfPresent(d.allHubsPath())
++}
++
++// Shortnames lists the shortnames of the hubs whose launcher stands in the desktop directory, in name order.
++func (d Desktop) Shortnames() ([]string, error) {
++	entries, err := os.ReadDir(d.Dir)
++	if err != nil {
++		return nil, fmt.Errorf("desktoplauncher: list the desktop %s: %w", d.Dir, err)
++	}
++	var shortnames []string
++	for _, entry := range entries {
++		rest, isHub := strings.CutPrefix(entry.Name(), hubPrefix)
++		shortname, hasExtension := strings.CutSuffix(rest, d.extension())
++		if isHub && hasExtension && shortname != "" && !entry.IsDir() {
++			shortnames = append(shortnames, shortname)
++		}
++	}
++	return shortnames, nil
++}
++
++// hubPath returns the path of the launcher of the hub shortname.
++func (d Desktop) hubPath(shortname string) string {
++	return filepath.Join(d.Dir, hubPrefix+shortname+d.extension())
++}
++
++// allHubsPath returns the path of the all-hubs launcher.
++func (d Desktop) allHubsPath() string {
++	return filepath.Join(d.Dir, allHubsName+d.extension())
++}
++
++// extension returns the file extension of the desktop's launchers.
++func (d Desktop) extension() string {
++	if d.Form == FormFreedesktop {
++		return ".desktop"
++	}
++	return ".cmd"
++}
++
++// fileMode returns the mode a launcher is written with.
++// A `.desktop` file is executable, which a file manager asks of a launcher it trusts.
++func (d Desktop) fileMode() os.FileMode {
++	if d.Form == FormFreedesktop {
++		return 0o755
++	}
++	return 0o644
++}
++
++// content returns the text of a launcher that runs `<lymPath> machine start`, with shortname as its argument when set.
++// purpose says what the launcher does, for its name and comment.
++func (d Desktop) content(lymPath, purpose, shortname string) (string, error) {
++	verb := strings.TrimSpace("machine start " + shortname)
++	sh := shell.Posix()
++	posixRun := sh.Invoke(lymPath) + " " + verb
++	switch d.Form {
++	case FormFreedesktop:
++		line := sh.Chain(posixRun, "echo", "read -r -p "+sh.Quote("Press Enter to close this window")+" _")
++		return strings.Join([]string{
++			"[Desktop Entry]",
++			"Type=Application",
++			"Name=lym: " + purpose,
++			"Comment=Runs lym " + verb + " on this machine",
++			"Exec=bash -lc " + execArgument(line),
++			"Terminal=true",
++			"Icon=utilities-terminal",
++			"",
++		}, "\n"), nil
++	case FormWindowsWSL:
++		if strings.ContainsAny(lymPath+shortname, "\"$`\\") {
++			return "", fmt.Errorf("desktoplauncher: the lym path %q or shortname %q holds a double quote, dollar sign, backquote or backslash, which a .cmd launcher cannot pass to wsl.exe; way forward: install lym under a path without one", lymPath, shortname)
++		}
++		run := "wsl.exe"
++		if d.Distro != "" {
++			run += ` -d "` + d.Distro + `"`
++		}
++		return cmdFile(purpose, run+` -- bash -lc "`+posixRun+`"`), nil
++	default:
++		return cmdFile(purpose, `"`+lymPath+`" `+verb), nil
++	}
++}
++
++// cmdFile returns a `.cmd` launcher that runs run and pauses, so its window shows the outcome until a key is pressed.
++// Each "%" is doubled, since a batch file reads "%" as a variable reference.
++func cmdFile(purpose, run string) string {
++	lines := []string{"@echo off", "rem lym: " + purpose, run, "pause", ""}
++	return strings.ReplaceAll(strings.Join(lines, "\r\n"), "%", "%%")
++}
++
++// execArgument quotes argument as one argument of a desktop entry's Exec key.
++// Inside the double quotes each double quote, backquote, "$" and backslash gets a backslash.
++// Each "%" is then doubled, since Exec reads "%" as a field code,
++// and each backslash is doubled again by the string escape every desktop entry value goes through.
++func execArgument(argument string) string {
++	var quoted strings.Builder
++	quoted.WriteByte('"')
++	for _, r := range argument {
++		if strings.ContainsRune("\"`$\\", r) {
++			quoted.WriteByte('\\')
++		}
++		quoted.WriteRune(r)
++	}
++	quoted.WriteByte('"')
++	return strings.NewReplacer(`\`, `\\`, "%", "%%").Replace(quoted.String())
++}
++
++// acquireLock takes the exclusive lock that serializes the launcher writes and removals on d across processes.
++// The lock file sits in the per-user state directory, so none shows on the desktop.
++// One lock serves every desktop of the user, since a machine has one.
++func (d Desktop) acquireLock() (*lock.FileLock, error) {
++	stateDir, err := standalonestate.UserStateDir()
++	if err != nil {
++		return nil, fmt.Errorf("desktoplauncher: place the lock of the desktop %s: %w", d.Dir, err)
++	}
++	if err := os.MkdirAll(stateDir, 0o755); err != nil {
++		return nil, fmt.Errorf("desktoplauncher: create %s: %w", stateDir, err)
++	}
++	held, err := lock.AcquireWriteLock(filepath.Join(stateDir, "launchers.lock"))
++	if err != nil {
++		return nil, fmt.Errorf("desktoplauncher: lock the desktop %s: %w", d.Dir, err)
++	}
++	return held, nil
++}
++
++// removeIfPresent removes the file at path; a file already gone is no error.
++func removeIfPresent(path string) error {
++	if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
++		return fmt.Errorf("desktoplauncher: remove the launcher %s: %w", path, err)
++	}
++	return nil
++}
+diff --git a/internal/desktoplauncher/desktoplauncher_test.go b/internal/desktoplauncher/desktoplauncher_test.go
+new file mode 100644
+index 00000000..a64883e2
+--- /dev/null
++++ b/internal/desktoplauncher/desktoplauncher_test.go
+@@ -0,0 +1,201 @@
++// desktoplauncher_test.go covers the launcher files Add writes, Remove takes away and Shortnames lists.
++// Each test works in a temporary desktop.
++
++package desktoplauncher_test
++
++import (
++	"os"
++	"path/filepath"
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/desktoplauncher"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// desktopFiles returns the names of the files in dir, in name order.
++func desktopFiles(t *testing.T, dir string) []string {
++	t.Helper()
++	entries, err := os.ReadDir(dir)
++	if err != nil {
++		t.Fatal(err)
++	}
++	names := []string{}
++	for _, entry := range entries {
++		names = append(names, entry.Name())
++	}
++	return names
++}
++
++func TestAddRemove_KeepTheAllHubsLauncherWhileAnyHubHasOne(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		form      desktoplauncher.Form
++		extension string
++	}{
++		{desktoplauncher.FormFreedesktop, ".desktop"},
++		{desktoplauncher.FormWindowsWSL, ".cmd"},
++		{desktoplauncher.FormWindows, ".cmd"},
++	}
++	for _, tt := range tests {
++		t.Run(string(tt.form), func(t *testing.T) {
++			t.Parallel()
++			desktop := desktoplauncher.Desktop{Dir: t.TempDir(), Form: tt.form}
++			unrelated := filepath.Join(desktop.Dir, "lym-hub-notes.txt")
++			if err := os.WriteFile(unrelated, nil, 0o644); err != nil {
++				t.Fatal(err)
++			}
++			for _, shortname := range []string{"alpha", "beta"} {
++				if err := desktop.Add("/opt/lym", shortname); err != nil {
++					t.Fatalf("Add(%q) = %v", shortname, err)
++				}
++			}
++
++			wantBoth := []string{"lym-hub-alpha" + tt.extension, "lym-hub-beta" + tt.extension, "lym-hub-notes.txt", "lym-hubs" + tt.extension}
++			if got := desktopFiles(t, desktop.Dir); !slices.Equal(got, wantBoth) {
++				t.Errorf("desktop after two adds = %v; want %v", got, wantBoth)
++			}
++			if got, err := desktop.Shortnames(); err != nil || !slices.Equal(got, []string{"alpha", "beta"}) {
++				t.Errorf("Shortnames() = %v, %v; want [alpha beta]", got, err)
++			}
++
++			if err := desktop.Remove("alpha"); err != nil {
++				t.Fatalf("Remove(alpha) = %v", err)
++			}
++			wantBeta := []string{"lym-hub-beta" + tt.extension, "lym-hub-notes.txt", "lym-hubs" + tt.extension}
++			if got := desktopFiles(t, desktop.Dir); !slices.Equal(got, wantBeta) {
++				t.Errorf("desktop after removing alpha = %v; want %v", got, wantBeta)
++			}
++
++			for _, shortname := range []string{"beta", "beta"} {
++				if err := desktop.Remove(shortname); err != nil {
++					t.Fatalf("Remove(%q) = %v", shortname, err)
++				}
++			}
++			if got := desktopFiles(t, desktop.Dir); !slices.Equal(got, []string{"lym-hub-notes.txt"}) {
++				t.Errorf("desktop after removing the last hub = %v; want only the unrelated file", got)
++			}
++		})
++	}
++}
++
++func TestAdd_WritesLaunchersRunningMachineStart(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		desktop desktoplauncher.Desktop
++		lymPath string
++		// file is the hub launcher's file name, and want its content.
++		file string
++		want string
++		// allFile is the all-hubs launcher's file name, and wantAll its content.
++		allFile string
++		wantAll string
++		wantErr bool
++	}{
++		{
++			name:    "Freedesktop",
++			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormFreedesktop},
++			lymPath: "/opt/lym dev/lym",
++			file:    "lym-hub-ly.desktop",
++			want: "[Desktop Entry]\nType=Application\nName=lym: start the hub ly\nComment=Runs lym machine start ly on this machine\n" +
++				`Exec=bash -lc "'/opt/lym dev/lym' machine start ly; echo; read -r -p 'Press Enter to close this window' _"` +
++				"\nTerminal=true\nIcon=utilities-terminal\n",
++			allFile: "lym-hubs.desktop",
++			wantAll: "[Desktop Entry]\nType=Application\nName=lym: start every hub\nComment=Runs lym machine start on this machine\n" +
++				`Exec=bash -lc "'/opt/lym dev/lym' machine start; echo; read -r -p 'Press Enter to close this window' _"` +
++				"\nTerminal=true\nIcon=utilities-terminal\n",
++		},
++		{
++			name:    "FreedesktopEscapesExecSpecials",
++			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormFreedesktop},
++			lymPath: `/opt/100%$x\lym`,
++			file:    "lym-hub-ly.desktop",
++			want: "[Desktop Entry]\nType=Application\nName=lym: start the hub ly\nComment=Runs lym machine start ly on this machine\n" +
++				`Exec=bash -lc "'/opt/100%%\\$x\\\\lym' machine start ly; echo; read -r -p 'Press Enter to close this window' _"` +
++				"\nTerminal=true\nIcon=utilities-terminal\n",
++		},
++		{
++			name:    "WindowsWSL",
++			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormWindowsWSL, Distro: "Ubuntu-24.04"},
++			lymPath: "/home/u/go/bin/lym",
++			file:    "lym-hub-ly.cmd",
++			want:    "@echo off\r\nrem lym: start the hub ly\r\nwsl.exe -d \"Ubuntu-24.04\" -- bash -lc \"'/home/u/go/bin/lym' machine start ly\"\r\npause\r\n",
++			allFile: "lym-hubs.cmd",
++			wantAll: "@echo off\r\nrem lym: start every hub\r\nwsl.exe -d \"Ubuntu-24.04\" -- bash -lc \"'/home/u/go/bin/lym' machine start\"\r\npause\r\n",
++		},
++		{
++			name:    "WindowsWSLDefaultDistroDoublesPercent",
++			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormWindowsWSL},
++			lymPath: "/opt/50%/lym",
++			file:    "lym-hub-ly.cmd",
++			want:    "@echo off\r\nrem lym: start the hub ly\r\nwsl.exe -- bash -lc \"'/opt/50%%/lym' machine start ly\"\r\npause\r\n",
++		},
++		{
++			name:    "WindowsWSLRefusesADoubleQuote",
++			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormWindowsWSL},
++			lymPath: `/opt/"x"/lym`,
++			wantErr: true,
++		},
++		{
++			name:    "WindowsWSLRefusesADollarSign",
++			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormWindowsWSL},
++			lymPath: "/opt/$x/lym",
++			wantErr: true,
++		},
++		{
++			name:    "WindowsWSLRefusesABackquote",
++			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormWindowsWSL},
++			lymPath: "/opt/`x`/lym",
++			wantErr: true,
++		},
++		{
++			name:    "WindowsWSLRefusesABackslash",
++			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormWindowsWSL},
++			lymPath: `/opt/\x/lym`,
++			wantErr: true,
++		},
++		{
++			name:    "NativeWindows",
++			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormWindows},
++			lymPath: `C:\Program Files\lym\lym.exe`,
++			file:    "lym-hub-ly.cmd",
++			want:    "@echo off\r\nrem lym: start the hub ly\r\n\"C:\\Program Files\\lym\\lym.exe\" machine start ly\r\npause\r\n",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			desktop := tt.desktop
++			desktop.Dir = t.TempDir()
++
++			err := desktop.Add(tt.lymPath, "ly")
++
++			if tt.wantErr {
++				if err == nil {
++					t.Errorf("Add(%q) = nil; want an error", tt.lymPath)
++				}
++				if got := desktopFiles(t, desktop.Dir); len(got) > 0 {
++					t.Errorf("desktop after a refused add = %v; want it empty", got)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("Add(%q) = %v", tt.lymPath, err)
++			}
++			for file, want := range map[string]string{tt.file: tt.want, tt.allFile: tt.wantAll} {
++				if file == "" {
++					continue
++				}
++				got, err := os.ReadFile(filepath.Join(desktop.Dir, file))
++				if err != nil || string(got) != want {
++					t.Errorf("launcher %s = %q, %v; want %q", file, got, err, want)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/desktoplauncher/doc.go b/internal/desktoplauncher/doc.go
+new file mode 100644
+index 00000000..fbbe85e5
+--- /dev/null
++++ b/internal/desktoplauncher/doc.go
+@@ -0,0 +1,25 @@
++// Package desktoplauncher writes the desktop launchers that run `lym machine start`:
++// one per hub, which starts that hub, and one for every hub, which starts every live hub of this machine.
++// It alone names where the launchers live and what they hold;
++// they sit on the machine's desktop, outside every hub, and no tracked record names them.
++//
++// Locate finds this machine's desktop directory and the form its launchers take:
++//
++//   - On Linux, a freedesktop `.desktop` file in the desktop directory `user-dirs.dirs` names, else `$HOME/Desktop`.
++//     It runs the verb in a terminal through a login bash, and the terminal waits for Enter before it closes.
++//   - Under WSL, a `.cmd` file on the Windows desktop, which runs the verb in this distribution through `wsl.exe`.
++//   - On native Windows, a `.cmd` file on the Windows desktop that runs the verb directly.
++//
++// XDG_DESKTOP_DIR, when set, names the desktop directory on every platform,
++// so a test process points it at a directory of its own.
++// A desktop directory that does not exist, or a platform with no launcher form, is ErrNoDesktop:
++// a machine with no desktop gets no launcher.
++//
++// A hub's launcher is named by the hub's shortname, `lym-hub-<shortname>` with the form's extension,
++// and the all-hubs launcher is `lym-hubs`.
++// Add writes a hub's launcher and the all-hubs launcher.
++// Remove removes a hub's launcher, and the all-hubs launcher once no hub's launcher stands.
++// Shortnames lists the hubs whose launcher stands, so a caller removes those of hubs that are gone.
++// Add and Remove hold one lock per desktop, kept in the per-user state directory.
++// So concurrent processes never leave a hub launcher standing without the all-hubs one.
++package desktoplauncher
+diff --git a/internal/desktoplauncher/locate.go b/internal/desktoplauncher/locate.go
+new file mode 100644
+index 00000000..b4a7e611
+--- /dev/null
++++ b/internal/desktoplauncher/locate.go
+@@ -0,0 +1,121 @@
++// locate.go finds this machine's desktop directory and the launcher form it takes.
++
++package desktoplauncher
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"runtime"
++	"strings"
++)
++
++// ErrNoDesktop reports that this machine has no desktop directory to hold launchers.
++var ErrNoDesktop = errors.New("desktoplauncher: no desktop directory on this machine")
++
++const (
++	// desktopEnv names the desktop directory on every platform when it is set.
++	desktopEnv = "XDG_DESKTOP_DIR"
++	// userDirsFileName is the freedesktop file in the user config directory that names the desktop directory.
++	userDirsFileName = "user-dirs.dirs"
++	// wslDistroEnv names the WSL distribution this process runs in; WSL sets it.
++	wslDistroEnv = "WSL_DISTRO_NAME"
++	// wslInteropPath exists on every WSL machine whose Windows interop is enabled.
++	wslInteropPath = "/proc/sys/fs/binfmt_misc/WSLInterop"
++)
++
++// probe carries the machine facts locate reads, so the choice is testable without the machine.
++type probe struct {
++	goos       string
++	getenv     func(string) string
++	fileExists func(string) bool
++	isDir      func(string) bool
++	// freedesktopDir returns the Linux desktop directory.
++	freedesktopDir func() (string, error)
++	// windowsDir returns the Windows desktop directory, as a path this process opens.
++	windowsDir func() (string, error)
++}
++
++// Locate returns this machine's desktop, or an error wrapping ErrNoDesktop that names why there is none.
++func Locate() (Desktop, error) {
++	return locate(probe{
++		goos:       runtime.GOOS,
++		getenv:     os.Getenv,
++		fileExists: func(path string) bool { _, err := os.Stat(path); return err == nil },
++		isDir: func(path string) bool {
++			info, err := os.Stat(path)
++			return err == nil && info.IsDir()
++		},
++		freedesktopDir: func() (string, error) { return freedesktopDesktopDir(os.UserConfigDir, os.UserHomeDir) },
++		windowsDir:     windowsDesktopDir,
++	})
++}
++
++func locate(p probe) (Desktop, error) {
++	desktop := Desktop{Form: FormFreedesktop}
++	resolveDir := p.freedesktopDir
++	switch {
++	case p.goos == "windows":
++		desktop.Form, resolveDir = FormWindows, p.windowsDir
++	case p.goos != "linux":
++		return Desktop{}, fmt.Errorf("%w: no launcher form for %s", ErrNoDesktop, p.goos)
++	case p.getenv(wslDistroEnv) != "" || p.fileExists(wslInteropPath):
++		desktop.Form, desktop.Distro, resolveDir = FormWindowsWSL, p.getenv(wslDistroEnv), p.windowsDir
++	}
++	dir := p.getenv(desktopEnv)
++	if dir == "" {
++		resolved, err := resolveDir()
++		if err != nil {
++			return Desktop{}, fmt.Errorf("%w: %v", ErrNoDesktop, err)
++		}
++		dir = resolved
++	}
++	if !p.isDir(dir) {
++		return Desktop{}, fmt.Errorf("%w: %s is not a directory", ErrNoDesktop, dir)
++	}
++	desktop.Dir = dir
++	return desktop, nil
++}
++
++// freedesktopDesktopDir returns the desktop directory that user-dirs.dirs in the directory userConfigDir returns names.
++// Without one it returns `$HOME/Desktop`, with the home directory userHomeDir returns.
++func freedesktopDesktopDir(userConfigDir, userHomeDir func() (string, error)) (string, error) {
++	home, err := userHomeDir()
++	if err != nil {
++		return "", err
++	}
++	if config, err := userConfigDir(); err == nil {
++		data, err := os.ReadFile(filepath.Join(config, userDirsFileName))
++		switch {
++		case err == nil:
++			if dir, found := parseUserDirs(data, home); found {
++				return dir, nil
++			}
++		case !errors.Is(err, fs.ErrNotExist):
++			return "", err
++		}
++	}
++	return filepath.Join(home, "Desktop"), nil
++}
++
++// parseUserDirs reads the desktop directory from the text of a user-dirs.dirs file, with "$HOME" read as home.
++// It reports false when the file names none or names one that is neither absolute nor under "$HOME".
++func parseUserDirs(data []byte, home string) (string, bool) {
++	for line := range strings.Lines(string(data)) {
++		value, found := strings.CutPrefix(strings.TrimSpace(line), desktopEnv+"=")
++		if !found {
++			continue
++		}
++		value = strings.Trim(value, `"`)
++		if rest, underHome := strings.CutPrefix(value, "$HOME"); underHome {
++			value = home + rest
++		}
++		if !filepath.IsAbs(value) {
++			return "", false
++		}
++		return filepath.Clean(value), true
++	}
++	return "", false
++}
+diff --git a/internal/desktoplauncher/locate_other.go b/internal/desktoplauncher/locate_other.go
+new file mode 100644
+index 00000000..72abff31
+--- /dev/null
++++ b/internal/desktoplauncher/locate_other.go
+@@ -0,0 +1,45 @@
++//go:build !windows
++
++// locate_other.go reads the Windows desktop directory from inside WSL, through powershell.exe and wslpath.
++
++package desktoplauncher
++
++import (
++	"context"
++	"fmt"
++	"os/exec"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// queryTimeout bounds one query process, so a Windows side that does not answer cannot hold up a dobby start.
++const queryTimeout = 30 * time.Second
++
++// windowsDesktopDir returns the Windows desktop directory of the current user as a WSL path.
++// The desktop's known folder follows a redirected desktop, such as one OneDrive holds.
++func windowsDesktopDir() (string, error) {
++	windowsPath, err := query("powershell.exe", "-NoProfile", "-NonInteractive", "-Command", "[Environment]::GetFolderPath('Desktop')")
++	if err != nil {
++		return "", err
++	}
++	return query("wslpath", "-u", windowsPath)
++}
++
++// query runs program with args, waits for it, and returns its trimmed standard output; empty output is an error.
++func query(program string, args ...string) (string, error) {
++	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
++	defer cancel()
++	logger.Info("desktoplauncher: spawning a desktop query", "program", program, "args", args)
++	output, err := exec.CommandContext(ctx, program, args...).Output()
++	logger.Debug("desktoplauncher: the desktop query ended", "program", program, "error", err)
++	if err != nil {
++		return "", fmt.Errorf("run %s: %w", program, err)
++	}
++	answer := strings.TrimSpace(string(output))
++	if answer == "" {
++		return "", fmt.Errorf("%s printed no path", program)
++	}
++	return answer, nil
++}
+diff --git a/internal/desktoplauncher/locate_test.go b/internal/desktoplauncher/locate_test.go
+new file mode 100644
+index 00000000..76ce7847
+--- /dev/null
++++ b/internal/desktoplauncher/locate_test.go
+@@ -0,0 +1,149 @@
++// locate_test.go covers the choice of desktop directory and launcher form per platform, through a hand-made probe.
++
++package desktoplauncher
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestLocate_ChoosesDirectoryAndFormPerPlatform(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		goos    string
++		env     map[string]string
++		interop bool
++		// dirs are the directories that exist.
++		dirs           []string
++		freedesktopErr error
++		want           Desktop
++		wantNone       bool
++	}{
++		{name: "LinuxFreedesktop", goos: "linux", dirs: []string{"/home/u/Skrivebord"}, want: Desktop{Dir: "/home/u/Skrivebord", Form: FormFreedesktop}},
++		{name: "OverrideWinsOnLinux", goos: "linux", env: map[string]string{desktopEnv: "/run/desk"}, dirs: []string{"/run/desk"}, want: Desktop{Dir: "/run/desk", Form: FormFreedesktop}},
++		{name: "WSLByEnv", goos: "linux", env: map[string]string{wslDistroEnv: "Ubuntu"}, dirs: []string{"/mnt/c/Users/u/Desktop"}, want: Desktop{Dir: "/mnt/c/Users/u/Desktop", Form: FormWindowsWSL, Distro: "Ubuntu"}},
++		{name: "WSLByInterop", goos: "linux", interop: true, dirs: []string{"/mnt/c/Users/u/Desktop"}, want: Desktop{Dir: "/mnt/c/Users/u/Desktop", Form: FormWindowsWSL}},
++		{name: "NativeWindows", goos: "windows", dirs: []string{"/mnt/c/Users/u/Desktop"}, want: Desktop{Dir: "/mnt/c/Users/u/Desktop", Form: FormWindows}},
++		{name: "MissingDirectory", goos: "linux", wantNone: true},
++		{name: "UnresolvedDirectory", goos: "linux", freedesktopErr: errors.New("no home"), wantNone: true},
++		{name: "OtherPlatform", goos: "darwin", dirs: []string{"/home/u/Skrivebord"}, wantNone: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			got, err := locate(probe{
++				goos:       tt.goos,
++				getenv:     func(key string) string { return tt.env[key] },
++				fileExists: func(string) bool { return tt.interop },
++				isDir: func(path string) bool {
++					for _, dir := range tt.dirs {
++						if dir == path {
++							return true
++						}
++					}
++					return false
++				},
++				freedesktopDir: func() (string, error) { return "/home/u/Skrivebord", tt.freedesktopErr },
++				windowsDir:     func() (string, error) { return "/mnt/c/Users/u/Desktop", nil },
++			})
++			if tt.wantNone {
++				if !errors.Is(err, ErrNoDesktop) {
++					t.Errorf("locate() = %+v, %v; want ErrNoDesktop", got, err)
++				}
++				return
++			}
++			if err != nil || got != tt.want {
++				t.Errorf("locate() = %+v, %v; want %+v", got, err, tt.want)
++			}
++		})
++	}
++}
++
++func TestFreedesktopDesktopDir_ReadsUserDirsOrFallsBackToHome(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// plant prepares the config directory.
++		plant   func(t *testing.T, configDir string)
++		want    string
++		wantErr bool
++	}{
++		{
++			name: "UserDirsNamesTheDesktop",
++			plant: func(t *testing.T, configDir string) {
++				if err := os.WriteFile(filepath.Join(configDir, userDirsFileName), []byte("XDG_DESKTOP_DIR=\"$HOME/Skrivebord\"\n"), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			},
++			want: "/home/u/Skrivebord",
++		},
++		{
++			name:  "NoUserDirsFallsBackToTheHomeDesktop",
++			plant: func(*testing.T, string) {},
++			want:  filepath.Join("/home/u", "Desktop"),
++		},
++		{
++			name: "UserDirsThatCannotBeReadIsAnError",
++			plant: func(t *testing.T, configDir string) {
++				if err := os.Mkdir(filepath.Join(configDir, userDirsFileName), 0o755); err != nil {
++					t.Fatal(err)
++				}
++			},
++			wantErr: true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			configDir := t.TempDir()
++			tt.plant(t, configDir)
++
++			got, err := freedesktopDesktopDir(
++				func() (string, error) { return configDir, nil },
++				func() (string, error) { return "/home/u", nil },
++			)
++
++			if (err != nil) != tt.wantErr || got != tt.want {
++				t.Errorf("freedesktopDesktopDir() = %q, %v; want %q, error %v", got, err, tt.want, tt.wantErr)
++			}
++		})
++	}
++}
++
++func TestParseUserDirs_ReadsTheDesktopDirectory(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name      string
++		data      string
++		want      string
++		wantFound bool
++	}{
++		{name: "UnderHome", data: "# written by xdg-user-dirs-update\nXDG_DOWNLOAD_DIR=\"$HOME/Nedlastinger\"\nXDG_DESKTOP_DIR=\"$HOME/Skrivebord\"\n", want: "/home/u/Skrivebord", wantFound: true},
++		{name: "Absolute", data: "XDG_DESKTOP_DIR=\"/data/desk/\"\n", want: "/data/desk", wantFound: true},
++		{name: "HomeItself", data: "XDG_DESKTOP_DIR=\"$HOME\"\n", want: "/home/u", wantFound: true},
++		{name: "Relative", data: "XDG_DESKTOP_DIR=\"desk\"\n"},
++		{name: "NotNamed", data: "XDG_MUSIC_DIR=\"$HOME/Music\"\n"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			got, found := parseUserDirs([]byte(tt.data), "/home/u")
++			if got != tt.want || found != tt.wantFound {
++				t.Errorf("parseUserDirs(%q) = %q, %v; want %q, %v", tt.data, got, found, tt.want, tt.wantFound)
++			}
++		})
++	}
++}
+diff --git a/internal/desktoplauncher/locate_windows.go b/internal/desktoplauncher/locate_windows.go
+new file mode 100644
+index 00000000..4bded571
+--- /dev/null
++++ b/internal/desktoplauncher/locate_windows.go
+@@ -0,0 +1,13 @@
++//go:build windows
++
++// locate_windows.go reads the Windows desktop directory from the shell's known folder.
++// That folder follows a redirected desktop.
++
++package desktoplauncher
++
++import "golang.org/x/sys/windows"
++
++// windowsDesktopDir returns the Windows desktop directory of the current user.
++func windowsDesktopDir() (string, error) {
++	return windows.KnownFolderPath(windows.FOLDERID_Desktop, 0)
++}
+diff --git a/internal/desktoplauncher/testmain_test.go b/internal/desktoplauncher/testmain_test.go
+new file mode 100644
+index 00000000..9488c003
+--- /dev/null
++++ b/internal/desktoplauncher/testmain_test.go
+@@ -0,0 +1,15 @@
++// testmain_test.go runs the package's tests under tmuxkit.Main.
++// Their temp files live in the process run directory and go with it.
++
++package desktoplauncher
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++func TestMain(m *testing.M) {
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/internal/dobbyengine/catchup.go b/internal/dobbyengine/catchup.go
+index 7285be6d..81559a1b 100644
+--- a/internal/dobbyengine/catchup.go
++++ b/internal/dobbyengine/catchup.go
+@@ -35,6 +35,9 @@ type CatchUpDeps struct {
+ 	HandOver func(slug, owner string) error
+ 	// ApplyPauseIntents writes this machine's pause entries from the pause intents of the runs it owns.
+ 	ApplyPauseIntents func(slugs []string) error
++	// Launcher names the hub's desktop launcher, which the catch-up removes once this machine owns nothing in the hub.
++	// Its zero value keeps no launcher.
++	Launcher Launcher
+ }
+ 
+ // CatchUpRun is what the catch-up reads of one run after the fetch.
+@@ -62,6 +65,8 @@ type CatchUpReport struct {
+ // It pulls Bolt and registers this machine, fetches and reads every run, then acts:
+ // a run owned here with commits origin lacks is pushed, a run owned elsewhere is handed over,
+ // and the runs owned here get their pause entries written from their pause intents.
++// Last, it removes the hub's desktop launcher when the pulled board reads that this machine owns nothing in the hub;
++// a launcher it could not remove is logged and fails nothing.
+ // An unreachable origin at the Bolt pull or a fetch, and a registration refusal, return before any run is acted on.
+ // A failed push or hand-over is joined into the returned error and the other runs go on,
+ // so the caller keeps the catch-up owed.
+@@ -119,6 +124,7 @@ func CatchUp(deps CatchUpDeps) (CatchUpReport, error) {
+ 			failures = append(failures, fmt.Errorf("dobbyengine: the catch-up could not apply the pause intents: %w", err))
+ 		}
+ 	}
++	removeLauncherIfOwnsNothing(deps.Launcher)
+ 	return report, errors.Join(failures...)
+ }
+ 
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 8d7c85a4..94517a6d 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -576,6 +576,20 @@
+ //     and the listed runs the hold holds, those whose verdict reason is held.
+ //     A failed sync logs once per episode and the tick goes on.
+ //
++// The desktop launcher:
++//
++//   - CatchUpDeps.Launcher names the hub's desktop launcher, which internal/desktoplauncher writes;
++//     one with no shortname, as a hand-built Deps leaves it, keeps no launcher.
++//   - Each start of the dobby, a re-exec's included, adds the hub's launcher, and the all-hubs launcher with it,
++//     when Deps.Owner reads the worktree owned by this machine.
++//     The launcher runs the dobby's lym binary, so a re-exec onto a moved binary rewrites it.
++//   - Every catch-up, the one a fresh start owes, one after a sleep and a hand pass's included,
++//     removes the hub's launcher once OwnsAnything reads, from the pulled board, that this machine owns nothing in the hub:
++//     neither the prime nor a beam not done.
++//   - A machine with no desktop keeps no launcher; any other failure is logged at Warn and stops nothing.
++//   - Bound: a launcher outlives this machine's ownership until this machine next runs a catch-up,
++//     since no other machine reaches its desktop.
++//
+ // The view:
+ //
+ //   - It carries beam.yaml's `max_runs` and `land_notice`.
+diff --git a/internal/dobbyengine/launcher.go b/internal/dobbyengine/launcher.go
+new file mode 100644
+index 00000000..bf5a9873
+--- /dev/null
++++ b/internal/dobbyengine/launcher.go
+@@ -0,0 +1,106 @@
++// launcher.go keeps the hub's desktop launcher on this machine.
++// A dobby start adds it for a worktree this machine owns.
++// A catch-up removes it once this machine owns nothing in the hub.
++
++package dobbyengine
++
++import (
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/desktoplauncher"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/machinename"
++	"github.com/Knatte18/loomyard/internal/selfexec"
++)
++
++// Launcher names a hub's desktop launcher.
++// Its zero value keeps no launcher.
++type Launcher struct {
++	// BoardDir is the hub's board directory, whose owners tell whether this machine owns anything in the hub.
++	BoardDir string
++	// Shortname is the hub's shortname, which names its launcher; empty keeps no launcher.
++	Shortname string
++}
++
++// OwnsAnything reports whether this machine, here, owns anything in the hub whose owners are owners.
++// That is the prime, or a beam not done whose recorded owner reads as here through the board's machine registry.
++func OwnsAnything(owners boardengine.Owners, here machinename.Identity) bool {
++	if owners.Registry.ReadsAsHere(owners.Prime, here) {
++		return true
++	}
++	for _, entry := range owners.Entries {
++		if !entry.Done && owners.Registry.ReadsAsHere(entry.Owner, here) {
++			return true
++		}
++	}
++	return false
++}
++
++// addLauncher adds the hub's desktop launcher, running the dobby's lym binary.
++// It adds one only when this dobby's worktree reads owned by this machine.
++// A worktree with no recorded owner or one another machine owns adds none, and so does a Launcher with no shortname.
++// A machine with no desktop adds none; any other failure is logged at Warn, and the dobby goes on.
++func (d *daemon) addLauncher() {
++	shortname := d.deps.CatchUp.Launcher.Shortname
++	if shortname == "" || d.deps.Owner == nil {
++		return
++	}
++	owner, elsewhere, err := d.deps.Owner()
++	if err != nil {
++		logger.Warn("dobbyengine: the owner read for the desktop launcher failed, so no launcher was added", "worktree", d.geom.WorktreeName, "error", err)
++		return
++	}
++	if owner == "" || elsewhere {
++		return
++	}
++	lymPath, err := selfexec.ResolveLymBinary(func() (string, error) { return d.geom.LymExecutable, nil })
++	if err != nil {
++		logger.Warn("dobbyengine: the lym binary for the desktop launcher did not resolve, so no launcher was added", "worktree", d.geom.WorktreeName, "error", err)
++		return
++	}
++	desktop, found := locateDesktop()
++	if !found {
++		return
++	}
++	if err := desktop.Add(lymPath, shortname); err != nil {
++		logger.Warn("dobbyengine: the hub's desktop launcher was not added", "shortname", shortname, "error", err)
++	}
++}
++
++// removeLauncherIfOwnsNothing removes the launcher of the hub launcher names once this machine owns nothing there.
++// The owners are read from the hub's local board.
++// A Launcher with no shortname and a machine with no desktop remove nothing; a failure is logged at Warn.
++func removeLauncherIfOwnsNothing(launcher Launcher) {
++	if launcher.Shortname == "" {
++		return
++	}
++	owners, err := boardengine.ReadOwners(launcher.BoardDir)
++	if err != nil {
++		logger.Warn("dobbyengine: the owners did not read, so the hub's desktop launcher was left as it stands", "shortname", launcher.Shortname, "error", err)
++		return
++	}
++	here, err := machinename.ReadIdentity()
++	if err != nil {
++		logger.Warn("dobbyengine: this machine's name did not read, so the hub's desktop launcher was left as it stands", "shortname", launcher.Shortname, "error", err)
++		return
++	}
++	if OwnsAnything(owners, here) {
++		return
++	}
++	desktop, found := locateDesktop()
++	if !found {
++		return
++	}
++	if err := desktop.Remove(launcher.Shortname); err != nil {
++		logger.Warn("dobbyengine: the hub's desktop launcher was not removed", "shortname", launcher.Shortname, "error", err)
++	}
++}
++
++// locateDesktop returns this machine's desktop, and false when it has none.
++func locateDesktop() (desktoplauncher.Desktop, bool) {
++	desktop, err := desktoplauncher.Locate()
++	if err != nil {
++		logger.Debug("dobbyengine: no desktop on this machine, so no desktop launcher is kept", "cause", err)
++		return desktoplauncher.Desktop{}, false
++	}
++	return desktop, true
++}
+diff --git a/internal/dobbyengine/launcher_test.go b/internal/dobbyengine/launcher_test.go
+new file mode 100644
+index 00000000..0ce112f8
+--- /dev/null
++++ b/internal/dobbyengine/launcher_test.go
+@@ -0,0 +1,187 @@
++// launcher_test.go pins when a dobby start adds the hub's desktop launcher and when a catch-up removes it.
++// The tests read XDG_DESKTOP_DIR, which tmuxkit.Main points at the run directory.
++// Each row keeps a shortname of its own there.
++
++package dobbyengine
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/desktoplauncher"
++	"github.com/Knatte18/loomyard/internal/machinename"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// writeOwnersBoard writes a board.json whose prime owner is primeOwner in a new board directory.
++// A beamOwner that is not empty adds a beam project named pay owned by it.
++// It returns the directory.
++func writeOwnersBoard(t *testing.T, primeOwner, beamOwner string) string {
++	t.Helper()
++	boardDir := filepath.Join(t.TempDir(), "board")
++	if err := os.MkdirAll(boardDir, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	entries := ""
++	if beamOwner != "" {
++		entries = fmt.Sprintf(`{"id":1,"slug":"pay","title":"pay","kind":"project","beam":true,"owner_machine":%q}`, beamOwner)
++	}
++	board := fmt.Sprintf(`{"version":1,"entries":[%s],"prime_owner":%q}`, entries, primeOwner)
++	if err := os.WriteFile(filepath.Join(boardDir, "board.json"), []byte(board), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	return boardDir
++}
++
++// testDesktop returns the desktop XDG_DESKTOP_DIR names, and removes the launcher of shortname when the test ends.
++func testDesktop(t *testing.T, shortname string) desktoplauncher.Desktop {
++	t.Helper()
++	desktop, err := desktoplauncher.Locate()
++	if err != nil {
++		t.Fatalf("desktoplauncher.Locate() = %v; want the desktop tmuxkit.Main set", err)
++	}
++	t.Cleanup(func() {
++		if err := desktop.Remove(shortname); err != nil {
++			t.Errorf("remove the launcher of %s: %v", shortname, err)
++		}
++	})
++	return desktop
++}
++
++// launcherStands reports whether the launcher of shortname stands on desktop.
++func launcherStands(t *testing.T, desktop desktoplauncher.Desktop, shortname string) bool {
++	t.Helper()
++	shortnames, err := desktop.Shortnames()
++	if err != nil {
++		t.Fatal(err)
++	}
++	return slices.Contains(shortnames, shortname)
++}
++
++func TestRun_StartAddsTheDesktopLauncherOfAWorktreeOwnedHere(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	here, err := machinename.ReadIdentity()
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	// Every row's board has this machine own something the catch-up keeps the launcher for,
++	// so the launcher stands afterwards only when the start added it.
++	tests := []struct {
++		name      string
++		shortname string
++		// owner and elsewhere are what the worktree's owner read answers.
++		owner     string
++		elsewhere bool
++		// boardPrimeOwner and boardBeamOwner are the owners the hub's board records.
++		boardPrimeOwner string
++		boardBeamOwner  string
++		want            bool
++	}{
++		{name: "OwnedHere", shortname: "start-owned-here", owner: here.Name, boardPrimeOwner: here.Name, want: true},
++		{name: "OwnedElsewhere", shortname: "start-owned-elsewhere", owner: "far-away", elsewhere: true, boardPrimeOwner: here.Name},
++		{name: "NoRecordedOwner", shortname: "start-no-owner", boardPrimeOwner: here.Name},
++		{name: "BeamOwnedHereUnderAPrimeOwnedElsewhere", shortname: "start-beam-here", owner: here.Name, boardPrimeOwner: "far-away", boardBeamOwner: here.Name, want: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			desktop := testDesktop(t, tt.shortname)
++			h := newLoopHarness(t, 1)
++			h.geom.LymExecutable = "/opt/lym"
++			h.deps.Owner = func() (string, bool, error) { return tt.owner, tt.elsewhere, nil }
++			h.deps.CatchUp = fakeCatchUpDeps(func() error { return nil })
++			h.deps.CatchUp.Launcher = Launcher{BoardDir: writeOwnersBoard(t, tt.boardPrimeOwner, tt.boardBeamOwner), Shortname: tt.shortname}
++
++			if err := h.run(t); err != nil {
++				t.Fatalf("Run() = %v; want nil", err)
++			}
++
++			if got := launcherStands(t, desktop, tt.shortname); got != tt.want {
++				t.Errorf("launcher of %s stands after the start and its catch-up = %v; want %v", tt.shortname, got, tt.want)
++			}
++		})
++	}
++}
++
++//testtiming:keep pins the catch-up removing a launcher that stands, which the start test never plants
++func TestCatchUp_RemovesTheDesktopLauncherOnceThisMachineOwnsNothing(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	here, err := machinename.ReadIdentity()
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	tests := []struct {
++		name       string
++		shortname  string
++		primeOwner string
++		want       bool
++	}{
++		{name: "PrimeOwnedHere", shortname: "catch-up-owned-here", primeOwner: here.Name, want: true},
++		{name: "OwnsNothing", shortname: "catch-up-owns-nothing", primeOwner: "far-away"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			desktop := testDesktop(t, tt.shortname)
++			if err := desktop.Add("/opt/lym", tt.shortname); err != nil {
++				t.Fatal(err)
++			}
++			deps := fakeCatchUpDeps(func() error { return nil })
++			deps.Launcher = Launcher{BoardDir: writeOwnersBoard(t, tt.primeOwner, ""), Shortname: tt.shortname}
++
++			if _, err := CatchUp(deps); err != nil {
++				t.Fatalf("CatchUp() = %v; want nil", err)
++			}
++
++			if got := launcherStands(t, desktop, tt.shortname); got != tt.want {
++				t.Errorf("launcher of %s stands after the catch-up = %v; want %v", tt.shortname, got, tt.want)
++			}
++		})
++	}
++}
++
++func TestOwnsAnything_ReadsEveryOwnerThroughTheRegistry(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	here := machinename.Identity{ID: "id-here", Name: "osl46"}
++	registry := boardengine.Registry{
++		"id-here":  {Name: "osl46", Former: []string{"osl-1046"}},
++		"id-other": {Name: "neve"},
++	}
++
++	tests := []struct {
++		name   string
++		owners boardengine.Owners
++		want   bool
++	}{
++		{name: "PrimeOwnedHere", owners: boardengine.Owners{Prime: "osl46", Registry: registry}, want: true},
++		{name: "PrimeOwnedUnderAFormerName", owners: boardengine.Owners{Prime: "osl-1046", Registry: registry}, want: true},
++		{
++			name:   "BeamOwnedHere",
++			owners: boardengine.Owners{Prime: "neve", Registry: registry, Entries: map[string]boardengine.OwnerEntry{"pay": {Owner: "osl46", IsProject: true, Beam: true}}},
++			want:   true,
++		},
++		{
++			name:   "DoneBeamOwnedHere",
++			owners: boardengine.Owners{Prime: "neve", Registry: registry, Entries: map[string]boardengine.OwnerEntry{"pay": {Owner: "osl46", IsProject: true, Beam: true, Done: true}}},
++		},
++		{name: "EverythingOwnedElsewhere", owners: boardengine.Owners{Prime: "neve", Registry: registry, Entries: map[string]boardengine.OwnerEntry{"pay": {Owner: "neve"}}}},
++		{name: "NoOwnerRecorded", owners: boardengine.Owners{Registry: registry}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := OwnsAnything(tt.owners, here); got != tt.want {
++				t.Errorf("OwnsAnything(%+v) = %v; want %v", tt.owners, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index 0e29852f..2a0cab43 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -71,6 +71,7 @@ type Deps struct {
+ 	ArchiveOwner func() error
+ 	// CatchUp is the seams of the catch-up from origin the dobby runs after every absence it sees.
+ 	// A CatchUp whose PullBolt is nil means no catch-up, as a nil PullBolt pulls nothing.
++	// Its Launcher also names the hub's desktop launcher the dobby's start adds.
+ 	CatchUp CatchUpDeps
+ 	// Upgrade is the seams of the first read after an upgrade, which the dobby runs before its first catch-up that succeeds.
+ 	// An Upgrade whose Entries is nil means no first read.
+@@ -219,6 +220,7 @@ func ReadsAsReexec(statePath string, pid int, startTicks string) (bool, error) {
+ // While an adopt in flight on this machine covers a beam another machine owns, the dobby stays up and schedules nothing.
+ // Otherwise it hands such a beam over, and returns nil, logging why, once the hand-over's archive succeeds.
+ // A start that does not read as a re-exec owes every run a full pass; a re-exec owes none.
++// Every start, a re-exec's included, adds the hub's desktop launcher when this machine owns the beam.
+ // A tick that fails is logged once per episode and the loop goes on; a cancelled context ends it after the tick in flight.
+ // Every way the dobby ends leaves a line in the log,
+ // and an error after a re-exec posts a notice.
+@@ -297,6 +299,7 @@ func (d *daemon) run(ctx context.Context, reexec bool) error {
+ 	} else {
+ 		d.logOwn(d.deps.Now(), fmt.Sprintf("start fresh pid %d", os.Getpid()))
+ 	}
++	d.addLauncher()
+ 	d.heartbeat(d.deps.Now(), nil)
+ 
+ 	var events <-chan struct{}
+diff --git a/internal/dobbyengine/seam_enforcement_test.go b/internal/dobbyengine/seam_enforcement_test.go
+index 576f46d1..288fd8b1 100644
+--- a/internal/dobbyengine/seam_enforcement_test.go
++++ b/internal/dobbyengine/seam_enforcement_test.go
+@@ -21,15 +21,18 @@ var dobbyengineAllowedImports = []string{
+ 	"github.com/Knatte18/loomyard/internal/agentconfig",
+ 	"github.com/Knatte18/loomyard/internal/boardengine",
+ 	"github.com/Knatte18/loomyard/internal/configengine",
++	"github.com/Knatte18/loomyard/internal/desktoplauncher",
+ 	"github.com/Knatte18/loomyard/internal/editdirective",
+ 	"github.com/Knatte18/loomyard/internal/fixtries",
+ 	"github.com/Knatte18/loomyard/internal/lock",
+ 	"github.com/Knatte18/loomyard/internal/logger",
++	"github.com/Knatte18/loomyard/internal/machinename",
+ 	"github.com/Knatte18/loomyard/internal/parentdirective",
+ 	"github.com/Knatte18/loomyard/internal/pauserecord",
+ 	"github.com/Knatte18/loomyard/internal/proc",
+ 	"github.com/Knatte18/loomyard/internal/runfsm",
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor",
++	"github.com/Knatte18/loomyard/internal/selfexec",
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine",
+ 	"github.com/Knatte18/loomyard/internal/state",
+ 	"github.com/Knatte18/loomyard/internal/stencil",
+diff --git a/internal/machinecli/cli.go b/internal/machinecli/cli.go
+index 1e186063..c3482a3c 100644
+--- a/internal/machinecli/cli.go
++++ b/internal/machinecli/cli.go
+@@ -1,20 +1,25 @@
+-// cli.go builds the `lym machine` cobra group with its `name` verb.
++// cli.go builds the `lym machine` cobra group with its `name` and `start` verbs.
+ 
+ package machinecli
+ 
+ import (
+-	"fmt"
+ 	"path/filepath"
+ 
+ 	"github.com/spf13/cobra"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/desktoplauncher"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/hubregistry"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/output"
+-	"github.com/Knatte18/loomyard/internal/standalonestate"
++	"github.com/Knatte18/loomyard/internal/selfexec"
++	"github.com/Knatte18/loomyard/internal/termwindow"
++	"github.com/Knatte18/loomyard/internal/vscode"
+ )
+ 
+ // forgetFormerFlag is the name verb's flag that drops a former name.
+@@ -47,6 +52,24 @@ type deps struct {
+ 	newID func() (string, error)
+ 	// references lists the records of the hub at hub that still name name.
+ 	references func(hub, name string) ([]formerReference, error)
++	// liveHubEntries lists the hubs the machine record lists as live, with their shortnames.
++	liveHubEntries func() ([]hubregistry.Entry, error)
++	// lookupHub returns the path of the one hub the machine record holds under shortname.
++	lookupHub func(shortname string) (string, error)
++	// hubStart returns the prime of the hub at hub and the start deps over it, whose owner reads go through the registry.
++	hubStart func(hub string) (*lymcwd.Location, dobbyengine.StartDeps, error)
++	// identity returns this machine's identity, which reads a recorded machine name as this machine or another.
++	identity func() (machinename.Identity, error)
++	// lymBinary returns the path of the running lym binary, which the children, the terminals and the launchers run.
++	lymBinary func() (string, error)
++	// beamStart runs `<lymPath> <args>` as a child in dir and returns the worktree entries its `beam start` envelope reports.
++	beamStart func(lymPath, dir string, args []string) ([]beamStartEntry, error)
++	// openWorkspace opens the VS Code workspace file at path.
++	openWorkspace func(path string) error
++	// terminal returns the opener of a terminal window attached to a worktree's reed session, or why none resolves.
++	terminal func() (func(dir, title, lymPath string) error, error)
++	// desktop returns this machine's desktop for the launchers, or why it has none.
++	desktop func() (desktoplauncher.Desktop, error)
+ }
+ 
+ // productionDeps returns the seams over the per-user machine file, this host's hostname and the real hubs.
+@@ -55,9 +78,9 @@ func productionDeps() deps {
+ 		locate:   machinename.FilePath,
+ 		hostName: machinename.FromThisHost,
+ 		hubs: func() ([]string, error) {
+-			dir, err := standalonestate.UserStateDir()
++			dir, err := recordDir()
+ 			if err != nil {
+-				return nil, fmt.Errorf("the per-user state directory of the machine record of hubs does not resolve: %w", err)
++				return nil, err
+ 			}
+ 			return liveHubs(dir)
+ 		},
+@@ -69,6 +92,33 @@ func productionDeps() deps {
+ 		register:   boardengine.RegisterMachine,
+ 		newID:      machinename.NewID,
+ 		references: hubReferences,
++		liveHubEntries: func() ([]hubregistry.Entry, error) {
++			dir, err := recordDir()
++			if err != nil {
++				return nil, err
++			}
++			return liveHubEntries(dir)
++		},
++		lookupHub: lookupHub,
++		hubStart: func(hub string) (*lymcwd.Location, dobbyengine.StartDeps, error) {
++			prime, err := primeOfHub(hub)
++			if err != nil {
++				return nil, dobbyengine.StartDeps{}, err
++			}
++			return prime, hubgeom.DobbyStart(prime), nil
++		},
++		identity:      machinename.ReadIdentity,
++		lymBinary:     selfexec.LymBinary,
++		beamStart:     runBeamStart,
++		openWorkspace: func(path string) error { return vscode.Launch(path) },
++		terminal: func() (func(dir, title, lymPath string) error, error) {
++			launcher, err := termwindow.Resolve()
++			if err != nil {
++				return nil, err
++			}
++			return launcher.OpenAttach, nil
++		},
++		desktop: desktoplauncher.Locate,
+ 	}
+ }
+ 
+@@ -79,7 +129,7 @@ func pullBoard(boardDir string) (fabricengine.BoltSkip, string, error) {
+ 	return fabricengine.NewBolt(boardDir).Pull(opts, fabricengine.NewMutations(filepath.Dir(boardDir)))
+ }
+ 
+-// Command returns the cobra command for `lym machine`: the bare group and its name verb.
++// Command returns the cobra command for `lym machine`: the bare group and its name and start verbs.
+ func Command() *cobra.Command {
+ 	return newCommand(productionDeps())
+ }
+@@ -88,11 +138,56 @@ func Command() *cobra.Command {
+ func newCommand(d deps) *cobra.Command {
+ 	machine := &cobra.Command{
+ 		Use:   "machine",
+-		Short: "show or set this machine's name",
++		Short: "show or set this machine's name, or bring back the hubs it owns",
+ 		Long: `machine shows or sets this machine's name, the name lym records as the owner of
+-its runs, projects and the hub's prime.`,
++its runs, projects and the hub's prime, and brings back the hubs this machine owns
++after a crash or a stop.`,
+ 		RunE: clihelp.GroupRunE,
+ 	}
++	start := &cobra.Command{
++		Use:         "start [<shortname>]",
++		Short:       "bring back every hub this machine owns, or the hub shortname names",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Long: `start brings back what this machine owns in every hub the machine record lists
++as live, or in the one hub shortname names, from any directory. In each hub it
++pulls the board and starts, through lym beam start in the hub's prime, the prime
++and every beam this machine owns: the prime with --all when this machine owns it,
++else each owned beam by its slug. A prime or beam another machine owns is
++skipped, naming that machine, and so is one with no recorded owner: the verb
++claims nothing, never runs lym s and resumes no run; the orchs and dobbies take
++the runs up.
++
++In each hub where it started a worktree it opens the hub's VS Code workspace file
++and, per started worktree, a terminal window running lym reed attach. Where no
++terminal launcher resolves, each started worktree carries its attach command in
++the result instead. A standing adopt hold is printed with its machine and
++subjects, and for this machine's own hold with the lym adopt re-run.
++
++It keeps the desktop launchers that run it, one per hub and one for every hub: a
++hub's launcher is written while this machine owns anything in the hub and removed
++once it owns nothing there, a launcher whose hub the machine record no longer
++lists as live is removed, and the all-hubs launcher goes with the last hub's.
++
++A hub that does not read, or a worktree that does not start, makes it exit
++non-zero; fix the cause it names and run it again.
++
++Example:
++  lym machine start
++  lym machine start ly`,
++		Args: cobra.MaximumNArgs(1),
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			shortname := ""
++			if len(args) == 1 {
++				shortname = args[0]
++			}
++			clihelp.SetExit(cmd.Context(), runStart(cmd.OutOrStdout(), d, shortname))
++			return nil
++		},
++	}
++	machine.AddCommand(start)
+ 	name := &cobra.Command{
+ 		Use:         "name [<name>]",
+ 		Short:       "show this machine's name, set it and sweep the owners recorded under its former names, or forget a former name",
+diff --git a/internal/machinecli/doc.go b/internal/machinecli/doc.go
+index d87a0e92..ff1d92bd 100644
+--- a/internal/machinecli/doc.go
++++ b/internal/machinecli/doc.go
+@@ -1,19 +1,56 @@
+-// Package machinecli builds the `lym machine` group with its one verb, `lym machine name`.
+-// With no argument the verb shows this machine's name, where it comes from and the former names the machine file records.
++// Package machinecli builds the `lym machine` group with its two verbs, `lym machine name` and `lym machine start`.
++// With no argument `name` shows this machine's name, where it comes from and the former names the machine file records.
+ // The package writes the machine file's names, and boardengine.EnsureIdentity writes its id; both keep the other's keys.
+ //
+ // The module is not standalone-capable.
+ // It resolves no `--target-dir`, repository root or mode-derived state, so internal/cliwire does not serve it.
+-// `name` carries the operator audience.
+-// The envelope carries the result under `machine`.
++// Both verbs carry the operator audience.
++// The envelope carries the result of `name` under `machine` and that of `start` under `start`.
+ // A refusal goes through output.ErrFields with a message that names its way forward.
+ //
+ // # Seams
+ //
+ // Every outside effect goes through a deps value that the command closes over, never a package-level variable.
+ // The file seam locates the machine file and its lock; the hostname seam gives the hostname rule's name of this host.
++// The start seams list and look up the live hubs and read each hub's start deps.
++// They also run the `lym beam start` child and open the workspace file, the terminal windows and the desktop.
+ // Tests build a deps by hand, so each hands in a file path under its own temporary directory.
+-// None reads or writes the developer's machine file.
++// None reads or writes the developer's machine file, hubs or desktop.
++//
++// # Start
++//
++// `lym machine start [<shortname>]` brings back what this machine owns, from any directory.
++// It reaches every hub hubregistry.Live lists, or the one hub hubregistry.Lookup resolves for shortname.
++// Per hub it pulls the board, then reads the owners and the hold from the local board.
++// It reads the machine names through the registry.
++// It sorts the worktrees dobbyengine.OwnedWorktrees lists over the hub's prime, with hubgeom.DobbyStart's owner reads.
++// A prime or beam another machine owns is skipped, naming that machine and `lym adopt`.
++// One with no recorded owner is skipped too, since dobbyengine.EnsureLive would claim a prime with none.
++// The hub's owned beams still start.
++// The rest start through `lym beam start` in the hub's prime.
++// The child is named through selfexec.LymBinary, logged and waited on.
++// The prime starts with `--all` when this machine owns it, which brings up every owned beam with it.
++// Otherwise each owned beam starts by its slug, with the hidden `--no-prime-claim` flag,
++// so no child claims a prime that has no recorded owner.
++// A worktree whose dobby `lym beam start` reports refused or failed counts as failed.
++// The verb never runs `lym s` or `lym adopt`, whose takeover would claim a hub another machine owns.
++// It resumes no run; the orchs and dobbies take the runs up.
++// In a hub where a worktree came up it opens the hub's workspace file through vscode.Launch.
++// It also opens one terminal window per started worktree running `lym reed attach`, through termwindow.
++// A started worktree whose window does not open carries its attach command in the result.
++// So does every started worktree when no launcher resolves.
++// The result lists every worktree under `worktrees`, each with a `line` of its outcome, detail and attach command.
++// Each hub carries a `line` of its hold.
++// The readable summary of a terminal prints those lines.
++// A standing Bolt hold is printed with its machine and subjects.
++// For this machine's own hold it also prints the `lym adopt <subjects>` re-run.
++// It keeps the desktop launchers internal/desktoplauncher writes.
++// A hub's launcher is added while dobbyengine.OwnsAnything reads that this machine owns anything in the hub.
++// It is removed once this machine owns nothing there.
++// The launcher of a hub hubregistry.Live no longer lists is removed, and the all-hubs launcher goes with the last hub's.
++// A pull that fails, a window, a workspace or a launcher that does not open or write is a warning.
++// A hub that does not read and a worktree that does not start make the verb exit non-zero, and the other hubs go on.
++// The verb writes no tracked record.
+ //
+ // # Show
+ //
+diff --git a/internal/machinecli/hubs.go b/internal/machinecli/hubs.go
+index 5b3e5f01..663370bc 100644
+--- a/internal/machinecli/hubs.go
++++ b/internal/machinecli/hubs.go
+@@ -1,5 +1,6 @@
+-// hubs.go finds the hubs a machine-name sweep reaches.
+-// They are the live hubs of the machine record and the hub of the working directory.
++// hubs.go finds the hubs the machine verbs reach.
++// They are the live hubs of the machine record and one hub by its shortname.
++// A machine-name sweep also reaches the hub of the working directory.
+ 
+ package machinecli
+ 
+@@ -12,15 +13,34 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/hubregistry"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/preflight"
++	"github.com/Knatte18/loomyard/internal/standalonestate"
+ )
+ 
+-// liveHubs returns the paths of the hubs the machine record in dir lists as live.
++// recordDir returns the per-user state directory that holds the machine record of hubs.
++func recordDir() (string, error) {
++	dir, err := standalonestate.UserStateDir()
++	if err != nil {
++		return "", fmt.Errorf("the per-user state directory of the machine record of hubs does not resolve: %w", err)
++	}
++	return dir, nil
++}
++
++// liveHubEntries returns the hubs the machine record in dir lists as live, with their shortnames.
+ // An unreadable record is an error naming the record's path.
+-func liveHubs(dir string) ([]string, error) {
++func liveHubEntries(dir string) ([]hubregistry.Entry, error) {
+ 	entries, err := hubregistry.Live(dir)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("read the machine record of hubs %s: %w", filepath.Join(dir, hubregistry.RecordFileName), err)
+ 	}
++	return entries, nil
++}
++
++// liveHubs returns the paths of the hubs the machine record in dir lists as live.
++func liveHubs(dir string) ([]string, error) {
++	entries, err := liveHubEntries(dir)
++	if err != nil {
++		return nil, err
++	}
+ 	paths := make([]string, 0, len(entries))
+ 	for _, entry := range entries {
+ 		paths = append(paths, entry.HubPath)
+@@ -28,6 +48,16 @@ func liveHubs(dir string) ([]string, error) {
+ 	return paths, nil
+ }
+ 
++// lookupHub returns the path of the one hub the machine record holds under shortname.
++// A shortname that names no hub, or several, is refused with its way forward.
++func lookupHub(shortname string) (string, error) {
++	dir, err := recordDir()
++	if err != nil {
++		return "", err
++	}
++	return hubregistry.Lookup(dir, shortname)
++}
++
+ // hubOfDir returns the hub dir lies in.
+ // A hub worktree and its subdirectories count, and so does the hub's container directory.
+ // A directory outside any hub has none.
+diff --git a/internal/machinecli/start.go b/internal/machinecli/start.go
+new file mode 100644
+index 00000000..47d0cc26
+--- /dev/null
++++ b/internal/machinecli/start.go
+@@ -0,0 +1,496 @@
++// start.go brings back the hubs this machine owns with `lym machine start`:
++// it starts each hub's owned worktrees through `lym beam start`, opens their windows and keeps the desktop launchers.
++
++package machinecli
++
++import (
++	"bytes"
++	"encoding/json"
++	"errors"
++	"fmt"
++	"io"
++	"os/exec"
++	"slices"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/beamcli"
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/desktoplauncher"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubregistry"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/machinename"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/shell"
++)
++
++// The outcomes of a worktree under `lym machine start`.
++const (
++	startStarted = "started"
++	startSkipped = "skipped"
++	startFailed  = "failed"
++)
++
++// The launcher actions a hub reports.
++const (
++	launcherAdded   = "added"
++	launcherRemoved = "removed"
++)
++
++// beamStartEntry is one worktree's entry in the envelope `lym beam start` prints.
++type beamStartEntry struct {
++	// Worktree is dobbyengine.PrimeLabel for the prime, else the beam's slug.
++	Worktree string `json:"worktree"`
++	// Outcome is the dobby's outcome, empty when no dobby start was attempted.
++	Outcome string `json:"outcome,omitempty"`
++	// Detail says why the dobby was refused or failed.
++	Detail string `json:"detail,omitempty"`
++	// Warnings are the notes that did not stop the worktree's start.
++	Warnings []string `json:"warnings,omitempty"`
++	// Error is why the worktree did not come up, empty when it did.
++	Error string `json:"error,omitempty"`
++}
++
++// startWorktree is one worktree's outcome under `lym machine start`.
++type startWorktree struct {
++	// Name is the hub's shortname and the worktree, which label the worktree in the readable summary.
++	Name string `json:"name"`
++	// Shortname is the shortname of the hub the worktree lies in; startHub keys the same value as name.
++	Shortname string `json:"shortname"`
++	// Worktree is dobbyengine.PrimeLabel for the prime, else the beam's slug.
++	Worktree string `json:"worktree"`
++	// Outcome is startStarted, startSkipped or startFailed.
++	Outcome string `json:"outcome"`
++	// Detail says why the worktree was skipped or failed, with its way forward.
++	Detail string `json:"detail,omitempty"`
++	// Attach is the command that attaches to a started worktree's reed session, set when no terminal window opened for it.
++	Attach string `json:"attach,omitempty"`
++	// Line is the outcome with its detail or attach command on one line, which the readable summary prints.
++	Line string `json:"line"`
++}
++
++// startHold is a standing adopt hold as `lym machine start` prints it.
++type startHold struct {
++	Machine  string   `json:"machine"`
++	Subjects []string `json:"subjects"`
++	// Rerun is the `lym adopt <subjects>` re-run, set for a hold this machine wrote.
++	Rerun string `json:"rerun,omitempty"`
++}
++
++// startHub is one hub's outcome under `lym machine start`.
++type startHub struct {
++	Shortname string `json:"name"`
++	Hub       string `json:"hub"`
++	// Worktrees are the hub's worktrees, which the envelope lists in startResult.Worktrees.
++	Worktrees []startWorktree `json:"-"`
++	Hold      *startHold      `json:"hold,omitempty"`
++	// Line is the hold on one line, which the readable summary prints; empty when no hold stands.
++	Line string `json:"line,omitempty"`
++	// Workspace is the hub's VS Code workspace file the verb opened, empty when it opened none.
++	Workspace string `json:"workspace,omitempty"`
++	// Launcher is launcherAdded or launcherRemoved, empty when the machine keeps no launcher or its write failed.
++	Launcher string `json:"launcher,omitempty"`
++	// Warnings are the hub's steps that failed without failing the verb.
++	Warnings []string `json:"warnings,omitempty"`
++	// Error is why the hub could not be read, so nothing of it started.
++	Error string `json:"error,omitempty"`
++}
++
++// failed reports whether the hub did not read or one of its worktrees did not start.
++func (h startHub) failed() bool {
++	return h.Error != "" || slices.ContainsFunc(h.Worktrees, func(w startWorktree) bool { return w.Outcome == startFailed })
++}
++
++// summarize fills the labels and one-line texts the readable summary prints for the hub and its worktrees.
++func (h *startHub) summarize() {
++	if h.Hold != nil {
++		h.Line = fmt.Sprintf("hold: %s holds %s", h.Hold.Machine, strings.Join(h.Hold.Subjects, ", "))
++		if h.Hold.Rerun != "" {
++			h.Line += "; re-run: " + h.Hold.Rerun
++		}
++	}
++	for i := range h.Worktrees {
++		worktree := &h.Worktrees[i]
++		worktree.Shortname = h.Shortname
++		worktree.Name = h.Shortname + "/" + worktree.Worktree
++		switch {
++		case worktree.Detail != "":
++			worktree.Line = worktree.Outcome + ": " + worktree.Detail
++		case worktree.Attach != "":
++			worktree.Line = worktree.Outcome + "; attach: " + worktree.Attach
++		default:
++			worktree.Line = worktree.Outcome
++		}
++	}
++}
++
++// startResult is the envelope of `lym machine start`.
++type startResult struct {
++	Hubs []startHub `json:"hubs"`
++	// Worktrees lists every hub's worktrees, each named by its hub and worktree.
++	Worktrees []startWorktree `json:"worktrees"`
++	// LaunchersRemoved lists the shortnames whose launcher went because the machine record no longer lists their hub as live.
++	LaunchersRemoved []string `json:"launchers_removed,omitempty"`
++	// Warnings are the steps that failed for every hub without failing the verb.
++	Warnings []string `json:"warnings,omitempty"`
++}
++
++// startSession is what one run of `lym machine start` shares across its hubs.
++type startSession struct {
++	d       deps
++	lymPath string
++	// openTerminal opens a terminal window attached to a worktree's reed session; nil when no launcher resolves.
++	openTerminal func(dir, title, lymPath string) error
++	// desktop holds the launchers; nil when this machine has none.
++	desktop *desktoplauncher.Desktop
++}
++
++// startRun is one `lym beam start` child: the worktree it is reported under when it fails as a whole, and its arguments.
++type startRun struct {
++	label string
++	args  []string
++}
++
++// startPlan is what `lym machine start` starts in one hub and what it skips.
++type startPlan struct {
++	// primeOwned reports that this machine owns the prime, so `lym beam start --all` starts it and every owned beam.
++	primeOwned bool
++	// beams are the owned beams started one by one when the prime is not owned here.
++	beams   []string
++	skipped []startWorktree
++}
++
++// runStart runs `lym machine start` over d for the hub shortname names, or for every live hub when it is empty.
++// It returns the exit code.
++func runStart(out io.Writer, d deps, shortname string) int {
++	live, err := d.liveHubEntries()
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("lym machine start: %v; way forward: fix the record it names, then run lym machine start again", err))
++	}
++	targets := live
++	if shortname != "" {
++		hub, err := d.lookupHub(shortname)
++		if err != nil {
++			return output.Err(out, fmt.Sprintf("lym machine start: no live hub reads the shortname %s; way forward: run lym machine start with no argument to start every live hub, or run lym creel inbox in that hub once to record it: %v", shortname, err))
++		}
++		targets = []hubregistry.Entry{{HubPath: hub, Shortname: shortname}}
++	}
++	lymPath, err := d.lymBinary()
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("lym machine start: resolve the running lym binary: %v; way forward: run lym machine start from an installed lym", err))
++	}
++	session := startSession{d: d, lymPath: lymPath}
++	result := startResult{Hubs: []startHub{}, Worktrees: []startWorktree{}}
++	if open, err := d.terminal(); err != nil {
++		result.Warnings = append(result.Warnings, fmt.Sprintf("no terminal window opens, so each started worktree carries its attach command: %v", err))
++	} else {
++		session.openTerminal = open
++	}
++	if desktop, err := d.desktop(); err != nil {
++		result.Warnings = append(result.Warnings, fmt.Sprintf("no desktop launcher is kept: %v", err))
++	} else {
++		session.desktop = &desktop
++	}
++
++	failed := false
++	for _, entry := range targets {
++		hub := session.startHub(entry)
++		hub.summarize()
++		failed = failed || hub.failed()
++		result.Hubs = append(result.Hubs, hub)
++		result.Worktrees = append(result.Worktrees, hub.Worktrees...)
++	}
++	if session.desktop != nil {
++		removed, err := removeGoneLaunchers(*session.desktop, live)
++		result.LaunchersRemoved = removed
++		if err != nil {
++			result.Warnings = append(result.Warnings, fmt.Sprintf("the launchers of hubs no longer live were not all removed: %v", err))
++		}
++	}
++	fields := map[string]any{"start": result}
++	if failed {
++		return output.ErrFields(out, "lym machine start: a hub did not start in full; way forward: fix the cause each hub or worktree names, then run lym machine start again", fields)
++	}
++	return output.Ok(out, fields)
++}
++
++// startHub brings back the hub of entry.
++// It pulls the board and reads the owners and the hold.
++// It then starts the worktrees this machine owns, opens their windows and keeps the hub's launcher.
++// A pull that fails or skips is a warning, and the local board's owners are read.
++func (s startSession) startHub(entry hubregistry.Entry) startHub {
++	hub := startHub{Shortname: entry.Shortname, Hub: entry.HubPath, Worktrees: []startWorktree{}}
++	boardDir := fabricengine.BoardDir(entry.HubPath)
++	if skip, detail, err := s.d.pull(boardDir); err != nil {
++		hub.Warnings = append(hub.Warnings, fmt.Sprintf("the board did not pull, so the local board's owners are read: %v", err))
++	} else if skip != "" {
++		hub.Warnings = append(hub.Warnings, fmt.Sprintf("the board pull skipped (%s), so the local board's owners are read: %s", skip, detail))
++	}
++	owners, err := s.d.readOwners(boardDir)
++	if err != nil {
++		hub.Error = fmt.Sprintf("read the board's owners: %v", err)
++		return hub
++	}
++	here, err := s.d.identity()
++	if err != nil {
++		hub.Error = fmt.Sprintf("read this machine's name: %v", err)
++		return hub
++	}
++	hub.Hold = holdOf(owners, here)
++	prime, start, err := s.d.hubStart(entry.HubPath)
++	if err != nil {
++		hub.Error = err.Error()
++		return hub
++	}
++	plan, err := planStart(start)
++	if err != nil {
++		hub.Error = err.Error()
++		return hub
++	}
++	hub.Worktrees = append(hub.Worktrees, plan.skipped...)
++	s.runBeamStarts(&hub, prime, plan)
++	s.openWindows(&hub, prime)
++	s.keepLauncher(&hub, owners, here)
++	return hub
++}
++
++// planStart sorts the worktrees dobbyengine.OwnedWorktrees lists into those to start and those to skip.
++// The prime and each beam another machine owns are skipped, naming that machine and the adopt that takes it here.
++// A prime or beam with no recorded owner is skipped too, since starting it would claim it.
++func planStart(start dobbyengine.StartDeps) (startPlan, error) {
++	owned, err := dobbyengine.OwnedWorktrees(start)
++	if err != nil {
++		return startPlan{}, err
++	}
++	primeOwner, primeElsewhere, err := start.PrimeOwner()
++	if err != nil {
++		return startPlan{}, fmt.Errorf("read the prime owner: %w", err)
++	}
++	beams, err := start.Beams()
++	if err != nil {
++		return startPlan{}, fmt.Errorf("list the local beams: %w", err)
++	}
++	var plan startPlan
++	skip := func(worktree, detail string) {
++		plan.skipped = append(plan.skipped, startWorktree{Worktree: worktree, Outcome: startSkipped, Detail: detail})
++	}
++	switch {
++	case primeElsewhere:
++		skip(dobbyengine.PrimeLabel, fmt.Sprintf("owned by %s; way forward: lym adopt root takes it over here", primeOwner))
++	case primeOwner == "":
++		skip(dobbyengine.PrimeLabel, "no owner is recorded, and this verb claims none; way forward: lym beam start root in the prime claims it for this machine")
++	default:
++		plan.primeOwned = slices.Contains(owned, start.PrimeName)
++	}
++	for _, beam := range beams {
++		switch {
++		case beam.Elsewhere:
++			skip(beam.Slug, fmt.Sprintf("owned by %s; way forward: lym adopt %s takes it over here", beam.Owner, beam.Slug))
++		case beam.Owner == "":
++			skip(beam.Slug, fmt.Sprintf("no owner is recorded for it or the worktrees above it; way forward: lym adopt %s takes it here", beam.Slug))
++		case slices.Contains(owned, beam.Slug):
++			plan.beams = append(plan.beams, beam.Slug)
++		}
++	}
++	return plan, nil
++}
++
++// runBeamStarts starts the plan's worktrees through `lym beam start` children in the hub's prime.
++// It records each worktree's outcome on hub.
++// An owned prime is started with `--all`, which brings up every owned beam with it.
++// Otherwise each owned beam is started by its slug, with the flag that keeps the child from claiming the prime.
++// A child that does not report fails the worktrees it was started for.
++// A worktree whose dobby was refused or failed is failed, since the dobby that takes its runs up is down.
++func (s startSession) runBeamStarts(hub *startHub, prime *lymcwd.Location, plan startPlan) {
++	var runs []startRun
++	if plan.primeOwned {
++		runs = append(runs, startRun{label: dobbyengine.PrimeLabel, args: []string{"beam", "start", "--all"}})
++	} else {
++		for _, slug := range plan.beams {
++			runs = append(runs, startRun{label: slug, args: []string{"beam", "start", slug, "--" + beamcli.NoPrimeClaimFlag}})
++		}
++	}
++	for _, run := range runs {
++		entries, err := s.d.beamStart(s.lymPath, prime.AnchorPath(), run.args)
++		if err != nil {
++			hub.Worktrees = append(hub.Worktrees, startWorktree{Worktree: run.label, Outcome: startFailed, Detail: err.Error()})
++			continue
++		}
++		for _, entry := range entries {
++			for _, warning := range entry.Warnings {
++				hub.Warnings = append(hub.Warnings, entry.Worktree+": "+warning)
++			}
++			switch {
++			case entry.Error != "":
++				hub.Worktrees = append(hub.Worktrees, startWorktree{Worktree: entry.Worktree, Outcome: startFailed, Detail: entry.Error})
++			case entry.Outcome == dobbyengine.OutcomeRefused || entry.Outcome == dobbyengine.OutcomeFailed:
++				detail := fmt.Sprintf("the dobby did not start (%s): %s", entry.Outcome, entry.Detail)
++				hub.Worktrees = append(hub.Worktrees, startWorktree{Worktree: entry.Worktree, Outcome: startFailed, Detail: detail})
++			default:
++				hub.Worktrees = append(hub.Worktrees, startWorktree{Worktree: entry.Worktree, Outcome: startStarted})
++			}
++		}
++	}
++}
++
++// openWindows opens the hub's VS Code workspace file.
++// It also opens one terminal window per started worktree, attached to its reed session.
++// A hub that started nothing opens nothing.
++// A worktree whose window does not open carries its attach command instead.
++// So does every one when no terminal launcher resolves.
++func (s startSession) openWindows(hub *startHub, prime *lymcwd.Location) {
++	if !slices.ContainsFunc(hub.Worktrees, func(w startWorktree) bool { return w.Outcome == startStarted }) {
++		return
++	}
++	workspace := fabricengine.HubWorkspacePath(prime)
++	if err := s.d.openWorkspace(workspace); err != nil {
++		hub.Warnings = append(hub.Warnings, fmt.Sprintf("the workspace file %s did not open: %v", workspace, err))
++	} else {
++		hub.Workspace = workspace
++	}
++	for i := range hub.Worktrees {
++		worktree := &hub.Worktrees[i]
++		if worktree.Outcome != startStarted {
++			continue
++		}
++		name := worktree.Worktree
++		if name == dobbyengine.PrimeLabel {
++			name = prime.WorktreeName
++		}
++		location, err := lymcwd.NamedWorktree(prime.HubPath, name)
++		if err != nil {
++			hub.Warnings = append(hub.Warnings, fmt.Sprintf("the worktree %s did not locate, so no window opened for it: %v", worktree.Worktree, err))
++			continue
++		}
++		dir := location.AnchorPath()
++		if s.openTerminal != nil {
++			err := s.openTerminal(dir, boardengine.ConsoleWindowTitle(prime.HubPath, prime.WorktreeName, name), s.lymPath)
++			if err == nil {
++				continue
++			}
++			hub.Warnings = append(hub.Warnings, fmt.Sprintf("the terminal window of %s did not open: %v", worktree.Worktree, err))
++		}
++		sh := shell.ForGOOS()
++		worktree.Attach = sh.Chain(sh.ChangeDir(dir), sh.Invoke(s.lymPath)+" reed attach")
++	}
++}
++
++// keepLauncher adds the hub's desktop launcher while this machine owns anything in the hub.
++// It removes the launcher once this machine owns nothing there.
++// A machine with no desktop keeps none, and a launcher that does not write is a warning.
++func (s startSession) keepLauncher(hub *startHub, owners boardengine.Owners, here machinename.Identity) {
++	if s.desktop == nil {
++		return
++	}
++	if dobbyengine.OwnsAnything(owners, here) {
++		if err := s.desktop.Add(s.lymPath, hub.Shortname); err != nil {
++			hub.Warnings = append(hub.Warnings, fmt.Sprintf("the hub's desktop launcher was not added: %v", err))
++			return
++		}
++		hub.Launcher = launcherAdded
++		return
++	}
++	if err := s.desktop.Remove(hub.Shortname); err != nil {
++		hub.Warnings = append(hub.Warnings, fmt.Sprintf("the hub's desktop launcher was not removed: %v", err))
++		return
++	}
++	hub.Launcher = launcherRemoved
++}
++
++// holdOf returns the standing adopt hold of owners as the verb prints it, or nil when none stands.
++// It carries the re-run when here wrote the hold.
++func holdOf(owners boardengine.Owners, here machinename.Identity) *startHold {
++	if len(owners.Holds) == 0 {
++		return nil
++	}
++	hold := owners.Holds[0]
++	view := &startHold{Machine: hold.Machine, Subjects: make([]string, len(hold.Subjects))}
++	for i, held := range hold.Subjects {
++		view.Subjects[i] = held.Subject
++	}
++	if owners.Registry.ReadsAsHere(hold.Machine, here) {
++		view.Rerun = "lym adopt " + strings.Join(view.Subjects, " ")
++	}
++	return view
++}
++
++// removeGoneLaunchers removes each hub launcher on desktop whose hub live does not list, and returns their shortnames.
++func removeGoneLaunchers(desktop desktoplauncher.Desktop, live []hubregistry.Entry) ([]string, error) {
++	shortnames, err := desktop.Shortnames()
++	if err != nil {
++		return nil, err
++	}
++	var removed []string
++	for _, shortname := range shortnames {
++		if slices.ContainsFunc(live, func(entry hubregistry.Entry) bool { return entry.Shortname == shortname }) {
++			continue
++		}
++		if err := desktop.Remove(shortname); err != nil {
++			return removed, err
++		}
++		removed = append(removed, shortname)
++	}
++	return removed, nil
++}
++
++// runBeamStart runs `<lymPath> <args>` in dir as a child and waits for it.
++// It returns the worktree entries of the envelope the child prints.
++// A child that does not run, or whose envelope carries no result, is an error.
++// The error carries the envelope's error or the child's error output.
++func runBeamStart(lymPath, dir string, args []string) ([]beamStartEntry, error) {
++	var stdout, stderr bytes.Buffer
++	cmd := exec.Command(lymPath, args...)
++	cmd.Dir = dir
++	cmd.Stdout, cmd.Stderr = &stdout, &stderr
++	logger.Info("machinecli: spawning lym beam start", "exe", lymPath, "args", args, "dir", dir)
++	runErr := cmd.Run()
++	logger.Info("machinecli: lym beam start ended", "args", args, "dir", dir, "error", runErr)
++
++	entries, err := parseBeamStartOutput(stdout.Bytes(), stderr.Bytes(), runErr)
++	if err != nil {
++		return nil, fmt.Errorf("lym %s in %s: %w", strings.Join(args, " "), dir, err)
++	}
++	return entries, nil
++}
++
++// parseBeamStartOutput reads the worktree entries from the output of a `lym beam start` child that ended with runErr.
++// An envelope that carries a result gives its entries, whether or not the child failed with it.
++// Any other output is an error.
++// Its reason is the envelope's error, else the child's error output, else runErr, else that the child printed no result.
++func parseBeamStartOutput(stdout, stderr []byte, runErr error) ([]beamStartEntry, error) {
++	var envelope struct {
++		Error  string `json:"error"`
++		Result *struct {
++			Beams []beamStartEntry `json:"beams"`
++		} `json:"result"`
++	}
++	decodeErr := json.Unmarshal(lastJSONLine(stdout), &envelope)
++	if decodeErr == nil && envelope.Result != nil {
++		return envelope.Result.Beams, nil
++	}
++	reason := envelope.Error
++	if reason == "" {
++		reason = strings.TrimSpace(string(stderr))
++	}
++	if reason == "" && runErr != nil {
++		reason = runErr.Error()
++	}
++	if reason == "" {
++		reason = fmt.Sprintf("it printed no result: %v", decodeErr)
++	}
++	return nil, errors.New(reason)
++}
++
++// lastJSONLine returns the last line of output that opens a JSON object.
++// That line is the envelope a lym verb prints last; nil when none does.
++func lastJSONLine(output []byte) []byte {
++	lines := bytes.Split(bytes.TrimSpace(output), []byte("\n"))
++	for i := len(lines) - 1; i >= 0; i-- {
++		if line := bytes.TrimSpace(lines[i]); bytes.HasPrefix(line, []byte("{")) {
++			return line
++		}
++	}
++	return nil
++}
+diff --git a/internal/machinecli/start_test.go b/internal/machinecli/start_test.go
+new file mode 100644
+index 00000000..d0b25b81
+--- /dev/null
++++ b/internal/machinecli/start_test.go
+@@ -0,0 +1,708 @@
++// start_test.go covers `lym machine start` through the command built over hand-made seams:
++// hubs with owners on a fake board, a fake `lym beam start` child, recorded windows and a temporary desktop.
++
++package machinecli
++
++import (
++	"bytes"
++	"encoding/json"
++	"errors"
++	"maps"
++	"os"
++	"path/filepath"
++	"reflect"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/desktoplauncher"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubregistry"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/machinename"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/shell"
++	"github.com/Knatte18/loomyard/internal/termwindow"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// The machines of the start fixtures: this machine and another one.
++const (
++	startHere = "here-m"
++	startFar  = "far-m"
++)
++
++// startHereIdentity is this machine as the start fixtures read it.
++var startHereIdentity = machinename.Identity{ID: "id-here", Name: startHere}
++
++// startRegistry is the board registry of every start fixture.
++var startRegistry = boardengine.Registry{"id-here": {Name: startHere}, "id-far": {Name: startFar}}
++
++// startPrimeName is the prime worktree's name in every start fixture.
++const startPrimeName = "main"
++
++// hubFixture is one hub of a start fixture.
++type hubFixture struct {
++	shortname  string
++	primeOwner string
++	// beamOwners maps each local beam's slug to the owner it effectively reads as.
++	beamOwners map[string]string
++	holds      []boardengine.Hold
++	// gone leaves the hub out of the machine record's live hubs.
++	gone bool
++	// startErr makes every `lym beam start` child in the hub fail as a whole.
++	startErr error
++	// entryErrors maps a worktree to the error its entry in the child's envelope carries.
++	entryErrors map[string]string
++	// dobbyOutcomes maps a worktree to the dobby outcome its entry in the child's envelope carries.
++	dobbyOutcomes map[string]string
++}
++
++// owners returns the hub's board owners.
++func (f hubFixture) owners() boardengine.Owners {
++	entries := map[string]boardengine.OwnerEntry{}
++	for slug, owner := range f.beamOwners {
++		entries[slug] = boardengine.OwnerEntry{Owner: owner, IsProject: true, Beam: true}
++	}
++	return boardengine.Owners{Prime: f.primeOwner, Entries: entries, Registry: startRegistry, Holds: f.holds}
++}
++
++// startDeps returns the hub's start deps, its owners judged through the registry.
++func (f hubFixture) startDeps() dobbyengine.StartDeps {
++	return dobbyengine.StartDeps{
++		PrimeName: startPrimeName,
++		PrimeOwner: func() (string, bool, error) {
++			return f.primeOwner, boardengine.OwnedElsewhere(f.primeOwner, startRegistry, startHereIdentity), nil
++		},
++		Beams: func() ([]dobbyengine.BeamPair, error) {
++			var beams []dobbyengine.BeamPair
++			for _, slug := range slices.Sorted(maps.Keys(f.beamOwners)) {
++				owner := f.beamOwners[slug]
++				beams = append(beams, dobbyengine.BeamPair{Slug: slug, Owner: owner, Elsewhere: boardengine.OwnedElsewhere(owner, startRegistry, startHereIdentity)})
++			}
++			return beams, nil
++		},
++	}
++}
++
++// terminalCall is one terminal window a start opened.
++type terminalCall struct {
++	dir   string
++	title string
++}
++
++// startCalls records what a start did outside the envelope.
++type startCalls struct {
++	// beamStarts holds `<hub dir name>: <args>` per `lym beam start` child.
++	beamStarts []string
++	workspaces []string
++	terminals  []terminalCall
++}
++
++// newStartDeps returns deps over fixtures under root, with a terminal launcher, and a freedesktop desktop in root.
++func newStartDeps(t *testing.T, root string, fixtures ...hubFixture) (deps, *startCalls, desktoplauncher.Desktop) {
++	t.Helper()
++	desktop := desktoplauncher.Desktop{Dir: filepath.Join(root, "desktop"), Form: desktoplauncher.FormFreedesktop}
++	if err := os.MkdirAll(desktop.Dir, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	calls := &startCalls{}
++	byHub := map[string]hubFixture{}
++	byBoard := map[string]hubFixture{}
++	live := []hubregistry.Entry{}
++	for _, f := range fixtures {
++		hub := filepath.Join(root, f.shortname+"-LYMHUB")
++		byHub[hub], byBoard[fabricengine.BoardDir(hub)] = f, f
++		if !f.gone {
++			live = append(live, hubregistry.Entry{HubPath: hub, Shortname: f.shortname})
++		}
++	}
++	d := deps{
++		liveHubEntries: func() ([]hubregistry.Entry, error) { return live, nil },
++		lookupHub: func(shortname string) (string, error) {
++			for _, entry := range live {
++				if entry.Shortname == shortname {
++					return entry.HubPath, nil
++				}
++			}
++			return "", errors.New("the machine record holds no hub under " + shortname)
++		},
++		pull:       func(string) (fabricengine.BoltSkip, string, error) { return "", "", nil },
++		readOwners: func(boardDir string) (boardengine.Owners, error) { return byBoard[boardDir].owners(), nil },
++		identity:   func() (machinename.Identity, error) { return startHereIdentity, nil },
++		hubStart: func(hub string) (*lymcwd.Location, dobbyengine.StartDeps, error) {
++			prime, err := lymcwd.NamedWorktree(hub, startPrimeName)
++			return prime, byHub[hub].startDeps(), err
++		},
++		lymBinary: func() (string, error) { return "/opt/lym", nil },
++		beamStart: func(_, dir string, args []string) ([]beamStartEntry, error) {
++			hub := filepath.Dir(dir)
++			calls.beamStarts = append(calls.beamStarts, filepath.Base(hub)+": "+strings.Join(args, " "))
++			f := byHub[hub]
++			if f.startErr != nil {
++				return nil, f.startErr
++			}
++			entries := []beamStartEntry{{Worktree: args[2]}}
++			if args[2] == "--all" {
++				entries = []beamStartEntry{{Worktree: dobbyengine.PrimeLabel}}
++				for _, slug := range slices.Sorted(maps.Keys(f.beamOwners)) {
++					if f.beamOwners[slug] == startHere {
++						entries = append(entries, beamStartEntry{Worktree: slug})
++					}
++				}
++			}
++			for i := range entries {
++				worktree := entries[i].Worktree
++				entries[i].Error = f.entryErrors[worktree]
++				if outcome := f.dobbyOutcomes[worktree]; outcome != "" {
++					entries[i].Outcome, entries[i].Detail = outcome, "the dobby could not take the runs up"
++					entries[i].Warnings = []string{"the dobby was not started (the dobby could not take the runs up)"}
++				}
++			}
++			return entries, nil
++		},
++		openWorkspace: func(path string) error { calls.workspaces = append(calls.workspaces, path); return nil },
++		terminal: func() (func(dir, title, lymPath string) error, error) {
++			return func(dir, title, _ string) error {
++				calls.terminals = append(calls.terminals, terminalCall{dir: dir, title: title})
++				return nil
++			}, nil
++		},
++		desktop: func() (desktoplauncher.Desktop, error) { return desktop, nil },
++	}
++	return d, calls, desktop
++}
++
++// wantTerminal returns the window a start opens for the worktree named name in the hub of shortname under root.
++func wantTerminal(t *testing.T, root, shortname, name string) terminalCall {
++	t.Helper()
++	hub := filepath.Join(root, shortname+"-LYMHUB")
++	location, err := lymcwd.NamedWorktree(hub, name)
++	if err != nil {
++		t.Fatal(err)
++	}
++	return terminalCall{dir: location.AnchorPath(), title: boardengine.ConsoleWindowTitle(hub, startPrimeName, name)}
++}
++
++// wantWorkspace returns the workspace file a start opens for the hub of shortname under root.
++func wantWorkspace(t *testing.T, root, shortname string) string {
++	t.Helper()
++	prime, err := lymcwd.NamedWorktree(filepath.Join(root, shortname+"-LYMHUB"), startPrimeName)
++	if err != nil {
++		t.Fatal(err)
++	}
++	return fabricengine.HubWorkspacePath(prime)
++}
++
++// runStartRaw runs `lym machine start` with args over d.
++// It returns the exit code and the output.
++func runStartRaw(t *testing.T, d deps, args ...string) (int, []byte) {
++	t.Helper()
++	var out bytes.Buffer
++	code := clihelp.ExecuteIn(newCommand(d), t.TempDir(), &out, append([]string{"start"}, args...))
++	return code, out.Bytes()
++}
++
++// decodeStart decodes the envelope of a start into its result and its error message.
++func decodeStart(t *testing.T, raw []byte) (startResult, string) {
++	t.Helper()
++	var envelope struct {
++		Start startResult `json:"start"`
++		Error string      `json:"error"`
++	}
++	if err := json.Unmarshal(raw, &envelope); err != nil {
++		t.Fatalf("decode envelope %q: %v", raw, err)
++	}
++	return envelope.Start, envelope.Error
++}
++
++// startSummary renders the output of a start as the readable summary a terminal prints.
++func startSummary(t *testing.T, raw []byte) string {
++	t.Helper()
++	summary, ok := output.Summary(bytes.TrimSpace(raw))
++	if !ok {
++		t.Fatalf("output.Summary(%q) = not an envelope", raw)
++	}
++	return summary
++}
++
++// runStartVerb runs `lym machine start` with args over d.
++// It returns the exit code, the decoded result and the error message.
++func runStartVerb(t *testing.T, d deps, args ...string) (int, startResult, string) {
++	t.Helper()
++	code, raw := runStartRaw(t, d, args...)
++	result, message := decodeStart(t, raw)
++	return code, result, message
++}
++
++// worktreesOf returns the worktrees of the hub of shortname.
++func worktreesOf(result startResult, shortname string) []startWorktree {
++	var worktrees []startWorktree
++	for _, worktree := range result.Worktrees {
++		if worktree.Shortname == shortname {
++			worktrees = append(worktrees, worktree)
++		}
++	}
++	return worktrees
++}
++
++// outcomes maps each of worktrees to its outcome.
++func outcomes(worktrees []startWorktree) map[string]string {
++	got := map[string]string{}
++	for _, worktree := range worktrees {
++		got[worktree.Worktree] = worktree.Outcome
++	}
++	return got
++}
++
++// detailOf returns the detail of the worktree named worktree in worktrees.
++func detailOf(worktrees []startWorktree, worktree string) string {
++	for _, w := range worktrees {
++		if w.Worktree == worktree {
++			return w.Detail
++		}
++	}
++	return ""
++}
++
++func TestStart_StartsOnlyWhatThisMachineOwns(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name           string
++		hub            hubFixture
++		wantCode       int
++		wantBeamStarts []string
++		wantOutcomes   map[string]string
++		// wantDetails maps a worktree to a substring its detail must carry.
++		wantDetails map[string]string
++		// wantWarning is a substring one of the hub's warnings must carry.
++		wantWarning string
++		// wantTerminals names the worktrees a terminal window opens for, in order.
++		wantTerminals []string
++		wantWorkspace bool
++	}{
++		{
++			name:           "PrimeOwnedHereStartsTheHubWithAll",
++			hub:            hubFixture{primeOwner: startHere, beamOwners: map[string]string{"pay": startHere, "ops": startFar}},
++			wantBeamStarts: []string{"ly-LYMHUB: beam start --all"},
++			wantOutcomes:   map[string]string{"prime": startStarted, "pay": startStarted, "ops": startSkipped},
++			wantDetails:    map[string]string{"ops": "owned by far-m"},
++			wantTerminals:  []string{startPrimeName, "pay"},
++			wantWorkspace:  true,
++		},
++		{
++			name:           "PrimeOwnedElsewhereStartsTheOwnedBeamsBySlugWithoutClaimingThePrime",
++			hub:            hubFixture{primeOwner: startFar, beamOwners: map[string]string{"pay": startHere, "web": startHere}},
++			wantBeamStarts: []string{"ly-LYMHUB: beam start pay --no-prime-claim", "ly-LYMHUB: beam start web --no-prime-claim"},
++			wantOutcomes:   map[string]string{"prime": startSkipped, "pay": startStarted, "web": startStarted},
++			wantDetails:    map[string]string{"prime": "owned by far-m; way forward: lym adopt root"},
++			wantTerminals:  []string{"pay", "web"},
++			wantWorkspace:  true,
++		},
++		{
++			name:           "PrimeWithNoOwnerIsNeitherClaimedNorStartedAndItsBeamsStartWithoutClaimingIt",
++			hub:            hubFixture{beamOwners: map[string]string{"pay": startHere, "loose": ""}},
++			wantBeamStarts: []string{"ly-LYMHUB: beam start pay --no-prime-claim"},
++			wantOutcomes:   map[string]string{"prime": startSkipped, "pay": startStarted, "loose": startSkipped},
++			wantDetails:    map[string]string{"prime": "no owner is recorded", "loose": "no owner is recorded"},
++			wantTerminals:  []string{"pay"},
++			wantWorkspace:  true,
++		},
++		{
++			name:         "NothingOwnedStartsAndOpensNothing",
++			hub:          hubFixture{primeOwner: startFar},
++			wantOutcomes: map[string]string{"prime": startSkipped},
++		},
++		{
++			name:           "AFailedBeamStartFailsTheVerb",
++			hub:            hubFixture{primeOwner: startHere, startErr: errors.New("lym beam start --all: origin is unreachable")},
++			wantCode:       1,
++			wantBeamStarts: []string{"ly-LYMHUB: beam start --all"},
++			wantOutcomes:   map[string]string{"prime": startFailed},
++			wantDetails:    map[string]string{"prime": "origin is unreachable"},
++		},
++		{
++			name:           "AnEntryErrorFailsThatWorktreeAlone",
++			hub:            hubFixture{primeOwner: startHere, beamOwners: map[string]string{"pay": startHere}, entryErrors: map[string]string{"pay": "the pair is gone"}},
++			wantCode:       1,
++			wantBeamStarts: []string{"ly-LYMHUB: beam start --all"},
++			wantOutcomes:   map[string]string{"prime": startStarted, "pay": startFailed},
++			wantDetails:    map[string]string{"pay": "the pair is gone"},
++			wantTerminals:  []string{startPrimeName},
++			wantWorkspace:  true,
++		},
++		{
++			name:           "AWorktreeWhoseDobbyFailedIsFailedAndItsWarningsAreKept",
++			hub:            hubFixture{primeOwner: startHere, beamOwners: map[string]string{"pay": startHere}, dobbyOutcomes: map[string]string{"pay": dobbyengine.OutcomeFailed}},
++			wantCode:       1,
++			wantBeamStarts: []string{"ly-LYMHUB: beam start --all"},
++			wantOutcomes:   map[string]string{"prime": startStarted, "pay": startFailed},
++			wantDetails:    map[string]string{"pay": "the dobby did not start (failed): the dobby could not take the runs up"},
++			wantWarning:    "pay: the dobby was not started",
++			wantTerminals:  []string{startPrimeName},
++			wantWorkspace:  true,
++		},
++		{
++			name:           "AWorktreeWhoseDobbyWasRefusedIsFailed",
++			hub:            hubFixture{primeOwner: startHere, dobbyOutcomes: map[string]string{"prime": dobbyengine.OutcomeRefused}},
++			wantCode:       1,
++			wantBeamStarts: []string{"ly-LYMHUB: beam start --all"},
++			wantOutcomes:   map[string]string{"prime": startFailed},
++			wantDetails:    map[string]string{"prime": "the dobby did not start (refused)"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			tt.hub.shortname = "ly"
++			root := t.TempDir()
++			d, calls, _ := newStartDeps(t, root, tt.hub)
++
++			code, result, _ := runStartVerb(t, d)
++
++			if code != tt.wantCode {
++				t.Errorf("start exit = %d; want %d", code, tt.wantCode)
++			}
++			if !slices.Equal(calls.beamStarts, tt.wantBeamStarts) {
++				t.Errorf("beam starts = %q; want %q", calls.beamStarts, tt.wantBeamStarts)
++			}
++			if len(result.Hubs) != 1 {
++				t.Fatalf("hubs = %+v; want one", result.Hubs)
++			}
++			worktrees := worktreesOf(result, "ly")
++			if got := outcomes(worktrees); !maps.Equal(got, tt.wantOutcomes) {
++				t.Errorf("outcomes = %v; want %v", got, tt.wantOutcomes)
++			}
++			for worktree, want := range tt.wantDetails {
++				if got := detailOf(worktrees, worktree); !strings.Contains(got, want) {
++					t.Errorf("detail of %s = %q; want it to carry %q", worktree, got, want)
++				}
++			}
++			if tt.wantWarning != "" && !slices.ContainsFunc(result.Hubs[0].Warnings, func(w string) bool { return strings.Contains(w, tt.wantWarning) }) {
++				t.Errorf("warnings = %q; want one carrying %q", result.Hubs[0].Warnings, tt.wantWarning)
++			}
++			var wantTerminals []terminalCall
++			for _, name := range tt.wantTerminals {
++				wantTerminals = append(wantTerminals, wantTerminal(t, root, "ly", name))
++			}
++			if !slices.Equal(calls.terminals, wantTerminals) {
++				t.Errorf("terminals = %+v; want %+v", calls.terminals, wantTerminals)
++			}
++			var wantWorkspaces []string
++			if tt.wantWorkspace {
++				wantWorkspaces = []string{wantWorkspace(t, root, "ly")}
++			}
++			if !slices.Equal(calls.workspaces, wantWorkspaces) {
++				t.Errorf("workspaces = %q; want %q", calls.workspaces, wantWorkspaces)
++			}
++		})
++	}
++}
++
++func TestStart_WindowAndHubFailuresLeaveTheRestStarted(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	ownedPrime := hubFixture{shortname: "ly", primeOwner: startHere}
++	tests := []struct {
++		name     string
++		hubs     []hubFixture
++		mutate   func(d *deps)
++		wantCode int
++		check    func(t *testing.T, result startResult, calls *startCalls)
++	}{
++		{
++			name: "ATerminalThatDoesNotOpenCarriesTheAttachCommand",
++			hubs: []hubFixture{ownedPrime},
++			mutate: func(d *deps) {
++				d.terminal = func() (func(dir, title, lymPath string) error, error) {
++					return func(string, string, string) error { return errors.New("no display") }, nil
++				}
++			},
++			check: func(t *testing.T, result startResult, calls *startCalls) {
++				worktrees := worktreesOf(result, "ly")
++				if len(worktrees) != 1 || worktrees[0].Outcome != startStarted || !strings.HasSuffix(worktrees[0].Attach, "reed attach") {
++					t.Errorf("worktrees = %+v; want the prime started and carrying its attach command", worktrees)
++				}
++				if warnings := result.Hubs[0].Warnings; len(warnings) != 1 || !strings.Contains(warnings[0], "terminal window of prime did not open: no display") {
++					t.Errorf("warnings = %q; want the terminal failure named", warnings)
++				}
++			},
++		},
++		{
++			name: "AWorkspaceThatDoesNotOpenIsAWarningAndTheTerminalsOpen",
++			hubs: []hubFixture{ownedPrime},
++			mutate: func(d *deps) {
++				d.openWorkspace = func(string) error { return errors.New("code is not installed") }
++			},
++			check: func(t *testing.T, result startResult, calls *startCalls) {
++				hub := result.Hubs[0]
++				if hub.Workspace != "" || len(hub.Warnings) != 1 || !strings.Contains(hub.Warnings[0], "code is not installed") {
++					t.Errorf("hub = %+v; want no workspace and the failure as its one warning", hub)
++				}
++				if len(calls.terminals) != 1 {
++					t.Errorf("terminals = %+v; want the terminal opened", calls.terminals)
++				}
++			},
++		},
++		{
++			name:     "AHubWhoseChildFailsDoesNotStopTheNextHub",
++			hubs:     []hubFixture{{shortname: "ly", primeOwner: startHere, startErr: errors.New("origin is unreachable")}, {shortname: "mx", primeOwner: startHere}},
++			wantCode: 1,
++			check: func(t *testing.T, result startResult, calls *startCalls) {
++				if got := outcomes(worktreesOf(result, "ly")); !maps.Equal(got, map[string]string{"prime": startFailed}) {
++					t.Errorf("outcomes of ly = %v; want the prime failed", got)
++				}
++				if got := outcomes(worktreesOf(result, "mx")); !maps.Equal(got, map[string]string{"prime": startStarted}) {
++					t.Errorf("outcomes of mx = %v; want the prime started", got)
++				}
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			d, calls, _ := newStartDeps(t, t.TempDir(), tt.hubs...)
++			if tt.mutate != nil {
++				tt.mutate(&d)
++			}
++
++			code, result, _ := runStartVerb(t, d)
++
++			if code != tt.wantCode {
++				t.Errorf("start exit = %d; want %d", code, tt.wantCode)
++			}
++			tt.check(t, result, calls)
++		})
++	}
++}
++
++func TestStart_NamedHubStartsThatHubAlone(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	d, calls, _ := newStartDeps(t, t.TempDir(),
++		hubFixture{shortname: "ly", primeOwner: startHere},
++		hubFixture{shortname: "mx", primeOwner: startHere},
++	)
++
++	code, result, _ := runStartVerb(t, d, "mx")
++	if code != 0 || len(result.Hubs) != 1 || result.Hubs[0].Shortname != "mx" || !slices.Equal(calls.beamStarts, []string{"mx-LYMHUB: beam start --all"}) {
++		t.Errorf("start mx = exit %d, hubs %+v, beam starts %q; want mx alone started", code, result.Hubs, calls.beamStarts)
++	}
++
++	code, _, message := runStartVerb(t, d, "zz")
++	if code == 0 || !strings.Contains(message, "lym machine start: no live hub reads the shortname zz") ||
++		!strings.Contains(message, "way forward: run lym machine start with no argument") || !strings.Contains(message, "the machine record holds no hub under zz") {
++		t.Errorf("start zz = exit %d, error %q; want the verb's refusal naming the shortname, its way forward and the cause", code, message)
++	}
++}
++
++func TestStart_PrintsAStandingHold(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	subjects := []boardengine.HoldSubject{{Subject: "root"}, {Subject: "pay"}}
++
++	tests := []struct {
++		name string
++		hold boardengine.Hold
++		want startHold
++		// wantSummary is the hold as the readable summary prints it.
++		wantSummary string
++	}{
++		{
++			name:        "ThisMachinesHoldCarriesTheRerun",
++			hold:        boardengine.Hold{Kind: boardengine.HoldKindAdopt, Machine: startHere, Subjects: subjects},
++			want:        startHold{Machine: startHere, Subjects: []string{"root", "pay"}, Rerun: "lym adopt root pay"},
++			wantSummary: "hold: here-m holds root, pay; re-run: lym adopt root pay",
++		},
++		{
++			name:        "AnotherMachinesHoldCarriesNone",
++			hold:        boardengine.Hold{Kind: boardengine.HoldKindAdopt, Machine: startFar, Subjects: subjects},
++			want:        startHold{Machine: startFar, Subjects: []string{"root", "pay"}},
++			wantSummary: "hold: far-m holds root, pay\n",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			d, _, _ := newStartDeps(t, t.TempDir(), hubFixture{shortname: "ly", primeOwner: startHere, holds: []boardengine.Hold{tt.hold}})
++
++			_, raw := runStartRaw(t, d)
++
++			result, _ := decodeStart(t, raw)
++			if len(result.Hubs) != 1 || result.Hubs[0].Hold == nil {
++				t.Fatalf("hubs = %+v; want one hub with its hold", result.Hubs)
++			}
++			got := *result.Hubs[0].Hold
++			if got.Machine != tt.want.Machine || got.Rerun != tt.want.Rerun || !slices.Equal(got.Subjects, tt.want.Subjects) {
++				t.Errorf("hold = %+v; want %+v", got, tt.want)
++			}
++			if summary := startSummary(t, raw); !strings.Contains(summary, tt.wantSummary) {
++				t.Errorf("summary = %q; want it to carry %q", summary, tt.wantSummary)
++			}
++		})
++	}
++}
++
++func TestStart_PrintsAttachCommandsWhereNoTerminalLauncherResolves(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	d, calls, _ := newStartDeps(t, t.TempDir(), hubFixture{shortname: "ly", primeOwner: startHere, beamOwners: map[string]string{"pay": startHere}})
++	d.terminal = func() (func(dir, title, lymPath string) error, error) {
++		return nil, termwindow.ErrNoLauncher
++	}
++
++	code, raw := runStartRaw(t, d)
++
++	result, _ := decodeStart(t, raw)
++	if code != 0 || len(result.Hubs) != 1 || len(result.Worktrees) != 2 {
++		t.Fatalf("start = exit %d, hubs %+v, worktrees %+v; want ok with one hub and its two worktrees", code, result.Hubs, result.Worktrees)
++	}
++	summary := startSummary(t, raw)
++	for _, worktree := range result.Worktrees {
++		name := worktree.Worktree
++		if name == dobbyengine.PrimeLabel {
++			name = startPrimeName
++		}
++		if !strings.Contains(worktree.Attach, name) || !strings.HasSuffix(worktree.Attach, shell.ForGOOS().Invoke("/opt/lym")+" reed attach") {
++			t.Errorf("attach of %s = %q; want a cd into its worktree and the lym reed attach", worktree.Worktree, worktree.Attach)
++		}
++		if !strings.Contains(summary, "ly/"+worktree.Worktree+": started; attach: "+worktree.Attach) {
++			t.Errorf("summary = %q; want it to carry the attach command of %s", summary, worktree.Worktree)
++		}
++	}
++	if len(calls.terminals) != 0 || len(result.Warnings) == 0 {
++		t.Errorf("terminals %+v, warnings %q; want no window and a warning naming why", calls.terminals, result.Warnings)
++	}
++}
++
++func TestStart_KeepsTheDesktopLaunchers(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		hubs []hubFixture
++		// before are the hubs whose launcher stands before the start.
++		before        []string
++		wantLaunchers []string
++		wantAllHubs   bool
++		wantRemoved   []string
++	}{
++		{
++			name: "KeepsAnOwnedHubAndRemovesAnUnownedAndAGoneOne",
++			hubs: []hubFixture{
++				{shortname: "ly", primeOwner: startFar, beamOwners: map[string]string{"pay": startHere}},
++				{shortname: "mx", primeOwner: startFar},
++				{shortname: "old", primeOwner: startHere, gone: true},
++			},
++			before:        []string{"mx", "old"},
++			wantLaunchers: []string{"ly"},
++			wantAllHubs:   true,
++			wantRemoved:   []string{"old"},
++		},
++		{
++			name:   "TheAllHubsLauncherGoesWithTheLastHub",
++			hubs:   []hubFixture{{shortname: "mx", primeOwner: startFar}},
++			before: []string{"mx"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			d, _, desktop := newStartDeps(t, t.TempDir(), tt.hubs...)
++			for _, shortname := range tt.before {
++				if err := desktop.Add("/opt/lym", shortname); err != nil {
++					t.Fatal(err)
++				}
++			}
++
++			if code, result, _ := runStartVerb(t, d); code != 0 || !slices.Equal(result.LaunchersRemoved, tt.wantRemoved) {
++				t.Errorf("start = exit %d, launchers removed %q; want ok and %q", code, result.LaunchersRemoved, tt.wantRemoved)
++			}
++
++			if got, err := desktop.Shortnames(); err != nil || !slices.Equal(got, tt.wantLaunchers) {
++				t.Errorf("launchers after the start = %q, %v; want %q", got, err, tt.wantLaunchers)
++			}
++			_, err := os.Stat(filepath.Join(desktop.Dir, "lym-hubs.desktop"))
++			if got := err == nil; got != tt.wantAllHubs {
++				t.Errorf("all-hubs launcher stands = %v; want %v", got, tt.wantAllHubs)
++			}
++		})
++	}
++}
++
++func TestParseBeamStartOutput_ReadsTheChildsEnvelope(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		stdout  string
++		stderr  string
++		runErr  error
++		want    []beamStartEntry
++		wantErr string
++	}{
++		{
++			name:   "ASuccessEnvelopeGivesItsEntries",
++			stdout: `{"ok":true,"result":{"beams":[{"worktree":"prime"},{"worktree":"pay","outcome":"started","warnings":["a note"]}]}}` + "\n",
++			want:   []beamStartEntry{{Worktree: "prime"}, {Worktree: "pay", Outcome: "started", Warnings: []string{"a note"}}},
++		},
++		{
++			name:   "APartialFailureEnvelopeGivesItsEntriesAlongsideItsError",
++			stdout: "a log line\n" + `{"ok":false,"error":"lym beam start: pay: boom","result":{"beams":[{"worktree":"pay","error":"boom"}]}}` + "\n",
++			runErr: errors.New("exit status 1"),
++			want:   []beamStartEntry{{Worktree: "pay", Error: "boom"}},
++		},
++		{
++			name:    "ARefusalEnvelopeWithNoResultIsItsError",
++			stdout:  `{"ok":false,"error":"lym beam start: no pair here; way forward: lym beam create"}` + "\n",
++			runErr:  errors.New("exit status 1"),
++			wantErr: "lym beam start: no pair here; way forward: lym beam create",
++		},
++		{
++			name:    "OutputWithNoJSONLineIsNoResult",
++			stdout:  "not an envelope\n",
++			wantErr: "it printed no result: unexpected end of JSON input",
++		},
++		{
++			name:    "EmptyOutputReadsTheErrorOutput",
++			stderr:  "panic: boom\n",
++			runErr:  errors.New("exit status 2"),
++			wantErr: "panic: boom",
++		},
++		{
++			name:    "EmptyOutputReadsTheRunError",
++			runErr:  errors.New("fork/exec /opt/lym: no such file or directory"),
++			wantErr: "fork/exec /opt/lym: no such file or directory",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			got, err := parseBeamStartOutput([]byte(tt.stdout), []byte(tt.stderr), tt.runErr)
++
++			if gotErr := errString(err); gotErr != tt.wantErr {
++				t.Errorf("parseBeamStartOutput() error = %q; want %q", gotErr, tt.wantErr)
++			}
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("parseBeamStartOutput() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
++
++// errString returns the message of err, or the empty string for nil.
++func errString(err error) string {
++	if err == nil {
++		return ""
++	}
++	return err.Error()
++}
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 387e2787..b257d48d 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -216,6 +216,7 @@
+ // A caller that already judged origin leaves `Prepare` false.
+ // Adopt does so after its own reconcile, and so does the pawl run's Beam-Up.
+ // The refusals still run.
++// `BeamUpOptions.NoPrimeClaim` leaves the prime claim out of `Prepare`, for a caller that must claim no prime.
+ // The reconcile never refuses the bring-up:
+ // a stop, an unreachable origin and a reconcile error are reported for the orch to act on,
+ // and a run already driving is reported live or stopped when origin moved its branch.
+diff --git a/internal/orchcli/start.go b/internal/orchcli/start.go
+index 428565eb..cc43555e 100644
+--- a/internal/orchcli/start.go
++++ b/internal/orchcli/start.go
+@@ -54,6 +54,8 @@ type BeamUpOptions struct {
+ 	// Prepare runs, before the beam steps, the hub-scope origin reconcile, the failed-push read, and the prime claim.
+ 	// It also ends the processes of each run another machine owns; a caller that already judged origin leaves it false.
+ 	Prepare bool
++	// NoPrimeClaim leaves the prime claim out of Prepare, for a caller that must claim no prime.
++	NoPrimeClaim bool
+ 	// Here names this machine for the owner refusal; empty reads machinename.Name.
+ 	Here string
+ 	// SkipOrch brings the beam up without its orch:
+@@ -470,9 +472,10 @@ func reconcileNote(report fabricengine.OriginReport, failedPushes []map[string]a
+ }
+ 
+ // prepare records on report the origin reconcile, the failed-push read, the prime claim and the ends of owned runs.
++// The prime is claimed only when claimPrime is set.
+ // The reconcile never refuses the start: the orch is the session that resolves what it reports.
+ // It returns the note a fresh launch's prompt gains.
+-func (c *orchCLI) prepare(report *BeamUpReport) string {
++func (c *orchCLI) prepare(report *BeamUpReport, claimPrime bool) string {
+ 	reconciled, reconcileErr := c.reconcile()
+ 	report.Reconcile = reconciled
+ 	report.Mutations = reconciled.Mutations.Entries()
+@@ -492,7 +495,9 @@ func (c *orchCLI) prepare(report *BeamUpReport) string {
+ 	}
+ 	report.FailedPushes = failedPushes
+ 
+-	report.Warnings = append(report.Warnings, c.claimPrimeNotes()...)
++	if claimPrime {
++		report.Warnings = append(report.Warnings, c.claimPrimeNotes()...)
++	}
+ 	ended, endWarnings := c.pauseOwnedRuns(reconciled)
+ 	report.OwnerPauses = ended
+ 	report.Warnings = append(report.Warnings, endWarnings...)
+@@ -521,7 +526,7 @@ func (c *orchCLI) beamUp(opts BeamUpOptions) (report BeamUpReport, err error) {
+ 
+ 	note := ""
+ 	if opts.Prepare {
+-		note = c.prepare(&report)
++		note = c.prepare(&report, !opts.NoPrimeClaim)
+ 	}
+ 
+ 	ownLandingOf := ""
+diff --git a/internal/orchcli/start_test.go b/internal/orchcli/start_test.go
+index 1e357962..774e64f5 100644
+--- a/internal/orchcli/start_test.go
++++ b/internal/orchcli/start_test.go
+@@ -159,6 +159,8 @@ type startHarness struct {
+ 	// claims, when set, wires the prime claim to answer each call with the next entry, the last one repeating; claimCalls counts the calls.
+ 	claims     []claimAnswer
+ 	claimCalls int
++	// noPrimeClaim brings the beam up with BeamUpOptions.NoPrimeClaim.
++	noPrimeClaim bool
+ 	// pauseOwned, when set, wires the end of owned runs to fail with pauseOwnedErr.
+ 	// It records each slug in ownerPaused with its dobby flag in ownerEndDobby.
+ 	// It counts the calls callsAtOwnerPause saw of the strand operations.
+@@ -230,7 +232,7 @@ const harnessRunsWindowTitle = "harness-runs-window"
+ // run brings the beam up with Prepare, unless the test set prepareOff, and decodes the report as the envelope a verb would print.
+ func (h *startHarness) run(t *testing.T) (int, map[string]any) {
+ 	t.Helper()
+-	return h.runWith(t, BeamUpOptions{Prepare: !h.prepareOff})
++	return h.runWith(t, BeamUpOptions{Prepare: !h.prepareOff, NoPrimeClaim: h.noPrimeClaim})
+ }
+ 
+ // runWith brings the beam up with opts and decodes the report into a map under the report's keys.
+@@ -1305,6 +1307,19 @@ func TestStart_ReconcilesTheHubFirst(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "under NoPrimeClaim a hub with no prime owner is reconciled but its prime is left unclaimed",
++			prepare: func(t *testing.T, h *startHarness) {
++				h.claims = []claimAnswer{{claimed: "desktop"}}
++				h.noPrimeClaim = true
++			},
++			wantOK: true,
++			check: func(t *testing.T, h *startHarness, env map[string]any) {
++				if h.reconciles != 1 || h.claimCalls != 0 || strings.Contains(warningText(env), "claimed for machine") || len(h.starter.specs) != 1 {
++					t.Errorf("reconciles = %d, claims = %d, warning = %q, starts = %d; want one reconcile, no claim and one launch", h.reconciles, h.claimCalls, warningText(env), len(h.starter.specs))
++				}
++			},
++		},
+ 		{
+ 			name: "an owned_elsewhere beam and task are ended once before the launch, the dobby with the beam only, and named in owner_pauses",
+ 			prepare: func(t *testing.T, h *startHarness) {
+diff --git a/internal/termwindow/termwindow.go b/internal/termwindow/termwindow.go
+index 5ac05a0f..18367354 100644
+--- a/internal/termwindow/termwindow.go
++++ b/internal/termwindow/termwindow.go
+@@ -1,12 +1,15 @@
+ // Package termwindow opens a desktop terminal window that runs "lym reed attach" in a worktree,
+ // so the operator can watch a run in a window of its own.
+ // The launcher is chosen per platform:
+-// Windows Terminal (wt.exe) into wsl.exe on WSL, Konsole on any other Linux with a graphical session.
++// Windows Terminal (wt.exe) opens on native Windows and, through wsl.exe, on WSL.
++// Konsole opens on any other Linux with a graphical session.
+ // Elsewhere Resolve reports ErrNoLauncher and nothing opens.
+ // The window is a detached process: once it starts, lym neither waits for it nor learns whether it stays open.
+-// It closes itself when the run ends:
++// On Linux and WSL it closes itself when the run ends:
+ // on a 0 attach exit, or on any other attach exit once the run's worktree is removed within a bounded wait.
+ // Otherwise it keeps an interactive shell and the attach's output.
++// On native Windows the window runs the attach itself,
++// so the Windows Terminal profile's closeOnExit decides whether it closes when the attach exits.
+ package termwindow
+ 
+ import (
+@@ -34,8 +37,8 @@ const wslInteropPath = "/proc/sys/fs/binfmt_misc/WSLInterop"
+ type Launcher struct {
+ 	name    string
+ 	program string
+-	// arguments returns the program's arguments for a window titled title, in dir, whose shell runs line.
+-	arguments func(dir, title, line string) []string
++	// arguments returns the program's arguments for a window titled title, in dir, that runs "<lymPath> reed attach".
++	arguments func(dir, title, lymPath string) []string
+ }
+ 
+ // probe carries the machine facts Resolve reads, so the choice is testable without the machine.
+@@ -60,6 +63,13 @@ func Resolve() (Launcher, error) {
+ }
+ 
+ func resolve(p probe) (Launcher, error) {
++	if p.goos == "windows" {
++		program, err := p.lookPath("wt.exe")
++		if err != nil {
++			return Launcher{}, fmt.Errorf("%w: wt.exe is not on PATH: %v", ErrNoLauncher, err)
++		}
++		return Launcher{name: "wt.exe", program: program, arguments: nativeWindowsTerminalArguments}, nil
++	}
+ 	if p.goos != "linux" {
+ 		return Launcher{}, fmt.Errorf("%w: no launcher for %s", ErrNoLauncher, p.goos)
+ 	}
+@@ -81,23 +91,36 @@ func resolve(p probe) (Launcher, error) {
+ }
+ 
+ // konsoleArguments opens a new Konsole window, never a tab, with its tab titled title.
+-func konsoleArguments(dir, title, line string) []string {
+-	return []string{"--workdir", dir, "-p", "tabtitle=" + title, "-e", "bash", "-lc", line}
++// Its login shell runs the attach line.
++func konsoleArguments(dir, title, lymPath string) []string {
++	return []string{"--workdir", dir, "-p", "tabtitle=" + title, "-e", "bash", "-lc", attachLine(lymPath, dir)}
+ }
+ 
+ // windowsTerminalArguments opens a new Windows Terminal window running wsl.exe in dir.
+-// Windows Terminal splits its own command line on ";", so each one in line is escaped as "\;".
+-func windowsTerminalArguments(dir, title, line string) []string {
+-	return []string{"-w", "new", "--title", title, "wsl.exe", "--cd", dir, "--", "bash", "-lc", strings.ReplaceAll(line, ";", `\;`)}
++// Its login shell runs the attach line.
++func windowsTerminalArguments(dir, title, lymPath string) []string {
++	return []string{"-w", "new", "--title", title, "wsl.exe", "--cd", dir, "--", "bash", "-lc", escapeWindowsTerminal(attachLine(lymPath, dir))}
++}
++
++// nativeWindowsTerminalArguments opens a new Windows Terminal window in dir that runs the attach with no shell around it.
++func nativeWindowsTerminalArguments(dir, title, lymPath string) []string {
++	return []string{"-w", "new", "--title", escapeWindowsTerminal(title), "-d", escapeWindowsTerminal(dir), escapeWindowsTerminal(lymPath), "reed", "attach"}
++}
++
++// escapeWindowsTerminal escapes each ";" in argument as "\;", since Windows Terminal splits its own command line on ";".
++func escapeWindowsTerminal(argument string) string {
++	return strings.ReplaceAll(argument, ";", `\;`)
+ }
+ 
+-// OpenAttach opens one window titled title whose login shell runs "<lymPath> reed attach" in dir.
+-// The window closes when the attach exits 0, which includes an operator detach and an ended pair session.
++// OpenAttach opens one window titled title that runs "<lymPath> reed attach" in dir.
++// On Linux and WSL the window closes when the attach exits 0.
++// That includes an operator detach and an ended pair session.
+ // After any other attach exit, it closes as soon as dir is removed within pairGoneWaitSeconds seconds;
+ // otherwise it stays open as a shell.
++// On native Windows the Windows Terminal profile decides whether the window closes when the attach exits.
+ // It returns once the launcher process has started; an error means it could not start.
+ func (l Launcher) OpenAttach(dir, title, lymPath string) error {
+-	cmd := exec.Command(l.program, l.arguments(dir, title, attachLine(lymPath, dir))...)
++	cmd := exec.Command(l.program, l.arguments(dir, title, lymPath)...)
+ 	proc.Detach(cmd)
+ 	logger.Info("termwindow: spawning terminal window", "launcher", l.name, "dir", dir, "title", title)
+ 	if err := cmd.Start(); err != nil {
+diff --git a/internal/termwindow/termwindow_test.go b/internal/termwindow/termwindow_test.go
+index 35319a53..ba58f268 100644
+--- a/internal/termwindow/termwindow_test.go
++++ b/internal/termwindow/termwindow_test.go
+@@ -36,6 +36,8 @@ func TestResolve_ChoosesLauncherPerPlatform(t *testing.T) {
+ 		{name: "KonsoleOnWayland", goos: "linux", env: map[string]string{"WAYLAND_DISPLAY": "wayland-0"}, lookPath: onPath("konsole"), want: "konsole"},
+ 		{name: "NoGraphicalSession", goos: "linux", lookPath: onPath("konsole")},
+ 		{name: "NoKonsole", goos: "linux", env: map[string]string{"DISPLAY": ":0"}, lookPath: onPath()},
++		{name: "NativeWindows", goos: "windows", lookPath: onPath("wt.exe"), want: "wt.exe"},
++		{name: "NativeWindowsWithoutWindowsTerminal", goos: "windows", lookPath: onPath()},
+ 		{name: "OtherPlatform", goos: "darwin", env: map[string]string{"DISPLAY": ":0"}, lookPath: onPath("konsole")},
+ 	}
+ 	for _, tt := range tests {
+@@ -65,35 +67,43 @@ func TestLauncher_ArgumentsOpenTitledWindowRunningAttach(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	line := attachLine("/opt/lym dev/lym", "/hub/my slug")
+ 	const wantLine = `'/opt/lym dev/lym' reed attach; status=$?; if [ $status -eq 0 ]; then exit 0; fi; ` +
+ 		`echo 'reed attach ended with status' $status '- waiting up to 30s for the run worktree to be removed'; ` +
+ 		`i=0; while [ $i -lt 30 ]; do [ -d '/hub/my slug' ] || exit 0; sleep 1; i=$((i+1)); done; ` +
+ 		`[ -d '/hub/my slug' ] || exit 0; exec bash`
+-	if line != wantLine {
++	if line := attachLine("/opt/lym dev/lym", "/hub/my slug"); line != wantLine {
+ 		t.Fatalf("attachLine() = %q; want %q", line, wantLine)
+ 	}
+ 	tests := []struct {
+ 		name      string
+-		arguments func(dir, title, line string) []string
++		arguments func(dir, title, lymPath string) []string
++		lymPath   string
+ 		want      []string
+ 	}{
+ 		{
+ 			name:      "Konsole",
+ 			arguments: konsoleArguments,
+-			want:      []string{"--workdir", "/hub/slug", "-p", "tabtitle=slug", "-e", "bash", "-lc", line},
++			lymPath:   "/opt/lym dev/lym",
++			want:      []string{"--workdir", "/hub/my slug", "-p", "tabtitle=slug", "-e", "bash", "-lc", wantLine},
+ 		},
+ 		{
+ 			name:      "WindowsTerminal",
+ 			arguments: windowsTerminalArguments,
+-			want:      []string{"-w", "new", "--title", "slug", "wsl.exe", "--cd", "/hub/slug", "--", "bash", "-lc", strings.ReplaceAll(wantLine, ";", `\;`)},
++			lymPath:   "/opt/lym dev/lym",
++			want:      []string{"-w", "new", "--title", "slug", "wsl.exe", "--cd", "/hub/my slug", "--", "bash", "-lc", strings.ReplaceAll(wantLine, ";", `\;`)},
++		},
++		{
++			name:      "NativeWindowsTerminal",
++			arguments: nativeWindowsTerminalArguments,
++			lymPath:   `C:\lym;dev\lym.exe`,
++			want:      []string{"-w", "new", "--title", "slug", "-d", "/hub/my slug", `C:\lym\;dev\lym.exe`, "reed", "attach"},
+ 		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			if got := tt.arguments("/hub/slug", "slug", line); !slices.Equal(got, tt.want) {
++			if got := tt.arguments("/hub/my slug", "slug", tt.lymPath); !slices.Equal(got, tt.want) {
+ 				t.Errorf("arguments = %q; want %q", got, tt.want)
+ 			}
+ 		})
+diff --git a/internal/testkit/tmuxkit/tmuxkit.go b/internal/testkit/tmuxkit/tmuxkit.go
+index 79ee0e2c..17d3a45c 100644
+--- a/internal/testkit/tmuxkit/tmuxkit.go
++++ b/internal/testkit/tmuxkit/tmuxkit.go
+@@ -601,11 +601,14 @@ func checkSocketPath(dir string, uid int) error {
+ // `XDG_STATE_HOME` and `XDG_CONFIG_HOME`, and on Windows `LOCALAPPDATA`, point at dir too,
+ // so no process a test starts, a `lym creel daemon` included, writes the operator's per-user state or machine file;
+ // a test that sets the variable itself still wins.
++// `XDG_DESKTOP_DIR` points at dir on every platform.
++// So no dobby a test starts writes a launcher on the operator's desktop.
+ func setTempEnv(dir string) {
+ 	os.Setenv("TMPDIR", dir)
+ 	os.Setenv("GIT_CEILING_DIRECTORIES", dir)
+ 	os.Setenv("XDG_STATE_HOME", dir)
+ 	os.Setenv("XDG_CONFIG_HOME", dir)
++	os.Setenv("XDG_DESKTOP_DIR", dir)
+ 	if runtime.GOOS == "windows" {
+ 		os.Setenv("TMP", dir)
+ 		os.Setenv("TEMP", dir)
+diff --git a/internal/testkit/tmuxkit/tmuxkit_test.go b/internal/testkit/tmuxkit/tmuxkit_test.go
+index bafdacca..9cebce4e 100644
+--- a/internal/testkit/tmuxkit/tmuxkit_test.go
++++ b/internal/testkit/tmuxkit/tmuxkit_test.go
+@@ -56,7 +56,7 @@ func TestSetEnv(t *testing.T) {
+ 	t.Setenv("LYM_REED_TMUX_CONF", "/operator/tmux.conf")
+ 	t.Setenv("TMUX_TMPDIR", "/elsewhere")
+ 	// TMP and TEMP are the Windows temp variables; setting them first has t.Setenv restore them.
+-	for _, name := range []string{"TMPDIR", "TMP", "TEMP", "GIT_CEILING_DIRECTORIES", "XDG_STATE_HOME", "XDG_CONFIG_HOME", "LOCALAPPDATA"} {
++	for _, name := range []string{"TMPDIR", "TMP", "TEMP", "GIT_CEILING_DIRECTORIES", "XDG_STATE_HOME", "XDG_CONFIG_HOME", "XDG_DESKTOP_DIR", "LOCALAPPDATA"} {
+ 		t.Setenv(name, os.Getenv(name))
+ 	}
+ 	dir := filepath.Join(t.TempDir(), dirPrefix+"0")
+@@ -66,7 +66,7 @@ func TestSetEnv(t *testing.T) {
+ 
+ 	setEnv(dir)
+ 
+-	for _, name := range []string{"TMUX_TMPDIR", "TMPDIR", "GIT_CEILING_DIRECTORIES", "XDG_STATE_HOME", "XDG_CONFIG_HOME"} {
++	for _, name := range []string{"TMUX_TMPDIR", "TMPDIR", "GIT_CEILING_DIRECTORIES", "XDG_STATE_HOME", "XDG_CONFIG_HOME", "XDG_DESKTOP_DIR"} {
+ 		if got := os.Getenv(name); got != dir {
+ 			t.Errorf("%s = %q, want %q", name, got, dir)
+ 		}
+diff --git a/pattern/PATTERN-cli-cobra.md b/pattern/PATTERN-cli-cobra.md
+index 1784134a..087fc3de 100644
+--- a/pattern/PATTERN-cli-cobra.md
++++ b/pattern/PATTERN-cli-cobra.md
+@@ -61,7 +61,7 @@ Deviations:
+   It calls the cleanup functions of `battencli`, `boardengine`, `orchengine`, `logger` and `lymtemp`.
+ - `adoptcli` calls the functions of `fabricengine`, `pairteardown`, `boardengine`, `tenderengine`, `tendercli`, `battencli`, `battenshed`, `buildvcs` and `landingshed`, with no engine package of its own.
+ - `beamcli` calls the functions of `fabricengine`, `boardengine`, `hubgeom` and `battencli`, with no engine package of its own.
+-- `machinecli` calls the functions of `machinename`, `boardengine`, `fabricengine`, `hubregistry`, `hubgeom` and `pairteardown`, with no engine package of its own.
++- `machinecli` calls the functions of `machinename`, `beamcli`, `boardengine`, `fabricengine`, `hubregistry`, `hubgeom` and `pairteardown`, with no engine package of its own.
+ 
+ ## Sole wiring
+ 
+diff --git a/pattern/PATTERN-test-isolation.md b/pattern/PATTERN-test-isolation.md
+index 00f2ac8a..ded90b50 100644
+--- a/pattern/PATTERN-test-isolation.md
++++ b/pattern/PATTERN-test-isolation.md
+@@ -67,6 +67,8 @@ A test package never reaches the operator's global gitconfig or default tmux soc
+   `Main` also points `XDG_STATE_HOME`, and on Windows `LOCALAPPDATA`, at that directory,
+   so a test, or a `lym creel daemon` it spawns, never writes the operator's per-user state directory;
+   a test that sets the variable itself wins.
++  `Main` also points `XDG_DESKTOP_DIR` at that directory on every platform,
++  so no dobby a test starts writes a launcher on the operator's desktop.
+   A test binary re-executed as a helper inherits that directory,
+   and its own run directory is made beside it by the temp package's beside-the-parent rule rather than inside it,
+   so nesting never pushes a socket path past the `sun_path` limit.
