@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-17 06:18 UTC; every age below is as of then.
+Rendered 2026-11-17 06:21 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (4)
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
@@ -27,7 +27,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (2)
+### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -35,8 +35,9 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>18h | claude, shuttle, config |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 4d<br>4d | slack, creel, orch |
+| T20 | `draft` **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | darn |  | 12m<br>2m | gate |
 
-## Notes (11)
+## Notes (10)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -47,12 +48,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 7d<br>7d | gate, fabric |
 | R4 |  | **Bench Code Mode on a darn writer doing a repeated edit** | [`code-mode-darn-bench`](design-code-mode-darn-bench.md) | 17h<br>17h | claude, shuttle |
 
-### Bugs (2)
+### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | 10m<br>0m | gate |
-| B2 |  | **Gate tiers run go test with no memory cap**<br>• A runaway test in a gate tier can freeze the machine as a mutant did; reuse the per-run cap | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | 0m<br>0m | gate |
+| B2 |  | **Gate tiers run go test with no memory cap**<br>• A runaway test in a gate tier can freeze the machine as a mutant did; reuse the per-run cap | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | 2m<br>2m | gate |
 
 ### Enhancements (1)
 
