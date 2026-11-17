@@ -1,0 +1,1477 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 5f2898e9..3c848cea 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -382,7 +382,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/parentlock/          the per-branch parent lock: one record valid while its owner process lives, a ticket queue and compare-and-release
+ ├── internal/tendercli/           the `lym tender` commands (`pause`, `resume`, `revive`, `status` and `reap`) and the network gate every lym process in a hub runs under
+ ├── internal/tenderengine/        the pause, resume, revive and status sequences over seams: the entry, the grace, the Esc, the resume line and the revive line
+-├── internal/hibernatecli/        the `lym hibernate` commands (`request`, `cancel`, `status`), their hub wiring, the prime dobby's carrier and the `systemctl` spawn
++├── internal/hibernatecli/        the `lym hibernate` commands (`request`, `cancel`, `status`), their hub wiring, the prime dobby's carrier, the `systemctl` spawn, and the hub pause and confirmation `lym beam stop --all` runs
+ ├── internal/hibernateengine/     the hibernate request file, the submit, cancel and status sequences, and the carrier the prime's dobby runs the request with, over seams
+ ├── internal/hibernateconfig/     the hub-wide `hibernate.yaml` config: whether the wake from a `lym hibernate request` lifts the hub pause that request added
+ ├── internal/reportconfig/        the hub-wide `report.yaml` config: the run count a cell of `lym report cost` needs before it shows figures
+@@ -800,7 +800,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `--take-hold` moves another machine's hold over the same subjects here and is denied to agents.
+   It calls each owning module's function in-process and has no engine package of its own.
+   ✅ Implemented. See the `internal/adoptcli` package documentation.
+-- **beam** — the making, landing, starting and stopping of a beam, a long-lived pair that groups board work, and dobby, the daemon every beam and the prime run (`internal/beamcli` + `internal/dobbyengine`; `lym beam create <slug>`, `lym beam ready <slug>`, which flags the beam ready to merge so its dobby writes the land request once nothing works under it, and is final: no verb takes the flag back, `lym beam land <slug>`, which writes the land request the beam's pawl run consumes at Beam-Await and refuses a beam not flagged ready, `lym beam merge-parent <slug>`, which files a darn task in the beam, its Code-Review perch on, whose run merges the beam's parent branch into the beam, `lym beam start [slug] [--all]`, `lym beam stop [slug]` and `lym beam status`, from the prime and from any beam, and the hidden `lym beam dobby`).
++- **beam** — the making, landing, starting and stopping of a beam, a long-lived pair that groups board work, and dobby, the daemon every beam and the prime run (`internal/beamcli` + `internal/dobbyengine`; `lym beam create <slug>`, `lym beam ready <slug>`, which flags the beam ready to merge so its dobby writes the land request once nothing works under it, and is final: no verb takes the flag back, `lym beam land <slug>`, which writes the land request the beam's pawl run consumes at Beam-Await and refuses a beam not flagged ready, `lym beam merge-parent <slug>`, which files a darn task in the beam, its Code-Review perch on, whose run merges the beam's parent branch into the beam, `lym beam start [slug] [--all]`, `lym beam stop [slug] [--all]`, whose `--all` takes the whole hub down on this machine from a detached process, and `lym beam status`, from the prime and from any beam, and the hidden `lym beam dobby`).
+   Create runs from the beam's parent worktree, claims the root when none is recorded, records this machine as a board project's owner with the beam flag and the pawl recipe, and starts the beam's pawl run as a detached first pass, whose Worktree-Create makes the pair, forked from the parent beam of a nested beam, whose Record-Write writes the project record from the project entry's body under `_lym/project/<slug>/`, and whose Beam-Up marks it.
+   Before it starts that run, create removes a done batten run under the same slug whose pair is gone and whose child ran motif, reporting `motif_run_cleared`;
+   any other done run is refused, naming `lym batten cleanup --apply`, until the parent's dobby removes it once its landing is counted and its notice decided.
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index 112e7c2c..0bed5d8f 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -561,22 +561,37 @@ func startTargets(location *lymcwd.Location, slug string, all bool) ([]beamTarge
+ 
+ // stopCmd returns the `beam stop` verb.
+ func stopCmd() *cobra.Command {
+-	return &cobra.Command{
++	var all, detached bool
++	cmd := &cobra.Command{
+ 		Use:         "stop [<slug>]",
+-		Short:       "take a beam down: its orch and its dobby",
++		Short:       "take a beam down: its orch and its dobby; with --all, the whole hub on this machine",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Takes a beam down: removes its orch strand, after which the orch's watcher exits on
+-its own, and ends its dobby. With no slug it acts on the worktree it runs in, the prime
+-or a beam; the slug "root" names the prime, and any other slug names that beam from
+-anywhere in the hub. Each part stops only when it is live, so a second call stops
+-nothing, and the next "lym beam start" resumes the orch's recorded session.
++its own, ends its dobby, and last ends the orch session's registered Claude process.
++With no slug it acts on the worktree it runs in, the prime or a beam; the slug "root"
++names the prime, and any other slug names that beam from anywhere in the hub. Each part
++stops only when it is live, so a second call stops nothing, and the next
++"lym beam start" resumes the orch's recorded session.
+ 
+ It refuses a task pair, naming the beam it belongs to, and a slug with no pair here.
+ It prints what it stopped.
+ 
++With --all it takes down everything of the hub on this machine, whoever owns each
++worktree, and writes no tracked record. It re-starts itself detached in the prime and
++prints that process's pid, so the end of the session it was run from does not cut it.
++The detached process pauses the hub and waits for hibernate's confirmation that every
++session is idle, no network call is in flight and no land lock is held; past
++hibernate's wait it goes on and names what was still busy. It then downs each task
++pair's processes and reed session as "lym reed down" does, takes down the prime's and
++each beam's orch and dobby, downs the beams' reed sessions, ends the run processes no
++run owns as "lym tender reap" does, lifts the pause entry it added, and downs the
++prime's reed session last. A hub pause that stood before it, and a Bolt hold, stay.
++Its report goes to lym's log. "lym beam start --all" or "lym s" brings the hub back.
++
+ Example:
+   lym beam stop
+-  lym beam stop payments`,
++  lym beam stop payments
++  lym beam stop --all`,
+ 		Args: cobra.MaximumNArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+@@ -586,10 +601,17 @@ Example:
+ 			if len(args) == 1 {
+ 				slug = args[0]
+ 			}
++			if all {
++				return stopAll(cmd, slug, detached)
++			}
+ 			result, err := stop(cmd, slug)
+ 			return finishVerb(cmd, result, err)
+ 		},
+ 	}
++	cmd.Flags().BoolVar(&all, "all", false, "take down every orch, dobby, run and reed session of the hub on this machine")
++	cmd.Flags().BoolVar(&detached, stopDetachedFlag, false, "run the hub stop's sequence in this process; set on the detached re-start")
++	_ = cmd.Flags().MarkHidden(stopDetachedFlag)
++	return cmd
+ }
+ 
+ // stop runs `beam stop` for slug.
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 14c44dd8..22acd146 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -6,7 +6,7 @@
+ //   - `lym beam land <slug>` lands a beam into its parent;
+ //   - `lym beam merge-parent <slug>` files a task that merges a beam's parent branch into it;
+ //   - `lym beam start [slug] [--all]` brings up a beam's dobby and orch;
+-//   - `lym beam stop [slug]` brings them down;
++//   - `lym beam stop [slug] [--all]` brings them down, and with `--all` the whole hub on this machine;
+ //   - `lym beam status` shows every local dobby and orch;
+ //   - the hidden `lym beam dobby` is the dobby process itself.
+ //
+@@ -325,8 +325,34 @@
+ // # stop
+ //
+ // `stop [slug]` resolves its target as `start` does and calls `orchcli.BeamDown`.
+-// That removes the orch strand and ends the beam's dobby through `runproc.EndRole`, each only when live.
+-// It prints what it stopped and takes no `--all`.
++// That removes the orch strand and ends the beam's dobby, then the orch session's registered provider process.
++// Each end goes through `runproc.EndRole` and only when live.
++// It prints what it stopped.
++//
++// `stop --all` takes the hub down on this machine, every worktree whoever owns it, and writes no tracked record.
++// A slug beside `--all` is refused.
++// The caller's process re-starts the verb detached at the prime's anchor through `selfexec`.
++// It logs the spawn and prints the pid,
++// so the end of the session it ran from, the prime's last, does not cut it.
++// The detached process runs the sequence, going past every failed step and naming each in its report:
++//  1. `hibernatecli.PauseHub`: a hub pause entry under the caller label `beam-stop` and hibernate's confirmation.
++//     A hub entry already standing covers the stop and stays.
++//     A confirmation not reached within hibernate's wait does not stop the stop; the report names what was busy.
++//  2. Each task pair's processes and reed session through `reedcli.DownWorktree`, which accepts a pair a hub pause covers.
++//     A pair whose `_lym` junction or origin record cannot be read is named in the report and goes unstopped.
++//  3. `orchcli.BeamDown` for the prime and each local beam.
++//     A failed dobby step does not skip the orch process's end, and each failure is named.
++//  4. Each beam's reed session through `reedcli.DownWorktree`.
++//  5. The run processes no run owns, through `tenderengine.Reap`.
++//  6. Its own pause entry, if it added one, lifted by identity through `tenderengine.Lift`,
++//     which pays the detached pushes the pause deferred.
++//  7. The prime's reed session, last.
++//
++// Its report goes to lym's log, since the detached process has no terminal.
++// It writes no pause intent, and a Bolt hold stays as it stands.
++// Bound: the stop ends agent steps mid-step; a run's transitions are pushed or owed,
++// so the cut step runs again once `lym beam start --all` or `lym s` brings the hub back.
++// A stop that dies midway leaves its pause entry, which `lym tender resume` lifts.
+ //
+ // # status
+ //
+diff --git a/internal/beamcli/hubstop.go b/internal/beamcli/hubstop.go
+new file mode 100644
+index 00000000..03aef8bb
+--- /dev/null
++++ b/internal/beamcli/hubstop.go
+@@ -0,0 +1,285 @@
++// hubstop.go implements `lym beam stop --all`: the detached re-start of the caller's process,
++// and the sequence the detached process runs to take the hub down on this machine.
++
++package beamcli
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"os"
++	"os/exec"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hibernatecli"
++	"github.com/Knatte18/loomyard/internal/hibernateengine"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/orchcli"
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/reedcli"
++	"github.com/Knatte18/loomyard/internal/selfexec"
++	"github.com/Knatte18/loomyard/internal/tendercli"
++	"github.com/Knatte18/loomyard/internal/tenderengine"
++	"github.com/spf13/cobra"
++)
++
++const (
++	// stopPauseCaller is the caller label of the hub pause entry the hub stop adds.
++	stopPauseCaller = "beam-stop"
++	// stopDetachedFlag is the hidden flag the hub stop's detached process runs under.
++	stopDetachedFlag = "detached"
++)
++
++// detachedStop is the envelope of the caller's `beam stop --all`: the pid of the detached process that runs the stop.
++type detachedStop struct {
++	PID int `json:"detached_pid"`
++}
++
++// hubStopReport is the envelope of the detached `beam stop --all`: what each step of the sequence did.
++type hubStopReport struct {
++	// PauseOwned reports whether the stop added its own hub pause entry; false when a standing hub entry covered it.
++	PauseOwned bool `json:"pause_owned"`
++	// Unconfirmed names what still withheld the pause's confirmation when the stop went on without it.
++	Unconfirmed string `json:"unconfirmed,omitempty"`
++	// Pairs holds the down of each task pair's processes and reed session.
++	Pairs []reedcli.DownReport `json:"pairs"`
++	// Orchs holds the bring-down of the prime's and each beam's orch and dobby.
++	Orchs []orchcli.BeamDownReport `json:"orchs"`
++	// Sessions holds the down of each beam's reed session, then the prime's.
++	Sessions []reedcli.DownReport `json:"sessions"`
++	// Reaped holds each run process no run owned that the stop ended.
++	Reaped []tenderengine.ReapedProcess `json:"reaped"`
++	// PauseLifted reports whether the stop lifted the pause entry it added.
++	PauseLifted bool `json:"pause_lifted"`
++	// Failures names each step that failed; the sequence goes on past every one.
++	Failures []string `json:"failures"`
++}
++
++// hubStopSteps are the effects of the hub stop's sequence, one per kind of step, so a test drives its order over fakes.
++type hubStopSteps struct {
++	pause       func() (hibernateengine.HubPause, error)
++	worktrees   func() (beams, tasks []*lymcwd.Location, err error)
++	downSession func(location *lymcwd.Location) (reedcli.DownReport, error)
++	beamDown    func(location *lymcwd.Location) (orchcli.BeamDownReport, error)
++	reap        func() (tenderengine.ReapReport, error)
++	lift        func(ref tenderengine.EntryRef) error
++}
++
++// stopAll runs `beam stop --all` and prints its envelope.
++// The caller's process re-starts the verb detached in the prime and prints the detached process's pid;
++// the detached process runs the hub stop's sequence and prints its report.
++// A slug beside --all is refused before anything is stopped.
++func stopAll(cmd *cobra.Command, slug string, detached bool) error {
++	if slug != "" {
++		return finishVerb[detachedStop](cmd, nil, fmt.Errorf("lym beam stop: a slug and --all are exclusive; way forward: drop the slug to stop the whole hub on this machine, or drop --all to stop %s alone", slug))
++	}
++	location, err := actingLocation(cmd, "stop")
++	if err != nil {
++		return finishVerb[detachedStop](cmd, nil, err)
++	}
++	target, err := resolveBeamTarget(location, rootSlug)
++	if err != nil {
++		return finishVerb[detachedStop](cmd, nil, err)
++	}
++	prime := target.Location
++	if !detached {
++		pid, err := spawnDetachedStop(prime)
++		if err != nil {
++			return finishVerb[detachedStop](cmd, nil, fmt.Errorf("lym beam stop --all: start the detached stop: %w; way forward: fix the cause it names, then run `lym beam stop --all` again", err))
++		}
++		return finishVerb(cmd, &detachedStop{PID: pid}, nil)
++	}
++	report := runHubStop(prime, hubStopStepsFor(cmd.Context(), prime, os.Getenv(agentname.StrandNameEnv)))
++	logger.Info("beam: the hub stop ended", "pause_owned", report.PauseOwned, "unconfirmed", report.Unconfirmed,
++		"pause_lifted", report.PauseLifted, "failures", report.Failures)
++	if len(report.Failures) > 0 {
++		return finishVerb(cmd, &report, fmt.Errorf("lym beam stop --all: steps failed: %s; way forward: fix the cause each names, then run `lym beam stop --all` again", strings.Join(report.Failures, "; ")))
++	}
++	return finishVerb(cmd, &report, nil)
++}
++
++// detachedStopCommand builds the command that runs `lym beam stop --all --detached` from exe, working in prime's anchor.
++// The detached process resolves its location strictly from its working directory, so it starts at the anchor.
++func detachedStopCommand(exe string, prime *lymcwd.Location) *exec.Cmd {
++	cmd := exec.Command(exe, "beam", "stop", "--all", "--"+stopDetachedFlag)
++	cmd.Dir = prime.AnchorPath()
++	return cmd
++}
++
++// spawnDetachedStop starts `lym beam stop --all` detached in a session of its own, working in prime's anchor.
++// It returns the process's pid.
++// The process outlives its caller and every reed session, the caller's own included.
++func spawnDetachedStop(prime *lymcwd.Location) (int, error) {
++	exe, err := selfexec.LymBinary()
++	if err != nil {
++		return 0, err
++	}
++	cmd := detachedStopCommand(exe, prime)
++	proc.Detach(cmd)
++	// Leave stdin/stdout/stderr nil so no handles are inherited from the parent.
++	if err := cmd.Start(); err != nil {
++		logger.Warn("beam: the detached hub stop did not start", "exe", exe, "args", cmd.Args[1:], "dir", cmd.Dir, "error", err)
++		return 0, err
++	}
++	proc.Reap(cmd)
++	logger.Info("beam: spawned the detached hub stop", "exe", exe, "args", cmd.Args[1:], "dir", cmd.Dir, "pid", cmd.Process.Pid)
++	return cmd.Process.Pid, nil
++}
++
++// hubStopStepsFor wires the hub stop's steps over the hub of prime.
++// requester is the strand the stop was asked from; the pause's confirmation leaves its session out when it is an orch's.
++func hubStopStepsFor(ctx context.Context, prime *lymcwd.Location, requester string) hubStopSteps {
++	tender := func() (tenderengine.Deps, error) {
++		deps, _, err := tendercli.HubDeps(prime, stopPauseCaller)
++		return deps, err
++	}
++	return hubStopSteps{
++		pause: func() (hibernateengine.HubPause, error) {
++			return hibernatecli.PauseHub(prime, stopPauseCaller, requester)
++		},
++		worktrees: func() ([]*lymcwd.Location, []*lymcwd.Location, error) { return hubStopWorktrees(prime) },
++		downSession: func(location *lymcwd.Location) (reedcli.DownReport, error) {
++			return reedcli.DownWorktree(ctx, location)
++		},
++		beamDown: orchcli.BeamDown,
++		reap: func() (tenderengine.ReapReport, error) {
++			deps, err := tender()
++			if err != nil {
++				return tenderengine.ReapReport{}, err
++			}
++			return tenderengine.Reap(deps)
++		},
++		lift: func(ref tenderengine.EntryRef) error {
++			deps, err := tender()
++			if err != nil {
++				return err
++			}
++			_, err = tenderengine.Lift(deps, ref)
++			return err
++		},
++	}
++}
++
++// hubStopWorktrees lists the hub's beams and task pairs on this machine, whoever owns each.
++// A beam is a pair whose origin record carries the beam mark;
++// a task pair is every other pair whose origin record lacks it or that has no _lym junction to read one through.
++// The prime, a prunable worktree and one still being created are in neither list.
++// A pair whose junction or origin record cannot be read is in neither list either:
++// the returned error names it, and the beams and tasks read so far are returned beside it.
++func hubStopWorktrees(prime *lymcwd.Location) (beams, tasks []*lymcwd.Location, err error) {
++	orchs, err := orchcli.HubOrchs(prime)
++	if err != nil {
++		return nil, nil, err
++	}
++	beams = orchs[1:]
++	worktrees, err := fabricengine.List(prime.WorktreePath())
++	if err != nil {
++		return nil, nil, err
++	}
++	var unreadable []error
++	for _, worktree := range worktrees {
++		if worktree.Main || worktree.Prunable || fabricengine.InWorktreeStaging(worktree.Path) {
++			continue
++		}
++		pair, err := lymcwd.ResolveWorktree(worktree.Path)
++		if err != nil {
++			logger.Warn("beam: the hub stop skips a worktree that does not resolve", "worktree", worktree.Path, "error", err)
++			continue
++		}
++		wired, err := fabricengine.LymJunctionWiredHere(pair)
++		if err != nil {
++			logger.Warn("beam: the hub stop skips a pair whose _lym junction cannot be read", "worktree", pair.WorktreeName, "error", err)
++			unreadable = append(unreadable, fmt.Errorf("read the _lym junction of %s: %w", pair.WorktreeName, err))
++			continue
++		}
++		if !wired {
++			// No _lym link means no origin record to read through; the pair is not a beam in the hub's orch list.
++			tasks = append(tasks, pair)
++			continue
++		}
++		origin, found, err := fabricengine.ReadOrigin(pair)
++		if err != nil {
++			logger.Warn("beam: the hub stop skips a pair whose origin record cannot be read", "worktree", pair.WorktreeName, "error", err)
++			unreadable = append(unreadable, fmt.Errorf("read the origin record of %s: %w", pair.WorktreeName, err))
++			continue
++		}
++		if !found || !origin.Beam {
++			tasks = append(tasks, pair)
++		}
++	}
++	return beams, tasks, errors.Join(unreadable...)
++}
++
++// runHubStop takes the hub of prime down on this machine, whoever owns each worktree, and returns what it did.
++// It pauses the hub and confirms the pause.
++// It downs each task pair's processes and reed session.
++// It takes down the prime's and each beam's orch and dobby, and downs the beams' reed sessions.
++// It then ends the run processes no run owns, lifts the pause entry it added, and downs the prime's reed session last.
++// A hub entry that stood before it covers the stop and stays.
++// It goes on past an unconfirmed pause, naming what withheld it, and past every failed step, naming each.
++func runHubStop(prime *lymcwd.Location, steps hubStopSteps) hubStopReport {
++	report := hubStopReport{
++		Pairs: []reedcli.DownReport{}, Orchs: []orchcli.BeamDownReport{}, Sessions: []reedcli.DownReport{},
++		Reaped: []tenderengine.ReapedProcess{}, Failures: []string{},
++	}
++	failed := func(step string, err error) {
++		logger.Warn("beam: a step of the hub stop failed; the stop goes on", "step", step, "error", err)
++		report.Failures = append(report.Failures, step+": "+err.Error())
++	}
++	downSession := func(location *lymcwd.Location, into *[]reedcli.DownReport) {
++		down, err := steps.downSession(location)
++		if err != nil {
++			failed("down the reed session of "+location.WorktreeName, err)
++			return
++		}
++		*into = append(*into, down)
++	}
++
++	paused, err := steps.pause()
++	if err != nil {
++		failed("pause the hub", err)
++	}
++	report.PauseOwned = paused.Owned != nil
++	switch paused.Outcome {
++	case hibernateengine.ConfirmationTimedOut:
++		report.Unconfirmed = paused.Withheld
++	case hibernateengine.ConfirmationLifted:
++		report.Unconfirmed = "the hub pause was lifted before it was confirmed"
++	}
++
++	beams, tasks, err := steps.worktrees()
++	if err != nil {
++		failed("list the hub's worktrees", err)
++	}
++	for _, task := range tasks {
++		downSession(task, &report.Pairs)
++	}
++	for _, worktree := range append([]*lymcwd.Location{prime}, beams...) {
++		down, err := steps.beamDown(worktree)
++		report.Orchs = append(report.Orchs, down)
++		if err != nil {
++			failed("take down the orch and dobby of "+worktree.WorktreeName, err)
++		}
++	}
++	for _, beam := range beams {
++		downSession(beam, &report.Sessions)
++	}
++	reaped, err := steps.reap()
++	report.Reaped = append(report.Reaped, reaped.Ended...)
++	if err != nil {
++		failed("end the run processes no run owns", err)
++	}
++	// A pause lifted before its confirmation was lifted by the operator; there is no entry left for the stop to lift.
++	if paused.Owned != nil && paused.Outcome != hibernateengine.ConfirmationLifted {
++		if err := steps.lift(*paused.Owned); err != nil {
++			failed("lift the stop's own pause entry", err)
++		} else {
++			report.PauseLifted = true
++		}
++	}
++	downSession(prime, &report.Sessions)
++	return report
++}
+diff --git a/internal/beamcli/hubstop_integration_test.go b/internal/beamcli/hubstop_integration_test.go
+new file mode 100644
+index 00000000..3c17c6df
+--- /dev/null
++++ b/internal/beamcli/hubstop_integration_test.go
+@@ -0,0 +1,48 @@
++// hubstop_integration_test.go drives hubStopWorktrees over a real hub of a prime, a beam and a task pair.
++
++package beamcli
++
++import (
++	"path/filepath"
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestHubStopWorktrees_SplitsBeamsFromTaskPairs(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{SkipPush: true, Beam: true})
++	hubforge.AddPairWith(t, h, "t", fabricengine.AddOptions{SkipPush: true})
++	prime, err := lymcwd.ResolveWorktree(h.PrimeWorktree())
++	if err != nil {
++		t.Fatalf("resolve the prime: %v", err)
++	}
++
++	beams, tasks, err := hubStopWorktrees(prime)
++
++	if err != nil {
++		t.Fatalf("hubStopWorktrees() error = %v; want none", err)
++	}
++	names := func(locations []*lymcwd.Location) []string {
++		var got []string
++		for _, location := range locations {
++			got = append(got, location.WorktreeName)
++		}
++		return got
++	}
++	wantBeams := []string{filepath.Base(h.PairCodeWorktree("b"))}
++	wantTasks := []string{filepath.Base(h.PairCodeWorktree("t"))}
++	if got := names(beams); !slices.Equal(got, wantBeams) {
++		t.Errorf("hubStopWorktrees() beams = %v; want %v", got, wantBeams)
++	}
++	if got := names(tasks); !slices.Equal(got, wantTasks) {
++		t.Errorf("hubStopWorktrees() tasks = %v; want %v", got, wantTasks)
++	}
++}
+diff --git a/internal/beamcli/hubstop_test.go b/internal/beamcli/hubstop_test.go
+new file mode 100644
+index 00000000..4799b78b
+--- /dev/null
++++ b/internal/beamcli/hubstop_test.go
+@@ -0,0 +1,187 @@
++// hubstop_test.go pins the order of the hub stop's sequence.
++// It pins that the stop lifts only a pause entry it added.
++// It pins that the stop goes past an unconfirmed pause and each failed step.
++// It pins the command the caller starts detached.
++
++package beamcli
++
++import (
++	"errors"
++	"path/filepath"
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/hibernateengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/orchcli"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
++	"github.com/Knatte18/loomyard/internal/reedcli"
++	"github.com/Knatte18/loomyard/internal/tenderengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestDetachedStopCommand_RunsDetachedAtThePrimesAnchor(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	prime := &lymcwd.Location{HubPath: "/hub", WorktreeName: "prime", AnchorRel: "backend"}
++
++	cmd := detachedStopCommand("/bin/lym", prime)
++
++	wantArgs := []string{"/bin/lym", "beam", "stop", "--all", "--detached"}
++	if !slices.Equal(cmd.Args, wantArgs) {
++		t.Errorf("detachedStopCommand() args = %v; want %v", cmd.Args, wantArgs)
++	}
++	if wantDir := filepath.Join("/hub", "prime", "backend"); cmd.Dir != wantDir {
++		t.Errorf("detachedStopCommand() dir = %q; want the prime's anchor %q", cmd.Dir, wantDir)
++	}
++}
++
++func TestRunHubStop(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	owned := &tenderengine.EntryRef{Scope: pauserecord.ScopeHub, Caller: stopPauseCaller}
++	order := []string{"pause", "down t1", "beam-down prime", "beam-down b1", "down b1", "reap", "lift", "down prime"}
++	without := func(calls []string, dropped ...string) []string {
++		return slices.DeleteFunc(slices.Clone(calls), func(call string) bool { return slices.Contains(dropped, call) })
++	}
++	reached := hibernateengine.HubPause{Owned: owned, Outcome: hibernateengine.ConfirmationReached}
++	tests := []struct {
++		name   string
++		paused hibernateengine.HubPause
++		// failCall names the one call, as the fakes record it, that returns an error.
++		failCall        string
++		wantCalls       []string
++		wantLifted      bool
++		wantUnconfirmed string
++		wantFailures    []string
++		// wantPairs is the number of task pairs the report holds, wantOrchs the orchs and wantReaped the reaped processes.
++		wantPairs, wantOrchs, wantReaped int
++	}{
++		{
++			name: "an owned pause is lifted after the reap, and the prime's session goes last", paused: reached,
++			wantCalls: order, wantLifted: true, wantPairs: 1, wantOrchs: 2, wantReaped: 1,
++		},
++		{
++			name:      "a hub entry already standing covers the stop and is not lifted",
++			paused:    hibernateengine.HubPause{Outcome: hibernateengine.ConfirmationReached},
++			wantCalls: without(order, "lift"), wantPairs: 1, wantOrchs: 2, wantReaped: 1,
++		},
++		{
++			name:      "an unconfirmed pause names what was busy and the stop goes on",
++			paused:    hibernateengine.HubPause{Owned: owned, Outcome: hibernateengine.ConfirmationTimedOut, Withheld: "a reads busy"},
++			wantCalls: order, wantLifted: true, wantUnconfirmed: "a reads busy", wantPairs: 1, wantOrchs: 2, wantReaped: 1,
++		},
++		{
++			name:      "a pause the operator lifted before its confirmation is not lifted again",
++			paused:    hibernateengine.HubPause{Owned: owned, Outcome: hibernateengine.ConfirmationLifted},
++			wantCalls: without(order, "lift"), wantUnconfirmed: "the hub pause was lifted before it was confirmed",
++			wantPairs: 1, wantOrchs: 2, wantReaped: 1,
++		},
++		{
++			name: "a failed pause is named and the stop goes on without a pause to lift", failCall: "pause", paused: reached,
++			wantCalls: without(order, "lift"), wantFailures: []string{"pause the hub: refused"}, wantPairs: 1, wantOrchs: 2, wantReaped: 1,
++		},
++		{
++			name: "a failed worktree list is named and the prime is still taken down", failCall: "worktrees", paused: reached,
++			wantCalls:    []string{"pause", "beam-down prime", "reap", "lift", "down prime"},
++			wantFailures: []string{"list the hub's worktrees: refused"}, wantLifted: true, wantOrchs: 1, wantReaped: 1,
++		},
++		{
++			name: "a failed pair down is named and every later step still runs", failCall: "down t1", paused: reached,
++			wantCalls: order, wantFailures: []string{"down the reed session of t1: refused"}, wantLifted: true, wantOrchs: 2, wantReaped: 1,
++		},
++		{
++			name: "a failed beam down is named, its report is kept and every later step still runs", failCall: "beam-down b1", paused: reached,
++			wantCalls: order, wantFailures: []string{"take down the orch and dobby of b1: refused"}, wantLifted: true,
++			wantPairs: 1, wantOrchs: 2, wantReaped: 1,
++		},
++		{
++			name: "a failed reap is named and the pause is still lifted", failCall: "reap", paused: reached,
++			wantCalls: order, wantFailures: []string{"end the run processes no run owns: refused"}, wantLifted: true,
++			wantPairs: 1, wantOrchs: 2,
++		},
++		{
++			name: "a failed lift is named and leaves the pause unlifted", failCall: "lift", paused: reached,
++			wantCalls: order, wantFailures: []string{"lift the stop's own pause entry: refused"},
++			wantPairs: 1, wantOrchs: 2, wantReaped: 1,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			prime := &lymcwd.Location{HubPath: "/hub", WorktreeName: "prime"}
++			beam := &lymcwd.Location{HubPath: "/hub", WorktreeName: "b1"}
++			task := &lymcwd.Location{HubPath: "/hub", WorktreeName: "t1"}
++			var calls []string
++			var lifted []tenderengine.EntryRef
++			// record logs call and returns the error the row asks that call to fail with.
++			record := func(call string) error {
++				calls = append(calls, call)
++				if call == tt.failCall {
++					return errors.New("refused")
++				}
++				return nil
++			}
++			steps := hubStopSteps{
++				pause: func() (hibernateengine.HubPause, error) {
++					if err := record("pause"); err != nil {
++						return hibernateengine.HubPause{}, err
++					}
++					return tt.paused, nil
++				},
++				worktrees: func() ([]*lymcwd.Location, []*lymcwd.Location, error) {
++					if tt.failCall == "worktrees" {
++						return nil, nil, errors.New("refused")
++					}
++					return []*lymcwd.Location{beam}, []*lymcwd.Location{task}, nil
++				},
++				downSession: func(location *lymcwd.Location) (reedcli.DownReport, error) {
++					if err := record("down " + location.WorktreeName); err != nil {
++						return reedcli.DownReport{}, err
++					}
++					return reedcli.DownReport{Session: location.WorktreeName}, nil
++				},
++				beamDown: func(location *lymcwd.Location) (orchcli.BeamDownReport, error) {
++					return orchcli.BeamDownReport{Worktree: location.WorktreeName}, record("beam-down " + location.WorktreeName)
++				},
++				reap: func() (tenderengine.ReapReport, error) {
++					if err := record("reap"); err != nil {
++						return tenderengine.ReapReport{}, err
++					}
++					return tenderengine.ReapReport{Ended: []tenderengine.ReapedProcess{{PID: 9, Role: "loop"}}}, nil
++				},
++				lift: func(ref tenderengine.EntryRef) error {
++					lifted = append(lifted, ref)
++					return record("lift")
++				},
++			}
++
++			report := runHubStop(prime, steps)
++
++			if !slices.Equal(calls, tt.wantCalls) {
++				t.Errorf("runHubStop() calls = %v; want %v", calls, tt.wantCalls)
++			}
++			if report.PauseLifted != tt.wantLifted {
++				t.Errorf("runHubStop() pause lifted = %v; want %v", report.PauseLifted, tt.wantLifted)
++			}
++			if tt.wantLifted && (len(lifted) != 1 || lifted[0] != *owned) {
++				t.Errorf("runHubStop() lifted entries %+v; want only %+v", lifted, *owned)
++			}
++			if report.PauseOwned != (tt.paused.Owned != nil && tt.failCall != "pause") || report.Unconfirmed != tt.wantUnconfirmed {
++				t.Errorf("runHubStop() pause owned %v, unconfirmed %q; want unconfirmed %q", report.PauseOwned, report.Unconfirmed, tt.wantUnconfirmed)
++			}
++			if !slices.Equal(report.Failures, tt.wantFailures) {
++				t.Errorf("runHubStop() failures = %q; want %q", report.Failures, tt.wantFailures)
++			}
++			if len(report.Pairs) != tt.wantPairs || len(report.Orchs) != tt.wantOrchs || len(report.Reaped) != tt.wantReaped {
++				t.Errorf("runHubStop() pairs %+v, orchs %+v, reaped %+v; want %d, %d and %d of them",
++					report.Pairs, report.Orchs, report.Reaped, tt.wantPairs, tt.wantOrchs, tt.wantReaped)
++			}
++			if tt.failCall == "down t1" && slices.ContainsFunc(report.Pairs, func(down reedcli.DownReport) bool { return down.Session == "t1" }) {
++				t.Errorf("runHubStop() pairs = %+v; want t1 absent after its down failed", report.Pairs)
++			}
++		})
++	}
++}
+diff --git a/internal/beamcli/start_integration_test.go b/internal/beamcli/start_integration_test.go
+index ea138e3f..abefd9fc 100644
+--- a/internal/beamcli/start_integration_test.go
++++ b/internal/beamcli/start_integration_test.go
+@@ -72,6 +72,12 @@ func TestStart_RefusesBeforeTheReconcile(t *testing.T) {
+ 			args: []string{"start", "b", "--all"},
+ 			want: []string{"exclusive", "drop the slug", "drop --all"},
+ 		},
++		{
++			name: "StopSlugWithAllNamesBothWaysForward",
++			cwd:  h.PrimeWorktree(),
++			args: []string{"stop", "b", "--all"},
++			want: []string{"lym beam stop: a slug and --all are exclusive; way forward: drop the slug to stop the whole hub on this machine, or drop --all to stop b alone"},
++		},
+ 		{
+ 			name: "OutsideAHubNamesWhereToRun",
+ 			cwd:  outside,
+diff --git a/internal/hibernatecli/deps.go b/internal/hibernatecli/deps.go
+index 3930890d..b727d2bd 100644
+--- a/internal/hibernatecli/deps.go
++++ b/internal/hibernatecli/deps.go
+@@ -66,6 +66,18 @@ func NewDobbyCarrier(prime *lymcwd.Location) (*hibernateengine.Carrier, error) {
+ 	return hibernateengine.NewCarrier(deps), nil
+ }
+ 
++// PauseHub pauses the hub of location and confirms the pause with the engine's own pause-and-confirm.
++// The entry it adds records caller as its caller label;
++// requester is the strand the confirmation leaves out when it is the orch's.
++// It serves a caller that needs the hub quiet on this machine before it takes the hub down.
++func PauseHub(location *lymcwd.Location, caller, requester string) (hibernateengine.HubPause, error) {
++	deps, err := hubDeps(location)
++	if err != nil {
++		return hibernateengine.HubPause{}, err
++	}
++	return hibernateengine.PauseAndConfirm(deps, hibernateengine.PauseConfirmRequest{Caller: caller, Requester: requester})
++}
++
+ // hubDeps fills the engine's Deps for the hub location belongs to.
+ // Tender's seams build their wiring at each call, so each reading sees the hub's current pairs, and `status` builds none.
+ func hubDeps(location *lymcwd.Location) (hibernateengine.Deps, error) {
+diff --git a/internal/hibernatecli/doc.go b/internal/hibernatecli/doc.go
+index 3bfe7a50..d21f7e2f 100644
+--- a/internal/hibernatecli/doc.go
++++ b/internal/hibernatecli/doc.go
+@@ -40,6 +40,12 @@
+ // The dobby's file watch opens only a directory that exists.
+ // internal/beamcli runs the Carrier in the prime's dobby; the sequence's log lines go to that dobby's own output.
+ //
++// # The hub stop's pause
++//
++// `PauseHub` runs the engine's `PauseAndConfirm` over the same Deps, with no request file.
++// `lym beam stop --all` calls it, so the hub stop pauses and confirms through the hibernate sequence's own function.
++// Its entry carries the caller label the stop names.
++//
+ // # Spawns
+ //
+ // The machine's hibernate is `systemctl hibernate`, which returns once the job is queued;
+diff --git a/internal/hibernateengine/doc.go b/internal/hibernateengine/doc.go
+index 04c347b3..36620ad0 100644
+--- a/internal/hibernateengine/doc.go
++++ b/internal/hibernateengine/doc.go
+@@ -116,7 +116,10 @@
+ // It returns to one second when the reason changes.
+ // Bound: the wait has no deadline, since the operator cancels a request whose run halted.
+ //
+-// Firing pauses the hub through tender with a ten second grace.
++// Firing pauses the hub and confirms the pause through `PauseAndConfirm`.
++// That function also serves the hub stop, `lym beam stop --all`, which runs it with no request file.
++// It owns only an entry it added and lifts none; what becomes of that entry is its caller's.
++// The pause goes through tender with a ten second grace.
+ // The pause's `Added` callback records the entry as the request's owned entry before the grace, whatever the phase.
+ // The sequence keeps the entry in memory even when that write fails.
+ // A pause that found a live hub entry owns none, so neither the sequence nor Cancel lifts that pause.
+diff --git a/internal/hibernateengine/pauseconfirm_test.go b/internal/hibernateengine/pauseconfirm_test.go
+new file mode 100644
+index 00000000..5ab64001
+--- /dev/null
++++ b/internal/hibernateengine/pauseconfirm_test.go
+@@ -0,0 +1,75 @@
++// pauseconfirm_test.go pins PauseAndConfirm called with no request file, as the hub stop calls it:
++// which entry it owns, the caller label that entry records, and the reason an unconfirmed pause names.
++
++package hibernateengine
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/pauserecord"
++	"github.com/Knatte18/loomyard/internal/tenderengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestPauseAndConfirm(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const caller = "beam-stop"
++	busy := []statusReading{{sessions: []tenderengine.SessionStatus{sessionReading("a", "busy")}}}
++	tests := []struct {
++		name string
++		// standing adds a live hub entry of another caller before the pause.
++		standing     bool
++		readings     []statusReading
++		wantOwned    bool
++		wantOutcome  Confirmation
++		wantWithheld string
++		wantCallers  []string
++	}{
++		{
++			name: "an idle hub confirms and owns the entry the pause added under the caller's label", wantOwned: true,
++			wantOutcome: ConfirmationReached, wantCallers: []string{caller},
++		},
++		{
++			name: "a hub entry already standing covers the caller, which owns none and leaves it live", standing: true,
++			wantOutcome: ConfirmationReached, wantCallers: []string{"EXTERNAL"},
++		},
++		{
++			name: "a session busy through the whole wait times out naming it and lifts nothing", readings: busy, wantOwned: true,
++			wantOutcome: ConfirmationTimedOut, wantWithheld: "a reads busy", wantCallers: []string{caller},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			w := newFakeWorld(t)
++			if tt.standing {
++				w.addHubEntry("EXTERNAL")
++			}
++			w.readings = tt.readings
++
++			got, err := PauseAndConfirm(w.deps(), PauseConfirmRequest{Caller: caller, Requester: requesterExternal})
++
++			if err != nil {
++				t.Fatalf("PauseAndConfirm() error = %v; want none", err)
++			}
++			if got.Outcome != tt.wantOutcome || got.Withheld != tt.wantWithheld {
++				t.Errorf("PauseAndConfirm() = %+v; want outcome %d withheld %q", got, tt.wantOutcome, tt.wantWithheld)
++			}
++			if (got.Owned != nil) != tt.wantOwned {
++				t.Errorf("PauseAndConfirm() owned = %+v; want owned %v", got.Owned, tt.wantOwned)
++			}
++			if tt.wantOwned && (got.Owned.Scope != pauserecord.ScopeHub || got.Owned.Caller != caller) {
++				t.Errorf("PauseAndConfirm() owned = %+v; want the hub entry under %q", got.Owned, caller)
++			}
++			var callers []string
++			for _, live := range w.liveEntries() {
++				callers = append(callers, live.Caller)
++			}
++			if len(callers) != len(tt.wantCallers) || (len(callers) == 1 && callers[0] != tt.wantCallers[0]) {
++				t.Errorf("live entry callers = %v; want %v", callers, tt.wantCallers)
++			}
++		})
++	}
++}
+diff --git a/internal/hibernateengine/watch.go b/internal/hibernateengine/watch.go
+index 57fecbf1..b4dba61b 100644
+--- a/internal/hibernateengine/watch.go
++++ b/internal/hibernateengine/watch.go
+@@ -1,6 +1,6 @@
+-// watch.go implements the request's sequence, which the prime's dobby carries.
+-// The sequence waits for the trigger, pauses the hub, confirms the pause, and hibernates the machine;
+-// it detects the wake, and lifts or keeps the request's own pause entry.
++// watch.go implements the request's sequence, which the prime's dobby carries, and PauseAndConfirm.
++// The sequence waits for the trigger, then pauses the hub and confirms the pause through PauseAndConfirm.
++// It then hibernates the machine, detects the wake, and lifts or keeps the request's own pause entry.
+ 
+ package hibernateengine
+ 
+@@ -88,30 +88,29 @@ func carry(deps Deps, r Request) (Request, error) {
+ 		return r, err
+ 	}
+ 
++	paused, err := PauseAndConfirm(deps, PauseConfirmRequest{
++		Requester: r.Requester,
++		Added:     func(ref tenderengine.EntryRef) error { return recordOwned(deps, ref) },
++		Confirming: func() (bool, error) {
++			next, moved, err := advance(deps, PhaseConfirming, "")
++			if moved {
++				r = next
++			}
++			return moved, err
++		},
++		Carried: func() bool { return stillOurs(deps) },
++	})
+ 	// kept holds the entry the pause added even when recording it in the request fails, so the sequence can still lift it.
+-	var kept *tenderengine.EntryRef
+-	report, err := deps.Pause(tenderengine.PauseRequest{Grace: pauseGrace, Added: func(entry pauserecord.Entry) error {
+-		ref := tenderengine.EntryRef{Scope: entry.Scope, Caller: entry.Caller, PausedAt: entry.PausedAt}
+-		kept = &ref
+-		return recordOwned(deps, ref)
+-	}})
+-	if err != nil {
++	kept := paused.Owned
++	switch paused.Outcome {
++	case ConfirmationNone:
+ 		return fail(deps, r, kept, err.Error())
+-	}
+-	if report.ResumedDuringGrace {
++	case ConfirmationLifted:
+ 		return finish(deps, r, PhaseCancelled, "the pause was lifted before the hibernate")
+-	}
+-
+-	if r, ok, err = advance(deps, PhaseConfirming, ""); err != nil || !ok {
++	case ConfirmationStopped:
+ 		return withdrawn(deps, r, kept, err)
+-	}
+-	switch outcome, reason := awaitConfirmation(deps, report, r.Requester); outcome {
+-	case confirmationStopped:
+-		return withdrawn(deps, r, kept, nil)
+-	case confirmationLifted:
+-		return finish(deps, r, PhaseCancelled, "the pause was lifted before the hibernate")
+-	case confirmationTimedOut:
+-		return fail(deps, r, kept, reason)
++	case ConfirmationTimedOut:
++		return fail(deps, r, kept, paused.Withheld)
+ 	}
+ 
+ 	// The status read comes first so a cancel that lands during it is seen by the advance that follows.
+@@ -433,26 +432,100 @@ func triggerReading(deps Deps, r Request) (fire bool, reason string, err error)
+ 	return true, "", nil
+ }
+ 
+-// confirmation is how the wait for a confirmed pause ended.
+-type confirmation int
++// Confirmation is how one PauseAndConfirm ended.
++type Confirmation int
+ 
+ const (
+-	confirmationReached confirmation = iota
+-	// confirmationLifted: no live hub entry stands, the operator's resume having lifted the pause.
+-	confirmationLifted
+-	// confirmationStopped: the request is not carried here.
+-	confirmationStopped
+-	confirmationTimedOut
++	// ConfirmationNone: the pause failed, so no reading was made.
++	ConfirmationNone Confirmation = iota
++	// ConfirmationReached: a reading confirmed the pause.
++	ConfirmationReached
++	// ConfirmationLifted: no live hub entry stands, the operator's resume having lifted the pause.
++	ConfirmationLifted
++	// ConfirmationStopped: the caller withdrew the wait.
++	ConfirmationStopped
++	// ConfirmationTimedOut: no reading confirmed the pause within the wait.
++	ConfirmationTimedOut
+ )
+ 
++// PauseConfirmRequest is what a caller of PauseAndConfirm adds to the hub pause and its confirmation.
++type PauseConfirmRequest struct {
++	// Caller, when set, is the caller label the added hub entry records in place of tender's default.
++	Caller string
++	// Requester is the caller's strand; the readings leave its session out when it parses as the orch.
++	Requester string
++	// Added, when set, is called with the entry the pause added, after it is on disk and before the grace.
++	// Its error ends the pause with the entry live.
++	Added func(tenderengine.EntryRef) error
++	// Confirming, when set, is called once the pause holds and before the first reading.
++	// False or an error ends the wait as ConfirmationStopped, with that error.
++	Confirming func() (bool, error)
++	// Carried, when set, is asked before each reading whether the caller still wants the wait;
++	// false ends it as ConfirmationStopped.
++	Carried func() bool
++}
++
++// HubPause is what one PauseAndConfirm did.
++type HubPause struct {
++	// Owned is the hub entry the pause added, nil when a live hub entry already stood and covers the caller.
++	// It is set on every outcome once the entry is on disk, so the caller can still lift it.
++	Owned *tenderengine.EntryRef
++	// Outcome is how the pause and the wait for its confirmation ended.
++	Outcome Confirmation
++	// Withheld is the last reason a reading withheld the confirmation, set when Outcome is ConfirmationTimedOut.
++	Withheld string
++}
++
++// PauseAndConfirm pauses the hub through tender with a ten second grace.
++// It then reads the hub until a reading confirms that the pause holds it quiet.
++// It serves every caller that needs the hub quiet on this machine before it acts, such as a hibernate or a hub stop.
++// It owns only an entry it added.
++// A live hub entry already standing, the operator's or another caller's, adds none.
++// It covers the caller and stays as it is.
++// PauseAndConfirm lifts no entry on any outcome.
++// A pause lifted during its grace ends as ConfirmationLifted with no reading.
++// A failed pause ends as ConfirmationNone with its error.
++func PauseAndConfirm(deps Deps, req PauseConfirmRequest) (HubPause, error) {
++	var result HubPause
++	report, err := deps.Pause(tenderengine.PauseRequest{Grace: pauseGrace, Caller: req.Caller, Added: func(entry pauserecord.Entry) error {
++		ref := tenderengine.EntryRef{Scope: entry.Scope, Caller: entry.Caller, PausedAt: entry.PausedAt}
++		result.Owned = &ref
++		if req.Added == nil {
++			return nil
++		}
++		return req.Added(ref)
++	}})
++	if err != nil {
++		return result, err
++	}
++	if report.ResumedDuringGrace {
++		result.Outcome = ConfirmationLifted
++		return result, nil
++	}
++	if req.Confirming != nil {
++		confirming, err := req.Confirming()
++		if err != nil || !confirming {
++			result.Outcome = ConfirmationStopped
++			return result, err
++		}
++	}
++	carried := req.Carried
++	if carried == nil {
++		carried = func() bool { return true }
++	}
++	result.Outcome, result.Withheld = awaitConfirmation(deps, report, req.Requester, carried)
++	return result, nil
++}
++
+ // awaitConfirmation reads the hub until a reading confirms the pause.
+ // The first reading comes right after the pause, and each re-read waits confirmInterval.
+ // The wait gives up after confirmRereads re-reads unless the latest reading withheld only for forks;
+ // a fork-only reading may re-read up to confirmForkRereads times.
+ // The first reading also withholds while the pause report lists a strand still busy or a refused one.
++// carried is asked before each reading, and false stops the wait.
+ // A reading error is logged and counts as unconfirmed and as not fork-only;
+ // the reason is the last withholding one when the wait times out.
+-func awaitConfirmation(deps Deps, report tenderengine.PauseReport, requester string) (confirmation, string) {
++func awaitConfirmation(deps Deps, report tenderengine.PauseReport, requester string, carried func() bool) (Confirmation, string) {
+ 	withheld := ""
+ 	forkOnly := false
+ 	for reading := 0; reading <= confirmForkRereads; reading++ {
+@@ -462,8 +535,8 @@ func awaitConfirmation(deps Deps, report tenderengine.PauseReport, requester str
+ 			}
+ 			deps.Sleep(confirmInterval)
+ 		}
+-		if !stillOurs(deps) {
+-			return confirmationStopped, ""
++		if !carried() {
++			return ConfirmationStopped, ""
+ 		}
+ 		status, err := deps.TenderStatus()
+ 		landLockHeld := false
+@@ -478,19 +551,19 @@ func awaitConfirmation(deps Deps, report tenderengine.PauseReport, requester str
+ 		ok, hubEntry, onlyForks, reason := confirmed(status, landLockHeld, requester)
+ 		switch {
+ 		case !hubEntry:
+-			return confirmationLifted, ""
++			return ConfirmationLifted, ""
+ 		case ok && reading == 0 && len(report.StillBusy) > 0:
+ 			ok, onlyForks, reason = false, false, "the pause left "+strings.Join(report.StillBusy, ", ")+" busy"
+ 		case ok && reading == 0 && len(report.Refused) > 0:
+ 			ok, onlyForks, reason = false, false, "the pause was refused by "+report.Refused[0].Strand
+ 		}
+ 		if ok {
+-			return confirmationReached, ""
++			return ConfirmationReached, ""
+ 		}
+ 		logger.Debug("hibernate: the pause is not confirmed", "reason", reason)
+ 		withheld, forkOnly = reason, onlyForks
+ 	}
+-	return confirmationTimedOut, withheld
++	return ConfirmationTimedOut, withheld
+ }
+ 
+ // hubPaused reports whether status shows a live hub entry.
+diff --git a/internal/orchcli/beamdown_test.go b/internal/orchcli/beamdown_test.go
+index 8c13e3f1..30d536c9 100644
+--- a/internal/orchcli/beamdown_test.go
++++ b/internal/orchcli/beamdown_test.go
+@@ -1,18 +1,22 @@
+ // beamdown_test.go pins the order of `lym beam stop`.
+-// It removes the orch strand first and ends the dobby only when it is live, so a second call stops nothing.
++// It removes the orch strand first, ends the dobby only when it is live, and ends the orch's process last,
++// so a second call stops nothing.
+ 
+ package orchcli
+ 
+ import (
++	"errors"
+ 	"slices"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-func TestBeamDown_StopsOrchThenTheDobbyByRole(t *testing.T) {
++func TestBeamDown_StopsOrchThenTheDobbyThenTheOrchProcess(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+@@ -21,14 +25,33 @@ func TestBeamDown_StopsOrchThenTheDobbyByRole(t *testing.T) {
+ 		// dobbyLive is whether the dobby holds its lock when beamDown reads it.
+ 		dobbyLive bool
+ 		// noStrand leaves reed tracking no orch strand.
+-		noStrand       bool
+-		wantCalls      []string
+-		wantOrchGone   bool
+-		wantDobbyEnded bool
++		noStrand bool
++		// orchProcessLive is whether a registered orch process is left for the last step to end.
++		orchProcessLive bool
++		// endDobbyFails and endOrchFails make that end return an error.
++		endDobbyFails bool
++		endOrchFails  bool
++		// wantErrStep is the step the returned error names; empty when beamDown succeeds.
++		wantErrStep          string
++		wantCalls            []string
++		wantOrchGone         bool
++		wantDobbyEnded       bool
++		wantOrchProcessEnded bool
+ 	}{
+-		{name: "the tracked orch is removed and then the live dobby ended", dobbyLive: true, wantCalls: []string{"remove", "end-dobby"}, wantOrchGone: true, wantDobbyEnded: true},
+-		{name: "a dead dobby is not ended", wantCalls: []string{"remove"}, wantOrchGone: true},
+-		{name: "a second call stops nothing", noStrand: true, wantCalls: nil},
++		{
++			name: "the tracked orch is removed, then the live dobby and the orch process ended", dobbyLive: true, orchProcessLive: true,
++			wantCalls: []string{"remove", "end-dobby", "end-orch"}, wantOrchGone: true, wantDobbyEnded: true, wantOrchProcessEnded: true,
++		},
++		{name: "a dead dobby is not ended", orchProcessLive: true, wantCalls: []string{"remove", "end-orch"}, wantOrchGone: true, wantOrchProcessEnded: true},
++		{name: "a second call stops nothing", noStrand: true, wantCalls: []string{"end-orch"}},
++		{
++			name: "a failed dobby end still ends the orch process", dobbyLive: true, orchProcessLive: true, endDobbyFails: true,
++			wantErrStep: "end the dobby", wantCalls: []string{"remove", "end-dobby", "end-orch"}, wantOrchGone: true, wantOrchProcessEnded: true,
++		},
++		{
++			name: "a failed orch process end keeps what the earlier steps did", dobbyLive: true, endOrchFails: true,
++			wantErrStep: "end the orch process", wantCalls: []string{"remove", "end-dobby", "end-orch"}, wantOrchGone: true, wantDobbyEnded: true,
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -45,19 +68,37 @@ func TestBeamDown_StopsOrchThenTheDobbyByRole(t *testing.T) {
+ 			h.cli.dobbyLive = func() (bool, error) { return tt.dobbyLive, nil }
+ 			h.cli.endDobby = func() error {
+ 				h.calls = append(h.calls, "end-dobby")
++				if tt.endDobbyFails {
++					return errors.New("refused")
++				}
+ 				return nil
+ 			}
++			h.cli.endOrch = func() ([]runproc.Ended, error) {
++				h.calls = append(h.calls, "end-orch")
++				if tt.endOrchFails {
++					return nil, errors.New("refused")
++				}
++				if !tt.orchProcessLive {
++					return nil, nil
++				}
++				return []runproc.Ended{{PID: 77, Role: runproc.RoleOrch}}, nil
++			}
+ 
+ 			report, err := h.cli.beamDown()
+ 
+-			if err != nil {
++			wantErr := "orch: " + tt.wantErrStep + " of " + h.cli.location.WorktreeName
++			if tt.wantErrStep == "" && err != nil {
+ 				t.Fatalf("beamDown() error = %v; want none", err)
+ 			}
++			if tt.wantErrStep != "" && (err == nil || !strings.Contains(err.Error(), wantErr)) {
++				t.Errorf("beamDown() error = %v; want one containing %q", err, wantErr)
++			}
+ 			if !slices.Equal(h.calls, tt.wantCalls) {
+ 				t.Errorf("calls = %v; want %v", h.calls, tt.wantCalls)
+ 			}
+-			if report.OrchRemoved != tt.wantOrchGone || report.DobbyEnded != tt.wantDobbyEnded {
+-				t.Errorf("beamDown() = %+v; want orch removed %v and dobby ended %v", report, tt.wantOrchGone, tt.wantDobbyEnded)
++			if report.OrchRemoved != tt.wantOrchGone || report.DobbyEnded != tt.wantDobbyEnded || report.OrchProcessEnded != tt.wantOrchProcessEnded {
++				t.Errorf("beamDown() = %+v; want orch removed %v, dobby ended %v and orch process ended %v",
++					report, tt.wantOrchGone, tt.wantDobbyEnded, tt.wantOrchProcessEnded)
+ 			}
+ 			if report.Worktree != h.cli.location.WorktreeName {
+ 				t.Errorf("beamDown() worktree = %q; want %q", report.Worktree, h.cli.location.WorktreeName)
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 387e2787..788588cc 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -43,8 +43,13 @@
+ // The beam then has its dobby and no orch until `lym beam start` starts one.
+ // Only `lym adopt` sets it, for a request carrying `--no-orch`.
+ // `BeamDown` removes the orch strand, after which the watcher exits on its own.
+-// It ends the worktree's dobby through `runproc.EndRole`, so no other process of the beam is signalled;
++// It ends the worktree's dobby, then, as its last step, the orch session's registered provider process.
++// Each end goes through `runproc.EndRole`, so no other process of the beam is signalled;
+ // each part stops only when live.
++// Every caller ends that process this way: `lym beam stop`, a beam's cancel and pawl's beam-down row.
++// The strand's removal ends the orch's pane and every process below it, so a caller inside that pane ends there;
++// the later steps run only for a caller outside it.
++// An earlier step's failure does not skip the orch process's end, and every failure is returned.
+ // `OrchLive` is the liveness predicate other modules call:
+ // the worktree's orch state records a strand that reed tracks and reports live.
+ //
+diff --git a/internal/orchcli/stop.go b/internal/orchcli/stop.go
+index 0b89c0e9..63ee664e 100644
+--- a/internal/orchcli/stop.go
++++ b/internal/orchcli/stop.go
+@@ -4,6 +4,7 @@
+ package orchcli
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 	"os"
+ 	"time"
+@@ -29,11 +30,18 @@ type BeamDownReport struct {
+ 	Strand      string `json:"strand,omitempty"`
+ 	// DobbyEnded reports whether a live dobby was ended.
+ 	DobbyEnded bool `json:"dobby_ended"`
++	// OrchProcessEnded reports whether the orch session's registered provider process was ended.
++	OrchProcessEnded bool `json:"orch_process_ended"`
+ }
+ 
+ // BeamDown takes the worktree at location down.
+ // It removes the orch strand, after which the watcher exits on its own,
+ // and it ends the worktree's dobby when one is live.
++// As its last step it ends the orch session's registered provider process, which outlives the strand's removal;
++// the caller and its ancestors are spared.
++// The strand's removal ends the orch's pane and every process below it, so a caller inside that pane ends there;
++// the later steps run only for a caller outside it.
++// A failed dobby step does not skip the orch process's end, and every failure is returned.
+ // Each part stops only when live, so a second call stops nothing.
+ // It refuses a worktree that is neither the prime nor a beam.
+ func BeamDown(location *lymcwd.Location) (BeamDownReport, error) {
+@@ -45,7 +53,8 @@ func BeamDown(location *lymcwd.Location) (BeamDownReport, error) {
+ }
+ 
+ // beamDown runs the bring-down steps on a receiver that has already been wired.
+-// The dobby is ended through the receiver's role-scoped end, so no other process of the beam is signalled.
++// The dobby and the orch process are each ended through the receiver's role-scoped end,
++// so no other process of the beam is signalled.
+ func (c *orchCLI) beamDown() (BeamDownReport, error) {
+ 	report := BeamDownReport{Worktree: c.location.WorktreeName}
+ 	removed, strand, err := c.stopOrch()
+@@ -53,20 +62,32 @@ func (c *orchCLI) beamDown() (BeamDownReport, error) {
+ 		return report, err
+ 	}
+ 	report.OrchRemoved, report.Strand = removed, strand
+-	live := false
+-	if c.dobbyLive != nil {
+-		live, err = c.dobbyLive()
+-		if err != nil {
+-			return report, fmt.Errorf("orch: read whether the dobby of %s is live: %w", c.location.WorktreeName, err)
+-		}
++	dobbyErr := c.endLiveDobby(&report)
++	ended, err := c.endOrch()
++	if err != nil {
++		err = fmt.Errorf("orch: end the orch process of %s: %w", c.location.WorktreeName, err)
+ 	}
+-	if live {
+-		if err := c.endDobby(); err != nil {
+-			return report, fmt.Errorf("orch: end the dobby of %s: %w", c.location.WorktreeName, err)
+-		}
+-		report.DobbyEnded = true
++	report.OrchProcessEnded = len(ended) > 0
++	return report, errors.Join(dobbyErr, err)
++}
++
++// endLiveDobby ends the worktree's dobby when it is live and records the end in report.
++func (c *orchCLI) endLiveDobby(report *BeamDownReport) error {
++	if c.dobbyLive == nil {
++		return nil
++	}
++	live, err := c.dobbyLive()
++	if err != nil {
++		return fmt.Errorf("orch: read whether the dobby of %s is live: %w", c.location.WorktreeName, err)
++	}
++	if !live {
++		return nil
++	}
++	if err := c.endDobby(); err != nil {
++		return fmt.Errorf("orch: end the dobby of %s: %w", c.location.WorktreeName, err)
+ 	}
+-	return report, nil
++	report.DobbyEnded = true
++	return nil
+ }
+ 
+ // stopOrch removes the recorded orchestrator strand when reed tracks it.
+diff --git a/internal/reedcli/cli.go b/internal/reedcli/cli.go
+index 0f105557..d7562921 100644
+--- a/internal/reedcli/cli.go
++++ b/internal/reedcli/cli.go
+@@ -99,6 +99,24 @@ type strandOps interface {
+ 	Status() (reedengine.StatusResult, error)
+ }
+ 
++// wireLocation resolves the engine of the worktree at location, with its hub path and anchor, onto c.
++func (c *reedCLI) wireLocation(location *lymcwd.Location) error {
++	// The _lym/config/ root is anchored at location.AnchorPath(), not at the worktree root or a fabric sibling.
++	// Reed config lives with the worktree the operator is standing in.
++	cfg, err := reedengine.LoadConfig(fabricengine.ConfigDirs(location), "reed")
++	if err != nil {
++		return err
++	}
++	reedGeom, err := hubgeom.ReedGeometry(location)
++	if err != nil {
++		return err
++	}
++	c.eng = reedengine.New(cfg, reedGeom, shuttleengines.EnvScrub())
++	c.hubPath = location.HubPath
++	c.anchorPath = location.AnchorPath()
++	return nil
++}
++
+ // strandEngine returns the test seam when set, else the resolved engine.
+ func (c *reedCLI) strandEngine() strandOps {
+ 	if c.strands != nil {
+@@ -170,24 +188,11 @@ rather than booting substrate it cannot reach.`,
+ 				}
+ 			}
+ 
+-			// The _lym/config/ root is anchored at location.AnchorPath(), not at the worktree root or a fabric sibling.
+-			// Reed config lives with the worktree the operator is standing in.
+-			cfg, err := reedengine.LoadConfig(fabricengine.ConfigDirs(location), "reed")
+-			if err != nil {
+-				output.Err(out, err.Error())
+-				clihelp.Abort(ctx, 1)
+-				return nil
+-			}
+-
+-			reedGeom, err := hubgeom.ReedGeometry(location)
+-			if err != nil {
++			if err := c.wireLocation(location); err != nil {
+ 				output.Err(out, err.Error())
+ 				clihelp.Abort(ctx, 1)
+ 				return nil
+ 			}
+-			c.eng = reedengine.New(cfg, reedGeom, shuttleengines.EnvScrub())
+-			c.hubPath = location.HubPath
+-			c.anchorPath = location.AnchorPath()
+ 			return nil
+ 		},
+ 	}
+diff --git a/internal/reedcli/doc.go b/internal/reedcli/doc.go
+index 4e6e5cb7..621bc532 100644
+--- a/internal/reedcli/doc.go
++++ b/internal/reedcli/doc.go
+@@ -35,6 +35,8 @@
+ // The session stays live in each refusal.
+ // A refusal of the run-lock wait, or survivors of the end, are the envelope's error the same way.
+ // The prime is no pair: its `down` ends no registered process.
++// `DownWorktree` runs the same `down` for a worktree its caller names, with no envelope.
++// One process can so take down the sessions of several worktrees.
+ //
+ // `add` places the strand in a window of its own, or its group's.
+ // Its `--anchor` takes `own-window` (the default) or `hidden`; any other value is refused.
+diff --git a/internal/reedcli/up.go b/internal/reedcli/up.go
+index dc6244cc..41888654 100644
+--- a/internal/reedcli/up.go
++++ b/internal/reedcli/up.go
+@@ -101,6 +101,65 @@ func (c *reedCLI) endPairProcesses(ctx context.Context) ([]runproc.Ended, error)
+ 	return teardown.EndBeforeSessionDown(ctx, location.WorktreeName)
+ }
+ 
++// DownReport is what one down of a worktree's reed session did.
++type DownReport struct {
++	// Session is the session the down killed.
++	Session string `json:"session"`
++	// Ended holds the pair's registered processes the down ended before the session, empty in the prime.
++	Ended []runproc.Ended `json:"ended_processes"`
++	// AbandonedSession is a different live session the worktree's state recorded, which the down left running.
++	AbandonedSession string `json:"abandoned_session,omitempty"`
++}
++
++// DownWorktree takes down the reed session of the worktree at location, as `lym reed down` run there does.
++// In a pair it first ends the pair's registered processes, and it refuses a run that is running and unpaused.
++// It then kills the session, clears its strand state, and ends the hub's server when that was its last session.
++// It serves a caller that takes down the sessions of several worktrees from one process.
++func DownWorktree(ctx context.Context, location *lymcwd.Location) (DownReport, error) {
++	c := &reedCLI{}
++	if err := c.wireLocation(location); err != nil {
++		return DownReport{}, err
++	}
++	return c.down(ctx)
++}
++
++// down ends the pair's registered processes, kills the session and clears its strand state.
++// When it ended the hub's server it waits for the watchdog daemon to leave its loop.
++func (c *reedCLI) down(ctx context.Context) (DownReport, error) {
++	endProcesses := c.endProcesses
++	if endProcesses == nil {
++		endProcesses = c.endPairProcesses
++	}
++	ended, err := endProcesses(ctx)
++	if err != nil {
++		return DownReport{}, err
++	}
++
++	result, err := c.strandEngine().Down()
++	if err != nil {
++		return DownReport{Ended: ended}, err
++	}
++	if result.EndedServer {
++		// The wait sends nothing to the watchdog: Down already wrote the stop.
++		// It only holds the verb until the daemon has left its loop.
++		wait, poll, probe, sleep := c.downLockWait, c.downLockPoll, c.downLockProbe, c.downLockSleep
++		if wait == 0 {
++			wait = watchdogDownWait
++		}
++		if poll == 0 {
++			poll = watchdogDownPoll
++		}
++		if probe == nil {
++			probe = probeWatchdogLock
++		}
++		if sleep == nil {
++			sleep = time.Sleep
++		}
++		waitWatchdogLockFree(c.hubPath, wait, poll, probe, sleep)
++	}
++	return DownReport{Session: result.Session, Ended: ended, AbandonedSession: result.AbandonedSession}, nil
++}
++
+ // endedProcessesField renders the ended processes as the envelope's list of {pid, role}, empty when none.
+ func endedProcessesField(ended []runproc.Ended) []map[string]any {
+ 	list := make([]map[string]any, len(ended))
+@@ -148,45 +207,17 @@ Example:
+ 			}
+ 			out := cmd.OutOrStdout()
+ 
+-			endProcesses := c.endProcesses
+-			if endProcesses == nil {
+-				endProcesses = c.endPairProcesses
+-			}
+-			ended, err := endProcesses(cmd.Context())
+-			if err != nil {
+-				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
+-				return nil
+-			}
+-
+-			result, err := c.strandEngine().Down()
++			report, err := c.down(cmd.Context())
+ 			if err != nil {
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
+ 				return nil
+ 			}
+-			if result.EndedServer {
+-				// The wait sends nothing to the watchdog: Down already wrote the stop.
+-				// It only holds the verb until the daemon has left its loop.
+-				wait, poll, probe, sleep := c.downLockWait, c.downLockPoll, c.downLockProbe, c.downLockSleep
+-				if wait == 0 {
+-					wait = watchdogDownWait
+-				}
+-				if poll == 0 {
+-					poll = watchdogDownPoll
+-				}
+-				if probe == nil {
+-					probe = probeWatchdogLock
+-				}
+-				if sleep == nil {
+-					sleep = time.Sleep
+-				}
+-				waitWatchdogLockFree(c.hubPath, wait, poll, probe, sleep)
+-			}
+ 
+-			payload := map[string]any{"session": result.Session, "ended_processes": endedProcessesField(ended)}
++			payload := map[string]any{"session": report.Session, "ended_processes": endedProcessesField(report.Ended)}
+ 			// The key appears only when there is an abandoned session, so the ordinary teardown envelope stays unchanged.
+ 			// Its presence alone tells the caller that a session was abandoned.
+-			if result.AbandonedSession != "" {
+-				payload["abandonedSession"] = result.AbandonedSession
++			if report.AbandonedSession != "" {
++				payload["abandonedSession"] = report.AbandonedSession
+ 			}
+ 			clihelp.SetExit(cmd.Context(), output.Ok(out, payload))
+ 			return nil
+diff --git a/internal/reedengine/config_test.go b/internal/reedengine/config_test.go
+index 91650934..a75988fe 100644
+--- a/internal/reedengine/config_test.go
++++ b/internal/reedengine/config_test.go
+@@ -117,6 +117,7 @@ func TestLoadConfig_TemplateDefaultsResolve(t *testing.T) {
+ 		{Label: "board", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill scribe:prose --skill scribe:conversation --skill ly:board-policy --skill ly:board", Ask: "Board agent name:", AskDefault: "board"},
+ 		{Label: "distill", Run: "lym orch distill", Confirm: "Distill the orch?"},
+ 		{Label: "refresh", Run: "lym orch refresh", Confirm: "Refresh the orch?"},
++		{Label: "stop", Run: "lym beam stop --all", Confirm: "Stop every orch, dobby, run and reed session of the hub on this machine?"},
+ 	}
+ 	wantShipped := shippedButtons{Task: wantTaskButtons, Beam: wantBeamButtons, Prime: wantPrimeButtons}
+ 	if got := decodeButtons(t, cfg.Buttons); !reflect.DeepEqual(got, wantShipped) {
+diff --git a/internal/reedengine/template_posix.yaml b/internal/reedengine/template_posix.yaml
+index fffc7041..438fd6e3 100644
+--- a/internal/reedengine/template_posix.yaml
++++ b/internal/reedengine/template_posix.yaml
+@@ -74,3 +74,6 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: refresh
+       run: lym orch refresh
+       confirm: Refresh the orch?
++    - label: stop
++      run: lym beam stop --all
++      confirm: Stop every orch, dobby, run and reed session of the hub on this machine?
+diff --git a/internal/reedengine/template_windows.yaml b/internal/reedengine/template_windows.yaml
+index b0fe3406..986e380b 100644
+--- a/internal/reedengine/template_windows.yaml
++++ b/internal/reedengine/template_windows.yaml
+@@ -74,3 +74,6 @@ buttons:  # status-bar buttons in the groups task, beam and prime; an entry has
+     - label: refresh
+       run: lym orch refresh
+       confirm: Refresh the orch?
++    - label: stop
++      run: lym beam stop --all
++      confirm: Stop every orch, dobby, run and reed session of the hub on this machine?
