@@ -1,13 +1,13 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Drift-Verify",
   "pause_before_by": "codex-writer-bench",
   "activity": {
-    "now": "Record-Write",
-    "last": "Preflight → done",
+    "now": "Drift-Baseline",
+    "last": "Record-Write → done",
     "wait": ""
   },
   "history": [
@@ -17,6 +17,13 @@
       "output": "",
       "at": "2026-11-17T17:31:48Z",
       "started_at": "2026-11-17T17:31:48Z"
+    },
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/cwb-codex/_lym/discussion/decision-record.md",
+      "at": "2026-11-17T17:31:50Z",
+      "started_at": "2026-11-17T17:31:50Z"
     }
   ],
   "product": {
