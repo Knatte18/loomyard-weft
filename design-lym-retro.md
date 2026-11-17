@@ -1,6 +1,6 @@
 # lym retro: one command that audits recent runs from their transcripts and proposes fixes
 
-`lym-retro` · Task · feature, friction, report, tools · landing · Finalize
+`lym-retro` · Task · feature, friction, report, tools · done
 
 ## Seen (operator, 2026-11-16)
 
