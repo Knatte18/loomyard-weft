@@ -120,6 +120,18 @@ Decision: Card 8 sets CLAUDE_PROJECT_DIR to req.RepoRoot in the hook environment
 
 Rationale: D8 asks that hooks run as Claude Code runs them, and Claude Code sets CLAUDE_PROJECT_DIR for every hook; a hook reading it would otherwise break under Codex.
 
+### Added after Discussion (parent, 2026-11-17): CLAUDE_PROJECT_DIR is the session's working directory
+
+Decision: This replaces the CLAUDE_PROJECT_DIR value in the entry 'Hooks run with CLAUDE_PROJECT_DIR as Claude Code sets it': card 8 sets CLAUDE_PROJECT_DIR to req.WorkDir, not req.RepoRoot, and the TestUserSetup_PluginSessionStartContexts row asserts that value and CLAUDE_PLUGIN_ROOT.
+
+Rationale: Claude Code sets it to the directory the session started in, and lym's panes start at the anchor, which can be a subdirectory of the worktree; req.WorkDir matches what a hook sees under Claude.
+
+### Added after Discussion (parent, 2026-11-17): A config dir that cannot be resolved drops only the parts that need it
+
+Decision: This replaces the entry 'A config dir that cannot be resolved warns and yields an empty user setup': when claudeConfigDir fails, UserSetup leaves out only the parts that need the config directory (the user's global file and the plugin-based skill listing and session-start contexts), keeps the parts that do not (project skills under .claude/skills and the CLAUDE.md files above the repository root), and adds one Warnings entry naming the cause and CLAUDE_CONFIG_DIR or HOME as the way forward; it never returns an error.
+
+Rationale: Claude itself still loads the parts that do not depend on HOME, so a Codex session should get them too; the warning-not-error handling matches sessionScopeFor's with an unreadable plugins file.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's user-setup resolution, session scope and file locations stay in `claudeengine`, and reach `codexengine` only through `shuttleengine` interfaces wired in `internal/shuttleengines`; the rollout reading for the batching nudge stays in `codexengine`, and the read-only lookup check both engines' nudges use sits in its own package under `internal/shuttleengine`.
