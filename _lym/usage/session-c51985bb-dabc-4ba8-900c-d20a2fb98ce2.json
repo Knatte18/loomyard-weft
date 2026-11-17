@@ -1,0 +1,14 @@
+{
+  "session_id": "c51985bb-dabc-4ba8-900c-d20a2fb98ce2",
+  "row": "Sampler-Session",
+  "role": "sampler",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 102,
+  "cache_write_tokens": 130744,
+  "cache_read_tokens": 2910119,
+  "output_tokens": 32455,
+  "cost_usd": 1.8852518000000003,
+  "started": "2026-11-17T06:50:22Z",
+  "ended": "2026-11-17T07:29:40Z"
+}
