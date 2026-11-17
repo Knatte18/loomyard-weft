@@ -1,18 +1,24 @@
 # Merge main into the beam adopt-build-resplit
 
-Brings the parent branch `main` into the beam `adopt-build-resplit` as one true merge, `bae0ec63`, with no commit after it.
-The merge brings in `main`'s commits up to `96b20f1c`.
+Brings the parent branch `main` into the beam `adopt-build-resplit`, as a true merge with no pull request.
+The diff is `main`'s own work carried in; this description covers only what the merge itself decided.
 
-Three paths conflicted, and each resolution keeps what both sides meant.
+## Conflicts
 
-- `internal/beamcli/pr_test.go`: the beam added a `wantNot string` field so the handed-over push row could check that its refusal does not say "again".
-  `main` added `wantNoErr []string` with the same meaning, plus `wantUntouched`.
-  The resolution keeps `main`'s two fields and their checks, drops `wantNot`, and moves the handed-over row to `wantNoErr: []string{"again"}`.
-- `internal/lymdirs/doc.go`: the beam's package doc named `HandOverDirName`, and `main`'s added `WeaverDirName` to the list of names that sit under the tracked `_lym`.
-  The resolution keeps both sentences, with the list naming `UsageDirName`, `RaddleDirName` and `WeaverDirName`.
-- `internal/reedengine/bindings_integration_test.go`: the beam had replaced three literal 30-second recorder waits with its `recorderDeadline` constant, and `main` still had the literals.
-  The resolution keeps the constant, which has the same value.
+The merge conflicted in three files, each settled by keeping both sides' intent:
 
-No other edit was needed.
-`go build ./cmd/lym` succeeds on the merged tree,
-and `go vet` is clean on every package both sides changed.
+- `internal/beamcli/pr_test.go`: the beam's `PushThatHandedTheRunOverIsReturnedWithoutARerun` case keeps its place in `TestPROpen`.
+  Its expectation moves to `wantNoErr: []string{"again"}`, the field `main` renamed from `wantNot`.
+- `internal/lymdirs/doc.go`: the package comment keeps `main`'s `HandOverDirName` line.
+  It also keeps the beam's wider list of exceptions under the tracked `LymDirName`: `UsageDirName`, `RaddleDirName` and `WeaverDirName`.
+- `internal/reedengine/bindings_integration_test.go`: settled by hand to carry both sides.
+
+## After the merge
+
+One commit follows the merge, `fix: break overview comments at sentence boundaries`.
+It re-breaks comments in `internal/heddleengine/overview.go` and `overview_test.go` at sentence boundaries, with no change in behavior.
+The merged tree carried comments that broke that rule.
+
+## To check by hand
+
+- Read the settlement of `internal/reedengine/bindings_integration_test.go` in the merge commit, the one conflict not described above.
