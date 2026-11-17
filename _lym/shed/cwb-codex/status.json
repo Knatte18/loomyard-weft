@@ -1,14 +1,13 @@
 {
-  "current_producer": "Preflight",
+  "current_producer": "Motif",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "pause_before": "Drift-Verify",
   "pause_before_by": "codex-writer-bench",
   "activity": {
-    "now": "Preflight",
-    "last": "Preflight → stuck",
+    "now": "Motif",
+    "last": "Preflight → done",
     "wait": ""
   },
   "history": [
@@ -19,6 +18,14 @@
       "at": "2026-11-17T17:26:52Z",
       "started_at": "2026-11-17T17:26:51Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-17T17:27:23Z",
+      "started_at": "2026-11-17T17:27:23Z",
+      "by": "shed"
     }
   ],
   "product": {
