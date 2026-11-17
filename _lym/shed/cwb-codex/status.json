@@ -1,40 +1,14 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "",
   "state": "running",
   "error": "",
   "pause_requested": false,
-  "pause_before": "Drift-Verify",
-  "pause_before_by": "codex-writer-bench",
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Motif → done",
+    "now": "",
+    "last": "",
     "wait": ""
   },
-  "history": [
-    {
-      "producer": "Preflight",
-      "outcome": "stuck",
-      "output": "",
-      "at": "2026-11-17T17:26:52Z",
-      "started_at": "2026-11-17T17:26:51Z",
-      "budget_exempt": true
-    },
-    {
-      "producer": "Preflight",
-      "outcome": "done",
-      "output": "",
-      "at": "2026-11-17T17:27:23Z",
-      "started_at": "2026-11-17T17:27:23Z",
-      "by": "shed"
-    },
-    {
-      "producer": "Motif",
-      "outcome": "done",
-      "output": "",
-      "at": "2026-11-17T17:27:25Z",
-      "started_at": "2026-11-17T17:27:25Z"
-    }
-  ],
+  "history": [],
   "product": {
     "slug": "cwb-codex",
     "parent": "codex-writer-bench",

@@ -1,8 +1,8 @@
 {
-  "recipe": "tapestry",
+  "recipe": "darn",
   "driver": "go",
   "params": {
     "parent": "codex-writer-bench"
   },
-  "started_at": "2026-11-17T17:26:48Z"
+  "started_at": "2026-11-17T17:28:17Z"
 }
