@@ -1,6 +1,6 @@
 # Trial: check five lym gate redundant candidates by hand after the kill-count fix
 
-`redundant-candidates-check` · Task · research, gate, testkit · starting · Seed-IDE
+`redundant-candidates-check` · Task · research, gate, testkit · running · Preflight
 
 ## Seen (orch, 2026-11-17)
 
