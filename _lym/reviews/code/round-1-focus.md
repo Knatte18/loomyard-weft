@@ -1,0 +1,17 @@
+---
+round: 1
+focus:
+  - "internal/weaverengine/run.go, resume.go, strand.go: check D6's stop ordering. Is the attempt outcome recorded before the strand is stopped, and does a failed stop or failed state write return Stuck naming the guid and `lym reed remove <guid>` without starting a next attempt?"
+  - "internal/weaverengine/resume.go: check D7 re-entry. Does a `NEEDS_PARENT` stop resume on the rung that asked, never take the no-spawn path, and refuse when the plan's card set no longer matches the recorded partition? Does a row with `gates` entries never take the no-spawn path?"
+  - "internal/weaverengine/reset.go and internal/weavercli/reset.go: check D2's reset against its refusal order. Does it refuse on a held run lock, probe every attempt and fixer strand through `ProbeGated` before moving anything, and handle `--stop-strand`, a probe error and a corrupt state file as the decision record says? Does the reset restore the plan to the first begin's weft commit and archive the run record under UTC-stamped names?"
+  - "internal/weaverengine/active.go and internal/loomshed (the implementer guard): check D1 and D13. Does a missing state file count as no begun batches while a corrupt one refuses with the file named and a way forward? Does each refusal name the two ways forward the record gives? Does every loom reader of implementer state go through the seam?"
+  - "internal/weaverengine/record.go, verify.go and internal/runplan: check D3 and D11. Is the recorded partition fixed per batch, so the later-reference check sees the pending cards and only the true last batch reads as last? Does a rename a batch reports rewrite the pending cards? Does the verify fixer climb the same ladder as D5 says?"
+  - "internal/shedrecipe, internal/weaverengine/config.go, internal/configreg: check D1 and D5. Does `weaver` join the closed `implementers` table with the row's other config keys forwarded, and does an empty or unresolvable ladder refuse with `lym config weaver` named?"
+  - "contracts/specs/implementer-spec.md and contracts/stencils/weaver: check the spec gains the `weaver` table entry, the Out line about committing the run directory and plan directory, and the Stuck route through shed's stop chain. Check that the stencil text names only what the agent reads."
+  - "internal/websterengine, internal/webstercli, internal/landingshed, internal/fabriccli, internal/loomcli, internal/lymdirs, internal/hubgeom, internal/standalonegeom: check the diff against the Scope list. Does any change go beyond what the decision record licenses, and does any Webster behavior regress through the shared-code moves (`beginbatch.go` deleted from websterengine)?"
+  - "pattern/PATTERN-config-layers.md, PATTERN-gate-slot.md, PATTERN-test-speed.md: check these edits against the constraints section's declared PATTERN changes, if any. Check the commit messages for `Pattern-Departure:` trailers."
+  - "Test economy: judge the redundancy report's two 'contained' candidates in internal/loomshed (`TestCancellation_RealProducersReturnErrorNotStuck`, `TestGateRows_StopsNameAWayForward`) and the three in internal/shedrecipe and internal/shedadapters against their covering tests' assertions. Check behavior added with no coverage, such as the reset refusals and the re-entry branches."
+---
+
+The foci follow the decision record's decisions D1 to D7 and D11 to D13, the plan's card order and the plan's lens files.
+The range is `c75a2b5d..HEAD`; no `_lym/landing/summary.md` exists, so the change description is not a subject.
