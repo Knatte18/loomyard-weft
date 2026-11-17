@@ -1,0 +1,8 @@
+{
+  "recipe": "darn",
+  "driver": "go",
+  "params": {
+    "parent": "adopt-build-resplit"
+  },
+  "started_at": "2026-11-17T17:04:56Z"
+}
