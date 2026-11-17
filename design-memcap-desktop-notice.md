@@ -1,6 +1,6 @@
 # A capped test run raises a desktop low-memory notice
 
-`memcap-desktop-notice` · Task · bug, gate, process · starting · Open-Window
+`memcap-desktop-notice` · Task · bug, gate, process · starting · Seed-IDE
 
 ## Seen (2026-11-17, Neve, KDE Plasma)
 
