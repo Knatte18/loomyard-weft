@@ -1,6 +1,8 @@
 # Build the coverage maps as a mode of the gate run, one process per test in parallel
 
-`gate-builds-testmap` · Task · enhancement, gate, testkit · running · Discussion-Bouncer
+`gate-builds-testmap` · Note · sketch, gate, testkit
+
+Decision record: [Sketch](decision-gate-builds-testmap.md)
 
 ## Seen (operator, 2026-11-17)
 
