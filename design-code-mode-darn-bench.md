@@ -1,6 +1,6 @@
 # Bench Code Mode on a darn writer doing a repeated edit
 
-`code-mode-darn-bench` · Task · research, claude, shuttle · starting · Open-IDE
+`code-mode-darn-bench` · Task · research, claude, shuttle · running · Preflight
 
 ## Seen (orch, 2026-11-16)
 
