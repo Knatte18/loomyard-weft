@@ -171,11 +171,9 @@
       "brief": "",
       "body": "Builds the first full set of coverage maps and uses them to cut the test suite:\ncut existing redundant tests.\nThe maps are built only on command now; the gate no longer selects tests from them.\n\n## Order (operator, 2026-11-12)\n\n1. Landed: the way to make the maps.\n   The upkeep pass (`--upkeep`) and the prime dobby that started it were retired by `testmap-on-command` (`72b26d1a`, 2026-11-15):\n   the payoff report found the pass took 7.7 to 31 minutes after a landing and saved the gate 0 to 4.2 s.\n   `gate-test-map-mode` (`b92c95ee`, 2026-11-17) replaced `lym gate testmap` with `lym gate test --map`,\n   which runs each test in its own process, in parallel, and writes each package's map whole.\n   The maps are built only on command, and the gate runs whole packages, with no `coverage` scope.\n2. Landed: the pilot on one package and the verb that lists redundant-test candidates (`lym gate redundant`, `79f0eb4a`).\n   Its report is `docs/research/speed/coverage-map-pilot-2026-11-12/report.md`.\n   The maps stay as the input of this verb.\n3. Open: the cut stage, `redundancy-sweep-existing`.\n   The operator reads the candidate lists first; the pilot found that equal coverage often hides a different assertion, so the cut stays a reading filter, not a verdict.\n",
       "created": "2026-11-09T20:46:47Z",
-      "revised": "2026-11-17T14:27:53Z",
+      "revised": "2026-11-17T19:00:07Z",
       "order": [
-        "testmap-maps-in-weft",
-        "testmap-upkeep-cost-and-guide",
-        "selector-non-body-miss",
+        "redundant-literal-clause-mutants",
         "redundancy-sweep-existing"
       ]
     },
