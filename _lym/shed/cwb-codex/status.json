@@ -1,12 +1,12 @@
 {
-  "current_producer": "",
+  "current_producer": "Preflight",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Drift-Verify",
   "pause_before_by": "codex-writer-bench",
   "activity": {
-    "now": "",
+    "now": "Preflight",
     "last": "",
     "wait": ""
   },

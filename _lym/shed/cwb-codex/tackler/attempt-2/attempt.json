@@ -1,0 +1,20 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Discussion-Write",
+    "history_length": 3,
+    "state": "failed"
+  },
+  "pause_before": "Drift-Verify",
+  "pause_after": "",
+  "snapshot": {
+    "head": "3bbc92a0e25d8aee6948596a2cb3a4d6a92af510",
+    "branch": "cwb-codex",
+    "dirty": {}
+  },
+  "spawned_at": "2026-11-17T18:29:18.279102938+01:00",
+  "deadline": "2026-11-17T18:39:18.279102938+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/cwb-codex/_lym/shed/cwb-codex/drive-reports/drive-envelope-20261117-182918-4c73.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/cwb-codex/_lym/shed/cwb-codex/drive-reports/drive-report-20261117-182918-f9fe.md",
+  "strand_guid": "56553eeabe130d3803af43e448fe6a33"
+}

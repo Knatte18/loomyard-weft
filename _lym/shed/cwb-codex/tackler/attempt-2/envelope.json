@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "The producer error is reed losing the Discussion strand 741f5db3151da04013e01211f1a4bd30 from its strand table (lym reed status now lists only ly:cwb-codex:loom-status and ly:cwb-codex:tackler). The reed error itself says it does not prove the agent is dead, but the shuttle session state for that strand reads dead (driver-trace 18:29:00). A plain re-launch of Discussion-Write would not settle this: the Discussion agent had already stopped at Step 1 (trace 18:27:45 and 18:27:58) because `lym board get {\"slug\":\"cwb-codex\"}` returns task null, and it wrote no files. The orch then replied (trace 18:27:58) that cwb-codex is a bench pair for codex-writer-bench, that it already has the landed run's decision record, and that it needs no Discussion. So re-running the Discussion row would repeat the same empty result. Whether this row should run at all, and against which board entry, is a scope choice for the run's parent. No parent is recorded for this run, so the question goes in the stop report.\n",
+  "question": "Run cwb-codex, row Discussion-Write: the Discussion agent found no board task for slug cwb-codex (board get returns task null). The orch replied that cwb-codex is a bench pair for codex-writer-bench, already has the landed run's decision record, and needs no Discussion; ly:codex-writer-bench:darn steers this run. Should Discussion-Write be skipped so the run moves on, or should a Discussion run against a named board entry? Separately, reed no longer tracks the Discussion strand 741f5db3151da04013e01211f1a4bd30 (reed status lists only loom-status and tackler), so the stop cannot be retried as-is until that is settled.\n",
+  "goto": "",
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/cwb-codex/_lym/shed/cwb-codex/tackler/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/cwb-codex/_lym/shed/cwb-codex/tackler/attempt-2/verdict.yaml",
+  "case_brief_path": ""
+}
