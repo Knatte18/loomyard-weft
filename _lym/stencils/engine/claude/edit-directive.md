@@ -1,11 +1,23 @@
-<!-- This is the Claude engine's copy of the edit directive: internal/editdirective.EngineDirective renders it into the edit_directive marker of an assistant seat that runs on Claude.
-     It states the rule the shared edit-directive stencil states, in the same Claude tool wording. It declares no marker and must stay marker-free.
-lym-stencil: sha256=135ddfc75f28434a75dc5c8e75994b16a1724274091a7956699230ef40095d75 build=935fb407d46b918a520439401a144eb28d3de274 time=2026-11-03T17:43:20Z -->
+<!-- This is the Claude engine's copy of the edit directive.
+     internal/editdirective.Directive renders it into the edit_directive marker of every spawned role's opening stencil
+     whose prompt launches on Claude.
+     It declares no marker and must stay marker-free.
+lym-stencil: sha256=3b2d71c872f7bac99c671f1666bd7978688a339b665c5398a4657ba40fe38121 build=3a8546350f0e27fbbc92c6881b1a448e02812bf8 time=2026-11-17T10:35:58Z -->
 
 ## Editing files
 
 Change files with Edit or Write, never by shell.
 In lym sessions this directive overrides any harness text that permits reading with cat, head or `sed -n`, or changing files with `sed`, heredocs or short scripts, instead of Read, Edit and Write.
+Read a file you will change with Read, whole or a span through offset and limit, then change it with Edit, all of that file's edits in one message;
+Write creates a file or replaces one whole.
+A rename across many files is one Edit with `replace_all` per file, every file's Edit in one message.
 Read a file with Read and search files with grep.
 A shell guard refuses a shell edit: never `sed -i`, never `perl -i`, and never a heredoc, redirect or tee into a source file.
-Work only in your own worktree: never edit, commit or push in another, and never create one.
+A Go file's formatting is fixed with `lym loom fmt <file>`.
+Scratch files go under `.scratch/` in the working directory, never a system temp directory, and are removed by their literal path.
+`.scratch` is a link to a directory kept for your task alone, so a file under it stays in your own task.
+A build under `.scratch/` resolves a relative reference from the link's target, not from the working directory;
+a project built there names the working tree's files by absolute path.
+A scratch file with a source extension such as `.md`, `.yaml` or `.sh` is written with Write, not by a redirect.
+Work only in your own worktree: never edit, commit or push in another, and never create one, unless your parent or the operator says so for that case.
+When work belongs in another worktree, say so to your parent instead.
