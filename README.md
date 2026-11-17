@@ -104,14 +104,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F12 |  | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | 7m<br>7m | stencil, shed |
 | F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>7m | burler, shed, orch, quarry, report |
 
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| F2 | **A per-run token and cost budget, audit mode first** | [`run-cost-budget`](design-run-cost-budget.md) | 7m<br>7m | shed, report |
-
 </details>
 
 <details open>

@@ -844,27 +844,6 @@
       "revised": "2026-11-17T10:49:21Z"
     },
     {
-      "id": 1417,
-      "handle": "F2",
-      "slug": "run-cost-budget",
-      "title": "A per-run token and cost budget, audit mode first",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "shed",
-        "report"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (orch, 2026-11-17)\n\nLym measures cost per phase (`f2295ed6`, `e62ce851`) and caps memory and time per run, but no run has a token or cost budget.\nWith Codex as a second engine and Weaver's model escalation, spend per run varies more than it did.\nSource: the survey F17 (`orchestrator-survey-ideas`), from Fusion's per-task budgets and Conductor's `limits.budget_usd` with `budget_mode: audit|enforce`.\n\n## Idea\n\n- A per-run token or cost budget, set per profile or per task.\n- It starts in audit mode: a run past its budget warns the orch once and goes on.\n- An enforce mode, chosen later, pauses the run with a named reason.\n",
-      "status": "done",
-      "created": "2026-11-17T10:49:21Z",
-      "revised": "2026-11-17T10:49:21Z",
-      "project": "borrowed-orchestrator-ideas"
-    },
-    {
       "id": 1420,
       "handle": "T16",
       "slug": "unrequested-scope-lens",
