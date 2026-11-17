@@ -338,8 +338,28 @@
       "spawnedAt": "2026-11-17T15:24:15Z",
       "sessionId": "81b1c802-12a0-4e4e-8251-243f37bc1227",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-stalemate-settlers",
+        "status": "done",
+        "head_sha": "b150586b6482545864d999d0dcfc58b44f732af0",
+        "deviations": [
+          "internal/loomengine/config_test.go",
+          "internal/shedrecipe/entries_bouncer_test.go",
+          "internal/shedrecipe/entries_burler.go",
+          "internal/shedrecipe/seam_enforcement_test.go"
+        ]
+      },
+      "cardShas": [
+        "b150586b6482545864d999d0dcfc58b44f732af0"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-rounds-converge-build/81b1c802-12a0-4e4e-8251-243f37bc1227/subagents/agent-a1335bef833382db0.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-rounds-converge-build/81b1c802-12a0-4e4e-8251-243f37bc1227/subagents/agent-a1335bef833382db0.jsonl"
+      ]
     },
     "5": {
       "slug": "review-round-checks",
@@ -393,12 +413,13 @@
       ]
     }
   },
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "2e9733407d4e886b0330ebdbcbfec9de",
   "masterSessionId": "81b1c802-12a0-4e4e-8251-243f37bc1227",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-rounds-converge-build/81b1c802-12a0-4e4e-8251-243f37bc1227/subagents/agent-a5fa96202e39c217b.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-rounds-converge-build/81b1c802-12a0-4e4e-8251-243f37bc1227/subagents/agent-a23b0a288e1b6df20.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-rounds-converge-build/81b1c802-12a0-4e4e-8251-243f37bc1227/subagents/agent-a23b0a288e1b6df20.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-rounds-converge-build/81b1c802-12a0-4e4e-8251-243f37bc1227/subagents/agent-a1335bef833382db0.jsonl"
   ]
 }
