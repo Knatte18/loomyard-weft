@@ -1,6 +1,8 @@
 # Interactive board view: a regenerated HTML file and a phone-friendly README
 
-`board-viewer` · Task · feature, board, ide, orch · running · Discussion-Bouncer
+`board-viewer` · Note · sketch, board, ide, orch
+
+Decision record: [Sketch](decision-board-viewer.md)
 
 Operator 2026-10-04: the board needs an interactive view with filters, reachable without typing a lym command each time.
 
