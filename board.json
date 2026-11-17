@@ -476,7 +476,7 @@
       "isolated": false,
       "brief": "",
       "body": "Merge in from parent: bring the parent branch main into the beam adopt-build-resplit.\nThis task's branch forks from the beam, so its landing carries the merge into the beam, as a true merge with no pull request.\nFiled by `lym beam merge-parent adopt-build-resplit`.\n\n- Run `lym fabric merge-in main` in this task's worktree.\n  On a conflict, settle each path it lists, stage them with `lym fabric merge-stage \u003cpaths\u003e` and conclude with `lym fabric merge --continue`.\n- Make the gate pass on the merged tree: fix what the merge broke, on either side, and nothing else.\n- Make no change the merge does not need: no refactor, no feature and no fix of an older fault.\n- When the merge is already up to date, change nothing and say so in the change description.\n- The Code-Review perch reviews the merge alone: each merge commit's conflict resolution and every commit after the merge, never the parent's own commits the merge brings in.\n  Checking the project's goal is no part of this task.\n",
-      "status": "running · Describe",
+      "status": "running · PR-Review",
       "created": "2026-11-17T18:58:46Z",
       "revised": "2026-11-17T18:58:46Z",
       "run_settings": {
