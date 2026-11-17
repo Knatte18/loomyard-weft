@@ -71,4 +71,15 @@ Rationale: Go reserves far more address space than it uses, so a 2048 MB RLIMIT_
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - memory-scope-probe-unbounded (class design, severity MEDIUM, open in rounds 1)
+  - report-step-and-testmap-capped-paths-untested (class design, severity MEDIUM, open in rounds 1)
+  - rlimit-data-replaces-rlimit-as-unrecorded (class decision, severity MEDIUM, open in rounds 1)
+  - runalone-oom-branch-untested-on-scope-host (class design, severity MEDIUM, open in rounds 1)
+  - scope-never-starts-reads-as-failing-test (class design, severity MEDIUM, open in rounds 1)
+  - testmap-capped-runs-lack-parallel-bound (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
