@@ -1,29 +1,54 @@
 # Heddle
 
-Every entry heddle delivers, grouped by the target it reaches, each group in render order.
+What heddle delivers to every worktree and session in this hub.
 lym rewrites this file whole at every heddle write; change an entry with `lym heddle set`, never this file.
 
-## `claude-file`
+Sources:
 
-Rendered into `CLAUDE.local.md` at every worktree's anchor. It also carries every entry aimed at `agents-file`.
+- **repo** — this hub's `heddle.json`; yours to change.
+- **lym** — shipped with lym; change it only through an override (`lym heddle set --layer lym`).
+- **lym, overridden** — shipped with lym, its text replaced by this hub's override.
+- **derived** — rendered from this hub's config, such as `agents.yaml`.
 
-No entry.
+## At a glance
 
-## `codex-file`
+| Lands in | Source | Entry | What it does |
+|---|---|---|---|
+| `CLAUDE.local.md` | lym | `lym-batching` | Batch your calls |
+| `CLAUDE.local.md` | lym | `lym-plan-edits-before-gate` | Make every round of edits in this order |
+| `CLAUDE.local.md` | **repo** | `nicknames` | Nicknames |
+| `AGENTS.override.md` | lym | `lym-batching` | Batch your calls |
+| `AGENTS.override.md` | lym | `lym-plan-edits-before-gate` | Make every round of edits in this order |
+| `AGENTS.override.md` | **repo** | `nicknames` | Nicknames |
+| `.claude/settings.local.json` | lym | `lym-no-attribution` | `attribution` |
+| `.claude/settings.local.json` | lym | `lym-plugins` | `enabledPlugins`, `extraKnownMarketplaces` |
+| `.claude/settings.local.json` | lym | `lym-tool-deny` | `permissions` |
+| `.claude/settings.local.json` | lym | `lym-session-scope` | `disableBundledSkills`, `disableClaudeAiConnectors`, `disableWorkflows` |
+| `.claude/settings.local.json` | lym | `lym-prompt-suggestion-off` | `promptSuggestionEnabled` |
+| `.claude/settings.local.json` | derived | `lym-agent-defaults` | `effortLevel`, `env` |
+| System prompt of every orch session | **repo** | `orch-rules` | Orch rules for the loomyard hub |
 
-Rendered into `AGENTS.override.md` at every worktree's anchor. It also carries every entry aimed at `agents-file`.
+## `CLAUDE.local.md`
 
-No entry.
+Rendered at every worktree's anchor.
 
-## `agents-file`
+### From this repository
 
-Rendered into `CLAUDE.local.md`, `AGENTS.override.md` at every worktree's anchor.
+#### `nicknames`
 
-### `lym-batching`
+```markdown
+## Nicknames
 
-- From: shipped with lym
-- Order: 10
-- Targets: `agents-file`
+- Read "Sketch" (capital S) as the decision record: the approved record a Discussion writes, stored on the board for a discussed entry.
+- Read "Merriam" as webster's long-lived master session, which forks one implementer per batch.
+- Use every nickname in this list freely with the operator.
+- Keep the formal names in code, files, verbs and specs.
+```
+
+### From lym
+
+<details>
+<summary><code>lym-batching</code> — Batch your calls</summary>
 
 ```markdown
 ## Batch your calls
@@ -41,11 +66,10 @@ Rendered into `CLAUDE.local.md`, `AGENTS.override.md` at every worktree's anchor
 - After a command rewrites files, such as a formatter, a generator or a script, read every file it changed again in one message before you edit any of them.
 ```
 
-### `lym-plan-edits-before-gate`
+</details>
 
-- From: shipped with lym
-- Order: 20
-- Targets: `agents-file`
+<details>
+<summary><code>lym-plan-edits-before-gate</code> — Make every round of edits in this order</summary>
 
 ```markdown
 ## Make every round of edits in this order
@@ -68,11 +92,15 @@ Rendered into `CLAUDE.local.md`, `AGENTS.override.md` at every worktree's anchor
 - Never run the gate between the edits of one round.
 ```
 
-### `nicknames`
+</details>
 
-- From: the hub's heddle.json
-- Order: 900
-- Targets: `agents-file`
+## `AGENTS.override.md`
+
+Rendered at every worktree's anchor.
+
+### From this repository
+
+#### `nicknames`
 
 ```markdown
 ## Nicknames
@@ -83,33 +111,69 @@ Rendered into `CLAUDE.local.md`, `AGENTS.override.md` at every worktree's anchor
 - Keep the formal names in code, files, verbs and specs.
 ```
 
-## `claude-settings`
+### From lym
 
-Merged into `.claude/settings.local.json` at every worktree's anchor; a key the file holds that heddle never set stays.
+<details>
+<summary><code>lym-batching</code> — Batch your calls</summary>
 
-### `lym-no-attribution`
+```markdown
+## Batch your calls
 
-- From: shipped with lym
-- Order: 100
-- Targets: `claude-settings`
+- Request every call whose arguments you already know in one message.
+- Before you look anything up, list every question the step raises.
+- Send every grep and read for all of those questions in one message.
+- Wait for a result only to choose the next call.
+- When a result arrives, send every call it unlocks and every call you already know in one message.
+- Read what you need before you edit: a file whole, or every span you need from it, in one message.
+- Read a file whole, or every span you need from it, even when your read tool advises reading only the part you need.
+- Never grep for a line number and then read a slice around it.
+- Never read one file in slices over several turns.
+- Keep a file you have read in mind; read it again only when something other than your own edit has changed it.
+- After a command rewrites files, such as a formatter, a generator or a script, read every file it changed again in one message before you edit any of them.
+```
 
-```json
+</details>
+
+<details>
+<summary><code>lym-plan-edits-before-gate</code> — Make every round of edits in this order</summary>
+
+```markdown
+## Make every round of edits in this order
+
+- Follow the steps below in order every round, and never deviate from them.
+- Count as a round any set of edits, whatever starts it: a card, a task, a plan, a review's findings, a fixer's report or a failed gate.
+
+1. Read everything the round needs in one message: every read and search together, a file whole when it fits and every span of it you need otherwise.
+   - Make a second round of reads only for files the first round named.
+2. Decide every edit across every file the round touches before you make any of them.
+3. Make all of those edits in one message, every file edit together in one turn.
+4. Run the round's gate once, or its validator when it has no gate, and fix everything its report shows the same way:
+   1. Read what the fixes need in one message.
+   2. Decide every fix.
+   3. Make all of them in one message.
+   4. Run the gate or validator again.
+
+- Never read one file per turn.
+- Never spread an edit, a read and another edit over turns.
+- Never run the gate between the edits of one round.
+```
+
+</details>
+
+## `.claude/settings.local.json`
+
+Merged into the file at every worktree's anchor; a key the file holds that heddle never set stays.
+What heddle merges in, with the entry that sets each key:
+
+```jsonc
 {
+  // lym-no-attribution (lym)
   "attribution": {
     "commit": "",
     "pr": ""
-  }
-}
-```
+  },
 
-### `lym-plugins`
-
-- From: shipped with lym
-- Order: 110
-- Targets: `claude-settings`
-
-```json
-{
+  // lym-plugins (lym)
   "enabledPlugins": {
     "ly@loomyard": true,
     "scribe@scribe": true
@@ -121,18 +185,9 @@ Merged into `.claude/settings.local.json` at every worktree's anchor; a key the 
         "source": "github"
       }
     }
-  }
-}
-```
+  },
 
-### `lym-tool-deny`
-
-- From: shipped with lym
-- Order: 120
-- Targets: `claude-settings`
-
-```json
-{
+  // lym-tool-deny (lym)
   "permissions": {
     "deny": [
       "Artifact",
@@ -150,44 +205,17 @@ Merged into `.claude/settings.local.json` at every worktree's anchor; a key the 
       "ExitWorktree",
       "Skill(dataviz)"
     ]
-  }
-}
-```
+  },
 
-### `lym-session-scope`
-
-- From: shipped with lym
-- Order: 130
-- Targets: `claude-settings`
-
-```json
-{
+  // lym-session-scope (lym)
   "disableBundledSkills": true,
   "disableClaudeAiConnectors": true,
-  "disableWorkflows": true
-}
-```
+  "disableWorkflows": true,
 
-### `lym-prompt-suggestion-off`
+  // lym-prompt-suggestion-off (lym)
+  "promptSuggestionEnabled": false,
 
-- From: shipped with lym
-- Order: 140
-- Targets: `claude-settings`
-
-```json
-{
-  "promptSuggestionEnabled": false
-}
-```
-
-### `lym-agent-defaults`
-
-- From: derived from the hub's agents.yaml
-- Order: 200
-- Targets: `claude-settings`
-
-```json
-{
+  // lym-agent-defaults (derived)
   "effortLevel": "medium",
   "env": {
     "CLAUDE_CODE_SUBAGENT_EFFORT": "medium"
@@ -195,27 +223,13 @@ Merged into `.claude/settings.local.json` at every worktree's anchor; a key the 
 }
 ```
 
-## `claude-prompt`
+## System prompt of every orch session
 
-Appended to the system prompt of every claude session.
+Appended to the system prompt of every orch session at its launch.
 
-No entry.
+### From this repository
 
-## `codex-prompt`
-
-Appended to the system prompt of every codex session.
-
-No entry.
-
-## `orch-prompt`
-
-Appended to the system prompt of every orch session.
-
-### `orch-rules`
-
-- From: the hub's heddle.json
-- Order: 1000
-- Targets: `orch-prompt`
+#### `orch-rules`
 
 ```markdown
 # Orch rules for the loomyard hub
