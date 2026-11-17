@@ -483,7 +483,7 @@
       "isolated": false,
       "brief": "Fixers and one-document writers edit one file many times by design, so the edit-loop watch reports ordinary work as a loop",
       "body": "## Seen (orch, 2026-11-17)\n\nThe edit-loop watch landed in `c167e803` (four edits of one file within five minutes sends the parent a notice).\nWithin its first hour it sent two notices for `gate-test-map-mode`'s Plan-Burler-Fix agent,\nwhich edited `_lym/plan/01-gate-test-map-mode.md` four times within five minutes each time.\nThat agent was applying the round-2 review's findings, one Edit per site, to the one plan file it owns; it was making progress.\nMinutes later `codex-standing-instructions`' Code-Burler-Fix agent drew one for `instructionfiles.go`, fixing several findings in that file.\nA fixer applying several findings to one file, or a writer whose whole output is one document,\nedits that file many times by design, so the watch reads ordinary work as a loop.\n\n## Idea\n\nCount an edit toward a loop only when it undoes or repeats an earlier one,\nfor example the same `old_string` edited back and forth, or the file's content returning to an earlier hash,\ninstead of counting every edit of the file.\nFailing that, exempt the roles whose output is one document, or give them a higher count.\n\nThe hub's default shuttle config sets `edit_loop_edits: 0` while the notices are noise (operator, 2026-11-17); the fix sets it back to a working threshold.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-17T12:55:53Z",
       "revised": "2026-11-17T16:43:37Z",
       "profile": "light"
