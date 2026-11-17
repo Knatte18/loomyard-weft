@@ -52,10 +52,14 @@ All six lenses returned a report.
 - `beam start` in the prime's and each beam's folder `tasks.json`: a beam's multi-root window lists both folders, so the key would find two tasks and could start the root.
 - Grouping the README by area: conflicts with the landed layer grouping; the viewer's area filter covers it.
 - Copying `board.html` into the Bolt by a separate install verb: a fresh clone would lack it until someone ran the verb.
+- `fabricengine.RegenerateHubWorkspace` writing the `beam start` tasks itself: extends fabric's IDE knowledge, which `PATTERN-fabric-boundary` forbids.
+- The ide module writing the workspace files' `tasks` key after fabric's regeneration, preserved by fabric:
+  a regeneration by any other caller, such as a fabric verb making a beam, would write a beam file with no `beam start` until the next seed.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1: fixed F1–F6 and F9–F15; F7 and F8 went to the parent as `decision` findings.
+  `beam start` moved behind a general workspace-content hook (D6), and `lym board open` resolves with `ResolveWithin` in the board pre-run (D5).
 
 ## Question ledger
 
