@@ -16,8 +16,9 @@
 D5 needs two general fabric verbs, shaped for no consumer (`PATTERN-fabric-boundary`).
 
 `WorktreeTreeID` hashes what `git add -A` would stage in the code checkout's working tree into a git tree object and returns the tree's id.
-It builds the tree in a throwaway index: a temp directory from `lymtemp.MkdirTemp`, `GIT_INDEX_FILE` pointing into it, `git add -A` then `git write-tree`, all through `gitexec.RunWithEnv` in the checkout.
-The checkout's own `info/exclude` and ignore files apply, so the excluded and ignored paths stay out, as they do for `ReadTaskPatch`'s untracked set.
+It builds the tree in a throwaway index: a temp directory from `lymtemp.MkdirTemp`, `GIT_INDEX_FILE` pointing into it, `git read-tree HEAD` to seed it, as `newIntegrateBuild` seeds its temporary index, then `git add -A` and `git write-tree`, all through `gitexec.RunWithEnv` in the checkout.
+The checkout's own `info/exclude` and ignore files apply, so the excluded and ignored untracked paths stay out, as they do for `ReadTaskPatch`'s untracked set;
+the seed keeps every tracked file staged whatever the ignore rules say, as `git add -A` against the real index does.
 The real index, HEAD and every ref are untouched, and the temp directory is removed before it returns.
 Uncommitted edits count, so a fix that is committed and one left uncommitted with the same bytes give the same id.
 
@@ -27,6 +28,6 @@ A tree id git no longer holds is a returned error; callers read it as a missing 
 The doc.go paragraph that lists the read-only verbs gains both.
 
 `TestFabric_WorktreeTreeID` is tier1 (git), one table over a hermetic fixture built as `TestFabric_ReadTaskPatch` builds its fabric.
-Rows: an unchanged tree gives the same id twice; an uncommitted edit to a tracked file changes the id and `ChangedPathsBetween` lists exactly that path; committing that edit leaves the id equal to the uncommitted one; a new untracked, non-ignored file changes the id and is listed; an ignored file leaves the id unchanged; after the calls `git status --porcelain` and `git rev-parse HEAD` read as before, so the index and refs are untouched; an unknown tree id makes `ChangedPathsBetween` return an error.
+Rows: an unchanged tree gives the same id twice; an uncommitted edit to a tracked file changes the id and `ChangedPathsBetween` lists exactly that path; committing that edit leaves the id equal to the uncommitted one; a new untracked, non-ignored file changes the id and is listed; an untracked ignored file leaves the id unchanged; an edit to a tracked file that an `info/exclude` pattern matches changes the id and `ChangedPathsBetween` lists it; after the calls `git status --porcelain` and `git rev-parse HEAD` read as before, so the index and refs are untouched; an unknown tree id makes `ChangedPathsBetween` return an error.
 
 **ImpactSummary:** Two additive read-only verbs on `*Fabric`; no existing verb or caller changes.

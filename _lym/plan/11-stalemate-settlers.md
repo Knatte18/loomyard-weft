@@ -15,7 +15,15 @@
 D6: a stalemate is circling that Go detected, and the same judgment ends it.
 
 `Eligibility` admits a pending escalation of cause `stalemate` beside hard-cap, circling and decision; `budget` stays refused.
-Its doc comment, arbiterstop's doc.go and loomcli doc.go's arbiter line list the admitted causes with `stalemate`.
+Its doc comment and arbiterstop's doc.go list the admitted causes with `stalemate`.
+loomcli doc.go enumerates them in two sentences, and both gain `stalemate`:
+the one listing the stops the verb's closed list admits, which ends "a pending escalation of cause `hard-cap`, `circling` or `decision`",
+and the one saying the table "asks the arbiter at an awaiting stop with a pending hard-cap, circling or decision escalation only".
+
+Bound: with `stalemate` admitted, the arbiter may accept a stalemated segment with findings still open, without the run's parent.
+The accept passes through `acceptRound`, whose `CarryOver` seam carries the open findings into the decision record's `## Open risks` where the recipe sets `carry_over`;
+`budget` stays refused, so a spent budget still goes to the parent;
+and the segment stays Awaiting until an `accept` or a `continue` is recorded.
 
 The circling verbs need no code change to record a stalemate decision (Card 10); their texts name the fifth kind:
 `circlingWayNot`, `circlingVerb`'s doc comment and the group, `accept` and `continue` help in `circlingCmd` list "a circling, hard-cap, budget, decision or stalemate escalation", and the group help says a stalemate escalation is one whose review target stayed unchanged for the configured rounds in a row.

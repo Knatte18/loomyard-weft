@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -31,9 +31,9 @@ The cards build bottom-up: fabric verbs, the fixer-report format, the snapshot s
 
 ### Decision: nil-seams-keep-today
 
-- **Decision:** Every new seam field (`BurlerHalfDeps.Snapshot`, `BouncerConfig.Snapshot`, `BouncerConfig.StalemateRounds`, `Profile.Round`) has a zero value that keeps today's behavior: no target id, every round full and counted changed, no stalemate check.
-- **Rationale:** Hand-built receivers in existing tests and an in-flight run that crosses the binary change keep reviewing and bouncing as today until they hold a complete new-format round (Open risks).
-- **Applies to:** cards 4, 5, 7, 10, 12
+- **Decision:** Every new seam field (`BurlerHalfDeps.Snapshot`, `BouncerConfig.Snapshot`, `BouncerConfig.StalemateRounds`, `Profile.Round`) has a legal zero value that no caller must fill: a nil `BurlerHalfDeps.Snapshot` writes no target id and no changes file, so every round counts as changed and an incremental round holds the BLOCKING rule alone; a nil `BouncerConfig.Snapshot` or a zero `StalemateRounds` never starts a stalemate escalation; a nil `Profile.Round` is a full round with today's prior-rounds text.
+- **Rationale:** Hand-built receivers in existing tests and an in-flight run that crosses the binary change keep working with no seam filled, and review as today until they hold a complete new-format round (Open risks).
+- **Applies to:** cards 4, 5, 6, 7, 10, 12
 
 ### Decision: pass-on-cap-checks
 

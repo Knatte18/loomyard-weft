@@ -37,7 +37,8 @@ D1: the fixer-report gains `---`-delimited YAML frontmatter over its prose, and 
 `FindingDisposition` holds `id`, `disposition`, `ground`, `rebuttal`, `evidence` (a list of strings) and `reason`.
 `FixerReport` holds `Dispositions []FindingDisposition` (yaml `dispositions`) and `Spawned *bool` (yaml `spawned`), so a present `spawned` key is told apart from an absent one.
 `ParseFixerReport` refuses a report with no frontmatter, an unclosed one, invalid YAML, or a disposition outside the five `Disposition` constants.
-It decodes leniently on unknown keys like the review parser; the report is agent-written and stays strict only on what it checks.
+`ParseFixerReport` refuses a frontmatter holding a top-level key other than `dispositions` and `spawned`, as `checkReviewKeys` does for the review, so a misspelled `dispositions` key never decodes as an empty list (`PATTERN-tolerant-records`: the report is agent-written and stays strict).
+Its message names the stray key and the two legal keys, and ends `way forward: rewrite the frontmatter of the fixer-report with only the dispositions and spawned keys`.
 
 `CheckFixerReport` judges a fixer-written report against the accepted review's findings and refuses, each with a message ending `way forward: rewrite the frontmatter of the fixer-report ...` naming what to add or remove:
 - a `spawned` key, which only Go writes;
@@ -64,6 +65,7 @@ doc.go gains a paragraph on the fixer-report format and the fix check, and its s
 Tests, all tier0:
 - `TestCheckFixerReport` is one table over parse and check, one row per refusal above, each asserting the refusal's `way forward:` clause, plus passing rows: a complete report; a routed round whose `decision`-class finding has no entry; a routed round with a `ruling` entry; a review with no findings and empty dispositions.
   An unrouted round missing the `decision`-class finding's entry is refused.
+  A frontmatter carrying a misspelled `dispositons` key is refused with the stray-key way forward.
   `skippedFixerReport` and `skippedRoutedFixerReport` each parse with `Spawned` false and no dispositions.
   A row runs `FixerReportGateEntry`'s gate over a review path holding an unparseable review and asserts the failed result names the review's parse error and the report to rewrite.
 - `TestEngine_Fix_TableShapeAndFiles` asserts the fix table's last gate entry is `fixer-report` with 3 attempts and `PassOnCap`.

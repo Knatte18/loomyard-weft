@@ -45,7 +45,7 @@ Config (`PATTERN-config-layers`):
 - `template.yaml` sets it to 2 beside `review_circling_checkpoint`, with a comment: the unchanged review rounds in a row that escalate a stalemate, 0 turning the check off.
 - `ConfigSpec` classifies it `CategoryNone`: its value only moves an escalation earlier or later and lets no gate pass.
 - `LoadConfig` refuses a negative value: `loom config key "review_stalemate_rounds": must not be negative, got <n>; set it to 0 to turn the check off or to a positive integer; way forward: <route>`, where the route is `reviewbudget.Route(dirs, ConfigSpec(), "review_stalemate_rounds")`, so a value set in the local layer or a task's `run_settings` is changed where it lives.
-- `docs/overview.md`'s review budget keys line names it.
+- `docs/overview.md`'s review budget keys line names it, and its paragraph on what a review segment escalates for names the stalemate escalation beside the circling finding and the hard cap.
 
 `shedrecipe.Env` gains `ReviewStalemateRounds int`, `ReviewTreeID func() (string, error)` and `ReviewTreeChanges func(fromID, toID string) ([]string, error)`.
 `loomCLI.wire` sets the first from the loom config and the two closures from `fabricengine.Open(location)` opened on each call, then `WorktreeTreeID` and `ChangedPathsBetween`, the way `codeSubject` reaches the fabric.

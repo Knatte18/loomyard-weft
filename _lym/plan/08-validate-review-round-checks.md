@@ -2,6 +2,8 @@
 
 **Edit:**
 - `internal/burlercli#burlerCLI.validateReviewCmd`
+- `internal/burlercli#validateReviewVerb`
+- `internal/burlercli#burlerCLI.resolvePersistentPreRun`
 - `internal/burlercli/doc.go`
 - `internal/burlerengine/doc.go`
 
@@ -32,7 +34,10 @@ Bound: the verb rebuilds the context from the decision record as it stands, whil
 An entry added through `lym loom decision add` while the reviewer works is listed by the verb and not by the gate, so a `resolved` quoting only that entry passes the verb and fails the gate, whose re-prompt names the refusal and whose cap lets the review through.
 The help text says the verb checks against the record as it stands.
 
-The help text names the round checks it runs on a review in a run directory, the cases that get the shape checks alone, and no longer says the verb needs no git repository.
+The help text names the round checks it runs on a review in a run directory, the cases that get the shape checks alone, and no longer says the verb needs no git repository;
+its sentence naming verdict and findings as the only top-level keys names `prior` as the third.
+The `validateReviewVerb` comment no longer says the check reads only the file it is given, nor `resolvePersistentPreRun`'s doc comment that the verb reads one told path;
+and validate.go's file header says the verb also runs the round checks on a review in a run directory.
 burlercli's doc.go line on the verb says the same, and burlerengine's doc.go sentence that the verb "needs no hub, mode or git repository" is rewritten to say it resolves the worktree from the seam cwd and runs the round checks on a review in a run directory.
 
 `validate_integration_test.go` is tier1 (a hermetic git task worktree from `hubforge`), and holds `TestValidateReviewVerb_RoundChecks`, one table:
