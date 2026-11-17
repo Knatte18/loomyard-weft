@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 14:00 UTC; every age below is as of then.
+Rendered 2026-11-17 14:04 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -73,7 +73,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Review rounds converge: parsed fixer rebuttals, incremental re-review with round checks, and a Go stalemate escalation** | [`review-rounds-converge-build`](design-review-rounds-converge-build.md)<br>[Sketch](decision-review-rounds-converge-build.md) | tapestry · solid | Plan-Write | neve | 13m<br>13m | burler, shed, stencil, fabric, loom, arbiter, cwd |
+| T4 | **Review rounds converge: parsed fixer rebuttals, incremental re-review with round checks, and a Go stalemate escalation** | [`review-rounds-converge-build`](design-review-rounds-converge-build.md)<br>[Sketch](decision-review-rounds-converge-build.md) | tapestry · solid | Plan-Write | neve | 17m<br>17m | burler, shed, stencil, fabric, loom, arbiter, cwd |
 
 #### Ready (0)
 
@@ -155,7 +155,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T23 | **Build the coverage maps with lym gate test --map, one process per test in parallel, and retire lym gate testmap** | [`gate-test-map-mode`](design-gate-test-map-mode.md)<br>[Sketch](decision-gate-test-map-mode.md) | tapestry · solid | Webster | neve | 2h<br>2h | gate, testkit, dobby, docs, pattern |
+| T23 | **Build the coverage maps with lym gate test --map, one process per test in parallel, and retire lym gate testmap** | [`gate-test-map-mode`](design-gate-test-map-mode.md)<br>[Sketch](decision-gate-test-map-mode.md) | tapestry · solid | Parent-Align | neve | 2h<br>2h | gate, testkit, dobby, docs, pattern |
 
 #### Ready (0)
 
@@ -216,7 +216,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S2 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md)<br>[Sketch](decision-board-viewer.md) | 6w<br>53m | board, ide, orch |
+| S2 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md)<br>[Sketch](decision-board-viewer.md) | 6w<br>57m | board, ide, orch |
 
 #### Research (1)
 
@@ -236,7 +236,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>3w | burler |
-| F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 1d<br>1d | batten, loom, board |
+| F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 2d<br>1d | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>11d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
 </details>
