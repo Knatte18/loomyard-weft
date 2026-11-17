@@ -1,0 +1,368 @@
+{
+  "runGuid": "0a70db7d32410364f4950a18b6f9fff8",
+  "planFingerprint": "4d2b4202011765defe118f46aeae069eefe9170d57a2d6ca88bfb40ae7dea6f8",
+  "planFileHashes": {
+    "00-overview.md": "5e14089f251704197709230f55363b5ad4b3d07cc39f870a17921296fce63a2e",
+    "01-board-replay-holds.md": "ba334222277c262aa0b0abb9dc027724524638e4ddf786e6bb21ad50eb7544be",
+    "02-board-adopt-write.md": "7ab5555a8da10429da3e302c84bc815f7d5e74243f74da1b034d28a773d54c22",
+    "03-fabric-takeover-writer.md": "01e8f2ca57f8062a291b82fc335e6d69390db88a8c039c17d6560f463dcf05b9",
+    "04-shellguard-take-hold.md": "47ec85fb684e428996bd4f1d67b2c08856f843ea3ff1f3c6dd1b79ee14372009",
+    "05-own-hold-reader.md": "dcda7670b0ac8c4db139d772d8a0d08c416720f5876a22074f3999be28e5f8ec",
+    "06-beam-status-hold.md": "66113aabb3efda0ae1366877a7905b3cbd541873e926baf0b85318ab73e8cbf4",
+    "07-batten-hub-run-slugs.md": "0a8ac8a0de33bc502f97a551e5350ffe7484f9369ca3e67fb161eb0d573494a9",
+    "08-adopt-check-ends-on-hold.md": "4337d2ce1f871e6c95b41167ddbad1ed9671e0eeae868d261e6a27afc2d5cb0f",
+    "09-adopt-foreground.md": "3e6d7a57f9753e50a197310e07426cf1c9a2251b4f5835738fdad36cc19742c3",
+    "10-retired-adopt-wording.md": "6c954ee15ef35065df26ccf2e5fd0a454436339fab140b82854a56e668329c50"
+  },
+  "planOverviewFrameHash": "9c993205f17167da8d1a1540ae310175d4ea9da737b86dc223dfeddf32cf3dc3",
+  "partition": [
+    {
+      "cards": [
+        "01-board-replay-holds",
+        "02-board-adopt-write",
+        "03-fabric-takeover-writer"
+      ],
+      "profile": "wide",
+      "estimate": 250618,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54652,
+        "read_union": 54780,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 636,
+            "reads": {
+              "file:internal/boardengine/doc.go": 9960,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 63,
+            "written": 19536
+          },
+          {
+            "card": 2,
+            "card_text": 1068,
+            "reads": {
+              "file:internal/boardengine/doc.go": 9960,
+              "file:internal/boardengine/holdwrite.go": 1020,
+              "package:cmd/lym": 2000,
+              "package:internal/boardengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 149,
+            "written": 45768
+          },
+          {
+            "card": 3,
+            "card_text": 1032,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29064,
+              "package:cmd/lym": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 249.5,
+            "written": 75882
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-shellguard-take-hold",
+        "05-own-hold-reader",
+        "06-beam-status-hold"
+      ],
+      "profile": "wide",
+      "estimate": 228664,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61652,
+        "read_union": 62240,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 480,
+            "reads": {
+              "file:internal/shellguard/doc.go": 696,
+              "file:internal/shuttleengine/claudeengine/testdata/settings-golden.json": 792,
+              "package:internal/shellguard": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata": 2000,
+              "tests:internal/shellguard": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata": 2000
+            },
+            "messages": 81.5,
+            "written": 24930
+          },
+          {
+            "card": 5,
+            "card_text": 696,
+            "reads": {
+              "file:internal/beamcli/doc.go": 5760,
+              "file:internal/dobbyengine/doc.go": 6984,
+              "file:internal/dobbyengine/handover.go": 1320,
+              "file:internal/orchcli/doc.go": 4176,
+              "file:internal/orchengine/doc.go": 8940,
+              "package:cmd/lym": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 195.5,
+            "written": 59346
+          },
+          {
+            "card": 6,
+            "card_text": 396,
+            "reads": {
+              "file:internal/beamcli/doc.go": 5760,
+              "package:internal/beamcli": 2000,
+              "tests:internal/beamcli": 2000
+            },
+            "messages": 67,
+            "written": 20496
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-batten-hub-run-slugs",
+        "08-adopt-check-ends-on-hold"
+      ],
+      "profile": "wide",
+      "estimate": 237030,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68652,
+        "read_union": 36612,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 312,
+            "reads": {
+              "package:cmd/lym": 2000,
+              "package:internal/battencli": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 84,
+            "written": 25512
+          },
+          {
+            "card": 8,
+            "card_text": 1704,
+            "reads": {
+              "file:internal/beamcli/doc.go": 5760,
+              "file:internal/fronttask/doc.go": 660,
+              "file:internal/orchcli/doc.go": 4176,
+              "package:cmd/lym": 2000,
+              "package:internal/adoptcli": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/fronttask": 2000,
+              "package:internal/orchcli": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/fronttask": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 348.5,
+            "written": 106254
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-adopt-foreground"
+      ],
+      "profile": "wide",
+      "estimate": 468288,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75652,
+        "read_union": 99668,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 3168,
+            "reads": {
+              "file:PATTERN.md": 684,
+              "file:docs/overview.md": 24384,
+              "file:internal/adoptcli/doc.go": 7752,
+              "file:internal/adoptcli/follow.go": 1560,
+              "file:internal/adoptcli/follow_test.go": 2364,
+              "file:internal/adoptcli/pause.go": 1776,
+              "file:internal/adoptcli/runreport.go": 2568,
+              "file:internal/adoptcli/runreport_test.go": 3252,
+              "file:internal/adoptcli/steps.go": 3996,
+              "file:internal/adoptcli/worker_test.go": 5508,
+              "file:internal/adoptrecord/doc.go": 348,
+              "file:internal/adoptrecord/record.go": 3168,
+              "file:internal/adoptrecord/record_test.go": 2472,
+              "file:internal/adoptrecord/testmain_test.go": 192,
+              "file:internal/adoptrecord/watch.go": 1260,
+              "file:internal/adoptrecord/watch_test.go": 1200,
+              "file:internal/fixtries/doc.go": 96,
+              "file:pattern/PATTERN-daemon-wakeups.md": 1644,
+              "file:pattern/PATTERN-dobby-runs.md": 276,
+              "package:.": 2000,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/adoptcli": 2000,
+              "package:internal/adoptrecord": 2000,
+              "package:internal/dobbyengine": 2000,
+              "package:internal/fixtries": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/adoptrecord": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:internal/fixtries": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 966,
+            "written": 292968
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-retired-adopt-wording"
+      ],
+      "profile": "wide",
+      "estimate": 149242,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82652,
+        "read_union": 33308,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 432,
+            "reads": {
+              "file:internal/fabriccli/doc.go": 2700,
+              "file:internal/landingshed/doc.go": 7980,
+              "file:internal/lymdirs/doc.go": 144,
+              "file:internal/pauserecord/doc.go": 1212,
+              "file:internal/runproc/doc.go": 840,
+              "package:internal/fabriccli": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/lymdirs": 2000,
+              "package:internal/pauserecord": 2000,
+              "package:internal/runproc": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/lymdirs": 2000,
+              "tests:internal/pauserecord": 2000,
+              "tests:internal/runproc": 2000
+            },
+            "messages": 109.5,
+            "written": 33282
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "board-replay-holds",
+      "cards": [
+        "01-board-replay-holds",
+        "02-board-adopt-write",
+        "03-fabric-takeover-writer"
+      ],
+      "cardHashes": {
+        "01-board-replay-holds": "ba334222277c262aa0b0abb9dc027724524638e4ddf786e6bb21ad50eb7544be",
+        "02-board-adopt-write": "7ab5555a8da10429da3e302c84bc815f7d5e74243f74da1b034d28a773d54c22",
+        "03-fabric-takeover-writer": "01e8f2ca57f8062a291b82fc335e6d69390db88a8c039c17d6560f463dcf05b9"
+      },
+      "startSha": "6005496ff858579dc33f8ebc593eb38e963188cd",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T14:15:22Z",
+      "sessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "f343e6f1dd8159caa6135f3dabefbab4",
+  "masterSessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
+  "masterEngine": "claude"
+}
