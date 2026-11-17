@@ -641,33 +641,6 @@
       "record_body_sha256": "83fe175e9930f7013b1cf97e916436a99b50e452c460f86049b4da9d55aec4c6"
     },
     {
-      "id": 1405,
-      "handle": "T6",
-      "slug": "prompt-engine-per-launch",
-      "title": "Every producer renders its prompt and edit directive for the engine its launch resolves to",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "codex",
-        "shuttle",
-        "stencil",
-        "heddle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `codex-same-as-claude`.\n\nTakes: nothing from another part; it waits for the board task weaver-implementer, which also changes internal/websterengine, so the two never run side by side\nDelivers: a launch spec that carries its prompt engine, or the hand-written mark from lym shuttle run alone; a shuttleengine call that returns the engine name a model choice resolves to; Prepare refusing a mismatched or unset prompt engine; the orch spec pinned to Claude; one full edit directive per engine block with the shared stencil removed; the D4 scan over production launch-spec literals\nExports: for every producer outside seatengine, one prompt render function that takes the engine name and needs no session, split out of its launching function where that function fills the prompt inline (bouncer.go judgeCall and runSeedSpawn, websterengine, treadleengine, samplerengine, landingshed, frictionengine, mergeresolve); launch-manifest-parity's producer table calls these, and editdirective.Directive takes the engine\n\nThe part changes these packages:\n\n- internal/shuttleengine (about 120 changed lines)\n- internal/shuttleengine/claudeengine (about 40 changed lines)\n- internal/shuttleengine/codexengine (about 40 changed lines)\n- internal/shuttleengines (about 150 changed lines)\n- internal/shuttlecli (about 40 changed lines)\n- internal/orchcli (about 20 changed lines)\n- internal/editdirective (about 40 changed lines)\n- contracts/stencils (about 250 changed lines)\n- internal/seatengine (about 40 changed lines)\n- internal/sheddriver (about 30 changed lines)\n- internal/treadleengine (about 60 changed lines)\n- internal/samplerengine (about 40 changed lines)\n- internal/websterengine (about 120 changed lines)\n- internal/landingshed (about 40 changed lines)\n- internal/gatefixer (about 30 changed lines)\n- internal/loomcli (about 30 changed lines)\n- internal/dobbyengine (about 30 changed lines)\n- internal/shedarbiter (about 30 changed lines)\n- internal/frictionengine (about 40 changed lines)\n- internal/mergeresolve (about 40 changed lines)\n- internal/shedadapters (about 120 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-16T13:56:13Z",
-      "revised": "2026-11-16T13:56:13Z",
-      "profile": "solid",
-      "project": "codexengine",
-      "discussed": true,
-      "record_body_sha256": "a8313727a5c2dc4ec7f0fb86bc4aed85facc25b693bee3c50aa777d49b68a326"
-    },
-    {
       "id": 1406,
       "handle": "T13",
       "slug": "codex-standing-instructions",
@@ -682,9 +655,7 @@
       ],
       "issues": [],
       "recipe": "tapestry",
-      "depends_on": [
-        "prompt-engine-per-launch"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `codex-same-as-claude`.\n\nTakes: prompt-engine-per-launch's prompt engine on the spec, so Prepare knows the launch renders for Codex\nDelivers: Codex developer_instructions in D5's order with the 128 KiB refusal; the agents table's subagent effort and thread cap; the Claude user setup (global file, CLAUDE.md files above the root, skill listing, plugin session-start contexts) resolved in claudeengine and handed to codexengine through a shuttleengine seam; the leaf @-import expander that claudeengine and heddle share; project_doc_max_bytes and AGENTS.override.md carrying both files; the agents-prompt target, the two shipped entries on agents-file and the hub reconcile rendering file targets\nExports: the plugin session-start hook runner and Codex's sandbox probe as injectable seams of Prepare, so launch-manifest-parity can pass a faked runner and probe and a runner that lists each hook unrun; Codex text it adds in Go literals names none of D2's closed terms\n\nThe part changes these packages:\n\n- internal/shuttleengine/codexengine (about 600 changed lines)\n- internal/shuttleengine/claudeengine (about 400 changed lines)\n- internal/shuttleengine (about 120 changed lines)\n- internal/shuttleengines (about 60 changed lines)\n- internal/claudeimports (about 150 changed lines)\n- internal/heddleengine (about 350 changed lines)\n- internal/heddlecli (about 30 changed lines)\n- internal/hubreconcile (about 80 changed lines)\n",

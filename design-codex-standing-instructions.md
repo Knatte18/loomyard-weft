@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-codex-standing-instructions.md)
 
-Depends on: [`prompt-engine-per-launch`](design-prompt-engine-per-launch.md)
-
 Filed from the Sketch `codex-same-as-claude`.
 
 Takes: prompt-engine-per-launch's prompt engine on the spec, so Prepare knows the launch renders for Codex
