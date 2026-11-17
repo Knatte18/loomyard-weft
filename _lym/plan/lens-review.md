@@ -1,0 +1,52 @@
+# Lens review
+
+Every lens returned a report: coverage, row-validity, forced-edits, guard-reach and way-forward.
+Duplicates are merged under the first lens that raised them, and the other lenses are named after it.
+
+- row-validity 1 + forced-edits 2, 3 — BLOCKING — fixed as proposed: card 4 lists `TestBuildSettings_NoAgentHookAndForkGuard` with its own bucket and want-exactly-one check, and `settings-golden.json` with `TestBuildSettings_MatchesGolden` under Uses.
+- row-validity 2 + guard-reach 3 — BLOCKING — fixed as proposed: `AdoptRequest` gains `BeforePush`, threaded through `commitBoardWriteAndPush`, re-signed with a `beforePush` parameter that `WriteHold` and `RegisterMachine` pass as nil; the two-clone row runs the second clone's adopt from it.
+- coverage BLOCKING + guard-reach 2 + way-forward "other" — BLOCKING — fixed differently: the proposal named an arm for runs filed under this machine's hold; `movedRun` gains a `slug` parameter and reads a run as not moved when its origin takeover entry names this machine, or it is the hold's `FixTask`, besides the `PriorOwner` arm, because a fix task has no takeover entry, so the takeover-entry arm alone would still move it; new row `ARunWhoseOriginRecordNamesThisMachinesTakeoverIsNotMoved`, and the re-run row states the real `PriorOwner`.
+- guard-reach 1 — BLOCKING — fixed as proposed: `UnderOwnHold` resolves the worktree's subject through `Owners.AdoptSubject` and covers it only when this machine's hold lists that subject; row `ABeamOutsideTheHoldsSubjectsIsNotCovered`.
+- forced-edits 1 — BLOCKING — fixed as proposed: card 9 lists `internal/dobbyengine#upgradeHub.deps`, which seeds `fix-tries.json` through `os.WriteFile`.
+- forced-edits 4 — BLOCKING — fixed differently: rather than listing the test against a non-zero refusal, `checkCmd` with no own hold ends 0 with `no_hold`, which also stops `fronttask.Settle` retrying (way-forward 8); `TestCheckCmd_FromABeamExitsZeroWhileOneRuns` is listed and plants the hold so its held-lock path is reached.
+- guard-reach 5 + way-forward 4 — MEDIUM — fixed as proposed: `holdStands` re-reads before steps 2 to 7 only, its last read before the check.
+- guard-reach 4 — MEDIUM — fixed as proposed: `takeoverBeforePushHook` (nil in production) runs before each push attempt; the rejected-push row plants the later transition from it.
+- row-validity 3 — MEDIUM — fixed as proposed: card 1 lists `replayRow` with holds and machines per side.
+- row-validity 4 — MEDIUM — fixed as proposed: the whole-refusal row changes an entry's owner and the prime owner too; new row `ACommitTouchingNoHoldReplaysOverAHoldOriginGained`.
+- row-validity 5 — MEDIUM — fixed as proposed: the integration fixture seeds an `adopt` gate key over a tier with no test, so the check runs green and the row asserts no hold left.
+- row-validity 6 — MEDIUM — fixed as proposed: `TestHoldSetters` goes, its rows join `TestWriteAdopt`.
+- row-validity 7 — LOW — fixed as proposed: card 5 states the test identity comes from envkit's machine file and the other machine is a second registry id.
+- row-validity 8 + coverage (bolt-hold criterion) — MEDIUM — fixed as proposed: new tier-1 `TestHubHoldCheckDeps_DropBoltHoldLeavesNoBoltHoldEntry` over the filled seam.
+- row-validity 9 — LOW — fixed as proposed: `TestHubRunSlugs` goes, its rows join `TestHubCatchUp`.
+- coverage (take-hold under adopt-fix files no second task) — MEDIUM — fixed as proposed: card 8 states `judgeOwnFix` reads an own task with no local run record as starting, and `TestFailedEnd` gains `AnOwnFixTaskWithNoLocalRunRecordFilesNoSecondTask`.
+- coverage (holdStands hold gone) — MEDIUM — fixed as proposed: row `AHoldClearedMidAdoptStopsAndStartsNothing`.
+- coverage (take-hold with all) — MEDIUM — fixed as proposed: row `TakeHoldWithAllRefusesNamingBeamStatus`; with way-forward 12 its way forward is `lym beam status`, and coverage's LOW on spelling it is answered by naming it "the take-hold flag".
+- coverage (catch-up end) + way-forward 10 — MEDIUM — fixed as proposed: a failing catch-up ends the adopt naming the hold's re-run; row `AFailingCatchUpEndsBeforeTheDeployNamingTheRerun`; `CatchUp` called in the adopt-fix re-run row. Card 3's fetch and fast-forward errors are stated as propagated, with the takeover entry left for the re-run to read.
+- coverage (workspace warning) — MEDIUM — fixed as proposed: row `AFailingWorkspaceIsAWarningAndTheAdoptGoesOn`.
+- coverage (nested beam row) — MEDIUM — fixed as proposed: `TestAdopt` keeps `NestedBeamOwnedElsewhereUnderAdoptedRootIsReportedOwnedElsewhere`.
+- coverage (exhausted retry) — MEDIUM — fixed as proposed: `TakeOverRequest.Delays` and row `ARetryOriginKeepsRejectingReturnsThePushError`.
+- coverage (OriginRunStatus untested) — MEDIUM — fixed as proposed: new tier-1 `TestOriginRunStatus` with its found and two not-found rows.
+- coverage (rewritten hold replay) — MEDIUM — fixed as proposed: card 1 matches a rewritten hold by deep equality with the parent's hold, and gains row `AHoldTheCommitRewroteToThisMachineReplacesOriginsCopy`.
+- coverage (rejected push that replays and lands) — MEDIUM — fixed as proposed: row `ARejectedPushMeetingNoNewHoldReplaysAndLands`.
+- coverage LOW (dobby's notice at the limit) — fixed as proposed: the limit line goes through `LimitNotice`, `orchcli.NotifyFromScoped` with `orchcli.DobbyProgram`, which beamcli's `dobbyProgram` now takes its value from.
+- coverage LOW (FixHold over another machine) + way-forward 3 — fixed as proposed: `FixHold` names that machine, wait or ask the operator; row `FixHoldOverAnotherMachinesHoldRefusesNamingIt`.
+- coverage LOW (DropHandOverMark absent, anchor-change through TakeOverRun) — fixed as proposed: rows `NoHandOverMarkIsNoError` and `AnAnchorChangeOnTheWeftRefusesBeforeAnyEntryIsWritten`.
+- coverage LOW (`--take-hold=value` row) — fixed as proposed: card 4 adds `lym adopt --take-hold=yes b` denied.
+- coverage LOW (UnderOwnHold unreadable board) — fixed as proposed: row `AnUndecodableBoardCoversNothing`.
+- coverage LOW (HubRunSlugs error return) — disputed, `every fix worse`: the branch returns a raw read error unchanged, which `refusal-spec.md` exempts as transient (the prompt's card rules: "A propagated raw I/O error ... is exempt"); a row would need a hub whose geometry read fails, a fixture no kit provides, and adds no behavior.
+- coverage LOW (runHoldCheck PullBolt error) — fixed as proposed: row `APullThatFailsReturnsItsError`.
+- coverage LOW (BeamUp after a failing check) — fixed as proposed: row `AFailingCheckBringsEachSubjectUpThenExitsNonZeroNamingTheFixTask`.
+- way-forward 1 — MEDIUM — fixed as proposed: `--take-hold` over another set names `lym adopt --take-hold <hold's subjects>`, reachable only by the operator since card 4 denies the flag to agents.
+- way-forward 2 — MEDIUM — fixed differently: the proposal had each site name the hold's re-run, but `runCheck`, `resolveSubjectWorktree`, `checkView` and fabric's retry error cannot read the hold. Instead `checkDeps`, `fixDeps` and `addError` take the hold's re-run, `resolveSubjectWorktree` and `TakeOverRun` leave the re-run to their caller, and `checkView` points at the re-run `lym beam status` shows.
+- way-forward 5 — MEDIUM — fixed as proposed: a lock-held check says to wait for it; `checkCmd` exits 0, the foreground adopt non-zero.
+- way-forward 6 — MEDIUM — fixed as proposed: a failed `ClearHold` names the hold's re-run, `BeamUp` reuses `runBeamSteps`'s `lym beam start` line, `DropBoltHold` names the dobby's next tick; rows for the first two.
+- way-forward 7 — LOW — fixed as proposed: the limit line names settling by hand and then the hold's re-run.
+- way-forward 9 — LOW — fixed as proposed: the `holdStands` stop says the adopt moved to that machine or its hold cleared, so nothing more runs here.
+- way-forward 11 — LOW — fixed as proposed: card 9 edits `deployStale`'s stop text to name the hold.
+- guard-reach 6 — LOW — fixed as proposed: row `AnAdoptFixHoldDoesNotCoverItsFixTask` dropped.
+- guard-reach 7 — LOW — fixed differently: the proposal named serialising or re-dropping after the bring-up, and a dobby's tick cannot be serialised with the adopt across processes. Instead `DropBoltHold` runs last, after `ClearHold` and `BeamUp`, and re-reads the pause record once to drop an entry a tick that read the hold before the clear wrote.
+- forced-edits 5, 6 — LOW — fixed as proposed: card 5 lists `OwnerWatch`, orchengine's doc.go and `internal/dobbyengine/handover.go` (the file comment, `probeOwner` and its log line).
+- forced-edits 7 — LOW — fixed as proposed: card 1 edits `internal/boardengine/doc.go`.
+- forced-edits 8 — LOW — fixed as proposed: the file comments of adopt.go and deps.go (card 9) and check.go (card 8) are named in the Intents; the files are not listed, since `redundant-file-target` refuses a file beside its members on one card.
+- forced-edits 9 — LOW — fixed as proposed: `HoldCheck` takes `noOrch` at call time and `hubDepsAs` keeps its signature.
+- forced-edits 10 — LOW — fixed as proposed: card 1 creates `parseReplayHolds` and drops `parseReplayBoard` from its targets.
