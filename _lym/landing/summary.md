@@ -1,40 +1,29 @@
-# Hand a run over to the on-disk build even over uncommitted paths
+# Hand a run over to the new build even with uncommitted paths
 
-A Go driver that finds the on-disk `lym` build has changed hands the run over to a fresh driver of that build at the next binary-eligible stop.
-It used to refuse that hand-over when the task pair held uncommitted paths outside the run's records, and handed the run back instead.
+A landing can install new board copies of the stencils while a run is mid-step.
+The old driver then kept running its old binary against stencils whose includes it lacks.
+Seen on `launch-manifest-parity`: `gatefix: fill the gatefix-body-plan prompt: stencil: include "engine-absolute-paths" has no entry in the includes`.
 
-That refusal kept a run stuck on the exact stop a deploy causes.
-A step child of the old build started before a landing installed new board stencils, and its producer rendered one of them midway.
-The new stencil included an engine block the old binary did not know, so the render failed and the step stopped.
-The producer's output, the plan writer's files under `_lym/plan/`, was still uncommitted at that point.
-So the driver saw the changed build, refused the hand-over over those files and parked the run.
-The parent's `lym loom resume` then started the same kind of fresh driver over the same tree, and the run went on.
-`lym loom resume` checks for no clean tree, so the hand-over's check only blocked the one automated route out of the failure.
+The cause was in `handOver` in `internal/sheddriver/drive.go`.
+It saw that the on-disk build had changed, but it spawned no successor while the plan writer's files in `_lym/plan/` were uncommitted.
+So the old binary rendered the new copies and failed the run.
 
-## What changes
+`handOver` now hands over whatever the tree holds.
+It no longer checks for uncommitted paths, and the `DirtyPaths` seam field and its wiring helper `dirtyPathsOutsideRecords` in `internal/loomcli/drivewiring.go` are removed.
+The successor driver of the on-disk build re-steps over the uncommitted output.
 
-- `sheddriver`'s hand-over no longer reads the tree.
-  At a binary-eligible stop after a step of another build, it records the hand-over, parks and notifies.
-  It then releases the driver lock and spawns the successor, whatever the tree holds.
-  It still never runs under a pause, and still runs once per stop key and build.
-- `HandOverSeam.DirtyPaths` is removed, with loom's `dirtyPathsOutsideRecords` wiring of it.
-- The driver test's dirty-tree row is removed, since no seam reads the tree any more; the hand-over row no longer names a clean tree.
-- `internal/loomcli/doc.go` states that the hand-over runs over uncommitted paths.
+Closes nothing: the board entry names no issue.
 
 ## Design decisions
 
-- Of the three routes the board entry offered, this takes the third one: a render failure on the old build hands over to the new build instead of failing the run.
-  It goes through the existing hand-over row, which every producer error and blocked stop after a deploy reaches.
-  It does not recognise a render error by its text.
-  The error text comes from the old binary, so a new recogniser could not match failures that older builds word differently.
-- Rendering from the binary's embedded stencils until the hand-over was not taken.
-  `stencilstore` reads the board copy at a caller-told path and holds no registry, and the board copy is also where operator edits live.
-  So the fallback would change how every stencil read treats the board, well beyond this failure.
-- Batten's binary re-step of a halted, driverless child keeps its clean-tree check.
-  The driver no longer hands back over a dirty tree after a deploy, so this failure no longer reaches that path.
+- A step of the old build that fails midway leaves its producer's output uncommitted, and only the on-disk build can re-step it.
+  A clean-tree gate therefore blocks exactly the hand-over that is needed.
+- Of the three ideas on the board entry, this takes the third in effect: the old binary stops running once the build has changed, rather than rendering embedded stencils or waiting for the producer to commit.
+- A failed successor spawn still leaves the run parked with its report.
+  A watching batten re-steps it only over a tree with no uncommitted paths outside the run's records, so a failed spawn over uncommitted paths waits for the parent.
+- The hand-over doc in `internal/loomcli/doc.go` and the `handOver` comment are updated to match.
 
-## Open risk
+## To check
 
-An old-build step can still render a new board stencil without failing, if the new text happens to parse with the old binary's includes and markers.
-That prompt then carries the new wording into the old step, and nothing detects it.
-This change only stops a failed render from parking the run.
+- The hand-over test table in `internal/sheddriver/drive_test.go` lost the dirty-tree row and the `dirty` field; no test was run by hand beyond that.
+- Check by hand that a hand-over over uncommitted paths in `_lym/plan/` lets the successor re-step cleanly without losing the producer's files.
