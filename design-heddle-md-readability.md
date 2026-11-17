@@ -1,6 +1,6 @@
 # A sampler that iterates the rendering of HEDDLE.md until it reads well
 
-`heddle-md-readability` · Task · enhancement, heddle
+`heddle-md-readability` · Task · enhancement, heddle · starting · Worktree-Create
 
 ## Seen (operator, 2026-11-07)
 
