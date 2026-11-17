@@ -4,6 +4,7 @@
 - `plan:internal/heddleengine#agentsPromptTarget` -> `const agentsPromptTarget = "agents-prompt"`
 
 **Edit:**
+- `internal/heddleengine#Target`
 - `internal/heddleengine#targetTable`
 - `internal/heddleengine#promptTargetsFor`
 - `internal/heddleengine#passagesOf`
@@ -26,6 +27,7 @@
 Add the shared prompt target `agents-prompt` (D7).
 It is a `targetTable` row with `Delivery: DeliveryPrompt` and `RendersInto: [claude-prompt, codex-prompt]`, and no engine or role of its own,
 so an entry aimed at it reaches every session `claude-prompt` or `codex-prompt` reaches, the Claude orch included.
+`Target`'s doc comment says `RendersInto` names the targets, of either delivery, that a shared target's entries reach.
 
 - `promptTargetsFor` skips a shared row, as `Render` skips a shared file row, so the shared row reaches a session only through a target it renders into.
 - `passagesOf` takes an entry when it names one of the given targets or a shared target that renders into one of them.

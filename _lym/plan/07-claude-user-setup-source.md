@@ -11,7 +11,7 @@
 - `plan:internal/shuttleengine/claudeengine#UserSetupSource` -> `type UserSetupSource struct`
 - `plan:internal/shuttleengine/claudeengine#NewUserSetupSource` -> `func NewUserSetupSource(dirs configengine.Dirs) *UserSetupSource`
 - `plan:internal/shuttleengine/claudeengine#UserSetupSource.UserSetup` -> `func (s *UserSetupSource) UserSetup(req shuttleengine.UserSetupRequest) (shuttleengine.UserSetup, error)`
-- `plan:internal/shuttleengine/claudeengine#instructionFiles` -> `func instructionFiles(configDir, repoRoot string) ([]shuttleengine.InstructionItem, error)`
+- `plan:internal/shuttleengine/claudeengine#instructionFiles` -> `func instructionFiles(configDir, repoRoot string) (items []shuttleengine.InstructionItem, warnings []string, err error)`
 - `plan:internal/shuttleengine/claudeengine#installedPluginRoots` -> `func installedPluginRoots(configDir, repoRoot string) (map[string]string, []string)`
 - `plan:internal/shuttleengine/claudeengine#skillListing` -> `func skillListing(configDir, repoRoot, workDir string, plugins map[string]string, scope sessionScope) (string, []string)`
 - `plan:internal/shuttleengine/claudeengine#pluginInstall` -> `type pluginInstall struct`
@@ -45,11 +45,16 @@ The seam, in a new file of `internal/shuttleengine`:
   A nil `RunHook` runs no hook, and card 8 lists each one omitted as not run.
 
 `NewUserSetupSource(dirs)` reads claude.yaml through `dirs`; its `claudeDir` field, empty in production, names Claude Code's config directory and otherwise resolves through `claudeConfigDir`.
+When `claudeConfigDir` fails, `UserSetup` leaves out only the parts that need the config directory:
+the user's global file, the user skills and plugin skills of the listing, and card 8's plugin session-start contexts.
+It keeps the CLAUDE.md files above `RepoRoot` and the project skills, adds one `Warnings` entry naming the cause, with the way forward to set `CLAUDE_CONFIG_DIR` or `HOME`, and never returns an error,
+as `sessionScopeFor` does with an unreadable plugins file.
 `UserSetup` returns, in this card:
 - `InstructionFiles`: the user's global file, `CLAUDE.md` in the config directory, then each `CLAUDE.md` in a directory above `RepoRoot`, outermost first, which Claude reads walking up from its working directory.
   Each is expanded through `claudeimports.Expand`; its `Name` is its absolute path and its `WayForward` says to shorten that file.
   An absent file adds nothing.
-  A read error of one of these files is the one error `UserSetup` returns, naming the file, with the way forward to fix its permissions or remove it, then launch again.
+  A read error of the global file is the one error `UserSetup` returns, naming the file, with the way forward to fix its permissions or remove it, then launch again.
+  An unreadable CLAUDE.md above `RepoRoot` is left out of `InstructionFiles` with a `Warnings` entry naming it, since the walk reaches machine directories the user may not own.
 - `SkillListing`: the rule that a skill is used by reading its SKILL.md in full before following it, then one line per skill the session's scope lists, `- <name>: <description> (<absolute SKILL.md path>)`, sorted by name.
   "" when no skill is listed.
 
@@ -70,7 +75,11 @@ since `writeInstalledPlugins` writes a fixed `/plugins/<id>` path no plugin tree
 
 Tests, tier0, each building a config directory under `t.TempDir()` and setting the source's `claudeDir`:
 - `TestUserSetup_InstructionFiles` (parallel table): a global file and CLAUDE.md files two and one levels above the repository root come back as the global file, then the outer, then the inner file, each expanded where it imports;
-  an absent global file adds nothing; a CLAUDE.md inside the root is not listed; a global file that cannot be read returns an error naming it.
+  an absent global file adds nothing; a CLAUDE.md inside the root is not listed; a global file that cannot be read returns an error naming it;
+  an unreadable CLAUDE.md above the root is not listed, returns no error and gives a warning naming it.
+  Both unreadable rows make the file unreadable with a directory standing at its path:
+  `os.ReadFile` of a directory fails with an error other than `fs.ErrNotExist` for every user, root included,
+  so neither row skips itself under root, and each tells an unreadable file from an absent one.
   The assertion keeps only the items under the fixture's temp base, in order, since the walk above the root also reaches the machine's own directories.
 - `TestUserSetup_SkillListing` (parallel table): a scope that preloads `scribe:prose` lists both of `scribe`'s skills with their paths and descriptions and none of an off plugin's;
   a user skill named in `skills_off` and not preloaded is left out;

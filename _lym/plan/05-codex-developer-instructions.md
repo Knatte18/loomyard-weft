@@ -44,9 +44,10 @@ An empty set returns "", and `codexCommand` then omits the key, since Codex refu
 Otherwise the setting is `developer_instructions=<tomlString(text)>`, a single-line TOML string, and `codexCommand` passes it as `-c <sh.Quote(setting)>` after the effort setting.
 Every `-c` setting this plan adds sits before the hook settings and `--dangerously-bypass-hook-trust`,
 so `TestPrepare_SkillsLoadFirst`'s assertion that the hook-trust flag directly precedes the first turn stays true.
-Bound: that setting reaches `codex` as one argument, which Linux caps at `maxArgumentBytes` (`MAX_ARG_STRLEN`).
-When the setting's length passes the cap, `developerInstructions` refuses with an error naming the setting's size, the cap, the largest item's name and size, and that item's way forward.
-A setting of exactly `maxArgumentBytes` bytes goes ahead.
+Bound: that setting reaches `codex` as one argument, which Linux caps at `maxArgumentBytes` (`MAX_ARG_STRLEN`) counting its terminating NUL,
+so the longest argument `execve` takes is `maxArgumentBytes`-1 bytes.
+When the setting's length is at least `maxArgumentBytes`, `developerInstructions` refuses with an error naming the setting's size, the cap, the largest item's name and size, and that item's way forward.
+A setting of `maxArgumentBytes`-1 bytes goes ahead.
 `Prepare` returns it with the `codexengine:` prefix before `prompt.md` is written.
 A standing passage's name is `heddle passage <n>`; its way forward is to find the entry with `lym heddle show codex-prompt` and shorten it with `lym heddle set`, or with `lym heddle set --layer lym` for a shipped entry.
 Cards 9 and 10 name the file and plugin items and their ways forward.
@@ -64,8 +65,8 @@ Tests:
   and those that read `prompt.md` expect the spec's prompt alone.
 - `TestPrepare_AppendsStandingPassages` (non-parallel, installs the passage reader) becomes a table.
   Its `PassagesFollowTheCreelHead` row expects the launch line's developer instructions to hold the creel head, then the two passages, and `prompt.md` to hold the prompt alone, keeping its reader-argument and trust-root assertions.
-  Its `AtTheArgumentCap` row's reader returns one passage sized so the setting is exactly `maxArgumentBytes` bytes; the launch goes ahead.
-  Its `OverTheArgumentCap` row's reader returns one passage one byte longer;
+  Its `AtTheArgumentCap` row's reader returns one passage sized so the setting is `maxArgumentBytes`-1 bytes; the launch goes ahead.
+  Its `OverTheArgumentCap` row's reader returns one passage one byte longer, so the setting is exactly `maxArgumentBytes` bytes;
   it expects a refusal naming the size, `heddle passage 1`, `lym heddle show codex-prompt` and `way forward`, and no `prompt.md`.
   The `//testtiming:keep` reason gains the cap refusal and its boundary.
 

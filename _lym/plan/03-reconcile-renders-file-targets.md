@@ -7,11 +7,11 @@
 **Edit:**
 - `internal/hubreconcile#reconcileWorktree`
 - `internal/fabricengine_test#TestWorktreeSeam_Events`
+- `pattern/PATTERN-heddle-instructions.md`
 
 **Extends:**
 - `internal/fabricengine/doc.go`
 - `internal/hubreconcile/doc.go`
-- `pattern/PATTERN-heddle-instructions.md`
 
 **Uses:**
 - `internal/fabricengine#NotifyWorktreeMade`

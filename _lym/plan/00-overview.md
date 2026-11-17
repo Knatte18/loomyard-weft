@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -46,6 +46,7 @@ and makes Codex read every instruction file Claude reads (D9).
 - **Plugin hook processes.**
   A `SessionStart` hook run is logged at its spawn and end and waited on under its timeout.
   It registers no `runproc` record, since `PATTERN-child-processes` asks one of a run's detached or long-lived processes, and a hook run is neither.
+  Bound: a hook left by a `Prepare` killed mid-run runs to its own end with no owner, review-held, as card 8 states.
 - **Subagent effort.**
   The Codex subagent effort is the effort agents.yaml gives the role on a model it does not list, the counterpart of Claude's fallback effort;
   an effort codex.yaml's `efforts` does not list is left off with a warning, rather than refusing every launch of that role.

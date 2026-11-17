@@ -42,7 +42,7 @@ an import of a missing file stays as written;
 a chain six hops deep stops expanding after the fifth hop;
 an import cycle stops at the repeated file;
 a `~/` import resolves under a home set by `t.Setenv`;
-and an unreadable `path` returns an error.
+and an unreadable `path`, a directory standing at it, returns an error other than `fs.ErrNotExist`, for every user, root included, so the row never skips itself.
 `TestExpand` itself calls no `t.Parallel`, since `t.Setenv` panics under a parallel ancestor:
 each row but the `~/` row runs as a parallel subtest, and the `~/` row runs as a non-parallel subtest.
 `TestLeafInvariant_StandardLibraryOnly` is tier0 and calls `scankit.AssertImportAllowlist(t, "internal/claudeimports")`.
