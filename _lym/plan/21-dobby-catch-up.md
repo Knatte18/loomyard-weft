@@ -1,11 +1,11 @@
 # Card 21 — dobby-catch-up
 
 **Create:**
-- `plan:internal/dobbyengine#CatchUpWait` -> `type CatchUpWait struct`
-- `plan:internal/dobbyengine#daemon.catchUp` -> `func (d *daemon) catchUp(ctx context.Context, now time.Time) bool`
-- `plan:internal/dobbyengine#daemon.syncBoltHold` -> `func (d *daemon) syncBoltHold(ctx context.Context)`
-- `plan:internal/dobbyengine#TestRun_CatchUp` -> `func TestRun_CatchUp(t *testing.T)`
-- `plan:internal/dobbyengine#TestRun_SyncsBoltHoldEntries` -> `func TestRun_SyncsBoltHoldEntries(t *testing.T)`
+- `internal/dobbyengine#CatchUpWait`
+- `internal/dobbyengine#daemon.catchUp`
+- `internal/dobbyengine#daemon.syncBoltHold`
+- `internal/dobbyengine#TestRun_CatchUp`
+- `internal/dobbyengine#TestRun_SyncsBoltHoldEntries`
 
 **Edit:**
 - `internal/dobbyengine#Deps`
@@ -30,9 +30,9 @@
 - `internal/dobbyengine#daemon.pauseRunsForOwner`
 
 **Uses:**
-- `plan:internal/dobbyengine#CatchUp`
-- `plan:internal/battencli#HubCatchUp`
-- `plan:internal/battencli#DobbyPairSlugs`
+- `internal/dobbyengine#CatchUp`
+- `internal/battencli#HubCatchUp`
+- `internal/battencli#DobbyPairSlugs`
 - `internal/tenderengine#SyncBoltHold`
 - `internal/tendercli#HubDeps`
 - `internal/pairteardown#EndSubjectProcesses`

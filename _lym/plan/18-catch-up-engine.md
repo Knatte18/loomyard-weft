@@ -1,12 +1,12 @@
 # Card 18 — catch-up-engine
 
 **Create:**
-- `plan:internal/dobbyengine#ErrOriginUnreachable` -> `var ErrOriginUnreachable = errors.New("dobbyengine: origin is unreachable, so the catch-up acted on no run")`
-- `plan:internal/dobbyengine#CatchUpDeps` -> `type CatchUpDeps struct`
-- `plan:internal/dobbyengine#CatchUpRun` -> `type CatchUpRun struct`
-- `plan:internal/dobbyengine#CatchUpReport` -> `type CatchUpReport struct`
-- `plan:internal/dobbyengine#CatchUp` -> `func CatchUp(deps CatchUpDeps) (CatchUpReport, error)`
-- `plan:internal/dobbyengine#TestCatchUp` -> `func TestCatchUp(t *testing.T)`
+- `internal/dobbyengine#ErrOriginUnreachable`
+- `internal/dobbyengine#CatchUpDeps`
+- `internal/dobbyengine#CatchUpRun`
+- `internal/dobbyengine#CatchUpReport`
+- `internal/dobbyengine#CatchUp`
+- `internal/dobbyengine#TestCatchUp`
 
 **Extends:**
 - `internal/dobbyengine/doc.go`

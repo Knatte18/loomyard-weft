@@ -10,8 +10,8 @@
 **Edit:**
 - `internal/dobbyengine#Deps`
 - `internal/dobbyengine#daemon`
-- `plan:internal/dobbyengine#daemon.catchUp`
-- `plan:internal/dobbyengine#TestRun_CatchUp`
+- `internal/dobbyengine#daemon.catchUp`
+- `internal/dobbyengine#TestRun_CatchUp`
 - `internal/dobbyengine#dobbyengineAllowedImports`
 - `internal/beamcli#hubDobbyDeps`
 - `internal/dobbyengine/doc.go`
@@ -20,7 +20,7 @@
 - `internal/fixtries#Read`
 - `internal/boardengine#WriteHold`
 - `internal/boardengine#Owners.HoldOf`
-- `plan:internal/tendercli#RecordPauseIntent`
+- `internal/tendercli#RecordPauseIntent`
 - `internal/pauserecord#AdoptCaller`
 - `internal/pauserecord#OwnerCaller`
 - `internal/fabricengine#AdoptScratchDir`

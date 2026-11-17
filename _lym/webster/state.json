@@ -1,6 +1,6 @@
 {
   "runGuid": "68c8af21b2573c67ea24b00d8c6a8507",
-  "planFingerprint": "176312fa97e8292b26d7036e80b022494fcb1b13087e58e4c9d4ec49ed47b6b9",
+  "planFingerprint": "448a0143d6e91cbafd13fd66ea41f02b24a4b209d19de7b0e4150f1e6cc722e2",
   "planFileHashes": {
     "00-overview.md": "8070a6e612366e940baf7464bff651d6e6f80c3c26d7e4f332211f6eef4a3045",
     "01-fixtries-package.md": "430abb950acfaefa82f14c1899839ce15fad1bc64a96004f3df727de828c3371",
@@ -20,11 +20,11 @@
     "15-tender-bolt-hold.md": "95573ea33be49ecf6aea494e99b660a5d8f06395e645bcf106b2054b0dfa259c",
     "16-held-tasks-not-started.md": "34f483d45bfb702c53b59d531a4306e5bc0c12e2c0583612711418237205bc6d",
     "17-hand-over-owned-elsewhere.md": "b0e492a9233f83abff8863cb31360190b3227ef51e522e9c62d6dea38e6b272e",
-    "18-catch-up-engine.md": "433e492cc8f8e5a75a96d49a20604c9c71f3ebedf29c217ea8202085baff279d",
-    "19-pause-intent-entries.md": "ff91ac5ecbe13aa60d1b47e1ddaba64570360d8ab522a39bd9d6c72355b19a5f",
-    "20-hand-pass-catch-up.md": "3d3d535cd6b7ee0c94f8f142a8b31ef3f276a9b1c3dc3d4e05798f813b93a64a",
-    "21-dobby-catch-up.md": "c213a42674ee18f57fdebd8a4231c3c10915aaaf2a9057e37cec7b7edad0bbfd",
-    "22-upgrade-first-read.md": "c718fb1b9223662c02bd89c974410baa1a302980b86db4ac9f48c86a67fbb670",
+    "18-catch-up-engine.md": "5cdcb09120051056c83cff3c21c67951b7b80c162debda7875f5655ab171e86d",
+    "19-pause-intent-entries.md": "d1e77949ffda1750b1a0eebdc4648d83766789cf46b8e98de094da00ed1402ad",
+    "20-hand-pass-catch-up.md": "f6b97270fa6de1c84fa15e57b0f1dd69fa25e03aa8cbb3f4b498514541a195db",
+    "21-dobby-catch-up.md": "9c2c7d95fa04c2076c8896e93728c8b6166e512babc38fb2ab1337dbf77153b1",
+    "22-upgrade-first-read.md": "d428c2dbe5b035e5c951e5886aec0b80d63bdb623292fae61fbc6aa294b383a8",
     "23-retire-owner-pause-callers.md": "e61b8714ff43fc4ca1886ebb24fbdc1393c36734425ae31feec118f040cf6323",
     "24-delete-tender-owner-pause.md": "0c84bc21374445aeecb43dca8f1a7b6f5dbfbc3b9da6c45378eee1abeb8a5828",
     "25-pattern-owner-machine.md": "c0de73f7de75cc061c5056465c98a1767a75f60cadb56d18b1351ebf17cda9e9"
@@ -783,18 +783,50 @@
         "21-dobby-catch-up"
       ],
       "cardHashes": {
-        "18-catch-up-engine": "433e492cc8f8e5a75a96d49a20604c9c71f3ebedf29c217ea8202085baff279d",
-        "19-pause-intent-entries": "ff91ac5ecbe13aa60d1b47e1ddaba64570360d8ab522a39bd9d6c72355b19a5f",
-        "20-hand-pass-catch-up": "3d3d535cd6b7ee0c94f8f142a8b31ef3f276a9b1c3dc3d4e05798f813b93a64a",
-        "21-dobby-catch-up": "c213a42674ee18f57fdebd8a4231c3c10915aaaf2a9057e37cec7b7edad0bbfd"
+        "18-catch-up-engine": "5cdcb09120051056c83cff3c21c67951b7b80c162debda7875f5655ab171e86d",
+        "19-pause-intent-entries": "d1e77949ffda1750b1a0eebdc4648d83766789cf46b8e98de094da00ed1402ad",
+        "20-hand-pass-catch-up": "f6b97270fa6de1c84fa15e57b0f1dd69fa25e03aa8cbb3f4b498514541a195db",
+        "21-dobby-catch-up": "9c2c7d95fa04c2076c8896e93728c8b6166e512babc38fb2ab1337dbf77153b1"
       },
       "startSha": "48c29e06ef5cda5d53cba0f58014c80bfce56ca0",
       "kind": "fork",
       "spawnedAt": "2026-11-17T11:18:24Z",
       "sessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "18-catch-up-engine",
+        "status": "done",
+        "head_sha": "b2c3b4333d4b280c5d17b19a2a40bbea456da7e4",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/battencli/arm.go",
+          "internal/battencli/catchup.go",
+          "internal/battencli/catchup_integration_test.go",
+          "internal/battencli/owner.go",
+          "internal/battencli/readopt.go",
+          "internal/beamcli/dobbydeps.go",
+          "internal/dobbyengine/catchup.go",
+          "internal/dobbyengine/catchup_test.go",
+          "internal/dobbyengine/catchupwait.go",
+          "internal/dobbyengine/handover.go",
+          "internal/dobbyengine/handover_test.go",
+          "internal/dobbyengine/loop_catchup_test.go",
+          "internal/dobbyengine/passes_test.go",
+          "internal/tendercli/pauseintents_test.go",
+          "internal/tendercli/runintents.go"
+        ]
+      },
+      "cardShas": [
+        "b2c3b4333d4b280c5d17b19a2a40bbea456da7e4"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-acb297db8d9e62f09.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-acb297db8d9e62f09.jsonl"
+      ]
     },
     "4": {
       "slug": "machine-registration-setter",
@@ -930,7 +962,7 @@
       ]
     }
   },
-  "currentBatch": 18,
+  "currentBatch": 0,
   "masterStrand": "e7e489f4ae82479452af8e587574191e",
   "masterSessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
   "masterEngine": "claude",
@@ -939,6 +971,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-afe851529bbe29582.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-ada6f38ee3b2521fd.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-a275b60799a7dffa9.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-aeeff58a5ffe32648.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-aeeff58a5ffe32648.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-acb297db8d9e62f09.jsonl"
   ]
 }

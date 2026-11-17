@@ -1,9 +1,9 @@
 # Card 19 — pause-intent-entries
 
 **Create:**
-- `plan:internal/tendercli#PauseIntentEntries` -> `func PauseIntentEntries(location *lymcwd.Location, slugs []string) error`
-- `plan:internal/tendercli#RecordPauseIntent` -> `func RecordPauseIntent(location *lymcwd.Location, slug string) error`
-- `plan:internal/tendercli#TestPauseIntentEntries` -> `func TestPauseIntentEntries(t *testing.T)`
+- `internal/tendercli#PauseIntentEntries`
+- `internal/tendercli#RecordPauseIntent`
+- `internal/tendercli#TestPauseIntentEntries`
 
 **Edit:**
 - `internal/tendercli#commitRunIntent` -> `func commitRunIntent(prime *lymcwd.Location, slug, message string, stderr io.Writer, returnOwed bool, write func() (found bool, err error)) error`

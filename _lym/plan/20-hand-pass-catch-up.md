@@ -1,11 +1,11 @@
 # Card 20 — hand-pass-catch-up
 
 **Create:**
-- `plan:internal/dobbyengine#PassExitOriginWait` -> `const PassExitOriginWait = 80`
-- `plan:internal/battencli#HubCatchUp` -> `func HubCatchUp(prime *lymcwd.Location, runs func() ([]string, error)) dobbyengine.CatchUpDeps`
-- `plan:internal/battencli#DobbyPairSlugs` -> `func DobbyPairSlugs(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *DobbyParents) ([]string, error)`
-- `plan:internal/battencli#battenCLI.catchUpRun` -> `func (c *battenCLI) catchUpRun() error`
-- `plan:internal/battencli#TestHubCatchUp` -> `func TestHubCatchUp(t *testing.T)`
+- `internal/dobbyengine#PassExitOriginWait`
+- `internal/battencli#HubCatchUp`
+- `internal/battencli#DobbyPairSlugs`
+- `internal/battencli#battenCLI.catchUpRun`
+- `internal/battencli#TestHubCatchUp`
 
 **Edit:**
 - `internal/battencli#battenCLI`
@@ -42,11 +42,11 @@
 - `internal/shedrun#originOwedMarkerFileName`
 
 **Uses:**
-- `plan:internal/dobbyengine#CatchUp`
+- `internal/dobbyengine#CatchUp`
 - `internal/pairteardown#HandOverOwnedElsewhere`
 - `internal/pairteardown#PushRun`
 - `internal/pairteardown#ReadRun`
-- `plan:internal/tendercli#PauseIntentEntries`
+- `internal/tendercli#PauseIntentEntries`
 - `internal/boardengine#EnsureIdentity`
 - `internal/boardengine#RegisterMachine`
 - `internal/shedrun/doc.go`
