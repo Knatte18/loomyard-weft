@@ -1,0 +1,308 @@
+{
+  "runGuid": "1654eeb4cf566cc2d86c59ab252609cc",
+  "planFingerprint": "cdf64a823a15f1bd47aa4d57f4a80cef58f624448a1168905dba8efdfc6aaa07",
+  "planFileHashes": {
+    "00-overview.md": "a3ed0962c46c1a283eb9a7accae4ff2028f5f48aea1fc6942e9bea30072f4c9a",
+    "01-fabric-worktree-tree.md": "60633b668b60ca11c1827b18e14bbb0a3a4b63c62d2ec0fe67714eb148eb7e70",
+    "02-fixer-report-dispositions.md": "de0ad5b7ccbd4eba255e222fc732c2851a17dd37f6deaaff9ca5369d97a3abf4",
+    "03-target-snapshot.md": "76ebd0e4a7a55b357bb85be9561eff6f6ecda5b7185fead739c8503cc4b6a30e",
+    "04-round-snapshot-record.md": "a32d2a3284827b905b2d83f485dde619a4230d174bfccd9529bd9f7c3b4c4bd4",
+    "05-review-round-checks.md": "07a943c273467ce3cb8dcd7050fd1f438efaf673e546efc9a4336fa969849017",
+    "06-prior-findings-block.md": "86ad58a3ebc63e694b6c28a96e49602ce81424a77683a126992ee35ed6b25075",
+    "07-round-context-builder.md": "3d5edf582112bc0f4eff5deaf7b20b7930cfa869e127b916e70cc757fb682b0a",
+    "08-validate-review-round-checks.md": "d04f8aa406ed460b8b5d1cbe6b8f98ce8673974f32ccd7570b2d9a0e62dcd481",
+    "09-escalation-notice-way-forward.md": "1c68bdf1cc212d9192227ea79ebe38583f48abedb9bf12b812e6313ee8ff0a13",
+    "10-stalemate-escalation.md": "758baf737d6b9afcdeb25f2244c519dd9632ce34af54f754723de05f6438e172",
+    "11-stalemate-settlers.md": "c121f112da4d104fdc0e99254ec6b85fbb990bd22c53b9679c19f7064e5b783b",
+    "12-wiring.md": "37ac0d9fa9ad066c301290ca697b2bcee1480efdb518ce1edb3cbc64a01392d1"
+  },
+  "planOverviewFrameHash": "aeae47f8ac3cf70029aef12d0c0378000f958713ed23009ac0d343347a5d2aa5",
+  "partition": [
+    {
+      "cards": [
+        "01-fabric-worktree-tree",
+        "02-fixer-report-dispositions",
+        "03-target-snapshot",
+        "04-round-snapshot-record"
+      ],
+      "profile": "wide",
+      "estimate": 272314,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54556,
+        "read_union": 72564,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 396,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 28500,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 138.5,
+            "written": 41946
+          },
+          {
+            "card": 2,
+            "card_text": 888,
+            "reads": {
+              "file:contracts/stencils/burler/burler-step-fix.md": 1032,
+              "file:internal/burlerengine/doc.go": 6744,
+              "file:pattern/PATTERN-sole-parsers.md": 1368,
+              "package:contracts/stencils/burler": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/stencils/burler": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 134,
+            "written": 41088
+          },
+          {
+            "card": 3,
+            "card_text": 456,
+            "reads": {
+              "file:internal/lymdirs/doc.go": 132,
+              "file:internal/shedadapters/doc.go": 8244,
+              "package:internal/lymdirs": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/lymdirs": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 64.5,
+            "written": 19806
+          },
+          {
+            "card": 4,
+            "card_text": 804,
+            "reads": {
+              "file:internal/shedadapters/doc.go": 8244,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 138.5,
+            "written": 42354
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-review-round-checks",
+        "06-prior-findings-block",
+        "07-round-context-builder",
+        "08-validate-review-round-checks",
+        "09-escalation-notice-way-forward",
+        "10-stalemate-escalation"
+      ],
+      "profile": "wide",
+      "estimate": 281986,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61556,
+        "read_union": 41552,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 936,
+            "reads": {
+              "file:internal/burlerengine/doc.go": 6744,
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 158,
+            "written": 48336
+          },
+          {
+            "card": 6,
+            "card_text": 504,
+            "reads": {
+              "file:contracts/stencils/burler/burler-review-format.md": 732,
+              "file:contracts/stencils/burler/burler-step-review.md": 432,
+              "package:contracts/stencils/burler": 2000,
+              "package:internal/burlerengine": 2000,
+              "tests:contracts/stencils/burler": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 40,
+            "written": 12504
+          },
+          {
+            "card": 7,
+            "card_text": 912,
+            "reads": {
+              "file:internal/shedadapters/doc.go": 8244,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 110.5,
+            "written": 34062
+          },
+          {
+            "card": 8,
+            "card_text": 612,
+            "reads": {
+              "file:internal/burlercli/doc.go": 276,
+              "file:internal/burlerengine/doc.go": 6744,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 66,
+            "written": 20412
+          },
+          {
+            "card": 9,
+            "card_text": 384,
+            "reads": {
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 48.5,
+            "written": 14934
+          },
+          {
+            "card": 10,
+            "card_text": 1080,
+            "reads": {
+              "file:contracts/stencils/bouncer/bouncer-template-escalation.md": 696,
+              "file:internal/shedadapters/doc.go": 8244,
+              "package:contracts/stencils/bouncer": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:contracts/stencils/bouncer": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 158.5,
+            "written": 48630
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-stalemate-settlers",
+        "12-wiring"
+      ],
+      "profile": "wide",
+      "estimate": 259956,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68556,
+        "read_union": 83064,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 432,
+            "reads": {
+              "file:contracts/orchrole/orch-role.md": 5472,
+              "file:contracts/stencils/loom/loom-template-arbiter.md": 1668,
+              "file:internal/arbiterstop/doc.go": 372,
+              "file:internal/loomcli/doc.go": 10116,
+              "package:contracts/orchrole": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/arbiterstop": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/orchrole": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/arbiterstop": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 113.5,
+            "written": 34482
+          },
+          {
+            "card": 12,
+            "card_text": 804,
+            "reads": {
+              "file:docs/overview.md": 24840,
+              "file:internal/loomcli/doc.go": 10116,
+              "file:internal/loomengine/template.yaml": 672,
+              "file:internal/shedrecipe/doc.go": 2688,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 243.5,
+            "written": 73854
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "fabric-worktree-tree",
+      "cards": [
+        "01-fabric-worktree-tree",
+        "02-fixer-report-dispositions",
+        "03-target-snapshot",
+        "04-round-snapshot-record"
+      ],
+      "cardHashes": {
+        "01-fabric-worktree-tree": "60633b668b60ca11c1827b18e14bbb0a3a4b63c62d2ec0fe67714eb148eb7e70",
+        "02-fixer-report-dispositions": "de0ad5b7ccbd4eba255e222fc732c2851a17dd37f6deaaff9ca5369d97a3abf4",
+        "03-target-snapshot": "76ebd0e4a7a55b357bb85be9561eff6f6ecda5b7185fead739c8503cc4b6a30e",
+        "04-round-snapshot-record": "a32d2a3284827b905b2d83f485dde619a4230d174bfccd9529bd9f7c3b4c4bd4"
+      },
+      "startSha": "f8cc499cb0e3d01affc0ba9d79c7dda4a2834034",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T14:34:36Z",
+      "sessionId": "81b1c802-12a0-4e4e-8251-243f37bc1227",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "2e9733407d4e886b0330ebdbcbfec9de",
+  "masterSessionId": "81b1c802-12a0-4e4e-8251-243f37bc1227",
+  "masterEngine": "claude"
+}
