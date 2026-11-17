@@ -35,7 +35,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T15 | **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | T19 | 1d<br>18m | codex, shuttle |
+| T15 | **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | T19 | 1d<br>19m | codex, shuttle |
 
 ### Notes (2)
 
@@ -147,7 +147,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Trial the coverage-map tooling before the redundancy sweep**<br>• Run lym gate test --map and lym gate redundant on two packages and check maps, timing, memory and leftovers | [`map-tooling-trial`](design-map-tooling-trial.md) | darn · docs | Code-Bouncer | neve | 27m<br>26m | gate, testkit |
+| T3 | **Trial the coverage-map tooling before the redundancy sweep**<br>• Run lym gate test --map and lym gate redundant on two packages and check maps, timing, memory and leftovers | [`map-tooling-trial`](design-map-tooling-trial.md) | darn · docs | Describe | neve | 27m<br>26m | gate, testkit |
 
 #### Ready (0)
 
