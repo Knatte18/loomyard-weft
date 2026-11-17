@@ -2,6 +2,7 @@
 
 What heddle delivers to every worktree and session in this hub.
 lym rewrites this file whole at every heddle write; change an entry with `lym heddle set`, never this file.
+Two targets are shared: `agents-file` lands in both agent files, and `agents-prompt` in the prompt of every Claude and Codex session.
 
 Sources:
 
