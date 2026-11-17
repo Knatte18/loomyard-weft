@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -196,6 +196,66 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/gate-tier-memory-cap/_lym/reviews/code/round-2-review.md",
+      "at": "2026-11-17T10:18:48Z",
+      "started_at": "2026-11-17T10:05:46Z",
+      "gate_attempts": 2,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T10:11:18.069918024Z",
+          "end": "2026-11-17T10:11:18.081848349Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T10:11:35.800096827Z",
+          "end": "2026-11-17T10:11:35.811204223Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T10:15:22.105822108Z",
+          "end": "2026-11-17T10:15:22.117129679Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T10:11:18.133903799Z",
+          "end": "2026-11-17T10:11:18.343026966Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-17T10:11:18.723945807Z",
+          "end": "2026-11-17T10:11:35.768594451Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T10:11:35.867266859Z",
+          "end": "2026-11-17T10:14:52.573891422Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-17T10:14:52.988581382Z",
+          "end": "2026-11-17T10:15:22.071656902Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T10:15:22.18040178Z",
+          "end": "2026-11-17T10:18:47.324790522Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
