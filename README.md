@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 06:52 UTC; every age below is as of then.
+Rendered 2026-11-17 06:53 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -165,7 +165,7 @@ Held by a run; its scope is locked until the run ends.
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Webster | neve | 20h<br>20h | webster, weaver |
 | T20 | **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice<br>• `darn: writer fable` | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | darn · light | Darn-Write | neve | 44m<br>31m | gate |
 | T21 | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | sampler | Sampler-Session | neve | 9d<br>3m | heddle |
-| T22 | **lym retro: run the retro task's writer on Opus**<br>• The retro task's writer judges transcripts and routes proposals; give it Opus instead of the docs default | [`retro-writer-opus`](design-retro-writer-opus.md) | darn · docs | Drift-Recheck | neve | 4m<br>3m | report, darn |
+| T22 | **lym retro: run the retro task's writer on Opus**<br>• The retro task's writer judges transcripts and routes proposals; give it Opus instead of the docs default | [`retro-writer-opus`](design-retro-writer-opus.md) | darn · docs | Describe | neve | 4m<br>3m | report, darn |
 
 #### Ready (0)
 
