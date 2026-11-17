@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 16:14 UTC; every age below is as of then.
+Rendered 2026-11-17 16:17 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -78,22 +78,21 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-adopt-build-resplit.md">P4 Merge the remaining adopt-build members into one design and split it again on what landed</a> (4)</strong></summary>
+<summary><strong><a href="project-adopt-build-resplit.md">P4 Merge the remaining adopt-build members into one design and split it again on what landed</a> (3)</strong></summary>
 
 [`adopt-build-resplit`](design-adopt-build-resplit.md) · Age 9d · Owner `neve`
 
-### Tasks (4)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
-#### Running (2)
+#### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T9 | **The dobby tears down or reports leftover pairs** | [`leftover-pairs-teardown`](design-leftover-pairs-teardown.md)<br>[Sketch](decision-leftover-pairs-teardown.md) | darn · solid | Darn-Write | neve | 1d<br>5h | dobby, workspaces, landing, fabric, batten, tender, shed |
-| T12 | **The board prints the prime as the root beam `root`**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-prints-root-beam`](design-board-prints-root-beam.md)<br>[Sketch](decision-board-prints-root-beam.md) | darn · light | landing · Finalize | neve | 1d<br>5h | board, orch |
 
 #### Ready (0)
 
@@ -113,6 +112,14 @@ Waits only on Running, Ready or Draft entries.
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T12 | **The board prints the prime as the root beam `root`**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-prints-root-beam`](design-board-prints-root-beam.md)<br>[Sketch](decision-board-prints-root-beam.md) | 1d<br>5h | board, orch |
 
 </details>
 
@@ -201,7 +208,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **An old driver fails on board stencils a landing installed mid-run**<br>• A blocked hand-over leaves the old binary rendering new board copies whose includes it lacks | [`stale-driver-new-stencils`](design-stale-driver-new-stencils.md) | 1h<br>1h | stencil, shed |
 | B4 |  | **Coverage map rewrites funcs in another order on each build**<br>• Two --map runs on one commit give the same sets in a different array order | [`map-entry-order-unstable`](design-map-entry-order-unstable.md) | 1h<br>1h |  |
 | B5 |  | **Coverage map records 0 seconds for nearly every test**<br>• redundant lists every candidate at 0 seconds so its slowest-first pass has no order | [`map-test-seconds-zero`](design-map-test-seconds-zero.md) | 1h<br>1h |  |
-| B6 |  | **lym gate redundant counts a timeout or memory cap as a kill** | [`redundant-timeout-not-kill`](design-redundant-timeout-not-kill.md) | 33m<br>33m | gate, testkit |
+| B6 |  | **lym gate redundant counts a timeout or memory cap as a kill** | [`redundant-timeout-not-kill`](design-redundant-timeout-not-kill.md) | 36m<br>36m | gate, testkit |
 
 #### Enhancements (1)
 
