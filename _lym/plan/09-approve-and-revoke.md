@@ -21,9 +21,9 @@
 
 **Uses:**
 - `internal/slackcli/doc.go`
-- `plan:internal/slackengine#ReadPeers`
-- `plan:internal/slackengine#UpdatePeers`
-- `plan:internal/slackengine#Peer`
+- `internal/slackengine#ReadPeers`
+- `internal/slackengine#UpdatePeers`
+- `internal/slackengine#Peer`
 - `internal/slackengine#SlackClient`
 - `internal/slackengine#ReadCredentials`
 - `internal/slackengine#inbound.retryOrGiveUp`

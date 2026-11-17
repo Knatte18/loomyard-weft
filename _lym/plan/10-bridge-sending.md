@@ -50,19 +50,19 @@
 
 **Uses:**
 - `internal/slackcli/doc.go`
-- `plan:internal/creelcli#GoClient.TakeMachine`
-- `plan:internal/creelcli#GoClient.ReportMachine`
-- `plan:internal/creelcli#GoClient.SettleMachineDelivered`
-- `plan:internal/creelcli#GoClient.SettleMachineReturned`
-- `plan:internal/creelcli#GoClient.DeliverMachine`
+- `internal/creelcli#GoClient.TakeMachine`
+- `internal/creelcli#GoClient.ReportMachine`
+- `internal/creelcli#GoClient.SettleMachineDelivered`
+- `internal/creelcli#GoClient.SettleMachineReturned`
+- `internal/creelcli#GoClient.DeliverMachine`
 - `internal/creelengine#IsDaemonRefusal`
 - `internal/creelengine#ErrDaemonRefusal`
-- `plan:internal/slackengine#FormatBridgeMessage`
-- `plan:internal/slackengine#BridgeChannelName`
-- `plan:internal/slackengine#ReadPeers`
-- `plan:internal/slackengine#UpdateBridgeMap`
-- `plan:internal/slackengine#ReadBridgeMap`
-- `plan:internal/slackengine#BridgeMap.ChannelOf`
+- `internal/slackengine#FormatBridgeMessage`
+- `internal/slackengine#BridgeChannelName`
+- `internal/slackengine#ReadPeers`
+- `internal/slackengine#UpdateBridgeMap`
+- `internal/slackengine#ReadBridgeMap`
+- `internal/slackengine#BridgeMap.ChannelOf`
 - `internal/slackengine#ForwardingOn`
 - `internal/slackengine#ReadSetup`
 - `internal/slackengine#channelKeeper.ensure`

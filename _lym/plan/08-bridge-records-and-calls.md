@@ -1,26 +1,26 @@
 # Card 8 — bridge-records-and-calls
 
 **Create:**
-- `plan:internal/slackengine#PeersFileName` -> `const PeersFileName = "slack-peers.json"`
-- `plan:internal/slackengine#BridgeMapFileName` -> `const BridgeMapFileName = "bridge-channels.json"`
-- `plan:internal/slackengine#BridgeNoticesFileName` -> `const BridgeNoticesFileName = "bridge-notices.json"`
-- `plan:internal/slackengine#BridgePostsFileName` -> `const BridgePostsFileName = "bridge-posts.json"`
-- `plan:internal/slackengine#Peer` -> `type Peer struct`
-- `plan:internal/slackengine#Peers` -> `type Peers struct`
-- `plan:internal/slackengine#ReadPeers` -> `func ReadPeers(path string) (Peers, error)`
-- `plan:internal/slackengine#UpdatePeers` -> `func UpdatePeers(path string, mutate func(*Peers) error) error`
-- `plan:internal/slackengine#BridgeEntry` -> `type BridgeEntry struct`
-- `plan:internal/slackengine#BridgeMap` -> `type BridgeMap struct`
-- `plan:internal/slackengine#ReadBridgeMap` -> `func ReadBridgeMap(path string) (BridgeMap, error)`
-- `plan:internal/slackengine#UpdateBridgeMap` -> `func UpdateBridgeMap(path string, mutate func(*BridgeMap) error) error`
-- `plan:internal/slackengine#BridgeMap.ChannelOf` -> `func (m BridgeMap) ChannelOf(localOrch, peer string) (string, bool)`
-- `plan:internal/slackengine#BotUser` -> `type BotUser struct`
-- `plan:internal/slackengine#API.BotUsersNamed` -> `func (a *API) BotUsersNamed(ctx context.Context, name string) ([]BotUser, error)`
-- `plan:internal/slackengine#API.MemberChannels` -> `func (a *API) MemberChannels(ctx context.Context) ([]ChannelInfo, error)`
-- `plan:internal/slackengine#API.PostTimestamped` -> `func (a *API) PostTimestamped(ctx context.Context, channel, text string, sender Sender) (string, error)`
-- `plan:internal/slackengine#API.PostThreadReply` -> `func (a *API) PostThreadReply(ctx context.Context, channel, thread, text string) error`
-- `plan:internal/slackengine#API.UserAppID` -> `func (a *API) UserAppID(ctx context.Context, userID string) (string, error)`
-- `plan:internal/slackengine_test#TestBridgeRecords` -> `func TestBridgeRecords(t *testing.T)`
+- `internal/slackengine#PeersFileName`
+- `internal/slackengine#BridgeMapFileName`
+- `internal/slackengine#BridgeNoticesFileName`
+- `internal/slackengine#BridgePostsFileName`
+- `internal/slackengine#Peer`
+- `internal/slackengine#Peers`
+- `internal/slackengine#ReadPeers`
+- `internal/slackengine#UpdatePeers`
+- `internal/slackengine#BridgeEntry`
+- `internal/slackengine#BridgeMap`
+- `internal/slackengine#ReadBridgeMap`
+- `internal/slackengine#UpdateBridgeMap`
+- `internal/slackengine#BridgeMap.ChannelOf`
+- `internal/slackengine#BotUser`
+- `internal/slackengine#API.BotUsersNamed`
+- `internal/slackengine#API.MemberChannels`
+- `internal/slackengine#API.PostTimestamped`
+- `internal/slackengine#API.PostThreadReply`
+- `internal/slackengine#API.UserAppID`
+- `internal/slackengine_test#TestBridgeRecords`
 
 **Edit:**
 - `internal/slackengine#MachinePaths`

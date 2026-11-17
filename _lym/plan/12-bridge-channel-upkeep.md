@@ -9,8 +9,8 @@
 - `internal/slackengine/doc.go`
 
 **Uses:**
-- `plan:internal/slackengine#ReadBridgeMap`
-- `plan:internal/slackengine#UpdateBridgeMap`
+- `internal/slackengine#ReadBridgeMap`
+- `internal/slackengine#UpdateBridgeMap`
 - `internal/slackengine#channelKeeper.renameDated`
 - `internal/slackengine#ArchivedName`
 - `internal/slackengine#ReadSetup`

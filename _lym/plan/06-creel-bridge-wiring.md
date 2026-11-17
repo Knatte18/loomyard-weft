@@ -1,16 +1,16 @@
 # Card 6 — creel-bridge-wiring
 
 **Create:**
-- `plan:internal/creelcli#GoClient.TakeMachine` -> `func (c *GoClient) TakeMachine() ([]creelengine.MachineOutbound, error)`
-- `plan:internal/creelcli#GoClient.ReportMachine` -> `func (c *GoClient) ReportMachine(id int64, reason string) error`
-- `plan:internal/creelcli#GoClient.SettleMachineDelivered` -> `func (c *GoClient) SettleMachineDelivered(id int64, slackTS string) error`
-- `plan:internal/creelcli#GoClient.SettleMachineReturned` -> `func (c *GoClient) SettleMachineReturned(id int64, reason string) error`
-- `plan:internal/creelcli#GoClient.DeliverMachine` -> `func (c *GoClient) DeliverMachine(mail creelengine.MachineMail) (int64, error)`
-- `plan:internal/creelcli#slackBridge` -> `type slackBridge struct`
-- `plan:internal/creelcli#newSlackBridge` -> `func newSlackBridge(hubPath string) *slackBridge`
-- `plan:internal/creelcli#slackBridge.Names` -> `func (b *slackBridge) Names() (string, []string, error)`
-- `plan:internal/creelcli#slackBridge.SendReady` -> `func (b *slackBridge) SendReady(orch string) error`
-- `plan:internal/creelcli#TestSlackBridge` -> `func TestSlackBridge(t *testing.T)`
+- `internal/creelcli#GoClient.TakeMachine`
+- `internal/creelcli#GoClient.ReportMachine`
+- `internal/creelcli#GoClient.SettleMachineDelivered`
+- `internal/creelcli#GoClient.SettleMachineReturned`
+- `internal/creelcli#GoClient.DeliverMachine`
+- `internal/creelcli#slackBridge`
+- `internal/creelcli#newSlackBridge`
+- `internal/creelcli#slackBridge.Names`
+- `internal/creelcli#slackBridge.SendReady`
+- `internal/creelcli#TestSlackBridge`
 
 **Edit:**
 - `internal/creelcli#serveDaemon`

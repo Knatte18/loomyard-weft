@@ -34,16 +34,16 @@
 - `internal/slackengine/doc.go`
 
 **Uses:**
-- `plan:internal/slackengine#ParseBridgeMessage`
-- `plan:internal/slackengine#ReadBridgeMap`
-- `plan:internal/slackengine#UpdateBridgeMap`
-- `plan:internal/slackengine#ReadPeers`
+- `internal/slackengine#ParseBridgeMessage`
+- `internal/slackengine#ReadBridgeMap`
+- `internal/slackengine#UpdateBridgeMap`
+- `internal/slackengine#ReadPeers`
 - `plan:internal/slackengine#markBridgeNotice`
 - `plan:internal/slackengine#clearBridgeNotice`
 - `plan:internal/slackengine#bridgePoll.wake`
 - `plan:internal/slackengine#BridgePoll`
 - `plan:internal/slackengine#NewBridgeSender`
-- `plan:internal/slackengine#API.UserAppID`
+- `internal/slackengine#API.UserAppID`
 - `plan:internal/slackengine#bridgePollBase`
 - `plan:internal/slackengine#bridgePollCeiling`
 - `plan:internal/slackengine#parsePeerCommand`

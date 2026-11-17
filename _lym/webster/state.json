@@ -1,6 +1,6 @@
 {
   "runGuid": "c115a07435ef17df56118bc29bf674c7",
-  "planFingerprint": "849c2226785e5be9f0552465f63c3a179aaf0f9c6f5cc14235f882e852d43128",
+  "planFingerprint": "018308bd7dfbc3bf2731bf92c6ff78011d9acf6ed27f294730870de9aa8c7d1f",
   "planFileHashes": {
     "00-overview.md": "9e58e89a087a04e18eda194d6a2bc67ac84acbd42a3222a9de19788bce669076",
     "01-machine-address-parser.md": "c6684b2f769ddc8cfc6e883ad6768046ea6526fb3594f745f1779b659c74d59b",
@@ -8,13 +8,13 @@
     "03-machine-outbound-post.md": "e9cf423390bb64d001b5ea23847a8eecf3a10d11a5aadd82665edfe6ba76841b",
     "04-machine-relay-verbs.md": "c36690e1eb0d6327218f0dbc628fe9590fcfc1758347a5e8237be4240c8e490c",
     "05-machine-inbound-deliver.md": "143d737af6b59fef7a042e7843e4cc2676e1ae9e66975d72eb9f9255b8c924d1",
-    "06-creel-bridge-wiring.md": "da9268f7684105febb52add0159295b7ef825252fb647db9c2db06544d5389b5",
-    "07-bridge-envelope-and-name.md": "b0efea3b528fdbc7d044b1d81f061353a85aa10209cf1ffca3c23c665fe0fbdb",
-    "08-bridge-records-and-calls.md": "f7a01dea813cae977f0fdcd8ed895adcaa6d9b9b7f0db3b0c579b5295d55302d",
-    "09-approve-and-revoke.md": "f9d671187dd81159ddb7e34938bcdf60e8ddcce69428401871c3fd2cef20b8f9",
-    "10-bridge-sending.md": "f191c36f90dda01743dbe462c9a35212daa8c40890d6a0df5b1df0354be77aa2",
-    "11-bridge-receiving.md": "ee03feb502da9cdd33541e6dde330642d736d83d25b29b1c4148ef59803c03a5",
-    "12-bridge-channel-upkeep.md": "4102c6d0640251f1c1f1f583f4b65f41a77317f6fc5ea52c5403f76087cd7557"
+    "06-creel-bridge-wiring.md": "52e827c0f3692ec3ebd7c3c63e147d6006ff29dde9283ca62670c8dd5a1d7fa6",
+    "07-bridge-envelope-and-name.md": "2836932bc2628d4227fbb89bc59ed7a4c44bfca29af8c730f21a5e20d7e4b140",
+    "08-bridge-records-and-calls.md": "d089f97dc8de9af968a803171bcc7ef1fbd3ceaf9c25d39ab0892f76a76c03ca",
+    "09-approve-and-revoke.md": "2430f8625455ba5e31c4eadcff96269a941aa3c1c64a088393229900f8f5d256",
+    "10-bridge-sending.md": "2b7c46cceae0c084cb1e05e14ff28f28b9752bb572f16923687aad2dab5b4577",
+    "11-bridge-receiving.md": "1e44eeb4ab21b3a33730963b33c945b380b9ea3724da1b27b0031d8541c746a9",
+    "12-bridge-channel-upkeep.md": "cdc883bffbef6fd2a5e4d8f4ab5948841ab3adcd5121e04089950a04179e292a"
   },
   "planOverviewFrameHash": "c44d669f07d71673cd871cd1cc2101546d03212888d750c5a215bb3e6d1de255",
   "partition": [
@@ -438,25 +438,50 @@
         "08-bridge-records-and-calls"
       ],
       "cardHashes": {
-        "06-creel-bridge-wiring": "da9268f7684105febb52add0159295b7ef825252fb647db9c2db06544d5389b5",
-        "07-bridge-envelope-and-name": "b0efea3b528fdbc7d044b1d81f061353a85aa10209cf1ffca3c23c665fe0fbdb",
-        "08-bridge-records-and-calls": "f7a01dea813cae977f0fdcd8ed895adcaa6d9b9b7f0db3b0c579b5295d55302d"
+        "06-creel-bridge-wiring": "52e827c0f3692ec3ebd7c3c63e147d6006ff29dde9283ca62670c8dd5a1d7fa6",
+        "07-bridge-envelope-and-name": "2836932bc2628d4227fbb89bc59ed7a4c44bfca29af8c730f21a5e20d7e4b140",
+        "08-bridge-records-and-calls": "d089f97dc8de9af968a803171bcc7ef1fbd3ceaf9c25d39ab0892f76a76c03ca"
       },
       "startSha": "0643efca8c2cc963fc3dfd9664384f610a8b367f",
       "kind": "fork",
       "spawnedAt": "2026-11-17T17:58:21Z",
       "sessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-creel-bridge-wiring",
+        "status": "done",
+        "head_sha": "6b89d7ab5b77bcd8d5789e23954d2e80c3f53011",
+        "deviations": [
+          "internal/creelcli/cli_test.go",
+          "internal/creelcli/slackbridge.go",
+          "internal/slackengine/api.go",
+          "internal/slackengine/bridgemessage.go",
+          "internal/slackengine/bridgemessage_test.go",
+          "internal/slackengine/geometry.go",
+          "internal/slackengine/inbound.go",
+          "internal/slackengine/inbound_test.go"
+        ]
+      },
+      "cardShas": [
+        "6b89d7ab5b77bcd8d5789e23954d2e80c3f53011"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a70376c79ae2bac6d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a70376c79ae2bac6d.jsonl"
+      ]
     }
   },
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "255015dbb2c93bc97dff12a121147be8",
   "masterSessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a3f4ea1e36ca7ed3c.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-ab6f7c16cac28f64b.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-ab6f7c16cac28f64b.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a70376c79ae2bac6d.jsonl"
   ]
 }

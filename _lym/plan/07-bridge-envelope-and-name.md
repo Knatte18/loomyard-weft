@@ -1,13 +1,13 @@
 # Card 7 — bridge-envelope-and-name
 
 **Create:**
-- `plan:internal/slackengine#BridgeEnvelope` -> `type BridgeEnvelope struct`
-- `plan:internal/slackengine#bridgeEnvelopePrefix` -> `const bridgeEnvelopePrefix = "[lym-bridge]"`
-- `plan:internal/slackengine#FormatBridgeMessage` -> `func FormatBridgeMessage(envelope BridgeEnvelope, body string) string`
-- `plan:internal/slackengine#ParseBridgeMessage` -> `func ParseBridgeMessage(text string) (BridgeEnvelope, string, bool)`
-- `plan:internal/slackengine#bridgeChannelPrefix` -> `const bridgeChannelPrefix = "bridge-"`
-- `plan:internal/slackengine#BridgeChannelName` -> `func BridgeChannelName(one, other agentname.MachineAddress) string`
-- `plan:internal/slackengine_test#TestBridgeMessage` -> `func TestBridgeMessage(t *testing.T)`
+- `internal/slackengine#BridgeEnvelope`
+- `internal/slackengine#bridgeEnvelopePrefix`
+- `internal/slackengine#FormatBridgeMessage`
+- `internal/slackengine#ParseBridgeMessage`
+- `internal/slackengine#bridgeChannelPrefix`
+- `internal/slackengine#BridgeChannelName`
+- `internal/slackengine_test#TestBridgeMessage`
 
 **Edit:**
 - `internal/slackengine_test#TestChannelName`
