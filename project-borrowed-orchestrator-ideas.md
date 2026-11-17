@@ -21,8 +21,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | darn · light | Code-Burler-Fix | neve | 1h<br>38m | stencil, shed |
-| T6 | **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | darn · light | Code-Burler-Fix | neve | 1h<br>38m | shuttle, friction |
+| T5 | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | darn · light | Code-Burler-Fix | neve | 1h<br>39m | stencil, shed |
+| T6 | **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | darn · light | Code-Burler-Fix | neve | 1h<br>39m | shuttle, friction |
 
 ### Ready (0)
 
