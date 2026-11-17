@@ -1,0 +1,705 @@
+{
+  "runGuid": "68c8af21b2573c67ea24b00d8c6a8507",
+  "planFingerprint": "098f6b5ad703684184ea09698a523d78bc9798e3a79a91e196f188a06c670340",
+  "planFileHashes": {
+    "00-overview.md": "8070a6e612366e940baf7464bff651d6e6f80c3c26d7e4f332211f6eef4a3045",
+    "01-fixtries-package.md": "c8422e4a5cc37fe00bc58ca5c96d783e86565ae23c211a794be4ba935ecff226",
+    "02-machine-identity.md": "0cb985a5fc54e7ddc2aae02adf4fad1a0b93f23d3c1c411fb1f98e5f11bc7566",
+    "03-bolt-registry-holds-records.md": "b49eda6abed53ef4ae642ee4706ef1efaf01c1337178b085b75ba1716ea7626c",
+    "04-machine-registration-setter.md": "2396dce9930c20c9e601e1b418d99ffd4433b8bf26bd4d88fcff1393a543a9de",
+    "05-bolt-hold-write.md": "402d385aa7a0306fcd14f9da3abb9e8043fefd83ff9074ca848de08d55edfd6d",
+    "06-owner-write-registers.md": "6dd2e1d1318bfd80599c4963c4f00e4aa169e1789dd03673d599e6f6339f240d",
+    "07-owned-elsewhere-through-registry.md": "32b4d841730c208d92e9dd1332d0cf11cf058cb91790c9c83a04035290d772f7",
+    "08-dobby-start-owner-flags.md": "b943ac9d3f188926fa841e7176d8fe10afe645eb65fbd71ae8ddc3e9092a575a",
+    "09-this-machine-names-registry.md": "8a4a2fa643d96243d3d99a09b55503b08946237735bd00eb401404ed81f1989e",
+    "10-machine-name-registers.md": "fb439eed6d6177b7750cb1ba6e17d505327fc19bff6c64ce43a17fcf576fd271",
+    "11-forget-former.md": "b16a915822e7c87b15733c9f849d9687d07263ed970551533bc1971f40b24bb7",
+    "12-bolt-hold-caller.md": "31c842819e96a59de47d0eb408eda80a153a08665e9800eb56240635f18ea39d",
+    "13-act-rule-hold.md": "6db0342e236dc98f34c3246bfe4da885365facf2fda543b67fd154437bef01cf",
+    "14-act-verbs-pull-bolt.md": "9bc14ef7436579364847f5effe46aa65ebf6fdb89ce107520577677a414fdcb5",
+    "15-tender-bolt-hold.md": "e4bf4af7e1f2e709c0081f635083887c33ab0f689d9154745309b181e77de7d0",
+    "16-held-tasks-not-started.md": "434735a12fc485b02f34e7436b5a0b1c98cb6f1d9fc0ca63cf2026a824c7c9d0",
+    "17-hand-over-owned-elsewhere.md": "3c0192af1e94694108c6712972ea2fab8dffd8c4b6949b127e6a0e37a2640c86",
+    "18-catch-up-engine.md": "433e492cc8f8e5a75a96d49a20604c9c71f3ebedf29c217ea8202085baff279d",
+    "19-pause-intent-entries.md": "ff91ac5ecbe13aa60d1b47e1ddaba64570360d8ab522a39bd9d6c72355b19a5f",
+    "20-hand-pass-catch-up.md": "a3b563985f4a6b0d2a17b33bd932d5cda853c06bfc88d2db5723a5f5415a9492",
+    "21-dobby-catch-up.md": "c5fcdf449b53481ef8b56af0cd7f0003c76f692e438ff810d1475d6ebe3b7e8e",
+    "22-upgrade-first-read.md": "c53faeae23145a4f6dc313dcf6e81bf1e19da880177972314bff8f2b9afc069e",
+    "23-retire-owner-pause-callers.md": "e61b8714ff43fc4ca1886ebb24fbdc1393c36734425ae31feec118f040cf6323",
+    "24-delete-tender-owner-pause.md": "0c84bc21374445aeecb43dca8f1a7b6f5dbfbc3b9da6c45378eee1abeb8a5828",
+    "25-pattern-owner-machine.md": "c0de73f7de75cc061c5056465c98a1767a75f60cadb56d18b1351ebf17cda9e9"
+  },
+  "planOverviewFrameHash": "970c7ea7e8b87c6b14414d4d6f0fc3c3d1b770f924b1d6f8b2b6889af75fd19c",
+  "partition": [
+    {
+      "cards": [
+        "01-fixtries-package",
+        "02-machine-identity",
+        "03-bolt-registry-holds-records"
+      ],
+      "profile": "wide",
+      "estimate": 188750,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 55096,
+        "read_union": 36184,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 504,
+            "reads": {
+              "file:internal/adoptcli/doc.go": 7752,
+              "file:internal/adoptcli/holds.go": 492,
+              "file:internal/adoptcli/holds_test.go": 468,
+              "file:internal/pauserecord/testmain_test.go": 180,
+              "package:internal/adoptcli": 2000,
+              "package:internal/fixtries": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/fixtries": 2000
+            },
+            "messages": 103.5,
+            "written": 31554
+          },
+          {
+            "card": 2,
+            "card_text": 420,
+            "reads": {
+              "file:internal/machinename/doc.go": 144,
+              "package:internal/machinename": 2000,
+              "tests:internal/machinename": 2000
+            },
+            "messages": 47,
+            "written": 14520
+          },
+          {
+            "card": 3,
+            "card_text": 696,
+            "reads": {
+              "file:internal/boardengine/doc.go": 9528,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 169,
+            "written": 51396
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-machine-registration-setter",
+        "05-bolt-hold-write",
+        "06-owner-write-registers"
+      ],
+      "profile": "wide",
+      "estimate": 208986,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 62096,
+        "read_union": 48532,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 780,
+            "reads": {
+              "file:internal/boardengine/doc.go": 9528,
+              "file:internal/machinecli/doc.go": 564,
+              "package:internal/boardengine": 2000,
+              "package:internal/machinecli": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/machinecli": 2000
+            },
+            "messages": 121,
+            "written": 37080
+          },
+          {
+            "card": 5,
+            "card_text": 372,
+            "reads": {
+              "file:internal/boardengine/doc.go": 9528,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 49,
+            "written": 15072
+          },
+          {
+            "card": 6,
+            "card_text": 456,
+            "reads": {
+              "file:internal/adoptcli/doc.go": 7752,
+              "file:internal/hubgeom/doc.go": 1080,
+              "package:internal/adoptcli": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/orchcli": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 152.5,
+            "written": 46206
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-owned-elsewhere-through-registry"
+      ],
+      "profile": "wide",
+      "estimate": 314320,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 69096,
+        "read_union": 66280,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 1344,
+            "reads": {
+              "file:internal/adoptcli/doc.go": 7752,
+              "file:internal/boardengine/doc.go": 9528,
+              "file:internal/fabriccli/doc.go": 2700,
+              "file:internal/fronttask/doc.go": 660,
+              "file:internal/pairteardown/doc.go": 4296,
+              "package:internal/adoptcli": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fronttask": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/tendercli": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fronttask": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/tendercli": 2000
+            },
+            "messages": 592,
+            "written": 178944
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-dobby-start-owner-flags",
+        "09-this-machine-names-registry",
+        "10-machine-name-registers",
+        "11-forget-former"
+      ],
+      "profile": "wide",
+      "estimate": 293440,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 76096,
+        "read_union": 49992,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 864,
+            "reads": {
+              "file:internal/dobbyengine/doc.go": 6372,
+              "file:internal/hubgeom/doc.go": 1080,
+              "package:internal/beamcli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/orchcli": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 231,
+            "written": 70164
+          },
+          {
+            "card": 9,
+            "card_text": 384,
+            "reads": {
+              "file:internal/fabriccli/doc.go": 2700,
+              "package:internal/beamcli": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/pairteardown": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/pairteardown": 2000
+            },
+            "messages": 141,
+            "written": 42684
+          },
+          {
+            "card": 10,
+            "card_text": 528,
+            "reads": {
+              "file:internal/machinecli/doc.go": 564,
+              "package:internal/machinecli": 2000,
+              "tests:internal/machinecli": 2000
+            },
+            "messages": 84,
+            "written": 25728
+          },
+          {
+            "card": 11,
+            "card_text": 576,
+            "reads": {
+              "file:internal/machinecli/doc.go": 564,
+              "file:pattern/PATTERN-cli-cobra.md": 924,
+              "package:internal/machinecli": 2000,
+              "package:pattern": 2000,
+              "tests:internal/machinecli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 94,
+            "written": 28776
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-bolt-hold-caller",
+        "13-act-rule-hold",
+        "14-act-verbs-pull-bolt",
+        "15-tender-bolt-hold",
+        "16-held-tasks-not-started",
+        "17-hand-over-owned-elsewhere"
+      ],
+      "profile": "wide",
+      "estimate": 276628,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 83096,
+        "read_union": 44048,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 456,
+            "reads": {
+              "file:internal/pauserecord/doc.go": 1164,
+              "package:internal/pauserecord": 2000,
+              "tests:internal/pauserecord": 2000
+            },
+            "messages": 64.5,
+            "written": 19806
+          },
+          {
+            "card": 13,
+            "card_text": 432,
+            "reads": {
+              "file:internal/pairteardown/doc.go": 4296,
+              "file:internal/runfsm/doc.go": 144,
+              "package:internal/pairteardown": 2000,
+              "package:internal/runfsm": 2000,
+              "package:internal/tenderengine": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/runfsm": 2000,
+              "tests:internal/tenderengine": 2000
+            },
+            "messages": 80,
+            "written": 24432
+          },
+          {
+            "card": 14,
+            "card_text": 420,
+            "reads": {
+              "file:internal/pairteardown/doc.go": 4296,
+              "package:internal/loomcli": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/tendercli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/tendercli": 2000
+            },
+            "messages": 109,
+            "written": 33120
+          },
+          {
+            "card": 15,
+            "card_text": 684,
+            "reads": {
+              "file:internal/tendercli/doc.go": 1392,
+              "file:internal/tenderengine/doc.go": 2268,
+              "package:internal/tendercli": 2000,
+              "package:internal/tenderengine": 2000,
+              "tests:internal/tendercli": 2000,
+              "tests:internal/tenderengine": 2000
+            },
+            "messages": 106,
+            "written": 32484
+          },
+          {
+            "card": 16,
+            "card_text": 360,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 91,
+            "written": 27660
+          },
+          {
+            "card": 17,
+            "card_text": 432,
+            "reads": {
+              "file:internal/pairteardown/doc.go": 4296,
+              "package:internal/pairteardown": 2000,
+              "tests:internal/pairteardown": 2000
+            },
+            "messages": 38.5,
+            "written": 11982
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "18-catch-up-engine",
+        "19-pause-intent-entries",
+        "20-hand-pass-catch-up",
+        "21-dobby-catch-up"
+      ],
+      "profile": "wide",
+      "estimate": 288968,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 90096,
+        "read_union": 33164,
+        "cards": [
+          {
+            "card": 18,
+            "card_text": 384,
+            "reads": {
+              "file:internal/dobbyengine/doc.go": 6372,
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 53,
+            "written": 16284
+          },
+          {
+            "card": 19,
+            "card_text": 360,
+            "reads": {
+              "file:internal/tendercli/doc.go": 1392,
+              "package:internal/tendercli": 2000,
+              "tests:internal/tendercli": 2000
+            },
+            "messages": 42,
+            "written": 12960
+          },
+          {
+            "card": 20,
+            "card_text": 1176,
+            "reads": {
+              "file:internal/battencli/originowed_test.go": 1152,
+              "file:internal/dobbyengine/doc.go": 6372,
+              "file:internal/shedrun/doc.go": 1140,
+              "package:internal/battencli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 273,
+            "written": 83076
+          },
+          {
+            "card": 21,
+            "card_text": 1188,
+            "reads": {
+              "file:internal/dobbyengine/doc.go": 6372,
+              "package:internal/beamcli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 174,
+            "written": 53388
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "22-upgrade-first-read"
+      ],
+      "profile": "wide",
+      "estimate": 145452,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 97096,
+        "read_union": 15164,
+        "cards": [
+          {
+            "card": 22,
+            "card_text": 792,
+            "reads": {
+              "file:internal/dobbyengine/doc.go": 6372,
+              "package:internal/beamcli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/dobbyengine": 2000
+            },
+            "messages": 108,
+            "written": 33192
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "23-retire-owner-pause-callers"
+      ],
+      "profile": "wide",
+      "estimate": 384196,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 104096,
+        "read_union": 101948,
+        "cards": [
+          {
+            "card": 23,
+            "card_text": 1452,
+            "reads": {
+              "file:internal/battenshed/doc.go": 5088,
+              "file:internal/beamcli/doc.go": 5760,
+              "file:internal/dobbyengine/doc.go": 6372,
+              "file:internal/hibernatecli/doc.go": 624,
+              "file:internal/hibernateengine/doc.go": 2568,
+              "file:internal/landingshed/doc.go": 7980,
+              "file:internal/loomcli/doc.go": 9960,
+              "file:internal/machinecli/doc.go": 564,
+              "file:internal/orchcli/doc.go": 4140,
+              "file:internal/pauserecord/doc.go": 1164,
+              "file:pattern/PATTERN-dobby-runs.md": 276,
+              "package:cmd/lym": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/dobbyengine": 2000,
+              "package:internal/hibernatecli": 2000,
+              "package:internal/hibernateengine": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/machinecli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/pauserecord": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:internal/hibernatecli": 2000,
+              "tests:internal/hibernateengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/machinecli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/pauserecord": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 589,
+            "written": 178152
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "24-delete-tender-owner-pause",
+        "25-pattern-owner-machine"
+      ],
+      "profile": "wide",
+      "estimate": 147648,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 111096,
+        "read_union": 15612,
+        "cards": [
+          {
+            "card": 24,
+            "card_text": 240,
+            "reads": {
+              "file:internal/tendercli/doc.go": 1392,
+              "package:internal/tendercli": 2000,
+              "tests:internal/tendercli": 2000
+            },
+            "messages": 56,
+            "written": 17040
+          },
+          {
+            "card": 25,
+            "card_text": 300,
+            "reads": {
+              "file:PATTERN.md": 684,
+              "file:pattern/PATTERN-owner-machine.md": 996,
+              "package:.": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 12,
+            "written": 3900
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "fixtries-package",
+      "cards": [
+        "01-fixtries-package",
+        "02-machine-identity",
+        "03-bolt-registry-holds-records"
+      ],
+      "cardHashes": {
+        "01-fixtries-package": "c8422e4a5cc37fe00bc58ca5c96d783e86565ae23c211a794be4ba935ecff226",
+        "02-machine-identity": "0cb985a5fc54e7ddc2aae02adf4fad1a0b93f23d3c1c411fb1f98e5f11bc7566",
+        "03-bolt-registry-holds-records": "b49eda6abed53ef4ae642ee4706ef1efaf01c1337178b085b75ba1716ea7626c"
+      },
+      "startSha": "595349b9f6759e43f8032314ca7658be93a2e45a",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T09:36:37Z",
+      "sessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "e7e489f4ae82479452af8e587574191e",
+  "masterSessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
+  "masterEngine": "claude"
+}
