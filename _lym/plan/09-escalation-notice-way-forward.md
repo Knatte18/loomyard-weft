@@ -1,7 +1,7 @@
 # Card 9 — The parent notice names each cause's way forward
 
 **Create:**
-- `plan:internal/shedadapters#Bouncer.noticeWayForward` -> `func (b *Bouncer) noticeWayForward(round int, cause EscalationCause) string`
+- `internal/shedadapters#Bouncer.noticeWayForward`
 
 **Edit:**
 - `internal/shedadapters#Bouncer.renderEscalation`

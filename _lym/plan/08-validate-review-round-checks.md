@@ -9,12 +9,12 @@
 
 **Create:**
 - `internal/burlercli/validate_integration_test.go`
-- `plan:internal/burlercli#TestValidateReviewVerb_RoundChecks` -> `func TestValidateReviewVerb_RoundChecks(t *testing.T)`
+- `internal/burlercli#TestValidateReviewVerb_RoundChecks`
 
 **Uses:**
-- `plan:internal/shedadapters#BuildRoundContext`
+- `internal/shedadapters#BuildRoundContext`
 - `internal/shedadapters#ParseRoundReviewName`
-- `plan:internal/burlerengine#CheckReviewRound`
+- `internal/burlerengine#CheckReviewRound`
 - `internal/lymcwd#ResolveWithin`
 - `internal/loomengine#LoomReviewsDir`
 - `internal/loomengine#DiscussionDecisionRecord`

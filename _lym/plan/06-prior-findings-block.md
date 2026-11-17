@@ -7,8 +7,8 @@
 - `contracts/stencils/burler/burler-review-format.md`
 
 **Uses:**
-- `plan:internal/burlerengine#RoundContext`
-- `plan:internal/burlerengine#PriorFinding`
+- `internal/burlerengine#RoundContext`
+- `internal/burlerengine#PriorFinding`
 - `internal/burlerengine#composeReview`
 - `internal/burlerengine#newComposableProfile`
 

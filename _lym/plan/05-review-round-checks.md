@@ -1,18 +1,18 @@
 # Card 5 — Review-file `prior` and `carries`, and the round-check gate entry
 
 **Create:**
-- `plan:internal/burlerengine#PriorStatus` -> `type PriorStatus string`
-- `plan:internal/burlerengine#PriorResolved` -> `const PriorResolved PriorStatus = "resolved"`
-- `plan:internal/burlerengine#PriorOpen` -> `const PriorOpen PriorStatus = "open"`
-- `plan:internal/burlerengine#PriorOutdated` -> `const PriorOutdated PriorStatus = "outdated"`
-- `plan:internal/burlerengine#PriorWithdrawn` -> `const PriorWithdrawn PriorStatus = "withdrawn"`
-- `plan:internal/burlerengine#PriorEntry` -> `type PriorEntry struct`
-- `plan:internal/burlerengine#PriorFinding` -> `type PriorFinding struct`
-- `plan:internal/burlerengine#RoundContext` -> `type RoundContext struct`
-- `plan:internal/burlerengine#CheckReviewRound` -> `func CheckReviewRound(content []byte, ctx *RoundContext) error`
-- `plan:internal/burlerengine#RoundCheckGateEntry` -> `func RoundCheckGateEntry(reviewPath string, ctx *RoundContext) shuttleengine.GateEntry`
-- `plan:internal/burlerengine#locationPath` -> `func locationPath(location, worktreeRoot string) string`
-- `plan:internal/burlerengine#TestCheckReviewRound` -> `func TestCheckReviewRound(t *testing.T)`
+- `internal/burlerengine#PriorStatus`
+- `internal/burlerengine#PriorResolved`
+- `internal/burlerengine#PriorOpen`
+- `internal/burlerengine#PriorOutdated`
+- `internal/burlerengine#PriorWithdrawn`
+- `internal/burlerengine#PriorEntry`
+- `internal/burlerengine#PriorFinding`
+- `internal/burlerengine#RoundContext`
+- `internal/burlerengine#CheckReviewRound`
+- `internal/burlerengine#RoundCheckGateEntry`
+- `internal/burlerengine#locationPath`
+- `internal/burlerengine#TestCheckReviewRound`
 
 **Edit:**
 - `internal/burlerengine#Finding`

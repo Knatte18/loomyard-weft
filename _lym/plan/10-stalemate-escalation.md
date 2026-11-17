@@ -1,11 +1,11 @@
 # Card 10 — The Bouncer escalates a stalemate
 
 **Create:**
-- `plan:internal/shedadapters#EscalationStalemate` -> `const EscalationStalemate EscalationCause = "stalemate"`
-- `plan:internal/shedadapters#Bouncer.recordPostFixTargetID` -> `func (b *Bouncer) recordPostFixTargetID(round int)`
-- `plan:internal/shedadapters#Bouncer.roundUnchanged` -> `func (b *Bouncer) roundUnchanged(round int) bool`
-- `plan:internal/shedadapters#Bouncer.stalemated` -> `func (b *Bouncer) stalemated(round int, windowOpen bool) bool`
-- `plan:internal/shedadapters#TestBouncer_Stalemate` -> `func TestBouncer_Stalemate(t *testing.T)`
+- `internal/shedadapters#EscalationStalemate`
+- `internal/shedadapters#Bouncer.recordPostFixTargetID`
+- `internal/shedadapters#Bouncer.roundUnchanged`
+- `internal/shedadapters#Bouncer.stalemated`
+- `internal/shedadapters#TestBouncer_Stalemate`
 
 **Edit:**
 - `internal/shedadapters#EscalationCause`

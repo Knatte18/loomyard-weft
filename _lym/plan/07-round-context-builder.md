@@ -1,12 +1,12 @@
 # Card 7 — Build the round context and the changes file in the review producer
 
 **Create:**
-- `plan:internal/shedadapters#BuildRoundContext` -> `func BuildRoundContext(runDir string, round int, decisionRecordPath, anchorPath string) (*burlerengine.RoundContext, error)`
-- `plan:internal/shedadapters#roundChangesPath` -> `func roundChangesPath(runDir string, n int) string`
-- `plan:internal/shedadapters#writeRoundChanges` -> `func writeRoundChanges(runDir string, n int, paths []string) error`
-- `plan:internal/shedadapters#readRoundChanges` -> `func readRoundChanges(runDir string, n int) ([]string, bool, error)`
-- `plan:internal/shedadapters#roundParentReportPath` -> `func roundParentReportPath(runDir string, round int, files burlerengine.ParentReviewFiles) string`
-- `plan:internal/shedadapters#TestBuildRoundContext` -> `func TestBuildRoundContext(t *testing.T)`
+- `internal/shedadapters#BuildRoundContext`
+- `internal/shedadapters#roundChangesPath`
+- `internal/shedadapters#writeRoundChanges`
+- `internal/shedadapters#readRoundChanges`
+- `internal/shedadapters#roundParentReportPath`
+- `internal/shedadapters#TestBuildRoundContext`
 
 **Edit:**
 - `internal/shedadapters#BurlerReviewProducer.recordRoundStart`
