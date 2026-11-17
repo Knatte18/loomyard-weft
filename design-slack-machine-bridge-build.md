@@ -1,6 +1,6 @@
 # Build the Slack bridge that carries creel mail between orchs on two machines
 
-`slack-machine-bridge-build` · Task · feature, slack, creel, orch
+`slack-machine-bridge-build` · Task · feature, slack, creel, orch · starting · Worktree-Create
 
 Decision record: [Sketch](decision-slack-machine-bridge-build.md)
 
