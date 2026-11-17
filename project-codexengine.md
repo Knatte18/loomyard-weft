@@ -73,13 +73,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T6 | **Every producer renders its prompt and edit directive for the engine its launch resolves to** | [`prompt-engine-per-launch`](design-prompt-engine-per-launch.md)<br>[Sketch](decision-prompt-engine-per-launch.md) | darn · solid | starting · Worktree-Create | neve | 18h<br>18h | codex, shuttle, stencil, heddle |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Every producer renders its prompt and edit directive for the engine its launch resolves to** | [`prompt-engine-per-launch`](design-prompt-engine-per-launch.md)<br>[Sketch](decision-prompt-engine-per-launch.md) | darn · solid |  | 18h<br>18h | codex, shuttle, stencil, heddle |
+_None._
 
 ### Layer A (1)
 
