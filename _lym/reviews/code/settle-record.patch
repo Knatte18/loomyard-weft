@@ -1,0 +1,1365 @@
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index a48a61b4..7f025bd7 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -1194,7 +1194,7 @@
+ // Each contained test then runs with each mutant of its blocks on.
+ // The call logs each such run's mutant, with its file, line and operator, before the run starts.
+ // A test that killed a mutant, or whose own run of it was unjudged, has its covering tests run with that mutant on.
+-// Only a covering test whose entry covers the mutant's block runs.
++// Only a covering test whose entry covers one of the mutant's blocks runs.
+ // A run that fails kills its mutant.
+ // A run that times out or ends at the memory cap is unjudged, never a kill, since it proves no check of the mutant.
+ // Up to the slot's tier0 parallel runs go side by side, each alone in its process under its test's tier env.
+diff --git a/internal/gatecli/redundant_integration_test.go b/internal/gatecli/redundant_integration_test.go
+index caff5f00..05b72f67 100644
+--- a/internal/gatecli/redundant_integration_test.go
++++ b/internal/gatecli/redundant_integration_test.go
+@@ -35,6 +35,8 @@ import (
+ // TestHoardChecked and TestHoardCheckedAgain check a loop that keeps a megabyte a pass.
+ // Its negated condition makes it endless.
+ // Hoard panics at hoardStop megabytes, so a memory cap that does not hold fails the test and never the machine.
++// TestAllowedChecked checks what TestAllowedRun only runs: an || chain and an && chain that one clause each decides,
++// and the lines of an embedded file.
+ // TestAll and TestDoubleChecked also call Timeout, whose constant does not compile behind the mutant helper.
+ // The module stands in its own tiergate, at the import path a coverage map reads tiers from, so it builds alone.
+ var redundantModuleFiles = map[string]string{
+@@ -43,7 +45,27 @@ var redundantModuleFiles = map[string]string{
+ 	"internal/testkit/scankit/scankit.go":   "package scankit\n\n// Files stands in for the module's source scan.\nfunc Files() int { return 0 }\n",
+ 	"cov/cov.go": `package cov
+ 
+-import "time"
++import (
++	_ "embed"
++	"time"
++)
++
++//go:embed banner.txt
++var banner string
++
++// Allowed is decided by admin alone whenever owner is false.
++func Allowed(admin, owner bool) bool {
++	return admin || owner
++}
++
++// Both is decided by active alone whenever admin is true.
++func Both(admin, active bool) bool {
++	return admin && active
++}
++
++func Banner() string {
++	return banner
++}
+ 
+ func Classify(n int) string {
+ 	if n < 0 {
+@@ -86,9 +108,11 @@ func Hoard(n int) int {
+ 	return len(kept)
+ }
+ `,
++	"cov/banner.txt": "first\nsecond\n",
+ 	"cov/cov_test.go": `package cov
+ 
+ import (
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testkit/scankit"
+@@ -120,6 +144,26 @@ func TestDoubleChecked(t *testing.T) {
+ 	}
+ }
+ 
++func TestAllowedChecked(t *testing.T) {
++	tiergate.Require(t, 0)
++	if !Allowed(true, false) || Allowed(false, false) {
++		t.Fatal("Allowed is not admin || owner")
++	}
++	if Both(true, false) {
++		t.Fatal("Both is not admin && active")
++	}
++	if lines := strings.Split(Banner(), "\n"); lines[0] != "first" || lines[1] != "second" {
++		t.Fatal("Banner's first two lines are not first and second")
++	}
++}
++
++func TestAllowedRun(t *testing.T) {
++	tiergate.Require(t, 0)
++	Allowed(true, true)
++	Both(true, true)
++	Banner()
++}
++
+ func TestDoubleUnchecked(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	Double(3)
+@@ -294,20 +338,20 @@ func TestGateRedundant(t *testing.T) {
+ 			t.Errorf("redundant ./cov lists %d removable candidates; want at most 1, one of the pair", removable)
+ 		}
+ 		// Timeout's constant is the one mutant that does not compile.
+-		if got.Mutation.Mutants != 14 || got.Mutation.Unbuildable != 1 {
+-			t.Errorf("redundant ./cov mutation = %+v; want 14 buildable mutants and 1 unbuildable", got.Mutation)
++		if got.Mutation.Mutants != 20 || got.Mutation.Unbuildable != 1 {
++			t.Errorf("redundant ./cov mutation = %+v; want 20 buildable mutants and 1 unbuildable", got.Mutation)
+ 		}
+ 		// Each involved test runs once with no mutant on, and each contained test once with each mutant of its blocks.
+ 		// Each covering test then runs with each mutant a contained test killed or left unjudged, when it covers the mutant.
+ 		// A covering test that left the mutant alive, or ended at the memory cap on it, keeps that answer and does not run.
+ 		// Every other covering run kills or ends at its time bound, and one beside another run runs once more alone.
+ 		// The tally loop's covering runs time out again, so no covering test kills the mutants ending the loops.
+-		const unmutatedRuns, containedRuns, coveringRuns = 8, 29, 16
++		const unmutatedRuns, containedRuns, coveringRuns = 10, 41, 16
+ 		if want := unmutatedRuns + containedRuns + 2*coveringRuns; got.Mutation.Runs != want {
+ 			t.Errorf("redundant ./cov started %d runs; want %d, with no covering run of a mutant the memory cap ended", got.Mutation.Runs, want)
+ 		}
+-		hoardLoop := redundantMutant{File: "cov.go", Line: 33, Operator: testcover.OperatorNegateCondition}
+-		tallyStep := redundantMutant{File: "cov.go", Line: 23, Operator: testcover.OperatorDropStatement}
++		hoardLoop := redundantMutant{File: "cov.go", Line: 53, Operator: testcover.OperatorNegateCondition}
++		tallyStep := redundantMutant{File: "cov.go", Line: 43, Operator: testcover.OperatorDropStatement}
+ 		stops := func(site redundantMutant, tests ...string) []mutantStop {
+ 			var listed []mutantStop
+ 			for _, test := range tests {
+@@ -325,7 +369,7 @@ func TestGateRedundant(t *testing.T) {
+ 		// The covering lists are the pick among every judged test but the source checks.
+ 		// TestSourceScan sorts before the Tally tests and overlaps them fully, yet neither it nor TestGuarded is named.
+ 		want := answer{
+-			OK: true, Package: "cov", Tests: 12,
++			OK: true, Package: "cov", Tests: 14,
+ 			Failure: &testcover.MapFailure{Commit: "deadbeef", Error: "later build broke"},
+ 			Candidates: []redundantCandidate{
+ 				{Name: "TestAll", Covering: []string{"TestClassifyChecked", "TestDoubleChecked"}, MutantsKilled: 1},
+@@ -338,12 +382,21 @@ func TestGateRedundant(t *testing.T) {
+ 				{Name: "TestTallyChecked", Covering: []string{"TestTallyCheckedAgain"}, MutantsKilled: 6, Unjudged: []redundantMutant{tallyStep}},
+ 				{Name: "TestTallyCheckedAgain", Covering: []string{"TestTallyChecked"}, MutantsKilled: 6, Unjudged: []redundantMutant{tallyStep}},
+ 			},
++			// TestAllowedRun only runs what TestAllowedChecked checks, so the deleted clause and the changed line are unique kills.
+ 			Refuted: []redundantRefuted{{
++				Name: "TestAllowedChecked", Covering: []string{"TestAllowedRun"},
++				Unique: []redundantMutant{
++					{File: "cov.go", Line: 13, Operator: testcover.OperatorDeleteClause},
++					{File: "cov.go", Line: 18, Operator: testcover.OperatorDeleteClause},
++					{File: "cov.go", Line: 22, Operator: testcover.OperatorChangeEmbeddedLine},
++					{File: "cov.go", Line: 22, Operator: testcover.OperatorChangeEmbeddedLine},
++				},
++			}, {
+ 				Name: "TestClassifyChecked", Covering: []string{"TestAll"},
+ 				Unique: []redundantMutant{
+-					{File: "cov.go", Line: 6, Operator: testcover.OperatorNegateCondition},
+-					{File: "cov.go", Line: 7, Operator: testcover.OperatorChangeConstant},
+-					{File: "cov.go", Line: 9, Operator: testcover.OperatorChangeConstant},
++					{File: "cov.go", Line: 26, Operator: testcover.OperatorNegateCondition},
++					{File: "cov.go", Line: 27, Operator: testcover.OperatorChangeConstant},
++					{File: "cov.go", Line: 29, Operator: testcover.OperatorChangeConstant},
+ 				},
+ 			}},
+ 			Kept: []redundantSkip{{Name: "TestKept", Reason: "pins the message"}},
+@@ -351,6 +404,7 @@ func TestGateRedundant(t *testing.T) {
+ 				{Name: "TestFails", Reason: string(testcover.OutcomeFailed)},
+ 				{Name: "TestGuarded", Reason: testcover.ReasonSourceCheck},
+ 				{Name: "TestSourceScan", Reason: testcover.ReasonSourceCheck},
++				{Name: "TestAllowedRun", Reason: testcover.ReasonKillsNone},
+ 				{Name: "TestDoubleUnchecked", Reason: testcover.ReasonKillsNone},
+ 			},
+ 		}
+diff --git a/internal/gatecli/redundantmutants.go b/internal/gatecli/redundantmutants.go
+index 3c3566db..1ba9ef1c 100644
+--- a/internal/gatecli/redundantmutants.go
++++ b/internal/gatecli/redundantmutants.go
+@@ -172,7 +172,7 @@ func (c *mutationCheck) run(m testcover.Map, contained []testcover.Verdict, cove
+ 			Name: verdict.Name, Elapsed: entries[verdict.Name].Seconds, Covering: testcover.CoveringTests(blocks, pool),
+ 		}
+ 		for id, mutant := range mutants {
+-			if _, covered := blocks[mutant.Block]; covered {
++			if mutant.InBlocks(blocks) {
+ 				candidates[i].Mutants = append(candidates[i].Mutants, id)
+ 			}
+ 		}
+@@ -197,7 +197,7 @@ func (c *mutationCheck) run(m testcover.Map, contained []testcover.Verdict, cove
+ // A test that does not pass unmutated runs with no mutant.
+ // Each candidate then runs with each mutant of its blocks on.
+ // A candidate that killed a mutant, or whose own run of it was unjudged, has its covering tests run with that mutant on.
+-// Only a covering test whose entry covers the mutant's block runs.
++// Only a covering test whose entry covers one of the mutant's blocks runs.
+ // A covering test that kills or times out beside other tests runs once more alone, and that run stands.
+ // A covering test that is itself a candidate has its answer from the candidate runs replaced by that run.
+ // A run that ends at its time bound or at the memory cap kills nothing: it is unjudged, and the check's stats list it.
+@@ -301,7 +301,7 @@ func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[stri
+ 			}
+ 			for _, name := range candidate.Covering {
+ 				_, passes := timeouts[name]
+-				_, covers := blocks[name][c.mutants[id].Block]
++				covers := c.mutants[id].InBlocks(blocks[name])
+ 				run := mutantRun{id, name}
+ 				// A covering test that ran the mutant as a candidate and did not kill it has its answer already.
+ 				// A run alone decides the answer when that candidate run timed out beside other runs.
+diff --git a/internal/gatecli/redundantmutants_guard_test.go b/internal/gatecli/redundantmutants_guard_test.go
+index 2946c529..a47ad7b0 100644
+--- a/internal/gatecli/redundantmutants_guard_test.go
++++ b/internal/gatecli/redundantmutants_guard_test.go
+@@ -73,7 +73,7 @@ func TestRunMutantsRerunsACoveringTestThatTimedOutAsACandidate(t *testing.T) {
+ 		sideBySide:  1,
+ 		env:         holderEnv,
+ 		holderEnv:   holderEnv,
+-		mutants:     map[int]testcover.Mutant{1: {ID: 1, Block: block.String()}},
++		mutants:     map[int]testcover.Mutant{1: {ID: 1, Blocks: []string{block.String()}}},
+ 	}
+ 	candidates := []testcover.MutantCandidate{
+ 		{Name: killer, Covering: []string{hangsOnce}, Mutants: []int{1}},
+@@ -132,7 +132,7 @@ func TestRunMutantsGuardKilledRunIsNoKill(t *testing.T) {
+ 				sideBySide:  1,
+ 				env:         os.Environ(),
+ 				holderEnv:   os.Environ(),
+-				mutants:     map[int]testcover.Mutant{1: {ID: 1, Block: block.String()}},
++				mutants:     map[int]testcover.Mutant{1: {ID: 1, Blocks: []string{block.String()}}},
+ 				guardKilled: func(int) bool { return tt.guardKilled },
+ 			}
+ 			candidates := []testcover.MutantCandidate{
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index 71148f3b..82db065d 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -42,7 +42,12 @@
+ // PlanMutants places those blocks in the package's own files.
+ // A mutant changes one site of a target block by one operator.
+ // One operator negates an if or for condition or a comparison, or drops a call, assignment or increment statement.
+-// Another operator changes an integer, rune or string constant.
++// Another deletes one operand of a chain of && or ||, so a clause only one test feeds has a mutant that test alone kills;
++// the operand is still evaluated, and only its value is replaced.
++// Another changes an integer, rune or string constant: a literal, or a use of a package-level constant holding one.
++// A literal of a package-level variable's value is a site of each block that names the variable.
++// It is also a site of each block that names a variable whose value names it.
++// At a use of a string variable an embed directive fills, one mutant per non-blank line of the file changes that line.
+ // MutantPlan.WriteOverlay writes every mutant into one copy of the changed files and an overlay naming them.
+ // Each mutant sits behind a helper that changes its value only while MutantEnv names the mutant's ID.
+ // No line moves, so a compiler error names the mutant's own line.
+diff --git a/internal/testcover/mutant.go b/internal/testcover/mutant.go
+index 838d2f41..de0c7922 100644
+--- a/internal/testcover/mutant.go
++++ b/internal/testcover/mutant.go
+@@ -4,11 +4,13 @@
+ package testcover
+ 
+ import (
++	"bytes"
+ 	"cmp"
+ 	"encoding/json"
+ 	"errors"
+ 	"fmt"
+ 	"go/ast"
++	"go/build"
+ 	"go/parser"
+ 	"go/token"
+ 	"maps"
+@@ -16,6 +18,7 @@ import (
+ 	"path"
+ 	"path/filepath"
+ 	"slices"
++	"strconv"
+ 	"strings"
+ )
+ 
+@@ -28,12 +31,19 @@ const mutantFileName = "lym_testcover_mutant.go"
+ // overlayFileName is the `go build -overlay` file WriteOverlay writes.
+ const overlayFileName = "overlay.json"
+ 
++// embedDirective opens the comment that fills a package-level variable from files at build time.
++const embedDirective = "//go:embed "
++
+ // The mutation operators.
+ const (
+ 	OperatorNegateCondition  = "negate condition"
+ 	OperatorNegateComparison = "negate comparison"
+-	OperatorDropStatement    = "drop statement"
+-	OperatorChangeConstant   = "change constant"
++	// OperatorDeleteClause replaces an operand of a && or || chain with the value that ignores it.
++	// The operand is still evaluated, and only its value is replaced, so a side effect of the operand stays.
++	OperatorDeleteClause       = "delete clause"
++	OperatorDropStatement      = "drop statement"
++	OperatorChangeConstant     = "change constant"
++	OperatorChangeEmbeddedLine = "change embedded line"
+ )
+ 
+ // mutantHelpers is the source of the file the overlay adds, after its package clause.
+@@ -43,6 +53,7 @@ const mutantHelpers = `
+ import (
+ 	lymmutantos "os"
+ 	lymmutantstrconv "strconv"
++	lymmutantstrings "strings"
+ )
+ 
+ var lymMutantActive, _ = lymmutantstrconv.Atoi(lymmutantos.Getenv("` + MutantEnv + `"))
+@@ -54,6 +65,20 @@ func lymMutantBool[T ~bool](v T, id int) T {
+ 	return v
+ }
+ 
++func lymMutantDropOr[T ~bool](v T, id int) T {
++	if id == lymMutantActive {
++		return false
++	}
++	return v
++}
++
++func lymMutantDropAnd[T ~bool](v T, id int) T {
++	if id == lymMutantActive {
++		return true
++	}
++	return v
++}
++
+ func lymMutantKeep(id int) bool {
+ 	return id != lymMutantActive
+ }
+@@ -71,6 +96,17 @@ func lymMutantString[T ~string](v T, id int) T {
+ 	}
+ 	return v
+ }
++
++func lymMutantLine[T ~string](v T, line, id int) T {
++	if id != lymMutantActive {
++		return v
++	}
++	lines := lymmutantstrings.SplitAfter(string(v), "\n")
++	text := lines[line-1]
++	indent := len(text) - len(lymmutantstrings.TrimLeft(text, " \t"))
++	lines[line-1] = text[:indent] + "~" + text[indent:]
++	return T(lymmutantstrings.Join(lines, ""))
++}
+ `
+ 
+ // Mutant is one small change at one site of a package's own source.
+@@ -82,15 +118,46 @@ type Mutant struct {
+ 	Line int
+ 	// Operator is one of the Operator constants.
+ 	Operator string
+-	// Block is the rendered key of the coverage block holding the site.
+-	Block string
++	// Blocks are the rendered keys of the coverage blocks whose run reaches the site, ascending.
++	// A site of a function body has the one block holding it;
++	// a site of a package-level variable's value has each block that reads the variable.
++	// It also has each block that reads a variable whose value names it.
++	Blocks []string
+ 
+ 	// lastLine is the line the site ends on.
+ 	lastLine int
+ 	// start and end are the site's byte offsets in its file.
+ 	start, end int
+-	// prefix and suffix are the text the mutant inserts before and after the site.
+-	prefix, suffix string
++	// helper is the function the site's value passes through, empty for a dropped statement;
++	// args are the arguments the helper takes between the value and the ID.
++	helper, args string
++}
++
++// InBlocks reports whether blocks holds one of the mutant's blocks, so a run of those blocks reaches the mutant.
++func (m Mutant) InBlocks(blocks BlockSet) bool {
++	return slices.ContainsFunc(m.Blocks, func(key string) bool {
++		_, held := blocks[key]
++		return held
++	})
++}
++
++// opening returns the text the mutant inserts before its site.
++func (m Mutant) opening() string {
++	if m.helper == "" {
++		return fmt.Sprintf("if lymMutantKeep(%d) { ", m.ID)
++	}
++	return m.helper + "("
++}
++
++// closing returns the text the mutant inserts after its site.
++func (m Mutant) closing() string {
++	switch {
++	case m.helper == "":
++		return " }"
++	case m.args != "":
++		return fmt.Sprintf(", %s, %d)", m.args, m.ID)
++	}
++	return fmt.Sprintf(", %d)", m.ID)
+ }
+ 
+ // MutantPlan holds the mutants of one package and the source they change.
+@@ -103,25 +170,52 @@ type MutantPlan struct {
+ 	sources map[string][]byte
+ }
+ 
+-// site is one place of a file a mutant can change, before it is placed in a block and given an ID.
++// site is one place of a file a mutant can change, before it is placed in its blocks and given an ID.
+ type site struct {
+ 	operator   string
+ 	start, end int
+-	// helper is the function the site's value passes through; empty for a dropped statement.
+-	helper string
++	// helper and args are the Mutant fields of the same names.
++	helper, args string
++	// variables names the package-level variables whose value holds the site; it is empty for a site of a function body.
++	variables []string
++}
++
++// packageFile is one parsed non-test Go file of a package.
++type packageFile struct {
++	name      string
++	text      []byte
++	file      *ast.File
++	tokenFile *token.File
++}
++
++// packageDecls is what the mutation sites depend on in a package's package-level declarations.
++type packageDecls struct {
++	// constants maps each constant whose value is a literal to the helper that changes its value.
++	constants map[string]string
++	// embedded maps each string variable an embed directive fills from one file to that file's non-blank lines.
++	embedded map[string][]int
++	// variables holds the names of the package-level variables.
++	variables map[string]bool
+ }
+ 
+ // PlanMutants returns the mutants of the blocks of the package at importPath that targets holds.
+ // profile is a profile of the package's coverage binary, which lists each of its blocks, covered or not.
+ // targets holds rendered block keys, keyed as KeyBlocks keys every block of the package's own files in profile.
+-// The files are read from the package directory dir.
+-// A site belongs to the innermost block holding its start, and it is a mutant when that block is a target.
+-// The sites lie in function bodies.
+-// They are each if and for condition, and each other comparison.
+-// They also include each call, assignment or increment statement of a statement list.
+-// Each integer, rune or string literal is a site too.
+-// A literal of a constant declaration, an array length, a composite key or a field tag stays, since it must be constant.
+-// A file that does not parse, or a block outside its file, is an error.
++// The files are read from the package directory dir, and so is each file an embed directive names.
++// A site of a function body belongs to the innermost block holding its start.
++// A site of a package-level variable's value belongs to each block that names the variable.
++// It also belongs to each block that names a variable whose value names it.
++// A site is a mutant when one of its blocks is a target.
++// Function bodies hold these sites: each if and for condition, and each other comparison;
++// each operand of a chain of && or of ||, which the mutant deletes;
++// each call, assignment or increment statement of a statement list;
++// each integer, rune or string literal, and each use of a package-level constant whose value is one;
++// and, at each use of a string variable an embed directive fills from one file, each non-blank line of that file.
++// A deleted operand is still evaluated, and only its value is replaced, so a side effect of the operand stays.
++// The literals of a package-level variable's value are sites too.
++// A literal of a constant declaration, an array length or a field tag stays, since it must be constant.
++// So does a composite literal's key unless it is a string literal, which only a map key can be.
++// A file that does not parse, an embedded file that cannot be read, or a block outside its file is an error.
+ func PlanMutants(dir, importPath string, profile []ProfileBlock, targets BlockSet) (*MutantPlan, error) {
+ 	var own []ProfileBlock
+ 	seen := map[string]bool{}
+@@ -160,134 +254,442 @@ func PlanMutants(dir, importPath string, profile []ProfileBlock, targets BlockSe
+ 		}
+ 		spans[name] = append(spans[name], span{start: start, end: end, key: keys[i].String()})
+ 	}
++	blockAt := func(name string, offset int) (string, bool) {
++		innermost := -1
++		for i, b := range spans[name] {
++			if b.start <= offset && offset < b.end && (innermost < 0 || b.end-b.start < spans[name][innermost].end-spans[name][innermost].start) {
++				innermost = i
++			}
++		}
++		if innermost < 0 {
++			return "", false
++		}
++		return spans[name][innermost].key, true
++	}
+ 
+-	plan := &MutantPlan{dir: dir, sources: map[string][]byte{}}
+-	for _, name := range slices.Sorted(maps.Keys(spans)) {
+-		if !slices.ContainsFunc(spans[name], func(s span) bool { _, target := targets[s.key]; return target }) {
+-			continue
++	files, err := parsePackageFiles(dir, sources)
++	if err != nil {
++		return nil, err
++	}
++	decls, err := scanPackageDecls(dir, files)
++	if err != nil {
++		return nil, err
++	}
++	readers := map[string]map[string]bool{}
++	addReader := func(variable, key string) bool {
++		if readers[variable][key] {
++			return false
+ 		}
+-		fset := token.NewFileSet()
+-		file, err := parser.ParseFile(fset, filepath.Join(dir, name), sources[name].text, parser.SkipObjectResolution)
+-		if err != nil {
+-			return nil, err
++		if readers[variable] == nil {
++			readers[variable] = map[string]bool{}
+ 		}
+-		plan.packageName = file.Name.Name
+-		tokenFile := fset.File(file.Pos())
+-		for _, s := range fileSites(file, tokenFile) {
+-			innermost := -1
+-			for i, b := range spans[name] {
+-				if b.start <= s.start && s.start < b.end && (innermost < 0 || b.end-b.start < spans[name][innermost].end-spans[name][innermost].start) {
+-					innermost = i
++		readers[variable][key] = true
++		return true
++	}
++	valueReads := map[string][]string{}
++	for _, f := range files {
++		for variable, offsets := range variableReads(f.file, f.tokenFile, decls) {
++			for _, offset := range offsets {
++				if key, ok := blockAt(f.name, offset); ok {
++					addReader(variable, key)
+ 				}
+ 			}
+-			if innermost < 0 {
+-				continue
++		}
++		for variable, names := range variableValueReads(f.file, decls) {
++			valueReads[variable] = append(valueReads[variable], names...)
++		}
++	}
++	// A variable a reader's value names is read wherever the reader is, however many variables lie between.
++	for grew := true; grew; {
++		grew = false
++		for variable, names := range valueReads {
++			for _, name := range names {
++				for key := range readers[variable] {
++					if addReader(name, key) {
++						grew = true
++					}
++				}
+ 			}
+-			key := spans[name][innermost].key
+-			if _, target := targets[key]; !target {
++		}
++	}
++
++	plan := &MutantPlan{dir: dir, sources: map[string][]byte{}}
++	for _, f := range files {
++		plan.packageName = f.file.Name.Name
++		for _, s := range fileSites(f.file, f.tokenFile, decls) {
++			var blocks []string
++			if len(s.variables) == 0 {
++				if key, ok := blockAt(f.name, s.start); ok {
++					blocks = []string{key}
++				}
++			} else {
++				for _, variable := range s.variables {
++					blocks = append(blocks, slices.Collect(maps.Keys(readers[variable]))...)
++				}
++				slices.Sort(blocks)
++				blocks = slices.Compact(blocks)
++			}
++			if !slices.ContainsFunc(blocks, func(key string) bool { _, target := targets[key]; return target }) {
+ 				continue
+ 			}
+ 			plan.Mutants = append(plan.Mutants, Mutant{
+-				File: name, Line: tokenFile.Line(tokenFile.Pos(s.start)), lastLine: tokenFile.Line(tokenFile.Pos(s.end)),
+-				Operator: s.operator, Block: key, start: s.start, end: s.end,
+-				prefix: s.helper,
++				File: f.name, Line: f.tokenFile.Line(f.tokenFile.Pos(s.start)), lastLine: f.tokenFile.Line(f.tokenFile.Pos(s.end)),
++				Operator: s.operator, Blocks: blocks, start: s.start, end: s.end, helper: s.helper, args: s.args,
+ 			})
++			plan.sources[f.name] = f.text
+ 		}
+-		plan.sources[name] = sources[name].text
+ 	}
+ 	for i := range plan.Mutants {
+-		m := &plan.Mutants[i]
+-		m.ID = i + 1
+-		if m.prefix == "" {
+-			m.prefix, m.suffix = fmt.Sprintf("if lymMutantKeep(%d) { ", m.ID), " }"
+-		} else {
+-			m.prefix, m.suffix = m.prefix+"(", fmt.Sprintf(", %d)", m.ID)
+-		}
++		plan.Mutants[i].ID = i + 1
+ 	}
+ 	return plan, nil
+ }
+ 
+-// fileSites returns the mutation sites of the function bodies of file, ordered by start, the longer first at one start.
+-func fileSites(file *ast.File, tokenFile *token.File) []site {
+-	var sites []site
+-	add := func(node ast.Node, operator, helper string) {
+-		sites = append(sites, site{operator: operator, start: tokenFile.Offset(node.Pos()), end: tokenFile.Offset(node.End()), helper: helper})
++// parsePackageFiles parses every file sources holds, in name order.
++// It also parses every other non-test Go file of dir that the default build context takes;
++// a build tag set through GOFLAGS is not read, so a file gated by one may be skipped or its alternative scanned.
++// A file of sources keeps the text read there.
++func parsePackageFiles(dir string, sources map[string]*sourceFile) ([]packageFile, error) {
++	names := slices.Collect(maps.Keys(sources))
++	entries, err := os.ReadDir(dir)
++	if err != nil {
++		return nil, err
+ 	}
+-	conditions := map[ast.Expr]bool{}
+-	fixed := map[*ast.BasicLit]bool{}
+-	markFixed := func(node ast.Expr) {
+-		if node == nil {
+-			return
+-		}
+-		ast.Inspect(node, func(n ast.Node) bool {
+-			if lit, ok := n.(*ast.BasicLit); ok {
+-				fixed[lit] = true
++	for _, entry := range entries {
++		name := entry.Name()
++		if entry.IsDir() || !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") || sources[name] != nil {
++			continue
++		}
++		if match, err := build.Default.MatchFile(dir, name); err != nil {
++			return nil, err
++		} else if match {
++			names = append(names, name)
++		}
++	}
++	slices.Sort(names)
++	files := make([]packageFile, len(names))
++	for i, name := range names {
++		var text []byte
++		if src := sources[name]; src != nil {
++			text = src.text
++		} else if text, err = os.ReadFile(filepath.Join(dir, name)); err != nil {
++			return nil, err
++		}
++		fset := token.NewFileSet()
++		file, err := parser.ParseFile(fset, filepath.Join(dir, name), text, parser.ParseComments|parser.SkipObjectResolution)
++		if err != nil {
++			return nil, err
++		}
++		files[i] = packageFile{name: name, text: text, file: file, tokenFile: fset.File(file.Pos())}
++	}
++	return files, nil
++}
++
++// scanPackageDecls reads the package-level constants and variables of files.
++// It reads each file an embed directive names from dir.
++func scanPackageDecls(dir string, files []packageFile) (packageDecls, error) {
++	decls := packageDecls{constants: map[string]string{}, embedded: map[string][]int{}, variables: map[string]bool{}}
++	for _, f := range files {
++		for _, decl := range f.file.Decls {
++			gen, ok := decl.(*ast.GenDecl)
++			if !ok || (gen.Tok != token.CONST && gen.Tok != token.VAR) {
++				continue
+ 			}
+-			return true
+-		})
++			for _, spec := range gen.Specs {
++				value := spec.(*ast.ValueSpec)
++				for i, name := range value.Names {
++					switch {
++					case name.Name == "_":
++					case gen.Tok == token.VAR:
++						decls.variables[name.Name] = true
++					case len(value.Values) == len(value.Names):
++						if lit, ok := value.Values[i].(*ast.BasicLit); ok && literalHelper(lit.Kind) != "" {
++							decls.constants[name.Name] = literalHelper(lit.Kind)
++						}
++					}
++				}
++				pattern, ok := embeddedFile(gen, value)
++				if !ok {
++					continue
++				}
++				data, err := os.ReadFile(filepath.Join(dir, pattern))
++				if err != nil {
++					return packageDecls{}, fmt.Errorf("read the embedded file of %s: %w", value.Names[0].Name, err)
++				}
++				for i, line := range bytes.SplitAfter(data, []byte("\n")) {
++					if len(bytes.TrimSpace(line)) > 0 {
++						decls.embedded[value.Names[0].Name] = append(decls.embedded[value.Names[0].Name], i+1)
++					}
++				}
++			}
++		}
+ 	}
+-	addStatements := func(list []ast.Stmt) {
+-		for _, stmt := range list {
+-			if droppable(stmt) {
+-				add(stmt, OperatorDropStatement, "")
++	return decls, nil
++}
++
++// embeddedFile returns the file an embed directive fills value from.
++// It reports false unless value is one string variable that one plain file name fills.
++func embeddedFile(gen *ast.GenDecl, value *ast.ValueSpec) (string, bool) {
++	typeName, ok := value.Type.(*ast.Ident)
++	if gen.Tok != token.VAR || len(value.Names) != 1 || !ok || typeName.Name != "string" {
++		return "", false
++	}
++	doc := value.Doc
++	if doc == nil && len(gen.Specs) == 1 {
++		doc = gen.Doc
++	}
++	if doc == nil {
++		return "", false
++	}
++	for _, comment := range doc.List {
++		pattern, found := strings.CutPrefix(comment.Text, embedDirective)
++		pattern = strings.TrimSpace(pattern)
++		if found && len(strings.Fields(pattern)) == 1 && !strings.ContainsAny(pattern, "*?[\"`") {
++			return pattern, true
++		}
++	}
++	return "", false
++}
++
++// localNames returns every name fn declares itself:
++// its receiver, parameters and results, and each name its body declares.
++// A use of such a name in fn may refer to the local, so no use of it there counts as a use of a package-level name.
++func localNames(fn *ast.FuncDecl) map[string]bool {
++	names := map[string]bool{}
++	addIdents := func(exprs ...ast.Expr) {
++		for _, expr := range exprs {
++			if ident, ok := expr.(*ast.Ident); ok {
++				names[ident.Name] = true
++			}
++		}
++	}
++	ast.Inspect(fn, func(n ast.Node) bool {
++		switch n := n.(type) {
++		case *ast.Field:
++			for _, name := range n.Names {
++				names[name.Name] = true
++			}
++		case *ast.ValueSpec:
++			for _, name := range n.Names {
++				names[name.Name] = true
++			}
++		case *ast.TypeSpec:
++			names[n.Name.Name] = true
++		case *ast.AssignStmt:
++			if n.Tok == token.DEFINE {
++				addIdents(n.Lhs...)
+ 			}
++		case *ast.RangeStmt:
++			if n.Tok == token.DEFINE {
++				addIdents(n.Key, n.Value)
++			}
++		}
++		return true
++	})
++	return names
++}
++
++// literalHelper returns the helper that changes a literal of kind, or "" for a kind no mutant changes.
++func literalHelper(kind token.Token) string {
++	switch kind {
++	case token.INT, token.CHAR:
++		return "lymMutantInt"
++	case token.STRING:
++		return "lymMutantString"
++	}
++	return ""
++}
++
++// markFixed records in fixed the literals and identifiers below node that must stay as written:
++// those of a constant declaration, an array length, a field's names and tag, and a selected name.
++// A composite key stays too, unless it is a string literal.
++func markFixed(node ast.Node, fixed map[ast.Node]bool) {
++	var held []ast.Node
++	switch n := node.(type) {
++	case *ast.GenDecl:
++		if n.Tok == token.CONST {
++			held = append(held, n)
++		}
++	case *ast.ArrayType:
++		if n.Len != nil {
++			held = append(held, n.Len)
++		}
++	case *ast.KeyValueExpr:
++		if lit, ok := n.Key.(*ast.BasicLit); !ok || lit.Kind != token.STRING {
++			held = append(held, n.Key)
++		}
++	case *ast.Field:
++		for _, name := range n.Names {
++			held = append(held, name)
++		}
++		if n.Tag != nil {
++			held = append(held, n.Tag)
+ 		}
++	case *ast.SelectorExpr:
++		held = append(held, n.Sel)
+ 	}
++	for _, h := range held {
++		ast.Inspect(h, func(inner ast.Node) bool {
++			switch inner.(type) {
++			case *ast.BasicLit, *ast.Ident:
++				fixed[inner] = true
++			}
++			return true
++		})
++	}
++}
++
++// variableReads finds each identifier of file's function bodies that names a package-level variable.
++// It returns their offsets by variable name.
++func variableReads(file *ast.File, tokenFile *token.File, decls packageDecls) map[string][]int {
++	reads := map[string][]int{}
++	fixed := map[ast.Node]bool{}
+ 	for _, decl := range file.Decls {
+ 		fn, ok := decl.(*ast.FuncDecl)
+ 		if !ok || fn.Body == nil {
+ 			continue
+ 		}
++		locals := localNames(fn)
+ 		ast.Inspect(fn.Body, func(n ast.Node) bool {
+-			switch n := n.(type) {
+-			case *ast.GenDecl:
+-				if n.Tok == token.CONST {
+-					ast.Inspect(n, func(inner ast.Node) bool {
+-						if lit, ok := inner.(*ast.BasicLit); ok {
+-							fixed[lit] = true
++			markFixed(n, fixed)
++			if ident, ok := n.(*ast.Ident); ok && !fixed[ident] && !locals[ident.Name] && decls.variables[ident.Name] {
++				reads[ident.Name] = append(reads[ident.Name], tokenFile.Offset(ident.Pos()))
++			}
++			return true
++		})
++	}
++	return reads
++}
++
++// variableValueReads finds, for each package-level variable of file, the package-level variables its value names.
++func variableValueReads(file *ast.File, decls packageDecls) map[string][]string {
++	reads := map[string][]string{}
++	fixed := map[ast.Node]bool{}
++	for _, decl := range file.Decls {
++		gen, ok := decl.(*ast.GenDecl)
++		if !ok || gen.Tok != token.VAR {
++			continue
++		}
++		for _, spec := range gen.Specs {
++			value := spec.(*ast.ValueSpec)
++			for _, expr := range value.Values {
++				ast.Inspect(expr, func(n ast.Node) bool {
++					markFixed(n, fixed)
++					if ident, ok := n.(*ast.Ident); ok && !fixed[ident] && decls.variables[ident.Name] {
++						for _, name := range value.Names {
++							if name.Name != "_" {
++								reads[name.Name] = append(reads[name.Name], ident.Name)
++							}
++						}
++					}
++					return true
++				})
++			}
++		}
++	}
++	return reads
++}
++
++// fileSites returns the mutation sites of the function bodies and package-level variable values of file.
++// They are ordered by start, the longer first at one start.
++func fileSites(file *ast.File, tokenFile *token.File, decls packageDecls) []site {
++	var sites []site
++	add := func(node ast.Node, operator, helper, args string, variables []string) {
++		sites = append(sites, site{
++			operator: operator, start: tokenFile.Offset(node.Pos()), end: tokenFile.Offset(node.End()),
++			helper: helper, args: args, variables: variables,
++		})
++	}
++	conditions := map[ast.Expr]bool{}
++	fixed := map[ast.Node]bool{}
++	addStatements := func(list []ast.Stmt) {
++		for _, stmt := range list {
++			if droppable(stmt) {
++				add(stmt, OperatorDropStatement, "", "", nil)
++			}
++		}
++	}
++	for _, decl := range file.Decls {
++		switch decl := decl.(type) {
++		case *ast.GenDecl:
++			if decl.Tok != token.VAR {
++				continue
++			}
++			for _, spec := range decl.Specs {
++				value := spec.(*ast.ValueSpec)
++				for i, expr := range value.Values {
++					names := value.Names
++					if len(value.Values) == len(value.Names) {
++						names = names[i : i+1]
++					}
++					var variables []string
++					for _, name := range names {
++						if name.Name != "_" {
++							variables = append(variables, name.Name)
++						}
++					}
++					if len(variables) == 0 {
++						continue
++					}
++					ast.Inspect(expr, func(n ast.Node) bool {
++						markFixed(n, fixed)
++						switch n := n.(type) {
++						case *ast.FuncLit:
++							return false
++						case *ast.BasicLit:
++							if helper := literalHelper(n.Kind); helper != "" && !fixed[n] {
++								add(n, OperatorChangeConstant, helper, "", variables)
++							}
+ 						}
+ 						return true
+ 					})
+ 				}
+-			case *ast.ArrayType:
+-				markFixed(n.Len)
+-			case *ast.KeyValueExpr:
+-				markFixed(n.Key)
+-			case *ast.Field:
+-				if n.Tag != nil {
+-					fixed[n.Tag] = true
+-				}
+-			case *ast.IfStmt:
+-				conditions[n.Cond] = true
+-				add(n.Cond, OperatorNegateCondition, "lymMutantBool")
+-			case *ast.ForStmt:
+-				if n.Cond != nil {
++			}
++		case *ast.FuncDecl:
++			if decl.Body == nil {
++				continue
++			}
++			locals := localNames(decl)
++			ast.Inspect(decl.Body, func(n ast.Node) bool {
++				markFixed(n, fixed)
++				switch n := n.(type) {
++				case *ast.IfStmt:
+ 					conditions[n.Cond] = true
+-					add(n.Cond, OperatorNegateCondition, "lymMutantBool")
+-				}
+-			case *ast.BinaryExpr:
+-				if isComparison(n.Op) && !conditions[n] {
+-					add(n, OperatorNegateComparison, "lymMutantBool")
+-				}
+-			case *ast.BasicLit:
+-				if fixed[n] {
+-					break
+-				}
+-				switch n.Kind {
+-				case token.INT, token.CHAR:
+-					add(n, OperatorChangeConstant, "lymMutantInt")
+-				case token.STRING:
+-					add(n, OperatorChangeConstant, "lymMutantString")
++					add(n.Cond, OperatorNegateCondition, "lymMutantBool", "", nil)
++				case *ast.ForStmt:
++					if n.Cond != nil {
++						conditions[n.Cond] = true
++						add(n.Cond, OperatorNegateCondition, "lymMutantBool", "", nil)
++					}
++				case *ast.BinaryExpr:
++					if isComparison(n.Op) && !conditions[n] {
++						add(n, OperatorNegateComparison, "lymMutantBool", "", nil)
++					}
++					addClauses(n, func(operand ast.Expr, helper string) { add(operand, OperatorDeleteClause, helper, "", nil) })
++				case *ast.BasicLit:
++					if helper := literalHelper(n.Kind); helper != "" && !fixed[n] {
++						add(n, OperatorChangeConstant, helper, "", nil)
++					}
++				case *ast.Ident:
++					if fixed[n] || locals[n.Name] {
++						break
++					}
++					if helper, ok := decls.constants[n.Name]; ok {
++						add(n, OperatorChangeConstant, helper, "", nil)
++					}
++					for _, line := range decls.embedded[n.Name] {
++						add(n, OperatorChangeEmbeddedLine, "lymMutantLine", strconv.Itoa(line), nil)
++					}
++				case *ast.BlockStmt:
++					addStatements(n.List)
++				case *ast.CaseClause:
++					addStatements(n.Body)
++				case *ast.CommClause:
++					addStatements(n.Body)
+ 				}
+-			case *ast.BlockStmt:
+-				addStatements(n.List)
+-			case *ast.CaseClause:
+-				addStatements(n.Body)
+-			case *ast.CommClause:
+-				addStatements(n.Body)
+-			}
+-			return true
+-		})
++				return true
++			})
++		}
+ 	}
+ 	slices.SortStableFunc(sites, func(a, b site) int {
+ 		return cmp.Or(cmp.Compare(a.start, b.start), cmp.Compare(b.end, a.end))
+@@ -295,6 +697,21 @@ func fileSites(file *ast.File, tokenFile *token.File) []site {
+ 	return sites
+ }
+ 
++// addClauses calls add with each operand of expr when expr is a && or || chain, and with the helper that deletes it:
++// an operand of && turns true and one of || turns false.
++// An operand that is itself a chain of the same operator passes on its own operands when it is visited.
++func addClauses(expr *ast.BinaryExpr, add func(operand ast.Expr, helper string)) {
++	helper := map[token.Token]string{token.LAND: "lymMutantDropAnd", token.LOR: "lymMutantDropOr"}[expr.Op]
++	if helper == "" {
++		return
++	}
++	for _, operand := range []ast.Expr{expr.X, expr.Y} {
++		if inner, ok := operand.(*ast.BinaryExpr); !ok || inner.Op != expr.Op {
++			add(operand, helper)
++		}
++	}
++}
++
+ // droppable reports whether dropping stmt can change what the code does and still compiles:
+ // a call other than panic, an increment,
+ // or an assignment that declares nothing and writes a name other than the blank one.
+@@ -361,23 +778,24 @@ func (p *MutantPlan) WriteOverlay(outDir string, dropped map[int]bool) (string,
+ 	return overlay, os.WriteFile(overlay, data, 0o644)
+ }
+ 
+-// applyMutants returns text with the prefix and suffix of each of mutants inserted around its site.
++// applyMutants returns text with the opening and closing text of each of mutants inserted around its site.
+ // Every insertion adds no line, so a line of the result is the line of text it came from.
+-// At one offset a closing suffix goes before an opening prefix;
+-// suffixes close the inner site first and prefixes open the outer site first.
++// At one offset a closing goes before an opening;
++// closings close the inner site first and openings open the outer site first.
++// Of two mutants on one site, the earlier in mutants is the outer.
+ func applyMutants(text []byte, mutants []Mutant) []byte {
+ 	type insertion struct {
+ 		offset int
+-		// opening is set for a prefix; length is the site's length.
+-		opening bool
+-		length  int
+-		text    string
++		// opening is set for an opening; length is the site's length and rank the mutant's index in mutants.
++		opening      bool
++		length, rank int
++		text         string
+ 	}
+ 	var insertions []insertion
+-	for _, m := range mutants {
++	for i, m := range mutants {
+ 		insertions = append(insertions,
+-			insertion{offset: m.start, opening: true, length: m.end - m.start, text: m.prefix},
+-			insertion{offset: m.end, length: m.end - m.start, text: m.suffix})
++			insertion{offset: m.start, opening: true, length: m.end - m.start, rank: i, text: m.opening()},
++			insertion{offset: m.end, length: m.end - m.start, rank: i, text: m.closing()})
+ 	}
+ 	slices.SortStableFunc(insertions, func(a, b insertion) int {
+ 		if a.offset != b.offset {
+@@ -390,9 +808,9 @@ func applyMutants(text []byte, mutants []Mutant) []byte {
+ 			return -1
+ 		}
+ 		if a.opening {
+-			return cmp.Compare(b.length, a.length)
++			return cmp.Or(cmp.Compare(b.length, a.length), cmp.Compare(a.rank, b.rank))
+ 		}
+-		return cmp.Compare(a.length, b.length)
++		return cmp.Or(cmp.Compare(a.length, b.length), cmp.Compare(b.rank, a.rank))
+ 	})
+ 	var out strings.Builder
+ 	at := 0
+diff --git a/internal/testcover/mutant_test.go b/internal/testcover/mutant_test.go
+index 98026770..51f1c121 100644
+--- a/internal/testcover/mutant_test.go
++++ b/internal/testcover/mutant_test.go
+@@ -1,11 +1,13 @@
+ package testcover_test
+ 
+ import (
++	"cmp"
+ 	"encoding/json"
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 
+@@ -39,8 +41,57 @@ func Join(x, y []int) int {
+ 		len(y)
+ 	return total
+ }
++
++const suffix = "!"
++
++var names = []string{"a", "b"}
++
++//go:embed fix.txt
++var text string
++
++func Pick(a, b bool, s string) string {
++	if a && b || s == names[0] {
++		return s + suffix
++	}
++	return text
++}
++
++func Shadow(text string) string {
++	suffix := text
++	names := suffix
++	return names
++}
++
++func Chain(a, b, c bool) bool {
++	return a && b && c
++}
++
++var set = map[string]int{"k": 1}
++
++var keyed = []string{0: "a"}
++
++var base = []string{"x"}
++
++var all = append(base, "y")
++
++func Reads() int {
++	return len(set) + len(keyed) + len(all)
++}
++
++func Tagged(a bool) string {
++	if a {
++		return tag
++	}
++	return tag
++}
+ `
+ 
++// mutantVariables is the fixture file that holds only a package-level variable, which two blocks of mutantSource read.
++const mutantVariables = "package fix\n\nvar tag = \"t\"\n"
++
++// mutantEmbedded is the file the fixture's embed directive names; lines 1 and 3 are not blank.
++const mutantEmbedded = "one\n\n  two\n"
++
+ // Indexes of the fixture's blocks in mutantBlocks, in the order a coverage profile lists them.
+ const (
+ 	blockClassifyHead = iota
+@@ -50,6 +101,14 @@ const (
+ 	blockCountLoop
+ 	blockCountTail
+ 	blockJoinSplitStatement
++	blockPickHead
++	blockPickTrue
++	blockPickTail
++	blockShadow
++	blockChain
++	blockReads
++	blockTaggedTrue
++	blockTaggedTail
+ )
+ 
+ // mutantBlocks returns the coverage blocks of mutantSource, each spanning the text from one marker to the end of another.
+@@ -63,6 +122,14 @@ func mutantBlocks(t *testing.T) []testcover.ProfileBlock {
+ 		{"{\n\t\ttotal +=", "xs[i]\n\t}"},
+ 		{"const limit", "return total\n}"},
+ 		{"total += len(x)", "len(y)"},
++		{"{\n\tif a && b", "names[0] {"},
++		{"{\n\t\treturn s + suffix", "suffix\n\t}"},
++		{"return text\n}", "return text\n}"},
++		{"{\n\tsuffix := text", "return names\n}"},
++		{"{\n\treturn a && b && c", "a && b && c\n}"},
++		{"{\n\treturn len(set)", "len(all)\n}"},
++		{"return tag\n\t}", "return tag\n\t}"},
++		{"return tag\n}", "return tag\n}"},
+ 	}
+ 	var blocks []testcover.ProfileBlock
+ 	for _, span := range spans {
+@@ -86,12 +153,15 @@ func lineCol(text string, offset int) (int, int) {
+ 	return strings.Count(before, "\n") + 1, offset - strings.LastIndex(before, "\n")
+ }
+ 
+-// planFixture writes mutantSource into a package directory and plans the mutants of the blocks targets indexes.
+-func planFixture(t *testing.T, targets ...int) (string, *testcover.MutantPlan) {
++// planFixture writes mutantSource and its embedded file into a package directory.
++// It plans the mutants of the blocks targets indexes, and returns the rendered key of each fixture block too.
++func planFixture(t *testing.T, targets ...int) (string, *testcover.MutantPlan, []string) {
+ 	t.Helper()
+ 	dir := t.TempDir()
+-	if err := os.WriteFile(filepath.Join(dir, "fix.go"), []byte(mutantSource), 0o644); err != nil {
+-		t.Fatal(err)
++	for name, text := range map[string]string{"fix.go": mutantSource, "fixvars.go": mutantVariables, "fix.txt": mutantEmbedded} {
++		if err := os.WriteFile(filepath.Join(dir, name), []byte(text), 0o644); err != nil {
++			t.Fatal(err)
++		}
+ 	}
+ 	blocks := mutantBlocks(t)
+ 	keys, err := testcover.KeyBlocks(dir, blocks)
+@@ -106,58 +176,143 @@ func planFixture(t *testing.T, targets ...int) (string, *testcover.MutantPlan) {
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+-	return dir, plan
++	rendered := make([]string, len(keys))
++	for i, key := range keys {
++		rendered[i] = key.String()
++	}
++	return dir, plan, rendered
+ }
+ 
+-//testtiming:keep pins each site's operator and line and the sites the mutator leaves alone
++//testtiming:keep pins each site's operator, line and blocks and the sites the mutator leaves alone
+ func TestPlanMutants(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
++	// site is a mutant's line and operator, with its blocks as indexes of the fixture's blocks.
+ 	type site struct {
+ 		Line     int
+ 		Operator string
++		Blocks   []int
+ 	}
+ 	tests := []struct {
+ 		name    string
+ 		targets []int
+-		want    []site
++		// file is the file every mutant is in; fix.go when empty.
++		file string
++		want []site
+ 	}{
+ 		{
+ 			name:    "a condition and its literals become mutants, and a site of a block no target holds does not",
+ 			targets: []int{blockClassifyHead},
+-			want:    []site{{4, testcover.OperatorNegateCondition}, {4, testcover.OperatorChangeConstant}},
++			want: []site{
++				{4, testcover.OperatorNegateCondition, []int{blockClassifyHead}},
++				{4, testcover.OperatorChangeConstant, []int{blockClassifyHead}},
++			},
+ 		},
+ 		{
+ 			name:    "a string literal is a constant to change",
+ 			targets: []int{blockClassifyNegative, blockClassifyTail},
+-			want:    []site{{5, testcover.OperatorChangeConstant}, {7, testcover.OperatorChangeConstant}},
++			want: []site{
++				{5, testcover.OperatorChangeConstant, []int{blockClassifyNegative}},
++				{7, testcover.OperatorChangeConstant, []int{blockClassifyTail}},
++			},
+ 		},
+ 		{
+ 			name:    "a declaring assignment and a for post statement are kept while their literals and the condition change",
+ 			targets: []int{blockCountHead},
+-			want:    []site{{11, testcover.OperatorChangeConstant}, {12, testcover.OperatorChangeConstant}, {12, testcover.OperatorNegateCondition}},
++			want: []site{
++				{11, testcover.OperatorChangeConstant, []int{blockCountHead}},
++				{12, testcover.OperatorChangeConstant, []int{blockCountHead}},
++				{12, testcover.OperatorNegateCondition, []int{blockCountHead}},
++			},
+ 		},
+ 		{
+ 			name:    "an assignment statement is dropped",
+ 			targets: []int{blockCountLoop},
+-			want:    []site{{13, testcover.OperatorDropStatement}},
++			want:    []site{{13, testcover.OperatorDropStatement, []int{blockCountLoop}}},
+ 		},
+ 		{
+ 			name:    "a constant declaration and a blank assignment hold no mutant",
+ 			targets: []int{blockCountTail},
+ 		},
++		{
++			name:    "each operand of a boolean chain is deleted, and a package variable's literals belong to the block that reads it",
++			targets: []int{blockPickHead},
++			want: []site{
++				{29, testcover.OperatorChangeConstant, []int{blockPickHead}},
++				{29, testcover.OperatorChangeConstant, []int{blockPickHead}},
++				{35, testcover.OperatorNegateCondition, []int{blockPickHead}},
++				{35, testcover.OperatorDeleteClause, []int{blockPickHead}},
++				{35, testcover.OperatorDeleteClause, []int{blockPickHead}},
++				{35, testcover.OperatorDeleteClause, []int{blockPickHead}},
++				{35, testcover.OperatorDeleteClause, []int{blockPickHead}},
++				{35, testcover.OperatorNegateComparison, []int{blockPickHead}},
++				{35, testcover.OperatorChangeConstant, []int{blockPickHead}},
++			},
++		},
++		{
++			name:    "a use of a package constant is a constant to change, and a package variable no target reads holds no mutant",
++			targets: []int{blockPickTrue},
++			want:    []site{{36, testcover.OperatorChangeConstant, []int{blockPickTrue}}},
++		},
++		{
++			name:    "a use of an embedded string is a mutant for each non-blank line of its file",
++			targets: []int{blockPickTail},
++			want: []site{
++				{38, testcover.OperatorChangeEmbeddedLine, []int{blockPickTail}},
++				{38, testcover.OperatorChangeEmbeddedLine, []int{blockPickTail}},
++			},
++		},
++		{
++			name:    "a parameter or local named as a package constant or variable is no use of it",
++			targets: []int{blockShadow},
++		},
++		{
++			name:    "each operand of a chain of three is deleted once",
++			targets: []int{blockChain},
++			want: []site{
++				{48, testcover.OperatorDeleteClause, []int{blockChain}},
++				{48, testcover.OperatorDeleteClause, []int{blockChain}},
++				{48, testcover.OperatorDeleteClause, []int{blockChain}},
++			},
++		},
++		{
++			name:    "a map's string key and value change, an array index stays, and a variable only another variable's value names is read where that one is",
++			targets: []int{blockReads},
++			want: []site{
++				{51, testcover.OperatorChangeConstant, []int{blockReads}},
++				{51, testcover.OperatorChangeConstant, []int{blockReads}},
++				{53, testcover.OperatorChangeConstant, []int{blockReads}},
++				{55, testcover.OperatorChangeConstant, []int{blockReads}},
++				{57, testcover.OperatorChangeConstant, []int{blockReads}},
++			},
++		},
++		{
++			name:    "a variable of a file holding no block belongs to every block that reads it, though only the later one is a target",
++			targets: []int{blockTaggedTail},
++			file:    "fixvars.go",
++			want:    []site{{3, testcover.OperatorChangeConstant, []int{blockTaggedTrue, blockTaggedTail}}},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			_, plan := planFixture(t, tt.targets...)
++			_, plan, keys := planFixture(t, tt.targets...)
+ 			var got []site
+ 			for i, m := range plan.Mutants {
+-				if m.ID != i+1 || m.File != "fix.go" {
+-					t.Errorf("mutant %d = %+v; want ID %d in fix.go", i, m, i+1)
++				if m.ID != i+1 || m.File != cmp.Or(tt.file, "fix.go") {
++					t.Errorf("mutant %d = %+v; want ID %d in %s", i, m, i+1, cmp.Or(tt.file, "fix.go"))
++				}
++				if !slices.IsSorted(m.Blocks) {
++					t.Errorf("mutant %d blocks = %v; want them ascending", i, m.Blocks)
++				}
++				// The keys order by their hash, so the fixture's block indexes are compared in index order.
++				var blocks []int
++				for _, key := range m.Blocks {
++					blocks = append(blocks, slices.Index(keys, key))
+ 				}
+-				got = append(got, site{m.Line, m.Operator})
++				slices.Sort(blocks)
++				got = append(got, site{m.Line, m.Operator, blocks})
+ 			}
+ 			if !reflect.DeepEqual(got, tt.want) {
+ 				t.Errorf("PlanMutants sites = %v; want %v", got, tt.want)
+@@ -170,7 +325,7 @@ func TestMutantPlan_WriteOverlay(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	dir, plan := planFixture(t, blockClassifyHead, blockClassifyNegative, blockClassifyTail, blockCountLoop)
++	dir, plan, _ := planFixture(t, blockClassifyHead, blockClassifyNegative, blockClassifyTail, blockCountLoop, blockPickHead, blockPickTrue, blockPickTail)
+ 	out := t.TempDir()
+ 	overlay, err := plan.WriteOverlay(out, map[int]bool{2: true})
+ 	if err != nil {
+@@ -199,9 +354,16 @@ func TestMutantPlan_WriteOverlay(t *testing.T) {
+ 		`return "negative"`, `return lymMutantString("negative", 3)`,
+ 		`return "non-negative"`, `return lymMutantString("non-negative", 4)`,
+ 		"total += xs[i]", "if lymMutantKeep(5) { total += xs[i] }",
++		`[]string{"a", "b"}`, `[]string{lymMutantString("a", 6), lymMutantString("b", 7)}`,
++		"if a && b || s == names[0] {",
++		"if lymMutantBool(lymMutantDropOr(lymMutantDropAnd(a, 10) && lymMutantDropAnd(b, 11), 9) || "+
++			"lymMutantDropOr(lymMutantBool(s == names[lymMutantInt(0, 14)], 13), 12), 8) {",
++		"return s + suffix", "return s + lymMutantString(suffix, 15)",
++		"return text\n}", "return lymMutantLine(lymMutantLine(text, 3, 17), 1, 16)\n}",
+ 	).Replace(mutantSource)
+ 	if string(mutated) != want {
+-		t.Errorf("mutated fix.go =\n%s\nwant, with the dropped mutant 2 left out and no line added,\n%s", mutated, want)
++		t.Errorf("mutated fix.go =\n%s\nwant, with the dropped mutant 2 left out, two mutants of one site nested in order "+
++			"and no line added,\n%s", mutated, want)
+ 	}
+ 	switchFile, err := os.ReadFile(got.Replace[helpers])
+ 	if err != nil {
+@@ -233,7 +395,7 @@ func TestMutantPlan_UnbuildableMutants(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			_, plan := planFixture(t, tt.targets...)
++			_, plan, _ := planFixture(t, tt.targets...)
+ 			if got := plan.UnbuildableMutants(tt.err, tt.dropped); !reflect.DeepEqual(got, tt.want) {
+ 				t.Errorf("UnbuildableMutants = %v; want %v", got, tt.want)
+ 			}
