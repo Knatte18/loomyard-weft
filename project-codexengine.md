@@ -1,6 +1,6 @@
 # P1 codexengine
 
-Rendered 2026-11-17 14:43 UTC; every age below is as of then.
+Rendered 2026-11-17 14:44 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codexengine`](design-codexengine.md) · Age 1d · Owner `neve`
@@ -35,6 +35,7 @@ The package doc `internal/shuttleengine/codexengine/doc.go` is the spec; each pa
 - Each part writes its findings to a report under `docs/research/`, and files each lym fault as a bug note on this board.
 - Parts run as darn with profile `docs`, unless the operator says otherwise.
 - A Codex run gets `high` effort at most.
+- A Codex bench runs the real producer with only the model swapped through `run_settings`, and never hand-builds Codex's prompt. Its report opens with the run's own manifest record, from the copy kept in the run-directory root's `manifests` directory, and, for the engine that did not run, the output of `lym shuttle manifest` for the same seat (from `launch-manifest-parity`, 2026-11-17).
 
 ## Built since (tidy, 2026-11-05)
 
@@ -104,4 +105,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 11d<br>1d | codex, shuttle |
-| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 8d<br>16m | codex, shuttle |
+| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 8d<br>17m | codex, shuttle |

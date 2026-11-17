@@ -34,6 +34,7 @@ The package doc `internal/shuttleengine/codexengine/doc.go` is the spec; each pa
 - Each part writes its findings to a report under `docs/research/`, and files each lym fault as a bug note on this board.
 - Parts run as darn with profile `docs`, unless the operator says otherwise.
 - A Codex run gets `high` effort at most.
+- A Codex bench runs the real producer with only the model swapped through `run_settings`, and never hand-builds Codex's prompt. Its report opens with the run's own manifest record, from the copy kept in the run-directory root's `manifests` directory, and, for the engine that did not run, the output of `lym shuttle manifest` for the same seat (from `launch-manifest-parity`, 2026-11-17).
 
 ## Built since (tidy, 2026-11-05)
 
