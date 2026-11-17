@@ -1,6 +1,6 @@
 # Give Codex lym's shipped heddle instructions too
 
-`shipped-heddle-agents-file` · Task · bug, heddle, codex · running · Describe
+`shipped-heddle-agents-file` · Task · bug, heddle, codex · running · PR-Review
 
 ## Seen (operator, 2026-11-17)
 
