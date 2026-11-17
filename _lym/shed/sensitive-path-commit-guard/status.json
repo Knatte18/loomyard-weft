@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-17T10:58:05Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/sensitive-path-commit-guard/_lym/landing/summary.md",
+      "at": "2026-11-17T11:22:41Z",
+      "started_at": "2026-11-17T10:58:07Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T11:08:10.82610464Z",
+          "end": "2026-11-17T11:08:10.83959875Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T11:18:33.018955702Z",
+          "end": "2026-11-17T11:18:33.029876959Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T11:08:10.958360935Z",
+          "end": "2026-11-17T11:18:02.356689722Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-17T11:18:02.852924969Z",
+          "end": "2026-11-17T11:18:32.980576537Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T11:18:33.082964876Z",
+          "end": "2026-11-17T11:22:10.130356897Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-17T11:22:10.184522039Z",
+          "end": "2026-11-17T11:22:10.404115631Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-17T11:22:10.459306531Z",
+          "end": "2026-11-17T11:22:10.488981375Z"
+        }
+      ]
     }
   ],
   "product": {
