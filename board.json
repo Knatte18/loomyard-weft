@@ -864,46 +864,6 @@
       "project": "borrowed-orchestrator-ideas"
     },
     {
-      "id": 1418,
-      "handle": "F5",
-      "slug": "review-fixer-rebuttal",
-      "title": "A burler fixer may rebut a finding, and the next round answers it",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "burler",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (orch, 2026-11-17)\n\nA burler fixer fixes a finding, leaves it undone or defers it to the parent, but its argument against a finding never reaches the next review round.\nThe reviewer then sees the same code and can raise the same finding again, which feeds circling.\nSource: the survey F17 (`orchestrator-survey-ideas`), from ralphex's external review, where Claude fixes each finding or argues against it and the rebuttal goes into the next round.\n\n## Idea\n\n- The fixer may answer a finding with a rebuttal: why the code stands, with file and line.\n- The next round's reviewer gets each rebuttal beside its finding and either withdraws the finding or answers the rebuttal.\n- It applies to every reviewer engine, Codex included.\n",
-      "created": "2026-11-17T10:49:21Z",
-      "revised": "2026-11-17T10:49:21Z",
-      "project": "borrowed-orchestrator-ideas"
-    },
-    {
-      "id": 1419,
-      "handle": "E1",
-      "slug": "incremental-rereview",
-      "title": "Later review rounds check earlier findings, not the whole diff again",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "burler",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (orch, 2026-11-17)\n\nEach review round after the first reviews the whole diff again, so it can raise new findings on code it passed before.\nBounce rounds are a large part of a run's cost.\nSource: the survey F17 (`orchestrator-survey-ideas`), from Traycer's re-verify, which checks only earlier findings and marks each resolved or outdated,\nand Fusion, which forbids new non-blocking findings on a re-review.\n\n## Idea\n\n- A later round checks the earlier round's findings against the fixes and marks each resolved, still open or outdated.\n- It raises a new finding only on code the fixes changed, and only at BLOCKING severity.\n",
-      "created": "2026-11-17T10:49:22Z",
-      "revised": "2026-11-17T10:49:22Z",
-      "project": "borrowed-orchestrator-ideas"
-    },
-    {
       "id": 1420,
       "handle": "F6",
       "slug": "unrequested-scope-lens",
@@ -919,26 +879,6 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-17)\n\nThe decision record's decisions carry IDs (`internal/discussionparser/decisionids.go`), but no review checks a diff for work no decision asked for.\nSource: the survey F17 (`orchestrator-survey-ideas`), from Spec Kit's `/converge`, which classifies gaps as missing, partial, contradicting or unrequested.\n\n## Idea\n\n- A lens in code review that maps each change in the diff to a decision ID and flags a change that traces to none as unrequested scope.\n- It also flags a decision no change builds.\n",
-      "created": "2026-11-17T10:49:22Z",
-      "revised": "2026-11-17T10:49:22Z",
-      "project": "borrowed-orchestrator-ideas"
-    },
-    {
-      "id": 1421,
-      "handle": "F7",
-      "slug": "stalemate-no-tree-change",
-      "title": "Halt a segment after review rounds that change nothing in the tree",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "burler",
-        "shed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (orch, 2026-11-17)\n\nA run's escalation cause `circling` (`internal/loomcli/circling.go`) is an LLM's judgment.\nA round whose fix changes nothing in the warp tree is a stalemate a Go check can see without one.\nSource: the survey F17 (`orchestrator-survey-ideas`), from ralphex's `--review-patience=N`, which stops after N rounds with no commit and no tree change.\n\n## Idea\n\n- The Bouncer counts review rounds whose fixer left the warp tree unchanged.\n- After a set number of them in a row, it halts the segment with a named stalemate cause before the bounce budget runs out.\n",
       "created": "2026-11-17T10:49:22Z",
       "revised": "2026-11-17T10:49:22Z",
       "project": "borrowed-orchestrator-ideas"
@@ -1001,6 +941,29 @@
       "body": "## Seen (orch, 2026-11-17)\n\nRuns last hours to days and stencils change often, so a resumed run's later producers may get prompts that differ from those it started with,\nand nothing says so.\nSource: the survey F17 (`orchestrator-survey-ideas`), from Conductor's `bundle build` and Bernstein, which refuses to resume after its spec digest changes.\n\n## Idea\n\n- A run records the digest of each stencil it may render when it starts, in weft.\n- Resume compares them with the installed stencils and warns the orch of each that changed, naming `lym stencil diff`.\n",
       "created": "2026-11-17T10:49:23Z",
       "revised": "2026-11-17T10:49:23Z",
+      "project": "borrowed-orchestrator-ideas"
+    },
+    {
+      "id": 1425,
+      "handle": "T14",
+      "slug": "review-rounds-converge",
+      "title": "Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "burler",
+        "shed",
+        "stencil"
+      ],
+      "issues": [],
+      "recipe": "motif",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (orch, 2026-11-17)\n\nBurler's review rounds circle more than they need to, in three ways.\n\n- A fixer can fix a finding, leave it undone or defer it to the parent, but its argument against a finding never reaches the next round,\n  so the reviewer can raise the same finding again on the same code.\n- Each round after the first reviews the whole diff again, so it can raise new findings on code it passed before.\n- A run's escalation cause `circling` (`internal/loomcli/circling.go`) is an LLM's judgment,\n  though a round whose fix changes nothing in the warp tree is a stalemate a Go check can see.\n\nSources, from the survey F17 (`orchestrator-survey-ideas`):\nralphex's external review, where the agent fixes each finding or argues against it and the rebuttal goes into the next round,\nand its `--review-patience=N`, which stops after N rounds with no tree change;\nTraycer's re-verify, which checks only earlier findings and marks each resolved or outdated;\nFusion, which forbids new non-blocking findings on a re-review.\n\n## Idea\n\n- **Rebuttal.** The fixer may answer a finding with a rebuttal: why the code stands, with file and line.\n  The next round's reviewer gets each rebuttal beside its finding and either withdraws the finding or answers the rebuttal.\n  It applies to every reviewer engine, Codex included.\n- **Incremental re-review.** A later round checks the earlier round's findings against the fixes and marks each resolved, still open or outdated.\n  It raises a new finding only on code the fixes changed, and only at BLOCKING severity.\n- **Stalemate on no tree change.** The Bouncer counts rounds whose fixer left the warp tree unchanged,\n  and after a set number in a row halts the segment with a named stalemate cause before the bounce budget runs out.\n",
+      "status": "draft",
+      "created": "2026-11-17T10:49:21Z",
+      "revised": "2026-11-17T10:57:02Z",
       "project": "borrowed-orchestrator-ideas"
     }
   ],

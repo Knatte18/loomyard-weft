@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 10:56 UTC; every age below is as of then.
+Rendered 2026-11-17 10:57 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -68,11 +68,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-borrowed-orchestrator-ideas.md">P2 Ideas borrowed from comparable agent orchestrators</a> (9)</strong></summary>
+<summary><strong><a href="project-borrowed-orchestrator-ideas.md">P2 Ideas borrowed from comparable agent orchestrators</a> (7)</strong></summary>
 
 [`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 7m · Owner `neve`
 
-### Tasks (0)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -82,24 +82,24 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (9)
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T14 | `draft` **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md) | motif |  | 7m<br>0m | burler, shed, stencil |
+
+### Notes (6)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-#### Enhancements (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| E1 |  | **Later review rounds check earlier findings, not the whole diff again** | [`incremental-rereview`](design-incremental-rereview.md) | 7m<br>7m | burler, stencil |
-
-#### Features (8)
+#### Features (6)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F2 |  | **A per-run token and cost budget, audit mode first** | [`run-cost-budget`](design-run-cost-budget.md) | 7m<br>7m | shed, report |
-| F5 |  | **A burler fixer may rebut a finding, and the next round answers it** | [`review-fixer-rebuttal`](design-review-fixer-rebuttal.md) | 7m<br>7m | burler, stencil |
 | F6 |  | **A review lens that flags changes no decision asked for** | [`unrequested-scope-lens`](design-unrequested-scope-lens.md) | 7m<br>7m | lenses, burler |
-| F7 |  | **Halt a segment after review rounds that change nothing in the tree** | [`stalemate-no-tree-change`](design-stalemate-no-tree-change.md) | 7m<br>7m | burler, shed |
 | F8 |  | **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | 7m<br>7m | shuttle, friction |
 | F10 |  | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | 7m<br>7m | webster, fabric |
 | F12 |  | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | 7m<br>7m | stencil, shed |
@@ -191,7 +191,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 7d<br>24m | testkit, gate |
+| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 7d<br>25m | testkit, gate |
 
 ### Notes (0)
 
