@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-17 09:59 UTC; every age below is as of then.
+Rendered 2026-11-17 10:00 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 7d · Owner `neve`
@@ -34,7 +34,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Survey the mutation-confirmed redundancy candidates across every package**<br>• Run the fixed lym gate redundant on every package and measure how many confirmed candidates are false | [`redundancy-confirmed-survey`](design-redundancy-confirmed-survey.md) | darn · docs | Describe | neve | 19h<br>19h | testkit, gate |
+| T14 | **Survey the mutation-confirmed redundancy candidates across every package**<br>• Run the fixed lym gate redundant on every package and measure how many confirmed candidates are false | [`redundancy-confirmed-survey`](design-redundancy-confirmed-survey.md) | darn · docs | PR-Review | neve | 19h<br>19h | testkit, gate |
 
 ### Ready (0)
 

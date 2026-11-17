@@ -1,6 +1,6 @@
 # Survey the mutation-confirmed redundancy candidates across every package
 
-`redundancy-confirmed-survey` · Task · research, testkit, gate · running · Describe
+`redundancy-confirmed-survey` · Task · research, testkit, gate · running · PR-Review
 
 ## Goal
 
