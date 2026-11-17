@@ -2,7 +2,7 @@
   "current_producer": "Run-Shed",
   "state": "running",
   "error": "",
-  "pause_requested": false,
+  "pause_requested": true,
   "activity": {
     "now": "Run-Shed",
     "last": "Open-IDE → skipped",
@@ -49,5 +49,9 @@
       "reason": "batten.open_ide = false",
       "machine": "neve"
     }
-  ]
+  ],
+  "pause_intent": {
+    "by": "EXTERNAL",
+    "at": "2026-11-17T07:08:16+01:00"
+  }
 }
