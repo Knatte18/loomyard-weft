@@ -1,14 +1,23 @@
 {
   "current_producer": "Preflight",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "preconditions not met: worktree-clean: uncommitted state changes under `_lym`: M _lym/discussion/decision-record.md; way forward: commit or stash the code changes with git, and commit the _lym changes with `lym fabric commit`, then re-step; a session lym refuses the verb from reports status: FAILED and the orch runs it",
   "pause_requested": false,
   "activity": {
     "now": "Preflight",
-    "last": "",
-    "wait": ""
+    "last": "Preflight → stuck",
+    "wait": "preconditions not met: worktree-clean: uncommitted state changes under `_lym`: M _lym/discussion/decision-record.md; way forward: commit or stash the code changes with git, and commit the _lym changes with `lym fabric commit`, then re-step; a session lym refuses the verb from reports status: FAILED and the orch runs it"
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-17T17:26:52Z",
+      "started_at": "2026-11-17T17:26:51Z",
+      "budget_exempt": true
+    }
+  ],
   "product": {
     "slug": "cwb-codex",
     "parent": "codex-writer-bench",
