@@ -681,6 +681,40 @@
       "body": "## Seen (orch, 2026-11-17)\n\n`launch-manifest-parity` failed at Plan-Write when `codex-wording-engine-blocks` (`40c66912`) landed mid-run:\n`gatefix: fill the gatefix-body-plan prompt: stencil: include \"engine-absolute-paths\" has no entry in the includes`.\nThe landing installed new board copies of the stencils, and `gatefix-body-plan` now includes the new engine block `engine-absolute-paths`.\nThe driver saw that the on-disk build had changed, but spawned no successor,\nsince the plan writer's files in `_lym/plan/` were uncommitted.\nSo the old driver went on running the old binary, which has no `engine-absolute-paths` in its includes, against the new board copies.\n`lym loom resume` started a fresh driver on the new build, and the run went on.\n\n## Idea\n\nWhen the build changes and a hand-over is blocked by uncommitted paths, the old binary must not render the new board copies.\nEither the old driver renders from the stencils embedded in its own binary until the hand-over happens,\nor it waits for the producer in flight to commit and then hands over before the next render,\nor a render that names an include its binary lacks hands over to a fresh driver instead of failing the run.\n",
       "created": "2026-11-17T14:40:50Z",
       "revised": "2026-11-17T14:40:50Z"
+    },
+    {
+      "id": 1432,
+      "handle": "B4",
+      "slug": "map-entry-order-unstable",
+      "title": "Coverage map rewrites funcs in another order on each build",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Two --map runs on one commit give the same sets in a different array order",
+      "body": "Found by the map-tooling-trial.\n\nTwo `lym gate test --wait --map internal/boardengine` runs on one commit (`b92c95ee`) wrote maps that hold the same sets per test but not the same bytes.\nBeside `built_at` and `measured_at`, the `funcs` array of four tests lists the same ids in another order: `TestHandles_AssignedLowestFreeAndStable`, `TestHoldsRaddleFiling`, `TestRunLock`, `TestSetStatusReleasingProject_ReleasesDraftMembers`.\nSet difference per test is empty in both directions, so only the order is unstable.\nTwo `internal/durfmt` runs differ in the timestamps alone.\n\nA map that rewrites with a spurious diff each build makes any map committed or compared by bytes churn.\nSort each test's `funcs` and `blocks` before writing.\n",
+      "created": "2026-11-17T15:01:51Z",
+      "revised": "2026-11-17T15:01:51Z"
+    },
+    {
+      "id": 1433,
+      "handle": "B5",
+      "slug": "map-test-seconds-zero",
+      "title": "Coverage map records 0 seconds for nearly every test",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "redundant lists every candidate at 0 seconds so its slowest-first pass has no order",
+      "body": "Found by the map-tooling-trial.\n\nIn the `internal/boardengine` map from `lym gate test --wait --map`, 132 of 136 tests record `seconds: 0` and the slowest records 0.29.\n`lym gate redundant internal/boardengine` then lists every one of its 14 candidates with `seconds: 0`.\nIts \"greedy pass, slowest first\" has no order to work from, and the standalone seconds it reports say nothing about what deleting a test saves.\nRecord each test's time at a resolution that separates tests, or say in the report that the figure is a floor.\n",
+      "created": "2026-11-17T15:01:51Z",
+      "revised": "2026-11-17T15:01:51Z"
     }
   ],
   "prime_owner": "neve",
