@@ -1,0 +1,8 @@
+{
+  "recipe": "tapestry",
+  "driver": "go",
+  "params": {
+    "parent": "adopt-build-resplit"
+  },
+  "started_at": "2026-11-17T12:50:49Z"
+}
