@@ -1,6 +1,6 @@
 # Edit-loop notices fire on a fixer editing one file
 
-`edit-loop-fixer-noise` · Task · bug, shuttle · starting · Worktree-Create
+`edit-loop-fixer-noise` · Task · bug, shuttle · starting · Seed-Child
 
 ## Seen (orch, 2026-11-17)
 
