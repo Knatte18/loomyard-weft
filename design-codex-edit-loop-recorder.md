@@ -1,6 +1,6 @@
 # Record Codex edits for the edit-loop watch
 
-`codex-edit-loop-recorder` · Task · bug, codex, shuttle
+`codex-edit-loop-recorder` · Task · bug, codex, shuttle · starting · Worktree-Create
 
 ## Seen (orch, 2026-11-17)
 
