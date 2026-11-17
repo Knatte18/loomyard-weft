@@ -1,6 +1,6 @@
 # Edit-loop notices fire on a fixer editing one file
 
-`edit-loop-fixer-noise` · Note · bug, shuttle
+`edit-loop-fixer-noise` · Task · bug, shuttle · draft
 
 ## Seen (orch, 2026-11-17)
 
@@ -18,3 +18,5 @@ Count an edit toward a loop only when it undoes or repeats an earlier one,
 for example the same `old_string` edited back and forth, or the file's content returning to an earlier hash,
 instead of counting every edit of the file.
 Failing that, exempt the roles whose output is one document, or give them a higher count.
+
+The hub's default shuttle config sets `edit_loop_edits: 0` while the notices are noise (operator, 2026-11-17); the fix sets it back to a working threshold.
