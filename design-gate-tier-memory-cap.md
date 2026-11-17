@@ -1,6 +1,6 @@
 # Memory guard for every test binary lym runs
 
-`gate-tier-memory-cap` · Task · bug, gate · running · Drift-Await
+`gate-tier-memory-cap` · Task · bug, gate · running · Drift-Expect
 
 ## Seen (2026-11-17)
 
