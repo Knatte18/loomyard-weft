@@ -35,6 +35,12 @@ A test that allocates without bound in a normal gate run can freeze the machine 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-17): Gate tiers stay uncapped unless the hub sets memory_mb
+
+Decision: A gate tier's kernel cap applies only where the hub sets memory_mb on the tier; the change ships no default and sets no hub value. The memory guard's pressure trigger is the default bound on every tier run.
+
+Rationale: A tier's cap bounds its builds and test binaries together, and what a tier needs differs per hub and per machine, so a shipped default would either fail healthy runs or bound nothing. The guard already kills the largest test binary when the user slice runs short, which is what froze the machine. The operator sets each hub's value from measured peaks after this lands.
+
 ## Constraints
 
 ## Auto-mode assumptions
