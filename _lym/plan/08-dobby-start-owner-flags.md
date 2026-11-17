@@ -38,7 +38,7 @@
 - `internal/boardengine#OwnedElsewhere`
 - `plan:internal/boardengine#EnsureIdentity`
 - `plan:internal/boardengine#IdentityRefusal`
-- `plan:internal/machinename#ReadIdentity`
+- `internal/machinename#ReadIdentity`
 - `internal/orchcli#NotifyPrime`
 - `internal/hubgeom/doc.go`
 

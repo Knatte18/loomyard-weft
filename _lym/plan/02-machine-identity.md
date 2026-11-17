@@ -5,11 +5,11 @@
 - `internal/machinename/doc.go`
 
 **Create:**
-- `plan:internal/machinename#Identity` -> `type Identity struct`
-- `plan:internal/machinename#ReadIdentity` -> `func ReadIdentity() (Identity, error)`
-- `plan:internal/machinename#resolveIdentity` -> `func resolveIdentity(locate fileLocator, hostname func() (string, error)) (Identity, error)`
-- `plan:internal/machinename#NewID` -> `func NewID() (string, error)`
-- `plan:internal/machinename#TestResolveIdentity` -> `func TestResolveIdentity(t *testing.T)`
+- `internal/machinename#Identity`
+- `internal/machinename#ReadIdentity`
+- `internal/machinename#resolveIdentity`
+- `internal/machinename#NewID`
+- `internal/machinename#TestResolveIdentity`
 
 **Uses:**
 - `internal/machinename#resolveNames`

@@ -17,8 +17,8 @@
 **Uses:**
 - `plan:internal/boardengine#RegisterMachine`
 - `plan:internal/boardengine#Registry.Check`
-- `plan:internal/boardengine#Registry.Resolve`
-- `plan:internal/machinename#NewID`
+- `internal/boardengine#Registry.Resolve`
+- `internal/machinename#NewID`
 - `internal/machinecli#sweepFixture`
 
 **Intent:** Make `lym machine name <new>` record the rename in each hub's registry under the same refusals, keep the machine id, and replace a copied id (D3).

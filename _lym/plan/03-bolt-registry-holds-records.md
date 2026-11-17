@@ -1,21 +1,21 @@
 # Card 3 — bolt-registry-holds-records
 
 **Create:**
-- `plan:internal/boardengine#Registry` -> `type Registry map[string]MachineEntry`
-- `plan:internal/boardengine#MachineEntry` -> `type MachineEntry struct`
-- `plan:internal/boardengine#MachineEntry.MarshalJSON` -> `func (e MachineEntry) MarshalJSON() ([]byte, error)`
-- `plan:internal/boardengine#MachineEntry.UnmarshalJSON` -> `func (e *MachineEntry) UnmarshalJSON(data []byte) error`
-- `plan:internal/boardengine#Registry.Resolve` -> `func (r Registry) Resolve(name string) (id string, entry MachineEntry, found bool)`
-- `plan:internal/boardengine#Registry.ReadsAsHere` -> `func (r Registry) ReadsAsHere(name string, here machinename.Identity) bool`
-- `plan:internal/boardengine#Hold` -> `type Hold struct`
-- `plan:internal/boardengine#HoldSubject` -> `type HoldSubject struct`
-- `plan:internal/boardengine#Hold.MarshalJSON` -> `func (h Hold) MarshalJSON() ([]byte, error)`
-- `plan:internal/boardengine#Hold.UnmarshalJSON` -> `func (h *Hold) UnmarshalJSON(data []byte) error`
-- `plan:internal/boardengine#HoldKindAdopt` -> `const HoldKindAdopt = "adopt"`
-- `plan:internal/boardengine#HoldKindAdoptFix` -> `const HoldKindAdoptFix = "adopt-fix"`
-- `plan:internal/boardengine#Owners.HoldOf` -> `func (o Owners) HoldOf(slug string) (Hold, bool)`
-- `plan:internal/boardengine#TestReadsAsHere` -> `func TestReadsAsHere(t *testing.T)`
-- `plan:internal/boardengine#TestHoldOf` -> `func TestHoldOf(t *testing.T)`
+- `internal/boardengine#Registry`
+- `internal/boardengine#MachineEntry`
+- `internal/boardengine#MachineEntry.MarshalJSON`
+- `internal/boardengine#MachineEntry.UnmarshalJSON`
+- `internal/boardengine#Registry.Resolve`
+- `internal/boardengine#Registry.ReadsAsHere`
+- `internal/boardengine#Hold`
+- `internal/boardengine#HoldSubject`
+- `internal/boardengine#Hold.MarshalJSON`
+- `internal/boardengine#Hold.UnmarshalJSON`
+- `internal/boardengine#HoldKindAdopt`
+- `internal/boardengine#HoldKindAdoptFix`
+- `internal/boardengine#Owners.HoldOf`
+- `internal/boardengine_test#TestReadsAsHere`
+- `internal/boardengine_test#TestHoldOf`
 
 **Edit:**
 - `internal/boardengine#storeFile`

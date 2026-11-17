@@ -11,7 +11,7 @@
 - `internal/battencli#DobbyTasks`
 
 **Uses:**
-- `plan:internal/boardengine#Owners.HoldOf`
+- `internal/boardengine#Owners.HoldOf`
 
 **Intent:** Claim no queued task under a hold, on any machine (D5: "under an adopt hold no queued task is claimed").
 

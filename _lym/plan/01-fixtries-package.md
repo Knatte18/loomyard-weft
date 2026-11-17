@@ -3,10 +3,10 @@
 **Create:**
 - `internal/fixtries/doc.go`
 - `internal/fixtries/testmain_test.go`
-- `plan:internal/fixtries#FileName` -> `const FileName = "fix-tries.json"`
-- `plan:internal/fixtries#Read` -> `func Read(dir string) (int, error)`
-- `plan:internal/fixtries#Write` -> `func Write(dir string, count int) error`
-- `plan:internal/fixtries#TestReadWrite` -> `func TestReadWrite(t *testing.T)`
+- `internal/fixtries#FileName`
+- `internal/fixtries#Read`
+- `internal/fixtries#Write`
+- `internal/fixtries_test#TestReadWrite`
 
 **Edit:**
 - `internal/adoptcli#failedEnd`

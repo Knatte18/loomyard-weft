@@ -72,8 +72,8 @@
 - `internal/pairteardown/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#Registry.ReadsAsHere`
-- `plan:internal/machinename#ReadIdentity`
+- `internal/boardengine#Registry.ReadsAsHere`
+- `internal/machinename#ReadIdentity`
 - `internal/fabriccli/doc.go`
 - `internal/adoptcli/doc.go`
 - `internal/fronttask/doc.go`

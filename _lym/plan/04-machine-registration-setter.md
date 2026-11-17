@@ -25,7 +25,7 @@
 - `internal/boardengine#pushOwnerCommit`
 - `internal/boardengine#newOwnerFixture`
 - `internal/boardengine#ownerFixture`
-- `plan:internal/machinename#NewID`
+- `internal/machinename#NewID`
 - `internal/machinename#ReadFile`
 
 **Intent:** Add the registry setter, the only writer of `board.json`'s `machines` map, with every D3 refusal and its way forward, and the one write of the machine id.

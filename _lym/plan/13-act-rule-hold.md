@@ -13,7 +13,7 @@
 - `internal/pairteardown/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#Owners.HoldOf`
+- `internal/boardengine#Owners.HoldOf`
 - `internal/runfsm/doc.go`
 
 **Intent:** Make the act rule read a Bolt hold, and name the hold's machine in its refusal (D5).

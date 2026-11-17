@@ -17,9 +17,9 @@
 - `internal/dobbyengine/doc.go`
 
 **Uses:**
-- `plan:internal/fixtries#Read`
+- `internal/fixtries#Read`
 - `plan:internal/boardengine#WriteHold`
-- `plan:internal/boardengine#Owners.HoldOf`
+- `internal/boardengine#Owners.HoldOf`
 - `plan:internal/tendercli#RecordPauseIntent`
 - `internal/pauserecord#AdoptCaller`
 - `internal/pauserecord#OwnerCaller`
