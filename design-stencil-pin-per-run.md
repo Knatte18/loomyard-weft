@@ -1,6 +1,6 @@
 # Warn on resume when a run's stencils changed since it started
 
-`stencil-pin-per-run` · Task · feature, stencil, shed · starting · Open-Window
+`stencil-pin-per-run` · Task · feature, stencil, shed · starting · Seed-IDE
 
 ## Seen (orch, 2026-11-17)
 
