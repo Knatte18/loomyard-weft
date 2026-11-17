@@ -1,0 +1,72 @@
+{
+  "sketch": "board-viewer",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "adopt-build-resplit", "revised": "2026-11-16T11:13:59Z"},
+    {"slug": "hub-stop-all", "revised": "2026-11-17T11:06:42Z"},
+    {"slug": "slack-machine-bridge-build", "revised": "2026-11-12T20:37:52Z"},
+    {"slug": "borrowed-orchestrator-ideas", "revised": "2026-11-17T10:49:21Z"},
+    {"slug": "leftover-pairs-teardown", "revised": "2026-11-17T11:06:42Z"},
+    {"slug": "launch-manifest-parity", "revised": "2026-11-16T13:56:13Z"}
+  ],
+  "parts": [
+    {
+      "slug": "board-viewer-build",
+      "title": "Board viewer rendered beside the README, opened by lym board open and a VS Code key",
+      "type": "feature",
+      "labels": ["board", "ide", "fabric"],
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6"],
+      "packages": [
+        {"path": "internal/boardengine", "size": 1200},
+        {"path": "internal/boardcli", "size": 250},
+        {"path": "internal/vscode", "size": 145},
+        {"path": "internal/fabricengine", "size": 125},
+        {"path": "internal/ideengine", "size": 100},
+        {"path": "cmd/lym", "size": 3}
+      ],
+      "contract": {
+        "takes": "the Sketch's decision record; boardengine's Render file map, RenderToDisk and its render manifest, boardView's sections, layerSection and childProjects, SetOwners' renderOwnerWrite, and FabricReplay.Claims; boardcli's PersistentPreRunE and rerender verb, lymcwd.ResolveWithin, and internal/vscode's launch_linux.go and launch_windows.go spawn as the opener pattern; vscode.WriteConfig with its reed attach task, the keybindings block and BuildWorkspace; fabricengine.RegenerateHubWorkspace and InstallPairFolderNamer as the install pattern; ideengine.LymBinary",
+        "delivers": "board-data.js and board.html as render outputs of every board write, listed in the render manifest, committed by the sync and the owner-set write, and claimed by FabricReplay; the self-contained viewer page with D4's filters, search, README grouping, expandable entries, escaping and link rules and colour scheme; lym board open with its ResolveWithin cwd, its refusal naming lym board rerender and its per-platform logged and waited opener; the board open task in every worktree's tasks.json, one beam start task in each workspace file through fabric's workspace-content hook, and alt+shift+0 and alt+shift+9 in the keybindings block",
+        "exports": "boardengine's board.html and board-data.js file-name constants and the embedded viewer; boardcli's open verb and its opener seam; fabricengine's workspace-content hook type and its process-wide Install function; internal/vscode's board open and beam start task labels and the tasks member BuildWorkspace splices after settings; the ide module's hook, installed in cmd/lym/main.go beside the pair folder namer"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "D1: a render's file map holds `board-data.js`; stripping its `window.BOARD = ` prefix and `;` suffix leaves JSON that decodes,\nand each task's or note's section, project handle and waited-on handles match the README's placement of that entry.",
+        "D1: the projection lists every open project with its parent project's handle, so a sub-project names its parent.",
+        "D1: a body holding `</script>` and `<b>` appears in `board-data.js` with no literal `</script>` or `<b>`.",
+        "D1: type and area labels are split by the board's vocabulary, so a type label never appears among an entry's area labels.",
+        "D2: a render's `board.html` equals the embedded asset byte for byte, and a second render of a changed board leaves its bytes unchanged.",
+        "D2: the embedded `board.html` references `board-data.js` through a script tag and holds no `http://` or `https://` resource URL.",
+        "D3: `RenderToDisk` writes both files and its manifest lists them; a board write's sync commit holds both beside `README.md` when they changed.",
+        "D3: `FabricReplay.Claims` claims `board-data.js` and `board.html`.",
+        "D4: Review: the viewer filters by kind, type and area with OR inside a group and AND across groups, searches text case-insensitively,\nnests projects and sections like the README with counts, expands an entry to its brief, facts and body, escapes HTML in bodies,\nrenders a title or brief holding an HTML tag as literal text, links design and decision files by a `./` relative path,\nkeeps only `http`, `https` and scheme-less relative links, renders `javascript:`, `data:`, `//host` and `/\\host` targets as plain text,\nfollows the colour scheme, and shows the `lym board rerender` line when the data is missing.",
+        "D5: `lym board open` with no `board.html` refuses naming `lym board rerender` and the anchored directory to run it from, and starts no process.",
+        "D5: `lym board open` run from a subdirectory of a worktree's anchored directory with `board.html` present hands the opener seam the absolute path of the hub's `board.html` and reports it.",
+        "D5: an opener that fails surfaces its error naming the opener.",
+        "D6: seeding the prime, a beam and a task pair each writes `reed attach` and `board open` into the worktree's `tasks.json`, and none of them writes `beam start` there.",
+        "D6: the `board open` task's presentation sets `\"reveal\": \"always\"` and `\"focus\": false`.",
+        "D6: the hub workspace file holds one `beam start` task running `lym beam start root`, and a beam's workspace file holds one running `lym beam start <beam>`.",
+        "D6: a regeneration with no workspace-content hook installed writes workspace files with no `tasks` key.",
+        "D6: the keybindings block holds `alt+shift+0` running `beam start` and `alt+shift+9` running `board open`, and a second seed leaves exactly one of each."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 12.3,
+      "cost_line": "darn/solid with a stored record (15 runs): fixed 8.01 USD plus 0.235 USD per 100 changed lines over about 1823 lines"
+    }
+  ],
+  "cost": {
+    "expected_usd": 12.3,
+    "line": "one darn/solid part with a stored record, 15 runs: 8.01 USD fixed plus 0.235 per 100 lines over about 1823 lines; the cell's hours fit is flat in size, so one run takes as long as two parallel ones",
+    "next_best": {
+      "split": "two darn/solid parts run side by side: the viewer (boardengine, boardcli) and the VS Code wiring (vscode, fabricengine, ideengine, cmd/lym), the board open verb name and task label fixed in both bodies",
+      "expected_usd": 20.3,
+      "line": "the same darn/solid stored-record cell twice: 11.42 USD for about 1450 lines plus 8.89 USD for about 375 lines; a second fixed start cost of 8.01 USD buys no wall-clock time"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
