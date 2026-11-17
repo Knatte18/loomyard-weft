@@ -3,7 +3,7 @@
      Every marker below is a top-level {{.X}} substitution, and there are no {{if}}/{{range}} conditionals anywhere in this file.
      Go interpolates only paths, round, cause, segment and slug, plus the decide fragment it picks by the hard cap; the wording lives here and nowhere else.
      cause_detail is the one optional marker, filled through stencil.FillOptional: it renders the decision cause's detail and nothing for any other cause.
-lym-stencil: sha256=471b13332f689ccacd773acf952e6ea9470b32d389fd96ee2e354044bd993990 build=e45949b21285d1690783771ee8b872cdb086de72 time=2026-11-05T17:37:52Z -->
+lym-stencil: sha256=742c618dcd0dcbf394a506cab643cbd13d304fbe9d382a26df80d3627e3cf058 build=44431fefaa213479d4f2b60d6dfca49853474a4d time=2026-11-17T15:49:12Z -->
 
 # Escalation — review segment `{{.segment}}`, round {{.round}}
 
@@ -15,6 +15,7 @@ The cause is `{{.cause}}`:
 - `budget`: the soft-cap rule could not read its inputs: the round's review, its ledger or the previous round's ledger.
 - `hard-cap`: the round is at or past the perch's hard cap with a design-wrong finding still open, or a continue was recorded there.
 - `decision`: the round's review holds a finding the review cannot settle itself.
+- `stalemate`: the review target stayed unchanged for the configured number of rounds in a row.
 
 {{.cause_detail}}
 

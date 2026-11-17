@@ -12,7 +12,7 @@
      There are no {{if}}/{{range}} conditionals in this file:
      a required marker inside a conditional branch would render silently blank when present-but-empty
      (see internal/stencil/stencil.go).
-lym-stencil: sha256=71c7549f4e974d2bfb03102392ef5da56d4de31f27ff1c7c605ab7aa135e093b build=9c0149af1de444a2ad91d6ebd133a3d2e93fbef5 time=2026-11-08T11:43:14Z -->
+lym-stencil: sha256=f34d3562bcac75a279a415ee46ff5be2eb05cf8754ddf69da623c4ccb1e6e84b build=44431fefaa213479d4f2b60d6dfca49853474a4d time=2026-11-17T15:49:12Z -->
 
 {{.friction_directive}}
 
@@ -75,7 +75,16 @@ one entry per ruling, naming the finding id, what the ruling asks, and either th
 {{.self_check}}## Fixer-report rule (write this to `{{.fixer_report_path}}`)
 
 Write `{{.fixer_report_path}}` unconditionally, every round — even when nothing needed fixing, in which case state "nothing fixed".
-Include what you changed, a `Disputed` section (empty if you disputed nothing), a deferred-with-reason section (empty if nothing was deferred) and a `Rulings` section (empty if no parent ruling reached you).
+Open the report with YAML frontmatter between two `---` lines, holding a `dispositions` list with one entry for each finding you own, in the order of the review.
+Each entry has an `id` and a `disposition`, which is exactly one of `fixed`, `fixed-differently`, `disputed`, `deferred` or `ruling`, and then the keys that disposition needs:
+
+- `disputed`: `ground` (`premise false` or `every fix worse`), a non-empty `rebuttal`, and `evidence`, a list of `<path>:<line>` items.
+  A dispute that rests on verify output cites the test file and line.
+- `fixed-differently`, `deferred` and `ruling`: a non-empty `reason`.
+- `ruling` is only for a parent ruling on a `decision`-class finding your parent routed to itself.
+
+Never write a `spawned` key; only the engine writes it.
+Below the frontmatter, include what you changed, a `Disputed` section (empty if you disputed nothing), a deferred-with-reason section (empty if nothing was deferred) and a `Rulings` section (empty if no parent ruling reached you).
 The review at `{{.review_path}}` is the reviewer's file: you never write it.
 The round is not done until `{{.fixer_report_path}}` exists on disk — a skipped fixer-report leaves the round looking unfinished.
 

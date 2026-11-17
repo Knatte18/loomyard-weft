@@ -14,12 +14,12 @@
      {{.verdict_path}} is the one file the arbiter writes.
      {{.amendment_target}} is the row a plan amendment routes to, or the literal `none`.
      {{.parent_directive}} is the no-parent variant of the parent directive rendered by internal/parentdirective.
-     {{.edit_directive}} is the shared edit directive rendered by internal/editdirective.
+     {{.edit_directive}} is the edit directive of the engine the prompt launches on, rendered by internal/editdirective.
      {{.edit_scope}} is what the arbiter may edit: loom-fragment-arbiter-fix when its driver lets it fix the stop itself,
      loom-fragment-arbiter-no-fix otherwise.
      The body is recipe-blind: it names no recipe and no row;
      they arrive only through the stop envelope and the files it points at.
-lym-stencil: sha256=3ee33cc7e47bff15c6325adadfef50d16b9ba9b2adf505c973a5a00474375e1d build=ab5d49e0633194a639aa9a3a5c2e407aa51911d6 time=2026-11-15T19:11:41Z -->
+lym-stencil: sha256=f6fc4214684a732b7e972542ac887c64fc2d7bf4a1ff73dd538692f1ab556749 build=44431fefaa213479d4f2b60d6dfca49853474a4d time=2026-11-17T15:49:12Z -->
 
 # Arbiter for run `{{.run_id}}`
 
@@ -104,6 +104,8 @@ Before you hand on, record every call of the stop you could settle, so the paren
     When the board entry and the record settle the returned finding, record the ruling as a decision, then continue below the hard cap.
     At the hard cap accept only when the finding is wrong or the fix in place already answers it.
     In every other case hand on.
+  - `stalemate`: the review target stayed unchanged for the configured rounds in a row, so the open findings are circling.
+    Rule it as `circling`: accept when the open findings are judged settled or not worth another round, continue otherwise.
   - `decision`: each decision finding the brief lists is a question the review could not settle.
     Before choosing accept, read the brief's Refusal section;
     when a refusal is named, a held accept meets the same refusal again, so record the answers and continue below the hard cap, and hand on at or past it.
