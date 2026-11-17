@@ -1,0 +1,956 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index c25692a4..aef88f22 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -662,7 +662,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call).
+   An autonomous run notifies its parent once per held turn end as creel mail to the orch,
+   and once per permission or input dialog its pane shows past 60 s,
+-  and once per edit loop, one file edited `edit_loop_edits` times within `edit_loop_window_s`,
++  and once per edit loop, one file edited back to content it held earlier `edit_loop_edits` times within `edit_loop_window_s`,
+   and an interactive run is answered in its pane;
+   a line typed into a run's pane goes through `lym creel post`, `lym creel inject` or `lym creel interrupt`, never a shuttle verb.
+   Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list;
+@@ -705,7 +705,7 @@ User-facing modules each get one `lym <module>` namespace:
+   While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Bash`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups (a Bash call with a read-only lookup command such as `grep`, `find` or a git read counting as one), a sliced read of a short or already-read file, or a chain of edit-only messages;
+   a subagent's or fork's call is judged against that agent's own transcript, context and nudge count;
+   it never denies a call, and the block's switches and thresholds are config.
+-  While `shuttle.yaml`'s `edit_loop_edits` is above 0, an autonomous claude run's `Edit` and `Write` calls run the hidden `lym shuttle hook-edit`, which records the edited file for the edit-loop notice.
++  While `shuttle.yaml`'s `edit_loop_edits` is above 0, an autonomous claude run's `Edit` and `Write` calls run the hidden `lym shuttle hook-edit`, which records the edited file and a hash of its content for the edit-loop notice.
+   The provider is swappable behind an **engine** seam;
+   the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it.
+   The registered engines are `claude` and `codex`.
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index 739c0f6d..e6be46af 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -208,7 +208,7 @@ func Modules() []Module {
+ 		{Name: "report", Template: reportconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(reportconfig.LoadConfig), Spec: reportconfig.ConfigSpec},
+ 		{Name: "sampler", Template: samplerengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoadNamed(samplerengine.LoadConfig, "sampler"), Spec: samplerengine.ConfigSpec},
+ 		{Name: "shed", Template: sheddriver.ConfigTemplate, CheckValues: sheddriver.ValidateLocalValues, CheckLoad: checkLoad(sheddriver.LoadConfig), Spec: sheddriver.ConfigSpec},
+-		{Name: "shuttle", Template: shuttleengine.ConfigTemplate, Migrate: shuttleengine.MigrateConfig, CheckLoad: checkLoadNamed(shuttleengine.LoadConfig, "shuttle"), Spec: shuttleengine.ConfigSpec},
++		{Name: "shuttle", Template: shuttleengine.ConfigTemplate, Migrate: shuttleengine.MigrateConfig, CheckLoad: checkLoadNamed(shuttleengine.LoadConfig, "shuttle"), Reinterpretations: []Reinterpretation{{ID: shuttleengine.EditLoopRepeatsReinterpretation, Rewrite: shuttleengine.DropEditLoopEdits}}, Spec: shuttleengine.ConfigSpec},
+ 		{Name: "slack", Template: slackengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(slackengine.LoadConfig), Spec: slackengine.ConfigSpec},
+ 		{Name: "tapestry", Template: loomengine.TapestryConfigTemplate, OpenMaps: loomengine.TapestryConfigOpenMaps(), CheckValues: loomengine.ValidateTapestryLocalValues, CheckLoad: checkLoadNamed(loomengine.LoadTapestryConfig, "tapestry"), Spec: loomengine.TapestryConfigSpec},
+ 		{Name: "weaver", Template: weaverengine.ConfigTemplate, OpenMaps: weaverengine.ConfigOpenMaps(), CheckLoad: checkLoadNamed(weaverengine.LoadConfig, "weaver"), Spec: weaverengine.ConfigSpec},
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 14b47ffb..0ccd9103 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -17,6 +17,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/creelconfig"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubregistry"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/Knatte18/loomyard/internal/yamlengine"
+ )
+@@ -48,17 +49,31 @@ func TestNames(t *testing.T) {
+ 	}
+ }
+ 
+-// TestModules_CreelRegistersTheTrustedHubsReinterpretation pins that the creel module carries the change of trusted_hubs.
+-// The change goes from shortnames to repository names and rewrites a hub's creel.yaml with no hand step.
+-func TestModules_CreelRegistersTheTrustedHubsReinterpretation(t *testing.T) {
++// TestModules_RegisterTheirReinterpretation pins that a module carries the change a binary made to one of its values,
++// so the hub-wide reconcile rewrites a hub's file with no hand step.
++// creel carries the change of trusted_hubs from shortnames to repository names.
++// shuttle carries the change of edit_loop_edits from every edit to the edits that return a file to earlier content.
++func TestModules_RegisterTheirReinterpretation(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+-	module, ok := Lookup("creel")
+-	if !ok {
+-		t.Fatal(`Lookup("creel") found no module`)
++	tests := []struct {
++		module string
++		wantID string
++	}{
++		{module: "creel", wantID: creelconfig.TrustedHubsRepositoryReinterpretation},
++		{module: "shuttle", wantID: shuttleengine.EditLoopRepeatsReinterpretation},
+ 	}
+-	if len(module.Reinterpretations) != 1 || module.Reinterpretations[0].ID != creelconfig.TrustedHubsRepositoryReinterpretation || module.Reinterpretations[0].Rewrite == nil {
+-		t.Errorf("creel Reinterpretations = %+v; want one with ID %q and a rewrite", module.Reinterpretations, creelconfig.TrustedHubsRepositoryReinterpretation)
++	for _, tt := range tests {
++		t.Run(tt.module, func(t *testing.T) {
++			t.Parallel()
++			module, ok := Lookup(tt.module)
++			if !ok {
++				t.Fatalf("Lookup(%q) found no module", tt.module)
++			}
++			if len(module.Reinterpretations) != 1 || module.Reinterpretations[0].ID != tt.wantID || module.Reinterpretations[0].Rewrite == nil {
++				t.Errorf("%s Reinterpretations = %+v; want one with ID %q and a rewrite", tt.module, module.Reinterpretations, tt.wantID)
++			}
++		})
+ 	}
+ }
+ 
+diff --git a/internal/shuttlecli/hookedit.go b/internal/shuttlecli/hookedit.go
+index 566f06cc..baeafd05 100644
+--- a/internal/shuttlecli/hookedit.go
++++ b/internal/shuttlecli/hookedit.go
+@@ -25,10 +25,11 @@ func hookEditCmd() *cobra.Command {
+ 		Hidden:      true,
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
+ 		Long: `hook-edit reads the engine's after-edit hook input from standard input and
+-appends one record of the edited file to the run's edit records file. The run's wait
+-counts those records to tell its parent about an agent that edits one file
+-again and again. It needs no hub and reads no config. A failure goes to
+-standard error, and the exit code is always 0.`,
++appends one record of the edited file and a hash of its content to the run's edit
++records file. The run's wait counts the edits that return a file to content it held
++earlier, to tell its parent about an agent that undoes or repeats its own edits.
++It needs no hub and reads no config. A failure goes to standard error, and the
++exit code is always 0.`,
+ 		Args: cobra.ExactArgs(2),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 43cc5b2c..bd3bdf94 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -308,8 +308,10 @@
+ // RecordEdit appends a stamp line and a slim PostToolUse line to the edit records file.
+ // Its writes so never land inside a recording hook's line in the events file.
+ // The slim line keeps only the session id, the agent id, the tool name and `tool_input.file_path`.
++// It adds lym's own `content_hash`, the SHA-256 of the file's content as the hook reads it after the edit.
+ // Claude Code's full payload carries the edit's text and the file's content.
+-// ParseSessionSignals reads that line as a SessionSignalFileEdit, which shuttle's edit-loop watch counts.
++// ParseSessionSignals reads that line as a SessionSignalFileEdit with its content hash.
++// Shuttle's edit-loop watch compares those hashes to tell an edit that returns the file to earlier content.
+ //
+ // The batching nudge (BatchingNudger) is a PostToolUse hook that adds one line to the calling chain's context.
+ // It does so when the chain's recent calls break lym's batching rules, and it never denies a call.
+diff --git a/internal/shuttleengine/claudeengine/editrecord.go b/internal/shuttleengine/claudeengine/editrecord.go
+index 50cff577..2ae3680c 100644
+--- a/internal/shuttleengine/claudeengine/editrecord.go
++++ b/internal/shuttleengine/claudeengine/editrecord.go
+@@ -1,13 +1,16 @@
+ // editrecord.go implements the edit hook: the PostToolUse hook command that runs on each Edit and Write call.
+-// It also holds RecordEdit, which appends one slim record of the edited file to the run's edit records file.
++// It also holds RecordEdit, which appends one slim record of an edited file to the run's edit records file.
+ // Shuttle's edit-loop watch reads those records.
+ 
+ package claudeengine
+ 
+ import (
++	"crypto/sha256"
++	"encoding/hex"
+ 	"encoding/json"
+ 	"errors"
+ 	"fmt"
++	"io"
+ 	"os"
+ 	"time"
+ 
+@@ -27,8 +30,13 @@ func editRecordHookCommand(quotedRecordsPath string) string {
+ 	return "lym shuttle " + shuttleengine.EditHookVerb + " " + engineName + " " + quotedRecordsPath + "; true"
+ }
+ 
++// contentHashKey is the edit record's key for the hash of the edited file's content right after the edit.
++// It is lym's own key, beside Claude Code's payload fields.
++const contentHashKey = "content_hash"
++
+ // editRecord is the PostToolUse line the edit hook appends.
+ // It has Claude Code's own payload shape and holds only the fields a file edit reads.
++// It adds the hash of the edited file's content.
+ // Claude Code's full payload carries the edit's text and the file's content.
+ // The edit records file must not hold them, since every watch of the run rereads it.
+ type editRecord struct {
+@@ -39,10 +47,13 @@ type editRecord struct {
+ 	ToolInput     struct {
+ 		FilePath string `json:"file_path"`
+ 	} `json:"tool_input"`
++	ContentHash string `json:"content_hash,omitempty"`
+ }
+ 
+ // RecordEdit appends the Edit or Write call a PostToolUse payload describes to the edit records file at recordsPath:
+ // a stamp line with the hook-side time, then an editRecord, in one write.
++// The record carries the SHA-256 of the edited file's content as the hook reads it,
++// or no hash when the file cannot be read, such as after a later edit removed it.
+ // A payload naming another tool or no file path appends nothing; a malformed payload or a failed write is an error.
+ func (c *Claude) RecordEdit(recordsPath string, payload []byte) error {
+ 	var record editRecord
+@@ -53,6 +64,7 @@ func (c *Claude) RecordEdit(recordsPath string, payload []byte) error {
+ 		return nil
+ 	}
+ 	record.HookEventName = hookEventPostToolUse
++	record.ContentHash = fileContentHash(record.ToolInput.FilePath)
+ 	line, err := json.Marshal(record)
+ 	if err != nil {
+ 		return fmt.Errorf("claudeengine: marshal the edit record: %w", err)
+@@ -71,3 +83,18 @@ func (c *Claude) RecordEdit(recordsPath string, payload []byte) error {
+ 	}
+ 	return nil
+ }
++
++// fileContentHash returns the hex SHA-256 of the content of the file at filePath, or "" when it cannot be read.
++// An unreadable file only costs the edit-loop watch this one edit, so the hook records the edit without a hash.
++func fileContentHash(filePath string) string {
++	file, err := os.Open(filePath)
++	if err != nil {
++		return ""
++	}
++	defer file.Close()
++	hash := sha256.New()
++	if _, err := io.Copy(hash, file); err != nil {
++		return ""
++	}
++	return hex.EncodeToString(hash.Sum(nil))
++}
+diff --git a/internal/shuttleengine/claudeengine/editrecord_test.go b/internal/shuttleengine/claudeengine/editrecord_test.go
+index fad64d26..b2be4a16 100644
+--- a/internal/shuttleengine/claudeengine/editrecord_test.go
++++ b/internal/shuttleengine/claudeengine/editrecord_test.go
+@@ -4,6 +4,9 @@
+ package claudeengine
+ 
+ import (
++	"crypto/sha256"
++	"encoding/hex"
++	"encoding/json"
+ 	"errors"
+ 	"io/fs"
+ 	"os"
+@@ -18,15 +21,21 @@ import (
+ )
+ 
+ // TestRecordEdit pins the record an edit hook input appends and the file-edit signal ParseSessionSignals reads from it.
+-// The record leaves out the edit's text and the file's content the input carries.
++// The record leaves out the edit's text and the file's content the input carries,
++// and it carries the hash of the edited file's content when the file can be read.
+ func TestRecordEdit(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	at := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
+ 	const validEdit = `{"hook_event_name":"PostToolUse","tool_name":"Edit","tool_input":{"file_path":"/w/a.go"}}`
++	const editedContent = "package a\n"
++	contentSum := sha256.Sum256([]byte(editedContent))
+ 	tests := []struct {
+ 		name    string
+ 		payload string
++		// content, when set, is written to a file in a temporary directory before the hook runs.
++		// That file's path then stands for editedFilePath in the payload and in want.
++		content string
+ 		// missingDir puts the edit records file under a directory that does not exist, so it cannot be opened.
+ 		missingDir bool
+ 		// want is the signals the edit records file reads as; nil wants nothing appended.
+@@ -35,6 +44,13 @@ func TestRecordEdit(t *testing.T) {
+ 		wantErr string
+ 	}{
+ 		{
++			name:    "AnEditOfAReadableFileCarriesItsContentHash",
++			payload: `{"hook_event_name":"PostToolUse","session_id":"sess-1","tool_name":"Edit","tool_input":{"file_path":"` + editedFilePath + `","old_string":"x","new_string":"y"}}`,
++			content: editedContent,
++			want:    []shuttleengine.SessionSignal{{Kind: shuttleengine.SessionSignalFileEdit, At: at, SessionID: "sess-1", FilePath: editedFilePath, ContentHash: hex.EncodeToString(contentSum[:])}},
++		},
++		{
++			// The file /w/a.go does not exist, so the edit is recorded with no content hash.
+ 			name:    "AnEditOfTheSessionIsAFileEdit",
+ 			payload: `{"hook_event_name":"PostToolUse","session_id":"sess-1","tool_name":"Edit","tool_input":{"file_path":"/w/a.go","old_string":"x","new_string":"y"},"tool_response":{"originalFile":"package a"}}`,
+ 			want:    []shuttleengine.SessionSignal{{Kind: shuttleengine.SessionSignalFileEdit, At: at, SessionID: "sess-1", FilePath: "/w/a.go"}},
+@@ -56,9 +72,24 @@ func TestRecordEdit(t *testing.T) {
+ 			if tt.missingDir {
+ 				recordsPath = filepath.Join(t.TempDir(), "no-such-dir", shuttleengine.EditRecordsFileName)
+ 			}
++			payload, want := tt.payload, slices.Clone(tt.want)
++			if tt.content != "" {
++				filePath := filepath.Join(t.TempDir(), "a.go")
++				if err := os.WriteFile(filePath, []byte(tt.content), 0o644); err != nil {
++					t.Fatalf("write the edited file: %v", err)
++				}
++				quotedPath, err := json.Marshal(filePath)
++				if err != nil {
++					t.Fatalf("quote the edited file's path: %v", err)
++				}
++				payload = strings.ReplaceAll(payload, `"`+editedFilePath+`"`, string(quotedPath))
++				for index := range want {
++					want[index].FilePath = filePath
++				}
++			}
+ 			engine := New()
+ 			engine.now = func() time.Time { return at }
+-			err := engine.RecordEdit(recordsPath, []byte(tt.payload))
++			err := engine.RecordEdit(recordsPath, []byte(payload))
+ 			if tt.wantErr != "" {
+ 				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+ 					t.Errorf("RecordEdit() error = %v; want one naming %q", err, tt.wantErr)
+@@ -72,23 +103,26 @@ func TestRecordEdit(t *testing.T) {
+ 			if err != nil && !errors.Is(err, fs.ErrNotExist) {
+ 				t.Fatalf("read the edit records file: %v", err)
+ 			}
+-			if tt.want == nil && len(data) != 0 {
++			if want == nil && len(data) != 0 {
+ 				t.Errorf("edit records file = %q; want nothing appended", data)
+ 			}
+-			for _, carried := range []string{"old_string", "new_string", "originalFile", `"content"`} {
++			for _, carried := range []string{"old_string", "new_string", "originalFile", `"content"`, "package a"} {
+ 				if strings.Contains(string(data), carried) {
+-					t.Errorf("edit records file = %q; want no %s from the hook input", data, carried)
++					t.Errorf("edit records file = %q; want no %s from the hook input or the edited file", data, carried)
+ 				}
+ 			}
+ 			got, consumed := engine.ParseSessionSignals(data)
+ 			if consumed != len(data) {
+ 				t.Errorf("ParseSessionSignals consumed %d of %d bytes; want the whole record", consumed, len(data))
+ 			}
+-			assertSignals(t, "recorded edit", got, tt.want)
++			assertSignals(t, "recorded edit", got, want)
+ 		})
+ 	}
+ }
+ 
++// editedFilePath stands in a TestRecordEdit row's payload and want for the path of the file the row writes.
++const editedFilePath = "EDITED_FILE"
++
+ // TestBuildSettings_EditHook pins that the settings carry the edit hook, which names the edit records file.
+ // They carry it exactly when the edit-loop watch is on and the run is not interactive.
+ func TestBuildSettings_EditHook(t *testing.T) {
+diff --git a/internal/shuttleengine/claudeengine/signals.go b/internal/shuttleengine/claudeengine/signals.go
+index 421f4d76..7da84835 100644
+--- a/internal/shuttleengine/claudeengine/signals.go
++++ b/internal/shuttleengine/claudeengine/signals.go
+@@ -200,7 +200,7 @@ func signalFromPayload(hookName string, fields map[string]any) (shuttleengine.Se
+ 	return shuttleengine.SessionSignal{}, false
+ }
+ 
+-// fileEditSignal reads a PostToolUse line the edit hook recorded as a file edit.
++// fileEditSignal reads a PostToolUse line the edit hook recorded as a file edit, with the file's content hash.
+ // It reports false for a line naming no file.
+ func fileEditSignal(fields map[string]any) (shuttleengine.SessionSignal, bool) {
+ 	toolInput, _ := fields["tool_input"].(map[string]any)
+@@ -209,7 +209,8 @@ func fileEditSignal(fields map[string]any) (shuttleengine.SessionSignal, bool) {
+ 		return shuttleengine.SessionSignal{}, false
+ 	}
+ 	agentID, _ := fields["agent_id"].(string)
+-	return shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalFileEdit, FilePath: filePath, AgentID: agentID}, true
++	contentHash, _ := fields[contentHashKey].(string)
++	return shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalFileEdit, FilePath: filePath, AgentID: agentID, ContentHash: contentHash}, true
+ }
+ 
+ // taskNotificationPrefix opens the prompt Claude Code submits by itself when a background task or fork finishes.
+diff --git a/internal/shuttleengine/config.go b/internal/shuttleengine/config.go
+index a9bdd031..88ee51f4 100644
+--- a/internal/shuttleengine/config.go
++++ b/internal/shuttleengine/config.go
+@@ -59,7 +59,9 @@ type Config struct {
+ 	// Leave it off for a hub whose work needs Python.
+ 	DenyPython bool `yaml:"deny_python"`
+ 
+-	// EditLoopEdits is how many edits of one file by one agent within EditLoopWindowS make an edit loop.
++	// EditLoopEdits is how many repeat edits of one file by one agent within EditLoopWindowS make an edit loop.
++	// A repeat is an edit that leaves the file with content an earlier edit of it in the window left.
++	// An agent that makes progress leaves new content with each edit, however often it edits the file.
+ 	// An autonomous run's Wait reports the loop to its parent.
+ 	// 0 turns the watch off, and an engine then installs no edit hook.
+ 	// A negative value is rejected when the config loads.
+diff --git a/internal/shuttleengine/config_test.go b/internal/shuttleengine/config_test.go
+index 5faccc4f..a26fe4f9 100644
+--- a/internal/shuttleengine/config_test.go
++++ b/internal/shuttleengine/config_test.go
+@@ -201,7 +201,7 @@ func TestLoadConfig_EditLoop(t *testing.T) {
+ 		// wantErr is the key the refusal names; empty wants no refusal.
+ 		wantErr string
+ 	}{
+-		{name: "TemplateValues", wantEdits: 4, wantWindowS: 300},
++		{name: "TemplateValues", wantEdits: 3, wantWindowS: 300},
+ 		{name: "ZeroCountTurnsTheWatchOffWhateverTheWindow", local: "edit_loop_edits: 0\nedit_loop_window_s: 0\n"},
+ 		{name: "NegativeCountIsRefused", local: "edit_loop_edits: -1\n", wantErr: "edit_loop_edits"},
+ 		{name: "NonPositiveWindowWhileOnIsRefused", local: "edit_loop_window_s: 0\n", wantErr: "edit_loop_window_s"},
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 35429818..6bb73679 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -209,19 +209,27 @@
+ // The offset is kept apart from RunState.NotifiedOffset, so a hold notice and a dialog notice never suppress each other.
+ // The notice is never typed into the pane and changes no outcome.
+ //
+-// A third notice covers an edit loop: one agent editing one file again and again.
++// A third notice covers an edit loop: one agent undoing or repeating its own edits of one file.
+ // It goes out in the same runs and through the same notifier as the dialog notice.
+-// An engine's edit hook appends each file edit to the run's edit records file, which EditRecordsFileName names,
+-// and the engine's SessionSignalParser reports it with its file.
++// An engine's edit hook appends each file edit to the run's edit records file, which EditRecordsFileName names.
++// Each record carries a hash of the file's content right after the edit,
++// and the engine's SessionSignalParser reports it with its file and that hash.
+ // The records go to that file, apart from the events file,
+ // so the hook's frequent writes never split a recording hook's line.
+ // The signal also names the subagent or fork that made the edit, by its id.
+-// Wait counts each agent's edits of each file at the signal's time, or the run clock's when the signal has none.
+-// Once Config.EditLoopEdits of them fall within Config.EditLoopWindowS seconds, it sends one notice line.
+-// It then restarts that count.
++// Wait keeps each agent's edits of each file at the signal's time, or the run clock's when the signal has none.
++// It counts as a repeat only an edit that leaves the file with the content an earlier edit of it left.
++// A fixer applying several findings to one file leaves new content with each edit and so draws no notice.
++// So does a writer whose output is one document.
++// Once Config.EditLoopEdits repeats fall within Config.EditLoopWindowS seconds, it sends one notice line.
++// It then restarts that file's count.
+ // The line names the strand, the file, the subagent or fork when one made the edits, the count and the window.
+ // It says the session keeps running.
+ // An EditLoopEdits of 0 turns the watch off, and an engine then installs no edit hook.
++// The key once counted every edit.
++// DropEditLoopEdits, the module's reinterpretation EditLoopRepeatsReinterpretation, drops a hub's 0 or null value once,
++// and the template's count then applies.
++// It leaves any other count in the file and flags it with the way to set a count of repeats.
+ // While a pause covers the run Wait reads no edits, so the edits made then are counted once it lifts.
+ // RunState.EditLoopNotifiedOffset is the edit-records-file offset past the batch of the latest notice.
+ // It is persisted before the notifier is called.
+diff --git a/internal/shuttleengine/editloop.go b/internal/shuttleengine/editloop.go
+index 5b2f657a..565dc8d4 100644
+--- a/internal/shuttleengine/editloop.go
++++ b/internal/shuttleengine/editloop.go
+@@ -1,6 +1,6 @@
+ // editloop.go holds the edit-loop watch of an autonomous run's wait loop.
+-// It counts each agent's edits of each file from the run's file-edit signals,
+-// and it notifies the parent when one file's edits reach the configured count within the configured window.
++// From the run's file-edit signals it counts each agent's edits that return a file to content it held earlier,
++// and it notifies the parent when one file's such edits reach the configured count within the configured window.
+ 
+ package shuttleengine
+ 
+@@ -21,37 +21,57 @@ type editLoopKey struct {
+ 	filePath string
+ }
+ 
+-// editLoop is one agent's edits of one file that reached the configured count within the window.
++// editLoop is one agent's repeat edits of one file, as many as the configured count, within the window.
++// A repeat is an edit that returned the file to earlier content.
+ type editLoop struct {
+-	key   editLoopKey
+-	edits int
++	key editLoopKey
++	// repeats is how many edits returned the file to content it held after an earlier edit in the window.
++	repeats int
++}
++
++// editedContent is the content one edit left a file with, by its hash, at the edit's time.
++type editedContent struct {
++	at   time.Time
++	hash string
++}
++
++// editHistory is one agent's recent edits of one file since that file's last notice.
++type editHistory struct {
++	// contents holds the content each edit left the file with, in signal order.
++	contents []editedContent
++	// repeats holds the time of each edit that returned the file to content in contents, in signal order.
++	repeats []time.Time
+ }
+ 
+ // editLoopWatch is the in-memory state of a run's edit-loop watch in its wait loop.
+ type editLoopWatch struct {
+ 	// cursor is the edit-records-file offset the next read resumes from.
+ 	cursor int64
+-	// edits holds the times of each agent's edits of each file since that file's last notice, oldest first.
+-	edits map[editLoopKey][]time.Time
++	// histories holds each agent's recent edits of each file.
++	histories map[editLoopKey]editHistory
+ }
+ 
+-// clone returns a copy of the watch that shares no edit times with it.
++// clone returns a copy of the watch that shares no history with it.
+ func (w editLoopWatch) clone() editLoopWatch {
+-	edits := make(map[editLoopKey][]time.Time, len(w.edits))
+-	for key, times := range w.edits {
+-		edits[key] = slices.Clone(times)
++	histories := make(map[editLoopKey]editHistory, len(w.histories))
++	for key, history := range w.histories {
++		histories[key] = editHistory{contents: slices.Clone(history.contents), repeats: slices.Clone(history.repeats)}
+ 	}
+-	return editLoopWatch{cursor: w.cursor, edits: edits}
++	return editLoopWatch{cursor: w.cursor, histories: histories}
+ }
+ 
+ // fold adds the file edits among signals to the watch and returns the edit loops they complete, in signal order.
+ // An edit takes its signal's time, or now when the signal has none.
+-// An edit more than window older than a later edit of the same file by the same agent drops out of the count.
+-// A loop is complete once its count reaches edits; that count then restarts, so a further loop takes as many edits again.
+-func (w *editLoopWatch) fold(signals []SessionSignal, edits int, window time.Duration, now time.Time) []editLoop {
++// An edit is a repeat when it leaves the file with the content an earlier edit of it by the same agent left.
++// An edit that makes progress leaves new content each time, so it never counts;
++// nor does an edit whose signal carries no content hash.
++// A content or a repeat more than window older than a later edit of the same file by the same agent drops out.
++// A loop is complete once the repeats reach repeats; the file's history then restarts,
++// so a further loop takes as many repeats again.
++func (w *editLoopWatch) fold(signals []SessionSignal, repeats int, window time.Duration, now time.Time) []editLoop {
+ 	var loops []editLoop
+ 	for _, signal := range signals {
+-		if signal.Kind != SessionSignalFileEdit {
++		if signal.Kind != SessionSignalFileEdit || signal.ContentHash == "" {
+ 			continue
+ 		}
+ 		at := signal.At
+@@ -59,25 +79,28 @@ func (w *editLoopWatch) fold(signals []SessionSignal, edits int, window time.Dur
+ 			at = now
+ 		}
+ 		key := editLoopKey{agentID: signal.AgentID, filePath: signal.FilePath}
+-		times := append(w.edits[key], at)
+-		for at.Sub(times[0]) > window {
+-			times = times[1:]
++		history := w.histories[key]
++		history.contents = slices.DeleteFunc(history.contents, func(content editedContent) bool { return at.Sub(content.at) > window })
++		history.repeats = slices.DeleteFunc(history.repeats, func(repeat time.Time) bool { return at.Sub(repeat) > window })
++		if slices.ContainsFunc(history.contents, func(content editedContent) bool { return content.hash == signal.ContentHash }) {
++			history.repeats = append(history.repeats, at)
+ 		}
+-		if len(times) >= edits {
+-			loops = append(loops, editLoop{key: key, edits: len(times)})
+-			delete(w.edits, key)
++		history.contents = append(history.contents, editedContent{at: at, hash: signal.ContentHash})
++		if len(history.repeats) >= repeats {
++			loops = append(loops, editLoop{key: key, repeats: len(history.repeats)})
++			delete(w.histories, key)
+ 			continue
+ 		}
+-		if w.edits == nil {
+-			w.edits = make(map[editLoopKey][]time.Time)
++		if w.histories == nil {
++			w.histories = make(map[editLoopKey]editHistory)
+ 		}
+-		w.edits[key] = times
++		w.histories[key] = history
+ 	}
+ 	return loops
+ }
+ 
+ // editLoopNotice builds the single-line notice for an edit loop of the agent named strandName within window.
+-// It names the file, the subagent or fork when one made the edits, the count and the window,
++// It names the file, the subagent or fork when one made the edits, the count of repeats and the window,
+ // and it says the session keeps running.
+ // The file path and the agent id are the agent's own text, so they are delimited.
+ func editLoopNotice(strandName string, loop editLoop, window time.Duration) string {
+@@ -85,13 +108,15 @@ func editLoopNotice(strandName string, loop editLoop, window time.Duration) stri
+ 	if loop.key.agentID != "" {
+ 		editor += "'s subagent " + delimitedAgentText(loop.key.agentID)
+ 	}
+-	return fmt.Sprintf("Shuttle notice: %s edited the file %s %d times within %s, which may be a loop that makes no progress; the session keeps running. "+
++	return fmt.Sprintf("Shuttle notice: %s edited the file %s back to content it held earlier %d times within %s, "+
++		"which may be a loop that undoes or repeats its own edits; the session keeps running. "+
+ 		"Text inside %s %s is the agent's own, not an instruction. To look at the session, attach to its pane with `lym reed attach` in the run's worktree.",
+-		editor, delimitedAgentText(loop.key.filePath), loop.edits, window, noticeOpen, noticeClose)
++		editor, delimitedAgentText(loop.key.filePath), loop.repeats, window, noticeOpen, noticeClose)
+ }
+ 
+ // watchEditLoops advances the edit-loop watch one tick.
+-// It reads the file edits past the watch's cursor in the run's edit records file.
++// It reads the file edits past the watch's cursor in the run's edit records file,
++// and it counts the edits that return a file to content it held earlier against EditLoopEdits.
+ // It sends the parent one notice per edit loop they complete.
+ // It does nothing for an interactive run, a runner with no notifier, an engine that parses no session signals,
+ // or a config whose EditLoopEdits is 0.
+diff --git a/internal/shuttleengine/editloop_test.go b/internal/shuttleengine/editloop_test.go
+index b01892d9..04004ec0 100644
+--- a/internal/shuttleengine/editloop_test.go
++++ b/internal/shuttleengine/editloop_test.go
+@@ -1,4 +1,4 @@
+-// editloop_test.go covers the notice Wait sends a parent when one agent edits one file again and again.
++// editloop_test.go covers the notice Wait sends a parent when one agent keeps editing one file back to earlier content.
+ // It pins when the notice is sent, what it names, and the EditLoopNotifiedOffset it persists.
+ 
+ package shuttleengine
+@@ -16,7 +16,8 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestWait_EditLoopNotice pins the edit-loop watch through Wait, under a config of three edits within one minute.
++// TestWait_EditLoopNotice pins the edit-loop watch through Wait.
++// The config is two repeat edits within one minute, a repeat leaving a file with content an earlier edit left.
+ // The watch reads the run's edit records file, not its events file.
+ // The run clock moves dialogTick per sleep, and an edit with no stamp takes the run clock's time.
+ func TestWait_EditLoopNotice(t *testing.T) {
+@@ -24,20 +25,24 @@ func TestWait_EditLoopNotice(t *testing.T) {
+ 	t.Parallel()
+ 	const window = time.Minute
+ 	const strandName = "lym:slug:writer"
+-	loopOf := func(agentID string, edits int) editLoop {
+-		return editLoop{key: editLoopKey{agentID: agentID, filePath: "a.go"}, edits: edits}
++	loopOf := func(agentID string, repeats int) editLoop {
++		return editLoop{key: editLoopKey{agentID: agentID, filePath: "a.go"}, repeats: repeats}
++	}
++	// flip is four edits of a.go that swap it between two contents, so the last two are repeats.
++	flip := "EDIT::a.go:h1\nEDIT::a.go:h2\nEDIT::a.go:h1\nEDIT::a.go:h2\n"
++	flipLen := int64(len(flip))
++	appendEdit := func(hash string) func(*dialogEnv) {
++		return func(env *dialogEnv) { env.appendEvents("EDIT::a.go:" + hash) }
+ 	}
+-	three := "EDIT::a.go\nEDIT::a.go\nEDIT::a.go\n"
+-	threeLen := int64(len(three))
+-	appendEdit := func(env *dialogEnv) { env.appendEvents("EDIT::a.go") }
+ 	stampBase := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
+-	// stamped is an edit of a.go the hook stamped seconds after stampBase; every stamped edit has the same length.
+-	stamped := func(seconds int) string {
+-		return "@" + stampBase.Add(time.Duration(seconds)*time.Second).Format(time.RFC3339) + "\nEDIT::a.go\n"
++	// stamped is an edit of a.go leaving content hash, which the hook stamped seconds after stampBase;
++	// every stamped edit has the same length for a hash of the same length.
++	stamped := func(seconds int, hash string) string {
++		return "@" + stampBase.Add(time.Duration(seconds)*time.Second).Format(time.RFC3339) + "\nEDIT::a.go:" + hash + "\n"
+ 	}
+-	stampedLen := int64(len(stamped(0)))
+-	appendStamped := func(seconds int) func(*dialogEnv) {
+-		return func(env *dialogEnv) { env.appendEvents(strings.TrimSuffix(stamped(seconds), "\n")) }
++	stampedLen := int64(len(stamped(0, "h1")))
++	appendStamped := func(seconds int, hash string) func(*dialogEnv) {
++		return func(env *dialogEnv) { env.appendEvents(strings.TrimSuffix(stamped(seconds, hash), "\n")) }
+ 	}
+ 	tests := []struct {
+ 		name   string
+@@ -65,54 +70,63 @@ func TestWait_EditLoopNotice(t *testing.T) {
+ 		wantFinal int64
+ 	}{
+ 		{
+-			name: "three edits of one file within the window notify once, with the offset persisted before the call", events: three,
+-			wantLoops: []editLoop{loopOf("", 3)}, wantAt: []time.Duration{0}, wantPersisted: []int64{threeLen}, wantFinal: threeLen,
++			name: "edits flipping one file between two contents notify once, with the offset persisted before the call", events: flip,
++			wantLoops: []editLoop{loopOf("", 2)}, wantAt: []time.Duration{0}, wantPersisted: []int64{flipLen}, wantFinal: flipLen,
++		},
++		{
++			name:   "edits that each leave new content make progress and do not notify",
++			events: "EDIT::a.go:h1\nEDIT::a.go:h2\nEDIT::a.go:h3\nEDIT::a.go:h4\nEDIT::a.go:h5\nEDIT::a.go:h6\n",
++		},
++		{name: "edits whose file the hook could not read never count", events: "EDIT::a.go\nEDIT::a.go\nEDIT::a.go\nEDIT::a.go\n"},
++		{
++			name: "a subagent's loop names the subagent", events: "EDIT:agent-1:a.go:h1\nEDIT:agent-1:a.go:h2\nEDIT:agent-1:a.go:h1\nEDIT:agent-1:a.go:h2\n",
++			wantLoops: []editLoop{loopOf("agent-1", 2)}, wantAt: []time.Duration{0},
++			wantPersisted: []int64{int64(len("EDIT:agent-1:a.go:h1\n") * 4)}, wantFinal: int64(len("EDIT:agent-1:a.go:h1\n") * 4),
+ 		},
++		{name: "the session's and a subagent's edits of one file count apart", events: "EDIT::a.go:h1\nEDIT:agent-1:a.go:h1\nEDIT::a.go:h1\n"},
++		{name: "edits of two files count apart", events: "EDIT::a.go:h1\nEDIT::b.go:h1\nEDIT::a.go:h1\n"},
+ 		{
+-			name: "a subagent's loop names the subagent", events: "EDIT:agent-1:a.go\nEDIT:agent-1:a.go\nEDIT:agent-1:a.go\n",
+-			wantLoops: []editLoop{loopOf("agent-1", 3)}, wantAt: []time.Duration{0},
+-			wantPersisted: []int64{int64(len("EDIT:agent-1:a.go\n") * 3)}, wantFinal: int64(len("EDIT:agent-1:a.go\n") * 3),
++			name: "edits across ticks within the window notify at the edit that reaches the count", events: "EDIT::a.go:h1\nEDIT::a.go:h2\n",
++			steps:     map[int]func(*dialogEnv){5: appendEdit("h1"), 10: appendEdit("h2")},
++			wantLoops: []editLoop{loopOf("", 2)}, wantAt: []time.Duration{55 * time.Second}, wantPersisted: []int64{flipLen}, wantFinal: flipLen,
+ 		},
+-		{name: "the session's and a subagent's edits of one file count apart", events: "EDIT::a.go\nEDIT:agent-1:a.go\nEDIT::a.go\n"},
+-		{name: "edits of two files count apart", events: "EDIT::a.go\nEDIT::b.go\nEDIT::a.go\n"},
+ 		{
+-			name: "edits across ticks within the window notify at the edit that reaches the count", events: "EDIT::a.go\n",
+-			steps:     map[int]func(*dialogEnv){5: appendEdit, 10: appendEdit},
+-			wantLoops: []editLoop{loopOf("", 3)}, wantAt: []time.Duration{55 * time.Second}, wantPersisted: []int64{threeLen}, wantFinal: threeLen,
++			name: "content older than the window before the latest edit drops out of the count", events: "EDIT::a.go:h1\nEDIT::a.go:h2\n",
++			steps: map[int]func(*dialogEnv){5: appendEdit("h1"), 12: appendEdit("h2")},
+ 		},
+ 		{
+-			name: "an edit older than the window before the latest edit drops out of the count", events: "EDIT::a.go\n",
+-			steps: map[int]func(*dialogEnv){5: appendEdit, 12: appendEdit},
++			name: "a repeat older than the window drops out of the count", markEvents: true,
++			events: stamped(0, "h1") + stamped(1, "h2") + stamped(2, "h1") + stamped(100, "h3") + stamped(101, "h4") + stamped(102, "h3"),
+ 		},
+ 		{
+-			name: "three edits read in one batch but stamped further apart than the window do not notify", markEvents: true,
+-			events: stamped(0) + stamped(120) + stamped(240),
++			name: "edits read in one batch but stamped further apart than the window do not notify", markEvents: true,
++			events: stamped(0, "h1") + stamped(120, "h2") + stamped(240, "h1") + stamped(360, "h2"),
+ 		},
+ 		{
+-			name: "three edits stamped within the window notify though the run clock read them further apart", markEvents: true,
+-			events:    stamped(0),
+-			steps:     map[int]func(*dialogEnv){12: appendStamped(10), 13: appendStamped(20)},
+-			wantLoops: []editLoop{loopOf("", 3)}, wantAt: []time.Duration{70 * time.Second},
+-			wantPersisted: []int64{3 * stampedLen}, wantFinal: 3 * stampedLen,
++			name: "edits stamped within the window notify though the run clock read them further apart", markEvents: true,
++			events:    stamped(0, "h1") + stamped(5, "h2"),
++			steps:     map[int]func(*dialogEnv){12: appendStamped(10, "h1"), 13: appendStamped(20, "h2")},
++			wantLoops: []editLoop{loopOf("", 2)}, wantAt: []time.Duration{70 * time.Second},
++			wantPersisted: []int64{4 * stampedLen}, wantFinal: 4 * stampedLen,
+ 		},
+ 		{
+-			name: "six edits notify twice, the count restarting after each notice", events: three + three,
+-			wantLoops: []editLoop{loopOf("", 3), loopOf("", 3)}, wantAt: []time.Duration{0, 0},
+-			wantPersisted: []int64{2 * threeLen, 2 * threeLen}, wantFinal: 2 * threeLen,
++			name: "a loop twice as long notifies twice, the count restarting after each notice", events: flip + flip,
++			wantLoops: []editLoop{loopOf("", 2), loopOf("", 2)}, wantAt: []time.Duration{0, 0},
++			wantPersisted: []int64{2 * flipLen, 2 * flipLen}, wantFinal: 2 * flipLen,
+ 		},
+ 		{
+-			name: "edits read while a pause covers the run notify once it lifts", events: three, covered: true,
++			name: "edits read while a pause covers the run notify once it lifts", events: flip, covered: true,
+ 			steps:     map[int]func(*dialogEnv){3: func(env *dialogEnv) { env.resume() }},
+-			wantLoops: []editLoop{loopOf("", 3)}, wantAt: []time.Duration{20 * time.Second}, wantPersisted: []int64{threeLen}, wantFinal: threeLen,
++			wantLoops: []editLoop{loopOf("", 2)}, wantAt: []time.Duration{20 * time.Second}, wantPersisted: []int64{flipLen}, wantFinal: flipLen,
+ 		},
+ 		{
+-			name: "a failed offset save is retried on the next tick", events: three, failFirstSave: true,
+-			wantLoops: []editLoop{loopOf("", 3)}, wantAt: []time.Duration{dialogTick}, wantPersisted: []int64{threeLen}, wantFinal: threeLen,
++			name: "a failed offset save is retried on the next tick", events: flip, failFirstSave: true,
++			wantLoops: []editLoop{loopOf("", 2)}, wantAt: []time.Duration{dialogTick}, wantPersisted: []int64{flipLen}, wantFinal: flipLen,
+ 		},
+-		{name: "a reattach whose persisted offset is past every edit sends nothing", events: three, editLoopOffset: threeLen, wantFinal: threeLen},
+-		{name: "a zero edit count turns the watch off", events: three, off: true},
+-		{name: "an interactive run sends nothing", events: three, interactive: true},
+-		{name: "a runner with no notifier sends nothing and persists no offset", events: three, noNotifier: true},
++		{name: "a reattach whose persisted offset is past every edit sends nothing", events: flip, editLoopOffset: flipLen, wantFinal: flipLen},
++		{name: "a zero edit count turns the watch off", events: flip, off: true},
++		{name: "an interactive run sends nothing", events: flip, interactive: true},
++		{name: "a runner with no notifier sends nothing and persists no offset", events: flip, noNotifier: true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -120,7 +134,7 @@ func TestWait_EditLoopNotice(t *testing.T) {
+ 			cfg := gateConfig
+ 			cfg.EditLoopWindowS = int(window / time.Second)
+ 			if !tt.off {
+-				cfg.EditLoopEdits = 3
++				cfg.EditLoopEdits = 2
+ 			}
+ 			reed := &dialogReed{fakeReed: &fakeReed{StatusQueue: liveStrandStatus(true)}, pane: dialogPaneBox}
+ 			fx := newFixture(t, reed, &sessionFakeEngine{markEvents: tt.markEvents}, withConfig(cfg))
+@@ -201,7 +215,7 @@ func TestWait_EditLoopNotice(t *testing.T) {
+ 				wantParts := []string{
+ 					strandName,
+ 					noticeOpen + loop.key.filePath + noticeClose,
+-					fmt.Sprintf("%d times", loop.edits),
++					fmt.Sprintf("%d times", loop.repeats),
+ 					"within " + window.String(),
+ 				}
+ 				if loop.key.agentID != "" {
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 52e29d8b..f519b2a0 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -314,10 +314,13 @@ const EditHookVerb = "hook-edit"
+ // EditRecorder is an optional capability of an engine:
+ // the after-edit hook that records each file edit in the run's edit records file.
+ // It records the edits of the session's subagents and forks too.
+-// The engine's SessionSignalParser reads each such record back as a SessionSignalFileEdit.
++// Each record carries a hash of the edited file's content right after the edit.
++// The engine's SessionSignalParser reads each such record back as a SessionSignalFileEdit with that hash.
++// An edit recorded with no hash never counts toward an edit loop.
+ // An engine without it installs no such hook, so its runs get no edit-loop notice.
+ type EditRecorder interface {
+ 	// RecordEdit appends the file edit the hook input payload describes to the edit records file at recordsPath.
++	// The record carries the hash of the file's content right after the edit.
+ 	// A payload that names no edited file appends nothing.
+ 	RecordEdit(recordsPath string, payload []byte) error
+ }
+diff --git a/internal/shuttleengine/fakes_test.go b/internal/shuttleengine/fakes_test.go
+index 781c7eaf..3365b424 100644
+--- a/internal/shuttleengine/fakes_test.go
++++ b/internal/shuttleengine/fakes_test.go
+@@ -936,9 +936,13 @@ func (e *sessionFakeEngine) ParseSessionSignals(data []byte) ([]SessionSignal, i
+ 		case trimmed == "ASK":
+ 			signal.Kind = SessionSignalAsk
+ 		case strings.HasPrefix(trimmed, "EDIT:"):
+-			// EDIT:<agent id>:<file path>, with an empty agent id for the session's own edit.
++			// EDIT:<agent id>:<file path>:<content hash>.
++			// The agent id is empty for the session's own edit.
++			// The content hash is empty for an edit whose file the hook could not read.
+ 			signal.Kind = SessionSignalFileEdit
+-			signal.AgentID, signal.FilePath, _ = strings.Cut(strings.TrimPrefix(trimmed, "EDIT:"), ":")
++			var rest string
++			signal.AgentID, rest, _ = strings.Cut(strings.TrimPrefix(trimmed, "EDIT:"), ":")
++			signal.FilePath, signal.ContentHash, _ = strings.Cut(rest, ":")
+ 		case strings.HasPrefix(trimmed, "SESSIONSTART"):
+ 			signal.Kind = SessionSignalSessionStart
+ 			signal.Source = SessionStartSource(strings.TrimPrefix(strings.TrimPrefix(trimmed, "SESSIONSTART"), ":"))
+diff --git a/internal/shuttleengine/reinterpret.go b/internal/shuttleengine/reinterpret.go
+new file mode 100644
+index 00000000..ba1a3606
+--- /dev/null
++++ b/internal/shuttleengine/reinterpret.go
+@@ -0,0 +1,72 @@
++// reinterpret.go carries a hub's shuttle.yaml across the change in what edit_loop_edits counts.
++// The key once counted every edit of a file and now counts only the edits that return it to earlier content.
++
++package shuttleengine
++
++import (
++	"fmt"
++
++	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/yamlengine"
++)
++
++// EditLoopRepeatsReinterpretation names the change in what edit_loop_edits counts.
++// The key once counted every edit of a file and now counts only the edits that return it to earlier content.
++const EditLoopRepeatsReinterpretation = "shuttle-edit-loop-repeats"
++
++// editLoopEditsKey is the shuttle.yaml key of Config.EditLoopEdits.
++const editLoopEditsKey = "edit_loop_edits"
++
++// DropEditLoopEdits is the reinterpretation of a hub's shuttle.yaml for EditLoopRepeatsReinterpretation.
++// A count of every edit has no equivalent count of repeats.
++// A hub that set 0 turned the watch off while every edit counted and the notices were noise.
++// A 0, or a null or empty value, which loads as 0, is therefore dropped and the template's count applies.
++// That drop is returned as one rewrote line naming the way to set another count.
++// Any other value is left in the file and returned as one flagged line naming it and the way forward.
++// Only the hub can say what count of repeats such a value means.
++// A file without the key comes back unchanged with no line.
++// The rewrite takes no worktree root or anchored directory, since the key names no path.
++// A document that does not parse, or whose top level is not a mapping, returns an error marked configengine.ErrInvalid.
++func DropEditLoopEdits(existing []byte, _, _ string) (rewritten []byte, rewrote, flagged []string, err error) {
++	var values struct {
++		EditLoopEdits yaml.Node `yaml:"edit_loop_edits"`
++	}
++	if err := yaml.Unmarshal(existing, &values); err != nil {
++		return nil, nil, nil, configengine.MarkInvalid(fmt.Errorf("drop edit_loop_edits: unmarshal yaml: %w", err))
++	}
++	if values.EditLoopEdits.IsZero() {
++		return existing, nil, nil, nil
++	}
++	var count int
++	if err := values.EditLoopEdits.Decode(&count); err != nil || count != 0 {
++		line := fmt.Sprintf("%s %s kept, since it counts only the edits that return a file to content it held earlier now, "+
++			"so the value means a different count; way forward: set the count of repeats with "+
++			"lym config shuttle --layer default --set %s=<count> from the prime worktree, or drop the key to take the template's count",
++			editLoopEditsKey, describeYAMLValue(values.EditLoopEdits), editLoopEditsKey)
++		return existing, nil, []string{line}, nil
++	}
++	rewritten, _, err = yamlengine.DropKeys(existing, []string{editLoopEditsKey})
++	if err != nil {
++		return nil, nil, nil, configengine.MarkInvalid(fmt.Errorf("drop edit_loop_edits: %w", err))
++	}
++	line := fmt.Sprintf("%s dropped, since it turned the watch off while every edit counted and the notices were noise, "+
++		"so the template's count of repeats applies; way forward: set another count with lym config shuttle --layer default --set %s=<count> "+
++		"from the prime worktree", editLoopEditsKey, editLoopEditsKey)
++	return rewritten, []string{line}, nil, nil
++}
++
++// describeYAMLValue names a node's value for a message: its text when it has one, otherwise its kind.
++func describeYAMLValue(node yaml.Node) string {
++	switch {
++	case node.Value != "":
++		return node.Value
++	case node.Kind == yaml.MappingNode:
++		return "(a mapping)"
++	case node.Kind == yaml.SequenceNode:
++		return "(a sequence)"
++	default:
++		return "(an empty value)"
++	}
++}
+diff --git a/internal/shuttleengine/reinterpret_test.go b/internal/shuttleengine/reinterpret_test.go
+new file mode 100644
+index 00000000..bbcedffe
+--- /dev/null
++++ b/internal/shuttleengine/reinterpret_test.go
+@@ -0,0 +1,87 @@
++// reinterpret_test.go pins the reinterpretation that drops a hub's edit_loop_edits.
++
++package shuttleengine_test
++
++import (
++	"errors"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestDropEditLoopEdits pins what the rewrite does to a hub's shuttle.yaml.
++// It drops edit_loop_edits when its value turns the watch off, a 0 or a null.
++// It keeps every other key and names the way forward in the line it reports.
++// Any other count stays in the file and is flagged with the way forward.
++// A file without the key comes back unchanged, and one that does not parse or is no mapping is an invalid-config error.
++func TestDropEditLoopEdits(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name     string
++		existing string
++		want     string
++		// wantRewrote and wantFlagged are texts the one line of that list holds; the other list wants no line.
++		// Both empty wants no line at all.
++		wantRewrote string
++		wantFlagged string
++		wantErr     bool
++	}{
++		{name: "AZeroCountIsDropped", existing: "edit_loop_edits: 0\n", want: "{}\n", wantRewrote: "edit_loop_edits dropped"},
++		{name: "ANullCountIsDropped", existing: "edit_loop_edits:\n", want: "{}\n", wantRewrote: "edit_loop_edits dropped"},
++		{
++			name:        "AZeroCountIsDroppedAndOtherKeysKept",
++			existing:    "deny_python: false\nedit_loop_edits: 0\nedit_loop_window_s: 120\n",
++			want:        "deny_python: false\nedit_loop_window_s: 120\n",
++			wantRewrote: "edit_loop_edits dropped",
++		},
++		{
++			name:        "ANonZeroCountIsKeptAndFlagged",
++			existing:    "deny_python: false\nedit_loop_edits: 6\nedit_loop_window_s: 120\n",
++			want:        "deny_python: false\nedit_loop_edits: 6\nedit_loop_window_s: 120\n",
++			wantFlagged: "edit_loop_edits 6 kept",
++		},
++		{name: "AFileWithoutTheKeyIsUnchanged", existing: "deny_python: false\n", want: "deny_python: false\n"},
++		{name: "AnEmptyFileIsUnchanged", existing: "", want: ""},
++		{name: "AnUnparsableFileIsInvalid", existing: "edit_loop_edits: [\n", wantErr: true},
++		{name: "ANonMappingDocumentIsInvalid", existing: "- a\n", wantErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, rewrote, flagged, err := shuttleengine.DropEditLoopEdits([]byte(tt.existing), "/root", "/root")
++			if tt.wantErr {
++				if !errors.Is(err, configengine.ErrInvalid) {
++					t.Errorf("DropEditLoopEdits(%q) error = %v; want one marked configengine.ErrInvalid", tt.existing, err)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("DropEditLoopEdits(%q) error: %v", tt.existing, err)
++			}
++			if string(got) != tt.want {
++				t.Errorf("DropEditLoopEdits(%q) = %q; want %q", tt.existing, got, tt.want)
++			}
++			assertLines(t, tt.existing, "rewrote", rewrote, tt.wantRewrote)
++			assertLines(t, tt.existing, "flagged", flagged, tt.wantFlagged)
++		})
++	}
++}
++
++// assertLines checks that lines holds nothing when want is empty.
++// Otherwise it checks for one line that holds want and lym config shuttle.
++func assertLines(t *testing.T, existing, list string, lines []string, want string) {
++	t.Helper()
++	if want == "" {
++		if len(lines) != 0 {
++			t.Errorf("DropEditLoopEdits(%q) %s = %q; want none", existing, list, lines)
++		}
++		return
++	}
++	if len(lines) != 1 || !strings.Contains(lines[0], want) || !strings.Contains(lines[0], "lym config shuttle") {
++		t.Errorf("DropEditLoopEdits(%q) %s = %q; want one line naming %q and lym config shuttle", existing, list, lines, want)
++	}
++}
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index ad4f368b..3b5a2bc2 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -496,6 +496,7 @@ const ActivityStampFileName = "activity-stamp"
+ // EditRecordsFileName is the file in a run directory that an engine's edit hook appends its file-edit records to.
+ // It is apart from the events file.
+ // The edit hook's frequent writes so never land between the payload append and the newline append of a recording hook.
++// Each record carries a hash of the edited file's content right after the edit.
+ const EditRecordsFileName = "edit-records.jsonl"
+ 
+ // Start prepares one run described by spec, registers it with reed, and returns a handle only once
+diff --git a/internal/shuttleengine/sessionsignal.go b/internal/shuttleengine/sessionsignal.go
+index 700b4b0f..017bab22 100644
+--- a/internal/shuttleengine/sessionsignal.go
++++ b/internal/shuttleengine/sessionsignal.go
+@@ -79,6 +79,10 @@ type SessionSignal struct {
+ 	// AgentID is the id of the subagent or fork that made a file edit;
+ 	// empty for an edit of the session itself and on every other kind.
+ 	AgentID string
++	// ContentHash is a hash of a file edit's file content right after the edit;
++	// equal hashes mean equal content.
++	// It is empty when the hook could not read the file and on every other kind.
++	ContentHash string
+ 	// Event is true when the same line also yields an event.
+ 	Event bool
+ 	// Raw is the exact hook payload line the signal was read from.
+diff --git a/internal/shuttleengine/template.yaml b/internal/shuttleengine/template.yaml
+index 76b82103..1741947d 100644
+--- a/internal/shuttleengine/template.yaml
++++ b/internal/shuttleengine/template.yaml
+@@ -12,5 +12,5 @@ submit_settle_ms: 300  # milliseconds between the two input-box reads that must
+ submit_redraw_settle_ms: 300  # milliseconds for the first step of the doubling interval at which the input box is read after an Enter to confirm the send, so Claude Code has redrawn it; 0 reads at once, negative is a config error
+ engine: claude  # the engine for a spec that names none; must be a registered engine name, and an empty value is a config error
+ deny_python: true  # switches the python guard of internal/shellguard's table for every engine: a deny for the python interpreter (python, python3, python3.<minor>, optionally path-prefixed) run as a shell command in every lym-spawned session, and the system-prompt sentence announcing that deny; false removes both the hook and the sentence; on by default because what Python runs differs from machine to machine and it is often very slow; turn it off for a hub whose work needs Python, such as a Python target repo or OCR, with lym config shuttle --layer default --set deny_python=false from the prime worktree
+-edit_loop_edits: 4  # edits of one file by one agent (the session, or one of its subagents or forks) within edit_loop_window_s that make an edit loop; an autonomous run's wait then sends its parent one notice and the session keeps running, and the count restarts; 0 turns the watch off and installs no edit hook, negative is a config error
++edit_loop_edits: 3  # edits of one file by one agent (the session, or one of its subagents or forks) within edit_loop_window_s that make an edit loop, counting only an edit that leaves the file with content an earlier edit of it in the window left, so a fixer or writer that edits one file many times while making progress never counts; an autonomous run's wait then sends its parent one notice and the session keeps running, and the count restarts; 0 turns the watch off and installs no edit hook, negative is a config error
+ edit_loop_window_s: 300  # seconds the edits of an edit loop fall within; 0 or negative is a config error while edit_loop_edits is above 0
