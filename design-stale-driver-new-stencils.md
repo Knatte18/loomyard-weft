@@ -1,6 +1,6 @@
 # An old driver fails on board stencils a landing installed mid-run
 
-`stale-driver-new-stencils` · Task · bug, stencil, shed · draft
+`stale-driver-new-stencils` · Task · bug, stencil, shed
 
 ## Seen (orch, 2026-11-17)
 
