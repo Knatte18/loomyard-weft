@@ -23,6 +23,10 @@
 A `landing` run past its parent-side merge is handed over the same way, so its owner finishes the Finalize.
 A failed push for a transient reason returns the push's error, so the catch-up retries; nothing is archived first.
 
+Bound: it hands over only a run whose owner reads elsewhere after the catch-up's registration landed (card 18 step 1), so a refused or unregistered identity never reaches it.
+The local pair's forced removal discards uncommitted files only after the archive tags naming its tips are on origin, since `HandOver` returns the archive's error before it removes the pair.
+It pushes only commits origin lacks, never rewinds or force-pushes an origin branch, writes no board and touches no other machine's records.
+
 `TestHandOverOwnedElsewhere`, tier1, over a hub fixture with a local pair whose records side holds a commit origin lacks, a process registered under the slug in `internal/runproc` and a local pause intent origin lacks:
 the commit reaches origin, the archive tags reach origin, the registered process is ended, the notice names the owner and the dropped pause intent (read as `TestPushRun_HandsOverOnATakeover` reads it), the local pair is gone and origin's branches stand, and the hand-over mark names the owner;
 a run at Finalize past its parent-side merge is handed over the same way, its process ended;

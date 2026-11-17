@@ -9,6 +9,8 @@
 - `plan:internal/boardengine#RegisterMachine` -> `func RegisterMachine(boardDir string, reg Registration) (bool, error)`
 - `plan:internal/boardengine#EnsureIdentity` -> `func EnsureIdentity() (machinename.Identity, error)`
 - `plan:internal/boardengine#ensureIdentityWith` -> `func ensureIdentityWith(locate func() (file, lock string, ok bool, err error), hostname func() (string, error)) (machinename.Identity, error)`
+- `plan:internal/boardengine#IdentityRefusal` -> `func IdentityRefusal() error`
+- `plan:internal/boardengine#identityRefusal` -> `func identityRefusal(locate func() (file, lock string, ok bool, err error)) error`
 - `plan:internal/boardengine#TestRegistryCheck` -> `func TestRegistryCheck(t *testing.T)`
 - `plan:internal/boardengine#TestEnsureIdentityWith` -> `func TestEnsureIdentityWith(t *testing.T)`
 - `plan:internal/boardengine#TestRegisterMachine` -> `func TestRegisterMachine(t *testing.T)`
@@ -46,6 +48,8 @@ An unreachable origin returns `ErrOwnerOriginUnreachable` wrapped, and a refusal
 
 `EnsureIdentity` is `ensureIdentityWith(machinename.FilePath, machinename.FromThisHost)`.
 With no directory resolved it returns a `*RegistrationError` naming the variable to set: `XDG_CONFIG_HOME` or `HOME`, or `LOCALAPPDATA` on Windows; its way forward is to set it to an absolute path, then run `lym beam stop` and `lym beam start`, so the dobbies start with it.
+`identityRefusal(locate)` builds that refusal, nil when a directory resolves, and `ensureIdentityWith` returns it before any read;
+`IdentityRefusal()` is `identityRefusal(machinename.FilePath)`, which reads no file and writes none, for a status read that must not write the id.
 It reads the machine file through `machinename.ReadFile`; a file with an id returns the identity `machinename.ReadIdentity` would.
 A file without one gets a fresh `machinename.NewID` written through `state.UpdateJSON` under the file's lock, keeping every other key; a missing file is created holding the hostname rule's name as `name` and `names`.
 An unreadable or invalid file returns the error `machinename` gives it.
@@ -58,4 +62,4 @@ Each passing row also asserts what `apply` returns: a first registration copies 
 `TestRegisterMachine`, tier1, runs on `newOwnerFixture`'s hub: a registration is on origin's board when it returns; the same registration again writes and pushes nothing; a second clone's clashing registration is refused and writes nothing; a rename moves the old name to `former` on origin.
 `boardengine/doc.go` gains the setter and the identity write, and `machinecli/doc.go` stops calling `machinecli` the only writer of the machine file.
 
-**ImpactSummary:** New setter and identity writer only; no existing caller changes, and board writes keep the machines map they carry from card 3.
+**ImpactSummary:** New setter, identity writer and read-only identity refusal; no existing caller changes, and board writes keep the machines map they carry from card 3.

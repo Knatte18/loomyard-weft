@@ -17,6 +17,9 @@ The background file's rule text matches, and its sections change with the code:
 "Origin reconcile first" becomes the catch-up after an absence (a sleep the dobby sees, a dobby start, a hand pass) and drops the origin-owed marker;
 "Passes" drops the marker from the continue-pass refusal and the full-pass rule;
 "Enforcement" names `TestReadsAsHere`, `TestRegistryCheck`, `TestCatchUp` and `TestRun_CatchUp` beside the tests it names.
+Two lines describing the retired owner pause change:
+"An entry owned elsewhere is paused under the owner, naming `lym adopt`" says the entry is handed over by the catch-up, naming `lym adopt`;
+and the Enforcement clause "They cover `InnerRun`'s owner pause" names `InnerRun`'s owner hold.
 `machinename` stays this machine's only name source, with the id beside the name.
 
 **ImpactSummary:** Two documentation files; no code or test changes.

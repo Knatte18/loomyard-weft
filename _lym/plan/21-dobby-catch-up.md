@@ -10,6 +10,7 @@
 **Edit:**
 - `internal/dobbyengine#Deps`
 - `internal/dobbyengine#daemon`
+- `internal/dobbyengine#Run`
 - `internal/dobbyengine#daemon.recordStart`
 - `internal/dobbyengine#daemon.tick`
 - `internal/dobbyengine#daemon.handOver`
@@ -35,18 +36,24 @@
 - `plan:internal/tenderengine#SyncBoltHold`
 - `internal/tendercli#HubDeps`
 - `internal/pairteardown#EndSubjectProcesses`
+- `internal/parentlock#Store.HeldBy`
 
 **Intent:** Run the catch-up in the dobby after every absence it sees, before any act rule answer, and keep its runs' `bolt-hold` entries in step with the Bolt hold (D4, D5).
 
 `Deps` gains `CatchUp CatchUpDeps`, `SyncBoltHold func(ctx context.Context, scope, held []string) error` and `EndSubject func() error`.
 A `CatchUp` whose `PullBolt` is nil means no catch-up, as a nil `Deps.PullBolt` pulls nothing, so `newLoopHarness` and every hand-built `Deps` keep running passes; a nil `SyncBoltHold` syncs nothing and a nil `EndSubject` ends nothing.
-The daemon gains `catchUpOwed`, `catchUpNext` and `catchUpDelay`, and one notice episode per failure class.
+The daemon gains `catchUpOwed`, `catchUpNext`, `catchUpDelay` and `handedOver`, and one notice episode per failure class.
 
 The catch-up is owed:
 at a fresh start (`recordStart`'s non-re-exec path; a re-exec is no absence);
 when the tick's sleep watch sees a sleep;
 when a pass exits `PassExitOriginWait` or `PassExitOwnedElsewhere`;
-and when `drivePasses` lists a run whose verdict answers `hand_over`, so a run another machine took while its pass was in flight here (InnerRun holding on its owner verdict, or loom's pre-push stop) is handed over and its processes end.
+and when `drivePasses` lists a run whose verdict answers `hand_over` and whose `RunView.PairPresent` is true, so a run another machine took while its pass was in flight here (InnerRun holding on its owner verdict, or loom's pre-push stop) is handed over and its processes end.
+`DobbyRuns` lists every batten record of the worktree whatever pair stands here, so a run whose pair is not here, one already handed over or one whose pair never stood here, owes nothing.
+`PairPresent` is a path check on the pair's worktree, while the hand-over removes a pair only when it reads as a registered linked worktree, so a directory left standing with no registration survives a successful catch-up.
+A run that owed the catch-up through this trigger and that a successful catch-up then covered owes none from it again while it still lists as `hand_over`:
+the daemon keeps its slug in `handedOver`, a map `Run` creates beside the other per-run maps and that the catch-up's success does not drop, and forgets it once the run stops answering `hand_over` or is no longer listed.
+Card 20's `DobbyPairSlugs` reads "whose pair stands here" by the same predicate as `PairPresent`, so the trigger's set and the catch-up's scope agree.
 `tick` runs `catchUp` first, after the sleep watch and before any scheduling:
 while it is owed and its next try is due, it runs `CatchUp(d.deps.CatchUp)`.
 Success clears it, resets the delay, clears the state record's wait and owes every listed run a full pass, dropping the per-run memory (`childSeen`, `liftPending`, `wasCovered`) of the runs it touched; each run's next pass is a full pass.
@@ -60,7 +67,8 @@ While the catch-up is owed the tick spawns no pass, starts no task, takes no lan
 
 After the catch-up and before the passes, `syncBoltHold` hands `SyncBoltHold` the scope and the held list:
 the scope is every slug `DobbyPairSlugs` gives for this dobby, not only the runs the tick listed, so a run `DobbyRuns` left out of the tick still has its entry dropped once the hold clears;
-the held list is the listed runs whose verdict reason is `held`, so a run whose push is owed (reason `push_owed`) gets no entry and its push passes the gate.
+the held list is the listed runs whose verdict reason is `held`, so a run whose push is owed (reason `push_owed`) gets no entry and its push passes the gate;
+a held run holding its parent lock gets no entry either, through `SyncBoltHold`'s parent-lock read (card 15).
 A hold read at a Bolt pull applies at once; a failure warns once per episode.
 
 `handOver`, the beam's hand-over when the beam reads owned elsewhere, runs the catch-up in place of `pauseRunsForOwner` (deleted), so its runs are handed over (processes ended, tips archived, pairs removed) instead of paused.
@@ -68,7 +76,7 @@ Once the catch-up succeeds it calls `EndSubject`, which ends the subject's proce
 A failed catch-up keeps the dobby up and retries at the next probe tick like a failed archive.
 The periodic Bolt pull stays.
 
-`hubDobbyDeps` wires `CatchUp` to `battencli.HubCatchUp(prime, DobbyPairSlugs(...))`, `SyncBoltHold` to `tenderengine.SyncBoltHold` over `tendercli.HubDeps`, with the machine and standing read from the local Bolt's holds, and `EndSubject` to `pairteardown.EndSubjectProcesses(prime, owner, true)` with the beam's slug, or `runproc.HubOwner` for the prime.
+`hubDobbyDeps` wires `CatchUp` to `battencli.HubCatchUp(prime, DobbyPairSlugs(...))`, `SyncBoltHold` to `tenderengine.SyncBoltHold` over `tendercli.HubDeps`, with the machine and standing read from the local Bolt's holds and `HoldsParentLock` reading `parentlock.Store.HeldBy` over the Bolt's parent lock directory (`parentlock.Dir`), and `EndSubject` to `pairteardown.EndSubjectProcesses(prime, owner, true)` with the beam's slug, or `runproc.HubOwner` for the prime.
 
 Tests, tier0:
 `TestRun_CatchUp` over `newLoopHarness` covers:
@@ -79,6 +87,8 @@ a refusal records `refused`, posts one notice and spawns nothing;
 any other failure records `failed` with its detail and posts one notice;
 a later success clears the wait and gives full passes;
 a listed run whose verdict answers `hand_over` owes the catch-up, gets no pass and is handed over;
+a listed run answering `hand_over` with `PairPresent` false owes no catch-up and the next tick runs none;
+a listed `hand_over` run whose pair stays present after a successful catch-up owes the catch-up once, not on each tick;
 a zero `CatchUp` runs passes as before.
 `TestRun_SyncsBoltHoldEntries` covers the scope from `DobbyPairSlugs` and the held list handed over, a run reading `push_owed` under a hold left out of the held list, an empty held list once no run reads held, and a failed sync logged once while the tick goes on.
 `TestRun_ForeignOwner` asserts the hand-over runs the catch-up instead of pausing runs and then calls `EndSubject`, and that a failed catch-up keeps the dobby up and retries at the next probe tick.

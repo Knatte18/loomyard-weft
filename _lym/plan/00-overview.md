@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -58,7 +58,9 @@ An adopt hold in Bolt holds the whole hub through the act rule and machine-local
 
 - **Decision:** the dobby loop is the long-lived process that observes a sleep and runs the catch-up for its worktree's runs; every pass that is not a continue pass runs the catch-up of its own run, which covers the hand pass.
   The orch watcher (`internal/orchengine`, outside this part's packages) gets no sleep watch: the dobby of the same worktree observes the same sleep and its catch-up covers the worktree's runs.
-- **Rationale:** batten cannot tell a hand pass from a dobby's full pass, and a full pass already runs the run-scope reconcile, so its own run's fetch costs little; one observer per worktree avoids two catch-ups racing over one pair.
+- **Rationale:** the dobby spawns its passes with flags it chooses and could mark them, but the plan runs the catch-up on every pass that is not a continue pass by choice, so one guard covers a pass whoever spawned it.
+  A full pass already runs the run-scope reconcile, so its own run's fetch costs little.
+  Such a catch-up racing the dobby's over one pair is safe, as card 20's Bound says; the orch watcher stays out, so each worktree has one sleep observer.
 - **Applies to:** cards 20, 21
 
 ### Decision: caches dropped by the catch-up

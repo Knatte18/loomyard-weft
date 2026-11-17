@@ -24,6 +24,7 @@ An unreachable origin (`ErrOwnerOriginUnreachable`) reads the local Bolt and goe
 Any other failed pull returns an error naming the pull's detail and the way forward: bring the board level as it names, then run the verb again; nothing is read.
 `loomcli`'s `hubRunVerdict` (behind `lym loom start` and `lym loom resume`) and the `Verdict` seam of `tendercli`'s `hubRunIntents` (behind `lym tender resume <slug>`) read through it in place of `ReadRun`.
 `lym batten cancel` already pulls first, and `lym batten run` reads origin through its catch-up (card 20).
+Card 15 later sets the hold aside in tender resume's verdict and reads the hold through its own `BoltHold` seam; the pull then keeps that verdict's owner reading fresh.
 
 `TestReadRunPulled`, tier1, runs over the hub fixture `TestReadRun_ReadsTheSameStateWithoutTheCache` builds, with a second clone of the hub's Bolt origin:
 a hold the second clone writes through `WriteHold` after this hub's last pull reads `Held` with that clone's machine;

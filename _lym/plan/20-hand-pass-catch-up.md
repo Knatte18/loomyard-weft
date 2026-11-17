@@ -60,7 +60,8 @@
 `ReadRun` reads `pairteardown.ReadRun` for the owner and `OwnedElsewhere`, and `Ahead` from whether the prime's records side or the pair's records or code side holds commits its upstream lacks;
 `PushOwed` is `PushRun` of the prime's records and then the pair, `ErrHandedOver` answering nil;
 `HandOver` is `pairteardown.HandOverOwnedElsewhere`; `ApplyPauseIntents` is `tendercli.PauseIntentEntries`.
-`DobbyPairSlugs` lists the slugs of the runs whose parent is the dobby's worktree and whose pair stands here, for the dobby's scope in card 21;
+A pair directory that stands but is not a registered linked worktree, as `Teardown.TaskWorktreeGone` reads it, is a run with no pair here for `FetchRun`, `Ahead` and `PushOwed`, so a leftover directory fails no catch-up and no git command runs in it.
+`DobbyPairSlugs` lists the slugs of the runs whose parent is the dobby's worktree and whose pair stands here (the pair's worktree path exists, the predicate `RunView.PairPresent` reads), for the dobby's scope in card 21;
 for the prime's dobby it also lists every local pair whose parent beam reads owned elsewhere, since `EnsureLive` starts no dobby for such a beam, so each local pair is caught up by some dobby (D4 step 2: "each local pair's branches").
 
 A pass that is not a continue pass runs `catchUpRun` before its resume reconcile, through a `catchUp` seam on `battenCLI` that `wire` fills with `CatchUp(HubCatchUp(prime, [slug]))`; a hand-built receiver's nil seam skips it.
@@ -70,6 +71,10 @@ A registration refusal refuses naming the refusal's own way forward, with the sa
 Any other failure refuses naming the catch-up's error and the way forward: fix the cause it names, then run `lym batten run <slug>` again; the same exit.
 A run the catch-up handed over exits with `PassExitOwnedElsewhere`.
 Bound: a dobby's full pass is not a continue pass, so it runs the catch-up of its own slug too; it fetches only that run's branches, beside the run-scope reconcile the full pass already runs.
+That pass's catch-up can run beside the dobby's own catch-up over the same pair, which is safe:
+pushes go under the push lock;
+pair removal takes the teardown lock, so a second hand-over meets a busy lock and retries, or finds the pair gone;
+and a pass whose push or hand-over loses that race fails it, so the pass refuses with the catch-up's error and acts on no run.
 
 The marker retires: `reconcileResume`'s unreachable branch is now reached only when origin is lost between the catch-up and the reconcile; it logs and resumes with no marker, since the catch-up before it already read origin.
 `driveRun` clears nothing; `refuseContinuePass` loses its marker clause; `DobbyRuns` stops reading it; `battenCLI` loses `originReached`;
@@ -84,7 +89,7 @@ No code path reads or writes the origin-owed marker.
 Tests:
 `TestRunCmd_ResumeDispositions` gains the catch-up rows over a fake `catchUp`: unreachable refuses with the exit and the re-run; a registration refusal passes its way forward; any other failure names the error and the re-run; a hand-over exits owned elsewhere; a continue pass runs no catch-up; a clean catch-up goes on to the reconcile.
 It drops its marker rows, and the unreachable resume row asserts the resume with no marker.
-`TestHubCatchUp`, tier1, over a hub fixture with one local pair, reaches the production seams through `CatchUp(HubCatchUp(prime, [slug]))`: a pair whose records side holds a commit origin lacks has it pushed and nothing reset; a scope of one slug fetches only that pair's branches; with origin unreachable the call returns `ErrOriginUnreachable` and pushes nothing.
+`TestHubCatchUp`, tier1, over a hub fixture with one local pair, reaches the production seams through `CatchUp(HubCatchUp(prime, [slug]))`: a pair whose records side holds a commit origin lacks has it pushed and nothing reset; a scope of one slug fetches only that pair's branches; a pair directory left standing with no worktree registration is read as no pair here and the catch-up succeeds; with origin unreachable the call returns `ErrOriginUnreachable` and pushes nothing.
 `TestPassExitCode` gains the new exit.
 `TestBattenPreRun_ContinuePass`, `TestOwnerPreflight_GoneTaskWorktree` and `TestOwnerPreflight_TeardownResume` drop their marker rows and assertions.
 `TestPlanPass` drops its two marker rows, and `TestDrivePasses_ExitHandling` drops its marker subtest and gains a `PassExitOriginWait` exit counted as no failure.

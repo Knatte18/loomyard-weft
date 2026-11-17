@@ -6,11 +6,11 @@
 - `plan:internal/tendercli#TestPauseIntentEntries` -> `func TestPauseIntentEntries(t *testing.T)`
 
 **Edit:**
-- `internal/tendercli#commitRunIntent`
+- `internal/tendercli#commitRunIntent` -> `func commitRunIntent(prime *lymcwd.Location, slug, message string, stderr io.Writer, returnOwed bool, write func() (found bool, err error)) error`
+- `internal/tendercli#hubRunIntents`
 - `internal/tendercli/doc.go`
 
 **Uses:**
-- `internal/tendercli#hubRunIntents`
 - `internal/tendercli#owedIntentPush`
 - `internal/pairteardown#ReadBattenRecord`
 

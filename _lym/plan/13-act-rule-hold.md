@@ -33,4 +33,4 @@ Tests, tier0:
 `TestResume` in `internal/tenderengine` asserts the reworded held refusal in place of `an adopt holds the hub`.
 `pairteardown/doc.go` names the hold read.
 
-**ImpactSummary:** Two struct fields and one refusal wording in runfsm; ReadRun's one reader fills Held, which no production code set before, so every act-rule caller now waits under a hold.
+**ImpactSummary:** Two struct fields and one refusal wording in runfsm; ReadRun's one reader fills Held, which no production code set before, so every act-rule caller now waits under a hold, until card 15 sets the hold aside for `lym tender resume`'s own hold rules.

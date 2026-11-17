@@ -8,6 +8,7 @@
 - `internal/machinecli#newFakeHubs`
 - `internal/machinecli#TestName_SweepsHubs`
 - `internal/machinecli/doc.go`
+- `pattern/PATTERN-cli-cobra.md`
 
 **Create:**
 - `plan:internal/machinecli#formerReference` -> `type formerReference struct`
@@ -42,5 +43,6 @@ It never writes another machine's entry or any owner; a record under the dropped
 `TestName_ForgetFormer`, tier0 over `fakeHubs`, covers: the name leaves `names`, joins `forgotten`, keeps the id and leaves the hub entry's former names; a name the file does not hold refuses; owner, takeover and cancel references are listed with their adopt subjects; a hub whose registration fails is reported while the others go on; after the verb, the registration that `Registry.Check` refused for that former name passes.
 `TestName_SweepsHubs`, tier1, gains a row that reaches `hubReferences`: after a rename, `--forget-former` of the old name on a hub whose board records a beam under it lists that beam with `lym adopt <slug>`.
 `doc.go` describes the flag and its bound.
+`PATTERN-cli-cobra.md`'s background line for `machinecli` adds `pairteardown` to the packages it calls.
 
 **ImpactSummary:** One new flag on the name verb with its own path; the set path and its seams are unchanged apart from the shared deps gaining the references seam.
