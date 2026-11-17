@@ -1,0 +1,100 @@
+diff --git a/docs/dotnet-hub.md b/docs/dotnet-hub.md
+index bb3f8823..58bcf800 100644
+--- a/docs/dotnet-hub.md
++++ b/docs/dotnet-hub.md
+@@ -204,6 +204,7 @@ fans:
+     - code-correctness
+     - code-affected-set
+     - code-tests
++    - code-scope
+     - models-rules
+ ```
+ 
+diff --git a/internal/lenses/config_test.go b/internal/lenses/config_test.go
+index c1fae3a4..0d4951dd 100644
+--- a/internal/lenses/config_test.go
++++ b/internal/lenses/config_test.go
+@@ -356,7 +356,7 @@ func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T) {
+ 
+ 	cfg := loadTemplateConfig(t)
+ 
+-	const wantLenses = 37
++	const wantLenses = 38
+ 	if len(cfg.Lenses) != wantLenses {
+ 		t.Errorf("seeded template has %d lenses; want %d", len(cfg.Lenses), wantLenses)
+ 	}
+@@ -371,7 +371,7 @@ func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T) {
+ 			}
+ 		}
+ 	}
+-	for fanName, wantEntries := range map[string]int{"standard": 5, "full": 8, "discussion": 5, "plan": 5, "twill-discussion": 6, "twill-plan": 5, "review-discussion": 4, "review-plan": 3, "fix-discussion": 4, "fix-plan": 4, "review-code": 3, "fix-code": 4} {
++	for fanName, wantEntries := range map[string]int{"standard": 5, "full": 8, "discussion": 5, "plan": 5, "twill-discussion": 6, "twill-plan": 5, "review-discussion": 4, "review-plan": 3, "fix-discussion": 4, "fix-plan": 4, "review-code": 4, "fix-code": 4} {
+ 		entries, ok := cfg.Fans[fanName]
+ 		if !ok {
+ 			t.Errorf("seeded template is missing fan %q", fanName)
+@@ -389,7 +389,7 @@ func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T) {
+ 		"review-plan":       {"affected-set", "guard-reach", "repo-invariants"},
+ 		"fix-discussion":    {"fix-consistency", "fix-claims", "fix-proposal", "fix-way-forward"},
+ 		"fix-plan":          {"fix-consistency", "fix-claims", "fix-proposal", "fix-affected-set"},
+-		"review-code":       {"code-correctness", "code-affected-set", "code-tests"},
++		"review-code":       {"code-correctness", "code-affected-set", "code-tests", "code-scope"},
+ 		"fix-code":          {"fix-code-correctness", "fix-consistency", "fix-proposal", "fix-affected-set"},
+ 	}
+ 	procedureLenses := map[string]bool{}
+@@ -710,7 +710,7 @@ func TestCheckLoad(t *testing.T) {
+ 	t.Run("a remove emptying a fan passes the check and the fan is refused at resolution", func(t *testing.T) {
+ 		t.Parallel()
+ 		anchor := t.TempDir()
+-		writeLensesYAML(t, anchor, "remove: [code-correctness, code-affected-set, code-tests]\n")
++		writeLensesYAML(t, anchor, "remove: [code-correctness, code-affected-set, code-tests, code-scope]\n")
+ 		dirs := configengine.Dirs{Anchor: anchor}
+ 
+ 		if err := CheckLoad(dirs); err != nil {
+diff --git a/internal/lenses/sets/csharp.yaml b/internal/lenses/sets/csharp.yaml
+index 03e42937..500cd247 100644
+--- a/internal/lenses/sets/csharp.yaml
++++ b/internal/lenses/sets/csharp.yaml
+@@ -50,6 +50,7 @@ fans:
+     - code-correctness
+     - code-affected-set
+     - code-tests
++    - code-scope
+     - numerics
+   full:
+     - correctness
+diff --git a/internal/lenses/template.yaml b/internal/lenses/template.yaml
+index da0d5a5b..3dfe8845 100644
+--- a/internal/lenses/template.yaml
++++ b/internal/lenses/template.yaml
+@@ -306,6 +306,23 @@ lenses:
+     find the test row that would fail if it were broken; a behaviour with no
+     such row is a finding, a stencil's static prose exempt. Your list: per
+     behaviour, the test that pins it, or none.
++  code-scope: |
++    Own the diff's trace to the decisions that ask for it. List the decisions:
++    where a plan is the answer key, each `### D<n> — <title>` heading of the
++    record's `## Decisions` section; where a decision record alone is, each
++    goal point of the board entry under its `## Goal`, never the record's
++    other sections; and in both cases each of the record's
++    `Added after Discussion` entries.
++    Group the diff's hunks into changes, one per purpose, and map each change
++    to the decision it builds, through the plan card that carries the
++    decision where a plan is the answer key. A change that traces to no
++    decision is unrequested scope, a finding of class `scope`, unless it is
++    an edit a traced change forces, such as a caller, a test, a doc or a rule
++    document it makes stale, or a `Pattern-Departure:` trailer explains it. A
++    decision no change builds is a finding of class `scope` too. Apply the
++    rubric's "Scope against the answer key". Your list: per change, the
++    decision it traces to, forced by a traced change, or none; per decision,
++    the changes that build it, or none.
+   fix-code-correctness: |
+     Own the correctness of the code the fix changed. For each function or
+     branch the fix added or changed, take one concrete input, including a
+@@ -405,6 +422,7 @@ fans:
+     - code-correctness
+     - code-affected-set
+     - code-tests
++    - code-scope
+   fix-code:
+     - fix-code-correctness
+     - fix-consistency
