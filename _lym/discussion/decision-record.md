@@ -153,6 +153,19 @@ Rationale: The check exists to hold Codex to what Claude delivers; deriving the 
   - shuttleparity-package-lacks-testmain (class scope, severity BLOCKING, open in rounds 3)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - claude-local-instruction-name-redeclared (class consistency, severity BLOCKING, open in rounds 1)
+  - codex-drops-omitted-hook-without-plugin (class design, severity MEDIUM, open in rounds 1)
+  - heddle-file-target-engine-literals (class consistency, severity BLOCKING, open in rounds 1)
+  - manifest-fields-unrun-and-verdict-untested (class design, severity MEDIUM, open in rounds 1)
+  - manifest-report-of-untested (class design, severity MEDIUM, open in rounds 1)
+  - parity-engine-names-hardcoded (class decision, severity MEDIUM, open in rounds 1)
+  - production-passage-reader-untested (class design, severity MEDIUM, open in rounds 1)
+  - report-tempdir-removal-untested-on-errors (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - For every seat in `seatengine`'s tables and every other producer of a launch spec, the Codex manifest holds every compared item of the Claude manifest, and dropping any one Codex delivery from `Prepare` fails the test;
