@@ -444,6 +444,24 @@
       "profile": "solid",
       "discussed": true,
       "record_body_sha256": "54b995f4b64f0c42f426413c856dcab90ad1132693498d6fb6148b00f23e0c4a"
+    },
+    {
+      "id": 1439,
+      "handle": "R4",
+      "slug": "antigravity-engine-spike",
+      "title": "Antigravity CLI engine spike",
+      "kind": "note",
+      "labels": [
+        "research",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login",
+      "body": "## Seen (orch, 2026-11-17)\n\nThe desk study `docs/research/gemini-antigravity-engine-study-2026-11-17.md` (`246c9146`) judged Antigravity CLI (`agy`) the better Google engine target.\nIts terms aim at third-party services reselling access, not at the operator driving the CLI with a tool they wrote, as with Codex and Claude (operator, 2026-11-17).\nSeveral of its readings are undocumented and can only be learnt hands-on.\n\n## Idea\n\nA hands-on spike like Codex's of 2026-10-24, run as darn docs, that installs `agy` and runs it in a tmux pane on Neve.\nIt answers the study's open points:\n\n- the busy, idle, trust and interrupt screens, and bracketed paste plus Enter through `paste-buffer -p`;\n- whether the keyring login works in a lym pane;\n- the hook payloads for SessionStart, PreToolUse, PostToolUse, PostInvocation and Stop (`continue`, `fullyIdle`);\n- the transcript's on-disk layout and token fields;\n- whether a conversation id can be chosen up front, and whether the `self` subagent inherits the caller's history.\n\nCap: one machine, one model, one short session per point, no lym code changed.\n",
+      "created": "2026-11-17T18:54:35Z",
+      "revised": "2026-11-17T18:54:35Z"
     }
   ],
   "prime_owner": "neve",
