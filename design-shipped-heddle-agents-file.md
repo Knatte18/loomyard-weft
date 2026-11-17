@@ -1,6 +1,6 @@
 # Give Codex lym's shipped heddle instructions too
 
-`shipped-heddle-agents-file` · Task · bug, heddle, codex · running · Drift-Baseline
+`shipped-heddle-agents-file` · Task · bug, heddle, codex · running · Drift-Expect
 
 ## Seen (operator, 2026-11-17)
 
