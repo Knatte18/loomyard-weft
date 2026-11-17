@@ -1,0 +1,272 @@
+{
+  "runGuid": "1537b0f62dee1bdda4b3704a320b26dd",
+  "planFingerprint": "ecabd91f25cc6c6b91df30f52f98185a8beee6c866267d8850ad086f6252c500",
+  "planFileHashes": {
+    "00-overview.md": "a9b668b33785239b29afaf269d001e6fe238f6c01e24061380f0d21adee7ac31",
+    "01-claude-imports-leaf.md": "39813fb54c8f452740ce5c7b4837ea5008d05ee4a964310a2f609b791c679ce2",
+    "02-agents-prompt-target.md": "154b1db334fba2f29605fb5f0a93382b209d9ece7e9a64625f40bc9f25dd9b85",
+    "03-reconcile-renders-file-targets.md": "b8e426c71f0dbcca0ccdd7c2a0c67f8bec98f85fb70a9c3e2eb18f5d2e132d28",
+    "04-codex-file-carries-both.md": "c9003e0a795c78f2468f5388bb6ff37356db5f34c582518e8d1b0a176e9b721e",
+    "05-codex-developer-instructions.md": "899bf9107a8a0451ef76dd632a2739f993fe9db595907f14276cd9faa3cffe87",
+    "06-codex-subagent-terms.md": "2563a36b1e837bf25e4a3c436bf7c8cc629886840787ad4cd549e8d60084d5ec",
+    "07-claude-user-setup-source.md": "7dcb6fb1c7f06765dc1508659493e1a05951fd746dc1cbd8337466c856b6ed43",
+    "08-plugin-session-start-contexts.md": "1d4d655885dd79e4351399d0c397de1b823487022c5163e3c500c61d70e94811",
+    "09-codex-takes-user-setup.md": "ce77cf29ebf2058dc7239574a368359c479f469add88284730868d560fc3a734",
+    "10-codex-instruction-files.md": "583762d46dcb00a9c3ed49e14ccaf49d166b5c5aead6d2c7acda14d8309d202a"
+  },
+  "planOverviewFrameHash": "dc3ecd5c251676a41c9292b1fd1987bdaa49d60a4046a140720c619442ea850b",
+  "partition": [
+    {
+      "cards": [
+        "01-claude-imports-leaf",
+        "02-agents-prompt-target",
+        "03-reconcile-renders-file-targets",
+        "04-codex-file-carries-both"
+      ],
+      "profile": "wide",
+      "estimate": 242590,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54724,
+        "read_union": 61272,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 636,
+            "reads": {
+              "file:pattern/PATTERN-leaf-packages.md": 1812,
+              "package:internal/claudeimports": 2000,
+              "package:pattern": 2000,
+              "tests:internal/claudeimports": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 44,
+            "written": 13836
+          },
+          {
+            "card": 2,
+            "card_text": 708,
+            "reads": {
+              "file:internal/heddlecli/doc.go": 840,
+              "file:internal/heddleengine/doc.go": 684,
+              "package:internal/heddlecli": 2000,
+              "package:internal/heddleengine": 2000,
+              "tests:internal/heddlecli": 2000,
+              "tests:internal/heddleengine": 2000
+            },
+            "messages": 88.5,
+            "written": 27258
+          },
+          {
+            "card": 3,
+            "card_text": 636,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 28344,
+              "file:internal/hubreconcile/doc.go": 2256,
+              "file:pattern/PATTERN-heddle-instructions.md": 492,
+              "package:internal/fabricengine": 2000,
+              "package:internal/hubreconcile": 2000,
+              "package:pattern": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/hubreconcile": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 163.5,
+            "written": 49686
+          },
+          {
+            "card": 4,
+            "card_text": 864,
+            "reads": {
+              "file:internal/heddlecli/doc.go": 840,
+              "file:internal/heddleengine/doc.go": 684,
+              "package:internal/heddlecli": 2000,
+              "package:internal/heddleengine": 2000,
+              "tests:internal/heddlecli": 2000,
+              "tests:internal/heddleengine": 2000
+            },
+            "messages": 116.5,
+            "written": 35814
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-codex-developer-instructions",
+        "06-codex-subagent-terms",
+        "07-claude-user-setup-source"
+      ],
+      "profile": "wide",
+      "estimate": 255876,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61724,
+        "read_union": 65524,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 912,
+            "reads": {
+              "file:docs/overview.md": 24744,
+              "file:internal/shuttleengine/codexengine/doc.go": 1572,
+              "file:internal/shuttleengine/codexengine/guards.go": 1068,
+              "package:docs": 2000,
+              "package:internal/shuttleengine/codexengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttleengine/codexengine": 2000
+            },
+            "messages": 124,
+            "written": 38112
+          },
+          {
+            "card": 6,
+            "card_text": 876,
+            "reads": {
+              "file:internal/shuttleengine/codexengine/doc.go": 1572,
+              "file:internal/shuttleengine/codexengine/template.yaml": 84,
+              "package:internal/shuttleengine/codexengine": 2000,
+              "tests:internal/shuttleengine/codexengine": 2000
+            },
+            "messages": 126,
+            "written": 38676
+          },
+          {
+            "card": 7,
+            "card_text": 1140,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 8208,
+              "file:internal/shuttleengine/doc.go": 10920,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 169,
+            "written": 51840
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-plugin-session-start-contexts",
+        "09-codex-takes-user-setup",
+        "10-codex-instruction-files"
+      ],
+      "profile": "wide",
+      "estimate": 205540,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68724,
+        "read_union": 30748,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 1020,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 8208,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 92,
+            "written": 28620
+          },
+          {
+            "card": 9,
+            "card_text": 948,
+            "reads": {
+              "file:internal/shuttleengine/codexengine/doc.go": 1572,
+              "file:internal/shuttleengine/codexengine/template.yaml": 84,
+              "file:internal/shuttleengines/doc.go": 504,
+              "file:pattern/PATTERN-shuttle-provider-seam.md": 1512,
+              "package:internal/shuttleengine/codexengine": 2000,
+              "package:internal/shuttleengines": 2000,
+              "package:pattern": 2000,
+              "tests:internal/shuttleengine/codexengine": 2000,
+              "tests:internal/shuttleengines": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 136,
+            "written": 41748
+          },
+          {
+            "card": 10,
+            "card_text": 900,
+            "reads": {
+              "file:internal/shuttleengine/codexengine/doc.go": 1572,
+              "package:internal/shuttleengine/codexengine": 2000,
+              "tests:internal/shuttleengine/codexengine": 2000
+            },
+            "messages": 116,
+            "written": 35700
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "claude-imports-leaf",
+      "cards": [
+        "01-claude-imports-leaf",
+        "02-agents-prompt-target",
+        "03-reconcile-renders-file-targets",
+        "04-codex-file-carries-both"
+      ],
+      "cardHashes": {
+        "01-claude-imports-leaf": "39813fb54c8f452740ce5c7b4837ea5008d05ee4a964310a2f609b791c679ce2",
+        "02-agents-prompt-target": "154b1db334fba2f29605fb5f0a93382b209d9ece7e9a64625f40bc9f25dd9b85",
+        "03-reconcile-renders-file-targets": "b8e426c71f0dbcca0ccdd7c2a0c67f8bec98f85fb70a9c3e2eb18f5d2e132d28",
+        "04-codex-file-carries-both": "c9003e0a795c78f2468f5388bb6ff37356db5f34c582518e8d1b0a176e9b721e"
+      },
+      "startSha": "3a8546350f0e27fbbc92c6881b1a448e02812bf8",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T11:26:40Z",
+      "sessionId": "dade0374-6cc2-4614-952f-8187cdaeda61",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "6b47512bc45f11042d24d5f0352cca06",
+  "masterSessionId": "dade0374-6cc2-4614-952f-8187cdaeda61",
+  "masterEngine": "claude"
+}
