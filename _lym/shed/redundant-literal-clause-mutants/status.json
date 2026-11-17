@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Review",
+  "current_producer": "Code-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Review",
-    "last": "Code-Bouncer → bounced to Code-Burler-Review",
+    "now": "Code-Burler-Fix",
+    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -110,6 +110,42 @@
       "at": "2026-11-17T19:20:53Z",
       "started_at": "2026-11-17T19:20:34Z",
       "routed_to": "Code-Burler-Review"
+    },
+    {
+      "producer": "Code-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/redundant-literal-clause-mutants/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-17T19:29:24Z",
+      "started_at": "2026-11-17T19:21:10Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-17T19:28:46.538905231Z",
+          "end": "2026-11-17T19:28:46.539296393Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-11-17T19:28:47.023489442Z",
+          "end": "2026-11-17T19:29:08.12068715Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-17T19:29:08.192730991Z",
+          "end": "2026-11-17T19:29:08.193442491Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-17T19:29:08.304423876Z",
+          "end": "2026-11-17T19:29:08.305035941Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Fix"
     }
   ],
   "product": {
