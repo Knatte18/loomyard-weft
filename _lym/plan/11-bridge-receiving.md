@@ -1,22 +1,22 @@
 # Card 11 — bridge-receiving
 
 **Create:**
-- `plan:internal/slackengine#bridgeResyncHint` -> `const bridgeResyncHint = "bridge-resync"`
-- `plan:internal/slackengine#isBridgeChannelName` -> `func isBridgeChannelName(name string) bool`
-- `plan:internal/slackengine#bridgeReader` -> `type bridgeReader struct`
-- `plan:internal/slackengine#newBridgeReader` -> `func newBridgeReader(geom Geometry, mailbox Mailbox, slack SlackClient, hub Hub, liveHubs LiveHubs, clock Clock, keeper *channelKeeper, in *inbound) *bridgeReader`
-- `plan:internal/slackengine#bridgeReader.read` -> `func (r *bridgeReader) read(ctx context.Context) (bool, error)`
-- `plan:internal/slackengine#bridgeReader.readChannel` -> `func (r *bridgeReader) readChannel(ctx context.Context, channelID string) (bool, error)`
-- `plan:internal/slackengine#bridgeReader.handle` -> `func (r *bridgeReader) handle(ctx context.Context, channelID string, entry BridgeEntry, message Message) (bool, bool, error)`
-- `plan:internal/slackengine#bridgeReader.readThreads` -> `func (r *bridgeReader) readThreads(ctx context.Context, channelID string) (bool, error)`
-- `plan:internal/slackengine#bridgeReader.operator` -> `func (r *bridgeReader) operator(ctx context.Context, channelID, thread string, entry BridgeEntry, message Message) error`
-- `plan:internal/slackengine#bridgeReader.resync` -> `func (r *bridgeReader) resync(ctx context.Context) error`
-- `plan:internal/slackengine#inbound.takeBridgeSignals` -> `func (in *inbound) takeBridgeSignals() (bool, bool)`
-- `plan:internal/slackengine#BridgeReader` -> `type BridgeReader = bridgeReader`
-- `plan:internal/slackengine#NewBridgeReader` -> `func NewBridgeReader(geom Geometry, mailbox Mailbox, slack SlackClient, hub Hub, liveHubs LiveHubs, clock Clock, keeper *ChannelKeeper, in *Inbound) *BridgeReader`
-- `plan:internal/slackengine#BridgeReader.Read` -> `func (r *BridgeReader) Read(ctx context.Context) (bool, error)`
-- `plan:internal/slackengine#BridgeReader.Resync` -> `func (r *BridgeReader) Resync(ctx context.Context) error`
-- `plan:internal/slackengine_test#TestBridgeReceive` -> `func TestBridgeReceive(t *testing.T)`
+- `internal/slackengine#bridgeResyncHint`
+- `internal/slackengine#isBridgeChannelName`
+- `internal/slackengine#bridgeReader`
+- `internal/slackengine#newBridgeReader`
+- `internal/slackengine#bridgeReader.read`
+- `internal/slackengine#bridgeReader.readChannel`
+- `internal/slackengine#bridgeReader.handle`
+- `internal/slackengine#bridgeReader.readThreads`
+- `internal/slackengine#bridgeReader.operator`
+- `internal/slackengine#bridgeReader.resync`
+- `internal/slackengine#inbound.takeBridgeSignals`
+- `internal/slackengine#BridgeReader`
+- `internal/slackengine#NewBridgeReader`
+- `internal/slackengine#BridgeReader.Read`
+- `internal/slackengine#BridgeReader.Resync`
+- `internal/slackengine_test#TestBridgeReceive`
 
 **Edit:**
 - `internal/slackengine#socketHolder`
