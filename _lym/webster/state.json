@@ -1,6 +1,6 @@
 {
   "runGuid": "74eca835caaa62652518eea5ec8168f3",
-  "planFingerprint": "eba18db96f74f2d9ef4e428821567f8e1e845cf8914ee0f5941e2dcc94c09351",
+  "planFingerprint": "fef61ca9e4695b295a223cbfaa28623668cd7818208e8edb027e4ff5629c3d36",
   "planFileHashes": {
     "00-overview.md": "b3b3f00300aa44c443c2c654438c1d346913e8012a434dfd66c87cc6bd205a77",
     "01-heddle-standing-keys.md": "e7aebc0288ac953b170ac130a331e69bfb534f0d2a78b1c432112ce9eebce3d0",
@@ -9,8 +9,8 @@
     "04-codex-manifest.md": "12ed0794d2008380e793d4924c9a7c46a7f221711501db17f7d127263979053a",
     "05-engines-with-seams.md": "b1e3b8b9baa2add27485f7276804b19b8c81c3917a01ecdbd75b4242c35baa65",
     "06-seat-parity.md": "3c4ec35d21a92fb1e8b9161763ba2406764aa0947ef554753cab6ca9e6e7d40f",
-    "07-producer-table.md": "1310436dd52880b872b0323ac6d116d2fe4b8426dae46268b3572fe105620ab5",
-    "08-shuttle-manifest-verb.md": "556b08bac344b6864199c324c6db143bb0ac65e4dec28236834ec2b189cc0422",
+    "07-producer-table.md": "295d2a25ef35b675625bfe2954d374996e11d86d17299b65649e97e369110fb1",
+    "08-shuttle-manifest-verb.md": "a42c2533ee13fd9cd480be8138920c208fa85d6ee2abdd05ad01f28151fa8315",
     "09-pattern-engine-parity.md": "450fef2deae8176ab1a9e495b82b39c3959e69a021832e12b8587a36e04f7005"
   },
   "planOverviewFrameHash": "44bd305a72397156f8bec6059a650d1f9f98b412d56fa8b24050739c11c9aa77",
@@ -327,8 +327,8 @@
         "09-pattern-engine-parity"
       ],
       "cardHashes": {
-        "07-producer-table": "1310436dd52880b872b0323ac6d116d2fe4b8426dae46268b3572fe105620ab5",
-        "08-shuttle-manifest-verb": "556b08bac344b6864199c324c6db143bb0ac65e4dec28236834ec2b189cc0422",
+        "07-producer-table": "295d2a25ef35b675625bfe2954d374996e11d86d17299b65649e97e369110fb1",
+        "08-shuttle-manifest-verb": "a42c2533ee13fd9cd480be8138920c208fa85d6ee2abdd05ad01f28151fa8315",
         "09-pattern-engine-parity": "450fef2deae8176ab1a9e495b82b39c3959e69a021832e12b8587a36e04f7005"
       },
       "startSha": "affd81e74a7dd88cf7a62e86162193c09c48eecb",
@@ -336,16 +336,36 @@
       "spawnedAt": "2026-11-17T16:17:13Z",
       "sessionId": "fb9e26e0-b300-4edf-b54e-0b3912f2602c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-producer-table",
+        "status": "done",
+        "head_sha": "35412c92696adc0f2ed99647f6973c2ba690471c",
+        "deviations": [
+          "cmd/lym/treesitterlink_integration_test.go",
+          "internal/shuttlecli/manifest.go",
+          "internal/shuttleparity/producers_test.go"
+        ]
+      },
+      "cardShas": [
+        "35412c92696adc0f2ed99647f6973c2ba690471c"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-launch-manifest-parity/fb9e26e0-b300-4edf-b54e-0b3912f2602c/subagents/agent-abff54c27b3da589e.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-launch-manifest-parity/fb9e26e0-b300-4edf-b54e-0b3912f2602c/subagents/agent-abff54c27b3da589e.jsonl"
+      ]
     }
   },
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "cc1aa022ec5a057ba24192cb64328e03",
   "masterSessionId": "fb9e26e0-b300-4edf-b54e-0b3912f2602c",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-launch-manifest-parity/fb9e26e0-b300-4edf-b54e-0b3912f2602c/subagents/agent-a28a9ad8d3d2f0ac2.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-launch-manifest-parity/fb9e26e0-b300-4edf-b54e-0b3912f2602c/subagents/agent-a6c475371c7280dda.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-launch-manifest-parity/fb9e26e0-b300-4edf-b54e-0b3912f2602c/subagents/agent-a6c475371c7280dda.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-launch-manifest-parity/fb9e26e0-b300-4edf-b54e-0b3912f2602c/subagents/agent-abff54c27b3da589e.jsonl"
   ]
 }

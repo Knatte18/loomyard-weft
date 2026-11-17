@@ -1,13 +1,13 @@
 # Card 8 — `lym shuttle manifest` prints each engine's manifest for a seat
 
 **Create:**
-- `plan:internal/shuttleparity#ManifestReport` -> `type ManifestReport struct`
-- `plan:internal/shuttleparity#Report` -> `func Report(env SeatEnv, name string, engines shuttleengine.EngineSet, cfg shuttleengine.Config) (ManifestReport, error)`
-- `plan:internal/shuttleparity#report` -> `func report(env SeatEnv, tables []seatTable, name string, engines shuttleengine.EngineSet, cfg shuttleengine.Config) (ManifestReport, error)`
-- `plan:internal/shuttleparity#LookupSeat` -> `func LookupSeat(seats []Seat, errs []error, name string) (Seat, error)`
-- `plan:internal/shuttlecli#shuttleCLI.manifestCmd` -> `func (c *shuttleCLI) manifestCmd() *cobra.Command`
-- `plan:internal/shuttleparity#TestReport` -> `func TestReport(t *testing.T)`
-- `plan:internal/shuttlecli#TestManifestCmd` -> `func TestManifestCmd(t *testing.T)`
+- `internal/shuttleparity#ManifestReport`
+- `internal/shuttleparity#Report`
+- `internal/shuttleparity#report`
+- `internal/shuttleparity#LookupSeat`
+- `internal/shuttlecli#shuttleCLI.manifestCmd`
+- `internal/shuttleparity#TestReport`
+- `internal/shuttlecli#TestManifestCmd`
 
 **Edit:**
 - `internal/shuttlecli#shuttleCLI`

@@ -1,11 +1,11 @@
 # Card 7 — The producer table and the scan for unlisted launch-spec literals
 
 **Create:**
-- `plan:internal/shuttleparity#producer` -> `type producer struct`
-- `plan:internal/shuttleparity#producers` -> `func producers(t *testing.T, fx parityFixture) []producer`
-- `plan:internal/shuttleparity#unlistedLiterals` -> `func unlistedLiterals(t *testing.T, base string, listed map[string]bool) ([]string, int)`
-- `plan:internal/shuttleparity#TestProducers_CodexManifestHoldsClaudes` -> `func TestProducers_CodexManifestHoldsClaudes(t *testing.T)`
-- `plan:internal/shuttleparity#TestLaunchSpecLiterals_AreListed` -> `func TestLaunchSpecLiterals_AreListed(t *testing.T)`
+- `internal/shuttleparity#producer`
+- `internal/shuttleparity#producers`
+- `internal/shuttleparity#unlistedLiterals`
+- `internal/shuttleparity#TestProducers_CodexManifestHoldsClaudes`
+- `internal/shuttleparity#TestLaunchSpecLiterals_AreListed`
 
 **Uses:**
 - `internal/shuttleparity#newParityFixture`
