@@ -26,5 +26,6 @@ What the design must settle:
 - Whether this is a recipe step, a `lym batten` verb, or orch guidance alone.
 
 The adopt redesign (`adopt-redesign`) has landed, and so has `run-fsm-tracked-records` (`27eefef6`, one run FSM over tracked records).
-The rest of how run state moves is built by the members of the project `adopt-build-resplit`, still open (`push-before-act-takeover` among them).
-Waits until those have landed.
+Of the members of the project `adopt-build-resplit`, `transition-push-takeover`, `machine-registry-holds-catchup`, `adopt-foreground` and `leftover-pairs-teardown` have landed;
+the project is still open.
+Waits until it has landed.
