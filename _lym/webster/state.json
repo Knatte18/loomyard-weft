@@ -805,9 +805,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-ada6f38ee3b2521fd.jsonl"
       ]
+    },
+    "8": {
+      "slug": "dobby-start-owner-flags",
+      "cards": [
+        "08-dobby-start-owner-flags",
+        "09-this-machine-names-registry",
+        "10-machine-name-registers",
+        "11-forget-former"
+      ],
+      "cardHashes": {
+        "08-dobby-start-owner-flags": "9a5be0dc572e9ac2f1226b346fa5e50af64b8a43789f65f2996a8c233bfac52f",
+        "09-this-machine-names-registry": "8a4a2fa643d96243d3d99a09b55503b08946237735bd00eb401404ed81f1989e",
+        "10-machine-name-registers": "18e1c787c6b9125ba4b1971958aa093abb29802416f2a63dc43fe8f787c5e5f5",
+        "11-forget-former": "c9caa23b0af57782ff8f55d383a79e25da8682bf1ca8dcefdef4ea33e9705803"
+      },
+      "startSha": "73db3dd108461052f48161ac2daec356240979f1",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T10:25:16Z",
+      "sessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "e7e489f4ae82479452af8e587574191e",
   "masterSessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
   "masterEngine": "claude",
