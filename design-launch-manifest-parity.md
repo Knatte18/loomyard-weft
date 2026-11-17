@@ -1,6 +1,6 @@
 # Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both
 
-`launch-manifest-parity` · Task · feature, codex, shuttle, stencil, heddle · running · Parts-Plan-Write
+`launch-manifest-parity` · Task · feature, codex, shuttle, stencil, heddle · running · Plan-Write
 
 Decision record: [Sketch](decision-launch-manifest-parity.md)
 
