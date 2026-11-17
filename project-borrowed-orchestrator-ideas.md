@@ -41,5 +41,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F7 |  | **Halt a segment after review rounds that change nothing in the tree** | [`stalemate-no-tree-change`](design-stalemate-no-tree-change.md) | 7m<br>7m | burler, shed |
 | F8 |  | **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | 7m<br>7m | shuttle, friction |
 | F10 |  | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | 7m<br>7m | webster, fabric |
-| F12 |  | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | 6m<br>6m | stencil, shed |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>6m | burler, shed, orch, quarry, report |
+| F12 |  | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | 7m<br>7m | stencil, shed |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>7m | burler, shed, orch, quarry, report |
