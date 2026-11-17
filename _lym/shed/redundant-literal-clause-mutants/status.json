@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-17T19:00:54Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/redundant-literal-clause-mutants/_lym/landing/summary.md",
+      "at": "2026-11-17T19:20:18Z",
+      "started_at": "2026-11-17T19:00:57Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T19:11:24.77531742Z",
+          "end": "2026-11-17T19:11:24.791997324Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T19:16:14.728480273Z",
+          "end": "2026-11-17T19:16:14.750742988Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T19:11:24.876229118Z",
+          "end": "2026-11-17T19:15:56.007417854Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-17T19:15:56.532743261Z",
+          "end": "2026-11-17T19:16:14.616652952Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T19:16:14.924740085Z",
+          "end": "2026-11-17T19:19:22.782759958Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-17T19:19:22.84752629Z",
+          "end": "2026-11-17T19:19:23.08463826Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-17T19:19:23.146394212Z",
+          "end": "2026-11-17T19:19:23.148201041Z"
+        }
+      ]
     }
   ],
   "product": {
