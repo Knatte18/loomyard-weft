@@ -516,3 +516,10 @@ The accounts and the pick stay machine-local.
 
 Logging the accounts in, and whether the use is within the accounts' and the organisation's terms, which is the operator's to settle.
 "recipe":"motif"
+
+
+## Released before the adopt rework lands (operator, 2026-11-17)
+
+This Motif runs while the adopt rework (`adopt-build-resplit`) is still building.
+Its Discussion builds on that rework's decision records for how a worktree moves between machines,
+and every build task its Sketch leads to depends on that rework.
