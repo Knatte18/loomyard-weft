@@ -158,6 +158,12 @@ Rationale: os.ReadFile of a directory fails with a non-ErrNotExist error for eve
 
 ## Open risks
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - hook-timeout-row-load-bound-no-waitdelay (class design, severity BLOCKING, open in rounds 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A Codex launch passes its standing items as `developer_instructions` in the stated order, its prompt file holds only the prompt, and an empty set omits the key;
