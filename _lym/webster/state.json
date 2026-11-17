@@ -828,6 +828,22 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-acb297db8d9e62f09.jsonl"
       ]
     },
+    "22": {
+      "slug": "upgrade-first-read",
+      "cards": [
+        "22-upgrade-first-read"
+      ],
+      "cardHashes": {
+        "22-upgrade-first-read": "d428c2dbe5b035e5c951e5886aec0b80d63bdb623292fae61fbc6aa294b383a8"
+      },
+      "startSha": "b2c3b4333d4b280c5d17b19a2a40bbea456da7e4",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T11:47:01Z",
+      "sessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "4": {
       "slug": "machine-registration-setter",
       "cards": [
@@ -962,7 +978,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 22,
   "masterStrand": "e7e489f4ae82479452af8e587574191e",
   "masterSessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
   "masterEngine": "claude",
