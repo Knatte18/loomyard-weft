@@ -105,7 +105,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **lym gate redundant: mutate data literals and delete boolean clauses**<br>• Add literal and clause-deletion mutants so tests pinning a literal or a clause stop being listed redundant | [`redundant-literal-clause-mutants`](design-redundant-literal-clause-mutants.md) | darn · light | Drift-Await | neve | 1h<br>0m | gate |
+| T5 | **lym gate redundant: mutate data literals and delete boolean clauses**<br>• Add literal and clause-deletion mutants so tests pinning a literal or a clause stop being listed redundant | [`redundant-literal-clause-mutants`](design-redundant-literal-clause-mutants.md) | darn · light | Darn-Write | neve | 1h<br>0m | gate |
 
 #### Ready (0)
 
