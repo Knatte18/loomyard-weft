@@ -1,6 +1,6 @@
 # Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change
 
-`review-rounds-converge` · Task · sketch, burler, shed, stencil · running · Raddle-File
+`review-rounds-converge` · Task · sketch, burler, shed, stencil · done
 
 Decision record: [Sketch](decision-review-rounds-converge.md)
 
