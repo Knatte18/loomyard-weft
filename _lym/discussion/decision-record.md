@@ -299,6 +299,13 @@ None.
   - relay-verb-journal-form-unstated (class design, severity MEDIUM, open in rounds 3)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - approve-does-not-deliver-held-in-pass (class design, severity MEDIUM, open in rounds 1)
+  - machine-address-split-outside-agentname (class design, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: `<machine>::<name>` parses into its machine and name; a bad machine part or a name that does not parse is refused by the parser; a post naming this machine's current or a former name with the prefix, a former name that fails the name rule included, is refused naming the bare name.
