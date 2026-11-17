@@ -23,4 +23,13 @@ Source: the survey F17 (`orchestrator-survey-ideas`), from Conductor's `bundle b
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - notice-overclaims-stencil-diff (class consistency, severity MEDIUM, open in rounds 1)
+  - pins-left-uncommitted-after-failed-seed-commit (class design, severity MEDIUM, open in rounds 1)
+  - seed-commit-of-pins-untested (class design, severity MEDIUM, open in rounds 1)
+  - start-stencil-check-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
