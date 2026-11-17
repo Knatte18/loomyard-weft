@@ -33,12 +33,12 @@
 - `internal/gatecli#testMapHangLymBuildEnv`
 
 **Create:**
-- `plan:internal/gatecli#mapSideBySide` -> `func mapSideBySide(tier gateslot.Tier, testMemory int64, capped func(parallel int, limit int64) int) int`
-- `plan:internal/gatecli#mapSlotAsk` -> `func mapSlotAsk(tiers map[int]gateslot.Tier) int`
-- `plan:internal/gatecli#TestMapSideBySide` -> `func TestMapSideBySide(t *testing.T)`
-- `plan:internal/gatecli#TestMapSlotAsk` -> `func TestMapSlotAsk(t *testing.T)`
-- `plan:internal/gatecli#testMapCollideEnv` -> `const testMapCollideEnv = "GATECLI_TESTMAP_COLLIDE"`
-- `plan:internal/gatecli#collidesWithAnother` -> `func collidesWithAnother(dir, name string) bool`
+- `internal/gatecli#mapSideBySide`
+- `internal/gatecli#mapSlotAsk`
+- `internal/gatecli#TestMapSideBySide`
+- `internal/gatecli#TestMapSlotAsk`
+- `internal/gatecli#testMapCollideEnv`
+- `internal/gatecli#collidesWithAnother`
 
 **Uses:**
 - `internal/gatecli#testMapMeetWait`
