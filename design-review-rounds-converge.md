@@ -1,6 +1,6 @@
 # Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change
 
-`review-rounds-converge` · Task · feature, burler, shed, stencil · starting · Worktree-Create
+`review-rounds-converge` · Task · feature, burler, shed, stencil · starting · Seed-Child
 
 ## Seen (orch, 2026-11-17)
 
