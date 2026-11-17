@@ -1,6 +1,6 @@
 # lym adopt runs in the foreground over pushed state: hold, owner, pull, takeover, check, with --take-hold
 
-`adopt-foreground` · Task · feature, board, dobby, fabric, workspaces, orch, tender, batten, process · running · Code-Bouncer
+`adopt-foreground` · Task · feature, board, dobby, fabric, workspaces, orch, tender, batten, process · running · Drift-Recheck
 
 Decision record: [Sketch](decision-adopt-foreground.md)
 
