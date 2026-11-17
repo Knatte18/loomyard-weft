@@ -121,17 +121,9 @@ VS Code reopens its own windows on Kubuntu.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Merge main into the beam adopt-build-resplit**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-resplit-merge-in`](design-adopt-build-resplit-merge-in.md) | darn | landing · Finalize | neve | 18m<br>18m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 
 ### Ready (0)
 
@@ -142,3 +134,11 @@ _None._
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T4 | **Merge main into the beam adopt-build-resplit**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-resplit-merge-in`](design-adopt-build-resplit-merge-in.md) | 18m<br>18m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
