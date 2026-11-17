@@ -2,3 +2,4 @@
 {"stop_key":{"current_producer":"Preflight","history_length":1,"state":"blocked"},"settler":"parent","action":"hand-back","outcome":"the tackler's resume was refused","at":"2026-11-17T18:27:14.570445335+01:00"}
 {"stop_key":{"current_producer":"Discussion-Write","history_length":3,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-11-17T18:29:45.92136244+01:00","target":"attempt-2"}
 {"stop_key":{"current_producer":"Discussion-Write","history_length":3,"state":"failed"},"settler":"go-rule","action":"running-exit","outcome":"another process is running the run","at":"2026-11-17T18:29:45.921454282+01:00"}
+{"stop_key":{"current_producer":"Darn-Write","history_length":5,"state":"failed"},"settler":"go-rule","action":"moved","outcome":"an orch goto moved the run: re-step","at":"2026-11-17T19:09:08.540770219+01:00","target":"Darn-Write"}

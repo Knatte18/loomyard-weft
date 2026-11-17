@@ -1,12 +1,11 @@
 {
   "current_producer": "Darn-Write",
-  "state": "paused",
+  "state": "running",
   "error": "",
   "entered_row": "Darn-Write",
   "pause_requested": false,
   "pause_before": "Drift-Verify",
   "pause_before_by": "codex-writer-bench",
-  "pause_reason": "goto to Darn-Write by darn",
   "activity": {
     "now": "Darn-Write",
     "last": "Darn-Write → goto",
