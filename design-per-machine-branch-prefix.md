@@ -1,6 +1,6 @@
 # config: per-machine or per-user branch_prefix, and a review of other per-user keys
 
-`per-machine-branch-prefix` · Task · feature, config, fabric · running · Code-Burler-Review
+`per-machine-branch-prefix` · Task · feature, config, fabric · running · Code-Burler-Fix
 
 Imported from [issue #99](https://github.com/Knatte18/loomyard/issues/99).
 
