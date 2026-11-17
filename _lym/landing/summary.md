@@ -1,57 +1,68 @@
-# Memory guard for every test binary lym runs, and a per-tier memory cap
+# Gate memory guard and per-tier kernel memory cap
 
-The gate watchdog sampled only CPU, and only for `lym gate test`'s own `go test`.
-A test that allocates without bound in a normal gate run could freeze the machine the way a runaway mutant did.
-This change adds a memory guard over every test binary lym starts, and lets a tier run its command under the kernel cap that `redundant-mutant-memory-cap` built.
+A test that allocates without bound in a gate run could freeze the machine.
+The gate watchdog watched CPU only, and the gate tiers' `go test` runs had no memory cap.
+This change adds a memory guard over every test binary lym starts, and an optional kernel cap per gate tier.
 
 ## What changes
 
-- `internal/gatecli`: a memory guard (`memoryguard.go`) samples the process tree once a second.
-  - It kills a `.test` process's tree, the binary and every process it started, once their resident memory together passes `memory_quit_mb`, with SIGKILL.
+- **Memory guard** (`internal/gatecli/memoryguard.go`):
+  while a tier's command runs, it samples the child tree once a second through `proc.TreeSample`.
+  - A `.test` process whose tree holds more than `memory_quit_mb` resident is killed whole with SIGKILL.
     A tree that holds another tree over the cap is spared, and the inner binary is killed.
-  - With no tree over the cap, it kills the largest tree of 1024 MB or more once the memory limit lym sits under has less than a tenth of its Max left.
-    `proc.ReadMemoryLimit` reads that limit; on Neve it is the user slice's `memory.high`.
-  - Each kill prints a line naming the binary and pid, its package directory, read from the binary's working directory, the `-test.run` value it was given, and the reason.
-  - In `lym gate test` the guard runs over each tier command beside the CPU watchdog and the process cap.
-    The kill lines go into the tier's log and its failure report's causes, the run fails, and it is never rerun.
-  - `lym gate redundant` and `lym gate testmap` run the same guard over their own process tree for the whole call, and print each kill line to stderr.
-    They still cap each test run at `redundancy_test_memory_mb` through the kernel.
-  - The guard is off when `memory_quit_mb` is 0, and when `LYM_GATE_TEST_PID` names a live ancestor, since the outer guard already sees those binaries.
-- `internal/gatecli`, tier runs: a tier with `memory_mb` runs its command under `proc.RunMemoryCappedVia`.
-  The shell stays tied to the verb.
-  A kill at that cap fails the run with a line naming the tier and its cap, and the run is never rerun.
-- `internal/gateslot`: the new hub key `memory_quit_mb`, cross-pair, defaults to 4096, and 0 turns the guard off.
-  The new tier key `memory_mb` is optional and at least 1.
-  `template.yaml`, the package doc and `TestLoadConfig` carry both.
-- `internal/proc`:
-  - `TreeCPU`/`ProcessCPU` become `TreeSample`/`ProcessSample`, with each process's parent and resident memory, and `cpu.go` is now `sample.go`.
-  - `ReadProcess` reads one process's links and command line; `ListProcesses` now uses it.
-  - `RunMemoryCappedVia` runs a capped command through a caller's own start and wait, and reports a kill of any process of the tree at the cap.
-    `RunMemoryCapped` now runs on the same internals, and its result is as before.
-- `PATTERN-daemon-wakeups` and the wakeup scan's file list name the guard's one-second loop.
-  `docs/overview.md` mentions the guard and `memory_mb`.
+  - When no tree passes the cap, the guard reads the memory limit lym sits under (`proc.ReadMemoryLimit`).
+    With less than a tenth of its Max left, it kills the largest tree of 1024 MB or more.
+  - Each kill prints a line naming the binary, its package directory, the `-test.run` value it was given and the reason.
+    The tier's log and failure report carry the line, and the tier is never rerun.
+    A go-json tier also names the tests that had started and never passed, failed or skipped.
+  - `lym gate redundant`, `lym gate testmap` and the redundancy report step of `lym gate test` run the same guard.
+    A test run it kills there is not judged, a killed mutant run counts as no mutant kill,
+    and `lym gate testmap` records the entry as failed.
+  - Off Linux the guard logs that it cannot sample, and ends.
+  - It is off when `memory_quit_mb` is 0, or when `LYM_GATE_TEST_PID` names a live ancestor whose own guard sees these binaries.
+- **Config key `memory_quit_mb`** (`internal/gateslot`):
+  a cross-pair key with the template default 4096, validated to at least 0.
+- **Per-tier `memory_mb`** (`internal/gateslot/tiers.go`, `internal/gatecli/tierrun.go`):
+  a tier that sets it runs its command under the kernel cap, covering its builds and test binaries together.
+  A kill at the cap fails the run with a line naming the tier and its cap, and the tier is never rerun.
+  Where the user manager cannot cap a scope, the cap falls back to each process's data segment.
+  A command that cannot start under the cap is a refusal naming the cap and its way forward.
+- **`internal/proc`**:
+  - `TreeCPU` becomes `TreeSample`, which also reports each process's parent and resident memory; `ReadProcess` reads one process.
+  - `RunMemoryCappedVia` runs a command under the cap through the caller's own start and wait,
+    so the tier shell stays tied to the verb.
+    It reports whether the kernel killed any process of the tree.
+  - `ErrMemoryCap` marks a cap that could not be set, as opposed to a verdict on the command.
+  - On Linux the scope's `memory.events` is watched by `poll` with no timeout, so the watch wakes only when the events change.
+    A kill at an enclosing cgroup's limit is not reported as a kill at the scope's.
+  - After a SIGKILL of the command, whatever is left in the scope is killed through `cgroup.kill`.
+- `internal/testcover` and the redundancy verbs pass the guard's verdicts through.
+  `pattern/PATTERN-daemon-wakeups.md` lists the guard's one-second sampling.
 
 ## Design decisions
 
-- `memory_mb` has no default, so a tier runs uncapped unless the hub sets it.
-  One cap holds the tier's builds and every test binary together, and the right size depends on the tier's parallel and packages.
-  The guard is on by default, so every tier is guarded without one.
-- The guard's per-binary cap, 4096 MB, sits above `redundancy_test_memory_mb`'s 2048 MB.
-  So in `lym gate redundant` and `lym gate testmap` the kernel cap stays the hard bound.
-  The guard catches what runs outside it, and names the culprit.
-- The guard names the package by the binary's working directory, which `go test` sets to the package directory.
-  It names the test only through `-test.run`.
-  A tier run without `-run` gets the package and not the test, and the tier's failure report lists the package's failure.
-- The pressure trigger spares a tree under 1024 MB, so a healthy small test is not failed for memory held elsewhere on the machine.
-- The guard samples once a second, the wakeup floor, since a runaway grows by a gigabyte or more a second.
-- The `lym gate test` redundancy report step runs no guard of its own.
-  It runs inside the gate call's process, after the tiers, under the kernel cap.
+- A tier is uncapped unless the hub sets `memory_mb` on it.
+  The change ships no default and sets no hub value.
+  A tier's cap bounds its builds and test binaries together, and the need differs per hub and machine,
+  so a default would either fail healthy runs or bound nothing.
+  The guard's pressure trigger is the default bound on every tier run.
+  The operator sets each hub's value from measured peaks after this lands.
+- The guard watches `.test` processes only, so a `vstest` tier is bounded by `timeout_min` and, if set, `memory_mb`.
+- The guard sits beside the `redundancy_test_memory_mb` kernel cap rather than replacing it:
+  the kernel cap is the hard bound, and the guard names the culprit.
 
 ## To check by hand
 
-- Set `memory_mb` on this hub's tiers, if wanted, with `lym config gate`; this change sets no hub value.
-- No test drives a real runaway through the guard or a tier's `memory_mb`.
-  The guard's decisions are covered on a scripted sampler, and `RunMemoryCappedVia` on a real capped scope.
-  A run with a test that allocates past the cap, watched with the slice's memory, would confirm both end to end.
-- The Windows paths of `RunMemoryCappedVia` were compiled and vetted but not run on Windows.
-  `TreeSample` is unsupported there, so the guard logs once and ends.
+Nothing ran beyond the unit tests, and no regression check ran for this task.
+Check these open findings:
+
+- A description or doc claim that contradicts the diff (`change-description-contradicts-diff`):
+  re-read the guard and cap paragraphs of `internal/gatecli/doc.go` against the code.
+- A guard kill of an inner test binary leaves the outer binary's pid unnamed in the kill line
+  (`guard-kill-of-inner-binary-leaves-outer-pid-unnamed`, `internal/gatecli/memoryguard.go`).
+- The OOM watch in `internal/proc/memorycap_linux.go`
+  (`oom-poll-wakes-every-20ms`): confirm the poll now wakes only on `memory.events` changes.
+- The scope-start read deadline in `internal/proc/memorycap_linux.go` can misread a slow start as a failed one
+  (`scope-start-read-deadline-misreads-slow-start`).
+- On a Linux host with a working user manager, run a tier with `memory_mb` set low and a test that allocates past it,
+  and confirm the failure line names the tier and cap.
