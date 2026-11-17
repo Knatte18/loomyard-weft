@@ -185,6 +185,12 @@ Decision: The split review's round-2 findings are each answered by the round-2 f
 
 Rationale: The round reached the perch's hard cap with both findings open in the ledger, but the fixer ran after the review (review 11:17, proposal and fixer report 11:20, judge 11:20:48), so the judge ruled on the review's findings, not on the edited proposal. Checked against the code: holds.go's readTries and writeTries import only fmt, path/filepath and internal/state, so internal/fixtries forms no cycle. Only internal/beamcli and cmd/lym import internal/adoptcli, and internal/adoptcli imports internal/dobbyengine, so the first read could not call into adoptcli; the new package removes that route. The dobby start as the first read's place matches the record's export line, which pairs the hold setter with the upgrade's first read and the catch-up with the dobby start. The record does not fix D5's reader package, so moving it changes no decision.
 
+### Added after Discussion (parent, 2026-11-17): Card 23's bring-up ends owned-elsewhere runs through an endOwned seam
+
+Decision: orchCLI.pauseOwned is replaced by endOwned func(location *lymcwd.Location, slug string, endDobby bool) error, filled where pauseOwned is filled today (installedOwnerPause and its install path) by pairteardown.EndSubjectProcesses(prime, slug, endDobby); a nil seam is skipped and warned as pauseOwned is today. endDobby comes from an isBeam func(slug string) (bool, error) seam on orchCLI, filled the same way from boardengine.ReadOwners(...).Entries[slug].Beam, since fabricengine.EntryOutcome carries no beam flag. The report key owner_pauses, orchcli.startReport.OwnerPauses and beamcli's startEntry.OwnerPauses keep their names and shape: the slug and owner of each entry whose processes ended. pauseOwnedRuns' two warnings use ended wording: "was not ended" and "could not be ended", with "re-run `lym beam start`, which ends it again". TestStart_ReconcilesTheHubFirst and startHarness.runWith assert the new seam's calls with the flag and the two reworded warnings; startHarness's test-local fields keep their names.
+
+Rationale: Card 23 removed pauseOwned without naming its replacement or the source of endDobby. Keeping the report key and field names avoids a change to the start report's JSON contract, and reading the beam flag from the board owners set is the one place it is recorded.
+
 ## Constraints
 
 - `PATTERN-owner-machine`: owners stay on roots and beams, written only by `boardengine`'s setter, read through `hubgeom.ParentOf` and the registry (D3).
