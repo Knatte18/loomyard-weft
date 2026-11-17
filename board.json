@@ -771,7 +771,7 @@
       "isolated": false,
       "brief": "Raddle copies the Sketch's module labels onto every part; let the split name each part's own",
       "body": "## Seen (operator, 2026-11-17)\n\nEvery task raddle files carries all of its Sketch's module labels.\n`Raddle-File` builds each entry's labels as its type label plus `entry.ModuleLabels`, the Sketch's whole module set\n(`internal/loomshed/raddlefile.go`, the `labels` closure: \"Every entry carries its type label and the Sketch's module labels\").\nSo each member of `adopt-build-resplit` carries fourteen module labels, and each `codexengine` member the same four,\nwhatever packages the part changes.\n\nThe board policy asks for a label for each module an entry touches.\nA label filter such as `--label reed` then matches parts that never touch reed, and the board listing runs very wide.\n\n## Idea\n\n- The split proposal names each part's module labels, the modules that part's work changes,\n  and `Raddle-File` writes those instead of the Sketch's whole set.\n- `raddleparser`'s check refuses a part with no module label, and a part label outside the board's vocabulary.\n  It accepts a part label that is not among the Sketch's, since a split can find a module the Sketch's labels missed.\n- The split perch weighs each part's labels against the packages its body names.\n- Raddle's stencil states the rule beside the other part fields.\n",
-      "status": "running · Drift-Recheck",
+      "status": "running · Describe",
       "created": "2026-11-17T09:15:42Z",
       "revised": "2026-11-17T10:40:45Z",
       "profile": "light"
