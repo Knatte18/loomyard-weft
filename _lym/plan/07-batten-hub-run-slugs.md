@@ -1,7 +1,7 @@
 # Card 7 — The hub-wide run list for adopt's catch-up
 
 **Create:**
-- `plan:internal/battencli#HubRunSlugs` -> `func HubRunSlugs(prime *lymcwd.Location) ([]string, error)`
+- `internal/battencli#HubRunSlugs`
 
 **Edit:**
 - `internal/battencli#TestHubCatchUp`

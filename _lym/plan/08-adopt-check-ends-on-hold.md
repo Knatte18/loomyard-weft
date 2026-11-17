@@ -1,14 +1,14 @@
 # Card 8 — The adopt check's ends work through the hold
 
 **Create:**
-- `plan:internal/adoptcli#holdCheckDeps` -> `type holdCheckDeps struct`
-- `plan:internal/adoptcli#holdCheckResult` -> `type holdCheckResult struct`
-- `plan:internal/adoptcli#runHoldCheck` -> `func runHoldCheck(ctx context.Context, deps holdCheckDeps, first string) (holdCheckResult, error)`
-- `plan:internal/adoptcli#hubHoldCheckDeps` -> `func hubHoldCheckDeps(prime *lymcwd.Location, terminal io.Writer, noOrch bool) (holdCheckDeps, error)`
-- `plan:internal/adoptcli#TestRunHoldCheck` -> `func TestRunHoldCheck(t *testing.T)`
-- `plan:internal/adoptcli#TestHubHoldCheckDeps_DropBoltHoldLeavesNoBoltHoldEntry` -> `func TestHubHoldCheckDeps_DropBoltHoldLeavesNoBoltHoldEntry(t *testing.T)`
-- `plan:internal/adoptcli#TestHubHoldCheckDeps_FilledSeamsNameTheRerun` -> `func TestHubHoldCheckDeps_FilledSeamsNameTheRerun(t *testing.T)`
-- `plan:internal/orchcli#DobbyProgram` -> `const DobbyProgram = "DOBBY"`
+- `internal/adoptcli#holdCheckDeps`
+- `internal/adoptcli#holdCheckResult`
+- `internal/adoptcli#runHoldCheck`
+- `internal/adoptcli#hubHoldCheckDeps`
+- `internal/adoptcli#TestRunHoldCheck`
+- `internal/adoptcli#TestHubHoldCheckDeps_DropBoltHoldLeavesNoBoltHoldEntry`
+- `internal/adoptcli#TestHubHoldCheckDeps_FilledSeamsNameTheRerun`
+- `internal/orchcli#DobbyProgram`
 
 **Edit:**
 - `internal/adoptcli#checkDeps`

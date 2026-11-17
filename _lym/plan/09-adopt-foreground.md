@@ -157,8 +157,8 @@
 - `internal/adoptcli#checkSubjects`
 - `internal/adoptcli#refuseStandingMove`
 - `internal/adoptcli#stopWith`
-- `plan:internal/adoptcli#runHoldCheck`
-- `plan:internal/adoptcli#hubHoldCheckDeps`
+- `internal/adoptcli#runHoldCheck`
+- `internal/adoptcli#hubHoldCheckDeps`
 - `internal/adoptcli#hereSubject`
 - `internal/adoptcli#collect`
 - `internal/adoptcli#checkAlive`
@@ -171,7 +171,7 @@
 - `internal/fabricengine#RegenerateHubWorkspace`
 - `internal/fabricengine#Topology.Add`
 - `internal/battencli#HubCatchUp`
-- `plan:internal/battencli#HubRunSlugs`
+- `internal/battencli#HubRunSlugs`
 - `internal/dobbyengine#CatchUp`
 - `internal/orchcli#BeamUp`
 - `internal/fixtries#Read`
