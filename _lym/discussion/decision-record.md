@@ -82,6 +82,12 @@ Rationale: run_in_background is on the record's closed list of Claude-only terms
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - producer-engine-choice-untested (class design, severity MEDIUM, open in rounds 1, 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - A term from the closed list in a stencil, spec or production Go literal outside the Claude engine's places fails the scan, the orch places are skipped, and an engine block with no copy for a registered engine fails (D2).
