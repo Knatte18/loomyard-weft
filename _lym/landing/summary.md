@@ -1,42 +1,40 @@
 # Refuse a commit that adds a secret file
 
-No lym commit path refused a secret file: `lym fabric commit`, `push` and `sync` committed whatever their pathspec reached, and webster's `record-batch` recorded whatever a fork committed.
-Unattended sessions now commit on their own, so a stray `.env` or private key could reach a branch and its remote.
-This change refuses such a commit in fabric and fails such a batch in webster, over one shared pattern list.
+No lym commit path refused a secret file: `record-batch` and fabric's commit verbs committed whatever an agent staged.
+Unattended sessions now commit on their own, so both paths check the paths they would add against a deny-list of secret-file patterns and refuse on a match.
 
 ## What changes
 
-- **`internal/secretpath`** (new leaf, standard library only) holds the patterns lym ships (`.env`, `*.pem`, `id_rsa`, `credentials*`, `secrets.y*ml`) and a `Matcher` over them plus a hub's added patterns.
-  A pattern holding a slash matches the whole repository-relative path; any other matches the base name.
-  The zero `Matcher` matches the shipped patterns alone, and `New` refuses a malformed added pattern.
-- **`fabric.yaml` gains `secret_paths`**, a whitespace-separated list of added patterns, empty by default.
-  It is classified `CategoryGuard`, so the local override layer cannot set it.
-  An added pattern never lifts a shipped one.
-- **`Fabric.Commit`** refuses, before taking any lock, a commit that would add a secret file on either side.
-  It lists the new paths each side's file list reaches through the new `gitrepo.Repo.NewPathsIn`: untracked files git does not ignore, plus paths already staged as added.
-  The error names each path with its pattern and a way forward: delete or move the file, then commit again.
-  It never refuses a tracked file, and a refused call stages nothing and lands nothing.
-- **`record-batch`** lists the paths the batch's commits add, from its start commit to the report's head, through the new `Git.AddedPaths` (backed by `gitrepo.Repo.AddedFilesBetween`).
-  When one matches, the batch fails whatever its report says, before the evidence re-run and the post-batch checks.
-  The failure names each file and its pattern.
-  The file already sits in the branch's history, so the way forward is: `lym webster reset --to batch-start --batch NN`, delete the named files, then `lym webster recover-batch NN`.
-  `webstercli` loads the hub's matcher from `fabric.yaml` only when `record-batch` runs; standalone mode checks the shipped patterns alone.
+- New leaf package `internal/secretpath` holds the shipped patterns `.env`, `*.pem`, `id_rsa`, `credentials*` and `secrets.y*ml`, plus a `Matcher` over them and a hub's added patterns.
+  A pattern with a slash matches the whole repository-relative path; any other pattern matches the file's base name.
+- A hub adds patterns through the new `secret_paths` key in `fabric.yaml` (whitespace-separated).
+  A malformed pattern is a config error naming the key.
+  The key is a `CategoryGuard` key.
+- `Fabric.Commit` refuses, before taking the lock or staging anything, a call that would add a secret file on the warp or weft side.
+  The error names each path with its pattern and the way forward.
+  A tracked file is never refused.
+  The path list comes from the new `gitrepo.Repo.NewPathsIn`: untracked non-ignored files and paths staged as added, under the side's pathspec.
+- `lym webster record-batch` fails a batch whose commits add a secret file, whatever the batch report says.
+  The check reads every commit from the batch's start commit to the report's head through the new `gitrepo.Repo.AddedFilesInCommits`, so a file added and later deleted within the batch still counts.
+  The failure ranks ahead of any correctness finding and the batch's audit findings are carried in its reasons.
+- The commits sit in the branch's history, so `recover-batch` alone would build on them.
+  The failure's way forward is therefore for the run's parent once the run has stopped: reset to the batch start, then `recover-batch`.
+  The Master stencil tells Master to stop on a failure carrying `websterengine.SecretFileFailureReason` instead of recovering.
+- Help text for `lym fabric commit` and `lym webster record-batch`, the package docs and the `fabric-boundary` and `leaf-packages` patterns are updated.
 
 ## Design decisions
 
-- One pattern list lives in its own leaf package, so fabric and webster cannot drift apart, and fabric's config owns the hub's additions because `fabric.yaml` is already the hub-wide home of what lands in commits.
-- Fabric checks before staging, rather than after `git add`, so a refusal leaves both indexes untouched, matching the existing never-committed refusal.
-- Webster cannot refuse a fork's commit; it can only judge the commits once they exist, so it fails the batch and names the reset that removes the commits.
-- Only added paths count. A secret file already tracked before the change is outside this guard.
+- The guard works on paths added, not on file content, so editing an already tracked secret-named file is allowed.
+- `NewPathsIn` and the check in `Commit` run before the combined write lock, so a refusal mutates nothing and spawns no push.
+- `webstercli` loads the matcher lazily through `fabricengine.LoadSecretPathMatcher`, wired only in hub mode.
+  Standalone `record-batch` checks the shipped patterns alone.
 
-## Not covered
+## Check by hand
 
-`recover-batch`, the Bolt board writes and the other records-commit helpers in `fabricengine` do not run the check; the task named `record-batch` and fabric's commit verbs.
-A follow-up could route those paths through `LoadSecretPathMatcher` too.
+Not run by hand; the findings below were left open by the last review and are worth a look.
 
-## Tests
-
-- `internal/secretpath`: the matching table (shipped, added, slash patterns, near-misses such as `.env.example` and `id_rsa.pub`), the malformed-pattern refusal, and the hit rendering.
-- `internal/gitrepo`: `NewPathsIn` (untracked and staged-added, never a tracked edit or an ignored file, scoped to its pathspec) and `AddedFilesBetween`.
-- `internal/fabricengine`: a refused commit on each side lands nothing, `LoadSecretPathMatcher` over a hub file, the local-layer refusal of `secret_paths`, and the template's new key.
-- `internal/websterengine`: `TestRecordBatch_SecretFileFailsBatch` covers a shipped-pattern hit, a hub-pattern hit and a batch with no secret file.
+- `AddedFilesInCommits` in `internal/gitrepo/gitrepo.go` reads added files per commit rather than the net tree delta; confirm that is intended for a file added then removed in one batch.
+- In `RecordBatch` (`internal/websterengine/recordbatch.go`), a correctness finding no longer hides the secret check; confirm the ordering when both apply.
+- Hub-added patterns are tested through the `fabricengine` and `webstercli` wiring; confirm the coverage is enough.
+- The Master stencil stops on a secret-file failure instead of calling `recover-batch`; confirm the reset-by-parent route reads right.
+- New tests in `internal/secretpath`, `internal/gitrepo`, `internal/webstercli` and `internal/websterengine` were flagged for missing `t.Parallel()`; confirm each either calls it or has a stated reason not to.
