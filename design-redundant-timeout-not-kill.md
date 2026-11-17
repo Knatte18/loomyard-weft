@@ -1,4 +1,4 @@
-# lym gate redundant counts a timeout or memory cap as a kill
+# Fix lym gate redundant kill counting and the map defects the trial found
 
 `redundant-timeout-not-kill` · Note · bug, gate, testkit
 
@@ -13,3 +13,24 @@ which can make a candidate look redundant when it is not; the earlier survey fou
 
 Count a run ended by timeout or the memory cap as unjudged, not as a kill, and report those mutants apart;
 a candidate whose confirmation rests on such a run is listed as unconfirmed.
+
+## Also: funcs order (was B4)
+
+Found by the map-tooling-trial.
+
+Two `lym gate test --wait --map internal/boardengine` runs on one commit (`b92c95ee`) wrote maps that hold the same sets per test but not the same bytes.
+Beside `built_at` and `measured_at`, the `funcs` array of four tests lists the same ids in another order: `TestHandles_AssignedLowestFreeAndStable`, `TestHoldsRaddleFiling`, `TestRunLock`, `TestSetStatusReleasingProject_ReleasesDraftMembers`.
+Set difference per test is empty in both directions, so only the order is unstable.
+Two `internal/durfmt` runs differ in the timestamps alone.
+
+A map that rewrites with a spurious diff each build makes any map committed or compared by bytes churn.
+Sort each test's `funcs` and `blocks` before writing.
+
+## Also: per-test seconds (was B5)
+
+Found by the map-tooling-trial.
+
+In the `internal/boardengine` map from `lym gate test --wait --map`, 132 of 136 tests record `seconds: 0` and the slowest records 0.29.
+`lym gate redundant internal/boardengine` then lists every one of its 14 candidates with `seconds: 0`.
+Its "greedy pass, slowest first" has no order to work from, and the standalone seconds it reports say nothing about what deleting a test saves.
+Record each test's time at a resolution that separates tests, or say in the report that the figure is a floor.
