@@ -1,6 +1,6 @@
 # The dobby tears down or reports leftover pairs
 
-`leftover-pairs-teardown` · Task · feature, dobby, workspaces, landing, fabric, batten, tender, shed · halted · Code-Burler-Fix
+`leftover-pairs-teardown` · Task · feature, dobby, workspaces, landing, fabric, batten, tender, shed · running · Code-Burler-Fix
 
 Decision record: [Sketch](decision-leftover-pairs-teardown.md)
 
