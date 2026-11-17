@@ -1,0 +1,3429 @@
+diff --git a/internal/battencli/cancelcmd.go b/internal/battencli/cancelcmd.go
+index 7be52696..e8e0b626 100644
+--- a/internal/battencli/cancelcmd.go
++++ b/internal/battencli/cancelcmd.go
+@@ -469,17 +469,26 @@ func cancelVerdict(records runfsm.Records, inputs runfsm.Inputs) runfsm.Verdict
+ 	return verdict
+ }
+ 
++// refuseWhileMergeActive returns an error while a merge is in progress on the prime's records side.
++// A record written while it holds could not be committed.
++func refuseWhileMergeActive(deps commitStatusDeps) error {
++	active, err := deps.MergeActive()
++	if err != nil {
++		return fmt.Errorf("read the prime's records merge state: %w", err)
++	}
++	if active {
++		return errors.New("a merge is in progress on the prime's records side; conclude or abort that merge there")
++	}
++	return nil
++}
++
+ // commitCancelRecord commits batten's record with the run's other records and pushes the records side.
+ // It refuses while a merge is in progress on the prime's records side, so no cancel goes on with its record uncommitted.
+ // A push that is owed is logged and the commit stands, so the cancel goes on and its push stays owed;
+ // any other push failure is returned with committed true.
+ func commitCancelRecord(deps commitStatusDeps, slug string) (committed bool, err error) {
+-	active, err := deps.MergeActive()
+-	if err != nil {
+-		return false, fmt.Errorf("read the prime's records merge state: %w", err)
+-	}
+-	if active {
+-		return false, errors.New("a merge is in progress on the prime's records side; conclude or abort that merge there")
++	if err := refuseWhileMergeActive(deps); err != nil {
++		return false, err
+ 	}
+ 	committed, err = deps.Commit("batten cancel: record the run state of " + slug)
+ 	if err != nil || !committed {
+diff --git a/internal/battencli/dobbyreads.go b/internal/battencli/dobbyreads.go
+index 868d5218..92f52bc8 100644
+--- a/internal/battencli/dobbyreads.go
++++ b/internal/battencli/dobbyreads.go
+@@ -152,6 +152,9 @@ var unsettledCodeTip logger.EpisodeSet
+ // Whether the run takes no slot is judged from its board entry on the local board at geom.BoardDir.
+ // Whether that entry ended, done or gone from the board, is judged from the same board.
+ // Whether its pair is present is read from its task worktree's path.
++// It also carries whether a cancel kept its pair and when that cancel finished.
++// It carries whether the registry reads its owner as another machine and whether a Bolt hold holds it.
++// It carries whether this machine's hand-over mark names it.
+ // A paused run also carries whether its work already reached its parent.
+ // That is read from the child's status in the task worktree,
+ // and a read that fails leaves the run unreached, with one Warn, so the run stays paused.
+@@ -198,6 +201,8 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ 		unreadableRunRecords.Recover(slug, "battencli: a run's records and act inputs read again", "slug", slug)
+ 		reading, verdict := runfsm.Judge(records, inputs, runfsm.Aside{})
+ 		view.Run, view.Verdict = reading.State, verdict
++		view.PairKept, view.KeptSince = reading.PairKept, keptSince(reading, records.Batten)
++		view.OwnedElsewhere, view.BoltHeld = inputs.OwnedElsewhere, inputs.Held
+ 		pair, err := lymcwd.NamedWorktree(prime.HubPath, slug)
+ 		if err != nil {
+ 			return nil, fmt.Errorf("locate the pair %s: %w", slug, err)
+@@ -215,6 +220,10 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ 			},
+ 			func() (err error) { view.DriverLockHeld, err = lockHeld(shedrun.DriverLock(prime, slug)); return },
+ 			func() (err error) { view.PairPresent, err = markerExists(pair.WorktreePath()); return },
++			func() (err error) {
++				_, view.HandOverMarked, err = fabricengine.ReadHandOverMark(prime.HubPath, slug)
++				return
++			},
+ 			func() error {
+ 				if !view.Landed {
+ 					return nil
+@@ -259,6 +268,19 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ 	return views, nil
+ }
+ 
++// keptSince returns when the cancel that kept a run's pair finished, read from the batten record's cancel intent.
++// It is zero for a run whose pair no cancel kept, and for a finish time that does not parse.
++func keptSince(reading runfsm.Reading, batten shedengine.Status) time.Time {
++	if !reading.PairKept || batten.Cancel == nil || batten.Cancel.Finish == nil {
++		return time.Time{}
++	}
++	at, err := time.Parse(time.RFC3339, batten.Cancel.Finish.EndedAt)
++	if err != nil {
++		return time.Time{}
++	}
++	return at
++}
++
+ // runTakesNoSlot reports whether the run behind task takes no slot under its dobby's max_runs:
+ // a beam project whose status is a run status and whose run does not hold the beam.
+ // A pawl run stands at Worktree-Create, Preflight, Record-Write, Beam-Up or Beam-Await with no hold.
+diff --git a/internal/battencli/dobbyruns_integration_test.go b/internal/battencli/dobbyruns_integration_test.go
+new file mode 100644
+index 00000000..b9a147f3
+--- /dev/null
++++ b/internal/battencli/dobbyruns_integration_test.go
+@@ -0,0 +1,90 @@
++// dobbyruns_integration_test.go pins what DobbyRuns reads of a run's kept cancel, hand-over mark, owner and Bolt hold.
++// Each row runs one status and one board over its own hubforge hub.
++
++package battencli
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestDobbyRuns_ReadsTheKeptCancelTheHandOverMarkTheOwnerAndTheBoltHold(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const running = `{"state":"running","current_producer":"Run-Shed"}`
++	const keptCancel = `{"state":"cancelled","current_producer":"Run-Shed","cancel":{"started_at":"2026-11-15T09:00:00Z",` +
++		`"machine":"other-machine","remove":false,"finish":{"ended_at":"2026-11-15T09:30:00Z","remove":false}}}`
++	const entry = `{"id":0,"slug":"subject","title":"S","kind":"task","labels":["bug"],"status":"draft"}`
++	const ownedByRegisteredMachine = `"prime_owner":"other-machine","machines":{"0123456789abcdef0123456789abcdef":{"name":"other-machine"}},`
++	const adoptHold = `"holds":[{"kind":"adopt","machine":"other-machine","at":"2026-11-17T09:00:00Z","subjects":[]}],`
++
++	type reading struct {
++		pairKept       bool
++		keptSince      string
++		handOverMarked bool
++		ownedElsewhere bool
++		boltHeld       bool
++	}
++	tests := []struct {
++		name     string
++		status   string
++		members  string
++		markMade bool
++		want     reading
++	}{
++		{name: "RunningRunWithNoneOfThemReadsNone", status: running},
++		{name: "CancelledWithKeepAndFinishReadsKeptSinceTheFinish", status: keptCancel,
++			want: reading{pairKept: true, keptSince: "2026-11-15T09:30:00Z"}},
++		{name: "HandedOverRunOwnedByAnotherRegisteredMachineReadsMarkedAndElsewhere", status: running, members: ownedByRegisteredMachine, markMade: true,
++			want: reading{handOverMarked: true, ownedElsewhere: true}},
++		{name: "RunUnderABoltHoldReadsHeld", status: running, members: adoptHold,
++			want: reading{boltHeld: true}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			hubforge.AddPair(t, h, "subject")
++			for path, content := range map[string]string{shedrun.SeedFile(h.Location, "subject"): `{"recipe":"batten","driver":"go"}`, shedrun.StatusFile(h.Location, "subject"): tt.status} {
++				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++					t.Fatalf("create %s: %v", filepath.Dir(path), err)
++				}
++				if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++					t.Fatalf("write %s: %v", path, err)
++				}
++			}
++			writeHubBoard(t, h, `{"version":1,`+tt.members+`"entries":[`+entry+`]}`)
++			if tt.markMade {
++				mark := fabricengine.HandOverMark{Machine: "other-machine", At: "2026-11-15T09:00:00Z", Written: time.Date(2026, 11, 15, 9, 5, 0, 0, time.UTC)}
++				if err := fabricengine.WriteHandOverMark(h.Path, "subject", mark); err != nil {
++					t.Fatalf("write the hand-over mark: %v", err)
++				}
++			}
++
++			views, err := DobbyRuns(h.Location, dobbyengine.Geometry{BoardDir: h.BoardDir()}, NewDobbyParents(h.Location), filepath.Join(t.TempDir(), "pause.json"))
++
++			if err != nil {
++				t.Fatalf("DobbyRuns() error = %v; want nil", err)
++			}
++			if len(views) != 1 || views[0].Slug != "subject" {
++				t.Fatalf("DobbyRuns() = %+v; want the run subject alone", views)
++			}
++			got := reading{pairKept: views[0].PairKept, handOverMarked: views[0].HandOverMarked, ownedElsewhere: views[0].OwnedElsewhere, boltHeld: views[0].BoltHeld}
++			if !views[0].KeptSince.IsZero() {
++				got.keptSince = views[0].KeptSince.UTC().Format(time.RFC3339)
++			}
++			if got != tt.want {
++				t.Errorf("DobbyRuns() PairKept, KeptSince, HandOverMarked, OwnedElsewhere, BoltHeld = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/battencli/leftoverpairs.go b/internal/battencli/leftoverpairs.go
+new file mode 100644
+index 00000000..f3a1272e
+--- /dev/null
++++ b/internal/battencli/leftoverpairs.go
+@@ -0,0 +1,160 @@
++// leftoverpairs.go reads and settles, for the dobby, the pairs no run's own teardown takes.
++// It lists the hub's orphan pairs,
++// and it gives a run cancelled with keep before cancel intents existed its finished keep cancel intent.
++
++package battencli
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/machinename"
++	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++)
++
++// MarkKeptCancels gives each run whose parent worktree is geom's a committed, finished keep cancel intent.
++// The intent names this machine.
++// It marks a run when its batten record is in shed state cancelled with no cancel intent and its pair stands here.
++// A cancel with keep left such a record before cancel intents existed,
++// and the run FSM reads it as neither cancelled nor kept.
++// A record whose finished keep intent this machine wrote, but whose commit failed, is committed again.
++// No intent is written while a merge is in progress on the prime's records side.
++// A refused commit therefore leaves nothing written.
++// Each record is committed and pushed through the synchronous records push; a push origin cannot take now is owed.
++// It returns the slugs it committed, and stops at the first run whose write, commit or push fails, naming it.
++func MarkKeptCancels(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *DobbyParents) ([]string, error) {
++	runs, err := dobbyParentRuns(prime, geom, parents)
++	if err != nil {
++		return nil, err
++	}
++	var marked []string
++	machine := ""
++	for _, run := range runs {
++		if run.status.State != shedengine.StateCancelled {
++			continue
++		}
++		stands, err := pairStands(prime, run.slug)
++		if err != nil {
++			return marked, err
++		}
++		if !stands {
++			continue
++		}
++		if machine == "" {
++			if machine, err = machinename.Name(); err != nil {
++				return marked, err
++			}
++		}
++		deps := battenCommitStatusDeps(prime, run.slug)
++		if intent := run.status.Cancel; intent == nil {
++			written, err := writeKeptCancel(prime, deps, run.slug, machine)
++			if err != nil {
++				return marked, err
++			}
++			if !written {
++				continue
++			}
++		} else {
++			if intent.Remove || intent.Finish == nil || intent.Machine != machine {
++				continue
++			}
++			// An intent already written waits for the next call while a merge is in progress, as it may be committed already.
++			active, err := deps.MergeActive()
++			if err != nil {
++				return marked, fmt.Errorf("read the prime's records merge state for %s: %w", run.slug, err)
++			}
++			if active {
++				continue
++			}
++		}
++		committed, err := commitCancelRecord(deps, run.slug)
++		if err != nil {
++			return marked, fmt.Errorf("commit and push the kept cancel of %s: %w", run.slug, err)
++		}
++		if committed {
++			marked = append(marked, run.slug)
++		}
++	}
++	return marked, nil
++}
++
++// writeKeptCancel writes slug's finished keep cancel intent naming machine, and reports whether it wrote one.
++// It writes nothing while a merge is in progress on the prime's records side.
++func writeKeptCancel(prime *lymcwd.Location, deps commitStatusDeps, slug, machine string) (bool, error) {
++	if err := refuseWhileMergeActive(deps); err != nil {
++		return false, fmt.Errorf("record the kept cancel of %s: %w", slug, err)
++	}
++	if err := os.MkdirAll(filepath.Dir(shedrun.StatusLock(prime, slug)), 0o755); err != nil {
++		return false, err
++	}
++	written, err := shedrun.WriteKeptCancel(prime, slug, machine, time.Now())
++	if err != nil {
++		return false, fmt.Errorf("record the kept cancel of %s: %w", slug, err)
++	}
++	return written, nil
++}
++
++// unreadableOrphanTip keeps one failure episode per orphan candidate whose last commit does not read.
++// It is keyed by slug, so a persistent failure logs one Warn, not one line per dobby probe tick.
++var unreadableOrphanTip logger.EpisodeSet
++
++// DobbyOrphans lists the hub's orphan pairs.
++// An orphan is a task pair on disk that no board entry at boardDir and no batten run directory on the prime names.
++// The prime is no pair, and a beam's pair is named by its board entry.
++// Each carries the newer commit time of its two branch tips and whether a process registered under its slug lives.
++// A worktree that does not resolve, or whose last commit does not read, is left out with one Warn.
++func DobbyOrphans(prime *lymcwd.Location, boardDir string) ([]dobbyengine.OrphanView, error) {
++	worktrees, err := fabricengine.List(prime.WorktreePath())
++	if err != nil {
++		return nil, err
++	}
++	tasks, err := boardengine.ReadTasks(boardDir)
++	if err != nil {
++		return nil, fmt.Errorf("read the board: %w", err)
++	}
++	onBoard := make(map[string]bool, len(tasks))
++	for _, task := range tasks {
++		onBoard[task.Slug] = true
++	}
++	var orphans []dobbyengine.OrphanView
++	for _, worktree := range worktrees {
++		if worktree.Main || worktree.Prunable {
++			continue
++		}
++		pair, err := lymcwd.ResolveWorktree(worktree.Path)
++		if err != nil {
++			logger.Warn("battencli: a worktree that does not resolve is left out of the orphan pairs", "worktree", worktree.Path, "error", err)
++			continue
++		}
++		slug := pair.WorktreeName
++		if onBoard[slug] {
++			continue
++		}
++		if _, err := os.Stat(shedrun.RunDir(prime, slug)); err == nil {
++			continue
++		} else if !os.IsNotExist(err) {
++			return nil, fmt.Errorf("read the batten run directory of %s: %w", slug, err)
++		}
++		lastCommit, err := fabricengine.PairLastCommit(pair)
++		if err != nil {
++			unreadableOrphanTip.Fail(slug, "battencli: a pair whose last commit does not read is left out of the orphan pairs", "slug", slug, "error", err)
++			continue
++		}
++		unreadableOrphanTip.Recover(slug, "battencli: a pair's last commit reads again and it is listed as an orphan again", "slug", slug)
++		live, err := runproc.List(fabricengine.RunProcDir(prime.HubPath), slug)
++		if err != nil {
++			return nil, fmt.Errorf("read the processes of %s: %w", slug, err)
++		}
++		orphans = append(orphans, dobbyengine.OrphanView{Slug: slug, LastCommit: lastCommit, ProcessLive: len(live) > 0})
++	}
++	return orphans, nil
++}
+diff --git a/internal/battencli/leftoverpairs_integration_test.go b/internal/battencli/leftoverpairs_integration_test.go
+new file mode 100644
+index 00000000..ea8855e5
+--- /dev/null
++++ b/internal/battencli/leftoverpairs_integration_test.go
+@@ -0,0 +1,182 @@
++// leftoverpairs_integration_test.go pins what the dobby reads and settles over the pairs no run's own teardown takes.
++// It drives DobbyOrphans and MarkKeptCancels over hubforge hubs.
++
++package battencli
++
++import (
++	"os"
++	"path/filepath"
++	"slices"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/battenrecipe"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/machinename"
++	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestDobbyOrphans_ListsOnlyAPairNoBoardEntryAndNoRunDirectoryNames(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name            string
++		registerProcess bool
++		wantProcessLive bool
++	}{
++		{"NoProcessRegistered", false, false},
++		{"ProcessRegisteredUnderTheSlug", true, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			for _, slug := range []string{"on-board", "has-run-directory", "orphan"} {
++				hubforge.AddPair(t, h, slug)
++			}
++			writeHubBoard(t, h, `{"version":1,"entries":[{"id":0,"slug":"on-board","title":"B","kind":"task","labels":["bug"],"status":"draft"}]}`)
++			if err := os.MkdirAll(shedrun.RunDir(h.Location, "has-run-directory"), 0o755); err != nil {
++				t.Fatalf("create the run directory: %v", err)
++			}
++			if tt.registerProcess {
++				if err := runproc.Register(fabricengine.RunProcDir(h.Path), "orphan", runproc.SelfRecord(runproc.RoleBatten)); err != nil {
++					t.Fatalf("register a process under the orphan: %v", err)
++				}
++			}
++
++			got, err := DobbyOrphans(h.Location, h.BoardDir())
++
++			if err != nil {
++				t.Fatalf("DobbyOrphans() error = %v; want nil", err)
++			}
++			if len(got) != 1 || got[0].Slug != "orphan" {
++				t.Fatalf("DobbyOrphans() = %+v; want the pair named orphan alone", got)
++			}
++			if got[0].LastCommit.IsZero() {
++				t.Error("DobbyOrphans() LastCommit = the zero time; want the newer tip's commit time")
++			}
++			if got[0].ProcessLive != tt.wantProcessLive {
++				t.Errorf("DobbyOrphans() ProcessLive = %v; want %v", got[0].ProcessLive, tt.wantProcessLive)
++			}
++		})
++	}
++}
++
++// writeHubBoard overwrites the hub board's board.json with content.
++func writeHubBoard(t *testing.T, h *hubforge.Hub, content string) {
++	t.Helper()
++	if err := os.WriteFile(filepath.Join(h.BoardDir(), "board.json"), []byte(content), 0o644); err != nil {
++		t.Fatalf("write board.json: %v", err)
++	}
++}
++
++// seedCancelledRunWithPair adds the pair slug and seeds a committed record of a run cancelled with no cancel intent.
++// With pairStands false the pair's task worktree is removed again.
++func seedCancelledRunWithPair(t *testing.T, h *hubforge.Hub, slug string, pairStands bool) {
++	t.Helper()
++	hubforge.AddPair(t, h, slug)
++	seedCancelRun(t, h, slug, battenrecipe.NameRunShed, shedengine.StateCancelled, "running · Run-Shed")
++	if !pairStands {
++		if err := os.RemoveAll(h.PairCodeWorktree(slug)); err != nil {
++			t.Fatalf("remove the task worktree of %s: %v", slug, err)
++		}
++	}
++}
++
++// primeRunViews reads the runs of the prime's dobby, keyed by slug.
++func primeRunViews(t *testing.T, h *hubforge.Hub) map[string]dobbyengine.RunView {
++	t.Helper()
++	geom := dobbyengine.Geometry{BoardDir: h.BoardDir()}
++	views, err := DobbyRuns(h.Location, geom, NewDobbyParents(h.Location), filepath.Join(t.TempDir(), "pause.json"))
++	if err != nil {
++		t.Fatalf("DobbyRuns() error = %v; want nil", err)
++	}
++	bySlug := make(map[string]dobbyengine.RunView, len(views))
++	for _, view := range views {
++		bySlug[view.Slug] = view
++	}
++	return bySlug
++}
++
++func TestMarkKeptCancels_MarksOnlyACancelledRunWhosePairStands(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	boardkit.InstallReplay(t)
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	seedCancelledRunWithPair(t, h, "pair-stands", true)
++	seedCancelledRunWithPair(t, h, "pair-gone", false)
++	machine, err := machinename.Name()
++	if err != nil {
++		t.Fatalf("machinename.Name() error = %v; want nil", err)
++	}
++	prime, geom, parents := h.Location, dobbyengine.Geometry{BoardDir: h.BoardDir()}, NewDobbyParents(h.Location)
++	if kept := primeRunViews(t, h)["pair-stands"].PairKept; kept {
++		t.Fatal("DobbyRuns() PairKept of a cancelled run with no cancel intent = true before the mark; want false")
++	}
++
++	got, err := MarkKeptCancels(prime, geom, parents)
++
++	if err != nil {
++		t.Fatalf("MarkKeptCancels() error = %v; want nil", err)
++	}
++	if want := []string{"pair-stands"}; !slices.Equal(got, want) {
++		t.Fatalf("MarkKeptCancels() = %q; want %q", got, want)
++	}
++	record, found := committedRecord(t, h, "pair-stands")
++	if !found || record.State != shedengine.StateCancelled || record.Cancel == nil || record.Cancel.Machine != machine || record.Cancel.Remove || record.Cancel.Finish == nil || record.Cancel.Finish.Remove {
++		t.Errorf("committed record of pair-stands = %+v, found %v; want state cancelled with a finished keep intent of %q", record, found, machine)
++	}
++	if record, found := committedRecord(t, h, "pair-gone"); !found || record.Cancel != nil {
++		t.Errorf("committed record of pair-gone = %+v, found %v; want it left with no cancel intent", record, found)
++	}
++	views := primeRunViews(t, h)
++	if view := views["pair-stands"]; !view.PairKept || view.KeptSince.IsZero() {
++		t.Errorf("DobbyRuns() pair-stands PairKept, KeptSince = %v, %v; want true and a finish time", view.PairKept, view.KeptSince)
++	}
++	if view := views["pair-gone"]; view.PairKept {
++		t.Error("DobbyRuns() pair-gone PairKept = true; want false")
++	}
++	if again, err := MarkKeptCancels(prime, geom, parents); err != nil || len(again) != 0 {
++		t.Errorf("MarkKeptCancels() after the mark = %q, %v; want none and nil", again, err)
++	}
++}
++
++func TestMarkKeptCancels_CommitsAFinishedKeepIntentThisMachineWroteButDidNotCommit(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	boardkit.InstallReplay(t)
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	seedCancelledRunWithPair(t, h, "uncommitted", true)
++	machine, err := machinename.Name()
++	if err != nil {
++		t.Fatalf("machinename.Name() error = %v; want nil", err)
++	}
++	if written, err := shedrun.WriteKeptCancel(h.Location, "uncommitted", machine, time.Now()); err != nil || !written {
++		t.Fatalf("WriteKeptCancel() = %v, %v; want true, nil", written, err)
++	}
++	if record, _ := committedRecord(t, h, "uncommitted"); record.Cancel != nil {
++		t.Fatalf("committed record = %+v; want no cancel intent before the retry", record)
++	}
++
++	got, err := MarkKeptCancels(h.Location, dobbyengine.Geometry{BoardDir: h.BoardDir()}, NewDobbyParents(h.Location))
++
++	if err != nil {
++		t.Fatalf("MarkKeptCancels() error = %v; want nil", err)
++	}
++	if want := []string{"uncommitted"}; !slices.Equal(got, want) {
++		t.Errorf("MarkKeptCancels() = %q; want %q", got, want)
++	}
++	record, found := committedRecord(t, h, "uncommitted")
++	if !found || record.Cancel == nil || record.Cancel.Machine != machine || record.Cancel.Finish == nil {
++		t.Errorf("committed record = %+v, found %v; want the finished keep intent of %q committed", record, found, machine)
++	}
++}
+diff --git a/internal/battencli/leftoverpairs_test.go b/internal/battencli/leftoverpairs_test.go
+new file mode 100644
+index 00000000..cc2c9c96
+--- /dev/null
++++ b/internal/battencli/leftoverpairs_test.go
+@@ -0,0 +1,59 @@
++// leftoverpairs_test.go pins the guarded write of a kept cancel intent over a bare location, with no hub.
++
++package battencli
++
++import (
++	"bytes"
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestWriteKeptCancel_WritesNothingWhileAMergeIsActive(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name        string
++		mergeActive bool
++		wantWritten bool
++	}{
++		{"NoMergeActiveWritesTheIntent", false, true},
++		{"MergeActiveWritesNothing", true, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			prime := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "main", AnchorRel: "."}
++			statusPath := shedrun.StatusFile(prime, "run")
++			if err := os.MkdirAll(filepath.Dir(statusPath), 0o755); err != nil {
++				t.Fatalf("create the run directory: %v", err)
++			}
++			before := []byte(`{"state":"cancelled"}`)
++			if err := os.WriteFile(statusPath, before, 0o644); err != nil {
++				t.Fatalf("write the status: %v", err)
++			}
++			deps := commitStatusDeps{MergeActive: func() (bool, error) { return tt.mergeActive, nil }}
++
++			written, err := writeKeptCancel(prime, deps, "run", "this-machine")
++
++			if (err != nil) != tt.mergeActive {
++				t.Errorf("writeKeptCancel() error = %v; want an error = %v", err, tt.mergeActive)
++			}
++			if written != tt.wantWritten {
++				t.Errorf("writeKeptCancel() written = %v; want %v", written, tt.wantWritten)
++			}
++			after, readErr := os.ReadFile(statusPath)
++			if readErr != nil {
++				t.Fatalf("read the status: %v", readErr)
++			}
++			if unchanged := bytes.Equal(before, after); unchanged == tt.wantWritten {
++				t.Errorf("status after writeKeptCancel() = %s; want it unchanged = %v", after, !tt.wantWritten)
++			}
++		})
++	}
++}
+diff --git a/internal/battencli/overviewdobby.go b/internal/battencli/overviewdobby.go
+index f5a1b893..cc98e3f5 100644
+--- a/internal/battencli/overviewdobby.go
++++ b/internal/battencli/overviewdobby.go
+@@ -31,6 +31,7 @@ const (
+ // What a run's cells say it owes ends its pass cell.
+ // Each released task it has not started takes one line, naming everything that holds it back.
+ // A run or task whose board entry asks for a landing notice ends its line with notify_on_land.
++// Each pair a cancel kept takes one line with its age and the verb that removes it.
+ // A run whose cells are unreadable draws `status unreadable` in their place and takes no part in their column widths.
+ // A duration still growing renders in whole minutes, so the lines change at most once a minute.
+ func DobbyLines(label string, view dobbyengine.View, runCells map[string]RunCells, now time.Time) []string {
+@@ -46,6 +47,9 @@ func DobbyLines(label string, view dobbyengine.View, runCells map[string]RunCell
+ 	for _, task := range view.Waiting {
+ 		slugWidth = max(slugWidth, len([]rune(task.Slug)))
+ 	}
++	for _, kept := range view.Kept {
++		slugWidth = max(slugWidth, len([]rune(kept.Slug)))
++	}
+ 
+ 	lines := []string{header}
+ 	if len(view.Runs) == 0 {
+@@ -83,6 +87,13 @@ func DobbyLines(label string, view dobbyengine.View, runCells map[string]RunCell
+ 		}
+ 		lines = append(lines, dobbyIndent+padRight(task.Slug, slugWidth)+overviewColumnGap+wait)
+ 	}
++	for _, kept := range view.Kept {
++		age := "kept pair, age unknown"
++		if !kept.Since.IsZero() {
++			age = "kept pair, cancelled " + durfmt.FormatMinutes(now.Sub(kept.Since)) + " ago"
++		}
++		lines = append(lines, dobbyIndent+padRight(kept.Slug, slugWidth)+overviewColumnGap+age+"; way forward: lym fabric remove "+kept.Slug)
++	}
+ 	return lines
+ }
+ 
+diff --git a/internal/battencli/overviewdobby_test.go b/internal/battencli/overviewdobby_test.go
+index ad9aafa7..920a3186 100644
+--- a/internal/battencli/overviewdobby_test.go
++++ b/internal/battencli/overviewdobby_test.go
+@@ -110,6 +110,24 @@ func TestDobbyLines(t *testing.T) {
+ 				"  held  waits on the beam is flagged ready: lym batten cancel held --remove",
+ 			},
+ 		},
++		{
++			name: "AKeptPairShowsWhenItsCancelFinishedAndNamesTheRemoval",
++			view: dobbyengine.View{Alive: true, MaxRuns: 3, LandNotice: dobbyengine.LandNoticeOff, Kept: []dobbyengine.KeptPair{{Slug: "k", Since: minutesAgo(12)}}},
++			want: []string{
++				"dobby prime: alive, max_runs 3, land_notice off",
++				"  no runs driven",
++				"  k  kept pair, cancelled 12m ago; way forward: lym fabric remove k",
++			},
++		},
++		{
++			name: "AKeptPairWithNoFinishTimeSaysItsAgeIsUnknown",
++			view: dobbyengine.View{Alive: true, MaxRuns: 3, LandNotice: dobbyengine.LandNoticeOff, Kept: []dobbyengine.KeptPair{{Slug: "k"}}},
++			want: []string{
++				"dobby prime: alive, max_runs 3, land_notice off",
++				"  no runs driven",
++				"  k  kept pair, age unknown; way forward: lym fabric remove k",
++			},
++		},
+ 		{
+ 			name: "NoRunsSaysSo",
+ 			view: dobbyengine.View{Alive: true, MaxRuns: 3, LandNotice: dobbyengine.LandNoticeOff},
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 3bebc4d4..4fc4cfb1 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -1,6 +1,6 @@
+ // dobbydeps.go fills the seams of dobbyengine.Run over a hub.
+ // It covers the runs and tasks it reads, the pass it spawns, and the notices it sends.
+-// It also covers the board tidy it sends, and the teardown of an ended run's pair it starts.
++// It also covers the board tidy it sends, and the teardown of the leftover pairs it starts.
+ // It also covers the hibernate request the prime's dobby carries, and the registration of the dobby process itself.
+ 
+ package beamcli
+@@ -11,6 +11,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"io/fs"
++	"maps"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
+@@ -307,7 +308,10 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 		SpawnPass: func(slug string, continuePass, noReopen bool) (<-chan dobbyengine.PassExit, error) {
+ 			return spawnPass(geom, slug, continuePass, noReopen)
+ 		},
+-		TearDownEnded: func(slugs []string) <-chan map[string]error { return tearDownEnded(prime, slugs) },
++		TearDownLeftovers: func(pairs []dobbyengine.LeftoverPair) <-chan map[string]error { return tearDownLeftovers(prime, pairs) },
++		MarkKeptCancels: func() ([]string, error) {
++			return battencli.MarkKeptCancels(prime, geom, parents)
++		},
+ 		Notice: func(_ context.Context, line string) error {
+ 			return requirePosted(orchcli.NotifyFromScoped(worktree, geom.Slug, dobbyProgram, line))
+ 		},
+@@ -360,6 +364,8 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 		},
+ 	}
+ 	if geom.Slug == "" {
++		deps.Orphans = func() ([]dobbyengine.OrphanView, error) { return battencli.DobbyOrphans(prime, boardDir) }
++		deps.OrphanRecord = fabricengine.OrphanFirstSightPath(prime.HubPath)
+ 		carrier, err := hibernatecli.NewDobbyCarrier(prime)
+ 		if err != nil {
+ 			return dobbyengine.Deps{}, err
+@@ -400,28 +406,76 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 	return deps, nil
+ }
+ 
+-// tearDownEnded runs the hub-scope origin reconcile from prime in a goroutine of its own, as `lym cleanup --apply` does.
+-// That reconcile tears down the local pair of every run origin has ended, and moves the hub's branches behind origin.
+-// Each entry of its mutation record is logged at Info.
+-// The channel delivers once.
+-// It maps each of slugs to nil when the reconcile removed its pair, and to the reason otherwise.
+-func tearDownEnded(prime *lymcwd.Location, slugs []string) <-chan map[string]error {
++// tearDownLeftovers tears down each of pairs by its kind in a goroutine of its own.
++// It then regenerates the hub workspace file once, so it no longer lists a removed pair.
++// The channel delivers once, mapping each slug to nil when its pair was removed and to the reason otherwise.
++func tearDownLeftovers(prime *lymcwd.Location, pairs []dobbyengine.LeftoverPair) <-chan map[string]error {
+ 	result := make(chan map[string]error, 1)
+ 	go func() {
+-		teardown, err := pairteardown.New(prime)
+-		if err != nil {
+-			result <- endedTeardownResults(slugs, fabricengine.OriginReport{}, err)
+-			return
++		results := make(map[string]error, len(pairs))
++		var ended []string
++		for _, pair := range pairs {
++			if pair.Kind == dobbyengine.LeftoverEnded {
++				ended = append(ended, pair.Slug)
++				continue
++			}
++			results[pair.Slug] = tearDownLeftover(prime, pair)
+ 		}
+-		report, err := fabricengine.ReconcileOrigin(prime, fabricengine.ReconcileScope{}, teardown.OriginSeams(pairteardown.HubSeamOptions(prime)), fabricengine.ReconcileOptions{})
+-		for _, mutation := range report.Mutations.Entries() {
+-			logger.Info("beamcli: origin reconcile mutation", "kind", string(mutation.Kind), "target", mutation.Target, "detail", mutation.Detail)
++		if len(ended) > 0 {
++			maps.Copy(results, reconcileEnded(prime, ended))
+ 		}
+-		result <- endedTeardownResults(slugs, report, err)
++		if _, err := fabricengine.RegenerateHubWorkspace(fabricengine.NewMutations(prime.HubPath), prime); err != nil {
++			logger.Warn(`beamcli: the hub workspace file was not regenerated after a leftover teardown; run "lym fabric reconcile" once the cause is fixed`, "error", err)
++		}
++		result <- results
+ 	}()
+ 	return result
+ }
+ 
++// tearDownLeftover tears down one leftover pair that is not an ended run's.
++// A handed-over run's local pair is removed in local mode, and an orphan's after its tips are archived.
++// A landed or cancelled run's pair goes through the pair teardown with its task branch on origin;
++// the landed run's claim is marked done, and the cancelled run's batten record goes with its pair.
++// The cancel chose the removal, so the cancelled run's teardown answers dirtiness with force.
++func tearDownLeftover(prime *lymcwd.Location, pair dobbyengine.LeftoverPair) error {
++	switch pair.Kind {
++	case dobbyengine.LeftoverHandedOver:
++		_, err := pairteardown.RemoveHandedOverPair(prime, pair.Slug)
++		return err
++	case dobbyengine.LeftoverOrphan:
++		_, err := pairteardown.RemoveOrphanPair(context.Background(), prime, pair.Slug)
++		return err
++	}
++	teardown, err := pairteardown.New(prime)
++	if err != nil {
++		return err
++	}
++	_, err = teardown.Run(context.Background(), pairteardown.Request{
++		Slug:    pair.Slug,
++		Remote:  true,
++		Force:   pair.Kind == dobbyengine.LeftoverCancelled,
++		Landed:  pair.Kind == dobbyengine.LeftoverLanded,
++		Verdict: fabricengine.EntryEnded,
++	})
++	return err
++}
++
++// reconcileEnded runs the hub-scope origin reconcile from prime, as `lym cleanup --apply` does.
++// That reconcile tears down the local pair of every run origin has ended, and moves the hub's branches behind origin.
++// Each entry of its mutation record is logged at Info.
++// It maps each of slugs to nil when the reconcile removed its pair, and to the reason otherwise.
++func reconcileEnded(prime *lymcwd.Location, slugs []string) map[string]error {
++	teardown, err := pairteardown.New(prime)
++	if err != nil {
++		return endedTeardownResults(slugs, fabricengine.OriginReport{}, err)
++	}
++	report, err := fabricengine.ReconcileOrigin(prime, fabricengine.ReconcileScope{}, teardown.OriginSeams(pairteardown.HubSeamOptions(prime)), fabricengine.ReconcileOptions{})
++	for _, mutation := range report.Mutations.Entries() {
++		logger.Info("beamcli: origin reconcile mutation", "kind", string(mutation.Kind), "target", mutation.Target, "detail", mutation.Detail)
++	}
++	return endedTeardownResults(slugs, report, err)
++}
++
+ // endedTeardownResults maps each of slugs to nil when report shows its pair removed, and to the reason otherwise.
+ // reconcileErr is the error the reconcile behind report returned, which every slug then carries.
+ func endedTeardownResults(slugs []string, report fabricengine.OriginReport, reconcileErr error) map[string]error {
+diff --git a/internal/beamcli/dobbyleftover_integration_test.go b/internal/beamcli/dobbyleftover_integration_test.go
+new file mode 100644
+index 00000000..cdcb4ea2
+--- /dev/null
++++ b/internal/beamcli/dobbyleftover_integration_test.go
+@@ -0,0 +1,122 @@
++// dobbyleftover_integration_test.go pins tearDownLeftovers over a hubforge hub.
++// It covers the teardown of a landed pair and of a cancelled pair that kept nothing.
++
++package beamcli
++
++import (
++	"os"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// readHubWorkspace regenerates the hub workspace file and returns its content.
++func readHubWorkspace(t *testing.T, h *hubforge.Hub) string {
++	t.Helper()
++	path, err := fabricengine.RegenerateHubWorkspace(fabricengine.NewMutations(h.Path), h.Location)
++	if err != nil {
++		t.Fatalf("RegenerateHubWorkspace() error = %v; want nil", err)
++	}
++	content, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatalf("read the hub workspace file: %v", err)
++	}
++	return string(content)
++}
++
++func TestTearDownLeftovers_RemovesALandedAndACancelledPairAndTheirWorkspaceFolders(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const landed, cancelled = "landed-pair", "cancelled-pair"
++	boardkit.InstallReplay(t)
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPair(t, h, landed)
++	hubforge.AddPair(t, h, cancelled)
++	prime := h.Location
++
++	cfg, err := boardengine.LoadConfig(configengine.Dirs{Board: h.BoardDir()}, "board")
++	if err != nil {
++		t.Fatalf("load board config: %v", err)
++	}
++	cfg.Path = h.BoardDir()
++	board := boardengine.New(cfg)
++	if _, err := board.UpsertTask(map[string]any{"slug": landed, "title": landed, "kind": "task", "labels": []string{"bug"}}); err != nil {
++		t.Fatalf("seed the board entry of %s: %v", landed, err)
++	}
++	claim := "running · Run-Shed"
++	if err := board.SetStatus(landed, &claim); err != nil {
++		t.Fatalf("claim %s on the board: %v", landed, err)
++	}
++
++	if err := shedrun.WriteSeed(prime, cancelled, shedrun.Seed{Recipe: shedrun.RecipeBatten, Driver: shedrun.DriverGo}); err != nil {
++		t.Fatalf("write the seed of %s: %v", cancelled, err)
++	}
++	record := shedengine.Status{
++		CurrentProducer: "Run-Shed",
++		State:           shedengine.StateCancelled,
++		History:         []shedengine.HistoryEntry{},
++		Cancel: &shedengine.CancelIntent{
++			StartedAt: "2026-11-15T09:00:00Z",
++			Machine:   "this-machine",
++			Remove:    true,
++			Finish:    &shedengine.CancelFinish{EndedAt: "2026-11-15T09:30:00Z", Remove: true},
++		},
++	}
++	if err := os.MkdirAll(shedrun.RunDir(prime, cancelled), 0o755); err != nil {
++		t.Fatalf("create the run directory of %s: %v", cancelled, err)
++	}
++	if err := state.WriteJSON(shedrun.StatusFile(prime, cancelled), shedrun.StatusLock(prime, cancelled), record); err != nil {
++		t.Fatalf("write the record of %s: %v", cancelled, err)
++	}
++	rels := []string{shedrun.SeedRel(prime, cancelled), shedrun.StatusRel(prime, cancelled)}
++	if _, committed, err := fabricengine.CommitAnchoredPaths(fabricengine.NewMutations(""), prime, rels, "test: record the cancelled run", fabricengine.EnvSyncOptions()); err != nil || !committed {
++		t.Fatalf("commit the record of %s: committed=%v err=%v", cancelled, committed, err)
++	}
++	workspace := readHubWorkspace(t, h)
++	for _, slug := range []string{landed, cancelled} {
++		if !strings.Contains(workspace, slug) {
++			t.Fatalf("hub workspace before the teardown = %s; want it to list %s", workspace, slug)
++		}
++	}
++
++	got := <-tearDownLeftovers(prime, []dobbyengine.LeftoverPair{
++		{Slug: landed, Kind: dobbyengine.LeftoverLanded},
++		{Slug: cancelled, Kind: dobbyengine.LeftoverCancelled},
++	})
++
++	if want := map[string]error{landed: nil, cancelled: nil}; !reflect.DeepEqual(got, want) {
++		t.Errorf("tearDownLeftovers() = %v; want %v", got, want)
++	}
++	for _, slug := range []string{landed, cancelled} {
++		for _, dir := range []string{h.PairCodeWorktree(slug), h.PairRecordsSibling(slug)} {
++			if _, err := os.Stat(dir); !os.IsNotExist(err) {
++				t.Errorf("stat %s = %v; want the pair of %s removed", dir, err, slug)
++			}
++		}
++	}
++	if _, err := os.Stat(shedrun.RunDir(prime, cancelled)); !os.IsNotExist(err) {
++		t.Errorf("stat the run directory of %s = %v; want the batten record removed with its pair", cancelled, err)
++	}
++	task, found, err := board.GetTask(landed)
++	if err != nil || !found || task.Status == nil || *task.Status != boardengine.StatusDone {
++		t.Errorf("board entry of %s = %+v, found %v, err %v; want its status done", landed, task, found, err)
++	}
++	workspace = readHubWorkspace(t, h)
++	for _, slug := range []string{landed, cancelled} {
++		if strings.Contains(workspace, slug) {
++			t.Errorf("hub workspace %s after the teardown = %s; want it to list no %s", fabricengine.HubWorkspacePath(prime), workspace, slug)
++		}
++	}
++}
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 4e53d9a1..14c44dd8 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -430,13 +430,21 @@
+ //   - `battencli.DobbyRuns` also marks each run `NoSlot` through the run's board entry;
+ //     a pawl run without its landing hold thus takes no slot under `max_runs`;
+ //     it marks the run `EntryEnded` when that entry is done or gone from the board, and reads whether its pair is on disk;
+-//   - the teardown of an ended run's pair, `TearDownEnded`, for every dobby:
+-//     `tearDownEnded` runs `fabricengine.ReconcileOrigin` over the hub scope from the prime in a goroutine of its own,
++//   - the teardown of the leftover pairs, `TearDownLeftovers`, for every dobby, in a goroutine of its own:
++//     an ended run's pairs go through `fabricengine.ReconcileOrigin` over the hub scope from the prime,
+ //     with the seams `pairteardown` builds for the hub, as `lym cleanup --apply` does;
+ //     that reconcile tears down every pair origin has ended and moves the hub's branches behind origin;
+-//     each requested run reads as removed only when the report's ended entry for it says so;
++//     each such run reads as removed only when the report's ended entry for it says so;
++//     a landed or cancelled run's pair goes through `pairteardown`'s teardown with its task branch on origin,
++//     a handed-over run's through `pairteardown.RemoveHandedOverPair` in local mode,
++//     and an orphan's through `pairteardown.RemoveOrphanPair`, which archives its tips first;
++//     the hub workspace file is regenerated once after each batch;
+ //     Bound: a teardown in flight when the dobby stops ends half done;
+ //     the next attempt or `lym cleanup --apply` finishes it;
++//   - `battencli.MarkKeptCancels`, which gives a run cancelled with keep before cancel intents existed
++//     its finished keep cancel intent, and commits again one whose commit failed;
++//   - for the prime's dobby only, `battencli.DobbyOrphans`,
++//     with the first-sight record `fabricengine.OrphanFirstSightPath` names;
+ //   - `battencli.DobbyRuns` also reads each run's place against its Land row through `battenrecipe.LandOutcomeOf`;
+ //     it reads the landing commit through `shedrun.ReadLandedCommit`;
+ //     for a paused run, whether its work already reached its parent, by the judgment `lym batten cancel` refuses on;
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 29a7ecd9..8d7c85a4 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -114,7 +114,7 @@
+ //     The second stop removes a strand only while reed still tracks it.
+ //     It logs a failed stop when reed's status probe fails.
+ //   - Between ticks it calls the binary check, which re-execs onto a changed lym binary.
+-//     It skips the check while a teardown of an ended run's pair is in flight, which a re-exec would cut short.
++//     It skips the check while a teardown of a leftover pair is in flight, which a re-exec would cut short.
+ //     The check logs `re-exec onto the changed lym binary` right before the exec.
+ //     An exec that fails logs `re-exec failed` and posts a notice naming `lym beam stop` and `lym beam start`.
+ //     The notice goes once per binary identity, and the dobby keeps running.
+@@ -275,23 +275,42 @@
+ //     A landed run that batten stopped as failed or halted before its Worktree-Teardown row therefore frees its slot.
+ //   - The view's `max_runs` reasons follow, since BuildView counts through the same rule.
+ //
+-// The ended teardown:
++// The leftover pairs:
+ //
+-//   - A run is stranded when its entry ended (RunView.EntryEnded) and its pair is on disk (RunView.PairPresent),
+-//     while dobby gives it no pass: batten's state is neither running, nor paused with its work on its parent, nor done.
+-//     A paused run whose work reached its parent is not stranded, since its Land is unfinished.
+-//     A run with a pass in flight, a held driver lock or a cancel under way is not.
+-//     Nor is a run a pause covers or one marked owned elsewhere.
+-//   - After the passes, each tick hands every stranded run whose wait ran out to one call of Deps.TearDownEnded.
+-//     The hub wiring runs the hub's origin reconcile there, as `lym cleanup --apply` does,
+-//     and that reconcile tears down the pair of each run origin has ended.
++//   - A listed run's pair on disk (RunView.PairPresent) is left over, by kind, when no pass of it is in flight,
++//     its driver lock is free and no cancel is under way:
++//     the local pair of a run this machine's hand-over mark names (RunView.HandOverMarked) while another machine owns it,
++//     whatever pause or hold covers it, since its removal takes no origin step;
++//     and, with no pause, no Bolt hold and no other machine owning the run, the pair of a run in the FSM state landed,
++//     the pair of a cancelled run whose cancel did not keep it,
++//     and the pair of a run whose entry ended (RunView.EntryEnded) while batten's state is neither running,
++//     nor paused with its work on its parent, nor done.
++//     A paused run whose work reached its parent is not, since its Land is unfinished.
++//     A machine that adopted its run back owns it, so its pair stays.
++//   - An orphan pair is one that neither a board entry nor a batten record names; only the prime's dobby reads them,
++//     through Deps.Orphans, on each probe tick.
++//     Its first sight posts one notice saying when it goes.
++//     Once that notice posted, the time goes in the first-sight record Deps.OrphanRecord names,
++//     which a restart reads, so the grace is neither reset nor skipped.
++//     A notice that failed leaves the orphan out of the record, and the next probe tick posts it again.
++//     An orphan is left over once OrphanGrace has passed since its first sight and since its last commit,
++//     with no process of its slug alive.
++//     A pair that stops being an orphan leaves the record, and so does one torn down.
++//   - After the passes, each tick hands every leftover pair whose wait ran out to one call of Deps.TearDownLeftovers.
++//     The hub wiring tears each down by its kind and regenerates the hub workspace file after.
+ //     The call returns at once, and a later tick reads its one result; only one is in flight at a time.
+ //   - A removed pair logs `teardown <slug>: pair removed`.
+ //     A teardown that failed logs `teardown <slug> failing: <reason>` once per episode.
+-//     Its run waits one probe interval, then twice its last wait after each further failure, up to an hour.
+-//     The waits are in memory only, and a run that is no longer stranded forgets its wait.
++//     Its pair waits one probe interval, then twice its last wait after each further failure, up to an hour.
++//     The waits are in memory only, and a pair that is no longer left over forgets its wait.
+ //   - A teardown in flight keeps the loop out of its idle backoff, and holds the binary check until it ends.
+-//     A nil TearDownEnded tears nothing down.
++//     A nil TearDownLeftovers tears nothing down.
++//   - The pair of a cancelled run whose cancel kept it stays.
++//     Each fresh start posts one notice listing those pairs and naming `lym fabric remove <slug>`, and the view lists them.
++//     Before the passes of its first tick, a dobby process gives each run cancelled with keep before cancel intents existed,
++//     whose pair stands here, its finished keep cancel intent through Deps.MarkKeptCancels, so such a run reads kept;
++//     the same call commits again a finished keep intent of this machine whose commit failed;
++//     a failure logs once per episode and is tried again at the next tick, and the notice waits for it.
+ //
+ // The landing step:
+ //
+@@ -490,6 +509,7 @@
+ //     So a finished run's record or leftover branch never refuses a later start under its slug.
+ //     A failed branch removal leaves the records, so the next tick tries again.
+ //   - A run is cleared only when no pass of it is in flight and its driver lock is free,
++//     its pair is gone, so the leftover teardown takes a landed run's pair first,
+ //     the landing-notice memory holds nothing of it,
+ //     and a landing it holds is counted.
+ //     So neither its landing notice nor its board-tidy count is lost.
+@@ -564,6 +584,7 @@
+ //   - The runs are the listed ones that are not done.
+ //     Each carries batten's state and producer, and a pass in flight while its driver lock is held.
+ //     It also carries its last pass exit, owed full pass, owner mark and failing count from the state record.
++//   - The kept pairs are the listed cancelled runs' pairs their cancel kept, each with when that cancel finished.
+ //   - A task waits while it is released to the worktree and not started.
+ //     Released means an empty status and the worktree as parent.
+ //     Its reasons are the start step's own conditions:
+diff --git a/internal/dobbyengine/donerun.go b/internal/dobbyengine/donerun.go
+index 2ff90b7a..a80a938c 100644
+--- a/internal/dobbyengine/donerun.go
++++ b/internal/dobbyengine/donerun.go
+@@ -14,6 +14,7 @@ import (
+ // It takes only a run whose batten status reads done.
+ // It runs after the landing count and the landing notices of the tick, and it clears a run only when all of these hold:
+ // no pass of it is in flight and its driver lock is free;
++// its pair is gone, so the leftover teardown, which reads the run's records, takes a pair left standing first;
+ // the landing-notice memory holds nothing of it, so its notice is decided and posted;
+ // and a landing it holds is counted.
+ // A cleared run logs `run <slug>: done run cleared`, and its slug leaves the counted landings,
+@@ -35,7 +36,7 @@ func (d *daemon) clearDoneRuns(now time.Time) {
+ 	}
+ 	var cleared []string
+ 	for _, run := range d.listedRuns {
+-		if run.State != runStateDone || run.DriverLockHeld {
++		if run.State != runStateDone || run.DriverLockHeld || run.PairPresent {
+ 			continue
+ 		}
+ 		if _, inFlight := d.flights[run.Slug]; inFlight {
+diff --git a/internal/dobbyengine/donerun_test.go b/internal/dobbyengine/donerun_test.go
+index 295fb118..b3701e03 100644
+--- a/internal/dobbyengine/donerun_test.go
++++ b/internal/dobbyengine/donerun_test.go
+@@ -58,6 +58,35 @@ func TestClearDoneRuns_WaitsForTheLandingCountOfARunWhileATidyIsInFlight(t *test
+ 	}
+ }
+ 
++func TestClearDoneRuns_LeavesARunWhosePairStandsForTheLeftoverTeardown(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const slug = "beam-merge-in"
++	var calls []string
++	d := &daemon{
++		geom: Geometry{WorktreeName: "prime", StatePath: filepath.Join(t.TempDir(), StateFileName)},
++		deps: Deps{ClearDoneRun: func(slug string) (bool, error) {
++			calls = append(calls, slug)
++			return true, nil
++		}},
++		flights:    map[string]flight{},
++		listedRuns: []RunView{{Slug: slug, State: runStateDone, PairPresent: true}},
++	}
++	now := time.Date(2026, 11, 15, 12, 0, 0, 0, time.UTC)
++
++	d.clearDoneRuns(now)
++	if len(calls) != 0 {
++		t.Fatalf("ClearDoneRun calls = %v; want none while the run's pair stands", calls)
++	}
++
++	d.listedRuns[0].PairPresent = false
++	d.clearDoneRuns(now)
++	if !slices.Equal(calls, []string{slug}) {
++		t.Errorf("ClearDoneRun calls = %v; want the one call once the pair is gone", calls)
++	}
++}
++
+ func TestClearDoneRuns(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/dobbyengine/ended.go b/internal/dobbyengine/ended.go
+deleted file mode 100644
+index 0f7fee14..00000000
+--- a/internal/dobbyengine/ended.go
++++ /dev/null
+@@ -1,121 +0,0 @@
+-// ended.go tears down the pair of a run whose board entry ended while batten left the run short of its own teardown.
+-// It picks those runs, starts their teardown through Deps.TearDownEnded, and reads how it ended, with a wait per run.
+-
+-package dobbyengine
+-
+-import (
+-	"errors"
+-	"time"
+-)
+-
+-// endedTeardownCeiling is the longest wait between two teardown attempts of one stranded run.
+-const endedTeardownCeiling = time.Hour
+-
+-// errTeardownUnreported is the reason given for a slug the teardown's result left out.
+-var errTeardownUnreported = errors.New("the teardown ended without reporting on the run")
+-
+-// endedTeardown is a teardown dobby started and has not read yet: the slugs it covers and its one result.
+-type endedTeardown struct {
+-	slugs  []string
+-	result <-chan map[string]error
+-}
+-
+-// endedRetry is when a stranded run's teardown may start next, the wait that set it, and whether its failure is logged.
+-type endedRetry struct {
+-	next     time.Time
+-	interval time.Duration
+-	failing  bool
+-}
+-
+-// strandedEnded reports whether batten left run short of its own teardown although its board entry ended.
+-// Its entry is done or gone, its pair is still on disk, and dobby gives it no pass:
+-// batten's state is neither running, nor paused with its work on its parent, nor done.
+-// A paused run whose work reached its parent is not stranded, since its Land is unfinished.
+-// A run with a pass in flight, a held driver lock or a cancel under way is not, since its driver or the cancel ends it.
+-// Nor is a run a pause covers, or one recorded owned elsewhere, whose pair is not this dobby's to remove.
+-func strandedEnded(run RunView, rs RunState, inFlight bool) bool {
+-	pausedWithWorkOnParent := run.State == runStatePaused && run.ReachedParent
+-	return run.EntryEnded && run.PairPresent && !drivable(run) && !pausedWithWorkOnParent && run.State != runStateDone &&
+-		!inFlight && !run.DriverLockHeld && !run.CancelMarker && !run.Covered && !rs.OwnedElsewhere
+-}
+-
+-// tearDownEnded reads the teardown in flight once it ended, then starts one over the stranded runs whose wait ran out.
+-// A run whose pair was removed logs `teardown <slug>: pair removed`.
+-// A run whose teardown failed logs `teardown <slug> failing: <reason>` at the first failure of an episode.
+-// It then waits one probe interval, and twice its last wait after each further failure, up to endedTeardownCeiling.
+-// A removed run waits one probe interval too, since the listing of the tick that read the result still shows its pair.
+-// A run no longer stranded forgets its wait.
+-// A teardown in flight keeps the loop out of its idle backoff; a nil Deps.TearDownEnded starts none.
+-func (d *daemon) tearDownEnded(now time.Time) error {
+-	if d.deps.TearDownEnded == nil {
+-		return nil
+-	}
+-	if d.teardown != nil {
+-		select {
+-		case results := <-d.teardown.result:
+-			d.readEndedTeardown(now, d.teardown.slugs, results)
+-			d.teardown = nil
+-		default:
+-			d.busy = true
+-			return nil
+-		}
+-	}
+-	current, _, err := ReadState(d.geom.StatePath)
+-	if err != nil {
+-		return err
+-	}
+-	if d.endedRetries == nil {
+-		d.endedRetries = map[string]endedRetry{}
+-	}
+-	stranded := map[string]bool{}
+-	var due []string
+-	for _, run := range d.runs {
+-		_, inFlight := d.flights[run.Slug]
+-		if !strandedEnded(run, current.Runs[run.Slug], inFlight) {
+-			continue
+-		}
+-		stranded[run.Slug] = true
+-		if !now.Before(d.endedRetries[run.Slug].next) {
+-			due = append(due, run.Slug)
+-		}
+-	}
+-	for slug := range d.endedRetries {
+-		if !stranded[slug] {
+-			delete(d.endedRetries, slug)
+-		}
+-	}
+-	if len(due) == 0 {
+-		return nil
+-	}
+-	d.teardown = &endedTeardown{slugs: due, result: d.deps.TearDownEnded(due)}
+-	d.busy = true
+-	return nil
+-}
+-
+-// readEndedTeardown logs each slug of a teardown that ended by its entry in results and sets the slug's next wait.
+-// A slug results leaves out, as a closed channel's nil map does, failed with errTeardownUnreported.
+-func (d *daemon) readEndedTeardown(now time.Time, slugs []string, results map[string]error) {
+-	if d.endedRetries == nil {
+-		d.endedRetries = map[string]endedRetry{}
+-	}
+-	for _, slug := range slugs {
+-		reason, reported := results[slug]
+-		if !reported {
+-			reason = errTeardownUnreported
+-		}
+-		if reason == nil {
+-			d.logLine(now, "teardown "+slug+": pair removed")
+-			d.endedRetries[slug] = endedRetry{next: now.Add(d.probe)}
+-			continue
+-		}
+-		retry := d.endedRetries[slug]
+-		if !retry.failing {
+-			d.logLine(now, "teardown "+slug+" failing: "+oneLine(reason.Error()))
+-		}
+-		interval := d.probe
+-		if retry.interval > 0 {
+-			interval = min(retry.interval*2, endedTeardownCeiling)
+-		}
+-		d.endedRetries[slug] = endedRetry{next: now.Add(interval), interval: interval, failing: true}
+-	}
+-}
+diff --git a/internal/dobbyengine/ended_test.go b/internal/dobbyengine/ended_test.go
+deleted file mode 100644
+index 8306b539..00000000
+--- a/internal/dobbyengine/ended_test.go
++++ /dev/null
+@@ -1,192 +0,0 @@
+-// ended_test.go pins which runs dobby counts as stranded past their ended board entry,
+-// and the teardown of their pairs it starts, reads and retries.
+-
+-package dobbyengine
+-
+-import (
+-	"errors"
+-	"slices"
+-	"testing"
+-
+-	"github.com/Knatte18/loomyard/internal/runfsm"
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-)
+-
+-func TestStrandedEnded(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	tests := []struct {
+-		name     string
+-		mutate   func(run *RunView, rs *RunState)
+-		inFlight bool
+-		want     bool
+-	}{
+-		{"FailedWithItsEntryEndedAndItsPairOnDisk", nil, false, true},
+-		{"Halted", func(run *RunView, _ *RunState) { run.State = "blocked" }, false, true},
+-		{"PausedShortOfItsParent", func(run *RunView, _ *RunState) { run.State = runStatePaused }, false, true},
+-		{"Running", func(run *RunView, _ *RunState) { run.State = runStateRunning }, false, false},
+-		{"PausedWithItsWorkOnItsParent", func(run *RunView, _ *RunState) { run.State, run.ReachedParent = runStatePaused, true }, false, false},
+-		{"Done", func(run *RunView, _ *RunState) { run.State = runStateDone }, false, false},
+-		{"EntryOpen", func(run *RunView, _ *RunState) { run.EntryEnded = false }, false, false},
+-		{"PairGone", func(run *RunView, _ *RunState) { run.PairPresent = false }, false, false},
+-		{"PassInFlight", nil, true, false},
+-		{"DriverLockHeld", func(run *RunView, _ *RunState) { run.DriverLockHeld = true }, false, false},
+-		{"CancelMarked", func(run *RunView, _ *RunState) { run.CancelMarker = true }, false, false},
+-		{"CoveredByAPause", func(run *RunView, _ *RunState) { run.Covered = true }, false, false},
+-		{"OwnedElsewhere", func(_ *RunView, rs *RunState) { rs.OwnedElsewhere = true }, false, false},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-			run, rs := strandedRun("x"), RunState{}
+-			if tt.mutate != nil {
+-				tt.mutate(&run, &rs)
+-			}
+-			if got := strandedEnded(run, rs, tt.inFlight); got != tt.want {
+-				t.Errorf("strandedEnded(%+v, %+v, %v) = %v; want %v", run, rs, tt.inFlight, got, tt.want)
+-			}
+-		})
+-	}
+-}
+-
+-func TestTearDownEnded(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	t.Run("a removed pair logs once and its run gets no further teardown once its pair is gone", func(t *testing.T) {
+-		t.Parallel()
+-		h := newPassHarness(t, strandedRun("x"))
+-		lines := h.recordLog()
+-		fake := &teardownFake{results: []map[string]error{{"x": nil}}}
+-		h.d.deps.TearDownEnded = fake.tearDown
+-
+-		h.tick(false)
+-		h.tick(false)
+-		h.fake.runs[0].PairPresent = false
+-		h.tick(false)
+-		h.tick(false)
+-
+-		if want := [][]string{{"x"}}; !slices.EqualFunc(fake.calls, want, slices.Equal[[]string]) {
+-			t.Errorf("teardown calls = %q; want %q", fake.calls, want)
+-		}
+-		if retry, held := h.d.endedRetries["x"]; held {
+-			t.Errorf("endedRetries[x] = %+v; want no wait for a run whose pair is gone", retry)
+-		}
+-		if want := []string{"run x: halted at Run-Shed", "teardown x: pair removed"}; !slices.Equal(*lines, want) {
+-			t.Errorf("log lines = %q; want %q", *lines, want)
+-		}
+-	})
+-
+-	t.Run("a failing teardown logs once and retries after one probe interval, then after twice it", func(t *testing.T) {
+-		t.Parallel()
+-		h := newPassHarness(t, strandedRun("x"))
+-		lines := h.recordLog()
+-		busy := map[string]error{"x": errors.New("its pair is busy")}
+-		fake := &teardownFake{results: slices.Repeat([]map[string]error{busy}, 12)}
+-		h.d.deps.TearDownEnded = fake.tearDown
+-
+-		for _, want := range []int{1, 1, 2, 2, 2, 3} {
+-			h.tick(false)
+-			if got := len(fake.calls); got != want {
+-				t.Fatalf("teardown calls = %d; want %d", got, want)
+-			}
+-		}
+-		// The wait doubles from 10s, so the 10th failure reaches the ceiling and the 12th, the last one read, must not pass it.
+-		for len(fake.calls) < 12 {
+-			h.advance(h.d.endedRetries["x"].next.Sub(h.clock.now()))
+-			h.tick(false)
+-		}
+-		// This tick reads the 12th result and, with the wait it sets, starts no 13th teardown.
+-		h.tick(false)
+-		retry := h.d.endedRetries["x"]
+-		if next := retry.next.Sub(h.clock.now()); retry.interval != endedTeardownCeiling || next != endedTeardownCeiling {
+-			t.Errorf("wait, time to next attempt after 12 failures read = %v, %v; want %v, %v",
+-				retry.interval, next, endedTeardownCeiling, endedTeardownCeiling)
+-		}
+-		if want := []string{"run x: halted at Run-Shed", "teardown x failing: its pair is busy"}; !slices.Equal(*lines, want) {
+-			t.Errorf("log lines = %q; want %q", *lines, want)
+-		}
+-	})
+-
+-	t.Run("no teardown seam starts none and leaves the loop idle", func(t *testing.T) {
+-		t.Parallel()
+-		h := newPassHarness(t, strandedRun("x"))
+-
+-		h.tick(false)
+-
+-		if h.d.teardown != nil || h.d.inFlight || len(h.d.endedRetries) != 0 {
+-			t.Errorf("teardown, in flight, waits = %v, %v, %v; want nil, false, none", h.d.teardown, h.d.inFlight, h.d.endedRetries)
+-		}
+-	})
+-
+-	t.Run("a teardown in flight holds the binary check", func(t *testing.T) {
+-		t.Parallel()
+-		h := newLoopHarness(t, 3)
+-		h.deps.Runs = func() ([]RunView, error) { return []RunView{strandedRun("x")}, nil }
+-		h.deps.TearDownEnded = func([]string) <-chan map[string]error { return make(chan map[string]error) }
+-		checks := 0
+-		h.checkBinary = func(func(), func(error)) { checks++ }
+-
+-		if err := h.run(t); err != nil {
+-			t.Fatalf("Run() = %v; want nil", err)
+-		}
+-
+-		if checks != 0 {
+-			t.Errorf("CheckBinary calls = %d; want 0 while a teardown is in flight", checks)
+-		}
+-	})
+-
+-	t.Run("a teardown in flight is not doubled and keeps the loop busy", func(t *testing.T) {
+-		t.Parallel()
+-		h := newPassHarness(t, strandedRun("x"))
+-		calls := 0
+-		h.d.deps.TearDownEnded = func([]string) <-chan map[string]error {
+-			calls++
+-			return make(chan map[string]error)
+-		}
+-
+-		h.tick(false)
+-		h.tick(false)
+-
+-		if calls != 1 || !h.d.inFlight {
+-			t.Errorf("teardown calls, in flight = %d, %v; want 1, true", calls, h.d.inFlight)
+-		}
+-	})
+-
+-	t.Run("a result that leaves the run out fails it as unreported", func(t *testing.T) {
+-		t.Parallel()
+-		h := newPassHarness(t, strandedRun("x"))
+-		lines := h.recordLog()
+-		fake := &teardownFake{results: []map[string]error{{}}}
+-		h.d.deps.TearDownEnded = fake.tearDown
+-
+-		h.tick(false)
+-		h.tick(false)
+-
+-		want := []string{"run x: halted at Run-Shed", "teardown x failing: " + errTeardownUnreported.Error()}
+-		if !slices.Equal(*lines, want) {
+-			t.Errorf("log lines = %q; want %q", *lines, want)
+-		}
+-	})
+-}
+-
+-// strandedRun is a run batten left failed at Run-Shed whose board entry ended and whose pair is still on disk.
+-func strandedRun(slug string) RunView {
+-	return RunView{Slug: slug, State: "failed", Run: runfsm.Halted, Producer: producerRunShed, EntryEnded: true, PairPresent: true}
+-}
+-
+-// teardownFake answers the TearDownEnded seam with its next result, delivered at once, and records each call's slugs.
+-type teardownFake struct {
+-	calls   [][]string
+-	results []map[string]error
+-}
+-
+-func (f *teardownFake) tearDown(slugs []string) <-chan map[string]error {
+-	f.calls = append(f.calls, slices.Clone(slugs))
+-	result := make(chan map[string]error, 1)
+-	next, rest := f.results[0], f.results[1:]
+-	f.results = rest
+-	result <- next
+-	return result
+-}
+diff --git a/internal/dobbyengine/leftover.go b/internal/dobbyengine/leftover.go
+new file mode 100644
+index 00000000..01d12060
+--- /dev/null
++++ b/internal/dobbyengine/leftover.go
+@@ -0,0 +1,246 @@
++// leftover.go tears down the pairs left on disk that no run's own teardown takes, and reports the pairs a cancel kept.
++// It picks those pairs and starts their teardown through Deps.TearDownLeftovers.
++// It reads how the teardown ended, with a wait per pair.
++
++package dobbyengine
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/runfsm"
++)
++
++// leftoverTeardownCeiling is the longest wait between two teardown attempts of one leftover pair.
++const leftoverTeardownCeiling = time.Hour
++
++// errTeardownUnreported is the reason given for a slug the teardown's result left out.
++var errTeardownUnreported = errors.New("the teardown ended without reporting on the pair")
++
++// LeftoverKind names why a pair is left over, which decides how the hub wiring tears it down.
++type LeftoverKind string
++
++// The kinds of leftover pair.
++const (
++	// LeftoverEnded is the pair of a run whose board entry ended while batten left the run short of its own teardown.
++	LeftoverEnded LeftoverKind = "ended"
++	// LeftoverLanded is the pair of a run in the FSM state landed.
++	LeftoverLanded LeftoverKind = "landed"
++	// LeftoverCancelled is the pair of a run in the FSM state cancelled whose cancel did not keep it.
++	// The run's batten record goes with the pair.
++	LeftoverCancelled LeftoverKind = "cancelled"
++	// LeftoverHandedOver is the local pair of a run this machine handed over and another machine owns.
++	// It is removed in local mode, which takes no origin step.
++	LeftoverHandedOver LeftoverKind = "handed_over"
++	// LeftoverOrphan is a pair that neither a board entry nor a batten record names, idle past the orphan grace.
++	LeftoverOrphan LeftoverKind = "orphan"
++)
++
++// LeftoverPair is one pair the dobby asks the hub wiring to tear down.
++type LeftoverPair struct {
++	Slug string
++	Kind LeftoverKind
++}
++
++// leftoverTeardown is a teardown dobby started and has not read yet: the pairs it covers and its one result.
++type leftoverTeardown struct {
++	pairs  []LeftoverPair
++	result <-chan map[string]error
++}
++
++// leftoverRetry holds when a leftover pair's teardown may start next.
++// It also holds the wait that set that time and whether the failure is logged.
++type leftoverRetry struct {
++	next     time.Time
++	interval time.Duration
++	failing  bool
++}
++
++// leftoverKind reports whether run's pair is left over, and its kind.
++// No pair is left over while it is absent, a pass of it is in flight, its driver lock is held or a cancel is under way.
++// The local pair of a run this machine handed over is left over while another machine owns the run.
++// That holds whatever pause or hold covers it, since its removal takes no origin step.
++// Every other kind needs no pause, no Bolt hold and no other machine owning the run.
++// A landed run's pair is left over, and so is a cancelled run's whose cancel did not keep it.
++// So is the pair of a run whose board entry ended while dobby gives it no pass:
++// batten's state is neither running, nor paused with its work on its parent, nor done.
++// A paused run whose work reached its parent is not, since its Land is unfinished.
++func leftoverKind(run RunView, rs RunState, inFlight bool) (LeftoverKind, bool) {
++	if !run.PairPresent || inFlight || run.DriverLockHeld || run.CancelMarker {
++		return "", false
++	}
++	if run.HandOverMarked && run.OwnedElsewhere {
++		return LeftoverHandedOver, true
++	}
++	if run.Covered || run.BoltHeld || run.OwnedElsewhere || rs.OwnedElsewhere {
++		return "", false
++	}
++	pausedWithWorkOnParent := run.State == runStatePaused && run.ReachedParent
++	switch {
++	case run.Run == runfsm.Landed:
++		return LeftoverLanded, true
++	case run.Run == runfsm.Cancelled && !run.PairKept:
++		return LeftoverCancelled, true
++	case run.Run == runfsm.Cancelled:
++		return "", false
++	case run.EntryEnded && !drivable(run) && !pausedWithWorkOnParent && run.State != runStateDone:
++		return LeftoverEnded, true
++	}
++	return "", false
++}
++
++// keptPair reports whether run is a cancelled run whose cancel kept its pair, and that pair still stands.
++func keptPair(run RunView) bool {
++	return run.Run == runfsm.Cancelled && run.PairKept && run.PairPresent
++}
++
++// tearDownLeftovers reads the teardown in flight once it ended.
++// It then starts one over the leftover pairs whose wait ran out.
++// The leftover pairs are those of the listed runs, done runs included, and the due orphan pairs.
++// A removed pair logs `teardown <slug>: pair removed`.
++// A pair whose teardown failed logs `teardown <slug> failing: <reason>` at the first failure of an episode.
++// It then waits one probe interval, and twice its last wait after each further failure, up to leftoverTeardownCeiling.
++// A removed pair waits one probe interval too, since the listing of the tick that read the result still shows it.
++// A pair no longer left over forgets its wait.
++// A teardown in flight keeps the loop out of its idle backoff; a nil Deps.TearDownLeftovers starts none.
++func (d *daemon) tearDownLeftovers(ctx context.Context, now time.Time) error {
++	if d.deps.TearDownLeftovers == nil {
++		return nil
++	}
++	if d.teardown != nil {
++		select {
++		case results := <-d.teardown.result:
++			d.readLeftoverTeardown(now, d.teardown.pairs, results)
++			d.teardown = nil
++		default:
++			d.busy = true
++			return nil
++		}
++	}
++	current, _, err := ReadState(d.geom.StatePath)
++	if err != nil {
++		return err
++	}
++	var leftover []LeftoverPair
++	for _, run := range d.listedRuns {
++		_, inFlight := d.flights[run.Slug]
++		if kind, ok := leftoverKind(run, current.Runs[run.Slug], inFlight); ok {
++			leftover = append(leftover, LeftoverPair{Slug: run.Slug, Kind: kind})
++		}
++	}
++	for _, slug := range d.dueOrphans(ctx, now) {
++		leftover = append(leftover, LeftoverPair{Slug: slug, Kind: LeftoverOrphan})
++	}
++
++	if d.leftoverRetries == nil {
++		d.leftoverRetries = map[string]leftoverRetry{}
++	}
++	standing := make(map[string]bool, len(leftover))
++	var due []LeftoverPair
++	for _, pair := range leftover {
++		standing[pair.Slug] = true
++		if !now.Before(d.leftoverRetries[pair.Slug].next) {
++			due = append(due, pair)
++		}
++	}
++	for slug := range d.leftoverRetries {
++		if !standing[slug] {
++			delete(d.leftoverRetries, slug)
++		}
++	}
++	if len(due) == 0 {
++		return nil
++	}
++	d.teardown = &leftoverTeardown{pairs: due, result: d.deps.TearDownLeftovers(due)}
++	d.busy = true
++	return nil
++}
++
++// readLeftoverTeardown logs each pair of a teardown that ended by its entry in results and sets the pair's next wait.
++// A removed orphan pair leaves the first-sight record.
++// A slug results leaves out, as a closed channel's nil map does, failed with errTeardownUnreported.
++func (d *daemon) readLeftoverTeardown(now time.Time, pairs []LeftoverPair, results map[string]error) {
++	if d.leftoverRetries == nil {
++		d.leftoverRetries = map[string]leftoverRetry{}
++	}
++	for _, pair := range pairs {
++		reason, reported := results[pair.Slug]
++		if !reported {
++			reason = errTeardownUnreported
++		}
++		if reason == nil {
++			d.logLine(now, "teardown "+pair.Slug+": pair removed")
++			d.leftoverRetries[pair.Slug] = leftoverRetry{next: now.Add(d.probe)}
++			if pair.Kind == LeftoverOrphan {
++				d.dropOrphanSight(pair.Slug)
++			}
++			continue
++		}
++		retry := d.leftoverRetries[pair.Slug]
++		if !retry.failing {
++			d.logLine(now, "teardown "+pair.Slug+" failing: "+oneLine(reason.Error()))
++		}
++		interval := d.probe
++		if retry.interval > 0 {
++			interval = min(retry.interval*2, leftoverTeardownCeiling)
++		}
++		d.leftoverRetries[pair.Slug] = leftoverRetry{next: now.Add(interval), interval: interval, failing: true}
++	}
++}
++
++// markKeptCancels runs once per dobby process.
++// It gives each run cancelled with keep before cancel intents existed its finished keep cancel intent.
++// Each marked run logs one line.
++// A failure is logged once per episode and tried again at the next tick; a nil Deps.MarkKeptCancels marks nothing.
++func (d *daemon) markKeptCancels(now time.Time) {
++	if d.keptMarked {
++		return
++	}
++	if d.deps.MarkKeptCancels == nil {
++		d.keptMarked = true
++		return
++	}
++	slugs, err := d.deps.MarkKeptCancels()
++	if err != nil {
++		if !d.keptMarkFailing {
++			d.keptMarkFailing = true
++			d.logLine(now, "kept cancel marking failing: "+oneLine(err.Error()))
++		}
++		return
++	}
++	d.keptMarked = true
++	d.keptMarkFailing = false
++	for _, slug := range slugs {
++		d.logLine(now, "run "+slug+": a cancel that kept the pair before the upgrade now records its finished keep cancel intent")
++	}
++}
++
++// noticeKeptPairs posts one notice per fresh start listing the kept pairs of the listed runs.
++// The notice names the verb that removes one.
++// It waits for the kept cancels of this process to be marked, so a pre-upgrade kept pair is in the list.
++// A start with no kept pair posts nothing.
++func (d *daemon) noticeKeptPairs(ctx context.Context) {
++	if !d.keptNoticeOwed || !d.keptMarked {
++		return
++	}
++	d.keptNoticeOwed = false
++	var items []string
++	for _, run := range d.listedRuns {
++		if !keptPair(run) {
++			continue
++		}
++		item := run.Slug
++		if !run.KeptSince.IsZero() {
++			item += " (kept since " + run.KeptSince.UTC().Format(time.RFC3339) + ")"
++		}
++		items = append(items, item)
++	}
++	if len(items) == 0 {
++		return
++	}
++	d.post(ctx, fmt.Sprintf("%s: kept pairs stand: %s; way forward: `lym fabric remove <slug>` removes each pair no longer needed",
++		d.geom.WorktreeName, strings.Join(items, ", ")))
++}
+diff --git a/internal/dobbyengine/leftover_test.go b/internal/dobbyengine/leftover_test.go
+new file mode 100644
+index 00000000..1586e3eb
+--- /dev/null
++++ b/internal/dobbyengine/leftover_test.go
+@@ -0,0 +1,496 @@
++// leftover_test.go pins which pairs dobby counts as left over and the teardown it starts, reads and retries.
++// It also pins the notice of the kept pairs and the orphan pairs dobby notices and tears down after their grace.
++
++package dobbyengine
++
++import (
++	"context"
++	"errors"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/runfsm"
++	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// ReadOrphanSights reads the first-sight record at path; an absent record reads empty.
++func ReadOrphanSights(path string) (OrphanSights, error) {
++	sights, _, err := state.ReadJSON[OrphanSights](path, lockPath(path))
++	return sights, err
++}
++
++func TestLeftoverKind(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name     string
++		run      RunView
++		mutate   func(run *RunView, rs *RunState)
++		inFlight bool
++		want     LeftoverKind
++	}{
++		{"FailedWithItsEntryEndedAndItsPairOnDisk", strandedRun("x"), nil, false, LeftoverEnded},
++		{"Halted", strandedRun("x"), func(run *RunView, _ *RunState) { run.State = "blocked" }, false, LeftoverEnded},
++		{"PausedShortOfItsParent", strandedRun("x"), func(run *RunView, _ *RunState) { run.State = runStatePaused }, false, LeftoverEnded},
++		{"Running", strandedRun("x"), func(run *RunView, _ *RunState) { run.State = runStateRunning }, false, ""},
++		{"PausedWithItsWorkOnItsParent", strandedRun("x"), func(run *RunView, _ *RunState) { run.State, run.ReachedParent = runStatePaused, true }, false, ""},
++		{"DoneWithItsEntryEnded", strandedRun("x"), func(run *RunView, _ *RunState) { run.State = runStateDone }, false, ""},
++		{"EntryOpen", strandedRun("x"), func(run *RunView, _ *RunState) { run.EntryEnded = false }, false, ""},
++		{"PairGone", strandedRun("x"), func(run *RunView, _ *RunState) { run.PairPresent = false }, false, ""},
++		{"PassInFlight", strandedRun("x"), nil, true, ""},
++		{"DriverLockHeld", strandedRun("x"), func(run *RunView, _ *RunState) { run.DriverLockHeld = true }, false, ""},
++		{"CancelMarked", strandedRun("x"), func(run *RunView, _ *RunState) { run.CancelMarker = true }, false, ""},
++		{"CoveredByAPause", strandedRun("x"), func(run *RunView, _ *RunState) { run.Covered = true }, false, ""},
++		{"MarkedOwnedElsewhere", strandedRun("x"), func(_ *RunView, rs *RunState) { rs.OwnedElsewhere = true }, false, ""},
++		{"Landed", landedRun("x"), nil, false, LeftoverLanded},
++		{"LandedWithItsEntryOpen", landedRun("x"), func(run *RunView, _ *RunState) { run.EntryEnded = false }, false, LeftoverLanded},
++		{"LandedUnderABoltHold", landedRun("x"), func(run *RunView, _ *RunState) { run.BoltHeld = true }, false, ""},
++		{"LandedOwnedElsewhere", landedRun("x"), func(run *RunView, _ *RunState) { run.OwnedElsewhere = true }, false, ""},
++		{"LandedCoveredByAPause", landedRun("x"), func(run *RunView, _ *RunState) { run.Covered = true }, false, ""},
++		{"CancelledWithoutKeep", cancelledRun("x", false), nil, false, LeftoverCancelled},
++		{"CancelledWithKeep", cancelledRun("x", true), nil, false, ""},
++		{"CancelledWithKeepAndItsEntryRemoved", cancelledRun("x", true), func(run *RunView, _ *RunState) { run.EntryEnded = true }, false, ""},
++		{"HandedOverAndOwnedElsewhere", handedOverRun("x"), nil, false, LeftoverHandedOver},
++		{"HandedOverUnderABoltHoldAndAPause", handedOverRun("x"), func(run *RunView, _ *RunState) { run.BoltHeld, run.Covered = true, true }, false, LeftoverHandedOver},
++		{"HandedOverThenAdoptedBack", handedOverRun("x"), func(run *RunView, _ *RunState) { run.OwnedElsewhere = false }, false, ""},
++		{"HandedOverWithAPassInFlight", handedOverRun("x"), nil, true, ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			run, rs := tt.run, RunState{}
++			if tt.mutate != nil {
++				tt.mutate(&run, &rs)
++			}
++			got, left := leftoverKind(run, rs, tt.inFlight)
++			if got != tt.want || left != (tt.want != "") {
++				t.Errorf("leftoverKind(%+v, %+v, %v) = %q, %v; want %q, %v", run, rs, tt.inFlight, got, left, tt.want, tt.want != "")
++			}
++		})
++	}
++}
++
++func TestTearDownLeftovers(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	t.Run("a removed pair logs once and gets no further teardown once it is gone", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, strandedRun("x"))
++		lines := h.recordLog()
++		fake := &teardownFake{results: []map[string]error{{"x": nil}}}
++		h.d.deps.TearDownLeftovers = fake.tearDown
++
++		h.tick(false)
++		h.tick(false)
++		h.fake.runs[0].PairPresent = false
++		h.tick(false)
++		h.tick(false)
++
++		if want := [][]LeftoverPair{{{Slug: "x", Kind: LeftoverEnded}}}; !slices.EqualFunc(fake.calls, want, slices.Equal[[]LeftoverPair]) {
++			t.Errorf("teardown calls = %v; want %v", fake.calls, want)
++		}
++		if retry, held := h.d.leftoverRetries["x"]; held {
++			t.Errorf("leftoverRetries[x] = %+v; want no wait for a pair that is gone", retry)
++		}
++		if want := []string{"run x: halted at Run-Shed", "teardown x: pair removed"}; !slices.Equal(*lines, want) {
++			t.Errorf("log lines = %q; want %q", *lines, want)
++		}
++	})
++
++	t.Run("a landed run's pair is torn down though batten reads done and the run takes no pass", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, landedRun("x"), cancelledRun("y", false), cancelledRun("z", true))
++		fake := &teardownFake{results: []map[string]error{{"x": nil, "y": nil}}}
++		h.d.deps.TearDownLeftovers = fake.tearDown
++
++		h.tick(false)
++
++		want := [][]LeftoverPair{{{Slug: "x", Kind: LeftoverLanded}, {Slug: "y", Kind: LeftoverCancelled}}}
++		if !slices.EqualFunc(fake.calls, want, slices.Equal[[]LeftoverPair]) {
++			t.Errorf("teardown calls = %v; want %v", fake.calls, want)
++		}
++	})
++
++	t.Run("a failing teardown logs once and retries after one probe interval, then after twice it", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, strandedRun("x"))
++		lines := h.recordLog()
++		busy := map[string]error{"x": errors.New("its pair is busy")}
++		fake := &teardownFake{results: slices.Repeat([]map[string]error{busy}, 12)}
++		h.d.deps.TearDownLeftovers = fake.tearDown
++
++		for _, want := range []int{1, 1, 2, 2, 2, 3} {
++			h.tick(false)
++			if got := len(fake.calls); got != want {
++				t.Fatalf("teardown calls = %d; want %d", got, want)
++			}
++		}
++		// The wait doubles from 10s, so the 10th failure reaches the ceiling and the 12th, the last one read, must not pass it.
++		for len(fake.calls) < 12 {
++			h.advance(h.d.leftoverRetries["x"].next.Sub(h.clock.now()))
++			h.tick(false)
++		}
++		// This tick reads the 12th result and, with the wait it sets, starts no 13th teardown.
++		h.tick(false)
++		retry := h.d.leftoverRetries["x"]
++		if next := retry.next.Sub(h.clock.now()); retry.interval != leftoverTeardownCeiling || next != leftoverTeardownCeiling {
++			t.Errorf("wait, time to next attempt after 12 failures read = %v, %v; want %v, %v",
++				retry.interval, next, leftoverTeardownCeiling, leftoverTeardownCeiling)
++		}
++		if want := []string{"run x: halted at Run-Shed", "teardown x failing: its pair is busy"}; !slices.Equal(*lines, want) {
++			t.Errorf("log lines = %q; want %q", *lines, want)
++		}
++	})
++
++	t.Run("no teardown seam starts none and leaves the loop idle", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, strandedRun("x"))
++
++		h.tick(false)
++
++		if h.d.teardown != nil || h.d.inFlight || len(h.d.leftoverRetries) != 0 {
++			t.Errorf("teardown, in flight, waits = %v, %v, %v; want nil, false, none", h.d.teardown, h.d.inFlight, h.d.leftoverRetries)
++		}
++	})
++
++	t.Run("a teardown in flight holds the binary check", func(t *testing.T) {
++		t.Parallel()
++		h := newLoopHarness(t, 3)
++		h.deps.Runs = func() ([]RunView, error) { return []RunView{strandedRun("x")}, nil }
++		h.deps.TearDownLeftovers = func([]LeftoverPair) <-chan map[string]error { return make(chan map[string]error) }
++		checks := 0
++		h.checkBinary = func(func(), func(error)) { checks++ }
++
++		if err := h.run(t); err != nil {
++			t.Fatalf("Run() = %v; want nil", err)
++		}
++
++		if checks != 0 {
++			t.Errorf("CheckBinary calls = %d; want 0 while a teardown is in flight", checks)
++		}
++	})
++
++	t.Run("a teardown in flight is not doubled and keeps the loop busy", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, strandedRun("x"))
++		calls := 0
++		h.d.deps.TearDownLeftovers = func([]LeftoverPair) <-chan map[string]error {
++			calls++
++			return make(chan map[string]error)
++		}
++
++		h.tick(false)
++		h.tick(false)
++
++		if calls != 1 || !h.d.inFlight {
++			t.Errorf("teardown calls, in flight = %d, %v; want 1, true", calls, h.d.inFlight)
++		}
++	})
++
++	t.Run("a result that leaves the pair out fails it as unreported", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, strandedRun("x"))
++		lines := h.recordLog()
++		fake := &teardownFake{results: []map[string]error{{}}}
++		h.d.deps.TearDownLeftovers = fake.tearDown
++
++		h.tick(false)
++		h.tick(false)
++
++		want := []string{"run x: halted at Run-Shed", "teardown x failing: " + errTeardownUnreported.Error()}
++		if !slices.Equal(*lines, want) {
++			t.Errorf("log lines = %q; want %q", *lines, want)
++		}
++	})
++}
++
++func TestKeptPairs(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	since := time.Date(2026, 11, 10, 8, 0, 0, 0, time.UTC)
++	keptWithSince := func(slug string) RunView {
++		run := cancelledRun(slug, true)
++		run.KeptSince = since
++		return run
++	}
++
++	t.Run("a fresh start posts one notice naming each kept pair and the verb that removes it", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, keptWithSince("k"), runningRun("r"), cancelledRun("gone", true))
++		h.fake.runs[2].PairPresent = false
++		h.d.keptNoticeOwed = true
++
++		h.tick(false)
++		h.tick(false)
++
++		want := []string{"prime: kept pairs stand: k (kept since 2026-11-10T08:00:00Z); way forward: `lym fabric remove <slug>` removes each pair no longer needed"}
++		if !slices.Equal(h.fake.notices, want) {
++			t.Errorf("notices = %q; want %q", h.fake.notices, want)
++		}
++	})
++
++	t.Run("a re-exec posts no notice", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, keptWithSince("k"))
++
++		h.tick(false)
++
++		if len(h.fake.notices) != 0 {
++			t.Errorf("notices = %q; want none", h.fake.notices)
++		}
++	})
++
++	t.Run("the notice waits for the kept cancels from before the upgrade, which are marked once", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, keptWithSince("k"))
++		lines := h.recordLog()
++		h.d.keptNoticeOwed = true
++		marks := 0
++		h.d.deps.MarkKeptCancels = func() ([]string, error) {
++			marks++
++			if marks == 1 {
++				return nil, errors.New("origin is unreachable")
++			}
++			return []string{"k"}, nil
++		}
++
++		h.tick(false)
++		noticesAfterFailure := len(h.fake.notices)
++		h.tick(false)
++		h.tick(false)
++
++		if noticesAfterFailure != 0 || len(h.fake.notices) != 1 || marks != 2 {
++			t.Errorf("notices after the failed mark, notices, marks = %d, %d, %d; want 0, 1, 2", noticesAfterFailure, len(h.fake.notices), marks)
++		}
++		want := []string{
++			"kept cancel marking failing: origin is unreachable",
++			"run k: a cancel that kept the pair before the upgrade now records its finished keep cancel intent",
++		}
++		if got := slices.DeleteFunc(slices.Clone(*lines), func(line string) bool { return strings.HasPrefix(line, "run k: cancelled") }); !slices.Equal(got, want) {
++			t.Errorf("log lines = %q; want %q", got, want)
++		}
++	})
++
++	t.Run("the view lists each kept pair that stands with when its cancel finished", func(t *testing.T) {
++		t.Parallel()
++		gone := cancelledRun("gone", true)
++		gone.PairPresent = false
++		view := BuildView(ViewInput{
++			Runs:   []RunView{keptWithSince("k"), cancelledRun("removed", false), gone},
++			Covers: func(string) bool { return false },
++		})
++		if want := []KeptPair{{Slug: "k", Since: since}}; !slices.Equal(view.Kept, want) {
++			t.Errorf("Kept = %+v; want %+v", view.Kept, want)
++		}
++	})
++}
++
++func TestOrphans(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	// orphanHarness is a dobby with no runs whose orphan seam answers listing and whose teardowns always succeed.
++	orphanHarness := func(t *testing.T, record string, listing *[]OrphanView) (*passHarness, *teardownFake) {
++		t.Helper()
++		h := newPassHarness(t)
++		h.d.deps.Orphans = func() ([]OrphanView, error) { return slices.Clone(*listing), nil }
++		h.d.deps.OrphanRecord = record
++		fake := &teardownFake{results: slices.Repeat([]map[string]error{{"o": nil}}, 4)}
++		h.d.deps.TearDownLeftovers = fake.tearDown
++		return h, fake
++	}
++
++	t.Run("an idle orphan is noticed once and torn down no earlier than the grace after the notice", func(t *testing.T) {
++		t.Parallel()
++		record := filepath.Join(t.TempDir(), "orphan", "first-sight.json")
++		listing := []OrphanView{{Slug: "o"}}
++		h, fake := orphanHarness(t, record, &listing)
++		first := h.clock.now().Add(10 * time.Second)
++
++		h.tick(true)
++		h.advance(OrphanGrace - 20*time.Second)
++		h.tick(true)
++		callsInGrace := len(fake.calls)
++		h.advance(10 * time.Second)
++		h.tick(true)
++
++		if len(h.fake.notices) != 1 || !strings.Contains(h.fake.notices[0], "o: orphan pair") ||
++			!strings.Contains(h.fake.notices[0], first.Add(OrphanGrace).Format(time.RFC3339)) {
++			t.Errorf("notices = %q; want one orphan notice naming %s", h.fake.notices, first.Add(OrphanGrace).Format(time.RFC3339))
++		}
++		if want := [][]LeftoverPair{{{Slug: "o", Kind: LeftoverOrphan}}}; callsInGrace != 0 || !slices.EqualFunc(fake.calls, want, slices.Equal[[]LeftoverPair]) {
++			t.Errorf("teardown calls inside the grace, after = %d, %v; want 0, %v", callsInGrace, fake.calls, want)
++		}
++	})
++
++	t.Run("an orphan with a commit inside the grace or a live process stays", func(t *testing.T) {
++		t.Parallel()
++		for _, orphan := range []func(now time.Time) OrphanView{
++			func(now time.Time) OrphanView { return OrphanView{Slug: "o", LastCommit: now.Add(-time.Hour)} },
++			func(time.Time) OrphanView { return OrphanView{Slug: "o", ProcessLive: true} },
++		} {
++			record := filepath.Join(t.TempDir(), "orphan", "first-sight.json")
++			var listing []OrphanView
++			h, fake := orphanHarness(t, record, &listing)
++			listing = []OrphanView{orphan(h.clock.now())}
++
++			h.tick(true)
++			h.advance(OrphanGrace + time.Minute)
++			listing = []OrphanView{orphan(h.clock.now())}
++			h.tick(true)
++
++			if len(fake.calls) != 0 {
++				t.Errorf("teardown calls = %v; want none for %+v", fake.calls, listing[0])
++			}
++		}
++	})
++
++	t.Run("a restarted dobby keeps the first sight and posts no second notice", func(t *testing.T) {
++		t.Parallel()
++		record := filepath.Join(t.TempDir(), "orphan", "first-sight.json")
++		listing := []OrphanView{{Slug: "o"}}
++		h, fake := orphanHarness(t, record, &listing)
++		h.tick(true)
++		first := h.clock.now()
++		h.advance(OrphanGrace)
++
++		restarted, restartedFake := orphanHarness(t, record, &listing)
++		restarted.clock = h.clock
++		restarted.d.deps.Now, restarted.d.deps.Awake, restarted.d.deps.Sleep = h.clock.now, h.clock.awake, h.clock.sleep
++		restarted.tick(true)
++
++		sights, err := ReadOrphanSights(record)
++		if err != nil || !sights.Seen["o"].Equal(first) {
++			t.Errorf("ReadOrphanSights() = %v, %v; want o first seen at %v", sights, err, first)
++		}
++		if len(restarted.fake.notices) != 0 || len(fake.calls) != 0 || len(restartedFake.calls) != 1 {
++			t.Errorf("restarted notices, first and restarted teardowns = %q, %d, %d; want none, 0, 1",
++				restarted.fake.notices, len(fake.calls), len(restartedFake.calls))
++		}
++	})
++
++	t.Run("a pair that stops being an orphan or is torn down leaves the record", func(t *testing.T) {
++		t.Parallel()
++		record := filepath.Join(t.TempDir(), "orphan", "first-sight.json")
++		listing := []OrphanView{{Slug: "o"}, {Slug: "p", ProcessLive: true}}
++		h, _ := orphanHarness(t, record, &listing)
++		h.tick(true)
++		h.advance(OrphanGrace)
++		listing = []OrphanView{{Slug: "o"}}
++		h.tick(true)
++		h.tick(false)
++
++		sights, err := ReadOrphanSights(record)
++		if err != nil || len(sights.Seen) != 0 {
++			t.Errorf("ReadOrphanSights() = %v, %v; want an empty record", sights, err)
++		}
++	})
++
++	t.Run("an orphan whose notice fails is not recorded and is noticed again before any teardown", func(t *testing.T) {
++		t.Parallel()
++		record := filepath.Join(t.TempDir(), "orphan", "first-sight.json")
++		listing := []OrphanView{{Slug: "o"}}
++		h, fake := orphanHarness(t, record, &listing)
++		posts := 0
++		h.d.deps.Notice = func(context.Context, string) error {
++			posts++
++			if posts == 1 {
++				return errors.New("no orch strand is recorded to receive the notice")
++			}
++			return nil
++		}
++
++		h.tick(true)
++		afterFailure, err := ReadOrphanSights(record)
++		if err != nil || len(afterFailure.Seen) != 0 {
++			t.Errorf("ReadOrphanSights() after the failed notice = %v, %v; want an empty record", afterFailure, err)
++		}
++		h.advance(OrphanGrace)
++		h.tick(true)
++		callsAtRetry := len(fake.calls)
++		h.advance(OrphanGrace)
++		h.tick(true)
++
++		if posts != 2 {
++			t.Errorf("notice posts = %d; want 2, the failed one and its retry", posts)
++		}
++		if want := [][]LeftoverPair{{{Slug: "o", Kind: LeftoverOrphan}}}; callsAtRetry != 0 || !slices.EqualFunc(fake.calls, want, slices.Equal[[]LeftoverPair]) {
++			t.Errorf("teardown calls at the retry, after the grace from it = %d, %v; want 0, %v", callsAtRetry, fake.calls, want)
++		}
++	})
++
++	t.Run("a failing orphan reading keeps the last due list until a later reading recovers", func(t *testing.T) {
++		t.Parallel()
++		record := filepath.Join(t.TempDir(), "orphan", "first-sight.json")
++		listing := []OrphanView{{Slug: "o"}}
++		h, _ := orphanHarness(t, record, &listing)
++		busy := &teardownFake{results: slices.Repeat([]map[string]error{{"o": errors.New("its pair is busy")}}, 4)}
++		h.d.deps.TearDownLeftovers = busy.tearDown
++		failing := false
++		h.d.deps.Orphans = func() ([]OrphanView, error) {
++			if failing {
++				return nil, errors.New("the worktree list failed")
++			}
++			return slices.Clone(listing), nil
++		}
++
++		h.tick(true)
++		h.advance(OrphanGrace)
++		h.tick(true)
++		if !slices.Equal(h.d.orphansDue, []string{"o"}) {
++			t.Fatalf("due orphans after the good reading = %v; want [o]", h.d.orphansDue)
++		}
++		failing = true
++		h.tick(true)
++		if !slices.Equal(h.d.orphansDue, []string{"o"}) {
++			t.Errorf("due orphans after the failed reading = %v; want the last reading's [o]", h.d.orphansDue)
++		}
++		failing, listing = false, nil
++		h.tick(true)
++		if len(h.d.orphansDue) != 0 {
++			t.Errorf("due orphans after the recovered reading = %v; want none", h.d.orphansDue)
++		}
++	})
++}
++
++// strandedRun is a run batten left failed at Run-Shed whose board entry ended and whose pair is still on disk.
++func strandedRun(slug string) RunView {
++	return RunView{Slug: slug, State: "failed", Run: runfsm.Halted, Producer: producerRunShed, EntryEnded: true, PairPresent: true}
++}
++
++// landedRun is a run batten finished as done, landed in the FSM, whose pair is still on disk.
++func landedRun(slug string) RunView {
++	return RunView{Slug: slug, State: runStateDone, Run: runfsm.Landed, Producer: "Worktree-Teardown", PairPresent: true}
++}
++
++// cancelledRun is a run whose cancel finished, keeping its pair or not, with its pair still on disk.
++func cancelledRun(slug string, keep bool) RunView {
++	return RunView{Slug: slug, State: "cancelled", Run: runfsm.Cancelled, Producer: producerRunShed, PairKept: keep, PairPresent: true}
++}
++
++// handedOverRun is a run this machine handed over, which another machine owns, with its local pair still on disk.
++func handedOverRun(slug string) RunView {
++	return RunView{Slug: slug, State: runStateRunning, Run: runfsm.Running, Producer: producerRunShed, PairPresent: true, OwnedElsewhere: true, HandOverMarked: true}
++}
++
++// teardownFake answers the TearDownLeftovers seam with its next result, delivered at once, and records each call's pairs.
++type teardownFake struct {
++	calls   [][]LeftoverPair
++	results []map[string]error
++}
++
++func (f *teardownFake) tearDown(pairs []LeftoverPair) <-chan map[string]error {
++	f.calls = append(f.calls, slices.Clone(pairs))
++	result := make(chan map[string]error, 1)
++	next, rest := f.results[0], f.results[1:]
++	f.results = rest
++	result <- next
++	return result
++}
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index ab6500b1..0e29852f 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -111,10 +111,21 @@ type Deps struct {
+ 	// It runs in its own process group with the prime's anchor as its working directory, and the spawn is logged at Info.
+ 	// The pass registers itself in `internal/runproc`, so dobby registers nothing; the channel delivers the exit once.
+ 	SpawnPass func(slug string, continuePass, noReopen bool) (<-chan PassExit, error)
+-	// TearDownEnded starts the teardown of the pairs of slugs, runs whose board entry ended short of their own teardown.
++	// TearDownLeftovers starts the teardown of the leftover pairs, each by the kind that decides how it goes.
+ 	// The channel delivers once, mapping each slug to nil when its pair was removed and to the reason otherwise.
+-	// A nil TearDownEnded tears nothing down.
+-	TearDownEnded func(slugs []string) <-chan map[string]error
++	// A nil TearDownLeftovers tears nothing down.
++	TearDownLeftovers func(pairs []LeftoverPair) <-chan map[string]error
++	// MarkKeptCancels marks each run of this worktree cancelled with keep before cancel intents existed.
++	// Each marked run, whose pair stands here, gets its finished keep cancel intent.
++	// A finished keep intent of this machine whose commit failed is committed again.
++	// It returns the slugs it committed.
++	// A nil MarkKeptCancels marks nothing.
++	MarkKeptCancels func() ([]string, error)
++	// Orphans lists the hub's orphan pairs, the pairs neither a board entry nor a batten record names.
++	// The hub wiring gives it to the prime's dobby only; a nil Orphans or an empty OrphanRecord notices no orphan.
++	Orphans func() ([]OrphanView, error)
++	// OrphanRecord is the path of the machine-local first-sight record of the orphan pairs.
++	OrphanRecord string
+ 	// Notice posts one line to the nearest live orch.
+ 	Notice func(ctx context.Context, line string) error
+ 	// ReleaseParentLock releases the parent lock record that names the run's child, which a run another machine owns needs.
+@@ -228,6 +239,7 @@ func Run(ctx context.Context, geom Geometry, deps Deps) error {
+ 		d.logOwn(deps.Now(), "dobby: stopped on error: "+err.Error()+stoppedWayForward)
+ 		return err
+ 	}
++	d.keptNoticeOwed = !reexec
+ 	err = d.run(ctx, reexec)
+ 	if err != nil && !errors.Is(err, ErrDobbyRunning) {
+ 		d.logOwn(deps.Now(), "dobby: stopped on error: "+err.Error()+stoppedWayForward)
+@@ -406,10 +418,21 @@ type daemon struct {
+ 	lastReminders map[string]time.Time
+ 	// waitFailures guards the wait reads by slug or `|`-prefixed name: Warn first, Debug while it repeats, Info on recovery.
+ 	waitFailures logger.EpisodeSet
+-	// teardown is the teardown of stranded runs' pairs in flight, nil when none is.
+-	teardown *endedTeardown
+-	// endedRetries holds, by slug, when each stranded run's teardown may start next, in memory only.
+-	endedRetries map[string]endedRetry
++	// teardown is the teardown of leftover pairs in flight, nil when none is.
++	teardown *leftoverTeardown
++	// leftoverRetries holds, by slug, when each leftover pair's teardown may start next, in memory only.
++	leftoverRetries map[string]leftoverRetry
++	// keptNoticeOwed reports whether this fresh start still owes its one notice of the kept pairs.
++	keptNoticeOwed bool
++	// keptMarked reports whether this process marked the kept cancels from before the upgrade.
++	// keptMarkFailing reports whether the failure episode of that step logged its line.
++	keptMarked      bool
++	keptMarkFailing bool
++	// orphansRead reports whether a probe tick of this process read the orphan pairs, and orphansDue the due ones it found.
++	orphansRead bool
++	orphansDue  []string
++	// orphanFailures is the failure episode of the orphan read and of its first-sight record.
++	orphanFailures logger.Episode
+ }
+ 
+ // releaseLock releases the dobby lock when it is held.
+@@ -685,12 +708,14 @@ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 	}
+ 	scheduling := moving == "" && !d.adoptHolds && !catchingUp
+ 	if scheduling {
++		d.markKeptCancels(now)
+ 		if err := d.drivePasses(ctx, now); err != nil {
+ 			return err
+ 		}
+-		if err := d.tearDownEnded(now); err != nil {
++		if err := d.tearDownLeftovers(ctx, now); err != nil {
+ 			return err
+ 		}
++		d.noticeKeptPairs(ctx)
+ 		d.runNotices(ctx, now)
+ 		d.waitReminders(ctx, now)
+ 		d.landNotices(ctx, now, d.listedRuns)
+diff --git a/internal/dobbyengine/orphan.go b/internal/dobbyengine/orphan.go
+new file mode 100644
+index 00000000..e4cdff6c
+--- /dev/null
++++ b/internal/dobbyengine/orphan.go
+@@ -0,0 +1,148 @@
++// orphan.go notices the orphan pairs, those that neither a board entry nor a batten record names.
++// It keeps the first-sight record that decides when an idle one is torn down.
++
++package dobbyengine
++
++import (
++	"context"
++	"fmt"
++	"slices"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++// OrphanGrace is how long an orphan pair stands after the notice of its first sight before the dobby tears it down.
++// Both its branches must also have gone without a commit for as long.
++const OrphanGrace = 24 * time.Hour
++
++// OrphanView is what the dobby reads of one orphan pair.
++type OrphanView struct {
++	Slug string
++	// LastCommit is the newer commit time of the tips of the pair's code and records branches.
++	LastCommit time.Time
++	// ProcessLive reports whether a process registered under the pair's slug lives.
++	ProcessLive bool
++}
++
++// OrphanSights is the machine-local record of when the dobby first noticed each orphan pair, by slug.
++// A dobby restart reads it, so the grace is neither reset nor skipped.
++type OrphanSights struct {
++	Seen map[string]time.Time `json:"seen,omitempty"`
++}
++
++// updateOrphanSights applies mutate to the first-sight record at path under its lock.
++// It keeps the keys it does not declare.
++func updateOrphanSights(path string, mutate func(*OrphanSights)) error {
++	return state.UpdateJSON(path, lockPath(path), func(current OrphanSights, _ bool) (OrphanSights, error) {
++		if current.Seen == nil {
++			current.Seen = map[string]time.Time{}
++		}
++		mutate(&current)
++		return current, nil
++	})
++}
++
++// dueOrphans returns the orphan pairs whose teardown is due.
++// It reads the orphans afresh on a probe tick, and between probe ticks it returns what the last reading found.
++// An orphan seen for the first time gets one notice saying when it goes.
++// Its first-sight time is recorded once that notice posted.
++// An orphan whose notice failed stays out of the record and is noticed again at the next probe tick,
++// so it is never due before a notice.
++// A pair no longer read as an orphan leaves the record.
++// An orphan is due once the orphan grace has passed since its first sight and since its last commit.
++// No process of its slug may be alive.
++// A failed read, notice or record write is logged once per episode and leaves the last reading standing.
++// A nil Deps.Orphans or an empty Deps.OrphanRecord notices nothing.
++func (d *daemon) dueOrphans(ctx context.Context, now time.Time) []string {
++	if d.deps.Orphans == nil || d.deps.OrphanRecord == "" {
++		return nil
++	}
++	if d.orphansRead && !d.probeDue {
++		return d.orphansDue
++	}
++	orphans, err := d.deps.Orphans()
++	if err != nil {
++		d.orphanFailures.Fail("dobbyengine: the orphan pairs are unreadable; the last reading stands", "worktree", d.geom.WorktreeName, "error", err)
++		return d.orphansDue
++	}
++	recorded, _, err := state.ReadJSON[OrphanSights](d.deps.OrphanRecord, lockPath(d.deps.OrphanRecord))
++	if err != nil {
++		d.orphanFailures.Fail("dobbyengine: the orphan first-sight record could not be read; the last reading stands", "worktree", d.geom.WorktreeName, "error", err)
++		return d.orphansDue
++	}
++	noticed := map[string]bool{}
++	var noticeErr error
++	for _, orphan := range orphans {
++		if _, known := recorded.Seen[orphan.Slug]; known {
++			continue
++		}
++		if err := d.postOrphanNotice(ctx, orphan.Slug, now); err != nil {
++			noticeErr = err
++			continue
++		}
++		noticed[orphan.Slug] = true
++	}
++	seen := map[string]time.Time{}
++	err = updateOrphanSights(d.deps.OrphanRecord, func(s *OrphanSights) {
++		listed := make(map[string]bool, len(orphans))
++		for _, orphan := range orphans {
++			listed[orphan.Slug] = true
++			if _, known := s.Seen[orphan.Slug]; !known && noticed[orphan.Slug] {
++				s.Seen[orphan.Slug] = now
++			}
++			if at, known := s.Seen[orphan.Slug]; known {
++				seen[orphan.Slug] = at
++			}
++		}
++		for slug := range s.Seen {
++			if !listed[slug] {
++				delete(s.Seen, slug)
++			}
++		}
++	})
++	if err != nil {
++		d.orphanFailures.Fail("dobbyengine: the orphan first-sight record could not be written; the last reading stands", "worktree", d.geom.WorktreeName, "error", err)
++		return d.orphansDue
++	}
++	if noticeErr != nil {
++		d.orphanFailures.Fail("dobbyengine: an orphan notice was not posted; the next probe tick posts it again", "worktree", d.geom.WorktreeName, "error", noticeErr)
++	} else {
++		d.orphanFailures.Recover("dobbyengine: the orphan pairs read again", "worktree", d.geom.WorktreeName)
++	}
++	d.orphansRead = true
++	d.orphansDue = nil
++	for _, orphan := range orphans {
++		first, noticedBefore := seen[orphan.Slug]
++		if noticedBefore && !orphan.ProcessLive && now.Sub(first) >= OrphanGrace && now.Sub(orphan.LastCommit) >= OrphanGrace {
++			d.orphansDue = append(d.orphansDue, orphan.Slug)
++		}
++	}
++	return d.orphansDue
++}
++
++// postOrphanNotice posts the notice of the orphan pair slug first seen at seenAt, and returns the post's failure.
++// A nil Deps.Notice posts nothing and fails nothing.
++func (d *daemon) postOrphanNotice(ctx context.Context, slug string, seenAt time.Time) error {
++	if d.deps.Notice == nil {
++		return nil
++	}
++	return d.deps.Notice(ctx, fmt.Sprintf("%s: orphan pair: neither a board entry nor a batten record names it; the dobby tears it down at %s or later, "+
++		"its branches kept under archive tags, once it has gone that long without a commit or a live process; "+
++		"way forward: put it on the board to keep it, or run `lym fabric remove %s` to remove it now",
++		slug, seenAt.Add(OrphanGrace).UTC().Format(time.RFC3339), slug))
++}
++
++// dropOrphanSight removes slug from the first-sight record once its pair is torn down.
++// A failed write is logged at Warn; the next reading drops a slug no longer listed anyway.
++func (d *daemon) dropOrphanSight(slug string) {
++	if d.deps.OrphanRecord == "" {
++		return
++	}
++	err := updateOrphanSights(d.deps.OrphanRecord, func(s *OrphanSights) { delete(s.Seen, slug) })
++	if err != nil {
++		logger.Warn("dobbyengine: a removed orphan could not leave the first-sight record", "slug", slug, "error", err)
++	}
++	d.orphansDue = slices.DeleteFunc(d.orphansDue, func(due string) bool { return due == slug })
++}
+diff --git a/internal/dobbyengine/passes.go b/internal/dobbyengine/passes.go
+index bcb3b389..a609215f 100644
+--- a/internal/dobbyengine/passes.go
++++ b/internal/dobbyengine/passes.go
+@@ -59,6 +59,16 @@ type RunView struct {
+ 	EntryEnded bool
+ 	// PairPresent reports whether the run's task worktree is still on disk.
+ 	PairPresent bool
++	// PairKept reports whether the run is cancelled by a cancel that kept its pair, and KeptSince when that cancel finished.
++	// KeptSince is zero when the record does not say.
++	PairKept  bool
++	KeptSince time.Time
++	// OwnedElsewhere reports whether the machine registry reads the run's owner as another machine.
++	OwnedElsewhere bool
++	// BoltHeld reports whether an adopt hold in Bolt holds the run.
++	BoltHeld bool
++	// HandOverMarked reports whether this machine's hand-over mark names the run, which this machine handed over.
++	HandOverMarked bool
+ 	// PastLand reports whether the run is past its Land row, and Landed whether it landed there rather than ending without landing.
+ 	PastLand bool
+ 	Landed   bool
+diff --git a/internal/dobbyengine/view.go b/internal/dobbyengine/view.go
+index 610333fe..5b625c26 100644
+--- a/internal/dobbyengine/view.go
++++ b/internal/dobbyengine/view.go
+@@ -25,6 +25,15 @@ type View struct {
+ 	Waiting []WaitingTask `json:"waiting"`
+ 	// CatchUp is the catch-up from origin the dobby waits on, nil when it waits on none.
+ 	CatchUp *CatchUpWait `json:"catch_up,omitempty"`
++	// Kept are the pairs that cancels of the dobby's runs kept and that still stand, by slug.
++	Kept []KeptPair `json:"kept,omitempty"`
++}
++
++// KeptPair is the pair of a cancelled run whose cancel kept it, still on disk.
++type KeptPair struct {
++	Slug string `json:"slug"`
++	// Since is when the cancel finished; zero when the record does not say.
++	Since time.Time `json:"since,omitzero"`
+ }
+ 
+ // ViewRun is one run a dobby drives, as read from its batten status and the dobby's state record.
+@@ -94,6 +103,7 @@ type ViewInput struct {
+ 
+ // BuildView returns the View of the dobby in.
+ // The runs are the listed ones that are not done; a done run takes a slot only while its driver lock is held.
++// The kept pairs are those of the listed cancelled runs whose cancel kept a pair that still stands.
+ // A task waits while it is released to the worktree and not started.
+ // Its reasons are the conditions the dobby's start step checks, in the start step's own order for max_runs.
+ // An open front task of the worktree holds every other waiting task back and takes no slot under max_runs.
+@@ -118,6 +128,9 @@ func BuildView(in ViewInput) View {
+ 			FailingPassError: rs.FailingPassError, FailingPassCount: rs.FailingPassCount,
+ 			NotifyOnLand: requested[run.Slug] || in.Record.LandNotices[run.Slug].Requested,
+ 		})
++		if keptPair(run) {
++			view.Kept = append(view.Kept, KeptPair{Slug: run.Slug, Since: run.KeptSince})
++		}
+ 	}
+ 
+ 	slots := in.Config.MaxRuns - slotsTaken(slotRuns, in.Record)
+diff --git a/internal/fabricengine/export_test.go b/internal/fabricengine/export_test.go
+index f3e264f9..ecb0c24a 100644
+--- a/internal/fabricengine/export_test.go
++++ b/internal/fabricengine/export_test.go
+@@ -932,6 +932,15 @@ func HoldHubPauseForTest(t *testing.T, slug string) {
+ 	}))
+ }
+ 
++// PendingFlagPathForTest is pendingFlagPath, the path of a side's pending flag in a lock directory.
++var PendingFlagPathForTest = pendingFlagPath
++
++// PushSideCodeForTest and PushSideRecordsForTest name the two sides a pending flag can stand for.
++const (
++	PushSideCodeForTest    = pushSideCode
++	PushSideRecordsForTest = pushSideRecords
++)
++
+ // SetBeforeWireForTest makes the Add call on t run hook once the new pair's weft worktree exists.
+ // The hook runs before the pair's junctions are wired.
+ // It sets the hook on the one Topology, so parallel tests inject per instance.
+diff --git a/internal/fabricengine/orphan.go b/internal/fabricengine/orphan.go
+new file mode 100644
+index 00000000..3f58255a
+--- /dev/null
++++ b/internal/fabricengine/orphan.go
+@@ -0,0 +1,48 @@
++// orphan.go names the machine-local first-sight record of orphan pairs and reads when a pair last committed.
++// The dobby tears an orphan pair down once it has gone idle for its grace.
++
++package fabricengine
++
++import (
++	"fmt"
++	"path/filepath"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++)
++
++// orphanFirstSightFileName is the file under the hub's orphan directory that holds each orphan's first-sight time.
++const orphanFirstSightFileName = "first-sight.json"
++
++// OrphanFirstSightPath returns the machine-local record of when the dobby first noticed each orphan pair of the hub:
++// <HubScratchDir(hubPath)>/<lymdirs.OrphanDirName>/first-sight.json.
++// A pair removal does not take it, since it sits under the hub's `.lym` and never in a pair.
++func OrphanFirstSightPath(hubPath string) string {
++	return filepath.Join(HubScratchDir(hubPath), lymdirs.OrphanDirName, orphanFirstSightFileName)
++}
++
++// PairLastCommit returns the newer commit time of the tips checked out in the pair's code and records worktrees.
++// A worktree that is not there counts no commit, so a pair with neither reads the zero time.
++func PairLastCommit(pair *lymcwd.Location) (time.Time, error) {
++	var newest time.Time
++	for _, dir := range []string{pair.WorktreePath(), RecordsWorktree(pair)} {
++		if !pathPresent(dir) {
++			continue
++		}
++		repo := gitrepo.New(dir)
++		tip, err := repo.CurrentSHA()
++		if err != nil {
++			return time.Time{}, fmt.Errorf("fabricengine: read the tip checked out at %s: %w", dir, err)
++		}
++		commits, err := repo.Log(tip, gitrepo.LogQuery{Limit: 1})
++		if err != nil {
++			return time.Time{}, fmt.Errorf("fabricengine: read the tip commit at %s: %w", dir, err)
++		}
++		if len(commits) > 0 && commits[0].Committed.After(newest) {
++			newest = commits[0].Committed
++		}
++	}
++	return newest, nil
++}
+diff --git a/internal/fabricengine/pairpushdeferred_integration_test.go b/internal/fabricengine/pairpushdeferred_integration_test.go
+new file mode 100644
+index 00000000..e345a1f9
+--- /dev/null
++++ b/internal/fabricengine/pairpushdeferred_integration_test.go
+@@ -0,0 +1,126 @@
++// pairpushdeferred_integration_test.go covers PairPushDeferred and PairLastCommit over the pair of a hubforge hub.
++// Package fabricengine_test; shares the single TestMain in testmain_test.go.
++
++package fabricengine_test
++
++import (
++	"os"
++	"os/exec"
++	"path/filepath"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// newHubPair adds the pair slug to a fresh hub and returns the hub with the pair's location.
++func newHubPair(t *testing.T, slug string) (*hubforge.Hub, *lymcwd.Location) {
++	t.Helper()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPair(t, h, slug)
++	pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(slug))
++	if err != nil {
++		t.Fatalf("ResolveWorktree: %v", err)
++	}
++	return h, pair
++}
++
++func TestPairPushDeferred(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// flagSides are the sides whose pending flag the row writes.
++		flagSides []string
++		want      bool
++	}{
++		{name: "NoPendingFlag", want: false},
++		{name: "ACodeSideFlag", flagSides: []string{fabricengine.PushSideCodeForTest}, want: true},
++		{name: "ARecordsSideFlag", flagSides: []string{fabricengine.PushSideRecordsForTest}, want: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			_, pair := newHubPair(t, "deferred-run")
++			lockDir := fabricengine.RecordsLockDirPath(fabricengine.RecordsWorktree(pair))
++			if err := os.MkdirAll(lockDir, 0o755); err != nil {
++				t.Fatalf("create the lock directory: %v", err)
++			}
++			for _, side := range tt.flagSides {
++				if err := os.WriteFile(fabricengine.PendingFlagPathForTest(lockDir, side), []byte("{}"), 0o644); err != nil {
++					t.Fatalf("write the %s pending flag: %v", side, err)
++				}
++			}
++
++			if got := fabricengine.PairPushDeferred(pair); got != tt.want {
++				t.Errorf("PairPushDeferred() = %v; want %v", got, tt.want)
++			}
++		})
++	}
++}
++
++// commitEmptyAt commits an empty commit in dir whose committer time is date, an RFC 3339 time.
++// The environment is set on the one git process, so parallel tests are not affected.
++func commitEmptyAt(t *testing.T, dir, date string) {
++	t.Helper()
++
++	cmd := exec.Command("git", "commit", "-q", "--allow-empty", "-m", "dated commit")
++	cmd.Dir = dir
++	cmd.Env = append(os.Environ(), "GIT_COMMITTER_DATE="+date, "GIT_AUTHOR_DATE="+date)
++	if output, err := cmd.CombinedOutput(); err != nil {
++		t.Fatalf("git commit in %s: %v; output: %s", dir, err, output)
++	}
++}
++
++func TestPairLastCommit(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const (
++		codeOlder    = "2020-01-01T00:00:00Z"
++		recordsNewer = "2021-01-01T00:00:00Z"
++	)
++	tests := []struct {
++		name                  string
++		codeDate, recordsDate string
++		removeRecordsWorktree bool
++		want                  string
++	}{
++		{name: "TheRecordsTipIsNewer", codeDate: codeOlder, recordsDate: recordsNewer, want: recordsNewer},
++		{name: "TheCodeTipIsNewer", codeDate: recordsNewer, recordsDate: codeOlder, want: recordsNewer},
++		{name: "WithoutARecordsWorktreeTheCodeTipCounts", codeDate: codeOlder, recordsDate: recordsNewer, removeRecordsWorktree: true, want: codeOlder},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h, pair := newHubPair(t, "last-commit-run")
++			commitEmptyAt(t, h.PairCodeWorktree("last-commit-run"), tt.codeDate)
++			commitEmptyAt(t, h.PairRecordsSibling("last-commit-run"), tt.recordsDate)
++			if tt.removeRecordsWorktree {
++				if err := os.RemoveAll(filepath.Clean(fabricengine.RecordsWorktree(pair))); err != nil {
++					t.Fatalf("remove the records worktree: %v", err)
++				}
++			}
++			want, err := time.Parse(time.RFC3339, tt.want)
++			if err != nil {
++				t.Fatalf("parse %q: %v", tt.want, err)
++			}
++
++			got, err := fabricengine.PairLastCommit(pair)
++
++			if err != nil {
++				t.Fatalf("PairLastCommit() error = %v; want nil", err)
++			}
++			if !got.Equal(want) {
++				t.Errorf("PairLastCommit() = %v; want %v", got, want)
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/pendingflags.go b/internal/fabricengine/pendingflags.go
+index 2486e66d..ed1d18cd 100644
+--- a/internal/fabricengine/pendingflags.go
++++ b/internal/fabricengine/pendingflags.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fsx"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ )
+ 
+ const (
+@@ -39,6 +40,19 @@ func pendingFlagPath(lockDir, side string) string {
+ 	return filepath.Join(lockDir, "pending."+side)
+ }
+ 
++// PairPushDeferred reports whether a detached push of the pair at l left a side's pending flag on disk.
++// A push that a pause deferred leaves one.
++// The flag stays until the pair's next push carries that side, so a lift reads from it whether a push is owed.
++func PairPushDeferred(l *lymcwd.Location) bool {
++	lockDir := RecordsLockDirPath(RecordsWorktree(l))
++	for _, side := range []string{pushSideCode, pushSideRecords} {
++		if pathPresent(pendingFlagPath(lockDir, side)) {
++			return true
++		}
++	}
++	return false
++}
++
+ // exitDeferred ends a detached push child that a pause covers; a test swaps it for a recorder.
+ var exitDeferred = func() { os.Exit(0) }
+ 
+diff --git a/internal/lymdirs/dirs.go b/internal/lymdirs/dirs.go
+index 7be9b80e..fbed618f 100644
+--- a/internal/lymdirs/dirs.go
++++ b/internal/lymdirs/dirs.go
+@@ -56,6 +56,10 @@ const DriftJudgeDirName = "drift-judge"
+ // A pair removal does not take it, since it sits under the hub's `.lym` and never in a pair.
+ const HandOverDirName = "hand-over"
+ 
++// OrphanDirName is the directory under the hub's board-level `.lym` that holds the dobby's record of orphan pairs.
++// The record keeps when each orphan was first noticed, so a dobby restart neither resets nor skips its grace.
++const OrphanDirName = "orphan"
++
+ // TestCoverDirName is the directory under a `.lym` that holds per-package coverage maps.
+ // Under the hub's board-level `.lym` it holds the maps every worktree of the hub on the machine shares;
+ // under a worktree's `.lym` it holds the maps that worktree builds for itself.
+diff --git a/internal/pairteardown/doc.go b/internal/pairteardown/doc.go
+index 4af785b3..9a960723 100644
+--- a/internal/pairteardown/doc.go
++++ b/internal/pairteardown/doc.go
+@@ -323,6 +323,17 @@
+ // Otherwise HandOver follows, with no dobby end, and its ErrHandedOver answers nil.
+ // A failed push returns its error and archives nothing.
+ //
++// # Leftover pairs
++//
++// RemoveHandedOverPair serves the dobby for a run this machine handed over from inside its pair.
++// It ends the run's processes through EndSubjectProcesses.
++// It then ends the pair's reed session and removes the pair in local mode with force, leaving the batten record alone.
++// RemoveOrphanPair serves the dobby for a pair no board entry or batten run names.
++// It first reads again that the pair is still an orphan with no live process.
++// It archives the code and records tips under owner archive tags and commits uncommitted files onto the archived tip.
++// It then tears the pair down, leaving its branches on origin and settling no board claim.
++// A failed archive removes nothing.
++//
+ // # Quiet rule
+ //
+ // A pair is quiet when its run lock and its loop lock are free,
+diff --git a/internal/pairteardown/leftover.go b/internal/pairteardown/leftover.go
+new file mode 100644
+index 00000000..b02b97ce
+--- /dev/null
++++ b/internal/pairteardown/leftover.go
+@@ -0,0 +1,92 @@
++// leftover.go removes two kinds of pair the dobby finds left over that no run's own teardown takes:
++// the local pair of a run this machine handed over, and an orphan pair no board entry or batten record names.
++
++package pairteardown
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"slices"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++)
++
++// RemoveHandedOverPair removes the local pair of slug, a run this machine handed over to the machine that owns it now.
++// It ends this machine's processes for the run first, then the pair's session.
++// That session stays live when the hand-over ran inside the pair.
++// The removal is local: it takes no origin step and writes no board or batten record, so a hold does not stop it.
++// The hand-over archived the pair's tips, so the removal answers dirtiness with force.
++func RemoveHandedOverPair(prime *lymcwd.Location, slug string) (Result, error) {
++	if err := EndSubjectProcesses(prime, slug, false); err != nil {
++		return Result{}, fmt.Errorf("pairteardown: remove the handed-over pair %q: end its processes: %w", slug, err)
++	}
++	td, err := New(prime)
++	if err != nil {
++		return Result{}, err
++	}
++	request := Request{Slug: slug, Local: true, Force: true, Verdict: fabricengine.EntryOwnedElsewhere}
++	session, err := td.EndSession(context.Background(), request)
++	if err != nil {
++		return Result{Session: session}, err
++	}
++	removal, err := td.RemovePair(request)
++	return Result{Session: session, Removal: removal}, err
++}
++
++// RemoveOrphanPair tears down the pair of slug, which neither a board entry nor a batten record names.
++// It first archives the pair's code and records tips that origin lacks under owner archive tags pushed to origin.
++// It commits the pair's uncommitted files onto the archived tip.
++// It then ends the pair's session and removes the pair, leaving its branches on origin and settling no board claim.
++// A failed archive removes nothing.
++// It first reads again that the pair is still an orphan.
++// It returns an error naming the reason, with nothing touched, when a board entry names the slug.
++// It does the same when a batten run directory names the slug or a process registered under it lives.
++func RemoveOrphanPair(ctx context.Context, prime *lymcwd.Location, slug string) (Result, error) {
++	if err := requireStillOrphan(prime, slug); err != nil {
++		return Result{}, err
++	}
++	pair, err := lymcwd.NamedWorktree(prime.HubPath, slug)
++	if err != nil {
++		return Result{}, fmt.Errorf("pairteardown: locate the orphan pair %q: %w", slug, err)
++	}
++	archive := []fabricengine.OwnerArchivePair{{Slug: slug, Pair: pair, CommitUncommitted: true}}
++	if _, err := fabricengine.ArchiveOwnerTips(prime.HubPath, archive); err != nil {
++		return Result{}, fmt.Errorf("pairteardown: archive the tips of the orphan pair %q: %w", slug, err)
++	}
++	td, err := New(prime)
++	if err != nil {
++		return Result{}, err
++	}
++	return td.Run(ctx, Request{Slug: slug, Force: true, LeaveClaim: true, Verdict: fabricengine.EntryEnded})
++}
++
++// requireStillOrphan returns an error when the board, the batten run directory or a registered live process names slug.
++func requireStillOrphan(prime *lymcwd.Location, slug string) error {
++	tasks, err := boardengine.ReadTasks(fabricengine.BoardDir(prime.HubPath))
++	if err != nil {
++		return fmt.Errorf("pairteardown: read the board before removing the orphan pair %q: %w", slug, err)
++	}
++	if slices.ContainsFunc(tasks, func(task boardengine.Task) bool { return task.Slug == slug }) {
++		return fmt.Errorf("pairteardown: %q is no orphan pair: a board entry names it", slug)
++	}
++	if _, err := os.Stat(shedrun.RunDir(prime, slug)); err == nil {
++		return fmt.Errorf("pairteardown: %q is no orphan pair: a batten run directory names it", slug)
++	} else if !errors.Is(err, fs.ErrNotExist) {
++		return fmt.Errorf("pairteardown: read the batten run directory of %q: %w", slug, err)
++	}
++	live, err := runproc.List(fabricengine.RunProcDir(prime.HubPath), slug)
++	if err != nil {
++		return fmt.Errorf("pairteardown: read the processes of %q: %w", slug, err)
++	}
++	if len(live) > 0 {
++		return fmt.Errorf("pairteardown: %q is no idle orphan pair: a process registered under it lives", slug)
++	}
++	return nil
++}
+diff --git a/internal/pairteardown/leftover_integration_test.go b/internal/pairteardown/leftover_integration_test.go
+new file mode 100644
+index 00000000..0997a814
+--- /dev/null
++++ b/internal/pairteardown/leftover_integration_test.go
+@@ -0,0 +1,169 @@
++//go:build !windows
++
++// leftover_integration_test.go drives RemoveOrphanPair over hub pairs.
++// Its rows pin the archive-then-remove order and the re-check that runs first.
++
++package pairteardown_test
++
++import (
++	"context"
++	"os"
++	"os/exec"
++	"path/filepath"
++	"strings"
++	"syscall"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/pairteardown"
++	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// requirePairStanding fails the test unless the code worktree and the records sibling of slug are both on disk.
++func requirePairStanding(t *testing.T, h *hubforge.Hub, slug string) {
++	t.Helper()
++
++	for _, path := range []string{h.PairCodeWorktree(slug), h.PairRecordsSibling(slug)} {
++		if _, err := os.Stat(path); err != nil {
++			t.Errorf("stat %s error = %v; want the pair standing", path, err)
++		}
++	}
++}
++
++// requirePairGone fails the test unless neither the code worktree nor the records sibling of slug is on disk.
++func requirePairGone(t *testing.T, h *hubforge.Hub, slug string) {
++	t.Helper()
++
++	for _, path := range []string{h.PairCodeWorktree(slug), h.PairRecordsSibling(slug)} {
++		if _, err := os.Stat(path); !os.IsNotExist(err) {
++			t.Errorf("stat %s error = %v; want the pair gone", path, err)
++		}
++	}
++}
++
++// ownerArchiveTags returns the owner archive tags of slug on the bare repository bare.
++func ownerArchiveTags(t *testing.T, bare, slug string) []string {
++	t.Helper()
++
++	return strings.Fields(gitkit.Git(t, bare, "tag", "--list", fabricengine.OwnerArchiveTagPrefix+slug+"/*"))
++}
++
++// registerLiveProcess starts a sleeping process and registers it under slug in the hub's process registry.
++// The process group is killed when the test ends.
++func registerLiveProcess(t *testing.T, h *hubforge.Hub, slug string) {
++	t.Helper()
++
++	sleeper := exec.Command("sleep", "300")
++	sleeper.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
++	if err := sleeper.Start(); err != nil {
++		t.Fatalf("start the sleeping process: %v", err)
++	}
++	t.Cleanup(func() {
++		_ = syscall.Kill(-sleeper.Process.Pid, syscall.SIGKILL)
++		_ = sleeper.Wait()
++	})
++	record := runproc.ChildRecord(sleeper.Process.Pid, runproc.RoleBatten, []string{"sleep", "300"})
++	if err := runproc.Register(fabricengine.RunProcDir(h.Path), slug, record); err != nil {
++		t.Fatalf("register the sleeping process: %v", err)
++	}
++}
++
++// TestRemoveOrphanPair drives RemoveOrphanPair over an orphan pair.
++// The pair holds a local commit origin lacks and an uncommitted file.
++func TestRemoveOrphanPair(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const slug = "orphan-run"
++	tests := []struct {
++		name string
++		// setup shapes the hub further, after the pair holds its commit and its uncommitted file.
++		setup func(t *testing.T, h *hubforge.Hub)
++		// wantErr is a substring of the expected error, empty when the removal succeeds.
++		wantErr string
++	}{
++		{name: "AnOrphanPairIsArchivedAndRemoved"},
++		{
++			name: "ARefusedArchiveTagPushLeavesThePairStanding",
++			setup: func(t *testing.T, h *hubforge.Hub) {
++				hook := filepath.Join(h.CodeBare, "hooks", "pre-receive")
++				if err := os.MkdirAll(filepath.Dir(hook), 0o755); err != nil {
++					t.Fatalf("create the hooks directory: %v", err)
++				}
++				if err := os.WriteFile(hook, []byte("#!/bin/sh\nexit 1\n"), 0o755); err != nil {
++					t.Fatalf("write the pre-receive hook: %v", err)
++				}
++			},
++			wantErr: "archive the tips",
++		},
++		{
++			name: "ABoardEntryNamingThePairRefusesTheRemoval",
++			setup: func(t *testing.T, h *hubforge.Hub) {
++				holdBoardEntry(t, h, slug)
++			},
++			wantErr: "a board entry names it",
++		},
++		{
++			name: "ABattenRunDirectoryNamingThePairRefusesTheRemoval",
++			setup: func(t *testing.T, h *hubforge.Hub) {
++				if err := os.MkdirAll(shedrun.RunDir(h.Location, slug), 0o755); err != nil {
++					t.Fatalf("create the batten run directory: %v", err)
++				}
++			},
++			wantErr: "a batten run directory names it",
++		},
++		{
++			name: "ALiveRegisteredProcessRefusesTheRemoval",
++			setup: func(t *testing.T, h *hubforge.Hub) {
++				registerLiveProcess(t, h, slug)
++			},
++			wantErr: "a process registered under it lives",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			hubforge.AddPair(t, h, slug)
++			code := h.PairCodeWorktree(slug)
++			gitkit.CommitFile(t, code, "local.txt", "local\n", "a commit origin lacks")
++			if err := os.WriteFile(filepath.Join(code, "uncommitted.txt"), []byte("uncommitted\n"), 0o644); err != nil {
++				t.Fatalf("write the uncommitted file: %v", err)
++			}
++			if tt.setup != nil {
++				tt.setup(t, h)
++			}
++
++			_, err := pairteardown.RemoveOrphanPair(context.Background(), h.Location, slug)
++
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Errorf("RemoveOrphanPair() error = %v; want one containing %q", err, tt.wantErr)
++				}
++				requirePairStanding(t, h, slug)
++				if tags := ownerArchiveTags(t, h.CodeBare, slug); len(tags) != 0 {
++					t.Errorf("owner archive tags on the code origin = %q; want none", tags)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("RemoveOrphanPair() error = %v; want nil", err)
++			}
++			requirePairGone(t, h, slug)
++			tags := ownerArchiveTags(t, h.CodeBare, slug)
++			if len(tags) != 1 {
++				t.Fatalf("owner archive tags on the code origin = %q; want exactly one", tags)
++			}
++			for file, want := range map[string]string{"uncommitted.txt": "uncommitted", "local.txt": "local"} {
++				if got := gitkit.Git(t, h.CodeBare, "show", tags[0]+":"+file); got != want {
++					t.Errorf("%s at the archive tag = %q; want %q", file, got, want)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/pairteardown/leftoverhandedover_integration_test.go b/internal/pairteardown/leftoverhandedover_integration_test.go
+new file mode 100644
+index 00000000..9e181c15
+--- /dev/null
++++ b/internal/pairteardown/leftoverhandedover_integration_test.go
+@@ -0,0 +1,74 @@
++//go:build !windows
++
++// leftoverhandedover_integration_test.go drives RemoveHandedOverPair over a hub pair with a live reed session.
++// It pins that the local removal ends the pair's session and deletes no origin branch.
++
++package pairteardown_test
++
++import (
++	"os"
++	"os/exec"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pairteardown"
++	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++// TestRemoveHandedOverPair drives RemoveHandedOverPair over a dirty pair with a live reed session.
++// It needs a real multiplexer, since it asserts the session is ended.
++func TestRemoveHandedOverPair(t *testing.T) {
++	tiergate.Require(t, 2)
++	t.Parallel()
++
++	const slug = "handed-over-run"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	cfg, err := reedengine.LoadConfig(configengine.Dirs{Anchor: h.Location.AnchorPath()}, "reed")
++	if err != nil {
++		t.Fatalf("reedengine.LoadConfig: %v", err)
++	}
++	if _, err := exec.LookPath(cfg.Tmux); err != nil {
++		t.Skipf("configured multiplexer binary %q not found: %v", cfg.Tmux, err)
++	}
++	tmuxkit.KillOnCleanup(t, cfg.Tmux, reedengine.ServerName(h.Path))
++	p := addLivePair(t, h, cfg.Tmux, slug)
++	pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(slug))
++	if err != nil {
++		t.Fatalf("ResolveWorktree: %v", err)
++	}
++	if _, err := fabricengine.PushPairAnchored(pair, fabricengine.EnvSyncOptions(), fabricengine.PairPush{LockWait: fabricengine.LockWaitUnbounded}); err != nil {
++		t.Fatalf("priming push error = %v", err)
++	}
++	if err := os.WriteFile(filepath.Join(h.PairCodeWorktree(slug), "dirty.txt"), []byte("uncommitted\n"), 0o644); err != nil {
++		t.Fatalf("write the uncommitted file: %v", err)
++	}
++	codeRef := "refs/heads/" + gitkit.CurrentBranch(t, h.PairCodeWorktree(slug))
++	recordsRef := "refs/heads/" + fabricengine.RecordsBranchName(gitkit.CurrentBranch(t, h.PairCodeWorktree(slug)))
++	codeBefore := gitkit.RevParse(t, h.CodeBare, codeRef)
++	recordsBefore := gitkit.RevParse(t, h.RecordsBare, recordsRef)
++	if !p.sessionUp(t) {
++		t.Fatal("the pair's session is not up before the removal")
++	}
++
++	if _, err := pairteardown.RemoveHandedOverPair(h.Location, slug); err != nil {
++		t.Fatalf("RemoveHandedOverPair() error = %v; want nil", err)
++	}
++
++	requirePairGone(t, h, slug)
++	if p.sessionUp(t) {
++		t.Error("the pair's session is still up after the removal")
++	}
++	if got := gitkit.RevParse(t, h.CodeBare, codeRef); got != codeBefore {
++		t.Errorf("origin code branch = %s; want it standing at %s", got, codeBefore)
++	}
++	if got := gitkit.RevParse(t, h.RecordsBare, recordsRef); got != recordsBefore {
++		t.Errorf("origin records branch = %s; want it standing at %s", got, recordsBefore)
++	}
++}
+diff --git a/internal/reedengine/bindings_integration_test.go b/internal/reedengine/bindings_integration_test.go
+index 9760dc8c..6e1d692b 100644
+--- a/internal/reedengine/bindings_integration_test.go
++++ b/internal/reedengine/bindings_integration_test.go
+@@ -159,7 +159,7 @@ func (f *bindingsFixture) assertFollow(t *testing.T, want string) {
+ func (f *bindingsFixture) awaitRecord(t *testing.T) []string {
+ 	t.Helper()
+ 	var args []string
+-	waitUntil(t, 5*time.Second, "the recorder never finished writing", func() bool {
++	waitUntil(t, recorderDeadline, "the recorder never finished writing", func() bool {
+ 		raw, err := os.ReadFile(f.recordPath)
+ 		args = strings.Split(strings.TrimSuffix(string(raw), "\n"), "\n")
+ 		return err == nil && len(args) == 8
+@@ -385,12 +385,12 @@ func TestBindings_AltLeftRightRunTheSwitchCommandWithTheToldPaths(t *testing.T)
+ 			t.Fatalf("remove stale record: %v", err)
+ 		}
+ 		f.send(t, step.key)
+-		waitUntil(t, 5*time.Second, "the recorder never ran for "+step.direction, func() bool {
++		waitUntil(t, recorderDeadline, "the recorder never ran for "+step.direction, func() bool {
+ 			_, err := os.Stat(f.recordPath)
+ 			return err == nil
+ 		})
+ 		var args []string
+-		waitUntil(t, 5*time.Second, "the recorder never finished writing", func() bool {
++		waitUntil(t, recorderDeadline, "the recorder never finished writing", func() bool {
+ 			raw, err := os.ReadFile(f.recordPath)
+ 			args = strings.Split(strings.TrimSuffix(string(raw), "\n"), "\n")
+ 			return err == nil && len(args) == 9
+@@ -406,6 +406,11 @@ func TestBindings_AltLeftRightRunTheSwitchCommandWithTheToldPaths(t *testing.T)
+ 	f.assertFollow(t, "on")
+ }
+ 
++// recorderDeadline bounds how long a test waits for the recorder script a binding spawns through tmux.
++// The spawn goes through a tmux server shared with the package's other parallel tests.
++// Under that load it can take longer than a few seconds.
++const recorderDeadline = 30 * time.Second
++
+ // TestBindings_ButtonClickRunsTheVerbInTheRunDirectory clicks a button and asserts what the pinned line runs.
+ // It checks the run directory and the arguments and environment.
+ // A failing verb must leave the pane out of view mode.
+@@ -459,7 +464,7 @@ func TestBindings_ButtonClickRunsTheVerbInTheRunDirectory(t *testing.T) {
+ 	socketPath := strings.TrimSpace(mustTmuxOutput(t, f.e, "display-message", "-p", "#{socket_path}"))
+ 	f.click(t, 2, "HALT")
+ 	var lines []string
+-	waitUntil(t, 5*time.Second, "the recorder never finished writing", func() bool {
++	waitUntil(t, recorderDeadline, "the recorder never finished writing", func() bool {
+ 		raw, err := os.ReadFile(recordPath)
+ 		lines = strings.Split(strings.TrimSuffix(string(raw), "\n"), "\n")
+ 		return err == nil && len(lines) >= 14
+@@ -495,7 +500,7 @@ func TestBindings_ButtonClickRunsTheVerbInTheRunDirectory(t *testing.T) {
+ 		t.Fatalf("remove the run directory: %v", err)
+ 	}
+ 	f.click(t, 2, "HALT")
+-	waitUntil(t, 5*time.Second, "the recorder never ran after the run directory was removed", func() bool {
++	waitUntil(t, recorderDeadline, "the recorder never ran after the run directory was removed", func() bool {
+ 		_, err := os.Stat(recordPath)
+ 		return err == nil
+ 	})
+diff --git a/internal/shedrun/intents.go b/internal/shedrun/intents.go
+index 38c6c6b1..5778f863 100644
+--- a/internal/shedrun/intents.go
++++ b/internal/shedrun/intents.go
+@@ -5,6 +5,7 @@ package shedrun
+ import (
+ 	"errors"
+ 	"fmt"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -14,6 +15,9 @@ import (
+ // errIntentRecordAbsent stops an intent write over a run with no status file, which has no intent to hold.
+ var errIntentRecordAbsent = errors.New("run has no status file")
+ 
++// errKeptCancelNotOwed stops a kept cancel's write over a run that is not cancelled or already holds a cancel intent.
++var errKeptCancelNotOwed = errors.New("run owes no kept cancel intent")
++
+ // updateStatusIfPresent rewrites the run's status file through mutate under the status lock.
+ // It writes nothing and reports found false when the file is absent.
+ // Keys the binary does not know survive the rewrite.
+@@ -62,6 +66,27 @@ func FinishCancel(l *lymcwd.Location, runID string, finish shedengine.CancelFini
+ 	})
+ }
+ 
++// WriteKeptCancel records a finished cancel intent that kept the pair, naming machine, started and ended at at.
++// It writes only over a run in state cancelled with no cancel intent.
++// A cancel with keep left such a run before cancel intents existed.
++// It reports written false and writes nothing for any other run and for a run with no status file.
++// The caller commits the record.
++func WriteKeptCancel(l *lymcwd.Location, runID, machine string, at time.Time) (written bool, err error) {
++	stamp := at.UTC().Format(time.RFC3339)
++	_, err = updateStatusIfPresent(l, runID, func(st *shedengine.Status) error {
++		if st.State != shedengine.StateCancelled || st.Cancel != nil {
++			return errKeptCancelNotOwed
++		}
++		st.Cancel = &shedengine.CancelIntent{StartedAt: stamp, Machine: machine, Finish: &shedengine.CancelFinish{EndedAt: stamp}}
++		written = true
++		return nil
++	})
++	if errors.Is(err, errKeptCancelNotOwed) {
++		return false, nil
++	}
++	return written && err == nil, err
++}
++
+ // WritePauseIntent records intent as the run's pause intent.
+ // It reports found false and writes nothing when the run has no status file.
+ // The caller commits the record.
+diff --git a/internal/shedrun/intents_test.go b/internal/shedrun/intents_test.go
+index 2f110cac..9d93591a 100644
+--- a/internal/shedrun/intents_test.go
++++ b/internal/shedrun/intents_test.go
+@@ -7,6 +7,7 @@ import (
+ 	"os"
+ 	"reflect"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -73,6 +74,45 @@ func TestRunIntents(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("KeptCancelWritesOnlyOverACancelledRecordWithNoIntent", func(t *testing.T) {
++		t.Parallel()
++		at := time.Date(2026, 11, 17, 9, 0, 0, 0, time.UTC)
++		stamp := at.Format(time.RFC3339)
++		kept := &shedengine.CancelIntent{StartedAt: stamp, Machine: "neve", Finish: &shedengine.CancelFinish{EndedAt: stamp}}
++		tests := []struct {
++			name        string
++			seed        map[string]any
++			wantWritten bool
++			wantCancel  *shedengine.CancelIntent
++		}{
++			{"CancelledWithNoIntent", map[string]any{"state": "cancelled"}, true, kept},
++			{"Running", map[string]any{"state": "running"}, false, nil},
++			{"CancelledWithAnIntent", map[string]any{"state": "cancelled", "cancel": keepCancel}, false, &keepCancel},
++			{"Absent", nil, false, nil},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				l := syntheticLocation(t)
++				if tt.seed != nil {
++					if err := state.WriteJSON(StatusFile(l, runID), StatusLock(l, runID), tt.seed); err != nil {
++						t.Fatalf("seed status file: %v", err)
++					}
++				}
++				written, err := WriteKeptCancel(l, runID, "neve", at)
++				if err != nil || written != tt.wantWritten {
++					t.Fatalf("WriteKeptCancel() = %v, %v; want %v, nil", written, err, tt.wantWritten)
++				}
++				if tt.seed == nil {
++					return
++				}
++				if got, _ := readIntentStatus(t, l, runID); !reflect.DeepEqual(got.Cancel, tt.wantCancel) {
++					t.Errorf("Cancel = %+v; want %+v", got.Cancel, tt.wantCancel)
++				}
++			})
++		}
++	})
++
+ 	t.Run("CancelThenFinishLeavesCancelledWithBothRecorded", func(t *testing.T) {
+ 		t.Parallel()
+ 		l := syntheticLocation(t)
+diff --git a/internal/tendercli/cli.go b/internal/tendercli/cli.go
+index 99e8dfb0..258e19f0 100644
+--- a/internal/tendercli/cli.go
++++ b/internal/tendercli/cli.go
+@@ -209,10 +209,12 @@ session another live entry still covers moves to that entry with no line. The
+ orchestrator's line comes from its own watcher.
+ 
+ A lift also spawns what a pause deferred: the detached push of each pair the
+-lifted entries covered, the prime's records push and the board sync. A pair a
+-live entry still covers, one another machine owns and one that is gone is not
+-pushed. The report's "spawned" lists the spawns and "spawn_failed" the ones that
+-failed; neither fails the resume.
++lifted entries covered whose push a pause deferred, such as an anchor change's,
++the prime's records push and the board sync. A run's transition pushes
++synchronously, so no pair push is spawned for one. A pair a live entry still
++covers, one another machine owns and one that is gone is not pushed. The
++report's "spawned" lists the spawns and "spawn_failed" the ones that failed;
++neither fails the resume.
+ 
+ Example:
+   lym tender resume
+diff --git a/internal/tendercli/deps.go b/internal/tendercli/deps.go
+index 22fac637..d1b5391d 100644
+--- a/internal/tendercli/deps.go
++++ b/internal/tendercli/deps.go
+@@ -139,6 +139,7 @@ func HubDeps(location *lymcwd.Location, strand string) (tenderengine.Deps, []str
+ 		PushPair: func(slug string) error {
+ 			return fabricengine.SpawnPairPush(pairLocations[slug])
+ 		},
++		PushDeferred: func(slug string) bool { return fabricengine.PairPushDeferred(pairLocations[slug]) },
+ 		PushPrimeRecords: func() error {
+ 			if prime == nil {
+ 				return nil
+diff --git a/internal/tendercli/doc.go b/internal/tendercli/doc.go
+index 628ba1a9..31d5cadf 100644
+--- a/internal/tendercli/doc.go
++++ b/internal/tendercli/doc.go
+@@ -35,6 +35,8 @@
+ //
+ // `HubDeps` fills the lift's spawn seams.
+ // They are a pair's detached push over the pair's location, the prime's records push, and the board sync.
++// A pair is pushed only when `fabricengine.PairPushDeferred` finds a push a pause deferred, such as an anchor change's;
++// a run's transition pushes synchronously, so a lift spawns no pair push for one.
+ // `syncBoardIfOwed` spawns the board sync when Bolt is ahead of its upstream or holds uncommitted changes.
+ // A sync deferred at its start leaves that state.
+ // The resume report names the spawned seams under `spawned` and the failed ones under `spawn_failed`.
+diff --git a/internal/tenderengine/doc.go b/internal/tenderengine/doc.go
+index e573e437..b8619d96 100644
+--- a/internal/tenderengine/doc.go
++++ b/internal/tenderengine/doc.go
+@@ -82,6 +82,7 @@
+ // These pairs are left out:
+ // a pair a live entry of the updated record still covers;
+ // a pair `Deps.Owners` reads owned by another machine;
++// a pair `Deps.PushDeferred` reads with no detached push a pause deferred, since a run's transition pushes synchronously;
+ // and a pair no longer in `Deps.Pairs`.
+ // An owners reading that fails spawns no pair push, since an owner it cannot read may be another machine.
+ // `PushPrimeRecords` and `SyncBoardIfOwed` run once each.
+diff --git a/internal/tenderengine/pause_test.go b/internal/tenderengine/pause_test.go
+index 09e0276a..4ed1e9dc 100644
+--- a/internal/tenderengine/pause_test.go
++++ b/internal/tenderengine/pause_test.go
+@@ -252,6 +252,8 @@ type env struct {
+ 	boardSyncs  int
+ 	// pushPairErr is what the pair push seam answers when set.
+ 	pushPairErr error
++	// pushDeferred holds the pairs a pause deferred a detached push of; a nil map leaves the seam unset.
++	pushDeferred map[string]bool
+ 	// owners and ownersErr are what the owners reading answers; a nil owners leaves the seam unset.
+ 	owners    []PairOwner
+ 	ownersErr error
+@@ -365,6 +367,9 @@ func (e *env) deps() Deps {
+ 	if e.owners != nil || e.ownersErr != nil {
+ 		deps.Owners = func() ([]PairOwner, error) { return e.owners, e.ownersErr }
+ 	}
++	if e.pushDeferred != nil {
++		deps.PushDeferred = func(slug string) bool { return e.pushDeferred[slug] }
++	}
+ 	if e.boltHold != nil || e.boltHoldErr != nil {
+ 		deps.BoltHold = func() (BoltHoldState, error) {
+ 			if e.boltHold == nil {
+diff --git a/internal/tenderengine/report.go b/internal/tenderengine/report.go
+index 6dbc997b..3fd62571 100644
+--- a/internal/tenderengine/report.go
++++ b/internal/tenderengine/report.go
+@@ -109,6 +109,10 @@ type Deps struct {
+ 	BoltHold func() (BoltHoldState, error)
+ 	// PushPair spawns the detached push of the pair slug names; nil spawns none.
+ 	PushPair func(slug string) error
++	// PushDeferred reports whether a pause deferred a detached push of the pair slug names, which a lift then pays.
++	// A run's transition pushes synchronously and owes no lift a push.
++	// A nil PushDeferred reads every pair as owed one.
++	PushDeferred func(slug string) bool
+ 	// PushPrimeRecords spawns the detached push of the prime's records; nil spawns none.
+ 	PushPrimeRecords func() error
+ 	// SyncBoardIfOwed spawns the board sync when the board holds changes a deferred sync left; nil spawns none.
+diff --git a/internal/tenderengine/resume.go b/internal/tenderengine/resume.go
+index db634eae..dfb34da8 100644
+--- a/internal/tenderengine/resume.go
++++ b/internal/tenderengine/resume.go
+@@ -258,8 +258,8 @@ func liftEntries(deps Deps, pick func(record *pauserecord.Record) ([]pauserecord
+ 
+ // spawnOwed spawns the detached pushes and the board sync that a pause deferred and the lift uncovers.
+ // It records each spawn in report.
+-// A pair is pushed when a lifted entry covered it, no live entry of record still covers it, no other machine owns it,
+-// and the hub still holds it;
++// A pair is pushed when a lifted entry covered it and no live entry of record still covers it.
++// It is pushed only when no other machine owns it, a pause deferred a detached push of it, and the hub still holds it;
+ // a pair that is gone had its owed push go with it.
+ // An owners reading that fails spawns no pair push, since an owner it cannot read may be another machine.
+ // A seam error is recorded under SpawnFailed and never fails the lift.
+@@ -303,6 +303,9 @@ func pairsToPush(deps Deps, record pauserecord.Record, lifted []pauserecord.Entr
+ 		if slices.ContainsFunc(owners, func(owner PairOwner) bool { return owner.Slug == slug && owner.Local && !owner.OwnedHere }) {
+ 			continue
+ 		}
++		if deps.PushDeferred != nil && !deps.PushDeferred(slug) {
++			continue
++		}
+ 		slugs = append(slugs, slug)
+ 	}
+ 	return slugs
+diff --git a/internal/tenderengine/resume_test.go b/internal/tenderengine/resume_test.go
+index 0eafab35..1a7bb67b 100644
+--- a/internal/tenderengine/resume_test.go
++++ b/internal/tenderengine/resume_test.go
+@@ -371,6 +371,17 @@ func TestResume(t *testing.T) {
+ 				t.Errorf("report %+v, err %v, pushed %v; want only p1 pushed", report, err, e.pushedPairs)
+ 			}
+ 		}},
++		{"a lifted entry over a pair with no deferred push spawns no pair push", func(t *testing.T) {
++			e := newEnv(t, newPair("p1"), newPair("p2"))
++			e.pushDeferred = map[string]bool{"p2": true}
++			e.seedLive(hubEntry(e.clock.Now()))
++
++			report, err := e.resume("")
++
++			if err != nil || !reflect.DeepEqual(e.pushedPairs, []string{"p2"}) || !reflect.DeepEqual(report.Spawned, []string{"pair:p2", "prime-records", "board-sync"}) {
++				t.Errorf("report %+v, err %v, pushed %v; want only p2, whose push a pause deferred", report, err, e.pushedPairs)
++			}
++		}},
+ 		{"a lifted entry whose pair is gone spawns no pair push", func(t *testing.T) {
+ 			e := newEnv(t, newPair("p1"))
+ 			e.seedLive(pauserecord.Entry{Scope: "gone", PausedAt: e.clock.Now(), GraceEnd: e.clock.Now(), Caller: "EXTERNAL"})
+diff --git a/pattern/PATTERN-pair-remote.md b/pattern/PATTERN-pair-remote.md
+index 816d7020..2f8c07e8 100644
+--- a/pattern/PATTERN-pair-remote.md
++++ b/pattern/PATTERN-pair-remote.md
+@@ -53,6 +53,11 @@ it then runs before the owned processes are ended.
+ A batten cancel's phase instead ends the owned processes and strands first and waits for the run lock after,
+ and its removal leaves the board claim to the cancel, which clears it.
+ 
++- The dobby tears down the leftover pairs of its runs through `internal/pairteardown` alone:
++  a landed run's pair, a cancelled run's pair its cancel did not keep, an ended run's pair through the origin reconcile,
++  and a handed-over run's local pair in local mode.
++  The prime's dobby also tears down an orphan pair, one no board entry or batten record names,
++  once it has gone idle for `dobbyengine.OrphanGrace`, its tips archived first.
+ - No production package outside `internal/pairteardown` and `internal/fabricengine` calls `Topology.Remove`.
+ - The composite waits for the pair's driver to go quiet, bounded by `Request.QuietWait`;
+   `--force` answers dirtiness only and never shortens or skips that wait.
