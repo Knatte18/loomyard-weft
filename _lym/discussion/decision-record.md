@@ -108,6 +108,18 @@ Decision: Treat the round-3 findings d12-non-exec-calls-outside-cell-model (F1),
 
 Rationale: The Discussion review reached its hard cap at round 3 with these keys open. D12 now scopes the payload and cell sentences to nested calls, gives a non-Bash, non-apply_patch payload no nudge and leaves the rollout unread for it, and ends a lookup_run or edit_run chain at a function_call; the 2026-11-15 rollout holds 21 custom_tool_call exec items and four collaboration function_call items (two spawn_agent, two send_message) as D12 states. D1 and D4 skip a Spec literal that sets no Prompt; bouncer.go's awaitLiveJudge and awaitLiveSeed literals set only OutputFiles, Role, Segment and Round, while judgeCall and runSeedSpawn set Prompt inline. D12 resolves both read paths against each call's CommandExecution cwd; the 2026-11-16 spike rollout carries that cwd as a file:// URL and parsed_cmd paths as written (notes.txt).
 
+### Added after Discussion (parent, 2026-11-17): A config dir that cannot be resolved warns and yields an empty user setup
+
+Decision: When claudeConfigDir fails, UserSetup returns the zero UserSetup with one Warnings entry naming the cause and CLAUDE_CONFIG_DIR or HOME as the way forward, never an error; card 7's Intent states it (plan finding F7).
+
+Rationale: It matches sessionScopeFor's handling of an unreadable plugins file: a missing piece of the user's setup degrades a Codex launch with a warning rather than failing it.
+
+### Added after Discussion (parent, 2026-11-17): Hooks run with CLAUDE_PROJECT_DIR as Claude Code sets it
+
+Decision: Card 8 sets CLAUDE_PROJECT_DIR to req.RepoRoot in the hook environment beside CLAUDE_PLUGIN_ROOT, and the TestUserSetup_PluginSessionStartContexts row asserts both (plan finding F11).
+
+Rationale: D8 asks that hooks run as Claude Code runs them, and Claude Code sets CLAUDE_PROJECT_DIR for every hook; a hook reading it would otherwise break under Codex.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's user-setup resolution, session scope and file locations stay in `claudeengine`, and reach `codexengine` only through `shuttleengine` interfaces wired in `internal/shuttleengines`; the rollout reading for the batching nudge stays in `codexengine`, and the read-only lookup check both engines' nudges use sits in its own package under `internal/shuttleengine`.
