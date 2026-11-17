@@ -1,6 +1,6 @@
 # Flag an agent that edits the same file again and again
 
-`edit-loop-detector` · Task · feature, shuttle, friction · starting · Open-Window
+`edit-loop-detector` · Task · feature, shuttle, friction · starting · Seed-IDE
 
 ## Seen (orch, 2026-11-17)
 
