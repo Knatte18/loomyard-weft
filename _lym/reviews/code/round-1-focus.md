@@ -1,0 +1,16 @@
+---
+round: 1
+focus:
+  - "internal/shuttleparity/compare (Compare, Report) and internal/shuttleparity/producers_test.go: does dropping any single Codex delivery in Prepare fail the test, and is `webster-fork-deny` compared only when the codex engine answers RequirementForks, with a tripwire test pinning that?"
+  - "internal/shuttleparity/producers_test.go scan: does it fail on a `shuttleengine.Spec` literal that sets `Prompt` whose enclosing function has no producer-table entry, skip literals without `Prompt` (bouncer attach probes), skip the orch places, the shuttle CLI and internal/testkit, and do the split-out renderers for judgeCall and runSeedSpawn (internal/burlerengine/review.go, internal/landingshed/fixreview.go) leave those producers' prompts unchanged?"
+  - "internal/shuttleengine/manifest.go, run.go, rundir.go: is the record written through internal/state and read tolerantly (unknown key still reads), is the copy under the run-directory root's `manifests` directory kept after a done run's cleanup, and do the orphan sweep and FindRunByStrand skip that directory?"
+  - "internal/shuttleengine/claudeengine/manifest.go and codexengine/manifest.go: is each item read back from the written artifact rather than from the inputs, are shared heddle targets (agents-file, agents-prompt) keyed by the shared target and compared while claude-*/codex-* targets are keyed to one engine and not compared, and is an omitted plugin session-start context marked omitted and counted missing in the record's verdict?"
+  - "internal/shuttlecli/manifest.go: does `lym shuttle manifest` exit non-zero naming each missing item, pass with plugin contexts listed unrun, remove its temporary run directory on every path including errors, keep no lasting manifest copy, and write nothing but the temp dir and the Codex home?"
+  - "internal/heddleengine/render.go and internal/shuttleengine/passages.go: do the slug and engine keys added to standing passages and file entries leave existing rendering and the per-engine target selection behaviour unchanged?"
+  - "internal/shuttleengines/shuttleengines.go and keepwarm.go: does the seam-taking constructor leave the production hook runner and sandbox probe behaviour of New unchanged, and does it respect PATTERN-shuttle-provider-seam?"
+  - "PATTERN.md, pattern/PATTERN-engine-parity.md, pattern/PATTERN-shuttle-provider-seam.md: does the diff land the declared PATTERN-engine-parity entry with its declared text, and do docs (docs/overview.md, doc.go files) state the new behaviour?"
+  - "cmd/lym/main.go, cmd/lym/testonlycode_linux_test.go: are the interim testOnlyCodeAllowed entries added by cards 2, 5 and 6 removed, and is any production reachability of a test-only helper left unadmitted?"
+  - "Test economy: TestShowAndPassagesReadTheShippedLayerFirst is contained by TestRender and TestOverrides; compare its assertions against theirs before filing a fold-or-keep finding. Also check new tests for duplication across internal/shuttleparity and the engine manifest tests."
+---
+
+Seeded from the decision record's D1, D10 and its added entries (every seat compared, fork-deny gating, card 10 dropped), the plan overview's shared decisions, and the diff stat of the review range.
