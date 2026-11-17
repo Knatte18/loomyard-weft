@@ -92,8 +92,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **The dobby tears down or reports leftover pairs** | [`leftover-pairs-teardown`](design-leftover-pairs-teardown.md)<br>[Sketch](decision-leftover-pairs-teardown.md) | darn · solid | starting · Seed-Child | neve | 1d<br>4h | dobby, workspaces, landing, fabric, batten, tender, shed |
-| T12 | **The board prints the prime as the root beam `root`**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-prints-root-beam`](design-board-prints-root-beam.md)<br>[Sketch](decision-board-prints-root-beam.md) | darn · light | starting · Worktree-Create | neve | 1d<br>4h | board, orch |
+| T9 | **The dobby tears down or reports leftover pairs** | [`leftover-pairs-teardown`](design-leftover-pairs-teardown.md)<br>[Sketch](decision-leftover-pairs-teardown.md) | darn · solid | Drift-Expect | neve | 1d<br>4h | dobby, workspaces, landing, fabric, batten, tender, shed |
+| T12 | **The board prints the prime as the root beam `root`**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-prints-root-beam`](design-board-prints-root-beam.md)<br>[Sketch](decision-board-prints-root-beam.md) | darn · light | Drift-Await | neve | 1d<br>4h | board, orch |
 
 #### Ready (0)
 
@@ -207,15 +207,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B1 |  | **Record Codex edits for the edit-loop watch**<br>• Codex runs record no edits, so the edit-loop watch never notifies their parent | [`codex-edit-loop-recorder`](design-codex-edit-loop-recorder.md) | 3h<br>1h | codex, shuttle |
 | B2 |  | **Edit-loop notices fire on a fixer editing one file**<br>• Fixers and one-document writers edit one file many times by design, so the edit-loop watch reports ordinary work as a loop | [`edit-loop-fixer-noise`](design-edit-loop-fixer-noise.md) | 2h<br>2h | shuttle |
 | B3 |  | **An old driver fails on board stencils a landing installed mid-run**<br>• A blocked hand-over leaves the old binary rendering new board copies whose includes it lacks | [`stale-driver-new-stencils`](design-stale-driver-new-stencils.md) | 1h<br>1h | stencil, shed |
-| B4 |  | **Coverage map rewrites funcs in another order on each build**<br>• Two --map runs on one commit give the same sets in a different array order | [`map-entry-order-unstable`](design-map-entry-order-unstable.md) | 50m<br>50m |  |
-| B5 |  | **Coverage map records 0 seconds for nearly every test**<br>• redundant lists every candidate at 0 seconds so its slowest-first pass has no order | [`map-test-seconds-zero`](design-map-test-seconds-zero.md) | 50m<br>50m |  |
+| B4 |  | **Coverage map rewrites funcs in another order on each build**<br>• Two --map runs on one commit give the same sets in a different array order | [`map-entry-order-unstable`](design-map-entry-order-unstable.md) | 51m<br>51m |  |
+| B5 |  | **Coverage map records 0 seconds for nearly every test**<br>• redundant lists every candidate at 0 seconds so its slowest-first pass has no order | [`map-test-seconds-zero`](design-map-test-seconds-zero.md) | 51m<br>51m |  |
 | B6 |  | **lym gate redundant counts a timeout or memory cap as a kill** | [`redundant-timeout-not-kill`](design-redundant-timeout-not-kill.md) | 11m<br>11m | gate, testkit |
 
 #### Enhancements (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **No lym check compares a map entry with a single-test coverage run**<br>• The trial cross-checked by hand; blocks have no line range and funcs have no profile counterpart | [`map-single-test-crosscheck`](design-map-single-test-crosscheck.md) | 50m<br>50m |  |
+| E1 |  | **No lym check compares a map entry with a single-test coverage run**<br>• The trial cross-checked by hand; blocks have no line range and funcs have no profile counterpart | [`map-single-test-crosscheck`](design-map-single-test-crosscheck.md) | 51m<br>51m |  |
 
 #### Features (3)
 
