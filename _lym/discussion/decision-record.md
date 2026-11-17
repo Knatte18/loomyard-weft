@@ -191,6 +191,12 @@ Decision: lym writes no launch.json, as the entry's Was ide-prime-setup part ask
 
 Rationale: The entry says No launch.json outright. b0e9f535 merged IDEWindowTitle and TerminalWindowTitle into ConsoleWindowTitle so both windows show one title, and 6b037083 (closes #633) dropped every folderOpen chain so that opening a worktree starts nothing; reinstating either reverses a landed design, which the entry does not say it wants.
 
+### Added after Discussion (parent, 2026-11-17): The phone goal is met by today's README
+
+Decision: The operator said in chat (2026-11-17) that today's README works on the phone. The task builds no per-area collapsible blocks and no new README folds for the phone's sake; D7's collapsible sections stay only if another goal of the entry needs them, and the entry's phone line is dropped from Open risks.
+
+Rationale: The operator judged the phone view good enough as it is, so changing the README layout for it would be work nobody asked for.
+
 ## Constraints
 
 - `PATTERN-cwd-resolution`: nothing is linked or junctioned into a worktree; the hub path is resolved in lym.
