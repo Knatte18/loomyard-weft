@@ -1,0 +1,380 @@
+{
+  "runGuid": "c115a07435ef17df56118bc29bf674c7",
+  "planFingerprint": "ddb28a877ece292e3236f60f23a94494bbfe733e23c2473b9c87516f333184b4",
+  "planFileHashes": {
+    "00-overview.md": "9e58e89a087a04e18eda194d6a2bc67ac84acbd42a3222a9de19788bce669076",
+    "01-machine-address-parser.md": "42141a39b073b6c55abd2863cb8c417ac9ff32bd38a34a25909628ec24df0582",
+    "02-machine-mail-journal.md": "b10da25199df0e5b39e603f7fb2e69d81d3bcd257861cc5c9ba4d418876be5a5",
+    "03-machine-outbound-post.md": "3848d8ab65ecb3392eceb4713c24177f4b161f61be79d592fa9851c2040df167",
+    "04-machine-relay-verbs.md": "9056258a162d8358d9bd085d2c1e3767c750997b7047ecd7ad2a8ac4cb4e90f1",
+    "05-machine-inbound-deliver.md": "60e79e824968f4d58448061e3331e61fc5c8f6377ccdb4a4b0b975117285b551",
+    "06-creel-bridge-wiring.md": "93a3e405d6f0169a4a3b330378917e05696a8f7286e6c37f82eaa02158cd70ef",
+    "07-bridge-envelope-and-name.md": "71ad30fae9a86938930ef95a413f6a96fa4dc9c6c833481b5a976f4451171ed5",
+    "08-bridge-records-and-calls.md": "f7a01dea813cae977f0fdcd8ed895adcaa6d9b9b7f0db3b0c579b5295d55302d",
+    "09-approve-and-revoke.md": "f9d671187dd81159ddb7e34938bcdf60e8ddcce69428401871c3fd2cef20b8f9",
+    "10-bridge-sending.md": "4963043ed81865ca57b02fed1fb5c43f6aebcc77b3732034f673697be3234093",
+    "11-bridge-receiving.md": "757b15b50dc44a6ac24dd9cf4eeca8ab8c516332ce176959d373c3a4472bedb3",
+    "12-bridge-channel-upkeep.md": "4102c6d0640251f1c1f1f583f4b65f41a77317f6fc5ea52c5403f76087cd7557"
+  },
+  "planOverviewFrameHash": "c44d669f07d71673cd871cd1cc2101546d03212888d750c5a215bb3e6d1de255",
+  "partition": [
+    {
+      "cards": [
+        "01-machine-address-parser",
+        "02-machine-mail-journal",
+        "03-machine-outbound-post"
+      ],
+      "profile": "wide",
+      "estimate": 261098,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54676,
+        "read_union": 45364,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 564,
+            "reads": {
+              "file:internal/agentname/agentname.go": 4356,
+              "package:cmd/lym": 2000,
+              "package:internal/agentname": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/agentname": 2000
+            },
+            "messages": 75.5,
+            "written": 23214
+          },
+          {
+            "card": 2,
+            "card_text": 936,
+            "reads": {
+              "file:internal/creelengine/doc.go": 9228,
+              "package:cmd/lym": 2000,
+              "package:internal/creelengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 191.5,
+            "written": 58386
+          },
+          {
+            "card": 3,
+            "card_text": 1308,
+            "reads": {
+              "file:PATTERN.md": 672,
+              "file:internal/creelengine/doc.go": 9228,
+              "file:pattern/PATTERN-agent-addressing.md": 300,
+              "package:.": 2000,
+              "package:cmd/lym": 2000,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/testkit/creelfake": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/testkit/creelfake": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 260.5,
+            "written": 79458
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-machine-relay-verbs",
+        "05-machine-inbound-deliver"
+      ],
+      "profile": "wide",
+      "estimate": 257310,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61676,
+        "read_union": 58504,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 1260,
+            "reads": {
+              "file:internal/creelengine/doc.go": 9228,
+              "file:pattern/PATTERN-daemon-wakeups.md": 1644,
+              "package:cmd/lym": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/slackengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/slackengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 282,
+            "written": 85860
+          },
+          {
+            "card": 5,
+            "card_text": 1020,
+            "reads": {
+              "file:contracts/orchrole/orch-role.md": 5520,
+              "file:contracts/orchrole/role-slack.md": 192,
+              "file:contracts/stencils/parent/parent-directive-parent.md": 384,
+              "file:internal/creelengine/doc.go": 9228,
+              "file:internal/shuttleengine/doc.go": 11256,
+              "package:contracts/orchrole": 2000,
+              "package:contracts/stencils/parent": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:contracts/orchrole": 2000,
+              "tests:contracts/stencils/parent": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 167.5,
+            "written": 51270
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-creel-bridge-wiring",
+        "07-bridge-envelope-and-name",
+        "08-bridge-records-and-calls"
+      ],
+      "profile": "wide",
+      "estimate": 259340,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68676,
+        "read_union": 28364,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 816,
+            "reads": {
+              "file:internal/creelcli/doc.go": 2196,
+              "package:cmd/lym": 2000,
+              "package:internal/creelcli": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 169,
+            "written": 51516
+          },
+          {
+            "card": 7,
+            "card_text": 588,
+            "reads": {
+              "file:internal/slackengine/doc.go": 1200,
+              "file:pattern/PATTERN-sole-parsers.md": 1476,
+              "package:cmd/lym": 2000,
+              "package:internal/slackengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/slackengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 116.5,
+            "written": 35538
+          },
+          {
+            "card": 8,
+            "card_text": 996,
+            "reads": {
+              "file:internal/hubgeom/doc.go": 1092,
+              "file:internal/slackengine/doc.go": 1200,
+              "package:cmd/lym": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/slackengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/slackengine": 2000
+            },
+            "messages": 247.5,
+            "written": 75246
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-approve-and-revoke",
+        "10-bridge-sending"
+      ],
+      "profile": "wide",
+      "estimate": 255120,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75676,
+        "read_union": 26768,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 828,
+            "reads": {
+              "file:docs/slack-app.md": 612,
+              "file:internal/slackcli/doc.go": 636,
+              "file:internal/slackengine/doc.go": 1200,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/slackcli": 2000,
+              "package:internal/slackengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/slackcli": 2000,
+              "tests:internal/slackengine": 2000
+            },
+            "messages": 138,
+            "written": 42228
+          },
+          {
+            "card": 10,
+            "card_text": 1848,
+            "reads": {
+              "file:internal/slackcli/doc.go": 636,
+              "file:internal/slackengine/doc.go": 1200,
+              "file:pattern/PATTERN-daemon-wakeups.md": 1644,
+              "package:cmd/lym": 2000,
+              "package:internal/slackcli": 2000,
+              "package:internal/slackengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/slackcli": 2000,
+              "tests:internal/slackengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 362,
+            "written": 110448
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-bridge-receiving",
+        "12-bridge-channel-upkeep"
+      ],
+      "profile": "wide",
+      "estimate": 186136,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82676,
+        "read_union": 11480,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 1824,
+            "reads": {
+              "file:internal/slackengine/doc.go": 1200,
+              "package:cmd/lym": 2000,
+              "package:internal/slackengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/slackengine": 2000
+            },
+            "messages": 256.5,
+            "written": 78774
+          },
+          {
+            "card": 12,
+            "card_text": 456,
+            "reads": {
+              "file:internal/slackengine/doc.go": 1200,
+              "package:internal/slackengine": 2000,
+              "tests:internal/slackengine": 2000
+            },
+            "messages": 42.5,
+            "written": 13206
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "machine-address-parser",
+      "cards": [
+        "01-machine-address-parser",
+        "02-machine-mail-journal",
+        "03-machine-outbound-post"
+      ],
+      "cardHashes": {
+        "01-machine-address-parser": "42141a39b073b6c55abd2863cb8c417ac9ff32bd38a34a25909628ec24df0582",
+        "02-machine-mail-journal": "b10da25199df0e5b39e603f7fb2e69d81d3bcd257861cc5c9ba4d418876be5a5",
+        "03-machine-outbound-post": "3848d8ab65ecb3392eceb4713c24177f4b161f61be79d592fa9851c2040df167"
+      },
+      "startSha": "44431fefaa213479d4f2b60d6dfca49853474a4d",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T17:29:02Z",
+      "sessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "255015dbb2c93bc97dff12a121147be8",
+  "masterSessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
+  "masterEngine": "claude"
+}
