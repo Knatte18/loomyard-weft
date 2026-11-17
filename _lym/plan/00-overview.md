@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -23,13 +23,14 @@ The adopt record, the adopt pause, `--keep-local`, `--drop-local` and `--discard
 6 — beam-status-hold — `lym beam status` shows the Bolt hold
 7 — batten-hub-run-slugs — the hub-wide run list for the catch-up
 8 — adopt-check-ends-on-hold — the check's ends keep tries in the hold and clear it on green
-9 — adopt-foreground — the foreground runner, retiring the worker, the record use and the adopt pause
-10 — retire-adopt-record — remove `internal/adoptrecord`
-11 — retired-adopt-wording — ways forward and docs stop naming the retired flags and pause
+9 — adopt-foreground — the foreground runner, retiring the worker, the adopt record package and the adopt pause
+10 — retired-adopt-wording — ways forward and docs stop naming the retired flags and pause
 
 ## Shared Decisions
 
-- The setters land in boardengine (card 2) and the takeover writer in fabric (card 3) before their production caller in adopt (card 9); the test-only-code guard runs at the plan-level gate, after card 9.
+- The setters land in boardengine (card 2) and the takeover writer in fabric (card 3) before their production caller in adopt (card 9).
+  The go scoper runs every `//lym:guard` test after any `--card` scope, so the test-only-code guard runs at each card and batch gate, and a package no main imports is outside its analysis.
+  So each card that leaves a function with no caller a main reaches lists it in `cmd/lym`'s `testOnlyCodeAllowed`, its Why naming the card that reaches it, as the `internal/runfsm.Order` entry does, and the card that reaches it, or removes its package, removes the entry; the exact keys come from the guard's report at each card's tree.
 - One fix task stands at a time: the hold's `FixTask` names the first failing subject's task, and `lym adopt check` checks every subject of this machine's hold, so the task's landing re-checks them all.
 - A plain adopt's refusal over another machine's hold names waiting or asking the operator, never the take-hold flag, since an agent may read it.
 

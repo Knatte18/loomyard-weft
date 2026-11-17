@@ -38,6 +38,8 @@
 - `internal/adoptcli#TestRunArchives`
 - `internal/adoptcli#AdoptAs` -> `func AdoptAs(prime *lymcwd.Location, machine func() (string, error), subjects []string, takeHold bool) (Outcome, error)`
 - `internal/adoptcli_test#TestAdoptIntegration_SecondCloneTakesOver`
+- `internal/adoptcli_test#TestCommand_HereAdoptsTheSubjectOfItsWorktree`
+- `cmd/lym#testOnlyCodeAllowed`
 - `internal/fixtries/doc.go`
 - `internal/fixtries_test#TestReadWrite`
 - `internal/dobbyengine#upgradeHub.deps`
@@ -67,6 +69,7 @@
 - `internal/adoptcli#ownedElsewhere`
 - `internal/adoptcli#takeOverSlug`
 - `internal/adoptcli#resumeSlug`
+- `internal/adoptcli#parentWarning`
 - `internal/adoptcli#noteStanding`
 - `internal/adoptcli#wouldStop`
 - `internal/adoptcli#stepRun`
@@ -140,6 +143,12 @@
 - `internal/adoptcli#testSuite`
 - `internal/adoptcli_test#holdOwnerPause`
 - `internal/fixtries#Write`
+- `internal/adoptrecord/record.go`
+- `internal/adoptrecord/watch.go`
+- `internal/adoptrecord/doc.go`
+- `internal/adoptrecord/record_test.go`
+- `internal/adoptrecord/watch_test.go`
+- `internal/adoptrecord/testmain_test.go`
 
 **Uses:**
 - `internal/adoptcli#namedEntries`
@@ -182,13 +191,15 @@ The reconcile, live-pair, drop-local, owner-write, pause, tries-reset and suite-
 `runForeground`:
 0. Validates the request, reads this machine's identity, and refuses a standing anchor change under the subjects (`refuseStandingMove`) before any write.
 1. `WriteAdopt` with the subjects, `TakeHold` and `Now`. A `*HoldRefusal` or registration refusal ends the adopt with its own way forward; `ownerWriteError` words an unreachable origin. Under this machine's same-set hold the hold stays as it stands (`Kept`).
-2. `holdStands` pulls Bolt and re-reads the hold before each of steps 2 to 7; once the hold is gone or names another machine it stops, naming the subjects' owner, says the adopt moved to that machine or its hold cleared so nothing more runs here, and starts nothing.
-   Its last read is before the check: steps 7 and 8 clear the hold themselves on green, so no re-read follows them.
+2. `holdStands` pulls Bolt and re-reads the hold before each of steps 2 to 7, and once more after a failing check before `runBeamSteps`; once the hold is gone or names another machine it stops, naming the subjects' owner, says the adopt moved to that machine or its hold cleared so nothing more runs here, and starts nothing.
+   After a green check the clear itself judges the hold, since a re-read would find the hold the check cleared gone (steps 7 and 8).
    An adopted beam with no local pair gets it from origin through `AddPair` (`addError` words a refused add, naming the hold's re-run).
    `movedRuns` now judges each open task or beam entry under the subjects by its record at origin (`OriginRun` from its parent's records branch), not done.
    `movedRun` reads a run as moved when its origin record holds a takeover entry naming another machine, or when it holds no takeover entry and the subject's `PriorOwner` in the hold does not read as this machine.
-   A run whose origin takeover entry names this machine (an earlier pass of this adopt took it), a run whose subject's `PriorOwner` reads as this machine with no foreign takeover entry, and the hold's `FixTask` are not moved:
+   A run whose origin takeover entry names this machine (an earlier pass of this adopt took it), a run whose subject's `PriorOwner` reads as this machine with no foreign takeover entry, and the hold's `FixTask` when its filer (`FixMachine`, or the hold's `Machine` when that is empty) reads as this machine and its origin record holds no takeover entry naming another machine are not moved;
+   a takeover entry naming another machine moves the fix task's run, as the paragraph's first clause says, so a take-hold back from the machine that took it moves it again:
    steps 2 and 3 skip them and step 4 pushes their owed commits, which leaves a fix task's branches and processes untouched on a re-run under this machine's own `adopt-fix` hold.
+   After a take-hold rewrite the filer is the old adopter (card 2), so the fix task's run is judged as any run: moved unless its origin record holds a takeover entry naming this machine, on the take-hold pass and on a re-run after a kill alike.
    The hold keeps `PriorOwner` across a re-run, so an adopt killed after step 1 still moves the runs it took and leaves alone the ones already taken.
    `takeOverRuns` adds each moved run's missing pair from origin through `AddPair`, then calls `TakeOver` (fetch, archive, reset, takeover entry pushed with its retry, fast-forward, hand-over mark dropped); a `TakeOver` error ends the adopt naming the run, the error and the hold's re-run.
    A beam under an adopted root that keeps its own owner on another machine is reported as owned elsewhere and not taken over.
@@ -196,7 +207,9 @@ The reconcile, live-pair, drop-local, owner-write, pause, tries-reset and suite-
 4. `CatchUp` over the whole hub. A failing catch-up ends the adopt with its error and the hold's re-run, once origin answers when origin was unreachable; nothing past it runs, since the deploy and the check must read origin's state.
 5. The deploy (`deployStale`) when root is a subject, as today; its stop text says the hold stands, so no run goes on under the old lym, in place of the retired adopt pause.
 6. `Workspace`; a failure is a warning naming `lym fabric reconcile` in the prime, and the adopt goes on.
-7. and 8. `HoldCheck` over the first subject: the gate runs in each subject's worktree with its output on the terminal; green clears the hold and drops this machine's bolt-hold entries, red files the fix task and writes the `adopt-fix` hold. Then `runBeamSteps` brings each subject up (honouring `--no-orch` and a landing-held beam), on green and on red alike.
+7. and 8. `HoldCheck` over the first subject: the gate runs in each subject's worktree with its output on the terminal; green clears the hold and drops this machine's bolt-hold entries, red files the fix task and writes the `adopt-fix` hold.
+   A result with `HoldLost` (another machine took the hold during the check, or it cleared) ends the adopt with the result's line, which names that machine or says the hold cleared, says nothing more runs here, and calls no `runBeamSteps`.
+   Otherwise, after `holdStands`' re-read on red, `runBeamSteps` brings each subject up (honouring `--no-orch` and a landing-held beam), on green and on red alike.
    A failing check ends the adopt with an error naming the fix task (or, at the limit, the failing tests, the standing task and the hold's re-run), so the command exits non-zero; a check that did not run (its lock held) ends non-zero with the line saying to wait for it.
 
 `--take-hold`: adopt's help names it; the bound is card 2's (only the same subject set moves, no check skipped, no run before a green check).
@@ -208,15 +221,21 @@ The reconcile, live-pair, drop-local, owner-write, pause, tries-reset and suite-
 `fixtries.Write` loses its last production callers and goes; `upgradeHub.deps` in dobbyengine's upgrade test seeds `fix-tries.json` through `os.WriteFile` with the file's JSON; fixtries' doc.go names the upgrade's first read as `Read`'s only caller, and `TestReadWrite` (tier 0) seeds the file through `os.WriteFile`.
 adoptcli's doc.go is rewritten to the foreground flow, the hold, `--take-hold` and the check's ends.
 `cmd/lym`'s `unboundedWaitFiles` drops `internal/adoptcli/follow.go`, and PATTERN-daemon-wakeups.md drops the follow's bullet.
+`internal/adoptrecord` goes whole with its tests: after cards 5, 6 and this card no package imports it, so no code path reads or writes `adopt.json` or `adopt.lock`; a file a retired worker left in the adopt scratch directory stays unread.
+`TestCommand_HereAdoptsTheSubjectOfItsWorktree` (tier 1) drops its `adoptrecord.Read` assertion at the end of each case and asserts instead that the hub's Bolt holds no hold after `--here` (`boardengine.ReadOwners(h.BoardDir()).Holds` empty), since `owned_here` writes no hold and starts nothing.
+A `grep -rn adoptrecord --include=*.go` over the tree returns nothing after this card.
+The go scoper runs the test-only-code guard at this card's gate as at every card's.
+This card reaches `WriteAdopt`, `TakeOverRun`, `DropHandOverMark`, `OriginParentRunStatus` and `HubRunSlugs` from a main and removes `internal/adoptrecord`, so `cmd/lym`'s `testOnlyCodeAllowed` drops every entry still standing from cards 2, 3, 5 and 7 (card 8 dropped card 2's other three), the `internal/adoptrecord` ones included, since an entry that matches no unreachable function fails the guard; the exact keys are the ones the guard reports at this card's tree.
 docs/overview.md's adopt entry describes the foreground flow.
 PATTERN-dobby-runs.md replaces its "Adopt pause" section with an "Adopt hold" section (an adopt holds the hub through Bolt's holds, written only by boardengine's setters, from its owner write until an adopt check is green; a green check clears it and the bolt-hold entries go with no hand lift), and its `--no-orch` exception names the adopt's last step.
+Its opening summary line becomes the declared PATTERN-dobby-runs text, ending in an adopt holds the hub through Bolt's holds until an adopt's check is green.
 PATTERN.md's overview line becomes, verbatim:
 
 ```
 - `PATTERN-dobby-runs` — Starting or holding a board task's run: only its parent's dobby, started with its orch bar `lym adopt --no-orch`; front tasks only via `fronttask`; an adopt holds the hub through Bolt's holds until an adopt's check is green. — [background](pattern/PATTERN-dobby-runs.md)
 ```
 
-`TestAdopt` (tier 0) drives `runForeground` over `world`, whose `deps` fill the new seams and record each call; it keeps its refusal and anchor-change rows, the deploy rows (their stop text asserting the hold) and `NestedBeamOwnedElsewhereUnderAdoptedRootIsReportedOwnedElsewhere`, and gains:
+`TestAdopt` (tier 0) drives `runForeground` over `world`, whose `deps` fill the new seams and record each call; it keeps its refusal and anchor-change rows, the deploy rows (their stop text asserting the hold) and `NestedBeamOwnedElsewhereUnderAdoptedRootIsReportedOwnedElsewhere`, drops `ParentTakenByARaceCarriesTheFinalizeWarning` with `parentWarning`, and gains:
 `TakeHoldWithAllRefusesNamingBeamStatus`,
 `APlainAdoptOfOtherSubjectsUnderThisMachinesHoldRefusesNamingTheHoldsSubjects`,
 `AnotherMachinesHoldRefusesNamingItsMachine`,
@@ -225,9 +244,13 @@ PATTERN.md's overview line becomes, verbatim:
 `ARunWhosePriorOwnerIsThisMachineIsNotMoved`, `ARunWhoseOriginRecordNamesAnotherMachinesTakeoverIsMoved`, `ARunWhoseOriginRecordNamesThisMachinesTakeoverIsNotMoved`,
 `AReRunAfterAKillAtTheOwnerWriteMovesTheSameRunsAndEndsAsAnUninterruptedAdopt`,
 `AReRunUnderItsOwnAdoptFixHoldKeepsKindTaskTriesAndFilesNoSecondTask` (the hold's `PriorOwner` is the other machine and the fix task's run has no takeover entry; no `TakeOver` of the fix task's run, and `CatchUp` is called),
+`TakeHoldOfAnAdoptFixHoldMovesTheFixTasksRun` (`AddPair` and `TakeOver` of the fix task's run),
+`TakeHoldBackFromTheMachineThatTookTheFixTasksRunMovesItAgain` (a take-hold from the other machine: the hold after `WriteAdopt` names this machine, `FixMachine` this one, and the fix task's origin record holds a takeover entry naming the other machine; `AddPair` is not called and `TakeOver` of that run is),
+`AReRunAfterAKillFollowingATakeHoldMovesTheFixTasksRun` (the hold names this machine, `FixMachine` the old adopter, and the fix task's run has no takeover entry; `TakeOver` of it is called),
 `AFailingTakeOverEndsNamingTheRunAndTheHoldsRerun`,
 `AHoldTakenOverByAnotherMachineStopsAtTheNextReReadNamingItAndStartsNoDobby` (no `BeamUp` call),
 `AHoldClearedMidAdoptStopsAndStartsNothing`,
+`AHoldTakenOverDuringTheCheckStartsNoDobby` (`HoldCheck` returns `HoldLost`; no `BeamUp` call),
 `AFailingCatchUpEndsBeforeTheDeployNamingTheRerun`, `AFailingWorkspaceIsAWarningAndTheAdoptGoesOn`,
 `AGreenCheckBringsEachSubjectUpAndReturnsOk`, `AFailingCheckBringsEachSubjectUpThenExitsNonZeroNamingTheFixTask`,
 `StepsPrintInOrder`, `NoOrchLeavesTheOrchDown`.
@@ -236,6 +259,6 @@ PATTERN.md's overview line becomes, verbatim:
 `TestAdoptIntegration_SecondCloneTakesOver` (tier 1) runs `AdoptAs` from a second hubforge clone sharing only origin; the fixture seeds the hub's gate config with an `adopt` key over a tier holding no test, as `TestHubCheckDeps_StaleStampRunsTheTunedFinalizeTiers` seeds its tiers, so the check runs green.
 It ends with the moved run in the same `runfsm` state as on the first clone, this machine as owner, the takeover entry on origin, the pair added from origin on the clone that had none, and no hold left in Bolt.
 
-**ImpactSummary:** adoptcli's verb, cobra wiring and envelope; cmd/lym's wait list, fixtries' writer with dobbyengine's upgrade-test helper, and the dobby-runs pattern move with it. beamcli and orchcli no longer read adoptcli's or adoptrecord's removed symbols after cards 5 and 6.
+**ImpactSummary:** adoptcli's verb, cobra wiring and envelope; cmd/lym's wait list and test-only-code allowlist, fixtries' writer with dobbyengine's upgrade-test helper, and the dobby-runs pattern move with it; `internal/adoptrecord` is removed with no remaining importer. beamcli and orchcli no longer read adoptcli's or adoptrecord's removed symbols after cards 5 and 6.
 
 **Commit:** 9: Run `lym adopt` in the foreground over pushed state, retiring the worker, the record and the adopt pause

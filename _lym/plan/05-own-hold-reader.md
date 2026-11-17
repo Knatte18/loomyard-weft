@@ -18,6 +18,7 @@
 - `internal/dobbyengine#Deps`
 - `internal/dobbyengine/handover.go`
 - `internal/dobbyengine/doc.go`
+- `cmd/lym#testOnlyCodeAllowed`
 
 **Delete:**
 - `internal/orchcli#UnderAdoptWatch`
@@ -44,11 +45,14 @@ Callers move to it in this card: `orchCLI.underAdoptWatch` returns the accessor 
 `ownerArchiveBeforeRefusal` skips the archive while `UnderOwnHold(prime)(slug)` holds.
 The `Deps.UnderAdopt` and `OwnerWatch.UnderAdopt` field comments, handover.go's file comment and `probeOwner`'s comment and its `adopt hold:` log line, and the doc.go files of dobbyengine, orchengine, orchcli and beamcli say the seam reads a hold this machine wrote in Bolt over the worktree's subject, standing until the adopt's check is green.
 
+Deleting `UnderAdoptWatch` leaves `internal/adoptrecord`'s watch with no caller a main reaches while `adoptcli` still imports the package, so `cmd/lym`'s `testOnlyCodeAllowed` gains `internal/adoptrecord.NewWatch`, `internal/adoptrecord.Watch.Covers`, `internal/adoptrecord.Watch.covers` and `internal/adoptrecord.Record.Covers`, whose only caller is `Watch.covers`, each Why saying card 9 removes the package, as the `internal/runfsm.Order` entry does.
+The exact keys are the ones the guard reports at this card's tree.
+
 `TestUnderOwnHold` (tier 1, over a hubforge hub; the test's own identity is the one envkit's machine file gives, and "another machine" is a name the registry entry of a second id holds; holds planted with `WriteHold`) rows:
 `AHoldOfThisMachineCoversThePrime`, `AHoldOfThisMachineCoversABeamSubject`, `ABeamOutsideTheHoldsSubjectsIsNotCovered`, `AnotherMachinesHoldCoversNothing`, `NoHoldCoversNothing`, `AnUndecodableBoardCoversNothing`.
 `TestHubDobbyDeps_ABeamWithNoOwnerOfItsOwnIsUnderARootAdopt` (tier 1) plants this machine's hold over root in place of a running adopt record and expects `UnderAdopt` true, and false with no hold.
 `TestOwnerArchiveBeforeRefusal_SkipsWhileAnAdoptCoversTheWorktree` (tier 1) plants the hold the same way.
 
-**ImpactSummary:** three readers in orchcli and beamcli switch from the adopt record to the Bolt hold; dobbyengine and orchengine keep their seams and change only comments and one log line.
+**ImpactSummary:** three readers in orchcli and beamcli switch from the adopt record to the Bolt hold; dobbyengine and orchengine keep their seams and change only comments and one log line; adoptrecord's watch gains test-only-code allowlist entries until card 9 removes the package.
 
 **Commit:** 5: Read this machine's Bolt hold where the watcher and the dobby read the adopt record
