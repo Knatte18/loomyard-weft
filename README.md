@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T13 | **A Codex session gets Claude's standing items, user setup, instruction files and subagent terms in its developer instructions** | [`codex-standing-instructions`](design-codex-standing-instructions.md)<br>[Sketch](decision-codex-standing-instructions.md) | tapestry · solid | Parent-Align | neve | 22h<br>22h | codex, shuttle, stencil, heddle |
+| T13 | **A Codex session gets Claude's standing items, user setup, instruction files and subagent terms in its developer instructions** | [`codex-standing-instructions`](design-codex-standing-instructions.md)<br>[Sketch](decision-codex-standing-instructions.md) | tapestry · solid | Drift-Verify | neve | 22h<br>22h | codex, shuttle, stencil, heddle |
 
 #### Ready (0)
 
@@ -90,7 +90,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md)<br>[Sketch](decision-review-rounds-converge.md) | 1h<br>56m | burler, shed, stencil |
+| S1 |  | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md)<br>[Sketch](decision-review-rounds-converge.md) | 1h<br>57m | burler, shed, stencil |
 
 #### Features (1)
 
@@ -170,7 +170,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T23 | **Build the coverage maps with lym gate test --map, one process per test in parallel, and retire lym gate testmap** | [`gate-test-map-mode`](design-gate-test-map-mode.md)<br>[Sketch](decision-gate-test-map-mode.md) | tapestry · solid | Plan-Burler-Review | neve | 56m<br>56m | gate, testkit, dobby, docs, pattern |
+| T23 | **Build the coverage maps with lym gate test --map, one process per test in parallel, and retire lym gate testmap** | [`gate-test-map-mode`](design-gate-test-map-mode.md)<br>[Sketch](decision-gate-test-map-mode.md) | tapestry · solid | Plan-Burler-Review | neve | 57m<br>57m | gate, testkit, dobby, docs, pattern |
 
 #### Ready (0)
 
@@ -238,7 +238,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Record Codex edits for the edit-loop watch**<br>• Codex runs record no edits, so the edit-loop watch never notifies their parent | [`codex-edit-loop-recorder`](design-codex-edit-loop-recorder.md) | 28m<br>28m | codex, shuttle |
+| B1 |  | **Record Codex edits for the edit-loop watch**<br>• Codex runs record no edits, so the edit-loop watch never notifies their parent | [`codex-edit-loop-recorder`](design-codex-edit-loop-recorder.md) | 29m<br>29m | codex, shuttle |
 
 #### Features (3)
 
