@@ -1,0 +1,29 @@
+verdict: resume
+reason: |-
+  Hard-cap stop at round 3 of Discussion-Review. The ledger marks six findings open and design-wrong (F1-F6).
+  The round-3 fixer report says all six were fixed as proposed, and the decision record (written at 12:46,
+  after the 12:42 review) bears that out, so the fix in place answers each finding:
+  F1 (routed-decisions fact): D1 and D5 now have the fix producer write decisions_routed into the round's
+  snapshot record. D2's held mark and completeness test, D3's context and the validate-review builder read it,
+  and acceptance rows were added. Checked against burlerfix.go:75, which sets DecisionsRouted only on the fix row.
+  F2 (carried class): D3 says a carried finding keeps its earlier finding's class. The round-check refusals and
+  an acceptance row cover a changed class.
+  F3 (resolved bound): the fixer took the option the finding itself offered. D3 states that Go checks only the
+  quoted title, accepts the bound set by the block's entries added since round N-1, and records it as an
+  Auto-mode assumption.
+  F4 (validate-review): D3 now resolves the worktree through lymcwd alone, from the seam cwd
+  (lymcwd.Resolve exists), and notes that _lym links out of the worktree. It names the builder's inputs
+  (run dir, round, decision record path, anchor path, decisions_routed), and a Review criterion covers the
+  help text.
+  F5 (stalemate vs softCapRule): D6 now yields to softCapRule in a window-open round with no design-wrong
+  entry, and has an acceptance row for that case. I recorded an arbiter ruling that ties "no design-wrong entry"
+  to designWrongKeys, the test softCapRule's accept actually runs (open BLOCKING/MEDIUM non-mechanical only),
+  so the record carries the exact condition.
+  F6 (title collision): D5 keys the snapshot on a sha256 digest of each added entry's heading and body, as
+  AddedDecisionTexts returns them. D2 lists entries by digest, and the open risk is gone.
+  No finding needs a fix that has not been made, so the segment is accepted at the hard cap.
+verbs:
+  - |-
+    lym loom decision add review-rounds-converge --by arbiter --title "D6's yield condition is softCapRule's own accept test" --decision "..." --rationale "..."
+  - |-
+    lym loom circling accept review-rounds-converge
