@@ -1,6 +1,6 @@
 # The board prints the prime as the root beam `root`
 
-`board-prints-root-beam` · Task · enhancement, board, orch · running · PR-Review
+`board-prints-root-beam` · Task · enhancement, board, orch · landing · Finalize
 
 Decision record: [Sketch](decision-board-prints-root-beam.md)
 

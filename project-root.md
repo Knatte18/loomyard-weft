@@ -59,7 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **An old driver fails on board stencils a landing installed mid-run**<br>• A blocked hand-over leaves the old binary rendering new board copies whose includes it lacks | [`stale-driver-new-stencils`](design-stale-driver-new-stencils.md) | 1h<br>1h | stencil, shed |
 | B4 |  | **Coverage map rewrites funcs in another order on each build**<br>• Two --map runs on one commit give the same sets in a different array order | [`map-entry-order-unstable`](design-map-entry-order-unstable.md) | 1h<br>1h |  |
 | B5 |  | **Coverage map records 0 seconds for nearly every test**<br>• redundant lists every candidate at 0 seconds so its slowest-first pass has no order | [`map-test-seconds-zero`](design-map-test-seconds-zero.md) | 1h<br>1h |  |
-| B6 |  | **lym gate redundant counts a timeout or memory cap as a kill** | [`redundant-timeout-not-kill`](design-redundant-timeout-not-kill.md) | 32m<br>32m | gate, testkit |
+| B6 |  | **lym gate redundant counts a timeout or memory cap as a kill** | [`redundant-timeout-not-kill`](design-redundant-timeout-not-kill.md) | 33m<br>33m | gate, testkit |
 
 ### Enhancements (1)
 
