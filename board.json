@@ -541,7 +541,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `codex-same-as-claude`.\n\nTakes: prompt-engine-per-launch's engine-aware renders, so an engine block resolves for the launch's engine; codex-standing-instructions' final heddle and codexengine text, which the scan then judges as landed\nDelivers: every stencil and spec passage naming a closed-list term in a Claude engine block with a Codex copy; mode_rules and plan-gate finding text chosen per engine or worded for any; the D2 scan over stencils, specs and production Go literals, with orch places skipped, an allowlist with reasons for literals that never reach a Codex session, and a check that every engine block has a copy for every registered engine\nExports: nothing another part calls\n\nThe part changes these packages:\n\n- contracts/stencils (about 1400 changed lines)\n- contracts/specs (about 150 changed lines)\n- internal/loomengine (about 120 changed lines)\n- internal/websterengine (about 80 changed lines)\n- internal/driftengine (about 40 changed lines)\n- internal/burlerengine (about 40 changed lines)\n- internal/darnengine (about 20 changed lines)\n- internal/planparser (about 40 changed lines)\n- internal/batcher (about 20 changed lines)\n- internal/shellguard (about 40 changed lines)\n- internal/seatengine (about 20 changed lines)\n- internal/loomcli (about 20 changed lines)\n",
-      "status": "running · Describe",
+      "status": "running · PR-Review",
       "created": "2026-11-16T13:56:13Z",
       "revised": "2026-11-16T13:56:13Z",
       "profile": "solid",

@@ -1,6 +1,6 @@
 # P1 codexengine
 
-Rendered 2026-11-17 14:15 UTC; every age below is as of then.
+Rendered 2026-11-17 14:16 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codexengine`](design-codexengine.md) · Age 1d · Owner `neve`
@@ -79,7 +79,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T17 | **Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan** | [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)<br>[Sketch](decision-codex-wording-engine-blocks.md) | darn · solid | Describe | neve | 1d<br>1d | codex, shuttle, stencil, heddle |
+| T17 | **Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan** | [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)<br>[Sketch](decision-codex-wording-engine-blocks.md) | darn · solid | PR-Review | neve | 1d<br>1d | codex, shuttle, stencil, heddle |
 
 ### Ready (0)
 
