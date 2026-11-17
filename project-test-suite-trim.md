@@ -47,11 +47,3 @@ Not released; nothing starts it until its status is cleared.
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T5 | **lym gate redundant: mutate data literals and delete boolean clauses**<br>• Add literal and clause-deletion mutants so tests pinning a literal or a clause stop being listed redundant<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-literal-clause-mutants`](design-redundant-literal-clause-mutants.md) | 1h<br>45m | gate |
