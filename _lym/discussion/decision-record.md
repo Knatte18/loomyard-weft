@@ -56,6 +56,12 @@ Decision: Treat the round-3 findings d12-non-exec-calls-outside-cell-model (F1),
 
 Rationale: The Discussion review reached its hard cap at round 3 with these keys open. D12 now scopes the payload and cell sentences to nested calls, gives a non-Bash, non-apply_patch payload no nudge and leaves the rollout unread for it, and ends a lookup_run or edit_run chain at a function_call; the 2026-11-15 rollout holds 21 custom_tool_call exec items and four collaboration function_call items (two spawn_agent, two send_message) as D12 states. D1 and D4 skip a Spec literal that sets no Prompt; bouncer.go's awaitLiveJudge and awaitLiveSeed literals set only OutputFiles, Role, Segment and Round, while judgeCall and runSeedSpawn set Prompt inline. D12 resolves both read paths against each call's CommandExecution cwd; the 2026-11-16 spike rollout carries that cwd as a file:// URL and parsed_cmd paths as written (notes.txt).
 
+### Added after Discussion (parent, 2026-11-17): Master's backgrounded commands get an engine block
+
+Decision: The fixer takes F2 of code round 2: the passages of webster-template-master.md that run recover-batch or the fix-verify step as a backgrounded Bash command and act on its completion notification move into an engine block (such as engine-background-command). The Claude copy keeps today's wording; the Codex copy tells a Codex session to run the command in the foreground through its shell tool and act on the command's exit and output when it returns. Both copies are registered in contracts/stencils/stencils.go.
+
+Rationale: run_in_background is on the record's closed list of Claude-only terms, so these passages are inside the task's scope; a Codex session must get the same instructions as a Claude one in its own terms, and running in the foreground is how a Codex session learns that a command ended.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's user-setup resolution, session scope and file locations stay in `claudeengine`, and reach `codexengine` only through `shuttleengine` interfaces wired in `internal/shuttleengines`; the rollout reading for the batching nudge stays in `codexengine`, and the read-only lookup check both engines' nudges use sits in its own package under `internal/shuttleengine`.
