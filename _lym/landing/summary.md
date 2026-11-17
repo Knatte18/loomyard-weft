@@ -1,0 +1,40 @@
+# Hand a run over to the on-disk build even over uncommitted paths
+
+A Go driver that finds the on-disk `lym` build has changed hands the run over to a fresh driver of that build at the next binary-eligible stop.
+It used to refuse that hand-over when the task pair held uncommitted paths outside the run's records, and handed the run back instead.
+
+That refusal kept a run stuck on the exact stop a deploy causes.
+A step child of the old build started before a landing installed new board stencils, and its producer rendered one of them midway.
+The new stencil included an engine block the old binary did not know, so the render failed and the step stopped.
+The producer's output, the plan writer's files under `_lym/plan/`, was still uncommitted at that point.
+So the driver saw the changed build, refused the hand-over over those files and parked the run.
+The parent's `lym loom resume` then started the same kind of fresh driver over the same tree, and the run went on.
+`lym loom resume` checks for no clean tree, so the hand-over's check only blocked the one automated route out of the failure.
+
+## What changes
+
+- `sheddriver`'s hand-over no longer reads the tree.
+  At a binary-eligible stop after a step of another build, it records the hand-over, parks and notifies.
+  It then releases the driver lock and spawns the successor, whatever the tree holds.
+  It still never runs under a pause, and still runs once per stop key and build.
+- `HandOverSeam.DirtyPaths` is removed, with loom's `dirtyPathsOutsideRecords` wiring of it.
+- The driver test's dirty-tree row is removed, since no seam reads the tree any more; the hand-over row no longer names a clean tree.
+- `internal/loomcli/doc.go` states that the hand-over runs over uncommitted paths.
+
+## Design decisions
+
+- Of the three routes the board entry offered, this takes the third one: a render failure on the old build hands over to the new build instead of failing the run.
+  It goes through the existing hand-over row, which every producer error and blocked stop after a deploy reaches.
+  It does not recognise a render error by its text.
+  The error text comes from the old binary, so a new recogniser could not match failures that older builds word differently.
+- Rendering from the binary's embedded stencils until the hand-over was not taken.
+  `stencilstore` reads the board copy at a caller-told path and holds no registry, and the board copy is also where operator edits live.
+  So the fallback would change how every stencil read treats the board, well beyond this failure.
+- Batten's binary re-step of a halted, driverless child keeps its clean-tree check.
+  The driver no longer hands back over a dirty tree after a deploy, so this failure no longer reaches that path.
+
+## Open risk
+
+An old-build step can still render a new board stencil without failing, if the new text happens to parse with the old binary's includes and markers.
+That prompt then carries the new wording into the old step, and nothing detects it.
+This change only stops a failed render from parking the run.
