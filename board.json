@@ -707,6 +707,25 @@
       "body": "Found by the map-tooling-trial.\n\nNothing in lym compares a map entry with a single-test coverage run.\nThe trial did it by hand: `lym gate test --wait ./internal/\u003cpkg\u003e -- -run '^\u003cTest\u003e$' -count=1 -coverprofile=\u003cabs path\u003e`, then counted covered blocks per file in the profile against the map's `blocks` of that test grouped by file.\nThat agreed for both `internal/durfmt` tests and for `TestOutputs`, `TestStoreValidatesLabelsWithVocabulary` and `TestWriteSiblings` of `internal/boardengine`.\n\nTwo limits:\n- The map's blocks carry file, function and hash but no line range, so the check is by count per file, not block by block.\n- The map's `funcs` list (functions of linked packages a test reaches) has no single-test counterpart in a statement profile, so it is unchecked.\n\nAdd a verb, or a `--map` option, that re-measures named tests alone and reports any block or function that differs, and give blocks a line range.\n",
       "created": "2026-11-17T15:01:51Z",
       "revised": "2026-11-17T15:01:51Z"
+    },
+    {
+      "id": 1435,
+      "handle": "B6",
+      "slug": "redundant-timeout-not-kill",
+      "title": "lym gate redundant counts a timeout or memory cap as a kill",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "testkit"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (orch, 2026-11-17)\n\nThe trial `map-tooling-trial` (`a666e8b3`, report `docs/research/speed/map-tooling-trial-2026-11-17/report.md`) ran `lym gate redundant` on `internal/boardengine`.\nOf 30994 mutant test runs, 383 ended by timeout and 39 by the memory cap, and the verb counted every one as a kill.\nA timeout or memory cap is not proof that the test caught the mutant, so these runs inflate the kills of the tests around a candidate,\nwhich can make a candidate look redundant when it is not; the earlier survey found 27 of 30 sampled confirmations false.\n\n## Idea\n\nCount a run ended by timeout or the memory cap as unjudged, not as a kill, and report those mutants apart;\na candidate whose confirmation rests on such a run is listed as unconfirmed.\n",
+      "created": "2026-11-17T15:41:02Z",
+      "revised": "2026-11-17T15:41:02Z"
     }
   ],
   "prime_owner": "neve",
