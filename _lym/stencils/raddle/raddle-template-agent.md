@@ -10,7 +10,7 @@
      return_note is the one optional marker:
      empty on a first session, and after a return the reason of the returned filing with the path to start from.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=c53ca1fd3c341bfa3040c535c03b4903f38e9e513dcf929f9292b52c7e9a9508 build=15bdd976f5e720f4c0b891f53aa82fd8ffcee136 time=2026-11-15T18:30:53Z -->
+lym-stencil: sha256=8d7b531b9d58414a088b75b15588f63fa2df6e56536c6a05a67eaa4455bc4f8b build=77b47ae10d761ff2d7d723891ab483dceb71f9d9 time=2026-11-17T11:05:23Z -->
 
 # Raddle — split a Sketch into the entries that get approved
 
@@ -56,6 +56,9 @@ Put no design question to the operator before the proposal passes the spec's che
 - When parts that share a package must be chained, order the chain by the Sketch's own order first: a part the record says waits for nothing goes first in its chain.
   Where the record states no order, put first the part with the largest stated saving, or the one the others gain from earliest.
 - List every place your order departs from an order the decision record states in the proposal's `order_departures`, with what the departure costs.
+- Give each part, beside its type, the module labels of the modules its own packages fall in, never the Sketch's whole set copied onto every part.
+  A part that changes a module the Sketch's labels missed carries that module's label too.
+  `lym board labels` lists the board's module labels.
 - When a live `PATTERN.md` entry absorbs a PATTERN change the Sketch declares, map the change with the part's `pattern_clusters`, so the part's record declares the live entry; a contract line that folds it in is not enough.
 - Weigh the next-best split too, since the proposal states its cost beside the chosen one.
 - Write each cost line so it says when a cell it rests on reads "too few runs", and never guess a figure for such a cell.

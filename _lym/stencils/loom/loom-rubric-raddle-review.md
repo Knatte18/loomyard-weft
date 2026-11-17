@@ -4,7 +4,7 @@
      and the Raddle-Burler-Review row interpolates it the same way into internal/burlerengine's review prompt.
      It is a marker VALUE, never a template: its only markers are the ones ReadRubric fills,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=51a57a6f19fe1b5b9a0ce9ed0cd55e5a2c327fbcb02197686ad86b1f4008e8a5 build=15bdd976f5e720f4c0b891f53aa82fd8ffcee136 time=2026-11-15T18:30:53Z -->
+lym-stencil: sha256=bcafb0af0340bdd2917ff579c0af11007d9d49798f40553a565c4e2742542c6e build=77b47ae10d761ff2d7d723891ab483dceb71f9d9 time=2026-11-17T11:05:23Z -->
 
 # Raddle-Review rubric
 
@@ -43,6 +43,9 @@ Judge the split's judgement, not its format:
   Two unchained parts where one uses what the other builds, with no interface fixed in both bodies, is a finding.
 - **The order follows the record.**
   The parts follow the record's stated order, or each departure is listed in `order_departures` with its cost.
+- **Each part's labels name its modules.**
+  A part's `labels` name the module of each package its body names, and no module the part does not change.
+  A label for a module the part never touches is a finding, and so is a named package whose module no label names.
 - **Each part's recipe and profile fit it.**
   A part's recipe and profile fit its size and risk, and each cost line rests on the cells it cites.
 - **The outcome fits the record's scope.**
@@ -69,6 +72,7 @@ In this segment, `design` means the split is wrong:
 a decision no part can build, a seam that does not hold,
 a part added only so parts run at once,
 a cut that runs fewer parts at once than another cut with the same part count,
+labels that do not match the packages a part changes,
 or a recipe or profile that does not fit its part.
 In this segment, `decision` means a question only the run's parent can settle:
 two record entries that contradict each other on what the split must build,
