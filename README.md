@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Every producer renders its prompt and edit directive for the engine its launch resolves to** | [`prompt-engine-per-launch`](design-prompt-engine-per-launch.md)<br>[Sketch](decision-prompt-engine-per-launch.md) | darn · solid | Drift-Expect | neve | 18h<br>18h | codex, shuttle, stencil, heddle |
+| T6 | **Every producer renders its prompt and edit directive for the engine its launch resolves to** | [`prompt-engine-per-launch`](design-prompt-engine-per-launch.md)<br>[Sketch](decision-prompt-engine-per-launch.md) | darn · solid | Darn-Write | neve | 18h<br>18h | codex, shuttle, stencil, heddle |
 
 #### Ready (0)
 
@@ -182,8 +182,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **reed: an RC button per agent, and Slack only in the orch's session**<br>• RC turns on per agent with a click, off by default; the Slack buttons show only where their orch lives | [`reed-orch-buttons-in-tasks`](design-reed-orch-buttons-in-tasks.md) | darn · light | landing · Finalize | neve | 42m<br>36m | reed, orch, slack |
-| T16 | **Memory guard for every test binary lym runs**<br>• The gate watchdog watches CPU only and only gate test runs; give it a memory trigger over every test binary, and cap the gate tiers | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | darn · solid | Code-Burler-Fix | neve | 2h<br>36m | gate |
+| T3 | **reed: an RC button per agent, and Slack only in the orch's session**<br>• RC turns on per agent with a click, off by default; the Slack buttons show only where their orch lives | [`reed-orch-buttons-in-tasks`](design-reed-orch-buttons-in-tasks.md) | darn · light | landing · Finalize | neve | 42m<br>37m | reed, orch, slack |
+| T16 | **Memory guard for every test binary lym runs**<br>• The gate watchdog watches CPU only and only gate test runs; give it a memory trigger over every test binary, and cap the gate tiers | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | darn · solid | Code-Burler-Fix | neve | 2h<br>37m | gate |
 
 #### Ready (0)
 
