@@ -107,6 +107,12 @@ Decision: The parity tests compare every seat and producer, including fanned bur
 
 Rationale: D1's acceptance criterion names every seat in seatengine's tables and every other producer, and its auto-mode assumption records no exemption table. A seat Codex cannot start today is the one most likely to drift, so it stays covered.
 
+### Added after Discussion (parent, 2026-11-17): The webster fork deny is compared only on an engine that meets the fork requirement
+
+Decision: The guard item webster-fork-deny belongs to fork support: it is compared only when the engine meets RequirementForks. Codex does not meet it today (its Start refuses a ForkSubagents spec, and its hook payload marks no subagent call), so on Codex the item is listed and not compared, and every other item of those seats is still compared. A test pins the tripwire: once Codex reports fork support, the item becomes compared and the parity test fails until Codex delivers a fork deny. No card builds a Codex fork deny.
+
+Rationale: A Codex fork deny cannot be built now: Codex runs no fork subagent and its hook input carries no subagent marker, so the deny would guard nothing. Keying the item to claude would hide the gap for good; gating it on the fork requirement keeps the rest of every seat compared and makes the gap fail loudly the day Codex can fork.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's user-setup resolution, session scope and file locations stay in `claudeengine`, and reach `codexengine` only through `shuttleengine` interfaces wired in `internal/shuttleengines`; the rollout reading for the batching nudge stays in `codexengine`, and the read-only lookup check both engines' nudges use sits in its own package under `internal/shuttleengine`.
