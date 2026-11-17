@@ -1,14 +1,40 @@
 {
-  "current_producer": "",
-  "state": "running",
-  "error": "",
+  "current_producer": "Discussion-Write",
+  "state": "failed",
+  "error": "shedadapters: Discussion-Write (seats): seat run: seatengine: chair wait: shuttle: reed did not track strand \"741f5db3151da04013e01211f1a4bd30\" on 2 consecutive liveness checks: reed's strand table no longer holds this run's strand — reed's bookkeeping was reset under the run (a reed remove/down, a lost or rebuilt reed.json, or a worktree renamed while the run was in flight), which says nothing about the agent: its process may still be working in its pane. Check \"lym reed status\"",
   "pause_requested": false,
+  "pause_before": "Drift-Verify",
+  "pause_before_by": "codex-writer-bench",
   "activity": {
-    "now": "",
-    "last": "",
-    "wait": ""
+    "now": "Discussion-Write",
+    "last": "Motif → done",
+    "wait": "shedadapters: Discussion-Write (seats): seat run: seatengine: chair wait: shuttle: reed did not track strand \"741f5db3151da04013e01211f1a4bd30\" on 2 consecutive liveness checks: reed's strand table no longer holds this run's strand — reed's bookkeeping was reset under the run (a reed remove/down, a lost or rebuilt reed.json, or a worktree renamed while the run was in flight), which says nothing about the agent: its process may still be working in its pane. Check \"lym reed status\""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-17T17:26:52Z",
+      "started_at": "2026-11-17T17:26:51Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-17T17:27:23Z",
+      "started_at": "2026-11-17T17:27:23Z",
+      "by": "shed"
+    },
+    {
+      "producer": "Motif",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-17T17:27:25Z",
+      "started_at": "2026-11-17T17:27:25Z"
+    }
+  ],
   "product": {
     "slug": "cwb-codex",
     "parent": "codex-writer-bench",
