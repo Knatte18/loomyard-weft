@@ -1,0 +1,1041 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 4e64af46..f2b30ee7 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -52,5 +52,5 @@
+ ## Testing
+ 
+ - `PATTERN-test-speed` — Writing or running a test: via `lym gate test` by gate key; one `tiergate.Require` tier, lowest that fits; it pins behavior no other test covers, which the gate's redundancy report checks; skips, clocks, `t.Parallel`, `//lym:seam` and `//lym:watch` per the background. (test) — [background](pattern/PATTERN-test-speed.md)
+-- `PATTERN-test-isolation` — Testing package: hermetic git and `tmuxkit.Main`; shared support in one `internal/testkit/<kit>/`; hub fixtures via `hubforge`. (test) — [background](pattern/PATTERN-test-isolation.md)
++- `PATTERN-test-isolation` — Testing package: hermetic git and `tmuxkit.Main`; shared support in one `internal/testkit/<kit>/`; a read-only or unreadable directory via `permkit.Chmod`; hub fixtures via `hubforge`. (test) — [background](pattern/PATTERN-test-isolation.md)
+ - `PATTERN-test-only-code` — Writing a function only tests call: it lives in a `_test.go` file or a test-support package (`internal/testkit`, `gitkit`, `hubforge`), never a production file; every other function is reachable from a `main` package. (test) — [background](pattern/PATTERN-test-only-code.md)
+diff --git a/internal/battencli/cleanup_test.go b/internal/battencli/cleanup_test.go
+index ea174f2f..c11be33f 100644
+--- a/internal/battencli/cleanup_test.go
++++ b/internal/battencli/cleanup_test.go
+@@ -19,6 +19,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/locationkit"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -332,10 +333,7 @@ func TestCleanup(t *testing.T) {
+ 			}
+ 			if tt.denyRunsRoot {
+ 				root := shedrun.RunsRoot(location)
+-				if err := os.Chmod(root, 0o444); err != nil {
+-					t.Fatalf("chmod: %v", err)
+-				}
+-				t.Cleanup(func() { _ = os.Chmod(root, 0o755) })
++				permkit.Chmod(t, root, 0o444)
+ 			}
+ 
+ 			report, err := cleanup(location, true, stubs.deps())
+@@ -664,10 +662,7 @@ func TestClearDoneRun_RemovesADoneRunTheRecipeFilterAdmits(t *testing.T) {
+ 			if tt.blockScratch {
+ 				blocked := filepath.Join(shedrun.ScratchDir(location, slug), "steps")
+ 				writeCleanupFile(t, filepath.Join(blocked, "record.json"), []byte("x"))
+-				if err := os.Chmod(blocked, 0o000); err != nil {
+-					t.Fatalf("chmod: %v", err)
+-				}
+-				t.Cleanup(func() { _ = os.Chmod(blocked, 0o755) })
++				permkit.Chmod(t, blocked, 0o000)
+ 			}
+ 			if tt.childRecipe != "" {
+ 				if err := shedrun.WriteChildRecipe(location, slug, tt.childRecipe); err != nil {
+diff --git a/internal/burlerengine/parentreview_test.go b/internal/burlerengine/parentreview_test.go
+index 3ea15b80..0fd2eb9e 100644
+--- a/internal/burlerengine/parentreview_test.go
++++ b/internal/burlerengine/parentreview_test.go
+@@ -17,6 +17,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"gopkg.in/yaml.v3"
+ )
+@@ -262,10 +263,7 @@ func TestAnswerParentAsk_FailedWriteAtDeadline(t *testing.T) {
+ 		t.Skip("a read-only directory does not block writes on Windows or for root")
+ 	}
+ 	files := recordParentAsks(t, burlerengine.ParentAsk{State: burlerengine.ParentAskOpen, Deadline: parentAskBase})
+-	if err := os.Chmod(files.Dir, 0o500); err != nil {
+-		t.Fatalf("make the record directory read-only: %v", err)
+-	}
+-	t.Cleanup(func() { _ = os.Chmod(files.Dir, 0o700) })
++	permkit.Chmod(t, files.Dir, 0o500)
+ 
+ 	_, err := burlerengine.AnswerParentAsk(files, 1, parentAskBase.Add(time.Minute), nil)
+ 	if err == nil {
+diff --git a/internal/configcli/configcli_integration_test.go b/internal/configcli/configcli_integration_test.go
+index 6ccf34d1..ca4b4488 100644
+--- a/internal/configcli/configcli_integration_test.go
++++ b/internal/configcli/configcli_integration_test.go
+@@ -27,6 +27,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/runprofile"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -485,10 +486,7 @@ func TestConfigOverRealHub(t *testing.T) {
+ 					t.Skip("file mode bits do not bind root")
+ 				}
+ 				configDir := configengine.ConfigDir(boardDir)
+-				if err := os.Chmod(configDir, 0o555); err != nil {
+-					t.Fatalf("make the board config dir read-only: %v", err)
+-				}
+-				t.Cleanup(func() { _ = os.Chmod(configDir, 0o755) })
++				permkit.Chmod(t, configDir, 0o555)
+ 				headBefore := boardHead(t, boardDir)
+ 
+ 				var out bytes.Buffer
+diff --git a/internal/configengine/config_unix_test.go b/internal/configengine/config_unix_test.go
+index 81214642..2e9132a7 100644
+--- a/internal/configengine/config_unix_test.go
++++ b/internal/configengine/config_unix_test.go
+@@ -11,6 +11,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -26,15 +27,7 @@ func TestLoadOrTemplate_LymDirStatFailure_DoesNotFallback(t *testing.T) {
+ 	}
+ 
+ 	tmpDir, _ := newBase(t, baseLym, "board", "")
+-	t.Cleanup(func() {
+-		if err := os.Chmod(tmpDir, 0755); err != nil {
+-			t.Errorf("failed to restore tmpDir mode: %v", err)
+-		}
+-	})
+-
+-	if err := os.Chmod(tmpDir, 0o000); err != nil {
+-		t.Fatalf("failed to chmod tmpDir: %v", err)
+-	}
++	permkit.Chmod(t, tmpDir, 0o000)
+ 
+ 	resolved, err := configengine.LoadOrTemplate(configengine.Dirs{Anchor: tmpDir}, boardSpec("path: "+fabricengine.BoltDirName+"\n", nil))
+ 	if err == nil {
+diff --git a/internal/fabricengine/destructivegaps_integration_test.go b/internal/fabricengine/destructivegaps_integration_test.go
+index ac3b8fc3..4f2dbb99 100644
+--- a/internal/fabricengine/destructivegaps_integration_test.go
++++ b/internal/fabricengine/destructivegaps_integration_test.go
+@@ -26,6 +26,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -397,10 +398,7 @@ func TestRemoveWarpWorktreeDir_LeftoverRetry(t *testing.T) {
+ 			target := fabricengine.WorktreePath(l, slug)
+ 			gitkit.CommitFile(t, target, lockedDirName+"/held.txt", "committed\n", "add a file under the directory made read-only")
+ 			lockedDir := filepath.Join(target, lockedDirName)
+-			if err := os.Chmod(lockedDir, 0o555); err != nil {
+-				t.Fatalf("make %s read-only: %v", lockedDir, err)
+-			}
+-			t.Cleanup(func() { _ = os.Chmod(lockedDir, 0o755) })
++			permkit.Chmod(t, lockedDir, 0o555)
+ 
+ 			o := outcome{target: target}
+ 			remove, sleep := tt.setup(lockedDir, &o)
+@@ -622,10 +620,7 @@ func TestOwnership_FabricHubKind(t *testing.T) {
+ 			if err := os.MkdirAll(hub, 0o755); err != nil {
+ 				t.Fatalf("mkdir hub: %v", err)
+ 			}
+-			if err := os.Chmod(hub, 0o000); err != nil {
+-				t.Fatalf("chmod: %v", err)
+-			}
+-			t.Cleanup(func() { _ = os.Chmod(hub, 0o755) })
++			permkit.Chmod(t, hub, 0o000)
+ 			if fabricengine.LooksLikeHubForTest(hub) {
+ 				t.Errorf("LooksLikeHubForTest(unreadable) = true; want false, the conservative direction")
+ 			}
+diff --git a/internal/fabricengine/remove_leftoverdir_integration_test.go b/internal/fabricengine/remove_leftoverdir_integration_test.go
+index 0dc38c77..5c30624e 100644
+--- a/internal/fabricengine/remove_leftoverdir_integration_test.go
++++ b/internal/fabricengine/remove_leftoverdir_integration_test.go
+@@ -20,6 +20,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -77,10 +78,7 @@ func TestRemove_FinishesWorktreeDirGitLeftOnDisk(t *testing.T) {
+ 			lockedDir := filepath.Join(dir, lockedDirName)
+ 			if tt.readOnly {
+ 				gitkit.CommitFile(t, dir, lockedDirName+"/held.txt", "committed\n", "add a file under the directory made read-only")
+-				if err := os.Chmod(lockedDir, 0o555); err != nil {
+-					t.Fatalf("make %s read-only: %v", lockedDir, err)
+-				}
+-				t.Cleanup(func() { _ = os.Chmod(lockedDir, 0o755) })
++				permkit.Chmod(t, lockedDir, 0o555)
+ 			}
+ 			if tt.locked {
+ 				gitkit.MustRun(t, mustRecordsRepoRoot(t, l), "git", "worktree", "lock", dir)
+diff --git a/internal/fabricengine/scratchlink_integration_test.go b/internal/fabricengine/scratchlink_integration_test.go
+index e82c6006..f024fb5b 100644
+--- a/internal/fabricengine/scratchlink_integration_test.go
++++ b/internal/fabricengine/scratchlink_integration_test.go
+@@ -23,6 +23,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -211,15 +212,6 @@ func skipAsRoot(t *testing.T) {
+ 	}
+ }
+ 
+-// makeReadOnly makes dir read-only and registers a cleanup restoring its mode so the temp directory can be removed.
+-func makeReadOnly(t *testing.T, dir string) {
+-	t.Helper()
+-	if err := os.Chmod(dir, 0o555); err != nil {
+-		t.Fatalf("chmod %s: %v", dir, err)
+-	}
+-	t.Cleanup(func() { _ = os.Chmod(dir, 0o755) })
+-}
+-
+ // scratchShapeCase is one shape the scratch step leaves as found.
+ type scratchShapeCase struct {
+ 	name string
+@@ -303,7 +295,7 @@ var scratchShapeCases = []scratchShapeCase{
+ 			root, target := scratchPaths(l, slug)
+ 			replaceLinkWithRealDirectory(t, root)
+ 			removeTarget(t, target)
+-			makeReadOnly(t, filepath.Dir(target))
++			permkit.Chmod(t, filepath.Dir(target), 0o555)
+ 		},
+ 		leaves: true,
+ 		phrase: "whose move to",
+@@ -321,7 +313,7 @@ var scratchShapeCases = []scratchShapeCase{
+ 			if _, err := os.Stat(filepath.Join(infoDir, "exclude.lym.lock")); err != nil {
+ 				t.Fatalf("exclude lock file missing before the chmod: %v", err)
+ 			}
+-			makeReadOnly(t, infoDir)
++			permkit.Chmod(t, infoDir, 0o555)
+ 		},
+ 		leaves: true,
+ 		phrase: "scratch exclude not written",
+diff --git a/internal/frictionengine/reflect_unix_test.go b/internal/frictionengine/reflect_unix_test.go
+index 29e9de73..13ac8d5d 100644
+--- a/internal/frictionengine/reflect_unix_test.go
++++ b/internal/frictionengine/reflect_unix_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"path/filepath"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -22,10 +23,7 @@ func TestReflect_UnwritableRecord_FailedNoSpawn(t *testing.T) {
+ 	shuttle := doneShuttle()
+ 	deps := newTestDeps(t, shuttle, fixedClock())
+ 	writeNote(t, deps, "note-1", "x")
+-	if err := os.Chmod(deps.FrictionDir, 0o555); err != nil {
+-		t.Fatalf("Chmod: %v", err)
+-	}
+-	t.Cleanup(func() { _ = os.Chmod(deps.FrictionDir, 0o755) })
++	permkit.Chmod(t, deps.FrictionDir, 0o555)
+ 
+ 	report, err := Reflect(deps)
+ 	if err != nil {
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index ba2dcf07..28f69d27 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -39,6 +39,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengines"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
+ )
+@@ -2305,14 +2306,7 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		if os.Geteuid() == 0 {
+ 			t.Skip("root reads any file")
+ 		}
+-		info, err := os.Stat(path)
+-		if err != nil {
+-			t.Fatal(err)
+-		}
+-		if err := os.Chmod(path, 0o000); err != nil {
+-			t.Fatal(err)
+-		}
+-		t.Cleanup(func() { _ = os.Chmod(path, info.Mode().Perm()) })
++		permkit.Chmod(t, path, 0o000)
+ 	}
+ 	scanRefusals := []struct {
+ 		name  string
+diff --git a/internal/impactset/guardscan_integration_test.go b/internal/impactset/guardscan_integration_test.go
+index cbb1c752..5d0c8fb1 100644
+--- a/internal/impactset/guardscan_integration_test.go
++++ b/internal/impactset/guardscan_integration_test.go
+@@ -11,6 +11,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -41,7 +42,7 @@ func TestModuleGuardTests_OverAModule(t *testing.T) {
+ 	if runtime.GOOS != "windows" {
+ 		t.Run("an unreadable test file is a parse error naming it with no line", func(t *testing.T) {
+ 			skipAsRoot(t)
+-			makeUnreadable(t, filepath.Join(moduleDir, "p", "p_test.go"))
++			permkit.Chmod(t, filepath.Join(moduleDir, "p", "p_test.go"), 0o000)
+ 
+ 			_, err := ModuleGuardTests(moduleDir)
+ 			var scanErr *GuardScanError
+@@ -59,7 +60,7 @@ func TestModuleGuardTests_OverAModule(t *testing.T) {
+ 		t.Run("an unreadable package directory is a plain error naming the module and the directory", func(t *testing.T) {
+ 			skipAsRoot(t)
+ 			writeRepoFile(t, moduleDir, "c/c.go", "package c\n")
+-			makeUnreadable(t, filepath.Join(moduleDir, "c"))
++			permkit.Chmod(t, filepath.Join(moduleDir, "c"), 0o000)
+ 
+ 			_, err := ModuleGuardTests(moduleDir)
+ 			if err == nil || IsGuardScanError(err) || !strings.Contains(err.Error(), moduleDir) || !strings.Contains(err.Error(), "open c:") {
+@@ -83,16 +84,3 @@ func skipAsRoot(t *testing.T) {
+ 		t.Skip("root reads any file")
+ 	}
+ }
+-
+-// makeUnreadable removes every permission from path and restores them at cleanup so the temp directory can be removed.
+-func makeUnreadable(t *testing.T, path string) {
+-	t.Helper()
+-	info, err := os.Stat(path)
+-	if err != nil {
+-		t.Fatalf("Stat(%s): %v", path, err)
+-	}
+-	if err := os.Chmod(path, 0o000); err != nil {
+-		t.Fatalf("Chmod(%s): %v", path, err)
+-	}
+-	t.Cleanup(func() { _ = os.Chmod(path, info.Mode().Perm()) })
+-}
+diff --git a/internal/logger/retention_test.go b/internal/logger/retention_test.go
+index 89a4a58f..f1f62a6d 100644
+--- a/internal/logger/retention_test.go
++++ b/internal/logger/retention_test.go
+@@ -15,6 +15,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -304,6 +305,8 @@ func TestSweep_GrammarScope(t *testing.T) {
+ }
+ 
+ // TestSweep_DeleteFailureTolerance verifies delete failures are silently tolerated.
++//
++//testtiming:keep pins that Sweep returns nil and keeps the stale file when its unlink fails.
+ func TestSweep_DeleteFailureTolerance(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -314,10 +317,7 @@ func TestSweep_DeleteFailureTolerance(t *testing.T) {
+ 	dir := t.TempDir()
+ 	stale := writeTraceTestFile(t, dir, time.Now().Add(-15*24*time.Hour), hexID(1), deadTestPID)
+ 
+-	if err := os.Chmod(dir, 0o555); err != nil {
+-		t.Fatalf("Chmod(%s) = %v", dir, err)
+-	}
+-	t.Cleanup(func() { _ = os.Chmod(dir, 0o755) })
++	permkit.Chmod(t, dir, 0o555)
+ 
+ 	if err := Sweep(dir, testBounds); err != nil {
+ 		t.Fatalf("Sweep(%s) = %v; want nil even when a delete fails", dir, err)
+diff --git a/internal/lymtemp/doc.go b/internal/lymtemp/doc.go
+index 4f5aca00..365a5182 100644
+--- a/internal/lymtemp/doc.go
++++ b/internal/lymtemp/doc.go
+@@ -27,6 +27,12 @@
+ // The OS releases a dead owner's lock, so the next start's sweep removes a killed process's run directory.
+ // With apply false the sweep removes nothing and lists the same candidates.
+ //
++// The sweep first gives every directory in a dead run directory's tree owner read, write and search permission.
++// A test binary killed before its cleanups ran can leave a directory it made read-only or unreadable,
++// and that directory's entries could not be removed otherwise.
++// Files and links keep their bits, and a link is never followed.
++// The pass is best-effort: a failure in it is ignored, and the removal's own result is what the sweep reports.
++//
+ // A removal that fails because the directory is not empty is retried until the sweep's one shared budget runs out;
+ // one still failing then is reported as a failure.
+ // The not-empty symptom is a concurrent sweeper's lock probe recreating the lock file.
+diff --git a/internal/lymtemp/root.go b/internal/lymtemp/root.go
+index f0d94b56..fc9cabad 100644
+--- a/internal/lymtemp/root.go
++++ b/internal/lymtemp/root.go
+@@ -45,7 +45,7 @@ func openRoot(path string, uid int, now func() time.Time) (*Root, error) {
+ 	if err := checkRoot(path, uid); err != nil {
+ 		return nil, err
+ 	}
+-	return &Root{path: path, now: now, remove: os.RemoveAll, retryNow: time.Now, sleep: time.Sleep, runName: randomRunName}, nil
++	return &Root{path: path, now: now, remove: removeTreeMakingWritable, retryNow: time.Now, sleep: time.Sleep, runName: randomRunName}, nil
+ }
+ 
+ // resolveRootPath returns the root path under tempDir.
+diff --git a/internal/lymtemp/sweep.go b/internal/lymtemp/sweep.go
+index ace28710..040ed15f 100644
+--- a/internal/lymtemp/sweep.go
++++ b/internal/lymtemp/sweep.go
+@@ -105,6 +105,39 @@ func removeRunDirectory(r *Root, path string, deadline *time.Time) error {
+ 	}
+ }
+ 
++// removeTreeMakingWritable removes the tree at path.
++// It first gives every directory in the tree owner read, write and search permission.
++// A test binary killed before its cleanups ran can leave a directory it made read-only or unreadable.
++// Such a directory bars the removal of its entries.
++// The permission pass is best-effort: its failures are ignored, so the result is the one the removal itself gives.
++// A path already gone counts as removed.
++func removeTreeMakingWritable(path string) error {
++	makeTreeOwnerWritable(path)
++	return os.RemoveAll(path)
++}
++
++// makeTreeOwnerWritable adds owner read, write and search permission to path and to every directory below it.
++// It sets a directory's bits before it lists the directory, so an unreadable directory is opened too.
++// Files and links keep their bits, since removing one needs only its parent's write permission;
++// a link is never followed.
++// The pass is best-effort: a directory it cannot change or list is skipped, and the walk goes on with the rest.
++func makeTreeOwnerWritable(path string) {
++	info, err := os.Lstat(path)
++	if err != nil || !info.IsDir() {
++		return
++	}
++	if perm := info.Mode().Perm(); perm&0o700 != 0o700 {
++		_ = os.Chmod(path, perm|0o700)
++	}
++	// ReadDir returns the entries it read before a failure, so they are walked either way.
++	entries, _ := os.ReadDir(path)
++	for _, entry := range entries {
++		if entry.IsDir() {
++			makeTreeOwnerWritable(filepath.Join(path, entry.Name()))
++		}
++	}
++}
++
+ // isRemovalSymptom reports whether err is the directory-not-empty failure of removing path itself.
+ // A peer's lock probe recreating the lock file is what causes this failure.
+ // The POSIX rmdir errors for a non-empty directory, and Windows' directory-not-empty error, satisfy fs.ErrExist.
+diff --git a/internal/lymtemp/sweep_test.go b/internal/lymtemp/sweep_test.go
+index 538abe27..6210fe98 100644
+--- a/internal/lymtemp/sweep_test.go
++++ b/internal/lymtemp/sweep_test.go
+@@ -17,6 +17,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/fslink"
+ 	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -64,6 +65,7 @@ func TestSweep(t *testing.T) {
+ 	}{
+ 		{name: "dead owner past the grace", entry: "rdead", kind: "dir", withLock: true, age: past, wantRemoved: true},
+ 		{name: "lock-less directory past the grace", entry: "rbare", kind: "dir", age: past, wantRemoved: true},
++		{name: "dead owner holding a read-only and an unreadable directory", entry: "rlocked", kind: "lockedTree", age: past, wantRemoved: true},
+ 		{name: "live owner at any age", entry: "rlive", kind: "dir", withLock: true, held: true, age: 1000 * time.Hour},
+ 		{name: "dead owner within the grace", entry: "rfresh", kind: "dir", withLock: true, age: creationGrace - time.Minute},
+ 		{name: "unprefixed entry", entry: "other", kind: "dir", withLock: true, age: past},
+@@ -76,6 +78,8 @@ func TestSweep(t *testing.T) {
+ 			root := newTestRoot(t)
+ 			path := filepath.Join(root.Path(), row.entry)
+ 			var linkTargetMarker string
++			var outsideDirectory string
++			var outsideMode fs.FileMode
+ 			switch row.kind {
+ 			case "dir":
+ 				makeRunDirectory(t, path, row.withLock, row.age)
+@@ -86,6 +90,35 @@ func TestSweep(t *testing.T) {
+ 					}
+ 					t.Cleanup(func() { held.Release() })
+ 				}
++			case "lockedTree":
++				makeRunDirectory(t, path, true, row.age)
++				readOnly := filepath.Join(path, "read-only")
++				unreadable := filepath.Join(readOnly, "unreadable")
++				if err := os.MkdirAll(unreadable, 0o700); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(filepath.Join(unreadable, "left.txt"), nil, 0o600); err != nil {
++					t.Fatal(err)
++				}
++				permkit.Chmod(t, unreadable, 0o000)
++				permkit.Chmod(t, readOnly, 0o555)
++				outsideDirectory = filepath.Join(t.TempDir(), "outside")
++				if err := os.Mkdir(outsideDirectory, 0o700); err != nil {
++					t.Fatal(err)
++				}
++				permkit.Chmod(t, outsideDirectory, 0o555)
++				outsideInfo, err := os.Stat(outsideDirectory)
++				if err != nil {
++					t.Fatal(err)
++				}
++				outsideMode = outsideInfo.Mode().Perm()
++				if err := fslink.CreateDirLink(filepath.Join(path, "escape"), outsideDirectory); err != nil {
++					t.Fatalf("create link: %v", err)
++				}
++				modified := fixedClock().Add(-row.age)
++				if err := os.Chtimes(path, modified, modified); err != nil {
++					t.Fatal(err)
++				}
+ 			case "file":
+ 				if err := os.WriteFile(path, nil, 0o600); err != nil {
+ 					t.Fatal(err)
+@@ -124,9 +157,30 @@ func TestSweep(t *testing.T) {
+ 					t.Errorf("link target was touched: %v", err)
+ 				}
+ 			}
++			if outsideDirectory != "" {
++				info, err := os.Stat(outsideDirectory)
++				if err != nil {
++					t.Fatalf("directory behind a link inside the run directory is gone: %v", err)
++				}
++				if got := info.Mode().Perm(); got != outsideMode {
++					t.Errorf("directory behind a link inside the run directory has mode %v, want %v", got, outsideMode)
++				}
++			}
+ 		})
+ 	}
+ 
++	t.Run("a failed permission pass leaves the result to the removal", func(t *testing.T) {
++		t.Parallel()
++		path := filepath.Join(t.TempDir(), "file", "child")
++		if err := os.WriteFile(filepath.Dir(path), nil, 0o600); err != nil {
++			t.Fatal(err)
++		}
++		want := os.RemoveAll(path)
++		if got := removeTreeMakingWritable(path); fmt.Sprint(got) != fmt.Sprint(want) {
++			t.Errorf("removeTreeMakingWritable(%s) = %v, want the outcome of os.RemoveAll, %v", path, got, want)
++		}
++	})
++
+ 	t.Run("two concurrent sweeps both succeed", func(t *testing.T) {
+ 		t.Parallel()
+ 		root := newTestRoot(t)
+diff --git a/internal/machinecli/set_test.go b/internal/machinecli/set_test.go
+index 6e1dfb0d..3200f2df 100644
+--- a/internal/machinecli/set_test.go
++++ b/internal/machinecli/set_test.go
+@@ -17,6 +17,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -510,10 +511,7 @@ func TestName_Set(t *testing.T) {
+ 		if err := os.WriteFile(path+".lock", nil, 0o644); err != nil {
+ 			t.Fatalf("write the lock file: %v", err)
+ 		}
+-		if err := os.Chmod(dir, 0o555); err != nil {
+-			t.Fatalf("make %s read-only: %v", dir, err)
+-		}
+-		t.Cleanup(func() { os.Chmod(dir, 0o755) })
++		permkit.Chmod(t, dir, 0o555)
+ 
+ 		code, envelope := runName(t, seams{path: path, host: "box"}.deps(f), t.TempDir(), "osl46")
+ 
+diff --git a/internal/reedcli/watchdog_test.go b/internal/reedcli/watchdog_test.go
+index f45cb1bf..a9182ff8 100644
+--- a/internal/reedcli/watchdog_test.go
++++ b/internal/reedcli/watchdog_test.go
+@@ -25,6 +25,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -374,14 +375,7 @@ func TestWorktreeRootGoneAndHubIsLiveDir(t *testing.T) {
+ 				if err := os.Mkdir(target, 0o755); err != nil {
+ 					t.Fatalf("Mkdir: %v", err)
+ 				}
+-				if err := os.Chmod(parent, 0o000); err != nil {
+-					t.Fatalf("Chmod: %v", err)
+-				}
+-				t.Cleanup(func() {
+-					if err := os.Chmod(parent, 0o755); err != nil {
+-						t.Errorf("Chmod restore: %v", err)
+-					}
+-				})
++				permkit.Chmod(t, parent, 0o000)
+ 				if _, err := os.Stat(target); err == nil {
+ 					t.Skip("stat of target succeeded despite the denied parent mode; cannot exercise the EACCES shape here")
+ 				}
+@@ -624,10 +618,7 @@ func TestConsumeDiscoverSignal(t *testing.T) {
+ 				if err := os.WriteFile(path, []byte(reedengine.DiscoverStopMarker), 0o644); err != nil {
+ 					t.Fatalf("write signal: %v", err)
+ 				}
+-				if err := os.Chmod(locked, 0o555); err != nil {
+-					t.Fatalf("chmod: %v", err)
+-				}
+-				t.Cleanup(func() { _ = os.Chmod(locked, 0o755) })
++				permkit.Chmod(t, locked, 0o555)
+ 				return path
+ 			},
+ 			wantErr: true,
+diff --git a/internal/reedengine/server_unix_test.go b/internal/reedengine/server_unix_test.go
+index 711a2b1d..5b8731b1 100644
+--- a/internal/reedengine/server_unix_test.go
++++ b/internal/reedengine/server_unix_test.go
+@@ -10,6 +10,7 @@ import (
+ 	"path/filepath"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -28,15 +29,7 @@ func TestValidateToldWorktreeRootLive_UnreadableParentIsNotTheSentinel(t *testin
+ 	if err := os.Mkdir(worktreeRoot, 0o755); err != nil {
+ 		t.Fatalf("Mkdir: %v", err)
+ 	}
+-	if err := os.Chmod(parent, 0o000); err != nil {
+-		t.Fatalf("Chmod: %v", err)
+-	}
+-	t.Cleanup(func() {
+-		// Restore the mode so t.TempDir's own cleanup can traverse and remove parent.
+-		if err := os.Chmod(parent, 0o755); err != nil {
+-			t.Fatalf("restore parent mode: %v", err)
+-		}
+-	})
++	permkit.Chmod(t, parent, 0o000)
+ 
+ 	err := validateToldWorktreeRootLive(Geometry{WorktreeRoot: worktreeRoot})
+ 	if err == nil {
+diff --git a/internal/shedadapters/bouncer_amendment_test.go b/internal/shedadapters/bouncer_amendment_test.go
+index 697d9e65..b4b318b9 100644
+--- a/internal/shedadapters/bouncer_amendment_test.go
++++ b/internal/shedadapters/bouncer_amendment_test.go
+@@ -14,6 +14,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -324,10 +325,7 @@ func TestBouncer_Amendment(t *testing.T) {
+ 			h.layoutSettledRound1(h.subject, nil)
+ 			h.subject = amendmentChangedSubject
+ 			parent := filepath.Dir(h.cfg.RunDir)
+-			if err := os.Chmod(parent, 0o555); err != nil {
+-				t.Fatalf("Chmod(parent) = %v; want nil", err)
+-			}
+-			t.Cleanup(func() { _ = os.Chmod(parent, 0o755) })
++			permkit.Chmod(t, parent, 0o555)
+ 
+ 			if ptr := shedfake.RequireOutcome(t, h.b, shedengine.Stuck); ptr.GenerationStart {
+ 				t.Error("degraded Stuck GenerationStart = true; want false")
+diff --git a/internal/shedadapters/bouncer_clear_test.go b/internal/shedadapters/bouncer_clear_test.go
+index dd15dbc0..1cf92242 100644
+--- a/internal/shedadapters/bouncer_clear_test.go
++++ b/internal/shedadapters/bouncer_clear_test.go
+@@ -21,6 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -277,10 +278,7 @@ func TestBouncer_Clear_ArchiveFailureDegradesToStuck(t *testing.T) {
+ 	layoutApprovedGeneration(t, cfg, 1)
+ 
+ 	parent := filepath.Dir(cfg.RunDir)
+-	if err := os.Chmod(parent, 0o555); err != nil {
+-		t.Fatalf("Chmod(parent) = %v; want nil", err)
+-	}
+-	t.Cleanup(func() { _ = os.Chmod(parent, 0o755) })
++	permkit.Chmod(t, parent, 0o555)
+ 
+ 	ptr := shedfake.RequireOutcome(t, b, shedengine.Stuck)
+ 	if ptr.Path != "" || ptr.GateAttempts != nil {
+diff --git a/internal/shedadapters/round_unix_test.go b/internal/shedadapters/round_unix_test.go
+index 905eb542..c13c5d16 100644
+--- a/internal/shedadapters/round_unix_test.go
++++ b/internal/shedadapters/round_unix_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"path/filepath"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -30,12 +31,7 @@ func TestResolveRound_NonNotExistStatErrorIsReturned(t *testing.T) {
+ 	writeReport(t, dir, 1)
+ 
+ 	// Remove the directory's search (execute) bit, so a stat inside it fails with a permission error.
+-	if err := os.Chmod(dir, 0o000); err != nil {
+-		t.Fatalf("Chmod(%q, 0o000) = %v; want nil", dir, err)
+-	}
+-	t.Cleanup(func() {
+-		_ = os.Chmod(dir, 0o755)
+-	})
++	permkit.Chmod(t, dir, 0o000)
+ 
+ 	got, err := ResolveRound(dir, reportName)
+ 	if err == nil {
+diff --git a/internal/shedrun/seed_test.go b/internal/shedrun/seed_test.go
+index 93a1addb..84d61781 100644
+--- a/internal/shedrun/seed_test.go
++++ b/internal/shedrun/seed_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -327,12 +328,7 @@ func TestList(t *testing.T) {
+ 	if err := os.WriteFile(unreadableSeed, []byte(`{"recipe":"tapestry"}`), 0o644); err != nil {
+ 		t.Fatalf("WriteFile() error = %v", err)
+ 	}
+-	if err := os.Chmod(unreadableSeed, 0o000); err != nil {
+-		t.Fatalf("Chmod() error = %v", err)
+-	}
+-	t.Cleanup(func() {
+-		_ = os.Chmod(unreadableSeed, 0o644)
+-	})
++	permkit.Chmod(t, unreadableSeed, 0o000)
+ 
+ 	got, err := List(l)
+ 	if err != nil {
+diff --git a/internal/shuttleengine/rundir_test.go b/internal/shuttleengine/rundir_test.go
+index 7aa73dbb..abcfd7d9 100644
+--- a/internal/shuttleengine/rundir_test.go
++++ b/internal/shuttleengine/rundir_test.go
+@@ -15,6 +15,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -297,10 +298,7 @@ func TestSweepOrphans_OneUndeletableDirDoesNotAbandonTheRest(t *testing.T) {
+ 		}
+ 	}
+ 	// A directory whose own write bit is cleared cannot have its child unlinked, so RemoveAll fails.
+-	if err := os.Chmod(stuck, 0o500); err != nil {
+-		t.Fatalf("Chmod(%q) error = %v", stuck, err)
+-	}
+-	t.Cleanup(func() { _ = os.Chmod(stuck, 0o755) })
++	permkit.Chmod(t, stuck, 0o500)
+ 
+ 	// Neither dir carries a run.json, so both are orphans; both are old enough for the age guard.
+ 	removed, err := sweepOrphans(root, map[string]bool{}, time.Minute, time.Now().Add(time.Hour))
+diff --git a/internal/shuttleengine/stop_test.go b/internal/shuttleengine/stop_test.go
+index 851ca980..aaae6069 100644
+--- a/internal/shuttleengine/stop_test.go
++++ b/internal/shuttleengine/stop_test.go
+@@ -10,6 +10,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -147,10 +148,7 @@ func TestStopStrand_UnrecordableStopRemovesNothing(t *testing.T) {
+ 			if _, _, err := loadRunState(runDir); err != nil {
+ 				t.Fatalf("loadRunState: %v", err)
+ 			}
+-			if err := os.Chmod(runDir, 0o555); err != nil {
+-				t.Fatalf("make run dir read-only: %v", err)
+-			}
+-			t.Cleanup(func() { os.Chmod(runDir, 0o755) })
++			permkit.Chmod(t, runDir, 0o555)
+ 		}},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/testkit/enforcement_test.go b/internal/testkit/enforcement_test.go
+index 5cfb4cc3..de935a12 100644
+--- a/internal/testkit/enforcement_test.go
++++ b/internal/testkit/enforcement_test.go
+@@ -87,3 +87,13 @@ func TestEnforcement_ScankitStdlibOnly(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	scankit.AssertImportAllowlist(t, "internal/testkit/scankit")
+ }
++
++// TestEnforcement_PermkitStdlibOnly fails when a non-test permkit file imports a package outside the standard library.
++// A narrowed gate runs it only when a permkit file changes; a whole gate always runs it.
++//
++//lym:guard
++//lym:watch internal/testkit/permkit/*.go
++func TestEnforcement_PermkitStdlibOnly(t *testing.T) {
++	tiergate.Require(t, 0)
++	scankit.AssertImportAllowlist(t, "internal/testkit/permkit")
++}
+diff --git a/internal/testkit/permkit/permkit.go b/internal/testkit/permkit/permkit.go
+new file mode 100644
+index 00000000..2417a918
+--- /dev/null
++++ b/internal/testkit/permkit/permkit.go
+@@ -0,0 +1,29 @@
++// Package permkit changes a test path's permission bits for the length of one test.
++//
++// A test that needs a read-only or unreadable path takes it from Chmod,
++// so the restore that lets the test's temp tree be removed is registered in one place.
++// A test binary killed before its cleanups run leaves the path as Chmod set it;
++// the dead-owner sweep of the lym temp root makes such a tree owner-writable before it removes it.
++// The kit imports the standard library only.
++package permkit
++
++import (
++	"io/fs"
++	"os"
++	"testing"
++)
++
++// Chmod sets path's permission bits to mode and registers a cleanup that restores the bits path had before.
++// It fails the test when path cannot be read or changed.
++// The restore drops its own error, so a test may remove path itself before it ends.
++func Chmod(tb testing.TB, path string, mode fs.FileMode) {
++	tb.Helper()
++	info, err := os.Stat(path)
++	if err != nil {
++		tb.Fatalf("permkit: stat %s: %v", path, err)
++	}
++	if err := os.Chmod(path, mode); err != nil {
++		tb.Fatalf("permkit: chmod %s to %v: %v", path, mode, err)
++	}
++	tb.Cleanup(func() { _ = os.Chmod(path, info.Mode().Perm()) })
++}
+diff --git a/internal/testkit/permkit/permkit_test.go b/internal/testkit/permkit/permkit_test.go
+new file mode 100644
+index 00000000..485bc01a
+--- /dev/null
++++ b/internal/testkit/permkit/permkit_test.go
+@@ -0,0 +1,49 @@
++package permkit_test
++
++import (
++	"io/fs"
++	"os"
++	"path/filepath"
++	"runtime"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestChmod_SetsTheModeAndRestoresItAtCleanup(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	if runtime.GOOS == "windows" {
++		t.Skip("Windows keeps only the owner write bit of a mode")
++	}
++	dir := filepath.Join(t.TempDir(), "dir")
++	if err := os.Mkdir(dir, 0o700); err != nil {
++		t.Fatalf("Mkdir(%s): %v", dir, err)
++	}
++	const before fs.FileMode = 0o750
++	if err := os.Chmod(dir, before); err != nil {
++		t.Fatalf("Chmod(%s): %v", dir, err)
++	}
++
++	// Not parallel: the outer test reads the mode once the subtest's cleanups have run.
++	t.Run("Inside", func(t *testing.T) {
++		permkit.Chmod(t, dir, 0o555)
++		if got := permOf(t, dir); got != 0o555 {
++			t.Errorf("mode inside the test = %v; want %v", got, fs.FileMode(0o555))
++		}
++	})
++	if got := permOf(t, dir); got != before {
++		t.Errorf("mode after the test = %v; want %v", got, before)
++	}
++}
++
++// permOf returns path's permission bits.
++func permOf(t *testing.T, path string) fs.FileMode {
++	t.Helper()
++	info, err := os.Stat(path)
++	if err != nil {
++		t.Fatalf("Stat(%s): %v", path, err)
++	}
++	return info.Mode().Perm()
++}
+diff --git a/internal/testkit/permkit/testmain_test.go b/internal/testkit/permkit/testmain_test.go
+new file mode 100644
+index 00000000..47290830
+--- /dev/null
++++ b/internal/testkit/permkit/testmain_test.go
+@@ -0,0 +1,15 @@
++// testmain_test.go runs the package's tests under tmuxkit.Main.
++// Their temp files then live in the process run directory and go with it.
++
++package permkit_test
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++func TestMain(m *testing.M) {
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/internal/vscode/keybindings_test.go b/internal/vscode/keybindings_test.go
+index 9f67f507..39bad168 100644
+--- a/internal/vscode/keybindings_test.go
++++ b/internal/vscode/keybindings_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -230,10 +231,7 @@ func TestSeedKeybindings(t *testing.T) {
+ 		path := filepath.Join(dir, "keybindings.json")
+ 		const content = "[\n  { \"key\": \"ctrl+k\" }\n]\n"
+ 		write(t, path, content, 0o644)
+-		if err := os.Chmod(dir, 0o555); err != nil {
+-			t.Fatal(err)
+-		}
+-		t.Cleanup(func() { os.Chmod(dir, 0o755) })
++		permkit.Chmod(t, dir, 0o555)
+ 		if got := SeedKeybindings(path); got.Outcome != KeybindingsSkipped || got.Reason == "" {
+ 			t.Fatalf("run = %+v; want skipped with a reason", got)
+ 		}
+diff --git a/internal/websterengine/runlevel_test.go b/internal/websterengine/runlevel_test.go
+index 55246bb2..62979eae 100644
+--- a/internal/websterengine/runlevel_test.go
++++ b/internal/websterengine/runlevel_test.go
+@@ -29,6 +29,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/plankit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shuttlefake"
+ 	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
+@@ -591,10 +592,7 @@ func TestRun_RefusesBeforeSpawn(t *testing.T) {
+ 				seedMatchingState(t, fx, &websterengine.State{})
+ 				fx.Deps.Geom.WorktreeRoot = filepath.Join(t.TempDir(), "no-such-tree")
+ 				websterDir := fx.Deps.Geom.WebsterDir
+-				if err := os.Chmod(websterDir, 0o555); err != nil {
+-					t.Fatalf("chmod webster dir read-only: %v", err)
+-				}
+-				t.Cleanup(func() { _ = os.Chmod(websterDir, 0o755) })
++				permkit.Chmod(t, websterDir, 0o555)
+ 				return nil
+ 			},
+ 			errIs:       planglyph.ErrQuarryUnavailable,
+@@ -910,10 +908,7 @@ func TestRun_AutoRebaseline(t *testing.T) {
+ 					skipAsRoot(t)
+ 					addCards(t, fx, 2)
+ 					websterDir := fx.Deps.Geom.WebsterDir
+-					if err := os.Chmod(websterDir, 0o555); err != nil {
+-						t.Fatalf("make the webster dir read-only: %v", err)
+-					}
+-					t.Cleanup(func() { _ = os.Chmod(websterDir, 0o755) })
++					permkit.Chmod(t, websterDir, 0o555)
+ 				},
+ 				want: []string{"way forward: transient, " + reStep},
+ 			},
+diff --git a/pattern/PATTERN-test-isolation.md b/pattern/PATTERN-test-isolation.md
+index 00f2ac8a..fd975088 100644
+--- a/pattern/PATTERN-test-isolation.md
++++ b/pattern/PATTERN-test-isolation.md
+@@ -75,6 +75,10 @@ A test package never reaches the operator's global gitconfig or default tmux soc
+   a lingering child's cwd blocking it on Windows is one such failure.
+   A binary killed by a panic or timeout skips the removal,
+   and the next start's sweep of `internal/lymtemp` removes its directory once the OS has released its lock.
++  The sweep first gives every directory in that tree owner read, write and search permission,
++  so a directory the killed test left read-only or unreadable is removed with the rest.
++- A test that makes a directory read-only or unreadable takes the change from `permkit.Chmod`,
++  which registers the restore that lets the test's temp tree be removed.
+ - After the run `Main` sweeps the servers.
+   On Linux it then scans `/proc` for any process whose cwd, executable or an argv element references that directory.
+   It waits up to two seconds for such a process to exit on its own.
+@@ -175,6 +179,7 @@ It is never duplicated per package and never placed under the package it fakes.
+   A package an import cycle bars from a kit keeps exactly one local copy,
+   and a fixture used by one package stays in that package's `_test.go` files.
+ - `internal/testkit/scankit` imports the standard library only, so every package's tests can import it.
++- `internal/testkit/permkit` imports the standard library only.
+ 
+ ### Enforcement
+ 
+diff --git a/tools/forkaudit/forkaudit_integration_test.go b/tools/forkaudit/forkaudit_integration_test.go
+index 2ec867c8..9bc42714 100644
+--- a/tools/forkaudit/forkaudit_integration_test.go
++++ b/tools/forkaudit/forkaudit_integration_test.go
+@@ -24,6 +24,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -166,16 +167,6 @@ func snapshot(t *testing.T, root string) map[string]string {
+ 	return files
+ }
+ 
+-// makeReadOnly sets dir to mode 0555.
+-// Its cleanup restores 0755 before the temporary tree is removed.
+-func makeReadOnly(t *testing.T, dir string) {
+-	t.Helper()
+-	t.Cleanup(func() { _ = os.Chmod(dir, 0o755) })
+-	if err := os.Chmod(dir, 0o555); err != nil {
+-		t.Fatalf("chmod %s: %v", dir, err)
+-	}
+-}
+-
+ // writeFile creates a file with its parent directories.
+ func writeFile(t *testing.T, path, content string) {
+ 	t.Helper()
+@@ -422,7 +413,7 @@ func TestForkauditRefusals(t *testing.T) {
+ 			}},
+ 		{name: "out directory read-only", denial: true, wantExit: 1, wantStderr: []string{"--out"},
+ 			prepare: func(t *testing.T, d *auditDirs) ([]string, []string) {
+-				makeReadOnly(t, d.outDir)
++				permkit.Chmod(t, d.outDir, 0o555)
+ 				return d.args(since...), nil
+ 			}},
+ 		{name: "out directory missing", wantExit: 1, wantStderr: []string{"--out"},
+@@ -481,7 +472,7 @@ func TestForkauditRefusals(t *testing.T) {
+ 		{name: "marked work read-only", denial: true, wantExit: 1, wantStderr: []string{"--work", "not writable"},
+ 			prepare: func(t *testing.T, d *auditDirs) ([]string, []string) {
+ 				markedDir(t, d.work)
+-				makeReadOnly(t, d.work)
++				permkit.Chmod(t, d.work, 0o555)
+ 				return d.args(since...), nil
+ 			}},
+ 		{name: "unreadable candidate transcript", denial: true, failsAfterWork: true, wantExit: 1, wantStderr: []string{"agent-ffile"},
+@@ -504,7 +495,7 @@ func TestForkauditRefusals(t *testing.T) {
+ 				if err := os.Mkdir(parent, 0o755); err != nil {
+ 					t.Fatalf("create parent: %v", err)
+ 				}
+-				makeReadOnly(t, parent)
++				permkit.Chmod(t, parent, 0o555)
+ 				d.work = filepath.Join(parent, "work")
+ 				return d.args(since...), nil
+ 			}},
