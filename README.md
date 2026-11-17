@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 18:59 UTC; every age below is as of then.
+Rendered 2026-11-17 19:00 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -76,7 +76,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Merge main into the beam adopt-build-resplit**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-resplit-merge-in`](design-adopt-build-resplit-merge-in.md) | darn | Darn-Write | neve | 0m<br>0m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
+| T4 | **Merge main into the beam adopt-build-resplit**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-resplit-merge-in`](design-adopt-build-resplit-merge-in.md) | darn | Darn-Write | neve | 1m<br>1m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 
 #### Ready (0)
 
@@ -91,11 +91,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-test-suite-trim.md">P6 Coverage maps: build them, keep them fresh, and cut the test suite with them</a> (1)</strong></summary>
+<summary><strong><a href="project-test-suite-trim.md">P6 Coverage maps: build them, keep them fresh, and cut the test suite with them</a> (2)</strong></summary>
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 7d · Owner `neve`
 
-### Tasks (1)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -105,13 +105,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 8d<br>1h | testkit, gate |
+| T5 | `draft` **lym gate redundant: mutate data literals and delete boolean clauses**<br>• Add literal and clause-deletion mutants so tests pinning a literal or a clause stop being listed redundant | [`redundant-literal-clause-mutants`](design-redundant-literal-clause-mutants.md) | darn · light |  | 1h<br>0m | gate |
 
 ### Notes (0)
 
@@ -120,7 +121,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (13)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (11)</strong></summary>
 
 Owner `neve`
 
@@ -156,9 +157,9 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | darn · solid |  | 52m<br>52m | board, ide, fabric |
+| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | darn · solid |  | 53m<br>53m | board, ide, fabric |
 
-### Notes (10)
+### Notes (8)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -167,16 +168,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 8d<br>8d | gate, fabric |
-| R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 4m<br>4m | shuttle |
+| R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5m<br>5m | shuttle |
 
-#### Bugs (4)
+#### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Record Codex edits for the edit-loop watch**<br>• Codex runs record no edits, so the edit-loop watch never notifies their parent | [`codex-edit-loop-recorder`](design-codex-edit-loop-recorder.md) | 6h<br>1h | codex, shuttle |
-| B2 |  | **lym gate redundant never mutates a data literal, so a test that pins one is listed redundant**<br>• Mutants change operators only, so a table row or string no other test asserts is no unique kill | [`redundant-mutants-skip-literals`](design-redundant-mutants-skip-literals.md) | 59m<br>0m | gate |
 | B3 |  | **An old driver fails on board stencils a landing installed mid-run**<br>• A blocked hand-over leaves the old binary rendering new board copies whose includes it lacks | [`stale-driver-new-stencils`](design-stale-driver-new-stencils.md) | 4h<br>4h | stencil, shed |
-| B4 |  | **lym gate redundant lists a test redundant when its covers never feed a clause its input**<br>• Negating a condition is killed by any passing test, so a clause no cover exercises alone still counts as covered | [`redundant-clause-inputs-unfed`](design-redundant-clause-inputs-unfed.md) | 59m<br>0m | gate |
 
 #### Enhancements (1)
 

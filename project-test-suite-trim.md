@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-17 18:59 UTC; every age below is as of then.
+Rendered 2026-11-17 19:00 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 7d · Owner `neve`
@@ -26,7 +26,7 @@ The maps are built only on command now; the gate no longer selects tests from th
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -36,13 +36,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (1)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 8d<br>1h | testkit, gate |
+| T5 | `draft` **lym gate redundant: mutate data literals and delete boolean clauses**<br>• Add literal and clause-deletion mutants so tests pinning a literal or a clause stop being listed redundant | [`redundant-literal-clause-mutants`](design-redundant-literal-clause-mutants.md) | darn · light |  | 1h<br>0m | gate |
 
 ## Notes (0)
 
