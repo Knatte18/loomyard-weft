@@ -35,6 +35,7 @@ Every lens returned a report.
 - interactions + bound-breaker: a guard kill beside others had no rerun rule, and D7's exit disagreed with D5 — fixed: D5 reruns killed tests alone, D7 judges the outcome after that rerun.
 - interactions: the one-ahead build was not handled on an early end — fixed: D2 cancels and waits for it.
 - walkthrough + bound-breaker: nothing built the prebuilt `lym` for tier 1 — fixed: D3 builds it once per call, with a criterion.
+  Review round 1 (F2) reversed this: no test map mode runs reaches that build, so D3 builds no `lym` and the criterion went.
 - bound-breaker: the slot hold had no bound — fixed: D7 states the `slots: all` bound.
 - walkthrough + interactions: a failed build dropped old entries, a silent change for consumers — fixed: D7 keeps today's rule, and the `PATTERN-test-speed` constraint says the coverage-map section is rewritten.
 - interactions: the `go-json` criterion covered tier 0 only — fixed.
@@ -71,7 +72,7 @@ _No rounds yet._
 - Q3 (auto-pick): incremental planning? None; every package in the call is rebuilt whole, since the study puts a full build at about 16 CPU-minutes. → D2
 - Q4 (auto-pick): how do the memory guard and the per-run cap cover the processes? The guard samples lym's own tree; the tier's `memory_mb` bounds the headroom the per-test caps are clamped to. → D4
 - Q5 (auto-pick): collisions between parallel processes? Keep the alone-rerun and list each test that passed only alone. → D5
-- Q6 (auto-pick): dirty files? Check the package's and linked packages' directories and HEAD before each build and write; a dirty package is skipped and listed. → D6
+- Q6 (auto-pick): dirty files? Check the files the package and its linked packages own, and HEAD, after each build and before each write; a dirty package is skipped and listed. → D6
 - Q7 (auto-pick): does a map run count as a gate pass? No: it writes no run, green, verify or failure record, and exits non-zero on a failed test. → D7
 - Q8 (auto-pick): map location and format? Unchanged; last write wins between two runs. → D8
 - Q9 (resolved, fact): does a coverage build share the normal build cache? No; a `set`-mode build reuses its own instrumented packages (smart-build study, Go 1.26.8). → Constraints
