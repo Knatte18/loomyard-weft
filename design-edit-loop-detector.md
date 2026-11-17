@@ -1,6 +1,6 @@
 # Flag an agent that edits the same file again and again
 
-`edit-loop-detector` · Task · feature, shuttle, friction · running · Drift-Recheck
+`edit-loop-detector` · Task · feature, shuttle, friction · running · Describe
 
 ## Seen (orch, 2026-11-17)
 
