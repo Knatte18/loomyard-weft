@@ -1,13 +1,13 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedverbs: step Webster interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step weaver-implementer --until-stop",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Drift-Expect → skipped",
-    "wait": ""
+    "wait": "shedverbs: step Webster interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step weaver-implementer --until-stop"
   },
   "history": [
     {
