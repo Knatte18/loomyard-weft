@@ -489,17 +489,36 @@
       "spawnedAt": "2026-11-17T18:12:04Z",
       "sessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "09-approve-and-revoke",
+        "status": "failed",
+        "head_sha": "9c7f2f0bb0c0c3aeddc56d6847347aed78616e38",
+        "reasons": [
+          "batch 09-approve-and-revoke holds cards 9-approve-and-revoke, 10-bridge-sending",
+          "create-not-done/10-bridge-sending[blocking]: Create target \"plan:internal/slackengine#BridgeSender.Send\" still does not resolve: looked up \"internal/slackengine#BridgeSender.Send\", quarry answered not_found (the unit exists and the member is missing); quarry searched 27 files of unit internal/slackengine; Send is declared as internal/slackengine#bridgeSender.Send in internal/slackengine/export_test.go, internal/burlercli#halfHandle.Send in internal/burlercli/wiring_test.go, internal/burlerengine#fakeHandle.Send in internal/burlerengine/engine_test.go and 15 more",
+          "create-not-done/10-bridge-sending[blocking]: Create target \"plan:internal/slackengine#BridgeSender.SettleAccepted\" still does not resolve: looked up \"internal/slackengine#BridgeSender.SettleAccepted\", quarry answered not_found (the unit exists and the member is missing); quarry searched 27 files of unit internal/slackengine; SettleAccepted is declared as internal/slackengine#bridgeSender.SettleAccepted in internal/slackengine/export_test.go",
+          "create-not-done/10-bridge-sending[blocking]: Create target \"plan:internal/slackengine#BridgePoll.Run\" still does not resolve: looked up \"internal/slackengine#BridgePoll.Run\", quarry answered not_found (the unit exists and the member is missing); quarry searched 27 files of unit internal/slackengine; Run is declared as internal/slackengine#bridgePoll.Run in internal/slackengine/export_test.go, internal/slackengine#socketHolder.Run in internal/slackengine/export_test.go, internal/creelengine#Run in internal/creelengine/server.go and 32 more",
+          "create-not-done/10-bridge-sending[blocking]: Create target \"plan:internal/slackengine#BridgePoll.Wake\" still does not resolve: looked up \"internal/slackengine#BridgePoll.Wake\", quarry answered not_found (the unit exists and the member is missing); quarry searched 27 files of unit internal/slackengine; Wake is declared as internal/slackengine#bridgePoll.Wake in internal/slackengine/export_test.go, internal/battenshed#Wake in internal/battenshed/classify.go"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a92ac1239bdc5a567.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a92ac1239bdc5a567.jsonl"
+      ]
     }
   },
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "255015dbb2c93bc97dff12a121147be8",
   "masterSessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a3f4ea1e36ca7ed3c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-ab6f7c16cac28f64b.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a70376c79ae2bac6d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a70376c79ae2bac6d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a92ac1239bdc5a567.jsonl"
   ]
 }
