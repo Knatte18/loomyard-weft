@@ -1,14 +1,31 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/review-rounds-converge/_lym/discussion/decision-record.md",
+      "at": "2026-11-17T11:07:47Z",
+      "started_at": "2026-11-17T10:57:36Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-17T11:06:58.746186347Z",
+          "end": "2026-11-17T11:07:46.884152074Z"
+        }
+      ]
+    }
+  ],
   "product": {
     "slug": "review-rounds-converge",
     "parent": "main",
