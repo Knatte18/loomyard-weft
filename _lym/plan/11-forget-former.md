@@ -11,12 +11,12 @@
 - `pattern/PATTERN-cli-cobra.md`
 
 **Create:**
-- `plan:internal/machinecli#formerReference` -> `type formerReference struct`
-- `plan:internal/machinecli#forgetResult` -> `type forgetResult struct`
-- `plan:internal/machinecli#forgetFormer` -> `func forgetFormer(d deps, cwd, name string) (forgetResult, error)`
-- `plan:internal/machinecli#runForget` -> `func runForget(out io.Writer, d deps, cwd, name string) int`
-- `plan:internal/machinecli#hubReferences` -> `func hubReferences(hub, name string) ([]formerReference, error)`
-- `plan:internal/machinecli#TestName_ForgetFormer` -> `func TestName_ForgetFormer(t *testing.T)`
+- `internal/machinecli#formerReference`
+- `internal/machinecli#forgetResult`
+- `internal/machinecli#forgetFormer`
+- `internal/machinecli#runForget`
+- `internal/machinecli#hubReferences`
+- `internal/machinecli#TestName_ForgetFormer`
 
 **Uses:**
 - `internal/boardengine#RegisterMachine`

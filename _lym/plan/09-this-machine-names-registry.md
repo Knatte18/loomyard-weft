@@ -8,8 +8,8 @@
 - `internal/beamcli#hubDobbyDeps`
 
 **Create:**
-- `plan:internal/pairteardown#machineNamesOf` -> `func machineNamesOf(here machinename.Identity, registry boardengine.Registry) fabricengine.MachineNames`
-- `plan:internal/pairteardown#TestMachineNamesOf` -> `func TestMachineNamesOf(t *testing.T)`
+- `internal/pairteardown#machineNamesOf`
+- `internal/pairteardown#TestMachineNamesOf`
 
 **Uses:**
 - `internal/fabriccli/doc.go`

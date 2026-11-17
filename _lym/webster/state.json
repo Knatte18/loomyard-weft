@@ -1,6 +1,6 @@
 {
   "runGuid": "68c8af21b2573c67ea24b00d8c6a8507",
-  "planFingerprint": "128c5c020c208b523be174f803a1c3de6a5c14254945860938113c8e200914f6",
+  "planFingerprint": "9d5c08bb6cafbe0e553d93a0d7a6ae62f4b1c67d26ea4b6844ce73d785687bdc",
   "planFileHashes": {
     "00-overview.md": "8070a6e612366e940baf7464bff651d6e6f80c3c26d7e4f332211f6eef4a3045",
     "01-fixtries-package.md": "430abb950acfaefa82f14c1899839ce15fad1bc64a96004f3df727de828c3371",
@@ -10,10 +10,10 @@
     "05-bolt-hold-write.md": "587ec1b4e20d495a6707fea07be9224588374e525588d3585ca0049dfb7c30f1",
     "06-owner-write-registers.md": "f410b3b591c7ef5919e6e141c28b2355845e1b60f9955e33ee4104b7cfc58422",
     "07-owned-elsewhere-through-registry.md": "c88f277d6d6760abbe8108425756b3778cee9191d4159abce4b0ed6d8fff7a54",
-    "08-dobby-start-owner-flags.md": "9a5be0dc572e9ac2f1226b346fa5e50af64b8a43789f65f2996a8c233bfac52f",
-    "09-this-machine-names-registry.md": "8a4a2fa643d96243d3d99a09b55503b08946237735bd00eb401404ed81f1989e",
+    "08-dobby-start-owner-flags.md": "abbe7ec105cd0fb0a755f18768c5f565b468dfa4696507e7f4cc2d8139ab2b29",
+    "09-this-machine-names-registry.md": "570f484532f3007b1d297910834aa1ab8d1d92faba18a984429e9a47577e47b3",
     "10-machine-name-registers.md": "18e1c787c6b9125ba4b1971958aa093abb29802416f2a63dc43fe8f787c5e5f5",
-    "11-forget-former.md": "c9caa23b0af57782ff8f55d383a79e25da8682bf1ca8dcefdef4ea33e9705803",
+    "11-forget-former.md": "b2ee3224819ad24a504772fd29db7d992e6d28657425e50c95937e11dd993d95",
     "12-bolt-hold-caller.md": "31c842819e96a59de47d0eb408eda80a153a08665e9800eb56240635f18ea39d",
     "13-act-rule-hold.md": "1c82037c813863de20a4037c9f6b021655b0787e9b10eadb60c92005d0d2931d",
     "14-act-verbs-pull-bolt.md": "a56a3c360f1fe9549169a36805d15b2df19ddea99d70d59d0f6837afbf9f1b76",
@@ -815,27 +815,53 @@
         "11-forget-former"
       ],
       "cardHashes": {
-        "08-dobby-start-owner-flags": "9a5be0dc572e9ac2f1226b346fa5e50af64b8a43789f65f2996a8c233bfac52f",
-        "09-this-machine-names-registry": "8a4a2fa643d96243d3d99a09b55503b08946237735bd00eb401404ed81f1989e",
+        "08-dobby-start-owner-flags": "abbe7ec105cd0fb0a755f18768c5f565b468dfa4696507e7f4cc2d8139ab2b29",
+        "09-this-machine-names-registry": "570f484532f3007b1d297910834aa1ab8d1d92faba18a984429e9a47577e47b3",
         "10-machine-name-registers": "18e1c787c6b9125ba4b1971958aa093abb29802416f2a63dc43fe8f787c5e5f5",
-        "11-forget-former": "c9caa23b0af57782ff8f55d383a79e25da8682bf1ca8dcefdef4ea33e9705803"
+        "11-forget-former": "b2ee3224819ad24a504772fd29db7d992e6d28657425e50c95937e11dd993d95"
       },
       "startSha": "73db3dd108461052f48161ac2daec356240979f1",
       "kind": "fork",
       "spawnedAt": "2026-11-17T10:25:16Z",
       "sessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-dobby-start-owner-flags",
+        "status": "done",
+        "head_sha": "661016166ccd0f9181de71e3dce51add8bf04f2f",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/boardengine/identity.go",
+          "internal/dobbyengine/start.go",
+          "internal/machinecli/cli.go",
+          "internal/machinecli/forget.go",
+          "internal/machinecli/set.go",
+          "internal/machinecli/set_test.go",
+          "internal/machinename/machinename.go",
+          "internal/orchcli/start.go"
+        ]
+      },
+      "cardShas": [
+        "661016166ccd0f9181de71e3dce51add8bf04f2f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-a275b60799a7dffa9.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-a275b60799a7dffa9.jsonl"
+      ]
     }
   },
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "e7e489f4ae82479452af8e587574191e",
   "masterSessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-a76f5848f92ab3b8d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-afe851529bbe29582.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-ada6f38ee3b2521fd.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-ada6f38ee3b2521fd.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-a275b60799a7dffa9.jsonl"
   ]
 }

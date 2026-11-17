@@ -30,9 +30,9 @@
 - `internal/dobbyengine/doc.go`
 
 **Create:**
-- `plan:internal/hubgeom#beamPair` -> `func beamPair(slug string, owners boardengine.Owners, here machinename.Identity, parentOf func(slug string) (string, error)) (dobbyengine.BeamPair, error)`
-- `plan:internal/hubgeom#TestBeamPair` -> `func TestBeamPair(t *testing.T)`
-- `plan:internal/beamcli#TestDobbyStatus_ShowsTheIdentityRefusal` -> `func TestDobbyStatus_ShowsTheIdentityRefusal(t *testing.T)`
+- `internal/hubgeom#beamPair`
+- `internal/hubgeom#TestBeamPair`
+- `internal/beamcli#TestDobbyStatus_ShowsTheIdentityRefusal`
 
 **Uses:**
 - `internal/boardengine#OwnedElsewhere`
