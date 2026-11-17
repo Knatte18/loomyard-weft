@@ -2,8 +2,6 @@
 
 `redundancy-sweep-existing` · Task · enhancement, testkit, gate · draft
 
-Depends on: [`map-tooling-trial`](design-map-tooling-trial.md)
-
 ## Seen (orch, 2026-11-09)
 
 The coverage maps (`internal/testcover`, built by `lym gate test --map` since `b92c95ee`) record, per package, the blocks each tier 0 and tier 1 test covers.
