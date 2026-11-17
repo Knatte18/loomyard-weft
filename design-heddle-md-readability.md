@@ -1,6 +1,6 @@
 # A sampler that iterates the rendering of HEDDLE.md until it reads well
 
-`heddle-md-readability` · Task · enhancement, heddle · running · Code-Bouncer
+`heddle-md-readability` · Task · enhancement, heddle · running · Drift-Recheck
 
 ## Seen (operator, 2026-11-07)
 
