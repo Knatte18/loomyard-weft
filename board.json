@@ -945,7 +945,7 @@
       "id": 1412,
       "handle": "B2",
       "slug": "gate-tier-memory-cap",
-      "title": "Gate tiers run go test with no memory cap",
+      "title": "Memory guard for every test binary lym runs",
       "kind": "note",
       "labels": [
         "bug",
@@ -954,10 +954,10 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "A runaway test in a gate tier can freeze the machine as a mutant did; reuse the per-run cap",
-      "body": "## Seen (2026-11-17)\n\nThe diagnosis of `redundant-mutant-memory-cap` found that the gate tiers run `go test` with no memory cap either (`internal/gatecli/tierrun.go`), and the gate watchdog samples CPU only (`internal/gatecli/watchdog.go`).\nA test that allocates without bound in a normal gate run can freeze the machine the same way a mutant did.\n\n## Idea\n\nOnce `redundant-mutant-memory-cap` has built the per-run memory cap in `internal/proc` and `internal/testcover`, put the gate tiers' `go test` runs under the same cap, with a per-tier setting, and have the watchdog report memory beside CPU.\n",
+      "brief": "The gate watchdog watches CPU only and only gate test runs; give it a memory trigger over every test binary, and cap the gate tiers",
+      "body": "## Seen (2026-11-17)\n\nThe diagnosis of `redundant-mutant-memory-cap` found that the gate tiers run `go test` with no memory cap either (`internal/gatecli/tierrun.go`).\n\nWhat lym has today is no memory guard:\n\n- The gate watchdog (`internal/gatecli/watchdog.go`) samples the process tree of a running `lym gate test` every 5 s, but only for CPU: it sends one SIGQUIT to a test binary that keeps a core busy for its window.\n  It never looks at memory, and it watches only `lym gate test`'s own `go test`, not the mutant and testmap runs of `lym gate redundant` and `lym gate testmap`.\n- `proc.ReadTaskLimit` (`internal/proc/tasklimit.go`) reads the cgroup's task limit so dobby can hold back starts; it kills nothing.\n- On Neve, the user unit `memsample.timer` only logs a memory sample every 15 s to trace freezes; it kills nothing either.\n\nA test that allocates without bound in a normal gate run can freeze the machine the same way a mutant did.\n\n## Idea\n\n- Give the watchdog a memory trigger: kill (SIGKILL, the whole test binary's tree) any test binary whose RSS passes a cap, or when the user slice nears its `memory.high`, and report which test and package was killed.\n- Run the same watchdog over every test binary lym starts: the gate tiers, and the `Toolchain.RunAlone` runs of `lym gate redundant` and `lym gate testmap`, beside the per-run kernel cap `redundant-mutant-memory-cap` builds.\n  The kernel cap is the hard bound; the watchdog catches what runs outside it, and names the culprit.\n- Put the gate tiers' `go test` runs under the same per-run kernel cap, with a per-tier setting.\n",
       "created": "2026-11-17T06:18:52Z",
-      "revised": "2026-11-17T06:18:52Z"
+      "revised": "2026-11-17T06:26:35Z"
     }
   ],
   "prime_owner": "neve",
