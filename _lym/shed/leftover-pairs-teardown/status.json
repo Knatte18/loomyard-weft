@@ -1,12 +1,12 @@
 {
   "current_producer": "Code-Burler-Fix",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Code-Burler-Fix (burler-fix): round 1 attempt 1: fix: burler: twill fixer fork \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-leftover-pairs-teardown/f64804ff-1459-4477-ac4f-6ffbbae2d279/subagents/agent-a654e39025dc97419.jsonl\" attempted 5 write/edit tool call(s) — a fork must never mutate a file; way forward: inspect the target's working-tree changes, revert what the fork wrote, and resume the run",
   "pause_requested": false,
   "activity": {
     "now": "Code-Burler-Fix",
     "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
-    "wait": ""
+    "wait": "shedadapters: Code-Burler-Fix (burler-fix): round 1 attempt 1: fix: burler: twill fixer fork \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-leftover-pairs-teardown/f64804ff-1459-4477-ac4f-6ffbbae2d279/subagents/agent-a654e39025dc97419.jsonl\" attempted 5 write/edit tool call(s) — a fork must never mutate a file; way forward: inspect the target's working-tree changes, revert what the fork wrote, and resume the run"
   },
   "history": [
     {
