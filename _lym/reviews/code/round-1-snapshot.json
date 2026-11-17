@@ -1,0 +1,35 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "88d89b66dade819e45dee509541a4cdeae495ac3",
+  "added_decisions": [
+    {
+      "title": "The assist-trial schedule risk has no subject",
+      "digest": "173a1a17441f6d4d10a1f0a221b6931aa99485b8e59c1ed8d7ac7c8d70c3bc52"
+    },
+    {
+      "title": "Round-3 review findings are answered by the record as it stands",
+      "digest": "ae23921bf9f7de748e3d6dc6761bce324a6c98421b61208206c973fc167be8b5"
+    },
+    {
+      "title": "D11's bench rule goes on the codexengine project",
+      "digest": "c242564d8e8a52247152e883a3c4096a5ebc2d57a822b953b4b37508718950fc"
+    },
+    {
+      "title": "D11 is done on the board by the orch; card 10 drops",
+      "digest": "f6e0e87658a097860824d966883053db0bb566f05e04de928ba0cc054250944e"
+    },
+    {
+      "title": "Every seat is compared, including those Codex cannot start",
+      "digest": "3139fb243a6739f4da798ee1887bf9a834ac75eb713025d547caf07b09d36ebc"
+    },
+    {
+      "title": "The webster fork deny is compared only on an engine that meets the fork requirement",
+      "digest": "f6ea14d168a6f9815086b1a49fc6540bcb4461be578483fe16ca8c1477562217"
+    },
+    {
+      "title": "Plan review round 3 closes at the hard cap with every finding fixed in place",
+      "digest": "307025901bc33c715043371c5ccb7f6e78f651f28844453002c6a706c25e7e41"
+    }
+  ]
+}
