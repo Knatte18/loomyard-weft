@@ -1,0 +1,91 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 46eac70b..82012936 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -842,7 +842,7 @@ User-facing modules each get one `lym <module>` namespace:
+   Convergence and timing cover tapestry and darn runs, each tagged with its recipe, and read records lym already writes.
+   ✅ Implemented. See the `internal/reportengine` package documentation.
+ - **retro** — one command that audits recent runs and proposes fixes (`internal/retrocli` + `internal/retroengine`; `lym retro [<slug>...] [--since <date>] [--until <date>] [--max-runs <n>]`, prime only).
+-  It files one darn task on the `docs` profile from the `retro-template-task` stencil and releases it.
++  It files one darn task on the `docs` profile from the `retro-template-task` stencil, with its writer set to Opus through `run_settings`, and releases it.
+   With no slug it covers the runs landed since the last retro, the newest stamp among the report directories under `docs/research/retro` and the retro tasks on the board, up to a cap of runs;
+   past the cap it keeps the oldest, and the next retro starts after them.
+   The task's writer runs `tools/retro/retro.sh`, `tools/tokencount` and `tools/forkaudit` over the runs' records and transcripts,
+diff --git a/internal/retroengine/retro.go b/internal/retroengine/retro.go
+index cfbf7992..e25fffab 100644
+--- a/internal/retroengine/retro.go
++++ b/internal/retroengine/retro.go
+@@ -38,6 +38,10 @@ const (
+ 	// TaskProfile is the run profile of the retro task, the darn profile for prose work.
+ 	TaskProfile = "docs"
+ 
++	// TaskWriter is the model-spec of the retro task's darn writer.
++	// The writer judges transcripts and routes proposals, work a weaker model turns into board noise.
++	TaskWriter = "opus"
++
+ 	// TaskLabel is the type label of the retro task.
+ 	TaskLabel = "research"
+ 
+@@ -259,16 +263,18 @@ func (p Plan) Body(stencilsDir string) (string, error) {
+ 	return strings.TrimSpace(stencil.StripLeadingComment(string(body))) + "\n", nil
+ }
+ 
+-// TaskFields returns the board fields of the retro task with body: a darn task on the docs profile.
++// TaskFields returns the board fields of the retro task with body:
++// a darn task on the docs profile whose run settings put the writer on TaskWriter.
+ func (p Plan) TaskFields(body string) map[string]any {
+ 	return map[string]any{
+-		"slug":    p.Slug,
+-		"title":   fmt.Sprintf("Retro of %d landed runs up to %s", len(p.Runs), p.Until.UTC().Format(time.RFC3339)),
+-		"brief":   "Audit the runs from their records and transcripts, and propose fixes, most severe first",
+-		"kind":    boardengine.KindTask,
+-		"recipe":  shedrun.RecipeDarn,
+-		"profile": TaskProfile,
+-		"labels":  []string{TaskLabel},
+-		"body":    body,
++		"slug":         p.Slug,
++		"title":        fmt.Sprintf("Retro of %d landed runs up to %s", len(p.Runs), p.Until.UTC().Format(time.RFC3339)),
++		"brief":        "Audit the runs from their records and transcripts, and propose fixes, most severe first",
++		"kind":         boardengine.KindTask,
++		"recipe":       shedrun.RecipeDarn,
++		"profile":      TaskProfile,
++		"labels":       []string{TaskLabel},
++		"body":         body,
++		"run_settings": map[string]any{"darn": map[string]any{"writer": TaskWriter}},
+ 	}
+ }
+diff --git a/internal/retroengine/retro_test.go b/internal/retroengine/retro_test.go
+index fdb3e82c..d3c1e7c5 100644
+--- a/internal/retroengine/retro_test.go
++++ b/internal/retroengine/retro_test.go
+@@ -185,7 +185,7 @@ func TestSelect(t *testing.T) {
+ 	}
+ }
+ 
+-func TestPlan_TaskFieldsFilesOneDarnTaskOnTheDocsProfile(t *testing.T) {
++func TestPlan_TaskFieldsFilesOneDarnTaskOnTheDocsProfileWithAnOpusWriter(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+@@ -195,13 +195,14 @@ func TestPlan_TaskFieldsFilesOneDarnTaskOnTheDocsProfile(t *testing.T) {
+ 	got := plan.TaskFields("the body\n")
+ 
+ 	for key, want := range map[string]any{
+-		"slug":    "retro-20261116-140000",
+-		"title":   "Retro of 2 landed runs up to 2026-11-16T14:00:00Z",
+-		"kind":    boardengine.KindTask,
+-		"recipe":  shedrun.RecipeDarn,
+-		"profile": "docs",
+-		"labels":  []string{"research"},
+-		"body":    "the body\n",
++		"slug":         "retro-20261116-140000",
++		"title":        "Retro of 2 landed runs up to 2026-11-16T14:00:00Z",
++		"kind":         boardengine.KindTask,
++		"recipe":       shedrun.RecipeDarn,
++		"profile":      "docs",
++		"labels":       []string{"research"},
++		"body":         "the body\n",
++		"run_settings": map[string]any{"darn": map[string]any{"writer": "opus"}},
+ 	} {
+ 		if !reflect.DeepEqual(got[key], want) {
+ 			t.Errorf("TaskFields()[%q] = %v; want %v", key, got[key], want)
