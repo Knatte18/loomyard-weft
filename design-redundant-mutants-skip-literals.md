@@ -1,6 +1,6 @@
 # lym gate redundant never mutates a data literal, so a test that pins one is listed redundant
 
-`redundant-mutants-skip-literals` · Note · bug
+`redundant-mutants-skip-literals` · Note · bug, gate
 
 Found by the redundant-candidates-check trial on internal/boardengine. The mutation check changes operators and conditions, never a string, list member or map entry.
 

@@ -1,6 +1,6 @@
 # lym gate redundant lists a test redundant when its covers never feed a clause its input
 
-`redundant-clause-inputs-unfed` · Note · bug
+`redundant-clause-inputs-unfed` · Note · bug, gate
 
 Found by the redundant-candidates-check trial on internal/boardengine. Equal block coverage plus equal kills of negated conditions does not mean equal inputs.
 
