@@ -1,6 +1,6 @@
 # Warn on resume when a run's stencils changed since it started
 
-`stencil-pin-per-run` · Task · feature, stencil, shed · running · Record-Write
+`stencil-pin-per-run` · Task · feature, stencil, shed · running · Drift-Baseline
 
 ## Seen (orch, 2026-11-17)
 
