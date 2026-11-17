@@ -800,6 +800,30 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/2f9e36a8-a5d3-4777-a05b-00d2f91d664e/subagents/agent-a23ad652ddada5742.jsonl"
       ]
     },
+    "22": {
+      "slug": "describe-and-rework-archive",
+      "cards": [
+        "22-describe-and-rework-archive",
+        "23-merge-in-warning",
+        "24-arbiter-names-run-dir",
+        "25-batten-fixer-timeout",
+        "26-implementer-spec"
+      ],
+      "cardHashes": {
+        "22-describe-and-rework-archive": "4a76d2a8c1f61957bec752814f5bcae82243a67e20ee1fb56d858afd549ecb2b",
+        "23-merge-in-warning": "bb4fc71178c505dd2a53107c1eeafe3ee4b9d03a3a2f50cd9efb591937aa177f",
+        "24-arbiter-names-run-dir": "b44666ae6452058374500fb9dd021a9ccad28fcfdc686e46f4e17505f96c9b8f",
+        "25-batten-fixer-timeout": "bee21c48608f30fa5163aa5ffa817432385058494a0ba363e5764f40374dfed7",
+        "26-implementer-spec": "0cf3198dbf7253d05e43e6f88af5890d9c3b89c40960cfd81bf6de38aaaba742"
+      },
+      "startSha": "83fedbe7ddd50ce7798890949c0b7442910fbe14",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T07:48:39Z",
+      "sessionId": "2f9e36a8-a5d3-4777-a05b-00d2f91d664e",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "3": {
       "slug": "weaver-geometry",
       "cards": [
@@ -917,7 +941,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 22,
   "masterStrand": "ad45d38c900010baa4b2b666b45bbcd9",
   "masterSessionId": "2f9e36a8-a5d3-4777-a05b-00d2f91d664e",
   "masterEngine": "claude",
