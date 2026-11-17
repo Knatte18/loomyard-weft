@@ -14,7 +14,7 @@
 
 **Uses:**
 - `internal/runfsm#CodeTipGrace`
-- `plan:internal/fabricengine#OriginCodeTip`
+- `internal/fabricengine#OriginCodeTip`
 - `internal/fabricengine#TransitionTrailerKey`
 - `internal/fabricengine#CommitAnchoredPaths`
 - `internal/fabricengine#appendWarpSHATrailer`

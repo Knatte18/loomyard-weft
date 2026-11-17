@@ -1,11 +1,11 @@
 # Card 7 — read-run-owed-and-tip
 
 **Create:**
-- `plan:internal/fabricengine#CodeTipReading` -> `type CodeTipReading struct`
-- `plan:internal/fabricengine#OriginCodeTip` -> `func OriginCodeTip(prime *lymcwd.Location, slug string) (CodeTipReading, error)`
-- `plan:internal/fabricengine#FailedPushesOwedBy` -> `func FailedPushesOwedBy(hubPath, slug string) ([]FailedPush, error)`
-- `plan:internal/fabricengine#pushJob.resetUnnamedTip` -> `func (j *pushJob) resetUnnamedTip() (reset bool, err error)`
-- `plan:internal/fabricengine_test#TestOriginCodeTip` -> `func TestOriginCodeTip(t *testing.T)`
+- `internal/fabricengine#CodeTipReading`
+- `internal/fabricengine#OriginCodeTip`
+- `internal/fabricengine#FailedPushesOwedBy`
+- `internal/fabricengine#pushJob.resetUnnamedTip`
+- `internal/fabricengine_test#TestOriginCodeTip`
 
 **Edit:**
 - `internal/fabricengine#pushJob.repushOverOriginContained`
