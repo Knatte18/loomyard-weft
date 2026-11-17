@@ -1,7 +1,7 @@
 # Card 12 — bolt-hold-caller
 
 **Create:**
-- `plan:internal/pauserecord#BoltHoldCaller` -> `const BoltHoldCaller = "bolt-hold"`
+- `internal/pauserecord#BoltHoldCaller`
 
 **Edit:**
 - `internal/pauserecord#Entry`

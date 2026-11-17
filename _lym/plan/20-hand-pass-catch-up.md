@@ -43,7 +43,7 @@
 
 **Uses:**
 - `plan:internal/dobbyengine#CatchUp`
-- `plan:internal/pairteardown#HandOverOwnedElsewhere`
+- `internal/pairteardown#HandOverOwnedElsewhere`
 - `internal/pairteardown#PushRun`
 - `internal/pairteardown#ReadRun`
 - `plan:internal/tendercli#PauseIntentEntries`

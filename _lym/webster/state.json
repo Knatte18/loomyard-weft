@@ -1,6 +1,6 @@
 {
   "runGuid": "68c8af21b2573c67ea24b00d8c6a8507",
-  "planFingerprint": "9d5c08bb6cafbe0e553d93a0d7a6ae62f4b1c67d26ea4b6844ce73d785687bdc",
+  "planFingerprint": "176312fa97e8292b26d7036e80b022494fcb1b13087e58e4c9d4ec49ed47b6b9",
   "planFileHashes": {
     "00-overview.md": "8070a6e612366e940baf7464bff651d6e6f80c3c26d7e4f332211f6eef4a3045",
     "01-fixtries-package.md": "430abb950acfaefa82f14c1899839ce15fad1bc64a96004f3df727de828c3371",
@@ -14,16 +14,16 @@
     "09-this-machine-names-registry.md": "570f484532f3007b1d297910834aa1ab8d1d92faba18a984429e9a47577e47b3",
     "10-machine-name-registers.md": "18e1c787c6b9125ba4b1971958aa093abb29802416f2a63dc43fe8f787c5e5f5",
     "11-forget-former.md": "b2ee3224819ad24a504772fd29db7d992e6d28657425e50c95937e11dd993d95",
-    "12-bolt-hold-caller.md": "31c842819e96a59de47d0eb408eda80a153a08665e9800eb56240635f18ea39d",
+    "12-bolt-hold-caller.md": "eac573e3a744979aebc38e8642df1177d9842d8f2f740317825846531ead08ed",
     "13-act-rule-hold.md": "1c82037c813863de20a4037c9f6b021655b0787e9b10eadb60c92005d0d2931d",
-    "14-act-verbs-pull-bolt.md": "a56a3c360f1fe9549169a36805d15b2df19ddea99d70d59d0f6837afbf9f1b76",
-    "15-tender-bolt-hold.md": "e4bf4af7e1f2e709c0081f635083887c33ab0f689d9154745309b181e77de7d0",
+    "14-act-verbs-pull-bolt.md": "3b3478e56366a142b06fe6640ae81b39c3bf172e72453fb6f0b7caff97f911d7",
+    "15-tender-bolt-hold.md": "95573ea33be49ecf6aea494e99b660a5d8f06395e645bcf106b2054b0dfa259c",
     "16-held-tasks-not-started.md": "34f483d45bfb702c53b59d531a4306e5bc0c12e2c0583612711418237205bc6d",
-    "17-hand-over-owned-elsewhere.md": "3c0192af1e94694108c6712972ea2fab8dffd8c4b6949b127e6a0e37a2640c86",
+    "17-hand-over-owned-elsewhere.md": "b0e492a9233f83abff8863cb31360190b3227ef51e522e9c62d6dea38e6b272e",
     "18-catch-up-engine.md": "433e492cc8f8e5a75a96d49a20604c9c71f3ebedf29c217ea8202085baff279d",
     "19-pause-intent-entries.md": "ff91ac5ecbe13aa60d1b47e1ddaba64570360d8ab522a39bd9d6c72355b19a5f",
-    "20-hand-pass-catch-up.md": "6e5ad9cd45ba581712128087c3191ead2d6ea4de50816f8b9ee1af6424a135dc",
-    "21-dobby-catch-up.md": "c5fcdf449b53481ef8b56af0cd7f0003c76f692e438ff810d1475d6ebe3b7e8e",
+    "20-hand-pass-catch-up.md": "3d3d535cd6b7ee0c94f8f142a8b31ef3f276a9b1c3dc3d4e05798f813b93a64a",
+    "21-dobby-catch-up.md": "c213a42674ee18f57fdebd8a4231c3c10915aaaf2a9057e37cec7b7edad0bbfd",
     "22-upgrade-first-read.md": "c718fb1b9223662c02bd89c974410baa1a302980b86db4ac9f48c86a67fbb670",
     "23-retire-owner-pause-callers.md": "e61b8714ff43fc4ca1886ebb24fbdc1393c36734425ae31feec118f040cf6323",
     "24-delete-tender-owner-pause.md": "0c84bc21374445aeecb43dca8f1a7b6f5dbfbc3b9da6c45378eee1abeb8a5828",
@@ -731,20 +731,48 @@
         "17-hand-over-owned-elsewhere"
       ],
       "cardHashes": {
-        "12-bolt-hold-caller": "31c842819e96a59de47d0eb408eda80a153a08665e9800eb56240635f18ea39d",
+        "12-bolt-hold-caller": "eac573e3a744979aebc38e8642df1177d9842d8f2f740317825846531ead08ed",
         "13-act-rule-hold": "1c82037c813863de20a4037c9f6b021655b0787e9b10eadb60c92005d0d2931d",
-        "14-act-verbs-pull-bolt": "a56a3c360f1fe9549169a36805d15b2df19ddea99d70d59d0f6837afbf9f1b76",
-        "15-tender-bolt-hold": "e4bf4af7e1f2e709c0081f635083887c33ab0f689d9154745309b181e77de7d0",
+        "14-act-verbs-pull-bolt": "3b3478e56366a142b06fe6640ae81b39c3bf172e72453fb6f0b7caff97f911d7",
+        "15-tender-bolt-hold": "95573ea33be49ecf6aea494e99b660a5d8f06395e645bcf106b2054b0dfa259c",
         "16-held-tasks-not-started": "34f483d45bfb702c53b59d531a4306e5bc0c12e2c0583612711418237205bc6d",
-        "17-hand-over-owned-elsewhere": "3c0192af1e94694108c6712972ea2fab8dffd8c4b6949b127e6a0e37a2640c86"
+        "17-hand-over-owned-elsewhere": "b0e492a9233f83abff8863cb31360190b3227ef51e522e9c62d6dea38e6b272e"
       },
       "startSha": "661016166ccd0f9181de71e3dce51add8bf04f2f",
       "kind": "fork",
       "spawnedAt": "2026-11-17T10:49:26Z",
       "sessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-bolt-hold-caller",
+        "status": "done",
+        "head_sha": "48c29e06ef5cda5d53cba0f58014c80bfce56ca0",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/battencli/dobbyreading_test.go",
+          "internal/dobbyengine/starts.go",
+          "internal/dobbyengine/view.go",
+          "internal/pairteardown/handover.go",
+          "internal/pairteardown/handover_integration_test.go",
+          "internal/pairteardown/runread.go",
+          "internal/pauserecord/record.go",
+          "internal/tendercli/cli.go",
+          "internal/tendercli/runintents.go",
+          "internal/tenderengine/bolthold.go",
+          "internal/tenderengine/pause_test.go"
+        ]
+      },
+      "cardShas": [
+        "48c29e06ef5cda5d53cba0f58014c80bfce56ca0"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-aeeff58a5ffe32648.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-aeeff58a5ffe32648.jsonl"
+      ]
     },
     "4": {
       "slug": "machine-registration-setter",
@@ -880,7 +908,7 @@
       ]
     }
   },
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "e7e489f4ae82479452af8e587574191e",
   "masterSessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
   "masterEngine": "claude",
@@ -888,6 +916,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-a76f5848f92ab3b8d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-afe851529bbe29582.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-ada6f38ee3b2521fd.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-a275b60799a7dffa9.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-a275b60799a7dffa9.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-aeeff58a5ffe32648.jsonl"
   ]
 }

@@ -1,8 +1,8 @@
 # Card 17 — hand-over-owned-elsewhere
 
 **Create:**
-- `plan:internal/pairteardown#HandOverOwnedElsewhere` -> `func HandOverOwnedElsewhere(prime *lymcwd.Location, slug, owner string) error`
-- `plan:internal/pairteardown_test#TestHandOverOwnedElsewhere` -> `func TestHandOverOwnedElsewhere(t *testing.T)`
+- `internal/pairteardown#HandOverOwnedElsewhere`
+- `internal/pairteardown_test#TestHandOverOwnedElsewhere`
 
 **Extends:**
 - `internal/pairteardown/doc.go`

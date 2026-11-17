@@ -1,11 +1,11 @@
 # Card 15 — tender-bolt-hold
 
 **Create:**
-- `plan:internal/tenderengine#BoltHoldState` -> `type BoltHoldState struct`
-- `plan:internal/tenderengine#BoltHoldRequest` -> `type BoltHoldRequest struct`
-- `plan:internal/tenderengine#BoltHoldReport` -> `type BoltHoldReport struct`
-- `plan:internal/tenderengine#SyncBoltHold` -> `func SyncBoltHold(deps Deps, req BoltHoldRequest) (BoltHoldReport, error)`
-- `plan:internal/tenderengine#TestSyncBoltHold` -> `func TestSyncBoltHold(t *testing.T)`
+- `internal/tenderengine#BoltHoldState`
+- `internal/tenderengine#BoltHoldRequest`
+- `internal/tenderengine#BoltHoldReport`
+- `internal/tenderengine#SyncBoltHold`
+- `internal/tenderengine#TestSyncBoltHold`
 
 **Edit:**
 - `internal/tenderengine#PauseRequest`
@@ -21,7 +21,7 @@
 - `internal/tendercli/doc.go`
 
 **Uses:**
-- `plan:internal/pauserecord#BoltHoldCaller`
+- `internal/pauserecord#BoltHoldCaller`
 - `internal/boardengine#ReadOwners`
 - `internal/boardengine#PullBolt`
 

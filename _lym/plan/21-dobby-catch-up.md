@@ -33,7 +33,7 @@
 - `plan:internal/dobbyengine#CatchUp`
 - `plan:internal/battencli#HubCatchUp`
 - `plan:internal/battencli#DobbyPairSlugs`
-- `plan:internal/tenderengine#SyncBoltHold`
+- `internal/tenderengine#SyncBoltHold`
 - `internal/tendercli#HubDeps`
 - `internal/pairteardown#EndSubjectProcesses`
 - `internal/parentlock#Store.HeldBy`

@@ -1,8 +1,8 @@
 # Card 14 — act-verbs-pull-bolt
 
 **Create:**
-- `plan:internal/pairteardown#ReadRunPulled` -> `func ReadRunPulled(prime *lymcwd.Location, slug string) (runfsm.Records, runfsm.Inputs, error)`
-- `plan:internal/pairteardown_test#TestReadRunPulled` -> `func TestReadRunPulled(t *testing.T)`
+- `internal/pairteardown#ReadRunPulled`
+- `internal/pairteardown_test#TestReadRunPulled`
 
 **Edit:**
 - `internal/loomcli#hubRunVerdict`
