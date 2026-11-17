@@ -1,6 +1,6 @@
 # Build the coverage maps with lym gate test --map, one process per test in parallel, and retire lym gate testmap
 
-`gate-test-map-mode` · Task · enhancement, gate, testkit, dobby, docs, pattern · running · Code-Bouncer
+`gate-test-map-mode` · Task · enhancement, gate, testkit, dobby, docs, pattern · running · Code-Burler-Review
 
 Decision record: [Sketch](decision-gate-test-map-mode.md)
 
