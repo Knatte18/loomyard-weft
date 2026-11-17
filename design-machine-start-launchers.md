@@ -1,6 +1,6 @@
 # lym machine start brings back every hub this machine owns, from desktop launchers
 
-`machine-start-launchers` · Task · feature, termwindow, dobby · starting · Worktree-Create
+`machine-start-launchers` · Task · feature, termwindow, dobby · starting · Seed-Child
 
 Decision record: [Sketch](decision-machine-start-launchers.md)
 
