@@ -523,33 +523,6 @@
       "record_body_sha256": "83fe175e9930f7013b1cf97e916436a99b50e452c460f86049b4da9d55aec4c6"
     },
     {
-      "id": 1407,
-      "handle": "T17",
-      "slug": "codex-wording-engine-blocks",
-      "title": "Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "codex",
-        "shuttle",
-        "stencil",
-        "heddle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `codex-same-as-claude`.\n\nTakes: prompt-engine-per-launch's engine-aware renders, so an engine block resolves for the launch's engine; codex-standing-instructions' final heddle and codexengine text, which the scan then judges as landed\nDelivers: every stencil and spec passage naming a closed-list term in a Claude engine block with a Codex copy; mode_rules and plan-gate finding text chosen per engine or worded for any; the D2 scan over stencils, specs and production Go literals, with orch places skipped, an allowlist with reasons for literals that never reach a Codex session, and a check that every engine block has a copy for every registered engine\nExports: nothing another part calls\n\nThe part changes these packages:\n\n- contracts/stencils (about 1400 changed lines)\n- contracts/specs (about 150 changed lines)\n- internal/loomengine (about 120 changed lines)\n- internal/websterengine (about 80 changed lines)\n- internal/driftengine (about 40 changed lines)\n- internal/burlerengine (about 40 changed lines)\n- internal/darnengine (about 20 changed lines)\n- internal/planparser (about 40 changed lines)\n- internal/batcher (about 20 changed lines)\n- internal/shellguard (about 40 changed lines)\n- internal/seatengine (about 20 changed lines)\n- internal/loomcli (about 20 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-16T13:56:13Z",
-      "revised": "2026-11-16T13:56:13Z",
-      "profile": "solid",
-      "project": "codexengine",
-      "discussed": true,
-      "record_body_sha256": "d1c1941de3068cba1c839b10018320680748d41ae63d75e3f191111a50be57fd"
-    },
-    {
       "id": 1409,
       "handle": "T19",
       "slug": "launch-manifest-parity",
@@ -564,9 +537,7 @@
       ],
       "issues": [],
       "recipe": "tapestry",
-      "depends_on": [
-        "codex-wording-engine-blocks"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `codex-same-as-claude`.\n\nTakes: prompt-engine-per-launch's per-producer render functions taking the engine; codex-standing-instructions' injectable hook runner and sandbox probe; every Codex delivery of codex-standing-instructions and codex-question-deny-nudge, which the parity test then finds present; codex-wording-engine-blocks' engine blocks, which the test renders per engine\nDelivers: the launch manifest read back from each engine's Prepare, written as a record into the run directory and as a copy into the run-directory root's manifests directory, skipped by the orphan sweep and the run lookup by strand; the parity test with its producer table and the scan for unlisted launch-spec literals; the lym shuttle manifest verb; the bench rule on codex-engine-trial, and on codex-writer-bench, the draft that replaced codex-writer-bench-osl on 2026-11-16 and already runs the real producer, so D11's osl section lands there as a check that its body states the rule whole\nExports: the manifest record and the lym shuttle manifest verb, which the Codex benches read\n\nThe part changes these packages:\n\n- internal/shuttleengine (about 300 changed lines)\n- internal/shuttleengine/claudeengine (about 200 changed lines)\n- internal/shuttleengine/codexengine (about 200 changed lines)\n- internal/shuttlecli (about 200 changed lines)\n- internal/shuttleparity (about 600 changed lines)\n",

@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-launch-manifest-parity.md)
 
-Depends on: [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)
-
 Filed from the Sketch `codex-same-as-claude`.
 
 Takes: prompt-engine-per-launch's per-producer render functions taking the engine; codex-standing-instructions' injectable hook runner and sandbox probe; every Codex delivery of codex-standing-instructions and codex-question-deny-nudge, which the parity test then finds present; codex-wording-engine-blocks' engine blocks, which the test renders per engine
