@@ -647,6 +647,28 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/a0ce39e9-3fe4-40c0-a911-9648bcc05e28/subagents/agent-a24e5b5ec91fcafa0.jsonl"
       ]
     },
+    "13": {
+      "slug": "run-reentry-and-resume",
+      "cards": [
+        "13-run-reentry-and-resume",
+        "14-weaver-archive-and-reset",
+        "15-weavercli-reset",
+        "16-weaver-shed-producer"
+      ],
+      "cardHashes": {
+        "13-run-reentry-and-resume": "1de7442e060f2002b37a37d0a4091875d2f2d686145bfd45e46371c903e49462",
+        "14-weaver-archive-and-reset": "ab5d8e650ac27e8b7c4021e4e2ece27a64c7c148252956670ead60b06142a4aa",
+        "15-weavercli-reset": "148427adc0dcc11e4dbd021417283d377b29f509e7b3db87b603f9772fde7a90",
+        "16-weaver-shed-producer": "68224e517c00219973df9c8abd3f2b81536c77b76a218145ceb6413bb1f3a3e5"
+      },
+      "startSha": "6ede1b3f709d8d3bcc77699ac771e243687d9167",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T06:46:08Z",
+      "sessionId": "2f9e36a8-a5d3-4777-a05b-00d2f91d664e",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "3": {
       "slug": "weaver-geometry",
       "cards": [
@@ -764,7 +786,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "ad45d38c900010baa4b2b666b45bbcd9",
   "masterSessionId": "2f9e36a8-a5d3-4777-a05b-00d2f91d664e",
   "masterEngine": "claude",
