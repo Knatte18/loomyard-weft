@@ -1,29 +1,31 @@
-# A code-scope review lens that flags changes no decision asked for
+# Add a code-review lens that flags unrequested scope
 
-Code-Review's `review-code` fan gains a fourth lens, `code-scope`, in the embedded `lenses.yaml` template.
-The fork that runs it lists the decision record's decisions: each `### D<n> — <title>` heading of `## Decisions` and each `Added after Discussion` entry.
-A record with no decision ids, such as one written straight from a board entry, falls back to the goal points of the amended board entry.
-The fork groups the diff's hunks into changes and maps each to the decision it builds, through the carrying plan card when a plan is the answer key.
-It files two kinds of `scope` finding:
+Code review now checks the diff against the decisions that asked for it.
+A new `code-scope` lens maps each change in the diff to a decision and reports two gaps:
+a change that traces to no decision, and a decision that no change builds.
+Both are findings of class `scope`.
+Until now nothing checked a diff for work no decision asked for, although decisions carry IDs.
+The idea comes from Spec Kit's `/converge`, which classifies gaps as missing, partial, contradicting or unrequested.
 
-- a change that traces to no decision, which is unrequested scope;
-- a decision that no change builds.
+## What changes
 
-An edit forced by a traced change, such as a caller, test, doc or rule document it makes stale, is not unrequested scope.
-Neither is a change a `Pattern-Departure:` trailer explains.
-The lens is a procedure lens like the others in the fan, so it ends in its list instead of the emphasis line.
-It points at the rubric's existing "Scope against the answer key" bullet rather than restating it.
+- `internal/lenses/template.yaml` defines the `code-scope` lens and adds it to the `review-code` fan.
+- `internal/lenses/sets/csharp.yaml` adds it to that set's `review-code` fan.
+- `docs/dotnet-hub.md` adds it to the `review-code` fan example.
+- `internal/lenses/config_test.go` updates the seeded-template expectations: the lens total, the `review-code` entry count and its member list, and the remove-all-members case.
 
 ## Design decisions
 
-- The check is review prose, not a mechanical gate.
-  Mapping a hunk to a decision is a judgment the reviewer makes, so it sits in the lens fan beside `code-affected-set` and `code-tests`.
-- The csharp language layer's `review-code` fan adds `code-scope` before its own `numerics`, because a layer fan keeps the base fan's entries first.
-- A hub that tuned its own `review-code` fan in `lenses.yaml` keeps that fan as written.
-  Only a fan that resolves from the template picks up the new lens.
+- The lens builds its decision list from whichever answer key the run has.
+  With a plan, the decisions are the `### D<n> — <title>` headings of the record's `## Decisions` section, and each change is mapped through the plan card that carries its decision.
+  With a decision record alone, they are the goal points of the board entry under its `## Goal`, never the record's other sections.
+  In both cases the record's `Added after Discussion` entries count as decisions.
+- A change that traces to no decision is not flagged when a traced change forces it (a caller, a test, a doc or a rule document it makes stale) or when a `Pattern-Departure:` trailer explains it.
+- The lens defers to the rubric's "Scope against the answer key" for how a scope finding is judged.
 
-## Tests
+## To check by hand
 
-`TestConfigTemplate_DecodesAndIsSelfConsistent` now expects the extra lens and the four-lens `review-code` order.
-It also pins the lens's two finding sentences.
-The emptied-fan subtest lists `code-scope` in its `remove`, so the removal still empties `review-code`.
+- `code-scope-writer-claimed-decision-source` (class design, MEDIUM): the lens text in `internal/lenses/template.yaml` takes its decision list from the record and board entry.
+  Check that it does not rely on what the change's author claims as the decision source.
+- `dotnet-hub-review-code-fan-omits-code-scope` (class consistency, MEDIUM): the `review-code` fan example in `docs/dotnet-hub.md` now lists `code-scope`.
+  Check that every other place that enumerates the fan matches.
