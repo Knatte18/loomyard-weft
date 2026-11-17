@@ -1,18 +1,18 @@
 {
   "runGuid": "1537b0f62dee1bdda4b3704a320b26dd",
-  "planFingerprint": "e2af07a5fa4622f19f0b212fe16fe1cda2f4818c0831c2c321c667f2f3e25c72",
+  "planFingerprint": "98a10cfd23aeb4fe10b5bfc51df7639d5622d69d7db2ccdabd780ccc2ad4b97b",
   "planFileHashes": {
     "00-overview.md": "a9b668b33785239b29afaf269d001e6fe238f6c01e24061380f0d21adee7ac31",
     "01-claude-imports-leaf.md": "c97974e754286019051721e5f039ebb0040444bc0f3970469aa07456446e19fa",
     "02-agents-prompt-target.md": "200cfcbd1ddefa39319821ffad345b86b49fa67243cff9697b5c5a3e256fce20",
     "03-reconcile-renders-file-targets.md": "2d6e7ee57e2e07b25f0c731d0bc2f118e084077065de6cb9f23a88d628b5feff",
     "04-codex-file-carries-both.md": "0967658b300338300bae9d288f1da8a0f4ccf806eeff4a98255113ed6cf5d540",
-    "05-codex-developer-instructions.md": "899bf9107a8a0451ef76dd632a2739f993fe9db595907f14276cd9faa3cffe87",
-    "06-codex-subagent-terms.md": "2563a36b1e837bf25e4a3c436bf7c8cc629886840787ad4cd549e8d60084d5ec",
-    "07-claude-user-setup-source.md": "8a698d59587252c63b98e125c753849a75422b4a0d422df62c44e7393dc39d2f",
-    "08-plugin-session-start-contexts.md": "1d4d655885dd79e4351399d0c397de1b823487022c5163e3c500c61d70e94811",
-    "09-codex-takes-user-setup.md": "ce77cf29ebf2058dc7239574a368359c479f469add88284730868d560fc3a734",
-    "10-codex-instruction-files.md": "d746cf5b128f84b52b9933936b5088f5fc7be3ba2c39af7c59706caa6ad86fcf"
+    "05-codex-developer-instructions.md": "dfb2ab93b41dc074474aaf47da554f63f836fd289830e851b448c62203f121a6",
+    "06-codex-subagent-terms.md": "0b588358ae81c0e226481a6f543c4c204e947a79512bfd739d3019b21fbdfcd3",
+    "07-claude-user-setup-source.md": "7961462e3b96fb5d35994c338b57cf542430508ce5d12a0164a6fc5422d7c9c7",
+    "08-plugin-session-start-contexts.md": "d8784eff060b623f37cf1786606aa481f994225c538a702051f58ed6ab2e42f1",
+    "09-codex-takes-user-setup.md": "3b4fb285bab847d744eb8888fb97a382379d37e4ffb4989c6aac799b0e5f6c38",
+    "10-codex-instruction-files.md": "de2853235c386289b9ac015bc8da3a3a12fe9e1fccff84e45c8239b4071d1fa6"
   },
   "planOverviewFrameHash": "dc3ecd5c251676a41c9292b1fd1987bdaa49d60a4046a140720c619442ea850b",
   "partition": [
@@ -294,24 +294,47 @@
         "07-claude-user-setup-source"
       ],
       "cardHashes": {
-        "05-codex-developer-instructions": "899bf9107a8a0451ef76dd632a2739f993fe9db595907f14276cd9faa3cffe87",
-        "06-codex-subagent-terms": "2563a36b1e837bf25e4a3c436bf7c8cc629886840787ad4cd549e8d60084d5ec",
-        "07-claude-user-setup-source": "8a698d59587252c63b98e125c753849a75422b4a0d422df62c44e7393dc39d2f"
+        "05-codex-developer-instructions": "dfb2ab93b41dc074474aaf47da554f63f836fd289830e851b448c62203f121a6",
+        "06-codex-subagent-terms": "0b588358ae81c0e226481a6f543c4c204e947a79512bfd739d3019b21fbdfcd3",
+        "07-claude-user-setup-source": "7961462e3b96fb5d35994c338b57cf542430508ce5d12a0164a6fc5422d7c9c7"
       },
       "startSha": "f1c5622dba373618a229705bcedde70dad5ce460",
       "kind": "fork",
       "spawnedAt": "2026-11-17T11:43:15Z",
       "sessionId": "dade0374-6cc2-4614-952f-8187cdaeda61",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-codex-developer-instructions",
+        "status": "done",
+        "head_sha": "48435b58451e38872e6e9a8e3714275739cd9257",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/shuttleengine/claudeengine/usersetup.go",
+          "internal/shuttleengine/claudeengine/usersetup_test.go",
+          "internal/shuttleengine/codexengine/developerinstructions.go",
+          "internal/shuttleengine/codexengine/prepare_test.go",
+          "internal/shuttleengine/usersetup.go"
+        ]
+      },
+      "cardShas": [
+        "48435b58451e38872e6e9a8e3714275739cd9257"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-codex-standing-instructions/dade0374-6cc2-4614-952f-8187cdaeda61/subagents/agent-aceab501b6a5632f1.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-codex-standing-instructions/dade0374-6cc2-4614-952f-8187cdaeda61/subagents/agent-aceab501b6a5632f1.jsonl"
+      ]
     }
   },
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "6b47512bc45f11042d24d5f0352cca06",
   "masterSessionId": "dade0374-6cc2-4614-952f-8187cdaeda61",
   "masterEngine": "claude",
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-codex-standing-instructions/dade0374-6cc2-4614-952f-8187cdaeda61/subagents/agent-a4e70a4082b15ec66.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-codex-standing-instructions/dade0374-6cc2-4614-952f-8187cdaeda61/subagents/agent-a4e70a4082b15ec66.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-codex-standing-instructions/dade0374-6cc2-4614-952f-8187cdaeda61/subagents/agent-aceab501b6a5632f1.jsonl"
   ]
 }

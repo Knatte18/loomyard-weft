@@ -16,7 +16,7 @@
 - `internal/shuttleengine/codexengine#TestPrepare_SandboxMode`
 - `internal/shuttleengine/codexengine#TestPrepare_ExpandsHomeInWritableRoots`
 - `internal/shuttleengine/codexengine#TestPrepare_InstallsGuardsFromItsInputs`
-- `plan:internal/shuttleengine/codexengine#TestPrepare_SubagentTerms`
+- `internal/shuttleengine/codexengine#TestPrepare_SubagentTerms`
 
 **Extends:**
 - `internal/shuttleengine/codexengine/doc.go`

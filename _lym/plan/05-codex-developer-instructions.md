@@ -1,10 +1,10 @@
 # Card 5 — codex-developer-instructions
 
 **Create:**
-- `plan:internal/shuttleengine/codexengine#instructionItem` -> `type instructionItem struct`
-- `plan:internal/shuttleengine/codexengine#developerInstructionsKey` -> `const developerInstructionsKey = "developer_instructions"`
-- `plan:internal/shuttleengine/codexengine#maxArgumentBytes` -> `const maxArgumentBytes = 128 * 1024`
-- `plan:internal/shuttleengine/codexengine#developerInstructions` -> `func developerInstructions(items []instructionItem) (string, error)`
+- `internal/shuttleengine/codexengine#instructionItem`
+- `internal/shuttleengine/codexengine#developerInstructionsKey`
+- `internal/shuttleengine/codexengine#maxArgumentBytes`
+- `internal/shuttleengine/codexengine#developerInstructions`
 
 **Edit:**
 - `internal/shuttleengine/codexengine#Codex.Prepare`

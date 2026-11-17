@@ -1,23 +1,23 @@
 # Card 7 — claude-user-setup-source
 
 **Create:**
-- `plan:internal/shuttleengine#UserSetupSource` -> `type UserSetupSource interface`
-- `plan:internal/shuttleengine#UserSetupRequest` -> `type UserSetupRequest struct`
-- `plan:internal/shuttleengine#UserSetup` -> `type UserSetup struct`
-- `plan:internal/shuttleengine#InstructionItem` -> `type InstructionItem struct`
-- `plan:internal/shuttleengine#OmittedHook` -> `type OmittedHook struct`
-- `plan:internal/shuttleengine#HookRun` -> `type HookRun struct`
-- `plan:internal/shuttleengine#HookRunner` -> `type HookRunner func(run HookRun) ([]byte, error)`
-- `plan:internal/shuttleengine/claudeengine#UserSetupSource` -> `type UserSetupSource struct`
-- `plan:internal/shuttleengine/claudeengine#NewUserSetupSource` -> `func NewUserSetupSource(dirs configengine.Dirs) *UserSetupSource`
-- `plan:internal/shuttleengine/claudeengine#UserSetupSource.UserSetup` -> `func (s *UserSetupSource) UserSetup(req shuttleengine.UserSetupRequest) (shuttleengine.UserSetup, error)`
-- `plan:internal/shuttleengine/claudeengine#instructionFiles` -> `func instructionFiles(configDir, repoRoot string) (items []shuttleengine.InstructionItem, warnings []string, err error)`
-- `plan:internal/shuttleengine/claudeengine#installedPluginRoots` -> `func installedPluginRoots(configDir, repoRoot string) (map[string]string, []string)`
-- `plan:internal/shuttleengine/claudeengine#skillListing` -> `func skillListing(configDir, repoRoot, workDir string, plugins map[string]string, scope sessionScope) (string, []string)`
-- `plan:internal/shuttleengine/claudeengine#pluginInstall` -> `type pluginInstall struct`
-- `plan:internal/shuttleengine/claudeengine#writePluginInstalls` -> `func writePluginInstalls(t *testing.T, configDir string, installs []pluginInstall)`
-- `plan:internal/shuttleengine/claudeengine#TestUserSetup_InstructionFiles` -> `func TestUserSetup_InstructionFiles(t *testing.T)`
-- `plan:internal/shuttleengine/claudeengine#TestUserSetup_SkillListing` -> `func TestUserSetup_SkillListing(t *testing.T)`
+- `internal/shuttleengine#UserSetupSource`
+- `internal/shuttleengine#UserSetupRequest`
+- `internal/shuttleengine#UserSetup`
+- `internal/shuttleengine#InstructionItem`
+- `internal/shuttleengine#OmittedHook`
+- `internal/shuttleengine#HookRun`
+- `internal/shuttleengine#HookRunner`
+- `internal/shuttleengine/claudeengine#UserSetupSource`
+- `internal/shuttleengine/claudeengine#NewUserSetupSource`
+- `internal/shuttleengine/claudeengine#UserSetupSource.UserSetup`
+- `internal/shuttleengine/claudeengine#instructionFiles`
+- `internal/shuttleengine/claudeengine#installedPluginRoots`
+- `internal/shuttleengine/claudeengine#skillListing`
+- `internal/shuttleengine/claudeengine#pluginInstall`
+- `internal/shuttleengine/claudeengine#writePluginInstalls`
+- `internal/shuttleengine/claudeengine#TestUserSetup_InstructionFiles`
+- `internal/shuttleengine/claudeengine#TestUserSetup_SkillListing`
 
 **Extends:**
 - `internal/shuttleengine/doc.go`

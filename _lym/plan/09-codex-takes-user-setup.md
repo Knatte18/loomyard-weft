@@ -16,7 +16,7 @@
 - `internal/shuttleengine/codexengine#LoadConfig`
 - `internal/shuttleengine/codexengine#newEngine`
 - `internal/shuttleengine/codexengine#TestLoadConfig_Template`
-- `plan:internal/shuttleengine/codexengine#TestLoadConfig_RefusesInvalidValues`
+- `internal/shuttleengine/codexengine#TestLoadConfig_RefusesInvalidValues`
 - `internal/shuttleengines#registry`
 
 **Extends:**
@@ -26,9 +26,9 @@
 - `pattern/PATTERN-shuttle-provider-seam.md`
 
 **Uses:**
-- `plan:internal/shuttleengine#UserSetupSource`
-- `plan:internal/shuttleengine#UserSetupRequest`
-- `plan:internal/shuttleengine/claudeengine#NewUserSetupSource`
+- `internal/shuttleengine#UserSetupSource`
+- `internal/shuttleengine#UserSetupRequest`
+- `internal/shuttleengine/claudeengine#NewUserSetupSource`
 - `plan:internal/shuttleengine/claudeengine#RunPluginHook`
 - `internal/shuttleengine/codexengine#repoFixture.addWorktree`
 - `internal/shuttleengine/codexengine#warnLog`

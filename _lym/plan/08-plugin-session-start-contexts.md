@@ -11,19 +11,19 @@
 - `plan:internal/shuttleengine/claudeengine#TestRunPluginHook` -> `func TestRunPluginHook(t *testing.T)`
 
 **Edit:**
-- `plan:internal/shuttleengine/claudeengine#UserSetupSource.UserSetup`
+- `internal/shuttleengine/claudeengine#UserSetupSource.UserSetup`
 
 **Extends:**
 - `internal/shuttleengine/claudeengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine/claudeengine#installedPluginRoots`
-- `plan:internal/shuttleengine/claudeengine#NewUserSetupSource`
-- `plan:internal/shuttleengine/claudeengine#writePluginInstalls`
-- `plan:internal/shuttleengine/claudeengine#pluginInstall`
-- `plan:internal/shuttleengine#HookRun`
-- `plan:internal/shuttleengine#HookRunner`
-- `plan:internal/shuttleengine#OmittedHook`
+- `internal/shuttleengine/claudeengine#installedPluginRoots`
+- `internal/shuttleengine/claudeengine#NewUserSetupSource`
+- `internal/shuttleengine/claudeengine#writePluginInstalls`
+- `internal/shuttleengine/claudeengine#pluginInstall`
+- `internal/shuttleengine#HookRun`
+- `internal/shuttleengine#HookRunner`
+- `internal/shuttleengine#OmittedHook`
 
 **Intent:**
 `UserSetup` adds the plugin session-start contexts (D8): each `SessionStart` command hook of a plugin the session scope turns on, run the way Claude Code runs it, with its output.

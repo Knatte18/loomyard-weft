@@ -1,10 +1,10 @@
 # Card 6 — codex-subagent-terms
 
 **Create:**
-- `plan:internal/shuttleengine/codexengine#Codex.subagentEffort` -> `func (c *Codex) subagentEffort(agents agentconfig.Config, role agentconfig.Role, codex Config) string`
-- `plan:internal/shuttleengine/codexengine#subagentPassage` -> `func subagentPassage(effort string, skills []string) string`
-- `plan:internal/shuttleengine/codexengine#TestPrepare_SubagentTerms` -> `func TestPrepare_SubagentTerms(t *testing.T)`
-- `plan:internal/shuttleengine/codexengine#TestLoadConfig_RefusesInvalidValues` -> `func TestLoadConfig_RefusesInvalidValues(t *testing.T)`
+- `internal/shuttleengine/codexengine#Codex.subagentEffort`
+- `internal/shuttleengine/codexengine#subagentPassage`
+- `internal/shuttleengine/codexengine#TestPrepare_SubagentTerms`
+- `internal/shuttleengine/codexengine#TestLoadConfig_RefusesInvalidValues`
 
 **Edit:**
 - `internal/shuttleengine/codexengine#Config`
@@ -26,7 +26,7 @@
 
 **Uses:**
 - `internal/agentconfig#Load`
-- `plan:internal/shuttleengine/codexengine#developerInstructions`
+- `internal/shuttleengine/codexengine#developerInstructions`
 - `internal/shuttleengine/codexengine#tomlString`
 - `internal/shuttleengine/codexengine#repoFixture.addWorktree`
 - `internal/shuttleengine/codexengine#repoFixture.writeCodexLayer`
