@@ -1,6 +1,6 @@
 # Codex as darn writer, replayed on a landed task through the real producer
 
-`codex-writer-bench` · Task · research, codex, shuttle · running · Drift-Verify
+`codex-writer-bench` · Task · research, codex, shuttle · running · Code-Bouncer
 
 ## Goal
 
