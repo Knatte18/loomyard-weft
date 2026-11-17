@@ -1,34 +1,45 @@
-# A capped test run no longer raises a desktop low-memory notice
+# proc: keep a capped scope's kill off the desktop's low-memory notice
 
-`proc.RunMemoryCapped` runs each test binary in a transient systemd user scope with `MemoryMax=<cap>`.
-When the kernel killed a binary at its cap, systemd failed the scope with the result `oom-kill`.
-KDE Plasma's `oom-notifier` kded module watches every user `Scope` and `Service` unit over D-Bus,
-and it shows "terminated by the Linux kernel because the system is low on memory" for each unit that ends with that result.
-So each capped run, in the cap's own tests and in `lym gate redundant`, raised a notice on a host with gigabytes free.
+`RunMemoryCapped` runs a command in a transient systemd user scope with `MemoryMax` as the cap.
+When the kernel killed a process at that cap, the unit ended with the result `oom-kill`.
+KDE Plasma's out-of-memory notifier reports every such unit as "terminated by the Linux kernel because the system is low on memory".
+The host was not low on memory: the kill was the scope's own memcg limit.
+Each gate run of the cap's tests raised several notices, and every capped mutant of `lym gate redundant` would raise one more.
 
 ## What changes
 
-- `internal/proc`, Linux scope path:
-  - The scope runs with `-p OOMPolicy=continue`.
-    The kernel still kills the command at the cap, but systemd no longer fails the unit with `oom-kill`, so the notifier stays quiet.
-  - With that policy systemd no longer stops the scope's other processes after a kill.
-    The scope's start script now writes its cgroup listing to the start pipe instead of an empty line,
-    and after a kill at the cap `runMemoryCapped` writes `1` to that cgroup's `cgroup.kill`, ending whatever the command left there.
-    A scope already emptied and removed is no error.
-    A failed kill is joined to the returned error.
-- `doc.go` and `RunMemoryCapped`'s doc state both points.
-- New test `TestRunMemoryCapped_AKillAtTheCapEndsWhatTheChildLeftInItsScope`:
-  a capped shell starts a long sleep and becomes a hog past the cap,
-  and the sleep must be gone soon after the call reports the kill.
-  It runs only where the host can cap a scope.
+- `memoryScopeArgs` passes `-p OOMPolicy=continue`, so a kill at the cap never fails the scope with `oom-kill`, and the notifier stays quiet.
+- With that policy the scope survives the kill, so anything the command started would outlive it.
+  `runMemoryCapped` now writes `1` to the scope's `cgroup.kill` after any kill at the cap, which ends what is left.
+  A scope already gone is no error.
+- The start script writes the scope's cgroup listing to file descriptor 3 instead of one blank line.
+  `scopeCgroup` takes the cgroup path from it, so the caller knows which `cgroup.kill` to write.
+- The scope kill follows two cases: the command itself died of SIGKILL, or `memory.events` shows `oom_kill > 0`.
+  The second covers a child of the command killed at the cap while the command went on and exited by itself.
+  `killed` still reports only the command's own SIGKILL, as before.
 
 ## Design decisions
 
-- The board entry suggested starting the scopes in a slice of lym's own.
-  The notifier never checks the slice: it keys only on the unit's `Result` being `oom-kill`, which the module's strings show.
-  A separate slice would therefore not stop the notices, so the scopes stay in `app.slice`.
-- On Neve (systemd 259), a capped scope with the default policy logged `Failed with result 'oom-kill'`.
-  The same scope with `OOMPolicy=continue` logged the OOM kill and ended with `Result=success`.
-- `cgroup.kill` (Linux 5.14+) ends every process in the scope, including ones that left the command's process group.
-  A process-group kill could miss those, and it could hit a reused group id once the group's leader is gone.
-- `MemoryHigh` plus a kill of lym's own, and the `RLIMIT_DATA` path, were not needed: the existing cap and kill report stay as they were.
+- Keeping the scope in `app.slice` and changing the policy was chosen over a slice of lym's own.
+  The notifier keys on the unit's result, not its slice, so a different slice would not silence it.
+- `memory.events` is read rather than relying on the exit status alone, because a surviving command can exit 0 after its child was killed.
+- The `RLIMIT_DATA` fallback for hosts whose user manager cannot cap a scope is untouched.
+
+## Tests
+
+- A kill of the command at the cap leaves no process the command started.
+- A kill of a child while the command runs on lets the command finish with no error, then ends the scope and the process it left.
+- The existing cap test now requires exactly an `*exec.ExitError` from a killed run.
+
+## To check by hand
+
+- The desktop notice itself: run the `proc` tests, or a capped `lym gate redundant`, on a KDE Plasma host and confirm no notice appears.
+  No automated test observes the notifier.
+- `leftover-kill-test-real-time-bound` (`internal/proc/memorycap_linux_test.go`):
+  `requireProcessGone` waits up to a real minute for the left-over `sleep` to vanish, a wall-clock bound in a test.
+- `oom-kill-of-child-leaves-scope-running` (`internal/proc/memorycap_linux.go`):
+  when a child is killed and the command goes on, the scope runs until the command ends or the scope kill; check that this is the wanted behavior.
+- `oom-policy-continue-unpinned` (`internal/proc/memorycap_linux.go`):
+  confirm the tests pin `OOMPolicy=continue` strongly enough that dropping it fails one.
+- `scope-start-script-repeats-cgroup-path-literal` (`internal/proc/memorycap_linux.go`):
+  the cgroup path handling around the start script, `scopeCgroup` and `killScope` repeats path pieces; check whether one definition should serve them.
