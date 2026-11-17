@@ -1,6 +1,8 @@
 # Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change
 
-`review-rounds-converge` · Task · feature, burler, shed, stencil · running · Discussion-Bouncer
+`review-rounds-converge` · Note · sketch, burler, shed, stencil
+
+Decision record: [Sketch](decision-review-rounds-converge.md)
 
 ## Seen (orch, 2026-11-17)
 
