@@ -1,6 +1,6 @@
 # Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan
 
-`codex-wording-engine-blocks` · Task · enhancement, codex, shuttle, stencil, heddle · running · Code-Bouncer
+`codex-wording-engine-blocks` · Task · enhancement, codex, shuttle, stencil, heddle · running · Drift-Recheck
 
 Decision record: [Sketch](decision-codex-wording-engine-blocks.md)
 

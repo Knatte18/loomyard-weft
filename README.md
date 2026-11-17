@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T17 | **Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan** | [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)<br>[Sketch](decision-codex-wording-engine-blocks.md) | darn · solid | Code-Bouncer | neve | 1d<br>1d | codex, shuttle, stencil, heddle |
+| T17 | **Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan** | [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)<br>[Sketch](decision-codex-wording-engine-blocks.md) | darn · solid | Drift-Recheck | neve | 1d<br>1d | codex, shuttle, stencil, heddle |
 
 #### Ready (0)
 
@@ -73,7 +73,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Review rounds converge: parsed fixer rebuttals, incremental re-review with round checks, and a Go stalemate escalation** | [`review-rounds-converge-build`](design-review-rounds-converge-build.md)<br>[Sketch](decision-review-rounds-converge-build.md) | tapestry · solid | Plan-Burler-Review | neve | 27m<br>27m | burler, shed, stencil, fabric, loom, arbiter, cwd |
+| T4 | **Review rounds converge: parsed fixer rebuttals, incremental re-review with round checks, and a Go stalemate escalation** | [`review-rounds-converge-build`](design-review-rounds-converge-build.md)<br>[Sketch](decision-review-rounds-converge-build.md) | tapestry · solid | Plan-Burler-Review | neve | 28m<br>28m | burler, shed, stencil, fabric, loom, arbiter, cwd |
 
 #### Ready (0)
 
