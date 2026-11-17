@@ -751,7 +751,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-17)\n\nA test that makes a directory read-only and restores it only in `t.Cleanup` leaves it read-only when the test binary is killed:\nthe memory cap of `lym gate redundant` killed `internal/websterengine`'s `TestRun_RefusesBeforeSpawn` mid-run,\nand three read-only leftovers stayed under `/tmp/lym-1000`.\nThe cleanup sweep could not unlink them, so `internal/cleanupcli`'s `TestCleanupVerb_ScratchSegmentSweepsTheAnchorOfASubpathHub`\nfailed in `prompt-engine-per-launch`'s verify gate on machine state, not on its change.\n\nThe pattern is not one test's: `grep -rn 'Chmod(.*0o555' --include=*_test.go internal` finds it in several packages\n(webster, fabric, config, shuttle, machine, vscode, friction).\n\n## Idea\n\n- The scratch sweep of the cleanup verb makes a leftover tree owner-writable before it removes it,\n  so a killed test's read-only directory is swept like any other leftover.\n- A test that needs a read-only directory takes it from one testkit helper that registers the restore,\n  so the pattern lives in one place.\n",
-      "status": "running · PR-Review",
+      "status": "landing · Finalize",
       "created": "2026-11-17T10:32:44Z",
       "revised": "2026-11-17T10:40:45Z",
       "profile": "light"

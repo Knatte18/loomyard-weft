@@ -1,6 +1,6 @@
 # Sweep read-only leftovers a killed test leaves under the scratch root
 
-`readonly-test-leftovers` · Task · bug, cleanup, testkit, webster · running · PR-Review
+`readonly-test-leftovers` · Task · bug, cleanup, testkit, webster · landing · Finalize
 
 ## Seen (orch, 2026-11-17)
 
