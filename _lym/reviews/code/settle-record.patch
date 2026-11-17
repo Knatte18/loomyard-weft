@@ -1,0 +1,1081 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index c25692a4..490bfa4d 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -963,7 +963,8 @@ User-facing modules each get one `lym <module>` namespace:
+   Each listed candidate comes with its seconds, its covering tests and whether it is in the removable set.
+   Every test run is capped at `redundancy_test_memory_mb` of memory, in a transient systemd scope where the user manager caps one,
+   so a mutant that keeps memory for ever is killed alone;
+-  a run that ends at the cap or at its time bound kills its mutant and is listed.
++  a run that ends at the cap or at its time bound is unjudged, never a kill, and is listed,
++  and a candidate whose answer rests on such a run is listed as unconfirmed, with those mutants.
+   `lym gate test --map [<targets>...]` builds the per-package coverage maps of `internal/testcover` over its scope's packages at the HEAD of the worktree it runs in, only on command,
+   the hub's shared maps from the prime and a worktree's own, under its `.lym`, from any other worktree:
+   each tier0 and tier1 test runs alone in its own process, a package's tier0 tests before its tier1 tests,
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 473b1090..a48a61b4 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -1193,18 +1193,19 @@
+ // and the rest of the machine keeps its memory.
+ // Each contained test then runs with each mutant of its blocks on.
+ // The call logs each such run's mutant, with its file, line and operator, before the run starts.
+-// A test that killed a mutant has its covering tests run with that mutant on.
++// A test that killed a mutant, or whose own run of it was unjudged, has its covering tests run with that mutant on.
+ // Only a covering test whose entry covers the mutant's block runs.
+-// A run that fails, times out or ends at the memory cap kills its mutant.
++// A run that fails kills its mutant.
++// A run that times out or ends at the memory cap is unjudged, never a kill, since it proves no check of the mutant.
+ // Up to the slot's tier0 parallel runs go side by side, each alone in its process under its test's tier env.
+ // Fewer go side by side when memory is short.
+ // The caps of the runs together stay within the memory `proc.ReadMemoryLimit` finds left.
+ // Where `proc.MemoryCapCoversTree` says the cap bounds each process alone, one run goes at a time.
+ // A tier with `prebuilt_lym` gets the `lym` the call builds once into the pool's prebuilt store.
+-// A covering test that kills beside other runs runs once more alone, and that run stands.
++// A covering test that kills or times out beside other runs runs once more alone, and that run stands.
+ // A run the memory cap ended is not run again, since it reaches the cap alone too.
+ // That holds for a covering test that is also a contained test.
+-// `testcover.JudgeMutants` judges each contained test from the kills.
++// `testcover.JudgeMutants` judges each contained test from the kills and the unjudged runs.
+ // Bound: a contained test's own kill from its candidate runs is not rerun alone,
+ // so a disturbed run can refute it falsely.
+ // Bound: a mutant changes the package's own code only,
+@@ -1217,6 +1218,10 @@
+ // A candidate is removable when both the coverage pass and the mutation pass remove it.
+ // It prints `refuted`, each test that kills a mutant its covering tests miss.
+ // Each carries those mutants' file, line and operator.
++// It prints `unconfirmed`, each other contained test whose answer rests on an unjudged run:
++// its own run of a mutant none of its covering tests killed,
++// or its covering tests' runs of a mutant it killed and none of them killed.
++// Each carries its tier, seconds, covering tests, `mutants_killed` and those mutants' file, line and operator.
+ // It prints `kept`, each keep-marked test with its reason, and `not_judged`, each other unjudged test with why.
+ // When it checked a test it prints `mutation`: the mutants built and dropped, the build and run seconds and the runs.
+ // `mutation` also holds `timed_out` and `memory_capped`.
+diff --git a/internal/gatecli/redundant.go b/internal/gatecli/redundant.go
+index 02a0746f..9b41bc61 100644
+--- a/internal/gatecli/redundant.go
++++ b/internal/gatecli/redundant.go
+@@ -52,6 +52,20 @@ type redundantRefuted struct {
+ 	Unique []redundantMutant `json:"unique_mutants"`
+ }
+ 
++// redundantUnconfirmed is one test whose blocks other tests cover and whose answer rests on an unjudged run:
++// a run with a mutant on that ended at its time bound or the memory cap, which proves no check.
++type redundantUnconfirmed struct {
++	Name     string   `json:"name"`
++	Tier     int      `json:"tier"`
++	Seconds  float64  `json:"seconds"`
++	Covering []string `json:"covering"`
++	// MutantsKilled counts the mutants the test killed.
++	MutantsKilled int `json:"mutants_killed"`
++	// Unjudged are the mutants whose answer rests on such a run:
++	// the test's own run, or the covering tests' runs of a mutant the test killed and none of them killed.
++	Unjudged []redundantMutant `json:"unjudged_mutants"`
++}
++
+ // redundantMutant names one mutant by its site and operator.
+ type redundantMutant struct {
+ 	File     string `json:"file"`
+@@ -95,18 +109,19 @@ func redundantCmd(goBinary string, minuteUnit, grace time.Duration) *cobra.Comma
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `redundant judges the coverage map of one package, named by its directory relative to the module root, and confirms each candidate by mutation.
+ A candidate is a tier0 or tier1 test whose covered blocks of the package's own files the package's other judged tests cover.
+-Equal coverage is not equal checks, so the verb then mutates the candidates' blocks: it negates conditions and comparisons, drops statements and changes constants, one mutant at a time.
++Equal coverage is not equal checks, so the verb then mutates the candidates' blocks, one mutant at a time.
+ It runs each candidate with each mutant of its blocks on, and its covering tests with each mutant it kills.
+ A candidate stays listed only when a covering test kills every mutant it kills; one that kills a mutant they miss is listed as refuted, with those mutants.
++A run that ends at the memory cap or its time bound is unjudged, never a kill; a candidate resting on one is listed as unconfirmed.
+ One that kills no mutant, holds none in its blocks or does not pass unmutated is listed as not judged.
+-Each listed candidate comes with its standalone seconds, the tests that cover it and the mutants it killed; removable marks the set a greedy pass, slowest first, can delete together while every block stays covered and every mutant killed.
++Each listed candidate comes with its standalone seconds, the tests that cover it and the mutants it killed; removable marks the set a greedy pass can delete together.
+ A test marked //testtiming:keep is neither a candidate nor a cover, nor is a test the spawn scan marks or one whose entry records no passing run.
+ It reads the map as the last lym gate test --map call from this worktree left it.
+ It refuses a map built from other Go files of the package than this worktree holds.
+ It reads the keep markers from this worktree, and runs its builds and tests in one gate slot, bounded by redundancy_build_timeout_min and redundancy_test_timeout_sec.
+-Each test run is capped at redundancy_test_memory_mb of memory; a mutant run past the cap or its time bound is a kill.
++Each test run is capped at redundancy_test_memory_mb of memory.
+ A test binary past memory_quit_mb is killed and named on stderr.
+-It prints the map's commit and build time, map_build_failure when a later coverage build failed, the candidates, the refuted tests, the kept tests with their reasons, the tests not judged with why, and what the mutation check cost.
++It prints the map's commit and build time, map_build_failure when a later coverage build failed, the candidates, the refuted tests, the unconfirmed tests, the kept tests with their reasons, the tests not judged with why, and what the mutation check cost.
+ 
+ Examples:
+ 
+@@ -214,9 +229,9 @@ func runRedundant(ctx context.Context, out io.Writer, request redundantRequest)
+ 	if m.Failure != nil {
+ 		answer["map_build_failure"] = map[string]string{"commit": m.Failure.Commit, "error": m.Failure.Error}
+ 	}
+-	candidates, refuted := []redundantCandidate{}, []redundantRefuted{}
++	candidates, refuted, unconfirmed := []redundantCandidate{}, []redundantRefuted{}, []redundantUnconfirmed{}
+ 	if len(contained) == 0 {
+-		answer["candidates"], answer["refuted"], answer["not_judged"] = candidates, refuted, notJudged
++		answer["candidates"], answer["refuted"], answer["unconfirmed"], answer["not_judged"] = candidates, refuted, unconfirmed, notJudged
+ 		return output.Ok(out, answer)
+ 	}
+ 
+@@ -267,19 +282,31 @@ func runRedundant(ctx context.Context, out io.Writer, request redundantRequest)
+ 				Name: test.Name, Tier: test.Tier, Seconds: test.Seconds, Removable: verdict.Removable && mutated.Removable,
+ 				Covering: coverings[j], MutantsKilled: len(mutated.Killed),
+ 			})
++		case len(mutated.Unique) > 0:
++			refuted = append(refuted, redundantRefuted{
++				Name: test.Name, Tier: test.Tier, Seconds: test.Seconds, Covering: coverings[j], Unique: mutantSites(mutated.Unique, mutants),
++			})
+ 		default:
+-			line := redundantRefuted{Name: test.Name, Tier: test.Tier, Seconds: test.Seconds, Covering: coverings[j]}
+-			for _, id := range mutated.Unique {
+-				line.Unique = append(line.Unique, redundantMutant{File: mutants[id].File, Line: mutants[id].Line, Operator: mutants[id].Operator})
+-			}
+-			refuted = append(refuted, line)
++			unconfirmed = append(unconfirmed, redundantUnconfirmed{
++				Name: test.Name, Tier: test.Tier, Seconds: test.Seconds, Covering: coverings[j],
++				MutantsKilled: len(mutated.Killed), Unjudged: mutantSites(mutated.Unjudged, mutants),
++			})
+ 		}
+ 	}
+-	answer["candidates"], answer["refuted"], answer["not_judged"] = candidates, refuted, notJudged
++	answer["candidates"], answer["refuted"], answer["unconfirmed"], answer["not_judged"] = candidates, refuted, unconfirmed, notJudged
+ 	answer["mutation"] = check.stats
+ 	return output.Ok(out, answer)
+ }
+ 
++// mutantSites returns the site and operator of each mutant ids names, in the order given.
++func mutantSites(ids []int, mutants map[int]testcover.Mutant) []redundantMutant {
++	sites := make([]redundantMutant, len(ids))
++	for i, id := range ids {
++		sites[i] = redundantMutant{File: mutants[id].File, Line: mutants[id].Line, Operator: mutants[id].Operator}
++	}
++	return sites
++}
++
+ // sourceCheckingTests returns the tests of the module package pkg whose check reads the module's source files:
+ // those marked `//lym:guard`, and those that reach the module's scan kit.
+ // root is the worktree root.
+diff --git a/internal/gatecli/redundant_integration_test.go b/internal/gatecli/redundant_integration_test.go
+index 18716dcd..caff5f00 100644
+--- a/internal/gatecli/redundant_integration_test.go
++++ b/internal/gatecli/redundant_integration_test.go
+@@ -181,6 +181,7 @@ func TestHoardCheckedAgain(t *testing.T) {
+ `,
+ 	"lacking/lacking.go":   "package lacking\n\nfunc One() int { return 1 }\n",
+ 	"stale/stale.go":       "package stale\n\nfunc One() int { return 1 }\n",
++	"alone/alone.go":       "package alone\n\nfunc One() int { return 1 }\n",
+ 	"badkeep/keep_test.go": "package badkeep\n\nimport \"testing\"\n\n//testtiming:keep\nfunc TestBadKeepMarked(t *testing.T) {}\n",
+ }
+ 
+@@ -206,7 +207,7 @@ func TestGateRedundant(t *testing.T) {
+ 	}
+ 	prime := h.PrimeWorktree()
+ 	plankit.WriteTree(t, prime, redundantModuleFiles)
+-	gitkit.Git(t, prime, "add", "go.mod", "internal", "cov", "stale", "lacking", "badkeep")
++	gitkit.Git(t, prime, "add", "go.mod", "internal", "cov", "stale", "lacking", "badkeep", "alone")
+ 	gitkit.Git(t, prime, "commit", "-q", "-m", "seed the fixture module")
+ 
+ 	mapsDir := testcover.Dir(fabricengine.BoltDir(h.Location.HubPath))
+@@ -223,6 +224,8 @@ func TestGateRedundant(t *testing.T) {
+ 			Blocks: []testcover.BlockKey{{File: "lacking.go", Func: "One", Hash: "h"}},
+ 			Tests:  []testcover.MapTest{{Name: "TestSub", Seconds: 1, Blocks: []int{0}}, {Name: "TestSuper", Seconds: 1, Blocks: []int{0}}},
+ 		},
++		// The map holds one test, which no other test covers, so no test is contained.
++		"alone":    {Commit: "c0ffee", BuiltAt: builtAt, Blocks: []testcover.BlockKey{key}, Tests: []testcover.MapTest{{Name: "TestAlone", Seconds: 1, Blocks: []int{0}}}},
+ 		"badindex": {Commit: "c0ffee", BuiltAt: builtAt, Blocks: []testcover.BlockKey{key}, Tests: []testcover.MapTest{{Name: "TestBadIndex", Blocks: []int{5}}}},
+ 		"badkeep":  {Commit: "c0ffee", BuiltAt: builtAt, Blocks: []testcover.BlockKey{key}, Tests: []testcover.MapTest{{Name: "TestBadKeep", Blocks: []int{0}}}},
+ 		"broken":   {Commit: "c0ffee", BuildFailure: "boom"},
+@@ -233,7 +236,7 @@ func TestGateRedundant(t *testing.T) {
+ 		}
+ 	}
+ 
+-	t.Run("ListsTheCandidatesMutationConfirmsAndSetsApartTheRefutedKeptAndUnjudgedOnes", func(t *testing.T) {
++	t.Run("ListsTheCandidatesMutationConfirmsAndSetsApartTheRefutedUnconfirmedKeptAndUnjudgedOnes", func(t *testing.T) {
+ 		t.Parallel()
+ 		var built bytes.Buffer
+ 		// cov's TestFails fails, so the call exits 1 after it wrote the map.
+@@ -257,15 +260,16 @@ func TestGateRedundant(t *testing.T) {
+ 			cappedParallel: func(int, int64) int { return 2 },
+ 		})
+ 		type answer struct {
+-			OK         bool                  `json:"ok"`
+-			Package    string                `json:"package"`
+-			Tests      int                   `json:"tests"`
+-			Failure    *testcover.MapFailure `json:"map_build_failure"`
+-			Candidates []redundantCandidate  `json:"candidates"`
+-			Refuted    []redundantRefuted    `json:"refuted"`
+-			Kept       []redundantSkip       `json:"kept"`
+-			NotJudged  []redundantSkip       `json:"not_judged"`
+-			Mutation   mutationStats         `json:"mutation"`
++			OK          bool                   `json:"ok"`
++			Package     string                 `json:"package"`
++			Tests       int                    `json:"tests"`
++			Failure     *testcover.MapFailure  `json:"map_build_failure"`
++			Candidates  []redundantCandidate   `json:"candidates"`
++			Refuted     []redundantRefuted     `json:"refuted"`
++			Unconfirmed []redundantUnconfirmed `json:"unconfirmed"`
++			Kept        []redundantSkip        `json:"kept"`
++			NotJudged   []redundantSkip        `json:"not_judged"`
++			Mutation    mutationStats          `json:"mutation"`
+ 		}
+ 		var got answer
+ 		if err := json.Unmarshal(out.Bytes(), &got); err != nil || code != 0 {
+@@ -282,29 +286,32 @@ func TestGateRedundant(t *testing.T) {
+ 		for i := range got.Refuted {
+ 			got.Refuted[i].Seconds = 0
+ 		}
+-		// Each pair of candidates kills the same mutants, so the greedy pass never drops both of a pair.
+-		if removable > 3 {
+-			t.Errorf("redundant ./cov lists %d removable candidates; want at most 3, one of each pair", removable)
++		for i := range got.Unconfirmed {
++			got.Unconfirmed[i].Seconds = 0
++		}
++		// The two candidates kill the same mutant, so the greedy pass never drops both.
++		if removable > 1 {
++			t.Errorf("redundant ./cov lists %d removable candidates; want at most 1, one of the pair", removable)
+ 		}
+ 		// Timeout's constant is the one mutant that does not compile.
+ 		if got.Mutation.Mutants != 14 || got.Mutation.Unbuildable != 1 {
+ 			t.Errorf("redundant ./cov mutation = %+v; want 14 buildable mutants and 1 unbuildable", got.Mutation)
+ 		}
+ 		// Each involved test runs once with no mutant on, and each contained test once with each mutant of its blocks.
+-		// Each covering test then runs with each mutant a contained test killed and it covers, unless it left that mutant alive.
+-		// Every one of those covering runs kills, and one that kills beside another run runs once more alone.
+-		// The two the memory cap ended do not.
+-		const unmutatedRuns, containedRuns, coveringRuns, cappedCoveringRuns = 8, 29, 18, 2
+-		if want := unmutatedRuns + containedRuns + 2*coveringRuns - cappedCoveringRuns; got.Mutation.Runs != want {
+-			t.Errorf("redundant ./cov started %d runs; want %d, with no second run of one the memory cap ended", got.Mutation.Runs, want)
++		// Each covering test then runs with each mutant a contained test killed or left unjudged, when it covers the mutant.
++		// A covering test that left the mutant alive, or ended at the memory cap on it, keeps that answer and does not run.
++		// Every other covering run kills or ends at its time bound, and one beside another run runs once more alone.
++		// The tally loop's covering runs time out again, so no covering test kills the mutants ending the loops.
++		const unmutatedRuns, containedRuns, coveringRuns = 8, 29, 16
++		if want := unmutatedRuns + containedRuns + 2*coveringRuns; got.Mutation.Runs != want {
++			t.Errorf("redundant ./cov started %d runs; want %d, with no covering run of a mutant the memory cap ended", got.Mutation.Runs, want)
+ 		}
+-		hoardLoop := mutantStop{File: "cov.go", Line: 33, Operator: testcover.OperatorNegateCondition}
+-		tallyStep := mutantStop{File: "cov.go", Line: 23, Operator: testcover.OperatorDropStatement}
+-		stops := func(site mutantStop, tests ...string) []mutantStop {
++		hoardLoop := redundantMutant{File: "cov.go", Line: 33, Operator: testcover.OperatorNegateCondition}
++		tallyStep := redundantMutant{File: "cov.go", Line: 23, Operator: testcover.OperatorDropStatement}
++		stops := func(site redundantMutant, tests ...string) []mutantStop {
+ 			var listed []mutantStop
+ 			for _, test := range tests {
+-				site.Test = test
+-				listed = append(listed, site)
++				listed = append(listed, mutantStop{File: site.File, Line: site.Line, Operator: site.Operator, Test: test})
+ 			}
+ 			return listed
+ 		}
+@@ -323,10 +330,13 @@ func TestGateRedundant(t *testing.T) {
+ 			Candidates: []redundantCandidate{
+ 				{Name: "TestAll", Covering: []string{"TestClassifyChecked", "TestDoubleChecked"}, MutantsKilled: 1},
+ 				{Name: "TestDoubleChecked", Covering: []string{"TestAll"}, MutantsKilled: 1},
+-				{Name: "TestHoardChecked", Covering: []string{"TestHoardCheckedAgain"}, MutantsKilled: 1},
+-				{Name: "TestHoardCheckedAgain", Covering: []string{"TestHoardChecked"}, MutantsKilled: 1},
+-				{Name: "TestTallyChecked", Covering: []string{"TestTallyCheckedAgain"}, MutantsKilled: 7},
+-				{Name: "TestTallyCheckedAgain", Covering: []string{"TestTallyChecked"}, MutantsKilled: 7},
++			},
++			// Each loop test's own run of the mutant that makes its loop endless ended unjudged.
++			Unconfirmed: []redundantUnconfirmed{
++				{Name: "TestHoardChecked", Covering: []string{"TestHoardCheckedAgain"}, Unjudged: []redundantMutant{hoardLoop}},
++				{Name: "TestHoardCheckedAgain", Covering: []string{"TestHoardChecked"}, Unjudged: []redundantMutant{hoardLoop}},
++				{Name: "TestTallyChecked", Covering: []string{"TestTallyCheckedAgain"}, MutantsKilled: 6, Unjudged: []redundantMutant{tallyStep}},
++				{Name: "TestTallyCheckedAgain", Covering: []string{"TestTallyChecked"}, MutantsKilled: 6, Unjudged: []redundantMutant{tallyStep}},
+ 			},
+ 			Refuted: []redundantRefuted{{
+ 				Name: "TestClassifyChecked", Covering: []string{"TestAll"},
+@@ -349,6 +359,23 @@ func TestGateRedundant(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("AnswersEmptyListsForAMapHoldingNoContainedTest", func(t *testing.T) {
++		t.Parallel()
++		var out bytes.Buffer
++		if code := clihelp.ExecuteIn(Command(), prime, &out, []string{"redundant", "alone"}); code != 0 {
++			t.Fatalf("redundant alone = %d, %s; want exit 0", code, out.Bytes())
++		}
++		var got map[string]json.RawMessage
++		if err := json.Unmarshal(out.Bytes(), &got); err != nil {
++			t.Fatalf("output %q is not a JSON envelope: %v", out.String(), err)
++		}
++		for _, key := range []string{"candidates", "refuted", "unconfirmed"} {
++			if string(got[key]) != "[]" {
++				t.Errorf("redundant alone %s = %s; want [], as the map holds no contained test", key, got[key])
++			}
++		}
++	})
++
+ 	refusals := []struct {
+ 		name      string
+ 		cwd       string
+diff --git a/internal/gatecli/redundantmutants.go b/internal/gatecli/redundantmutants.go
+index 563e262f..3c3566db 100644
+--- a/internal/gatecli/redundantmutants.go
++++ b/internal/gatecli/redundantmutants.go
+@@ -55,7 +55,7 @@ type mutationStats struct {
+ 	// Runs counts the test processes the check started.
+ 	Runs int `json:"runs"`
+ 	// TimedOut and MemoryCapped list the runs with a mutant on that ended at their time bound or at the memory cap.
+-	// Each killed its mutant.
++	// Each is unjudged: it proves no check of its mutant, so it is no kill.
+ 	TimedOut     []mutantStop `json:"timed_out"`
+ 	MemoryCapped []mutantStop `json:"memory_capped"`
+ }
+@@ -180,29 +180,30 @@ func (c *mutationCheck) run(m testcover.Map, contained []testcover.Verdict, cove
+ 		coverings[i] = candidates[i].Covering
+ 	}
+ 	if len(mutants) == 0 {
+-		return testcover.JudgeMutants(candidates, nil), coverings, mutants, nil
++		return testcover.JudgeMutants(candidates, nil, nil), coverings, mutants, nil
+ 	}
+ 	started = time.Now()
+-	kills, err := c.runMutants(bin, m, entries, candidates)
++	kills, unjudged, err := c.runMutants(bin, m, entries, candidates)
+ 	c.stats.RunSeconds = time.Since(started).Seconds()
+ 	if err != nil {
+ 		return nil, nil, nil, err
+ 	}
+-	return testcover.JudgeMutants(candidates, kills), coverings, mutants, nil
++	return testcover.JudgeMutants(candidates, kills, unjudged), coverings, mutants, nil
+ }
+ 
+-// runMutants runs the tests of candidates with each mutant of their blocks on and returns the kills.
++// runMutants runs the tests of candidates with each mutant of their blocks on.
++// It returns the kills, and in their shape the unjudged runs: those that ended at their time bound or at the memory cap.
+ // It first runs every candidate and covering test unmutated, setting FailsUnmutated on a candidate that does not pass.
+ // A test that does not pass unmutated runs with no mutant.
+ // Each candidate then runs with each mutant of its blocks on.
+-// A candidate that killed a mutant has its covering tests run with that mutant on.
++// A candidate that killed a mutant, or whose own run of it was unjudged, has its covering tests run with that mutant on.
+ // Only a covering test whose entry covers the mutant's block runs.
+-// A covering test that kills beside other tests runs once more alone, and that run stands.
+-// That holds for a covering test that is itself a candidate, whose kill from the candidate runs is replaced by that run.
+-// A run that ends at its time bound or at the memory cap kills its mutant too, and the check's stats list it.
++// A covering test that kills or times out beside other tests runs once more alone, and that run stands.
++// A covering test that is itself a candidate has its answer from the candidate runs replaced by that run.
++// A run that ends at its time bound or at the memory cap kills nothing: it is unjudged, and the check's stats list it.
+ // A run the memory guard killed records no kill.
+ // Its candidate, and each candidate it covers, is marked GuardKilled, never FailsUnmutated.
+-func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[string]testcover.MapTest, candidates []testcover.MutantCandidate) (testcover.Kills, error) {
++func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[string]testcover.MapTest, candidates []testcover.MutantCandidate) (testcover.Kills, testcover.Kills, error) {
+ 	var involved []string
+ 	for _, candidate := range candidates {
+ 		involved = append(involved, candidate.Name)
+@@ -215,7 +216,7 @@ func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[stri
+ 		blocks[name] = mapBlocksOf(m, entries[name])
+ 	}
+ 	if err := c.buildLymFor(involved, entries); err != nil {
+-		return nil, err
++		return nil, nil, err
+ 	}
+ 	var baseline []mutantJob
+ 	for _, name := range involved {
+@@ -223,7 +224,7 @@ func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[stri
+ 	}
+ 	results, err := c.runJobs(bin, baseline, true)
+ 	if err != nil {
+-		return nil, err
++		return nil, nil, err
+ 	}
+ 	timeouts := map[string]time.Duration{}
+ 	guarded := map[string]bool{}
+@@ -248,15 +249,16 @@ func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[stri
+ 				continue
+ 			}
+ 			run := mutantRun{mutant: jobs[i].mutant, test: jobs[i].test.Name}
+-			if kills[run.mutant] == nil {
+-				kills[run.mutant] = map[string]bool{}
+-			}
+-			kills[run.mutant][run.test] = true
+ 			switch {
+ 			case result.MemoryCapped:
+ 				capped[run] = true
+ 			case result.TimedOut:
+ 				timedOut[run] = true
++			default:
++				if kills[run.mutant] == nil {
++					kills[run.mutant] = map[string]bool{}
++				}
++				kills[run.mutant][run.test] = true
+ 			}
+ 		}
+ 	}
+@@ -276,25 +278,37 @@ func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[stri
+ 		}
+ 	}
+ 	if results, err = c.runJobs(bin, jobs, false); err != nil {
+-		return nil, err
++		return nil, nil, err
+ 	}
+ 	record(jobs, results)
+ 
+ 	jobs = nil
+ 	queued := map[mutantRun]bool{}
+-	for _, id := range slices.Sorted(maps.Keys(kills)) {
++	answered := map[int]bool{}
++	for id := range kills {
++		answered[id] = true
++	}
++	for _, ended := range []map[mutantRun]bool{timedOut, capped} {
++		for run := range ended {
++			answered[run.mutant] = true
++		}
++	}
++	for _, id := range slices.Sorted(maps.Keys(answered)) {
+ 		for _, candidate := range candidates {
+-			if !kills[id][candidate.Name] {
++			own := mutantRun{id, candidate.Name}
++			if !kills[id][candidate.Name] && !timedOut[own] && !capped[own] {
+ 				continue
+ 			}
+ 			for _, name := range candidate.Covering {
+ 				_, passes := timeouts[name]
+ 				_, covers := blocks[name][c.mutants[id].Block]
++				run := mutantRun{id, name}
+ 				// A covering test that ran the mutant as a candidate and did not kill it has its answer already.
+-				if !passes || !covers || queued[mutantRun{id, name}] || (ran[id][name] && !kills[id][name]) {
++				// A run alone decides the answer when that candidate run timed out beside other runs.
++				if !passes || !covers || queued[run] || (ran[id][name] && !kills[id][name] && !timedOut[run]) {
+ 					continue
+ 				}
+-				queued[mutantRun{id, name}] = true
++				queued[run] = true
+ 				jobs = append(jobs, mutantJob{test: entries[name], mutant: id, timeout: timeouts[name]})
+ 			}
+ 		}
+@@ -307,14 +321,23 @@ func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[stri
+ 		delete(capped, run)
+ 	}
+ 	if results, err = c.runJobs(bin, jobs, true); err != nil {
+-		return nil, err
++		return nil, nil, err
+ 	}
+ 	record(jobs, results)
+ 	c.stats.TimedOut, c.stats.MemoryCapped = c.stopsOf(timedOut), c.stopsOf(capped)
++	unjudged := testcover.Kills{}
++	for _, ended := range []map[mutantRun]bool{timedOut, capped} {
++		for run := range ended {
++			if unjudged[run.mutant] == nil {
++				unjudged[run.mutant] = map[string]bool{}
++			}
++			unjudged[run.mutant][run.test] = true
++		}
++	}
+ 	for i := range candidates {
+ 		candidates[i].GuardKilled = guarded[candidates[i].Name] || slices.ContainsFunc(candidates[i].Covering, func(name string) bool { return guarded[name] })
+ 	}
+-	return kills, nil
++	return kills, unjudged, nil
+ }
+ 
+ // stopsOf returns the runs of ended, each with its mutant's site, ordered by mutant and then by test.
+@@ -453,7 +476,7 @@ func (c *mutationCheck) runSideBySide(bin string, jobs []mutantJob) ([]testcover
+ 
+ // runJob runs the job's test alone under bin in the package directory, with its tier's env and its mutant on.
+ // A run past its timeout comes back failed and TimedOut, and one past the memory cap failed and MemoryCapped.
+-// Either counts as a kill.
++// The check holds either unjudged, never a kill.
+ // A run the memory guard killed comes back GuardKilled, which counts as none.
+ // It logs the mutant before the run starts, so the log names the mutant of a run that never reports back.
+ func (c *mutationCheck) runJob(bin string, job mutantJob) (testcover.RunResult, error) {
+diff --git a/internal/gatecli/redundantmutants_guard_test.go b/internal/gatecli/redundantmutants_guard_test.go
+index 1a5addbd..2946c529 100644
+--- a/internal/gatecli/redundantmutants_guard_test.go
++++ b/internal/gatecli/redundantmutants_guard_test.go
+@@ -6,6 +6,7 @@ package gatecli
+ import (
+ 	"context"
+ 	"os"
++	"path/filepath"
+ 	"testing"
+ 	"time"
+ 
+@@ -27,6 +28,71 @@ func TestMutantStandInCovering(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ }
+ 
++// standInMarkerEnv names the file TestMutantStandInHangsOnce creates on its first run with mutant 1 on.
++const standInMarkerEnv = "GATECLI_STAND_IN_MARKER"
++
++// TestMutantStandInHangsOnce is a stand-in test that hangs on its first run with mutant 1 on and fails on each later one.
++func TestMutantStandInHangsOnce(t *testing.T) {
++	tiergate.Require(t, 0)
++	marker := os.Getenv(standInMarkerEnv)
++	if os.Getenv(testcover.MutantEnv) != "1" || marker == "" {
++		return
++	}
++	if file, err := os.OpenFile(marker, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644); err == nil {
++		file.Close()
++		// The check's time bound kills this run long before the hour passes.
++		<-time.After(time.Hour)
++	}
++	t.Fatal("mutant 1 is on")
++}
++
++// TestRunMutantsRerunsACoveringTestThatTimedOutAsACandidate pins the rerun of a covering test.
++// Its candidate run of a mutant ended at the time bound, so it runs that mutant again.
++// The rerun's answer replaces the timeout.
++func TestRunMutantsRerunsACoveringTestThatTimedOutAsACandidate(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	bin, err := os.Executable()
++	if err != nil {
++		t.Fatal(err)
++	}
++	const killer, hangsOnce = "TestMutantStandIn", "TestMutantStandInHangsOnce"
++	block := testcover.BlockKey{File: "x.go", Func: "F", Hash: "h"}
++	m := testcover.Map{
++		Blocks: []testcover.BlockKey{block},
++		Tests:  []testcover.MapTest{{Name: killer, Blocks: []int{0}}, {Name: hangsOnce, Blocks: []int{0}}},
++	}
++	holderEnv := append(os.Environ(), standInMarkerEnv+"="+filepath.Join(t.TempDir(), "marker"))
++	check := &mutationCheck{
++		ctx:         context.Background(),
++		request:     redundantRequest{secondUnit: time.Second, grace: time.Second},
++		tiers:       map[int]gateslot.Tier{0: {}},
++		pkgDir:      t.TempDir(),
++		testTimeout: time.Minute,
++		sideBySide:  1,
++		env:         holderEnv,
++		holderEnv:   holderEnv,
++		mutants:     map[int]testcover.Mutant{1: {ID: 1, Block: block.String()}},
++	}
++	candidates := []testcover.MutantCandidate{
++		{Name: killer, Covering: []string{hangsOnce}, Mutants: []int{1}},
++		{Name: hangsOnce, Covering: []string{killer}, Mutants: []int{1}},
++	}
++
++	kills, unjudged, err := check.runMutants(bin, m, mapEntries(m), candidates)
++
++	if err != nil {
++		t.Fatalf("runMutants() error = %v; want none", err)
++	}
++	if !kills[1][hangsOnce] {
++		t.Errorf("runMutants() kill of mutant 1 by %s = false; want true, from its rerun", hangsOnce)
++	}
++	if unjudged[1][hangsOnce] {
++		t.Errorf("runMutants() holds %s unjudged on mutant 1; want its candidate-run timeout cleared by the rerun", hangsOnce)
++	}
++}
++
+ // TestRunMutantsGuardKilledRunIsNoKill pins what the mutation check records of a run that fails with a mutant on.
+ // A failure the memory guard caused counts as no kill and leaves the candidate not judged, never as a failing candidate.
+ // A failure it did not cause is the candidate's kill of the mutant.
+@@ -73,7 +139,7 @@ func TestRunMutantsGuardKilledRunIsNoKill(t *testing.T) {
+ 				{Name: "TestMutantStandIn", Covering: []string{"TestMutantStandInCovering"}, Mutants: []int{1}},
+ 			}
+ 
+-			kills, err := check.runMutants(bin, m, mapEntries(m), candidates)
++			kills, _, err := check.runMutants(bin, m, mapEntries(m), candidates)
+ 
+ 			if err != nil {
+ 				t.Fatalf("runMutants() error = %v; want none", err)
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 53cd79d4..725e6225 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -177,7 +177,7 @@
+ // `redundancy_test_memory_mb` caps the memory of each test and of every process it starts, in megabytes.
+ // Config.RedundancyTestMemory returns it in bytes.
+ // The redundancy report step of `lym gate test` and the mutation check of `lym gate redundant` take the three bounds too.
+-// A mutant run past the test bound or the memory cap counts as a kill in `lym gate redundant`.
++// In `lym gate redundant` a mutant run past the test bound or the memory cap is unjudged, never a kill.
+ // `lym gate test --map` and `lym gate redundant` run fewer tests side by side when memory is short.
+ // That is when the limit they sit under leaves less than the caps of those tests together.
+ // A map call runs each mapped tier's tests up to that tier's parallel.
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 8cb93ce6..26497e1a 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -3,8 +3,8 @@ busy_quit_sec: 120  # seconds a Go test binary under lym gate test may keep a CP
+ memory_quit_mb: 4096  # megabytes a Go test binary that lym gate test (its redundancy report step included), lym gate redundant or lym gate test --map runs may hold, with every process it starts, before the memory guard kills them all and names its package; the guard also kills the largest test binary of 1024 MB or more once the memory limit lym sits under has less than a tenth left; 0 turns the guard off
+ fixer_timeout_min: 30  # minutes a cold gate fixer may run before the call that spawned it stops waiting; it bounds the card gate's fixer and the row gate fixers, and webster's fix-verify keeps its own recovery_timeout_min
+ redundancy_build_timeout_min: 10  # minutes each coverage, mutant and lym build of a coverage map run, the redundancy report step or lym gate redundant may take before its process group is killed and the build counts as failed
+-redundancy_test_timeout_sec: 120  # seconds each test of those runs alone may take before its process group is killed; the test is left out, except a mutant run in lym gate redundant, which then counts as a kill
+-redundancy_test_memory_mb: 2048  # megabytes each test of those runs alone may hold, with every process it starts, before the kernel ends it or fails its allocation; the test is left out, recorded as failed by lym gate test --map, and a mutant run in lym gate redundant counts as a kill; lym gate redundant and lym gate test --map run fewer tests side by side when the memory limit they sit under leaves less than their caps together
++redundancy_test_timeout_sec: 120  # seconds each test of those runs alone may take before its process group is killed; the test is left out, except a mutant run in lym gate redundant, which is then unjudged, never a kill
++redundancy_test_memory_mb: 2048  # megabytes each test of those runs alone may hold, with every process it starts, before the kernel ends it or fails its allocation; the test is left out, recorded as failed by lym gate test --map, and a mutant run in lym gate redundant is unjudged, never a kill; lym gate redundant and lym gate test --map run fewer tests side by side when the memory limit they sit under leaves less than their caps together
+ redundancy_max_tests: 40  # the most new and changed tests the redundancy report step judges in one call, taken in file then name order; the rest are listed as not judged
+ redundancy_budget_min: 10  # minutes the redundancy report step may spend on its builds and tests once it holds its gate slot; past it the step starts no further build or test
+ 
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index ed64595f..71148f3b 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -13,6 +13,8 @@
+ // A bounded command runs in its own process group, which the bound kills whole.
+ // The wait for its exit and output then lasts at most Grace, so a descendant holding the output pipe cannot stall it.
+ // A test past its bound comes back marked TimedOut, never as an error.
++// A test's elapsed time runs from the arrival of its `=== RUN` line to that of its result line, to the microsecond.
++// The binary's own figure is rounded to the hundredth and records most tests as taking no time.
+ // A Toolchain with a MemoryLimit runs each test binary through `proc.RunMemoryCapped`.
+ // That caps the memory of the test and of every process it starts; the go commands are never capped.
+ // A test the cap ends comes back marked MemoryCapped, never as an error.
+@@ -49,6 +51,8 @@
+ // RunAlone with no profile runs a test of that binary.
+ // JudgeMutants calls a candidate redundant when it kills a mutant and a covering test kills each one it kills;
+ // a candidate that kills a mutant no covering test kills is refuted.
++// A run that ends at its time bound or the memory cap is unjudged, never a kill, since it proves no check.
++// A candidate with no unique kill whose answer rests on such a run is unconfirmed, neither redundant nor refuted.
+ // One that does not pass unmutated, holds no mutant in its blocks or kills none is not judged.
+ // Its greedy pass, slowest first, removes a candidate only while a test it keeps kills each mutant the candidate killed.
+ // ScanSourceReaders marks the tests that reach the module's scan kit, whose check reads source files no mutant changes.
+diff --git a/internal/testcover/export_test.go b/internal/testcover/export_test.go
+new file mode 100644
+index 00000000..23574744
+--- /dev/null
++++ b/internal/testcover/export_test.go
+@@ -0,0 +1,16 @@
++// export_test.go exposes the unexported test output collector to the package's external tests.
++
++package testcover
++
++import "time"
++
++// StampOutput writes chunks, in order, to the output collector of the test name, stamped by now.
++// It returns the arrival times the collector recorded for the test's `=== RUN` line and its result line.
++// A time is zero where its line never arrived.
++func StampOutput(name string, now func() time.Time, chunks ...string) (started, ended time.Time) {
++	out := &testOutput{name: name, now: now}
++	for _, chunk := range chunks {
++		out.Write([]byte(chunk))
++	}
++	return out.started, out.ended
++}
+diff --git a/internal/testcover/mutantverdict.go b/internal/testcover/mutantverdict.go
+index 2a019d1c..201414ea 100644
+--- a/internal/testcover/mutantverdict.go
++++ b/internal/testcover/mutantverdict.go
+@@ -42,21 +42,33 @@ type MutantVerdict struct {
+ 	Reason string
+ 	// Killed are the IDs of the mutants the candidate killed, ascending.
+ 	Killed []int
+-	// Unique are the IDs of the mutants it killed that none of its covering tests killed, ascending.
++	// Unique are the IDs of the mutants it killed that none of its covering tests killed or left unjudged, ascending.
+ 	Unique []int
+-	// Redundant is set when it killed a mutant and a covering test killed each one it killed.
++	// Unjudged are the IDs of the mutants whose answer rests on an unjudged run, ascending:
++	// the candidate's own run of a mutant none of its covering tests killed,
++	// or the covering tests' runs of a mutant the candidate killed and none of them killed.
++	Unjudged []int
++	// Redundant is set when it killed a mutant and no answer rests on an unjudged run.
++	// It also requires that a covering test killed each mutant it killed.
+ 	Redundant bool
+ 	// Removable is set for a redundant candidate the greedy pass drops:
+ 	// a test it keeps killed each mutant the candidate killed.
+ 	Removable bool
+ }
+ 
+-// JudgeMutants returns the verdict of each of candidates, in the order given, from kills.
++// JudgeMutants returns the verdict of each of candidates, in the order given, from kills and unjudged.
++// unjudged holds, in the shape of kills, the tests whose run with a mutant on ended at its time bound or the memory cap.
++// Such a run is no proof that the test checks the mutant, so it counts as no kill.
+ // A candidate is not judged when it did not pass with no mutant on or the memory guard killed a run of it.
+-// It is not judged either when its blocks hold no mutant or it killed none.
++// It is not judged either when its blocks hold no mutant.
++// Nor is it judged when it killed none and no answer of it rests on an unjudged run.
++// A covering test that killed a mutant makes the candidate's own unjudged run of it moot:
++// deleting the candidate loses no check of the mutant, so it is in none of Killed, Unique and Unjudged.
++// A candidate with a unique kill is refuted.
++// One without, whose answer rests on an unjudged run, is unconfirmed: neither redundant nor refuted.
+ // The removable set is a greedy pass over the redundant candidates, slowest first, then by name.
+ // It drops a candidate while some other test still kept killed each mutant the candidate killed.
+-func JudgeMutants(candidates []MutantCandidate, kills Kills) []MutantVerdict {
++func JudgeMutants(candidates []MutantCandidate, kills, unjudged Kills) []MutantVerdict {
+ 	out := make([]MutantVerdict, len(candidates))
+ 	var redundant []int
+ 	for i, c := range candidates {
+@@ -71,18 +83,31 @@ func JudgeMutants(candidates []MutantCandidate, kills Kills) []MutantVerdict {
+ 		}
+ 		if verdict.Reason == "" {
+ 			for _, id := range slices.Sorted(slices.Values(c.Mutants)) {
++				coveringRunIn := func(runs Kills) bool {
++					return slices.ContainsFunc(c.Covering, func(name string) bool { return runs[id][name] })
++				}
++				if unjudged[id][c.Name] {
++					if !coveringRunIn(kills) {
++						verdict.Unjudged = append(verdict.Unjudged, id)
++					}
++					continue
++				}
+ 				if !kills[id][c.Name] {
+ 					continue
+ 				}
+ 				verdict.Killed = append(verdict.Killed, id)
+-				if !slices.ContainsFunc(c.Covering, func(name string) bool { return kills[id][name] }) {
++				switch {
++				case coveringRunIn(kills):
++				case coveringRunIn(unjudged):
++					verdict.Unjudged = append(verdict.Unjudged, id)
++				default:
+ 					verdict.Unique = append(verdict.Unique, id)
+ 				}
+ 			}
+ 			switch {
+-			case len(verdict.Killed) == 0:
++			case len(verdict.Killed) == 0 && len(verdict.Unjudged) == 0:
+ 				verdict.Reason = ReasonKillsNone
+-			case len(verdict.Unique) == 0:
++			case len(verdict.Unique) == 0 && len(verdict.Unjudged) == 0:
+ 				verdict.Redundant = true
+ 				redundant = append(redundant, i)
+ 			}
+diff --git a/internal/testcover/mutantverdict_test.go b/internal/testcover/mutantverdict_test.go
+index 9fae08de..b3b3c1d3 100644
+--- a/internal/testcover/mutantverdict_test.go
++++ b/internal/testcover/mutantverdict_test.go
+@@ -25,7 +25,9 @@ func TestJudgeMutants(t *testing.T) {
+ 		name       string
+ 		candidates []testcover.MutantCandidate
+ 		kills      testcover.Kills
+-		want       []testcover.MutantVerdict
++		// unjudged holds the runs that ended at their time bound or the memory cap.
++		unjudged testcover.Kills
++		want     []testcover.MutantVerdict
+ 	}{
+ 		{
+ 			name:       "a covering test that kills every mutant the candidate kills makes it redundant and removable",
+@@ -55,6 +57,46 @@ func TestJudgeMutants(t *testing.T) {
+ 				{Name: "Silent", Reason: testcover.ReasonKillsNone},
+ 			},
+ 		},
++		{
++			name: "a candidate whose own run of a mutant was unjudged is unconfirmed, whether or not it killed another",
++			candidates: []testcover.MutantCandidate{
++				{Name: "A", Covering: []string{"B"}, Mutants: []int{1, 2}},
++				{Name: "Stalls", Covering: []string{"B"}, Mutants: []int{3}},
++			},
++			kills:    testcover.Kills{1: killedBy("A", "B")},
++			unjudged: testcover.Kills{2: killedBy("A"), 3: killedBy("Stalls")},
++			want: []testcover.MutantVerdict{
++				{Name: "A", Killed: []int{1}, Unjudged: []int{2}},
++				{Name: "Stalls", Unjudged: []int{3}},
++			},
++		},
++		{
++			name:       "a candidate's own unjudged run of a mutant a covering test killed rests nothing on it, so the candidate stays redundant",
++			candidates: []testcover.MutantCandidate{{Name: "A", Elapsed: 1, Covering: []string{"B"}, Mutants: []int{1, 2}}},
++			kills:      testcover.Kills{1: killedBy("A", "B"), 2: killedBy("B")},
++			unjudged:   testcover.Kills{2: killedBy("A")},
++			want:       []testcover.MutantVerdict{{Name: "A", Killed: []int{1}, Redundant: true, Removable: true}},
++		},
++		{
++			name:       "a candidate whose every mutant is an own unjudged run a covering test killed kills none that it can show",
++			candidates: []testcover.MutantCandidate{{Name: "A", Covering: []string{"B"}, Mutants: []int{1}}},
++			kills:      testcover.Kills{1: killedBy("B")},
++			unjudged:   testcover.Kills{1: killedBy("A")},
++			want:       []testcover.MutantVerdict{{Name: "A", Reason: testcover.ReasonKillsNone}},
++		},
++		{
++			name: "a covering run that was unjudged confirms no kill, yet a unique kill still refutes",
++			candidates: []testcover.MutantCandidate{
++				{Name: "A", Covering: []string{"B"}, Mutants: []int{1}},
++				{Name: "C", Covering: []string{"B"}, Mutants: []int{1, 2}},
++			},
++			kills:    testcover.Kills{1: killedBy("A", "C"), 2: killedBy("C")},
++			unjudged: testcover.Kills{1: killedBy("B")},
++			want: []testcover.MutantVerdict{
++				{Name: "A", Killed: []int{1}, Unjudged: []int{1}},
++				{Name: "C", Killed: []int{1, 2}, Unique: []int{2}, Unjudged: []int{1}},
++			},
++		},
+ 		{
+ 			name: "two candidates killing only each other's mutants: the slower is removable and the other kept",
+ 			candidates: []testcover.MutantCandidate{
+@@ -71,7 +113,7 @@ func TestJudgeMutants(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			if got := testcover.JudgeMutants(tt.candidates, tt.kills); !reflect.DeepEqual(got, tt.want) {
++			if got := testcover.JudgeMutants(tt.candidates, tt.kills, tt.unjudged); !reflect.DeepEqual(got, tt.want) {
+ 				t.Errorf("JudgeMutants = %+v\nwant           %+v", got, tt.want)
+ 			}
+ 		})
+diff --git a/internal/testcover/runner.go b/internal/testcover/runner.go
+index 027fb66a..6de06b97 100644
+--- a/internal/testcover/runner.go
++++ b/internal/testcover/runner.go
+@@ -52,12 +52,16 @@ type Toolchain struct {
+ 	GuardKilled func(pid int) bool
+ 	// Grace bounds the wait for a bounded command's exit and output once it ended or was killed; zero waits for both.
+ 	Grace time.Duration
++	// Now stamps the arrival of a test run's `=== RUN` line and result line; nil uses time.Now.
++	Now func() time.Time
+ }
+ 
+ // RunResult is one top-level test run alone under a coverage binary.
+ type RunResult struct {
+ 	Name string
+-	// Elapsed is the seconds the binary reported for the test.
++	// Elapsed is the test's seconds, to the microsecond, from the arrival of its `=== RUN` line to that of its result line.
++	// A run whose output holds no `=== RUN` line before the result line has the binary's own figure.
++	// The binary rounds that figure to the hundredth.
+ 	Elapsed float64
+ 	// Action is ActionPass, ActionFail or ActionSkip.
+ 	Action string
+@@ -171,12 +175,15 @@ func (tc Toolchain) RunAlone(bin, dir, profile, name string) (RunResult, error)
+ 	defer cancel()
+ 	cmd.Dir = dir
+ 	cmd.Env = tc.Env
+-	var out bytes.Buffer
+-	cmd.Stdout, cmd.Stderr = &out, &out
++	out := &testOutput{name: name, now: tc.Now}
++	if out.now == nil {
++		out.now = time.Now
++	}
++	cmd.Stdout, cmd.Stderr = out, out
+ 	logger.Info("testcover: spawning a coverage binary for one test", "binary", bin, "test", name, "memory_limit", tc.MemoryLimit)
+ 	killed, err := tc.runTestBinary(cmd)
+ 	guardKilled := err != nil && tc.GuardKilled != nil && cmd.Process != nil && tc.GuardKilled(cmd.Process.Pid)
+-	capped := tc.MemoryLimit > 0 && err != nil && !guardKilled && (killed || outOfMemoryLine.Match(out.Bytes()))
++	capped := tc.MemoryLimit > 0 && err != nil && !guardKilled && (killed || outOfMemoryLine.Match(out.buf.Bytes()))
+ 	logger.Info("testcover: coverage binary ended", "test", name, "error", err, "memory_capped", capped, "guard_killed", guardKilled)
+ 	if err != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
+ 		return RunResult{Name: name, Action: ActionFail, TimedOut: true}, nil
+@@ -196,12 +203,15 @@ func (tc Toolchain) RunAlone(bin, dir, profile, name string) (RunResult, error)
+ 	}
+ 
+ 	run := RunResult{Name: name, Action: ActionFail}
+-	for _, m := range testResultLine.FindAllStringSubmatch(out.String(), -1) {
++	for _, m := range testResultLine.FindAllStringSubmatch(out.buf.String(), -1) {
+ 		if m[2] == name {
+ 			run.Action = strings.ToLower(m[1])
+ 			run.Elapsed, _ = strconv.ParseFloat(m[3], 64)
+ 		}
+ 	}
++	if !out.ended.IsZero() {
++		run.Elapsed = out.ended.Sub(out.started).Round(time.Microsecond).Seconds()
++	}
+ 	if run.Action == ActionFail || profile == "" {
+ 		return run, nil
+ 	}
+@@ -219,6 +229,52 @@ func (tc Toolchain) RunAlone(bin, dir, profile, name string) (RunResult, error)
+ 	return run, nil
+ }
+ 
++// runLinePrefix opens the line a verbose test binary prints as a test starts, before the test's name.
++const runLinePrefix = "=== RUN   "
++
++// testOutput collects the output of a test binary running one top-level test.
++// It stamps the arrival of the test's `=== RUN` line and of the result line that follows it.
++// The binary's own figure is rounded to the hundredth and records most tests as taking no time.
++// A binary's stdout and stderr share one testOutput, which exec then writes from a single goroutine.
++type testOutput struct {
++	name string
++	now  func() time.Time
++	buf  bytes.Buffer
++	// scanned is the length of the complete lines of buf already stamped.
++	scanned int
++	// started and ended are the arrival times of the two lines, zero until each arrives.
++	started, ended time.Time
++}
++
++// Write implements io.Writer, stamping each line it completes.
++func (o *testOutput) Write(p []byte) (int, error) {
++	o.buf.Write(p)
++	for {
++		rest := o.buf.Bytes()[o.scanned:]
++		end := bytes.IndexByte(rest, '\n')
++		if end < 0 {
++			return len(p), nil
++		}
++		o.stamp(string(rest[:end]))
++		o.scanned += end + 1
++	}
++}
++
++// stamp records the arrival of line when it is the test's first `=== RUN` line.
++// It also records the arrival of the first result line of the test after it.
++func (o *testOutput) stamp(line string) {
++	switch {
++	case o.started.IsZero():
++		if line == runLinePrefix+o.name {
++			o.started = o.now()
++		}
++	case o.ended.IsZero() && strings.HasPrefix(line, "--- "):
++		if m := testResultLine.FindStringSubmatch(line); m != nil && m[2] == o.name {
++			o.ended = o.now()
++		}
++	}
++}
++
+ // runAloneArgs returns the test binary's arguments for running one top-level test alone.
+ // It passes no profile flag for profile "".
+ // Every flag is one `-flag=value` argument, the form `go test` passes:
+diff --git a/internal/testcover/runner_test.go b/internal/testcover/runner_test.go
+index cd0eaeb4..085b5539 100644
+--- a/internal/testcover/runner_test.go
++++ b/internal/testcover/runner_test.go
+@@ -11,6 +11,7 @@ import (
+ 	"slices"
+ 	"strconv"
+ 	"strings"
++	"sync/atomic"
+ 	"testing"
+ 	"time"
+ 
+@@ -44,6 +45,13 @@ func standIn(t *testing.T) (testcover.Toolchain, string) {
+ 	return testcover.Toolchain{Go: testBinary, Env: append(os.Environ(), standInRecordEnv+"="+record)}, record
+ }
+ 
++// steppingClock returns a clock that advances by step on each call.
++func steppingClock(step time.Duration) func() time.Time {
++	start := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
++	var calls atomic.Int64
++	return func() time.Time { return start.Add(time.Duration(calls.Add(1)) * step) }
++}
++
+ func recordedArgs(t *testing.T, record string) []string {
+ 	t.Helper()
+ 	recorded, err := os.ReadFile(record)
+@@ -206,9 +214,26 @@ func TestRunAlone(t *testing.T) {
+ 		guard func(pid int) bool
+ 		// noProfile runs the test with no profile flag, as a binary built without coverage.
+ 		noProfile bool
+-		want      testcover.RunResult
+-		wantErr   string
++		// now is the run's Now; nil sets none.
++		now     func() time.Time
++		want    testcover.RunResult
++		wantErr string
+ 	}{
++		{
++			// The stand-in prints both lines in one write and reports 0.00s, so only stamping each line separates them.
++			name: "ElapsedRunsFromTheRunLineToTheResultLine", test: standInTimed, now: steppingClock(1500 * time.Microsecond),
++			want: testcover.RunResult{Name: standInTimed, Elapsed: 0.0015, Action: testcover.ActionPass, Profile: []testcover.ProfileBlock{
++				{File: "m/p/x.go", StartLine: 3, StartCol: 21, EndLine: 5, EndCol: 2, Statements: 1, Count: 1},
++			}},
++		},
++		{
++			// The stand-in splits its result line across two writes and prints an indented subtest result line before it.
++			// Only the RUN line and the completed top-level result line are stamped, so the clock steps twice.
++			name: "ElapsedStampsOnlyTheRunLineAndTheCompletedTopLevelResultLine", test: standInSplit, now: steppingClock(1500 * time.Microsecond),
++			want: testcover.RunResult{Name: standInSplit, Elapsed: 0.0015, Action: testcover.ActionPass, Profile: []testcover.ProfileBlock{
++				{File: "m/p/x.go", StartLine: 3, StartCol: 21, EndLine: 5, EndCol: 2, Statements: 1, Count: 1},
++			}},
++		},
+ 		{
+ 			name: "PassWithNoProfileFlag", test: standInPass, noProfile: true,
+ 			want: testcover.RunResult{Name: standInPass, Elapsed: 0.25, Action: testcover.ActionPass},
+@@ -279,7 +304,7 @@ func TestRunAlone(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			tc, record := standIn(t)
+-			tc.TestTimeout, tc.MemoryLimit, tc.GuardKilled, tc.Grace = tt.timeout, tt.memory, tt.guard, time.Second
++			tc.TestTimeout, tc.MemoryLimit, tc.GuardKilled, tc.Grace, tc.Now = tt.timeout, tt.memory, tt.guard, time.Second, tt.now
+ 			profile := filepath.Join(t.TempDir(), "cover.out")
+ 			if tt.noProfile {
+ 				profile = ""
+diff --git a/internal/testcover/stampoutput_test.go b/internal/testcover/stampoutput_test.go
+new file mode 100644
+index 00000000..0f4ec3f1
+--- /dev/null
++++ b/internal/testcover/stampoutput_test.go
+@@ -0,0 +1,50 @@
++// stampoutput_test.go pins the line stamping of the collector that times a test run from its RUN line to its result line.
++// It feeds fixed chunks to the collector, so no process runs.
++
++package testcover_test
++
++import (
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestStampOutput pins which writes the output collector stamps.
++// A line counts once it is complete, whatever the chunking.
++func TestStampOutput(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const step = time.Second
++	tests := []struct {
++		name        string
++		chunks      []string
++		wantStarted bool
++		wantEnded   bool
++	}{
++		{name: "ARunLineWithoutItsNewlineStampsNothing", chunks: []string{"=== RUN   TestX"}},
++		{
++			name:   "ARunLineAndAResultLineSplitAcrossWritesStampOnceComplete",
++			chunks: []string{"=== RUN   Te", "stX\n", "    --- PASS: TestX/sub (0.00s)\n--- PA", "SS: TestX (0.00s)\n"}, wantStarted: true, wantEnded: true,
++		},
++		{name: "AnUnfinishedResultLineStampsNoEnd", chunks: []string{"=== RUN   TestX\n--- PASS: TestX (0.00s)"}, wantStarted: true},
++		{name: "ASubtestResultLineAloneStampsNoEnd", chunks: []string{"=== RUN   TestX\n", "    --- PASS: TestX/sub (0.00s)\n"}, wantStarted: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			started, ended := testcover.StampOutput("TestX", steppingClock(step), tt.chunks...)
++			if got := !started.IsZero(); got != tt.wantStarted {
++				t.Errorf("StampOutput(%q) stamped the run line = %v; want %v", tt.chunks, got, tt.wantStarted)
++			}
++			if got := !ended.IsZero(); got != tt.wantEnded {
++				t.Errorf("StampOutput(%q) stamped the result line = %v; want %v", tt.chunks, got, tt.wantEnded)
++			}
++			if tt.wantEnded && ended.Sub(started) != step {
++				t.Errorf("StampOutput(%q) span = %s; want %s, one clock step between the two stamps", tt.chunks, ended.Sub(started), step)
++			}
++		})
++	}
++}
+diff --git a/internal/testcover/testmain_test.go b/internal/testcover/testmain_test.go
+index 7ce6f15b..a7b0c58f 100644
+--- a/internal/testcover/testmain_test.go
++++ b/internal/testcover/testmain_test.go
+@@ -23,6 +23,8 @@ const standInRecordEnv = "TESTCOVER_STAND_IN_RECORD"
+ // standInProfileLine is the profile line it writes for a pass.
+ const (
+ 	standInPass        = "TestStandInPass"
++	standInTimed       = "TestStandInTimed"
++	standInSplit       = "TestStandInSplit"
+ 	standInFail        = "TestStandInFail"
+ 	standInSkip        = "TestStandInSkip"
+ 	standInSkipProfile = "TestStandInSkipWithProfile"
+@@ -77,6 +79,9 @@ const standInGoEnv = "go1.26.8\nlinux\namd64\n"
+ // As `go test -c` with standInCompileErrorsEnv set, it prints standInCompileErrors and fails.
+ // As a coverage binary, it reports the outcome of the one test its `-test.run` names.
+ // It writes a profile for a passing test, and for a skipped one that standInSkipProfile names, when given a profile flag.
++// The test standInTimed prints its `=== RUN` line and its result line in one write, and reports 0.00s.
++// The test standInSplit writes its `=== RUN` line and an indented subtest result line.
++// It then writes its result line in two writes, and reports 0.00s.
+ // Run with a pattern matching no test, it writes the profile with its block uncovered.
+ // The test standInHang never ends on its own.
+ // The test standInHoldsPipe passes and exits, leaving a child that holds the output pipe for standInChildSleep;
+@@ -139,6 +144,19 @@ func runStandIn(record string, args []string) int {
+ 			return 1
+ 		}
+ 		fmt.Printf("--- PASS: %s (0.25s)\n", name)
++	case standInTimed:
++		if err := writeProfile("1"); err != nil {
++			return 1
++		}
++		fmt.Printf("=== RUN   %s\n--- PASS: %s (0.00s)\n", name, name)
++	case standInSplit:
++		if err := writeProfile("1"); err != nil {
++			return 1
++		}
++		fmt.Printf("=== RUN   %s\n", name)
++		fmt.Printf("    --- PASS: %s/sub (0.00s)\n", name)
++		fmt.Print("--- PA")
++		fmt.Printf("SS: %s (0.00s)\n", name)
+ 	case standInSkipProfile:
+ 		if err := writeProfile("1"); err != nil {
+ 			return 1
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index ff55b2cd..0b5eb083 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -312,9 +312,11 @@ this section keeps only what is project-specific or stricter here.
+   then confirms each candidate by mutation inside a gate slot.
+   It mutates the candidates' blocks and keeps a candidate only when its covering tests kill every mutant it kills;
+   one that kills a mutant they miss is listed as refuted, with those mutants.
++  A run that ends at its time bound or the memory cap is no kill,
++  and a candidate whose answer rests on one is listed as unconfirmed, with those mutants.
+   A `//lym:guard` test and one reaching `internal/testkit/scankit` are never candidates:
+   their check reads source files, which no mutant changes.
+-  It lists the candidates with their seconds, covering tests and kills, and the refuted, keep-marked and unjudged tests.
++  It lists the candidates with their seconds, covering tests and kills, and the refuted, unconfirmed, keep-marked and unjudged tests.
+   Bound: a mutant changes the package's own code only,
+   so a candidate whose check differs from its covers only in another package's result is confirmed falsely.
+ - A gate key whose `reports` lists `redundancy` runs the report step after its tiers and lints.
