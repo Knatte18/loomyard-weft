@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-17 08:01 UTC; every age below is as of then.
+Rendered 2026-11-17 08:02 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -50,7 +50,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **reed: the orch's slack and RC buttons show in task sessions**<br>• A task session draws its parent orch's slack and RC buttons; draw them only where that orch lives, or name the orch | [`reed-orch-buttons-in-tasks`](design-reed-orch-buttons-in-tasks.md) | 0m<br>0m | reed, orch, slack |
+| B1 |  | **reed: the orch's slack and RC buttons show in task sessions**<br>• A task session draws its parent orch's slack and RC buttons; draw them only where that orch lives, or name the orch | [`reed-orch-buttons-in-tasks`](design-reed-orch-buttons-in-tasks.md) | 1m<br>1m | reed, orch, slack |
 | B2 |  | **Memory guard for every test binary lym runs**<br>• The gate watchdog watches CPU only and only gate test runs; give it a memory trigger over every test binary, and cap the gate tiers | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | 1h<br>41m | gate |
 
 ### Features (6)
@@ -63,11 +63,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>11d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 6w<br>22h | board, ide, orch |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>11d | burler, shed, orch, quarry, report |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T20 | **A capped test run raises a desktop low-memory notice**<br>• Each kernel kill of a capped test scope in app.slice shows a desktop low-memory notice; move the scopes so it does not | [`memcap-desktop-notice`](design-memcap-desktop-notice.md) | 1h<br>29m | gate, process |
