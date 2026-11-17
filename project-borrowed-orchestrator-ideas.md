@@ -11,7 +11,7 @@ The note orchestrator-survey-ideas holds the remaining leads; each other member 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (2)
+## Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -30,14 +30,21 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (3)
+### Draft (2)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | `draft` **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | darn |  | 52m<br>52m | stencil, shed |
+| T6 | `draft` **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | darn |  | 52m<br>52m | shuttle, friction |
+
+## Notes (1)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Features (3)
+### Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F8 |  | **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | 52m<br>52m | shuttle, friction |
-| F12 |  | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | 52m<br>52m | stencil, shed |
 | F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>52m | burler, shed, orch, quarry, report |

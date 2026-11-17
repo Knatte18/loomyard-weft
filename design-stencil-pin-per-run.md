@@ -1,6 +1,6 @@
 # Warn on resume when a run's stencils changed since it started
 
-`stencil-pin-per-run` · Note · feature, stencil, shed
+`stencil-pin-per-run` · Task · feature, stencil, shed · draft
 
 ## Seen (orch, 2026-11-17)
 
