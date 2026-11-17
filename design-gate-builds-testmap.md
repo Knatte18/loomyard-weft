@@ -1,6 +1,6 @@
 # Build the coverage maps as a mode of the gate run, one process per test in parallel
 
-`gate-builds-testmap` · Task · sketch, gate, testkit · running · Raddle-Write
+`gate-builds-testmap` · Task · sketch, gate, testkit · running · Raddle-File
 
 Decision record: [Sketch](decision-gate-builds-testmap.md)
 
