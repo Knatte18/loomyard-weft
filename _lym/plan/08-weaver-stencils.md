@@ -3,11 +3,11 @@
 **Create:**
 - `contracts/stencils/weaver/weaver-template-batch.md`
 - `contracts/stencils/weaver/weaver-body-verify-fix.md`
-- `plan:contracts/stencils#WeaverTemplateBatch` -> `var WeaverTemplateBatch []byte`
-- `plan:contracts/stencils#WeaverBodyVerifyFix` -> `var WeaverBodyVerifyFix []byte`
-- `plan:internal/weaverengine#BatchPromptInputs` -> `type BatchPromptInputs struct`
-- `plan:internal/weaverengine#RenderBatchPrompt` -> `func RenderBatchPrompt(in BatchPromptInputs) ([]byte, error)`
-- `plan:internal/weaverengine#TestRenderBatchPrompt` -> `func TestRenderBatchPrompt(t *testing.T)`
+- `contracts/stencils#WeaverTemplateBatch`
+- `contracts/stencils#WeaverBodyVerifyFix`
+- `internal/weaverengine#BatchPromptInputs`
+- `internal/weaverengine#RenderBatchPrompt`
+- `internal/weaverengine_test#TestRenderBatchPrompt`
 
 **Extends:**
 - `contracts/stencils#entries`

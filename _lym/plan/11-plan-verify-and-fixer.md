@@ -1,14 +1,14 @@
 # Card 11 — plan-verify-and-fixer
 
 **Create:**
-- `plan:internal/weaverengine#RunDeps` -> `type RunDeps struct`
-- `plan:internal/weaverengine#verifyOutcome` -> `type verifyOutcome struct`
-- `plan:internal/weaverengine#runVerify` -> `func runVerify(deps RunDeps, st *State, evaluation int) (verifyOutcome, error)`
-- `plan:internal/weaverengine#fixerStore` -> `type fixerStore struct`
-- `plan:internal/weaverengine#fixerStore.Live` -> `func (s *fixerStore) Live() (*gatefixer.Record, error)`
-- `plan:internal/weaverengine#fixerStore.Save` -> `func (s *fixerStore) Save(rec *gatefixer.Record) error`
-- `plan:internal/weaverengine#fixerSpec` -> `func fixerSpec(deps RunDeps, st *State, fixer *FixerState, findings string) (gatefixer.Spec, error)`
-- `plan:internal/weaverengine#writeSummary` -> `func writeSummary(deps RunDeps, st *State, flaky []string) error`
+- `internal/weaverengine#RunDeps`
+- `internal/weaverengine#verifyOutcome`
+- `internal/weaverengine#runVerify`
+- `internal/weaverengine#fixerStore`
+- `internal/weaverengine#fixerStore.Live`
+- `internal/weaverengine#fixerStore.Save`
+- `internal/weaverengine#fixerSpec`
+- `internal/weaverengine#writeSummary`
 
 **Edit:**
 - `internal/gatefixer#RoleVerifyFixer`

@@ -1,15 +1,15 @@
 # Card 9 — batch-attempt-strand
 
 **Create:**
-- `plan:internal/weaverengine#StrandRunner` -> `type StrandRunner interface`
-- `plan:internal/weaverengine#attemptSpec` -> `func attemptSpec(in attemptLaunch) shuttleengine.Spec`
-- `plan:internal/weaverengine#attemptLaunch` -> `type attemptLaunch struct`
-- `plan:internal/weaverengine#batchGateCalls` -> `func batchGateCalls(geom Geometry, cards []planparser.Card, last bool) ([]string, error)`
-- `plan:internal/weaverengine#batchGateSpec` -> `func batchGateSpec(geom Geometry, cards []planparser.Card, last bool, rowGates shuttleengine.GateSpec) (shuttleengine.GateSpec, error)`
-- `plan:internal/weaverengine#attemptVerdict` -> `type attemptVerdict struct`
-- `plan:internal/weaverengine#classifyAttempt` -> `func classifyAttempt(result shuttleengine.Result, waitErr error, reportPath string) attemptVerdict`
-- `plan:internal/weaverengine#StrandStopError` -> `type StrandStopError struct`
-- `plan:internal/weaverengine#stopAttempt` -> `func stopAttempt(runner StrandRunner, guid string) error`
+- `internal/weaverengine#StrandRunner`
+- `internal/weaverengine#attemptSpec`
+- `internal/weaverengine#attemptLaunch`
+- `internal/weaverengine#batchGateCalls`
+- `internal/weaverengine#batchGateSpec`
+- `internal/weaverengine#attemptVerdict`
+- `internal/weaverengine#classifyAttempt`
+- `internal/weaverengine#StrandStopError`
+- `internal/weaverengine#stopAttempt`
 
 **Edit:**
 - `pattern/PATTERN-gate-slot.md`

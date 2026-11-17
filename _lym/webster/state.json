@@ -1,6 +1,6 @@
 {
   "runGuid": "214cb2fb17a9ecc7ede789d9ce9d4369",
-  "planFingerprint": "393e8fe43e63e65a1455a97bcc0c18191599a375584625df12239180bb466fb5",
+  "planFingerprint": "78503f75762305d7d6319d7c1bc1c171ad1fffe121d299e4d3224bcd864f186f",
   "planFileHashes": {
     "00-overview.md": "630f946eaff53f2af1a132415e75a681e27ceb4f0859aca925436059648241b4",
     "01-shared-plan-conflict-path.md": "605edb94583244030a150b83b3259b1accfeb4089b1dfde359a31123651d7339",
@@ -10,13 +10,13 @@
     "05-weaver-state.md": "65ee2a99e0919ab8fbcfee86d61535abfd9581bf138c3e53a116fd043d004225",
     "06-active-implementer-seam.md": "889448910d54c80f12d144b94a368a179558256d07251ffb7c003ea57b3c2c1a",
     "07-journal-and-report-paths.md": "c3778430d510260bc977a732bfdddd4b92a77cf798b5508fde4602b4be5e96fc",
-    "08-weaver-stencils.md": "146d03a5f7a84152ea796653d7535c95d30d51f54f6c4970ba9c18fe0ca0adab",
-    "09-batch-attempt-strand.md": "be3e16e09a9278bbaf370bdac5686c881fa13c919b37ff616f9032fd3fa32d4f",
-    "10-batch-record.md": "fc02bab4e3f92a100b0bd13cf248342a6f24684f412cc5ae92353acd264db7ed",
-    "11-plan-verify-and-fixer.md": "e8d59e52e61399ffe1cf8f42fc411654615470e3a3ddc3e8814d5c3d7c260dfd",
-    "12-run-loop.md": "4a261f60406bf32b18c480555d200cd482974a48d1d082b23a764bd22ad8dcbc",
-    "13-run-reentry-and-resume.md": "3bea587297e3cf312bde366b85ac0a7c4549d8785b1f1b194a6188441e6fab18",
-    "14-weaver-archive-and-reset.md": "0f12d4621ec32793c3b7c5f81f36a3ab8a08def1a7d67dc4a47bdfe046f36b9a",
+    "08-weaver-stencils.md": "d1742e0da809205758bce51aa5ac6d7adc61cb819f268dff0e2fe4fe19cb20c2",
+    "09-batch-attempt-strand.md": "79a0d44018bc4ea590ac84cb0d8095bd4356ce9286c53cd7fca1c8e22aeb5945",
+    "10-batch-record.md": "cc0fa8269ab797d38d7aad2e7acb4dad483d2685b8e8a5a68229a49c9cf5da51",
+    "11-plan-verify-and-fixer.md": "94d82515ff877af267ca49533c34816c74cfa01c7c8538d52c6152f7d80360db",
+    "12-run-loop.md": "40b631e08e60e33480fb8fa85f65064bff83cd8947e5683911ce35616d9c4f4f",
+    "13-run-reentry-and-resume.md": "1de7442e060f2002b37a37d0a4091875d2f2d686145bfd45e46371c903e49462",
+    "14-weaver-archive-and-reset.md": "ab5d8e650ac27e8b7c4021e4e2ece27a64c7c148252956670ead60b06142a4aa",
     "15-weavercli-reset.md": "148427adc0dcc11e4dbd021417283d377b29f509e7b3db87b603f9772fde7a90",
     "16-weaver-shed-producer.md": "68224e517c00219973df9c8abd3f2b81536c77b76a218145ceb6413bb1f3a3e5",
     "17-implementer-guard.md": "768289a5b17a797a565ca4063ae826e5cd9bdad495e5a2339ee6e2db1d701858",
@@ -25,7 +25,7 @@
     "20-renumber-reads-active.md": "5a23f3270b0e4df04129bf7dcbd5662b6b4d8a582dcaaf2735a9f5dc08b0068f",
     "21-decision-notice-weaver.md": "78417d9a37955d7888fed8cd135ac724130b781b093961da005c988f307e3a49",
     "22-describe-and-rework-archive.md": "300d5fc4f4a9398e3b3d8a1f84d5ce6ce06c75f5bda19aac66f4f7769e37eec7",
-    "23-merge-in-warning.md": "97793c102a568a44e0673b621b5f8482adb1e4a4ff39107bd40b00ef85fb2040",
+    "23-merge-in-warning.md": "bb4fc71178c505dd2a53107c1eeafe3ee4b9d03a3a2f50cd9efb591937aa177f",
     "24-arbiter-names-run-dir.md": "b44666ae6452058374500fb9dd021a9ccad28fcfdc686e46f4e17505f96c9b8f",
     "25-batten-fixer-timeout.md": "bee21c48608f30fa5163aa5ffa817432385058494a0ba363e5764f40374dfed7",
     "26-implementer-spec.md": "0cf3198dbf7253d05e43e6f88af5890d9c3b89c40960cfd81bf6de38aaaba742"
@@ -716,27 +716,61 @@
         "12-run-loop"
       ],
       "cardHashes": {
-        "08-weaver-stencils": "146d03a5f7a84152ea796653d7535c95d30d51f54f6c4970ba9c18fe0ca0adab",
-        "09-batch-attempt-strand": "be3e16e09a9278bbaf370bdac5686c881fa13c919b37ff616f9032fd3fa32d4f",
-        "10-batch-record": "fc02bab4e3f92a100b0bd13cf248342a6f24684f412cc5ae92353acd264db7ed",
-        "11-plan-verify-and-fixer": "e8d59e52e61399ffe1cf8f42fc411654615470e3a3ddc3e8814d5c3d7c260dfd",
-        "12-run-loop": "4a261f60406bf32b18c480555d200cd482974a48d1d082b23a764bd22ad8dcbc"
+        "08-weaver-stencils": "d1742e0da809205758bce51aa5ac6d7adc61cb819f268dff0e2fe4fe19cb20c2",
+        "09-batch-attempt-strand": "79a0d44018bc4ea590ac84cb0d8095bd4356ce9286c53cd7fca1c8e22aeb5945",
+        "10-batch-record": "cc0fa8269ab797d38d7aad2e7acb4dad483d2685b8e8a5a68229a49c9cf5da51",
+        "11-plan-verify-and-fixer": "94d82515ff877af267ca49533c34816c74cfa01c7c8538d52c6152f7d80360db",
+        "12-run-loop": "40b631e08e60e33480fb8fa85f65064bff83cd8947e5683911ce35616d9c4f4f"
       },
       "startSha": "8850ad93c21dce4c2f3542b89a848824842fc6fe",
       "kind": "fork",
       "spawnedAt": "2026-11-17T06:21:19Z",
       "sessionId": "2f9e36a8-a5d3-4777-a05b-00d2f91d664e",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-weaver-stencils",
+        "status": "done",
+        "head_sha": "6ede1b3f709d8d3bcc77699ac771e243687d9167",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "contracts/stencils/stencils.go",
+          "internal/weaverengine/record.go",
+          "internal/weaverengine/render.go",
+          "internal/weaverengine/render_test.go",
+          "internal/weaverengine/run.go",
+          "internal/weaverengine/run_fixture_test.go",
+          "internal/weaverengine/run_test.go",
+          "internal/weaverengine/strand.go",
+          "internal/weaverengine/verify.go"
+        ],
+        "renames": [
+          {
+            "old": "internal/weaverengine#RunDeps.WeftHead",
+            "new": "internal/weaverengine#RunDeps.RecordsHead",
+            "reason": "the fabric-vocabulary tree scan rejects the word \"weft\" in a Go identifier"
+          }
+        ]
+      },
+      "cardShas": [
+        "6ede1b3f709d8d3bcc77699ac771e243687d9167"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/2f9e36a8-a5d3-4777-a05b-00d2f91d664e/subagents/agent-a2758a955aaec38f7.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/2f9e36a8-a5d3-4777-a05b-00d2f91d664e/subagents/agent-a2758a955aaec38f7.jsonl"
+      ]
     }
   },
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "ad45d38c900010baa4b2b666b45bbcd9",
   "masterSessionId": "2f9e36a8-a5d3-4777-a05b-00d2f91d664e",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/a0ce39e9-3fe4-40c0-a911-9648bcc05e28/subagents/agent-a24e5b5ec91fcafa0.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/a0ce39e9-3fe4-40c0-a911-9648bcc05e28/subagents/agent-a0305a9080972ac6a.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/a0ce39e9-3fe4-40c0-a911-9648bcc05e28/subagents/agent-a0305a9080972ac6a.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/2f9e36a8-a5d3-4777-a05b-00d2f91d664e/subagents/agent-a2758a955aaec38f7.jsonl"
   ]
 }

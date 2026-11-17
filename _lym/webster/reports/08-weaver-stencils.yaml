@@ -1,0 +1,6 @@
+status: OK
+head_sha: 6ede1b3f709d8d3bcc77699ac771e243687d9167
+renames:
+  - old: internal/weaverengine#RunDeps.WeftHead
+    new: internal/weaverengine#RunDeps.RecordsHead
+    reason: the fabric-vocabulary tree scan rejects the word "weft" in a Go identifier

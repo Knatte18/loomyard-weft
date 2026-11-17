@@ -10,8 +10,8 @@
 - `plan:internal/weaverengine#TestArchiveRunRecord` -> `func TestArchiveRunRecord(t *testing.T)`
 
 **Edit:**
-- `plan:internal/weaverengine#Run`
-- `plan:internal/weaverengine#TestRun`
+- `internal/weaverengine#Run`
+- `internal/weaverengine_test#TestRun`
 
 **Extends:**
 - `internal/weaverengine/doc.go`

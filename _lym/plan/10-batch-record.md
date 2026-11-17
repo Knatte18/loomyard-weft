@@ -1,12 +1,12 @@
 # Card 10 — batch-record
 
 **Create:**
-- `plan:internal/weaverengine#recordInputs` -> `type recordInputs struct`
-- `plan:internal/weaverengine#endAttempt` -> `func endAttempt(in recordInputs) (recordOutcome, error)`
-- `plan:internal/weaverengine#recordOutcome` -> `type recordOutcome struct`
-- `plan:internal/weaverengine#commitRecords` -> `func commitRecords(commit func(msg string) error, label, reentryStep string) error`
-- `plan:internal/weaverengine#saveRunState` -> `func saveRunState(geom Geometry, st *State, leaseHeld bool) error`
-- `plan:internal/weaverengine#checkCleanTree` -> `func checkCleanTree(git websterengine.Git, worktree string) ([]string, error)`
+- `internal/weaverengine#recordInputs`
+- `internal/weaverengine#endAttempt`
+- `internal/weaverengine#recordOutcome`
+- `internal/weaverengine#commitRecords`
+- `internal/weaverengine#saveRunState`
+- `internal/weaverengine#checkCleanTree`
 
 **Extends:**
 - `internal/weaverengine/doc.go`

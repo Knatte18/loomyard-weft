@@ -12,7 +12,7 @@
 - `plan:internal/weaverengine#TestRun_Resume` -> `func TestRun_Resume(t *testing.T)`
 
 **Edit:**
-- `plan:internal/weaverengine#Run`
+- `internal/weaverengine#Run`
 
 **Extends:**
 - `internal/weaverengine/doc.go`
@@ -24,7 +24,7 @@
 - `internal/runplan#BatchDepartures`
 - `internal/runplan#IsLastBatch`
 - `internal/shuttleengine#Runner.ProbeGated`
-- `plan:internal/weaverengine#batchGateCalls`
+- `internal/weaverengine#batchGateCalls`
 
 **Intent:** What a new call of the row does after a stop or a crash (D7, D12), run by `Run` before it starts anything.
 

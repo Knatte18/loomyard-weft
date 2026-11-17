@@ -16,7 +16,7 @@
 
 **Uses:**
 - `internal/weaverengine#ActiveOrSetting`
-- `plan:internal/weaverengine#outcomeRecord`
+- `internal/weaverengine#outcomeRecord`
 - `internal/websterengine#RunInFlight`
 - `internal/fabriccli_test#seedWebsterState`
 

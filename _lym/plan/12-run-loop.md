@@ -1,16 +1,16 @@
 # Card 12 — run-loop
 
 **Create:**
-- `plan:internal/weaverengine#Run` -> `func Run(deps RunDeps) (RunResult, error)`
-- `plan:internal/weaverengine#RunResult` -> `type RunResult struct`
-- `plan:internal/weaverengine#ErrRunBusy` -> `var ErrRunBusy = errors.New("weaver: run is already in progress")`
-- `plan:internal/weaverengine#RunActive` -> `func RunActive(scratchDir string) (bool, error)`
-- `plan:internal/weaverengine#runBatch` -> `func runBatch(deps RunDeps, st *State, plan *planparser.Plan, batch batcher.Batch, startRung int, reentry bool) (batchEnd, error)`
-- `plan:internal/weaverengine#batchEnd` -> `type batchEnd struct`
-- `plan:internal/weaverengine#outcomeRecord` -> `type outcomeRecord struct`
-- `plan:internal/weaverengine#writeOutcome` -> `func writeOutcome(path string, rec outcomeRecord) error`
-- `plan:internal/weaverengine#stopReason` -> `func stopReason(deps RunDeps, st *State, label, cause string) string`
-- `plan:internal/weaverengine#TestRun` -> `func TestRun(t *testing.T)`
+- `internal/weaverengine#Run`
+- `internal/weaverengine#RunResult`
+- `internal/weaverengine#ErrRunBusy`
+- `internal/weaverengine#RunActive`
+- `internal/weaverengine#runBatch`
+- `internal/weaverengine#batchEnd`
+- `internal/weaverengine#outcomeRecord`
+- `internal/weaverengine#writeOutcome`
+- `internal/weaverengine#stopReason`
+- `internal/weaverengine_test#TestRun`
 
 **Extends:**
 - `internal/weaverengine/doc.go`
