@@ -1,6 +1,6 @@
 # Study: the work to support Gemini CLI or Antigravity as an agent engine
 
-`gemini-engine-study` · Task · research, shuttle · running · Preflight
+`gemini-engine-study` · Task · research, shuttle · running · Drift-Baseline
 
 ## Question (operator, 2026-11-17)
 
