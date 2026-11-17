@@ -1,8 +1,8 @@
 # Card 10 — board-done-pushed
 
 **Create:**
-- `plan:internal/boardengine#Board.SetStatusPushed` -> `func (b *Board) SetStatusPushed(slug string, status *string) error`
-- `plan:internal/boardengine#TestBoard_SetStatusPushed` -> `func TestBoard_SetStatusPushed(t *testing.T)`
+- `internal/boardengine#Board.SetStatusPushed`
+- `internal/boardengine#TestBoard_SetStatusPushed`
 
 **Edit:**
 - `internal/boardengine#pushOwnerCommit`

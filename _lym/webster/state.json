@@ -1,6 +1,6 @@
 {
   "runGuid": "45b4e49a9a211d85332a2d7a26384f31",
-  "planFingerprint": "07888d018aeba29c29126774dac032920fdd01131e2f2cf385fcf5deb326b670",
+  "planFingerprint": "218ba66f5b11fbbb3bdd8f3e7c70667905e7c00da84af171a4458beb0090190b",
   "planFileHashes": {
     "00-overview.md": "0b8a5fdcf988f5ce83784df19dbfb70fe959f9055eb2dab5f9f6a7231211bf7b",
     "01-runfsm-push-owed.md": "a8e7ef45b0320677b8ace15a393b142d8cea0c2b49920205882bf46ca68bc0b8",
@@ -11,9 +11,9 @@
     "06-run-hand-over.md": "f45e5e993b0cb44d15abcc4468d3d5f8fd737cd28e981565f8eb936bab3d79de",
     "07-read-run-owed-and-tip.md": "9ebbc42f7a68d3e4a9fda260586c090e56a337293ebd2ff1273f61202f4c9357",
     "08-transition-sync-push.md": "95d7088bfe0e6cd19de2e8b3c815d1a98a4b7cb98796ec05617289fd3dad1354",
-    "09-intent-sync-push.md": "7b336bbda03c5efad088fbc5d47d75abf8644e1fb47eb59a49a25078452aace7",
-    "10-board-done-pushed.md": "77cd4fd84dd60d75e865337366b2af2d8fc6208e6b9dd9114f1258c4b57e7641",
-    "11-finalize-push-order.md": "e03753535054a60f873706c5fca8e823fb86072a398627491ce1118ff07046be",
+    "09-intent-sync-push.md": "078eb31fd43682cecc9413189918ee0f53629d06675c05e29de8e1038fe22434",
+    "10-board-done-pushed.md": "0ca7e4b0adb03093467e6eb5e26cf31f898a53c1348e52cde255588f28d07fea",
+    "11-finalize-push-order.md": "dc1d56f5126c85f6e9b11e433dc903f169783a8f1e3e3743e2fd6983ea1d9de8",
     "12-code-tip-grace.md": "a9d5aa61956bc73150a86dc3f0a1e41fd33c6258a0a840ec14f64e870ee876ec",
     "13-status-shows-owed.md": "a2fad818d85810eab83cabcfd08f1168752ae46e69cdfc6de8e826f206ee25e3",
     "14-pattern-run-fsm.md": "abba2a821d7a3325c1f17c018798f612ab75b38e2fd8fb21c583a8f883ef46ab"
@@ -709,19 +709,37 @@
         "10-board-done-pushed"
       ],
       "cardHashes": {
-        "09-intent-sync-push": "7b336bbda03c5efad088fbc5d47d75abf8644e1fb47eb59a49a25078452aace7",
-        "10-board-done-pushed": "77cd4fd84dd60d75e865337366b2af2d8fc6208e6b9dd9114f1258c4b57e7641"
+        "09-intent-sync-push": "078eb31fd43682cecc9413189918ee0f53629d06675c05e29de8e1038fe22434",
+        "10-board-done-pushed": "0ca7e4b0adb03093467e6eb5e26cf31f898a53c1348e52cde255588f28d07fea"
       },
       "startSha": "a8114e14762cb753002e7e438b477c514c52df84",
       "kind": "fork",
       "spawnedAt": "2026-11-17T06:45:53Z",
       "sessionId": "0e3fab80-c91b-4217-bd7e-98ef56a33f6c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "09-intent-sync-push",
+        "status": "done",
+        "head_sha": "b0cedb6e1d7bb79e4c4b7350c231722157d4adcb",
+        "deviations": [
+          "internal/battencli/cancel_test.go",
+          "internal/tendercli/runintents.go"
+        ]
+      },
+      "cardShas": [
+        "b0cedb6e1d7bb79e4c4b7350c231722157d4adcb"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/0e3fab80-c91b-4217-bd7e-98ef56a33f6c/subagents/agent-a5873b34f0718a255.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/0e3fab80-c91b-4217-bd7e-98ef56a33f6c/subagents/agent-a5873b34f0718a255.jsonl"
+      ]
     }
   },
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "2d1bddc9e17b20aab1f341a78b97dd19",
   "masterSessionId": "0e3fab80-c91b-4217-bd7e-98ef56a33f6c",
   "masterEngine": "claude",
@@ -731,6 +749,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/a823923f-7348-4ce9-a1d7-ac8a5677e1bf/subagents/agent-a9d83c62ae0609357.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/0e3fab80-c91b-4217-bd7e-98ef56a33f6c/subagents/agent-afc370c2eb2a4db8d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/0e3fab80-c91b-4217-bd7e-98ef56a33f6c/subagents/agent-af0a7c01c84db237c.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/0e3fab80-c91b-4217-bd7e-98ef56a33f6c/subagents/agent-a50dbbbeff05cf27a.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/0e3fab80-c91b-4217-bd7e-98ef56a33f6c/subagents/agent-a50dbbbeff05cf27a.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/0e3fab80-c91b-4217-bd7e-98ef56a33f6c/subagents/agent-a5873b34f0718a255.jsonl"
   ]
 }

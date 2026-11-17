@@ -29,7 +29,7 @@
 - `internal/pairteardown#ThisMachine`
 - `internal/boardengine#PullBolt`
 - `internal/boardengine#ReadOwners`
-- `plan:internal/boardengine#Board.SetStatusPushed`
+- `internal/boardengine#Board.SetStatusPushed`
 - `internal/loomcli#TestLandingDeps_EveryFieldPopulated`
 - `internal/loomcli#TestWire_EverySeamFilled`
 - `internal/loomcli#TestWire_BeamRecipe`

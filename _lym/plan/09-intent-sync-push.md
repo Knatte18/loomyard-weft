@@ -1,8 +1,8 @@
 # Card 9 — intent-sync-push
 
 **Create:**
-- `plan:internal/tendercli#owedIntentPush` -> `func owedIntentPush(slug string, err error, stderr io.Writer) error`
-- `plan:internal/tendercli#TestOwedIntentPush` -> `func TestOwedIntentPush(t *testing.T)`
+- `internal/tendercli#owedIntentPush`
+- `internal/tendercli#TestOwedIntentPush`
 
 **Edit:**
 - `internal/tendercli#commitRunIntent`
