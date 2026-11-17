@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-17T13:10:24Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/codex-wording-engine-blocks/_lym/landing/summary.md",
+      "at": "2026-11-17T13:41:37Z",
+      "started_at": "2026-11-17T13:10:26Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T13:29:15.412382993Z",
+          "end": "2026-11-17T13:29:15.430872318Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T13:38:41.394688853Z",
+          "end": "2026-11-17T13:38:41.406511988Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T13:29:15.504671824Z",
+          "end": "2026-11-17T13:38:17.840063447Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-17T13:38:18.276175839Z",
+          "end": "2026-11-17T13:38:41.354174458Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T13:38:41.455976755Z",
+          "end": "2026-11-17T13:41:07.110101491Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-17T13:41:07.188631656Z",
+          "end": "2026-11-17T13:41:07.426569211Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-17T13:41:07.473552115Z",
+          "end": "2026-11-17T13:41:07.4737849Z"
+        }
+      ]
     }
   ],
   "product": {
