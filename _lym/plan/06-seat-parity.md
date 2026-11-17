@@ -11,6 +11,7 @@
 - `plan:internal/shuttleparity#SeatEnv` -> `type SeatEnv struct`
 - `plan:internal/shuttleparity#Seat` -> `type Seat struct`
 - `plan:internal/shuttleparity#Seats` -> `func Seats(env SeatEnv) ([]Seat, []error)`
+- `plan:internal/shuttleparity#seatsOf` -> `func seatsOf(env SeatEnv, tables []seatTable) ([]Seat, []error)`
 - `plan:internal/shuttleparity#seatTables` -> `var seatTables []seatTable`
 - `plan:internal/shuttleparity#seatTable` -> `type seatTable struct`
 - `plan:internal/seatengine#Specs` -> `func Specs(geom Geometry, table Table) (map[string]shuttleengine.Spec, error)`
@@ -55,7 +56,8 @@ D1's per-seat comparison and the production code D10's verb shares with the test
 
 Shared seams (D10):
 - `ConfiguredSandbox` runs nothing and reports a sandbox that starts, so `codex.yaml`'s `auto` and `workspace-write` settle to `workspace-write` and `danger-full-access` probes nothing: the configured mode is what the manifest lists.
-- `UnrunHooks` runs nothing and returns `shuttleengine.ErrHookUnrun`, so every plugin session-start context is listed by plugin and hook as omitted with that reason, and Codex logs no warning for it (card 4).
+- `UnrunHooks` runs nothing and returns `shuttleengine.ErrHookUnrun` itself, never wrapped, so every plugin session-start context is listed by plugin and hook as omitted with that reason, and Codex logs no warning for it (card 4).
+  Card 4's check matches the reason's text, which `pluginSessionStartContexts` copies from the runner's error, so a wrapped error would bring the warning back.
 
 `PromptItems` returns the prompt-side items an engine cannot see, since an engine is told no stencils directory:
 `edit-directive`, key `edit-directive`, delivered when the prompt holds the engine's copy from `editdirective.Directive(stencilsDir, engine)`, and no item otherwise.
@@ -71,8 +73,10 @@ the told stencils and specs directories, the worktree's `*lymcwd.Location`, each
 a placeholder slug, branch names and paths under `env.Dir`, where `Build` first writes each input file a builder reads, such as a parts file with one part for `PartsPlanTable` and a decision record for `DescribeTable`.
 The two unexported builders get exported entry points in their own packages: `landingshed.FixReviewSeatTable` fills `fixReviewInputs` with stand-in paths under the stencils directory and calls `fixReviewTable`; `(*Profile).SeatTables` returns `reviewTable` and `fixTable` with no marker values.
 `SeatEnv` carries `StencilsDir`, `SpecsDir`, `Dir`, `Registry`, the `*lymcwd.Location`, `Dirs`, `Shortname`, `Slug` and `ParentName`.
-`Seats(env)` builds every table and returns one `Seat` per seat of each table that built, each with `Name` (its strand role, `seatengine.SeatRole`), `Builder` and `Specs func(engine string) (shuttleengine.Spec, error)`, which sets every seat's `Engine` to engine and returns its spec from `seatengine.Specs` with the table geometry's `DefaultEngine` set to engine.
-It returns beside them one error per builder that failed, naming the builder, so one failing builder costs only its own seats.
+`Seats(env)` is `seatsOf(env, seatTables)`; `seatsOf` takes the catalog as an argument so card 8's `TestReport` runs on fixture tables.
+`seatsOf` builds every table and returns one `Seat` per seat of each table that built, each with `Name` (its strand role, `seatengine.SeatRole`), `Builder` and `Specs func(engine string) (shuttleengine.Spec, error)`, which sets every seat's `Engine` to engine and returns its spec from `seatengine.Specs` with the table geometry's `DefaultEngine` set to engine.
+It returns beside them one error per builder that failed, so one failing builder costs only its own seats.
+Each error names the builder's glyph and wraps its error, with the way forward: fix the stand-in inputs that builder's `seatTables` entry's `Build` writes in `internal/shuttleparity`, since the builder ran on those stand-ins and not on a run's inputs.
 `seatengine.Specs` is `Prompts` plus `seatSpec` for each seat, the spec `startSeat` passes to `StartGated` short of its hold deferral, so the catalog launches no hand-built spec.
 
 Tests, all tier0:
@@ -80,8 +84,10 @@ Tests, all tier0:
 - `TestCompare` is a table over hand-built manifests: an item of a shared heddle target (`agents-prompt` passage, `agents-file` entry) absent from Codex is missing; an item keyed to `claude` (a `claude-file` entry) is not; an omitted plugin context in Codex counts present; an extra Codex item is no finding.
   Its `PromptItems` rows: a prompt holding the engine's edit-directive copy gives the item, and one without it gives none.
   Its `Unmet` rows: a `ForkSubagents` spec on an engine meeting no requirement gives `RequirementForks`, and a plain spec gives none.
+  Its `UnrunHooks` row: the error returned equals `shuttleengine.ErrHookUnrun` under `==`, so a wrapped error fails it.
 - `TestSeats_CodexManifestHoldsClaudes`, `//lym:guard` since it builds the real tables over seeded stencils: `newParityFixture` seeds stencils with `stencilkit.Seed`, writes a fake checkout and Claude config directory (global CLAUDE.md, a plugin with one session-start hook, a skill) as `shuttleengines`' Codex launch fixture does, writes a marked `CLAUDE.local.md` and `AGENTS.override.md` holding its file entry's text, and installs a passage reader returning one `agents-prompt`, one `claude-prompt` and one `codex-prompt` passage and one `agents-file` entry.
-  It fails on any builder error `Seats` returns.
+  The fixture's worktree codex.yaml layer sets `sandbox_mode: auto`, and every compared seat's Codex manifest lists `workspace-write` in its sandbox `settings` item, the mode `ConfiguredSandbox` settles to.
+  It fails on any builder error `Seats` returns, printing the error with its way forward.
   For every `Seat` whose Codex spec `Unmet` leaves empty, it runs `PrepareEach` on `shuttleengines.NewWithSeams` with `UnrunHooks` and `ConfiguredSandbox` and fails naming the seat and each item `Compare` returns, with the way forward: give the Codex engine a delivery for each missing item in `internal/shuttleengine/codexengine`.
   A seat whose Codex spec has unmet requirements is logged with them and not compared, since `Start` refuses it on Codex.
   It sets `CLAUDE_CONFIG_DIR` and `HOME` and installs the process passage reader, so it does not run in parallel.

@@ -54,6 +54,7 @@ The copy: `Runner.launch`, right after `saveRunState` succeeds, calls `copyManif
 It reads `<runDir>/manifest.json` and, when found, writes it as `<root>/manifests/<runID>.json`; an absent record writes nothing, so an engine that writes none (a test fake) launches as before.
 A copy placed after the run record is saved belongs to a launch whose strand registered, so an attempt that fails before then, or a start retry's failed attempt, leaves no copy.
 A record that cannot be read or a copy that fails to write is logged at Warn and never fails the launch, since the run-directory record stands.
+The warning names the copy's path and the error, with the way forward: remove whatever blocks `<root>/manifests` so the next launch keeps its copy.
 A done run's cleanup removes only the run directory, so the copy stays; bound: nothing removes the copies.
 `lym shuttle manifest` calls `Prepare` directly and never `Runner.launch`, so it keeps no copy (D10).
 
@@ -72,7 +73,8 @@ Tests, all tier0:
 - `TestRunner_Start_KeepsTheManifestCopy` is a table driving a run with `newFixture` and a `fakeEngine` whose existing `PrepareHook` writes a manifest with `WriteManifest`, to done with `KeepPane` false:
   the run directory is gone and `<root>/manifests/<runID>.json` reads back the hook's manifest;
   a hook that writes none leaves no `manifests` directory;
-  with a regular file already at `<root>/manifests`, the copy fails, the run still starts and finishes done, and no copy exists.
+  with a regular file already at `<root>/manifests`, the copy fails, the run still starts and finishes done, and no copy exists;
+  a hook that writes a `manifest.json` that is not JSON leaves the record unreadable, and the run still finishes done with no copy.
 
 `doc.go` gains a paragraph on the manifest record, its copy and the two scans that skip the copies' directory.
 

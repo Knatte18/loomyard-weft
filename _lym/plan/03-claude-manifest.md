@@ -23,6 +23,9 @@
 - `internal/shuttleengine/claudeengine#buildDenyNotice`
 - `internal/shuttleengine/claudeengine#appendPromptText`
 - `internal/heddleengine#Marker`
+- `internal/shuttleengine/claudeengine#writePluginInstalls`
+- `internal/shuttleengine/claudeengine#writeUserSetupFile`
+- `internal/shuttleengine/claudeengine#writeSkillFile`
 
 **Intent:**
 `Claude.Prepare` writes the D1 manifest into the run directory through `shuttleengine.WriteManifest`, after it has written `prompt.md`, `settings.json` and the appended system prompt, and before it returns the launch.
@@ -52,8 +55,11 @@ A write failure of the manifest refuses the launch with the path, as the other a
 
 Tests, all tier0:
 `TestPrepare_WritesTheManifest` is a table on `engineWithAnchor` whose rows set the engine's `claudeDir` to a fixture config directory holding a global CLAUDE.md, an installed plugin with one session-start hook and a user skill, and write a CLAUDE.md at the anchor and a marked `CLAUDE.local.md`.
+The fixture is written with `writeUserSetupFile`, `writePluginInstalls` and `writeSkillFile`.
+The plugin is a user-scope install that also ships a skill, and the autonomous row's spec loads that skill, so the session scope turns the plugin on, as `scope_test.go`'s rows turn a plugin on through a spec skill.
 Each row reads the record back with `ReadManifest` and asserts its items by channel and key:
-- an autonomous spec with skills holds `prompt-engine`, the question deny, every unswitched guard row, each skill load, the `deny-notice`, `creel-trust` and `subagent-passage` notices, the native global CLAUDE.md and anchor CLAUDE.md sources, the listed skills and the plugin's context keyed `<plugin>/<hook command>`;
+- an autonomous spec with skills holds `prompt-engine`, the question deny, every unswitched guard row, each skill load, the `deny-notice`, `creel-trust` and `subagent-passage` notices, the native global CLAUDE.md and anchor CLAUDE.md sources, the listed skills and the plugin's context keyed `<plugin>/<hook command>` as `native`;
+  its record's `Omitted` verdict is empty, so a hook the resolution reports as not run never becomes an omitted item;
 - a hand-written prompt holds `prompt-engine` under key `hand-written`;
 - an interactive spec holds no `question-deny`;
 - a spec with `ForkSubagents` holds `webster-fork-deny` with an empty `Engine`;

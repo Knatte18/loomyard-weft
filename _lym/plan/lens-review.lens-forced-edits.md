@@ -3,31 +3,20 @@ lens: forced-edits
 outcome: reported
 ```
 
-Forced-edits review: what the plan's changes force outside the members its cards list.
+Task: forced-edits lens review of cards 1–9 and the overview.
 
-1. **BLOCKING** — Card 5 (`constructor` type re-sign). Card 5 adds a seams parameter to the registry's constructor. Code that builds or passes `map[string]constructor` outside the members card 5 lists stops compiling.
-   - `internal/shuttleengines#keepWarmWith` and `internal/shuttleengines#KeepWarm` (keepwarm.go:32-41,53) build and pass that map.
-   - `internal/shuttleengines#TestKeepWarm` (keepwarm_test.go:71-74) holds constructor literals.
-   - `internal/shuttleengines#TestNew` (shuttleengines_test.go:136-164, `forksWithoutAudit`, the `build(tt.cfg, tt.dirs, tt.constructors)` call) holds them too.
-   - Card 5 lists none of these, nor `build`, whose parameter type changes; it has `build` under Uses only.
-   - Fix: list them under Edit, or keep the constructor signature and wrap the seams outside it.
+**LOW — the `constructor` type isn't listed on card 5 (`05-engines-with-seams`).**
+- The Intent says "The registry's `constructor` type takes the seams as a third parameter", which changes that named function type's signature.
+- The card's `**Edit:**` list names `internal/shuttleengines#registry` and the constructor's call sites, but not `internal/shuttleengines#constructor`.
+- If `constructor` is a declared type in `internal/shuttleengines` (the Intent names it as one), the card should list it with a re-sign arrow, for example `` `internal/shuttleengines#constructor` -&gt; `type constructor func(cfg shuttleengine.Config, dirs configengine.Dirs, seams LaunchSeams) (shuttleengine.Engine, error)` ``, with the result types copied from the current declaration.
+- I could not confirm the declaration within my call budget. Run `lym quarry resolve internal/shuttleengines#constructor` before acting on this.
 
-2. **MEDIUM** — Card 1 (`Renderer.Passages` re-sign). Card 1 lists only `TestShowAndPassagesReadTheShippedLayerFirst`, but `internal/heddleengine#TestRender` also calls `r.Passages` and compares its result (render_test.go:754, 758, 762, 793). After the re-sign to `[]Passage`, that test no longer compiles. Fix: add `internal/heddleengine#TestRender` under Edit.
-
-3. **MEDIUM** — Card 1 (`passageItems` item name). Card 1 renames the item from `heddle passage <n>` to `heddle passage <slug>`. `internal/shuttleengine/codexengine#TestPrepare_AppendsStandingPassages` asserts `"heddle passage 1"` in its oversize refusal (prepare_test.go:415). The card says the two standing-passage tests "keep their assertions on the launch text", so this row would fail. Fix: the Intent should state that this `wantErr` changes to the slug.
-
-4. **LOW** — Card 6/8 (new package and verb). `docs/overview.md:639` lists `lym shuttle run|open|state|await|await-forks` and the shuttle packages, and the package tree at docs/overview.md:324-329 lists the shuttle and seat packages. Neither names `internal/shuttleparity` nor `lym shuttle manifest`, and no card lists `//docs/overview.md`. Fix: card 8 extends `//docs/overview.md`, adding the verb, the package and its tree line.
-
-5. **LOW** — Card 8 (cli.go header). The Intent says "`cli.go`'s header comment names the verb", but the file comment lies outside `internal/shuttlecli#Command`'s span, and the card's only cli.go ref is `Command` under Extends. Fix: name the file self glyph's header change, or drop the claim.
-
-6. **LOW** — Card 5 (`PATTERN-shuttle-provider-seam` background). pattern/PATTERN-shuttle-provider-seam.md says the Codex engine takes the source, hook runner and probe as `codexengine.Seams`, wired in `internal/shuttleengines`. `NewWithSeams` adds a second wiring entry point with caller-given seams, and no card updates that background. Fix: card 5 or card 9 adds a line naming `NewWithSeams`.
-
-7. **LOW** — Card 7 (Uses). Card 7 lists `internal/shuttleengine#promptEngineViolations` under Uses and says the scan walks files "as `promptEngineViolations` does". That function is in a `_test.go` file of package `shuttleengine`, so `internal/shuttleparity` cannot call or reuse it. The Uses entry implies a dependency that cannot exist. Fix: drop the Uses entry and state that the walk is reimplemented over `scankit`.
-
-All 25 of the plan's existing glyphs I resolved with `lym quarry` resolve as found.
+No other forced edit is missing from the cards.
 
 Calls made:
-- grep for callers of `Passages`, `skillListing` and `passageItems`, the `heddle passage` assertions, constructor use, importers of shuttlecli, target-table asserts and `fakeEngine` (my context had not looked for re-sign callers).
-- awk/grep for the enclosing test of render_test.go:754 and keepwarm.go's constructor use, plus a docs grep for shuttle verb lists (my context lacked the function spans and the docs).
-- `lym quarry resolve` on the cards' existing glyphs plus a grep of docs/overview.md (my context had not confirmed the glyph spellings or the overview's verb list).
-- grep for a test guarding docs/overview.md and for callers of `keepWarmWith` (to tell whether finding 4 is a gate failure and to finish finding 1).
+1. Grepped callers of `Passages`, `StandingPassages`, `PassageReader`, `passagesOf`, `passageItems` and `skillListing`, plus the docs that mention them. The pre-read had resolved the glyphs but not their callers.
+2. Listed the test functions in `internal/heddleengine/render_test.go` and grepped the PATTERN, HEDDLE and overview docs and the run-root scans. This placed the `r.Passages` calls at lines 754–793 inside `TestRender`, which card 1 lists.
+3. Read the guard lines of each other run-root scan. This tested card 2's claim that they already skip a directory with no `run.json` silently.
+4. Read `loadRunState`, `agentwait.go:42-54` and any engine manifest code. This confirmed that a missing `run.json` reads as not found, with no warning.
+5. Read `state.ReadJSON`'s lock handling and `PATTERN-lym-files` on naming. This checked whether reading a `manifests` directory creates a lock file and whether the new directory name breaks the naming rule. It does neither.
+6. Grepped the new handle names for collisions, `lymtemp.MkdirTemp`, and every use of `heddle passage`. This confirmed no name collides, `MkdirTemp` exists at `internal/lymtemp/lymtemp.go:39`, and the only assertion of the old item name is `codexengine/prepare_test.go:415`, inside a test card 1 lists.

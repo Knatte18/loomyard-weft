@@ -4,6 +4,7 @@
 - `internal/shuttleengine/codexengine#Codex.Prepare`
 - `internal/shuttleengine/codexengine#Codex.resolveUserSetup`
 - `internal/shuttleengine/codexengine/doc.go`
+- `internal/shuttleengine/codexengine#TestPrepare_UserSetup`
 
 **Create:**
 - `plan:internal/shuttleengine/codexengine#codexManifest` -> `func codexManifest(in manifestInputs) shuttleengine.Manifest`
@@ -55,8 +56,10 @@ Each row reads the record back with `ReadManifest` and asserts its items by chan
 - a CLAUDE.md Codex reads itself and one only a pointer names each give a delivered `instruction-source` item;
 - the file entry appears as `heddle-file/<slug>` under a marked `AGENTS.override.md` and has no item under an unmarked one;
 - the delivered and the omitted plugin hook give a delivered and an omitted `plugin-context` item, and the record's `Omitted` verdict names the omitted one;
-- an omitted hook with the `ErrHookUnrun` reason adds no warning to the engine's warn log, and one with another reason does;
 - the `settings` items carry `codex` and the sandbox mode.
+
+`TestPrepare_UserSetup` gains a row beside `OmittedHookAndWarningReachTheWarnings`: an omitted hook whose reason is `shuttleengine.ErrHookUnrun`'s text adds nothing to the `warnings` buffer.
+That existing row already pins the warning for any other reason.
 
 **ImpactSummary:** `Codex.Prepare` writes one more file read back from its launch line; `resolveUserSetup` drops one warning for unrun hooks; no signature changes.
 

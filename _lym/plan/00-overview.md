@@ -10,7 +10,7 @@ Each engine's `Prepare` writes a launch manifest: one item per thing the session
 The record goes into the run directory, and a launch keeps a copy under the run-directory root's `manifests` directory.
 A parity test in a new `internal/shuttleparity` package builds one spec per engine for every seat and every other launch-spec producer, runs both `Prepare`s on fixtures and fails when the Codex manifest lacks a compared item of Claude's.
 A scan fails on a launch-spec literal or seat table the test does not list.
-`lym shuttle manifest` prints both engines' manifests for a seat, and the board carries the bench rule.
+`lym shuttle manifest` prints both engines' manifests for a seat.
 
 ## Card Index
 
@@ -23,7 +23,6 @@ A scan fails on a launch-spec literal or seat table the test does not list.
 7 — producer-table — the producer table and the scan for unlisted launch-spec literals and seat tables
 8 — shuttle-manifest-verb — lym shuttle manifest prints each engine's manifest for a seat
 9 — pattern-engine-parity — the PATTERN-engine-parity entry and its background
-10 — bench-rule — the bench rule on the Codex project and the writer bench
 
 ## Shared Decisions
 
@@ -46,14 +45,13 @@ D1's "a launch's Prepare also writes a copy" is met for every launch, and `lym s
 ### Decision: a seat Codex cannot start is not compared
 
 Every item keeps its compared key; only single-engine heddle targets and settings are keyed to one engine, so there is no exemption table.
-A spec that requires forks, such as Merriam's, cannot start on Codex, whose engine meets no forks requirement, so `Start` refuses it there.
+A spec with a requirement, such as Merriam's forks or the loom driver's background wake, cannot start on Codex, whose engine answers no requirement through `shuttleengine.RequirementSupporter`, so `Start` refuses it there.
 The parity tests log such a seat with its unmet requirement and compare nothing for it, and `lym shuttle manifest` refuses it naming the requirement, both through `shuttleparity.Unmet`, the engine's own requirement answer.
 
-### Decision: `codex-engine-trial`'s Rules land on `codexengine`
+### Decision: no card writes the board
 
-The board's project `codexengine` (P1) says the project `codex-engine-trial` was merged into it on 2026-11-16, and no entry `codex-engine-trial` exists, so D11's rule goes under `codexengine`'s `## Rules`.
-The decision record carries this call as the parent's `Added after Discussion` entry of 2026-11-17.
-The decision record's Goal already moves D11's osl section to `codex-writer-bench`.
+D11's bench rule is on the board already: the orch wrote it on 2026-11-17 under the `## Rules` of project `codexengine`, which `codex-engine-trial` was merged into, and as a closing line of `codex-writer-bench`'s body.
+The decision record carries both calls as the parent's `Added after Discussion` entries of 2026-11-17, which drop the board card; D11's review criterion is met by those bodies.
 
 ### Decision: seats come from the table builders
 

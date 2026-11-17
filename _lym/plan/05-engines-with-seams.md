@@ -6,6 +6,8 @@
 - `plan:internal/shuttleengines#TestNewWithSeams_CodexTakesTheGivenSeams` -> `func TestNewWithSeams_CodexTakesTheGivenSeams(t *testing.T)`
 
 **Edit:**
+- `internal/shuttleengines#constructor` -> `type constructor func(cfg shuttleengine.Config, dirs configengine.Dirs, seams LaunchSeams) shuttleengine.Engine`
+- `internal/shuttleengines#entry`
 - `internal/shuttleengines#registry`
 - `internal/shuttleengines#New`
 - `internal/shuttleengines#build`

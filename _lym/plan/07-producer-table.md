@@ -50,14 +50,17 @@ The renderers are `RenderTacklerPrompt`, `RenderCirclingJudgePrompt` (the treadl
 A method's glyph is `<dir>#<Receiver>.<Method>`; a literal inside a function literal takes its enclosing named function's glyph.
 Skipped places: `internal/orchcli` and `internal/orchengine` (the orch spec names the Claude engine), `internal/shuttlecli` (`lym shuttle run` is hand-written and `lym shuttle open` carries no role), and `internal/testkit`.
 The real module's `listed` set holds every `producers` function, every `seatTables` entry's `Builder` and `Holders`, `internal/seatengine#seatSpec` (each seat's spec, which the seat catalog covers), and `internal/shedrecipe#multiLLMEntry` (its seats come from an operator-written row config, card 6's bound).
-Each failure message ends with the way forward: add the function to `producers` or to a `seatTables` entry's `Holders`, or, for a probe, set no `Prompt`.
+Each failure message ends with the way forward:
+for a Spec literal, add the function to `producers`, or, for a probe, set no `Prompt`;
+for a Table literal, give a new table builder its own `seatTables` entry with `Builder`, `Holders` and `Build`, so its seats reach the parity test, and add a helper that holds an existing builder's literal to that builder's `Holders`.
 
 Tests, tier0:
 - `TestProducers_CodexManifestHoldsClaudes`, `//lym:guard` since it renders producers over the real stencil set:
   for each `producer` whose Codex spec `Unmet` leaves empty, it runs `PrepareEach` on `newParityFixture`'s fixture and fails naming the function and each item `Compare` returns, with card 6's way forward;
-  Merriam's `websterengine#Run` spec requires forks, so it is logged with its unmet requirement and not compared.
+  Merriam's `internal/websterengine#Run` spec requires forks, so it is logged with its unmet requirement and not compared.
   Not parallel, for the fixture's environment and passage reader.
 - `TestLaunchSpecLiterals_AreListed`, `//lym:guard`, table rows over temp-dir sources: an unlisted Spec literal setting `Prompt` is reported with its function's glyph; a listed one is not; a Spec literal setting no `Prompt` is skipped; literals under `internal/shuttlecli`, `internal/testkit`, `internal/orchcli` and `internal/orchengine` are skipped; an unlisted non-empty `seatengine.Table` literal is reported; an empty `seatengine.Table{}` is skipped;
+  an unlisted literal in a method is reported as `<dir>#<Receiver>.<Method>`, and one inside a function literal under its enclosing named function's glyph, so listing that glyph clears it;
   a `RealModule` row scans the module against the real `listed` set and fails naming each unlisted literal, with `scankit.RequireFloor` on the file count.
 
 **Commit:** 7: List every launch-spec producer for the parity test

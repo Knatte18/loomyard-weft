@@ -1,62 +1,37 @@
 # Lens review
 
 Every lens returned a report; each is saved beside this file as `lens-review.lens-<lens>.md`.
+Duplicates merged: coverage F1, guard-reach F1 and way-forward F5 are one finding (the failed-builder branch), recorded under guard-reach.
 
 ## coverage
 
-- coverage F1 (MEDIUM), manifest built from Prepare's inputs, not read back from the launch: fixed differently. The proposal was no specific change; cards 3 and 4 now keep a candidate item only when the written artifact (settings.json, appended prompt, launch line, marked heddle file) holds its text or command, and the overview's first Shared Decision says so.
-- coverage F2 (MEDIUM), Claude and Codex items of most channels unpinned: fixed as proposed. Card 3's and card 4's `TestPrepare_WritesTheManifest` gain rows for every channel: instruction sources, skill listing, plugin context, prompt engine and hand-written, subagent passage, standing passage, batching nudge, and the pointer branch.
-- coverage F3 (MEDIUM), Claude's repository root and working directory unstated: fixed as proposed. Card 3 resolves the anchor with `filepath.EvalSymlinks` and takes the nearest `.git`-holding ancestor as the root.
-- coverage F4 (MEDIUM), fork deny keyed to claude without licence, and the skip untested: fixed differently. The proposal was no specific change. The fork deny is now compared (`webster-fork-deny`, empty `Engine`); a seat Codex cannot start goes through `shuttleparity.Unmet`, which has `TestCompare` rows; the overview decision is replaced.
-- coverage F5 (MEDIUM), D11 written to `codexengine` and not `codex-engine-trial`, plus the single-session contradiction and the dropped replay clause: fixed differently. No entry `codex-engine-trial` exists, and P1's body records its merge into `codexengine`, so the write stays there; the parent recorded the call as an `Added after Discussion` entry (2026-11-17), which the overview cites. Card 10 no longer contradicts `## The one run` and now states the redesigned replay route.
-- coverage F6 (MEDIUM), the verb's seats built from stand-ins in place of the current worktree: fixed as proposed. Card 6's `Build` loads each builder's config and language skills from the worktree's layers, with stand-ins only for a run's own inputs.
-- coverage F7 (MEDIUM), the verb's ok and err exits never run: fixed as proposed. Card 8's `TestManifestCmd` drives a hand-built `shuttleCLI` through both exits.
-- coverage F8 (MEDIUM), the edit-directive not-delivered branch was unreached: fixed as proposed. `TestCompare` gains `PromptItems` rows with and without the copy.
-- coverage F9 (LOW), the orch skip had no row: fixed as proposed. Card 7's scan table gains `orchcli` and `orchengine` rows.
-- coverage F10 (LOW), copy failure and unreadable record had no row: fixed as proposed. Card 2 adds a row with a file at `manifests`, and states that an unreadable record is logged at Warn.
-- coverage F11 (LOW), nil-seam fallbacks untested: disputed, every fix worse. Reaching them runs `claudeengine.RunPluginHook`'s `sh -c` (`internal/shuttleengine/claudeengine/pluginhook.go:189`) and `runSandboxProbe`'s `codex` (`internal/shuttleengine/codexengine/sandbox.go`), both of which `PATTERN-test-speed` bars from tier0. A tier1 test for a nil default adds a spawning test for a one-line wiring; card 5 states the bound.
-- coverage F12 (LOW), `Passage.Engine` double-aimed entry and the `StandingPassages` error branch: fixed as proposed. Card 1 adds a `TestRenderer_EntryKeys` row and `TestStandingPassages`.
-- coverage F13 (LOW), DenyPublish and DenyPython rows: fixed as proposed in cards 3 and 4.
-- coverage F14 (LOW), `PrepareEach`'s absent-record branch: fixed as proposed. A `TestReport` row covers it.
-- coverage F15 (LOW), Codex told the operator to fix hooks that were only listed unrun: fixed as proposed. Card 2 adds `ErrHookUnrun`, card 4 keeps it out of the warning (with a row), and card 6's `UnrunHooks` returns it.
+- coverage F1 (MEDIUM), the builder-failure branch of `Seats` and `LookupSeat` is unreached: merged into guard-reach F1, fixed as proposed there.
+- coverage F2 (MEDIUM), the verb's unmet-requirement exit has no CLI row: fixed as proposed. Card 8's `TestManifestCmd` gains a row for a seat with an unmet Codex requirement that names `codex` and the requirement and exits non-zero.
+- coverage F3 (LOW), `copyManifest`'s unreadable-record branch has no row: fixed as proposed. Card 2's `TestRunner_Start_KeepsTheManifestCopy` gains a row whose hook writes a `manifest.json` that is not JSON: the run finishes done with no copy.
+- coverage F4 (LOW), no row asserts the configured sandbox mode under `ConfiguredSandbox`: fixed as proposed. Card 6's fixture sets `sandbox_mode: auto`, and `TestSeats_CodexManifestHoldsClaudes` asserts `workspace-write` in each compared Codex manifest's sandbox `settings` item.
+- coverage F5 (LOW), the method-glyph and function-literal rules have no temp-dir row: fixed as proposed. Card 7's `TestLaunchSpecLiterals_AreListed` gains both rows.
+- Note outside the lenses (guard-reach and way-forward): seats and producers with any requirement, background wake included, are not compared, because Codex implements no `RequirementSupporter` (`internal/shuttleengine/requires.go:94-101`, `internal/shuttleengine/claudeengine/capabilities.go:16` the only implementer). `Start` refuses such a spec on Codex, so no Codex launch exists to compare. No card changes; the overview's decision now names background wake beside forks.
 
 ## row-validity
 
-- row-validity F1 (MEDIUM), card 5's probe and hook were unreachable on the named fixture: fixed as proposed. The test rewrites the layer to `auto` and writes the plugin itself. Folding it into `TestNew_CodexLaunchCarriesTheClaudeUserSetup` was not done: that test pins `New`'s production wiring, this one `NewWithSeams`'s.
-- row-validity F2 (MEDIUM), the verb test could not pass `PersistentPreRunE` at tier0: fixed as proposed. The verb's environment is now a `shuttleCLI` field, the test builds the receiver by hand, and the no-argument row moves into `TestCommand_PositionalArgValidation`.
-- row-validity F3 (MEDIUM), the verb's non-zero exit was unreached: fixed as proposed, through the same injectable field (`TestManifestCmd`).
-- row-validity F4 (MEDIUM), `PartsPlanTable` and `DescribeTable` could not build on stand-ins: fixed as proposed. Card 6's `Build` writes the parts file and decision record under `env.Dir` and fills the branches.
-- row-validity F5 (MEDIUM), card 3 had no native-item rows and no config directory: fixed as proposed. Rows set `claudeDir` to a fixture holding a global CLAUDE.md, a plugin and a skill.
-- row-validity F6 (MEDIUM), card 4's skill-load row could not fail, other channels were unasserted, and `fakeUserSetupSource` was unlisted: fixed as proposed.
-- row-validity F7 (LOW), `fakeEngine.manifest` duplicates `PrepareHook`: fixed as proposed. Card 2 uses `PrepareHook`; `fakeEngine` moves to Uses.
-- row-validity F8 (LOW), the sweep test is no table: fixed as proposed. Card 2 now seeds the directory and asserts it survives.
-- row-validity F9 (LOW), `HoldDeferral` comparison: fixed as proposed. Card 6 nils both specs' field after asserting the lead's was set.
+- row-validity F1 (MEDIUM), `TestReport` and `TestManifestCmd` cannot inject a fixture catalog, and `shuttlecli` cannot reach `manifestEngine`: fixed differently. The proposal was a `SeatEnv` field naming the tables plus a manifest-writing fake engine for `shuttlecli`. An exported field of the unexported `seatTable` type cannot be set from outside the package. A fake engine in `shuttlecli` would make that test re-run what `TestReport` already covers. Instead, card 6 adds `seatsOf(env, tables)`, which `Seats` calls on `seatTables`, and card 8 adds `report(env, tables, …)`, which `Report` calls, and `TestReport` runs it on fixture tables. Card 8 also replaces the `manifestEnv` field with `manifestReport func(name string) (ManifestReport, error)`, which `TestManifestCmd` stubs with hand-built reports.
+- row-validity F2 (LOW), card 4's `ErrHookUnrun` rows: fixed as proposed. The no-warning row moves to `TestPrepare_UserSetup`, which card 4 now lists under Edit. The other-reason row is dropped because `OmittedHookAndWarningReachTheWarnings` already pins it. "warn log" now reads "`warnings` buffer".
+- row-validity F3 (LOW), card 3's fixture helpers are unlisted and the plugin scope is unstated: fixed as proposed. `writePluginInstalls`, `writeUserSetupFile` and `writeSkillFile` join Uses. The row says the plugin is a user-scope install whose skill the spec loads, so the scope turns it on.
+- row-validity F4 (LOW), Claude's unrun plugin hooks could become omitted items unnoticed: fixed as proposed. Card 3's autonomous row asserts the plugin context is `native` and that the record's `Omitted` verdict is empty.
 
 ## forced-edits
 
-- forced-edits F1 (BLOCKING), the constructor re-sign broke unlisted code: fixed as proposed. Card 5 lists `build`, `keepWarmWith`, `KeepWarm`, `SessionNamers`, `RecordReaders`, `ToolBoundaryRenderer`, `BatchingNudger`, `EditRecorder`, `TestKeepWarm` and `TestNew` under Edit.
-- forced-edits F2 (MEDIUM), `TestRender` calls `Passages`: fixed as proposed in card 1.
-- forced-edits F3 (MEDIUM), the Codex refusal asserts `heddle passage 1`: fixed as proposed. Card 1 states the expectation change.
-- forced-edits F4 (LOW), `docs/overview.md` lists shuttle verbs and packages: fixed as proposed. Card 8 extends `//docs/overview.md`.
-- forced-edits F5 (LOW), the cli.go header lies outside `Command`'s span: fixed differently. Listing `internal/shuttlecli/cli.go` beside `internal/shuttlecli#Command` is refused by `redundant-file-target`, so card 8 has `Command`'s own doc comment name the verb.
-- forced-edits F6 (LOW), the seam background does not mention `NewWithSeams`: fixed as proposed. Card 5 extends `//pattern/PATTERN-shuttle-provider-seam.md`.
-- forced-edits F7 (LOW), `promptEngineViolations` is test code of another package: fixed as proposed. Card 7 drops it from Uses and says the walk is its own.
+- forced-edits F1 (LOW), card 5 does not list `constructor`: fixed as proposed, with the result copied from the declaration `lym quarry resolve` gives (`type constructor func(cfg shuttleengine.Config, dirs configengine.Dirs) shuttleengine.Engine`, with no error result). Card 5 lists `internal/shuttleengines#constructor` -> `type constructor func(cfg shuttleengine.Config, dirs configengine.Dirs, seams LaunchSeams) shuttleengine.Engine`.
 
 ## guard-reach
 
-- guard-reach F1 (BLOCKING), the Table scan fired on empty literals, helper holders and MultiLLM: fixed as proposed. Card 7 skips empty `seatengine.Table{}`, card 6's entries carry `Holders`, and the listed set names `internal/shedrecipe#multiLLMEntry`.
-- guard-reach F2 (BLOCKING), `seatSpec`'s literal was unlisted: fixed as proposed. Card 7's listed set holds `internal/seatengine#seatSpec`.
-- guard-reach F3 (MEDIUM), heddle file items were read off the reader, not the rendered file: fixed as proposed. Cards 3 and 4 require the marked file to hold the entry, with an unmarked-file row; card 6's fixture writes both marked files.
-- guard-reach F4 (MEDIUM), the verb's stand-ins landed outside the temporary directory, and one builder error blocked every seat: fixed as proposed. `Report` makes the directory first and sets `env.Dir`; `Seats` returns per-builder errors, and `LookupSeat` refuses only a failed builder's seats.
-- guard-reach F5 (LOW), card 7's forks skip was unreachable: fixed as proposed. Producers carry `ForkSubagents` and `Requires`, and Merriam's spec reaches the skip.
-- guard-reach F6 (LOW), card 5's probe was unreachable: merged with row-validity F1, fixed as proposed.
-- guard-reach F7 (LOW), copies outlived failed launches: fixed as proposed. Card 2 copies after `saveRunState`.
+- guard-reach F1 (MEDIUM), `LookupSeat`'s failed-builder refusal is unreachable because a failed builder yields no seat names. This merges coverage F1 and way-forward F5, and is fixed as proposed. Card 8 drops that branch. The refusal for a name no built seat holds names the catalog's seats and every builder error. `TestReport` gains a row with a failing fixture `Build`: the other entry's seat still reports, and the failing entry's seat name is refused naming that builder.
+- guard-reach F2 (LOW), card 4's text match depends on `UnrunHooks` returning `ErrHookUnrun` unwrapped: fixed differently. The proposal was an end-to-end no-warning assertion in card 5's or card 6's test. Card 6 instead states that `UnrunHooks` never wraps the error, and why, and `TestCompare` gains an `UnrunHooks` row asserting `==` against `ErrHookUnrun`. Card 4's `TestPrepare_UserSetup` row pins the warning skip on that exact text. Together the two rows fail if either link breaks, and neither needs the real hook path to emit a warning.
 
 ## way-forward
 
-- way-forward F1 (MEDIUM), a builder failure blocked the verb for every seat with no next step: merged with guard-reach F4, fixed as proposed.
-- way-forward F2 (MEDIUM), the missing-item exit named no next step: fixed as proposed. Card 8's error names the codexengine fix and holds the bench.
-- way-forward F3 (LOW), the parity and scan failures named no next step: fixed as proposed in cards 6 and 7.
-- way-forward F4 (LOW), `PrepareEach`'s absent record named no next step: fixed as proposed. The error names `shuttleengine.WriteManifest`.
-- way-forward F5 (LOW), a failed manifest write named no next step: disputed, premise false. It is a propagated raw I/O error, which `refusal-spec.md` exempts as transient, and the lens itself confirms the launch is retryable (`internal/shuttleengine/run.go:649-652`).
-- way-forward F6 (LOW), the verb had no rule for a seat Codex cannot start: fixed as proposed. `Report` returns `Unmet`, and the verb refuses naming the requirement.
+- way-forward F1 (MEDIUM), the verb's unmet-requirement exit names no next step: fixed as proposed. Card 8's exit says the seat cannot run on that engine until its engine package meets each requirement through `shuttleengine.RequirementSupporter`, that no bench of the seat runs on it, and that the other engine's printed manifest still stands.
+- way-forward F2 (LOW), the Table-literal way forward could file a new builder under an unrelated entry: fixed as proposed. Card 7's message tells a new builder to get its own `seatTables` entry with `Builder`, `Holders` and `Build`, and a helper to go under its builder's `Holders`.
+- way-forward F3 (LOW), the failed-copy warning names no next step: fixed as proposed. Card 2's warning names the copy path and the error, and says to remove whatever blocks `<root>/manifests`.
+- way-forward F4 (LOW), the parity test's builder failure names no next step: fixed as proposed. Card 6's `seatsOf` errors name the builder and say to fix the stand-in inputs its `seatTables` entry's `Build` writes, and the test prints that error.
+- way-forward F5 (LOW), a failed builder's own way forward points at a run's input, which the verb's operator cannot follow: merged into guard-reach F1 and fixed by the same card 6 error text, which the verb's refusal relays.
