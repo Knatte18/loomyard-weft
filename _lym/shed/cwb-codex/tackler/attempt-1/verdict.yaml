@@ -1,0 +1,4 @@
+verdict: resume
+reason: >-
+  The Preflight stop (blocked, trace e72ed94da496f6e6, envelope drive-envelope-20261117-182653-f7b8.json) named one cause: worktree-clean failed on the uncommitted change `M _lym/discussion/decision-record.md`. The stop's own way forward was to commit the _lym change and re-step. The trace shows that commit already happened in the step itself: fabric recorded commit_created in cwb-codex-weft (ef9c086b6f4c7bad95eba5ece4c4097b77fda988 at 18:26:51, and 10dcbf75f947fc83dd0f7742f387f0ec0ca2b5cb at 18:26:52) and spawned detached pushes for them. Preflight checked before the second commit landed. A read-only `git -C <worktree> status --short` now prints nothing and `git diff --stat -- _lym/discussion/decision-record.md` is empty, so the worktree is clean. A plain re-launch from Preflight should pass the precondition. This verdict rests on the local worktree state; I did not run ls-remote on the weft push.
+goto: Preflight
