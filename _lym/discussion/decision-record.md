@@ -46,4 +46,12 @@ Fix to weigh: a clause-deletion mutant for each operand of a boolean chain.
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - blockless-file-and-multi-block-attribution-untested (class design, severity MEDIUM, open in rounds 1)
+  - map-literal-string-keys-held-fixed (class design, severity MEDIUM, open in rounds 1)
+  - mutant-helpers-never-switched-on-in-test (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
