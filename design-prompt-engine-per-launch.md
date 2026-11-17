@@ -1,6 +1,6 @@
 # Every producer renders its prompt and edit directive for the engine its launch resolves to
 
-`prompt-engine-per-launch` · Task · enhancement, codex, shuttle, stencil, heddle · running · PR-Review
+`prompt-engine-per-launch` · Task · enhancement, codex, shuttle, stencil, heddle · landing · Finalize
 
 Decision record: [Sketch](decision-prompt-engine-per-launch.md)
 
