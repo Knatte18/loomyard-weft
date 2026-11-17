@@ -89,6 +89,12 @@ Decision: Treat the round-3 findings d12-non-exec-calls-outside-cell-model (F1),
 
 Rationale: The Discussion review reached its hard cap at round 3 with these keys open. D12 now scopes the payload and cell sentences to nested calls, gives a non-Bash, non-apply_patch payload no nudge and leaves the rollout unread for it, and ends a lookup_run or edit_run chain at a function_call; the 2026-11-15 rollout holds 21 custom_tool_call exec items and four collaboration function_call items (two spawn_agent, two send_message) as D12 states. D1 and D4 skip a Spec literal that sets no Prompt; bouncer.go's awaitLiveJudge and awaitLiveSeed literals set only OutputFiles, Role, Segment and Round, while judgeCall and runSeedSpawn set Prompt inline. D12 resolves both read paths against each call's CommandExecution cwd; the 2026-11-16 spike rollout carries that cwd as a file:// URL and parsed_cmd paths as written (notes.txt).
 
+### Added after Discussion (parent, 2026-11-17): D11's bench rule goes on the codexengine project
+
+Decision: D11's bench rule, named for the project codex-engine-trial, is written under the ## Rules of project P1 codexengine, which codex-engine-trial was merged into on 2026-11-16.
+
+Rationale: codex-engine-trial no longer exists as a board entry; codexengine holds its members and its body records the merge, so the rule reaches the same benches there.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's user-setup resolution, session scope and file locations stay in `claudeengine`, and reach `codexengine` only through `shuttleengine` interfaces wired in `internal/shuttleengines`; the rollout reading for the batching nudge stays in `codexengine`, and the read-only lookup check both engines' nudges use sits in its own package under `internal/shuttleengine`.
