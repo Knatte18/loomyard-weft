@@ -1,69 +1,45 @@
-# Codex launches deny the question tools and run the batching nudge
+# Codex gets the question-tool deny and the batching nudge
 
-A Codex session now gets the two hooks a Claude session already had:
-the deny of the operator-question tools on an autonomous launch,
-and the batching nudge that adds one line of context when the session's recent calls break lym's batching rules.
+A Codex session now gets the two hooks a Claude session already runs, through the one `hooks.PreToolUse` and `hooks.PostToolUse` settings of the Codex launch line.
 
-## Shared lookup check
+## What changes
 
-The read-only lookup check moves out of `claudeengine` into a new package, `internal/shuttleengine/bashlookup`, which both engines import.
-`IsReadOnlyLookup` is the moved check, unchanged.
-`LineRangeFile` is new: it names the one file a command prints a line range of (`sed -n 'A,Bp' f`, `head`/`tail` with a line count).
-The bounded tail read and the capped line count the Claude nudge used move to `shuttleengine` as `ReadFileTail` and `CountLinesUpTo`, so the Codex nudge reuses them.
+- An autonomous Codex launch denies a call whose payload tool name ends in `request_user_input` or `request_user_input_async`.
+  The entry takes the `*` matcher and matches the suffix, since Codex prefixes a namespaced tool name, as it does for `spawn_agent`.
+  The deny steers the model to state its question as its final message and end the turn, and the developer-instructions deny notice announces it.
+- A `*`-matcher `PostToolUse` hook runs `lym shuttle hook-batching codex` and nudges a Codex thread by Claude's batching rules.
+  The line reaches the model as `additionalContext` with a `systemMessage`, never as a block,
+  because a block after a tool call makes Codex read the call as failed and may run it again.
+- `codex.yaml` gains a `batching_nudge` block with `claude.yaml`'s keys and defaults.
+  The values are validated at load while the hook is on.
+- The read-only lookup check moves out of `claudeengine` into the new package `internal/shuttleengine/bashlookup`, which both engines import.
+  The transcript-tail read and the line count move beside it as `shuttleengine.ReadFileTail` and `shuttleengine.CountLinesUpTo`.
 
-`internal/shuttleengine`'s provider-seam scan treated every package under `internal/shuttleengine/` as a concrete engine.
-It now has a `sharedPackages` list naming `bashlookup`, so an engine may import it.
-`PATTERN-shuttle-provider-seam`'s background states the exemption.
+## Design
 
-## Question-tool deny
+- The nudge reads the rollout at the payload's `transcript_path` and lists its top-level calls in order:
+  each `exec` cell with the nested calls that fall between its call and its output, and each `function_call` such as `spawn_agent`.
+  `PostToolUse` fires per nested call and never for the cell, so a nested call belongs to the latest cell whose output is unwritten.
+- One top-level call counts as one message does on Claude:
+  - A cell whose only nested call is one read-only lookup counts toward `lookup_run`.
+  - A cell of `apply_patch` calls only counts toward `edit_run`.
+  - A `function_call` is neither, so it ends either chain.
+  - A payload whose tool is neither `Bash` nor `apply_patch` gets no nudge, and the rollout is left unread for it.
+- A `Bash` line-range read (`sed -n` with a range, `head` or `tail` with a count) is judged against `slice_lines` and the read-again rule.
+  An earlier read is a `read` in a prior cell's `parsed_cmd` that is not older than the file's last modification.
+  Both paths are resolved to absolute against their own call's `cwd`, since a nested call may set its own `workdir`.
+  A call whose rollout item is not yet written at the wait bound gets no read-slice nudge.
+- The nudge count and the `max_nudges` cap are keyed by `transcript_path`, because a Codex payload carries no `agent_id` and a child's carries its parent's `session_id`.
+  Each child therefore has its own count and cap, as Claude's subagents do.
+- Settings stay per engine rather than moving to a shared module, which would need a config reinterpretation.
+- The rollout reading stays in `codexengine`, and the lookup check sits in its own package, as `PATTERN-shuttle-provider-seam` requires.
+  The pattern and `docs/overview.md` carry the change.
+- The call shapes come from a Codex 0.164.0 rollout and a `codex exec` spike with logging hooks.
+  They showed `tool_use_id` equal to the rollout item's id and a `parsed_cmd` naming a file as written.
+  No spike ran a `collaboration` call under a `PostToolUse` hook, so the `function_call` handling rests on the rollout shape alone and holds whether the hook fires for one or not.
 
-An autonomous launch (`!spec.Interactive`) puts a `*`-matcher entry first in its one `hooks.PreToolUse` setting, before the guard rows.
-The entry denies a payload whose `tool_name` ends in `request_user_input` or `request_user_input_async`, so a namespace-prefixed name such as `functionsrequest_user_input` still matches.
-Its notice opens the developer instructions' deny notice.
-`toolHooks` groups the launch's tool hooks, the guards, the deny and the batching state file, as `hookSettings`' input.
+## To check by hand
 
-## Codex batching nudge
-
-`codex.yaml` gains a `batching_nudge` block with `claude.yaml`'s keys and defaults.
-`LoadConfig` refuses a threshold below its least value while the block is on, the same way it refuses codex.yaml's other invalid values.
-With the block on, Prepare seeds `batching-nudge.json` in the run directory,
-and the `hooks.PostToolUse` setting runs `lym shuttle hook-batching codex <state>` on every tool, after the activity hook and before creel's mail hook.
-The hook prints `{}` when the verb prints nothing.
-The existing `hook-batching` verb needed no change: Codex now implements `BatchingNudger`, so the registry resolves it.
-
-The judgment (`codexengine/batchingnudge.go`) reads a 4 MiB tail of the rollout at the payload's `transcript_path` and lists its top-level calls.
-Each `exec` `custom_tool_call` is a cell holding the `CommandExecution` and `FileChange` items that complete before its output.
-Every other call, such as a `collaboration` `function_call`, is a top-level call with no nested calls.
-The payload's call belongs to the latest exec cell, and is added to it from the payload when its item is not in the rollout yet.
-A cell counts as one message does on Claude:
-
-- a cell whose one nested call is a read-only lookup extends a `lookup_run` chain;
-- a cell whose nested calls are all `apply_patch` extends an `edit_run` chain;
-- any other top-level call, a `function_call` included, ends both chains;
-- a `Bash` line-range read fires when the file is under `slice_lines` lines,
-  or when an earlier cell's `parsed_cmd` read the same file and the file has not changed since that cell started.
-  Each path is resolved against its own call's `CommandExecution` `cwd` (a `file://` URL).
-
-Only a line-range read waits for its own item, polling a bounded number of times;
-if the item is still missing at the bound, the read gets no read-slice nudge.
-A payload that is neither `Bash` nor `apply_patch`, and a `Bash` call that is no lookup, return before reading the state file or the rollout.
-The context threshold comes from the tail's newest `token_count`.
-Counts and the `max_nudges` cap are kept per thread, keyed by `transcript_path`, because a Codex payload carries no agent id and a child's carries its parent's session id.
-Each count records the cell it nudged, so the nested calls of one cell nudge at most once.
-The output carries the line as `additionalContext` with a `systemMessage`, never a block, since Codex would read a block as a failed call.
-
-`rollout.go`'s event parsing is split so the nudge parses the tail with the same code `ContextTokens` uses (`parseRolloutEvents`, `latestContext`).
-
-## Tests
-
-- `bashlookup_test.go` carries the moved lookup table plus `TestLineRangeFile`.
-- `filetail_test.go` carries the moved tail-read test plus `TestCountLinesUpTo`.
-- `codexengine/batchingnudge_test.go` drives `BatchingNudge` over rollout fixtures, covering:
-  - each breach;
-  - each way the nudge is held back;
-  - per-thread counting;
-  - path resolution;
-  - the item wait.
-- `TestQuestionDenyCommand_DeniesAQuestionTool` (tier 1) runs the deny under `sh`.
-- `TestPrepare_QuestionDenyAndBatchingHook` pins that the deny follows `Interactive` and the hook and state file follow `enabled`.
-- `TestHookSettings`, `TestLoadConfig_*` and `TestBatchingNudger` gain the new rows.
+No regression check or integration run covers a live Codex session.
+Run an autonomous Codex launch and check that a `request_user_input` call is denied.
+Check that a chain of single-lookup cells, a line-range read and a chain of `apply_patch` cells each produce the nudge line without the call showing as failed.
