@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-17T18:10:01Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/gemini-engine-study/_lym/landing/summary.md",
+      "at": "2026-11-17T18:20:35Z",
+      "started_at": "2026-11-17T18:10:05Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T18:19:47.222779552Z",
+          "end": "2026-11-17T18:19:47.238993587Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T18:19:47.322851727Z",
+          "end": "2026-11-17T18:19:47.34220853Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-17T18:19:47.416876301Z",
+          "end": "2026-11-17T18:19:47.801051483Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-17T18:19:47.878480018Z",
+          "end": "2026-11-17T18:19:47.878680513Z"
+        }
+      ]
     }
   ],
   "product": {
