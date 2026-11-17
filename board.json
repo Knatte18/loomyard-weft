@@ -799,6 +799,25 @@
       "body": "## Seen (operator, 2026-11-17)\n\nEvery task raddle files carries all of its Sketch's module labels.\n`Raddle-File` builds each entry's labels as its type label plus `entry.ModuleLabels`, the Sketch's whole module set\n(`internal/loomshed/raddlefile.go`, the `labels` closure: \"Every entry carries its type label and the Sketch's module labels\").\nSo each member of `adopt-build-resplit` carries fourteen module labels, and each `codexengine` member the same four,\nwhatever packages the part changes.\n\nThe board policy asks for a label for each module an entry touches.\nA label filter such as `--label reed` then matches parts that never touch reed, and the board listing runs very wide.\n\n## Idea\n\n- The split proposal names each part's module labels, the modules that part's work changes,\n  and `Raddle-File` writes those instead of the Sketch's whole set.\n- `raddleparser`'s check refuses a part with no module label, and a part label outside the board's vocabulary.\n  It accepts a part label that is not among the Sketch's, since a split can find a module the Sketch's labels missed.\n- The split perch weighs each part's labels against the packages its body names.\n- Raddle's stencil states the rule beside the other part fields.\n",
       "created": "2026-11-17T09:15:42Z",
       "revised": "2026-11-17T09:15:42Z"
+    },
+    {
+      "id": 1414,
+      "handle": "E1",
+      "slug": "gate-builds-testmap",
+      "title": "Build the coverage maps as a mode of the gate run, one process per test in parallel",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate",
+        "testkit"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-17)\n\nThe coverage maps are worth having, but the way they are built is too complicated and ad hoc.\n`lym gate testmap` is a verb of its own beside the gate, with its own planning, audit round, locks, slot handling and package lists\n(`internal/gatecli/testmap*.go`, `internal/testcover`).\nThe survey `redundancy-confirmed-survey` (`53d40bd0`) and the payoff report behind `testmap-on-command` (`72b26d1a`)\nfound little use of the maps so far, but the operator holds that they can be used once building them is simple.\n\nThe core is already simple and sound:\na test binary built with `-cover` counts every block, and nothing is added to production code or to a normal build;\none process per test, each writing its own `-test.coverprofile`, gives per-test coverage;\n`internal/testcover` merges the files into a map.\nOne process per test is needed because tests in one process share the counters, and parallel tests mix them.\n\n## Idea\n\n- The map is a mode of the gate's own tier 0 and tier 1 run, set by a flag on `lym gate test`, and the `lym gate testmap` verb goes.\n- In map mode the gate builds each package's test binary with `-cover`, runs each test as its own process from that binary,\n  one profile file per test, and `internal/testcover` merges the files into the package's map when the package ends.\n- The per-test processes run in parallel across the machine's cores, bounded like the gate's own parallelism.\n  Separate processes keep separate counters, so parallel runs never mix coverage.\n- Risks to settle in the design:\n  - Tests of one package that share state outside the process (a fixed path, a port, a tmux socket) may collide\n    when run as parallel processes, though they pass run in sequence.\n  - Many test processes at once need the memory guard and the per-run memory cap to cover them.\n  - A `-cover` binary does not share the build cache with the normal gate build, so a map run costs a build of its own.\n- What the maps are used for (test selection, redundancy, showing a reviewer the tests that cover a diff) is decided apart from this note;\n  this note only makes them simple and cheap to build.\n",
+      "created": "2026-11-17T10:30:42Z",
+      "revised": "2026-11-17T10:30:42Z"
     }
   ],
   "prime_owner": "neve",
