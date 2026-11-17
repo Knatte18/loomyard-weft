@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 16:56 UTC; every age below is as of then.
+Rendered 2026-11-17 16:57 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -92,7 +92,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **The dobby tears down or reports leftover pairs** | [`leftover-pairs-teardown`](design-leftover-pairs-teardown.md)<br>[Sketch](decision-leftover-pairs-teardown.md) | darn · solid | Code-Bouncer | neve | 1d<br>5h | dobby, workspaces, landing, fabric, batten, tender, shed |
+| T9 | **The dobby tears down or reports leftover pairs** | [`leftover-pairs-teardown`](design-leftover-pairs-teardown.md)<br>[Sketch](decision-leftover-pairs-teardown.md) | darn · solid | Drift-Recheck | neve | 1d<br>5h | dobby, workspaces, landing, fabric, batten, tender, shed |
 
 #### Ready (0)
 
