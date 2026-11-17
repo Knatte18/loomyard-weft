@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 09:58 UTC; every age below is as of then.
+Rendered 2026-11-17 09:59 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -145,7 +145,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Survey the mutation-confirmed redundancy candidates across every package**<br>• Run the fixed lym gate redundant on every package and measure how many confirmed candidates are false | [`redundancy-confirmed-survey`](design-redundancy-confirmed-survey.md) | darn · docs | Darn-Write | neve | 19h<br>19h | testkit, gate |
+| T14 | **Survey the mutation-confirmed redundancy candidates across every package**<br>• Run the fixed lym gate redundant on every package and measure how many confirmed candidates are false | [`redundancy-confirmed-survey`](design-redundancy-confirmed-survey.md) | darn · docs | Drift-Verify | neve | 19h<br>19h | testkit, gate |
 
 #### Ready (0)
 
@@ -214,7 +214,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | 43m<br>43m | loom, board, stencil |
+| B1 |  | **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | 44m<br>44m | loom, board, stencil |
 
 #### Features (6)
 

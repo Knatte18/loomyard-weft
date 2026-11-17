@@ -1,6 +1,6 @@
 # Survey the mutation-confirmed redundancy candidates across every package
 
-`redundancy-confirmed-survey` · Task · research, testkit, gate · running · Darn-Write
+`redundancy-confirmed-survey` · Task · research, testkit, gate · running · Drift-Verify
 
 ## Goal
 
