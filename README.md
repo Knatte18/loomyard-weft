@@ -68,11 +68,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-borrowed-orchestrator-ideas.md">P2 Ideas borrowed from comparable agent orchestrators</a> (7)</strong></summary>
+<summary><strong><a href="project-borrowed-orchestrator-ideas.md">P2 Ideas borrowed from comparable agent orchestrators</a> (6)</strong></summary>
 
 [`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 7m · Owner `neve`
 
-### Tasks (1)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -82,28 +82,35 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T14 | `draft` **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md) | motif |  | 7m<br>0m | burler, shed, stencil |
+| T16 | `draft` **A review lens that flags changes no decision asked for** | [`unrequested-scope-lens`](design-unrequested-scope-lens.md) | darn · light |  | 7m<br>0m | lenses, burler |
+| T20 | `draft` **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | darn · light |  | 7m<br>0m | webster, fabric |
 
-### Notes (6)
+### Notes (3)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-#### Features (6)
+#### Features (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F2 |  | **A per-run token and cost budget, audit mode first** | [`run-cost-budget`](design-run-cost-budget.md) | 7m<br>7m | shed, report |
-| F6 |  | **A review lens that flags changes no decision asked for** | [`unrequested-scope-lens`](design-unrequested-scope-lens.md) | 7m<br>7m | lenses, burler |
 | F8 |  | **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | 7m<br>7m | shuttle, friction |
-| F10 |  | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | 7m<br>7m | webster, fabric |
 | F12 |  | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | 7m<br>7m | stencil, shed |
 | F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>7m | burler, shed, orch, quarry, report |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| F2 | **A per-run token and cost budget, audit mode first** | [`run-cost-budget`](design-run-cost-budget.md) | 7m<br>7m | shed, report |
 
 </details>
 

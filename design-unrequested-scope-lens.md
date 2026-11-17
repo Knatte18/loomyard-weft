@@ -1,6 +1,6 @@
 # A review lens that flags changes no decision asked for
 
-`unrequested-scope-lens` · Note · feature, lenses, burler
+`unrequested-scope-lens` · Task · feature, lenses, burler · draft
 
 ## Seen (orch, 2026-11-17)
 

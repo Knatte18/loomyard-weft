@@ -1,6 +1,6 @@
 # A per-run token and cost budget, audit mode first
 
-`run-cost-budget` · Note · feature, shed, report
+`run-cost-budget` · Note · feature, shed, report · done
 
 ## Seen (orch, 2026-11-17)
 
