@@ -1,6 +1,6 @@
 # Every producer renders its prompt and edit directive for the engine its launch resolves to
 
-`prompt-engine-per-launch` · Task · enhancement, codex, shuttle, stencil, heddle · starting · Worktree-Create
+`prompt-engine-per-launch` · Task · enhancement, codex, shuttle, stencil, heddle · starting · Seed-Child
 
 Decision record: [Sketch](decision-prompt-engine-per-launch.md)
 
