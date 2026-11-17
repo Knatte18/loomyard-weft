@@ -165,13 +165,15 @@ Held by a run; its scope is locked until the run ends.
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Webster | neve | 21h<br>21h | webster, weaver |
 | T21 | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | sampler | Sampler-Session | neve | 9d<br>30m | heddle |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T16 | **Give Codex lym's shipped heddle instructions too**<br>• Aim lym-batching and lym-plan-edits-before-gate at agents-file and word them for both agents | [`shipped-heddle-agents-file`](design-shipped-heddle-agents-file.md) | darn · light |  | 0m<br>0m | heddle, codex |
 
-#### Draft (3)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -179,7 +181,6 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>19h | claude, shuttle, config |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 4d<br>4d | slack, creel, orch |
-| T16 | `draft` **Give Codex lym's shipped heddle instructions too**<br>• Aim lym-batching and lym-plan-edits-before-gate at agents-file and word them for both agents | [`shipped-heddle-agents-file`](design-shipped-heddle-agents-file.md) | darn · light |  | 0m<br>0m | heddle, codex |
 
 ### Notes (10)
 

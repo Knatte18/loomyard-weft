@@ -974,7 +974,6 @@
       "isolated": false,
       "brief": "Aim lym-batching and lym-plan-edits-before-gate at agents-file and word them for both agents",
       "body": "## Seen (operator, 2026-11-17)\n\nlym's two shipped text entries in `internal/heddleengine/shipped.json`, `lym-batching` and `lym-plan-edits-before-gate`,\ntarget `claude-file` alone, so they render into `CLAUDE.local.md` and never into `AGENTS.override.md`.\nA Codex session gets neither, while it should get the same instructions as a Claude session.\n\n## Fix\n\n- Aim both entries at `agents-file`, so they render into both files.\n- Their text names Claude Code's tools: \"the Read tool advises\", \"every Read and grep call\", \"every Edit and Write call\".\n  Word those lines so they hold for both agents,\n  such as \"every read and search\", \"every file edit\", \"even when your read tool advises reading only part\",\n  keeping each rule's meaning.\n- Update `ShippedEntriesArePinned` in `internal/heddleengine/store_test.go` and any test that pins the rendered files,\n  and check that a rendered `AGENTS.override.md` holds both entries.\n- The root `CLAUDE.local.md` of this repository carries the same two sections, rendered from the store; it follows on the next render.\n",
-      "status": "draft",
       "created": "2026-11-17T07:19:21Z",
       "revised": "2026-11-17T07:19:21Z",
       "profile": "light"
