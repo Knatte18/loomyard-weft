@@ -1,6 +1,6 @@
 # A capped test run raises a desktop low-memory notice
 
-`memcap-desktop-notice` · Task · bug, gate, process · running · Code-Burler-Review
+`memcap-desktop-notice` · Task · bug, gate, process · running · Code-Burler-Fix
 
 ## Seen (2026-11-17, Neve, KDE Plasma)
 
