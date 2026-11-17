@@ -1,0 +1,905 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 96c3cd3f..25bdff8d 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -708,7 +708,7 @@ User-facing modules each get one `lym <module>` namespace:
+   While `claude.yaml`'s `batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Bash`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups (a Bash call with a read-only lookup command such as `grep`, `find` or a git read counting as one), a sliced read of a short or already-read file, or a chain of edit-only messages;
+   a subagent's or fork's call is judged against that agent's own transcript, context and nudge count;
+   it never denies a call, and the block's switches and thresholds are config.
+-  While `shuttle.yaml`'s `edit_loop_edits` is above 0, an autonomous claude run's `Edit` and `Write` calls run the hidden `lym shuttle hook-edit`, which records the edited file and a hash of its content for the edit-loop notice.
++  While `shuttle.yaml`'s `edit_loop_edits` is above 0, an autonomous run's file edits, `Edit` and `Write` on claude and `apply_patch` on codex, run the hidden `lym shuttle hook-edit`, which records each edited file and a hash of its content for the edit-loop notice.
+   The provider is swappable behind an **engine** seam;
+   the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, or per run by a model-spec naming it.
+   The registered engines are `claude` and `codex`.
+@@ -717,6 +717,7 @@ User-facing modules each get one `lym <module>` namespace:
+   an autonomous Codex launch also denies `request_user_input` and `request_user_input_async` through a `*`-matcher `PreToolUse` entry,
+   and while `codex.yaml`'s `batching_nudge` block is on, a `*`-matcher `PostToolUse` hook runs `lym shuttle hook-batching codex`,
+   which judges the thread's exec cells by Claude's rules, keys its counts by the payload's `transcript_path` and hands the line over as additional context, never a block;
++  while `edit_loop_edits` is above 0 an autonomous Codex launch also carries an `apply_patch`-matcher `PostToolUse` hook running `lym shuttle hook-edit codex`, which records each file a patch touches;
+   a Codex run in a hub carries creel's hook delivery, the mail handed over as a hook block after a tool call and at a turn end, an idle session woken by its async waiter hook through `codex queue`, and the creel trust sentence in its developer instructions, while an opened Codex session stays a pane-mail strand;
+   the launch line carries the standing items as `developer_instructions`: the deny notice with the creel trust sentence, the subagent passage, the heddle passages, the user's Claude instruction files, the instruction-file pointers, the skill listing and the plugin contexts, in that order, and a launch whose setting reaches the 128 KiB argument cap is refused naming the largest item;
+   the subagent passage and `agents.default_subagent_reasoning_effort` carry the effort `agents.yaml` gives the role when `codex.yaml`'s efforts lists it, and `agents.max_concurrent_threads_per_session` carries `codex.yaml`'s `max_subagent_threads`;
+diff --git a/internal/shuttlecli/hookedit.go b/internal/shuttlecli/hookedit.go
+index baeafd05..a62bd166 100644
+--- a/internal/shuttlecli/hookedit.go
++++ b/internal/shuttlecli/hookedit.go
+@@ -25,7 +25,7 @@ func hookEditCmd() *cobra.Command {
+ 		Hidden:      true,
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
+ 		Long: `hook-edit reads the engine's after-edit hook input from standard input and
+-appends one record of the edited file and a hash of its content to the run's edit
++appends a record of each edited file and a hash of its content to the run's edit
+ records file. The run's wait counts the edits that return a file to content it held
+ earlier, to tell its parent about an agent that undoes or repeats its own edits.
+ It needs no hub and reads no config. A failure goes to standard error, and the
+diff --git a/internal/shuttleengine/claudeengine/editrecord.go b/internal/shuttleengine/claudeengine/editrecord.go
+index 2ae3680c..d5ca4699 100644
+--- a/internal/shuttleengine/claudeengine/editrecord.go
++++ b/internal/shuttleengine/claudeengine/editrecord.go
+@@ -5,12 +5,9 @@
+ package claudeengine
+ 
+ import (
+-	"crypto/sha256"
+-	"encoding/hex"
+ 	"encoding/json"
+ 	"errors"
+ 	"fmt"
+-	"io"
+ 	"os"
+ 	"time"
+ 
+@@ -64,7 +61,7 @@ func (c *Claude) RecordEdit(recordsPath string, payload []byte) error {
+ 		return nil
+ 	}
+ 	record.HookEventName = hookEventPostToolUse
+-	record.ContentHash = fileContentHash(record.ToolInput.FilePath)
++	record.ContentHash = shuttleengine.FileContentHash(record.ToolInput.FilePath)
+ 	line, err := json.Marshal(record)
+ 	if err != nil {
+ 		return fmt.Errorf("claudeengine: marshal the edit record: %w", err)
+@@ -83,18 +80,3 @@ func (c *Claude) RecordEdit(recordsPath string, payload []byte) error {
+ 	}
+ 	return nil
+ }
+-
+-// fileContentHash returns the hex SHA-256 of the content of the file at filePath, or "" when it cannot be read.
+-// An unreadable file only costs the edit-loop watch this one edit, so the hook records the edit without a hash.
+-func fileContentHash(filePath string) string {
+-	file, err := os.Open(filePath)
+-	if err != nil {
+-		return ""
+-	}
+-	defer file.Close()
+-	hash := sha256.New()
+-	if _, err := io.Copy(hash, file); err != nil {
+-		return ""
+-	}
+-	return hex.EncodeToString(hash.Sum(nil))
+-}
+diff --git a/internal/shuttleengine/codexengine/codexengine.go b/internal/shuttleengine/codexengine/codexengine.go
+index 7a975f19..e4d024cb 100644
+--- a/internal/shuttleengine/codexengine/codexengine.go
++++ b/internal/shuttleengine/codexengine/codexengine.go
+@@ -48,6 +48,8 @@ type Codex struct {
+ 	runHook shuttleengine.HookRunner
+ 	// rolloutWait bounds the batching nudge's wait for the call it judges to reach the rollout.
+ 	rolloutWait batchingRolloutWait
++	// now stamps the edit hook's records; tests replace it to pin the stamp.
++	now func() time.Time
+ }
+ 
+ // Seams are the collaborators a Codex engine takes from its wiring, so a test can fake each of them.
+@@ -82,6 +84,7 @@ func NewFromConfig(cfg shuttleengine.Config, dirs configengine.Dirs, seams Seams
+ 		userSetup:            seams.UserSetup,
+ 		runHook:              seams.RunHook,
+ 		rolloutWait:          defaultBatchingRolloutWait(),
++		now:                  time.Now,
+ 	}
+ }
+ 
+@@ -136,6 +139,8 @@ func validateChoice(choice shuttleengine.ModelChoice, permissionMode string, cod
+ // An autonomous spec's question-tool deny comes before them, and the deny notice announces both.
+ // With codex.yaml's batching nudge on, Prepare seeds the nudge's state file in runDir.
+ // The line then carries the nudge's PostToolUse hook.
++// While cfg's EditLoopEdits is above 0, an autonomous spec's line carries the edit hook.
++// The hook writes to the edit records file in runDir.
+ // It runs the settled sandbox mode, and under workspace-write it turns on the sandbox's network access,
+ // so the session reaches the creel daemon's socket.
+ // Once Codex exits, the launch appends the exit record to the run's events file.
+@@ -236,6 +241,9 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 			return shuttleengine.Launch{}, fmt.Errorf("codexengine: write the batching nudge state: %w", err)
+ 		}
+ 	}
++	if cfg.EditLoopEdits > 0 && !spec.Interactive {
++		tools.editRecordsPath = filepath.Join(absRunDir, shuttleengine.EditRecordsFileName)
++	}
+ 	firstTurn, promptLine := launchPointer(promptPath), ""
+ 	// The roots come from the codex.yaml this launch already loaded, so one load serves the whole launch.
+ 	skillRoots := c.expandSkillRoots(codex)
+diff --git a/internal/shuttleengine/codexengine/command.go b/internal/shuttleengine/codexengine/command.go
+index 4dc31041..87b3648f 100644
+--- a/internal/shuttleengine/codexengine/command.go
++++ b/internal/shuttleengine/codexengine/command.go
+@@ -256,13 +256,16 @@ type toolHooks struct {
+ 	questionDeny bool
+ 	// batchingStatePath is the run's batching nudge state file; empty installs no batching hook.
+ 	batchingStatePath string
++	// editRecordsPath is the run's edit records file; empty installs no edit hook.
++	editRecordsPath string
+ }
+ 
+ // hookSettings returns the `-c` hook settings of a run whose events file is eventsPath.
+ // Each recorded event gets a recording hook.
+ // A PreToolUse setting holds the question-tool deny, on every tool, then one entry per guard row, when tools has either.
+ // The activity hook runs after every tool call.
+-// When tools names a state file, the batching hook runs after it, on every tool.
++// When tools names an edit records file, the edit hook runs after it, on apply_patch calls alone.
++// When tools names a state file, the batching hook runs next, on every tool.
+ // With a creel flag directory, the Stop setting runs the merged creel Stop command, then the async idle waiter.
+ // The PostToolUse setting also runs the creel mail hook, last.
+ // Entries of one event share one setting, since a second `-c` of the same key replaces the first.
+@@ -284,6 +287,9 @@ func hookSettings(eventsPath string, tools toolHooks, creel creelDelivery) []str
+ 		settings = append(settings, hookSetting(hookEventPreToolUse, preToolUse...))
+ 	}
+ 	postToolUse := []string{hookEntry(toolMatcherAll, activityCommand(eventsPath))}
++	if tools.editRecordsPath != "" {
++		postToolUse = append(postToolUse, hookEntry(toolNameApplyPatch, editRecordHookCommand(tools.editRecordsPath)))
++	}
+ 	if tools.batchingStatePath != "" {
+ 		postToolUse = append(postToolUse, hookEntry(toolMatcherAll, batchingNudgeHookCommand(tools.batchingStatePath)))
+ 	}
+diff --git a/internal/shuttleengine/codexengine/command_test.go b/internal/shuttleengine/codexengine/command_test.go
+index 8bc5b4ed..228ee192 100644
+--- a/internal/shuttleengine/codexengine/command_test.go
++++ b/internal/shuttleengine/codexengine/command_test.go
+@@ -64,7 +64,8 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 
+ // TestHookSettings pins one setting per recorded hook, in order.
+ // A PreToolUse setting follows when the launch has a deny: the question-tool deny on every tool, then every guard entry.
+-// Then comes the activity hook on every tool, and the batching hook after it when the launch names a state file.
++// Then comes the activity hook on every tool, the edit hook on apply_patch when the launch names an edit records file,
++// and the batching hook when the launch names a state file.
+ // Each runs the command for the run's events file.
+ // A creel delivery swaps the Stop setting for the merged creel Stop command and the async idle waiter.
+ // It adds the creel mail hook last.
+@@ -86,6 +87,8 @@ func TestHookSettings(t *testing.T) {
+ 	waiter := asyncHookEntry(creelWaitHookCommand(creel), creelWaitTimeoutSeconds)
+ 	const statePath = "/run/batching-nudge.json"
+ 	batching := hookEntry("*", batchingNudgeHookCommand(statePath))
++	const recordsPath = "/run/edit-records.jsonl"
++	editHook := hookEntry("apply_patch", editRecordHookCommand(recordsPath))
+ 	tests := []struct {
+ 		name  string
+ 		tools toolHooks
+@@ -97,6 +100,7 @@ func TestHookSettings(t *testing.T) {
+ 		{"QuestionDenyBeforeTheGuards", toolHooks{guards: guards, questionDeny: true}, creelDelivery{}, append(append([]string{}, recorded...),
+ 			hookSetting(hookEventPreToolUse, append([]string{hookEntry("*", questionDenyCommand())}, guardEntries(guards)...)...), activity)},
+ 		{"BatchingAfterTheActivityHook", toolHooks{batchingStatePath: statePath}, creelDelivery{}, append(append([]string{}, recorded...), hookSetting(hookEventPostToolUse, activityEntry, batching))},
++		{"EditHookBeforeTheBatchingHook", toolHooks{batchingStatePath: statePath, editRecordsPath: recordsPath}, creelDelivery{}, append(append([]string{}, recorded...), hookSetting(hookEventPostToolUse, activityEntry, editHook, batching))},
+ 		{"CreelMailAfterTheBatchingHook", toolHooks{batchingStatePath: statePath}, creel, []string{
+ 			sessionStart,
+ 			promptSubmit,
+@@ -131,6 +135,9 @@ func TestHookSettings(t *testing.T) {
+ 	if got, want := batchingNudgeHookCommand(statePath), `out=$(lym shuttle hook-batching codex '/run/batching-nudge.json'); [ -n "$out" ] && printf '%s\n' "$out" || printf '{}\n'`; got != want {
+ 		t.Errorf("batchingNudgeHookCommand() = %s; want %s", got, want)
+ 	}
++	if got, want := editRecordHookCommand(recordsPath), `lym shuttle hook-edit codex '/run/edit-records.jsonl'; printf '{}\n'`; got != want {
++		t.Errorf("editRecordHookCommand() = %s; want %s", got, want)
++	}
+ 	if want := `{hooks=[{type="command",command="CODEX_HOME='/h' LYM_CODEX_BINARY='codex' lym creel hook-wait codex",async=true,timeout=86400}]}`; waiter != want {
+ 		t.Errorf("idle waiter entry = %s; want %s", waiter, want)
+ 	}
+diff --git a/internal/shuttleengine/codexengine/doc.go b/internal/shuttleengine/codexengine/doc.go
+index 17724c02..7f48f0d8 100644
+--- a/internal/shuttleengine/codexengine/doc.go
++++ b/internal/shuttleengine/codexengine/doc.go
+@@ -59,7 +59,8 @@
+ //
+ // Hooks given by `-c` append to the run's events file a stamp line and the payload of these events:
+ // SessionStart, UserPromptSubmit, Stop and PermissionRequest.
+-// A PostToolUse hook touches the activity stamp; the batching nudge and creel's mail hook join its setting.
++// A PostToolUse hook touches the activity stamp;
++// the edit hook, the batching nudge and creel's mail hook join its setting.
+ // The standing items ride the launch line as the `developer_instructions` setting, a single-line TOML string,
+ // and the prompt file holds the spec's prompt alone.
+ // The items are the deny notice with the creel trust sentence, then each standing passage.
+@@ -143,6 +144,21 @@
+ // so each thread's count and cap are keyed by the payload's `transcript_path`, its own rollout.
+ // The output carries the line as `additionalContext` with a `systemMessage`.
+ //
++// The edit hook (EditRecorder) is a PostToolUse entry matching `apply_patch`, after the activity hook.
++// The line carries it for a run that is not interactive while shuttle.yaml's `edit_loop_edits` is above 0.
++// It runs `lym shuttle hook-edit codex <edit records file>`, then prints the empty hook output.
++// The edit records file is shuttleengine.EditRecordsFileName in the run directory.
++// RecordEdit reads the file headers of the patch text in the payload's `tool_input.command`.
++// It records each file once: the one an add, update or delete header names, or the file a move header moves an update to.
++// A relative path is resolved against the payload's `cwd`.
++// Per file it appends a stamp line and a slim PostToolUse line, all in one write.
++// The slim line keeps only the session id, the agent id, the tool name and `tool_input.file_path`.
++// It adds lym's own `content_hash`, the SHA-256 of the file's content as the hook reads it after the patch.
++// The agent id names a child thread.
++// Its payload carries the parent's session id, but its rollout's name ends in its own id.
++// ParseSessionSignals reads that line as a SessionSignalFileEdit with its content hash.
++// So shuttle's edit-loop watch covers Codex runs as it covers Claude runs.
++//
+ // A skill `<plugin>:<name>` is a file the model reads:
+ // the load line names the newest version's skills/<name>/SKILL.md under codex.yaml's skill_roots by absolute path.
+ // A tool call of the load turn that names that tail in the rollout reads the skill loaded.
+diff --git a/internal/shuttleengine/codexengine/editrecord.go b/internal/shuttleengine/codexengine/editrecord.go
+new file mode 100644
+index 00000000..c94bd734
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/editrecord.go
+@@ -0,0 +1,187 @@
++// editrecord.go implements the Codex edit hook: the PostToolUse hook command that runs on each apply_patch call.
++// It also holds RecordEdit, which appends one slim record per file a patch touched to the run's edit records file.
++// Shuttle's edit-loop watch reads those records.
++
++package codexengine
++
++import (
++	"encoding/json"
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/shell"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++var _ shuttleengine.EditRecorder = (*Codex)(nil)
++
++// editRecordHookCommand returns the PostToolUse command of the edit hook over the run's edit records file at recordsPath:
++// the shuttle verb, told this engine's registry name.
++// The verb prints nothing, so the command prints the empty hook output after it,
++// and a missing or failing lym never shows the session a hook error.
++func editRecordHookCommand(recordsPath string) string {
++	return "lym shuttle " + shuttleengine.EditHookVerb + " " + engineName + " " + shell.Posix().Quote(recordsPath) + "; " + emptyHookOutput
++}
++
++// contentHashKey is the edit record's key for the hash of the edited file's content right after the edit.
++// It is lym's own key, beside the fields of Codex's payload.
++const contentHashKey = "content_hash"
++
++// editHookInput is the part of Codex's PostToolUse input for an apply_patch call that the edit hook reads.
++type editHookInput struct {
++	SessionID      string `json:"session_id"`
++	TranscriptPath string `json:"transcript_path"`
++	Cwd            string `json:"cwd"`
++	ToolName       string `json:"tool_name"`
++	ToolInput      struct {
++		// Command is the patch text.
++		Command string `json:"command"`
++	} `json:"tool_input"`
++	// ToolResponse is the call's outcome, whose shape Codex does not fix; only a failure marker in an object is read.
++	ToolResponse json.RawMessage `json:"tool_response"`
++}
++
++// patchFailed reports whether a tool_response names a failed or rejected apply_patch call:
++// an object with "success" false or an "error" that is a non-empty string or object.
++// Any other response, including an absent or non-object one, reads as a success.
++func patchFailed(toolResponse json.RawMessage) bool {
++	var response struct {
++		Success *bool `json:"success"`
++		Error   any   `json:"error"`
++	}
++	if err := json.Unmarshal(toolResponse, &response); err != nil {
++		return false
++	}
++	if response.Success != nil && !*response.Success {
++		return true
++	}
++	switch value := response.Error.(type) {
++	case string:
++		return value != ""
++	case map[string]any:
++		return len(value) > 0
++	}
++	return false
++}
++
++// editRecord is the PostToolUse line the edit hook appends for one file a patch touched.
++// It holds only the fields a file edit reads, and the hash of the file's content after the patch.
++// It never holds the patch text, since every watch of the run rereads the edit records file.
++type editRecord struct {
++	HookEventName string `json:"hook_event_name"`
++	SessionID     string `json:"session_id,omitempty"`
++	AgentID       string `json:"agent_id,omitempty"`
++	ToolName      string `json:"tool_name"`
++	ToolInput     struct {
++		FilePath string `json:"file_path"`
++	} `json:"tool_input"`
++	ContentHash string `json:"content_hash,omitempty"`
++}
++
++// The file headers of Codex's patch format.
++// An update header may be followed by a move header that names the file the update leaves.
++const (
++	patchAddFile    = "*** Add File: "
++	patchUpdateFile = "*** Update File: "
++	patchDeleteFile = "*** Delete File: "
++	patchMoveTo     = "*** Move to: "
++)
++
++// threadIDLength is the length of a Codex thread id, a UUID in text form, which ends a rollout's file name.
++const threadIDLength = 36
++
++// RecordEdit appends the files that the apply_patch call of a Codex PostToolUse payload touched.
++// They go to the edit records file at recordsPath.
++// Each file gets a stamp line with the hook-side time, then an editRecord; all of them go in one write.
++// A file is the one an add, update or delete header names, or the file a move header moves an update to.
++// A relative path is resolved against the payload's cwd, and one with no cwd is skipped.
++// A file the patch names twice is recorded once.
++// The record carries the SHA-256 of the file's content as the hook reads it,
++// or no hash when the file cannot be read, such as after a delete.
++// It names the child thread that made the patch, by the thread id its rollout's name ends in.
++// A payload naming another tool or no file, or whose tool_response reports a failed patch, appends nothing;
++// a malformed payload or a failed write is an error.
++func (c *Codex) RecordEdit(recordsPath string, payload []byte) error {
++	var input editHookInput
++	if err := json.Unmarshal(payload, &input); err != nil {
++		return fmt.Errorf("codexengine: parse the edit hook input: %w", err)
++	}
++	if input.ToolName != toolNameApplyPatch || patchFailed(input.ToolResponse) {
++		return nil
++	}
++	stamp, err := json.Marshal(map[string]string{stampHookKey: hookEventPostToolUse, stampAtKey: c.now().UTC().Format(time.RFC3339)})
++	if err != nil {
++		return fmt.Errorf("codexengine: marshal the edit record's stamp: %w", err)
++	}
++	agentID := childThreadID(input.SessionID, input.TranscriptPath)
++	var lines []byte
++	for _, file := range patchedFiles(input.ToolInput.Command, input.Cwd) {
++		record := editRecord{HookEventName: hookEventPostToolUse, SessionID: input.SessionID, AgentID: agentID, ToolName: input.ToolName}
++		record.ToolInput.FilePath = file
++		record.ContentHash = shuttleengine.FileContentHash(file)
++		line, err := json.Marshal(record)
++		if err != nil {
++			return fmt.Errorf("codexengine: marshal the edit record: %w", err)
++		}
++		lines = append(append(append(append(lines, stamp...), '\n'), line...), '\n')
++	}
++	if len(lines) == 0 {
++		return nil
++	}
++	file, err := os.OpenFile(recordsPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
++	if err != nil {
++		return fmt.Errorf("codexengine: open the edit records file %s: %w", recordsPath, err)
++	}
++	_, writeErr := file.Write(lines)
++	if err := errors.Join(writeErr, file.Close()); err != nil {
++		return fmt.Errorf("codexengine: append the edit records to %s: %w", recordsPath, err)
++	}
++	return nil
++}
++
++// patchedFiles returns the absolute paths of the files the patch text touches, each once, in patch order.
++// A move header replaces the path of the update before it.
++// A relative path is resolved against cwd, and one with no cwd to resolve it against is left out.
++func patchedFiles(patch, cwd string) []string {
++	var named []string
++	for _, line := range strings.Split(patch, "\n") {
++		line = strings.TrimSpace(line)
++		switch {
++		case strings.HasPrefix(line, patchAddFile), strings.HasPrefix(line, patchUpdateFile), strings.HasPrefix(line, patchDeleteFile):
++			named = append(named, strings.TrimSpace(line[strings.Index(line, ": ")+2:]))
++		case strings.HasPrefix(line, patchMoveTo) && len(named) > 0:
++			named[len(named)-1] = strings.TrimSpace(strings.TrimPrefix(line, patchMoveTo))
++		}
++	}
++	var files []string
++	for _, path := range named {
++		resolved := resolvePath(cwd, path)
++		if resolved != "" && !slices.Contains(files, resolved) {
++			files = append(files, resolved)
++		}
++	}
++	return files
++}
++
++// childThreadID returns the thread id of the child thread a payload comes from, or "" for the session's own thread.
++// A Codex payload carries no agent id, and a child's carries its parent's session id,
++// but its transcript_path names the thread's own rollout, whose file name ends in the thread's id.
++// A rollout whose name ends in the session id is the session's own.
++func childThreadID(sessionID, transcriptPath string) string {
++	if sessionID == "" || transcriptPath == "" {
++		return ""
++	}
++	name := strings.TrimSuffix(filepath.Base(transcriptPath), filepath.Ext(transcriptPath))
++	if strings.HasSuffix(name, sessionID) {
++		return ""
++	}
++	if len(name) > threadIDLength {
++		return name[len(name)-threadIDLength:]
++	}
++	return name
++}
+diff --git a/internal/shuttleengine/codexengine/editrecord_test.go b/internal/shuttleengine/codexengine/editrecord_test.go
+new file mode 100644
+index 00000000..8f1d735f
+--- /dev/null
++++ b/internal/shuttleengine/codexengine/editrecord_test.go
+@@ -0,0 +1,288 @@
++// editrecord_test.go pins the Codex edit hook.
++// It checks the slim records RecordEdit appends for an apply_patch call, read back as file-edit signals.
++
++package codexengine
++
++import (
++	"cmp"
++	"crypto/sha256"
++	"encoding/hex"
++	"encoding/json"
++	"errors"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestRecordEditAppendsAcrossCalls pins that a second hook call appends to the records an earlier call wrote.
++// Each edit carries the hash of the file as that call read it.
++func TestRecordEditAppendsAcrossCalls(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const sessionID = "01a1ea92-ca1c-7342-ade2-3f95786f1981"
++	cwd := t.TempDir()
++	recordsPath := filepath.Join(t.TempDir(), shuttleengine.EditRecordsFileName)
++	target := filepath.Join(cwd, "a.go")
++	engine := New()
++	var want []string
++	for _, content := range []string{"package a\n", "package b\n"} {
++		if err := os.WriteFile(target, []byte(content), 0o644); err != nil {
++			t.Fatalf("write the patched file: %v", err)
++		}
++		payload, err := json.Marshal(map[string]any{
++			"hook_event_name": hookEventPostToolUse,
++			"session_id":      sessionID,
++			"tool_name":       toolNameApplyPatch,
++			"cwd":             cwd,
++			"tool_input":      map[string]any{"command": "*** Begin Patch\n*** Update File: a.go\n@@\n+x\n*** End Patch"},
++		})
++		if err != nil {
++			t.Fatalf("marshal the hook input: %v", err)
++		}
++		if err := engine.RecordEdit(recordsPath, payload); err != nil {
++			t.Fatalf("RecordEdit() error: %v", err)
++		}
++		sum := sha256.Sum256([]byte(content))
++		want = append(want, hex.EncodeToString(sum[:]))
++	}
++	data, err := os.ReadFile(recordsPath)
++	if err != nil {
++		t.Fatalf("read the edit records file: %v", err)
++	}
++	signals, _ := engine.ParseSessionSignals(data)
++	var got []string
++	for _, signal := range signals {
++		got = append(got, signal.ContentHash)
++	}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("recorded content hashes = %v; want %v", got, want)
++	}
++}
++
++// TestRecordEdit pins the records an apply_patch hook input appends and the file-edit signals ParseSessionSignals reads.
++// Each file a patch touches is recorded once, resolved against the payload's cwd, with its content hash when readable.
++// A move records the file it moves to, and a child thread's records name its thread id.
++// The records leave out the patch text.
++func TestRecordEdit(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	at := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
++	const (
++		sessionID   = "01a1ea92-ca1c-7342-ade2-3f95786f1981"
++		childThread = "01a1eb00-1111-7222-8333-944455556666"
++		mainRollout = "/s/rollout-2026-11-17T18-34-10-" + sessionID + ".jsonl"
++	)
++	// wantEdit is one file-edit signal a row wants, by the file's name in the payload's cwd.
++	type wantEdit struct {
++		file    string
++		agentID string
++	}
++	const bareThreadRollout = "/s/" + childThread + ".jsonl"
++	tests := []struct {
++		name string
++		// toolName is the payload's tool name; empty sends apply_patch.
++		toolName string
++		patch    string
++		// transcript is the payload's transcript_path; empty sends the session's own rollout.
++		transcript string
++		// noCwd sends a payload with no cwd.
++		noCwd bool
++		// noSession sends a payload with no session_id.
++		noSession bool
++		// noTranscript sends a payload with no transcript_path.
++		noTranscript bool
++		// toolResponse, when set, is sent as the payload's tool_response.
++		toolResponse any
++		// files are written in the payload's cwd, by name, before the hook runs.
++		files map[string]string
++		// rawPayload, when set, is sent in place of the payload the other fields build.
++		rawPayload string
++		// missingDir puts the edit records file under a directory that does not exist, so it cannot be opened.
++		missingDir bool
++		want       []wantEdit
++		// wantErr is a text the error names; empty wants none.
++		wantErr string
++	}{
++		{
++			name:  "AnUpdateOfAReadableFileCarriesItsContentHash",
++			patch: "*** Begin Patch\n*** Update File: a.go\n@@\n-package x\n+package a\n*** End Patch",
++			files: map[string]string{"a.go": "package a\n"},
++			want:  []wantEdit{{file: "a.go"}},
++		},
++		{
++			// gone.go does not exist after the delete, so its record carries no hash.
++			name:  "EachFileOfAPatchIsRecordedOnce",
++			patch: "*** Begin Patch\r\n*** Add File: b.go\r\n+package b\r\n*** Update File: a.go\r\n@@\r\n+// a\r\n*** Delete File: gone.go\r\n*** Update File: a.go\r\n@@\r\n+// again\r\n*** End Patch",
++			files: map[string]string{"a.go": "package a\n// a\n// again\n", "b.go": "package b\n"},
++			want:  []wantEdit{{file: "b.go"}, {file: "a.go"}, {file: "gone.go"}},
++		},
++		{
++			name:  "AMoveRecordsTheFileItMovesTo",
++			patch: "*** Begin Patch\n*** Update File: old.go\n*** Move to: new.go\n@@\n+package n\n*** End Patch",
++			files: map[string]string{"new.go": "package n\n"},
++			want:  []wantEdit{{file: "new.go"}},
++		},
++		{
++			name:       "AChildThreadsPatchNamesItsThread",
++			patch:      "*** Begin Patch\n*** Update File: a.go\n@@\n+package a\n*** End Patch",
++			transcript: "/s/rollout-2026-11-17T18-40-00-" + childThread + ".jsonl",
++			files:      map[string]string{"a.go": "package a\n"},
++			want:       []wantEdit{{file: "a.go", agentID: childThread}},
++		},
++		{
++			name:  "AHeaderWithLeadingWhitespaceIsRecorded",
++			patch: "*** Begin Patch\n  *** Update File: a.go\n@@\n+package a\n*** End Patch",
++			files: map[string]string{"a.go": "package a\n"},
++			want:  []wantEdit{{file: "a.go"}},
++		},
++		{
++			name:       "ABareThreadIDRolloutNamesItsThread",
++			patch:      "*** Begin Patch\n*** Update File: a.go\n@@\n+package a\n*** End Patch",
++			transcript: bareThreadRollout,
++			files:      map[string]string{"a.go": "package a\n"},
++			want:       []wantEdit{{file: "a.go", agentID: childThread}},
++		},
++		{
++			name:       "AShortRolloutNameIsTheWholeThreadID",
++			patch:      "*** Begin Patch\n*** Update File: a.go\n@@\n+package a\n*** End Patch",
++			transcript: "/s/short.jsonl",
++			files:      map[string]string{"a.go": "package a\n"},
++			want:       []wantEdit{{file: "a.go", agentID: "short"}},
++		},
++		{
++			name:         "ANoTranscriptPayloadNamesNoThread",
++			patch:        "*** Begin Patch\n*** Update File: a.go\n@@\n+package a\n*** End Patch",
++			noTranscript: true,
++			files:        map[string]string{"a.go": "package a\n"},
++			want:         []wantEdit{{file: "a.go"}},
++		},
++		{
++			name:         "AnErrorFlagOfFalseIsRecorded",
++			patch:        "*** Begin Patch\n*** Update File: a.go\n@@\n+package a\n*** End Patch",
++			files:        map[string]string{"a.go": "package a\n"},
++			toolResponse: map[string]any{"error": false},
++			want:         []wantEdit{{file: "a.go"}},
++		},
++		{
++			name:      "ANoSessionPayloadNamesNoThread",
++			patch:     "*** Begin Patch\n*** Update File: a.go\n@@\n+package a\n*** End Patch",
++			noSession: true,
++			files:     map[string]string{"a.go": "package a\n"},
++			want:      []wantEdit{{file: "a.go"}},
++		},
++		{
++			name:         "AFailedPatchAppendsNothing",
++			patch:        "*** Begin Patch\n*** Update File: a.go\n@@\n+package a\n*** End Patch",
++			files:        map[string]string{"a.go": "package a\n"},
++			toolResponse: map[string]any{"success": false},
++		},
++		{
++			name:         "ARejectedPatchWithAnErrorAppendsNothing",
++			patch:        "*** Begin Patch\n*** Update File: a.go\n@@\n+package a\n*** End Patch",
++			files:        map[string]string{"a.go": "package a\n"},
++			toolResponse: map[string]any{"error": "patch does not apply"},
++		},
++		{
++			name:         "ASuccessfulResponseIsRecorded",
++			patch:        "*** Begin Patch\n*** Update File: a.go\n@@\n+package a\n*** End Patch",
++			files:        map[string]string{"a.go": "package a\n"},
++			toolResponse: map[string]any{"success": true},
++			want:         []wantEdit{{file: "a.go"}},
++		},
++		{name: "ARelativePathWithNoCwdAppendsNothing", patch: "*** Begin Patch\n*** Update File: a.go\n*** End Patch", noCwd: true},
++		{name: "APatchNamingNoFileAppendsNothing", patch: "*** Begin Patch\n*** End Patch"},
++		{name: "AnotherToolAppendsNothing", toolName: toolMatcherBash, patch: "*** Update File: a.go"},
++		{name: "AMalformedPayloadIsAnError", rawPayload: `{not json`, wantErr: "parse the edit hook input"},
++		{name: "AnUnopenableRecordsFileIsAnError", patch: "*** Update File: /w/a.go", missingDir: true, wantErr: "open the edit records file"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			recordsPath := filepath.Join(t.TempDir(), shuttleengine.EditRecordsFileName)
++			if tt.missingDir {
++				recordsPath = filepath.Join(t.TempDir(), "no-such-dir", shuttleengine.EditRecordsFileName)
++			}
++			cwd := t.TempDir()
++			for name, content := range tt.files {
++				if err := os.WriteFile(filepath.Join(cwd, name), []byte(content), 0o644); err != nil {
++					t.Fatalf("write the patched file %s: %v", name, err)
++				}
++			}
++			payload := []byte(tt.rawPayload)
++			if tt.rawPayload == "" {
++				input := map[string]any{
++					"hook_event_name": hookEventPostToolUse,
++					"session_id":      sessionID,
++					"transcript_path": cmp.Or(tt.transcript, mainRollout),
++					"tool_name":       cmp.Or(tt.toolName, toolNameApplyPatch),
++					"tool_input":      map[string]any{"command": tt.patch},
++				}
++				if !tt.noCwd {
++					input["cwd"] = cwd
++				}
++				if tt.noSession {
++					delete(input, "session_id")
++				}
++				if tt.noTranscript {
++					delete(input, "transcript_path")
++				}
++				if tt.toolResponse != nil {
++					input["tool_response"] = tt.toolResponse
++				}
++				var err error
++				if payload, err = json.Marshal(input); err != nil {
++					t.Fatalf("marshal the hook input: %v", err)
++				}
++			}
++			engine := New()
++			engine.now = func() time.Time { return at }
++
++			err := engine.RecordEdit(recordsPath, payload)
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Errorf("RecordEdit() error = %v; want one naming %q", err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("RecordEdit() error: %v", err)
++			}
++			data, err := os.ReadFile(recordsPath)
++			if err != nil && !errors.Is(err, fs.ErrNotExist) {
++				t.Fatalf("read the edit records file: %v", err)
++			}
++			if strings.Contains(string(data), "***") || strings.Contains(string(data), "package") {
++				t.Errorf("edit records file = %q; want no patch text or file content", data)
++			}
++			got, consumed := engine.ParseSessionSignals(data)
++			if consumed != len(data) {
++				t.Errorf("ParseSessionSignals consumed %d of %d bytes; want every record", consumed, len(data))
++			}
++			var want []shuttleengine.SessionSignal
++			for _, edit := range tt.want {
++				signal := shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalFileEdit, At: at, SessionID: sessionID, FilePath: filepath.Join(cwd, edit.file), AgentID: edit.agentID}
++				if tt.noSession {
++					signal.SessionID = ""
++				}
++				if content, ok := tt.files[edit.file]; ok {
++					sum := sha256.Sum256([]byte(content))
++					signal.ContentHash = hex.EncodeToString(sum[:])
++				}
++				want = append(want, signal)
++			}
++			for index := range got {
++				got[index].Raw = nil
++			}
++			if !reflect.DeepEqual(got, want) {
++				t.Errorf("recorded edits =\n%+v\nwant\n%+v", got, want)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/codexengine/events.go b/internal/shuttleengine/codexengine/events.go
+index ac4636b9..729d47cb 100644
+--- a/internal/shuttleengine/codexengine/events.go
++++ b/internal/shuttleengine/codexengine/events.go
+@@ -51,6 +51,7 @@ type pendingStamp struct {
+ // ParseSessionSignals parses events file bytes into session signals, in file order.
+ // SessionStart reads as a session start, UserPromptSubmit as a turn start, and Stop as a turn end.
+ // PermissionRequest reads as an ask, and the launch line's exit record reads as a session end that ends the process.
++// A PostToolUse line the edit hook recorded reads as a file edit with its agent id and content hash.
+ // A payload line takes its time from the nearest preceding untaken stamp naming its hook.
+ // A payload line with no such stamp, or whose stamp time is empty or malformed, reads a zero time.
+ // The returned count is the number of bytes consumed, up to the last newline-terminated line.
+@@ -140,10 +141,25 @@ func signalFromPayload(hookName string, fields map[string]any) (shuttleengine.Se
+ 		return shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalSessionStart, Source: sessionStartSource(source)}, true
+ 	case exitRecordEvent:
+ 		return shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalSessionEnd, Reason: exitRecordReason, EndsProcess: true}, true
++	case hookEventPostToolUse:
++		return fileEditSignal(fields)
+ 	}
+ 	return shuttleengine.SessionSignal{}, false
+ }
+ 
++// fileEditSignal reads a PostToolUse line the edit hook recorded as a file edit, with the file's content hash.
++// It reports false for a line naming no file.
++func fileEditSignal(fields map[string]any) (shuttleengine.SessionSignal, bool) {
++	toolInput, _ := fields["tool_input"].(map[string]any)
++	filePath, _ := toolInput["file_path"].(string)
++	if filePath == "" {
++		return shuttleengine.SessionSignal{}, false
++	}
++	agentID, _ := fields["agent_id"].(string)
++	contentHash, _ := fields[contentHashKey].(string)
++	return shuttleengine.SessionSignal{Kind: shuttleengine.SessionSignalFileEdit, FilePath: filePath, AgentID: agentID, ContentHash: contentHash}, true
++}
++
+ // typedInstruction returns a UserPromptSubmit prompt as a typed instruction, or "" for a slash command.
+ // A slash command is a command to Codex's own interface.
+ // A prompt is a slash command when its first word starts with "/" and holds no further "/".
+diff --git a/internal/shuttleengine/codexengine/events_test.go b/internal/shuttleengine/codexengine/events_test.go
+index b9c9ac6c..db5012ae 100644
+--- a/internal/shuttleengine/codexengine/events_test.go
++++ b/internal/shuttleengine/codexengine/events_test.go
+@@ -65,6 +65,7 @@ func TestParseSessionSignals(t *testing.T) {
+ 		stampLine(hookEventStop, "2026-10-24T11:55:31Z"), stopPayload,
+ 		stampLine(hookEventPermissionRequest, ""), permissionRequestPayload,
+ 		preToolUsePayload, slashPrompt, forkStart, exitRecordLine,
++		stampLine(hookEventPostToolUse, "2026-10-24T11:55:32Z"), `{"session_id":"s","hook_event_name":"PostToolUse","tool_name":"apply_patch","tool_input":{}}`,
+ 	}
+ 	complete := ""
+ 	for _, line := range lines {
+diff --git a/internal/shuttleengine/codexengine/new_test.go b/internal/shuttleengine/codexengine/new_test.go
+index 6e21edfd..0afdc9cb 100644
+--- a/internal/shuttleengine/codexengine/new_test.go
++++ b/internal/shuttleengine/codexengine/new_test.go
+@@ -2,9 +2,13 @@
+ 
+ package codexengine
+ 
+-import "github.com/Knatte18/loomyard/internal/logger"
++import (
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
+ 
+ // New returns a Codex engine with the default redraw settle and no dirs, so it serves reading uses only.
+ func New() *Codex {
+-	return &Codex{submitRedrawSettleMS: defaultSubmitRedrawSettleMS, warn: logger.Warn, sandboxProbe: runSandboxProbe}
++	return &Codex{submitRedrawSettleMS: defaultSubmitRedrawSettleMS, warn: logger.Warn, sandboxProbe: runSandboxProbe, now: time.Now}
+ }
+diff --git a/internal/shuttleengine/codexengine/prepare_test.go b/internal/shuttleengine/codexengine/prepare_test.go
+index e2873dcf..dc74d1c0 100644
+--- a/internal/shuttleengine/codexengine/prepare_test.go
++++ b/internal/shuttleengine/codexengine/prepare_test.go
+@@ -504,12 +504,14 @@ func TestPrepare_CreelHooksInAHub(t *testing.T) {
+ 	}
+ }
+ 
+-// TestPrepare_QuestionDenyAndBatchingHook pins the two tool hooks a launch's spec and codex.yaml switch.
++// TestPrepare_SwitchedToolHooks pins the three tool hooks a launch's spec, codex.yaml and shuttle.yaml switch.
+ // An autonomous spec carries the question-tool deny and its notice, and an interactive one carries neither.
+ // With the batching nudge on, Prepare seeds the state file with codex.yaml's block.
+ // The line then runs the batching hook over it.
+ // With the nudge off, Prepare writes no state file and the line carries no batching hook.
+-func TestPrepare_QuestionDenyAndBatchingHook(t *testing.T) {
++// An autonomous spec carries the edit hook over the run's edit records file while the edit-loop watch is on.
++// An interactive spec, or a watch that is off, carries none.
++func TestPrepare_SwitchedToolHooks(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+@@ -517,12 +519,15 @@ func TestPrepare_QuestionDenyAndBatchingHook(t *testing.T) {
+ 		name         string
+ 		interactive  bool
+ 		batchingOff  bool
++		editLoopOff  bool
+ 		wantDeny     bool
+ 		wantBatching bool
++		wantEditHook bool
+ 	}{
+-		{name: "Autonomous", wantDeny: true, wantBatching: true},
++		{name: "Autonomous", wantDeny: true, wantBatching: true, wantEditHook: true},
+ 		{name: "Interactive", interactive: true, wantBatching: true},
+-		{name: "BatchingOff", batchingOff: true, wantDeny: true},
++		{name: "BatchingOff", batchingOff: true, wantDeny: true, wantEditHook: true},
++		{name: "EditLoopOff", editLoopOff: true, wantDeny: true, wantBatching: true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -535,7 +540,11 @@ func TestPrepare_QuestionDenyAndBatchingHook(t *testing.T) {
+ 			engine, _ := newEngine(anchor)
+ 			runDir := t.TempDir()
+ 
+-			launch, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "p", PromptEngine: engineName, Interactive: tt.interactive}, shuttleengine.Config{})
++			cfg := shuttleengine.Config{EditLoopEdits: 4, EditLoopWindowS: 300}
++			if tt.editLoopOff {
++				cfg.EditLoopEdits = 0
++			}
++			launch, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "p", PromptEngine: engineName, Interactive: tt.interactive}, cfg)
+ 			if err != nil {
+ 				t.Fatalf("Prepare() error: %v", err)
+ 			}
+@@ -545,6 +554,9 @@ func TestPrepare_QuestionDenyAndBatchingHook(t *testing.T) {
+ 			if tt.wantBatching {
+ 				tools.batchingStatePath = statePath
+ 			}
++			if tt.wantEditHook {
++				tools.editRecordsPath = filepath.Join(runDir, shuttleengine.EditRecordsFileName)
++			}
+ 			for _, setting := range hookSettings(filepath.Join(runDir, "events.jsonl"), tools, creelDelivery{}) {
+ 				if quoted := shell.ForGOOS().Quote(setting); !strings.Contains(launch.Cmd, quoted) {
+ 					t.Errorf("Prepare() launch line = %q; want it to hold the setting %s", launch.Cmd, quoted)
+diff --git a/internal/shuttleengine/editloop.go b/internal/shuttleengine/editloop.go
+index 565dc8d4..f404e2fb 100644
+--- a/internal/shuttleengine/editloop.go
++++ b/internal/shuttleengine/editloop.go
+@@ -1,12 +1,17 @@
+ // editloop.go holds the edit-loop watch of an autonomous run's wait loop.
+ // From the run's file-edit signals it counts each agent's edits that return a file to content it held earlier,
+ // and it notifies the parent when one file's such edits reach the configured count within the configured window.
++// It also holds the content hash an engine's edit hook records with each edit.
+ 
+ package shuttleengine
+ 
+ import (
+ 	"cmp"
++	"crypto/sha256"
++	"encoding/hex"
+ 	"fmt"
++	"io"
++	"os"
+ 	"path/filepath"
+ 	"slices"
+ 	"time"
+@@ -14,6 +19,22 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
++// FileContentHash returns the hex SHA-256 of the content of the file at filePath, or "" when it cannot be read.
++// An engine's edit hook records it with each edit, so the edit-loop watch can tell an edit that restores earlier content.
++// An unreadable file only costs the watch that one edit, so the hook records the edit without a hash.
++func FileContentHash(filePath string) string {
++	file, err := os.Open(filePath)
++	if err != nil {
++		return ""
++	}
++	defer file.Close()
++	hash := sha256.New()
++	if _, err := io.Copy(hash, file); err != nil {
++		return ""
++	}
++	return hex.EncodeToString(hash.Sum(nil))
++}
++
+ // editLoopKey names one file as edited by one agent.
+ // The agent is the session itself for an empty agent id, else one of its subagents or forks.
+ type editLoopKey struct {
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index f519b2a0..583c5467 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -319,7 +319,7 @@ const EditHookVerb = "hook-edit"
+ // An edit recorded with no hash never counts toward an edit loop.
+ // An engine without it installs no such hook, so its runs get no edit-loop notice.
+ type EditRecorder interface {
+-	// RecordEdit appends the file edit the hook input payload describes to the edit records file at recordsPath.
++	// RecordEdit appends each file edit the hook input payload describes to the edit records file at recordsPath.
+ 	// The record carries the hash of the file's content right after the edit.
+ 	// A payload that names no edited file appends nothing.
+ 	RecordEdit(recordsPath string, payload []byte) error
