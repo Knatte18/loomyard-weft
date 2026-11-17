@@ -1,0 +1,14 @@
+verdict: resume
+reason: >-
+  The stop is a producer error on Code-Burler-Fix (round 1, attempt 1): the twill fixer fork
+  (agent-a654e39025dc97419.jsonl) made 5 write/edit tool calls, which the shed refuses because a fork must never mutate a file.
+  The way forward the error gives is to inspect the working-tree changes, revert what the fork wrote, and resume.
+  Read-only check of the worktree at the time of this verdict: `git status --short` shows no tracked source changes
+  (HEAD is 3b9ec898; only untracked _lym/loom/, _lym/shed/leftover-pairs-teardown/drive-reports/ and tackler/ paths),
+  so no fork-written source edit remains to revert. The weft commit 5b8f9614 ("loom: Code-Burler-Fix -> failed") holds only
+  _lym/ review, fixer-report, snapshot and status records, not source. The fork's writes therefore look already reverted or never landed.
+  A plain re-launch of the Code-Burler-Fix row, from HEAD, settles the stop. This is the first stop on this run, so it is not a repeat of a resumed stop.
+  Caveat: the re-run may fork again and mutate again; if it does, the next stop should be hand-back or escalate.
+  Also note for the parent: after the refusal, the detached fabric push (pid 4004317) was still running in the background, and the
+  gate's earlier attempts had failed (verify-4 and verify-6 logs), so the fix round's gate has not passed yet.
+goto: Code-Burler-Fix

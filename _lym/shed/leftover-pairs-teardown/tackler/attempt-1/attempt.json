@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Code-Burler-Fix",
+    "history_length": 9,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "3b9ec898340d1b1e8ba1559aa945d33386d9084b",
+    "branch": "leftover-pairs-teardown",
+    "dirty": {}
+  },
+  "spawned_at": "2026-11-17T17:45:07.589845198+01:00",
+  "deadline": "2026-11-17T17:55:07.589845198+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/leftover-pairs-teardown/_lym/shed/leftover-pairs-teardown/drive-reports/drive-envelope-20261117-174507-c6c3.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/leftover-pairs-teardown/_lym/shed/leftover-pairs-teardown/drive-reports/drive-report-20261117-174507-50a3.md",
+  "strand_guid": "e0d21e82b883ca1992cb33dba2a15444"
+}
