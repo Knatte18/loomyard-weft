@@ -462,6 +462,46 @@
       "body": "## Seen (orch, 2026-11-17)\n\nThe desk study `docs/research/gemini-antigravity-engine-study-2026-11-17.md` (`246c9146`) judged Antigravity CLI (`agy`) the better Google engine target.\nIts terms aim at third-party services reselling access, not at the operator driving the CLI with a tool they wrote, as with Codex and Claude (operator, 2026-11-17).\nSeveral of its readings are undocumented and can only be learnt hands-on.\n\n## Idea\n\nA hands-on spike like Codex's of 2026-10-24, run as darn docs, that installs `agy` and runs it in a tmux pane on Neve.\nIt answers the study's open points:\n\n- the busy, idle, trust and interrupt screens, and bracketed paste plus Enter through `paste-buffer -p`;\n- whether the keyring login works in a lym pane;\n- the hook payloads for SessionStart, PreToolUse, PostToolUse, PostInvocation and Stop (`continue`, `fullyIdle`);\n- the transcript's on-disk layout and token fields;\n- whether a conversation id can be chosen up front, and whether the `self` subagent inherits the caller's history.\n\nCap: one machine, one model, one short session per point, no lym code changed.\n",
       "created": "2026-11-17T18:54:35Z",
       "revised": "2026-11-17T18:54:35Z"
+    },
+    {
+      "id": 1440,
+      "handle": "T4",
+      "slug": "adopt-build-resplit-merge-in",
+      "title": "Merge main into the beam adopt-build-resplit",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "enhancement",
+        "batten",
+        "tender",
+        "dobby",
+        "orch",
+        "fabric",
+        "loom",
+        "cleanup",
+        "workspaces",
+        "shuttle",
+        "board",
+        "reed",
+        "termwindow",
+        "shortcut"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Merge in from parent: bring the parent branch main into the beam adopt-build-resplit.\nThis task's branch forks from the beam, so its landing carries the merge into the beam, as a true merge with no pull request.\nFiled by `lym beam merge-parent adopt-build-resplit`.\n\n- Run `lym fabric merge-in main` in this task's worktree.\n  On a conflict, settle each path it lists, stage them with `lym fabric merge-stage \u003cpaths\u003e` and conclude with `lym fabric merge --continue`.\n- Make the gate pass on the merged tree: fix what the merge broke, on either side, and nothing else.\n- Make no change the merge does not need: no refactor, no feature and no fix of an older fault.\n- When the merge is already up to date, change nothing and say so in the change description.\n- The Code-Review perch reviews the merge alone: each merge commit's conflict resolution and every commit after the merge, never the parent's own commits the merge brings in.\n  Checking the project's goal is no part of this task.\n",
+      "created": "2026-11-17T18:58:46Z",
+      "revised": "2026-11-17T18:58:46Z",
+      "run_settings": {
+        "loom": {
+          "code_hard_max_bounces": 4,
+          "code_max_bounces": 1
+        }
+      },
+      "pull_request": "merge-in",
+      "project": "adopt-build-resplit"
     }
   ],
   "prime_owner": "neve",
