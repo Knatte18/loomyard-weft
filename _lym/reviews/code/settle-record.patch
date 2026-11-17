@@ -1,0 +1,1469 @@
+diff --git a/cmd/lym/gitrepoboundary_test.go b/cmd/lym/gitrepoboundary_test.go
+index 3df92686..d6839403 100644
+--- a/cmd/lym/gitrepoboundary_test.go
++++ b/cmd/lym/gitrepoboundary_test.go
+@@ -57,6 +57,8 @@ var gitrepoPinnedRunBoundMethods = []string{
+ 	"MergeFFOnly",
+ 	"StageResolved",
+ 	"StageTrackedChanges",
++	"NewPathsIn",
++	"AddedFilesInCommits",
+ }
+ 
+ // gitrepoBoundaryMinScannedFiles is the vacuous-scan floor for this guard's single-directory walk of internal/gitrepo.
+diff --git a/contracts/stencils/webster/webster-template-master.md b/contracts/stencils/webster/webster-template-master.md
+index 270c6a1d..64f8e5fc 100644
+--- a/contracts/stencils/webster/webster-template-master.md
++++ b/contracts/stencils/webster/webster-template-master.md
+@@ -176,6 +176,10 @@ You message your parent only on the `waiting` rung below and under "A parent dec
+   Do NOT call `recover-batch` for that batch again, and do NOT begin the next batch.
+ - `record-batch` refuses with `{"batch_failed": true}` → the batch is already terminal-failed and its report archived: run `lym webster recover-batch <NN>` backgrounded, then follow the recover-batch rungs above.
+   When the refusal's message names a plan edit as its way forward (a later card still references a symbol the batch deletes), that edit is not Master's to make: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop without calling `recover-batch`.
++- `record-batch` refuses with `{"batch_failed": true}` and a message containing `the batch's commits add a secret file` → the batch's commits hold a secret file that now sits in the branch's history, and `recover-batch` would build on those commits.
++  Only the run's parent can reset the batch, since the reset refuses while the run holds its lock.
++  Write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop without calling `recover-batch`.
++  This rung takes precedence over the `batch_failed` rung above.
+ - `record-batch <NN>` or `recover-batch <NN>` refuses with a head mismatch whose way forward names `lym webster reset --to report-head --batch <NN>` → run that reset, then re-run the refused verb once.
+   A refusal of the reset, a second head mismatch, or a way forward that also needs a parent merge-in redone ends the run: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop, since a merge-in is not Master's to redo.
+   Run `reset --to report-head` for a batch at most once, and no other reset.
+diff --git a/internal/fabriccli/weft_verbs.go b/internal/fabriccli/weft_verbs.go
+index f5785041..8a5fd08b 100644
+--- a/internal/fabriccli/weft_verbs.go
++++ b/internal/fabriccli/weft_verbs.go
+@@ -187,6 +187,10 @@ in the fabric config) plus whatever the fabric config's optional pathspec adds (
+ none). The machine-local scratch directory (.lym) is NEVER staged or committed -- a path
+ under it in a commit request is refused, not silently dropped.
+ 
++A commit that would add a secret file is refused before anything is staged: a
++new file matching a pattern lym ships (such as .env or *.pem) or one the
++fabric config's secret_paths adds. The error names each file and its pattern.
++
+ Related commands:
+   lym fabric push   — commit then push in the same process
+   lym fabric sync   — commit then async-push (detached child process)`,
+diff --git a/internal/fabricengine/commit.go b/internal/fabricengine/commit.go
+index b2346fad..c7da35aa 100644
+--- a/internal/fabricengine/commit.go
++++ b/internal/fabricengine/commit.go
+@@ -1,4 +1,4 @@
+-// commit.go holds CommitResult, PartialCommitError, and Fabric.Commit.
++// commit.go holds CommitResult, PartialCommitError, and Fabric.Commit with its secret-file refusal.
+ // Fabric.Commit splits a mixed file list into a warp-side plain-git commit;
+ // the weft side is a commit that carries trailers.
+ // Both sides commit under one combined write lock whenever anything is committed,
+@@ -13,6 +13,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/secretpath"
+ )
+ 
+ // CommitResult reports what Fabric.Commit did on each side: the SHA that landed and whether a commit was made.
+@@ -75,6 +76,11 @@ var spawnDetachedPushFn = SpawnDetachedPush
+ // dropping the path would hide it, and committing it would break the never-committed contract.
+ // Because the check precedes the lock, a rejected call mutates nothing and spawns no push.
+ //
++// Commit also refuses, before any lock, a call that would add a secret file on either side.
++// A secret file is a new path the side's file list reaches, untracked or staged as added.
++// It matches a pattern lym ships or one fabric.yaml's secret_paths adds.
++// The error names every such path with its pattern; a tracked file is never refused.
++//
+ // The weft side is taken when there are weft files or snapshot tags, unless opts.SkipGit is set.
+ // Snapshot tags force a weft commit: an empty one carries the tags when there is nothing else to commit.
+ // Commit(nil, msg, tags, opts) is a supported call: it records a baseline under those tags without weft content.
+@@ -132,6 +138,14 @@ func (f *Fabric) Commit(files []string, msg string, snapshotTags []string, opts
+ 	}
+ 	weftSide := (len(weftFiles) > 0 || len(snapshotTags) > 0) && !opts.SkipGit
+ 
++	secretPaths, err := cfg.SecretPathMatcher()
++	if err != nil {
++		return CommitResult{}, err
++	}
++	if err := f.refuseSecretPaths(secretPaths, warpFiles, weftFiles, weftSide); err != nil {
++		return CommitResult{}, err
++	}
++
+ 	result, partialErr, err := f.commitBothSides(warpFiles, weftFiles, weftSide, msg, snapshotTags, opts)
+ 	if err != nil {
+ 		return result, err
+@@ -158,6 +172,29 @@ func (f *Fabric) Commit(files []string, msg string, snapshotTags []string, opts
+ 	return result, nil
+ }
+ 
++// refuseSecretPaths returns an error naming every new path that secretPaths matches.
++// The paths are those committing warpFiles would add, and weftFiles too when weftSide is set.
++// It stages nothing, so a refused Commit leaves both indexes as it found them.
++func (f *Fabric) refuseSecretPaths(secretPaths secretpath.Matcher, warpFiles, weftFiles []string, weftSide bool) error {
++	added, err := f.code.NewPathsIn(warpFiles)
++	if err != nil {
++		return fmt.Errorf("fabricengine: list the paths the warp commit would add: %w", err)
++	}
++	if weftSide {
++		weftAdded, err := f.records.NewPathsIn(weftFiles)
++		if err != nil {
++			return fmt.Errorf("fabricengine: list the paths the weft commit would add: %w", err)
++		}
++		added = append(added, weftAdded...)
++	}
++
++	hits := secretPaths.Hits(added)
++	if len(hits) == 0 {
++		return nil
++	}
++	return fmt.Errorf("fabricengine: refusing to commit %s: each matches a secret-file pattern lym ships or fabric.yaml's %s adds; way forward: delete each named file or move it out of the repository, then commit again", secretpath.Describe(hits), SecretPathsKey)
++}
++
+ // commitBothSides runs the locked section that Commit dispatches to: it commits warp first, then weft.
+ // It takes the combined write lock (`.weft/weft.write.lock`) whenever anything will commit.
+ // The lock is scoped to this helper, not to Commit, so it is released before Commit spawns the push.
+diff --git a/internal/fabricengine/commit_integration_test.go b/internal/fabricengine/commit_integration_test.go
+index b7d66da3..e6d6888b 100644
+--- a/internal/fabricengine/commit_integration_test.go
++++ b/internal/fabricengine/commit_integration_test.go
+@@ -1,6 +1,7 @@
+ // commit_integration_test.go covers Fabric.Commit's two-sided commit.
+ // It tests warp-first ordering and CommitResult fields;
+-// it also covers the spawnDetachedPushFn push seam, the empty-commit rule, and CommitWeft's inherited contract.
++// it also covers the spawnDetachedPushFn push seam, the empty-commit rule, CommitWeft's inherited contract,
++// and the never-committed and secret-file refusals.
+ // It is package fabricengine_test and reaches the unexported seams through export_test.go's ForTest shims.
+ 
+ package fabricengine_test
+@@ -12,6 +13,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+@@ -420,3 +422,74 @@ func TestCommit_DotLymPath_HardErrorsAndCommitsNothing(t *testing.T) {
+ 		t.Errorf("weft HEAD moved from %s to %s; want it unchanged by a rejected call", weftSHABefore, got)
+ 	}
+ }
++
++// TestCommit_SecretPath_RefusedAndCommitsNothing asserts that adding a secret file on either side fails Fabric.Commit.
++// The error names the path with the shipped pattern it matched and the way forward.
++// Nothing lands on either side.
++func TestCommit_SecretPath_RefusedAndCommitsNothing(t *testing.T) {
++	tiergate.Require(t, 1)
++	// Serial: it swaps the package-level `spawnDetachedPushFn` hook, so it must not run in parallel.
++	tests := []struct {
++		name    string
++		path    string
++		pattern string
++		weft    bool
++		// hubFabricKeys is appended to the hub's fabric.yaml before the call.
++		hubFabricKeys string
++	}{
++		{"Warp", "id_rsa", "id_rsa", false, ""},
++		{"Weft", "_lym/.env", ".env", true, ""},
++		{"HubPattern", "tls/server.key", "*.key", false, "secret_paths: \"*.key\"\n"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			f, warpPath, weftPath := fabricengine.NewCommitFixtureForTest(t)
++			fabricengine.SwapPushRecorderForTest(t)
++			if tt.hubFabricKeys != "" {
++				fabricConfig := configengine.ConfigFile(fabricengine.BoardDir(filepath.Dir(warpPath)), "fabric")
++				content := "branch_prefix: \"\"\npathspec: _lym _extra\n" + tt.hubFabricKeys
++				if err := os.WriteFile(fabricConfig, []byte(content), 0o644); err != nil {
++					t.Fatalf("write %s: %v", fabricConfig, err)
++				}
++			}
++
++			root := warpPath
++			if tt.weft {
++				root = weftPath
++			}
++			secretFile := filepath.Join(root, filepath.FromSlash(tt.path))
++			if err := os.MkdirAll(filepath.Dir(secretFile), 0o755); err != nil {
++				t.Fatalf("create the directory of %s: %v", secretFile, err)
++			}
++			if err := os.WriteFile(secretFile, []byte("TOKEN=secret\n"), 0o644); err != nil {
++				t.Fatalf("write %s: %v", secretFile, err)
++			}
++			warpSHABefore := fabricengine.CurrentSHAForTest(t, warpPath)
++			weftSHABefore := fabricengine.CurrentSHAForTest(t, weftPath)
++
++			result, err := f.Commit([]string{tt.path}, "should never land", nil, fabricengine.SyncOptions{})
++			if err == nil {
++				t.Fatalf("Commit(%q) error = nil; want the secret-file refusal", tt.path)
++			}
++			for _, want := range []string{tt.path + " (pattern " + tt.pattern + ")", "way forward: delete each named file"} {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("Commit(%q) error = %q; want it to contain %q", tt.path, err.Error(), want)
++				}
++			}
++			if result.WarpCommitted || result.WeftCommitted {
++				t.Errorf("Commit(%q) = %+v; want nothing committed on either side", tt.path, result)
++			}
++			if got := fabricengine.CurrentSHAForTest(t, warpPath); got != warpSHABefore {
++				t.Errorf("warp HEAD moved from %s to %s; want it unchanged by a refused call", warpSHABefore, got)
++			}
++			if got := fabricengine.CurrentSHAForTest(t, weftPath); got != weftSHABefore {
++				t.Errorf("weft HEAD moved from %s to %s; want it unchanged by a refused call", weftSHABefore, got)
++			}
++			for side, checkout := range map[string]string{"warp": warpPath, "weft": weftPath} {
++				if staged := strings.TrimSpace(gitkit.Git(t, checkout, "diff", "--cached", "--name-only")); staged != "" {
++					t.Errorf("%s index holds %q after a refused call; want nothing staged", side, staged)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/config.go b/internal/fabricengine/config.go
+index 54868dba..69b7b0e3 100644
+--- a/internal/fabricengine/config.go
++++ b/internal/fabricengine/config.go
+@@ -1,5 +1,6 @@
+ // config.go holds fabric's configuration: the Config type, its layered-load spec and LoadConfig.
+-// Config carries the warp branch prefix, the weft-sync pathspec and the warp exclude list, all in fabric.yaml.
++// Config carries the keys of fabric.yaml.
++// They are the warp branch prefix, the weft-sync pathspec, the warp exclude list and the hub's secret-file patterns.
+ // LoadConfig resolves the fabric config file strictly through internal/configengine.Load and ConfigTemplate().
+ // The fabric module never reads config files or knows their layout itself.
+ 
+@@ -10,17 +11,44 @@ import (
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/secretpath"
+ 	"gopkg.in/yaml.v3"
+ )
+ 
+ // ExcludeListKey is fabric.yaml's key holding the warp exclude list.
+ const ExcludeListKey = "warp_exclude"
+ 
+-// Config holds the settings every pair shares: the warp branch prefix, the weft-sync pathspec and the warp exclude list.
++// SecretPathsKey is fabric.yaml's key holding the secret-file patterns a hub adds to the ones lym ships.
++const SecretPathsKey = "secret_paths"
++
++// Config holds the settings every pair shares:
++// the warp branch prefix, the weft-sync pathspec, the warp exclude list and the hub's secret-file patterns.
+ type Config struct {
+ 	BranchPrefix string `yaml:"branch_prefix"`
+ 	Pathspec     string `yaml:"pathspec"`
+ 	WarpExclude  string `yaml:"warp_exclude"`
++	SecretPaths  string `yaml:"secret_paths"`
++}
++
++// SecretPathMatcher returns the matcher over lym's shipped secret-file patterns and the ones SecretPaths adds.
++// SecretPaths is split on whitespace.
++// A malformed added pattern is an error wrapping configengine.ErrInvalid that names the key.
++func (c Config) SecretPathMatcher() (secretpath.Matcher, error) {
++	m, err := secretpath.New(strings.Fields(c.SecretPaths))
++	if err != nil {
++		return secretpath.Matcher{}, fmt.Errorf("%w: fabric.yaml's %s: %w", configengine.ErrInvalid, SecretPathsKey, err)
++	}
++	return m, nil
++}
++
++// LoadSecretPathMatcher loads fabric configuration under dirs and returns its SecretPathMatcher.
++// It serves a module that refuses a secret file in commits fabric does not make.
++func LoadSecretPathMatcher(dirs configengine.Dirs) (secretpath.Matcher, error) {
++	cfg, err := LoadConfig(dirs)
++	if err != nil {
++		return secretpath.Matcher{}, err
++	}
++	return cfg.SecretPathMatcher()
+ }
+ 
+ // Dirs returns the pathspec as a slice of directory names, split on whitespace.
+@@ -35,7 +63,8 @@ func (c Config) WarpExcludePaths() []string {
+ }
+ 
+ // ConfigSpec returns fabric's layered-load spec.
+-// Each key either shapes a pair at creation or reaches every worktree through the repository-wide exclude file.
++// A key shapes a pair at creation, or it reaches every worktree through the repository-wide exclude file.
++// The secret-file key configures the guard on every commit.
+ // Every pair converges to the same value for each key, so none may be set in the local layer.
+ func ConfigSpec() configengine.Spec {
+ 	return configengine.Spec{
+@@ -46,6 +75,7 @@ func ConfigSpec() configengine.Spec {
+ 			"branch_prefix": configengine.CategoryCrossPair,
+ 			"pathspec":      configengine.CategoryCrossPair,
+ 			ExcludeListKey:  configengine.CategoryCrossPair,
++			SecretPathsKey:  configengine.CategoryGuard,
+ 		},
+ 	}
+ }
+diff --git a/internal/fabricengine/config_test.go b/internal/fabricengine/config_test.go
+index 849af238..4b9eaab7 100644
+--- a/internal/fabricengine/config_test.go
++++ b/internal/fabricengine/config_test.go
+@@ -1,7 +1,7 @@
+ // config_test.go — unit tests for fabricengine.LoadConfig.
+ //
+ // Covers: happy-path with template keys present, branch_prefix/pathspec parsing, and environment variable resolution;
+-// and the not-initialized error path.
++// the not-initialized error path; and the secret-file matcher a hub's secret_paths yields.
+ 
+ package fabricengine_test
+ 
+@@ -114,6 +114,7 @@ func TestLoadConfig(t *testing.T) {
+ 	for _, tt := range []struct{ key, line string }{
+ 		{"pathspec", "pathspec: docs\n"},
+ 		{"warp_exclude", "warp_exclude: x\n"},
++		{"secret_paths", "secret_paths: x\n"},
+ 	} {
+ 		t.Run("a local "+tt.key+" is refused naming the local file and the key", func(t *testing.T) {
+ 			board, anchor := t.TempDir(), t.TempDir()
+@@ -142,3 +143,51 @@ func TestLoadConfig(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestLoadSecretPathMatcher covers the matcher a hub's fabric.yaml yields:
++// each pattern secret_paths adds refuses its paths, the shipped patterns still apply beside them,
++// and a malformed added pattern fails as invalid config naming the key.
++func TestLoadSecretPathMatcher(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name        string
++		content     string
++		path        string
++		wantPattern string
++		wantErr     bool
++	}{
++		{name: "AddedBaseNamePattern", content: "secret_paths: \"*.key vault/*\"\n", path: "tls/server.key", wantPattern: "*.key"},
++		{name: "AddedSlashPattern", content: "secret_paths: \"*.key vault/*\"\n", path: "vault/token", wantPattern: "vault/*"},
++		{name: "ShippedPatternStillApplies", content: "secret_paths: \"*.key\"\n", path: "config/.env", wantPattern: ".env"},
++		{name: "EmptyKeyMatchesNoOrdinaryFile", content: "secret_paths: \"\"\n", path: "tls/server.key"},
++		{name: "MalformedPattern", content: "secret_paths: \"[unclosed\"\n", wantErr: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			board := t.TempDir()
++			if err := os.MkdirAll(configengine.ConfigDir(board), 0o755); err != nil {
++				t.Fatalf("failed to create _lym/config: %v", err)
++			}
++			if err := os.WriteFile(configengine.ConfigFile(board, "fabric"), []byte(tt.content), 0o644); err != nil {
++				t.Fatalf("failed to write config: %v", err)
++			}
++
++			m, err := fabricengine.LoadSecretPathMatcher(configengine.Dirs{Board: board})
++			if tt.wantErr {
++				if !errors.Is(err, configengine.ErrInvalid) || !strings.Contains(err.Error(), fabricengine.SecretPathsKey) {
++					t.Fatalf("LoadSecretPathMatcher() error = %v; want ErrInvalid naming %s", err, fabricengine.SecretPathsKey)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("LoadSecretPathMatcher() error = %v", err)
++			}
++			pattern, matched := m.Match(tt.path)
++			if pattern != tt.wantPattern || matched != (tt.wantPattern != "") {
++				t.Errorf("Match(%q) = (%q, %v); want (%q, %v)", tt.path, pattern, matched, tt.wantPattern, tt.wantPattern != "")
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 27a848c8..2093838f 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -238,6 +238,12 @@
+ // `_lym` arrives from `structuralCommittedDirs`, not from `pathspec`.
+ // Any tracked `_lym` content is therefore committed without a pathspec entry.
+ //
++// `Fabric.Commit` refuses, before any lock, a commit that would add a secret file on either side.
++// A secret file is a new path, untracked or staged as added, that `internal/secretpath` matches:
++// a pattern lym ships, or one `fabric.yaml`'s `secret_paths` key adds.
++// A tracked file is never refused.
++// `LoadSecretPathMatcher` hands the same matcher to a module that checks its own commits.
++//
+ // `configsync.ReconcileAll` -> `yamlengine.Reconcile` never rewrites a `pathspec:` key present in a `fabric.yaml`.
+ // It only adds the key when it is absent entirely.
+ // A worktree whose `fabric.yaml` records `pathspec: _pattern` keeps it until its repo is re-cloned.
+diff --git a/internal/fabricengine/template.yaml b/internal/fabricengine/template.yaml
+index 9de970dc..81c07a4d 100644
+--- a/internal/fabricengine/template.yaml
++++ b/internal/fabricengine/template.yaml
+@@ -1,3 +1,4 @@
+ branch_prefix: ${env:LYM_BRANCH_PREFIX:-}  # prefix prepended to the slug of each new pair (e.g. "hanf/"); a pair keeps the branch name it was made with, so the value can change while pairs are live; empty = branch == slug
+ pathspec: ""  # OPTIONAL per-repo directory path(s) relative to worktree root, whitespace-separated; _lym and .lym are structural and injected in code by internal/fabricengine, never read from here
+ warp_exclude: CLAUDE.local.md AGENTS.override.md .heddle .claude/settings.local.json  # OPTIONAL paths relative to a warp worktree's anchor, whitespace-separated, excluded through the warp repository's info/exclude; separate from pathspec and never wired as a junction
++secret_paths: ""  # OPTIONAL secret-file patterns, whitespace-separated, that fabric's commits and webster's record-batch refuse to add, on top of the patterns lym ships; a pattern holding a slash matches the whole repository-relative path, any other the file's base name
+diff --git a/internal/fabricengine/template_test.go b/internal/fabricengine/template_test.go
+index 5ce290cc..74379a4e 100644
+--- a/internal/fabricengine/template_test.go
++++ b/internal/fabricengine/template_test.go
+@@ -1,6 +1,6 @@
+ // template_test.go — tests for the fabric ConfigTemplate generator.
+ //
+-// Covers: ConfigTemplate returns valid YAML with its three expected keys.
++// Covers: ConfigTemplate returns valid YAML with its expected keys.
+ // It also resolves to the correct defaults when the environment is empty.
+ 
+ package fabricengine
+@@ -16,8 +16,8 @@ import (
+ )
+ 
+ // TestConfigTemplate covers the generated template, resolved against an empty environment:
+-// it is valid YAML carrying the branch_prefix, pathspec and warp_exclude keys;
+-// branch_prefix resolves to an empty string;
++// it is valid YAML carrying the branch_prefix, pathspec, warp_exclude and secret_paths keys;
++// branch_prefix and secret_paths resolve to an empty string;
+ // pathspec resolves to an empty set, whatever the environment.
+ // _lym and .lym are structural and injected in code, so the key never supplies them;
+ // an empty default leaves pathspec free to name only the optional per-repo directories the operator adds.
+@@ -25,7 +25,7 @@ import (
+ // warp_exclude resolves to exactly CLAUDE.local.md, AGENTS.override.md, .heddle and .claude/settings.local.json;
+ // and an empty pathspec leaves the routing set and the wired-name set at their structural sets alone.
+ //
+-//testtiming:keep the config template being valid YAML with its three keys, resolving to an empty branch prefix, an empty pathspec and the default warp exclude paths, and degrading to the structural sets alone; coverage of its blocks by other tests does not show an assertion of this
++//testtiming:keep the config template being valid YAML with its keys, resolving to an empty branch prefix, an empty pathspec, no added secret-file pattern and the default warp exclude paths, and degrading to the structural sets alone; coverage of its blocks by other tests does not show an assertion of this
+ func TestConfigTemplate(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -36,7 +36,7 @@ func TestConfigTemplate(t *testing.T) {
+ 	if err := yaml.Unmarshal([]byte(got), &template); err != nil {
+ 		t.Fatalf("ConfigTemplate() is not valid YAML: %v", err)
+ 	}
+-	for _, key := range []string{"branch_prefix", "pathspec", "warp_exclude"} {
++	for _, key := range []string{"branch_prefix", "pathspec", "warp_exclude", "secret_paths"} {
+ 		if _, ok := template[key]; !ok {
+ 			t.Errorf("ConfigTemplate() missing expected key: %s", key)
+ 		}
+@@ -80,6 +80,9 @@ func TestConfigTemplate(t *testing.T) {
+ 	if got, want := cfg.WarpExcludePaths(), []string{"CLAUDE.local.md", "AGENTS.override.md", ".heddle", ".claude/settings.local.json"}; !reflect.DeepEqual(got, want) {
+ 		t.Errorf("cfg.WarpExcludePaths() = %v; want %v", got, want)
+ 	}
++	if cfg.SecretPaths != "" {
++		t.Errorf("cfg.SecretPaths = %q; want empty", cfg.SecretPaths)
++	}
+ 
+ 	if len(cfg.Dirs()) != 0 {
+ 		t.Errorf("cfg.Dirs() = %v; want empty", cfg.Dirs())
+diff --git a/internal/gitrepo/gitrepo.go b/internal/gitrepo/gitrepo.go
+index 44476b0d..9844281a 100644
+--- a/internal/gitrepo/gitrepo.go
++++ b/internal/gitrepo/gitrepo.go
+@@ -7,6 +7,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"regexp"
++	"slices"
+ 	"strings"
+ 	"sync"
+ 	"time"
+@@ -166,6 +167,31 @@ func (r *Repo) StageAndCommit(msg string, files []string) (sha string, committed
+ 	return sha, true, nil
+ }
+ 
++// NewPathsIn returns, sorted, every path under pathspec that staging and committing it would add as a new file:
++// an untracked file git does not ignore, and a path already staged as added.
++// Paths are relative to the checkout root, and a pathspec that matches nothing yields none.
++func (r *Repo) NewPathsIn(pathspec []string) ([]string, error) {
++	if len(pathspec) == 0 {
++		return nil, nil
++	}
++	untracked, err := r.runChecked(append([]string{"ls-files", "--others", "--exclude-standard", "-z", "--"}, pathspec...)...)
++	if err != nil {
++		return nil, fmt.Errorf("gitrepo: git ls-files --others: %w", err)
++	}
++	staged, err := r.runChecked(append([]string{"diff", "--cached", "--name-only", "--no-renames", "--diff-filter=A", "-z", "--"}, pathspec...)...)
++	if err != nil {
++		return nil, fmt.Errorf("gitrepo: git diff --cached --diff-filter=A: %w", err)
++	}
++	var paths []string
++	for _, p := range strings.Split(untracked+"\x00"+staged, "\x00") {
++		if p != "" {
++			paths = append(paths, p)
++		}
++	}
++	slices.Sort(paths)
++	return slices.Compact(paths), nil
++}
++
+ // CommitEmpty records an empty commit whose tree is identical to its parent's.
+ // It uses `git commit --allow-empty`.
+ // It returns ErrIndexNotEmpty when the index is dirty.
+@@ -341,6 +367,31 @@ func (r *Repo) ChangedFilesSince(sha string) ([]string, error) {
+ 	})
+ }
+ 
++// AddedFilesInCommits returns, sorted and without duplicates, every repo-relative path that a commit in base..head adds.
++// The range is the commits reachable from head and not from base.
++// A commit adds the paths its tree holds over its first parent's, and a root commit adds every path it holds.
++// A path a later commit in the range deletes still counts, because the commit that added it keeps it in history.
++// A path a commit renames counts as added under its new name, and a merge commit adds none.
++// It returns ErrInvalidSHA if either SHA is invalid.
++func (r *Repo) AddedFilesInCommits(base, head string) ([]string, error) {
++	if !validSHA(base) || !validSHA(head) {
++		return nil, ErrInvalidSHA
++	}
++
++	out, err := r.runChecked("log", "--no-renames", "--diff-filter=A", "--name-only", "--format=", "-z", base+".."+head, "--")
++	if err != nil {
++		return nil, fmt.Errorf("gitrepo: git log %s..%s: %w", base, head, err)
++	}
++	var paths []string
++	for _, p := range strings.Split(out, "\x00") {
++		if p != "" {
++			paths = append(paths, p)
++		}
++	}
++	slices.Sort(paths)
++	return slices.Compact(paths), nil
++}
++
+ // treeForRev resolves rev to its commit's tree.
+ func treeForRev(repo *git.Repository, rev string) (*object.Tree, error) {
+ 	commit, err := commitByHash(repo, rev)
+diff --git a/internal/gitrepo/gitrepo_test.go b/internal/gitrepo/gitrepo_test.go
+index 4f856bfe..2f767b42 100644
+--- a/internal/gitrepo/gitrepo_test.go
++++ b/internal/gitrepo/gitrepo_test.go
+@@ -1,5 +1,5 @@
+-// gitrepo_test.go covers the read and commit primitives of Repo against real git repositories built under t.TempDir():
+-// CurrentSHA, StageAndCommit, StageAllAndCommit, ChangedFilesSince, SHAExists and CurrentBranch.
++// gitrepo_test.go covers the read and commit primitives of Repo against real git repositories built under t.TempDir().
++// The primitives are the commit verbs, the changed, added and new path reads, SHAExists and CurrentBranch.
+ // Every test spawns real git, so this file requires the hermetic TestMain in testmain_test.go.
+ 
+ package gitrepo_test
+@@ -8,6 +8,7 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 
+@@ -341,6 +342,86 @@ func TestCommitAndReadPrimitives(t *testing.T) {
+ 			}
+ 			requireSameFiles(t, "ChangedFilesSince()", got, "old.txt", "renamed.txt")
+ 		}},
++		// Leaves a clean tree.
++		{"AddedFilesInCommits lists the paths each commit in the range adds, even one a later commit deletes", func(t *testing.T) {
++			base := requireCurrentSHA(t, repo)
++			writeFile(t, dir, "a.txt", "modified for the added-files step")
++			writeFile(t, dir, "added.txt", "new")
++			commitAll(t, dir, "add one file, modify another")
++			head := requireCurrentSHA(t, repo)
++
++			got, err := repo.AddedFilesInCommits(base, head)
++			if err != nil {
++				t.Fatalf("AddedFilesInCommits() error = %v; want nil", err)
++			}
++			if want := []string{"added.txt"}; !slices.Equal(got, want) {
++				t.Errorf("AddedFilesInCommits(base, head) = %v; want %v", got, want)
++			}
++			reversed, err := repo.AddedFilesInCommits(head, base)
++			if err != nil {
++				t.Fatalf("AddedFilesInCommits(head, base) error = %v; want nil", err)
++			}
++			if len(reversed) != 0 {
++				t.Errorf("AddedFilesInCommits(head, base) = %v; want empty (base is an ancestor of head, so no commit is in head's range)", reversed)
++			}
++
++			writeFile(t, dir, "transient.txt", "added, then deleted")
++			commitAll(t, dir, "add transient.txt")
++			gitkit.MustRun(t, dir, "git", "rm", "-q", "transient.txt")
++			gitkit.MustRun(t, dir, "git", "commit", "-m", "delete transient.txt")
++			tip := requireCurrentSHA(t, repo)
++
++			spanning, err := repo.AddedFilesInCommits(head, tip)
++			if err != nil {
++				t.Fatalf("AddedFilesInCommits(head, tip) error = %v; want nil", err)
++			}
++			if want := []string{"transient.txt"}; !slices.Equal(spanning, want) {
++				t.Errorf("AddedFilesInCommits(head, tip) = %v; want %v (the net tree delta is empty, the history is not)", spanning, want)
++			}
++		}},
++		// Leaves a clean tree: the step unstages, removes and restores what it made.
++		{"NewPathsIn lists the untracked and staged-added paths a commit of the pathspec would add", func(t *testing.T) {
++			infoDir := filepath.Join(dir, ".git", "info")
++			if err := os.MkdirAll(infoDir, 0o755); err != nil {
++				t.Fatalf("create %s: %v", infoDir, err)
++			}
++			writeFile(t, infoDir, "exclude", "ignored.txt\n")
++			writeFile(t, dir, "a.txt", "tracked edit")
++			writeFile(t, dir, "fresh.txt", "untracked")
++			writeFile(t, dir, "ignored.txt", "ignored")
++			writeFile(t, dir, "staged.txt", "staged")
++			gitkit.MustRun(t, dir, "git", "add", "staged.txt")
++
++			got, err := repo.NewPathsIn([]string{"."})
++			if err != nil {
++				t.Fatalf("NewPathsIn(.) error = %v; want nil", err)
++			}
++			if want := []string{"fresh.txt", "staged.txt"}; !slices.Equal(got, want) {
++				t.Errorf("NewPathsIn(.) = %v; want %v (never the tracked edit or the ignored file)", got, want)
++			}
++			scoped, err := repo.NewPathsIn([]string{"fresh.txt", "absent.txt"})
++			if err != nil {
++				t.Fatalf("NewPathsIn(fresh.txt, absent.txt) error = %v; want nil", err)
++			}
++			if want := []string{"fresh.txt"}; !slices.Equal(scoped, want) {
++				t.Errorf("NewPathsIn(fresh.txt, absent.txt) = %v; want %v", scoped, want)
++			}
++			none, err := repo.NewPathsIn(nil)
++			if err != nil {
++				t.Fatalf("NewPathsIn(nil) error = %v; want nil", err)
++			}
++			if len(none) != 0 {
++				t.Errorf("NewPathsIn(nil) = %v; want none (an empty pathspec must not list the whole checkout)", none)
++			}
++
++			gitkit.MustRun(t, dir, "git", "rm", "--cached", "-q", "staged.txt")
++			gitkit.MustRun(t, dir, "git", "checkout", "--", "a.txt")
++			for _, name := range []string{"fresh.txt", "ignored.txt", "staged.txt"} {
++				if err := os.Remove(filepath.Join(dir, name)); err != nil {
++					t.Fatalf("remove %s: %v", name, err)
++				}
++			}
++		}},
+ 		{"ChangedFilesSince errors on a fabricated sha", func(t *testing.T) {
+ 			if _, err := repo.ChangedFilesSince("0123456789abcdef0123456789abcdef01234567"); err == nil {
+ 				t.Fatal("ChangedFilesSince(fabricated sha) error = nil; want an error")
+diff --git a/internal/secretpath/doc.go b/internal/secretpath/doc.go
+new file mode 100644
+index 00000000..4af6fc22
+--- /dev/null
++++ b/internal/secretpath/doc.go
+@@ -0,0 +1,5 @@
++// Package secretpath decides whether a repository-relative path names a secret file.
++// No lym commit path may add such a file, for example a `.env` file or a private key.
++// lym ships a fixed pattern list; a hub adds its own patterns, which never lift a shipped one.
++// It imports the standard library only.
++package secretpath
+diff --git a/internal/secretpath/leaf_enforcement_test.go b/internal/secretpath/leaf_enforcement_test.go
+new file mode 100644
+index 00000000..bf762143
+--- /dev/null
++++ b/internal/secretpath/leaf_enforcement_test.go
+@@ -0,0 +1,17 @@
++// leaf_enforcement_test.go enforces internal/secretpath's import cap from PATTERN-leaf-packages:
++// production code in internal/secretpath imports the standard library alone.
++
++package secretpath
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/scankit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestLeafInvariant_StandardLibraryOnly(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	scankit.AssertImportAllowlist(t, "internal/secretpath")
++}
+diff --git a/internal/secretpath/secretpath.go b/internal/secretpath/secretpath.go
+new file mode 100644
+index 00000000..d79a710d
+--- /dev/null
++++ b/internal/secretpath/secretpath.go
+@@ -0,0 +1,75 @@
++// secretpath.go holds the shipped secret-file patterns, the Matcher over them and a hub's, and the hit rendering.
++
++package secretpath
++
++import (
++	"fmt"
++	"path"
++	"path/filepath"
++	"slices"
++	"strings"
++)
++
++// shippedPatterns are the secret-file patterns every Matcher refuses, whatever a hub adds.
++var shippedPatterns = []string{".env", "*.pem", "id_rsa", "credentials*", "secrets.y*ml"}
++
++// Matcher matches repository-relative paths against lym's shipped secret-file patterns and a hub's added ones.
++// A pattern holding a slash matches the whole slash-separated path; any other pattern matches the path's base name.
++// The zero Matcher matches the shipped patterns alone.
++type Matcher struct {
++	added []string
++}
++
++// New returns a Matcher over the shipped patterns and added.
++// It refuses an added pattern that path.Match cannot parse, naming the pattern.
++func New(added []string) (Matcher, error) {
++	for _, p := range added {
++		if _, err := path.Match(p, ""); err != nil {
++			return Matcher{}, fmt.Errorf("secretpath: malformed pattern %q: %w", p, err)
++		}
++	}
++	return Matcher{added: slices.Clone(added)}, nil
++}
++
++// Hit is one path a Matcher refuses, with the first pattern it matched.
++type Hit struct {
++	Path    string
++	Pattern string
++}
++
++// Match returns the first pattern relPath matches, shipped patterns first, and whether any did.
++func (m Matcher) Match(relPath string) (pattern string, matched bool) {
++	slashed := filepath.ToSlash(relPath)
++	base := path.Base(slashed)
++	for _, p := range slices.Concat(shippedPatterns, m.added) {
++		target := base
++		if strings.Contains(p, "/") {
++			target = slashed
++		}
++		// New refused every pattern path.Match cannot parse, so the error is always nil.
++		if ok, _ := path.Match(p, target); ok {
++			return p, true
++		}
++	}
++	return "", false
++}
++
++// Hits returns, in input order, every path of relPaths that the Matcher refuses.
++func (m Matcher) Hits(relPaths []string) []Hit {
++	var hits []Hit
++	for _, p := range relPaths {
++		if pattern, ok := m.Match(p); ok {
++			hits = append(hits, Hit{Path: p, Pattern: pattern})
++		}
++	}
++	return hits
++}
++
++// Describe renders hits for a refusal as `<path> (pattern <pattern>)` items joined by ", ".
++func Describe(hits []Hit) string {
++	items := make([]string, len(hits))
++	for i, h := range hits {
++		items[i] = fmt.Sprintf("%s (pattern %s)", h.Path, h.Pattern)
++	}
++	return strings.Join(items, ", ")
++}
+diff --git a/internal/secretpath/secretpath_test.go b/internal/secretpath/secretpath_test.go
+new file mode 100644
+index 00000000..6733c37d
+--- /dev/null
++++ b/internal/secretpath/secretpath_test.go
+@@ -0,0 +1,77 @@
++// secretpath_test.go covers which paths a Matcher refuses, the malformed-pattern refusal and the hit rendering.
++
++package secretpath_test
++
++import (
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/secretpath"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestMatcher_Match(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name        string
++		added       []string
++		path        string
++		wantPattern string
++	}{
++		{"EnvAtRoot", nil, ".env", ".env"},
++		{"EnvInSubdirectory", nil, "config/.env", ".env"},
++		{"PemKey", nil, "certs/server.pem", "*.pem"},
++		{"PrivateKey", nil, "home/id_rsa", "id_rsa"},
++		{"CredentialsFile", nil, "credentials.json", "credentials*"},
++		{"SecretsYml", nil, "deploy/secrets.yml", "secrets.y*ml"},
++		{"SecretsYaml", nil, "secrets.yaml", "secrets.y*ml"},
++		{"EnvExampleAllowed", nil, ".env.example", ""},
++		{"PublicKeyAllowed", nil, "id_rsa.pub", ""},
++		{"OrdinaryFileAllowed", nil, "internal/foo/impl.go", ""},
++		{"AddedBaseNamePattern", []string{"*.key"}, "tls/server.key", "*.key"},
++		{"AddedSlashPatternMatchesWholePath", []string{"config/prod.json"}, "config/prod.json", "config/prod.json"},
++		{"AddedSlashPatternSkipsDeeperPath", []string{"config/prod.json"}, "other/config/prod.json", ""},
++		{"ShippedPatternWinsOverAdded", []string{".e*"}, ".env", ".env"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			m, err := secretpath.New(tt.added)
++			if err != nil {
++				t.Fatalf("New(%q) error = %v", tt.added, err)
++			}
++			pattern, matched := m.Match(tt.path)
++			if pattern != tt.wantPattern || matched != (tt.wantPattern != "") {
++				t.Errorf("Match(%q) = (%q, %v); want (%q, %v)", tt.path, pattern, matched, tt.wantPattern, tt.wantPattern != "")
++			}
++		})
++	}
++}
++
++func TestNew_RefusesMalformedPattern(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	_, err := secretpath.New([]string{"*.key", "[unclosed"})
++	if err == nil {
++		t.Fatal("New() error = nil; want the malformed pattern refused")
++	}
++	if !strings.Contains(err.Error(), `"[unclosed"`) {
++		t.Errorf("New() error = %q; want it to name the malformed pattern", err.Error())
++	}
++}
++
++func TestHits_DescribeNamesEachPathAndPattern(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	var m secretpath.Matcher
++	hits := m.Hits([]string{"README.md", "keys/id_rsa", ".env"})
++	want := []secretpath.Hit{{Path: "keys/id_rsa", Pattern: "id_rsa"}, {Path: ".env", Pattern: ".env"}}
++	if !reflect.DeepEqual(hits, want) {
++		t.Fatalf("Hits() = %v; want %v", hits, want)
++	}
++	if got, want := secretpath.Describe(hits), "keys/id_rsa (pattern id_rsa), .env (pattern .env)"; got != want {
++		t.Errorf("Describe() = %q; want %q", got, want)
++	}
++}
+diff --git a/internal/secretpath/testmain_test.go b/internal/secretpath/testmain_test.go
+new file mode 100644
+index 00000000..eca55b97
+--- /dev/null
++++ b/internal/secretpath/testmain_test.go
+@@ -0,0 +1,15 @@
++// testmain_test.go runs the package's tests under tmuxkit.Main,
++// so their temp files live in the process run directory and go with it.
++
++package secretpath
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++func TestMain(m *testing.M) {
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/internal/webstercli/cli.go b/internal/webstercli/cli.go
+index 8bda9c09..371f3d27 100644
+--- a/internal/webstercli/cli.go
++++ b/internal/webstercli/cli.go
+@@ -37,6 +37,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/preflight"
++	"github.com/Knatte18/loomyard/internal/secretpath"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/websterengine"
+ 	"github.com/spf13/cobra"
+@@ -111,6 +112,10 @@ type websterCLI struct {
+ 	// parentBranch lazily reads the pair's recorded parent branch from fabric's origin record.
+ 	// The clean-parent-merge rule needs it; standalone leaves it nil, since no merge commit is accepted.
+ 	parentBranch websterengine.ParentBranchFunc
++	// secretPaths lazily loads the secret-file matcher record-batch checks a batch's commits against.
++	// wireHub sets it to read fabric.yaml, so no other verb loads it;
++	// standalone leaves it nil, and record-batch then checks lym's shipped patterns alone.
++	secretPaths func() (secretpath.Matcher, error)
+ 	// runProcDir is the hub-level directory holding the owner records of a run's processes; wireHub sets it.
+ 	// pairSlugRead lazily reads the worktree's pair slug from fabric's origin record; it stays nil in standalone.
+ 	runProcDir   string
+diff --git a/internal/webstercli/recordbatch.go b/internal/webstercli/recordbatch.go
+index 892b03b4..e00dac98 100644
+--- a/internal/webstercli/recordbatch.go
++++ b/internal/webstercli/recordbatch.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
++	"github.com/Knatte18/loomyard/internal/secretpath"
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
+ 	"github.com/Knatte18/loomyard/internal/websterengine"
+ 	"github.com/spf13/cobra"
+@@ -76,7 +77,9 @@ and no recovery is spent. A call on a waiting batch refuses, naming
+ A batch rejected on its merits exits non-zero with {"batch_failed": true,
+ "batch": "NN-<slug>", "warnings": [...]} after its terminal failed state
+ and archived report are saved and committed; the error names
+-"lym webster recover-batch NN". The envelope also carries "card_amended": true
++"lym webster recover-batch NN". A batch whose commits add a secret file
++fails the same way; its error names the run's parent's way forward.
++The envelope also carries "card_amended": true
+ when a card of the batch was amended after its attempt began, which forces the
+ batch failed whatever its report says. A report that cannot be attributed to a
+ fork of this bracket is archived and committed, and the call exits non-zero
+@@ -108,6 +111,13 @@ Example:
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
+ 				return nil
+ 			}
++			var secretPaths secretpath.Matcher
++			if c.secretPaths != nil {
++				if secretPaths, err = c.secretPaths(); err != nil {
++					clihelp.SetExit(cmd.Context(), output.Err(out, configLoadError("fabric.yaml", err).Error()))
++					return nil
++				}
++			}
+ 			mutateLock, err := websterengine.AcquireStateMutation(c.geom.ScratchDir)
+ 			if err != nil {
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
+@@ -149,6 +159,7 @@ Example:
+ 				Sleeper:      realSleeper{},
+ 				Plan:         plan,
+ 				ParentBranch: c.parentBranch,
++				SecretPaths:  secretPaths,
+ 			}
+ 
+ 			fingerprintBefore := st.PlanFingerprint
+diff --git a/internal/webstercli/secretpaths_test.go b/internal/webstercli/secretpaths_test.go
+new file mode 100644
+index 00000000..b9f6dc1a
+--- /dev/null
++++ b/internal/webstercli/secretpaths_test.go
+@@ -0,0 +1,73 @@
++// secretpaths_test.go covers record-batch's use of the secret-file matcher its CLI loads.
++
++package webstercli
++
++import (
++	"fmt"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/secretpath"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/websterengine"
++)
++
++// TestRecordBatchCmd_SecretPaths proves record-batch fails a batch whose commit adds a path the loaded matcher matches.
++// A loader that fails with an invalid config refuses the verb with the fabric.yaml way forward instead.
++// Serial: each subtest sets FABRIC_SKIP_GIT through t.Setenv, so none calls t.Parallel.
++func TestRecordBatchCmd_SecretPaths(t *testing.T) {
++	tiergate.Require(t, 1)
++	tests := []struct {
++		name        string
++		secretPaths func() (secretpath.Matcher, error)
++		wantSubstrs []string
++	}{
++		{
++			name:        "HubPatternFailsBatch",
++			secretPaths: func() (secretpath.Matcher, error) { return secretpath.New([]string{"*.key"}) },
++			wantSubstrs: []string{`"batch_failed":true`, "tls/server.key (pattern *.key)", "lym webster reset --to batch-start --batch 01"},
++		},
++		{
++			name: "InvalidFabricYAMLRefused",
++			secretPaths: func() (secretpath.Matcher, error) {
++				return secretpath.Matcher{}, fmt.Errorf("fabric.yaml secret_paths: %w", configengine.ErrInvalid)
++			},
++			wantSubstrs: []string{"webster: fabric.yaml did not load", "way forward: fix fabric.yaml under _lym/config"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Setenv("FABRIC_SKIP_GIT", "1")
++			fx := newVerbsFixture(t)
++			fx.CLI.secretPaths = tt.secretPaths
++			st := fx.initState(t)
++			startSHA := gitkit.RevParse(t, fx.CLI.geom.WorktreeRoot, "HEAD")
++			headSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "tls/server.key", "key material\n", "01.1: add the key")
++			st.Batches[1] = &websterengine.BatchState{Slug: "only", StartSHA: startSHA, Kind: "fork"}
++			st.CurrentBatch = 1
++			if err := websterengine.SaveState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir, st); err != nil {
++				t.Fatalf("SaveState() error = %v", err)
++			}
++			fx.Engine.Audit = shuttleengine.ForkAudit{
++				Forks: []shuttleengine.ForkReport{{TranscriptPath: "subagents/fork1.jsonl", ReportReturned: true}},
++			}
++			writeBatchReport(t, fx.CLI.geom.ReportsDir, headSHA)
++
++			var out strings.Builder
++			exitCode := clihelp.Execute(fx.CLI.recordBatchCmd(), &out, []string{"1"})
++
++			if exitCode == 0 {
++				t.Fatalf("record-batch 1 = 0; want non-zero, output: %s", out.String())
++			}
++			for _, want := range tt.wantSubstrs {
++				if !strings.Contains(out.String(), want) {
++					t.Errorf("output missing %q; got %q", want, out.String())
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/webstercli/secretpaths_wiring_test.go b/internal/webstercli/secretpaths_wiring_test.go
+new file mode 100644
+index 00000000..f97d4344
+--- /dev/null
++++ b/internal/webstercli/secretpaths_wiring_test.go
+@@ -0,0 +1,67 @@
++// secretpaths_wiring_test.go covers the hub matcher that wireHub loads from fabric.yaml.
++// record-batch's secret-file guard reads that matcher.
++
++package webstercli
++
++import (
++	"errors"
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/preflight"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestWire_HubLoadsSecretPathsFromFabricYAML proves hub wiring hands record-batch a loader over the hub's fabric.yaml.
++// An added pattern matches beside the shipped ones, and a malformed one fails the load as an invalid config.
++// Serial: wire sets the process-global logger sink, so neither the test nor its subtests call t.Parallel.
++func TestWire_HubLoadsSecretPathsFromFabricYAML(t *testing.T) {
++	tiergate.Require(t, 0)
++	tests := []struct {
++		name        string
++		secretPaths string
++		wantPattern string
++		wantInvalid bool
++	}{
++		{"AddedPattern", "secret_paths: \"*.key\"\n", "*.key", false},
++		{"MalformedPattern", "secret_paths: \"[unclosed\"\n", "", true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			hub := t.TempDir()
++			loc := hubLocation(t, hub, fabricengine.BoltDirName, ".")
++			boardDir := fabricengine.BoardDir(hub)
++			if err := os.MkdirAll(configengine.ConfigDir(boardDir), 0o755); err != nil {
++				t.Fatalf("mkdir config dir: %v", err)
++			}
++			fabricConfig := configengine.ConfigFile(boardDir, "fabric")
++			if err := os.WriteFile(fabricConfig, []byte("branch_prefix: \"\"\npathspec: _lym\n"+tt.secretPaths), 0o644); err != nil {
++				t.Fatalf("write %s: %v", fabricConfig, err)
++			}
++
++			c := &websterCLI{}
++			if err := c.wire(loc, preflight.ModeHub, "", "", "", ""); err != nil {
++				t.Fatalf("wire() = %v; want nil", err)
++			}
++			if c.secretPaths == nil {
++				t.Fatal("secretPaths = nil; want hub wiring to supply the fabric.yaml loader")
++			}
++
++			matcher, err := c.secretPaths()
++			if tt.wantInvalid {
++				if !errors.Is(err, configengine.ErrInvalid) {
++					t.Fatalf("secretPaths() error = %v; want errors.Is(err, configengine.ErrInvalid)", err)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("secretPaths() error = %v; want nil", err)
++			}
++			if pattern, matched := matcher.Match("tls/server.key"); !matched || pattern != tt.wantPattern {
++				t.Errorf("Match(tls/server.key) = (%q, %v); want (%q, true)", pattern, matched, tt.wantPattern)
++			}
++		})
++	}
++}
+diff --git a/internal/webstercli/wiring.go b/internal/webstercli/wiring.go
+index ff3f31d0..abdbfe9e 100644
+--- a/internal/webstercli/wiring.go
++++ b/internal/webstercli/wiring.go
+@@ -26,6 +26,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/preflight"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/secretpath"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengines"
+ 	"github.com/Knatte18/loomyard/internal/standalonegeom"
+@@ -226,6 +227,9 @@ func (c *websterCLI) wireHub(loc *lymcwd.Location, stencilsDir, planDir, targetD
+ 		}
+ 		return origin.ParentBranch, nil
+ 	}
++	c.secretPaths = func() (secretpath.Matcher, error) {
++		return fabricengine.LoadSecretPathMatcher(fabricengine.ConfigDirs(loc))
++	}
+ 	c.runProcDir = fabricengine.RunProcDir(loc.HubPath)
+ 	c.pairSlugRead = func() string { return originPairSlug(loc) }
+ 	c.batcher = activeBatcher
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 667d5e18..adc39874 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -406,6 +406,15 @@
+ // A correctness finding fails the batch on its merits instead of wedging it.
+ // The batch goes terminal with digest status failed and its reasons.
+ // The report is archived, and record-batch returns *BatchFailedError naming `lym webster recover-batch`.
++// A batch whose commits add a secret file fails the same way, whatever its report says.
++// A secret file is a path that RecordDeps.SecretPaths matches.
++// Some commit from the batch's start commit to its head must add it, whether or not a later commit deletes it.
++// A batch that also trips a correctness finding fails on the secret file instead, so the way forward names the file.
++// The file sits in the branch's history, and recover-batch would build on the commits that hold it.
++// Master therefore stops with outcome stuck on this failure.
++// The run's parent then resets the batch to its start.
++// The reset drops the commits and the files they added.
++// The parent then recovers the batch.
+ // recover-batch proceeds from a failed batch and hands its strand the failure digest.
+ // The exception is a batch failed on a correctness finding the recovery check cannot verify.
+ // Such a finding has no path or a path outside the tracked tree and the plan directory.
+diff --git a/internal/websterengine/git.go b/internal/websterengine/git.go
+index 46096442..ad503de8 100644
+--- a/internal/websterengine/git.go
++++ b/internal/websterengine/git.go
+@@ -34,6 +34,9 @@ type Git interface {
+ 	NonMergeCommitsBetween(worktree, base, head string) (bool, error)
+ 	// OtherWorktrees returns the canonical root of every worktree of the repository except the given one.
+ 	OtherWorktrees(worktree string) ([]string, error)
++	// AddedPaths returns, sorted, the repository-relative paths that a commit in base..head adds over its first parent.
++	// A path a later commit in the range deletes still counts.
++	AddedPaths(worktree, base, head string) ([]string, error)
+ }
+ 
+ // realGit implements Git over the repository on disk;
+@@ -76,6 +79,10 @@ func (realGit) IgnoredPath(worktree, path string) (bool, error) { return ignored
+ 
+ func (realGit) OtherWorktrees(worktree string) ([]string, error) { return otherWorktrees(worktree) }
+ 
++func (realGit) AddedPaths(worktree, base, head string) ([]string, error) {
++	return addedPaths(worktree, base, head)
++}
++
+ func (realGit) PathDiffers(worktree, base, path string) (bool, error) {
+ 	return worktreePathDiffers(worktree, base, path)
+ }
+diff --git a/internal/websterengine/gitfake_test.go b/internal/websterengine/gitfake_test.go
+index a9271a02..043bdf47 100644
+--- a/internal/websterengine/gitfake_test.go
++++ b/internal/websterengine/gitfake_test.go
+@@ -58,12 +58,20 @@ type fakeGit struct {
+ 	treeBlobPaths map[string][]string
+ 	// logs maps a registered commit to the entry CommitLog returns for it; a commit not listed has an empty subject and no departures.
+ 	logs map[string]websterengine.CommitLogEntry
++	// added maps a base and head commit pair to the paths AddedPaths reports for that range.
++	// A pair not listed adds none.
++	added map[addedRange][]string
+ 	// commitLogCalls counts the CommitLog calls.
+ 	commitLogCalls int
+ 	// registered counts the SHAs minted so far.
+ 	registered int
+ }
+ 
++// addedRange is the base and head commit of one AddedPaths call.
++type addedRange struct {
++	base, head string
++}
++
+ // fakeIndex is the real planindex.Index except Delta, which answers from fields a test sets and records the commit range of every call.
+ // The zero values answer an empty delta.
+ type fakeIndex struct {
+@@ -341,6 +349,10 @@ func (g *fakeGit) IgnoredPath(_, path string) (bool, error) { return g.ignored[p
+ 
+ func (g *fakeGit) OtherWorktrees(string) ([]string, error) { return g.others, nil }
+ 
++func (g *fakeGit) AddedPaths(_, base, head string) ([]string, error) {
++	return g.added[addedRange{base: base, head: head}], nil
++}
++
+ func (g *fakeGit) PathDiffers(_, _, path string) (bool, error) { return g.differing[path], nil }
+ 
+ // WorktreeBlob returns the SHA-1 of the file's bytes, or an empty string when the file does not exist.
+diff --git a/internal/websterengine/gitwrap.go b/internal/websterengine/gitwrap.go
+index 5bda03b3..163a9ea0 100644
+--- a/internal/websterengine/gitwrap.go
++++ b/internal/websterengine/gitwrap.go
+@@ -445,6 +445,15 @@ func treePathsWithBlob(worktree, commit, blob string) ([]string, error) {
+ 	return paths, nil
+ }
+ 
++// addedPaths returns, sorted, the repository-relative paths that a commit in base..head adds over its first parent.
++func addedPaths(worktree, base, head string) ([]string, error) {
++	paths, err := gitrepo.New(worktree).AddedFilesInCommits(base, head)
++	if err != nil {
++		return nil, fmt.Errorf("websterengine: paths added between %s and %s in %s: %w", base, head, worktree, err)
++	}
++	return paths, nil
++}
++
+ // shaExists reports whether sha names a commit in worktree's repository.
+ func shaExists(worktree, sha string) bool {
+ 	return gitrepo.New(worktree).SHAExists(sha)
+diff --git a/internal/websterengine/recordbatch.go b/internal/websterengine/recordbatch.go
+index 2fc48c6d..08a4b794 100644
+--- a/internal/websterengine/recordbatch.go
++++ b/internal/websterengine/recordbatch.go
+@@ -5,6 +5,7 @@
+ // It always advances the transcript attribution.
+ // It checks that the batch report is present and parses it.
+ // It cross-checks the report's head SHA against the fork's self-reported head_sha.
++// It fails a batch whose commits add a secret file.
+ // It persists the distilled digest.
+ // RecordBatch never touches the fabric repo.
+ // The caller fabric-commits state.json and the batch report once RecordBatch returns successfully.
+@@ -25,6 +26,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/cardverify"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/runplan"
++	"github.com/Knatte18/loomyard/internal/secretpath"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
+@@ -36,6 +38,11 @@ var ErrNoBeginRecord = errors.New("webster: record-batch called with no begin-ba
+ // ErrReportArchived marks a batch report that was archived because record-batch could not attribute it to a fork.
+ var ErrReportArchived = errors.New("webster: report archived")
+ 
++// SecretFileFailureReason opens the reason of a batch that failed because its commits add a secret file.
++// The commits sit in the branch's history, and recover-batch would build on them.
++// Master therefore stops on a failure carrying this text and leaves the reset to the run's parent.
++const SecretFileFailureReason = "the batch's commits add a secret file"
++
+ // ReportArchivedError reports a batch report that record-batch could not attribute to a fork of its bracket.
+ // The report is archived, and begin-batch re-drives the batch.
+ // Cause is the attribution failure: no begin-batch record, no fork transcripts, or a missing transcript directory.
+@@ -223,6 +230,9 @@ type RecordDeps struct {
+ 	// VerifyTimeout bounds each card verify command the policy-warning evidence re-run executes;
+ 	// zero means cardverify.DefaultTimeout.
+ 	VerifyTimeout time.Duration
++	// SecretPaths matches the secret files a batch's commits must not add;
++	// the zero Matcher holds lym's shipped patterns alone.
++	SecretPaths secretpath.Matcher
+ }
+ 
+ // RecordResult is what a successful record-batch call returns.
+@@ -268,6 +278,9 @@ func archiveUnattributable(deps RecordDeps, number int, slug string, cause error
+ // A correctness finding, or a policy finding whose evidence re-run fails, fails the batch.
+ // Such a failure returns a *BatchFailedError naming `lym webster recover-batch`.
+ // It comes with a RecordResult carrying the failed digest.
++// A batch whose commits add a secret file fails the same way, whatever its report says.
++// That failure comes ahead of any correctness finding.
++// Its way forward is the run's parent's, since recover-batch would build on the commits that hold the file.
+ // A NEEDS_PARENT report records the batch as waiting with its need and archives the report.
+ // A call on a waiting batch refuses, naming the resume step.
+ // An OK report returns *LaterTargetRemovedError once per bracket:
+@@ -437,6 +450,17 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 				return nil, rerr
+ 			}
+ 		}
++		// A secret file in the batch's commits outranks the finding:
++		// the plain recover-batch way forward would keep the file in the branch's history.
++		if headSHA != "" {
++			bfe, serr := failOnSecretPaths(deps, bs, number, slug, headSHA, all, newPaths)
++			if serr != nil {
++				return nil, serr
++			}
++			if bfe != nil {
++				return &RecordResult{Digest: bs.Digest, Failed: true, Warnings: warnings}, bfe
++			}
++		}
+ 		return failOnCorrectness(deps, bs, number, slug, headSHA, all, correctness, newPaths, warnings)
+ 	}
+ 
+@@ -507,6 +531,14 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 		warnings = append(warnings, moved)
+ 	}
+ 
++	// A secret file the batch committed sits in the branch's history whatever the report says,
++	// so the batch fails before any evidence re-run or post-batch pass.
++	if bfe, err := failOnSecretPaths(deps, bs, number, slug, report.HeadSHA, nil, nil); err != nil {
++		return nil, err
++	} else if bfe != nil {
++		return &RecordResult{Digest: bs.Digest, Failed: true, Warnings: warnings}, bfe
++	}
++
+ 	// An OK report with policy findings, or a batch with earlier warnings, needs its cards' verify commands to pass:
+ 	// a policy warning is only safe to carry once the work is evidenced.
+ 	// A FAILED report takes its policy findings as warnings with no re-run.
+@@ -602,6 +634,54 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 	return &RecordResult{Digest: &digest, Warnings: warnings}, nil
+ }
+ 
++// failOnSecretPaths fails the batch when a commit from its start commit to headSHA adds a path deps.SecretPaths matches.
++// It returns nil and nil when none does.
++// findings are audit findings the batch also tripped: each joins the reasons and is marked failed.
++// newTranscripts are the transcripts the failure consumes.
++// The commits sit in the branch's history, and recover-batch builds on them.
++// So the way forward is the run's parent's, once the run has stopped:
++// the reset drops the commits and the files they added, and recover-batch then re-drives the batch.
++func failOnSecretPaths(deps RecordDeps, bs *BatchState, number int, slug, headSHA string, findings []classifiedFinding, newTranscripts []string) (*BatchFailedError, error) {
++	added, err := deps.Geom.git().AddedPaths(deps.Geom.WorktreeRoot, bs.StartSHA, headSHA)
++	if err != nil {
++		return nil, err
++	}
++	hits := deps.SecretPaths.Hits(added)
++	if len(hits) == 0 {
++		return nil, nil
++	}
++	steps := wayForwardSteps(
++		resetVerb(ResetToBatchStart, number),
++		fmt.Sprintf("lym webster recover-batch %02d", number),
++	)
++	reasons := []string{SecretFileFailureReason + ": " + secretpath.Describe(hits)}
++	for _, cf := range findings {
++		reasons = append(reasons, cf.Violation.Error())
++	}
++	bfe, err := failBatch(failBatchInput{
++		State:          deps.State,
++		Batch:          bs,
++		Number:         number,
++		Slug:           slug,
++		ReportsDir:     deps.Geom.ReportsDir,
++		PaneCwd:        deps.Geom.PaneCwd,
++		WorktreeRoot:   deps.Geom.WorktreeRoot,
++		Git:            deps.Geom.Git,
++		HeadSHA:        headSHA,
++		Reasons:        reasons,
++		NewTranscripts: newTranscripts,
++		WayForward:     "for the run's parent, once the run has stopped: " + strings.TrimPrefix(steps, "way forward: "),
++		Now:            time.Now,
++	})
++	if err != nil {
++		return nil, err
++	}
++	for _, cf := range findings {
++		recordFailedFinding(deps.State, cf.ID)
++	}
++	return bfe, nil
++}
++
+ // failOnCorrectness fails the batch on its audit findings, naming the correctness findings' paths as suspects.
+ // A correctness finding with no path is recorded as uncheckable, since recovery cannot verify it.
+ func failOnCorrectness(deps RecordDeps, bs *BatchState, number int, slug, headSHA string, all, correctness []classifiedFinding, newPaths, warnings []string) (*RecordResult, error) {
+diff --git a/internal/websterengine/recordbatch_test.go b/internal/websterengine/recordbatch_test.go
+index bdd7a2b8..594131ef 100644
+--- a/internal/websterengine/recordbatch_test.go
++++ b/internal/websterengine/recordbatch_test.go
+@@ -27,6 +27,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/planindex"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/runplan"
++	"github.com/Knatte18/loomyard/internal/secretpath"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/plankit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shuttlefake"
+@@ -1451,6 +1452,81 @@ func TestRecordBatch_NeedsParentWaits(t *testing.T) {
+ 	}
+ }
+ 
++// TestRecordBatch_SecretFileFailsBatch proves a batch whose commits add a secret file fails.
++// It fails whatever its report says, and ahead of a correctness finding the batch also tripped.
++// The failure names each path with its pattern and the run's parent's reset to the batch's start before the recovery.
++// A hub's added pattern refuses the same way, and a batch adding no secret file is recorded.
++func TestRecordBatch_SecretFileFailsBatch(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name          string
++		added         []string
++		hubPatterns   []string
++		needsParent   bool
++		contractWrite bool
++		wantHit       string
++	}{
++		{"ShippedPattern", []string{"internal/foo/impl.go", "config/.env"}, nil, false, false, "config/.env (pattern .env)"},
++		{"HubPattern", []string{"tls/server.key"}, []string{"*.key"}, false, false, "tls/server.key (pattern *.key)"},
++		{"NeedsParentReport", []string{"config/.env"}, nil, true, false, "config/.env (pattern .env)"},
++		{"CorrectnessFindingToo", []string{"config/.env"}, nil, false, true, "config/.env (pattern .env)"},
++		{"NoSecretFile", []string{"internal/foo/impl.go", ".env.example"}, nil, false, false, ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			fx := newRecordFixture(t, []shuttleengine.ForkAudit{
++				{Forks: []shuttleengine.ForkReport{{TranscriptPath: "subagents/f1.jsonl", ReportReturned: true}}},
++			})
++			if tt.contractWrite {
++				fx.Audit.scripted[0].Forks[0].WritePaths = []string{fx.Deps.OutcomePath}
++			}
++			fx.Git.added = map[addedRange][]string{{base: fx.StartSHA, head: fx.HeadSHA}: tt.added}
++			matcher, err := secretpath.New(tt.hubPatterns)
++			if err != nil {
++				t.Fatalf("secretpath.New(%q) error = %v", tt.hubPatterns, err)
++			}
++			fx.Deps.SecretPaths = matcher
++			report := validReport(fx.HeadSHA)
++			if tt.needsParent {
++				report = "status: NEEDS_PARENT\nhead_sha: " + fx.HeadSHA + "\nneed: raise the tier 2 timeout\n"
++			}
++			writeReport(t, fx.ReportsDir, report)
++
++			result, err := websterengine.RecordBatch(fx.Deps, 1)
++			if tt.wantHit == "" {
++				if err != nil {
++					t.Fatalf("RecordBatch() error = %v; want nil", err)
++				}
++				if result.Failed {
++					t.Errorf("RecordBatch() result.Failed = true; want the batch recorded")
++				}
++				return
++			}
++			if !errors.Is(err, websterengine.ErrBatchFailed) {
++				t.Fatalf("RecordBatch() error = %v; want ErrBatchFailed", err)
++			}
++			for _, want := range []string{
++				tt.wantHit,
++				websterengine.SecretFileFailureReason,
++				"way forward: for the run's parent, once the run has stopped: 1) lym webster reset --to batch-start --batch 01",
++				"2) lym webster recover-batch 01",
++			} {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("RecordBatch() error = %q; want it to contain %q", err.Error(), want)
++				}
++			}
++			if result == nil || !result.Failed {
++				t.Errorf("RecordBatch() result = %+v; want Failed", result)
++			}
++			if bs := fx.Deps.State.Batches[1]; !bs.Terminal || bs.Status != websterengine.DigestStatusFailed {
++				t.Errorf("Batches[1] Terminal, Status = %v, %q; want true, %q", bs.Terminal, bs.Status, websterengine.DigestStatusFailed)
++			}
++		})
++	}
++}
++
+ // TestRecordBatch_MalformedReportYAMLErrors proves an unparseable batch-report is a hard error:
+ // here the status value is unrecognized, and the error never yields a guessed digest.
+ func TestRecordBatch_MalformedReportYAMLErrors(t *testing.T) {
+diff --git a/internal/websterengine/template_test.go b/internal/websterengine/template_test.go
+index 440455f4..dcacdf5c 100644
+--- a/internal/websterengine/template_test.go
++++ b/internal/websterengine/template_test.go
+@@ -485,6 +485,15 @@ func TestMasterTemplate_QuotesBulletLists(t *testing.T) {
+ 	}
+ }
+ 
++// TestMasterTemplate_QuotesSecretFileFailureReason asserts the secret-file rung quotes the failure's reason text.
++// Rewording the reason in code then breaks the rung's match.
++func TestMasterTemplate_QuotesSecretFileFailureReason(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	text := string(mustMasterTemplate(t, newTestStencilsDir(t)))
++	requireContains(t, text, "`"+websterengine.SecretFileFailureReason+"`")
++}
++
+ // TestTemplates_FillRequiresEveryRequiredMarker asserts that every template fills when all markers are supplied.
+ // It also asserts that a fill missing any one required marker fails, naming that marker.
+ // The optional markers are excluded from the deletion sweep: deleting one must not error.
+diff --git a/pattern/PATTERN-fabric-boundary.md b/pattern/PATTERN-fabric-boundary.md
+index 10b57d6d..9120d988 100644
+--- a/pattern/PATTERN-fabric-boundary.md
++++ b/pattern/PATTERN-fabric-boundary.md
+@@ -58,6 +58,8 @@ The entry binds lym's own code only.
+ - Every weft-commit caller passes a positive-only file list via `fabricengine.ScopedPathspec`.
+ - `structuralNeverCommittedDirs` paths route to a third bucket in `classifyPaths`,
+   and `Commit` hard-errors on a non-empty third bucket.
++- `Commit` refuses, before any lock, a commit that would add a new path `internal/secretpath` matches,
++  over lym's shipped patterns and the ones `fabric.yaml`'s `secret_paths` adds.
+ 
+ ### Excludes
+ 
+diff --git a/pattern/PATTERN-leaf-packages.md b/pattern/PATTERN-leaf-packages.md
+index 70ee5033..0862dd06 100644
+--- a/pattern/PATTERN-leaf-packages.md
++++ b/pattern/PATTERN-leaf-packages.md
+@@ -144,6 +144,12 @@ Imports only the standard library, `github.com/fsnotify/fsnotify` and `internal/
+ - Every lym process that waits on a file event goes through it, so fsnotify is imported nowhere else.
+ - `internal/logger` is admitted because fsnotify's error channel is drained and logged at Debug.
+ 
++## `internal/secretpath`
++
++Imports only the standard library.
++It holds the secret-file patterns lym ships and the matcher fabric and webster share, and reads no config:
++each caller hands it the patterns a hub adds.
++
+ ## `internal/runfsm`
+ 
+ Imports only the standard library and `internal/shedengine`, for the record type.
