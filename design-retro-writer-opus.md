@@ -1,6 +1,6 @@
 # lym retro: run the retro task's writer on Opus
 
-`retro-writer-opus` · Task · enhancement, report, darn · running · Darn-Write
+`retro-writer-opus` · Task · enhancement, report, darn · running · Drift-Verify
 
 ## Seen (2026-11-17)
 
