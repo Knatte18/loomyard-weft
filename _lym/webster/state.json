@@ -322,9 +322,35 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-rounds-converge-build/81b1c802-12a0-4e4e-8251-243f37bc1227/subagents/agent-a5fa96202e39c217b.jsonl"
       ]
+    },
+    "5": {
+      "slug": "review-round-checks",
+      "cards": [
+        "05-review-round-checks",
+        "06-prior-findings-block",
+        "07-round-context-builder",
+        "08-validate-review-round-checks",
+        "09-escalation-notice-way-forward",
+        "10-stalemate-escalation"
+      ],
+      "cardHashes": {
+        "05-review-round-checks": "aa56a072c45df21971c39a994394fad65190cf2e905162a5b471c3f8c600270d",
+        "06-prior-findings-block": "86ad58a3ebc63e694b6c28a96e49602ce81424a77683a126992ee35ed6b25075",
+        "07-round-context-builder": "86748867aabeace2442c5fe483f58409fa4faded59ea7cfb5e0fbc15c1141524",
+        "08-validate-review-round-checks": "d04f8aa406ed460b8b5d1cbe6b8f98ce8673974f32ccd7570b2d9a0e62dcd481",
+        "09-escalation-notice-way-forward": "1c68bdf1cc212d9192227ea79ebe38583f48abedb9bf12b812e6313ee8ff0a13",
+        "10-stalemate-escalation": "0e460e5b992a4f0823dc0b94c2e1be5388bd75fe351aeab40bfd4f55a1b8b1e7"
+      },
+      "startSha": "86db4c1c1423f7597b39585d0e9c367f5eb09948",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T14:55:35Z",
+      "sessionId": "81b1c802-12a0-4e4e-8251-243f37bc1227",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "2e9733407d4e886b0330ebdbcbfec9de",
   "masterSessionId": "81b1c802-12a0-4e4e-8251-243f37bc1227",
   "masterEngine": "claude",
