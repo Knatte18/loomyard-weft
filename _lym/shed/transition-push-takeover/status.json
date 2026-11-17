@@ -1,12 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Expect → skipped",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -222,6 +221,29 @@
       "output": "",
       "at": "2026-11-16T13:54:55Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/transition-push-takeover/_lym/webster/summary.md",
+      "at": "2026-11-17T07:23:35Z",
+      "started_at": "2026-11-17T06:21:19Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-17T07:19:27.381722139Z",
+          "end": "2026-11-17T07:19:27.659441102Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T07:19:27.715522883Z",
+          "end": "2026-11-17T07:23:33.85675364Z"
+        }
+      ],
+      "by": "shed"
     }
   ],
   "product": {
