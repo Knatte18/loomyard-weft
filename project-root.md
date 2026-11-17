@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **reed: an RC button per agent, and Slack only in the orch's session**<br>• RC turns on per agent with a click, off by default; the Slack buttons show only where their orch lives | [`reed-orch-buttons-in-tasks`](design-reed-orch-buttons-in-tasks.md) | darn · light | Drift-Recheck | neve | 37m<br>32m | reed, orch, slack |
+| T3 | **reed: an RC button per agent, and Slack only in the orch's session**<br>• RC turns on per agent with a click, off by default; the Slack buttons show only where their orch lives | [`reed-orch-buttons-in-tasks`](design-reed-orch-buttons-in-tasks.md) | darn · light | Describe | neve | 37m<br>32m | reed, orch, slack |
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | landing · Finalize | neve | 22h<br>22h | webster, weaver |
 | T16 | **Memory guard for every test binary lym runs**<br>• The gate watchdog watches CPU only and only gate test runs; give it a memory trigger over every test binary, and cap the gate tiers | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | darn · solid | Code-Burler-Review | neve | 2h<br>32m | gate |
 
