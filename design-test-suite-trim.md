@@ -8,10 +8,12 @@ The maps are built only on command now; the gate no longer selects tests from th
 
 ## Order (operator, 2026-11-12)
 
-1. Landed: the way to make the maps (`lym gate testmap`).
+1. Landed: the way to make the maps.
    The upkeep pass (`--upkeep`) and the prime dobby that started it were retired by `testmap-on-command` (`72b26d1a`, 2026-11-15):
    the payoff report found the pass took 7.7 to 31 minutes after a landing and saved the gate 0 to 4.2 s.
-   The maps are built only when the operator runs `lym gate testmap`, and the gate runs whole packages, with no `coverage` scope.
+   `gate-test-map-mode` (`b92c95ee`, 2026-11-17) replaced `lym gate testmap` with `lym gate test --map`,
+   which runs each test in its own process, in parallel, and writes each package's map whole.
+   The maps are built only on command, and the gate runs whole packages, with no `coverage` scope.
 2. Landed: the pilot on one package and the verb that lists redundant-test candidates (`lym gate redundant`, `79f0eb4a`).
    Its report is `docs/research/speed/coverage-map-pilot-2026-11-12/report.md`.
    The maps stay as the input of this verb.
