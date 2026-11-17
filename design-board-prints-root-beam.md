@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-board-prints-root-beam.md)
 
-Depends on: [`adopt-foreground`](design-adopt-foreground.md)
-
 Filed from the Sketch `adopt-build-resplit`.
 
 Takes: BriefTask.ParentBeam set in internal/boardengine/store.go from ParentBeam and hubgeom.ParentOf; the get envelope written by outputGetTask in internal/boardcli/cli.go; boardcli's --text listing; boardengine.RootSubject; the parent_beam readers in contracts/orchrole/orch-role.md and plugins/ly/skills/board/SKILL.md

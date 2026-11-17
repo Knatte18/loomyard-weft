@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-leftover-pairs-teardown.md)
 
-Depends on: [`adopt-foreground`](design-adopt-foreground.md)
-
 Filed from the Sketch `adopt-build-resplit`.
 
 Takes: runfsm's landed and cancelled states and runfsm.Derive's reading of a cancel intent with its finish; dobbyengine's ended-run teardown (strandedEnded in internal/dobbyengine/ended.go); pairteardown's teardown and local mode; the hand-over mark from transition-push-takeover and its drop at adopt's takeover write from adopt-foreground; the holds, registry and owner reads from machine-registry-holds-catchup; D1's synchronous push for the kept-cancel intent; lym tender resume's pair push; fabricengine.RegenerateHubWorkspace
