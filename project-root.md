@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-17 06:34 UTC; every age below is as of then.
+Rendered 2026-11-17 06:38 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Webster | neve | 20h<br>20h | webster, weaver |
-| T20 | **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice<br>• `darn: writer fable` | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | darn · light | Darn-Write | neve | 26m<br>13m | gate |
+| T20 | **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice<br>• `darn: writer fable` | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | darn · light | Darn-Write | neve | 29m<br>17m | gate |
 
 ### Ready (0)
 
@@ -51,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **Memory guard for every test binary lym runs**<br>• The gate watchdog watches CPU only and only gate test runs; give it a memory trigger over every test binary, and cap the gate tiers | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | 15m<br>8m | gate |
+| B2 |  | **Memory guard for every test binary lym runs**<br>• The gate watchdog watches CPU only and only gate test runs; give it a memory trigger over every test binary, and cap the gate tiers | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | 19m<br>11m | gate |
 
 ### Enhancements (1)
 
@@ -69,11 +69,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>11d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 6w<br>20h | board, ide, orch |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>11d | burler, shed, orch, quarry, report |
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T16 | **lym retro: one command that audits recent runs from their transcripts and proposes fixes**<br>• Turn the hand-set transcript audits into one command with a fixed lym-scoped question set, routing each finding to a check, a rubric line or a deletion | [`lym-retro`](design-lym-retro.md) | 20h<br>16h | friction, report, tools |
