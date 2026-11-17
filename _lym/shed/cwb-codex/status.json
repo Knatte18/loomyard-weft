@@ -1,16 +1,24 @@
 {
-  "current_producer": "Preflight",
+  "current_producer": "Record-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Drift-Verify",
   "pause_before_by": "codex-writer-bench",
   "activity": {
-    "now": "Preflight",
-    "last": "",
+    "now": "Record-Write",
+    "last": "Preflight → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-17T17:31:48Z",
+      "started_at": "2026-11-17T17:31:48Z"
+    }
+  ],
   "product": {
     "slug": "cwb-codex",
     "parent": "codex-writer-bench",
