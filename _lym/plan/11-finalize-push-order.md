@@ -1,9 +1,9 @@
 # Card 11 — finalize-push-order
 
 **Create:**
-- `plan:internal/landingshed#Finalize.handOverIfOwnedElsewhere` -> `func (f *Finalize) handOverIfOwnedElsewhere() (handedOver bool, err error)`
-- `plan:internal/fabricengine#ArchiveParentMerge` -> `func ArchiveParentMerge(parent *lymcwd.Location, slug string) (tag string, err error)`
-- `plan:internal/fabricengine_test#TestArchiveParentMerge` -> `func TestArchiveParentMerge(t *testing.T)`
+- `internal/landingshed#Finalize.handOverIfOwnedElsewhere`
+- `internal/fabricengine#ArchiveParentMerge`
+- `internal/fabricengine_test#TestArchiveParentMerge`
 
 **Edit:**
 - `internal/landingshed#Deps`
