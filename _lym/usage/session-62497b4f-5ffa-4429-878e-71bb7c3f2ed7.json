@@ -1,0 +1,14 @@
+{
+  "session_id": "62497b4f-5ffa-4429-878e-71bb7c3f2ed7",
+  "row": "Plan-Burler-Review",
+  "role": "plan-burler-review",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 98,
+  "cache_write_tokens": 354099,
+  "cache_read_tokens": 9051445,
+  "output_tokens": 95969,
+  "cost_usd": 5.500556000000002,
+  "started": "2026-11-17T12:18:34Z",
+  "ended": "2026-11-17T12:29:57Z"
+}
