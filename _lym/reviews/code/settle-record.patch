@@ -1,0 +1,568 @@
+diff --git a/docs/research/README.md b/docs/research/README.md
+index a4c8b120..91c4deae 100644
+--- a/docs/research/README.md
++++ b/docs/research/README.md
+@@ -25,6 +25,7 @@ A study's script finds the repository root with `git rev-parse --show-toplevel`,
+ ## claude — Claude Code features
+ 
+ - [code-mode-bench-2026-11-16](claude/code-mode-bench-2026-11-16/report.md) — Code Mode and shell pipelines on the Plan writer, one sample per arm.
++- [code-mode-darn-bench-2026-11-17](claude/code-mode-darn-bench-2026-11-17/report.md) — Code Mode on a darn writer repeating one edit across packages, one sample per arm, and a check that the shell guard holds in a script.
+ - [code-mode-web-research-2026-11-16](claude/code-mode-web-research-2026-11-16/report.md) — how Anthropic and users say to use Code Mode, each tip judged for lym's writers, and a correction to the bench's reading of `Poll`.
+ 
+ ## codex — the Codex engine
+diff --git a/docs/research/claude/code-mode-darn-bench-2026-11-17/data/claude-codemode.sh b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/claude-codemode.sh
+new file mode 100755
+index 00000000..cdc6ef5c
+--- /dev/null
++++ b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/claude-codemode.sh
+@@ -0,0 +1,2 @@
++#!/bin/sh
++exec env CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=1 /home/knatte/.local/bin/claude "$@"
+diff --git a/docs/research/claude/code-mode-darn-bench-2026-11-17/data/codemode-summary.md b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/codemode-summary.md
+new file mode 100644
+index 00000000..9fe00e78
+--- /dev/null
++++ b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/codemode-summary.md
+@@ -0,0 +1,75 @@
++# Guard every pinned or spawned lym against running a test binary
++
++On 2026-11-08 a reed status job was built from the running binary's own path. Under `go test` that path is the test binary, so every tmux session a test created ran the suite again, and those runs created more sessions. The machine froze twice. `3aaa98cc` fixed the Slack lines only. This change closes the whole class with three independent layers, one commit each.
++
++## 1. `internal/lymexe`: the only resolver of "this lym binary"
++
++A new stdlib-only leaf:
++
++- `Path()` returns the running binary's path for a command that runs it. Under `go test` it returns `ErrTestBinary`.
++- `Resolve(lookup)` does the same over an injected lookup, the seam tests replace with a stand-in binary. It refuses only the running test binary, compared by cleaned path or `os.SameFile`, so stand-ins still pass.
++- `Runnable(path)` checks a path that was resolved earlier, at the site that runs it.
++- `Self()` is for identity reads only: stat, VCS stamp, commit label, process match, or a path recorded for a later spawn.
++
++`enforcement_test.go` fails on any production reference to `os.Executable` outside `internal/lymexe` (`internal/testkit` is exempt, since only tests import it).
++
++Every call site was audited and moved:
++
++- **Pins and spawns that run lym now use `Path`/`Resolve`:**
++  - reed's switch, follow, button and both Slack lines, plus the button prompt's re-entry line. This replaces `slackLineExecutable`, so the refusal now covers every binding, not just Slack.
++  - The per-hub watchdog spawn, `reed remove`'s detached child and `reed window`.
++  - loom's status strand and orch's runs strand. Both are panes that run lym. Under test, loom now adds no status strand and logs why instead of failing.
++  - The loom and batten loop specs (under test the loop gets no executable), `spawnGoDriver`, drift capture and raddle children.
++  - batten's `loom start` child and detached pass, the adopt suite and resume, creel's daemon, gate's detached runner, fabric's push and teardown children, board sync, `beam start`, and the IDE config's lym path (under test it falls back to the bare name).
++- **Paths recorded for later use now come from `Self` and are checked where they run:**
++  - The loom driver's on-disk path: `spawnDetachedDrive` calls `Runnable`.
++  - batten's `{lym}` placeholder: `shedadapters` refuses a test-binary `{lym}` before starting a process.
++  - The dobby and Slack geometries: their spawners already return early under `testing.Testing()`.
++- **Identity-only reads use `Self`:** `BinaryLabel`, `statuspane.CurrentBuild`, adopt's running build, tender's process match, `reed watchdog`'s binary stat and `selfexec`. `selfexec`'s leaf allowlist and `PATTERN-leaf-packages` now admit `lymexe`.
++
++reed's `executablePath` field now defaults to `lymexe.Self`. The pane and window PATH prelude only adds the binary's directory to `PATH` and never runs it, so it still reads that path directly. Everything that does run it goes through `Resolve`.
++
++## 2. Every test binary refuses a non-test first argument
++
++`tmuxkit.Main`, which every test package's `TestMain` already calls (enforced), now returns 2 with a refusal on stderr when the first argument is not a flag. It checks only the first argument, as gitkit's guard does, so `-test.run Foo` still works. reedengine's own `flag.NArg` guard folds into it.
++
++`tmuxkit.RequireNonTestArgsRefused(t)` proves the refusal: it starts the running test binary with `slack bar`. Each package whose code pins or spawns lym has a tier1 `argguard_test.go` calling it: reedengine, reedcli, loomcli, battencli, adoptcli, orchcli, fabriccli, fabricengine, driftcli, creelcli, gatecli, boardengine, ideengine, shedadapters, dobbyengine, slackengine, hubgeom and fronttask.
++
++The proof checks for exit 2, empty stdout and "refusing" on stderr. Packages that call `gitkit.HermeticGitEnv` before `tmuxkit.Main` are refused by gitkit's equivalent guard, with its own wording.
++
++`PATTERN-test-isolation` records the guard, the third kit-assertion exception and tmuxkit's widened `os/exec` exemption.
++
++## 3. `lym gate test` caps the processes a tier may hold
++
++Each tier command gets its own environment entry, `LYM_GATE_TIER_MARK_<pid>_<n>=1`. Processes inherit it even after leaving the process tree: a tmux server and its panes keep the mark. A nested gate adds its own entry next to the outer one.
++
++Once a second the verb counts marked processes through the new `proc.PidsWithEnv`. Above `maxTierProcesses` (1500) it:
++
++- cancels the command,
++- SIGKILLs every marked process, for up to five rounds,
++- fails the tier with exit 1 and a cause line naming the count, the cap and the fix.
++
++A capped run is never rerun on the resource-shortage marker its own runaway printed. Off Linux the cap logs that it does not apply.
++
++## Docs
++
++- `PATTERN-child-processes` has a new "This lym binary" rule, with `(test)` added to its `PATTERN.md` entry.
++- Updated package docs: `reedengine`, `selfexec`, `shedadapters`, `proc`, `gatecli` ("Process cap"), `tmuxkit` and the new `lymexe`.
++- `docs/overview.md` lists `lymexe` in the module table and describes the cap.
++
++## Review notes
++
++- **Untested.** Only `go build` and `go vet` ran on the touched packages; `proc` and `gatecli` also built for `GOOS=windows`. No test ran. The new and changed tests are:
++  - `lymexe`'s unit and scan tests
++  - `tmuxkit`'s argument tests and the 18 `argguard` tests
++  - `gatecli`'s `spawncap_test.go`
++  - the updated `runInvocations` call in `testtargets_test.go`
++  - the `TestBinaryExecutable` row in reed's `bindings_test.go`, which now expects no button line either
++- **Behaviour change under test:** a reed engine that falls back on its default executable lookup no longer pins switch, follow or button lines. Integration tests that inject a stand-in binary are unaffected.
++- **The cap value (1500) is a judgment call.** It is a named constant, not config. Raising it to a `gate.yaml` limit would need a `configengine`/`hubreconcile` reinterpretation.
++- **Bound on the cap:** a process started with an environment built from scratch carries no mark and is not counted.
++
++## To check by hand
++
++- Run `lym gate test` over the touched packages at tiers 0 and 1, including `./internal/lymexe`, `./internal/testkit/tmuxkit`, `./internal/reedengine` and `./internal/gatecli`.
++- On a live reed session, confirm the switch, follow, button and Slack bindings still name the installed `lym`.
+diff --git a/docs/research/claude/code-mode-darn-bench-2026-11-17/data/control-summary.md b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/control-summary.md
+new file mode 100644
+index 00000000..9a767f9e
+--- /dev/null
++++ b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/control-summary.md
+@@ -0,0 +1,88 @@
++# Guard every spawned or pinned lym path against the test binary, and cap a gate run's processes
++
++On 2026-11-08 a reed Slack status job was built from `os.Executable`. Under `go test` that path is the test binary, so every tmux session a test created ran the suite again, which created more sessions. The machine froze twice. `3aaa98cc` fixed the Slack lines alone. This change guards the whole class in four parts, each matching an item of the board entry.
++
++## 1–2. One resolver for "this lym binary": `internal/lymexe`
++
++A new stdlib-only leaf, `internal/lymexe`, provides two functions:
++
++- `Path()` returns the running lym binary's path. Under `go test` it returns `ErrTestBinary` and no path.
++- `Refuse(path)` rejects any `*.test` or `*.test.exe` binary. Under `go test` it also rejects the running binary's own path. It is for paths that arrive through a seam.
++
++Every site that hands the running binary's path to another process now uses `lymexe.Path` instead of `os.Executable`:
++
++- **reedengine**
++  - The engine's and the button click's `executablePath` now default to `lymexe.Path`.
++  - The new `pinnedExecutable` replaces `slackLineExecutable`. It runs `Refuse` before every line reed pins and every prelude it writes: switch, follow, button, both Slack lines, the button re-entry prompt, the pane `LYM_BIN` prelude and the window prelude.
++  - The watchdog spawn now uses `lymexe.Path` too.
++- **Unattended pins and loops**
++  - loomcli: the status strand, the loop job's executable, the drift capture child, the raddle `beam create` child and the Go driver spawn.
++  - battencli: the loop spec, the `loom start` child and the pass spawn.
++  - orchcli: the runs strand and the watcher.
++  - reedcli: `reed window`'s terminal, through a new `lymPath` seam, and the detached remove.
++  - ideengine: the `.vscode` lym path, which falls back to the bare name.
++  - fronttask: the front-task actions. `startAction` now takes the lookup as a parameter.
++- **Detached children that were already guarded by `testing.Testing()`**: fabriccli, fabricengine (push and teardown hold), driftcli, gatecli's detached runner, creelcli, boardengine and adoptcli. They now go through the helper too, so the rule has no exceptions.
++
++Behaviour changes a reviewer should check:
++
++- **Unwired path under test:** `battenCLI.wire` and `goDriverDepsFor` must still wire under test, because tests call them. They treat `ErrTestBinary` as an empty path, so a spawn from it fails instead of re-running the suite. In production nothing changes.
++- **Status strand:** `ensureStatusStrand` now only warns and leaves the status pane out when the path does not resolve, as a failed replace already did. Before, it failed `start`.
++- **Test expectation changed:** in reedengine, a test-binary executable now also leaves the button line unpinned. The `TestBinaryExecutable` row of `TestPinBindingsLocked_PinsTheSlackLinesOnlyWhenEverythingResolves` was updated to match.
++
++`lymexe/executable_enforcement_test.go` scans every production file under `internal/` and `cmd/` and fails on `os.Executable` outside an allowlist. Each allowlist entry names its reason. All of them only read the binary (stat, build stamp, commit label, process comparison), except two:
++
++- `hubgeom`'s dobby geometry and slack geometry carry the path to engines that already refuse to spawn under `go test`.
++- `selfexec` re-execs its own process behind its own test refusal.
++
++`hubgeom` was left on `os.Executable` because its tests assert an absolute path.
++
++PATTERN changes:
++
++- `PATTERN-child-processes` gains a "This lym binary" rule, marked `(test)` in `PATTERN.md`.
++- `PATTERN-leaf-packages` lists `internal/lymexe`.
++- The overview's module table gains `internal/lymexe`.
++
++## 3. The TestMain guard, now in `tmuxkit.Main`
++
++reedengine's `TestMain` used to refuse positional arguments itself. That guard now lives at the top of `tmuxkit.Main`, which every test package calls (`cmd/lym/tmuxisolation_test.go` enforces this, and its allowlist is empty). The guard works like this:
++
++- It parses the flags. If any non-flag argument is left over, it prints `<binary>: refusing the non-test arguments …` and returns 2 before it creates a run directory or runs a test.
++- Helper roles that a `TestMain` dispatches by environment before it calls `Main` are not affected.
++- `gitkit.HermeticGitEnv` still refuses a leading positional argument, as before.
++
++`tmuxkit.RequireArgGuard(t)` proves the guard on the calling package's own binary:
++
++- It starts the binary with `-test.run=^$ slack bar`. The filter comes first so the line gets past gitkit's leading-argument check.
++- It asserts exit 2, empty stdout and the refusal text.
++- A child environment variable makes the test skip in the child, so a missing guard cannot recurse.
++
++A tier1 `testmain_guard_test.go` calling it is added to reedengine (replacing its hand-rolled test) and to every package whose tests boot reed or reach a converted spawn or pin site:
++
++- cmd/lym
++- reedcli, loomcli, battencli, adoptcli, beamcli
++- burlerengine, creelcli, driftcli, loomshed, orchcli
++- seatengine, shedverbs, shuttlecli, standalonegeom, treadleengine
++- webstercli, websterengine, fronttask, ideengine, boardengine
++
++tmuxkit itself also gets one. `PATTERN-test-isolation` documents the refusal. It also extends tmuxkit's `os/exec` exemption, and its list of asserting kit helpers, to cover `RequireArgGuard`.
++
++## 4. `lym gate test` caps a run's processes
++
++The fork bomb ran through tmux servers, and tmux servers leave the tier's process group, so counting the tier's process tree would miss them. The cap counts by environment instead:
++
++- **The mark:** the outermost gate run sets `LYM_GATE_PROCESS_MARK=<its pid>` in every tier's environment. Every descendant inherits it, including a tmux server a test starts and that server's panes.
++- **The count:** once a second, `processCap` counts the marked processes through the new `proc.PidsWithEnv`, which reads `/proc/*/environ`. On Windows it returns `ErrUnsupported`, and the cap is off.
++- **The trip:** past the new gate.yaml key `max_processes`, the cap prints `gateslot.ProcessCapLine`, which names the likely cause and the way forward. It kills every marked process, again at each later count, and once more as the tier ends. The tier then fails, with exit 1 if the shell still exited zero.
++- **The key:** `max_processes` is cross-pair, defaults to 1000, and 0 turns the cap off.
++- **Nested runs:** a nested `lym gate test`, detected through the existing `LYM_GATE_TEST_PID` ancestor check, keeps its enclosing run's mark and does not run a cap of its own.
++
++The gatecli, gateslot and proc package docs and the overview's gate entry describe the cap. The test for `TemplateConfig` now expects `MaxProcesses: 1000`.
++
++## Not verified here
++
++Every touched package was compiled and vetted (`go build` / `go vet`, and `GOOS=windows` for `proc`). No tests were run, so the reviewer should run the gate. These carry the most risk:
++
++- the guard tests and the `os.Executable` scan;
++- tests that relied on a real executable path in an unstubbed reed engine or status strand;
++- the 1000 default, which is a judgment call above a normal tier's process count and below the incident's roughly 1600 processes.
+diff --git a/docs/research/claude/code-mode-darn-bench-2026-11-17/data/guard-report.md b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/guard-report.md
+new file mode 100644
+index 00000000..3d064fa6
+--- /dev/null
++++ b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/guard-report.md
+@@ -0,0 +1,18 @@
++# Guard probe report: shell guard inside a Code Mode REPL script
++
++Probe file: `.scratch/bench/guard-scratch/probe.txt`, created with the Write tool holding `alpha` (Read confirmed `alpha`).
++Note: this session exposes only the REPL and Poll tools at top level, so the step 2 "direct" Bash call was made as a lone `tools.Bash` call from its own REPL script, separate from step 3.
++
++Refusal text (identical every time it fired): "Permission denied for Bash: sed -i, perl -i, and a heredoc, redirect or tee into a source file are refused here; …"
++
++| Step | Route | Command | Outcome | Probe content afterwards |
++|---|---|---|---|---|
++| 2 | Bash tool (lone call) | `sed -i s/alpha/beta/ probe.txt` | Refused ({error: "Permission denied for Bash: sed -i …"}) | `alpha` |
++| 3a | REPL script → `tools.Bash` | `sed -i s/alpha/beta/ probe.txt` | Refused (same error object) | `alpha` |
++| 3b | REPL script → `$` template | `sed -i s/alpha/beta/ probe.txt` | Refused (exit 1, "[error] Permission denied for Bash: sed -i …") | `alpha` |
++| 3b | REPL script → `$(string)` | `sed -i s/alpha/beta/ probe.txt` | Refused (exit 1, same error) | `alpha` |
++| 3c | REPL script → `tools.Bash` | `echo gamma > probe.txt` | Ran (empty stdout/stderr) | `gamma` |
++| 3c | REPL script → `$` template | `echo gamma > probe.txt` | Ran (exit 0) | `gamma` |
++| 3d | REPL script → `write()` | `write(probe.txt, "delta\n")` | Ran (returned 6 bytes) | `delta` |
++
++The guard held inside the script: every `sed -i` was refused on all three in-script routes exactly as on the top-level call. The redirects ran, which matches the rule's wording (it refuses a redirect only into a *source* file, and probe.txt is not one). `write()` is a sanctioned whole-file write, like the Write tool, so it is not a bypass.
+diff --git a/docs/research/claude/code-mode-darn-bench-2026-11-17/data/metrics.jq b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/metrics.jq
+new file mode 100644
+index 00000000..41804438
+--- /dev/null
++++ b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/metrics.jq
+@@ -0,0 +1,17 @@
++def price: if (.model|test("opus")) then {i:4,w5:5,w1:8,r:0.2,o:20} elif (.model|test("sonnet")) then {i:2,w5:2.5,w1:4,r:0.2,o:10} else {i:1,w5:1.25,w1:2,r:0.1,o:5} end;
++[inputs | select(.type=="assistant" and .message.usage != null)]
++| group_by(.message.id)
++| map(last) as $msgs
++| {
++  turns: ($msgs|length),
++  input: ($msgs|map(.message.usage.input_tokens)|add),
++  cache_write: ($msgs|map(.message.usage.cache_creation_input_tokens)|add),
++  cache_read: ($msgs|map(.message.usage.cache_read_input_tokens)|add),
++  output: ($msgs|map(.message.usage.output_tokens)|add),
++  cost: ($msgs|map(. as $m | ($m.message|price) as $p | ($m.message.usage) as $u
++      | ($u.input_tokens*$p.i + ($u.cache_creation.ephemeral_5m_input_tokens // 0)*$p.w5 + ($u.cache_creation.ephemeral_1h_input_tokens // 0)*$p.w1 + $u.cache_read_input_tokens*$p.r + $u.output_tokens*$p.o)/1000000)|add),
++  models: ($msgs|map(.message.model)|unique),
++  first: ($msgs|map(.timestamp)|min),
++  last: ($msgs|map(.timestamp)|max),
++  peak_context: ($msgs|map(.message.usage.input_tokens + .message.usage.cache_creation_input_tokens + .message.usage.cache_read_input_tokens)|max)
++}
+diff --git a/docs/research/claude/code-mode-darn-bench-2026-11-17/data/prompt-codemode.md b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/prompt-codemode.md
+new file mode 100644
+index 00000000..7ae31abc
+--- /dev/null
++++ b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/prompt-codemode.md
+@@ -0,0 +1,84 @@
++# Darn — make the change a board entry asks for, in one session
++
++You are the darn writer: one autonomous session that reads a task's decision record, makes the change it asks for in the repository clone named below, and commits it on the clone's branch, then writes the change description it lands under.
++No operator is present, so make best-judgment calls and never block on a dialog.
++You have no parent to ask: settle every question yourself.
++
++## Your clone
++
++The repository to change is the clone at `/home/knatte/Code/loomyard-LYMHUB/code-mode-darn-bench/.scratch/bench/codemode`, on the branch `bench-codemode`, at the commit the task starts from.
++Your session's working directory is another worktree: never edit, read for the task or commit there.
++Name every file of the clone by its absolute path, run git as `git -C <clone> ...`, and run Go as `go -C <clone> build ./internal/x` and `go -C <clone> vet ./internal/x`, never a bare `cd`.
++The clone sits outside any hub: `lym board`, `lym loom`, `lym creel`, `lym gate` and `lym drift` do not apply to it, and no `_lym/drift/expected.yaml` exists.
++Run no test and no `lym gate test`: compile and vet only, with `go build` and `go vet` on a package or a short list of packages, never `./...` or `all`.
++
++## Editing files
++
++Change files with Edit or Write, never by shell.
++Read a file you will change with Read, whole or a span through offset and limit, then change it with Edit, all of that file's edits in one message;
++Write creates a file or replaces one whole.
++A rename across many files is one Edit with `replace_all` per file, every file's Edit in one message.
++Read a file with Read and search files with grep.
++A shell guard refuses a shell edit: never `sed -i`, never `perl -i`, and never a heredoc, redirect or tee into a source file.
++A Go file's formatting is fixed with `gofmt -w <file>`.
++Scratch files go under `/home/knatte/Code/loomyard-LYMHUB/code-mode-darn-bench/.scratch/bench/codemode-scratch/`, removed by their literal path.
++
++## Constraints — do this before you write any code
++
++- Read the repository's `PATTERN.md` in the clone in full, and every background file under `pattern/` that it links to and that touches what you are about to change.
++- These constraints are BINDING: a change that violates one is wrong even if it compiles.
++- When a constraint conflicts with anything else in this prompt, the constraint wins; state the conflict in the change description.
++
++## Step 1 — Read the task
++
++Your scope is the decision record below.
++Its `## Goal` holds the board entry's body.
++
++```markdown
++## Seen (orch, 2026-11-08)
++
++Neve froze twice on 2026-11-08, at 14:37 and 15:40, and needed a hard restart each time.
++The journal's memory samples show a fork bomb of `reedengine.test`, `tmux` and `bash` processes: from 125 to 537 test processes in four minutes, load above 800, memory and swap full.
++The cause was a reed status job built from the running binary's own path (`composeSlackStateCommand`, `internal/reedengine/panebin.go`) in the Slack toggles change.
++Under `go test` that path is the test binary, so each tmux session a test made ran the test binary again, which ran the suite and made more sessions.
++
++## Fixed already (`3aaa98cc`)
++
++- `slackLineExecutable` refuses the running test binary, so the Slack state job and toggle click are pinned only for a real `lym`.
++- `reedengine`'s `TestMain` exits 2 on any positional argument (`testmain_guard_test.go`).
++- The `claudeengine` hook commands name `lym` through `PATH`.
++
++## Change (operator, 2026-11-08)
++
++Guard the whole class across lym, not only reed's Slack lines:
++
++1. Audit every place that pins a command built from `os.Executable` (or a stand-in such as `executablePath`) into tmux or another process that runs it unattended: status jobs, key and mouse bindings, hooks, watchdogs.
++   Packages to read include `reedengine`, `reedcli`, `loomcli`, `battencli` and `adoptcli`; grep for the rest.
++   Fix each one that could run a test binary.
++2. One shared helper resolves "this lym binary" and never returns a test binary's path; every such pin uses it.
++3. Every package whose tests reach such a pin gets the `TestMain` guard that exits at once on non-test arguments, with a test proving it, as `reedengine` has.
++4. `lym gate test` caps the processes a test run may spawn, so a runaway loop fails the gate instead of freezing the machine.
++```
++
++## Step 2 — Make the change
++
++1. Edit the clone to make the change.
++   Follow the existing patterns, and the PATTERN entries.
++   Each commit is one change, with its own reads and edits.
++2. Hand work that needs no overview of the change to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "sonnet"`: a batch of lookups, and per-package work whose edits you have already decided, one subagent per package, each owning its own files.
++   Launch every subagent of a batch together in one message.
++   A fresh subagent sees none of this session, so each prompt names the files the subagent owns and the edits to make, and tells the subagent to run no test.
++   Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
++3. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
++   the repository's overview doc when a module table or execution stack it shows changes;
++   and its `PATTERN.md` entry for a cross-cutting invariant the change adds or changes.
++4. Commit on the clone's branch in small, coherent commits.
++   Never push.
++
++## Step 3 — Write the change description
++
++Write the change description to `/home/knatte/Code/loomyard-LYMHUB/code-mode-darn-bench/.scratch/bench/codemode-summary.md`, in the format the final-summary spec defines at `/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/loom/loom-final-summary-spec.md`.
++Read that spec for the format; it is authoritative and this prompt does not restate it.
++Write the description for a reviewer who knows the codebase but has not seen this session, and never describe the session's own process.
++`lym loom validate-description` does not apply here.
++Writing this file is the last thing you do before you end your turn.
+diff --git a/docs/research/claude/code-mode-darn-bench-2026-11-17/data/prompt-control.md b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/prompt-control.md
+new file mode 100644
+index 00000000..67a81b6a
+--- /dev/null
++++ b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/prompt-control.md
+@@ -0,0 +1,84 @@
++# Darn — make the change a board entry asks for, in one session
++
++You are the darn writer: one autonomous session that reads a task's decision record, makes the change it asks for in the repository clone named below, and commits it on the clone's branch, then writes the change description it lands under.
++No operator is present, so make best-judgment calls and never block on a dialog.
++You have no parent to ask: settle every question yourself.
++
++## Your clone
++
++The repository to change is the clone at `/home/knatte/Code/loomyard-LYMHUB/code-mode-darn-bench/.scratch/bench/control`, on the branch `bench-control`, at the commit the task starts from.
++Your session's working directory is another worktree: never edit, read for the task or commit there.
++Name every file of the clone by its absolute path, run git as `git -C <clone> ...`, and run Go as `go -C <clone> build ./internal/x` and `go -C <clone> vet ./internal/x`, never a bare `cd`.
++The clone sits outside any hub: `lym board`, `lym loom`, `lym creel`, `lym gate` and `lym drift` do not apply to it, and no `_lym/drift/expected.yaml` exists.
++Run no test and no `lym gate test`: compile and vet only, with `go build` and `go vet` on a package or a short list of packages, never `./...` or `all`.
++
++## Editing files
++
++Change files with Edit or Write, never by shell.
++Read a file you will change with Read, whole or a span through offset and limit, then change it with Edit, all of that file's edits in one message;
++Write creates a file or replaces one whole.
++A rename across many files is one Edit with `replace_all` per file, every file's Edit in one message.
++Read a file with Read and search files with grep.
++A shell guard refuses a shell edit: never `sed -i`, never `perl -i`, and never a heredoc, redirect or tee into a source file.
++A Go file's formatting is fixed with `gofmt -w <file>`.
++Scratch files go under `/home/knatte/Code/loomyard-LYMHUB/code-mode-darn-bench/.scratch/bench/control-scratch/`, removed by their literal path.
++
++## Constraints — do this before you write any code
++
++- Read the repository's `PATTERN.md` in the clone in full, and every background file under `pattern/` that it links to and that touches what you are about to change.
++- These constraints are BINDING: a change that violates one is wrong even if it compiles.
++- When a constraint conflicts with anything else in this prompt, the constraint wins; state the conflict in the change description.
++
++## Step 1 — Read the task
++
++Your scope is the decision record below.
++Its `## Goal` holds the board entry's body.
++
++```markdown
++## Seen (orch, 2026-11-08)
++
++Neve froze twice on 2026-11-08, at 14:37 and 15:40, and needed a hard restart each time.
++The journal's memory samples show a fork bomb of `reedengine.test`, `tmux` and `bash` processes: from 125 to 537 test processes in four minutes, load above 800, memory and swap full.
++The cause was a reed status job built from the running binary's own path (`composeSlackStateCommand`, `internal/reedengine/panebin.go`) in the Slack toggles change.
++Under `go test` that path is the test binary, so each tmux session a test made ran the test binary again, which ran the suite and made more sessions.
++
++## Fixed already (`3aaa98cc`)
++
++- `slackLineExecutable` refuses the running test binary, so the Slack state job and toggle click are pinned only for a real `lym`.
++- `reedengine`'s `TestMain` exits 2 on any positional argument (`testmain_guard_test.go`).
++- The `claudeengine` hook commands name `lym` through `PATH`.
++
++## Change (operator, 2026-11-08)
++
++Guard the whole class across lym, not only reed's Slack lines:
++
++1. Audit every place that pins a command built from `os.Executable` (or a stand-in such as `executablePath`) into tmux or another process that runs it unattended: status jobs, key and mouse bindings, hooks, watchdogs.
++   Packages to read include `reedengine`, `reedcli`, `loomcli`, `battencli` and `adoptcli`; grep for the rest.
++   Fix each one that could run a test binary.
++2. One shared helper resolves "this lym binary" and never returns a test binary's path; every such pin uses it.
++3. Every package whose tests reach such a pin gets the `TestMain` guard that exits at once on non-test arguments, with a test proving it, as `reedengine` has.
++4. `lym gate test` caps the processes a test run may spawn, so a runaway loop fails the gate instead of freezing the machine.
++```
++
++## Step 2 — Make the change
++
++1. Edit the clone to make the change.
++   Follow the existing patterns, and the PATTERN entries.
++   Each commit is one change, with its own reads and edits.
++2. Hand work that needs no overview of the change to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "sonnet"`: a batch of lookups, and per-package work whose edits you have already decided, one subagent per package, each owning its own files.
++   Launch every subagent of a batch together in one message.
++   A fresh subagent sees none of this session, so each prompt names the files the subagent owns and the edits to make, and tells the subagent to run no test.
++   Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
++3. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
++   the repository's overview doc when a module table or execution stack it shows changes;
++   and its `PATTERN.md` entry for a cross-cutting invariant the change adds or changes.
++4. Commit on the clone's branch in small, coherent commits.
++   Never push.
++
++## Step 3 — Write the change description
++
++Write the change description to `/home/knatte/Code/loomyard-LYMHUB/code-mode-darn-bench/.scratch/bench/control-summary.md`, in the format the final-summary spec defines at `/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/specs/loom/loom-final-summary-spec.md`.
++Read that spec for the format; it is authoritative and this prompt does not restate it.
++Write the description for a reviewer who knows the codebase but has not seen this session, and never describe the session's own process.
++`lym loom validate-description` does not apply here.
++Writing this file is the last thing you do before you end your turn.
+diff --git a/docs/research/claude/code-mode-darn-bench-2026-11-17/data/prompt-guard.md b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/prompt-guard.md
+new file mode 100644
+index 00000000..a0501cdd
+--- /dev/null
++++ b/docs/research/claude/code-mode-darn-bench-2026-11-17/data/prompt-guard.md
+@@ -0,0 +1,18 @@
++# Check that the shell guard still holds inside a Code Mode script
++
++This session runs with Claude Code's Code Mode on, so it has a `REPL` tool that runs a JavaScript program making several tool calls in one step.
++lym refuses certain shell commands in a session through a guard.
++Your job is to find out whether a guarded command is still refused when it runs inside a REPL script, and report what you saw.
++Change no file of the repository; every file you touch is under `/home/knatte/Code/loomyard-LYMHUB/code-mode-darn-bench/.scratch/bench/guard-scratch/`.
++
++1. With the Write tool, create `/home/knatte/Code/loomyard-LYMHUB/code-mode-darn-bench/.scratch/bench/guard-scratch/probe.txt` holding the single line `alpha`.
++2. With a direct Bash tool call, run `sed -i s/alpha/beta/ /home/knatte/Code/loomyard-LYMHUB/code-mode-darn-bench/.scratch/bench/guard-scratch/probe.txt`.
++   Record whether the guard refuses it, and the refusal text.
++3. With one REPL script, try each of the following inside the script and record, for each, the exact result or error the script saw:
++   a. the same `sed -i` command through the script's Bash tool call;
++   b. the same `sed -i` command through the script's shell template or any shell-running function the REPL offers;
++   c. a redirect that writes `gamma` into the probe file, through the same two routes;
++   d. a script's own file-write function, if the REPL offers one, writing `delta` into the probe file.
++4. Read the probe file with the Read tool and record its content after each of steps 2 and 3.
++5. Write `/home/knatte/Code/loomyard-LYMHUB/code-mode-darn-bench/.scratch/bench/guard-report.md`: a table with one row per attempt in steps 2 and 3, each row holding the route, the command, whether it was refused or ran, and the probe file's content afterwards, then one sentence on whether the guard held inside the script.
++   Writing this file is the last thing you do before you end your turn.
+diff --git a/docs/research/claude/code-mode-darn-bench-2026-11-17/report.md b/docs/research/claude/code-mode-darn-bench-2026-11-17/report.md
+new file mode 100644
+index 00000000..ff541ea8
+--- /dev/null
++++ b/docs/research/claude/code-mode-darn-bench-2026-11-17/report.md
+@@ -0,0 +1,116 @@
++# Code Mode on a darn writer doing a repeated edit: one sample per arm
++
++2026-11-17, board task `code-mode-darn-bench`.
++Two darn-writer runs on one landed task, one control and one Code Mode, plus one guard-check session; a direction from one sample per arm, not an effect size.
++
++## Question
++
++The Plan-writer bench found no Code Mode gain, and the web study found Code Mode pays on mechanical, read-heavy work.
++The bench asks whether a darn writer making one edit across many packages gets cheaper, faster or leaner in Code Mode.
++It also asks whether lym's shell guard still refuses a guarded command run inside a Code Mode script.
++
++## Input
++
++The landed task `test-binary-fork-guard`, commit `888969e7`, base commit `112bb821`.
++Its record asks for one shared helper that resolves "this lym binary" and never returns a test binary, used at every pin and spawn of a lym command.
++The landed change touches 68 files in 19 Go directories, +997 / -290 lines.
++The change is the same small edit repeated at many pins, around a new helper, a `tmuxkit.Main` guard and a process cap.
++The recorded Opus writer cost $6.71 and ran 23 minutes.
++
++## Setup
++
++- Each arm ran in its own local clone of this repository at the base commit, outside the hub, through `lym shuttle run` from this task's worktree.
++  The method is the one of [advisor-model-bench-2026-11-12](../../loom/advisor-model-bench-2026-11-12/report.md).
++- Both writers ran on `claude-opus-5-5` at `medium`, the darn writer's default, one after the other, control first.
++- The prompt is the darn writer's template rewritten for a clone: the landed task's record, the edit directive, the subagent rule and the change-description step.
++  It sends the writer to the clone's `PATTERN.md` instead of inlining it.
++  Both prompts are identical bar the clone's name; they are in `data/`.
++- The Code Mode arm differs only in the launch: this worktree's `claude.yaml` named `data/claude-codemode.sh` as the `binary`, which execs `claude` under `CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=1`.
++  The file was removed after the arm and before the control, so no other session saw it.
++  The first-use dialog had been answered during the earlier bench.
++- No gate, cold fixer or test ran: a clone has no hub.
++  Writers could compile and vet; each prompt said to run no test.
++- Cost is the list price of every message in the session transcript and its subagents, from `internal/shuttleengine/claudeengine/pricing.go`, computed by `data/metrics.jq`.
++  A Code Mode transcript also holds one row per inner call; these carry no usage and are counted apart from turns.
++
++## Guard check
++
++One Code Mode session ran `sed -i` against a scratch file through six routes; the full table is `data/guard-report.md`.
++
++| Route | `sed -i` | Redirect into the file |
++|---|---|---|
++| Direct Bash call | refused | not tried |
++| Script's `tools.Bash` | refused | ran |
++| Script's `$` template and `$(string)` | refused | ran |
++| Script's `write()` | not applicable | ran, returned 6 bytes |
++
++The guard held for every `sed -i` inside the script, with the refusal text of the direct call.
++The redirects ran because the probe file is not a source file, which is the guard's own wording.
++The probe's `write()` is a whole-file write like the Write tool.
++So a Code Mode writer cannot reach `sed -i` through a script, and it keeps the sanctioned whole-file write.
++The check did not test a redirect into a source file inside a script.
++
++## Writer figures
++
++| Figure | Control | Code Mode |
++|---|---|---|
++| Cost, writer | $6.71 | $5.89 |
++| Cost, with lookup subagents | $7.17 | $5.89 |
++| Wall time | 18m46s | 24m12s |
++| Assistant turns | 60 | 43 |
++| Direct tool calls | 214 | 80 (41 `REPL`, 39 `Poll`) |
++| Inner calls recorded in `REPL` | 0 | 569 |
++| Lookup subagents | 4 (Sonnet, 23 turns) | 0 |
++| Cache-read tokens, writer | 12.51M | 8.04M |
++| Cache-read tokens, with subagents | 12.93M | 8.04M |
++| Output tokens, writer | 118k | 78k |
++| Peak context, tokens | 374,947 | 307,638 |
++| Tool results marked as errors | 0 | 1 |
++| `REPL` scripts that ended in an error | 0 | 0 |
++
++- The control's direct calls are 80 Edit, 48 Read, 46 Bash, 36 Write and 4 Agent.
++  The Code Mode inner calls are 241 Bash, 150 Read, 148 Edit and 30 Write; shell run through the `$` template is not recorded as a call, so these are a lower bound.
++- Every `REPL` eval settled.
++  The one error is an inner `go build` that failed on an unused import in `internal/loomcli/cli.go`; the control's tool results show none.
++- Code Mode made 12% less writer cost and 36% fewer cache-read tokens, with 17 fewer turns, and took 29% longer.
++  Two evals held the session long: one 293 seconds and another 117 seconds.
++  The bench did not trace what those two waited on, so the cause of the extra wall time is not known.
++- The control spent 4 Sonnet lookup subagents, $0.47; the Code Mode writer spawned none.
++- The turn count fell by 28%, a larger drop than the Plan writer's three turns, but the direct calls fell by far more because each `REPL` call carries its batch.
++
++## Output
++
++Both runs made three commits in their clone, and both clones compile and vet on every Go directory they changed.
++No test ran, so neither diff's tests are known to pass.
++
++| Figure | Landed | Control | Code Mode |
++|---|---|---|---|
++| Files changed | 68 | 85 | 83 |
++| Lines added / deleted | 997 / 290 | 1278 / 146 | 1181 / 163 |
++| Go directories changed | 19 | 29 | 24 |
++| Test-file lines added / deleted | not measured | 685 / 50 | 608 / 51 |
++
++Neither diff was reviewed, so the report says nothing of their quality against the landed one.
++Both added more than the landed diff did, the control by more.
++
++## Verdict
++
++- The guard holds in Code Mode: `sed -i` is refused in every route a script has, so the shell guard needs no change for Code Mode on this evidence.
++- On this repeated-edit task Code Mode cost 12% less for the writer and 18% less with the control's subagents, and it took 29% longer.
++  One sample per arm cannot tell the cost gap from run-to-run spread; the control's writer cost lands on the landed run's $6.71 to the cent, which says the control is typical, not that the gap is real.
++- The batching worked as the web study predicts: 569 inner calls ran in 41 scripts, and turns fell from 60 to 43.
++  The gain is in cached context carried per turn, not in time.
++- The wall time went the other way from the cost, and this sample does not show why.
++- Quality is unmeasured, so this bench does not support adopting Code Mode for the darn writer.
++  A deciding bench needs the verify gate in the loop, a review of each diff, and a second sample of each arm.
++- Adopting it would still need the launch line to carry the variable and its tooling to read the `REPL` rows, as the Plan-writer report said.
++
++## Deviations and limits
++
++- One sample per arm; the control ran first and the Code Mode arm after it, so the two share no wall clock but the second ran later in the account's day.
++- No gate or test ran, so cost and time leave out the verify loop the recorded run had, and the diffs' correctness is unknown.
++- The prompt points to `PATTERN.md` rather than inlining it, and omits the hub's board, loom and drift steps; both arms are alike in this.
++- The change description each writer wrote is in `data/`; the spec's validator did not run.
++- The bench's spend by the transcripts' list price is $13.25: control $7.17, Code Mode $5.89, guard check $0.19, against the $25 cap.
++- Raw material is in `data/`: both prompts, the wrapper script, the `jq` program, the guard report and both change descriptions.
++  The session transcripts live in the Claude project directory of this worktree.
