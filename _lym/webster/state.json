@@ -285,9 +285,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-codex-standing-instructions/dade0374-6cc2-4614-952f-8187cdaeda61/subagents/agent-a4e70a4082b15ec66.jsonl"
       ]
+    },
+    "5": {
+      "slug": "codex-developer-instructions",
+      "cards": [
+        "05-codex-developer-instructions",
+        "06-codex-subagent-terms",
+        "07-claude-user-setup-source"
+      ],
+      "cardHashes": {
+        "05-codex-developer-instructions": "899bf9107a8a0451ef76dd632a2739f993fe9db595907f14276cd9faa3cffe87",
+        "06-codex-subagent-terms": "2563a36b1e837bf25e4a3c436bf7c8cc629886840787ad4cd549e8d60084d5ec",
+        "07-claude-user-setup-source": "8a698d59587252c63b98e125c753849a75422b4a0d422df62c44e7393dc39d2f"
+      },
+      "startSha": "f1c5622dba373618a229705bcedde70dad5ce460",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T11:43:15Z",
+      "sessionId": "dade0374-6cc2-4614-952f-8187cdaeda61",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "6b47512bc45f11042d24d5f0352cca06",
   "masterSessionId": "dade0374-6cc2-4614-952f-8187cdaeda61",
   "masterEngine": "claude",
