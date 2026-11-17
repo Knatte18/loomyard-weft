@@ -1,10 +1,9 @@
 {
   "current_producer": "Drift-Verify",
-  "state": "running",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
-  "pause_before": "Drift-Verify",
-  "pause_before_by": "codex-writer-bench",
+  "pause_reason": "paused before Drift-Verify, as requested by codex-writer-bench",
   "activity": {
     "now": "Drift-Verify",
     "last": "Darn-Write → done",
