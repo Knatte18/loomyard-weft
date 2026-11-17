@@ -95,6 +95,12 @@ Rationale: The round reached the perch's hard cap with both findings open in the
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - no-prime-claim-flag-literal-repeated (class design, severity BLOCKING, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D10: `lym machine start` starts the prime and owned beams of a hub this machine owns; under a prime another machine owns, or one with no recorded owner, it starts only the beams owned here, names the prime's machine, and claims no prime.
