@@ -1,80 +1,57 @@
-# lym retro: audit landed runs from their transcripts and propose fixes
+# lym retro: file a darn task that audits landed runs from transcripts
 
 `lym retro` turns the hand-set transcript audits under `docs/research/` into one command.
-It files a darn task with a fixed, lym-scoped question set, and releases it.
-The task's writer runs the retro scripts over the runs' records and transcripts, reads what the figures point at,
-and writes a stamped report of proposals, most severe first, under `docs/research/retro/<slug>/`.
-Each proposal is routed to a check, a rubric line or a deletion.
-The run files nothing on the board; the operator picks which proposals become notes.
+It files and releases one darn task on the `docs` profile; the task's writer audits the runs and writes a stamped report of proposals, most severe first.
+The run files nothing on the board: the operator picks which proposals become notes.
 
-## The command
+## What changes
 
-`lym retro [<slug>...] [--since <date>] [--until <date>] [--max-runs <n>]` runs from the hub's prime worktree only (`internal/retrocli`).
-
-- With no slug it covers the runs landed on the parent branch after the last retro and up to now.
-  With no earlier retro, it covers the last seven days.
-  `--since` and `--until` replace the two ends.
-- Named slugs cover exactly those runs, each of which must have landed within the last 60 days.
-- The landed runs come from `reportengine`'s landings: a first-parent commit that a finished run claims.
-  `reportcli.PrimeGeometry` is exported for this, with no change in behavior.
-- It renders the body from the new `retro-template-task` stencil, files a darn task on the `docs` profile with the `research` label,
-  and releases it with a second write, as `lym beam merge-parent` does.
-- The board write carries the caller's strand name, so a run's agent gets the board's usual refusal of a new task.
-  A repository with no `tools/retro` is refused, since the task's writer could not run its scripts there.
-
-`internal/retroengine` holds the logic and reads nothing itself:
-the last retro's stamp, the run selection with its cap, the body render and the task's board fields.
-
-## The scripts
-
-`tools/retro/retro.sh <out-dir> <slug>...` is the scripted part.
-It is built from the past audits' scripts, which stay as they were in their research folders:
-the turn audit's call classes and serial-lookup count, the batching remeasure's refusal and gate-result reading,
-and `run-slowness-causes`' status and review-facts readers.
-For each run, it reads its records at the newest archive tag and the transcripts of its worktree, forks included.
-It writes these JSON lines files:
-
-- `sessions.jsonl`: per session, turns, calls, lookup turns, serial single lookups, guard refusals, and its own gate runs and failures.
-  Each session is joined to its usage record for the row, model and cost.
-- `refusals.jsonl`: each refused call, with the first words of the refusal.
-- `rows.jsonl`: per recipe row, verify gate runs and the reworks handed back to the agent.
-- `facts.jsonl` and `keys.jsonl`: every cell of each review perch's rounds table, and the ledger keys that recurred.
-- `missing.jsonl`: each run with no archive tag or no transcript directory.
-
-`figures.jq` renders these as `figures.md`.
-It shows each producer's median turns and cost, with the sessions at twice either median, and the finding totals per severity and kind column.
-The stencil has the writer run `tools/tokencount` and `tools/forkaudit` beside it, as the design asks.
+- `lym retro [<slug>...] [--since <date>] [--until <date>] [--max-runs <n>]` is a new operator verb, prime worktree only (`internal/retrocli`).
+  With no slug it covers the runs landed since the last retro; with no earlier retro it covers the last seven days.
+  Named slugs cover exactly those runs, each landed within the last 60 days.
+  `--max-runs` caps the runs one retro covers.
+  Past the cap the oldest are kept and the next retro starts after them.
+- `internal/retroengine` holds the domain logic: finding the last retro, choosing the runs under the cap, and rendering the task's board fields.
+- `contracts/stencils/retro/retro-template-task.md` is the task body.
+  It orders the writer to run the scripts first, read at most a fixed number of moments the figures point at,
+  answer a fixed question set, and route each proposal by the fault it fixes:
+  a mechanical fault to a check, a judgement call to a reviewer rubric line, an instruction with no effect to a deletion,
+  and a new prompt sentence only as the last resort.
+- `tools/retro/` holds the retro's own scripts (`retro.sh`, `transcript.jq`, `figures.jq`, `facts.awk`).
+  They read each run's records at its newest archive tag and its Claude Code transcripts, and write `figures.md` and the tables behind it:
+  turns and cost per session against medians, serial single lookups, refused commands, verify-gate failures and reworks,
+  review rounds and recurring finding keys.
+  The task also runs `tools/tokencount` and `tools/forkaudit`.
+- `reportcli.PrimeGeometry` is now exported, so `lym retro` reads landings through the same `reportengine` source as `lym report`.
+- `docs/overview.md` lists the two packages and the module.
 
 ## Design decisions
 
-- **The question set and its scripts.**
-  The scripts the figures need now live in `tools/retro/`, beside `tools/tokencount` and `tools/forkaudit`.
-  The research folders keep their own copies as records of their runs.
-  The question set is in the stencil:
-  producers against their medians, serial lookups, refused commands, verify gate failures and fixers,
-  recurring findings, instructions with no effect, and missing information.
-  The writer reads at most 12 moments.
-  A moment is a span of at most 30 turns, or one stencil, heddle passage or `CLAUDE.local.md` section that a span showed an agent acting on.
-- **How `lym retro` knows the last retro.**
-  It reads the latest stamp: no new record is kept.
-  The task slug and the report directory share one name, `retro-<UTC end of the window>`, such as `retro-20261116-140550`.
-  The last retro is the newest such name among the report directories in the prime and the entries on the board,
-  so a retro still in flight counts, and two retros do not cover the same runs.
-- **The cap moves the stamp.**
-  Past `--max-runs` (default 10), the oldest runs are kept, and the window ends at the last kept landing.
-  The next retro then starts with the first run left out, so nothing is skipped.
-  Bound: a retro over named runs is stamped with its newest run's landing.
-  The next bare retro starts after that, so a run landed before it and not named is left out.
-  Pass `--since` to reach it.
+- **The last retro is the newest stamp, not a record.**
+  A retro's slug is `retro-<UTC stamp>` of the end of its window, and so is its report directory.
+  `lym retro` takes the newest stamp among the directories under `docs/research/retro` and the retro tasks on the board,
+  so a retro filed but not yet reported still moves the next window.
+- **The cap never splits a landing second.**
+  Runs landed in the same second as the first run left out are all kept or all left out.
+  When the cap falls inside the oldest landing's second, that whole second is kept, past the cap.
+  The stamp of a capped retro is its last kept landing.
+- **Named runs** start their window a second before the oldest landing, so each one landed after it.
+  A name with no landing within the lookback is refused, as are more names than the cap.
+- **`--until` later than now is refused**, since the stamp would hide runs that land before it from the next retro.
+- **A second filing under an existing slug is refused**, naming the two ways out.
+- **The filing writes the task, then releases it** with a second board write, because the board gives a new task the draft status.
+  When the release fails, the error names the draft task and the `lym board set-status` call that releases it.
+- **The board write carries the caller's strand name**, so a run's agent is refused a new task as on `lym board`.
 - **Friction-Reflect is kept as it is.**
-  It is a per-run step that files public lym issues from notes the agents chose to write.
-  The retro is a cross-run audit that files nothing, and the two do not overlap in what they produce.
-- **The research index path reaches the stencil as a marker.**
-  The stencil citation guard refuses a bare `docs/` path in a stencil body.
+  It files lym issues from notes the agents chose to write; the retro reads transcripts and writes a report.
+- **The scripts are shell and `jq`.**
+  They need `bash`, `jq`, `awk` and `git`, and write only under the output directory.
+  A run on another agent engine has no Claude Code transcript directory and is listed in `missing.jsonl` instead of failing the figures.
 
-## Tests
+## To check by hand
 
-- `internal/retroengine`: finding the last retro; run selection (after the last retro, the default window, a given range,
-  the cap moving the window's end, named runs, and the three refusals); and rendering the shipped stencil with every marker filled.
-- `internal/retrocli`: the argument refusals that come before any read.
-- `tools/retro` (tier1): `retro.sh` over a fixture records repository and transcript root, checking every table it writes and the figures it renders.
+- No retro has been filed against a real hub, so the task's whole path is unrun: a darn run's start, the writer running the scripts, and a report landing.
+  Run `lym retro` on the prime worktree and read the filed task and the figures it produces.
+- `Select` in `internal/retroengine/retro.go`, the widening loop where the cap falls inside the oldest landing's second:
+  check that it keeps every run of that second and cannot index past the runs.
+- `tools/retro/retro_integration_test.go`: check that every fixture path is built from `lymdirs.LymDirName` and none is an inline `.lym` or `_lym` literal.
