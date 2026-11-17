@@ -1,15 +1,15 @@
 # Card 13 — run-reentry-and-resume
 
 **Create:**
-- `plan:internal/weaverengine#resumeStrands` -> `func resumeStrands(deps RunDeps, st *State) (resumeResult, error)`
-- `plan:internal/weaverengine#resumeResult` -> `type resumeResult struct`
-- `plan:internal/weaverengine#reenter` -> `func reenter(deps RunDeps, st *State, plan *planparser.Plan) (reentry, error)`
-- `plan:internal/weaverengine#reentry` -> `type reentry struct`
-- `plan:internal/weaverengine#checkStoppedBatch` -> `func checkStoppedBatch(deps RunDeps, st *State, plan *planparser.Plan, batch *runplan.BatchState) (deviations, reasons []string, err error)`
-- `plan:internal/weaverengine#recordDoneWithoutSpawn` -> `func recordDoneWithoutSpawn(deps RunDeps, st *State, batch *runplan.BatchState, deviations []string) error`
-- `plan:internal/weaverengine#reentryWayForward` -> `const reentryWayForward = "put the plan's card set back as the recorded partition holds it, or run lym weaver reset to start the run over from the plan it started with"`
-- `plan:internal/weaverengine#TestRun_Reentry` -> `func TestRun_Reentry(t *testing.T)`
-- `plan:internal/weaverengine#TestRun_Resume` -> `func TestRun_Resume(t *testing.T)`
+- `internal/weaverengine#resumeStrands`
+- `internal/weaverengine#resumeResult`
+- `internal/weaverengine#reenter`
+- `internal/weaverengine#reentry`
+- `internal/weaverengine#checkStoppedBatch`
+- `internal/weaverengine#recordDoneWithoutSpawn`
+- `internal/weaverengine#reentryWayForward`
+- `internal/weaverengine_test#TestRun_Reentry`
+- `internal/weaverengine_test#TestRun_Resume`
 
 **Edit:**
 - `internal/weaverengine#Run`

@@ -1,12 +1,12 @@
 # Card 16 — weaver-shed-producer
 
 **Create:**
-- `plan:internal/shedadapters#WeaverRunner` -> `type WeaverRunner func(weaverengine.RunDeps) (weaverengine.RunResult, error)`
-- `plan:internal/shedadapters#WeaverProducer` -> `type WeaverProducer struct`
-- `plan:internal/shedadapters#NewWeaverProducer` -> `func NewWeaverProducer(name string, run WeaverRunner, deps weaverengine.RunDeps) *WeaverProducer`
-- `plan:internal/shedadapters#WeaverProducer.Call` -> `func (p *WeaverProducer) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#claimConflict` -> `func claimConflict(name, engine, reason, conflictDir string, ptr shedengine.OutputPointer) shedengine.OutputPointer`
-- `plan:internal/shedadapters#TestWeaverProducer` -> `func TestWeaverProducer(t *testing.T)`
+- `internal/shedadapters#WeaverRunner`
+- `internal/shedadapters#WeaverProducer`
+- `internal/shedadapters#NewWeaverProducer`
+- `internal/shedadapters#WeaverProducer.Call`
+- `internal/shedadapters#claimConflict`
+- `internal/shedadapters#TestWeaverProducer`
 
 **Edit:**
 - `internal/shedadapters#WebsterProducer.Call`

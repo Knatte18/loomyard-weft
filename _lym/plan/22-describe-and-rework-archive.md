@@ -29,7 +29,7 @@
 - `internal/failuretrace#TestNewTracer`
 
 **Uses:**
-- `plan:internal/weaverengine#ArchiveRunRecord`
+- `internal/weaverengine#ArchiveRunRecord`
 - `internal/weaverengine#Active`
 - `internal/weaverengine#RunDirs`
 - `internal/weaverengine#DirRel`

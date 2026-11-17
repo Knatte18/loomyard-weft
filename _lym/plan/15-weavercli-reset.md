@@ -3,12 +3,12 @@
 **Create:**
 - `internal/weavercli/doc.go`
 - `internal/weavercli/testmain_test.go`
-- `plan:internal/weavercli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/weavercli#weaverCLI` -> `type weaverCLI struct`
-- `plan:internal/weavercli#weaverCLI.resetCmd` -> `func (c *weaverCLI) resetCmd() *cobra.Command`
-- `plan:internal/weavercli#resetVerb` -> `func resetVerb(out io.Writer, deps weaverengine.ResetDeps, stopStrands bool) int`
-- `plan:internal/weavercli#outsideHubRefusal` -> `const outsideHubRefusal = "weaver: lym weaver reset runs only in a hub's task worktree, where Weaver runs as a loom row; way forward: run it from the task worktree of the run to reset"`
-- `plan:internal/weavercli#TestResetVerb` -> `func TestResetVerb(t *testing.T)`
+- `internal/weavercli#Command`
+- `internal/weavercli#weaverCLI`
+- `internal/weavercli#weaverCLI.resetCmd`
+- `internal/weavercli#resetVerb`
+- `internal/weavercli#outsideHubRefusal`
+- `internal/weavercli#TestResetVerb`
 
 **Edit:**
 - `cmd/lym#newRoot`

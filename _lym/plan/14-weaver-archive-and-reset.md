@@ -1,13 +1,13 @@
 # Card 14 — weaver-archive-and-reset
 
 **Create:**
-- `plan:internal/weaverengine#ResetDeps` -> `type ResetDeps struct`
-- `plan:internal/weaverengine#ResetResult` -> `type ResetResult struct`
-- `plan:internal/weaverengine#Reset` -> `func Reset(deps ResetDeps, stopStrands bool) (ResetResult, error)`
-- `plan:internal/weaverengine#archiveRunInPlace` -> `func archiveRunInPlace(geom Geometry, now func() time.Time) error`
-- `plan:internal/weaverengine#ArchiveRunRecord` -> `func ArchiveRunRecord(geom Geometry, dest string) error`
-- `plan:internal/weaverengine#TestReset` -> `func TestReset(t *testing.T)`
-- `plan:internal/weaverengine#TestArchiveRunRecord` -> `func TestArchiveRunRecord(t *testing.T)`
+- `internal/weaverengine#ResetDeps`
+- `internal/weaverengine#ResetResult`
+- `internal/weaverengine#Reset`
+- `internal/weaverengine#archiveRunInPlace`
+- `internal/weaverengine#ArchiveRunRecord`
+- `internal/weaverengine_test#TestReset`
+- `internal/weaverengine_test#TestArchiveRunRecord`
 
 **Edit:**
 - `internal/weaverengine#Run`

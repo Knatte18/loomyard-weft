@@ -24,7 +24,7 @@
 **Uses:**
 - `internal/weaverengine#Active`
 - `internal/websterengine#ArchiveRunAfterReset`
-- `plan:internal/weaverengine#ArchiveRunRecord`
+- `internal/weaverengine#ArchiveRunRecord`
 
 **Intent:** The D1 guard, on both implementers' rows, and Weaver's lazy producer (D1, D2).
 
