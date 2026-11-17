@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 18:17 UTC; every age below is as of then.
+Rendered 2026-11-17 18:18 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -84,7 +84,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **lym machine start brings back every hub this machine owns, from desktop launchers**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`machine-start-launchers`](design-machine-start-launchers.md)<br>[Sketch](decision-machine-start-launchers.md) | darn · solid | Describe | neve | 1d<br>7h | termwindow, dobby |
+| T11 | **lym machine start brings back every hub this machine owns, from desktop launchers**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`machine-start-launchers`](design-machine-start-launchers.md)<br>[Sketch](decision-machine-start-launchers.md) | darn · solid | PR-Review | neve | 1d<br>7h | termwindow, dobby |
 
 #### Ready (0)
 
@@ -142,7 +142,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Study: the work to support Gemini CLI or Antigravity as an agent engine**<br>• `darn: writer opus[high]` | [`gemini-engine-study`](design-gemini-engine-study.md) | darn · docs | Darn-Write | neve | 7m<br>7m | shuttle |
+| T4 | **Study: the work to support Gemini CLI or Antigravity as an agent engine**<br>• `darn: writer opus[high]` | [`gemini-engine-study`](design-gemini-engine-study.md) | darn · docs | Darn-Write | neve | 8m<br>8m | shuttle |
 | T7 | **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid | Webster | neve | 4d<br>4d | slack, creel, orch |
 
 #### Ready (0)
@@ -165,7 +165,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | darn · solid |  | 10m<br>10m | board, ide, fabric |
+| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | darn · solid |  | 11m<br>11m | board, ide, fabric |
 
 ### Notes (9)
 
@@ -184,7 +184,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B1 |  | **Record Codex edits for the edit-loop watch**<br>• Codex runs record no edits, so the edit-loop watch never notifies their parent | [`codex-edit-loop-recorder`](design-codex-edit-loop-recorder.md) | 5h<br>42m | codex, shuttle |
 | B2 |  | **lym gate redundant never mutates a data literal, so a test that pins one is listed redundant**<br>• Mutants change operators only, so a table row or string no other test asserts is no unique kill | [`redundant-mutants-skip-literals`](design-redundant-mutants-skip-literals.md) | 18m<br>18m |  |
 | B3 |  | **An old driver fails on board stencils a landing installed mid-run**<br>• A blocked hand-over leaves the old binary rendering new board copies whose includes it lacks | [`stale-driver-new-stencils`](design-stale-driver-new-stencils.md) | 3h<br>3h | stencil, shed |
-| B4 |  | **lym gate redundant lists a test redundant when its covers never feed a clause its input**<br>• Negating a condition is killed by any passing test, so a clause no cover exercises alone still counts as covered | [`redundant-clause-inputs-unfed`](design-redundant-clause-inputs-unfed.md) | 17m<br>17m |  |
+| B4 |  | **lym gate redundant lists a test redundant when its covers never feed a clause its input**<br>• Negating a condition is killed by any passing test, so a clause no cover exercises alone still counts as covered | [`redundant-clause-inputs-unfed`](design-redundant-clause-inputs-unfed.md) | 18m<br>18m |  |
 
 #### Enhancements (1)
 
