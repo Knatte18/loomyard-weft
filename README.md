@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 13:56 UTC; every age below is as of then.
+Rendered 2026-11-17 13:58 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -73,7 +73,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Review rounds converge: parsed fixer rebuttals, incremental re-review with round checks, and a Go stalemate escalation** | [`review-rounds-converge-build`](design-review-rounds-converge-build.md)<br>[Sketch](decision-review-rounds-converge-build.md) | tapestry · solid | Plan-Write | neve | 9m<br>9m | burler, shed, stencil, fabric, loom, arbiter, cwd |
+| T4 | **Review rounds converge: parsed fixer rebuttals, incremental re-review with round checks, and a Go stalemate escalation** | [`review-rounds-converge-build`](design-review-rounds-converge-build.md)<br>[Sketch](decision-review-rounds-converge-build.md) | tapestry · solid | Plan-Write | neve | 11m<br>11m | burler, shed, stencil, fabric, loom, arbiter, cwd |
 
 #### Ready (0)
 
@@ -108,7 +108,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **lym adopt runs in the foreground over pushed state: hold, owner, pull, takeover, check, with --take-hold** | [`adopt-foreground`](design-adopt-foreground.md)<br>[Sketch](decision-adopt-foreground.md) | tapestry · solid | Plan-Burler-Fix | neve | 1d<br>2h | board, dobby, fabric, workspaces, orch, tender, batten, process |
+| T8 | **lym adopt runs in the foreground over pushed state: hold, owner, pull, takeover, check, with --take-hold** | [`adopt-foreground`](design-adopt-foreground.md)<br>[Sketch](decision-adopt-foreground.md) | tapestry · solid | Plan-Bouncer | neve | 1d<br>2h | board, dobby, fabric, workspaces, orch, tender, batten, process |
 
 #### Ready (0)
 
@@ -198,7 +198,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>58m | claude, shuttle, config |
+| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>1h | claude, shuttle, config |
 
 #### Draft (1)
 
@@ -216,7 +216,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S2 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md)<br>[Sketch](decision-board-viewer.md) | 6w<br>50m | board, ide, orch |
+| S2 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md)<br>[Sketch](decision-board-viewer.md) | 6w<br>52m | board, ide, orch |
 
 #### Research (1)
 
