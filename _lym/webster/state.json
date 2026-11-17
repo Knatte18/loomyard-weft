@@ -754,6 +754,24 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/2f9e36a8-a5d3-4777-a05b-00d2f91d664e/subagents/agent-a686d639d2456c6d1.jsonl"
       ]
     },
+    "20": {
+      "slug": "renumber-reads-active",
+      "cards": [
+        "20-renumber-reads-active",
+        "21-decision-notice-weaver"
+      ],
+      "cardHashes": {
+        "20-renumber-reads-active": "5a23f3270b0e4df04129bf7dcbd5662b6b4d8a582dcaaf2735a9f5dc08b0068f",
+        "21-decision-notice-weaver": "78417d9a37955d7888fed8cd135ac724130b781b093961da005c988f307e3a49"
+      },
+      "startSha": "403a3e7519ce392d4e987ca6df8958ec3e11ab1d",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T07:35:11Z",
+      "sessionId": "2f9e36a8-a5d3-4777-a05b-00d2f91d664e",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "3": {
       "slug": "weaver-geometry",
       "cards": [
@@ -871,7 +889,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 20,
   "masterStrand": "ad45d38c900010baa4b2b666b45bbcd9",
   "masterSessionId": "2f9e36a8-a5d3-4777-a05b-00d2f91d664e",
   "masterEngine": "claude",
