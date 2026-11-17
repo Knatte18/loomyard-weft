@@ -1,60 +1,55 @@
-# Notify a run's parent when an agent edits one file again and again
+# Shuttle notices a parent when an agent edits one file again and again
 
-An agent that edits the same file over and over without progress used to run until its time budget ran out.
-Shuttle now counts each agent's edits of each file in an autonomous run.
-When one file's edits reach a set count within a set window, it sends the run's parent one notice.
-The session keeps running; the notice stops nothing and changes no outcome.
+Nothing stopped an agent that kept editing the same file without progress; only the run's time budget ended it.
+Shuttle now counts each agent's edits per file and tells the run's parent when one file's edits reach a set count within a set window.
+The session keeps running, and the notice is advisory.
 
 ## What changes
 
-- **Edit hook (claude engine).**
-  For a run that is not interactive, while the watch is on, a Claude session's settings carry a PostToolUse entry matching `Edit|Write`.
-  It runs the new hidden verb `lym shuttle hook-edit claude <events file>; true`.
-  `Claude.RecordEdit` appends a stamp line and a slim PostToolUse line to `events.jsonl`.
-  The line holds only the session id, the agent id, the tool name and `tool_input.file_path`.
-  Claude Code's full payload carries the edit's text and the whole file's content.
-  Recording it raw would bloat a file that every watch of the run rereads.
-- **New signal.**
-  `ParseSessionSignals` reads that line as the new `SessionSignalFileEdit`, carrying `FilePath` and `AgentID`.
-  `AgentID` is empty for the session's own edit and set for a subagent's or fork's, so each agent counts apart.
-- **Watch and notice (engine-neutral).**
-  `internal/shuttleengine/editloop.go` adds `watchEditLoops`, run each wait tick beside the dialog watch.
-  It counts edits per agent and file at the hook-side stamp time.
-  When `edit_loop_edits` of them fall within `edit_loop_window_s`, it sends one notice line through the runner's notifier and restarts that count.
-  This is the same channel the hold and dialog notices use.
-  The line names the strand, the file, the subagent when one made the edits, the count and the window.
-  The agent-written parts are delimited, as in the hold notice.
-  `RunState.EditLoopNotifiedOffset` is persisted before the notifier call, so a reattach never repeats a notice.
-  Interactive runs, runners with no notifier, and runs under a pause send nothing.
-  Under a pause no edits are read, so they count once it lifts.
-- **Config.**
-  `shuttle.yaml` gains `edit_loop_edits: 4` and `edit_loop_window_s: 300`, the survey's four edits in five minutes.
-  `0` edits turns the watch off and installs no hook.
-  A negative count, or a non-positive window while the count is on, is refused at load, naming its way forward.
-- **Session fold.**
-  `SessionFold` skips file edits, so an edit between a turn start and an idle notice does not hide the contradiction that pair signals.
+- A new edit hook runs on each Claude `Edit` and `Write` call.
+  It runs the hidden `lym shuttle hook-edit <engine> <edit-records-file>` verb (`internal/shuttlecli/hookedit.go`),
+  which appends a slim record of the edited file to a per-run edit records file.
+  The record holds the hook-side time, the session and agent ids, and the file path, never the edit's text or the file's content.
+  The hook command ends in `; true` and the verb always exits 0, so a failure never shows the session a hook error.
+- `internal/shuttleengine/editloop.go` adds the watch to an autonomous run's wait loop.
+  It reads new records each tick and counts edits per agent and file; the session and each subagent or fork count separately.
+  An edit older than the window before a later edit of the same file by the same agent drops out of the count.
+  When the count reaches `edit_loop_edits`, the runner's notifier sends the parent one shuttle notice line,
+  the same channel the hold and dialog notices use, and the count for that file restarts.
+  The notice delimits the file path and agent id as the agent's own text.
+- Two new shuttle config keys: `edit_loop_edits` (default 4) and `edit_loop_window_s` (default 300).
+  `edit_loop_edits: 0` turns the watch off and installs no edit hook.
+  `LoadConfig` rejects a negative `edit_loop_edits`, and a non-positive `edit_loop_window_s` while `edit_loop_edits` is above 0.
+- `RunState.EditLoopNotifiedOffset` persists the records-file offset before the notifier is called,
+  so a restarted wait does not re-notify.
+  When the state write fails, the watch is restored and the batch is read again on the next tick.
+  A notifier error is only logged.
+- The watch does nothing for an interactive run, a runner with no notifier, an engine that parses no session signals,
+  or while a pause covers the run.
+  Edits made during a pause count once it lifts.
 
 ## Design decisions
 
-- The board idea says shuttle already gets every PostToolUse event.
-  It gets them as hooks only: `events.jsonl` records no PostToolUse line.
-  So this change adds a dedicated slim recording hook instead of reading an existing record.
-- The counting lives in the engine-neutral wait loop, not in the hook process.
-  The window then runs on recorded stamp times, the run clock covers unstamped lines, and the notice reuses the notifier.
-  The hook stays a stateless append.
-- "Raises a friction note to the run's parent" is implemented as a shuttle notice line to the parent,
-  the parent channel shuttle owns.
-  No file is written to the run's friction directory: shuttle is never told that directory,
+- The friction note is a shuttle notice line through the notifier, not a file in the run's friction directory.
+  Shuttle owns the notifier channel to the parent and is never told the friction directory,
   and `PATTERN-run-records` keeps Go-written friction notes to their existing writers.
-- Only the claude engine implements `EditRecorder`.
-  The codex engine has no edit hook yet, so its runs get no edit-loop notice.
+- The edit hook writes its own edit records file beside the events file, not the events file itself,
+  so the watch does not reread the full payloads the events file carries.
+- Edit times come from the hook-side stamp, so the window measures when the edits happened, not when the wait read them.
+  A record with no stamp takes the read time.
+- Only the claude engine has an edit recorder (`shuttleengine.EditRecorder`, registered through `shuttleengines`).
+  A codex run gets no notice until a later task adds a codex recorder and hook;
+  the engine-neutral watch needs no change then.
 
-## Tests
+## To check by hand
 
-- `TestWait_EditLoopNotice` covers the watch through `Wait`:
-  the notice and the persisted offset, a subagent's loop, session and subagent counting apart, files counting apart,
-  the window dropping an old edit, the count restarting after a notice, a pause, a reattach,
-  and the off, interactive and no-notifier cases.
-- `TestRecordEdit` and `TestBuildSettings_EditHook` pin the slim record read back as a signal, and the hook's settings entry.
-- `TestHookEditVerb` and `TestHookEditVerb_RunsOutsideAHub` pin the verb.
-  `TestLoadConfig_EditLoop` pins the config, and a new `TestSessionFold` row pins the fold.
+- No manual run was made of the hook inside a live Claude session.
+  Check that a real session's `Edit` and `Write` calls produce records, and that four edits of one file within five minutes send one notice.
+- The edit hook shares the edit records file with every watch of the run, which is a design choice a reviewer may want to confirm
+  (`internal/shuttleengine/claudeengine/editrecord.go`).
+- The task's friction note became a notice line, a reinterpretation of the board entry's wording
+  (`internal/shuttleengine/editloop.go`, `editLoopNotice`).
+- Counting by stamp time is covered by tests, but its edge cases are thin
+  (`internal/shuttleengine/editloop_test.go`).
+
+Closes no issue.
