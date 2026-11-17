@@ -119,6 +119,12 @@ Decision: The plan review ends unconverged on round 3 and the plan stands as the
 
 Rationale: The one design-wrong finding, seat-specs-keeps-claude-model-params, is answered by the fix in place: codexengine.validateChoice refuses only a non-empty Version, an unlisted non-empty Effort or a non-bypass permission mode; claudeengine's validateEffort accepts an empty effort and resolveModelID returns the empty model when no version is given. Model and Effort reach only the launch command settings (buildLaunchCmd, Codex's model and effort args), which D1 lists and does not compare, so clearing them changes no compared item. The other four open keys are mechanical and the plan carries each fix as the review worded it.
 
+### Added after Discussion (parent, 2026-11-17): The parity check names its two engines as constants
+
+Decision: ReferenceEngine (claude) and ComparedEngine (codex) stay as named constants in internal/shuttleparity. The commit that adds them carries a Pattern-Departure trailer naming PATTERN-code-conventions, with the reason that the parity comparison is between two named engines by definition.
+
+Rationale: The check exists to hold Codex to what Claude delivers; deriving the pair from the engine set or config would add a setting with one meaningful value. The departure is confined to the parity package and its CLI verb, and no other caller branches on an engine name.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's user-setup resolution, session scope and file locations stay in `claudeengine`, and reach `codexengine` only through `shuttleengine` interfaces wired in `internal/shuttleengines`; the rollout reading for the batching nudge stays in `codexengine`, and the read-only lookup check both engines' nudges use sits in its own package under `internal/shuttleengine`.
@@ -138,6 +144,14 @@ Rationale: The one design-wrong finding, seat-specs-keeps-claude-model-params, i
 - D12: the nudge keeps separate settings per engine rather than moving to a shared module, which would need a config reinterpretation.
 
 ## Open risks
+
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
+  - interim-reachability-not-admitted-in-allowlist (class design, severity MEDIUM, open in rounds 3)
+  - seat-specs-keeps-claude-model-params (class design, severity MEDIUM, open in rounds 3)
+  - shuttleparity-package-lacks-testmain (class scope, severity BLOCKING, open in rounds 3)
+<!-- /lym:carry-over Plan-Review -->
 
 ## Acceptance criteria
 
