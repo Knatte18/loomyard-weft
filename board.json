@@ -939,28 +939,6 @@
       "revised": "2026-11-17T06:26:35Z"
     },
     {
-      "id": 1414,
-      "handle": "T22",
-      "slug": "retro-writer-opus",
-      "title": "lym retro: run the retro task's writer on Opus",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "report",
-        "darn"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The retro task's writer judges transcripts and routes proposals; give it Opus instead of the docs default",
-      "body": "## Seen (2026-11-17)\n\n`lym retro` files its task as darn on the `docs` profile with no writer model (`TaskFields` in `internal/retroengine/retro.go`),\nso the writer runs on the docs profile's default model, Sonnet.\nThe scripts under `tools/retro` do the counting; the report's worth lies in judgement:\ntelling a real fault in a transcript from noise,\nrouting each proposal to a check, a rubric line, a deletion or a prompt sentence,\nand ranking them by severity.\nA weak writer files plausible proposals that turn into board noise.\n\n## Idea\n\n- `TaskFields` adds `run_settings` `{\"darn\":{\"writer\":\"opus\"}}`, so every retro task's writer runs on Opus.\n- Its test pins the writer in the rendered fields.\n",
-      "status": "done",
-      "created": "2026-11-17T06:48:35Z",
-      "revised": "2026-11-17T06:49:12Z",
-      "profile": "docs"
-    },
-    {
       "id": 1415,
       "handle": "B1",
       "slug": "memcap-desktop-notice",
