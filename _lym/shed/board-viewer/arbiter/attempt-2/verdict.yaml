@@ -1,0 +1,17 @@
+verdict: resume
+reason: |-
+  Round 2 of the Discussion review escalated as `circling` because the design-wrong key d6-fabric-ide-knowledge came back after round 1's continue.
+  The returned finding was valid against the record that round 2 reviewed, but the fix is converging.
+  In round 1 fabric wrote the tasks itself. In round 2 fabric only spliced the members and refused the folders and settings keys.
+  The round-2 fixer then made exactly the placement F2 proposed. D6 now has fabric read only the member names, to refuse its own lym.generated mark, and pass the members to internal/vscode, whose builder splices them and refuses folders and settings. The PATTERN-fabric-boundary Constraint says fabric's existing vscode import is not extended.
+  That matches PATTERN-fabric-boundary and internal/fabricengine/hubworkspace.go, where fabric already leaves the file's shape to vscode.BuildWorkspace and owns beamWorkspaceMark.
+  I recorded that ruling as a decision so round 3 checks the text against it.
+  The other gating key, board-open-refusal-invisible (F4), is answered in the record: D6 now reveals always, with focus false.
+  The record also carries the mechanical fixes: D7 removed, Open risks emptied, the D5 board-path and anchored-directory wording, and D1's escape spelled out.
+  The Discussion hard cap resolves to review_hard_max_bounces 4, since the hub's loom.yaml sets no override. Round 2 is below it, so I continued for one more round.
+  I made no commit of my own.
+verbs:
+  - |-
+    lym loom decision add board-viewer --by arbiter --title "D6's workspace seam keeps the workspace schema in internal/vscode" --decision … --rationale …
+  - |-
+    lym loom circling continue board-viewer
