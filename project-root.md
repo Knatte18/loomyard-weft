@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 4d<br>4d | slack, creel, orch |
 
-## Notes (10)
+## Notes (11)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -59,6 +59,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **An old driver fails on board stencils a landing installed mid-run**<br>• A blocked hand-over leaves the old binary rendering new board copies whose includes it lacks | [`stale-driver-new-stencils`](design-stale-driver-new-stencils.md) | 21m<br>21m | stencil, shed |
 | B4 |  | **Coverage map rewrites funcs in another order on each build**<br>• Two --map runs on one commit give the same sets in a different array order | [`map-entry-order-unstable`](design-map-entry-order-unstable.md) | 0m<br>0m |  |
 | B5 |  | **Coverage map records 0 seconds for nearly every test**<br>• redundant lists every candidate at 0 seconds so its slowest-first pass has no order | [`map-test-seconds-zero`](design-map-test-seconds-zero.md) | 0m<br>0m |  |
+
+### Enhancements (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E1 |  | **No lym check compares a map entry with a single-test coverage run**<br>• The trial cross-checked by hand; blocks have no line range and funcs have no profile counterpart | [`map-single-test-crosscheck`](design-map-single-test-crosscheck.md) | 0m<br>0m |  |
 
 ### Features (3)
 

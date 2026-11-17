@@ -715,6 +715,23 @@
       "body": "Found by the map-tooling-trial.\n\nIn the `internal/boardengine` map from `lym gate test --wait --map`, 132 of 136 tests record `seconds: 0` and the slowest records 0.29.\n`lym gate redundant internal/boardengine` then lists every one of its 14 candidates with `seconds: 0`.\nIts \"greedy pass, slowest first\" has no order to work from, and the standalone seconds it reports say nothing about what deleting a test saves.\nRecord each test's time at a resolution that separates tests, or say in the report that the figure is a floor.\n",
       "created": "2026-11-17T15:01:51Z",
       "revised": "2026-11-17T15:01:51Z"
+    },
+    {
+      "id": 1434,
+      "handle": "E1",
+      "slug": "map-single-test-crosscheck",
+      "title": "No lym check compares a map entry with a single-test coverage run",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The trial cross-checked by hand; blocks have no line range and funcs have no profile counterpart",
+      "body": "Found by the map-tooling-trial.\n\nNothing in lym compares a map entry with a single-test coverage run.\nThe trial did it by hand: `lym gate test --wait ./internal/\u003cpkg\u003e -- -run '^\u003cTest\u003e$' -count=1 -coverprofile=\u003cabs path\u003e`, then counted covered blocks per file in the profile against the map's `blocks` of that test grouped by file.\nThat agreed for both `internal/durfmt` tests and for `TestOutputs`, `TestStoreValidatesLabelsWithVocabulary` and `TestWriteSiblings` of `internal/boardengine`.\n\nTwo limits:\n- The map's blocks carry file, function and hash but no line range, so the check is by count per file, not block by block.\n- The map's `funcs` list (functions of linked packages a test reaches) has no single-test counterpart in a statement profile, so it is unchecked.\n\nAdd a verb, or a `--map` option, that re-measures named tests alone and reports any block or function that differs, and give blocks a line range.\n",
+      "created": "2026-11-17T15:01:51Z",
+      "revised": "2026-11-17T15:01:51Z"
     }
   ],
   "prime_owner": "neve",
