@@ -1,6 +1,6 @@
 # Memory guard for every test binary lym runs
 
-`gate-tier-memory-cap` · Note · bug, gate
+`gate-tier-memory-cap` · Task · bug, gate · draft
 
 ## Seen (2026-11-17)
 
