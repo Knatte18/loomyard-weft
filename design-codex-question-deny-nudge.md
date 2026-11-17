@@ -1,6 +1,6 @@
 # A Codex session gets the question-tool deny and the batching nudge Claude runs
 
-`codex-question-deny-nudge` · Task · feature, codex, shuttle, stencil, heddle · running · Describe
+`codex-question-deny-nudge` · Task · feature, codex, shuttle, stencil, heddle · running · PR-Review
 
 Decision record: [Sketch](decision-codex-question-deny-nudge.md)
 
