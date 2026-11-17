@@ -1,6 +1,6 @@
 # Codex as darn writer, replayed on a landed task through the real producer
 
-`codex-writer-bench` · Task · research, codex, shuttle · running · Drift-Expect
+`codex-writer-bench` · Task · research, codex, shuttle · running · Darn-Write
 
 Depends on: [`launch-manifest-parity`](design-launch-manifest-parity.md)
 
