@@ -2,10 +2,10 @@
   "current_producer": "Run-Shed",
   "state": "running",
   "error": "",
-  "pause_requested": false,
+  "pause_requested": true,
   "activity": {
     "now": "Run-Shed",
-    "last": "Open-IDE → skipped",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -47,6 +47,46 @@
       "output": "",
       "at": "2026-11-16T12:08:29Z",
       "reason": "batten.open_ide = false",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Plan-Bouncer",
+      "at": "2026-11-16T14:08:59Z",
+      "started_at": "2026-11-16T14:08:59Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Plan-Bouncer",
+      "at": "2026-11-16T14:09:49Z",
+      "started_at": "2026-11-16T14:09:49Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → failed at Webster",
+      "at": "2026-11-17T06:03:04Z",
+      "started_at": "2026-11-17T06:03:04Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child failed → running at Webster",
+      "at": "2026-11-17T06:03:47Z",
+      "started_at": "2026-11-17T06:03:47Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
       "machine": "neve"
     }
   ]
