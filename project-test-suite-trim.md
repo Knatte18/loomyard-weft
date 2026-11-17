@@ -24,17 +24,9 @@ The maps are built only on command now; the gate no longer selects tests from th
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (2)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
-
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Survey the mutation-confirmed redundancy candidates across every package**<br>• Run the fixed lym gate redundant on every package and measure how many confirmed candidates are false | [`redundancy-confirmed-survey`](design-redundancy-confirmed-survey.md) | darn · docs | landing · Finalize | neve | 19h<br>19h | testkit, gate |
 
 ### Ready (0)
 
@@ -48,8 +40,16 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid | T14 | 7d<br>19h | testkit, gate |
+| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 7d<br>19h | testkit, gate |
 
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T14 | **Survey the mutation-confirmed redundancy candidates across every package**<br>• Run the fixed lym gate redundant on every package and measure how many confirmed candidates are false | [`redundancy-confirmed-survey`](design-redundancy-confirmed-survey.md) | 19h<br>19h | testkit, gate |
