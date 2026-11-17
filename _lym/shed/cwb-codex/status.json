@@ -1,14 +1,13 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
-  "entered_row": "Darn-Write",
   "pause_requested": false,
   "pause_before": "Drift-Verify",
   "pause_before_by": "codex-writer-bench",
   "activity": {
-    "now": "Darn-Write",
-    "last": "Darn-Write → goto",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -53,6 +52,58 @@
       "output": "",
       "at": "2026-11-17T18:09:02Z",
       "by": "darn"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/cwb-codex/_lym/landing/summary.md",
+      "at": "2026-11-17T18:26:06Z",
+      "started_at": "2026-11-17T18:09:09Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T18:13:44.628583879Z",
+          "end": "2026-11-17T18:13:44.64003685Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T18:22:15.702200193Z",
+          "end": "2026-11-17T18:22:15.711270036Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T18:13:44.712992398Z",
+          "end": "2026-11-17T18:19:25.519977254Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-17T18:19:26.97830306Z",
+          "end": "2026-11-17T18:22:15.674719726Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T18:22:15.751651852Z",
+          "end": "2026-11-17T18:25:19.175148477Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-17T18:25:19.221437321Z",
+          "end": "2026-11-17T18:25:19.423685034Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-17T18:25:19.459566323Z",
+          "end": "2026-11-17T18:25:19.459664908Z"
+        }
+      ]
     }
   ],
   "product": {
