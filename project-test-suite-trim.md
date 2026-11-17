@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-17 19:22 UTC; every age below is as of then.
+Rendered 2026-11-17 19:26 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 7d · Owner `neve`
@@ -36,7 +36,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **lym gate redundant: mutate data literals and delete boolean clauses**<br>• Add literal and clause-deletion mutants so tests pinning a literal or a clause stop being listed redundant<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-literal-clause-mutants`](design-redundant-literal-clause-mutants.md) | darn · light | Code-Burler-Review | neve | 1h<br>22m | gate |
+| T5 | **lym gate redundant: mutate data literals and delete boolean clauses**<br>• Add literal and clause-deletion mutants so tests pinning a literal or a clause stop being listed redundant<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-literal-clause-mutants`](design-redundant-literal-clause-mutants.md) | darn · light | Code-Burler-Review | neve | 1h<br>26m | gate |
 
 ### Ready (0)
 
@@ -50,7 +50,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid | T5 | 8d<br>22m | testkit, gate |
+| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid | T5 | 8d<br>26m | testkit, gate |
 
 ## Notes (0)
 
