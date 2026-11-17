@@ -1,6 +1,6 @@
 # lym machine start brings back every hub this machine owns, from desktop launchers
 
-`machine-start-launchers` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut
+`machine-start-launchers` · Task · feature, termwindow, dobby
 
 Decision record: [Sketch](decision-machine-start-launchers.md)
 
