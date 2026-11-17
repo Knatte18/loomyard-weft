@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "Card order, cards 1 to 4: card 1 retires planning and `testMapRun.dirtyGoFile`, `headTree` and `changedFiles` stays until card 4. Settle whether any card uses a symbol a later card creates or an earlier card deletes (`dirtyOwnedFile`, `readHead`, `readPackageTree`, `testMapRun.skip`, `endJob`), and whether card 2's deletes in `internal/testcover` are reached by no surviving caller after card 1."
+  - "Fidelity to D1 to D9 and the Constraints: find a Decision step or Constraint no card carries (D1 `--main-packages` and `-C`/`--dir` refusal, D1 detached-key replay, D4 guard naming, D6 spawn-marked-only package check, D8 prime versus worktree location, `PATTERN-child-processes`, `PATTERN-tolerant-records`, `PATTERN-gate-slot` text, `PATTERN-daemon-wakeups` row in `cmd/lym/daemonwakeups_test.go`), and any card scope the record does not license."
+  - "Test economy, card 3: `TestMapSideBySide` and `TestMapSlotAsk` are one test per new helper. Settle whether the `TestGateTestMap` subtests (`ATiersMemoryMBClampsItsTestsToOneAtATime`, `AMapRunHoldsTheLargerSlotAskOfItsTiers`) already reach the same behavior through the public surface. Also check card 1 and 4 for tests that duplicate an existing subtest, and for tests that assert the static prose of docs or patterns."
+  - "Reachability of the prescribed refusals: each refusal in cards 1, 3, 4 and 5 (`--map` beside each partner flag, non-go-json tier, `memory_mb` below the test cap, the HEAD-moved and dirty-file reasons, the redundant way-forward texts) needs a named input and a named test that reaches it, and no upstream check (`flagShapeRefusal` order, `--tags` handling, config validation of `memory_mb`) rejects that input first."
+  - "Attack-surface statement: card 1 and card 3 introduce `--map` skipping tier commands, filters, memory scopes and timeouts, a `guardFor` seam, and a `--map` slot hold of `slots: all`. Settle whether each card's `Intent` states what is skipped and what bounds it."
+  - "Edit-card shape: card 1 lists many `Edit` members; check the re-sign arrow on every member whose parameters or results the Intent changes (`testMapRun.packages`, `mapPackages`, `mapPackage`, `write`, `writeFailed`, `runBatch`, `runSideBySide`, `measureTests`, `addMeasure`, `testMapSkip`), that `.go` file targets with named symbols carry member glyphs (`prebuild.go`, `doc.go`), and that `Extends` is not used on a rewritten ref."
+  - "Research step and board scope: any card that leaves a fact to be found while it runs (for example `testMapRun.mappedTests` reachability, the `fileHashes` HEAD-tracked check, `unboundedWaitFiles` contents) or that edits this task's own board entry."
+  - "Verify lines and granularity: confirm no `**Verify:**` names a raw test command, and that card 1's size (verb retirement, flag routing, package-set selection, docs for seven files) is one reviewable unit rather than batching that belongs in separate cards."
+---
+
+Seed focus only; the reviewer still reads every card against the whole rubric.
+`support-log.md` was not read.
