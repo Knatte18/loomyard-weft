@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-adopt-foreground.md)
 
-Depends on: [`machine-registry-holds-catchup`](design-machine-registry-holds-catchup.md)
-
 Filed from the Sketch `adopt-build-resplit`.
 
 Takes: machine-registry-holds-catchup's hold types and readers, the hold write its upgrade first read calls, its registry types, readers and registration write with D3's refusals, its catch-up entry point, pauserecord.BoltHoldCaller, and fixtries.Read and fixtries.Write in internal/fixtries, which its upgrade first read and adoptcli's fix loop call; boardengine.SetOwners's pull-first commit and its re-read after a rejected push (internal/boardengine/ownerset.go); transition-push-takeover's takeover entry type, reader and synchronous pushes, and the hand-over mark's path and reader; runfsm's states and the refusals that name lym adopt <subject>; adoptcli's fix loop (fixloop.go, fronttask.File), check, deploy, archives and --here paths; the adopt record's readers in the dobby's handover, the orch watcher and lym beam status; orchcli.BeamUp; internal/shellguard's table
