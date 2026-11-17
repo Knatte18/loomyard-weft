@@ -1,6 +1,6 @@
 {
   "runGuid": "214cb2fb17a9ecc7ede789d9ce9d4369",
-  "planFingerprint": "bc10be6e58ea4d6171ff687bbc700c334b52de5fa7193ec8945e214fcac186ef",
+  "planFingerprint": "eceaa3dafc8978006ba066d8af43ae6b2487a62343af22ddb70a34669eb22dbb",
   "planFileHashes": {
     "00-overview.md": "630f946eaff53f2af1a132415e75a681e27ceb4f0859aca925436059648241b4",
     "01-shared-plan-conflict-path.md": "605edb94583244030a150b83b3259b1accfeb4089b1dfde359a31123651d7339",
@@ -22,8 +22,8 @@
     "17-implementer-guard.md": "463e16e49ff7745b916c849605cbe4cedf35de878606f5e4901ae39153fc7081",
     "18-weaver-implementer-row.md": "8369355118f1ee9ee50cb25805f7c1df8e9f2e1d0ec6267e86cbdf17ed829490",
     "19-plan-gate-reads-active.md": "1a4d893873d2f797f7e29bc73ee4cc308d95b08e25eef622e343e91e792996cd",
-    "20-renumber-reads-active.md": "5a23f3270b0e4df04129bf7dcbd5662b6b4d8a582dcaaf2735a9f5dc08b0068f",
-    "21-decision-notice-weaver.md": "78417d9a37955d7888fed8cd135ac724130b781b093961da005c988f307e3a49",
+    "20-renumber-reads-active.md": "7b0a17cad67af77fd68863627ae382041dbf2455616860e2830bc1cfc700e263",
+    "21-decision-notice-weaver.md": "5c33a2689f19b05fa3becbb7e2f78f266244596e4ce51478b1e38a8f903c0148",
     "22-describe-and-rework-archive.md": "4a76d2a8c1f61957bec752814f5bcae82243a67e20ee1fb56d858afd549ecb2b",
     "23-merge-in-warning.md": "bb4fc71178c505dd2a53107c1eeafe3ee4b9d03a3a2f50cd9efb591937aa177f",
     "24-arbiter-names-run-dir.md": "b44666ae6452058374500fb9dd021a9ccad28fcfdc686e46f4e17505f96c9b8f",
@@ -761,16 +761,44 @@
         "21-decision-notice-weaver"
       ],
       "cardHashes": {
-        "20-renumber-reads-active": "5a23f3270b0e4df04129bf7dcbd5662b6b4d8a582dcaaf2735a9f5dc08b0068f",
-        "21-decision-notice-weaver": "78417d9a37955d7888fed8cd135ac724130b781b093961da005c988f307e3a49"
+        "20-renumber-reads-active": "7b0a17cad67af77fd68863627ae382041dbf2455616860e2830bc1cfc700e263",
+        "21-decision-notice-weaver": "5c33a2689f19b05fa3becbb7e2f78f266244596e4ce51478b1e38a8f903c0148"
       },
       "startSha": "403a3e7519ce392d4e987ca6df8958ec3e11ab1d",
       "kind": "fork",
       "spawnedAt": "2026-11-17T07:35:11Z",
       "sessionId": "2f9e36a8-a5d3-4777-a05b-00d2f91d664e",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "20-renumber-reads-active",
+        "status": "done",
+        "head_sha": "83fedbe7ddd50ce7798890949c0b7442910fbe14",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/loomcli/decision.go",
+          "internal/loomcli/decision_test.go",
+          "internal/loomcli/renumber.go",
+          "internal/loomcli/renumber_test.go",
+          "internal/loomcli/wiring.go",
+          "internal/runplan/begun_test.go",
+          "internal/testkit/shedfake/shedfake.go",
+          "internal/weaverengine/delivery_test.go",
+          "internal/weaverengine/record.go",
+          "internal/websterengine/beginbatch.go",
+          "internal/websterengine/begun_test.go"
+        ]
+      },
+      "cardShas": [
+        "83fedbe7ddd50ce7798890949c0b7442910fbe14"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/2f9e36a8-a5d3-4777-a05b-00d2f91d664e/subagents/agent-a23ad652ddada5742.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/2f9e36a8-a5d3-4777-a05b-00d2f91d664e/subagents/agent-a23ad652ddada5742.jsonl"
+      ]
     },
     "3": {
       "slug": "weaver-geometry",
@@ -889,7 +917,7 @@
       ]
     }
   },
-  "currentBatch": 20,
+  "currentBatch": 0,
   "masterStrand": "ad45d38c900010baa4b2b666b45bbcd9",
   "masterSessionId": "2f9e36a8-a5d3-4777-a05b-00d2f91d664e",
   "masterEngine": "claude",
@@ -898,6 +926,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/a0ce39e9-3fe4-40c0-a911-9648bcc05e28/subagents/agent-a0305a9080972ac6a.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/2f9e36a8-a5d3-4777-a05b-00d2f91d664e/subagents/agent-a2758a955aaec38f7.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/2f9e36a8-a5d3-4777-a05b-00d2f91d664e/subagents/agent-a822854cb984b670c.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/2f9e36a8-a5d3-4777-a05b-00d2f91d664e/subagents/agent-a686d639d2456c6d1.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/2f9e36a8-a5d3-4777-a05b-00d2f91d664e/subagents/agent-a686d639d2456c6d1.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-implementer/2f9e36a8-a5d3-4777-a05b-00d2f91d664e/subagents/agent-a23ad652ddada5742.jsonl"
   ]
 }

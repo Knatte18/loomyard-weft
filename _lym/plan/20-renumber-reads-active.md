@@ -1,9 +1,9 @@
 # Card 20 — renumber-reads-active
 
 **Create:**
-- `plan:internal/loomcli#renumberDepsFor` -> `func renumberDepsFor(anchor string, active weaverengine.ActiveDeps) renumberDeps`
-- `plan:internal/loomcli#errRenumberSeam` -> `var errRenumberSeam = errors.New("the run's active implementer cannot be read")`
-- `plan:internal/loomcli#TestRenumberDepsFor` -> `func TestRenumberDepsFor(t *testing.T)`
+- `internal/loomcli#renumberDepsFor`
+- `internal/loomcli#errRenumberSeam`
+- `internal/loomcli#TestRenumberDepsFor`
 
 **Edit:**
 - `internal/loomcli#renumberDeps`

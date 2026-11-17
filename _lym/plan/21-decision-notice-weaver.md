@@ -1,9 +1,9 @@
 # Card 21 — decision-notice-weaver
 
 **Create:**
-- `plan:internal/weaverengine#RecordDelivery` -> `func RecordDelivery(anchorRoot, strandName string, headings []string) error`
-- `plan:internal/weaverengine#TestRecordDelivery` -> `func TestRecordDelivery(t *testing.T)`
-- `plan:internal/loomcli#weaverDeliver` -> `func weaverDeliver(location *lymcwd.Location) func(strandName string, delivered []string) ([]string, error)`
+- `internal/weaverengine#RecordDelivery`
+- `internal/weaverengine_test#TestRecordDelivery`
+- `internal/loomcli#weaverDeliver`
 
 **Edit:**
 - `internal/loomcli#decisionDeps`
