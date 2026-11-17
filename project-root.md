@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-17 07:40 UTC; every age below is as of then.
+Rendered 2026-11-17 07:42 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Webster | neve | 21h<br>21h | webster, weaver |
-| T20 | **A capped test run raises a desktop low-memory notice**<br>• Each kernel kill of a capped test scope in app.slice shows a desktop low-memory notice; move the scopes so it does not | [`memcap-desktop-notice`](design-memcap-desktop-notice.md) | darn · light | Darn-Write | neve | 45m<br>8m | gate, process |
+| T20 | **A capped test run raises a desktop low-memory notice**<br>• Each kernel kill of a capped test scope in app.slice shows a desktop low-memory notice; move the scopes so it does not | [`memcap-desktop-notice`](design-memcap-desktop-notice.md) | darn · light | Darn-Write | neve | 47m<br>10m | gate, process |
 
 ### Ready (0)
 
@@ -51,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **Memory guard for every test binary lym runs**<br>• The gate watchdog watches CPU only and only gate test runs; give it a memory trigger over every test binary, and cap the gate tiers | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | 1h<br>20m | gate |
+| B2 |  | **Memory guard for every test binary lym runs**<br>• The gate watchdog watches CPU only and only gate test runs; give it a memory trigger over every test binary, and cap the gate tiers | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | 1h<br>21m | gate |
 
 ### Features (6)
 
