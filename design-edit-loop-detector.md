@@ -1,6 +1,6 @@
 # Flag an agent that edits the same file again and again
 
-`edit-loop-detector` · Task · feature, shuttle, friction · starting · Worktree-Create
+`edit-loop-detector` · Task · feature, shuttle, friction · starting · Seed-Child
 
 ## Seen (orch, 2026-11-17)
 
