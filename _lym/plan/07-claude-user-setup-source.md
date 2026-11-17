@@ -24,7 +24,7 @@
 - `internal/shuttleengine/claudeengine/doc.go`
 
 **Uses:**
-- `plan:internal/claudeimports#Expand`
+- `internal/claudeimports#Expand`
 - `internal/shuttleengine/claudeengine#claudeConfigDir`
 - `internal/shuttleengine/claudeengine#resolveSessionScope`
 - `internal/shuttleengine/claudeengine#readInstalledPlugins`

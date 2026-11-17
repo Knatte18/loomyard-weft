@@ -1,7 +1,7 @@
 # Card 2 — agents-prompt-target
 
 **Create:**
-- `plan:internal/heddleengine#agentsPromptTarget` -> `const agentsPromptTarget = "agents-prompt"`
+- `internal/heddleengine#agentsPromptTarget`
 
 **Edit:**
 - `internal/heddleengine#Target`

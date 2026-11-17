@@ -1,8 +1,8 @@
 # Card 3 — reconcile-renders-file-targets
 
 **Create:**
-- `plan:internal/fabricengine#NotifyWorktreeMadeAt` -> `func NotifyWorktreeMadeAt(worktreePath string) string`
-- `plan:internal/hubreconcile_test#TestEnsure_RendersTheHeddleFileTargetsOfEveryWalkedWorktree` -> `func TestEnsure_RendersTheHeddleFileTargetsOfEveryWalkedWorktree(t *testing.T)`
+- `internal/fabricengine#NotifyWorktreeMadeAt`
+- `internal/hubreconcile_test#TestEnsure_RendersTheHeddleFileTargetsOfEveryWalkedWorktree`
 
 **Edit:**
 - `internal/hubreconcile#reconcileWorktree`

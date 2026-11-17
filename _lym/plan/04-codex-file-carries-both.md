@@ -1,10 +1,10 @@
 # Card 4 — codex-file-carries-both
 
 **Create:**
-- `plan:internal/heddleengine#importRecordFile` -> `const importRecordFile = "codex-file-imports.json"`
-- `plan:internal/heddleengine#importRecord` -> `type importRecord struct`
-- `plan:internal/heddleengine#recordImports` -> `func recordImports(req RenderRequest, imports []string) error`
-- `plan:internal/heddleengine#recordedImports` -> `func recordedImports(scratchDir string) []string`
+- `internal/heddleengine#importRecordFile`
+- `internal/heddleengine#importRecord`
+- `internal/heddleengine#recordImports`
+- `internal/heddleengine#recordedImports`
 
 **Edit:**
 - `internal/heddleengine#RenderRequest`
@@ -22,7 +22,7 @@
 
 **Uses:**
 - `internal/heddlecli/doc.go`
-- `plan:internal/claudeimports#Expand`
+- `internal/claudeimports#Expand`
 - `internal/heddleengine#newRenderFixture`
 - `internal/heddleengine#renderFixture.writeAnchor`
 - `internal/heddleengine#renderFixture.readAnchor`

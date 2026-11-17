@@ -22,7 +22,7 @@
 - `internal/shuttleengine/codexengine/doc.go`
 
 **Uses:**
-- `plan:internal/claudeimports#Expand`
+- `internal/claudeimports#Expand`
 - `internal/heddleengine#Marker`
 - `plan:internal/shuttleengine/codexengine#Seams`
 - `internal/shuttleengine/codexengine#instructionFallbackFile`

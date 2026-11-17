@@ -2,11 +2,11 @@
 
 **Create:**
 - `internal/claudeimports/doc.go`
-- `plan:internal/claudeimports#Expanded` -> `type Expanded struct`
-- `plan:internal/claudeimports#Expand` -> `func Expand(path string) (Expanded, error)`
-- `plan:internal/claudeimports#maxImportHops` -> `const maxImportHops = 5`
-- `plan:internal/claudeimports#TestExpand` -> `func TestExpand(t *testing.T)`
-- `plan:internal/claudeimports#TestLeafInvariant_StandardLibraryOnly` -> `func TestLeafInvariant_StandardLibraryOnly(t *testing.T)`
+- `internal/claudeimports#Expanded`
+- `internal/claudeimports#Expand`
+- `internal/claudeimports#maxImportHops`
+- `internal/claudeimports_test#TestExpand`
+- `internal/claudeimports#TestLeafInvariant_StandardLibraryOnly`
 
 **Extends:**
 - `pattern/PATTERN-leaf-packages.md`
