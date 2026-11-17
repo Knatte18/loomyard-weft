@@ -757,7 +757,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-17)\n\nRuns last hours to days and stencils change often, so a resumed run's later producers may get prompts that differ from those it started with,\nand nothing says so.\nSource: the survey F17 (`orchestrator-survey-ideas`), from Conductor's `bundle build` and Bernstein, which refuses to resume after its spec digest changes.\n\n## Idea\n\n- A run records the digest of each stencil it may render when it starts, in weft.\n- Resume compares them with the installed stencils and warns the orch of each that changed, naming `lym stencil diff`.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-17T10:49:23Z",
       "revised": "2026-11-17T11:42:03Z",
       "profile": "light",
