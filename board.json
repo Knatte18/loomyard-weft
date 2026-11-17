@@ -578,7 +578,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-16)\n\nThe bench `claude-code-mode` found no gain from Claude Code's Code Mode on the Plan writer,\nand the web study `code-mode-web-research` (report `docs/research/claude/code-mode-web-research-2026-11-16/report.md`) found nothing that would change that:\nAnthropic and users agree Code Mode pays on mechanical, read-heavy work, such as one change repeated across many files,\nand not where each result needs a judgment, as in planning.\n\n## Idea\n\nA bench of Code Mode on a darn writer doing mechanical work:\nreplay one landed darn task whose diff is a repeated edit across packages, control against Code Mode,\nand compare turns, cache-read tokens, cost, wall time and scripts that ended in an error.\nBefore it runs, one Code Mode session checks that lym's shell guard still refuses a guarded command run inside a script.\n\n## Cap\n\n- One input: one landed darn task.\n- Two writer runs: one control and one Code Mode, each once, on the darn writer's default model and effort.\n- One guard-check session before them.\n",
-      "status": "running · Drift-Baseline",
+      "status": "running · Drift-Await",
       "created": "2026-11-16T13:11:34Z",
       "revised": "2026-11-17T11:42:05Z",
       "profile": "docs"
