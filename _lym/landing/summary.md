@@ -1,34 +1,33 @@
-# Sweep read-only leftovers a killed test leaves under the temp root
+# Sweep read-only leftovers a killed test leaves under the scratch root
 
-A test that made a directory read-only and restored it only in `t.Cleanup` left the directory read-only when its binary was killed.
-`internal/lymtemp`'s dead-owner sweep then failed to remove the run directory holding it,
-so the `temp` segment of `lym cleanup --apply` failed on machine state.
-That failure is what broke `TestCleanupVerb_ScratchSegmentSweepsTheAnchorOfASubpathHub` in an unrelated run's verify gate.
+A test that makes a directory read-only and restores it only in `t.Cleanup` leaves it read-only when its binary is killed.
+The `lym temp` sweep could not unlink such a leftover, so the next run's scratch-segment cleanup test failed on machine state rather than on its change.
+This change makes the sweep remove those leftovers and moves the read-only test pattern into one testkit helper.
 
 ## What changes
 
-- **The sweep makes a dead tree owner-writable first.**
-  `Root.Sweep` now removes a dead run directory through `removeTreeMakingWritable`.
-  It walks the tree and adds owner read, write and search permission to every directory, setting the bits before it lists the directory,
-  then calls `os.RemoveAll`.
+- `internal/lymtemp`: the dead-owner sweep now removes a run directory through `removeTreeMakingWritable`.
+  It first gives every directory in the tree owner read, write and search permission, then calls `os.RemoveAll`.
   Files and links keep their bits, and a link is never followed.
-  An entry that vanishes mid-walk under a concurrent sweeper is skipped, and the retry on the not-empty symptom is unchanged.
-  A new `TestSweep` row pins a dead run directory holding a read-only directory and an unreadable one below it.
-- **One kit for the chmod-and-restore pattern.**
-  The new `internal/testkit/permkit` exports `Chmod(tb, path, mode)`.
-  It sets the bits and registers a cleanup that restores the bits the path had before.
-  Every test that chmodded a path and restored it in `t.Cleanup` now calls it,
-  across webster, fabric, config, shuttle, machine, vscode, friction, batten, burler, reed, logger, shed, impactset, gate and `tools/forkaudit`.
-  The local `makeReadOnly` and `makeUnreadable` helpers in fabricengine, impactset and forkaudit are gone.
-  Tests that chmod a file to `0` with no restore are left alone, since a file's own bits never block its removal.
-- `PATTERN-test-isolation` and its `PATTERN.md` line name the kit and the sweep's owner-writable pass.
+  The permission pass is best-effort: its failures are ignored, and the removal's own result is what the sweep reports.
+- New `internal/testkit/permkit` with `Chmod(tb, path, mode)`.
+  It sets the mode, registers a cleanup that restores the original bits, and drops the restore's own error so a test may remove the path first.
+  The kit imports the standard library only; `TestEnforcement_PermkitStdlibOnly` in `internal/testkit` pins this.
+- Tests that called `os.Chmod` with a read-only or unreadable mode and a hand-written restore now call `permkit.Chmod`.
+  They span the packages the `grep -rn 'Chmod(.*0o555'` in the board entry finds, plus further ones of the same shape.
+- `PATTERN.md` and `pattern/PATTERN-test-isolation.md` name `permkit.Chmod` and the sweep's permission pass.
 
 ## Design decisions
 
-- The board entry calls the fix "the scratch sweep of the cleanup verb", and its title says "the scratch root".
-  The leftovers sat under `/tmp/lym-1000`, the lym temp root, and the cleanup verb's `temp` segment is the one that failed.
-  So the fix is in `lymtemp`'s sweep, which every process start also runs, not in the `.scratch` segment of `cleanupcli`.
-- The restore puts back the path's original bits rather than a fixed `0o755`.
-  It drops its own error, so a test whose code under test removed the path still passes.
-- `permkit` imports the standard library only, so `lymtemp`'s own tests use it without an import cycle through `tmuxkit`.
-- No scan forbids a raw chmod-and-restore outside the kit; review and the `PATTERN-test-isolation` rule hold it.
+- The permission pass sets a directory's bits before it lists the directory, so an unreadable directory is opened too.
+- Only directories are touched: removing a file or link needs only its parent's write permission.
+- The pass does not follow links, so a link inside a run directory cannot change the mode of a directory outside it.
+  `TestSweep` covers this with a link to a read-only directory outside the tree.
+- A failed pass falls through to `os.RemoveAll`, so a path that cannot be changed reports the same error as before.
+
+## To check by hand
+
+- `lymtemp` link safety was the open review finding: the sweep's link handling had no test.
+  Check that the `lockedTree` row of `TestSweep` and the "a failed permission pass leaves the result to the removal" case in `internal/lymtemp/sweep_test.go` cover it.
+- Nothing ran by hand: no regression check ran for this task.
+  To reproduce the original failure, kill a test binary mid-run while it holds a directory made read-only without `permkit.Chmod`, then run `lym cleanup`.
