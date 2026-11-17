@@ -14,3 +14,9 @@ Give the codex engine an `EditRecorder` and an edit hook that records each file 
 so the engine-neutral watch in `internal/shuttleengine/editloop.go` covers Codex runs unchanged.
 Codex edits files through its patch tool rather than `Edit` or `Write`,
 so the hook reads the file paths from that tool's input; one patch touching several files records one edit per file.
+
+## Built since (tidy, 2026-11-17)
+
+Commit `b2cd8150` (`codex-question-deny-nudge`) gave Codex launches `hooks.PreToolUse` and `hooks.PostToolUse` settings, with a `*`-matcher `PostToolUse` hook running `lym shuttle hook-batching codex`.
+The hook channel this note needs now exists on the Codex launch line, and that nudge already reads `apply_patch` calls from the rollout at `transcript_path`.
+The edit recorder itself is still not built.
