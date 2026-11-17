@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (4)
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Webster | neve | 21h<br>21h | webster, weaver |
-| T21 | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | sampler | Sampler-Session | neve | 9d<br>29m | heddle |
+| T21 | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | sampler | Sampler-Session | neve | 9d<br>30m | heddle |
 
 ### Ready (0)
 
@@ -27,7 +27,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (2)
+### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -35,6 +35,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>19h | claude, shuttle, config |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 4d<br>4d | slack, creel, orch |
+| T16 | `draft` **Give Codex lym's shipped heddle instructions too**<br>• Aim lym-batching and lym-plan-edits-before-gate at agents-file and word them for both agents | [`shipped-heddle-agents-file`](design-shipped-heddle-agents-file.md) | darn · light |  | 0m<br>0m | heddle, codex |
 
 ## Notes (10)
 
@@ -71,4 +72,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T20 | **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice<br>• `darn: writer fable` | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | 1h<br>57m | gate |
+| T20 | **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice<br>• `darn: writer fable` | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | 1h<br>58m | gate |
