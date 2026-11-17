@@ -1,12 +1,12 @@
 # Card 12 — code-tip-grace
 
 **Create:**
-- `plan:internal/fabricengine#ReturnToPreviousTransition` -> `func ReturnToPreviousTransition(pair *lymcwd.Location, slug string) (returned bool, err error)`
-- `plan:internal/fabricengine_test#TestReturnToPreviousTransition` -> `func TestReturnToPreviousTransition(t *testing.T)`
-- `plan:internal/battencli#codeTipDeps` -> `type codeTipDeps struct`
-- `plan:internal/battencli#hubCodeTipDeps` -> `func hubCodeTipDeps(prime *lymcwd.Location) codeTipDeps`
-- `plan:internal/battencli#settleCodeTip` -> `func settleCodeTip(deps codeTipDeps, slug string, verdict runfsm.Verdict, now time.Time) error`
-- `plan:internal/battencli#TestSettleCodeTip` -> `func TestSettleCodeTip(t *testing.T)`
+- `internal/fabricengine#ReturnToPreviousTransition`
+- `internal/fabricengine_test#TestReturnToPreviousTransition`
+- `internal/battencli#codeTipDeps`
+- `internal/battencli#hubCodeTipDeps`
+- `internal/battencli#settleCodeTip`
+- `internal/battencli#TestSettleCodeTip`
 
 **Edit:**
 - `internal/battencli#DobbyRuns`
