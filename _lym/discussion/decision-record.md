@@ -220,6 +220,12 @@ Rationale: Card 23 removed pauseOwned without naming its replacement or the sour
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - writehold-former-name-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a run claim, a landing's board `done`, an owner write and a hold write are on origin when their verb returns.
