@@ -18,6 +18,12 @@ Source: the survey F17 (`orchestrator-survey-ideas`), from Bernstein, which kill
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-17): The edit-loop notice is a shuttle notice line
+
+Decision: The entry's friction note to the run's parent is built as one shuttle notice line through the runner's notifier, the channel the hold and dialog notices use; no file is written to the run's friction directory.
+
+Rationale: Shuttle owns the notifier channel to the parent and is never told the friction directory; PATTERN-run-records keeps Go-written friction notes to their existing writers, and the parent reads the notice line the same way it reads the other shuttle notices.
+
 ## Constraints
 
 ## Auto-mode assumptions
