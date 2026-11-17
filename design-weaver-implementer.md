@@ -1,6 +1,6 @@
 # Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam
 
-`weaver-implementer` · Task · feature, webster, weaver · running · Code-Burler-Fix
+`weaver-implementer` · Task · feature, webster, weaver · running · Code-Bouncer
 
 Decision record: [Sketch](decision-weaver-implementer.md)
 
