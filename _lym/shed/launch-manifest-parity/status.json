@@ -1,14 +1,14 @@
 {
   "current_producer": "Plan-Write",
-  "state": "failed",
-  "error": "shedadapters: Plan-Write (seats): seat run: seatengine: chair wait: shuttle: gate: gatefixer: build the fixer's launch: gatefixer: fill the gatefix-body-plan prompt: stencil: include \"engine-absolute-paths\" has no entry in the includes",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "entered_row": "Plan-Write",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Write",
     "last": "Parts-Plan-Write → skipped",
-    "wait": "shedadapters: Plan-Write (seats): seat run: seatengine: chair wait: shuttle: gate: gatefixer: build the fixer's launch: gatefixer: fill the gatefix-body-plan prompt: stencil: include \"engine-absolute-paths\" has no entry in the includes"
+    "wait": ""
   },
   "history": [
     {
