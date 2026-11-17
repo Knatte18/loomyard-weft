@@ -1,6 +1,6 @@
 # P1 codexengine
 
-Rendered 2026-11-17 16:31 UTC; every age below is as of then.
+Rendered 2026-11-17 16:37 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codexengine`](design-codexengine.md) · Age 1d · Owner `neve`
@@ -80,7 +80,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T19 | **Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both** | [`launch-manifest-parity`](design-launch-manifest-parity.md)<br>[Sketch](decision-launch-manifest-parity.md) | tapestry · solid | Parent-Align | neve | 1d<br>1d | codex, shuttle, stencil, heddle |
+| T19 | **Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both** | [`launch-manifest-parity`](design-launch-manifest-parity.md)<br>[Sketch](decision-launch-manifest-parity.md) | tapestry · solid | Drift-Verify | neve | 1d<br>1d | codex, shuttle, stencil, heddle |
 
 ### Ready (0)
 
