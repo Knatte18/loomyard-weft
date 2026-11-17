@@ -1,6 +1,6 @@
 # Edit-loop notices fire on a fixer editing one file
 
-`edit-loop-fixer-noise` · Task · bug, shuttle · running · Drift-Await
+`edit-loop-fixer-noise` · Task · bug, shuttle · running · Drift-Expect
 
 ## Seen (orch, 2026-11-17)
 
