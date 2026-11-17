@@ -1,0 +1,1221 @@
+diff --git a/internal/loomcli/cli.go b/internal/loomcli/cli.go
+index 02ea70f5..7f64420c 100644
+--- a/internal/loomcli/cli.go
++++ b/internal/loomcli/cli.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
++	"github.com/Knatte18/loomyard/internal/orchcli"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/runfsm"
+@@ -177,6 +178,9 @@ type loomCLI struct {
+ 	// runVerdict judges whether the act rule lets the run of slug act, with a shed pause set aside.
+ 	// A nil runVerdict checks nothing.
+ 	runVerdict func(l *lymcwd.Location, slug string) (runfsm.Verdict, error)
++	// notifyParent posts one line to the run's parent orch, signed as lym's loom program.
++	// A test substitutes a recorder.
++	notifyParent func(line string) error
+ }
+ 
+ // newLoomCLI is the only place production code may build a *loomCLI.
+@@ -195,6 +199,10 @@ func newLoomCLI() *loomCLI {
+ 		return runOwnerVerdict(l, slug, machinename.Name)
+ 	}
+ 	c.runVerdict = hubRunVerdict
++	c.notifyParent = func(line string) error {
++		_, err := orchcli.NotifyParent(c.location, loomProgram, line)
++		return err
++	}
+ 	c.spawnGoDriverFrom = func(executable string) (int, error) { return spawnDetachedDrive(c.location, executable) }
+ 	c.spawnGoDriver = func() (int, error) {
+ 		executable, err := selfexec.LymBinary()
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 8b2f1c69..861b6925 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -191,6 +191,9 @@
+ // A first seed clears the friction directory first, so the clear is committed with the seed.
+ // Notes the fabric carried in, such as a beam pawl run's halt note, never reach the task's reflection.
+ // They do not leave Preflight a dirty worktree.
++// A first seed also pins the stencils the run may render:
++// the run's `shedrun.StencilPins` record holds the body hash of every installed registry stencil.
++// The record is committed with the seed, and a re-entry keeps it.
+ // An unseeded run is seeded with the driver `shed.yaml`'s `driver_kind` and its layers resolve to, `llm` by default;
+ // a seeded run keeps its recorded driver whatever the key says later.
+ // It brings up the worktree's tmux session;
+@@ -314,6 +317,13 @@
+ //     otherwise refused naming `lym batten run <slug>` from the prime and then resume for a dead strand,
+ //     and `lym loom start` for a retiring strand or none.
+ //
++// A start or a resume that spawns or wakes a driver compares the run's stencil pins with the installed stencils.
++// A start that finds a driver already working resumes nothing and compares nothing.
++// One notice to the run's parent orch names each pinned stencil whose board copy changed or is gone.
++// The notice names `lym stencil diff` as the way to inspect each one against its shipped default and its board copy.
++// The envelope lists the same stencils under `stencils_changed`.
++// A run with no pins warns of nothing, and a failed read, compare or post is logged and never fails the verb.
++//
+ // The driver strand is read from reed's directory, which still lists a session that died with the machine.
+ // It is never read from the run's seed;
+ // the seed is read only to tell a go-seeded run that has no driver, which gets a Go driver.
+diff --git a/internal/loomcli/resume.go b/internal/loomcli/resume.go
+index b5215306..543c39e7 100644
+--- a/internal/loomcli/resume.go
++++ b/internal/loomcli/resume.go
+@@ -50,6 +50,12 @@ func (c *loomCLI) resumeFromRunState(ctx context.Context, out io.Writer, bootstr
+ 		_ = bootstrapLock.Release()
+ 		output.Ok(out, fields)
+ 	}
++	// succeedAfterWake reports a run whose driver this call put to work.
++	// It releases the bootstrap lock before the stencil check, so the notice's post never runs under the lock.
++	succeedAfterWake := func(fields map[string]any) {
++		_ = bootstrapLock.Release()
++		output.Ok(out, withChangedStencils(fields, c.warnChangedStencils()))
++	}
+ 
+ 	// The status lock lives in the ephemeral scratch directory.
+ 	// A pair re-created from its branch lacks that directory while the status file is there.
+@@ -132,7 +138,7 @@ func (c *loomCLI) resumeFromRunState(ctx context.Context, out io.Writer, bootstr
+ 					refuse(resumeRefusal{message: err.Error()})
+ 					return
+ 				}
+-				succeed(map[string]any{"run_id": runID, "state": string(status.State), "message": "a Go driver was spawned", "pid": pid})
++				succeedAfterWake(map[string]any{"run_id": runID, "state": string(status.State), "message": "a Go driver was spawned", "pid": pid})
+ 				return
+ 			}
+ 		}
+@@ -161,7 +167,7 @@ func (c *loomCLI) resumeFromRunState(ctx context.Context, out io.Writer, bootstr
+ 		refuse(resumeRefusal{message: err.Error()})
+ 		return
+ 	}
+-	succeed(map[string]any{"run_id": runID, "state": string(status.State), "message": "the parked driver was woken", "stop_report": reportPath})
++	succeedAfterWake(map[string]any{"run_id": runID, "state": string(status.State), "message": "the parked driver was woken", "stop_report": reportPath})
+ }
+ 
+ // awaitingResumability decides whether a run awaiting at row may take the halted path.
+@@ -248,7 +254,10 @@ Reach for it in the task worktree after "lym loom circling accept" or
+ "lym loom circling continue", or whenever a run halted at a hand-back should
+ carry on with the driver it already has. A done run, and a running run whose
+ driver is live, are a no-op success; a resumed run's envelope names the
+-stop-report path.
++stop-report path. A run that spawns or wakes a driver lists under
++"stencils_changed" each stencil whose installed copy changed since the run
++started, and the parent orch is told to inspect each with "lym stencil diff",
++which compares it with its shipped default and its board copy.
+ 
+ Each refusal names its way forward: "lym loom start" when no run or no usable
+ driver strand exists, the circling verbs at a review segment awaiting a
+diff --git a/internal/loomcli/resume_test.go b/internal/loomcli/resume_test.go
+index 67929056..182dc1cc 100644
+--- a/internal/loomcli/resume_test.go
++++ b/internal/loomcli/resume_test.go
+@@ -48,6 +48,8 @@ type resumeEnvelope struct {
+ 	Message    string    `json:"message"`
+ 	StopReport string    `json:"stop_report"`
+ 	Conflicts  *[]string `json:"conflicts"`
++	// StencilsChanged lists the stencils changed since the run started.
++	StencilsChanged []string `json:"stencils_changed"`
+ }
+ 
+ // newResumeVerbReceiver builds a receiver for the resume verb over the shared temp-directory fixture.
+diff --git a/internal/loomcli/sharedbootstrap.go b/internal/loomcli/sharedbootstrap.go
+index bf1426e8..40c2e157 100644
+--- a/internal/loomcli/sharedbootstrap.go
++++ b/internal/loomcli/sharedbootstrap.go
+@@ -145,12 +145,21 @@ func (c *loomCLI) seedAndCommitBootstrap(slug, parentFlag string) (string, strin
+ 	// A re-entry keeps the record already there.
+ 	wroteRunUsage := seedErr == nil && c.writeRunUsage(seedRecipe, slug)
+ 
++	// Step 2d pins the stencils the run may render on the first seed only,
++	// so a later resume can name each one that changed since the run started.
++	// A re-entry keeps the pins already there.
++	if seedErr == nil {
++		c.writeStencilPins()
++	}
++
+ 	// Step 3: commit the seed and the provenance record into the fabric on every invocation.
+ 	// The commit does not depend on whether this invocation wrote the origin record.
+ 	// The origin record's path is always included.
+ 	// A prior invocation may have written it to disk and crashed before committing it.
+ 	// On the next call, resolveParentBranch finds the record present and reports write == false while it is untracked.
+ 	// The status file and the seed are included on every call for the same reason, since WriteSeed is idempotent.
++	// The stencil pins record is included whenever it is on disk, not only when this call wrote it:
++	// a first seed whose commit failed or died left it untracked, and a re-entry must commit it.
+ 	// Committing a clean path is a no-op (StageAndCommit reports committed == false), so the ordinary path pays nothing.
+ 	// The commit must precede any producer call.
+ 	// The phase machine's first precondition row scans the fabric, including untracked files.
+@@ -281,18 +290,23 @@ func loomSeedFor(recipe, parent, driver string) shedrun.Seed {
+ 	}
+ }
+ 
+-// bootstrapCommitPaths returns the anchor-relative paths the bootstrap commits:
+-// the status file, the seed and the origin record always,
+-// and the friction directory when withFriction is set,
++// bootstrapCommitPaths returns the anchor-relative paths the bootstrap commits.
++// The status file, the seed and the origin record are always included.
++// The friction directory is included when withFriction is set,
+ // so a first seed's clear of notes the fabric already tracked is committed with the seed.
+-// Git refuses a commit pathspec that matches nothing;
+-// so withFriction must be set only when the directory matches tracked or untracked content.
+-// It is a pure function, so a Tier 1 test can pin the pathspec's exact shape without a real fabric behind it.
++// The stencil pins record is included when it is on disk.
++// Git refuses a commit pathspec that matches nothing.
++// So withFriction must be set only when the directory matches tracked or untracked content,
++// and the pins record is added only when its file exists.
++// It only stats that one file, so a Tier 1 test can pin the pathspec's exact shape without a real fabric behind it.
+ func bootstrapCommitPaths(location *lymcwd.Location, withFriction bool) []string {
+ 	paths := []string{shedrun.StatusRel(location, shedrun.SelfRunID), shedrun.SeedRel(location, shedrun.SelfRunID), fabricengine.OriginRecordRel()}
+ 	if withFriction {
+ 		paths = append(paths, loomengine.LoomFrictionDirRel())
+ 	}
++	if _, err := os.Stat(shedrun.StencilPinsFile(location, shedrun.SelfRunID)); err == nil {
++		paths = append(paths, shedrun.StencilPinsRel(location, shedrun.SelfRunID))
++	}
+ 	return paths
+ }
+ 
+diff --git a/internal/loomcli/sharedbootstrap_test.go b/internal/loomcli/sharedbootstrap_test.go
+index 961b3569..d4a70357 100644
+--- a/internal/loomcli/sharedbootstrap_test.go
++++ b/internal/loomcli/sharedbootstrap_test.go
+@@ -182,27 +182,41 @@ func TestResolveSeedRecipe(t *testing.T) {
+ // TestBootstrapCommitPaths asserts the pathspec that seedAndCommitBootstrap commits.
+ // The status file, the seed and the origin record are always committed,
+ // so a crashed-and-resumed bootstrap's seed self-heals into the fabric.
+-// The friction directory is committed only when it holds tracked or untracked content.
++// The friction directory is committed only when it holds tracked or untracked content,
++// and the stencil pins record only when it is on disk.
+ func TestBootstrapCommitPaths(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+-	loc := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "task-slug", AnchorRel: "."}
++	// The pathspecs are anchor-relative, so they do not depend on which hub a row's location names.
++	shapeLoc := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "task-slug", AnchorRel: "."}
+ 	base := []string{
+-		shedrun.StatusRel(loc, shedrun.SelfRunID),
+-		shedrun.SeedRel(loc, shedrun.SelfRunID),
++		shedrun.StatusRel(shapeLoc, shedrun.SelfRunID),
++		shedrun.SeedRel(shapeLoc, shedrun.SelfRunID),
+ 		fabricengine.OriginRecordRel(),
+ 	}
++	friction := loomengine.LoomFrictionDirRel()
++	pins := shedrun.StencilPinsRel(shapeLoc, shedrun.SelfRunID)
+ 	tests := []struct {
+ 		name         string
+ 		withFriction bool
+-		want         []string
++		// withPinsRecord writes the run's stencil pins record before the call.
++		withPinsRecord bool
++		want           []string
+ 	}{
+-		{"NoFrictionDirectory", false, base},
+-		{"FrictionDirectoryHasContent", true, append(append([]string{}, base...), loomengine.LoomFrictionDirRel())},
++		{"NoFrictionDirectory", false, false, base},
++		{"FrictionDirectoryHasContent", true, false, append(append([]string{}, base...), friction)},
++		{"StencilPinsRecordOnDisk", false, true, append(append([]string{}, base...), pins)},
++		{"FrictionDirectoryAndStencilPins", true, true, append(append([]string{}, base...), friction, pins)},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
++			loc := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "task-slug", AnchorRel: "."}
++			if tt.withPinsRecord {
++				if err := shedrun.WriteStencilPins(loc, shedrun.SelfRunID, shedrun.StencilPins{Stencils: map[string]string{"loom-one": "aaaa"}}); err != nil {
++					t.Fatalf("WriteStencilPins() error: %v", err)
++				}
++			}
+ 			if got := bootstrapCommitPaths(loc, tt.withFriction); !reflect.DeepEqual(got, tt.want) {
+ 				t.Errorf("bootstrapCommitPaths(loc, %v) = %v; want %v", tt.withFriction, got, tt.want)
+ 			}
+diff --git a/internal/loomcli/start.go b/internal/loomcli/start.go
+index 59614748..dda05886 100644
+--- a/internal/loomcli/start.go
++++ b/internal/loomcli/start.go
+@@ -314,16 +314,18 @@ func (c *loomCLI) vouchForSpawnedResume() {
+ // lockHeld is the go arm's handshake seam, built by the caller over the real driver lock in production.
+ // A test substitutes a counting fake to prove the handshake is never consulted on an llm-seeded bootstrap.
+ //
+-// Every failure return releases bootstrapLock before it reports on out's envelope, and returns false;
++// Every failure return releases bootstrapLock before it reports on out's envelope, and returns false, false;
+ // the caller then returns at once, without a second release.
+ // On success it returns true and leaves bootstrapLock held for the caller to release.
+-func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driver string, bootstrapLock *lock.FileLock, lockHeld func() (bool, error)) bool {
++// Its second result reports whether this invocation put a driver to work, by a spawn or by waking a parked driver.
++// It is false for a working driver left alone.
++func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driver string, bootstrapLock *lock.FileLock, lockHeld func() (bool, error)) (bool, bool) {
+ 	runLockPath := c.shedPaths.LockPath
+ 	probe, runLockFree, err := lock.TryAcquireWriteLock(runLockPath)
+ 	if err != nil {
+ 		_ = bootstrapLock.Release()
+ 		clihelp.SetExit(ctx, output.Err(out, rerunMessage(err, retryStart)))
+-		return false
++		return false, false
+ 	}
+ 	if runLockFree {
+ 		_ = probe.Release()
+@@ -333,7 +335,7 @@ func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driv
+ 	if err != nil {
+ 		_ = bootstrapLock.Release()
+ 		clihelp.SetExit(ctx, output.Err(out, rerunMessage(err, retryStart)))
+-		return false
++		return false, false
+ 	}
+ 
+ 	// The strand table is read once here, through the driverPaneProbe.Strands() seam.
+@@ -342,7 +344,7 @@ func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driv
+ 	if err != nil {
+ 		_ = bootstrapLock.Release()
+ 		clihelp.SetExit(ctx, output.Err(out, rerunMessage(err, retryStart)))
+-		return false
++		return false, false
+ 	}
+ 	driverAction, driverGUID := resolveDriverStrandAction(strands)
+ 	if driverAction == driverStrandRetiring {
+@@ -350,7 +352,7 @@ func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driv
+ 		if err := c.driverPaneProbe.RemoveDriverStrand(driverGUID); err != nil {
+ 			_ = bootstrapLock.Release()
+ 			clihelp.SetExit(ctx, output.Err(out, rerunMessage(err, retryStart)))
+-			return false
++			return false, false
+ 		}
+ 		driverAction, driverGUID = driverStrandNone, ""
+ 	}
+@@ -371,10 +373,10 @@ func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driv
+ 		if err != nil {
+ 			_ = bootstrapLock.Release()
+ 			clihelp.SetExit(ctx, output.Err(out, statusReadFailedMessage(err)))
+-			return false
++			return false, false
+ 		}
+ 		if !c.refuseOverUnfinishedMerge(ctx, out, bootstrapLock, retryStart, producer) {
+-			return false
++			return false, false
+ 		}
+ 	}
+ 	if mustSpawn {
+@@ -382,7 +384,7 @@ func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driv
+ 			if err := os.Remove(stale); err != nil && !errors.Is(err, os.ErrNotExist) {
+ 				_ = bootstrapLock.Release()
+ 				clihelp.SetExit(ctx, output.Err(out, rerunMessage(err, retryStart)))
+-				return false
++				return false, false
+ 			}
+ 		}
+ 		c.vouchForSpawnedResume()
+@@ -392,10 +394,10 @@ func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driv
+ 				_ = bootstrapLock.Release()
+ 				if errors.Is(err, shuttleengine.ErrSessionBusy) {
+ 					clihelp.SetExit(ctx, output.ErrFields(out, driverBusyMessage(err, retryStart), map[string]any{"kind": shedrun.StartDriverBusyKind}))
+-					return false
++					return false, false
+ 				}
+ 				clihelp.SetExit(ctx, output.Err(out, err.Error()))
+-				return false
++				return false, false
+ 			}
+ 		} else {
+ 			// No marker: a running run's driver is working, so there is nothing to do.
+@@ -405,12 +407,12 @@ func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driv
+ 			if err != nil {
+ 				_ = bootstrapLock.Release()
+ 				clihelp.SetExit(ctx, output.Err(out, statusReadFailedMessage(err)))
+-				return false
++				return false, false
+ 			}
+ 			if handBack != "" {
+ 				_ = bootstrapLock.Release()
+ 				clihelp.SetExit(ctx, output.ErrFields(out, driverNotParkedMessage(handBack, retryStart), map[string]any{"kind": shedrun.StartNotParkedKind}))
+-				return false
++				return false, false
+ 			}
+ 		}
+ 	}
+@@ -421,7 +423,7 @@ func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driv
+ 		if err != nil {
+ 			_ = bootstrapLock.Release()
+ 			clihelp.SetExit(ctx, output.Err(out, err.Error()))
+-			return false
++			return false, false
+ 		}
+ 	} else if mustSpawn {
+ 		// The seam reaps the child in the background.
+@@ -431,7 +433,7 @@ func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driv
+ 		if err != nil {
+ 			_ = bootstrapLock.Release()
+ 			clihelp.SetExit(ctx, output.Err(out, err.Error()))
+-			return false
++			return false, false
+ 		}
+ 		childPID = pid
+ 	}
+@@ -460,13 +462,13 @@ func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driv
+ 		if err != nil {
+ 			_ = bootstrapLock.Release()
+ 			clihelp.SetExit(ctx, output.Err(out, err.Error()))
+-			return false
++			return false, false
+ 		}
+ 		driverLogPath := loomengine.LoomDriverLog(c.location)
+ 		if dispositionForHandshake(result) == handshakeRefuse {
+ 			_ = bootstrapLock.Release()
+ 			clihelp.SetExit(ctx, output.Err(out, "loom: driver did not take its driver lock; see "+driverLogPath+" for why the driver exited; way forward: lym loom start"))
+-			return false
++			return false, false
+ 		}
+ 		if result == awaitRunLockChildDied {
+ 			// Not a failure: the driver ran to completion and exited before the handshake's first poll.
+@@ -483,7 +485,19 @@ func (c *loomCLI) runDriverSpawnAndWait(ctx context.Context, out io.Writer, driv
+ 		}
+ 	}
+ 
+-	return true
++	return true, mustSpawn || parkedLive
++}
++
++// startSuccessFields returns the fields of `start`'s success envelope.
++// When this start put a driver to work, it warns the parent orch of the stencils changed since the run started.
++// It lists them in the envelope too.
++// A start that resumed nothing warns of nothing, so the parent gets no duplicate notice.
++func (c *loomCLI) startSuccessFields(driver, slug string, putDriverToWork bool) map[string]any {
++	fields := startEnvelopeFields(driver, slug, shedrun.ResolveRunID(c.location, c.runID), c.shedPaths.StatusPath)
++	if !putDriverToWork {
++		return fields
++	}
++	return withChangedStencils(fields, c.warnChangedStencils())
+ }
+ 
+ // startCmd builds the `start` subcommand: the session bootstrap.
+@@ -509,7 +523,11 @@ hand-back that waits on start to carry the run on.
+ 
+ It returns once the driver is up and never attaches to the session; watch it
+ with "lym reed attach". The envelope carries the run's driver, slug, run id
+-and status file.
++and status file. A run's first start pins the installed stencils; a later
++start that spawns or wakes a driver lists under "stencils_changed" each one
++that changed since, and the parent orch is told to inspect each with
++"lym stencil diff", which compares it with its shipped default and its board
++copy.
+ 
+ It refuses with the kind "merge_in_progress" while the worktree holds an
+ unfinished merge, naming the conflicted paths and the remedy, and with the
+@@ -613,7 +631,8 @@ Example:
+ 			// The go arm's handshake seam is the real driver lock, which `lym loom drive` takes first and holds for life.
+ 			// The lock-held check is a parameter so a test can substitute a counting fake.
+ 			// The fake proves the handshake is never consulted on an llm-seeded bootstrap.
+-			if !c.runDriverSpawnAndWait(ctx, out, driver, bootstrapLock, c.driverLockHeld) {
++			proceeded, putDriverToWork := c.runDriverSpawnAndWait(ctx, out, driver, bootstrapLock, c.driverLockHeld)
++			if !proceeded {
+ 				return nil
+ 			}
+ 
+@@ -622,8 +641,7 @@ Example:
+ 			// attaching is `lym reed attach`.
+ 			_ = bootstrapLock.Release()
+ 
+-			runID := shedrun.ResolveRunID(c.location, c.runID)
+-			output.Ok(out, startEnvelopeFields(driver, slug, runID, c.shedPaths.StatusPath))
++			output.Ok(out, c.startSuccessFields(driver, slug, putDriverToWork))
+ 			return nil
+ 		},
+ 	}
+diff --git a/internal/loomcli/start_driver_test.go b/internal/loomcli/start_driver_test.go
+index afa69bd1..d60d547f 100644
+--- a/internal/loomcli/start_driver_test.go
++++ b/internal/loomcli/start_driver_test.go
+@@ -485,7 +485,7 @@ func TestRunDriverSpawnAndWait_LLMArm_ReleasesLockOnFailure(t *testing.T) {
+ 
+ 			bootstrapLock := acquireTestBootstrapLock(t, bootstrapLockPath)
+ 			var out bytes.Buffer
+-			ok := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
++			ok, _ := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
+ 
+ 			if ok {
+ 				t.Error("runDriverSpawnAndWait() = true; want false")
+@@ -517,7 +517,7 @@ func TestRunDriverSpawnAndWait_LiveRetiringDriverIsRemovedThenReplaced(t *testin
+ 	c, bootstrapLockPath := newTestSpawnAndWaitReceiver(t, orderingStarter{starter: starter, order: &order}, probe)
+ 
+ 	bootstrapLock := acquireTestBootstrapLock(t, bootstrapLockPath)
+-	ok := c.runDriverSpawnAndWait(context.Background(), &bytes.Buffer{}, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
++	ok, _ := c.runDriverSpawnAndWait(context.Background(), &bytes.Buffer{}, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
+ 	defer func() { _ = bootstrapLock.Release() }()
+ 
+ 	if !ok {
+@@ -550,7 +550,7 @@ func TestRunDriverSpawnAndWait_LLMArm_NeverConsultsTheRunLockHandshake(t *testin
+ 	}
+ 
+ 	bootstrapLock := acquireTestBootstrapLock(t, bootstrapLockPath)
+-	ok := c.runDriverSpawnAndWait(context.Background(), &bytes.Buffer{}, shedrun.DriverLLM, bootstrapLock, countingLockHeld)
++	ok, _ := c.runDriverSpawnAndWait(context.Background(), &bytes.Buffer{}, shedrun.DriverLLM, bootstrapLock, countingLockHeld)
+ 
+ 	if !ok {
+ 		t.Fatal("runDriverSpawnAndWait() = false; want true (this scenario is a clean success)")
+@@ -626,11 +626,11 @@ func TestRunDriverSpawnAndWait_SpawnVouchesForTheResume(t *testing.T) {
+ 			}
+ 
+ 			bootstrapLock := acquireTestBootstrapLock(t, lockPath)
+-			ok := c.runDriverSpawnAndWait(context.Background(), &bytes.Buffer{}, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
++			ok, putToWork := c.runDriverSpawnAndWait(context.Background(), &bytes.Buffer{}, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
+ 			_ = bootstrapLock.Release()
+ 
+-			if !ok || !starter.called {
+-				t.Fatalf("runDriverSpawnAndWait() = %v, starter called = %v; want a spawn", ok, starter.called)
++			if !ok || !putToWork || !starter.called {
++				t.Fatalf("runDriverSpawnAndWait() = %v, %v, starter called = %v; want a spawn that put a driver to work", ok, putToWork, starter.called)
+ 			}
+ 			voucher, found := voucherOnDisk(t, c)
+ 			if found != tc.wantVoucher {
+@@ -654,11 +654,14 @@ func TestRunDriverSpawnAndWait_LiveParkedDriverIsResumedNotSpawned(t *testing.T)
+ 
+ 	var out bytes.Buffer
+ 	bootstrapLock := acquireTestBootstrapLock(t, lockPath)
+-	ok := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
++	ok, putToWork := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
+ 
+ 	if !ok {
+ 		t.Fatalf("runDriverSpawnAndWait() = false; want true (output %q)", out.String())
+ 	}
++	if !putToWork {
++		t.Error("runDriverSpawnAndWait() reported no driver put to work; want the parked-driver resume to count")
++	}
+ 	if len(sender.texts) != 1 {
+ 		t.Errorf("SendDriver calls = %d; want 1", len(sender.texts))
+ 	}
+@@ -755,7 +758,7 @@ func TestRunDriverSpawnAndWait_LiveDriverWithoutParkMarker(t *testing.T) {
+ 
+ 				var out bytes.Buffer
+ 				bootstrapLock := acquireTestBootstrapLock(t, lockPath)
+-				ok := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
++				ok, putToWork := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
+ 
+ 				if len(sender.texts) != 0 || starter.called || probe.removeCalled {
+ 					t.Errorf("sent %d line(s), starter called = %v, strand removed = %v; want none", len(sender.texts), starter.called, probe.removeCalled)
+@@ -764,8 +767,8 @@ func TestRunDriverSpawnAndWait_LiveDriverWithoutParkMarker(t *testing.T) {
+ 					t.Error("the live-strand call wrote a handoff voucher")
+ 				}
+ 				if tt.wantIn == nil {
+-					if !ok || out.Len() != 0 {
+-						t.Errorf("runDriverSpawnAndWait() = %v, output %q; want true and no output", ok, out.String())
++					if !ok || putToWork || out.Len() != 0 {
++						t.Errorf("runDriverSpawnAndWait() = %v, %v, output %q; want true, false and no output", ok, putToWork, out.String())
+ 					}
+ 					_ = bootstrapLock.Release()
+ 					return
+@@ -832,7 +835,7 @@ func TestRunDriverSpawnAndWait_GoArm(t *testing.T) {
+ 
+ 			var out bytes.Buffer
+ 			bootstrapLock := acquireTestBootstrapLock(t, lockPath)
+-			ok := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverGo, bootstrapLock, c.driverLockHeld)
++			ok, _ := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverGo, bootstrapLock, c.driverLockHeld)
+ 
+ 			if spawns != 1 {
+ 				t.Errorf("spawnGoDriver called %d times; want 1", spawns)
+@@ -864,7 +867,7 @@ func TestRunDriverSpawnAndWait_DeadDriverWithStaleMarkerRemovesItAndSpawns(t *te
+ 	}
+ 
+ 	bootstrapLock := acquireTestBootstrapLock(t, lockPath)
+-	ok := c.runDriverSpawnAndWait(context.Background(), &bytes.Buffer{}, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
++	ok, _ := c.runDriverSpawnAndWait(context.Background(), &bytes.Buffer{}, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
+ 
+ 	if !ok {
+ 		t.Fatal("runDriverSpawnAndWait() = false; want true")
+@@ -889,7 +892,7 @@ func TestRunDriverSpawnAndWait_ResumeNeverReadyRefusesAndKeepsMarker(t *testing.
+ 
+ 	var out bytes.Buffer
+ 	bootstrapLock := acquireTestBootstrapLock(t, lockPath)
+-	ok := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
++	ok, _ := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
+ 
+ 	if ok {
+ 		t.Error("runDriverSpawnAndWait() = true; want a refusal")
+@@ -914,7 +917,7 @@ func TestRunDriverSpawnAndWait_ResumeOnABusyPaneRefusesAsDriverBusyAndKeepsMarke
+ 
+ 	var out bytes.Buffer
+ 	bootstrapLock := acquireTestBootstrapLock(t, lockPath)
+-	ok := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
++	ok, _ := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bootstrapLock, noopLockHeld)
+ 
+ 	if ok {
+ 		t.Error("runDriverSpawnAndWait() = true; want a refusal")
+diff --git a/internal/loomcli/start_midmerge_test.go b/internal/loomcli/start_midmerge_test.go
+index 0ba4a79f..7a0c5dcc 100644
+--- a/internal/loomcli/start_midmerge_test.go
++++ b/internal/loomcli/start_midmerge_test.go
+@@ -189,7 +189,7 @@ func TestRunDriverSpawnAndWait_MidMerge_SpawnRefusals(t *testing.T) {
+ 
+ 			var out bytes.Buffer
+ 			bl := acquireTestBootstrapLock(t, lockPath)
+-			ok := c.runDriverSpawnAndWait(context.Background(), &out, tc.driver, bl, noopLockHeld)
++			ok, _ := c.runDriverSpawnAndWait(context.Background(), &out, tc.driver, bl, noopLockHeld)
+ 
+ 			if ok {
+ 				t.Fatalf("runDriverSpawnAndWait() = true; want a refusal")
+@@ -231,7 +231,7 @@ func TestRunDriverSpawnAndWait_MidMerge_LiveWorkingDriverNotProbed(t *testing.T)
+ 		c.midMerge = fake.probe
+ 
+ 		bl := acquireTestBootstrapLock(t, lockPath)
+-		ok := c.runDriverSpawnAndWait(context.Background(), &bytes.Buffer{}, shedrun.DriverLLM, bl, noopLockHeld)
++		ok, _ := c.runDriverSpawnAndWait(context.Background(), &bytes.Buffer{}, shedrun.DriverLLM, bl, noopLockHeld)
+ 
+ 		if !ok {
+ 			t.Fatal("runDriverSpawnAndWait() = false; want true")
+@@ -250,7 +250,7 @@ func TestRunDriverSpawnAndWait_MidMerge_LiveWorkingDriverNotProbed(t *testing.T)
+ 
+ 		var out bytes.Buffer
+ 		bl := acquireTestBootstrapLock(t, lockPath)
+-		ok := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bl, noopLockHeld)
++		ok, _ := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bl, noopLockHeld)
+ 
+ 		if ok {
+ 			t.Fatal("runDriverSpawnAndWait() = true; want a refusal")
+@@ -304,7 +304,7 @@ func TestRunDriverSpawnAndWait_MidMerge_ProbeErrorRefuses(t *testing.T) {
+ 
+ 			var out bytes.Buffer
+ 			bl := acquireTestBootstrapLock(t, lockPath)
+-			ok := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bl, noopLockHeld)
++			ok, _ := c.runDriverSpawnAndWait(context.Background(), &out, shedrun.DriverLLM, bl, noopLockHeld)
+ 
+ 			if ok {
+ 				t.Fatal("runDriverSpawnAndWait() = true; want a refusal")
+diff --git a/internal/loomcli/stencilpins.go b/internal/loomcli/stencilpins.go
+new file mode 100644
+index 00000000..c34bb7ca
+--- /dev/null
++++ b/internal/loomcli/stencilpins.go
+@@ -0,0 +1,76 @@
++// stencilpins.go pins the stencils a run may render when the run is first seeded.
++// A start or resume that puts a driver to work warns the run's parent orch.
++// The warning names each pinned stencil whose installed board copy changed since.
++
++package loomcli
++
++import (
++	"strings"
++
++	"github.com/Knatte18/loomyard/contracts/stencils"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
++)
++
++// stencilsChangedField is the envelope key that lists the stencils changed since the run started.
++const stencilsChangedField = "stencils_changed"
++
++// writeStencilPins records the body hash of each installed stencil as the run's stencil pins.
++// A failed hash or write is logged at Warn:
++// the run starts without pins, and its resumes warn of nothing.
++func (c *loomCLI) writeStencilPins() {
++	pins, err := stencilstore.Pins(c.runDeps.Geom.StencilsDir, stencils.Registry())
++	if err != nil {
++		logger.Warn("loom: could not hash the installed stencils; the run starts without stencil pins", "error", err)
++		return
++	}
++	if err := shedrun.WriteStencilPins(c.location, shedrun.SelfRunID, shedrun.StencilPins{Stencils: pins}); err != nil {
++		logger.Warn("loom: could not write the run's stencil pins; the run starts without them", "error", err)
++	}
++}
++
++// warnChangedStencils compares the run's stencil pins with the installed board copies.
++// It returns the names of the pinned stencils that changed or are gone.
++// When any did, it posts one notice to the run's parent orch naming them and `lym stencil diff`.
++// A run with no pins returns none.
++// The notice names `lym stencil diff` as the way to inspect each one against its shipped default and its board copy.
++// A failed read, compare or post is logged at Warn and never fails the verb that resumes the run.
++func (c *loomCLI) warnChangedStencils() []string {
++	pins, found, err := shedrun.ReadStencilPins(c.location, c.runID)
++	if err != nil {
++		logger.Warn("loom: could not read the run's stencil pins; no stencil change is reported", "error", err)
++		return nil
++	}
++	if !found {
++		return nil
++	}
++	changed, err := stencilstore.ChangedPins(c.runDeps.Geom.StencilsDir, pins.Stencils)
++	if err != nil {
++		logger.Warn("loom: could not compare the installed stencils with the run's pins; no stencil change is reported", "error", err)
++		return nil
++	}
++	if len(changed) == 0 {
++		return nil
++	}
++	if err := c.notifyParent(stencilsChangedNotice(seedSlug(c.location.WorktreeName), changed)); err != nil {
++		logger.Warn("loom: could not tell the parent orch which stencils changed since the run started", "changed", changed, "error", err)
++	}
++	return changed
++}
++
++// stencilsChangedNotice is the parent notice naming the stencils of the run slug that changed since it started.
++func stencilsChangedNotice(slug string, changed []string) string {
++	return "loom " + slug + ": the stencils " + strings.Join(changed, ", ") +
++		` changed since the run started, so its later rows render prompts that differ from its earlier ones;` +
++		` inspect each with "lym stencil diff <name>", which compares it with its shipped default and its board copy`
++}
++
++// withChangedStencils returns fields with changed listed under stencilsChangedField.
++// It returns fields as they are when changed is empty.
++func withChangedStencils(fields map[string]any, changed []string) map[string]any {
++	if len(changed) > 0 {
++		fields[stencilsChangedField] = changed
++	}
++	return fields
++}
+diff --git a/internal/loomcli/stencilpins_integration_test.go b/internal/loomcli/stencilpins_integration_test.go
+new file mode 100644
+index 00000000..e08d947d
+--- /dev/null
++++ b/internal/loomcli/stencilpins_integration_test.go
+@@ -0,0 +1,68 @@
++// stencilpins_integration_test.go pins that a run's first seed records its stencil pins and a re-entry keeps them.
++// It runs git, so it is a tier-1 file apart from the tier-0 tests of the pins' use on resume.
++
++package loomcli
++
++import (
++	"os"
++	"path/filepath"
++	"reflect"
++	"testing"
++
++	"github.com/Knatte18/loomyard/contracts/stencils"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/shedbuild"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
++	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/websterengine"
++)
++
++// TestSeedAndCommitBootstrap_PinsStencilsOnTheFirstSeedOnly asserts that the first seed pins every installed stencil,
++// and that a re-entry after a stencil changed keeps the first seed's pins.
++// It is not parallel: it sets FABRIC_SKIP_GIT, so the bootstrap's commit needs no git repository.
++func TestSeedAndCommitBootstrap_PinsStencilsOnTheFirstSeedOnly(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Setenv("FABRIC_SKIP_GIT", "1")
++	dir := t.TempDir()
++	stencilsDir := filepath.Join(dir, "stencils")
++	stencilkit.SeedInto(t, stencilsDir)
++	location := &lymcwd.Location{HubPath: dir, WorktreeName: "pair", AnchorRel: "."}
++	// Writing the origin record seeds the exclude file of the records sibling, which must be a repository.
++	records := fabricengine.RecordsWorktree(location)
++	if err := os.MkdirAll(records, 0o755); err != nil {
++		t.Fatalf("MkdirAll(%q) = %v; want nil", records, err)
++	}
++	gitkit.Git(t, records, "init")
++	c := &loomCLI{
++		location: location,
++		runDeps:  websterengine.RunDeps{Geom: websterengine.Geometry{StencilsDir: stencilsDir}},
++		shedPaths: shedbuild.ShedPaths{
++			StatusPath:     filepath.Join(dir, "status.json"),
++			StatusLockPath: filepath.Join(dir, "status.json.lock"),
++		},
++	}
++	wantPins, err := stencilstore.Pins(stencilsDir, stencils.Registry())
++	if err != nil {
++		t.Fatalf("Pins() error: %v", err)
++	}
++
++	if _, _, stage, err := c.seedAndCommitBootstrap("pair", "main"); err != nil {
++		t.Fatalf("first seedAndCommitBootstrap() = stage %d, %v; want success", stage, err)
++	}
++	editInstalledStencil(t, stencilsDir, stencils.Registry().Names()[0])
++	if _, _, stage, err := c.seedAndCommitBootstrap("pair", "main"); err != nil {
++		t.Fatalf("second seedAndCommitBootstrap() = stage %d, %v; want success", stage, err)
++	}
++
++	got, found, err := shedrun.ReadStencilPins(c.location, shedrun.SelfRunID)
++	if err != nil || !found {
++		t.Fatalf("ReadStencilPins() = found %v, err %v; want the first seed's pins", found, err)
++	}
++	if !reflect.DeepEqual(got.Stencils, wantPins) {
++		t.Errorf("stencil pins after a re-entry differ from the first seed's: got %d entries, want %d", len(got.Stencils), len(wantPins))
++	}
++}
+diff --git a/internal/loomcli/stencilpins_test.go b/internal/loomcli/stencilpins_test.go
+new file mode 100644
+index 00000000..6822fd59
+--- /dev/null
++++ b/internal/loomcli/stencilpins_test.go
+@@ -0,0 +1,163 @@
++// stencilpins_test.go pins that a start or resume that puts a driver to work warns the parent orch.
++// The warning names each pinned stencil changed since the run started.
++
++package loomcli
++
++import (
++	"errors"
++	"os"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/contracts/stencils"
++	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// editInstalledStencil appends a line to the body of name's board copy under stencilsDir.
++func editInstalledStencil(t *testing.T, stencilsDir, name string) {
++	t.Helper()
++	path := stencilstore.Path(stencilsDir, name)
++	content, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(path, append(content, []byte("\nedited after the run started\n")...), 0o644); err != nil {
++		t.Fatal(err)
++	}
++}
++
++// assertParentNotices asserts the notices a recording notifyParent received.
++// An empty want asserts none; otherwise exactly one notice that names edited and the diff command.
++func assertParentNotices(t *testing.T, notices []string, want []string) {
++	t.Helper()
++	if len(want) == 0 {
++		if len(notices) != 0 {
++			t.Errorf("parent notices = %q; want none", notices)
++		}
++		return
++	}
++	if len(notices) != 1 {
++		t.Fatalf("parent notices = %q; want one", notices)
++	}
++	for _, name := range append(append([]string{}, want...), `"lym stencil diff <name>"`) {
++		if !strings.Contains(notices[0], name) {
++			t.Errorf("parent notice %q lacks %q", notices[0], name)
++		}
++	}
++}
++
++// TestResumeVerb_NamesStencilsChangedSinceTheRunStarted resumes a halted run.
++// The run gets a spawned Go driver or a woken parked one.
++// It asserts the envelope's stencils_changed and the notice the parent orch gets,
++// and that a failed post keeps the verb's success.
++func TestResumeVerb_NamesStencilsChangedSinceTheRunStarted(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	edited := stencils.Registry().Names()[0]
++	tests := []struct {
++		name string
++		pin  bool
++		edit bool
++		// parked resumes a parked live driver instead of spawning a Go driver.
++		parked bool
++		// notifyErr is what the parent post returns.
++		notifyErr error
++		want      []string
++	}{
++		{name: "RunWithoutPinsWarnsOfNothing", edit: true},
++		{name: "UnchangedStencilsWarnOfNothing", pin: true},
++		{name: "EditedStencilIsNamedToTheParent", pin: true, edit: true, want: []string{edited}},
++		{name: "ParkedDriverWakeNamesTheEditedStencil", pin: true, edit: true, parked: true, want: []string{edited}},
++		{name: "FailedParentPostStillListsTheEditedStencil", pin: true, edit: true, notifyErr: errors.New("creel is down"), want: []string{edited}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			directory := fakeDriverDirectory{}
++			if tt.parked {
++				directory = fakeDriverDirectory{found: true, row: reedengine.DirectoryRow{Name: driverStrandDisplayName, GUID: "g-drv", Live: true}}
++			}
++			c, _, _ := newResumeVerbReceiver(t, &fakeDriverSender{}, directory)
++			c.spawnGoDriver = func() (int, error) { return 4242, nil }
++			var notices []string
++			c.notifyParent = func(line string) error {
++				notices = append(notices, line)
++				return tt.notifyErr
++			}
++			if err := shedrun.WriteSeed(c.location, c.runID, shedrun.Seed{Recipe: shedrun.RecipeTapestry, Driver: shedrun.DriverGo}); err != nil {
++				t.Fatalf("write seed: %v", err)
++			}
++			writeTestRunState(t, c, shedengine.StateBlocked)
++			if tt.parked {
++				putParkMarker(t, c)
++			}
++			if tt.pin {
++				c.writeStencilPins()
++			}
++			if tt.edit {
++				editInstalledStencil(t, c.runDeps.Geom.StencilsDir, edited)
++			}
++
++			env, code := runResume(t, c)
++
++			if !env.OK || code != 0 {
++				t.Fatalf("resume envelope ok = %v, exit code = %d (%s); want a spawned or woken driver", env.OK, code, env.Error)
++			}
++			if !reflect.DeepEqual(env.StencilsChanged, tt.want) {
++				t.Errorf("stencils_changed = %v; want %v", env.StencilsChanged, tt.want)
++			}
++			assertParentNotices(t, notices, tt.want)
++		})
++	}
++}
++
++// TestStartSuccessFields asserts that a start warns the parent orch of the changed stencils.
++// It warns only when it put a driver to work.
++func TestStartSuccessFields(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	edited := stencils.Registry().Names()[0]
++	tests := []struct {
++		name            string
++		edit            bool
++		putDriverToWork bool
++		want            []string
++	}{
++		{"SpawnedDriverNamesTheEditedStencil", true, true, []string{edited}},
++		{"SpawnedDriverWithUnchangedStencilsWarnsOfNothing", false, true, nil},
++		{"WorkingDriverLeftAloneWarnsOfNothing", true, false, nil},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			c, _ := newTestSpawnAndWaitReceiver(t, &fakeDriverStarter{}, &fakeDriverPaneProbeFull{strandsFn: noStrands})
++			var notices []string
++			c.notifyParent = func(line string) error {
++				notices = append(notices, line)
++				return nil
++			}
++			c.writeStencilPins()
++			if tt.edit {
++				editInstalledStencil(t, c.runDeps.Geom.StencilsDir, edited)
++			}
++
++			fields := c.startSuccessFields("go", "pair", tt.putDriverToWork)
++
++			got, listed := fields[stencilsChangedField]
++			if tt.want == nil && listed {
++				t.Errorf("stencils_changed = %v; want the key absent", got)
++			}
++			if tt.want != nil && !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("stencils_changed = %v; want %v", got, tt.want)
++			}
++			assertParentNotices(t, notices, tt.want)
++		})
++	}
++}
+diff --git a/internal/shedrun/doc.go b/internal/shedrun/doc.go
+index 56c0ed44..21e23f95 100644
+--- a/internal/shedrun/doc.go
++++ b/internal/shedrun/doc.go
+@@ -63,6 +63,10 @@
+ // When known, the prime's batten scratch directory and the Run-Shed row's name follow on the next two.
+ // ParseBattenWatched reads it back, and a one-line marker parses with an empty scratch directory and row.
+ //
++// StencilPinsFile is the durable record under RunDir of the stencils a run may render, as installed at its first seed.
++// It maps each stencil's name to its body hash then; WriteStencilPins writes it and ReadStencilPins reads it.
++// StencilPinsRel is its anchor-relative form, which the seed's commit takes.
++//
+ // WakeRecord is the ephemeral wake record under ScratchDir.
+ // WriteWakeStamp writes it after a row completes a wake.
+ // ReadWakeStamp reads it back by row, found only for the row that wrote it.
+diff --git a/internal/shedrun/stencilpins.go b/internal/shedrun/stencilpins.go
+new file mode 100644
+index 00000000..c5a323bb
+--- /dev/null
++++ b/internal/shedrun/stencilpins.go
+@@ -0,0 +1,54 @@
++// stencilpins.go declares a run's stencil pins record:
++// the body hash of each stencil the run may render, as installed when the run was first seeded.
++
++package shedrun
++
++import (
++	"fmt"
++	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++// stencilPinsFileName is the filename of the run's stencil pins record, whose path StencilPinsFile returns.
++const stencilPinsFileName = "stencil-pins.json"
++
++// stencilPinsLockSuffix ends the name of the lock guarding the stencil pins record.
++// lock.TrackedFileLockPath places that lock outside the tracked run directory.
++const stencilPinsLockSuffix = ".lock"
++
++// StencilPins records the stencils a run may render, written once when the run is first seeded.
++// Stencils maps each stencil's name to the body hash its installed board copy had then.
++type StencilPins struct {
++	Stencils map[string]string `json:"stencils"`
++}
++
++// StencilPinsFile returns the path to the run's durable stencil pins record, under RunDir(l, runID).
++func StencilPinsFile(l *lymcwd.Location, runID string) string {
++	return filepath.Join(RunDir(l, runID), stencilPinsFileName)
++}
++
++// StencilPinsRel returns the worktree-anchor-relative form of StencilPinsFile's path.
++// It is the pathspec a commit of the record takes.
++func StencilPinsRel(l *lymcwd.Location, runID string) string {
++	return filepath.Join(lymdirs.LymDirName, shedDirName, runSegment(l, runID), stencilPinsFileName)
++}
++
++// WriteStencilPins writes pins as the run's stencil pins record through internal/state.
++func WriteStencilPins(l *lymcwd.Location, runID string, pins StencilPins) error {
++	path := StencilPinsFile(l, runID)
++	if err := state.WriteJSON(path, lock.TrackedFileLockPath(path, stencilPinsLockSuffix), pins); err != nil {
++		return fmt.Errorf("shedrun: write stencil pins %s: %w", path, err)
++	}
++	return nil
++}
++
++// ReadStencilPins reads the run's stencil pins record, found false when the run has none.
++// A key the record does not declare is accepted.
++func ReadStencilPins(l *lymcwd.Location, runID string) (StencilPins, bool, error) {
++	path := StencilPinsFile(l, runID)
++	return state.ReadJSON[StencilPins](path, lock.TrackedFileLockPath(path, stencilPinsLockSuffix))
++}
+diff --git a/internal/shedrun/stencilpins_test.go b/internal/shedrun/stencilpins_test.go
+new file mode 100644
+index 00000000..d7a3ba75
+--- /dev/null
++++ b/internal/shedrun/stencilpins_test.go
+@@ -0,0 +1,39 @@
++// stencilpins_test.go covers the stencil pins record's write and read.
++
++package shedrun
++
++import (
++	"path/filepath"
++	"reflect"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestStencilPins_RoundTrip asserts that a run with no record reads as not found,
++// and that a written record reads back unchanged.
++// It also asserts that the record's anchor-relative path, the one a commit takes, names the file the write made.
++func TestStencilPins_RoundTrip(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	l := syntheticLocation(t)
++
++	if _, found, err := ReadStencilPins(l, SelfRunID); err != nil || found {
++		t.Fatalf("ReadStencilPins() before any write = found %v, err %v; want found false, nil", found, err)
++	}
++
++	want := StencilPins{Stencils: map[string]string{"loom-one": "aaaa", "loom-two": "bbbb"}}
++	if err := WriteStencilPins(l, SelfRunID, want); err != nil {
++		t.Fatalf("WriteStencilPins() error: %v", err)
++	}
++	got, found, err := ReadStencilPins(l, SelfRunID)
++	if err != nil || !found {
++		t.Fatalf("ReadStencilPins() after the write = found %v, err %v; want found true, nil", found, err)
++	}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("ReadStencilPins() = %+v; want %+v", got, want)
++	}
++	if gotPath, wantPath := filepath.Join(l.AnchorPath(), StencilPinsRel(l, SelfRunID)), StencilPinsFile(l, SelfRunID); gotPath != wantPath {
++		t.Errorf("anchor path joined with StencilPinsRel() = %q; want StencilPinsFile() = %q", gotPath, wantPath)
++	}
++}
+diff --git a/internal/stencilstore/doc.go b/internal/stencilstore/doc.go
+index 5122d7c7..70c92c12 100644
+--- a/internal/stencilstore/doc.go
++++ b/internal/stencilstore/doc.go
+@@ -27,6 +27,9 @@
+ // Reconcile runs once per process, so each of those lines appears once per process.
+ // The caller tells the drift warning its build-ancestry input through Source, because stencilstore runs no git.
+ //
++// Pins hashes each installed board copy's body, so a caller can record what a run may render when it starts.
++// ChangedPins reports the pinned stencils whose board copy changed or is gone since.
++//
+ // # Engine blocks
+ //
+ // An engine block is an include whose text differs by the engine a stencil is rendered for.
+diff --git a/internal/stencilstore/pins.go b/internal/stencilstore/pins.go
+new file mode 100644
+index 00000000..349a9bf3
+--- /dev/null
++++ b/internal/stencilstore/pins.go
+@@ -0,0 +1,66 @@
++// pins.go hashes the installed board copy of each registry stencil, so a caller can pin what a run may render.
++// It also reports which pinned stencils changed since.
++
++package stencilstore
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"sort"
++)
++
++// Pins returns the BodyHash of each registry stencil's board copy under baseDir, keyed by stencil name.
++// A stencil with no board copy is left out, since nothing can render it.
++// A board copy that exists but cannot be read is an error naming the stencil.
++func Pins(baseDir string, registry Registry) (map[string]string, error) {
++	pins := make(map[string]string)
++	for _, name := range registry.Names() {
++		content, found, err := readBoardCopy(baseDir, name)
++		if err != nil {
++			return nil, err
++		}
++		if found {
++			pins[name] = BodyHash(content)
++		}
++	}
++	return pins, nil
++}
++
++// ChangedPins returns the names of the stencils in pins that changed, in name order.
++// A stencil changed when its board copy under baseDir no longer has its pinned BodyHash.
++// A pinned stencil whose board copy is gone counts as changed.
++// A stencil installed after the pins were taken is not in pins, so it is never reported.
++// A board copy that exists but cannot be read is an error naming the stencil.
++func ChangedPins(baseDir string, pins map[string]string) ([]string, error) {
++	names := make([]string, 0, len(pins))
++	for name := range pins {
++		names = append(names, name)
++	}
++	sort.Strings(names)
++
++	var changed []string
++	for _, name := range names {
++		content, found, err := readBoardCopy(baseDir, name)
++		if err != nil {
++			return nil, err
++		}
++		if !found || BodyHash(content) != pins[name] {
++			changed = append(changed, name)
++		}
++	}
++	return changed, nil
++}
++
++// readBoardCopy reads name's board copy under baseDir, reporting found false when the file does not exist.
++func readBoardCopy(baseDir, name string) ([]byte, bool, error) {
++	content, err := os.ReadFile(Path(baseDir, name))
++	if errors.Is(err, fs.ErrNotExist) {
++		return nil, false, nil
++	}
++	if err != nil {
++		return nil, false, fmt.Errorf("stencilstore: read the board copy of %q: %w", name, err)
++	}
++	return content, true, nil
++}
+diff --git a/internal/stencilstore/pins_test.go b/internal/stencilstore/pins_test.go
+new file mode 100644
+index 00000000..f080712f
+--- /dev/null
++++ b/internal/stencilstore/pins_test.go
+@@ -0,0 +1,105 @@
++// pins_test.go covers Pins and ChangedPins over board copies in a t.TempDir().
++
++package stencilstore
++
++import (
++	"os"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestChangedPins pins the stencils installed when the pins are taken, then changes the board copies.
++// It asserts which pinned stencils ChangedPins reports, in name order,
++// and that a board copy that cannot be read is an error naming the stencil.
++func TestChangedPins(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	registry := newFakeRegistry(map[string][]byte{
++		"loom-one":   []byte("shipped one\n"),
++		"loom-two":   []byte("shipped two\n"),
++		"loom-three": []byte("shipped three\n"),
++		"loom-four":  []byte("shipped four\n"),
++	})
++
++	tests := []struct {
++		name   string
++		change func(t *testing.T, dir string)
++		want   []string
++		// wantErrIn is a substring of the error ChangedPins must return;
++		// empty wants success.
++		wantErrIn string
++	}{
++		{"UntouchedCopiesReportNothing", func(*testing.T, string) {}, nil, ""},
++		{"EditedBodyIsReported", func(t *testing.T, dir string) {
++			writeBoardCopy(t, dir, "loom-two", []byte("body two edited\n"))
++		}, []string{"loom-two"}, ""},
++		{"EveryEditedBodyIsReportedInNameOrder", func(t *testing.T, dir string) {
++			writeBoardCopy(t, dir, "loom-three", []byte("body three edited\n"))
++			writeBoardCopy(t, dir, "loom-two", []byte("body two edited\n"))
++			writeBoardCopy(t, dir, "loom-one", []byte("body one edited\n"))
++		}, []string{"loom-one", "loom-three", "loom-two"}, ""},
++		{"RestampedBannerIsNotReported", func(t *testing.T, dir string) {
++			writeBoardCopy(t, dir, "loom-one", []byte(StampPrefix+"0000"+StampSuffix+"\nbody one\n"))
++		}, nil, ""},
++		{"RemovedCopyIsReported", func(t *testing.T, dir string) {
++			if err := os.Remove(Path(dir, "loom-one")); err != nil {
++				t.Fatal(err)
++			}
++		}, []string{"loom-one"}, ""},
++		{"StencilInstalledAfterThePinsIsNotReported", func(t *testing.T, dir string) {
++			writeBoardCopy(t, dir, "loom-four", []byte("body four\n"))
++		}, nil, ""},
++		{"UnreadableCopyIsAnErrorNamingTheStencil", func(t *testing.T, dir string) {
++			// A directory where the board copy belongs exists but cannot be read as a file.
++			path := Path(dir, "loom-two")
++			if err := os.Remove(path); err != nil {
++				t.Fatal(err)
++			}
++			if err := os.Mkdir(path, 0o755); err != nil {
++				t.Fatal(err)
++			}
++		}, nil, `"loom-two"`},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			writeBoardCopy(t, dir, "loom-one", []byte("body one\n"))
++			writeBoardCopy(t, dir, "loom-two", []byte("body two\n"))
++			writeBoardCopy(t, dir, "loom-three", []byte("body three\n"))
++
++			pins, err := Pins(dir, registry)
++			if err != nil {
++				t.Fatalf("Pins() error: %v", err)
++			}
++			wantPins := map[string]string{
++				"loom-one":   BodyHash([]byte("body one\n")),
++				"loom-two":   BodyHash([]byte("body two\n")),
++				"loom-three": BodyHash([]byte("body three\n")),
++			}
++			if !reflect.DeepEqual(pins, wantPins) {
++				t.Fatalf("Pins() = %v; want %v", pins, wantPins)
++			}
++
++			tt.change(t, dir)
++
++			got, err := ChangedPins(dir, pins)
++			if tt.wantErrIn != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErrIn) {
++					t.Fatalf("ChangedPins() error = %v; want one naming %s", err, tt.wantErrIn)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("ChangedPins() error: %v", err)
++			}
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("ChangedPins() = %v; want %v", got, tt.want)
++			}
++		})
++	}
++}
