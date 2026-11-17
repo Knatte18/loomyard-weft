@@ -28,7 +28,7 @@
 - `internal/creelengine#daemon.dispatch`
 - `internal/creelengine#Store`
 - `internal/creelengine#Store.do`
-- `plan:internal/creelengine#Store.postMachine`
+- `internal/creelengine#Store.postMachine`
 - `internal/creelengine#Scheduler`
 - `internal/creelengine#NewScheduler`
 - `internal/creelengine#Scheduler.Start`
@@ -50,11 +50,11 @@
 - `internal/creelengine#Store.appendPostedLocked`
 - `internal/creelengine#Store.deliverMailLocked`
 - `internal/creelengine#Store.answerLocked`
-- `plan:internal/creelengine#eventMachineHeld`
-- `plan:internal/creelengine#eventMachineDelivered`
-- `plan:internal/creelengine#eventMachineReturned`
+- `internal/creelengine#eventMachineHeld`
+- `internal/creelengine#eventMachineDelivered`
+- `internal/creelengine#eventMachineReturned`
 - `internal/testkit/creelfake#NewClock`
-- `plan:internal/creelengine_test#env.withBridge`
+- `internal/creelengine_test#env.withBridge`
 
 **Intent:**
 D3's relay verbs and creel's hour: the program-only `take`, `report` and `settle`, and the scheduler timer that returns an unsettled machine-outbound message an hour after its post.

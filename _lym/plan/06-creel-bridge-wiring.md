@@ -26,7 +26,7 @@
 - `internal/creelcli/doc.go`
 
 **Uses:**
-- `plan:internal/creelengine#MachineBridge`
+- `internal/creelengine#MachineBridge`
 - `plan:internal/creelengine#VerbMachineTake`
 - `plan:internal/creelengine#VerbMachineReport`
 - `plan:internal/creelengine#VerbMachineSettle`

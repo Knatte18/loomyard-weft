@@ -26,18 +26,18 @@
 
 **Uses:**
 - `internal/shuttleengine/doc.go`
-- `plan:internal/agentname#ParseMachineAddress`
+- `internal/agentname#ParseMachineAddress`
 - `internal/machinename#CheckName`
-- `plan:internal/creelengine#eventMachineInbound`
-- `plan:internal/creelengine#eventMachineOutbound`
-- `plan:internal/creelengine#StampMachineTrusted`
-- `plan:internal/creelengine#StampMachineUntrusted`
+- `internal/creelengine#eventMachineInbound`
+- `internal/creelengine#eventMachineOutbound`
+- `internal/creelengine#StampMachineTrusted`
+- `internal/creelengine#StampMachineUntrusted`
 - `plan:internal/creelengine#Store.requireBridgeProgram`
 - `plan:internal/creelengine#Store.TakeMachineOutbound`
-- `plan:internal/creelengine#widestMachineLine`
+- `internal/creelengine#widestMachineLine`
 - `internal/creelengine#Store.checkReceiverLocked`
 - `internal/creelengine#Store.deliverMailLocked`
-- `plan:internal/creelengine_test#env.withBridge`
+- `internal/creelengine_test#env.withBridge`
 - `internal/creelengine_test#env.withHubs`
 
 **Intent:**

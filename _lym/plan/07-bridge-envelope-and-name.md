@@ -18,11 +18,11 @@
 - `pattern/PATTERN-sole-parsers.md`
 
 **Uses:**
-- `plan:internal/agentname#MachineAddress`
-- `plan:internal/agentname#ParseMachineAddress`
+- `internal/agentname#MachineAddress`
+- `internal/agentname#ParseMachineAddress`
 - `internal/agentname#FormatMachineAddress`
 - `internal/machinename#CheckName`
-- `plan:internal/creelengine#MachineEnvelopeWidth`
+- `internal/creelengine#MachineEnvelopeWidth`
 - `internal/slackengine#slackNamePart`
 - `internal/slackengine#fitName`
 

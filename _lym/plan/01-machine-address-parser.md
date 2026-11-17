@@ -1,10 +1,10 @@
 # Card 1 — machine-address-parser
 
 **Create:**
-- `plan:internal/agentname#MachineAddress` -> `type MachineAddress struct`
-- `plan:internal/agentname#ParseMachineAddress` -> `func ParseMachineAddress(address string, ownNames []string, checkMachine func(string) error) (MachineAddress, error)`
-- `plan:internal/agentname#IsMachineAddress` -> `func IsMachineAddress(name string) bool`
-- `plan:internal/agentname#TestParseMachineAddress` -> `func TestParseMachineAddress(t *testing.T)`
+- `internal/agentname#MachineAddress`
+- `internal/agentname#ParseMachineAddress`
+- `internal/agentname#IsMachineAddress`
+- `internal/agentname#TestParseMachineAddress`
 
 **Edit:**
 - `cmd/lym#testOnlyCodeAllowed`

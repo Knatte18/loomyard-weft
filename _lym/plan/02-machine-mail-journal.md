@@ -1,15 +1,15 @@
 # Card 2 — machine-mail-journal
 
 **Create:**
-- `plan:internal/creelengine#eventMachineOutbound` -> `const eventMachineOutbound = "machine-outbound"`
-- `plan:internal/creelengine#eventMachineHeld` -> `const eventMachineHeld = "machine-held"`
-- `plan:internal/creelengine#eventMachineDelivered` -> `const eventMachineDelivered = "machine-delivered"`
-- `plan:internal/creelengine#eventMachineReturned` -> `const eventMachineReturned = "machine-returned"`
-- `plan:internal/creelengine#eventMachineInbound` -> `const eventMachineInbound = "machine-inbound"`
-- `plan:internal/creelengine#machineOutboundEntry` -> `type machineOutboundEntry struct`
-- `plan:internal/creelengine#machineOutboundEntry.message` -> `func (o *machineOutboundEntry) message() Message`
-- `plan:internal/creelengine#pool.applyMachineOutbound` -> `func (p *pool) applyMachineOutbound(rec record, day string)`
-- `plan:internal/creelengine#pool.applyMachineInbound` -> `func (p *pool) applyMachineInbound(rec record, day string)`
+- `internal/creelengine#eventMachineOutbound`
+- `internal/creelengine#eventMachineHeld`
+- `internal/creelengine#eventMachineDelivered`
+- `internal/creelengine#eventMachineReturned`
+- `internal/creelengine#eventMachineInbound`
+- `internal/creelengine#machineOutboundEntry`
+- `internal/creelengine#machineOutboundEntry.message`
+- `internal/creelengine#pool.applyMachineOutbound`
+- `internal/creelengine#pool.applyMachineInbound`
 
 **Edit:**
 - `internal/creelengine#record`
