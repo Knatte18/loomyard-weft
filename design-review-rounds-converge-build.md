@@ -1,6 +1,6 @@
 # Review rounds converge: parsed fixer rebuttals, incremental re-review with round checks, and a Go stalemate escalation
 
-`review-rounds-converge-build` · Task · feature, burler, shed, stencil, fabric, loom, arbiter, cwd · starting · Open-Window
+`review-rounds-converge-build` · Task · feature, burler, shed, stencil, fabric, loom, arbiter, cwd · running · Motif
 
 Decision record: [Sketch](decision-review-rounds-converge-build.md)
 
