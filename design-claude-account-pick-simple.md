@@ -2,6 +2,8 @@
 
 `claude-account-pick-simple` · Task · enhancement, claude, shuttle, config · draft
 
+Depends on: [`adopt-build-resplit`](design-adopt-build-resplit.md)
+
 ## Idea (operator, 2026-11-11)
 
 Spread Claude usage over two accounts, as simply as it can be built.
