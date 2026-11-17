@@ -1,6 +1,6 @@
 {
   "runGuid": "68c8af21b2573c67ea24b00d8c6a8507",
-  "planFingerprint": "448a0143d6e91cbafd13fd66ea41f02b24a4b209d19de7b0e4150f1e6cc722e2",
+  "planFingerprint": "b760f369375f0535e085c4efd574fa9f9ec4a4f0a6e7111fdf8f714f4c56bb73",
   "planFileHashes": {
     "00-overview.md": "8070a6e612366e940baf7464bff651d6e6f80c3c26d7e4f332211f6eef4a3045",
     "01-fixtries-package.md": "430abb950acfaefa82f14c1899839ce15fad1bc64a96004f3df727de828c3371",
@@ -24,7 +24,7 @@
     "19-pause-intent-entries.md": "d1e77949ffda1750b1a0eebdc4648d83766789cf46b8e98de094da00ed1402ad",
     "20-hand-pass-catch-up.md": "f6b97270fa6de1c84fa15e57b0f1dd69fa25e03aa8cbb3f4b498514541a195db",
     "21-dobby-catch-up.md": "9c2c7d95fa04c2076c8896e93728c8b6166e512babc38fb2ab1337dbf77153b1",
-    "22-upgrade-first-read.md": "d428c2dbe5b035e5c951e5886aec0b80d63bdb623292fae61fbc6aa294b383a8",
+    "22-upgrade-first-read.md": "5951bf1470f28a3031932f08445e1b35081e7e3f54214e7a57d8d87a810d408f",
     "23-retire-owner-pause-callers.md": "e61b8714ff43fc4ca1886ebb24fbdc1393c36734425ae31feec118f040cf6323",
     "24-delete-tender-owner-pause.md": "0c84bc21374445aeecb43dca8f1a7b6f5dbfbc3b9da6c45378eee1abeb8a5828",
     "25-pattern-owner-machine.md": "c0de73f7de75cc061c5056465c98a1767a75f60cadb56d18b1351ebf17cda9e9"
@@ -834,15 +834,35 @@
         "22-upgrade-first-read"
       ],
       "cardHashes": {
-        "22-upgrade-first-read": "d428c2dbe5b035e5c951e5886aec0b80d63bdb623292fae61fbc6aa294b383a8"
+        "22-upgrade-first-read": "5951bf1470f28a3031932f08445e1b35081e7e3f54214e7a57d8d87a810d408f"
       },
       "startSha": "b2c3b4333d4b280c5d17b19a2a40bbea456da7e4",
       "kind": "fork",
       "spawnedAt": "2026-11-17T11:47:01Z",
       "sessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "22-upgrade-first-read",
+        "status": "done",
+        "head_sha": "480775990a4ac0cc90d400be304179eaada7681f",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/beamcli/dobbydeps.go",
+          "internal/dobbyengine/upgrade.go",
+          "internal/dobbyengine/upgrade_test.go"
+        ]
+      },
+      "cardShas": [
+        "480775990a4ac0cc90d400be304179eaada7681f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-ad85fc9fd085ea8b5.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-ad85fc9fd085ea8b5.jsonl"
+      ]
     },
     "4": {
       "slug": "machine-registration-setter",
@@ -978,7 +998,7 @@
       ]
     }
   },
-  "currentBatch": 22,
+  "currentBatch": 0,
   "masterStrand": "e7e489f4ae82479452af8e587574191e",
   "masterSessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
   "masterEngine": "claude",
@@ -988,6 +1008,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-ada6f38ee3b2521fd.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-a275b60799a7dffa9.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-aeeff58a5ffe32648.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-acb297db8d9e62f09.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-acb297db8d9e62f09.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-ad85fc9fd085ea8b5.jsonl"
   ]
 }

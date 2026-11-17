@@ -1,11 +1,11 @@
 # Card 22 — upgrade-first-read
 
 **Create:**
-- `plan:internal/dobbyengine#UpgradeDeps` -> `type UpgradeDeps struct`
-- `plan:internal/dobbyengine#UpgradeRun` -> `type UpgradeRun struct`
-- `plan:internal/dobbyengine#UpgradeReport` -> `type UpgradeReport struct`
-- `plan:internal/dobbyengine#UpgradeRead` -> `func UpgradeRead(deps UpgradeDeps) (UpgradeReport, error)`
-- `plan:internal/dobbyengine#TestUpgradeRead` -> `func TestUpgradeRead(t *testing.T)`
+- `internal/dobbyengine#UpgradeDeps`
+- `internal/dobbyengine#UpgradeRun`
+- `internal/dobbyengine#UpgradeReport`
+- `internal/dobbyengine#UpgradeRead`
+- `internal/dobbyengine#TestUpgradeRead`
 
 **Edit:**
 - `internal/dobbyengine#Deps`
