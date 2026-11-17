@@ -774,6 +774,28 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-aeeff58a5ffe32648.jsonl"
       ]
     },
+    "18": {
+      "slug": "catch-up-engine",
+      "cards": [
+        "18-catch-up-engine",
+        "19-pause-intent-entries",
+        "20-hand-pass-catch-up",
+        "21-dobby-catch-up"
+      ],
+      "cardHashes": {
+        "18-catch-up-engine": "433e492cc8f8e5a75a96d49a20604c9c71f3ebedf29c217ea8202085baff279d",
+        "19-pause-intent-entries": "ff91ac5ecbe13aa60d1b47e1ddaba64570360d8ab522a39bd9d6c72355b19a5f",
+        "20-hand-pass-catch-up": "3d3d535cd6b7ee0c94f8f142a8b31ef3f276a9b1c3dc3d4e05798f813b93a64a",
+        "21-dobby-catch-up": "c213a42674ee18f57fdebd8a4231c3c10915aaaf2a9057e37cec7b7edad0bbfd"
+      },
+      "startSha": "48c29e06ef5cda5d53cba0f58014c80bfce56ca0",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T11:18:24Z",
+      "sessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "4": {
       "slug": "machine-registration-setter",
       "cards": [
@@ -908,7 +930,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 18,
   "masterStrand": "e7e489f4ae82479452af8e587574191e",
   "masterSessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
   "masterEngine": "claude",
