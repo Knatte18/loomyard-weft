@@ -78,21 +78,20 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
+#### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T10 | **lym beam stop --all takes the hub down on this machine, behind a stop button**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hub-stop-all`](design-hub-stop-all.md)<br>[Sketch](decision-hub-stop-all.md) | darn · solid | starting · Worktree-Create | neve | 1d<br>5h | hibernate, workspaces, orch, reed |
+| T11 | **lym machine start brings back every hub this machine owns, from desktop launchers**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`machine-start-launchers`](design-machine-start-launchers.md)<br>[Sketch](decision-machine-start-launchers.md) | darn · solid | starting · Worktree-Create | neve | 1d<br>5h | termwindow, dobby |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T11 | **lym machine start brings back every hub this machine owns, from desktop launchers**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`machine-start-launchers`](design-machine-start-launchers.md)<br>[Sketch](decision-machine-start-launchers.md) | darn · solid |  | 1d<br>5h | termwindow, dobby |
+_None._
 
 ### Notes (0)
 
@@ -154,7 +153,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Fix lym gate redundant kill counting and the map defects the trial found** | [`redundant-timeout-not-kill`](design-redundant-timeout-not-kill.md) | darn · light | Code-Burler-Review | neve | 2h<br>21m | gate, testkit |
 | T4 | **Edit-loop notices fire on a fixer editing one file**<br>• Fixers and one-document writers edit one file many times by design, so the edit-loop watch reports ordinary work as a loop | [`edit-loop-fixer-noise`](design-edit-loop-fixer-noise.md) | darn · light | Darn-Write | neve | 4h<br>21m | shuttle |
-| T5 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md)<br>[Sketch](decision-board-viewer.md) | raddle | Raddle-Write | neve | 6w<br>20m | board, ide, orch |
+| T5 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md)<br>[Sketch](decision-board-viewer.md) | raddle | Raddle-Write | neve | 6w<br>21m | board, ide, orch |
 | T7 | **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid | Plan-Write | neve | 4d<br>4d | slack, creel, orch |
 
 #### Ready (0)
