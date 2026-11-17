@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 14:22 UTC; every age below is as of then.
+Rendered 2026-11-17 14:25 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -65,7 +65,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Review rounds converge: parsed fixer rebuttals, incremental re-review with round checks, and a Go stalemate escalation** | [`review-rounds-converge-build`](design-review-rounds-converge-build.md)<br>[Sketch](decision-review-rounds-converge-build.md) | tapestry · solid | Plan-Burler-Fix | neve | 35m<br>35m | burler, shed, stencil, fabric, loom, arbiter, cwd |
+| T4 | **Review rounds converge: parsed fixer rebuttals, incremental re-review with round checks, and a Go stalemate escalation** | [`review-rounds-converge-build`](design-review-rounds-converge-build.md)<br>[Sketch](decision-review-rounds-converge-build.md) | tapestry · solid | Plan-Burler-Fix | neve | 38m<br>38m | burler, shed, stencil, fabric, loom, arbiter, cwd |
 
 #### Ready (0)
 
@@ -133,21 +133,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-test-suite-trim.md">P6 Coverage maps: build them, keep them fresh, and cut the test suite with them</a> (2)</strong></summary>
+<summary><strong><a href="project-test-suite-trim.md">P6 Coverage maps: build them, keep them fresh, and cut the test suite with them</a> (1)</strong></summary>
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 7d · Owner `neve`
 
-### Tasks (2)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
-
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T23 | **Build the coverage maps with lym gate test --map, one process per test in parallel, and retire lym gate testmap** | [`gate-test-map-mode`](design-gate-test-map-mode.md)<br>[Sketch](decision-gate-test-map-mode.md) | tapestry · solid | landing · Finalize | neve | 2h<br>2h | gate, testkit, dobby, docs, pattern |
 
 #### Ready (0)
 
@@ -166,6 +158,14 @@ Not released; nothing starts it until its status is cleared.
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T23 | **Build the coverage maps with lym gate test --map, one process per test in parallel, and retire lym gate testmap** | [`gate-test-map-mode`](design-gate-test-map-mode.md)<br>[Sketch](decision-gate-test-map-mode.md) | 2h<br>2h | gate, testkit, dobby, docs, pattern |
 
 </details>
 
