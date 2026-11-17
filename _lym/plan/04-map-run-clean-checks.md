@@ -23,8 +23,8 @@
 - `internal/gatecli#changedName`
 
 **Create:**
-- `plan:internal/gatecli#testMapRun.checkClean` -> `func (r *testMapRun) checkClean(trees map[string]packageTree) (string, error)`
-- `plan:internal/gatecli#testMapRun.dirtyModuleFile` -> `func (r *testMapRun) dirtyModuleFile() (string, error)`
+- `internal/gatecli#testMapRun.checkClean`
+- `internal/gatecli#testMapRun.dirtyModuleFile`
 
 **Uses:**
 - `internal/gatecli#testMapRun.dirtyOwnedFile`

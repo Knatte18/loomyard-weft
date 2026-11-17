@@ -1,12 +1,12 @@
 {
   "runGuid": "c35884a27515f426f3c69dd704b8b0da",
-  "planFingerprint": "08967cbeb489b185173ee493f72533ec2e21e9119efb44e46e7512531238003f",
+  "planFingerprint": "c80966387f202d9bd16fe4446cc55c72780f864ac2f75160591acb0bca0113cc",
   "planFileHashes": {
     "00-overview.md": "943367af210d204a39e7733cc2f2e88920176bce57dc469d18ea6b4ac6e28684",
     "01-gate-test-map-mode.md": "eb24d91059e5632d52223522143cfa3c14d8ac261712af254aa811d584837208",
     "02-testcover-planning-delete.md": "21feb3981bbbd2dccfc3a1b7d27158431f457b5cd171abe128ae862ab022fd1c",
     "03-map-run-tier-bounds.md": "8cc131b8089db87fdd3d8338af5ce0ae09c21d2ebe0684646055ba78cb54e2dd",
-    "04-map-run-clean-checks.md": "4e30f108aef7349e0e27f3a7aa2c7361b6bd342d4c26bdb71deddf8bbfa13c0e",
+    "04-map-run-clean-checks.md": "564182b0e8c56a00ea267c368624f61fb25aa0af3655fed72de6bed4df9abd68",
     "05-redundant-map-way-forward.md": "ee04c56e702917fbd5b84000371fd1845f8edb41209b308c4241b6f862e69b80"
   },
   "planOverviewFrameHash": "c85477f5ebde436f89def6c54902863fd86cff164011a087a743434fd9e58722",
@@ -276,7 +276,7 @@
         "05-redundant-map-way-forward"
       ],
       "cardHashes": {
-        "04-map-run-clean-checks": "4e30f108aef7349e0e27f3a7aa2c7361b6bd342d4c26bdb71deddf8bbfa13c0e",
+        "04-map-run-clean-checks": "564182b0e8c56a00ea267c368624f61fb25aa0af3655fed72de6bed4df9abd68",
         "05-redundant-map-way-forward": "ee04c56e702917fbd5b84000371fd1845f8edb41209b308c4241b6f862e69b80"
       },
       "startSha": "c1b4d92a3a70c176d44e4eaf3c4e65fa45500f1e",
@@ -284,16 +284,35 @@
       "spawnedAt": "2026-11-17T13:51:02Z",
       "sessionId": "f1b2bded-766e-49ae-ab44-b4b61d03052f",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-map-run-clean-checks",
+        "status": "done",
+        "head_sha": "c785978b989fe6e127f4cdf03372c402c3e5cd6c",
+        "deviations": [
+          "internal/gatecli/testmap.go",
+          "internal/gatecli/testmap_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "c785978b989fe6e127f4cdf03372c402c3e5cd6c"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-test-map-mode/f1b2bded-766e-49ae-ab44-b4b61d03052f/subagents/agent-ae9b13eef1af69224.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-test-map-mode/f1b2bded-766e-49ae-ab44-b4b61d03052f/subagents/agent-ae9b13eef1af69224.jsonl"
+      ]
     }
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "e8b3bb526407ff1c8bb8996f37f9690a",
   "masterSessionId": "f1b2bded-766e-49ae-ab44-b4b61d03052f",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-test-map-mode/f1b2bded-766e-49ae-ab44-b4b61d03052f/subagents/agent-aae9e5197951d7f0f.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-test-map-mode/f1b2bded-766e-49ae-ab44-b4b61d03052f/subagents/agent-a42165273686ed200.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-test-map-mode/f1b2bded-766e-49ae-ab44-b4b61d03052f/subagents/agent-a42165273686ed200.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-test-map-mode/f1b2bded-766e-49ae-ab44-b4b61d03052f/subagents/agent-ae9b13eef1af69224.jsonl"
   ]
 }
