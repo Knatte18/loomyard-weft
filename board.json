@@ -450,7 +450,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `adopt-build-resplit`.\n\nTakes: BriefTask.ParentBeam set in internal/boardengine/store.go from ParentBeam and hubgeom.ParentOf; the get envelope written by outputGetTask in internal/boardcli/cli.go; boardcli's --text listing; boardengine.RootSubject; the parent_beam readers in contracts/orchrole/orch-role.md and plugins/ly/skills/board/SKILL.md\nDelivers: lym board list and lym board get printing parent_beam root for every entry under the prime; a P0 row among the projects in lym board list --text; boardengine.ParentBeam, Board.ParentBeamOf and hubgeom.ParentOf still returning the empty slug for the prime; the orch-role contract, the board skill and boardcli's help and package doc reading root as the prime and addressing its orch as \u003cshortname\u003e:orch\nExports: nothing new; the printed value of parent_beam changes at the printing boundary only\n\nThe part changes these packages:\n\n- internal/boardengine (about 40 changed lines)\n- internal/boardcli (about 60 changed lines)\n- contracts/orchrole (about 15 changed lines)\n- plugins/ly/skills/board (about 10 changed lines)\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-16T10:22:19Z",
       "revised": "2026-11-17T11:06:42Z",
       "run_settings": {
