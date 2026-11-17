@@ -127,15 +127,17 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 7d · Owner `neve`
 
-### Tasks (1)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Build the coverage maps as a mode of the gate run, one process per test in parallel** | [`gate-builds-testmap`](design-gate-builds-testmap.md) | motif |  | 6m<br>0m | gate, testkit |
 
 #### Draft (1)
 
@@ -145,15 +147,9 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 7d<br>5m | testkit, gate |
 
-### Notes (1)
+### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-#### Enhancements (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| E1 |  | **Build the coverage maps as a mode of the gate run, one process per test in parallel** | [`gate-builds-testmap`](design-gate-builds-testmap.md) | 6m<br>1m | gate, testkit |
 
 </details>
 
