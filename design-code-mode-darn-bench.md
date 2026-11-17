@@ -1,6 +1,6 @@
 # Bench Code Mode on a darn writer doing a repeated edit
 
-`code-mode-darn-bench` · Task · research, claude, shuttle · running · Record-Write
+`code-mode-darn-bench` · Task · research, claude, shuttle · running · Drift-Baseline
 
 ## Seen (orch, 2026-11-16)
 
