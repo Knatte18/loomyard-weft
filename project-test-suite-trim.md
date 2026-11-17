@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-17 14:35 UTC; every age below is as of then.
+Rendered 2026-11-17 14:36 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 7d · Owner `neve`
@@ -26,7 +26,7 @@ The maps are built only on command now; the gate no longer selects tests from th
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -36,20 +36,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (1)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 7d<br>8m | testkit, gate |
+| T3 | `draft` **Trial the coverage-map tooling before the redundancy sweep**<br>• Run lym gate test --map and lym gate redundant on two packages and check maps, timing, memory and leftovers | [`map-tooling-trial`](design-map-tooling-trial.md) | darn |  | 0m<br>0m | gate, testkit |
 
-## Notes (1)
+## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Research (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| R4 |  | **Trial the coverage-map tooling before the redundancy sweep**<br>• Run lym gate test --map and lym gate redundant on two packages and check maps, timing, memory and leftovers | [`map-tooling-trial`](design-map-tooling-trial.md) | 0m<br>0m | gate, testkit |
