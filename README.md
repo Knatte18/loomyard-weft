@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 09:15 UTC; every age below is as of then.
+Rendered 2026-11-17 09:18 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -90,7 +90,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **A machine registry and adopt holds in Bolt, and a catch-up from origin after every absence** | [`machine-registry-holds-catchup`](design-machine-registry-holds-catchup.md)<br>[Sketch](decision-machine-registry-holds-catchup.md) | tapestry · solid | Plan-Burler-Review | neve | 22h<br>22h | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
+| T4 | **A machine registry and adopt holds in Bolt, and a catch-up from origin after every absence** | [`machine-registry-holds-catchup`](design-machine-registry-holds-catchup.md)<br>[Sketch](decision-machine-registry-holds-catchup.md) | tapestry · solid | Plan-Burler-Fix | neve | 22h<br>22h | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 
 #### Ready (0)
 
@@ -214,7 +214,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | 0m<br>0m | loom, board, stencil |
+| B1 |  | **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | 2m<br>2m | loom, board, stencil |
 
 #### Features (6)
 

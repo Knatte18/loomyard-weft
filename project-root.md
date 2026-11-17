@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-17 09:15 UTC; every age below is as of then.
+Rendered 2026-11-17 09:18 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -50,7 +50,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | 0m<br>0m | loom, board, stencil |
+| B1 |  | **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | 2m<br>2m | loom, board, stencil |
 
 ### Features (6)
 
