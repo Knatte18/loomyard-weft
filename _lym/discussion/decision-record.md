@@ -46,6 +46,12 @@ The report opens with the Codex writer's manifest record and the Claude writer's
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-17): Bench pair and who runs it
+
+Decision: The orch created one bench pair, cwb-codex at /home/knatte/Code/loomyard-LYMHUB/cwb-codex, forked from this task's worktree. The darn writer of this task runs everything in it: moves its tree to 055ef994 (the parent of 824eb2b6), runs lym shuttle manifest for the Darn-Write seat, runs the real Darn-Write producer with only the writer model swapped to astra[high] through run_settings, stops after Darn-Write, runs lym gate test on the touched packages, and writes the report. The orch removes the pair when the writer says so. The run waits until the installed lym carries lym shuttle manifest (from 3bbc92a0); the orch tells the writer when it does.
+
+Rationale: A task session cannot run lym fabric add, so the orch creates bench pairs from the task's worktree and the task agent runs them (operator, 2026-11-16). The manifest check is the bench's precondition, and the installed binary predates the verb.
+
 ## Constraints
 
 ## Auto-mode assumptions
