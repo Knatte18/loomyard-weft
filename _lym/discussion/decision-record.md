@@ -1,45 +1,20 @@
 ## Goal
 
 ```markdown
-## Goal
+## Seen (operator, 2026-11-15)
 
-Level 2 of `codex-support-levels` (R2): can Codex do the darn writer's work on real lym code as well as Claude did?
-The bench replays only the writer, never a whole run: no other producer runs, and nothing lands or is pushed.
+1. The `code` button in a beam opened `README.md` of the beam's worktree, which is of no use there.
+   The cause is `ide.yaml`'s template, whose `open_files.beam` lists `README.md` (`internal/ideconfig`).
+   The hub's default layer now sets `open_files.beam: []`; the template still opens it for every other hub.
+2. The markdown preview does not work in a window lym opens: a `.md` file does not render, the Bolt README included.
+   `render_markdown` sets `settings.json`'s `workbench.editorAssociations` `"*.md"` to `vscode.markdown.preview.editor` (`internal/vscode/config.go`).
 
-## Why again (operator, 2026-11-16)
+## Idea
 
-The earlier bench on Neve does not count: its Codex session did not get the starting point Claude's writer got.
-This bench runs only once the Codex parity tasks of the project `codexengine` (from the Sketch `codex-same-as-claude`) have landed,
-so the Codex writer gets exactly what a Claude writer gets.
-It runs on Neve; the OSL-1046 run and its sandbox fallback check are dropped.
-
-## Input
-
-The darn light task `ide-beam-readme-preview`, landed as `824eb2b6`.
-Its Claude writer's work is the answer key: the landed diff, and the run's records on its records branch (writer cost, review rounds and findings).
-
-## The one run
-
-1. The orch creates one bench worktree from this task's worktree, at the parent of `824eb2b6`.
-2. Run the real Darn-Write producer there on the task's body as it stood then, with only the writer's model swapped to `astra[high]`.
-   Never hand-build the prompt.
-3. Before the session starts, check with `lym shuttle manifest` that the Codex writer's manifest holds every item the Claude writer's holds.
-4. Stop the run after Darn-Write, and run `lym gate test` on the packages the diff touches.
-
-Exactly one Codex session; no Claude run, since the landed run is the comparison.
-
-## Read
-
-- Did it finish the work, and does the gate pass on its tree?
-- Its diff against the landed one: scope, correctness, comments and prose in the house tone.
-- Cost, wall time and turns against the landed writer's.
-- Any skill-load or idle-wake fault on the way (`codex-idle-wake-extra-reminder`).
-
-## Bounds
-
-Change no production code and nothing under Bolt; the orch removes the bench worktree when the writer says so.
-The report goes under `docs/research/codex/`; the verdict on level 2 is the operator's.
-The report opens with the Codex writer's manifest record and the Claude writer's `lym shuttle manifest` output for the same seat, as the project's bench rule says.
+- Drop `README.md` from the template's `open_files.beam`, so every place opens nothing by default.
+- Find why the preview association fails and fix it, or drop `render_markdown` if the association cannot work.
+  VS Code showed an "Extension Bisect" in progress at the time, which disables extensions and may have switched off the markdown extension;
+  settle whether lym's settings are at fault before changing them.
 ```
 
 ## Scope

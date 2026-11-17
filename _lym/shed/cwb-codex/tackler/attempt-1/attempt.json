@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Preflight",
+    "history_length": 1,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "3bbc92a0e25d8aee6948596a2cb3a4d6a92af510",
+    "branch": "cwb-codex",
+    "dirty": {}
+  },
+  "spawned_at": "2026-11-17T18:26:53.211583478+01:00",
+  "deadline": "2026-11-17T18:36:53.211583478+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/cwb-codex/_lym/shed/cwb-codex/drive-reports/drive-envelope-20261117-182653-f7b8.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/cwb-codex/_lym/shed/cwb-codex/drive-reports/drive-report-20261117-182653-8980.md",
+  "strand_guid": ""
+}
