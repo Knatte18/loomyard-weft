@@ -1,0 +1,492 @@
+diff --git a/contracts/specs/raddle-proposal-spec.md b/contracts/specs/raddle-proposal-spec.md
+index 183b8749..8d5455e9 100644
+--- a/contracts/specs/raddle-proposal-spec.md
++++ b/contracts/specs/raddle-proposal-spec.md
+@@ -37,6 +37,9 @@ A part holds:
+ 
+ - `slug` and `title`.
+ - `type` — a type label of the board's vocabulary, never `sketch`.
++- `labels` — the module labels of the modules the part's own work changes, at least one, each listed once and each a module label of the board's vocabulary.
++  A label the Sketch does not carry is allowed, since a split can find a module the Sketch's labels missed.
++  Raddle-File files the part with its `type` and these labels, and the project with its `type` and every label its parts carry.
+ - `recipe` — `tapestry` or `darn`.
+ - `profile` — a profile of `profiles.yaml` that holds a block for that recipe.
+ - `decisions` — the Sketch decision ids the part builds, such as `D3`.
+@@ -98,6 +101,9 @@ The gate, `raddle-propose` and `raddle-approve` run the checks of the proposal a
+ - `recipe-invalid` — a recipe that is neither `tapestry` nor `darn`.
+ - `profile-unknown` — a profile that `profiles.yaml` does not hold, or holds without a block for the part's recipe.
+ - `type-invalid` — a part's or the project's type that is not in the board's vocabulary, or is `sketch`.
++- `labels-missing` — a part with no module label.
++- `label-unknown` — a part label that is not a module label of the board's vocabulary, a type label included.
++- `label-duplicate` — a part that lists one module label more than once.
+ - `slug-taken` — a new slug already on the board or in the raddle store; the run's own entry is exempt, which `slug-sketch` judges.
+ - `slug-sketch` — a filed slug equal to the Sketch's; a perch-mode project whose slug is the run's own entry is exempt.
+ - `slug-duplicate` — a slug that two filed entries share.
+@@ -136,6 +142,7 @@ Auto and perch mode file with no approval match, and `raddle-approve` refuses in
+       "slug": "usage-writer",
+       "title": "Usage record writer",
+       "type": "feature",
++      "labels": ["shed"],
+       "recipe": "tapestry",
+       "profile": "standard",
+       "decisions": ["D1", "D2"],
+diff --git a/contracts/stencils/loom/loom-rubric-raddle-review.md b/contracts/stencils/loom/loom-rubric-raddle-review.md
+index e1a0d86b..557d2cae 100644
+--- a/contracts/stencils/loom/loom-rubric-raddle-review.md
++++ b/contracts/stencils/loom/loom-rubric-raddle-review.md
+@@ -42,6 +42,9 @@ Judge the split's judgement, not its format:
+   Two unchained parts where one uses what the other builds, with no interface fixed in both bodies, is a finding.
+ - **The order follows the record.**
+   The parts follow the record's stated order, or each departure is listed in `order_departures` with its cost.
++- **Each part's labels name its modules.**
++  A part's `labels` name the module of each package its body names, and no module the part does not change.
++  A label for a module the part never touches is a finding, and so is a named package whose module no label names.
+ - **Each part's recipe and profile fit it.**
+   A part's recipe and profile fit its size and risk, and each cost line rests on the cells it cites.
+ - **The outcome fits the record's scope.**
+@@ -68,6 +71,7 @@ In this segment, `design` means the split is wrong:
+ a decision no part can build, a seam that does not hold,
+ a part added only so parts run at once,
+ a cut that runs fewer parts at once than another cut with the same part count,
++labels that do not match the packages a part changes,
+ or a recipe or profile that does not fit its part.
+ In this segment, `decision` means a question only the run's parent can settle:
+ two record entries that contradict each other on what the split must build,
+diff --git a/contracts/stencils/raddle/raddle-template-agent.md b/contracts/stencils/raddle/raddle-template-agent.md
+index 406d46c7..dbb1da21 100644
+--- a/contracts/stencils/raddle/raddle-template-agent.md
++++ b/contracts/stencils/raddle/raddle-template-agent.md
+@@ -55,6 +55,9 @@ Put no design question to the operator before the proposal passes the spec's che
+ - When parts that share a package must be chained, order the chain by the Sketch's own order first: a part the record says waits for nothing goes first in its chain.
+   Where the record states no order, put first the part with the largest stated saving, or the one the others gain from earliest.
+ - List every place your order departs from an order the decision record states in the proposal's `order_departures`, with what the departure costs.
++- Give each part, beside its type, the module labels of the modules its own packages fall in, never the Sketch's whole set copied onto every part.
++  A part that changes a module the Sketch's labels missed carries that module's label too.
++  `lym board labels` lists the board's module labels.
+ - When a live `PATTERN.md` entry absorbs a PATTERN change the Sketch declares, map the change with the part's `pattern_clusters`, so the part's record declares the live entry; a contract line that folds it in is not enough.
+ - Weigh the next-best split too, since the proposal states its cost beside the chosen one.
+ - Write each cost line so it says when a cell it rests on reads "too few runs", and never guess a figure for such a cell.
+diff --git a/internal/boardengine/raddlefile.go b/internal/boardengine/raddlefile.go
+index a240537e..b584cc3a 100644
+--- a/internal/boardengine/raddlefile.go
++++ b/internal/boardengine/raddlefile.go
+@@ -47,7 +47,7 @@ type RaddleEntry struct {
+ 	Title string
+ 	// Kind is KindTask or KindProject.
+ 	Kind string
+-	// Labels holds the entry's type label and the Sketch's module labels; a filed entry never carries the sketch label.
++	// Labels holds the entry's type label and its module labels; a filed entry never carries the sketch label.
+ 	Labels []string
+ 	// Recipe and Profile are the task's run recipe and run profile; both are empty for a project.
+ 	Recipe  string
+diff --git a/internal/loomcli/raddlecontext.go b/internal/loomcli/raddlecontext.go
+index 3600843f..28896567 100644
+--- a/internal/loomcli/raddlecontext.go
++++ b/internal/loomcli/raddlecontext.go
+@@ -1,5 +1,6 @@
+ // raddlecontext.go builds the board context that a raddle check reads.
+-// The context holds the run's Sketch, the board's entries, the raddle store's slugs and the board's type labels.
++// The context holds the run's Sketch, the board's entries, the raddle store's slugs,
++// and the board's type and module labels.
+ // It also holds the run profiles and the live PATTERN.md entries.
+ 
+ package loomcli
+@@ -26,7 +27,7 @@ import (
+ // The Sketch is the run's own entry, whose slug is the worktree's.
+ // Its module labels are the entry's labels that are not type labels.
+ // Entries holds every entry of the hub's board and Store the slugs the raddle store holds.
+-// TypeLabels holds the board config's type labels.
++// TypeLabels holds the board config's type labels, and LabelVocabulary its module labels.
+ // Profiles names the profiles that hold a block for each recipe a part may name.
+ // LivePattern answers from the worktree's PATTERN.md, and a worktree with none holds no live entry.
+ // The filing flag goes to the context unchanged.
+@@ -63,13 +64,14 @@ func raddleBoardContext(location *lymcwd.Location, filing bool) (raddleparser.Bo
+ 	vocabulary := boardConfig.Vocabulary()
+ 	sketch := seedSlug(location.WorktreeName)
+ 	board := raddleparser.BoardContext{
+-		Sketch:     sketch,
+-		Entry:      sketch,
+-		Store:      store.Slugs(),
+-		TypeLabels: vocabulary.Types,
+-		Profiles:   map[string][]string{},
+-		Filing:     filing,
+-		Perch:      recorded.Mode == loomengine.RaddleModePerch,
++		Sketch:          sketch,
++		Entry:           sketch,
++		Store:           store.Slugs(),
++		TypeLabels:      vocabulary.Types,
++		LabelVocabulary: vocabulary.Labels,
++		Profiles:        map[string][]string{},
++		Filing:          filing,
++		Perch:           recorded.Mode == loomengine.RaddleModePerch,
+ 		LivePattern: func(id string) bool {
+ 			_, live := pattern.EntryBullet(overview, id)
+ 			return live
+diff --git a/internal/loomcli/raddlecontext_integration_test.go b/internal/loomcli/raddlecontext_integration_test.go
+index 48d6c7cf..3530383c 100644
+--- a/internal/loomcli/raddlecontext_integration_test.go
++++ b/internal/loomcli/raddlecontext_integration_test.go
+@@ -11,6 +11,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+@@ -36,6 +37,9 @@ func TestRaddleBoardContext(t *testing.T) {
+ 	if err := os.WriteFile(filepath.Join(hub.BoardDir(), "board.json"), []byte(board), 0o644); err != nil {
+ 		t.Fatalf("write board.json: %v", err)
+ 	}
++	if err := os.WriteFile(configengine.ConfigFile(hub.BoardDir(), "board"), []byte("labels:\n  mod-a: Module A\n"), 0o644); err != nil {
++		t.Fatalf("write the board config: %v", err)
++	}
+ 	storeDir := filepath.Join(hub.BoardDir(), "raddle", "old-sketch")
+ 	if err := os.MkdirAll(storeDir, 0o755); err != nil {
+ 		t.Fatalf("create the store directory: %v", err)
+@@ -96,6 +100,9 @@ func TestRaddleBoardContext(t *testing.T) {
+ 			t.Errorf("TypeLabels = %v; want it to hold %q", got.TypeLabels, label)
+ 		}
+ 	}
++	if want := []string{"mod-a"}; !slices.Equal(got.LabelVocabulary, want) {
++		t.Errorf("LabelVocabulary = %v; want %v, the board config's module labels", got.LabelVocabulary, want)
++	}
+ 	for _, recipe := range []string{raddleparser.RecipeTapestry, raddleparser.RecipeDarn} {
+ 		if len(got.Profiles[recipe]) == 0 {
+ 			t.Errorf("Profiles[%s] = none; want the profiles that hold a block for it", recipe)
+diff --git a/internal/loomcli/raddleverbs_test.go b/internal/loomcli/raddleverbs_test.go
+index bf038110..8743fac1 100644
+--- a/internal/loomcli/raddleverbs_test.go
++++ b/internal/loomcli/raddleverbs_test.go
+@@ -37,7 +37,7 @@ func raddleTestProposal(t *testing.T, costLine string, checked ...raddleparser.B
+ 		Shape:        raddleparser.ShapeTapestry,
+ 		BoardChecked: checked,
+ 		Parts: []raddleparser.Part{{
+-			Slug: "part-a", Title: "Part A", Type: "enhancement", Recipe: raddleparser.RecipeTapestry, Profile: "standard",
++			Slug: "part-a", Title: "Part A", Type: "enhancement", Labels: []string{"mod-a"}, Recipe: raddleparser.RecipeTapestry, Profile: "standard",
+ 			Decisions: []string{"D1"}, Packages: []raddleparser.Package{{Path: "internal/a", Size: 10}},
+ 			Criteria: []string{"D1: first holds."}, CostLine: "one tapestry part",
+ 		}},
+@@ -59,8 +59,9 @@ func raddleTestBoard() raddleparser.BoardContext {
+ 			{Slug: "the-sketch", Kind: raddleparser.KindTask, Labels: []string{"sketch"}, Open: true},
+ 			{Slug: "other", Kind: raddleparser.KindTask, Labels: []string{"bug"}, Open: true, Revised: "2026-11-01T10:00:00Z"},
+ 		},
+-		TypeLabels: []string{"bug", "enhancement", "sketch"},
+-		Profiles:   map[string][]string{raddleparser.RecipeTapestry: {"standard"}},
++		TypeLabels:      []string{"bug", "enhancement", "sketch"},
++		LabelVocabulary: []string{"mod-a"},
++		Profiles:        map[string][]string{raddleparser.RecipeTapestry: {"standard"}},
+ 	}
+ }
+ 
+diff --git a/internal/loomshed/raddlecheck_test.go b/internal/loomshed/raddlecheck_test.go
+index 19f9b39c..714e958e 100644
+--- a/internal/loomshed/raddlecheck_test.go
++++ b/internal/loomshed/raddlecheck_test.go
+@@ -52,13 +52,13 @@ func validRaddleProposal() raddleparser.Proposal {
+ 		BoardChecked: []raddleparser.BoardCheck{{Slug: "other-open", Revised: "2026-11-01T10:00:00Z"}},
+ 		Parts: []raddleparser.Part{
+ 			{
+-				Slug: "part-a", Title: "Part A", Type: "feature", Recipe: raddleparser.RecipeTapestry, Profile: "standard",
++				Slug: "part-a", Title: "Part A", Type: "feature", Labels: []string{"mod-a"}, Recipe: raddleparser.RecipeTapestry, Profile: "standard",
+ 				Decisions: []string{"D1"}, Packages: []raddleparser.Package{{Path: "internal/a", Size: 10}},
+ 				OpenRisks: []string{"Risk one"}, Criteria: []string{"D1: first holds."}, PatternChanges: []string{"PATTERN-a"},
+ 				CostLine: "one tapestry part",
+ 			},
+ 			{
+-				Slug: "part-b", Title: "Part B", Type: "feature", Recipe: raddleparser.RecipeTapestry, Profile: "standard",
++				Slug: "part-b", Title: "Part B", Type: "feature", Labels: []string{"mod-a", "mod-b"}, Recipe: raddleparser.RecipeTapestry, Profile: "standard",
+ 				Decisions: []string{"D2"}, Packages: []raddleparser.Package{{Path: "internal/b", Size: 10}}, DependsOn: []string{"part-a"},
+ 				OpenRisks: []string{"Risk two"}, Criteria: []string{"D2: second holds."}, PatternChanges: []string{"PATTERN-b"},
+ 				CostLine: "one tapestry part",
+@@ -78,8 +78,9 @@ func validRaddleBoard() raddleparser.BoardContext {
+ 			{Slug: "sketch-x", Kind: raddleparser.KindTask, Labels: []string{"mod-a", "sketch"}, Open: true, Revised: "2026-11-01T09:00:00Z"},
+ 			{Slug: "other-open", Kind: raddleparser.KindTask, Labels: []string{"mod-z"}, Open: true, Revised: "2026-11-01T10:00:00Z"},
+ 		},
+-		TypeLabels: []string{"feature", "fix", "sketch"},
+-		Profiles:   map[string][]string{raddleparser.RecipeTapestry: {"standard"}, raddleparser.RecipeDarn: {"quick"}},
++		TypeLabels:      []string{"feature", "fix", "sketch"},
++		LabelVocabulary: []string{"mod-a", "mod-b", "mod-z"},
++		Profiles:        map[string][]string{raddleparser.RecipeTapestry: {"standard"}, raddleparser.RecipeDarn: {"quick"}},
+ 	}
+ }
+ 
+diff --git a/internal/loomshed/raddlefile.go b/internal/loomshed/raddlefile.go
+index 9ebf9d06..0dab165d 100644
+--- a/internal/loomshed/raddlefile.go
++++ b/internal/loomshed/raddlefile.go
+@@ -456,7 +456,8 @@ func raddlePartBody(sketch string, part raddleparser.Part) string {
+ // filing builds the board filing from the proposal, the part records on disk and the staged store files.
+ // The parts are in dependency order, the project is the project shapes' own entry,
+ // and the entries are filed at the run's own project level.
+-// Every entry carries its type label and the Sketch's module labels, never the sketch label.
++// Every part carries its type label and its own module labels,
++// and the project its type label and every module label its parts carry; no entry carries the sketch label.
+ func (p *raddleFile) filing(proposal raddleparser.Proposal, hash string, entry RaddleRunEntry) (boardengine.RaddleFiling, error) {
+ 	staged := make(map[string][]byte, 3)
+ 	for _, name := range []string{stageProposalFile, stageColdFile, stageRecordFile} {
+@@ -467,9 +468,6 @@ func (p *raddleFile) filing(proposal raddleparser.Proposal, hash string, entry R
+ 		staged[name] = content
+ 	}
+ 
+-	labels := func(entryType string) []string {
+-		return append([]string{entryType}, entry.ModuleLabels...)
+-	}
+ 	filing := boardengine.RaddleFiling{
+ 		Sketch:       proposal.Sketch,
+ 		Created:      entry.Created,
+@@ -506,7 +504,7 @@ func (p *raddleFile) filing(proposal raddleparser.Proposal, hash string, entry R
+ 			Slug:      part.Slug,
+ 			Title:     part.Title,
+ 			Kind:      boardengine.KindTask,
+-			Labels:    labels(part.Type),
++			Labels:    append([]string{part.Type}, part.Labels...),
+ 			Recipe:    part.Recipe,
+ 			Profile:   part.Profile,
+ 			DependsOn: part.DependsOn,
+@@ -523,7 +521,7 @@ func (p *raddleFile) filing(proposal raddleparser.Proposal, hash string, entry R
+ 			Slug:   proposal.Project.Slug,
+ 			Title:  proposal.Project.Title,
+ 			Kind:   boardengine.KindProject,
+-			Labels: labels(proposal.Project.Type),
++			Labels: append([]string{proposal.Project.Type}, raddleProjectLabels(proposal.Parts)...),
+ 			Body:   fmt.Sprintf("%s: %s.\n", boardengine.RaddleProjectBodyPrefix(proposal.Sketch), strings.Join(slugs, ", ")),
+ 			Record: record,
+ 		}
+@@ -531,6 +529,20 @@ func (p *raddleFile) filing(proposal raddleparser.Proposal, hash string, entry R
+ 	return filing, nil
+ }
+ 
++// raddleProjectLabels returns the module labels of every part, each once, in the order the parts first name them:
++// a project touches every module its parts change.
++func raddleProjectLabels(parts []raddleparser.Part) []string {
++	var labels []string
++	for _, part := range parts {
++		for _, label := range part.Labels {
++			if !slices.Contains(labels, label) {
++				labels = append(labels, label)
++			}
++		}
++	}
++	return labels
++}
++
+ // raddleBoardEntries maps the board's entries onto the entries the proposal's checks read.
+ func raddleBoardEntries(tasks []boardengine.Task) []raddleparser.BoardEntry {
+ 	entries := make([]raddleparser.BoardEntry, len(tasks))
+diff --git a/internal/loomshed/raddlefile_test.go b/internal/loomshed/raddlefile_test.go
+index d31a564a..0468b049 100644
+--- a/internal/loomshed/raddlefile_test.go
++++ b/internal/loomshed/raddlefile_test.go
+@@ -39,6 +39,7 @@ func raddleFileProposal(shape string) raddleparser.Proposal {
+ 		first.Criteria = append(first.Criteria, second.Criteria...)
+ 		first.PatternChanges = append(first.PatternChanges, second.PatternChanges...)
+ 		first.Packages = append(first.Packages, second.Packages...)
++		first.Labels = []string{"mod-a", "mod-b"}
+ 		proposal.Parts = []raddleparser.Part{first}
+ 	case raddleparser.ShapeProject, raddleparser.ShapeBeam:
+ 		proposal.Project = &raddleparser.Project{Slug: "proj-1", Title: "Project", Type: "feature"}
+@@ -94,7 +95,7 @@ func newRaddleFileFixture(t *testing.T, proposal raddleparser.Proposal, mode loo
+ 	t.Helper()
+ 	dir := t.TempDir()
+ 	f := &raddleFileFixture{t: t, proposal: proposal, created: time.Date(2026, 11, 1, 9, 0, 0, 0, time.UTC), failing: map[string]error{}}
+-	f.entry = loomshed.RaddleRunEntry{Slug: "sketch-x", Created: f.created, ModuleLabels: []string{"mod-a"}, Project: "grouping", Kind: boardengine.KindTask, StatusProducer: "Raddle-File"}
++	f.entry = loomshed.RaddleRunEntry{Slug: "sketch-x", Created: f.created, ModuleLabels: []string{"mod-a", "mod-sketch"}, Project: "grouping", Kind: boardengine.KindTask, StatusProducer: "Raddle-File"}
+ 	f.deps = loomshed.RaddleFileDeps{
+ 		ProposalPath:   filepath.Join(dir, "proposal.yaml"),
+ 		ColdPath:       filepath.Join(dir, "cold-proposal.yaml"),
+@@ -306,12 +307,17 @@ func TestRaddleFile(t *testing.T) {
+ 					t.Fatalf("project entry = %+v; want one only for the project shapes", filing.ProjectEntry)
+ 				}
+ 				if isProject {
+-					if want := []string{"feature", "mod-a"}; !slices.Equal(filing.ProjectEntry.Labels, want) || filing.ProjectEntry.Kind != boardengine.KindProject || string(filing.ProjectEntry.Record) != raddleFileRecord {
+-						t.Errorf("project entry = %+v; want labels %v, kind project and the Sketch's record whole", filing.ProjectEntry, want)
++					if want := []string{"feature", "mod-a", "mod-b"}; !slices.Equal(filing.ProjectEntry.Labels, want) || filing.ProjectEntry.Kind != boardengine.KindProject || string(filing.ProjectEntry.Record) != raddleFileRecord {
++						t.Errorf("project entry = %+v; want labels %v, its parts' module labels each once, kind project and the Sketch's record whole", filing.ProjectEntry, want)
+ 					}
+ 				}
++				// Each part carries its own module labels, never the Sketch's mod-sketch.
++				wantLabels := map[string][]string{"part-a": {"feature", "mod-a"}, "part-b": {"feature", "mod-a", "mod-b"}}
++				if tt.shape == raddleparser.ShapeTapestry {
++					wantLabels["part-a"] = []string{"feature", "mod-a", "mod-b"}
++				}
+ 				for _, part := range filing.Parts {
+-					if want := []string{"feature", "mod-a"}; !slices.Equal(part.Labels, want) || part.Kind != boardengine.KindTask {
++					if want := wantLabels[part.Slug]; !slices.Equal(part.Labels, want) || part.Kind != boardengine.KindTask {
+ 						t.Errorf("part %s labels/kind = %v/%q; want %v and a task", part.Slug, part.Labels, part.Kind, want)
+ 					}
+ 					for _, want := range []string{"`sketch-x`", "takes " + part.Slug, "delivers " + part.Slug, "Exports" + part.Slug, "(about 10 changed lines)"} {
+diff --git a/internal/raddleparser/check.go b/internal/raddleparser/check.go
+index bf736b0d..feab2473 100644
+--- a/internal/raddleparser/check.go
++++ b/internal/raddleparser/check.go
+@@ -36,6 +36,9 @@ const (
+ 	CheckRecipeInvalid          = "recipe-invalid"
+ 	CheckProfileUnknown         = "profile-unknown"
+ 	CheckTypeInvalid            = "type-invalid"
++	CheckLabelsMissing          = "labels-missing"
++	CheckLabelUnknown           = "label-unknown"
++	CheckLabelDuplicate         = "label-duplicate"
+ 	CheckSlugTaken              = "slug-taken"
+ 	CheckSlugSketch             = "slug-sketch"
+ 	CheckSlugDuplicate          = "slug-duplicate"
+@@ -85,22 +88,24 @@ type BoardEntry struct {
+ // ModuleLabels are the Sketch's labels that are not type labels.
+ // Store holds the slugs the raddle store keeps, each as a Sketch slug or a filed slug.
+ // TypeLabels are the board's type labels.
++// LabelVocabulary holds the board's module labels, the configured labels that are not type labels.
+ // Profiles maps each part recipe to the profiles of `profiles.yaml` that hold a block for it.
+ // Filing is true at Raddle-File's run, where a dependency on an entry gone from the board is dropped.
+ // Perch is true in a perch-mode run, whose split perch approves the proposal in place of the operator:
+ // the checks then allow only one task, or one project whose slug is the run's own entry.
+ // LivePattern reports whether the run's PATTERN.md holds the entry id.
+ type BoardContext struct {
+-	Sketch       string
+-	Entry        string
+-	ModuleLabels []string
+-	Entries      []BoardEntry
+-	Store        []string
+-	TypeLabels   []string
+-	Profiles     map[string][]string
+-	Filing       bool
+-	Perch        bool
+-	LivePattern  func(id string) bool
++	Sketch          string
++	Entry           string
++	ModuleLabels    []string
++	Entries         []BoardEntry
++	Store           []string
++	TypeLabels      []string
++	LabelVocabulary []string
++	Profiles        map[string][]string
++	Filing          bool
++	Perch           bool
++	LivePattern     func(id string) bool
+ }
+ 
+ // decisionIDPattern matches a decision id as a whole word;
+@@ -411,6 +416,10 @@ func validType(label string, board BoardContext) bool {
+ // vocabulary reports a part whose recipe is neither tapestry nor darn.
+ // It also reports a part whose profile holds no block for its recipe.
+ // It also reports a part or project whose type is not a type label of the board other than the Sketch.
++// It also reports a part that names no module label, and a part label that is no module label of the board;
++// a module label the Sketch does not carry passes, since a split can find a module the Sketch's labels missed.
++// It also reports a part label that the part's labels list more than once, once per repeated label.
++// The board refuses an entry that carries a label twice.
+ func (c *checker) vocabulary() []Finding {
+ 	var findings []Finding
+ 	for _, part := range c.proposal.Parts {
+@@ -422,6 +431,20 @@ func (c *checker) vocabulary() []Finding {
+ 		if !validType(part.Type, c.board) {
+ 			findings = append(findings, Finding{Check: CheckTypeInvalid, Part: part.Slug, Detail: fmt.Sprintf("type %q is not a type label of the board other than %s", part.Type, TypeSketch)})
+ 		}
++		if len(part.Labels) == 0 {
++			findings = append(findings, Finding{Check: CheckLabelsMissing, Part: part.Slug, Detail: "the part names no module label; way forward: list in labels the module label of each module the part's work changes"})
++		}
++		var seenLabels, repeatedLabels []string
++		for _, label := range part.Labels {
++			if slices.Contains(seenLabels, label) && !slices.Contains(repeatedLabels, label) {
++				repeatedLabels = append(repeatedLabels, label)
++				findings = append(findings, Finding{Check: CheckLabelDuplicate, Part: part.Slug, Detail: fmt.Sprintf("the label %q is listed more than once; way forward: list each module label once in labels", label)})
++			}
++			seenLabels = append(seenLabels, label)
++			if !slices.Contains(c.board.LabelVocabulary, label) {
++				findings = append(findings, Finding{Check: CheckLabelUnknown, Part: part.Slug, Detail: fmt.Sprintf("the label %q is no module label of the board; way forward: name a label that lym board labels lists under labels, or have the operator add the module's label to the board config", label)})
++			}
++		}
+ 	}
+ 	if project := c.proposal.Project; project != nil && !validType(project.Type, c.board) {
+ 		findings = append(findings, Finding{Check: CheckTypeInvalid, Part: project.Slug, Detail: fmt.Sprintf("the project's type %q is not a type label of the board other than %s", project.Type, TypeSketch)})
+diff --git a/internal/raddleparser/check_test.go b/internal/raddleparser/check_test.go
+index 69250a3d..cda01c41 100644
+--- a/internal/raddleparser/check_test.go
++++ b/internal/raddleparser/check_test.go
+@@ -99,6 +99,10 @@ func TestCheck(t *testing.T) {
+ 		{"RecipeInvalid", func(p *Proposal, _ *BoardContext) { p.Parts[0].Recipe = "batten" }, []string{CheckRecipeInvalid}},
+ 		{"ProfileUnknown", func(p *Proposal, _ *BoardContext) { p.Parts[0].Profile = "ghost" }, []string{CheckProfileUnknown}},
+ 		{"PartTypedSketch", func(p *Proposal, _ *BoardContext) { p.Parts[0].Type = TypeSketch }, []string{CheckTypeInvalid}},
++		{"PartWithNoModuleLabel", func(p *Proposal, _ *BoardContext) { p.Parts[0].Labels = nil }, []string{CheckLabelsMissing}},
++		{"PartLabelOutsideTheBoardsVocabulary", func(p *Proposal, _ *BoardContext) { p.Parts[0].Labels = []string{"mod-a", "ghost"} }, []string{CheckLabelUnknown}},
++		{"PartLabelListedTwice", func(p *Proposal, _ *BoardContext) { p.Parts[0].Labels = []string{"mod-a", "mod-a"} }, []string{CheckLabelDuplicate}},
++		{"PartLabelThatIsATypeLabel", func(p *Proposal, _ *BoardContext) { p.Parts[0].Labels = []string{"feature"} }, []string{CheckLabelUnknown}},
+ 		{"ProjectWithNoValidType", func(p *Proposal, _ *BoardContext) {
+ 			p.Shape = ShapeProject
+ 			p.Project = &Project{Slug: "proj-new", Title: "Project"}
+@@ -110,7 +114,7 @@ func TestCheck(t *testing.T) {
+ 		}, []string{CheckSlugTaken}},
+ 		{"SlugEqualToTheSketchs", func(p *Proposal, _ *BoardContext) { p.Parts[1].Slug = "sketch-x" }, []string{CheckSlugSketch}},
+ 		{"SlugFiledTwice", func(p *Proposal, _ *BoardContext) {
+-			p.Parts = append(p.Parts, Part{Slug: "part-b", Type: "feature", Recipe: RecipeTapestry, Profile: "standard", Packages: []Package{{Path: "internal/c", Size: 1}}})
++			p.Parts = append(p.Parts, Part{Slug: "part-b", Type: "feature", Labels: []string{"mod-a"}, Recipe: RecipeTapestry, Profile: "standard", Packages: []Package{{Path: "internal/c", Size: 1}}})
+ 		}, []string{CheckSlugDuplicate}},
+ 		{"TapestryWithTwoParts", func(p *Proposal, _ *BoardContext) { p.Shape = ShapeTapestry }, []string{CheckShapeInvalid}},
+ 		{"ProjectShapeWithNoProject", func(p *Proposal, _ *BoardContext) { p.Shape = ShapeProject }, []string{CheckShapeInvalid}},
+@@ -203,6 +207,7 @@ func mergeIntoOnePart(p *Proposal) {
+ 	first.Criteria = append(first.Criteria, second.Criteria...)
+ 	first.PatternChanges = append(first.PatternChanges, second.PatternChanges...)
+ 	first.Packages = append(first.Packages, second.Packages...)
++	first.Labels = append(first.Labels, second.Labels...)
+ 	p.Parts = []Part{first}
+ }
+ 
+diff --git a/internal/raddleparser/fixture_test.go b/internal/raddleparser/fixture_test.go
+index f25e7c1c..adfc74e1 100644
+--- a/internal/raddleparser/fixture_test.go
++++ b/internal/raddleparser/fixture_test.go
+@@ -37,6 +37,7 @@ The second decision.
+ `))
+ 
+ // validProposal returns a proposal of parts that passes every check against the fixture decision record and board.
++// The second part's label mod-b is one the Sketch does not carry.
+ func validProposal() Proposal {
+ 	return Proposal{
+ 		Sketch:       "sketch-x",
+@@ -44,13 +45,13 @@ func validProposal() Proposal {
+ 		BoardChecked: []BoardCheck{{Slug: "other-open", Revised: "2026-11-01T10:00:00Z"}},
+ 		Parts: []Part{
+ 			{
+-				Slug: "part-a", Title: "Part A", Type: "feature", Recipe: RecipeTapestry, Profile: "standard",
++				Slug: "part-a", Title: "Part A", Type: "feature", Labels: []string{"mod-a"}, Recipe: RecipeTapestry, Profile: "standard",
+ 				Decisions: []string{"D1"}, Packages: []Package{{Path: "internal/a", Size: 10}},
+ 				OpenRisks: []string{"Risk one"}, Criteria: []string{"D1: first holds."}, PatternChanges: []string{"PATTERN-a"},
+ 				CostLine: "one tapestry part",
+ 			},
+ 			{
+-				Slug: "part-b", Title: "Part B", Type: "feature", Recipe: RecipeTapestry, Profile: "standard",
++				Slug: "part-b", Title: "Part B", Type: "feature", Labels: []string{"mod-b"}, Recipe: RecipeTapestry, Profile: "standard",
+ 				Decisions: []string{"D2"}, Packages: []Package{{Path: "internal/b", Size: 10}}, DependsOn: []string{"part-a"},
+ 				OpenRisks: []string{"Risk two"}, Criteria: []string{"D2: second holds."}, PatternChanges: []string{"PATTERN-b"},
+ 				CostLine: "one tapestry part",
+@@ -71,9 +72,10 @@ func validBoard() BoardContext {
+ 			{Slug: "sketch-x", Kind: KindTask, Labels: []string{"mod-a", "sketch"}, Open: true, Revised: "2026-11-01T09:00:00Z"},
+ 			{Slug: "other-open", Kind: KindTask, Labels: []string{"mod-z"}, Open: true, Revised: "2026-11-01T10:00:00Z"},
+ 		},
+-		TypeLabels:  []string{"feature", "fix", "sketch"},
+-		Profiles:    map[string][]string{RecipeTapestry: {"standard"}, RecipeDarn: {"quick"}},
+-		LivePattern: func(id string) bool { return id == "PATTERN-live" },
++		TypeLabels:      []string{"feature", "fix", "sketch"},
++		LabelVocabulary: []string{"mod-a", "mod-b", "mod-z"},
++		Profiles:        map[string][]string{RecipeTapestry: {"standard"}, RecipeDarn: {"quick"}},
++		LivePattern:     func(id string) bool { return id == "PATTERN-live" },
+ 	}
+ }
+ 
+diff --git a/internal/raddleparser/proposal.go b/internal/raddleparser/proposal.go
+index d4b033f2..2ff7be11 100644
+--- a/internal/raddleparser/proposal.go
++++ b/internal/raddleparser/proposal.go
+@@ -73,9 +73,11 @@ type BoardCheck struct {
+ // Part is one entry the proposal files.
+ // ExpectedCostUSD is nil when a cell the figure rests on reads "too few runs".
+ type Part struct {
+-	Slug           string    `json:"slug"`
+-	Title          string    `json:"title"`
+-	Type           string    `json:"type"`
++	Slug  string `json:"slug"`
++	Title string `json:"title"`
++	Type  string `json:"type"`
++	// Labels are the module labels of the modules the part's own work changes; the part is filed with them beside its type.
++	Labels         []string  `json:"labels"`
+ 	Recipe         string    `json:"recipe"`
+ 	Profile        string    `json:"profile"`
+ 	Decisions      []string  `json:"decisions"`
