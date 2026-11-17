@@ -1,6 +1,6 @@
 # Trial: check five lym gate redundant candidates by hand after the kill-count fix
 
-`redundant-candidates-check` · Task · research, gate, testkit · running · PR-Review
+`redundant-candidates-check` · Task · research, gate, testkit · landing · Finalize
 
 ## Seen (orch, 2026-11-17)
 
