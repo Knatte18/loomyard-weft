@@ -42,3 +42,4 @@ Exactly one Codex session; no Claude run, since the landed run is the comparison
 
 Change no production code and nothing under Bolt; the orch removes the bench worktree when the writer says so.
 The report goes under `docs/research/codex/`; the verdict on level 2 is the operator's.
+The report opens with the Codex writer's manifest record and the Claude writer's `lym shuttle manifest` output for the same seat, as the project's bench rule says.
