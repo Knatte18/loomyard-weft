@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-codex-question-deny-nudge.md)
 
-Depends on: [`codex-standing-instructions`](design-codex-standing-instructions.md)
-
 Filed from the Sketch `codex-same-as-claude`.
 
 Takes: codex-standing-instructions' codexengine launch line, whose one hooks.PreToolUse and hooks.PostToolUse settings these entries join

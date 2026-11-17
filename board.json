@@ -523,33 +523,6 @@
       "record_body_sha256": "83fe175e9930f7013b1cf97e916436a99b50e452c460f86049b4da9d55aec4c6"
     },
     {
-      "id": 1406,
-      "handle": "T13",
-      "slug": "codex-standing-instructions",
-      "title": "A Codex session gets Claude's standing items, user setup, instruction files and subagent terms in its developer instructions",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "codex",
-        "shuttle",
-        "stencil",
-        "heddle"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `codex-same-as-claude`.\n\nTakes: prompt-engine-per-launch's prompt engine on the spec, so Prepare knows the launch renders for Codex\nDelivers: Codex developer_instructions in D5's order with the 128 KiB refusal; the agents table's subagent effort and thread cap; the Claude user setup (global file, CLAUDE.md files above the root, skill listing, plugin session-start contexts) resolved in claudeengine and handed to codexengine through a shuttleengine seam; the leaf @-import expander that claudeengine and heddle share; project_doc_max_bytes and AGENTS.override.md carrying both files; the agents-prompt target, the two shipped entries on agents-file and the hub reconcile rendering file targets\nExports: the plugin session-start hook runner and Codex's sandbox probe as injectable seams of Prepare, so launch-manifest-parity can pass a faked runner and probe and a runner that lists each hook unrun; Codex text it adds in Go literals names none of D2's closed terms\n\nThe part changes these packages:\n\n- internal/shuttleengine/codexengine (about 600 changed lines)\n- internal/shuttleengine/claudeengine (about 400 changed lines)\n- internal/shuttleengine (about 120 changed lines)\n- internal/shuttleengines (about 60 changed lines)\n- internal/claudeimports (about 150 changed lines)\n- internal/heddleengine (about 350 changed lines)\n- internal/heddlecli (about 30 changed lines)\n- internal/hubreconcile (about 80 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-16T13:56:13Z",
-      "revised": "2026-11-16T13:56:13Z",
-      "profile": "solid",
-      "project": "codexengine",
-      "discussed": true,
-      "record_body_sha256": "66bdd26c298491d07dda4a82e415215414253cc64ae4693cb37bbb17f0cec54c"
-    },
-    {
       "id": 1407,
       "handle": "T17",
       "slug": "codex-wording-engine-blocks",
@@ -564,13 +537,11 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "codex-standing-instructions"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `codex-same-as-claude`.\n\nTakes: prompt-engine-per-launch's engine-aware renders, so an engine block resolves for the launch's engine; codex-standing-instructions' final heddle and codexengine text, which the scan then judges as landed\nDelivers: every stencil and spec passage naming a closed-list term in a Claude engine block with a Codex copy; mode_rules and plan-gate finding text chosen per engine or worded for any; the D2 scan over stencils, specs and production Go literals, with orch places skipped, an allowlist with reasons for literals that never reach a Codex session, and a check that every engine block has a copy for every registered engine\nExports: nothing another part calls\n\nThe part changes these packages:\n\n- contracts/stencils (about 1400 changed lines)\n- contracts/specs (about 150 changed lines)\n- internal/loomengine (about 120 changed lines)\n- internal/websterengine (about 80 changed lines)\n- internal/driftengine (about 40 changed lines)\n- internal/burlerengine (about 40 changed lines)\n- internal/darnengine (about 20 changed lines)\n- internal/planparser (about 40 changed lines)\n- internal/batcher (about 20 changed lines)\n- internal/shellguard (about 40 changed lines)\n- internal/seatengine (about 20 changed lines)\n- internal/loomcli (about 20 changed lines)\n",
-      "status": "starting · Seed-Child",
+      "status": "starting · Open-Window",
       "created": "2026-11-16T13:56:13Z",
       "revised": "2026-11-16T13:56:13Z",
       "profile": "solid",
@@ -593,9 +564,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "codex-standing-instructions"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `codex-same-as-claude`.\n\nTakes: codex-standing-instructions' codexengine launch line, whose one hooks.PreToolUse and hooks.PostToolUse settings these entries join\nDelivers: the request_user_input deny on an autonomous Codex launch; the Codex batching nudge reading the rollout's top-level calls and exec cells, judged by Claude's rules and keyed by transcript_path; the read-only lookup check moved out of claudeengine into a package both engines import; codex.yaml's batching_nudge block\nExports: the moved lookup check's package under internal/shuttleengine\n\nThe part changes these packages:\n\n- internal/shuttleengine/codexengine (about 800 changed lines)\n- internal/shuttleengine/claudeengine (about 80 changed lines)\n- internal/shuttleengine/bashlookup (about 280 changed lines)\n- internal/shuttlecli (about 60 changed lines)\n- internal/shuttleengines (about 40 changed lines)\n",

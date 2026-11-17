@@ -1,10 +1,8 @@
 # Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan
 
-`codex-wording-engine-blocks` · Task · enhancement, codex, shuttle, stencil, heddle · starting · Seed-Child
+`codex-wording-engine-blocks` · Task · enhancement, codex, shuttle, stencil, heddle · starting · Open-Window
 
 Decision record: [Sketch](decision-codex-wording-engine-blocks.md)
-
-Depends on: [`codex-standing-instructions`](design-codex-standing-instructions.md)
 
 Filed from the Sketch `codex-same-as-claude`.
 
