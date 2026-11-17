@@ -318,9 +318,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-launch-manifest-parity/fb9e26e0-b300-4edf-b54e-0b3912f2602c/subagents/agent-a6c475371c7280dda.jsonl"
       ]
+    },
+    "7": {
+      "slug": "producer-table",
+      "cards": [
+        "07-producer-table",
+        "08-shuttle-manifest-verb",
+        "09-pattern-engine-parity"
+      ],
+      "cardHashes": {
+        "07-producer-table": "1310436dd52880b872b0323ac6d116d2fe4b8426dae46268b3572fe105620ab5",
+        "08-shuttle-manifest-verb": "556b08bac344b6864199c324c6db143bb0ac65e4dec28236834ec2b189cc0422",
+        "09-pattern-engine-parity": "450fef2deae8176ab1a9e495b82b39c3959e69a021832e12b8587a36e04f7005"
+      },
+      "startSha": "affd81e74a7dd88cf7a62e86162193c09c48eecb",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T16:17:13Z",
+      "sessionId": "fb9e26e0-b300-4edf-b54e-0b3912f2602c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "cc1aa022ec5a057ba24192cb64328e03",
   "masterSessionId": "fb9e26e0-b300-4edf-b54e-0b3912f2602c",
   "masterEngine": "claude",
