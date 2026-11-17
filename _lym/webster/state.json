@@ -554,6 +554,26 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-transition-push-takeover/0e3fab80-c91b-4217-bd7e-98ef56a33f6c/subagents/agent-a467551ad29bd2d76.jsonl"
       ]
     },
+    "12": {
+      "slug": "code-tip-grace",
+      "cards": [
+        "12-code-tip-grace",
+        "13-status-shows-owed",
+        "14-pattern-run-fsm"
+      ],
+      "cardHashes": {
+        "12-code-tip-grace": "a9d5aa61956bc73150a86dc3f0a1e41fd33c6258a0a840ec14f64e870ee876ec",
+        "13-status-shows-owed": "a2fad818d85810eab83cabcfd08f1168752ae46e69cdfc6de8e826f206ee25e3",
+        "14-pattern-run-fsm": "abba2a821d7a3325c1f17c018798f612ab75b38e2fd8fb21c583a8f883ef46ab"
+      },
+      "startSha": "392c8f6457b6cb98077985cd5a56e16adcbba8a9",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T07:06:33Z",
+      "sessionId": "0e3fab80-c91b-4217-bd7e-98ef56a33f6c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "3": {
       "slug": "pair-push-records-first",
       "cards": [
@@ -777,7 +797,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "2d1bddc9e17b20aab1f341a78b97dd19",
   "masterSessionId": "0e3fab80-c91b-4217-bd7e-98ef56a33f6c",
   "masterEngine": "claude",
