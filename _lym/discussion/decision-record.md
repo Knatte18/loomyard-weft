@@ -45,4 +45,14 @@ Record each test's time at a resolution that separates tests, or say in the repo
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - gate-template-comments-still-say-timeout-is-kill (class consistency, severity MEDIUM, open in rounds 1)
+  - gateslot-doc-still-says-timeout-is-kill (class consistency, severity MEDIUM, open in rounds 1)
+  - own-unjudged-run-makes-candidate-unconfirmed (class design, severity MEDIUM, open in rounds 1)
+  - testoutput-line-assembly-untested (class design, severity MEDIUM, open in rounds 1)
+  - timed-out-covering-rerun-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
