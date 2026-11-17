@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-17T07:19:58Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/shipped-heddle-agents-file/_lym/landing/summary.md",
+      "at": "2026-11-17T07:25:46Z",
+      "started_at": "2026-11-17T07:20:00Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T07:22:44.325189463Z",
+          "end": "2026-11-17T07:22:44.338271933Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T07:22:44.397365117Z",
+          "end": "2026-11-17T07:25:15.029232997Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-17T07:25:15.092874676Z",
+          "end": "2026-11-17T07:25:15.28607655Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-17T07:25:15.329991797Z",
+          "end": "2026-11-17T07:25:15.330079861Z"
+        }
+      ]
     }
   ],
   "product": {
