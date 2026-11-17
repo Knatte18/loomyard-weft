@@ -1,6 +1,6 @@
 # P4 Merge the remaining adopt-build members into one design and split it again on what landed
 
-Rendered 2026-11-17 13:21 UTC; every age below is as of then.
+Rendered 2026-11-17 13:27 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`adopt-build-resplit`](design-adopt-build-resplit.md) · Age 8d · Owner `neve`
@@ -131,7 +131,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **lym adopt runs in the foreground over pushed state: hold, owner, pull, takeover, check, with --take-hold** | [`adopt-foreground`](design-adopt-foreground.md)<br>[Sketch](decision-adopt-foreground.md) | tapestry · solid | Plan-Burler-Review | neve | 1d<br>2h | board, dobby, fabric, workspaces, orch, tender, batten, process |
+| T8 | **lym adopt runs in the foreground over pushed state: hold, owner, pull, takeover, check, with --take-hold** | [`adopt-foreground`](design-adopt-foreground.md)<br>[Sketch](decision-adopt-foreground.md) | tapestry · solid | Plan-Burler-Fix | neve | 1d<br>2h | board, dobby, fabric, workspaces, orch, tender, batten, process |
 
 ### Ready (0)
 
