@@ -1,6 +1,6 @@
 # lym machine start brings back every hub this machine owns, from desktop launchers
 
-`machine-start-launchers` · Task · feature, termwindow, dobby · running · Code-Bouncer
+`machine-start-launchers` · Task · feature, termwindow, dobby · running · Drift-Recheck
 
 Decision record: [Sketch](decision-machine-start-launchers.md)
 
