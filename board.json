@@ -335,34 +335,6 @@
       "profile": "light"
     },
     {
-      "id": 1431,
-      "handle": "T8",
-      "slug": "stale-driver-new-stencils",
-      "title": "An old driver fails on board stencils a landing installed mid-run",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "stencil",
-        "shed"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A blocked hand-over leaves the old binary rendering new board copies whose includes it lacks",
-      "body": "## Seen (orch, 2026-11-17)\n\n`launch-manifest-parity` failed at Plan-Write when `codex-wording-engine-blocks` (`40c66912`) landed mid-run:\n`gatefix: fill the gatefix-body-plan prompt: stencil: include \"engine-absolute-paths\" has no entry in the includes`.\nThe landing installed new board copies of the stencils, and `gatefix-body-plan` now includes the new engine block `engine-absolute-paths`.\nThe driver saw that the on-disk build had changed, but spawned no successor,\nsince the plan writer's files in `_lym/plan/` were uncommitted.\nSo the old driver went on running the old binary, which has no `engine-absolute-paths` in its includes, against the new board copies.\n`lym loom resume` started a fresh driver on the new build, and the run went on.\n\n## Idea\n\nWhen the build changes and a hand-over is blocked by uncommitted paths, the old binary must not render the new board copies.\nEither the old driver renders from the stencils embedded in its own binary until the hand-over happens,\nor it waits for the producer in flight to commit and then hands over before the next render,\nor a render that names an include its binary lacks hands over to a fresh driver instead of failing the run.\n",
-      "status": "done",
-      "created": "2026-11-17T14:40:50Z",
-      "revised": "2026-11-17T19:04:55Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
       "id": 1434,
       "handle": "E1",
       "slug": "map-single-test-crosscheck",
