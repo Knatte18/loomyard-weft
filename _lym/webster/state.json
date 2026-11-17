@@ -382,9 +382,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-a13cef7449a7a3986.jsonl"
       ]
+    },
+    "4": {
+      "slug": "shellguard-take-hold",
+      "cards": [
+        "04-shellguard-take-hold",
+        "05-own-hold-reader",
+        "06-beam-status-hold"
+      ],
+      "cardHashes": {
+        "04-shellguard-take-hold": "47ec85fb684e428996bd4f1d67b2c08856f843ea3ff1f3c6dd1b79ee14372009",
+        "05-own-hold-reader": "dcda7670b0ac8c4db139d772d8a0d08c416720f5876a22074f3999be28e5f8ec",
+        "06-beam-status-hold": "66113aabb3efda0ae1366877a7905b3cbd541873e926baf0b85318ab73e8cbf4"
+      },
+      "startSha": "e877782bfcde2646eae2b379b9e5f66cb4a45e3c",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T14:40:38Z",
+      "sessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "f343e6f1dd8159caa6135f3dabefbab4",
   "masterSessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
   "masterEngine": "claude",
