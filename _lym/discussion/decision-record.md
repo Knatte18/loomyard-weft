@@ -59,6 +59,12 @@ The run never runs `lym gate redundant` or `lym gate testmap` on a real package 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-17): The fallback cap uses RLIMIT_DATA, not RLIMIT_AS
+
+Decision: Where no user systemd manager is available, the fallback bounds each test run with RLIMIT_DATA at the cap instead of RLIMIT_AS, as the code already does.
+
+Rationale: Go reserves far more address space than it uses, so a 2048 MB RLIMIT_AS fails healthy Go test binaries at start-up, as the writer measured. Since Linux 4.7, RLIMIT_DATA counts private anonymous mappings, which is where Go's heap lives, so it bounds a runaway mutant's growth without failing a healthy run.
+
 ## Constraints
 
 ## Auto-mode assumptions
