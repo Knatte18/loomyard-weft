@@ -284,9 +284,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "launch-manifest-parity"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Goal\n\nLevel 2 of `codex-support-levels` (R2): can Codex do the darn writer's work on real lym code as well as Claude did?\nThe bench replays only the writer, never a whole run: no other producer runs, and nothing lands or is pushed.\n\n## Why again (operator, 2026-11-16)\n\nThe earlier bench on Neve does not count: its Codex session did not get the starting point Claude's writer got.\nThis bench runs only once the Codex parity tasks of the project `codexengine` (from the Sketch `codex-same-as-claude`) have landed,\nso the Codex writer gets exactly what a Claude writer gets.\nIt runs on Neve; the OSL-1046 run and its sandbox fallback check are dropped.\n\n## Input\n\nThe darn light task `ide-beam-readme-preview`, landed as `824eb2b6`.\nIts Claude writer's work is the answer key: the landed diff, and the run's records on its records branch (writer cost, review rounds and findings).\n\n## The one run\n\n1. The orch creates one bench worktree from this task's worktree, at the parent of `824eb2b6`.\n2. Run the real Darn-Write producer there on the task's body as it stood then, with only the writer's model swapped to `astra[high]`.\n   Never hand-build the prompt.\n3. Before the session starts, check with `lym shuttle manifest` that the Codex writer's manifest holds every item the Claude writer's holds.\n4. Stop the run after Darn-Write, and run `lym gate test` on the packages the diff touches.\n\nExactly one Codex session; no Claude run, since the landed run is the comparison.\n\n## Read\n\n- Did it finish the work, and does the gate pass on its tree?\n- Its diff against the landed one: scope, correctness, comments and prose in the house tone.\n- Cost, wall time and turns against the landed writer's.\n- Any skill-load or idle-wake fault on the way (`codex-idle-wake-extra-reminder`).\n\n## Bounds\n\nChange no production code and nothing under Bolt; the orch removes the bench worktree when the writer says so.\nThe report goes under `docs/research/codex/`; the verdict on level 2 is the operator's.\nThe report opens with the Codex writer's manifest record and the Claude writer's `lym shuttle manifest` output for the same seat, as the project's bench rule says.\n",
@@ -460,33 +458,6 @@
       "revised": "2026-11-17T14:44:09Z",
       "discussed": true,
       "record_body_sha256": "83fe175e9930f7013b1cf97e916436a99b50e452c460f86049b4da9d55aec4c6"
-    },
-    {
-      "id": 1409,
-      "handle": "T19",
-      "slug": "launch-manifest-parity",
-      "title": "Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "codex",
-        "shuttle",
-        "stencil",
-        "heddle"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `codex-same-as-claude`.\n\nTakes: prompt-engine-per-launch's per-producer render functions taking the engine; codex-standing-instructions' injectable hook runner and sandbox probe; every Codex delivery of codex-standing-instructions and codex-question-deny-nudge, which the parity test then finds present; codex-wording-engine-blocks' engine blocks, which the test renders per engine\nDelivers: the launch manifest read back from each engine's Prepare, written as a record into the run directory and as a copy into the run-directory root's manifests directory, skipped by the orphan sweep and the run lookup by strand; the parity test with its producer table and the scan for unlisted launch-spec literals; the lym shuttle manifest verb; the bench rule on codex-engine-trial, and on codex-writer-bench, the draft that replaced codex-writer-bench-osl on 2026-11-16 and already runs the real producer, so D11's osl section lands there as a check that its body states the rule whole\nExports: the manifest record and the lym shuttle manifest verb, which the Codex benches read\n\nThe part changes these packages:\n\n- internal/shuttleengine (about 300 changed lines)\n- internal/shuttleengine/claudeengine (about 200 changed lines)\n- internal/shuttleengine/codexengine (about 200 changed lines)\n- internal/shuttlecli (about 200 changed lines)\n- internal/shuttleparity (about 600 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-16T13:56:13Z",
-      "revised": "2026-11-16T13:56:13Z",
-      "profile": "solid",
-      "project": "codexengine",
-      "discussed": true,
-      "record_body_sha256": "a45e2c333881a072f678b68e78f82249d76c92ff66cd9ea763d16a284c9a1c2c"
     },
     {
       "id": 1416,

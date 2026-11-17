@@ -2,8 +2,6 @@
 
 `codex-writer-bench` · Task · research, codex, shuttle · running · Darn-Write
 
-Depends on: [`launch-manifest-parity`](design-launch-manifest-parity.md)
-
 ## Goal
 
 Level 2 of `codex-support-levels` (R2): can Codex do the darn writer's work on real lym code as well as Claude did?
