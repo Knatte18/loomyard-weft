@@ -1,6 +1,6 @@
 # Trial the coverage-map tooling before the redundancy sweep
 
-`map-tooling-trial` · Task · research, gate, testkit · running · Drift-Await
+`map-tooling-trial` · Task · research, gate, testkit · running · Drift-Expect
 
 ## Seen (orch, 2026-11-17)
 
