@@ -461,9 +461,25 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-a571337e1c2df4e7b.jsonl"
       ]
+    },
+    "9": {
+      "slug": "adopt-foreground",
+      "cards": [
+        "09-adopt-foreground"
+      ],
+      "cardHashes": {
+        "09-adopt-foreground": "3523ad56078c1273043ebf089206f2e67fdddb554a5c61afa344c88ae238576d"
+      },
+      "startSha": "31f8630b77364b79dbfcf5d1152622d85cbb8670",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T15:09:58Z",
+      "sessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "f343e6f1dd8159caa6135f3dabefbab4",
   "masterSessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
   "masterEngine": "claude",
