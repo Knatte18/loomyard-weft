@@ -1,0 +1,14 @@
+{
+  "session_id": "cd1a7eee-b62b-4e73-b798-613d3eaa4e43",
+  "row": "Discussion-Burler-Fix",
+  "role": "discussion-burler-fix",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 66,
+  "cache_write_tokens": 125478,
+  "cache_read_tokens": 2129199,
+  "output_tokens": 45362,
+  "cost_usd": 1.9607337999999999,
+  "started": "2026-11-17T12:00:05Z",
+  "ended": "2026-11-17T12:07:25Z"
+}
