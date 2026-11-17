@@ -2,6 +2,7 @@
   "current_producer": "Plan-Write",
   "state": "failed",
   "error": "shedadapters: Plan-Write (seats): seat run: seatengine: chair wait: shuttle: gate: gatefixer: build the fixer's launch: gatefixer: fill the gatefix-body-plan prompt: stencil: include \"engine-absolute-paths\" has no entry in the includes",
+  "pending_by": "shed",
   "entered_row": "Plan-Write",
   "pause_requested": false,
   "activity": {
