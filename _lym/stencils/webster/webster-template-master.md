@@ -16,7 +16,7 @@
      pattern_directive and friction_directive each render as nothing when their own tier is inactive.
      parent_directive is rendered by internal/parentdirective and is optional too.
      edit_directive is required and is rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=b8b22c9858a9cf6661f621e36e66d67826e9f55de62741539d26cc449ca41260 build=17f374e9efe9df3194cd2ca894eff9da0a6ed194 time=2026-11-11T08:33:54Z -->
+lym-stencil: sha256=2f8477be7d35292020057698ed68d9ae3e30bf53e74b84b5ea927cdce14ee10f build=5469ff91dec0d829a53ac45136d0f746d04879a8 time=2026-11-17T11:50:30Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -177,6 +177,10 @@ You message your parent only on the `waiting` rung below and under "A parent dec
   Do NOT call `recover-batch` for that batch again, and do NOT begin the next batch.
 - `record-batch` refuses with `{"batch_failed": true}` → the batch is already terminal-failed and its report archived: run `lym webster recover-batch <NN>` backgrounded, then follow the recover-batch rungs above.
   When the refusal's message names a plan edit as its way forward (a later card still references a symbol the batch deletes), that edit is not Master's to make: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop without calling `recover-batch`.
+- `record-batch` refuses with `{"batch_failed": true}` and a message containing `the batch's commits add a secret file` → the batch's commits hold a secret file that now sits in the branch's history, and `recover-batch` would build on those commits.
+  Only the run's parent can reset the batch, since the reset refuses while the run holds its lock.
+  Write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop without calling `recover-batch`.
+  This rung takes precedence over the `batch_failed` rung above.
 - `record-batch <NN>` or `recover-batch <NN>` refuses with a head mismatch whose way forward names `lym webster reset --to report-head --batch <NN>` → run that reset, then re-run the refused verb once.
   A refusal of the reset, a second head mismatch, or a way forward that also needs a parent merge-in redone ends the run: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` quoting the refusal's message, and stop, since a merge-in is not Master's to redo.
   Run `reset --to report-head` for a batch at most once, and no other reset.
