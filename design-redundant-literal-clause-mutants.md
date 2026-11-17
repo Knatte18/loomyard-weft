@@ -1,6 +1,6 @@
 # lym gate redundant: mutate data literals and delete boolean clauses
 
-`redundant-literal-clause-mutants` · Task · bug, gate · running · Code-Bouncer
+`redundant-literal-clause-mutants` · Task · bug, gate · running · Drift-Recheck
 
 Two defects of `lym gate redundant`'s mutation check, found by the check of five boardengine candidates (`docs/research/speed/redundant-candidates-check-2026-11-17/report.md`, `8492b54a`).
 All five candidates were false: each holds a check no covering test makes, yet the verb listed it.
