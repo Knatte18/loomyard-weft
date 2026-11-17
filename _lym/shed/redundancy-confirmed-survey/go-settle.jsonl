@@ -1,1 +1,2 @@
 {"stop_key":{"current_producer":"Darn-Write","history_length":5,"state":"failed"},"settler":"go-rule","action":"restep","outcome":"an interrupted step under the reinvoke policy: re-step","at":"2026-11-17T07:02:59.734619896+01:00"}
+{"stop_key":{"current_producer":"Darn-Write","history_length":5,"state":"failed"},"settler":"parent","action":"hand-back","outcome":"the tree is not clean for a hand-over","at":"2026-11-17T09:47:18.820864492+01:00"}
