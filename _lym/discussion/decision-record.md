@@ -101,6 +101,12 @@ Decision: The plan drops card 10. The orch wrote D11's bench rule on 2026-11-17:
 
 Rationale: A plan card targets files in the worktree, and a board body is no such target; the board edit is a few lines that the orch makes directly, so neither a validator exemption nor a reshaped card is needed.
 
+### Added after Discussion (parent, 2026-11-17): Every seat is compared, including those Codex cannot start
+
+Decision: The parity tests compare every seat and producer, including fanned burler review and fix, Plan-Write and Discussion seats, Merriam and the loom driver. Prepare does not refuse an unmet requirement, only Start does, so the manifest exists for each; the Unmet skip in TestSeats and TestProducers is dropped.
+
+Rationale: D1's acceptance criterion names every seat in seatengine's tables and every other producer, and its auto-mode assumption records no exemption table. A seat Codex cannot start today is the one most likely to drift, so it stays covered.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's user-setup resolution, session scope and file locations stay in `claudeengine`, and reach `codexengine` only through `shuttleengine` interfaces wired in `internal/shuttleengines`; the rollout reading for the batching nudge stays in `codexengine`, and the read-only lookup check both engines' nudges use sits in its own package under `internal/shuttleengine`.
