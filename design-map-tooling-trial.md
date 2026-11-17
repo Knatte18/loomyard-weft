@@ -1,6 +1,6 @@
 # Trial the coverage-map tooling before the redundancy sweep
 
-`map-tooling-trial` · Task · research, gate, testkit · draft
+`map-tooling-trial` · Task · research, gate, testkit
 
 ## Seen (orch, 2026-11-17)
 
