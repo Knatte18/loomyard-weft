@@ -500,6 +500,31 @@
       "body": "Found by the redundant-candidates-check trial on internal/boardengine. Equal block coverage plus equal kills of negated conditions does not mean equal inputs.\n\nTestRunLock_BeamKindAndBeamChange is a candidate covered by TestRunLock. Only the candidate changes a beam project's kind or beam alone, so the before.Kind != now.Kind and before.Beam != now.Beam clauses of checkRunLocks are exercised by it alone. TestRunLock's beam rows trip the project, recipe, removal and merge clauses. Negating a clause breaks every accepted beam row in the cover, so the candidate has no unique kill, yet deleting a clause fails nothing else.\n\nTestRunLock_SketchExemptionIsTheWholeNetChange is a candidate covered by TestFabricReplay, TestMakeSketch and TestCheckRunLocks_FamilyProject. Only the candidate feeds a Sketch with a changed title, a changed body or a kept run status.\n\nTestReadRaddleStore is a candidate covered by TestSlugRule_RaddleStore. Only the candidate asserts the decoded Hash and Project, the tolerated unknown key and the exact git checkout command.\n\nFix to weigh: a clause-deletion mutant for each operand of a boolean chain.",
       "created": "2026-11-17T17:59:37Z",
       "revised": "2026-11-17T17:59:37Z"
+    },
+    {
+      "id": 1438,
+      "handle": "T3",
+      "slug": "board-viewer-build",
+      "title": "Board viewer rendered beside the README, opened by lym board open and a VS Code key",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "board",
+        "ide",
+        "fabric"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `board-viewer`.\n\nTakes: the Sketch's decision record; boardengine's Render file map, RenderToDisk and its render manifest, boardView's sections, layerSection and childProjects, SetOwners' renderOwnerWrite, and FabricReplay.Claims; boardcli's PersistentPreRunE and rerender verb, lymcwd.ResolveWithin, and internal/vscode's launch_linux.go and launch_windows.go spawn as the opener pattern; vscode.WriteConfig with its reed attach task, the keybindings block and BuildWorkspace; fabricengine.RegenerateHubWorkspace and InstallPairFolderNamer as the install pattern; ideengine.LymBinary\nDelivers: board-data.js and board.html as render outputs of every board write, listed in the render manifest, committed by the sync and the owner-set write, and claimed by FabricReplay; the self-contained viewer page with D4's filters, search, README grouping, expandable entries, escaping and link rules and colour scheme; lym board open with its ResolveWithin cwd, its refusal naming lym board rerender and its per-platform logged and waited opener; the board open task in every worktree's tasks.json, one beam start task in each workspace file through fabric's workspace-content hook, and alt+shift+0 and alt+shift+9 in the keybindings block\nExports: boardengine's board.html and board-data.js file-name constants and the embedded viewer; boardcli's open verb and its opener seam; fabricengine's workspace-content hook type and its process-wide Install function; internal/vscode's board open and beam start task labels and the tasks member BuildWorkspace splices after settings; the ide module's hook, installed in cmd/lym/main.go beside the pair folder namer\n\nThe part changes these packages:\n\n- internal/boardengine (about 1200 changed lines)\n- internal/boardcli (about 250 changed lines)\n- internal/vscode (about 145 changed lines)\n- internal/fabricengine (about 125 changed lines)\n- internal/ideengine (about 100 changed lines)\n- cmd/lym (about 3 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-17T18:06:42Z",
+      "revised": "2026-11-17T18:06:42Z",
+      "profile": "solid",
+      "discussed": true,
+      "record_body_sha256": "54b995f4b64f0c42f426413c856dcab90ad1132693498d6fb6148b00f23e0c4a"
     }
   ],
   "prime_owner": "neve",
