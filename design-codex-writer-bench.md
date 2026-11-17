@@ -1,6 +1,6 @@
 # Codex as darn writer, replayed on a landed task through the real producer
 
-`codex-writer-bench` · Task · research, codex, shuttle
+`codex-writer-bench` · Task · research, codex, shuttle · starting · Worktree-Create
 
 Depends on: [`launch-manifest-parity`](design-launch-manifest-parity.md)
 
