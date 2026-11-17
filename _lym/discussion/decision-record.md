@@ -98,6 +98,12 @@ Rationale: The orch relies on Claude-only features (remote control, hooks, the r
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - producer-edit-directive-copy-untested (class design, severity MEDIUM, open in rounds 1, 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - Every producer's prompt for a Codex launch holds the Codex edit directive, an assist seat gets the full directive, and no stencil named `edit-directive` remains outside the engine blocks (D3).
