@@ -95,6 +95,12 @@ Decision: D11's bench rule, named for the project codex-engine-trial, is written
 
 Rationale: codex-engine-trial no longer exists as a board entry; codexengine holds its members and its body records the merge, so the rule reaches the same benches there.
 
+### Added after Discussion (parent, 2026-11-17): D11 is done on the board by the orch; card 10 drops
+
+Decision: The plan drops card 10. The orch wrote D11's bench rule on 2026-11-17: under the ## Rules of project codexengine, and as a closing line of codex-writer-bench's body, which already runs the real producer with only the model swapped. No card of this task writes the board.
+
+Rationale: A plan card targets files in the worktree, and a board body is no such target; the board edit is a few lines that the orch makes directly, so neither a validator exemption nor a reshaped card is needed.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's user-setup resolution, session scope and file locations stay in `claudeengine`, and reach `codexengine` only through `shuttleengine` interfaces wired in `internal/shuttleengines`; the rollout reading for the batching nudge stays in `codexengine`, and the read-only lookup check both engines' nudges use sits in its own package under `internal/shuttleengine`.
