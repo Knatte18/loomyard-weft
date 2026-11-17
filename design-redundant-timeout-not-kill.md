@@ -1,6 +1,6 @@
 # Fix lym gate redundant kill counting and the map defects the trial found
 
-`redundant-timeout-not-kill` · Task · bug, gate, testkit · running · Drift-Expect
+`redundant-timeout-not-kill` · Task · bug, gate, testkit · running · Darn-Write
 
 ## Seen (orch, 2026-11-17)
 
