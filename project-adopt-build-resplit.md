@@ -1,6 +1,6 @@
 # P4 Merge the remaining adopt-build members into one design and split it again on what landed
 
-Rendered 2026-11-17 07:46 UTC; every age below is as of then.
+Rendered 2026-11-17 07:47 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`adopt-build-resplit`](design-adopt-build-resplit.md) · Age 8d · Owner `neve`
@@ -168,11 +168,3 @@ Starts when every entry it names under After is done.
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T3 | **A transition pushes its records before the run acts, and a takeover entry in the run's records hands the run over** | [`transition-push-takeover`](design-transition-push-takeover.md)<br>[Sketch](decision-transition-push-takeover.md) | 21h<br>19h | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |

@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 07:46 UTC; every age below is as of then.
+Rendered 2026-11-17 07:47 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -100,14 +100,6 @@ Starts when every entry it names under After is done.
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T3 | **A transition pushes its records before the run acts, and a takeover entry in the run's records hands the run over** | [`transition-push-takeover`](design-transition-push-takeover.md)<br>[Sketch](decision-transition-push-takeover.md) | 21h<br>19h | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
-
 </details>
 
 <details open>
@@ -163,7 +155,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Webster | neve | 21h<br>21h | webster, weaver |
-| T20 | **A capped test run raises a desktop low-memory notice**<br>• Each kernel kill of a capped test scope in app.slice shows a desktop low-memory notice; move the scopes so it does not | [`memcap-desktop-notice`](design-memcap-desktop-notice.md) | darn · light | Code-Burler-Review | neve | 51m<br>15m | gate, process |
+| T20 | **A capped test run raises a desktop low-memory notice**<br>• Each kernel kill of a capped test scope in app.slice shows a desktop low-memory notice; move the scopes so it does not | [`memcap-desktop-notice`](design-memcap-desktop-notice.md) | darn · light | Code-Burler-Review | neve | 52m<br>15m | gate, process |
 
 #### Ready (0)
 

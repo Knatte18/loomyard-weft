@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-machine-registry-holds-catchup.md)
 
-Depends on: [`transition-push-takeover`](design-transition-push-takeover.md)
-
 Filed from the Sketch `adopt-build-resplit`.
 
 Takes: transition-push-takeover's synchronous Bolt writes, takeover reader, hand-over, hand-over mark and owed-push facts, and its pair-push entry taking the set of names reading as this machine; runfsm's Held and OwnedElsewhere inputs, Judge and Aside, and pairteardown.ReadRun; pairteardown.EndSubjectProcesses and its local mode; boardengine's owner setter and OwnedElsewhere; machinename.File, FilePath and Names and lym machine name's owner sweep (internal/machinecli/set.go); dobbyengine's OwnedWorktrees, EnsureLive, loop, handover and PauseOwned seam, its OriginOwed passes; tendercli.PauseOwnedElsewhere; pauserecord's callers, CoveredError and SleepWatch; battencli's origin-owed marker; hibernate's wake hold of runs owned elsewhere; the fix-tries.json reader and writer in internal/adoptcli/holds.go (the unexported readTries and writeTries) and their callers in adoptcli's fix loop, green clear and ResetTries; fabricengine.AdoptScratchDir; dobbyengine's import allowlist (internal/dobbyengine/seam_enforcement_test.go)

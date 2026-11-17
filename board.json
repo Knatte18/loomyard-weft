@@ -349,7 +349,6 @@
       "revised": "2026-11-16T11:13:59Z",
       "owner_machine": "neve",
       "order": [
-        "transition-push-takeover",
         "machine-registry-holds-catchup",
         "adopt-foreground",
         "leftover-pairs-teardown",
@@ -387,42 +386,6 @@
       "record_body_sha256": "dc08ca33ecb361b7013ab30307e61c17ca74c1056d0d56fb71aa79466363dc5b"
     },
     {
-      "id": 1393,
-      "handle": "T3",
-      "slug": "transition-push-takeover",
-      "title": "A transition pushes its records before the run acts, and a takeover entry in the run's records hands the run over",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "batten",
-        "tender",
-        "dobby",
-        "orch",
-        "fabric",
-        "loom",
-        "cleanup",
-        "workspaces",
-        "shuttle",
-        "board",
-        "reed",
-        "termwindow",
-        "shortcut"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `adopt-build-resplit`.\n\nTakes: runfsm's Judge, Aside and Inputs, whose PushOwedOffline and CodeTipMissing nothing fills; pairteardown.ReadRun, the one reader of a run's inputs, and EndSubjectProcesses; the detached commit-and-push of lym tender pause, lym tender resume, lym batten cancel, the pull-request record and the fixer attempt counts; fabricengine's PushPairAnchored (code side first today), coalescePushSides, coalesceFlagged and respawnForeignFlags, the teardown-lock respawn, pushclassified's rejection path, anchorchange's push and ArchiveOwnerTips; statuscommit's per-transition spawn; boardengine's Sync, SpawnSync and owner commit; landingshed's Finalize; machinename.Names; PATTERN-test-only-code holds, so every new function has a production caller in this part\nDelivers: a shed transition that takes a pauserecord.Admit admission, commits its records naming its code tip and pushes records side first and code side after before the next producer starts; PushPairAnchored and coalescePushSides sending records first and no code side after a failed or rejected records side; the run intents, the PR record and the fixer counts on the same synchronous push, the offline verbs acting here at once and owing their push; the per-transition detached push, the teardown-lock respawn and the pending-flag respawn retired; an owed push retried on a backoff behind the gate and read by ReadRun into runfsm's PushOwed (renamed from PushOwedOffline) with its last error carried in the inputs, the verdict, the refusal and lym beam status; synchronous Bolt writes for a run claim, a landing's done and an owner; Finalize pushing the parent branch before its transition and its board done, and reading the owner before its merge and each later push; a rejected records push that reads origin's record against the name set its caller hands in and hands over on another machine's takeover entry, archiving local tips and the local parent merge, removing the local pair through pairteardown's local mode when the caller runs outside the pair, writing the hand-over mark under the hub's .lym and skipping a takeover a mark names; ReadRun setting CodeTipMissing, the code-tip wait, its 30-minute grace and the leased push and reset of an owed tip\nExports: the takeover entry type and its reader, called in the rejected-push path, and its test writer in internal/testkit; a pair-push entry that takes the set of names reading as this machine, so the registry part passes its names in later without changing fabricengine's signature again; the hand-over mark's path in internal/lymdirs and its reader; runfsm's PushOwed input with its last error; the code-tip grace constant\n\nThe part changes these packages:\n\n- internal/fabricengine (about 1340 changed lines)\n- internal/battencli (about 300 changed lines)\n- internal/landingshed (about 250 changed lines)\n- internal/sheddriver (about 200 changed lines)\n- internal/loomcli (about 200 changed lines)\n- internal/boardengine (about 150 changed lines)\n- internal/statuscommit (about 100 changed lines)\n- internal/tendercli (about 100 changed lines)\n- internal/pairteardown (about 100 changed lines)\n- internal/runfsm (about 60 changed lines)\n- internal/testkit (about 60 changed lines)\n- internal/shedengine (about 60 changed lines)\n- internal/beamcli (about 60 changed lines)\n- internal/fabriccli (about 40 changed lines)\n- internal/tenderengine (about 40 changed lines)\n- internal/pauserecord (about 40 changed lines)\n- internal/pullrequest (about 30 changed lines)\n- internal/lymdirs (about 10 changed lines)\n- pattern (about 30 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-16T10:22:19Z",
-      "revised": "2026-11-16T11:57:13Z",
-      "profile": "solid",
-      "project": "adopt-build-resplit",
-      "discussed": true,
-      "record_body_sha256": "7894db4e3640497d4bb3714c63ce1b366eea8a6ac4d49862178bdb60c08f5008"
-    },
-    {
       "id": 1394,
       "handle": "T4",
       "slug": "machine-registry-holds-catchup",
@@ -446,9 +409,7 @@
       ],
       "issues": [],
       "recipe": "tapestry",
-      "depends_on": [
-        "transition-push-takeover"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `adopt-build-resplit`.\n\nTakes: transition-push-takeover's synchronous Bolt writes, takeover reader, hand-over, hand-over mark and owed-push facts, and its pair-push entry taking the set of names reading as this machine; runfsm's Held and OwnedElsewhere inputs, Judge and Aside, and pairteardown.ReadRun; pairteardown.EndSubjectProcesses and its local mode; boardengine's owner setter and OwnedElsewhere; machinename.File, FilePath and Names and lym machine name's owner sweep (internal/machinecli/set.go); dobbyengine's OwnedWorktrees, EnsureLive, loop, handover and PauseOwned seam, its OriginOwed passes; tendercli.PauseOwnedElsewhere; pauserecord's callers, CoveredError and SleepWatch; battencli's origin-owed marker; hibernate's wake hold of runs owned elsewhere; the fix-tries.json reader and writer in internal/adoptcli/holds.go (the unexported readTries and writeTries) and their callers in adoptcli's fix loop, green clear and ResetTries; fabricengine.AdoptScratchDir; dobbyengine's import allowlist (internal/dobbyengine/seam_enforcement_test.go)\nDelivers: board.json's machines map and holds list written only by boardengine's setters with a synchronous push; a random machine id in machine.json kept by every writer, forgotten names and lym machine name --forget-former; registration at the first catch-up, dobby start, owner write and lym machine name with every D3 refusal and its way forward; every machine-name comparison through the registry, OwnedElsewhere, OwnedWorktrees, EnsureLive and ReadRun included, and the name set handed to fabricengine's pair push; the catch-up after a sleep, a dobby start or a hand pass, pushing owed commits, handing over runs owned elsewhere and removing their local pairs in local mode; the origin-owed marker retired; ReadRun filling Held, false for the adopt-fix hold's fix task, and the held refusal naming the hold's machine; bolt-hold slug entries under pauserecord.BoltHoldCaller, read by pauserecord's readers and worded by CoveredError; the owner caller and its writers retired into hand_over; the upgrade's first read turning standing adopt and adopt-hold entries into pause intents and one Bolt hold, run by the dobby start before its catch-up in internal/dobbyengine; the fix-tries.json reader and writer moved out of internal/adoptcli/holds.go into internal/fixtries (new) as fixtries.Read and fixtries.Write, importing only internal/state and taking the subject's directory from the caller, so neither internal/dobbyengine nor internal/adoptcli imports the other, adoptcli's callers switched to them and dobbyengine's import allowlist gaining internal/fixtries; the first read calling fixtries.Read on each subject's directory under the adopt scratch directory its caller hands in\nExports: boardengine's registry and hold types, their readers, and the one hold write the upgrade's first read calls, writing an adopt or adopt-fix hold; OwnedElsewhere taking the registry; the catch-up entry point the dobby start calls here and adopt calls later, run by the dobby start in internal/dobbyengine; pauserecord.BoltHoldCaller; fixtries.Read, called by the upgrade's first read and adoptcli's fix loop, and fixtries.Write, called by adoptcli's fix loop, green clear and ResetTries\n\nThe part changes these packages:\n\n- internal/boardengine (about 450 changed lines)\n- internal/dobbyengine (about 450 changed lines)\n- internal/machinecli (about 300 changed lines)\n- internal/pauserecord (about 160 changed lines)\n- internal/battencli (about 140 changed lines)\n- internal/orchcli (about 120 changed lines)\n- internal/machinename (about 100 changed lines)\n- internal/tenderengine (about 100 changed lines)\n- internal/beamcli (about 100 changed lines)\n- internal/pairteardown (about 60 changed lines)\n- internal/tendercli (about 60 changed lines)\n- internal/hibernateengine (about 60 changed lines)\n- internal/runfsm (about 50 changed lines)\n- internal/adoptcli (about 40 changed lines)\n- internal/fixtries (about 40 changed lines)\n- internal/loomcli (about 40 changed lines)\n- internal/battenshed (about 30 changed lines)\n- internal/hubgeom (about 20 changed lines)\n- internal/landingshed (about 10 changed lines)\n- internal/fabricengine (about 10 changed lines)\n- internal/shedrecipe (about 10 changed lines)\n- internal/shedrun (about 10 changed lines)\n- internal/hibernatecli (about 10 changed lines)\n- internal/fabriccli (about 10 changed lines)\n- internal/fronttask (about 10 changed lines)\n- internal/pawlengine (about 10 changed lines)\n- pattern (about 10 changed lines)\n",
