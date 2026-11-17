@@ -720,6 +720,32 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-a76f5848f92ab3b8d.jsonl"
       ]
     },
+    "12": {
+      "slug": "bolt-hold-caller",
+      "cards": [
+        "12-bolt-hold-caller",
+        "13-act-rule-hold",
+        "14-act-verbs-pull-bolt",
+        "15-tender-bolt-hold",
+        "16-held-tasks-not-started",
+        "17-hand-over-owned-elsewhere"
+      ],
+      "cardHashes": {
+        "12-bolt-hold-caller": "31c842819e96a59de47d0eb408eda80a153a08665e9800eb56240635f18ea39d",
+        "13-act-rule-hold": "1c82037c813863de20a4037c9f6b021655b0787e9b10eadb60c92005d0d2931d",
+        "14-act-verbs-pull-bolt": "a56a3c360f1fe9549169a36805d15b2df19ddea99d70d59d0f6837afbf9f1b76",
+        "15-tender-bolt-hold": "e4bf4af7e1f2e709c0081f635083887c33ab0f689d9154745309b181e77de7d0",
+        "16-held-tasks-not-started": "34f483d45bfb702c53b59d531a4306e5bc0c12e2c0583612711418237205bc6d",
+        "17-hand-over-owned-elsewhere": "3c0192af1e94694108c6712972ea2fab8dffd8c4b6949b127e6a0e37a2640c86"
+      },
+      "startSha": "661016166ccd0f9181de71e3dce51add8bf04f2f",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T10:49:26Z",
+      "sessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "4": {
       "slug": "machine-registration-setter",
       "cards": [
@@ -854,7 +880,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "e7e489f4ae82479452af8e587574191e",
   "masterSessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
   "masterEngine": "claude",
