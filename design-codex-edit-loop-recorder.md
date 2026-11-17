@@ -1,6 +1,6 @@
 # Record Codex edits for the edit-loop watch
 
-`codex-edit-loop-recorder` · Task · bug, codex, shuttle · running · Drift-Baseline
+`codex-edit-loop-recorder` · Task · bug, codex, shuttle · running · Drift-Await
 
 ## Seen (orch, 2026-11-17)
 
