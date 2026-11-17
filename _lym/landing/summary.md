@@ -1,0 +1,18 @@
+# Merge main into the beam adopt-build-resplit
+
+Brings the parent branch `main` into the beam `adopt-build-resplit` as one true merge, `bae0ec63`, with no commit after it.
+The merge brings in `main`'s commits up to `96b20f1c`.
+
+Three paths conflicted, and each resolution keeps what both sides meant.
+
+- `internal/beamcli/pr_test.go`: the beam added a `wantNot string` field so the handed-over push row could check that its refusal does not say "again".
+  `main` added `wantNoErr []string` with the same meaning, plus `wantUntouched`.
+  The resolution keeps `main`'s two fields and their checks, drops `wantNot`, and moves the handed-over row to `wantNoErr: []string{"again"}`.
+- `internal/lymdirs/doc.go`: the beam's package doc named `HandOverDirName`, and `main`'s added `WeaverDirName` to the list of names that sit under the tracked `_lym`.
+  The resolution keeps both sentences, with the list naming `UsageDirName`, `RaddleDirName` and `WeaverDirName`.
+- `internal/reedengine/bindings_integration_test.go`: the beam had replaced three literal 30-second recorder waits with its `recorderDeadline` constant, and `main` still had the literals.
+  The resolution keeps the constant, which has the same value.
+
+No other edit was needed.
+`go build ./cmd/lym` succeeds on the merged tree,
+and `go vet` is clean on every package both sides changed.
