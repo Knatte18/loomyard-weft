@@ -420,9 +420,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-ac8ad1743cc5d2198.jsonl"
       ]
+    },
+    "7": {
+      "slug": "batten-hub-run-slugs",
+      "cards": [
+        "07-batten-hub-run-slugs",
+        "08-adopt-check-ends-on-hold"
+      ],
+      "cardHashes": {
+        "07-batten-hub-run-slugs": "0a8ac8a0de33bc502f97a551e5350ffe7484f9369ca3e67fb161eb0d573494a9",
+        "08-adopt-check-ends-on-hold": "b0fadb8352cc001aaf5e5687420799f03cca11fc01faddfc7e911c9ea5c4fe13"
+      },
+      "startSha": "feab3af8579debf2154d1910b9a4b9c43649467a",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T14:55:28Z",
+      "sessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "f343e6f1dd8159caa6135f3dabefbab4",
   "masterSessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
   "masterEngine": "claude",
