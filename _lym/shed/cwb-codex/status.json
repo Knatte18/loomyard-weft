@@ -1,14 +1,16 @@
 {
   "current_producer": "Darn-Write",
-  "state": "failed",
-  "error": "shedadapters: Darn-Write (seats): seat run: seatengine: chair wait: shuttle: reed did not track strand \"a47528574954381c6e859804677b1411\" on 2 consecutive liveness checks: reed's strand table no longer holds this run's strand — reed's bookkeeping was reset under the run (a reed remove/down, a lost or rebuilt reed.json, or a worktree renamed while the run was in flight), which says nothing about the agent: its process may still be working in its pane. Check \"lym reed status\"",
+  "state": "paused",
+  "error": "",
+  "entered_row": "Darn-Write",
   "pause_requested": false,
   "pause_before": "Drift-Verify",
   "pause_before_by": "codex-writer-bench",
+  "pause_reason": "goto to Darn-Write by darn",
   "activity": {
     "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
-    "wait": "shedadapters: Darn-Write (seats): seat run: seatengine: chair wait: shuttle: reed did not track strand \"a47528574954381c6e859804677b1411\" on 2 consecutive liveness checks: reed's strand table no longer holds this run's strand — reed's bookkeeping was reset under the run (a reed remove/down, a lost or rebuilt reed.json, or a worktree renamed while the run was in flight), which says nothing about the agent: its process may still be working in its pane. Check \"lym reed status\""
+    "last": "Darn-Write → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -45,6 +47,13 @@
       "output": "",
       "at": "2026-11-17T17:32:03Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-11-17T18:09:02Z",
+      "by": "darn"
     }
   ],
   "product": {
