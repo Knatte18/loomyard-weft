@@ -4,14 +4,10 @@
 
 ## Seen (orch, 2026-11-09)
 
-The coverage maps (`internal/testcover`, built by `lym gate testmap`) record, per package, the blocks each tier 0 and tier 1 test covers.
+The coverage maps (`internal/testcover`, built by `lym gate test --map` since `b92c95ee`) record, per package, the blocks each tier 0 and tier 1 test covers.
 The gate report (the advisory redundancy step of `lym gate test`, landed as `7f21142e`) judges only the new tests of a diff against the map;
 nothing yet uses the maps to find redundant tests that already exist.
 The operator wants the existing ones cut, across the packages, not only kept from growing.
-
-## Waits for `gate-builds-testmap` (operator, 2026-11-17)
-
-The cut waits until the note `gate-builds-testmap` is settled, since it changes how the maps are built.
 
 The survey `redundancy-confirmed-survey` (`53d40bd0`, report `docs/research/speed/redundancy-confirmed-survey-2026-11-16/report.md`)
 ran the mutation-confirmed `lym gate redundant` over 121 packages:
@@ -27,5 +23,5 @@ the cut is a test-quality cleanup that reads every confirmed candidate against i
    a candidate is cut or folded into another test only when its assertions add nothing the covering tests check.
    The survey names what to look for first: absent side effects, persisted state, and inputs the covering tests do not feed.
 3. `internal/fabricengine` was swept by hand on 2026-11-08, so it comes last or not at all.
-4. Before judging a package, the sweep builds that package's map fresh in its own worktree,
+4. Before judging a package, the sweep builds that package's map fresh in its own worktree with `lym gate test --map`,
    since no landing keeps the maps fresh; spawn-marked tests are neither candidates nor covers.
