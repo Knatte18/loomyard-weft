@@ -24,6 +24,12 @@ Decision: The entry's friction note to the run's parent is built as one shuttle 
 
 Rationale: Shuttle owns the notifier channel to the parent and is never told the friction directory; PATTERN-run-records keeps Go-written friction notes to their existing writers, and the parent reads the notice line the same way it reads the other shuttle notices.
 
+### Added after Discussion (parent, 2026-11-17): Codex edit recording is later work
+
+Decision: This task builds the edit recorder for the claude engine only; a codex run gets no edit-loop notice until a later task adds a codex EditRecorder and edit hook. The engine-neutral watch stays as built so that task only adds the recorder.
+
+Rationale: The codexengine package is being changed by a chain of other tasks now, so adding a codex hook here would collide with them; Codex sessions are meant to match Claude's, so the gap is filed as its own note rather than left.
+
 ## Constraints
 
 ## Auto-mode assumptions
