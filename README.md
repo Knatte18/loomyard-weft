@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 <details open>
 <summary><strong><a href="project-borrowed-orchestrator-ideas.md">P2 Ideas borrowed from comparable agent orchestrators</a> (9)</strong></summary>
 
-[`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 4m · Owner `neve`
+[`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 5m · Owner `neve`
 
 ### Tasks (0)
 
@@ -90,20 +90,20 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Later review rounds check earlier findings, not the whole diff again** | [`incremental-rereview`](design-incremental-rereview.md) | 4m<br>4m | burler, stencil |
+| E1 |  | **Later review rounds check earlier findings, not the whole diff again** | [`incremental-rereview`](design-incremental-rereview.md) | 5m<br>5m | burler, stencil |
 
 #### Features (8)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F2 |  | **A per-run token and cost budget, audit mode first** | [`run-cost-budget`](design-run-cost-budget.md) | 4m<br>4m | shed, report |
-| F5 |  | **A burler fixer may rebut a finding, and the next round answers it** | [`review-fixer-rebuttal`](design-review-fixer-rebuttal.md) | 4m<br>4m | burler, stencil |
-| F6 |  | **A review lens that flags changes no decision asked for** | [`unrequested-scope-lens`](design-unrequested-scope-lens.md) | 4m<br>4m | lenses, burler |
-| F7 |  | **Halt a segment after review rounds that change nothing in the tree** | [`stalemate-no-tree-change`](design-stalemate-no-tree-change.md) | 4m<br>4m | burler, shed |
-| F8 |  | **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | 4m<br>4m | shuttle, friction |
-| F10 |  | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | 4m<br>4m | webster, fabric |
-| F12 |  | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | 4m<br>4m | stencil, shed |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>4m | burler, shed, orch, quarry, report |
+| F2 |  | **A per-run token and cost budget, audit mode first** | [`run-cost-budget`](design-run-cost-budget.md) | 5m<br>5m | shed, report |
+| F5 |  | **A burler fixer may rebut a finding, and the next round answers it** | [`review-fixer-rebuttal`](design-review-fixer-rebuttal.md) | 5m<br>5m | burler, stencil |
+| F6 |  | **A review lens that flags changes no decision asked for** | [`unrequested-scope-lens`](design-unrequested-scope-lens.md) | 5m<br>5m | lenses, burler |
+| F7 |  | **Halt a segment after review rounds that change nothing in the tree** | [`stalemate-no-tree-change`](design-stalemate-no-tree-change.md) | 5m<br>5m | burler, shed |
+| F8 |  | **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | 5m<br>5m | shuttle, friction |
+| F10 |  | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | 5m<br>5m | webster, fabric |
+| F12 |  | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | 5m<br>5m | stencil, shed |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>5m | burler, shed, orch, quarry, report |
 
 </details>
 
@@ -177,7 +177,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Build the coverage maps as a mode of the gate run, one process per test in parallel** | [`gate-builds-testmap`](design-gate-builds-testmap.md) | motif | Discussion-Burler-Fix | neve | 23m<br>16m | gate, testkit |
+| T3 | **Build the coverage maps as a mode of the gate run, one process per test in parallel** | [`gate-builds-testmap`](design-gate-builds-testmap.md) | motif | Discussion-Burler-Fix | neve | 23m<br>17m | gate, testkit |
 
 #### Ready (0)
 
@@ -215,7 +215,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **raddle: each filed part carries its own module labels, not the Sketch's whole set**<br>• Raddle copies the Sketch's module labels onto every part; let the split name each part's own | [`raddle-part-labels`](design-raddle-part-labels.md) | darn · light | Code-Burler-Review | neve | 1h<br>13m | loom, board, stencil |
-| T6 | **Sweep read-only leftovers a killed test leaves under the scratch root** | [`readonly-test-leftovers`](design-readonly-test-leftovers.md) | darn · light | Code-Bouncer | neve | 21m<br>13m | cleanup, testkit, webster |
+| T6 | **Sweep read-only leftovers a killed test leaves under the scratch root** | [`readonly-test-leftovers`](design-readonly-test-leftovers.md) | darn · light | Code-Burler-Review | neve | 21m<br>13m | cleanup, testkit, webster |
 
 #### Ready (0)
 
