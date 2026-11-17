@@ -1,0 +1,2244 @@
+diff --git a/cmd/lym/spawnobservability_test.go b/cmd/lym/spawnobservability_test.go
+index 8dd75a0a..4bb10365 100644
+--- a/cmd/lym/spawnobservability_test.go
++++ b/cmd/lym/spawnobservability_test.go
+@@ -61,6 +61,12 @@ var spawnObservabilityAllowedSpawners = []scankit.Entry{
+ 		Why: "structurally barred: internal/logger imports internal/proc, so importing logger here would " +
+ 			"close an import cycle; the callers of StartTied log the spawn and the teardown",
+ 	},
++	{
++		Key: "internal/proc/memorycap_linux.go",
++		Why: "structurally barred: internal/logger imports internal/proc, so importing logger here would " +
++			"close an import cycle; the callers of RunMemoryCapped log the command and its end, " +
++			"and the one-time probe's systemd-run spawn goes unlogged, since a caller sees only its outcome",
++	},
+ 	{
+ 		Key: "internal/hubforge/hub.go",
+ 		Why: "not governed: a test-fixture builder, not a code path reachable from a lym command",
+diff --git a/cmd/testtiming/main.go b/cmd/testtiming/main.go
+index b6917da1..71558c48 100644
+--- a/cmd/testtiming/main.go
++++ b/cmd/testtiming/main.go
+@@ -71,6 +71,7 @@
+ // A package that fails to list or build keeps its old section,
+ // and the run exits 1 after writing the others.
+ // For each package it runs every top-level test alone through internal/testcover's runner.
++// Each such run is bounded in time and memory, and a test past either bound is listed as failed.
+ // The one coverage binary per package is instrumented over the whole module.
+ // It judges each test by the blocks of its package's own files:
+ // per package it writes the tests whose covered blocks other tests of the package already cover.
+diff --git a/cmd/testtiming/redundancy.go b/cmd/testtiming/redundancy.go
+index b7836dea..14057552 100644
+--- a/cmd/testtiming/redundancy.go
++++ b/cmd/testtiming/redundancy.go
+@@ -9,6 +9,7 @@ import (
+ 	"path/filepath"
+ 	"sort"
+ 	"strings"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymtemp"
+ 	"github.com/Knatte18/loomyard/internal/testcover"
+@@ -20,6 +21,14 @@ const (
+ 	defaultRedundancyPkg  = "./..."
+ )
+ 
++// The bounds of each test the redundancy mode runs alone, and the wait for the exit and output of one it ended.
++// A test past its time or memory bound is ended and counts as failed.
++const (
++	redundancyTestTimeout = 2 * time.Minute
++	redundancyTestMemory  = 2048 << 20
++	redundancyGrace       = 10 * time.Second
++)
++
+ // verdict is the redundancy classification of one test, judged by the blocks of its own package's files.
+ type verdict struct {
+ 	name string
+@@ -296,6 +305,7 @@ func runRedundancy(tags, pkgFlag, outPath string) error {
+ }
+ 
+ // measurePackage builds the package's coverage binary, runs each top-level test alone and classifies the runs.
++// Each run is bounded in time and memory, and a test past either bound counts as failed.
+ // A test the spawn scan does not find counts as unclassifiable.
+ // A test named in keeps carries its keep reason on its verdict.
+ // env is the environment every command runs under.
+@@ -318,9 +328,10 @@ func measurePackage(layout moduleLayout, tags, importPath, coverpkg, tmp string,
+ 	}
+ 
+ 	profile := filepath.Join(tmp, "cover.out")
++	runner := testcover.Toolchain{Env: env, TestTimeout: redundancyTestTimeout, MemoryLimit: redundancyTestMemory, Grace: redundancyGrace}
+ 	runs := make([]measuredRun, 0, len(names))
+ 	for _, name := range names {
+-		result, err := toolchain.RunAlone(bin, dir, profile, name)
++		result, err := runner.RunAlone(bin, dir, profile, name)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+diff --git a/docs/overview.md b/docs/overview.md
+index 0650c4b5..c1b2d981 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -936,10 +936,14 @@ User-facing modules each get one `lym <module>` namespace:
+   a candidate stays listed only when its covering tests kill every mutant it kills,
+   and one that kills a mutant they miss is listed as refuted.
+   Each listed candidate comes with its seconds, its covering tests and whether it is in the removable set.
++  Every test run is capped at `redundancy_test_memory_mb` of memory, in a transient systemd scope where the user manager caps one,
++  so a mutant that keeps memory for ever is killed alone;
++  a run that ends at the cap or at its time bound kills its mutant and is listed.
+   `lym gate testmap [--max <n>] [<package>...]` builds the stale per-package coverage maps of `internal/testcover` at the HEAD of the worktree it runs in, only on command,
+   the hub's shared maps from the prime and a worktree's own, under its `.lym`, from any other worktree:
+   each tier0 and tier1 test runs alone in its own process, up to the tier0 parallel side by side inside one gate slot,
+-  bounded by `redundancy_build_timeout_min` and `redundancy_test_timeout_sec`,
++  fewer when memory is short,
++  bounded by `redundancy_build_timeout_min` and `redundancy_test_timeout_sec` and capped at `redundancy_test_memory_mb`,
+   under a coverage binary over every in-module package its test binary links; the gate selects no test from the maps.
+   A package with a modified or untracked Go file, or whose map another call is building, is skipped,
+   and so is one whose linked packages hold a modified or untracked file just before its build or after its tests.
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 96608a7e..a21d74ae 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -587,6 +587,8 @@
+ // It runs each test alone under its tier's env, as `lym gate testmap` does.
+ // It builds `lym` once for a tier with `prebuilt_lym`.
+ // Each build is bounded by `redundancy_build_timeout_min` and each test by `redundancy_test_timeout_sec`.
++// Each test is also capped at `redundancy_test_memory_mb` of memory.
++// One the cap ends is not judged, with the cap as its reason.
+ // A skipped, failed, timed-out or block-free test is not judged.
+ // A map entry covers each judged test when it passes and its test still exists with the same function hash.
+ // The map entries for the judged tests themselves are left out.
+@@ -1053,6 +1055,7 @@
+ // The skip cause names the file, and the package does not count against `--max`.
+ // It runs each test alone in its own process with its own profile, in the package directory under its tier's env.
+ // It runs them through `testcover.Toolchain.RunAlone`, up to the slot's tier0 parallel side by side.
++// Fewer go side by side when memory is short, as in `lym gate redundant`.
+ // That holds whether or not a test calls `t.Parallel`:
+ // each test runs in its own process with its own environment and profile, all in the package directory,
+ // so a test that writes a fixed path there can disturb another.
+@@ -1064,6 +1067,7 @@
+ // The call writes the map once, after the package's tests ran.
+ // A tier with `prebuilt_lym` gets the `lym` the call builds once into the pool's prebuilt store, as a tier run does.
+ // Each build is bounded by `redundancy_build_timeout_min` and each test by `redundancy_test_timeout_sec`.
++// Each test is also capped at `redundancy_test_memory_mb` of memory, and one the cap ends is recorded as failed.
+ // Past its bound the process group is killed.
+ // The wait for its exit and output then lasts at most the pipe wait the gate already uses.
+ // A failed or timed-out build is listed as failed.
+@@ -1142,13 +1146,21 @@
+ // A test that does not pass then runs with no mutant.
+ // Each other test gets a bound of `mutantTimeoutFactor` times its seconds, and at least `mutantTimeoutFloor` seconds.
+ // The bound stays within `redundancy_test_timeout_sec`, so a mutant that makes a loop endless ends early.
++// Every test run is capped at `redundancy_test_memory_mb` of memory, and so is the run that reads the block table.
++// A mutant that makes a loop keep memory for ever therefore ends at the cap,
++// and the rest of the machine keeps its memory.
+ // Each contained test then runs with each mutant of its blocks on.
++// The call logs each such run's mutant, with its file, line and operator, before the run starts.
+ // A test that killed a mutant has its covering tests run with that mutant on.
+ // Only a covering test whose entry covers the mutant's block runs.
+-// A run that fails or times out kills its mutant.
++// A run that fails, times out or ends at the memory cap kills its mutant.
+ // Up to the slot's tier0 parallel runs go side by side, each alone in its process under its test's tier env.
++// Fewer go side by side when memory is short.
++// The caps of the runs together stay within the memory `proc.ReadMemoryLimit` finds left.
++// Where `proc.MemoryCapCoversTree` says the cap bounds each process alone, one run goes at a time.
+ // A tier with `prebuilt_lym` gets the `lym` the call builds once into the pool's prebuilt store.
+ // A covering test that kills beside other runs runs once more alone, and that run stands.
++// A run the memory cap ended is not run again, since it reaches the cap alone too.
+ // That holds for a covering test that is also a contained test.
+ // `testcover.JudgeMutants` judges each contained test from the kills.
+ // Bound: a contained test's own kill from its candidate runs is not rerun alone,
+@@ -1165,6 +1177,9 @@
+ // Each carries those mutants' file, line and operator.
+ // It prints `kept`, each keep-marked test with its reason, and `not_judged`, each other unjudged test with why.
+ // When it checked a test it prints `mutation`: the mutants built and dropped, the build and run seconds and the runs.
++// `mutation` also holds `timed_out` and `memory_capped`.
++// They list the runs with a mutant on that ended at their time bound or at the memory cap.
++// Each carries its mutant's file, line and operator and its test.
+ // It refuses outside a hub.
+ // It refuses for a package whose map is missing, unreadable, holds only a failed build or records other Go files.
+ // It refuses for a failed keep or source scan, and for a mutation check whose slot, build or run fails.
+diff --git a/internal/gatecli/redundancy.go b/internal/gatecli/redundancy.go
+index db3efec5..89624c75 100644
+--- a/internal/gatecli/redundancy.go
++++ b/internal/gatecli/redundancy.go
+@@ -56,6 +56,7 @@ const (
+ 	reasonBuildFailed   = "its package's coverage build failed"
+ 	reasonLymFailed     = "the lym build failed"
+ 	reasonTimedOut      = "timed out after %s"
++	reasonMemoryCapped  = "ended at the memory cap of %d MB"
+ 	reasonNotRun        = "it could not run"
+ 	reasonUnkeyed       = "its covered blocks could not be keyed"
+ )
+@@ -528,7 +529,7 @@ func (r *redundancyRun) buildLym() error {
+ // runTest runs test alone under the coverage binary bin in the package directory pkgDir with its tier's env.
+ // It returns the test's run with the keys of the package blocks it covered.
+ // It returns the reason the test is not judged instead when the call was cancelled.
+-// It does so too when the test timed out, could not run or had blocks that could not be keyed.
++// It does so too when the test timed out, ended at the memory cap, could not run or had blocks that could not be keyed.
+ func (r *redundancyRun) runTest(pkg, pkgDir, importPath, bin string, test redundancyCandidate, tier gateslot.Tier) (testcover.Run, string) {
+ 	s := r.step
+ 	env := slices.Concat(r.holderEnv, renderTierEnv(tier))
+@@ -536,7 +537,7 @@ func (r *redundancyRun) runTest(pkg, pkgDir, importPath, bin string, test redund
+ 		env = append(env, gateslot.PrebuiltLymEnv+"="+r.lymBin)
+ 	}
+ 	timeout := time.Duration(s.cfg.RedundancyTestTimeoutSec) * s.secondUnit
+-	runner := testcover.Toolchain{Env: env, Ctx: s.ctx, TestTimeout: timeout, Grace: s.grace}
++	runner := testcover.Toolchain{Env: env, Ctx: s.ctx, TestTimeout: timeout, MemoryLimit: s.cfg.RedundancyTestMemory(), Grace: s.grace}
+ 	result, err := runner.RunAlone(bin, pkgDir, filepath.Join(r.tmp, "cover.out"), test.fn.Name)
+ 	// A cancelled call kills the test in flight, which then reads as a failed test; it is listed as cancelled instead,
+ 	// so the report asks for a retry.
+@@ -549,6 +550,8 @@ func (r *redundancyRun) runTest(pkg, pkgDir, importPath, bin string, test redund
+ 		return testcover.Run{}, reasonNotRun
+ 	case result.TimedOut:
+ 		return testcover.Run{}, fmt.Sprintf(reasonTimedOut, timeout)
++	case result.MemoryCapped:
++		return testcover.Run{}, fmt.Sprintf(reasonMemoryCapped, s.cfg.RedundancyTestMemoryMB)
+ 	}
+ 	run := testcover.Run{Name: test.fn.Name, Elapsed: result.Elapsed, Action: result.Action}
+ 	if result.Action == testcover.ActionPass {
+diff --git a/internal/gatecli/redundancy_integration_test.go b/internal/gatecli/redundancy_integration_test.go
+index 3516537d..5ca847ad 100644
+--- a/internal/gatecli/redundancy_integration_test.go
++++ b/internal/gatecli/redundancy_integration_test.go
+@@ -59,7 +59,7 @@ func TestRedundancyStep(t *testing.T) {
+ 	// tier1 is the line of a tier1 the hub declares beside tier0 and tier2, or empty for a hub with no tier1.
+ 	writeGate := func(t *testing.T, budgetMin int, tier1 string) {
+ 		t.Helper()
+-		content := "slots: 1\nscoper: go\nredundancy_build_timeout_min: 1\nredundancy_test_timeout_sec: 20\nredundancy_max_tests: 9\n" +
++		content := "slots: 1\nscoper: go\nredundancy_build_timeout_min: 1\nredundancy_test_timeout_sec: 20\nredundancy_max_tests: 10\nredundancy_test_memory_mb: 128\n" +
+ 			fmt.Sprintf("redundancy_budget_min: %d\ntiers:\n", budgetMin) +
+ 			"  tier0: {command: x, timeout_min: 1, counter: go-json, env: {LYM_TEST_TIER: \"0\"}}\n" +
+ 			"  tier2: {command: x, timeout_min: 1, counter: go-json, env: {LYM_TEST_TIER: \"2\"}}\n" + tier1
+@@ -69,7 +69,7 @@ func TestRedundancyStep(t *testing.T) {
+ 	}
+ 	writeGate(t, 9, "")
+ 
+-	packages := []string{"alpha", "beta", "broken", "drops", "gone", "moved", "nomap", "stale", "zcapped"}
++	packages := []string{"alpha", "beta", "broken", "capped", "drops", "gone", "moved", "nomap", "stale", "zcapped"}
+ 	seeded := map[string]string{"go.mod": "module " + module + "\n\ngo 1.21\n"}
+ 	for _, pkg := range packages {
+ 		seeded[pkg+"/"+pkg+".go"] = testMapSource(pkg)
+@@ -77,6 +77,7 @@ func TestRedundancyStep(t *testing.T) {
+ 	seeded["alpha/alpha_test.go"] = judgedTestFile("alpha", tieredTest("TestAlphaBase", 0, ""))
+ 	seeded["beta/beta_test.go"] = judgedTestFile("beta", tieredTest("TestBetaOne", 0, ""))
+ 	seeded["broken/broken_test.go"] = judgedTestFile("broken", tieredTest("TestBrokenOne", 0, ""))
++	seeded["capped/capped_test.go"] = judgedTestFile("capped", tieredTest("TestCappedBase", 0, ""))
+ 	seeded["drops/drops_test.go"] = judgedTestFile("drops", tieredTest("TestDropsOne", 0, ""), tieredTest("TestDropsPlain", 0, ""))
+ 	seeded["gone/gone_test.go"] = judgedTestFile("gone", tieredTest("TestGoneOne", 0, ""))
+ 	seeded["moved/a_test.go"] = judgedTestFile("moved", tieredTest("TestMovedOne", 0, ""))
+@@ -101,6 +102,8 @@ func TestRedundancyStep(t *testing.T) {
+ 		"beta/beta_test.go":     judgedTestFile("beta", tieredTest("TestBetaNewOne", 0, ""), tieredTest("TestBetaOne", 0, "\tt.Log(\"edited\")\n")),
+ 		"broken/broken_test.go": judgedTestFile("broken", tieredTest("TestBrokenOne", 0, ""), tieredTest("TestBrokenNew", 0, "")),
+ 		"drops/drops_test.go":   dropsTestFile,
++		// TestCappedHoards keeps more memory than the gate's cap of 128 MB lets a test hold, and passes unless the cap ends it.
++		"capped/capped_test.go": judgedTestFile("capped", tieredTest("TestCappedBase", 0, ""), tieredTest("TestCappedHoards", 0, "")),
+ 		// A test in a file built under a tier tag that runs the go command is marked out of process.
+ 		"drops/spawn_tier1_test.go": "//go:build tier1\n\npackage drops\n\nimport (\n\t\"os\"\n\t\"testing\"\n)\n\nfunc TestDropsSpawns(t *testing.T) {\n\t_, _ = os.Executable()\n}\n",
+ 		"moved/b_test.go":           seeded["moved/a_test.go"],
+@@ -196,6 +199,7 @@ func TestRedundancyStep(t *testing.T) {
+ 	broken := mapOf(t, "broken")
+ 	broken.Blocks, broken.BuildFailure = nil, "the coverage build failed"
+ 	writeMap(t, "broken", broken)
++	writeMap(t, "capped", mapOf(t, "capped", mapTest(t, "capped", "TestCappedBase")))
+ 	// The map's entry for TestStaleOld records a function text the package no longer holds, so the map test is not counted.
+ 	staleOld := mapTest(t, "stale", "TestStaleOld")
+ 	staleOld.FuncHash = "the text of an earlier TestStaleOld"
+@@ -270,6 +274,7 @@ func TestRedundancyStep(t *testing.T) {
+ 			{Package: "beta", Name: "TestBetaNewOne", File: "beta/beta_test.go", Verdict: RedundancyContained, Covering: []string{"TestBetaOne"}},
+ 			{Package: "beta", Name: "TestBetaOne", File: "beta/beta_test.go", Verdict: RedundancyUnique},
+ 			notJudged("broken", "TestBrokenNew", reasonMapFailure),
++			notJudged("capped", "TestCappedHoards", "ended at the memory cap of 128 MB"),
+ 			notJudged("drops", "TestDropsHangs", "timed out after 3s"),
+ 			notJudged("drops", "TestDropsKept", "kept: pins the slow path on purpose"),
+ 			{Package: "drops", Name: "TestDropsLate", File: "drops/drops_test.go", Verdict: RedundancyUnique},
+@@ -279,7 +284,7 @@ func TestRedundancyStep(t *testing.T) {
+ 			{Package: "drops", Name: "TestDropsSpawns", File: "drops/spawn_tier1_test.go", Verdict: RedundancyNotJudged, Reason: testcover.ReasonOutOfProcess},
+ 			notJudged("nomap", "TestNomapNew", reasonNoMap),
+ 			{Package: "stale", Name: "TestStaleNew", File: "stale/stale_test.go", Verdict: RedundancyUnique},
+-			notJudged("zcapped", "TestZcappedNew", "past redundancy_max_tests (9)"),
++			notJudged("zcapped", "TestZcappedNew", "past redundancy_max_tests (10)"),
+ 		}
+ 		if diff := cmp.Diff(wantTests, first.Tests, cmpopts.EquateEmpty()); diff != "" {
+ 			t.Errorf("report tests mismatch (-want +got):\n%s", diff)
+@@ -288,6 +293,7 @@ func TestRedundancyStep(t *testing.T) {
+ 			{Package: "alpha", Judged: true, MapCommit: "c0ffee", Drift: []string{"alpha_test.go"}},
+ 			{Package: "beta", Judged: true, MapCommit: "c0ffee"},
+ 			{Package: "broken", Reason: "its coverage map records a build failure: the coverage build failed"},
++			{Package: "capped", Judged: true, MapCommit: "c0ffee"},
+ 			{Package: "drops", Judged: true, MapCommit: "c0ffee"},
+ 			{Package: "nomap", Reason: "it has no coverage map"},
+ 			{Package: "stale", Judged: true, MapCommit: "c0ffee"},
+@@ -300,7 +306,7 @@ func TestRedundancyStep(t *testing.T) {
+ 		}
+ 		wantTaken := map[string][]string{
+ 			"alpha": {"TestAlphaNewOne", "TestAlphaNewTwo"}, "beta": {"TestBetaNewOne", "TestBetaOne"}, "broken": {"TestBrokenNew"},
+-			"drops": {"TestDropsHangs", "TestDropsKept", "TestDropsLate", "TestDropsSpawns", "TestDropsTier1", "TestDropsTier1Again", "TestDropsTier2"},
++			"capped": {"TestCappedHoards"}, "drops": {"TestDropsHangs", "TestDropsKept", "TestDropsLate", "TestDropsSpawns", "TestDropsTier1", "TestDropsTier1Again", "TestDropsTier2"},
+ 			"nomap": {"TestNomapNew"}, "stale": {"TestStaleNew"}, "zcapped": {"TestZcappedNew"},
+ 		}
+ 		gotTaken := map[string][]string{}
+@@ -310,8 +316,8 @@ func TestRedundancyStep(t *testing.T) {
+ 		if diff := cmp.Diff(wantTaken, gotTaken); diff != "" {
+ 			t.Errorf("report test hashes mismatch (-want +got):\n%s; want no test of the moved file or the deleted one", diff)
+ 		}
+-		if got := slices.Sorted(maps.Keys(first.FileHashes)); !slices.Equal(got, []string{"alpha", "beta", "drops", "stale"}) {
+-			t.Errorf("report file hashes name %v; want the judged packages alpha, beta, drops and stale", got)
++		if got := slices.Sorted(maps.Keys(first.FileHashes)); !slices.Equal(got, []string{"alpha", "beta", "capped", "drops", "stale"}) {
++			t.Errorf("report file hashes name %v; want the judged packages alpha, beta, capped, drops and stale", got)
+ 		}
+ 		if len(first.Errors) != 0 || first.Note != "" || first.GateKey != "darn-write" {
+ 			t.Errorf("report = errors %q, note %q, gate key %q; want no error, no note and darn-write", first.Errors, first.Note, first.GateKey)
+diff --git a/internal/gatecli/redundant.go b/internal/gatecli/redundant.go
+index ebae5abb..5ac383bb 100644
+--- a/internal/gatecli/redundant.go
++++ b/internal/gatecli/redundant.go
+@@ -78,6 +78,8 @@ type redundantRequest struct {
+ 	secondUnit, minuteUnit time.Duration
+ 	// grace bounds the wait for a killed build's or test's exit and output.
+ 	grace time.Duration
++	// cappedParallel returns how many of parallel test runs, each capped at limit bytes of memory, go side by side.
++	cappedParallel func(parallel int, limit int64) int
+ }
+ 
+ // redundantCmd builds `lym gate redundant`.
+@@ -97,9 +99,10 @@ A candidate stays listed only when a covering test kills every mutant it kills;
+ One that kills no mutant, holds none in its blocks or does not pass unmutated is listed as not judged.
+ Each listed candidate comes with its standalone seconds, the tests that cover it and the mutants it killed; removable marks the set a greedy pass, slowest first, can delete together while every block stays covered and every mutant killed.
+ A test marked //testtiming:keep is neither a candidate nor a cover, and nor is a test the spawn scan marks or one whose entry records no passing run.
+-It reads the map as the last lym gate testmap call from this worktree left it: the hub's shared maps from the prime, this worktree's own elsewhere.
++It reads the map as the last lym gate testmap call from this worktree left it.
+ It refuses a map built from other Go files of the package than this worktree holds.
+ It reads the keep markers from this worktree, and runs its builds and tests inside one gate slot, bounded by redundancy_build_timeout_min and redundancy_test_timeout_sec.
++Each test run is capped at redundancy_test_memory_mb of memory; a mutant run past the cap or its time bound is a kill.
+ It prints the map's commit and build time, map_build_failure when a later coverage build failed, the candidates, the refuted tests, the kept tests with their reasons, the tests not judged with why, and what the mutation check cost.
+ 
+ Examples:
+@@ -112,6 +115,7 @@ Examples:
+ 			}
+ 			clihelp.SetExit(cmd.Context(), runRedundant(cmd.Context(), cmd.OutOrStdout(), redundantRequest{
+ 				pkg: args[0], goBinary: goBinary, environ: os.Environ(), secondUnit: time.Second, minuteUnit: minuteUnit, grace: grace,
++				cappedParallel: memoryCappedParallel,
+ 			}))
+ 			return nil
+ 		},
+@@ -230,6 +234,7 @@ func runRedundant(ctx context.Context, out io.Writer, request redundantRequest)
+ 		pkgDir: pkgDir, importPath: module.importPath(pkg), moduleDir: module.dir,
+ 		buildTimeout: time.Duration(cfg.RedundancyBuildTimeoutMin) * request.minuteUnit,
+ 		testTimeout:  time.Duration(cfg.RedundancyTestTimeoutSec) * request.secondUnit,
++		testMemory:   cfg.RedundancyTestMemory(),
+ 		env:          gateEnv(request.environ, hubEnv),
+ 	}
+ 	defer check.close()
+diff --git a/internal/gatecli/redundant_integration_test.go b/internal/gatecli/redundant_integration_test.go
+index 1b77f337..66b680f8 100644
+--- a/internal/gatecli/redundant_integration_test.go
++++ b/internal/gatecli/redundant_integration_test.go
+@@ -32,6 +32,9 @@ import (
+ // TestDoubleUnchecked checks nothing.
+ // TestSourceScan checks what the module's scan kit reads, and TestGuarded carries a //lym:guard marker.
+ // TestTallyChecked and TestTallyCheckedAgain check the same loop, whose dropped decrement makes it endless.
++// TestHoardChecked and TestHoardCheckedAgain check a loop that keeps a megabyte a pass.
++// Its negated condition makes it endless.
++// Hoard panics at hoardStop megabytes, so a memory cap that does not hold fails the test and never the machine.
+ // TestAll and TestDoubleChecked also call Timeout, whose constant does not compile behind the mutant helper.
+ // The module stands in its own tiergate, at the import path a coverage map reads tiers from, so it builds alone.
+ var redundantModuleFiles = map[string]string{
+@@ -65,6 +68,23 @@ func Tally(n int) int {
+ 	}
+ 	return steps
+ }
++
++const hoardStop = 384
++
++func Hoard(n int) int {
++	var kept [][]byte
++	for i := 1; i <= n; i++ {
++		if len(kept) == hoardStop {
++			panic("Hoard kept hoardStop megabytes: no memory cap ended the run")
++		}
++		block := make([]byte, 1<<20)
++		for at := range block {
++			block[at] = 1
++		}
++		kept = append(kept, block)
++	}
++	return len(kept)
++}
+ `,
+ 	"cov/cov_test.go": `package cov
+ 
+@@ -144,6 +164,20 @@ func TestTallyCheckedAgain(t *testing.T) {
+ 		t.Fatal("Tally(3) != 3")
+ 	}
+ }
++
++func TestHoardChecked(t *testing.T) {
++	tiergate.Require(t, 0)
++	if Hoard(0) != 0 {
++		t.Fatal("Hoard(0) != 0")
++	}
++}
++
++func TestHoardCheckedAgain(t *testing.T) {
++	tiergate.Require(t, 0)
++	if Hoard(0) != 0 {
++		t.Fatal("Hoard(0) != 0")
++	}
++}
+ `,
+ 	"lacking/lacking.go":   "package lacking\n\nfunc One() int { return 1 }\n",
+ 	"stale/stale.go":       "package stale\n\nfunc One() int { return 1 }\n",
+@@ -151,7 +185,7 @@ func TestTallyCheckedAgain(t *testing.T) {
+ }
+ 
+ // redundantTestSecond is the length of one `redundancy_test_timeout_sec` second in TestGateRedundant.
+-const redundantTestSecond = 400 * time.Millisecond
++const redundantTestSecond = 2 * time.Second
+ 
+ // TestGateRedundant confirms a built map's candidates by mutation and refuses where no map can be judged.
+ func TestGateRedundant(t *testing.T) {
+@@ -164,7 +198,9 @@ func TestGateRedundant(t *testing.T) {
+ 	// It is far above a healthy fixture test's whole process run.
+ 	// The test bound, redundancy_test_timeout_sec × redundantTestSecond, lies above that floor.
+ 	// So the mutant making a loop endless ends at the floor and not at the test bound.
+-	gate := "slots: 1\nredundancy_test_timeout_sec: 20\ntiers:\n  tier0: {command: x, timeout_min: 1, counter: go-json, env: {LYM_TEST_TIER: \"0\"}}\n"
++	// The memory cap lies far above a healthy fixture test's memory and far below hoardStop megabytes.
++	// So the mutant making a loop keep memory for ever ends at the cap, long before the floor.
++	gate := "slots: 1\nredundancy_test_timeout_sec: 20\nredundancy_test_memory_mb: 128\ntiers:\n  tier0: {command: x, timeout_min: 1, counter: go-json, env: {LYM_TEST_TIER: \"0\"}}\n"
+ 	if err := os.WriteFile(configengine.ConfigFile(h.BoardDir(), "gate"), []byte(gate), 0o644); err != nil {
+ 		t.Fatal(err)
+ 	}
+@@ -216,6 +252,8 @@ func TestGateRedundant(t *testing.T) {
+ 		code := runRedundant(lymcwd.WithCwd(context.Background(), prime), &out, redundantRequest{
+ 			pkg: "./cov", goBinary: defaultGoBinary, environ: os.Environ(),
+ 			secondUnit: redundantTestSecond, minuteUnit: time.Minute, grace: defaultPipeWaitDelay,
++			// Two runs go side by side whatever memory the machine has left, so a covering run that fails runs again alone.
++			cappedParallel: func(int, int64) int { return 2 },
+ 		})
+ 		type answer struct {
+ 			OK         bool                  `json:"ok"`
+@@ -244,22 +282,48 @@ func TestGateRedundant(t *testing.T) {
+ 			got.Refuted[i].Seconds = 0
+ 		}
+ 		// Each pair of candidates kills the same mutants, so the greedy pass never drops both of a pair.
+-		if removable > 2 {
+-			t.Errorf("redundant ./cov lists %d removable candidates; want at most 2, one of each pair", removable)
++		if removable > 3 {
++			t.Errorf("redundant ./cov lists %d removable candidates; want at most 3, one of each pair", removable)
+ 		}
+ 		// Timeout's constant is the one mutant that does not compile.
+-		if got.Mutation.Mutants != 12 || got.Mutation.Unbuildable != 1 || got.Mutation.Runs == 0 {
+-			t.Errorf("redundant ./cov mutation = %+v; want 12 buildable mutants, 1 unbuildable, and runs", got.Mutation)
++		if got.Mutation.Mutants != 14 || got.Mutation.Unbuildable != 1 {
++			t.Errorf("redundant ./cov mutation = %+v; want 14 buildable mutants and 1 unbuildable", got.Mutation)
++		}
++		// Each involved test runs once with no mutant on, and each contained test once with each mutant of its blocks.
++		// Each covering test then runs with each mutant a contained test killed and it covers, unless it left that mutant alive.
++		// Every one of those covering runs kills, and one that kills beside another run runs once more alone.
++		// The two the memory cap ended do not.
++		const unmutatedRuns, containedRuns, coveringRuns, cappedCoveringRuns = 8, 29, 18, 2
++		if want := unmutatedRuns + containedRuns + 2*coveringRuns - cappedCoveringRuns; got.Mutation.Runs != want {
++			t.Errorf("redundant ./cov started %d runs; want %d, with no second run of one the memory cap ended", got.Mutation.Runs, want)
++		}
++		hoardLoop := mutantStop{File: "cov.go", Line: 33, Operator: testcover.OperatorNegateCondition}
++		tallyStep := mutantStop{File: "cov.go", Line: 23, Operator: testcover.OperatorDropStatement}
++		stops := func(site mutantStop, tests ...string) []mutantStop {
++			var listed []mutantStop
++			for _, test := range tests {
++				site.Test = test
++				listed = append(listed, site)
++			}
++			return listed
++		}
++		if diff := cmp.Diff(stops(hoardLoop, "TestHoardChecked", "TestHoardCheckedAgain"), got.Mutation.MemoryCapped); diff != "" {
++			t.Errorf("redundant ./cov memory_capped mismatch (-want +got):\n%s", diff)
++		}
++		if diff := cmp.Diff(stops(tallyStep, "TestTallyChecked", "TestTallyCheckedAgain"), got.Mutation.TimedOut); diff != "" {
++			t.Errorf("redundant ./cov timed_out mismatch (-want +got):\n%s", diff)
+ 		}
+ 		got.Mutation = mutationStats{}
+ 		// The covering lists are the pick among every judged test but the source checks.
+ 		// TestSourceScan sorts before the Tally tests and overlaps them fully, yet neither it nor TestGuarded is named.
+ 		want := answer{
+-			OK: true, Package: "cov", Tests: 10,
++			OK: true, Package: "cov", Tests: 12,
+ 			Failure: &testcover.MapFailure{Commit: "deadbeef", Error: "later build broke"},
+ 			Candidates: []redundantCandidate{
+ 				{Name: "TestAll", Covering: []string{"TestClassifyChecked", "TestDoubleChecked"}, MutantsKilled: 1},
+ 				{Name: "TestDoubleChecked", Covering: []string{"TestAll"}, MutantsKilled: 1},
++				{Name: "TestHoardChecked", Covering: []string{"TestHoardCheckedAgain"}, MutantsKilled: 1},
++				{Name: "TestHoardCheckedAgain", Covering: []string{"TestHoardChecked"}, MutantsKilled: 1},
+ 				{Name: "TestTallyChecked", Covering: []string{"TestTallyCheckedAgain"}, MutantsKilled: 7},
+ 				{Name: "TestTallyCheckedAgain", Covering: []string{"TestTallyChecked"}, MutantsKilled: 7},
+ 			},
+diff --git a/internal/gatecli/redundantmutants.go b/internal/gatecli/redundantmutants.go
+index 81910766..108de4df 100644
+--- a/internal/gatecli/redundantmutants.go
++++ b/internal/gatecli/redundantmutants.go
+@@ -7,6 +7,7 @@
+ package gatecli
+ 
+ import (
++	"cmp"
+ 	"context"
+ 	"errors"
+ 	"fmt"
+@@ -16,12 +17,15 @@ import (
+ 	"runtime"
+ 	"slices"
+ 	"strconv"
++	"strings"
+ 	"sync"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymtemp"
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/testcover"
+ )
+ 
+@@ -37,7 +41,7 @@ const mutantBuildRounds = 5
+ // A mutant that makes a loop endless is then killed long before the test's own bound.
+ const (
+ 	mutantTimeoutFactor = 10
+-	mutantTimeoutFloor  = 10
++	mutantTimeoutFloor  = 2
+ )
+ 
+ // mutationStats is what one call's mutation check built and ran.
+@@ -50,6 +54,24 @@ type mutationStats struct {
+ 	RunSeconds   float64 `json:"run_seconds"`
+ 	// Runs counts the test processes the check started.
+ 	Runs int `json:"runs"`
++	// TimedOut and MemoryCapped list the runs with a mutant on that ended at their time bound or at the memory cap.
++	// Each killed its mutant.
++	TimedOut     []mutantStop `json:"timed_out"`
++	MemoryCapped []mutantStop `json:"memory_capped"`
++}
++
++// mutantStop is one run of a test with a mutant on that the check ended before the test did, with the mutant's site.
++type mutantStop struct {
++	File     string `json:"file"`
++	Line     int    `json:"line"`
++	Operator string `json:"operator"`
++	Test     string `json:"test"`
++}
++
++// mutantRun names one run of a test with a mutant on.
++type mutantRun struct {
++	mutant int
++	test   string
+ }
+ 
+ // mutationCheck is one `lym gate redundant` call's mutation check of one package.
+@@ -64,6 +86,8 @@ type mutationCheck struct {
+ 	pkgDir, importPath, moduleDir string
+ 	// buildTimeout bounds each build, and testTimeout each test.
+ 	buildTimeout, testTimeout time.Duration
++	// testMemory caps the bytes each test run may hold.
++	testMemory int64
+ 	// env is the environment the check's children start from, before the slot's Go flags.
+ 	env []string
+ 
+@@ -71,9 +95,13 @@ type mutationCheck struct {
+ 
+ 	// lease is the held slot; it stays nil inside an enclosing gate run's slot.
+ 	lease *gateslot.Lease
+-	// holderEnv is env with the slot's Go flags, and parallel the most tests run side by side.
++	// holderEnv is env with the slot's Go flags, and parallel the `-p` of the `lym` build.
+ 	holderEnv []string
+ 	parallel  int
++	// sideBySide is the most tests run side by side: parallel, or fewer when memory is short.
++	sideBySide int
++	// mutants holds the mutants the binary was built with, by ID.
++	mutants map[int]testcover.Mutant
+ 	// tmp holds the binaries, profiles and overlays.
+ 	tmp string
+ 	// lymBin is the `lym` built for a tier with prebuilt_lym, empty when none was needed.
+@@ -123,8 +151,10 @@ func (c *mutationCheck) run(m testcover.Map, contained []testcover.Verdict, cove
+ 		}
+ 		c.stats.Unbuildable = len(dropped)
+ 	}
++	c.mutants = mutants
+ 	c.stats.Mutants = len(mutants)
+ 	c.stats.BuildSeconds = time.Since(started).Seconds()
++	c.stats.TimedOut, c.stats.MemoryCapped = []mutantStop{}, []mutantStop{}
+ 
+ 	candidates := make([]testcover.MutantCandidate, len(contained))
+ 	coverings := make([][]string, len(contained))
+@@ -151,7 +181,7 @@ func (c *mutationCheck) run(m testcover.Map, contained []testcover.Verdict, cove
+ 		return testcover.JudgeMutants(candidates, nil), coverings, mutants, nil
+ 	}
+ 	started = time.Now()
+-	kills, err := c.runMutants(bin, m, entries, candidates, mutants)
++	kills, err := c.runMutants(bin, m, entries, candidates)
+ 	c.stats.RunSeconds = time.Since(started).Seconds()
+ 	if err != nil {
+ 		return nil, nil, nil, err
+@@ -167,7 +197,8 @@ func (c *mutationCheck) run(m testcover.Map, contained []testcover.Verdict, cove
+ // Only a covering test whose entry covers the mutant's block runs.
+ // A covering test that kills beside other tests runs once more alone, and that run stands.
+ // That holds for a covering test that is itself a candidate, whose kill from the candidate runs is replaced by that run.
+-func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[string]testcover.MapTest, candidates []testcover.MutantCandidate, mutants map[int]testcover.Mutant) (testcover.Kills, error) {
++// A run that ends at its time bound or at the memory cap kills its mutant too, and the check's stats list it.
++func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[string]testcover.MapTest, candidates []testcover.MutantCandidate) (testcover.Kills, error) {
+ 	var involved []string
+ 	for _, candidate := range candidates {
+ 		involved = append(involved, candidate.Name)
+@@ -198,13 +229,22 @@ func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[stri
+ 	}
+ 
+ 	kills := testcover.Kills{}
++	timedOut, capped := map[mutantRun]bool{}, map[mutantRun]bool{}
+ 	record := func(jobs []mutantJob, results []testcover.RunResult) {
+ 		for i, result := range results {
+-			if result.Action == testcover.ActionFail {
+-				if kills[jobs[i].mutant] == nil {
+-					kills[jobs[i].mutant] = map[string]bool{}
+-				}
+-				kills[jobs[i].mutant][jobs[i].test.Name] = true
++			if result.Action != testcover.ActionFail {
++				continue
++			}
++			run := mutantRun{mutant: jobs[i].mutant, test: jobs[i].test.Name}
++			if kills[run.mutant] == nil {
++				kills[run.mutant] = map[string]bool{}
++			}
++			kills[run.mutant][run.test] = true
++			switch {
++			case result.MemoryCapped:
++				capped[run] = true
++			case result.TimedOut:
++				timedOut[run] = true
+ 			}
+ 		}
+ 	}
+@@ -229,11 +269,7 @@ func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[stri
+ 	record(jobs, results)
+ 
+ 	jobs = nil
+-	type coverRun struct {
+-		mutant int
+-		name   string
+-	}
+-	queued := map[coverRun]bool{}
++	queued := map[mutantRun]bool{}
+ 	for _, id := range slices.Sorted(maps.Keys(kills)) {
+ 		for _, candidate := range candidates {
+ 			if !kills[id][candidate.Name] {
+@@ -241,27 +277,44 @@ func (c *mutationCheck) runMutants(bin string, m testcover.Map, entries map[stri
+ 			}
+ 			for _, name := range candidate.Covering {
+ 				_, passes := timeouts[name]
+-				_, covers := blocks[name][mutants[id].Block]
++				_, covers := blocks[name][c.mutants[id].Block]
+ 				// A covering test that ran the mutant as a candidate and did not kill it has its answer already.
+-				if !passes || !covers || queued[coverRun{id, name}] || (ran[id][name] && !kills[id][name]) {
++				if !passes || !covers || queued[mutantRun{id, name}] || (ran[id][name] && !kills[id][name]) {
+ 					continue
+ 				}
+-				queued[coverRun{id, name}] = true
++				queued[mutantRun{id, name}] = true
+ 				jobs = append(jobs, mutantJob{test: entries[name], mutant: id, timeout: timeouts[name]})
+ 			}
+ 		}
+ 	}
+ 	// The rerun decides these kills, so a kill made beside other runs is cleared once every job is chosen.
+ 	for _, job := range jobs {
+-		delete(kills[job.mutant], job.test.Name)
++		run := mutantRun{mutant: job.mutant, test: job.test.Name}
++		delete(kills[run.mutant], run.test)
++		delete(timedOut, run)
++		delete(capped, run)
+ 	}
+ 	if results, err = c.runJobs(bin, jobs, true); err != nil {
+ 		return nil, err
+ 	}
+ 	record(jobs, results)
++	c.stats.TimedOut, c.stats.MemoryCapped = c.stopsOf(timedOut), c.stopsOf(capped)
+ 	return kills, nil
+ }
+ 
++// stopsOf returns the runs of ended, each with its mutant's site, ordered by mutant and then by test.
++func (c *mutationCheck) stopsOf(ended map[mutantRun]bool) []mutantStop {
++	runs := slices.SortedFunc(maps.Keys(ended), func(a, b mutantRun) int {
++		return cmp.Or(cmp.Compare(a.mutant, b.mutant), strings.Compare(a.test, b.test))
++	})
++	stops := make([]mutantStop, len(runs))
++	for i, run := range runs {
++		mutant := c.mutants[run.mutant]
++		stops[i] = mutantStop{File: mutant.File, Line: mutant.Line, Operator: mutant.Operator, Test: run.test}
++	}
++	return stops
++}
++
+ // mutantTimeout returns the bound of a run with a mutant on of a test that passed unmutated in elapsed seconds.
+ func (c *mutationCheck) mutantTimeout(elapsed float64) time.Duration {
+ 	timeout := max(time.Duration(mutantTimeoutFloor)*c.request.secondUnit, time.Duration(elapsed*mutantTimeoutFactor*float64(time.Second)))
+@@ -279,7 +332,10 @@ func (c *mutationCheck) planMutants(targets testcover.BlockSet) (*testcover.Muta
+ 		return nil, fmt.Errorf("coverage build: %w", err)
+ 	}
+ 	lowest := c.tiers[slices.Min(slices.Collect(maps.Keys(c.tiers)))]
+-	runner := testcover.Toolchain{Env: slices.Concat(c.holderEnv, renderTierEnv(lowest)), Ctx: c.ctx, TestTimeout: c.testTimeout, Grace: c.request.grace}
++	runner := testcover.Toolchain{
++		Env: slices.Concat(c.holderEnv, renderTierEnv(lowest)), Ctx: c.ctx,
++		TestTimeout: c.testTimeout, MemoryLimit: c.testMemory, Grace: c.request.grace,
++	}
+ 	profile, err := runner.ProfileBlocks(bin, c.pkgDir, filepath.Join(c.tmp, "blocks.out"))
+ 	if err != nil {
+ 		return nil, err
+@@ -327,17 +383,18 @@ func (c *mutationCheck) toolchain() testcover.Toolchain {
+ 	}
+ }
+ 
+-// runJobs runs each of jobs alone in its own process, up to the check's parallel side by side.
++// runJobs runs each of jobs alone in its own process, up to the check's sideBySide at once.
+ // It returns the runs in the order of jobs.
+ // With rerunFailed, a job that failed beside other jobs runs once more alone, and that run stands.
++// A job the memory cap ended is not run again: its cap is its own, so it reaches it alone too.
+ // The error reports a test binary that did not start, or the context's error once the call is cancelled.
+ func (c *mutationCheck) runJobs(bin string, jobs []mutantJob, rerunFailed bool) ([]testcover.RunResult, error) {
+ 	results, err := c.runSideBySide(bin, jobs)
+-	if err != nil || !rerunFailed || len(jobs) < 2 || c.parallel < 2 {
++	if err != nil || !rerunFailed || len(jobs) < 2 || c.sideBySide < 2 {
+ 		return results, err
+ 	}
+ 	for i, result := range results {
+-		if result.Action != testcover.ActionFail {
++		if result.Action != testcover.ActionFail || result.MemoryCapped {
+ 			continue
+ 		}
+ 		alone, err := c.runSideBySide(bin, jobs[i:i+1])
+@@ -349,7 +406,7 @@ func (c *mutationCheck) runJobs(bin string, jobs []mutantJob, rerunFailed bool)
+ 	return results, nil
+ }
+ 
+-// runSideBySide runs each of jobs alone in its own process, at most the check's parallel at once.
++// runSideBySide runs each of jobs alone in its own process, at most the check's sideBySide at once.
+ // It returns the runs in the order of jobs.
+ // The error is the first run's that did not start, or the context's once the call is cancelled.
+ func (c *mutationCheck) runSideBySide(bin string, jobs []mutantJob) ([]testcover.RunResult, error) {
+@@ -357,7 +414,7 @@ func (c *mutationCheck) runSideBySide(bin string, jobs []mutantJob) ([]testcover
+ 	errs := make([]error, len(jobs))
+ 	indexes := make(chan int)
+ 	var workers sync.WaitGroup
+-	for range min(c.parallel, len(jobs)) {
++	for range min(c.sideBySide, len(jobs)) {
+ 		workers.Add(1)
+ 		go func() {
+ 			defer workers.Done()
+@@ -379,14 +436,20 @@ func (c *mutationCheck) runSideBySide(bin string, jobs []mutantJob) ([]testcover
+ }
+ 
+ // runJob runs the job's test alone under bin in the package directory, with its tier's env and its mutant on.
+-// A run past its timeout comes back failed and TimedOut, which counts as a kill.
++// A run past its timeout comes back failed and TimedOut, and one past the memory cap failed and MemoryCapped.
++// Either counts as a kill.
++// It logs the mutant before the run starts, so the log names the mutant of a run that never reports back.
+ func (c *mutationCheck) runJob(bin string, job mutantJob) (testcover.RunResult, error) {
+ 	tier := c.tiers[job.test.Tier]
+ 	env := slices.Concat(c.holderEnv, renderTierEnv(tier), []string{testcover.MutantEnv + "=" + strconv.Itoa(job.mutant)})
+ 	if tier.PrebuiltLym && c.lymBin != "" {
+ 		env = append(env, gateslot.PrebuiltLymEnv+"="+c.lymBin)
+ 	}
+-	runner := testcover.Toolchain{Env: env, Ctx: c.ctx, TestTimeout: job.timeout, Grace: c.request.grace}
++	if mutant, on := c.mutants[job.mutant]; on {
++		logger.Info("gate redundant: running a test with a mutant on",
++			"test", job.test.Name, "mutant", mutant.ID, "file", mutant.File, "line", mutant.Line, "operator", mutant.Operator)
++	}
++	runner := testcover.Toolchain{Env: env, Ctx: c.ctx, TestTimeout: job.timeout, MemoryLimit: c.testMemory, Grace: c.request.grace}
+ 	result, err := runner.RunAlone(bin, c.pkgDir, "", job.test.Name)
+ 	if err != nil {
+ 		return testcover.RunResult{}, fmt.Errorf("run %s with mutant %d: %w", job.test.Name, job.mutant, err)
+@@ -434,10 +497,37 @@ func (c *mutationCheck) holdSlot() error {
+ 	if c.parallel < 1 {
+ 		c.parallel = runtime.NumCPU()
+ 	}
++	c.sideBySide = c.request.cappedParallel(c.parallel, c.testMemory)
+ 	c.holderEnv = gateslot.HolderEnv(c.env, c.lease, limits.Tier0Parallel)
+ 	return nil
+ }
+ 
++// memoryCappedParallel returns how many of parallel test runs, each capped at limit bytes, go side by side on this host.
++// It reads how far a memory cap reaches here and the memory the process's cgroup ancestry leaves, and logs what it found.
++func memoryCappedParallel(parallel int, limit int64) int {
++	coversTree := proc.MemoryCapCoversTree()
++	left, limited := proc.ReadMemoryLimit()
++	sideBySide := clampParallelToMemory(parallel, limit, coversTree, left.Headroom(), limited)
++	logger.Info("gate: test runs side by side under the memory cap",
++		"parallel", parallel, "side_by_side", sideBySide, "cap_covers_tree", coversTree,
++		"memory_limited", limited, "cgroup", left.Cgroup, "headroom", left.Headroom())
++	return sideBySide
++}
++
++// clampParallelToMemory returns how many of parallel runs, each capped at limit bytes, fit side by side.
++// A cap that bounds each process alone, coversTree false, lets one run go at a time.
++// Otherwise the caps of the runs together stay within headroom, the memory a limit leaves, when limited is set.
++// One run always goes.
++func clampParallelToMemory(parallel int, limit int64, coversTree bool, headroom int64, limited bool) int {
++	switch {
++	case !coversTree:
++		return 1
++	case !limited:
++		return parallel
++	}
++	return max(1, min(parallel, int(headroom/limit)))
++}
++
+ // close releases the check's slot and removes its temporary directory.
+ func (c *mutationCheck) close() {
+ 	if c.lease != nil {
+diff --git a/internal/gatecli/redundantmutants_test.go b/internal/gatecli/redundantmutants_test.go
+new file mode 100644
+index 00000000..36e90de0
+--- /dev/null
++++ b/internal/gatecli/redundantmutants_test.go
+@@ -0,0 +1,39 @@
++// redundantmutants_test.go pins how many memory-capped test runs the mutation check lets go side by side.
++
++package gatecli
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestClampParallelToMemory(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const limit = 2048 << 20
++	tests := []struct {
++		name       string
++		parallel   int
++		coversTree bool
++		headroom   int64
++		limited    bool
++		want       int
++	}{
++		{"RoomForEveryRun", 4, true, 10 * limit, true, 4},
++		{"TheMemoryLeftHoldsFewerCaps", 4, true, 2*limit + limit/2, true, 2},
++		{"LessThanOneCapLeftStillRunsOne", 4, true, limit / 2, true, 1},
++		{"ALimitAlreadyPassedStillRunsOne", 4, true, -limit, true, 1},
++		{"NoLimitInTheAncestryKeepsTheParallel", 4, true, 0, false, 4},
++		{"ACapOnEachProcessAloneRunsOne", 4, false, 10 * limit, true, 1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := clampParallelToMemory(tt.parallel, limit, tt.coversTree, tt.headroom, tt.limited); got != tt.want {
++				t.Errorf("clampParallelToMemory(%d, %d, %v, %d, %v) = %d; want %d", tt.parallel, limit, tt.coversTree, tt.headroom, tt.limited, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/testmap.go b/internal/gatecli/testmap.go
+index 287193b1..e3ae8fb9 100644
+--- a/internal/gatecli/testmap.go
++++ b/internal/gatecli/testmap.go
+@@ -64,6 +64,8 @@ type testMapRequest struct {
+ 	grace time.Duration
+ 	// auditTests is how many passing entries the closing audit round re-measures: testMapAuditTests in production.
+ 	auditTests int
++	// cappedParallel returns how many of parallel test runs, each capped at limit bytes of memory, go side by side.
++	cappedParallel func(parallel int, limit int64) int
+ 	// waitBase is the first pause of a named call's build lock wait; waitCeiling is the pause it doubles up to.
+ 	waitBase, waitCeiling time.Duration
+ }
+@@ -80,7 +82,7 @@ func testMapCmd(goBinary string, minuteUnit, grace time.Duration) *cobra.Command
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `testmap builds the coverage map of every package at this worktree's HEAD, or rebuilds each named package's map whole.
+ It runs in any worktree of the hub: from the prime it writes the hub's shared maps, from any other its own under .lym.
+-Nothing else builds the maps: run it before lym gate redundant, which reads the same worktree's maps.
++Run it before lym gate redundant, which reads the same worktree's maps.
+ A map records, for each tier0 and tier1 test run alone under coverage, the blocks it covers of the package's own files and the functions it covers of linked packages.
+ With no package named, it first plans every package at HEAD, building nothing, by comparing each map with HEAD through the coverage selector.
+ A map moves to HEAD keeping every entry but those of affected tests and of tests no longer declared; the affected ones are queued.
+@@ -88,7 +90,7 @@ A map the selector misses for stays as it is, and its package is queued for a wh
+ It then measures the queued packages, all of them unless --max caps the count: first those the gate's run records show costliest, then the rest in import path order.
+ It holds one gate slot to its end, and ends once HEAD moves.
+ Named packages wait for each map build lock and are rebuilt whole.
+-Each test runs alone in its own process, up to the slot's tier0 parallel side by side; a test that fails beside others runs once more alone.
++Each test runs alone in its own process, up to the slot's tier0 parallel side by side, fewer when memory is short; a test that fails beside others runs once more alone.
+ A test that fails, times out, skips or covers nothing gets an entry naming that outcome; a test the spawn scan marks is never run.
+ Once nothing is left queued, it re-measures the oldest passing entries if a gate slot is free at once, counting each difference as an audit mismatch.
+ A package with a modified or untracked Go file, its own or a linked package's, is skipped; one whose map another call is building is skipped and counted as queued.
+@@ -111,7 +113,7 @@ Examples:
+ 			clihelp.SetExit(cmd.Context(), runTestMap(cmd.Context(), cmd.OutOrStdout(), testMapRequest{
+ 				goBinary: goBinary, maxPackages: limit, packages: args, environ: os.Environ(),
+ 				secondUnit: time.Second, minuteUnit: minuteUnit, grace: grace, auditTests: testMapAuditTests,
+-				waitBase: testMapWaitBase, waitCeiling: testMapWaitCeiling,
++				cappedParallel: memoryCappedParallel, waitBase: testMapWaitBase, waitCeiling: testMapWaitCeiling,
+ 			}))
+ 			return nil
+ 		},
+@@ -173,6 +175,8 @@ type testMapRun struct {
+ 	moduleDir, moduleRel, modulePath string
+ 	// buildTimeout bounds each build, and testTimeout each test.
+ 	buildTimeout, testTimeout time.Duration
++	// testMemory caps the bytes each test run may hold.
++	testMemory int64
+ 	// env is the environment the call's children start from, before the slot's Go flags.
+ 	env []string
+ 	// hubEnv is the hub's env.yaml variables, which env holds.
+@@ -194,8 +198,11 @@ type testMapRun struct {
+ 	lease *gateslot.Lease
+ 	// holderEnv is env with the slot's Go flags, nil until the call holds its slot.
+ 	holderEnv []string
+-	// parallel is the `-p` of the `lym` build and the most tests run side by side, read with the slot.
++	// parallel is the `-p` of the `lym` build, read with the slot.
+ 	parallel int
++	// sideBySide is the most tests run at once.
++	// It is parallel, or fewer when the memory limit leaves less than their caps together.
++	sideBySide int
+ 	// tmp holds the coverage binaries and profiles, empty until the call holds its slot.
+ 	tmp string
+ 	// next is the job the walk measures after the current one, whose binary the current job builds ahead;
+@@ -338,6 +345,7 @@ func (r *testMapRun) prepare() string {
+ 	r.moduleRel = filepath.ToSlash(rel)
+ 	r.buildTimeout = time.Duration(cfg.RedundancyBuildTimeoutMin) * r.request.minuteUnit
+ 	r.testTimeout = time.Duration(cfg.RedundancyTestTimeoutSec) * r.request.secondUnit
++	r.testMemory = cfg.RedundancyTestMemory()
+ 	r.env = gateEnv(r.request.environ, hubEnv)
+ 	r.hubEnv = hubEnv
+ 	r.inert = cfg.Inert
+diff --git a/internal/gatecli/testmap_integration_test.go b/internal/gatecli/testmap_integration_test.go
+index b362bfec..3f8b8579 100644
+--- a/internal/gatecli/testmap_integration_test.go
++++ b/internal/gatecli/testmap_integration_test.go
+@@ -241,6 +241,7 @@ func testMapTestFile(pkg string, tiers map[string]int) string {
+ // It fails if another test recorded itself there meanwhile, so it passes only apart from another.
+ // One ending in Overlaps, when testMapOverlapEnv names a package, passes only beside that package's coverage build.
+ // It fails unless the file testMapCoverBuildsEnv names records that build within testMapMeetWait.
++// One ending in Hoards keeps testMapHoardMegabytes megabytes, writing each one, and then passes.
+ // A test run without LYM_TEST_TIER fails, so a map entry proves its tier's env reached it.
+ // A run records the prebuilt `lym` path it was given in the file testMapLymSeenEnv names.
+ func runTestMapStandIn() int {
+@@ -329,6 +330,8 @@ func runTestMapStandIn() int {
+ 			fmt.Printf("--- FAIL: %s (0.00s)\n", name)
+ 			return 1
+ 		}
++	case strings.HasSuffix(name, "Hoards"):
++		runtime.KeepAlive(hoardMegabytes(testMapHoardMegabytes))
+ 	}
+ 	first, second := 1, 0
+ 	if strings.HasSuffix(name, "Two") {
+@@ -355,6 +358,19 @@ func runTestMapStandIn() int {
+ 	return 0
+ }
+ 
++// hoardMegabytes keeps megabytes megabytes, writing each one so the host counts it, and returns them.
++func hoardMegabytes(megabytes int) [][]byte {
++	kept := make([][]byte, 0, megabytes)
++	for range megabytes {
++		block := make([]byte, 1<<20)
++		for at := range block {
++			block[at] = 1
++		}
++		kept = append(kept, block)
++	}
++	return kept
++}
++
+ // meetsAnother appends name to the file meet and reports whether the file holds a second line within testMapMeetWait.
+ func meetsAnother(meet, name string) bool {
+ 	if appendLine(meet, name) != nil {
+@@ -571,13 +587,20 @@ func runTestMapIn(prime, goBinary string, env []string, minuteUnit time.Duration
+ 	return runTestMapRequest(prime, testMapRequest{
+ 		goBinary: goBinary, maxPackages: maxPackages, packages: packages, environ: env,
+ 		secondUnit: 150 * time.Millisecond, minuteUnit: minuteUnit, grace: time.Second,
+-		waitBase: testMapTestWait, waitCeiling: 5 * testMapTestWait,
++		cappedParallel: unclampedParallel, waitBase: testMapTestWait, waitCeiling: 5 * testMapTestWait,
+ 	})
+ }
+ 
+ // testMapTestWait is the first pause of a test call's waits.
+ const testMapTestWait = 10 * time.Millisecond
+ 
++// unclampedParallel keeps every test run of a call side by side, whatever memory the machine has left.
++func unclampedParallel(parallel int, _ int64) int { return parallel }
++
++// testMapHoardMegabytes is the memory a test ending in Hoards keeps before it passes.
++// It stops there, so a memory cap that does not hold fails the test and never the machine.
++const testMapHoardMegabytes = 384
++
+ // runTestMapRequest runs `lym gate testmap` over the prime worktree prime as request asks.
+ // It returns the call's exit code and output.
+ func runTestMapRequest(prime string, request testMapRequest) (int, []byte) {
+@@ -802,7 +825,7 @@ func TestGateTestMap(t *testing.T) {
+ 		return testMapRequest{
+ 			goBinary: standIn, maxPackages: 10, packages: packages, environ: env,
+ 			secondUnit: secondUnit, minuteUnit: time.Minute, grace: time.Second,
+-			waitBase: testMapTestWait, waitCeiling: 5 * testMapTestWait,
++			cappedParallel: unclampedParallel, waitBase: testMapTestWait, waitCeiling: 5 * testMapTestWait,
+ 		}
+ 	}
+ 	// wantOutcome compares an outcome but its failures, which wantBrokenFailed checks.
+@@ -1282,6 +1305,24 @@ func TestGateTestMap(t *testing.T) {
+ 		}
+ 		wantOutcome(t, got, testMapOutcome{Skipped: []testMapSkip{{Package: "amoves", Cause: "files changed under its tests: amoves.go"}}, Queued: 2})
+ 	})
++
++	t.Run("ATestPastTheMemoryCapIsRecordedAsFailed", func(t *testing.T) {
++		// The fixture test keeps testMapHoardMegabytes and passes unless the cap ends it first; the cap lies far below that.
++		writeGate(t, "redundancy_test_memory_mb: 128\n"+gateYAML("parallel: 2, "))
++		t.Cleanup(func() { writeGate(t, gateYAML("parallel: 2, ")) })
++		plankit.WriteTree(t, prime, map[string]string{
++			"capped/capped.go":      testMapSource("capped"),
++			"capped/capped_test.go": testMapTestFile("capped", map[string]int{"TestCappedHoards": 0}),
++		})
++		gitkit.Git(t, prime, "add", "capped")
++		gitkit.Git(t, prime, "commit", "-q", "-m", "add a package whose test keeps memory past the cap")
++		got := callWith(t, environ, time.Minute, 10, "capped")
++		wantOutcome(t, got, testMapOutcome{Built: []string{"capped"}})
++		want := []testcover.MapTest{{Name: "TestCappedHoards", Outcome: testcover.OutcomeFailed}}
++		if diff := cmp.Diff(want, readMap(t, "capped").Tests, cmpopts.EquateEmpty(), ignoreRunFields); diff != "" {
++			t.Errorf("capped map tests mismatch (-want +got):\n%s", diff)
++		}
++	})
+ }
+ 
+ // TestGateTestMapLinkedPackages runs `lym gate testmap` calls in order over one hub.
+@@ -1383,7 +1424,7 @@ func TestGateTestMapLinkedPackages(t *testing.T) {
+ 		code, out := runTestMapRequest(prime, testMapRequest{
+ 			goBinary: standIn, maxPackages: maxPackages, environ: environ, auditTests: 1,
+ 			secondUnit: 150 * time.Millisecond, minuteUnit: time.Minute, grace: time.Second,
+-			waitBase: testMapTestWait, waitCeiling: 5 * testMapTestWait,
++			cappedParallel: unclampedParallel, waitBase: testMapTestWait, waitCeiling: 5 * testMapTestWait,
+ 		})
+ 		return decodeTestMap(t, code, out)
+ 	}
+diff --git a/internal/gatecli/testmappackage.go b/internal/gatecli/testmappackage.go
+index b8680871..428a4248 100644
+--- a/internal/gatecli/testmappackage.go
++++ b/internal/gatecli/testmappackage.go
+@@ -1,6 +1,6 @@
+ // testmappackage.go measures one queued package for `lym gate testmap`, inside the call's slot.
+ // It runs the package's tests under a coverage binary over every in-module package the test binary links.
+-// Each test runs alone in its own process, up to the slot's tier0 parallel side by side.
++// Each test runs alone in its own process, up to the slot's tier0 parallel side by side, fewer when memory is short.
+ // It reads each run's profile once.
+ // It keys the blocks covered of the package's own files and names the functions covered of the others.
+ // It merges the runs into the package's map and writes it once.
+@@ -339,7 +339,7 @@ func (r *testMapRun) addMeasure(m testMapMeasure) {
+ }
+ 
+ // runBatch runs each test of queue alone in its own process and returns their runs.
+-// Up to the call's parallel of them run side by side.
++// Up to the call's side-by-side count of them run at once.
+ // The runs come back in the order of queue.
+ // A test that failed or timed out beside other tests runs once more alone, and that run stands.
+ // A timed-out test is listed on the call's report.
+@@ -349,7 +349,7 @@ func (r *testMapRun) runBatch(p *packageRun, queue []testcover.TestFunc) ([]mapp
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	if len(queue) > 1 && r.parallel > 1 {
++	if len(queue) > 1 && r.sideBySide > 1 {
+ 		for i, run := range runs {
+ 			if run.outcome != testcover.OutcomeFailed && run.outcome != testcover.OutcomeTimedOut {
+ 				continue
+@@ -369,7 +369,8 @@ func (r *testMapRun) runBatch(p *packageRun, queue []testcover.TestFunc) ([]mapp
+ 	return runs, nil
+ }
+ 
+-// runSideBySide runs each of tests alone in its own process with its own profile, at most the call's parallel at once.
++// runSideBySide runs each of tests alone in its own process with its own profile.
++// At most the call's side-by-side count of them run at once.
+ // It reduces each run as the run ends, so it holds no more profiles at once than runs side by side.
+ // The runs come back in the order of tests.
+ // The error is the call context's after a terminating signal, since a run it ended records nothing.
+@@ -382,7 +383,7 @@ func (r *testMapRun) runSideBySide(p *packageRun, tests []testcover.TestFunc) ([
+ 	indexes := make(chan int)
+ 	ended := make(chan int)
+ 	var workers sync.WaitGroup
+-	for worker := range min(r.parallel, len(tests)) {
++	for worker := range min(r.sideBySide, len(tests)) {
+ 		workers.Add(1)
+ 		go func() {
+ 			defer workers.Done()
+@@ -604,6 +605,7 @@ func (r *testMapRun) takeSlot(acquire func(gateslot.Holder) (*gateslot.Lease, er
+ 	if r.parallel < 1 {
+ 		r.parallel = runtime.NumCPU()
+ 	}
++	r.sideBySide = r.request.cappedParallel(r.parallel, r.testMemory)
+ 	r.holderEnv = gateslot.HolderEnv(r.env, r.lease, limits.Tier0Parallel)
+ 	return true, nil
+ }
+@@ -669,7 +671,7 @@ func (r *testMapRun) runTest(p *packageRun, fn testcover.TestFunc, profile strin
+ 	if tier.PrebuiltLym && r.lymBin != "" {
+ 		env = append(env, gateslot.PrebuiltLymEnv+"="+r.lymBin)
+ 	}
+-	runner := testcover.Toolchain{Env: env, Ctx: r.ctx, TestTimeout: r.testTimeout, Grace: r.request.grace}
++	runner := testcover.Toolchain{Env: env, Ctx: r.ctx, TestTimeout: r.testTimeout, MemoryLimit: r.testMemory, Grace: r.request.grace}
+ 	result, err := runner.RunAlone(p.bin, p.pkgDir, profile, fn.Name)
+ 	run := mappedRun{fn: fn, result: result}
+ 	switch {
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index 05d4cc91..7a06df8d 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -38,6 +38,8 @@ type Config struct {
+ 	RedundancyBuildTimeoutMin int `yaml:"redundancy_build_timeout_min"`
+ 	// RedundancyTestTimeoutSec is the seconds each test a coverage map run or the redundancy report step runs alone may take.
+ 	RedundancyTestTimeoutSec int `yaml:"redundancy_test_timeout_sec"`
++	// RedundancyTestMemoryMB is the megabytes each such test, with every process it starts, may hold.
++	RedundancyTestMemoryMB int `yaml:"redundancy_test_memory_mb"`
+ 	// RedundancyMaxTests caps the tests the redundancy report step judges in one call.
+ 	RedundancyMaxTests int `yaml:"redundancy_max_tests"`
+ 	// RedundancyBudgetMin is the minutes the redundancy report step may spend on builds and tests once it holds its slot.
+@@ -90,6 +92,7 @@ type configFile struct {
+ 	FixerTimeoutMin           int                  `yaml:"fixer_timeout_min"`
+ 	RedundancyBuildTimeoutMin int                  `yaml:"redundancy_build_timeout_min"`
+ 	RedundancyTestTimeoutSec  int                  `yaml:"redundancy_test_timeout_sec"`
++	RedundancyTestMemoryMB    int                  `yaml:"redundancy_test_memory_mb"`
+ 	RedundancyMaxTests        int                  `yaml:"redundancy_max_tests"`
+ 	RedundancyBudgetMin       int                  `yaml:"redundancy_budget_min"`
+ 	Tiers                     map[string]tierFile  `yaml:"tiers"`
+@@ -148,6 +151,7 @@ func ConfigSpec() configengine.Spec {
+ 			"fixer_timeout_min":            configengine.CategoryCrossPair,
+ 			"redundancy_build_timeout_min": configengine.CategoryCrossPair,
+ 			"redundancy_test_timeout_sec":  configengine.CategoryCrossPair,
++			"redundancy_test_memory_mb":    configengine.CategoryCrossPair,
+ 			"redundancy_max_tests":         configengine.CategoryCrossPair,
+ 			"redundancy_budget_min":        configengine.CategoryCrossPair,
+ 			"tiers":                        configengine.CategoryExecutable,
+@@ -279,6 +283,7 @@ func decodeConfig(data []byte, machineLayerApplies bool) (Config, error) {
+ 		{"fixer_timeout_min", file.FixerTimeoutMin},
+ 		{"redundancy_build_timeout_min", file.RedundancyBuildTimeoutMin},
+ 		{"redundancy_test_timeout_sec", file.RedundancyTestTimeoutSec},
++		{"redundancy_test_memory_mb", file.RedundancyTestMemoryMB},
+ 		{"redundancy_max_tests", file.RedundancyMaxTests},
+ 		{"redundancy_budget_min", file.RedundancyBudgetMin},
+ 	} {
+@@ -319,6 +324,7 @@ func decodeConfig(data []byte, machineLayerApplies bool) (Config, error) {
+ 		FixerTimeoutMin:           file.FixerTimeoutMin,
+ 		RedundancyBuildTimeoutMin: file.RedundancyBuildTimeoutMin,
+ 		RedundancyTestTimeoutSec:  file.RedundancyTestTimeoutSec,
++		RedundancyTestMemoryMB:    file.RedundancyTestMemoryMB,
+ 		RedundancyMaxTests:        file.RedundancyMaxTests,
+ 		RedundancyBudgetMin:       file.RedundancyBudgetMin,
+ 		Tiers:                     tiers,
+@@ -462,6 +468,11 @@ func (c Config) FixerTimeout() time.Duration {
+ 	return time.Duration(c.FixerTimeoutMin) * time.Minute
+ }
+ 
++// RedundancyTestMemory returns the memory cap `redundancy_test_memory_mb` sets, in bytes.
++func (c Config) RedundancyTestMemory() int64 {
++	return int64(c.RedundancyTestMemoryMB) << 20
++}
++
+ // decodeGates decodes the gates entries into keys and validates each key's scope, lints, reports and fixer.
+ func decodeGates(entries map[string]yaml.Node) (map[string]GateKey, error) {
+ 	gates := make(map[string]GateKey, len(entries))
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index 7778287f..dad2fb4b 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -69,7 +69,7 @@ func TestConfigSpec_SetNestedKeys(t *testing.T) {
+ 
+ var templateDefaults = Config{
+ 	Slots: 2, BusyQuitSec: 120, FixerTimeoutMin: 30,
+-	RedundancyBuildTimeoutMin: 10, RedundancyTestTimeoutSec: 120, RedundancyMaxTests: 40, RedundancyBudgetMin: 10,
++	RedundancyBuildTimeoutMin: 10, RedundancyTestTimeoutSec: 120, RedundancyTestMemoryMB: 2048, RedundancyMaxTests: 40, RedundancyBudgetMin: 10,
+ 	Gates: map[string]GateKey{
+ 		"card":            {Tiers: []int{0}, Scope: "card", Lints: []string{"comments", "pattern"}, Fixer: "sonnet[medium]"},
+ 		"batch":           {Tiers: []int{0}, Scope: "card"},
+@@ -288,6 +288,7 @@ func TestLoadConfig(t *testing.T) {
+ 		{"fixer_timeout_min zero", baseKeys + "fixer_timeout_min: 0\n", Config{}, `gate config key "fixer_timeout_min": 0; want at least 1` + fixIt},
+ 		{"redundancy_build_timeout_min zero", baseKeys + "redundancy_build_timeout_min: 0\n", Config{}, `gate config key "redundancy_build_timeout_min": 0; want at least 1` + fixIt},
+ 		{"redundancy_test_timeout_sec zero", baseKeys + "redundancy_test_timeout_sec: 0\n", Config{}, `gate config key "redundancy_test_timeout_sec": 0; want at least 1` + fixIt},
++		{"redundancy_test_memory_mb zero", baseKeys + "redundancy_test_memory_mb: 0\n", Config{}, `gate config key "redundancy_test_memory_mb": 0; want at least 1` + fixIt},
+ 		{"redundancy_max_tests zero", baseKeys + "redundancy_max_tests: 0\n", Config{}, `gate config key "redundancy_max_tests": 0; want at least 1` + fixIt},
+ 		{"redundancy_budget_min zero", baseKeys + "redundancy_budget_min: 0\n", Config{}, `gate config key "redundancy_budget_min": 0; want at least 1` + fixIt},
+ 		{"an unknown report", baseKeys + "gates:\n  webster: {tiers: [0], scope: all, reports: [speed]}\n", Config{}, `gate config key "gates.webster": report "speed"; want redundancy` + fixIt},
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 63997f2e..245a59dd 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -170,11 +170,15 @@
+ // Only the `card` key may hold one; the template sets `sonnet[medium]` there, and an empty value turns the fixer off.
+ // `fixer_timeout_min` bounds how long the callers of a cold gate fixer wait for it.
+ // LoadConfig refuses a value below 1, and Config.FixerTimeout returns it as a duration.
+-// `lym gate testmap` builds coverage maps under two bounds.
++// `lym gate testmap` builds coverage maps under three bounds.
+ // `redundancy_build_timeout_min` bounds each build in minutes.
+ // `redundancy_test_timeout_sec` bounds each test in seconds.
+-// The redundancy report step of `lym gate test` and the mutation check of `lym gate redundant` take the two bounds too.
+-// A mutant run past the test bound counts as a kill in `lym gate redundant`.
++// `redundancy_test_memory_mb` caps the memory of each test and of every process it starts, in megabytes.
++// Config.RedundancyTestMemory returns it in bytes.
++// The redundancy report step of `lym gate test` and the mutation check of `lym gate redundant` take the three bounds too.
++// A mutant run past the test bound or the memory cap counts as a kill in `lym gate redundant`.
++// `lym gate testmap` and `lym gate redundant` run fewer tests side by side when memory is short.
++// That is when the limit they sit under leaves less than the caps of those tests together.
+ // The report step has two bounds of its own.
+ // `redundancy_max_tests` caps the tests it judges in one call.
+ // `redundancy_budget_min` bounds, in minutes, its builds and tests once it holds its slot.
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index d5781afe..5ede8abb 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -3,6 +3,7 @@ busy_quit_sec: 120  # seconds a Go test binary under lym gate test may keep a CP
+ fixer_timeout_min: 30  # minutes a cold gate fixer may run before the call that spawned it stops waiting; it bounds the card gate's fixer and the row gate fixers, and webster's fix-verify keeps its own recovery_timeout_min
+ redundancy_build_timeout_min: 10  # minutes each coverage, mutant and lym build of a coverage map run, the redundancy report step or lym gate redundant may take before its process group is killed and the build counts as failed
+ redundancy_test_timeout_sec: 120  # seconds each test of those runs alone may take before its process group is killed; the test is left out, except a mutant run in lym gate redundant, which then counts as a kill
++redundancy_test_memory_mb: 2048  # megabytes each test of those runs alone may hold, with every process it starts, before the kernel ends it or fails its allocation; the test is left out, recorded as failed by lym gate testmap, and a mutant run in lym gate redundant counts as a kill; lym gate redundant and lym gate testmap run fewer tests side by side when the memory limit they sit under leaves less than their caps together
+ redundancy_max_tests: 40  # the most new and changed tests the redundancy report step judges in one call, taken in file then name order; the rest are listed as not judged
+ redundancy_budget_min: 10  # minutes the redundancy report step may spend on its builds and tests once it holds its gate slot; past it the step starts no further build or test
+ 
+diff --git a/internal/proc/doc.go b/internal/proc/doc.go
+index 29fc87e5..27fc1e27 100644
+--- a/internal/proc/doc.go
++++ b/internal/proc/doc.go
+@@ -43,6 +43,27 @@
+ // A caller uses it to hold back new work before every fork fails.
+ // It finds none on Windows or a cgroup v1 host.
+ //
++// ReadMemoryLimit reads `memory.high`, `memory.max` and `memory.current` over the same ancestry.
++// It returns the cgroup v2 memory limit with the least memory left, the file cache not counted as used.
++// A caller uses it to start no more memory-capped work than the limit leaves room for.
++// It finds none on Windows or a cgroup v1 host.
++//
++// RunMemoryCapped runs a command with the memory of its process tree capped.
++// On Linux the command runs in a transient scope of the systemd user manager, started through `systemd-run`.
++// The scope's `MemoryMax` is the cap and it has no swap, so the kernel kills the command alone.
++// The call reports that kill.
++// The command keeps its pid and process group, so a group kill still reaches it.
++// One probe per process tells whether the user manager can cap a scope's memory.
++// Where it cannot, `RLIMIT_DATA` limits each process's data segment instead, set once the command started.
++// An allocation past that limit fails in the process, and the call reports no kill.
++// On Windows the command runs in a kill-on-close job object with a job memory limit.
++// That limit fails an allocation the same way.
++// A cancel there ends the whole job, and the job ends with the command.
++// MemoryCapCoversTree reports whether the cap bounds a command's whole tree as one.
++// Only the data segment limit does not.
++// proc cannot log, so the caller logs the command it hands over and its end.
++// The one-time probe's `systemd-run` spawn goes unlogged; a caller sees only its outcome, through MemoryCapCoversTree.
++//
+ // IsSpawnAgain reports whether a start failed on a temporary resource shortage, EAGAIN from fork or exec.
+ // NoteSpawnAgain records the time of each such refusal process-wide, and LastSpawnAgain reads it back,
+ // so a caller that sees a later failure can judge whether a host resource shortage preceded it.
+diff --git a/internal/proc/export_linux_test.go b/internal/proc/export_linux_test.go
+new file mode 100644
+index 00000000..62e9a825
+--- /dev/null
++++ b/internal/proc/export_linux_test.go
+@@ -0,0 +1,15 @@
++// export_linux_test.go exposes the capped run of a host with no user manager to the external tests.
++
++package proc
++
++import "os/exec"
++
++// RunMemoryCappedWithStarter runs cmd capped at limit bytes in a scope that starter, standing in for systemd-run, starts.
++func RunMemoryCappedWithStarter(cmd *exec.Cmd, limit int64, starter string) (killed bool, err error) {
++	return runMemoryCapped(cmd, limit, memoryScope{starter: starter})
++}
++
++// RunMemoryCappedWithoutScope runs cmd capped at limit bytes as a host whose user manager cannot cap a scope does.
++func RunMemoryCappedWithoutScope(cmd *exec.Cmd, limit int64) (killed bool, err error) {
++	return runMemoryCapped(cmd, limit, memoryScope{})
++}
+diff --git a/internal/proc/memorycap.go b/internal/proc/memorycap.go
+new file mode 100644
+index 00000000..a6e36ea7
+--- /dev/null
++++ b/internal/proc/memorycap.go
+@@ -0,0 +1,27 @@
++// memorycap.go runs a command with the memory of its process tree capped, by whatever means the platform has.
++
++package proc
++
++import "os/exec"
++
++// RunMemoryCapped runs cmd as cmd.Run does, with a cap of limit bytes on the memory cmd and the processes it starts hold.
++// It exists so a runaway command is ended alone, before it takes the memory of everything beside it.
++// On Linux, cmd runs in a transient scope of the systemd user manager whose memory limit is limit, with no swap.
++// The kernel kills a command that passes the limit, and killed reports that kill.
++// cmd keeps its pid and process group there, so a cancel that kills the group still reaches it.
++// On a Linux host whose user manager cannot cap a scope's memory, the data segment of each process is limited instead.
++// On Windows, cmd runs in a job object whose memory limit is limit, and a cancel ends the whole job.
++// cmd joins the job a moment after it starts, so a process it starts in that moment is outside the limit and the cancel.
++// Under those two an allocation past the limit fails in the process that asks for it, and killed stays false.
++// In a scope cmd.ExtraFiles is replaced, so cmd sets none.
++// The error is cmd.Run's, or reports a cap that could not be set, which includes a scope that never ran cmd.
++func RunMemoryCapped(cmd *exec.Cmd, limit int64) (killed bool, err error) {
++	return runMemoryCappedPlatform(cmd, limit)
++}
++
++// MemoryCapCoversTree reports whether a memory cap bounds a command's whole process tree as one.
++// It is false where the cap limits each process alone.
++// The processes of one command can then hold the limit several times over, so a caller runs one capped command at a time.
++func MemoryCapCoversTree() bool {
++	return memoryCapCoversTreePlatform()
++}
+diff --git a/internal/proc/memorycap_linux.go b/internal/proc/memorycap_linux.go
+new file mode 100644
+index 00000000..65d3fd6f
+--- /dev/null
++++ b/internal/proc/memorycap_linux.go
+@@ -0,0 +1,170 @@
++// memorycap_linux.go caps a command's memory with a transient scope of the systemd user manager.
++// On a host whose user manager cannot cap a scope's memory, it limits the data segment of each process instead.
++
++package proc
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"os"
++	"os/exec"
++	"path"
++	"path/filepath"
++	"slices"
++	"strconv"
++	"strings"
++	"sync"
++	"sync/atomic"
++	"syscall"
++	"time"
++
++	"golang.org/x/sys/unix"
++)
++
++// systemdRun names the command that starts a transient scope.
++const systemdRun = "systemd-run"
++
++// memoryController is the cgroup controller a scope's memory limit needs.
++const memoryController = "memory"
++
++// probeMemoryCap is the memory limit of the scope the probe starts.
++const probeMemoryCap = 64 << 20
++
++// probeTimeout bounds the probe's scope, so a user manager that does not answer reads as a host that cannot cap one.
++// probeWaitDelay bounds the wait for the probe's output once it is killed.
++const (
++	probeTimeout   = 5 * time.Second
++	probeWaitDelay = time.Second
++)
++
++// scopeStartScript is what a scope runs ahead of its command, with the command and its arguments as the script's own.
++// It writes a line to file descriptor 3, which tells the caller the scope started.
++// It then closes the descriptor and becomes the command, so the command's process is the shell's.
++const scopeStartScript = `echo >&3; exec 3>&-; exec "$@"`
++
++// markerReadBound bounds the read of the scope's start line, which a scope that started or failed answers at once.
++const markerReadBound = time.Second
++
++// memoryScope is how the host runs a command in a memory-capped scope; its zero value is a host that cannot.
++type memoryScope struct {
++	// starter is the path of systemd-run, empty on a host that cannot cap a scope's memory.
++	starter string
++}
++
++// hostMemoryScope probes the host once per process.
++var hostMemoryScope = sync.OnceValue(probeMemoryScope)
++
++// probeMemoryScope starts one capped scope and returns the host's memoryScope.
++// The scope prints its own cgroup,
++// and the host can cap one when that cgroup's parent hands the memory controller down.
++// A user manager without that controller starts the scope all the same and caps nothing.
++// A scope that outlasts probeTimeout counts as one the host cannot start.
++func probeMemoryScope() memoryScope {
++	starter, err := exec.LookPath(systemdRun)
++	if err != nil {
++		return memoryScope{}
++	}
++	bounded, cancel := context.WithTimeout(context.Background(), probeTimeout)
++	defer cancel()
++	probe := exec.CommandContext(bounded, starter, memoryScopeArgs(probeMemoryCap, "cat", selfCgroupFile)...)
++	probe.WaitDelay = probeWaitDelay
++	listing, err := probe.Output()
++	if err != nil {
++		return memoryScope{}
++	}
++	cgroup, ok := cgroupV2Path(string(listing))
++	if !ok {
++		return memoryScope{}
++	}
++	controllers, err := os.ReadFile(filepath.Join(cgroupMount, filepath.FromSlash(path.Dir(cgroup)), "cgroup.subtree_control"))
++	if err != nil || !slices.Contains(strings.Fields(string(controllers)), memoryController) {
++		return memoryScope{}
++	}
++	return memoryScope{starter: starter}
++}
++
++// memoryScopeArgs returns systemd-run's arguments for running command in a scope capped at limit bytes with no swap.
++// The scope is collected once it ends, whatever ended it.
++func memoryScopeArgs(limit int64, command ...string) []string {
++	return append([]string{
++		"--user", "--scope", "--quiet", "--collect",
++		"-p", "MemoryMax=" + strconv.FormatInt(limit, 10), "-p", "MemorySwapMax=0", "--",
++	}, command...)
++}
++
++// runMemoryCappedPlatform runs cmd capped at limit bytes by the means the probe found.
++func runMemoryCappedPlatform(cmd *exec.Cmd, limit int64) (bool, error) {
++	return runMemoryCapped(cmd, limit, hostMemoryScope())
++}
++
++// memoryCapCoversTreePlatform reports whether the host caps a command in a scope, which holds its whole tree.
++func memoryCapCoversTreePlatform() bool {
++	return hostMemoryScope().starter != ""
++}
++
++// runMemoryCapped runs cmd capped at limit bytes: in a scope when scope can start one, else under a data segment limit.
++// In a scope, killed reports a command the kernel ended with SIGKILL when no cancel of cmd sent one.
++// A scope that never ran the command returns an error that is no *exec.ExitError, so it never reads as a failing command.
++// The scope path uses cmd.ExtraFiles, so cmd must carry none.
++func runMemoryCapped(cmd *exec.Cmd, limit int64, scope memoryScope) (killed bool, err error) {
++	if scope.starter == "" {
++		return false, runDataLimited(cmd, limit)
++	}
++	started, marker, err := os.Pipe()
++	if err != nil {
++		return false, fmt.Errorf("create the pipe that marks the scope's start: %w", err)
++	}
++	defer started.Close()
++	// systemd-run moves itself into the scope and then becomes the shell, which becomes the command,
++	// so the pid and process group stay cmd's own.
++	shell := []string{"/bin/sh", "-c", scopeStartScript, "sh", cmd.Path}
++	cmd.Args = append([]string{systemdRun}, memoryScopeArgs(limit, append(shell, cmd.Args[1:]...)...)...)
++	cmd.Path = scope.starter
++	cmd.ExtraFiles = []*os.File{marker}
++	var cancelled atomic.Bool
++	if cancel := cmd.Cancel; cancel != nil {
++		cmd.Cancel = func() error {
++			cancelled.Store(true)
++			return cancel()
++		}
++	}
++	err = cmd.Start()
++	marker.Close()
++	if err != nil {
++		return false, err
++	}
++	err = cmd.Wait()
++	if cmd.ProcessState == nil || cancelled.Load() {
++		return false, err
++	}
++	if !scopeStarted(started) {
++		return false, fmt.Errorf("the scope did not run the command, and %s ended with: %v", systemdRun, err)
++	}
++	status, ok := cmd.ProcessState.Sys().(syscall.WaitStatus)
++	return ok && status.Signaled() && status.Signal() == syscall.SIGKILL, err
++}
++
++// scopeStarted reports whether the scope's shell wrote its start line to started, the read end of the scope's start pipe.
++func scopeStarted(started *os.File) bool {
++	_ = started.SetReadDeadline(time.Now().Add(markerReadBound))
++	_, err := started.Read(make([]byte, 1))
++	return err == nil
++}
++
++// runDataLimited runs cmd with the data segment of its process limited to limit bytes.
++// Every process cmd starts from then on inherits the limit as its own.
++// The limit counts the memory a process maps to write to, not the address space it only reserves.
++// It is set once cmd has started, since a command cannot be started with one.
++func runDataLimited(cmd *exec.Cmd, limit int64) error {
++	if err := cmd.Start(); err != nil {
++		return err
++	}
++	bound := unix.Rlimit{Cur: uint64(limit), Max: uint64(limit)}
++	if err := unix.Prlimit(cmd.Process.Pid, unix.RLIMIT_DATA, &bound, nil); err != nil && !errors.Is(err, unix.ESRCH) {
++		_ = cmd.Process.Kill()
++		_ = cmd.Wait()
++		return fmt.Errorf("limit the data segment of process %d: %w", cmd.Process.Pid, err)
++	}
++	return cmd.Wait()
++}
+diff --git a/internal/proc/memorycap_linux_test.go b/internal/proc/memorycap_linux_test.go
+new file mode 100644
+index 00000000..5696af9f
+--- /dev/null
++++ b/internal/proc/memorycap_linux_test.go
+@@ -0,0 +1,94 @@
++// memorycap_linux_test.go covers what a memory-capped run does on Linux alone.
++// A scope reports the kernel's kill, and a host with no user manager fails the child's own allocation.
++// A scope that never starts is an error, and a cancel still ends a capped run through its process group.
++
++package proc_test
++
++import (
++	"bufio"
++	"context"
++	"errors"
++	"io"
++	"os/exec"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestRunMemoryCapped_EndsAChildOverTheCapByTheHostsMeans(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		run  func(cmd *exec.Cmd, limit int64) (bool, error)
++		// needsScope is set for a row that runs only where the user manager can cap a scope's memory.
++		needsScope bool
++		wantKilled bool
++	}{
++		{"AScopeReportsTheKernelsKill", proc.RunMemoryCapped, true, true},
++		{"WithNoUserManagerTheChildFailsItsOwnAllocation", proc.RunMemoryCappedWithoutScope, false, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if tt.needsScope && !proc.MemoryCapCoversTree() {
++				t.Skip("this host has no systemd user manager that caps a scope's memory")
++			}
++			killed, err := tt.run(memoryHog(t, hogOverCap), testMemoryCap)
++			if err == nil || killed != tt.wantKilled {
++				t.Errorf("capped run of a child keeping %d MB under %d = killed %v, %v; want killed %v and an error", hogOverCap, testMemoryCap, killed, err, tt.wantKilled)
++			}
++		})
++	}
++}
++
++func TestRunMemoryCapped_AScopeThatNeverStartsIsAnErrorAndNotTheCommandsExit(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	// /bin/false stands in for a systemd-run that cannot create the scope: it exits 1 before it runs the command.
++	killed, err := proc.RunMemoryCappedWithStarter(exec.Command("echo", "never runs"), testMemoryCap, "/bin/false")
++	var exitErr *exec.ExitError
++	if err == nil || errors.As(err, &exitErr) || killed {
++		t.Errorf("RunMemoryCapped with a starter that fails at once = killed %v, %v; want no kill and an error that is no *exec.ExitError", killed, err)
++	}
++}
++
++func TestRunMemoryCapped_ACancelEndsTheRunAndIsNoCapKill(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	ctx, cancel := context.WithCancel(context.Background())
++	defer cancel()
++	// The shell becomes a sleep that outlasts the minute the test allows, so only the cancel ends the run.
++	cmd := exec.CommandContext(ctx, "sh", "-c", "echo started; exec sleep 300")
++	proc.ConfigureGroupKill(cmd, func(int, error) {})
++	reader, writer := io.Pipe()
++	cmd.Stdout = writer
++	type outcome struct {
++		killed bool
++		err    error
++	}
++	done := make(chan outcome, 1)
++	go func() {
++		killed, err := proc.RunMemoryCapped(cmd, testMemoryCap)
++		writer.Close()
++		done <- outcome{killed, err}
++	}()
++	if line, err := bufio.NewReader(reader).ReadString('\n'); err != nil || line != "started\n" {
++		t.Fatalf("the capped command printed %q, %v; want its started line", line, err)
++	}
++
++	cancel()
++	select {
++	case got := <-done:
++		if got.killed || got.err == nil {
++			t.Errorf("RunMemoryCapped after a cancel = killed %v, %v; want no cap kill and the cancelled command's error", got.killed, got.err)
++		}
++	case <-time.After(time.Minute):
++		t.Fatal("the capped command was still running a minute after its cancel")
++	}
++}
+diff --git a/internal/proc/memorycap_test.go b/internal/proc/memorycap_test.go
+new file mode 100644
+index 00000000..ff344d0c
+--- /dev/null
++++ b/internal/proc/memorycap_test.go
+@@ -0,0 +1,60 @@
++// memorycap_test.go covers a memory-capped run on every platform.
++// The child is the test binary itself, which the package's TestMain runs as a memory hog.
++
++package proc_test
++
++import (
++	"os"
++	"os/exec"
++	"strconv"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// testMemoryCap is the cap the capped-run tests run a child under, in bytes.
++const testMemoryCap = 128 << 20
++
++// The megabytes a child keeps: within testMemoryCap, and over it.
++// The larger child stops there by itself, so a cap that does not hold fails its test and never the machine.
++const (
++	hogWithinCap = 16
++	hogOverCap   = 384
++)
++
++// memoryHog returns the command of a child that keeps megabytes megabytes and then exits 0.
++func memoryHog(t *testing.T, megabytes int) *exec.Cmd {
++	t.Helper()
++	testBinary, err := os.Executable()
++	if err != nil {
++		t.Fatal(err)
++	}
++	cmd := exec.Command(testBinary)
++	cmd.Env = append(os.Environ(), memoryHogEnv+"="+strconv.Itoa(megabytes))
++	return cmd
++}
++
++func TestRunMemoryCapped(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name      string
++		megabytes int
++		// wantEnded is set for a child the cap ends before it exits 0.
++		wantEnded bool
++	}{
++		{"AChildWithinTheCapEndsOnItsOwn", hogWithinCap, false},
++		{"AChildOverTheCapIsEnded", hogOverCap, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			killed, err := proc.RunMemoryCapped(memoryHog(t, tt.megabytes), testMemoryCap)
++			if ended := err != nil; ended != tt.wantEnded || (killed && !tt.wantEnded) {
++				t.Errorf("RunMemoryCapped(a child keeping %d MB, %d) = killed %v, %v; want ended %v", tt.megabytes, testMemoryCap, killed, err, tt.wantEnded)
++			}
++		})
++	}
++}
+diff --git a/internal/proc/memorycap_windows.go b/internal/proc/memorycap_windows.go
+new file mode 100644
+index 00000000..3f5e32fd
+--- /dev/null
++++ b/internal/proc/memorycap_windows.go
+@@ -0,0 +1,41 @@
++// memorycap_windows.go caps a command's memory with the memory limit of a kill-on-close job object.
++
++package proc
++
++import (
++	"os/exec"
++
++	"golang.org/x/sys/windows"
++)
++
++// runMemoryCappedPlatform runs cmd in a job object whose memory limit is limit bytes.
++// The job fails an allocation past the limit in the process that asks for it, so killed is always false.
++// A cancel of cmd ends every process of the job before it ends cmd, and the job ends with the call.
++// cmd joins the job once it has started, so a process it starts in between is outside the limit and the cancel.
++func runMemoryCappedPlatform(cmd *exec.Cmd, limit int64) (bool, error) {
++	job, err := createKillOnCloseJob(nil, uintptr(limit))
++	if err != nil {
++		return false, err
++	}
++	defer windows.CloseHandle(job)
++	if cancel := cmd.Cancel; cancel != nil {
++		cmd.Cancel = func() error {
++			_ = windows.TerminateJobObject(job, 1)
++			return cancel()
++		}
++	}
++	if err := cmd.Start(); err != nil {
++		return false, err
++	}
++	if err := assignProcessToJob(job, cmd.Process.Pid); err != nil {
++		_ = cmd.Process.Kill()
++		_ = cmd.Wait()
++		return false, err
++	}
++	return false, cmd.Wait()
++}
++
++// memoryCapCoversTreePlatform is always true: a job object holds every process its command starts.
++func memoryCapCoversTreePlatform() bool {
++	return true
++}
+diff --git a/internal/proc/memorylimit.go b/internal/proc/memorylimit.go
+new file mode 100644
+index 00000000..915910e0
+--- /dev/null
++++ b/internal/proc/memorylimit.go
+@@ -0,0 +1,97 @@
++// memorylimit.go reads the cgroup v2 memory limit that the calling process sits under.
++// It is the level of the cgroup ancestry with the least memory left.
++
++package proc
++
++import (
++	"os"
++	"path"
++	"path/filepath"
++	"strconv"
++	"strings"
++)
++
++// MemoryLimit is one cgroup's memory use and its limit.
++type MemoryLimit struct {
++	// Used is the bytes the cgroup and its descendants hold outside the file cache, which the kernel drops under pressure.
++	Used int64
++	// Max is the lower of the cgroup's `memory.high` and `memory.max`.
++	Max int64
++	// Cgroup is the cgroup's path below the cgroup v2 mount, such as `/user.slice/user-1000.slice`.
++	Cgroup string
++}
++
++// Headroom is the bytes the cgroup can still take before its limit throttles or kills.
++func (l MemoryLimit) Headroom() int64 {
++	return l.Max - l.Used
++}
++
++// ReadMemoryLimit reads the memory limit closest to being reached over the calling process's cgroup and its ancestors.
++// A level's limit is the lower of its `memory.high`, where the kernel throttles the level, and its `memory.max`.
++// Reading every level sees a limit wherever it is set, such as a systemd user slice.
++// found is false when the process's cgroup v2 path is unreadable, as on Windows or a cgroup v1 host.
++// It is also false when no level sets a numeric limit.
++func ReadMemoryLimit() (limit MemoryLimit, found bool) {
++	return readMemoryLimitAt(selfCgroupFile, cgroupMount)
++}
++
++// readMemoryLimitAt reads the memory limit closest to being reached for the process whose cgroup file is selfCgroup.
++// mount is the cgroup v2 mount the levels are read under.
++func readMemoryLimitAt(selfCgroup, mount string) (MemoryLimit, bool) {
++	cgroup, ok := readCgroupV2Path(selfCgroup)
++	if !ok {
++		return MemoryLimit{}, false
++	}
++	var tightest MemoryLimit
++	found := false
++	for level := cgroup; ; level = path.Dir(level) {
++		if limit, ok := readMemoryLevel(mount, level); ok && (!found || limit.Headroom() < tightest.Headroom()) {
++			tightest, found = limit, true
++		}
++		if level == "/" {
++			break
++		}
++	}
++	return tightest, found
++}
++
++// readMemoryLevel reads the memory use and numeric limit of the cgroup at level under mount;
++// ok is false when the level sets no limit or its `memory.current` is unreadable or malformed.
++func readMemoryLevel(mount, level string) (MemoryLimit, bool) {
++	dir := filepath.Join(mount, filepath.FromSlash(level))
++	throttle, throttled := readIntFile(filepath.Join(dir, "memory.high"))
++	hard, capped := readIntFile(filepath.Join(dir, "memory.max"))
++	limit := hard
++	switch {
++	case !throttled && !capped:
++		return MemoryLimit{}, false
++	case throttled && (!capped || throttle < hard):
++		limit = throttle
++	}
++	current, ok := readIntFile(filepath.Join(dir, "memory.current"))
++	if !ok {
++		return MemoryLimit{}, false
++	}
++	return MemoryLimit{Used: int64(current) - fileCacheBytes(dir), Max: int64(limit), Cgroup: level}, true
++}
++
++// fileCacheBytes returns the file cache the cgroup at dir holds:
++// the `inactive_file` and `active_file` lines of its `memory.stat`.
++// An unreadable file reads as none.
++func fileCacheBytes(dir string) int64 {
++	content, err := os.ReadFile(filepath.Join(dir, "memory.stat"))
++	if err != nil {
++		return 0
++	}
++	var cache int64
++	for _, line := range strings.Split(string(content), "\n") {
++		key, value, found := strings.Cut(line, " ")
++		if !found || (key != "inactive_file" && key != "active_file") {
++			continue
++		}
++		if bytes, err := strconv.ParseInt(strings.TrimSpace(value), 10, 64); err == nil {
++			cache += bytes
++		}
++	}
++	return cache
++}
+diff --git a/internal/proc/memorylimit_test.go b/internal/proc/memorylimit_test.go
+new file mode 100644
+index 00000000..f01a8870
+--- /dev/null
++++ b/internal/proc/memorylimit_test.go
+@@ -0,0 +1,97 @@
++// memorylimit_test.go pins the memory-limit reader over fixture cgroup files.
++// The level with the least memory left wins, and an unreadable or limitless ancestry reads as not found.
++
++package proc
++
++import (
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestReadMemoryLimitAt(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const leaf = "/user.slice/user-1000.slice/user@1000.service/app.slice/run.scope"
++	// level holds one cgroup's memory.high, memory.max, memory.current and memory.stat; an empty text leaves the file absent.
++	type level struct{ high, max, current, stat string }
++	tests := []struct {
++		name string
++		// selfCgroup is the cgroup file's content; empty leaves the file absent.
++		selfCgroup string
++		levels     map[string]level
++		want       MemoryLimit
++		wantFound  bool
++	}{
++		{
++			name:       "the lower of high and max is the limit, and the file cache does not count as used",
++			selfCgroup: "0::" + leaf + "\n",
++			levels: map[string]level{
++				"/user.slice/user-1000.slice": {
++					high: "17179869184", max: "23622320128", current: "14037016576",
++					stat: "anon 5658374144\nfile 7582158848\ninactive_file 4161351680\nactive_file 2899247104\n",
++				},
++			},
++			want:      MemoryLimit{Used: 6976417792, Max: 17179869184, Cgroup: "/user.slice/user-1000.slice"},
++			wantFound: true,
++		},
++		{
++			name:       "the level with the least memory left wins over a larger limit closer to the root",
++			selfCgroup: "0::" + leaf + "\n",
++			levels: map[string]level{
++				"/user.slice/user-1000.slice": {high: "max", max: "8000", current: "1000"},
++				leaf:                          {high: "500", max: "max", current: "450"},
++			},
++			want:      MemoryLimit{Used: 450, Max: 500, Cgroup: leaf},
++			wantFound: true,
++		},
++		{
++			name:       "a level with no numeric limit or no memory.current is skipped",
++			selfCgroup: "12:memory:/legacy\n0::" + leaf + "\n",
++			levels: map[string]level{
++				"/user.slice":                 {high: "max", max: "max", current: "5"},
++				"/user.slice/user-1000.slice": {high: "100", max: "max"},
++				leaf:                          {high: "max", max: "4000", current: "10"},
++			},
++			want:      MemoryLimit{Used: 10, Max: 4000, Cgroup: leaf},
++			wantFound: true,
++		},
++		{
++			name:       "no numeric limit in the ancestry",
++			selfCgroup: "0::" + leaf + "\n",
++			levels:     map[string]level{"/user.slice/user-1000.slice": {high: "max", max: "max", current: "2364"}},
++		},
++		{
++			name:   "an absent cgroup file",
++			levels: map[string]level{"/user.slice": {high: "3000", max: "max", current: "2997"}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			root := t.TempDir()
++			selfCgroup := filepath.Join(root, "cgroup")
++			if tt.selfCgroup != "" {
++				writeFixture(t, selfCgroup, tt.selfCgroup)
++			}
++			mount := filepath.Join(root, "mount")
++			for path, files := range tt.levels {
++				dir := filepath.Join(mount, filepath.FromSlash(path))
++				for name, text := range map[string]string{
++					"memory.high": files.high, "memory.max": files.max, "memory.current": files.current, "memory.stat": files.stat,
++				} {
++					if text != "" {
++						writeFixture(t, filepath.Join(dir, name), text+"\n")
++					}
++				}
++			}
++
++			got, found := readMemoryLimitAt(selfCgroup, mount)
++			if got != tt.want || found != tt.wantFound {
++				t.Errorf("readMemoryLimitAt() = %+v, %v; want %+v, %v", got, found, tt.want, tt.wantFound)
++			}
++		})
++	}
++}
+diff --git a/internal/proc/namedjob_windows.go b/internal/proc/namedjob_windows.go
+index 67cb63c4..2c9689c5 100644
+--- a/internal/proc/namedjob_windows.go
++++ b/internal/proc/namedjob_windows.go
+@@ -20,7 +20,8 @@ var procOpenJobObject = windows.NewLazySystemDLL("kernel32.dll").NewProc("OpenJo
+ // The processes in the job all end when its last handle closes.
+ // The job admits a CREATE_BREAKAWAY_FROM_JOB start, so only a process started with that flag outlives it;
+ // without the limit Windows refuses such a start with ERROR_ACCESS_DENIED.
+-func createKillOnCloseJob(name *uint16) (windows.Handle, error) {
++// A memoryLimit above zero caps the memory the job's processes commit together, in bytes.
++func createKillOnCloseJob(name *uint16, memoryLimit uintptr) (windows.Handle, error) {
+ 	job, err := windows.CreateJobObject(nil, name)
+ 	// A named job that already exists comes back with its handle and ERROR_ALREADY_EXISTS.
+ 	if err != nil && !(job != 0 && errors.Is(err, windows.ERROR_ALREADY_EXISTS)) {
+@@ -29,9 +30,13 @@ func createKillOnCloseJob(name *uint16) (windows.Handle, error) {
+ 	info := windows.JOBOBJECT_EXTENDED_LIMIT_INFORMATION{
+ 		BasicLimitInformation: windows.JOBOBJECT_BASIC_LIMIT_INFORMATION{LimitFlags: windows.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | windows.JOB_OBJECT_LIMIT_BREAKAWAY_OK},
+ 	}
++	if memoryLimit > 0 {
++		info.BasicLimitInformation.LimitFlags |= windows.JOB_OBJECT_LIMIT_JOB_MEMORY
++		info.JobMemoryLimit = memoryLimit
++	}
+ 	if _, err := windows.SetInformationJobObject(job, windows.JobObjectExtendedLimitInformation, uintptr(unsafe.Pointer(&info)), uint32(unsafe.Sizeof(info))); err != nil {
+ 		_ = windows.CloseHandle(job)
+-		return 0, fmt.Errorf("set job object kill-on-close: %w", err)
++		return 0, fmt.Errorf("set job object limits: %w", err)
+ 	}
+ 	return job, nil
+ }
+@@ -55,7 +60,7 @@ func holdNamedJobPlatform(name string) (func() error, error) {
+ 	if err != nil {
+ 		return nil, fmt.Errorf("job object name %q: %w", name, err)
+ 	}
+-	job, err := createKillOnCloseJob(namePointer)
++	job, err := createKillOnCloseJob(namePointer, 0)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/proc/tasklimit.go b/internal/proc/tasklimit.go
+index bc70b2b8..8426b512 100644
+--- a/internal/proc/tasklimit.go
++++ b/internal/proc/tasklimit.go
+@@ -4,7 +4,6 @@
+ package proc
+ 
+ import (
+-	"bufio"
+ 	"os"
+ 	"path"
+ 	"path/filepath"
+@@ -12,6 +11,12 @@ import (
+ 	"strings"
+ )
+ 
++// The calling process's cgroup listing, and the mount the cgroup v2 levels are read under.
++const (
++	selfCgroupFile = "/proc/self/cgroup"
++	cgroupMount    = "/sys/fs/cgroup"
++)
++
+ // TaskLimit is one cgroup's task count and its limit, as `pids.current` and `pids.max` read.
+ type TaskLimit struct {
+ 	// Current is the tasks the cgroup and its descendants hold.
+@@ -32,7 +37,7 @@ func (l TaskLimit) Headroom() int {
+ // found is false when the process's cgroup v2 path is unreadable, as on Windows or a cgroup v1 host.
+ // It is also false when no level sets a numeric limit.
+ func ReadTaskLimit() (limit TaskLimit, found bool) {
+-	return readTaskLimitAt("/proc/self/cgroup", "/sys/fs/cgroup")
++	return readTaskLimitAt(selfCgroupFile, cgroupMount)
+ }
+ 
+ // readTaskLimitAt reads the task limit closest to being reached for the process whose cgroup file is selfCgroup.
+@@ -57,14 +62,17 @@ func readTaskLimitAt(selfCgroup, mount string) (TaskLimit, bool) {
+ 
+ // readCgroupV2Path returns the cgroup v2 path the `0::` line of the cgroup file at selfCgroup names.
+ func readCgroupV2Path(selfCgroup string) (string, bool) {
+-	file, err := os.Open(selfCgroup)
++	listing, err := os.ReadFile(selfCgroup)
+ 	if err != nil {
+ 		return "", false
+ 	}
+-	defer file.Close()
+-	scanner := bufio.NewScanner(file)
+-	for scanner.Scan() {
+-		if cgroup, ok := strings.CutPrefix(scanner.Text(), "0::"); ok && strings.HasPrefix(cgroup, "/") {
++	return cgroupV2Path(string(listing))
++}
++
++// cgroupV2Path returns the cgroup v2 path the `0::` line of a process's cgroup listing names.
++func cgroupV2Path(listing string) (string, bool) {
++	for _, line := range strings.Split(listing, "\n") {
++		if cgroup, ok := strings.CutPrefix(line, "0::"); ok && strings.HasPrefix(cgroup, "/") {
+ 			return path.Clean(cgroup), true
+ 		}
+ 	}
+diff --git a/internal/proc/testmain_test.go b/internal/proc/testmain_test.go
+index 9c636f9e..daa1edf1 100644
+--- a/internal/proc/testmain_test.go
++++ b/internal/proc/testmain_test.go
+@@ -1,16 +1,46 @@
+ // testmain_test.go runs the package's tests under tmuxkit.Main.
+ // Their temp files live in the process run directory and go with it.
+ // It is an external test package because tmuxkit imports proc.
++// It also runs the test binary as a memory hog when a capped-run test asks for one.
+ 
+ package proc_test
+ 
+ import (
++	"fmt"
+ 	"os"
++	"strconv"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
+ )
+ 
++// memoryHogEnv makes the test binary a child that keeps the megabytes the variable names and then exits 0.
++const memoryHogEnv = "PROC_TEST_MEMORY_HOG_MB"
++
++// TestMain runs a memory hog when memoryHogEnv is set, and the tests under tmuxkit.Main otherwise.
+ func TestMain(m *testing.M) {
++	if megabytes := os.Getenv(memoryHogEnv); megabytes != "" {
++		os.Exit(hoardMemory(megabytes))
++	}
+ 	os.Exit(tmuxkit.Main(m))
+ }
++
++// hoardMemory keeps megabytes megabytes, writing each one so the host counts it, and returns the process exit code.
++// It stops there, so a child no cap ends exits 0.
++func hoardMemory(megabytes string) int {
++	count, err := strconv.Atoi(megabytes)
++	if err != nil {
++		fmt.Fprintf(os.Stderr, "%s=%q names no megabyte count\n", memoryHogEnv, megabytes)
++		return 3
++	}
++	kept := make([][]byte, 0, count)
++	for range count {
++		block := make([]byte, 1<<20)
++		for at := range block {
++			block[at] = 1
++		}
++		kept = append(kept, block)
++	}
++	fmt.Println("kept", len(kept), "megabytes")
++	return 0
++}
+diff --git a/internal/proc/tied_windows.go b/internal/proc/tied_windows.go
+index a251b85a..fff1a0e6 100644
+--- a/internal/proc/tied_windows.go
++++ b/internal/proc/tied_windows.go
+@@ -12,7 +12,7 @@ import (
+ 
+ // startPlatform creates the child's unnamed kill-on-close job, starts the child and assigns it to that job.
+ func (t *Tied) startPlatform() error {
+-	job, err := createKillOnCloseJob(nil)
++	job, err := createKillOnCloseJob(nil, 0)
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index 866d2654..a29e9a53 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -13,6 +13,12 @@
+ // A bounded command runs in its own process group, which the bound kills whole.
+ // The wait for its exit and output then lasts at most Grace, so a descendant holding the output pipe cannot stall it.
+ // A test past its bound comes back marked TimedOut, never as an error.
++// A Toolchain with a MemoryLimit runs each test binary through `proc.RunMemoryCapped`.
++// That caps the memory of the test and of every process it starts; the go commands are never capped.
++// A test the cap ends comes back marked MemoryCapped, never as an error.
++// That is a test the kernel killed.
++// It is also a test whose run failed with the Go runtime's out-of-memory error in its output.
++// That error is how the cap shows where the host fails the allocation instead.
+ // ScanTestFuncs reads a package's top-level Test functions.
+ // Each comes with its file, the tier its `tiergate.Require` names and the hash of its source text.
+ // ParseTestFuncs reads them from one test file's source, such as the file as a commit stores it.
+diff --git a/internal/testcover/runner.go b/internal/testcover/runner.go
+index 5f614362..2b5adeec 100644
+--- a/internal/testcover/runner.go
++++ b/internal/testcover/runner.go
+@@ -43,6 +43,8 @@ type Toolchain struct {
+ 	BuildTimeout time.Duration
+ 	// TestTimeout bounds each test run alone; zero leaves it unbounded.
+ 	TestTimeout time.Duration
++	// MemoryLimit caps the bytes each test binary's run may hold, with every process it starts; zero leaves it uncapped.
++	MemoryLimit int64
+ 	// Grace bounds the wait for a bounded command's exit and output once it ended or was killed; zero waits for both.
+ 	Grace time.Duration
+ }
+@@ -58,6 +60,8 @@ type RunResult struct {
+ 	Profile []ProfileBlock
+ 	// TimedOut marks a run killed at TestTimeout; its Action is ActionFail.
+ 	TimedOut bool
++	// MemoryCapped marks a run ended for passing MemoryLimit; its Action is ActionFail.
++	MemoryCapped bool
+ }
+ 
+ // BuildBinary builds the coverage test binary of the package at importPath into out.
+@@ -146,11 +150,17 @@ func (tc Toolchain) ListTests(importPath, tags string) ([]string, error) {
+ 
+ var testResultLine = regexp.MustCompile(`(?m)^--- (PASS|FAIL|SKIP): (\S+) \(([0-9.]+)s\)$`)
+ 
++// outOfMemoryLine matches the Go runtime's fatal error for memory the host refused it.
++// A test binary prints it where a memory cap fails the allocation instead of killing the process.
++var outOfMemoryLine = regexp.MustCompile(`(?m)^fatal error: .*(out of memory|cannot allocate memory)`)
++
+ // RunAlone runs the top-level test name alone under the test binary bin in dir, writing its profile to profile.
+ // It reads the test's outcome and elapsed time from the binary's verbose output,
+ // and the profile's blocks for a test that passed, or skipped after writing one.
+ // A profile of "" runs the test with no coverage profile, as a binary built without coverage needs, and reads none.
+ // A failing test is returned as such, never as an error, and so is a test killed at TestTimeout, marked TimedOut.
++// So is a test ended for passing MemoryLimit, marked MemoryCapped:
++// the kernel killed it, or the run failed with the Go runtime's out-of-memory error in its output.
+ // The error reports a binary that did not start, or a passing test whose profile is missing or malformed.
+ func (tc Toolchain) RunAlone(bin, dir, profile, name string) (RunResult, error) {
+ 	if profile != "" {
+@@ -164,12 +174,16 @@ func (tc Toolchain) RunAlone(bin, dir, profile, name string) (RunResult, error)
+ 	cmd.Env = tc.Env
+ 	var out bytes.Buffer
+ 	cmd.Stdout, cmd.Stderr = &out, &out
+-	logger.Info("testcover: spawning a coverage binary for one test", "binary", bin, "test", name)
+-	err := cmd.Run()
+-	logger.Info("testcover: coverage binary ended", "test", name, "error", err)
++	logger.Info("testcover: spawning a coverage binary for one test", "binary", bin, "test", name, "memory_limit", tc.MemoryLimit)
++	killed, err := tc.runTestBinary(cmd)
++	capped := tc.MemoryLimit > 0 && err != nil && (killed || outOfMemoryLine.Match(out.Bytes()))
++	logger.Info("testcover: coverage binary ended", "test", name, "error", err, "memory_capped", capped)
+ 	if err != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
+ 		return RunResult{Name: name, Action: ActionFail, TimedOut: true}, nil
+ 	}
++	if capped {
++		return RunResult{Name: name, Action: ActionFail, MemoryCapped: true}, nil
++	}
+ 	if errors.Is(err, exec.ErrWaitDelay) {
+ 		err = nil
+ 	}
+@@ -218,7 +232,8 @@ func runAloneArgs(name, profile string) []string {
+ // ProfileBlocks runs the coverage binary bin in dir with no test, writing its profile to profile.
+ // It returns the profile's blocks.
+ // The profile lists every block the binary counts, none of them covered.
+-// The error reports a binary that did not start, failed or outlasted TestTimeout, or a profile missing or malformed.
++// The error reports a binary that did not start, failed, passed MemoryLimit or outlasted TestTimeout,
++// or a profile missing or malformed.
+ func (tc Toolchain) ProfileBlocks(bin, dir, profile string) ([]ProfileBlock, error) {
+ 	cmd, ctx, cancel := tc.command(tc.TestTimeout, bin, "-test.run=^$", "-test.coverprofile="+profile)
+ 	defer cancel()
+@@ -226,8 +241,8 @@ func (tc Toolchain) ProfileBlocks(bin, dir, profile string) ([]ProfileBlock, err
+ 	cmd.Env = tc.Env
+ 	var out bytes.Buffer
+ 	cmd.Stdout, cmd.Stderr = &out, &out
+-	logger.Info("testcover: spawning a coverage binary for its block table", "binary", bin)
+-	err := cmd.Run()
++	logger.Info("testcover: spawning a coverage binary for its block table", "binary", bin, "memory_limit", tc.MemoryLimit)
++	_, err := tc.runTestBinary(cmd)
+ 	logger.Info("testcover: coverage binary ended", "binary", bin, "error", err)
+ 	if errors.Is(err, exec.ErrWaitDelay) {
+ 		err = nil
+@@ -246,6 +261,16 @@ func (tc Toolchain) ProfileBlocks(bin, dir, profile string) ([]ProfileBlock, err
+ 	return ParseProfile(f)
+ }
+ 
++// runTestBinary runs cmd, the command of a test binary, as cmd.Run does, under MemoryLimit when the toolchain sets one.
++// killed reports a run the kernel killed for passing the limit.
++// The go commands never run through it, since a build's memory is not a test's.
++func (tc Toolchain) runTestBinary(cmd *exec.Cmd) (killed bool, err error) {
++	if tc.MemoryLimit <= 0 {
++		return false, cmd.Run()
++	}
++	return proc.RunMemoryCapped(cmd, tc.MemoryLimit)
++}
++
+ // compileErrorLine matches a compiler error line, capturing its file and line.
+ var compileErrorLine = regexp.MustCompile(`(?m)^(\S+\.go):(\d+):\d+: `)
+ 
+diff --git a/internal/testcover/runner_test.go b/internal/testcover/runner_test.go
+index ef130cf3..d3f37bf3 100644
+--- a/internal/testcover/runner_test.go
++++ b/internal/testcover/runner_test.go
+@@ -200,6 +200,8 @@ func TestRunAlone(t *testing.T) {
+ 		timeout time.Duration
+ 		// within, when above zero, is the longest the run may take.
+ 		within time.Duration
++		// memory is the run's MemoryLimit; zero leaves it uncapped.
++		memory int64
+ 		// noProfile runs the test with no profile flag, as a binary built without coverage.
+ 		noProfile bool
+ 		want      testcover.RunResult
+@@ -237,6 +239,23 @@ func TestRunAlone(t *testing.T) {
+ 			name: "TimedOut", test: standInHang, timeout: 3 * time.Second,
+ 			want: testcover.RunResult{Name: standInHang, Action: testcover.ActionFail, TimedOut: true},
+ 		},
++		{
++			name: "PassUnderTheMemoryLimit", test: standInPass, memory: 128 << 20,
++			want: testcover.RunResult{Name: standInPass, Elapsed: 0.25, Action: testcover.ActionPass, Profile: []testcover.ProfileBlock{
++				{File: "m/p/x.go", StartLine: 3, StartCol: 21, EndLine: 5, EndCol: 2, Statements: 1, Count: 1},
++			}},
++		},
++		{
++			// The stand-in passes by itself once it holds three times the limit, so a cap that does not hold fails the row.
++			name: "MemoryCapped", test: standInHoards, memory: 128 << 20,
++			want: testcover.RunResult{Name: standInHoards, Action: testcover.ActionFail, MemoryCapped: true},
++		},
++		{
++			// The stand-in fails as a test does whose allocation the cap refused.
++			// So the row pins the runtime-error branch on any host.
++			name: "MemoryCappedByTheRuntimesOutOfMemoryLine", test: standInOutOfMemory, memory: 128 << 20,
++			want: testcover.RunResult{Name: standInOutOfMemory, Action: testcover.ActionFail, MemoryCapped: true},
++		},
+ 		{
+ 			// The test passes and exits, but a child it left holds the output pipe past the grace.
+ 			// The child outlasts the minute the row allows, so a run that waits on it fails however loaded the machine.
+@@ -250,7 +269,7 @@ func TestRunAlone(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			tc, record := standIn(t)
+-			tc.TestTimeout, tc.Grace = tt.timeout, time.Second
++			tc.TestTimeout, tc.MemoryLimit, tc.Grace = tt.timeout, tt.memory, time.Second
+ 			profile := filepath.Join(t.TempDir(), "cover.out")
+ 			if tt.noProfile {
+ 				profile = ""
+diff --git a/internal/testcover/testmain_test.go b/internal/testcover/testmain_test.go
+index 8dc87b59..7ce6f15b 100644
+--- a/internal/testcover/testmain_test.go
++++ b/internal/testcover/testmain_test.go
+@@ -30,9 +30,15 @@ const (
+ 	standInHang        = "TestStandInHangs"
+ 	standInHoldsPipe   = "TestStandInHoldsPipe"
+ 	standInSleeps      = "TestStandInSleeps"
++	standInHoards      = "TestStandInHoards"
++	standInOutOfMemory = "TestStandInOutOfMemory"
+ 	standInProfileLine = "m/p/x.go:3.21,5.2 1 1"
+ )
+ 
++// standInHoardMegabytes is the memory standInHoards keeps before it passes.
++// It stops there, so a memory cap that does not hold fails the test and never the machine.
++const standInHoardMegabytes = 384
++
+ // standInChildPIDSuffix, appended to a stand-in's record path, names the file standInHoldsPipe records its child's pid into.
+ const standInChildPIDSuffix = ".child-pid"
+ 
+@@ -75,6 +81,8 @@ const standInGoEnv = "go1.26.8\nlinux\namd64\n"
+ // The test standInHang never ends on its own.
+ // The test standInHoldsPipe passes and exits, leaving a child that holds the output pipe for standInChildSleep;
+ // it records the child's pid in the file standInChildPIDSuffix names.
++// The test standInHoards keeps standInHoardMegabytes megabytes, writing each one, and then passes.
++// The test standInOutOfMemory prints the Go runtime's out-of-memory line and exits 2 without allocating.
+ func runStandIn(record string, args []string) int {
+ 	if err := os.WriteFile(record, []byte(strings.Join(args, "\n")), 0o644); err != nil {
+ 		return 1
+@@ -154,6 +162,22 @@ func runStandIn(record string, args []string) int {
+ 		if err := os.WriteFile(record+standInChildPIDSuffix, []byte(strconv.Itoa(child.Process.Pid)), 0o644); err != nil {
+ 			return 1
+ 		}
++	case standInHoards:
++		kept := make([][]byte, 0, standInHoardMegabytes)
++		for range standInHoardMegabytes {
++			block := make([]byte, 1<<20)
++			for at := range block {
++				block[at] = 1
++			}
++			kept = append(kept, block)
++		}
++		if err := writeProfile("1"); err != nil {
++			return 1
++		}
++		fmt.Printf("--- PASS: %s (0.25s)\n", name)
++	case standInOutOfMemory:
++		fmt.Println("fatal error: runtime: out of memory")
++		return 2
+ 	case standInSleeps:
+ 		time.Sleep(standInChildSleep)
+ 	case standInHang:
