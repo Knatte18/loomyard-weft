@@ -1,6 +1,6 @@
 # lym retro: run the retro task's writer on Opus
 
-`retro-writer-opus` · Task · enhancement, report, darn · starting · Seed-IDE
+`retro-writer-opus` · Task · enhancement, report, darn · starting · Open-IDE
 
 ## Seen (2026-11-17)
 
