@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-17 11:44 UTC; every age below is as of then.
+Rendered 2026-11-17 11:48 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 7d · Owner `neve`
@@ -34,7 +34,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Build the coverage maps as a mode of the gate run, one process per test in parallel** | [`gate-builds-testmap`](design-gate-builds-testmap.md)<br>[Sketch](decision-gate-builds-testmap.md) | raddle | Raddle-Write | neve | 1h<br>2m | gate, testkit |
+| T3 | **Build the coverage maps as a mode of the gate run, one process per test in parallel** | [`gate-builds-testmap`](design-gate-builds-testmap.md)<br>[Sketch](decision-gate-builds-testmap.md) | raddle | Raddle-Write | neve | 1h<br>7m | gate, testkit |
 
 ### Ready (0)
 
