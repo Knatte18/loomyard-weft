@@ -1,6 +1,6 @@
 # Interactive board view: a regenerated HTML file and a phone-friendly README
 
-`board-viewer` · Task · feature, board, ide, orch · starting · Open-IDE
+`board-viewer` · Task · feature, board, ide, orch · running · Discussion-Write
 
 Operator 2026-10-04: the board needs an interactive view with filters, reachable without typing a lym command each time.
 
