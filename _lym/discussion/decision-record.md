@@ -1,0 +1,98 @@
+## Goal
+
+```markdown
+## Goal
+
+Audit the landed runs below from their records and transcripts,
+and propose changes to lym's agent environment, most severe first.
+Write one report and its line in the research index, and change nothing else: no production code, no test, no stencil and nothing under Bolt.
+File nothing on the board and no issue; the operator picks which proposals become board notes.
+
+## The runs
+
+The runs landed after 2026-11-10T06:46:08Z and up to 2026-11-16T11:54:11Z:
+
+- `adopt-worker-record`, landed 2026-11-11T07:22:50Z
+- `gate-scope-by-coverage-map`, landed 2026-11-11T08:37:42Z
+- `decision-record-replace`, landed 2026-11-11T15:24:45Z
+- `testmap-upkeep-design`, landed 2026-11-11T16:26:53Z
+- `creel-notice-hygiene`, landed 2026-11-11T17:02:52Z
+- `plan-writer-context`, landed 2026-11-12T18:08:51Z
+- `adopt-redesign`, landed 2026-11-15T14:24:11Z
+- `test-only-functions-in-prod`, landed 2026-11-15T15:40:52Z
+- `weaver`, landed 2026-11-16T09:02:14Z
+- `codex-same-as-claude`, landed 2026-11-16T11:54:11Z
+
+## 1. The figures
+
+Run each of these once from the repository root, before you read anything else:
+
+- `tools/retro/retro.sh docs/research/retro/retro-20261116-115411 adopt-worker-record gate-scope-by-coverage-map decision-record-replace testmap-upkeep-design creel-notice-hygiene plan-writer-context adopt-redesign test-only-functions-in-prod weaver codex-same-as-claude`
+  writes `figures.md` and the tables behind it into the report directory.
+  Its header names each table and column.
+- `tools/tokencount/tokencount.sh -out docs/research/retro/retro-20261116-115411/tokencount.md adopt-worker-record gate-scope-by-coverage-map decision-record-replace testmap-upkeep-design creel-notice-hygiene plan-writer-context adopt-redesign test-only-functions-in-prod weaver codex-same-as-claude`
+  writes each run's cost per segment and part.
+- `tools/forkaudit/forkaudit.sh --runs adopt-worker-record,gate-scope-by-coverage-map,decision-record-replace,testmap-upkeep-design,creel-notice-hygiene,plan-writer-context,adopt-redesign,test-only-functions-in-prod,weaver,codex-same-as-claude --out docs/research/retro/retro-20261116-115411/forkaudit.md --work .scratch/forkaudit`
+  writes what the Webster implementer forks read; a run with no Webster fork matches none.
+
+Keep every file they write beside the report, and remove `.scratch/forkaudit` after.
+When a script fails, say so in the report with its error, and work from the figures the others gave.
+
+## 2. The reading
+
+Read what the figures point at, and nothing they do not.
+Read at most 12 moments in all.
+A moment is one span of at most 30 turns of one session's transcript,
+or one stencil, heddle passage or section of `CLAUDE.local.md` that a span showed an agent acting on.
+A session's transcript is `<session>.jsonl` under the run's directory in `~/.claude/projects`,
+and a fork's lies under `<session>/subagents/`; read a span with `jq`, never the whole file.
+
+Answer each question for the runs, with the moment that shows the answer:
+
+- Which producer's turns or cost stand out against its median, and what in the session made it so?
+- Which serial single lookups could have shared a turn, and which instruction failed to batch them?
+- Which commands did a guard refuse, and what led the agent to try them?
+- Which verify gate failures went to a fixer or back to the writer, and could a check have caught the fault earlier?
+- Which review findings recur across runs or rounds, and of which kind?
+- Which instruction had no effect: a sentence the sessions broke, or one they never needed?
+- Where did an agent search for something it should have been told: a path, a command, a format?
+
+## 3. The proposals
+
+Route each proposal by the fault it fixes:
+
+- A mechanical fault becomes a check: a shell guard row, a lint, a gate or a test.
+- A judgement call becomes a reviewer rubric line.
+- An instruction with no effect becomes a deletion.
+- A new prompt sentence is the last resort: propose one only when no check, rubric line or deletion fits, and say why.
+
+Each proposal names the file it changes, the route, and the moment it traces to:
+the run's slug, the session's first eight characters and the turn.
+
+## 4. The report
+
+Write `docs/research/retro/retro-20261116-115411/report.md`, and keep the directory's name as it is:
+the next `lym retro` reads its stamp from it.
+The report holds:
+
+- the runs and the window above;
+- the figures that matter to a proposal, cut from `figures.md`, which stays beside the report whole;
+- the proposals, most severe first, each with its severity, route, file and moment;
+- the questions above that the runs gave no answer to, one line each.
+
+Add one line for the report under a `retro` section of `docs/research/README.md`,
+creating the section when it has none.
+Every report under `docs/research/retro` is listed there.
+```
+
+## Scope
+
+## Decisions
+
+## Constraints
+
+## Auto-mode assumptions
+
+## Open risks
+
+## Acceptance criteria
