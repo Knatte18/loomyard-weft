@@ -875,6 +875,26 @@
       "created": "2026-11-17T06:55:00Z",
       "revised": "2026-11-17T07:31:48Z",
       "profile": "light"
+    },
+    {
+      "id": 1416,
+      "handle": "B1",
+      "slug": "reed-orch-buttons-in-tasks",
+      "title": "reed: the orch's slack and RC buttons show in task sessions",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed",
+        "orch",
+        "slack"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A task session draws its parent orch's slack and RC buttons; draw them only where that orch lives, or name the orch",
+      "body": "## Seen (operator, 2026-11-17)\n\nThe slack and RC buttons in reed's status bar belong to an orch, one state per orch:\nthe prime's orch and each beam's orch has its own (`lym orch rc-bar` and `lym slack bar` per worktree).\nThey also show in a task's own tmux session, where the operator reads them as the task agent's buttons\nand wonders whether RC is all orchs or none.\n\nThey show there because a task session's `@lym_button_dir` names its parent's worktree, the prime's or the beam's,\nso the state jobs in `@lym_rc_state_command` and `@lym_slack_state_command` read and switch the parent orch.\nA click in a task session turns on the parent orch's remote control or Slack, never the task's.\n`internal/reedengine/bar.go` says the slack toggle is \"drawn only in a prime's or a beam's session\", which the code does not hold.\n\n## Idea\n\n- Draw the slack and RC buttons only in the session of the worktree whose orch they switch, the prime's or a beam's,\n  and none in a task session.\n- Or, if they should stay reachable from a task, label them with the orch they switch, such as `RC prime` or `RC \u003cbeam\u003e`.\n- Make the bar's doc comment match what is drawn.\n",
+      "created": "2026-11-17T08:01:12Z",
+      "revised": "2026-11-17T08:01:12Z"
     }
   ],
   "prime_owner": "neve",
