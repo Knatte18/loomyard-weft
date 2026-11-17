@@ -53,4 +53,14 @@ Three of the Codex parity tasks have landed, which answers most of what the 2026
 - `codex-wording-engine-blocks` (`40c66912`): Claude-only wording in stencils, specs and agent-read Go text now has a Codex copy in an engine block.
 
 So a Codex seat now gets skills, guards and Codex-worded stencils.
-None of this is proven on a real run: the rerun of `codex-writer-bench` through the real producer is still the test, and `launch-manifest-parity` is still open.
+
+The rerun through the real producer has landed: task `codex-writer-bench` (`96b20f1c`), report `docs/research/codex/darn-writer/codex-darn-writer-bench-neve-2026-11-17/`.
+`astra[high]` ran the real `Darn-Write` row of the darn recipe on `ide-beam-readme-preview`, and the run stopped before `Drift-Verify`; `launch-manifest-parity` landed too (`3bbc92a0`), so the report opens with both engines' manifests.
+
+- Codex finished the fix; `template.yaml` and `config_test.go` are byte-identical to the landed ones, and its tree passes the verify gate.
+- It added four lines of preview troubleshooting to `docs/overview.md` the entry did not ask for, and its change description narrates verification the description spec leaves out.
+- 13 min 5 s against 5 min 41 s for the landed writer; no Codex cost, since `codexengine` has no pricer.
+- No skill-load or idle-wake fault shows in the run that counts.
+- The run stopped before `Drift-Verify`, so "lands with no resumption" is still unproved.
+
+The verdict on level 2 is the operator's.
