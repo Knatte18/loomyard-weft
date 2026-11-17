@@ -156,22 +156,21 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (2)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Webster | neve | 20h<br>20h | webster, weaver |
+| T16 | **Retro of 10 landed runs up to 2026-11-16T11:54:11Z**<br>• Audit the runs from their records and transcripts, and propose fixes, most severe first | [`retro-20261116-115411`](design-retro-20261116-115411.md) | darn · docs | starting · Worktree-Create | neve | 0m<br>0m |  |
 | T20 | **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice<br>• `darn: writer fable` | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | darn · light | Darn-Write | neve | 38m<br>25m | gate |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T16 | **Retro of 10 landed runs up to 2026-11-16T11:54:11Z**<br>• Audit the runs from their records and transcripts, and propose fixes, most severe first | [`retro-20261116-115411`](design-retro-20261116-115411.md) | darn · docs |  | 0m<br>0m |  |
+_None._
 
 #### Draft (2)
 
