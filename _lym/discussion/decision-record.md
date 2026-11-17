@@ -209,6 +209,14 @@ Rationale: The round is at the perch's hard cap with F1 open as design-wrong in 
   - owed-tip-pushed-hook-unreachable-from-external-test (class scope, severity MEDIUM, open in rounds 3)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - owed-code-tip-not-pushed-when-origin-lacks-code-branch (class design, severity MEDIUM, open in rounds 1)
+  - pushbeam-takeover-read-off (class scope, severity MEDIUM, open in rounds 1)
+  - recorded-landing-commit-archived-merge (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a shed transition in a task pair pushes its records side, then its code side once the records side landed, and starts the next producer only after both landed on origin.
