@@ -23,7 +23,7 @@
 - `internal/loomcli#spawnStatusPush`
 
 **Uses:**
-- `plan:internal/pairteardown#PushRun`
+- `internal/pairteardown#PushRun`
 - `plan:internal/fabricengine#IsPushOwed`
 - `internal/battencli#judgeOrigin`
 - `internal/loomcli/doc.go`

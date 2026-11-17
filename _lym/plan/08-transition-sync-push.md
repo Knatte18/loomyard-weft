@@ -43,10 +43,10 @@
 - `cmd/lym#unboundedWaitFiles`
 
 **Uses:**
-- `plan:internal/pairteardown#PushRun`
+- `internal/pairteardown#PushRun`
 - `internal/pauserecord#Admit`
 - `internal/fabricengine#CommitAnchoredPathsWithTrailers`
-- `plan:internal/fabricengine#TransitionTrailerKey`
+- `internal/fabricengine#TransitionTrailerKey`
 - `internal/shedrun#ResolveRunID`
 - `internal/loomcli/doc.go`
 

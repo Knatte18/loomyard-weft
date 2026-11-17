@@ -1,25 +1,25 @@
 # Card 6 — run-hand-over
 
 **Create:**
-- `plan:internal/fabricengine#HandOverRequest` -> `type HandOverRequest struct`
-- `plan:internal/fabricengine#HandOverResult` -> `type HandOverResult struct`
-- `plan:internal/fabricengine#HandOverTips` -> `func HandOverTips(prime *lymcwd.Location, req HandOverRequest) (HandOverResult, error)`
-- `plan:internal/fabricengine#WriteHandOverMark` -> `func WriteHandOverMark(hubPath, slug string, mark HandOverMark) error`
-- `plan:internal/fabricengine#OriginBattenStatus` -> `func OriginBattenStatus(prime *lymcwd.Location, slug string) (status shedengine.Status, found bool, err error)`
-- `plan:internal/fabricengine#archiveParentMerge` -> `func archiveParentMerge(rec *Mutations, parentDir, slug string) (tag string, err error)`
-- `plan:internal/fabricengine#resetKeepUnderArchive` -> `func resetKeepUnderArchive(rec *Mutations, req pathRequest, repo *gitrepo.Repo, sha, archiveTag string) error`
-- `plan:internal/fabricengine#lastTransitionCodeTip` -> `func lastTransitionCodeTip(weftPath, ref, slug string) (tip string, err error)`
-- `plan:internal/fabricengine#pushOwedCodeTip` -> `func pushOwedCodeTip(rec *Mutations, pair *lymcwd.Location) (pushed bool, err error)`
-- `plan:internal/fabricengine#owedTipPushedHook` -> `var owedTipPushedHook func()`
-- `plan:internal/fabricengine#SetOwedTipPushedHookForTest` -> `func SetOwedTipPushedHookForTest(t testing.TB, hook func())`
-- `plan:internal/fabricengine#TransitionTrailerKey` -> `const TransitionTrailerKey = "Run-Transition"`
-- `plan:internal/fabricengine_test#TestHandOverTips` -> `func TestHandOverTips(t *testing.T)`
-- `plan:internal/pairteardown#ThisMachine` -> `func ThisMachine() (fabricengine.MachineNames, error)`
-- `plan:internal/pairteardown#RunPush` -> `type RunPush struct`
-- `plan:internal/pairteardown#PushRun` -> `func PushRun(prime, l *lymcwd.Location, slug string, push RunPush) (fabricengine.PushResult, error)`
-- `plan:internal/pairteardown#HandOver` -> `func HandOver(prime *lymcwd.Location, slug string, entry shedengine.Takeover, push RunPush) error`
-- `plan:internal/pairteardown#droppedIntents` -> `func droppedIntents(local, origin shedengine.Status) []string`
-- `plan:internal/pairteardown_test#TestPushRun_HandsOverOnATakeover` -> `func TestPushRun_HandsOverOnATakeover(t *testing.T)`
+- `internal/fabricengine#HandOverRequest`
+- `internal/fabricengine#HandOverResult`
+- `internal/fabricengine#HandOverTips`
+- `internal/fabricengine#WriteHandOverMark`
+- `internal/fabricengine#OriginBattenStatus`
+- `internal/fabricengine#archiveParentMerge`
+- `internal/fabricengine#resetKeepUnderArchive`
+- `internal/fabricengine#lastTransitionCodeTip`
+- `internal/fabricengine#pushOwedCodeTip`
+- `internal/fabricengine#owedTipPushedHook`
+- `internal/fabricengine#SetOwedTipPushedHookForTest`
+- `internal/fabricengine#TransitionTrailerKey`
+- `internal/fabricengine_test#TestHandOverTips`
+- `internal/pairteardown#ThisMachine`
+- `internal/pairteardown#RunPush`
+- `internal/pairteardown#PushRun`
+- `internal/pairteardown#HandOver`
+- `internal/pairteardown#droppedIntents`
+- `internal/pairteardown_test#TestPushRun_HandsOverOnATakeover`
 
 **Edit:**
 - `internal/fabricengine#OwnerArchivePair`

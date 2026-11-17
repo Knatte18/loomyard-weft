@@ -22,11 +22,11 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#archiveParentMerge`
-- `plan:internal/fabricengine#resetKeepUnderArchive`
-- `plan:internal/pairteardown#HandOver`
-- `plan:internal/pairteardown#PushRun`
-- `plan:internal/pairteardown#ThisMachine`
+- `internal/fabricengine#archiveParentMerge`
+- `internal/fabricengine#resetKeepUnderArchive`
+- `internal/pairteardown#HandOver`
+- `internal/pairteardown#PushRun`
+- `internal/pairteardown#ThisMachine`
 - `internal/boardengine#PullBolt`
 - `internal/boardengine#ReadOwners`
 - `plan:internal/boardengine#Board.SetStatusPushed`

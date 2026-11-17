@@ -1,0 +1,14 @@
+{
+  "session_id": "262ab032-780f-4604-b810-b5f62ee16cc2",
+  "row": "Webster",
+  "role": "gate-fixer",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 18,
+  "cache_write_tokens": 56704,
+  "cache_read_tokens": 250139,
+  "output_tokens": 9192,
+  "cost_usd": 0.2837438,
+  "started": "2026-11-16T14:45:41Z",
+  "ended": "2026-11-17T06:21:56Z"
+}

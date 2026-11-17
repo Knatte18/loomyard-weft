@@ -15,12 +15,12 @@
 **Uses:**
 - `internal/runfsm#CodeTipGrace`
 - `plan:internal/fabricengine#OriginCodeTip`
-- `plan:internal/fabricengine#TransitionTrailerKey`
+- `internal/fabricengine#TransitionTrailerKey`
 - `internal/fabricengine#CommitAnchoredPaths`
 - `internal/fabricengine#appendWarpSHATrailer`
 - `internal/fabricengine#appendTrailerLine`
 - `internal/fabricengine#Fabric.FastForwardPair`
-- `plan:internal/pairteardown#PushRun`
+- `internal/pairteardown#PushRun`
 - `internal/beamcli#TestDobbyRuns_PairAtItsOwnAnchor`
 - `internal/beamcli#TestDobbyRuns_ReadsWhetherAPausedRunsWorkReachedItsParent`
 - `internal/beamcli#TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair`

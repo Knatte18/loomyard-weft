@@ -24,8 +24,8 @@
 - `internal/fabricengine_test#TestPushPairAnchored_PushesBothSidesRetriesAndReportsEachSide`
 
 **Uses:**
-- `plan:internal/fabricengine#lastTransitionCodeTip`
-- `plan:internal/fabricengine#TransitionTrailerKey`
+- `internal/fabricengine#lastTransitionCodeTip`
+- `internal/fabricengine#TransitionTrailerKey`
 - `internal/fabricengine#ListFailedPushes`
 - `internal/fabricengine#updateRemoteBranch`
 - `internal/fabricengine_test#newPairFixtureAt`
