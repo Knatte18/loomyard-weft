@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 08:02 UTC; every age below is as of then.
+Rendered 2026-11-17 08:05 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -186,8 +186,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **reed: the orch's slack and RC buttons show in task sessions**<br>• A task session draws its parent orch's slack and RC buttons; draw them only where that orch lives, or name the orch | [`reed-orch-buttons-in-tasks`](design-reed-orch-buttons-in-tasks.md) | 1m<br>1m | reed, orch, slack |
-| B2 |  | **Memory guard for every test binary lym runs**<br>• The gate watchdog watches CPU only and only gate test runs; give it a memory trigger over every test binary, and cap the gate tiers | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | 1h<br>41m | gate |
+| B1 |  | **reed: an RC button per agent, and Slack only in the orch's session**<br>• RC turns on per agent with a click, off by default; the Slack buttons show only where their orch lives | [`reed-orch-buttons-in-tasks`](design-reed-orch-buttons-in-tasks.md) | 4m<br>0m | reed, orch, slack |
+| B2 |  | **Memory guard for every test binary lym runs**<br>• The gate watchdog watches CPU only and only gate test runs; give it a memory trigger over every test binary, and cap the gate tiers | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | 1h<br>44m | gate |
 
 #### Features (6)
 
