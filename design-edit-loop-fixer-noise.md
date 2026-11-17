@@ -1,4 +1,4 @@
-# Edit-loop notices fire on a fixer editing its one document
+# Edit-loop notices fire on a fixer editing one file
 
 `edit-loop-fixer-noise` · Note · bug, shuttle
 
@@ -8,7 +8,8 @@ The edit-loop watch landed in `c167e803` (four edits of one file within five min
 Within its first hour it sent two notices for `gate-test-map-mode`'s Plan-Burler-Fix agent,
 which edited `_lym/plan/01-gate-test-map-mode.md` four times within five minutes each time.
 That agent was applying the round-2 review's findings, one Edit per site, to the one plan file it owns; it was making progress.
-A fixer or writer whose whole output is one document, a plan, a decision record or a summary,
+Minutes later `codex-standing-instructions`' Code-Burler-Fix agent drew one for `instructionfiles.go`, fixing several findings in that file.
+A fixer applying several findings to one file, or a writer whose whole output is one document,
 edits that file many times by design, so the watch reads ordinary work as a loop.
 
 ## Idea
