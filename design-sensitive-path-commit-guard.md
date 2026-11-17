@@ -1,6 +1,6 @@
 # Refuse a commit that adds a secret file
 
-`sensitive-path-commit-guard` · Task · feature, webster, fabric · running · Preflight
+`sensitive-path-commit-guard` · Task · feature, webster, fabric · running · Record-Write
 
 ## Seen (orch, 2026-11-17)
 
