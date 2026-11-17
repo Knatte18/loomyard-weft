@@ -85,20 +85,14 @@ Held by a run; its scope is locked until the run ends.
 | T14 | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md) | motif | Discussion-Burler-Review | neve | 52m<br>45m | burler, shed, stencil |
 | T20 | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | darn · light | Code-Burler-Fix | neve | 52m<br>45m | webster, fabric |
 
-#### Ready (0)
+#### Ready (2)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Draft (2)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | darn · light |  | 52m<br>0m | stencil, shed |
-| T6 | `draft` **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | darn · light |  | 52m<br>0m | shuttle, friction |
+| T5 | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | darn · light |  | 52m<br>0m | stencil, shed |
+| T6 | **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | darn · light |  | 52m<br>0m | shuttle, friction |
 
 ### Notes (1)
 
@@ -182,7 +176,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Build the coverage maps as a mode of the gate run, one process per test in parallel** | [`gate-builds-testmap`](design-gate-builds-testmap.md)<br>[Sketch](decision-gate-builds-testmap.md) | raddle | starting · Worktree-Create | neve | 1h<br>0m | gate, testkit |
+| T3 | **Build the coverage maps as a mode of the gate run, one process per test in parallel** | [`gate-builds-testmap`](design-gate-builds-testmap.md)<br>[Sketch](decision-gate-builds-testmap.md) | raddle | starting · Seed-Child | neve | 1h<br>0m | gate, testkit |
 
 #### Ready (0)
 
@@ -213,13 +207,17 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (3)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T16 | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | darn · light |  | 6d<br>0m | config, fabric |
+| T21 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | motif |  | 6w<br>0m | board, ide, orch |
+| T22 | **Bench Code Mode on a darn writer doing a repeated edit** | [`code-mode-darn-bench`](design-code-mode-darn-bench.md) | darn · docs |  | 22h<br>0m | claude, shuttle |
 
-#### Draft (5)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -227,9 +225,6 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>23h | claude, shuttle, config |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 4d<br>4d | slack, creel, orch |
-| T16 | `draft` **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | darn |  | 6d<br>1d | config, fabric |
-| T21 | `draft` **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | darn |  | 6w<br>1d | board, ide, orch |
-| T22 | `draft` **Bench Code Mode on a darn writer doing a repeated edit** | [`code-mode-darn-bench`](design-code-mode-darn-bench.md) | darn |  | 22h<br>22h | claude, shuttle |
 
 ### Notes (4)
 

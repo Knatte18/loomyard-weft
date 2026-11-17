@@ -24,20 +24,14 @@ Held by a run; its scope is locked until the run ends.
 | T14 | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md) | motif | Discussion-Burler-Review | neve | 52m<br>45m | burler, shed, stencil |
 | T20 | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | darn · light | Code-Burler-Fix | neve | 52m<br>45m | webster, fabric |
 
-### Ready (0)
+### Ready (2)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Draft (2)
-
-Not released; nothing starts it until its status is cleared.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | darn · light |  | 52m<br>0m | stencil, shed |
-| T6 | `draft` **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | darn · light |  | 52m<br>0m | shuttle, friction |
+| T5 | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | darn · light |  | 52m<br>0m | stencil, shed |
+| T6 | **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | darn · light |  | 52m<br>0m | shuttle, friction |
 
 ## Notes (1)
 
