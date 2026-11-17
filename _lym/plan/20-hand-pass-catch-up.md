@@ -47,8 +47,8 @@
 - `internal/pairteardown#PushRun`
 - `internal/pairteardown#ReadRun`
 - `plan:internal/tendercli#PauseIntentEntries`
-- `plan:internal/boardengine#EnsureIdentity`
-- `plan:internal/boardengine#RegisterMachine`
+- `internal/boardengine#EnsureIdentity`
+- `internal/boardengine#RegisterMachine`
 - `internal/shedrun/doc.go`
 
 **Intent:** Wire the catch-up for a run's own pass, and retire the origin-owed marker it replaces (D4: "a hand pass, whose catch-up runs over its own run only"; "The origin-owed marker ... retires").

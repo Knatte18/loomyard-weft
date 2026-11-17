@@ -15,7 +15,7 @@
 - `internal/boardengine#PullBolt`
 - `internal/pairteardown#ReadRun`
 - `internal/pairteardown_test#TestReadRun_ReadsTheSameStateWithoutTheCache`
-- `plan:internal/boardengine#WriteHold`
+- `internal/boardengine#WriteHold`
 
 **Intent:** Make every verb that asks the act rule outside the dobby's pass fetch Bolt first when origin answers, so a hold another machine wrote is read (D5).
 

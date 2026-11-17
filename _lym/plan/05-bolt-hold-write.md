@@ -1,9 +1,9 @@
 # Card 5 — bolt-hold-write
 
 **Create:**
-- `plan:internal/boardengine#HoldWrite` -> `type HoldWrite struct`
-- `plan:internal/boardengine#WriteHold` -> `func WriteHold(boardDir string, hold Hold) (HoldWrite, error)`
-- `plan:internal/boardengine#TestWriteHold` -> `func TestWriteHold(t *testing.T)`
+- `internal/boardengine#HoldWrite`
+- `internal/boardengine#WriteHold`
+- `internal/boardengine#TestWriteHold`
 
 **Extends:**
 - `internal/boardengine/doc.go`

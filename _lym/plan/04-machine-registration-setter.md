@@ -1,19 +1,19 @@
 # Card 4 — machine-registration-setter
 
 **Create:**
-- `plan:internal/boardengine#Registration` -> `type Registration struct`
-- `plan:internal/boardengine#RegistrationError` -> `type RegistrationError struct`
-- `plan:internal/boardengine#RegistrationError.Error` -> `func (e *RegistrationError) Error() string`
-- `plan:internal/boardengine#Registry.Check` -> `func (r Registry) Check(reg Registration) error`
-- `plan:internal/boardengine#Registry.apply` -> `func (r Registry) apply(reg Registration) (Registry, bool)`
-- `plan:internal/boardengine#RegisterMachine` -> `func RegisterMachine(boardDir string, reg Registration) (bool, error)`
-- `plan:internal/boardengine#EnsureIdentity` -> `func EnsureIdentity() (machinename.Identity, error)`
-- `plan:internal/boardengine#ensureIdentityWith` -> `func ensureIdentityWith(locate func() (file, lock string, ok bool, err error), hostname func() (string, error)) (machinename.Identity, error)`
-- `plan:internal/boardengine#IdentityRefusal` -> `func IdentityRefusal() error`
-- `plan:internal/boardengine#identityRefusal` -> `func identityRefusal(locate func() (file, lock string, ok bool, err error)) error`
-- `plan:internal/boardengine#TestRegistryCheck` -> `func TestRegistryCheck(t *testing.T)`
-- `plan:internal/boardengine#TestEnsureIdentityWith` -> `func TestEnsureIdentityWith(t *testing.T)`
-- `plan:internal/boardengine#TestRegisterMachine` -> `func TestRegisterMachine(t *testing.T)`
+- `internal/boardengine#Registration`
+- `internal/boardengine#RegistrationError`
+- `internal/boardengine#RegistrationError.Error`
+- `internal/boardengine#Registry.Check`
+- `internal/boardengine#Registry.apply`
+- `internal/boardengine#RegisterMachine`
+- `internal/boardengine#EnsureIdentity`
+- `internal/boardengine#ensureIdentityWith`
+- `internal/boardengine#IdentityRefusal`
+- `internal/boardengine#identityRefusal`
+- `internal/boardengine#TestRegistryCheck`
+- `internal/boardengine#TestEnsureIdentityWith`
+- `internal/boardengine#TestRegisterMachine`
 
 **Extends:**
 - `internal/boardengine/doc.go`

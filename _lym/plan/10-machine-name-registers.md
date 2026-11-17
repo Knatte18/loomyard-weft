@@ -15,8 +15,8 @@
 - `internal/machinecli/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#RegisterMachine`
-- `plan:internal/boardengine#Registry.Check`
+- `internal/boardengine#RegisterMachine`
+- `internal/boardengine#Registry.Check`
 - `internal/boardengine#Registry.Resolve`
 - `internal/machinename#NewID`
 - `internal/machinecli#sweepFixture`

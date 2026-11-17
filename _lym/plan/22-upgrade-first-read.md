@@ -18,7 +18,7 @@
 
 **Uses:**
 - `internal/fixtries#Read`
-- `plan:internal/boardengine#WriteHold`
+- `internal/boardengine#WriteHold`
 - `internal/boardengine#Owners.HoldOf`
 - `plan:internal/tendercli#RecordPauseIntent`
 - `internal/pauserecord#AdoptCaller`

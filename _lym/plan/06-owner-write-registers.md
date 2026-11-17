@@ -14,9 +14,9 @@
 **Uses:**
 - `internal/hubgeom/doc.go`
 - `internal/adoptcli/doc.go`
-- `plan:internal/boardengine#EnsureIdentity`
-- `plan:internal/boardengine#Registry.Check`
-- `plan:internal/boardengine#RegisterMachine`
+- `internal/boardengine#EnsureIdentity`
+- `internal/boardengine#Registry.Check`
+- `internal/boardengine#RegisterMachine`
 - `internal/boardengine#newOwnerFixture`
 
 **Intent:** Register this machine at every owner write, in the owner write's own commit (D3: "at its first owner write"; "Only boardengine's registry setter writes the map, at a registration or an owner write").

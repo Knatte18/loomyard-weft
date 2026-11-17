@@ -19,7 +19,7 @@
 - `plan:internal/machinecli#TestName_ForgetFormer` -> `func TestName_ForgetFormer(t *testing.T)`
 
 **Uses:**
-- `plan:internal/boardengine#RegisterMachine`
+- `internal/boardengine#RegisterMachine`
 - `internal/pairteardown#ReadBattenRecord`
 - `internal/machinecli#hubsToSweep`
 - `internal/machinecli#readCurrent`
