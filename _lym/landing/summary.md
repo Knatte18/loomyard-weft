@@ -1,50 +1,36 @@
 # reed: an RC button per agent, and Slack only in the orch's session
 
-reed's status bar showed the orch's slack and RC buttons in a task's own session.
-A click there switched the parent orch, the prime's or the beam's, never the task's agent.
-That happened because a task session's `@lym_button_dir` names the parent's worktree, and both state jobs resolved their orch from it.
+Reed's status bar showed the Slack and RC buttons in a task's tmux session as well as in an orch's.
+A task session's `@lym_button_dir` names its parent's worktree, so a click there switched the parent orch's Slack or remote control, never the task's.
+The `internal/reedengine/bar.go` comment said the Slack toggle was "drawn only in a prime's or a beam's session", which the code did not hold.
 
-## Slack
+## What changes
 
-The Slack state line now reads `--dir #{@lym_orch_dir}`, a new session option the button-row render pins alongside the other row options.
-It holds the session's own anchor for the prime and a beam, and the empty word for a task.
-`slack bar` prints no slack word for an empty directory, so a task's session draws the away toggle alone.
-The away toggle stays in every session, since the presence belongs to the machine.
-
-## RC
-
-The RC button now belongs to the agent of the window's active pane, an orch or any other agent.
-Its state is a pane user option, `@lym_rc`, so there is no `#()` job:
-the button is drawn while the active pane carries `@strand` and the RC click line is pinned, and it is lit while the pane carries `@lym_rc`.
-The mark dies with the pane, so a relaunched agent starts unlit.
-
-- `lym orch rc-on` reads the clicking client's active pane (`reedengine.ClientAgentPane`).
-  It queues creel's remote-control command into the agent the pane runs, under the name `remote_control_name` forms for that agent, then sets the mark (`reedengine.MarkPaneRemoteControlOn`).
-  A pane that runs no agent, or one already marked, is refused and nothing is sent.
-  The verb still runs from the session's run directory, so a task's click passes the orch wiring through the parent's worktree.
-- A launch of the orch with `remote_control` on sets the mark on the new pane through `Engine.MarkRemoteControlOn`.
-  No other agent's RC is on until its button is clicked, and `orch.yaml`'s switch is unchanged.
-- Removed: the orch's `remote-control.json` record (`orchengine.RemoteControlRecord` and its paths), the hidden `orch rc-bar` verb, `@lym_rc_state_command`, and the `rc-on`/`rc-off` state words.
-
-The bar's doc comments (`bar.go`, `reedengine` and `orchcli` package docs) now describe what is drawn.
+- **Slack is per orch.**
+  The Slack toggle reads its state through the new session option `@lym_orch_dir`, which names the orch's directory.
+  A task session holds it empty, so its job names no orch and the bar draws the away toggle alone.
+- **RC is per agent.**
+  The RC button belongs to the agent of the window's active pane and is drawn only while that pane carries `@lym_strand_name`.
+  A click runs the new hidden verb `lym orch rc-on` from that session's run directory, which queues creel's remote-control command into that agent's strand.
+- **The RC state is a pane mark.**
+  `@lym_rc` on the agent's pane lights the button and makes a second click on a marked pane a refusal.
+  A launch with remote control also sets the mark.
+  Every agent starts unmarked, so RC stays off until its button is clicked.
+  `orch.yaml`'s `remote_control` for orch sessions is unchanged.
+- **The per-orch RC record is gone.**
+  The `rc-bar` verb, the `RemoteControlPath` and `RemoteControlLockPath` state paths and the record they guarded in `orchengine` are removed, since the pane mark replaces them.
+  Every `lym orch` verb now needs a repository.
+- `remote_control_name` forms the name for the clicked agent's strand at click time, and for the orch's at launch.
+- The `reedengine` and `orchcli` docs and the bar's doc comment match what is drawn.
 
 ## Design decisions
 
-- **A pane mark instead of a per-strand record file.**
-  A pane option needs no new on-disk record or path, ends with the pane as the agent's session does, and the bar reads it directly.
-  `@lym_rc` joins `@lym_strand_name` as a pane option a Go decision reads: the click reads it to refuse a second click.
-- **No engine check on the click.**
-  The pane does not show which engine an agent runs on.
-  An agent on an engine with no remote control gets nothing typed for the command, and its pane is still marked.
-- A `remote-control.json` left in an orch's `.lym/orch` directory is no longer read and is harmless.
-  A running server keeps a stale `@lym_rc_state_command` global until it restarts; nothing reads it.
+- The state lives on the pane, a display option, not in a file, so it dies with the pane and needs no lock.
+  `@lym_strand_name` and `@lym_rc` are the only pane options a Go decision reads.
+- The RC click line rides its own pinned option, `@lym_rc_click_command`, set and unset apart from the Slack one.
 
-## Tests
+## To check
 
-- `reedengine`:
-  - The bar, bindings, pane-binary and button-row tests pin the new RC format, the `@lym_orch_dir` pin (the quoted anchor for prime and beam, `''` for a task) and the Slack line's new `--dir`.
-  - The new `remotecontrol_test.go` covers the pane read, the mark and the engine op.
-- `orchcli`:
-  - The launch test pins that a launch with a name marks the new strand's pane and one without marks nothing.
-  - The click test covers an orch and a task agent, both refusals, an unparseable name, a failed inject and a failed mark.
-  - The live-strand start test pins that adopting a running strand marks nothing.
+- **`rc-button-drawn-without-button-dir`** (design, medium): the RC button needs the session to carry `@lym_button_dir`, and the bar may still draw it without that option.
+  Check `internal/reedengine/bar.go` and `buttonrow.go` for a drawn RC button whose click has no directory to run from.
+- Not run by hand: a real tmux click on RC in a task session, a prime session and a beam session, and a Slack click in each.
