@@ -21,11 +21,11 @@
 - `cmd/lym#newRoot`
 
 **Create:**
-- `plan:internal/heddleengine#Passage` -> `type Passage struct`
-- `plan:internal/heddleengine#Renderer.FileEntries` -> `func (r Renderer) FileEntries(boltDir, engine string) ([]Passage, error)`
-- `plan:internal/heddleengine#TestRenderer_EntryKeys` -> `func TestRenderer_EntryKeys(t *testing.T)`
-- `plan:internal/shuttleengine#Passage` -> `type Passage struct`
-- `plan:internal/shuttleengine#Standing` -> `type Standing struct`
+- `internal/heddleengine#Passage`
+- `internal/heddleengine#Renderer.FileEntries`
+- `internal/heddleengine#TestRenderer_EntryKeys`
+- `internal/shuttleengine#Passage`
+- `internal/shuttleengine#Standing`
 
 **Uses:**
 - `internal/heddleengine#promptTargetsFor`

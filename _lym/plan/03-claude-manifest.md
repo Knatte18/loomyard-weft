@@ -10,15 +10,15 @@
 - `internal/shuttleengine/claudeengine/doc.go`
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#claudeManifest` -> `func claudeManifest(in manifestInputs) shuttleengine.Manifest`
-- `plan:internal/shuttleengine/claudeengine#manifestInputs` -> `type manifestInputs struct`
-- `plan:internal/shuttleengine/claudeengine#TestPrepare_WritesTheManifest` -> `func TestPrepare_WritesTheManifest(t *testing.T)`
+- `internal/shuttleengine/claudeengine#claudeManifest`
+- `internal/shuttleengine/claudeengine#manifestInputs`
+- `internal/shuttleengine/claudeengine#TestPrepare_WritesTheManifest`
 
 **Uses:**
-- `plan:internal/shuttleengine#WriteManifest`
-- `plan:internal/shuttleengine#ReadManifest`
-- `plan:internal/shuttleengine#Manifest`
-- `plan:internal/shuttleengine#WebsterForkDenyKey`
+- `internal/shuttleengine#WriteManifest`
+- `internal/shuttleengine#ReadManifest`
+- `internal/shuttleengine#Manifest`
+- `internal/shuttleengine#WebsterForkDenyKey`
 - `internal/shuttleengine/claudeengine#engineWithAnchor`
 - `internal/shuttleengine/claudeengine#instructionFiles`
 - `internal/shuttleengine/claudeengine#buildDenyNotice`

@@ -1,14 +1,14 @@
 {
   "runGuid": "74eca835caaa62652518eea5ec8168f3",
-  "planFingerprint": "449c3f24a1388e1b735d3f6bff71d1dca9e175b6acb740ac88cd167a98df64b0",
+  "planFingerprint": "d9d76cd9e65caf6d9f8254f90557ed7786849cffab96260103e870582ceaa366",
   "planFileHashes": {
     "00-overview.md": "b3b3f00300aa44c443c2c654438c1d346913e8012a434dfd66c87cc6bd205a77",
-    "01-heddle-standing-keys.md": "9d8dbee4ed79c03b667ba88f5b0433dcec72cd5f4007c7b524428b628be16c4f",
-    "02-manifest-record.md": "ab1560e2ce5137fd2de1c9eb29eba7acbcbd4065e929c8242c138a428dd6a86b",
-    "03-claude-manifest.md": "1e78c74962f19729b0d9a3c206c068d576e5e60230f261c569adf27ac66afc29",
-    "04-codex-manifest.md": "b214bd72a652e4575fe94ac34019abbc3ed249c3880e3614bcb74b23c180a36b",
+    "01-heddle-standing-keys.md": "e7aebc0288ac953b170ac130a331e69bfb534f0d2a78b1c432112ce9eebce3d0",
+    "02-manifest-record.md": "aa23a855834cbf8d8700f4770d797d5d5912157533f470594308f8a9e0ff878a",
+    "03-claude-manifest.md": "2455e5bfe138629ff395a339d207a0236c76093a1a7b8b72831fba0a7cd78d9f",
+    "04-codex-manifest.md": "ba412d507788283cada40517343261422487d502a299d1c1e45b5136e4df9184",
     "05-engines-with-seams.md": "1f7e16535c848404222e1305b293db1efdf62512607fff975fa422031af57a41",
-    "06-seat-parity.md": "676a7cdcca1e5e1811e840fcfaa1b66cc09f2d4cb004ea59dfe29295ebf48d72",
+    "06-seat-parity.md": "32654e64c3e68d6e7ea46c24223eaf48cac35931eebbd47cde1e651ceb40e6f4",
     "07-producer-table.md": "10941d0f1e63feb9e35b0b2b390d51602ded2210ffb5f6cb52d12164e1a6d314",
     "08-shuttle-manifest-verb.md": "bd7b8ee31e0205f5ecc05d7524f9a52ad3bb38fb757c991c0a14c1befa87018f",
     "09-pattern-engine-parity.md": "450fef2deae8176ab1a9e495b82b39c3959e69a021832e12b8587a36e04f7005"
@@ -241,21 +241,47 @@
         "03-claude-manifest"
       ],
       "cardHashes": {
-        "01-heddle-standing-keys": "9d8dbee4ed79c03b667ba88f5b0433dcec72cd5f4007c7b524428b628be16c4f",
-        "02-manifest-record": "ab1560e2ce5137fd2de1c9eb29eba7acbcbd4065e929c8242c138a428dd6a86b",
-        "03-claude-manifest": "1e78c74962f19729b0d9a3c206c068d576e5e60230f261c569adf27ac66afc29"
+        "01-heddle-standing-keys": "e7aebc0288ac953b170ac130a331e69bfb534f0d2a78b1c432112ce9eebce3d0",
+        "02-manifest-record": "aa23a855834cbf8d8700f4770d797d5d5912157533f470594308f8a9e0ff878a",
+        "03-claude-manifest": "2455e5bfe138629ff395a339d207a0236c76093a1a7b8b72831fba0a7cd78d9f"
       },
       "startSha": "40c66912c08839dc8d46483f325e6474c3062a7d",
       "kind": "fork",
       "spawnedAt": "2026-11-17T15:39:51Z",
       "sessionId": "fb9e26e0-b300-4edf-b54e-0b3912f2602c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-heddle-standing-keys",
+        "status": "done",
+        "head_sha": "0fe1c803f354b9f7ad3163181e4ee89a5bbfb5a4",
+        "deviations": [
+          "internal/heddleengine/render.go",
+          "internal/heddleengine/render_test.go",
+          "internal/heddleengine/target.go",
+          "internal/shuttleengine/claudeengine/manifest.go",
+          "internal/shuttleengine/claudeengine/manifest_test.go",
+          "internal/shuttleengine/claudeengine/pluginhook.go",
+          "internal/shuttleengine/manifest.go"
+        ]
+      },
+      "cardShas": [
+        "0fe1c803f354b9f7ad3163181e4ee89a5bbfb5a4"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-launch-manifest-parity/fb9e26e0-b300-4edf-b54e-0b3912f2602c/subagents/agent-a28a9ad8d3d2f0ac2.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-launch-manifest-parity/fb9e26e0-b300-4edf-b54e-0b3912f2602c/subagents/agent-a28a9ad8d3d2f0ac2.jsonl"
+      ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "cc1aa022ec5a057ba24192cb64328e03",
   "masterSessionId": "fb9e26e0-b300-4edf-b54e-0b3912f2602c",
-  "masterEngine": "claude"
+  "masterEngine": "claude",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-launch-manifest-parity/fb9e26e0-b300-4edf-b54e-0b3912f2602c/subagents/agent-a28a9ad8d3d2f0ac2.jsonl"
+  ]
 }

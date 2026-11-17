@@ -12,10 +12,10 @@
 - `plan:internal/shuttleengine/codexengine#TestPrepare_WritesTheManifest` -> `func TestPrepare_WritesTheManifest(t *testing.T)`
 
 **Uses:**
-- `plan:internal/shuttleengine#WriteManifest`
-- `plan:internal/shuttleengine#ReadManifest`
-- `plan:internal/shuttleengine#Manifest`
-- `plan:internal/shuttleengine#ErrHookUnrun`
+- `internal/shuttleengine#WriteManifest`
+- `internal/shuttleengine#ReadManifest`
+- `internal/shuttleengine#Manifest`
+- `internal/shuttleengine#ErrHookUnrun`
 - `internal/shuttleengine/codexengine#newRepoFixture`
 - `internal/shuttleengine/codexengine#repoFixture.addWorktree`
 - `internal/shuttleengine/codexengine#newEngine`

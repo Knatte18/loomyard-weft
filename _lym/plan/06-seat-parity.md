@@ -57,10 +57,10 @@
 - `internal/loomengine#DiscussionTable`
 - `internal/loomengine#RaddleTable`
 - `plan:internal/shuttleengines#NewWithSeams`
-- `plan:internal/shuttleengine#MissingItems`
-- `plan:internal/shuttleengine#ReadManifest`
-- `plan:internal/shuttleengine#ErrHookUnrun`
-- `plan:internal/shuttleengine#WebsterForkDenyKey`
+- `internal/shuttleengine#MissingItems`
+- `internal/shuttleengine#ReadManifest`
+- `internal/shuttleengine#ErrHookUnrun`
+- `internal/shuttleengine#WebsterForkDenyKey`
 - `internal/shuttleengine#InstallPassageReader`
 - `internal/shuttleengine#RequirementSupporter`
 

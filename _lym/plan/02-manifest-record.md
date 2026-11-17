@@ -1,21 +1,21 @@
 # Card 2 — The launch manifest record and its copy at the run-directory root
 
 **Create:**
-- `plan:internal/shuttleengine#Manifest` -> `type Manifest struct`
-- `plan:internal/shuttleengine#ManifestItem` -> `type ManifestItem struct`
-- `plan:internal/shuttleengine#ManifestChannel` -> `type ManifestChannel string`
-- `plan:internal/shuttleengine#ManifestDelivery` -> `type ManifestDelivery string`
-- `plan:internal/shuttleengine#ManifestFileName` -> `const ManifestFileName = "manifest.json"`
-- `plan:internal/shuttleengine#manifestsDirName` -> `const manifestsDirName = "manifests"`
-- `plan:internal/shuttleengine#ErrHookUnrun` -> `var ErrHookUnrun = errors.New("shuttle: the plugin hook is listed unrun")`
-- `plan:internal/shuttleengine#WebsterForkDenyKey` -> `const WebsterForkDenyKey = "webster-fork-deny"`
-- `plan:internal/shuttleengine#WriteManifest` -> `func WriteManifest(runDir string, m Manifest) error`
-- `plan:internal/shuttleengine#ReadManifest` -> `func ReadManifest(path string) (Manifest, bool, error)`
-- `plan:internal/shuttleengine#Manifest.Omitted` -> `func (m Manifest) Omitted() []ManifestItem`
-- `plan:internal/shuttleengine#MissingItems` -> `func MissingItems(from, in Manifest) []ManifestItem`
-- `plan:internal/shuttleengine#copyManifest` -> `func copyManifest(root, runID, runDir string) error`
-- `plan:internal/shuttleengine#TestManifest_Record` -> `func TestManifest_Record(t *testing.T)`
-- `plan:internal/shuttleengine#TestRunner_Start_KeepsTheManifestCopy` -> `func TestRunner_Start_KeepsTheManifestCopy(t *testing.T)`
+- `internal/shuttleengine#Manifest`
+- `internal/shuttleengine#ManifestItem`
+- `internal/shuttleengine#ManifestChannel`
+- `internal/shuttleengine#ManifestDelivery`
+- `internal/shuttleengine#ManifestFileName`
+- `internal/shuttleengine#manifestsDirName`
+- `internal/shuttleengine#ErrHookUnrun`
+- `internal/shuttleengine#WebsterForkDenyKey`
+- `internal/shuttleengine#WriteManifest`
+- `internal/shuttleengine#ReadManifest`
+- `internal/shuttleengine#Manifest.Omitted`
+- `internal/shuttleengine#MissingItems`
+- `internal/shuttleengine#copyManifest`
+- `internal/shuttleengine#TestManifest_Record`
+- `internal/shuttleengine#TestRunner_Start_KeepsTheManifestCopy`
 
 **Edit:**
 - `internal/shuttleengine#Runner.launch`
