@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 06:55 UTC; every age below is as of then.
+Rendered 2026-11-17 06:56 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -9,7 +9,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 <details open>
 <summary><strong><a href="project-codexengine.md">P1 codexengine</a> (8)</strong></summary>
 
-[`codexengine`](design-codexengine.md) · Age 16h · Owner `neve`
+[`codexengine`](design-codexengine.md) · Age 17h · Owner `neve`
 
 ### Tasks (6)
 
@@ -27,12 +27,12 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Every producer renders its prompt and edit directive for the engine its launch resolves to** | [`prompt-engine-per-launch`](design-prompt-engine-per-launch.md)<br>[Sketch](decision-prompt-engine-per-launch.md) | darn · solid | T5 | 16h<br>16h | codex, shuttle, stencil, heddle |
-| T13 | `draft` **A Codex session gets Claude's standing items, user setup, instruction files and subagent terms in its developer instructions** | [`codex-standing-instructions`](design-codex-standing-instructions.md)<br>[Sketch](decision-codex-standing-instructions.md) | tapestry · solid | T6 | 16h<br>16h | codex, shuttle, stencil, heddle |
+| T6 | `draft` **Every producer renders its prompt and edit directive for the engine its launch resolves to** | [`prompt-engine-per-launch`](design-prompt-engine-per-launch.md)<br>[Sketch](decision-prompt-engine-per-launch.md) | darn · solid | T5 | 17h<br>17h | codex, shuttle, stencil, heddle |
+| T13 | `draft` **A Codex session gets Claude's standing items, user setup, instruction files and subagent terms in its developer instructions** | [`codex-standing-instructions`](design-codex-standing-instructions.md)<br>[Sketch](decision-codex-standing-instructions.md) | tapestry · solid | T6 | 17h<br>17h | codex, shuttle, stencil, heddle |
 | T15 | `draft` **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | T19 | 1d<br>16h | codex, shuttle |
-| T17 | `draft` **Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan** | [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)<br>[Sketch](decision-codex-wording-engine-blocks.md) | darn · solid | T13 | 16h<br>16h | codex, shuttle, stencil, heddle |
-| T18 | `draft` **A Codex session gets the question-tool deny and the batching nudge Claude runs** | [`codex-question-deny-nudge`](design-codex-question-deny-nudge.md)<br>[Sketch](decision-codex-question-deny-nudge.md) | darn · solid | T13 | 16h<br>16h | codex, shuttle, stencil, heddle |
-| T19 | `draft` **Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both** | [`launch-manifest-parity`](design-launch-manifest-parity.md)<br>[Sketch](decision-launch-manifest-parity.md) | tapestry · solid | T17<br>T18 | 16h<br>16h | codex, shuttle, stencil, heddle |
+| T17 | `draft` **Claude-only wording moves into Claude engine blocks, each with a Codex copy, held by a term scan** | [`codex-wording-engine-blocks`](design-codex-wording-engine-blocks.md)<br>[Sketch](decision-codex-wording-engine-blocks.md) | darn · solid | T13 | 17h<br>17h | codex, shuttle, stencil, heddle |
+| T18 | `draft` **A Codex session gets the question-tool deny and the batching nudge Claude runs** | [`codex-question-deny-nudge`](design-codex-question-deny-nudge.md)<br>[Sketch](decision-codex-question-deny-nudge.md) | darn · solid | T13 | 17h<br>17h | codex, shuttle, stencil, heddle |
+| T19 | `draft` **Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both** | [`launch-manifest-parity`](design-launch-manifest-parity.md)<br>[Sketch](decision-launch-manifest-parity.md) | tapestry · solid | T17<br>T18 | 17h<br>17h | codex, shuttle, stencil, heddle |
 
 ### Notes (2)
 
@@ -148,24 +148,23 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (16)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (15)</strong></summary>
 
 Owner `neve`
 
-### Tasks (6)
+### Tasks (5)
 
 Concrete and claimable; only a task can run.
 
-#### Running (4)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Webster | neve | 20h<br>20h | webster, weaver |
-| T20 | **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice<br>• `darn: writer fable` | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | darn · light | Code-Burler-Review | neve | 47m<br>34m | gate |
-| T21 | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | sampler | Sampler-Session | neve | 9d<br>6m | heddle |
-| T22 | **lym retro: run the retro task's writer on Opus**<br>• The retro task's writer judges transcripts and routes proposals; give it Opus instead of the docs default | [`retro-writer-opus`](design-retro-writer-opus.md) | darn · docs | landing · Finalize | neve | 7m<br>6m | report, darn |
+| T20 | **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice<br>• `darn: writer fable` | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | darn · light | Code-Burler-Review | neve | 47m<br>35m | gate |
+| T21 | **A sampler that iterates the rendering of HEDDLE.md until it reads well** | [`heddle-md-readability`](design-heddle-md-readability.md) | sampler | Sampler-Session | neve | 9d<br>7m | heddle |
 
 #### Ready (0)
 
@@ -197,7 +196,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A capped test run raises a desktop low-memory notice**<br>• Each kernel kill of a capped test scope in app.slice shows a desktop low-memory notice; move the scopes so it does not | [`memcap-desktop-notice`](design-memcap-desktop-notice.md) | 0m<br>0m | gate, process |
+| B1 |  | **A capped test run raises a desktop low-memory notice**<br>• Each kernel kill of a capped test scope in app.slice shows a desktop low-memory notice; move the scopes so it does not | [`memcap-desktop-notice`](design-memcap-desktop-notice.md) | 1m<br>1m | gate, process |
 | B2 |  | **Memory guard for every test binary lym runs**<br>• The gate watchdog watches CPU only and only gate test runs; give it a memory trigger over every test binary, and cap the gate tiers | [`gate-tier-memory-cap`](design-gate-tier-memory-cap.md) | 37m<br>29m | gate |
 
 #### Features (6)
@@ -210,5 +209,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>11d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 6w<br>21h | board, ide, orch |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>11d | burler, shed, orch, quarry, report |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T22 | **lym retro: run the retro task's writer on Opus**<br>• The retro task's writer judges transcripts and routes proposals; give it Opus instead of the docs default | [`retro-writer-opus`](design-retro-writer-opus.md) | 7m<br>7m | report, darn |
 
 </details>
