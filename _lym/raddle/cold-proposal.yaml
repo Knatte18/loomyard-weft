@@ -1,0 +1,96 @@
+{
+  "sketch": "review-rounds-converge",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "leftover-pairs-teardown", "revised": "2026-11-17T11:06:42Z"},
+    {"slug": "codex-wording-engine-blocks", "revised": "2026-11-16T13:56:13Z"},
+    {"slug": "codex-question-deny-nudge", "revised": "2026-11-16T13:56:13Z"},
+    {"slug": "launch-manifest-parity", "revised": "2026-11-16T13:56:13Z"},
+    {"slug": "codexengine", "revised": "2026-11-16T14:10:30Z"},
+    {"slug": "borrowed-orchestrator-ideas", "revised": "2026-11-17T10:49:21Z"}
+  ],
+  "parts": [
+    {
+      "slug": "review-rounds-converge-build",
+      "title": "Review rounds converge: parsed fixer rebuttals, incremental re-review with round checks, and a Go stalemate escalation",
+      "type": "feature",
+      "labels": ["burler", "shed", "stencil", "fabric", "loom", "arbiter", "cwd"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6"],
+      "packages": [
+        {"path": "internal/burlerengine", "size": 1100},
+        {"path": "internal/shedadapters", "size": 1300},
+        {"path": "internal/fabricengine", "size": 200},
+        {"path": "internal/fabriccli", "size": 80},
+        {"path": "internal/burlercli", "size": 120},
+        {"path": "internal/shedrecipe", "size": 40},
+        {"path": "internal/loomengine", "size": 30},
+        {"path": "internal/loomcli", "size": 20},
+        {"path": "internal/arbiterstop", "size": 15},
+        {"path": "internal/lymdirs", "size": 5},
+        {"path": "contracts/stencils", "size": 150}
+      ],
+      "contract": {
+        "takes": "burlerengine's review parser, review gate and Go-written skipped fixer-reports; the review and fix producers and the Bouncer's settle path in shedadapters (settleUnlessRefused, settleUndecided, softCapRule, designWrongKeys, routeDecisions); BouncerConfig's closure seams wired in shedrecipe; fabricengine's private write-tree and diff-tree helpers; discussionparser.AddedDecisionTexts; internal/state's JSON records; arbiterstop's settleable causes",
+        "delivers": "fixer-report frontmatter with per-finding dispositions and its fix check; the Go-rendered prior-findings block in prior_rounds; the review file's prior and carries keys judged by a round-check gate entry with D4's incremental bound; a per-round snapshot record and changes file over two general fabric verbs; the stalemate escalation cause counted by Go, settled by the circling verbs and the arbiter, set by the loom key review_stalemate_rounds; lym burler validate-review running the round checks in a run directory; the burler stencils and parent notices stating the new rules",
+        "exports": "the fabric working-tree id and tree-diff verbs; the burlerengine fixer-report model and round-context type; the shedadapters round-context builder; EscalationStalemate"
+      },
+      "depends_on": [],
+      "open_risks": [
+        "An in-flight run that crosses the binary change has rounds with no snapshot record or fixer-report frontmatter:\nby D2 and D6 its next round is full and counts as changed, so it reviews and bounces as today until it holds a complete new-format round."
+      ],
+      "criteria": [
+        "D1: a fixer-report whose dispositions miss a finding the fixer owns, repeat one, or name an id the review lacks is refused by the fix check;\none with a `disputed` entry lacking `rebuttal` or a `<path>:<line>` evidence item is refused; a complete report passes.",
+        "D1: on a round that routes decisions, a `decision`-class finding needs no disposition and may carry a `ruling` entry;\non a round that routes none, a report missing a `decision`-class finding's disposition is refused.",
+        "D1: the Go-written fixer-reports parse and carry `spawned: false`; a fixer-written report carrying `spawned` is refused by the fix check.",
+        "D1: a fix check that exhausts its attempts passes; the round is not archived,\nand its report, unparseable or with incomplete dispositions, leaves the next round full and counts as changed.",
+        "D2: round N's composed review prompt holds every finding of round N-1, each with its disposition and, for a disputed one,\nits rebuttal and evidence, for both the Claude and the Codex reviewer engine;\na round with no complete round N-1, or whose fixer-written fixer-report fails the fix check, holds today's prior-rounds text.",
+        "D2: a round after one whose fixer was skipped, its Go-written fixer-report carrying `spawned: false`, renders the block.",
+        "D2: the block lists once every `Added after Discussion` entry whose digest round N-1's snapshot record lacks, and none it holds;\nwhen a `lym loom decision replace` folds entries and a `lym loom decision add` follows, the new entry is listed,\nas is one added under a folded entry's title with a body of its own.\nA `ruling` disposition is shown as the fixer's report, not as the parent's answer.",
+        "D2: on a segment whose fix row only notifies the parent, with no Bouncer escalation of decisions,\nround N's block marks round N-1's `decision`-class finding as held;\na round N-1 whose snapshot record lacks `decisions_routed` leaves round N with today's prior-rounds text.",
+        "D3: the round-check entry refuses a review whose `prior` list misses, repeats or invents an id, holds `withdrawn` on an undisputed finding,\nlacks `answer` on an open disputed finding, or whose `carries` links do not match its `open` entries;\nit refuses `prior` or `carries` in a review with no D2 block.",
+        "D3: a carried finding whose class differs from its earlier finding's, whose severity is above it,\nor whose location path moves to a file the changes file does not touch is refused;\none moved to a touched file passes.\nWith no changes file, a carried finding that keeps its earlier location path passes and one that moves it is refused.",
+        "D3: of two held `decision`-class findings where the block lists an entry settling one,\nthe review marks that one `resolved` with an `answer` quoting the entry's title, does not carry it, and the Bouncer does not escalate it again;\nit marks the other `open` and carries it.\nThe round-check entry refuses `resolved` whose `answer` quotes no title the block listed, and a status other than `resolved` or `open`.",
+        "D3: an incremental review carrying `prior` and `carries` passes the shape checks of `ParseCurrentReview`.",
+        "D3: a review that passes the round-check entry on its cap with a new non-BLOCKING finding is accepted, and the fixer works that finding.",
+        "D3: `lym burler validate-review` on an incremental review in its run directory, its seam cwd in the worktree,\nruns the round checks against the context the `internal/shedadapters` builder rebuilds;\non a file outside one, with a seam cwd outside any git repository,\nor on a run directory outside the resolved worktree's `_lym` run root, shape checks alone.",
+        "D4: in an incremental round, the round-check entry refuses a new non-BLOCKING finding and a new BLOCKING finding on a file the changes file does not touch,\nand accepts a new BLOCKING finding on a touched file, located by worktree-relative path with a `:line` or `#` suffix,\nand an `origin: parent` finding anywhere whose `parent_ids` name ids of the round's parent-review ask.",
+        "D4: in an incremental round, a new `origin: parent` finding is refused in a round with no parent-review ask,\nand when its `parent_ids` list is empty or names an id the ask's report lacks;\na carried `origin: parent` finding in a round with no ask passes.",
+        "D4: with no changes file, a new BLOCKING finding on any file passes and a new non-BLOCKING one is refused.",
+        "D4: a segment's first round, a new generation's first round and every round of an amendment generation are full rounds.",
+        "D5: a round's snapshot record holds a target id that changes when a fixer edits a target file, committed or not,\nand stays the same when nothing changed; a review re-run in the same round keeps the first record.",
+        "D5: the changes file of an incremental round lists exactly the target files changed since round N-1's snapshot, for source and overlay scope.",
+        "D6: with `review_stalemate_rounds` at 2 and a judge verdict that does not converge, a second unchanged round in a row escalates with cause `stalemate`;\none unchanged round does not; a changed round between two unchanged rounds resets the count; 0 never escalates.",
+        "D6: a converged verdict on an unchanged round converges; a round with no snapshot record, whose snapshot record holds no post-fix target id,\nor whose fixer-report carries `spawned: false`, counts as changed.",
+        "D6: a `decision`-class round that `routeDecisions` settles records its post-fix target id.",
+        "D6: a replay of a settled round after a target file is edited reads the recorded post-fix target id and settles as the harvest did.",
+        "D6: an unchanged round at the soft cap that meets every condition of the auto-accept is auto-accepted, not escalated with cause `stalemate`.",
+        "D6: an unchanged round in the soft-cap window, with the auto-accept setting off and a ledger holding no design-wrong entry,\nis accepted by `softCapRule`, not escalated with cause `stalemate`.",
+        "D6: a replay of a round whose pending escalation holds cause `stalemate` escalates with that cause again and runs no further round.",
+        "D6: `lym loom circling continue` after a stalemate runs another round and the count restarts; `accept` ends the segment.",
+        "D6: the arbiter is eligible to settle a pending `stalemate` escalation.",
+        "Review: `contracts/stencils/burler/burler-step-fix.md` tells the fixer to write the D1 frontmatter,\nand the review-file format states D3's `prior` and `carries` keys, the carried finding's class and location-path rules,\nthe two statuses of a held `decision`-class finding, `resolved` with an `answer` quoting the settling entry's title or `open` and carried,\nand D4's bound,\nincluding that a fix's regression in an untouched file is located at the changed line that causes it.",
+        "Review: `lym burler validate-review`'s help text names the round checks it runs on a review in a run directory\nand no longer says the verb needs no git repository.",
+        "Review: the stalemate parent notice names `lym loom circling accept` and `continue`.",
+        "Review: the decision escalation's parent notice names `lym loom decision add`, one entry per answered finding."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 34,
+      "cost_line": "tapestry/solid with stored record, 7 runs: fit 15.2 USD fixed plus 0.61 USD per 100 changed lines over about 3060 lines"
+    }
+  ],
+  "cost": {
+    "expected_usd": 34,
+    "line": "one tapestry/solid part over about 3060 changed lines, by the stored-record cell's fit (7 runs; its mean is 54 USD)",
+    "next_best": {
+      "split": "three chained darn/solid tasks: D1 with D5's snapshot record and fabric verbs, then D2 to D4's prior block and round checks, then D6's stalemate",
+      "expected_usd": 29,
+      "line": "darn/solid with stored record, 13 runs: three times 7.0 USD fixed plus 0.26 USD per 100 lines over the same 3060 lines; the chain runs about 15 hours against the tapestry's 8.5"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
