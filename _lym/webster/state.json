@@ -232,9 +232,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-test-map-mode/f1b2bded-766e-49ae-ab44-b4b61d03052f/subagents/agent-aae9e5197951d7f0f.jsonl"
       ]
+    },
+    "2": {
+      "slug": "testcover-planning-delete",
+      "cards": [
+        "02-testcover-planning-delete",
+        "03-map-run-tier-bounds"
+      ],
+      "cardHashes": {
+        "02-testcover-planning-delete": "21feb3981bbbd2dccfc3a1b7d27158431f457b5cd171abe128ae862ab022fd1c",
+        "03-map-run-tier-bounds": "e82a752258ce765cba7966a4636606fccb5172b67518279242a0459c5d78c2dd"
+      },
+      "startSha": "74fc052f44814f0aecad7fe2713d8c9e78ed4d63",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T13:35:03Z",
+      "sessionId": "f1b2bded-766e-49ae-ab44-b4b61d03052f",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "e8b3bb526407ff1c8bb8996f37f9690a",
   "masterSessionId": "f1b2bded-766e-49ae-ab44-b4b61d03052f",
   "masterEngine": "claude",
