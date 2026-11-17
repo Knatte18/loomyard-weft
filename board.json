@@ -837,6 +837,25 @@
       "project": "test-suite-trim",
       "discussed": true,
       "record_body_sha256": "5c97aa58372074845b6b913df331f48956bdfb040f0514acdafbb07762df2389"
+    },
+    {
+      "id": 1427,
+      "handle": "B1",
+      "slug": "codex-edit-loop-recorder",
+      "title": "Record Codex edits for the edit-loop watch",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "codex",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Codex runs record no edits, so the edit-loop watch never notifies their parent",
+      "body": "## Seen (orch, 2026-11-17)\n\nThe edit-loop watch from `edit-loop-detector` counts an agent's edits of one file and sends the run's parent a notice when they loop.\nOnly the claude engine implements `EditRecorder`: its sessions carry a PostToolUse hook on `Edit|Write` that records each edit.\nA Codex run records no edits, so it never gets the notice.\n\n## Idea\n\nGive the codex engine an `EditRecorder` and an edit hook that records each file edit as the same slim line the claude engine writes,\nso the engine-neutral watch in `internal/shuttleengine/editloop.go` covers Codex runs unchanged.\nCodex edits files through its patch tool rather than `Edit` or `Write`,\nso the hook reads the file paths from that tool's input; one patch touching several files records one edit per file.\n",
+      "created": "2026-11-17T12:19:07Z",
+      "revised": "2026-11-17T12:19:07Z"
     }
   ],
   "prime_owner": "neve",
