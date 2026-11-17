@@ -139,6 +139,14 @@ Rationale: The one design-wrong finding, seat-specs-keeps-claude-model-params, i
 
 ## Open risks
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
+  - interim-reachability-not-admitted-in-allowlist (class design, severity MEDIUM, open in rounds 3)
+  - seat-specs-keeps-claude-model-params (class design, severity MEDIUM, open in rounds 3)
+  - shuttleparity-package-lacks-testmain (class scope, severity BLOCKING, open in rounds 3)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - For every seat in `seatengine`'s tables and every other producer of a launch spec, the Codex manifest holds every compared item of the Claude manifest, and dropping any one Codex delivery from `Prepare` fails the test;
