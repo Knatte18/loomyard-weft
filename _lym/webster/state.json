@@ -210,12 +210,35 @@
       "spawnedAt": "2026-11-17T13:10:53Z",
       "sessionId": "f1b2bded-766e-49ae-ab44-b4b61d03052f",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-gate-test-map-mode",
+        "status": "done",
+        "head_sha": "74fc052f44814f0aecad7fe2713d8c9e78ed4d63",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/gatecli/testmap.go",
+          "internal/gatecli/testmap_integration_test.go",
+          "internal/gatecli/testmappackage.go"
+        ]
+      },
+      "cardShas": [
+        "74fc052f44814f0aecad7fe2713d8c9e78ed4d63"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-test-map-mode/f1b2bded-766e-49ae-ab44-b4b61d03052f/subagents/agent-aae9e5197951d7f0f.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-test-map-mode/f1b2bded-766e-49ae-ab44-b4b61d03052f/subagents/agent-aae9e5197951d7f0f.jsonl"
+      ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "e8b3bb526407ff1c8bb8996f37f9690a",
   "masterSessionId": "f1b2bded-766e-49ae-ab44-b4b61d03052f",
-  "masterEngine": "claude"
+  "masterEngine": "claude",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-gate-test-map-mode/f1b2bded-766e-49ae-ab44-b4b61d03052f/subagents/agent-aae9e5197951d7f0f.jsonl"
+  ]
 }
