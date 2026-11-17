@@ -1,15 +1,15 @@
 # Card 2 — One-commit adopt write and the hold setters
 
 **Create:**
-- `plan:internal/boardengine#AdoptRequest` -> `type AdoptRequest struct`
-- `plan:internal/boardengine#AdoptWrite` -> `type AdoptWrite struct`
-- `plan:internal/boardengine#HoldRefusal` -> `type HoldRefusal struct`
-- `plan:internal/boardengine#HoldRefusal.Error` -> `func (e *HoldRefusal) Error() string`
-- `plan:internal/boardengine#WriteAdopt` -> `func WriteAdopt(boardDir string, req AdoptRequest) (AdoptWrite, error)`
-- `plan:internal/boardengine#FixHold` -> `func FixHold(boardDir string, here machinename.Identity, fixTask string, tries map[string]int) (Hold, error)`
-- `plan:internal/boardengine#ClearHold` -> `func ClearHold(boardDir string, here machinename.Identity) (bool, error)`
-- `plan:internal/boardengine#holdSetterBeforePushHook` -> `var holdSetterBeforePushHook func()`
-- `plan:internal/boardengine#TestWriteAdopt` -> `func TestWriteAdopt(t *testing.T)`
+- `internal/boardengine#AdoptRequest`
+- `internal/boardengine#AdoptWrite`
+- `internal/boardengine#HoldRefusal`
+- `internal/boardengine#HoldRefusal.Error`
+- `internal/boardengine#WriteAdopt`
+- `internal/boardengine#FixHold`
+- `internal/boardengine#ClearHold`
+- `internal/boardengine#holdSetterBeforePushHook`
+- `internal/boardengine#TestWriteAdopt`
 
 **Edit:**
 - `internal/boardengine#commitBoardWriteAndPush` -> `func commitBoardWriteAndPush(boardDir, message string, write func() ([]string, error), beforePush func()) error`

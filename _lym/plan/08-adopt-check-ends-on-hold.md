@@ -50,9 +50,9 @@
 - `internal/beamcli/doc.go`
 - `internal/fronttask/doc.go`
 - `internal/adoptcli#judgeOwnFix`
-- `plan:internal/boardengine#FixHold`
-- `plan:internal/boardengine#ClearHold`
-- `plan:internal/boardengine#HoldRefusal`
+- `internal/boardengine#FixHold`
+- `internal/boardengine#ClearHold`
+- `internal/boardengine#HoldRefusal`
 - `internal/boardengine#PullBolt`
 - `internal/boardengine#WriteHold`
 - `internal/boardengine#Registry.ReadsAsHere`

@@ -1,14 +1,14 @@
 # Card 3 — The takeover entry's production writer
 
 **Create:**
-- `plan:internal/fabricengine#TakeOverRequest` -> `type TakeOverRequest struct`
-- `plan:internal/fabricengine#TakeOverResult` -> `type TakeOverResult struct`
-- `plan:internal/fabricengine#TakeOverRun` -> `func TakeOverRun(prime *lymcwd.Location, req TakeOverRequest) (TakeOverResult, error)`
-- `plan:internal/fabricengine#takeoverBeforePushHook` -> `var takeoverBeforePushHook func(attempt int)`
-- `plan:internal/fabricengine#DropHandOverMark` -> `func DropHandOverMark(hubPath, slug string) error`
-- `plan:internal/fabricengine_test#TestTakeOverRun` -> `func TestTakeOverRun(t *testing.T)`
-- `plan:internal/fabricengine#OriginParentRunStatus` -> `func OriginParentRunStatus(prime *lymcwd.Location, slug, parent string) (shedengine.Status, bool, error)`
-- `plan:internal/fabricengine_test#TestOriginRunStatus` -> `func TestOriginRunStatus(t *testing.T)`
+- `internal/fabricengine#TakeOverRequest`
+- `internal/fabricengine#TakeOverResult`
+- `internal/fabricengine#TakeOverRun`
+- `internal/fabricengine#takeoverBeforePushHook`
+- `internal/fabricengine#DropHandOverMark`
+- `internal/fabricengine_test#TestTakeOverRun`
+- `internal/fabricengine#OriginParentRunStatus`
+- `internal/fabricengine_test#TestOriginRunStatus`
 
 **Edit:**
 - `internal/fabricengine#refuseDropLocalAnchorChange`

@@ -1,17 +1,17 @@
 {
   "runGuid": "0a70db7d32410364f4950a18b6f9fff8",
-  "planFingerprint": "4d2b4202011765defe118f46aeae069eefe9170d57a2d6ca88bfb40ae7dea6f8",
+  "planFingerprint": "3251b9c72db4f22d05f79247d263f283449374680ac5aff219090218da4a54c3",
   "planFileHashes": {
     "00-overview.md": "5e14089f251704197709230f55363b5ad4b3d07cc39f870a17921296fce63a2e",
     "01-board-replay-holds.md": "ba334222277c262aa0b0abb9dc027724524638e4ddf786e6bb21ad50eb7544be",
-    "02-board-adopt-write.md": "7ab5555a8da10429da3e302c84bc815f7d5e74243f74da1b034d28a773d54c22",
-    "03-fabric-takeover-writer.md": "01e8f2ca57f8062a291b82fc335e6d69390db88a8c039c17d6560f463dcf05b9",
+    "02-board-adopt-write.md": "0344eccdf4554aa2f41d344923ab2f61526b254755c1b9a8dc5a61bc25565d9e",
+    "03-fabric-takeover-writer.md": "708bfa670136b6660f4536deba35bfaee760e554e76a8da5d1bbf9733f2e8699",
     "04-shellguard-take-hold.md": "47ec85fb684e428996bd4f1d67b2c08856f843ea3ff1f3c6dd1b79ee14372009",
     "05-own-hold-reader.md": "dcda7670b0ac8c4db139d772d8a0d08c416720f5876a22074f3999be28e5f8ec",
     "06-beam-status-hold.md": "66113aabb3efda0ae1366877a7905b3cbd541873e926baf0b85318ab73e8cbf4",
     "07-batten-hub-run-slugs.md": "0a8ac8a0de33bc502f97a551e5350ffe7484f9369ca3e67fb161eb0d573494a9",
-    "08-adopt-check-ends-on-hold.md": "4337d2ce1f871e6c95b41167ddbad1ed9671e0eeae868d261e6a27afc2d5cb0f",
-    "09-adopt-foreground.md": "3e6d7a57f9753e50a197310e07426cf1c9a2251b4f5835738fdad36cc19742c3",
+    "08-adopt-check-ends-on-hold.md": "b0fadb8352cc001aaf5e5687420799f03cca11fc01faddfc7e911c9ea5c4fe13",
+    "09-adopt-foreground.md": "1e2079db05863fb9c3e52ba513ff4aa79587f0402c59b3a4a52c2cc3c93beb73",
     "10-retired-adopt-wording.md": "6c954ee15ef35065df26ccf2e5fd0a454436339fab140b82854a56e668329c50"
   },
   "planOverviewFrameHash": "9c993205f17167da8d1a1540ae310175d4ea9da737b86dc223dfeddf32cf3dc3",
@@ -349,20 +349,46 @@
       ],
       "cardHashes": {
         "01-board-replay-holds": "ba334222277c262aa0b0abb9dc027724524638e4ddf786e6bb21ad50eb7544be",
-        "02-board-adopt-write": "7ab5555a8da10429da3e302c84bc815f7d5e74243f74da1b034d28a773d54c22",
-        "03-fabric-takeover-writer": "01e8f2ca57f8062a291b82fc335e6d69390db88a8c039c17d6560f463dcf05b9"
+        "02-board-adopt-write": "0344eccdf4554aa2f41d344923ab2f61526b254755c1b9a8dc5a61bc25565d9e",
+        "03-fabric-takeover-writer": "708bfa670136b6660f4536deba35bfaee760e554e76a8da5d1bbf9733f2e8699"
       },
       "startSha": "6005496ff858579dc33f8ebc593eb38e963188cd",
       "kind": "fork",
       "spawnedAt": "2026-11-17T14:15:22Z",
       "sessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-board-replay-holds",
+        "status": "done",
+        "head_sha": "e877782bfcde2646eae2b379b9e5f66cb4a45e3c",
+        "deviations": [
+          "internal/boardengine/holdwrite_integration_test.go",
+          "internal/boardengine/replay.go",
+          "internal/boardengine/replay_test.go",
+          "internal/fabricengine/destroy.go",
+          "internal/fabricengine/export_test.go",
+          "internal/fabricengine/takeoverrun_integration_test.go",
+          "internal/fabricengine/takeoverwrite.go"
+        ]
+      },
+      "cardShas": [
+        "e877782bfcde2646eae2b379b9e5f66cb4a45e3c"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-a13cef7449a7a3986.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-a13cef7449a7a3986.jsonl"
+      ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "f343e6f1dd8159caa6135f3dabefbab4",
   "masterSessionId": "11cf24b8-878e-4549-8056-9ee0117db93f",
-  "masterEngine": "claude"
+  "masterEngine": "claude",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-adopt-foreground/11cf24b8-878e-4549-8056-9ee0117db93f/subagents/agent-a13cef7449a7a3986.jsonl"
+  ]
 }

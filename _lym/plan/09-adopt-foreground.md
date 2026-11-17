@@ -162,12 +162,12 @@
 - `internal/adoptcli#hereSubject`
 - `internal/adoptcli#collect`
 - `internal/adoptcli#checkAlive`
-- `plan:internal/boardengine#WriteAdopt`
-- `plan:internal/boardengine#AdoptRequest`
-- `plan:internal/boardengine#HoldRefusal`
+- `internal/boardengine#WriteAdopt`
+- `internal/boardengine#AdoptRequest`
+- `internal/boardengine#HoldRefusal`
 - `internal/boardengine#PullBolt`
-- `plan:internal/fabricengine#TakeOverRun`
-- `plan:internal/fabricengine#OriginParentRunStatus`
+- `internal/fabricengine#TakeOverRun`
+- `internal/fabricengine#OriginParentRunStatus`
 - `internal/fabricengine#RegenerateHubWorkspace`
 - `internal/fabricengine#Topology.Add`
 - `internal/battencli#HubCatchUp`
