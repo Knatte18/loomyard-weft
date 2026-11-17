@@ -303,44 +303,10 @@
       "created": "2026-11-08T14:40:16Z",
       "revised": "2026-11-16T11:13:59Z",
       "owner_machine": "neve",
-      "order": [
-        "machine-start-launchers"
-      ],
       "beam": true,
       "beam_color": "#7d2d6b",
       "discussed": true,
       "record_body_sha256": "744ee6078ac045281f4b9d725ed32fba0f21d1c5f7c98aea70b00ad5f4b8d311"
-    },
-    {
-      "id": 1398,
-      "handle": "T11",
-      "slug": "machine-start-launchers",
-      "title": "lym machine start brings back every hub this machine owns, from desktop launchers",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "termwindow",
-        "dobby"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `adopt-build-resplit`.\n\nTakes: machinecli's cobra subtree and deps seams; hubregistry.Live and Lookup; dobbyengine.OwnedWorktrees and EnsureLive with their registry-aware owner reads and the catch-up from machine-registry-holds-catchup, run at the dobby start, after a sleep and on a hand pass; the Bolt hold reader; lym beam start --all as a child process named through selfexec.LymBinary; termwindow.Resolve and OpenAttach; fabricengine.HubWorkspacePath and vscode.Launch\nDelivers: lym machine start [\u003cshortname\u003e] starting the prime and owned beams of one hub or every live hub through lym beam start in the hub's prime, skipping a prime another machine owns or one with no recorded owner and saying so, never through lym s; the hub's workspace file opened and one terminal per started worktree running lym reed attach, or each attach command printed where no launcher resolves; a standing hold printed with its machine, subjects and, for this machine's own, the lym adopt \u003csubjects\u003e re-run; native Windows (wt.exe) in termwindow; internal/desktoplauncher writing .desktop files on Linux and .cmd files on the Windows desktop, through wsl.exe under WSL; the launcher added at the dobby start and removed by every catch-up, the dobby start's included, that finds this machine owns nothing in the hub, in internal/dobbyengine, and added and removed by the verb, never in internal/beamcli\nExports: internal/desktoplauncher's add and remove functions and machinecli's start verb\n\nThe part changes these packages:\n\n- internal/machinecli (about 420 changed lines)\n- internal/desktoplauncher (about 380 changed lines)\n- internal/termwindow (about 90 changed lines)\n- internal/dobbyengine (about 80 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-16T10:22:19Z",
-      "revised": "2026-11-17T11:06:42Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "solid",
-      "project": "adopt-build-resplit",
-      "discussed": true,
-      "record_body_sha256": "c6b7833d4a69ff8be82fe8bb21128fecd9c339cd659c19f031507a89dec3d93b"
     },
     {
       "id": 1404,
@@ -501,32 +467,6 @@
       "profile": "solid",
       "discussed": true,
       "record_body_sha256": "54b995f4b64f0c42f426413c856dcab90ad1132693498d6fb6148b00f23e0c4a"
-    },
-    {
-      "id": 1439,
-      "handle": "T4",
-      "slug": "gemini-engine-study",
-      "title": "Study: the work to support Gemini CLI or Antigravity as an agent engine",
-      "kind": "task",
-      "labels": [
-        "research",
-        "shuttle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Question (operator, 2026-11-17)\n\nlym now runs Codex beside Claude Code as an agent engine (project `codexengine`).\nHow much work is it to support Google's Gemini CLI, or Antigravity, as a third engine?\n\n## Study\n\n- Map what an engine must give lym today, from the code: `internal/shuttleengine`'s engine interface and seams, `claudeengine` and `codexengine`,\n  the launch manifest and parity test (`3bbc92a0`), hooks (tool boundary, stop, deny guards, edit recording), idle wake, skills and plugin contexts, instruction files and heddle targets, subagents and forks, session resume, cost and usage records, sandbox and permissions, and headless or pane launch under reed.\n- For each of Gemini CLI and Antigravity, read their current public documentation and source where open, and judge per item: native support, a workaround, or missing.\n  Name the version read and the date; state what could not be verified from documents alone.\n- Use the Codex work as the yardstick: list the `codexengine` tasks that landed and what each cost, and estimate the same work for each candidate in changed lines and runs.\n- Say which of the two fits lym better, or whether neither does yet, and what a first minimal level of support would hold.\n\n## Bounds\n\n- A desk study: no code change, no installed tool, no account or API call; web reading only.\n- The report goes under `docs/research/` as one file; the verdict on whether to build is the operator's.\n",
-      "status": "done",
-      "created": "2026-11-17T18:09:34Z",
-      "revised": "2026-11-17T18:09:34Z",
-      "run_settings": {
-        "darn": {
-          "writer": "opus[high]"
-        }
-      },
-      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
