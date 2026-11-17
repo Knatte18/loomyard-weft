@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-17T08:07:45Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/reed-orch-buttons-in-tasks/_lym/landing/summary.md",
+      "at": "2026-11-17T08:28:28Z",
+      "started_at": "2026-11-17T08:07:46Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T08:17:00.155367695Z",
+          "end": "2026-11-17T08:17:00.169142696Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T08:24:38.520650106Z",
+          "end": "2026-11-17T08:24:38.530546324Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T08:17:00.222250164Z",
+          "end": "2026-11-17T08:24:22.985262949Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-17T08:24:23.460788188Z",
+          "end": "2026-11-17T08:24:38.494594849Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T08:24:38.584120225Z",
+          "end": "2026-11-17T08:27:45.85665084Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-17T08:27:45.93405589Z",
+          "end": "2026-11-17T08:27:46.239121823Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-17T08:27:46.322742567Z",
+          "end": "2026-11-17T08:27:46.322901144Z"
+        }
+      ]
     }
   ],
   "product": {
