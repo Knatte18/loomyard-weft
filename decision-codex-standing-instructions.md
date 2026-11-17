@@ -132,6 +132,12 @@ Decision: This replaces the entry 'A config dir that cannot be resolved warns an
 
 Rationale: Claude itself still loads the parts that do not depend on HOME, so a Codex session should get them too; the warning-not-error handling matches sessionScopeFor's with an unreadable plugins file.
 
+### Added after Discussion (parent, 2026-11-17): Unreadable-file test rows use a directory at the file's path
+
+Decision: Card 7's TestUserSetup_InstructionFiles names a directory standing at the file's path as the input of both unreadable rows (the global file and a CLAUDE.md above the root), and card 1's TestExpand names the same input for its unreadable path row; no row skips itself under root (plan finding F2).
+
+Rationale: os.ReadFile of a directory fails with a non-ErrNotExist error for every user, root included, so the rows tell an unreadable file from an absent one on every gate run without a skip, which a mode-0 file cannot do under root.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: Claude's user-setup resolution, session scope and file locations stay in `claudeengine`, and reach `codexengine` only through `shuttleengine` interfaces wired in `internal/shuttleengines`; the rollout reading for the batching nudge stays in `codexengine`, and the read-only lookup check both engines' nudges use sits in its own package under `internal/shuttleengine`.
