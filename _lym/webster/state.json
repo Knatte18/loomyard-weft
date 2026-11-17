@@ -275,9 +275,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-launch-manifest-parity/fb9e26e0-b300-4edf-b54e-0b3912f2602c/subagents/agent-a28a9ad8d3d2f0ac2.jsonl"
       ]
+    },
+    "4": {
+      "slug": "codex-manifest",
+      "cards": [
+        "04-codex-manifest",
+        "05-engines-with-seams",
+        "06-seat-parity"
+      ],
+      "cardHashes": {
+        "04-codex-manifest": "ba412d507788283cada40517343261422487d502a299d1c1e45b5136e4df9184",
+        "05-engines-with-seams": "1f7e16535c848404222e1305b293db1efdf62512607fff975fa422031af57a41",
+        "06-seat-parity": "32654e64c3e68d6e7ea46c24223eaf48cac35931eebbd47cde1e651ceb40e6f4"
+      },
+      "startSha": "0fe1c803f354b9f7ad3163181e4ee89a5bbfb5a4",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T15:56:15Z",
+      "sessionId": "fb9e26e0-b300-4edf-b54e-0b3912f2602c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "cc1aa022ec5a057ba24192cb64328e03",
   "masterSessionId": "fb9e26e0-b300-4edf-b54e-0b3912f2602c",
   "masterEngine": "claude",
