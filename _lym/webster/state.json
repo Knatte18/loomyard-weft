@@ -473,9 +473,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-slack-machine-bridge-build/6cbc7377-dd77-4162-9204-74d00527ec62/subagents/agent-a70376c79ae2bac6d.jsonl"
       ]
+    },
+    "9": {
+      "slug": "approve-and-revoke",
+      "cards": [
+        "09-approve-and-revoke",
+        "10-bridge-sending"
+      ],
+      "cardHashes": {
+        "09-approve-and-revoke": "2430f8625455ba5e31c4eadcff96269a941aa3c1c64a088393229900f8f5d256",
+        "10-bridge-sending": "2b7c46cceae0c084cb1e05e14ff28f28b9752bb572f16923687aad2dab5b4577"
+      },
+      "startSha": "6b89d7ab5b77bcd8d5789e23954d2e80c3f53011",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T18:12:04Z",
+      "sessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "255015dbb2c93bc97dff12a121147be8",
   "masterSessionId": "6cbc7377-dd77-4162-9204-74d00527ec62",
   "masterEngine": "claude",
