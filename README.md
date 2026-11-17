@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 15:48 UTC; every age below is as of then.
+Rendered 2026-11-17 15:49 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -100,7 +100,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **lym adopt runs in the foreground over pushed state: hold, owner, pull, takeover, check, with --take-hold** | [`adopt-foreground`](design-adopt-foreground.md)<br>[Sketch](decision-adopt-foreground.md) | tapestry · solid | Drift-Recheck | neve | 1d<br>4h | board, dobby, fabric, workspaces, orch, tender, batten, process |
+| T8 | **lym adopt runs in the foreground over pushed state: hold, owner, pull, takeover, check, with --take-hold** | [`adopt-foreground`](design-adopt-foreground.md)<br>[Sketch](decision-adopt-foreground.md) | tapestry · solid | Describe | neve | 1d<br>4h | board, dobby, fabric, workspaces, orch, tender, batten, process |
 
 #### Ready (0)
 
@@ -217,7 +217,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **An old driver fails on board stencils a landing installed mid-run**<br>• A blocked hand-over leaves the old binary rendering new board copies whose includes it lacks | [`stale-driver-new-stencils`](design-stale-driver-new-stencils.md) | 1h<br>1h | stencil, shed |
 | B4 |  | **Coverage map rewrites funcs in another order on each build**<br>• Two --map runs on one commit give the same sets in a different array order | [`map-entry-order-unstable`](design-map-entry-order-unstable.md) | 47m<br>47m |  |
 | B5 |  | **Coverage map records 0 seconds for nearly every test**<br>• redundant lists every candidate at 0 seconds so its slowest-first pass has no order | [`map-test-seconds-zero`](design-map-test-seconds-zero.md) | 47m<br>47m |  |
-| B6 |  | **lym gate redundant counts a timeout or memory cap as a kill** | [`redundant-timeout-not-kill`](design-redundant-timeout-not-kill.md) | 7m<br>7m | gate, testkit |
+| B6 |  | **lym gate redundant counts a timeout or memory cap as a kill** | [`redundant-timeout-not-kill`](design-redundant-timeout-not-kill.md) | 8m<br>8m | gate, testkit |
 
 #### Enhancements (1)
 
