@@ -1,6 +1,6 @@
 # P2 Ideas borrowed from comparable agent orchestrators
 
-Rendered 2026-11-17 11:14 UTC; every age below is as of then.
+Rendered 2026-11-17 11:15 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 25m · Owner `neve`
@@ -21,9 +21,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md) | motif | Discussion-Burler-Fix | neve | 25m<br>17m | burler, shed, stencil |
-| T16 | **A review lens that flags changes no decision asked for** | [`unrequested-scope-lens`](design-unrequested-scope-lens.md) | darn · light | Code-Bouncer | neve | 25m<br>17m | lenses, burler |
-| T20 | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | darn · light | Darn-Write | neve | 25m<br>17m | webster, fabric |
+| T14 | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md) | motif | Discussion-Burler-Fix | neve | 25m<br>18m | burler, shed, stencil |
+| T16 | **A review lens that flags changes no decision asked for** | [`unrequested-scope-lens`](design-unrequested-scope-lens.md) | darn · light | Drift-Recheck | neve | 25m<br>18m | lenses, burler |
+| T20 | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | darn · light | Darn-Write | neve | 25m<br>18m | webster, fabric |
 
 ### Ready (0)
 
