@@ -1,6 +1,6 @@
 # Record Codex edits for the edit-loop watch
 
-`codex-edit-loop-recorder` · Task · bug, codex, shuttle · landing · Finalize
+`codex-edit-loop-recorder` · Task · bug, codex, shuttle · done
 
 ## Seen (orch, 2026-11-17)
 
