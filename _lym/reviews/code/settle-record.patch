@@ -1,0 +1,148 @@
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index dfd20651..fea4dce2 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -644,7 +644,9 @@
+ // so a move that lands between the check and the push is caught only by the push's own refusal.
+ //
+ // A hand-over runs only at a binary-eligible stop, once per stop key and build.
+-// It runs over a clean tree outside the run's records, and never under a pause.
++// It never runs under a pause, and it runs over uncommitted paths too:
++// a step of the old build that failed midway leaves its producer's output uncommitted,
++// and the successor re-steps over it.
+ // It records the hand-over and leaves the stop report and the park marker.
+ // It releases the driver lock and spawns a fresh `lym loom drive` of the on-disk build, which re-steps;
+ // a driver starting at a blocked Finalize stop first runs the Finalize arm,
+diff --git a/internal/loomcli/drivewiring.go b/internal/loomcli/drivewiring.go
+index 1742e35e..7c88098b 100644
+--- a/internal/loomcli/drivewiring.go
++++ b/internal/loomcli/drivewiring.go
+@@ -303,7 +303,6 @@ func (c *loomCLI) goDriverDepsFor(release func() error) (sheddriver.Deps, error)
+ 			BuildChanged: func(onDisk buildvcs.Identity) bool {
+ 				return shedverbs.LastStepBuildChanged(c.spec.StepsDir, onDisk)
+ 			},
+-			DirtyPaths:  func() ([]string, error) { return dirtyPathsOutsideRecords(location, c.runID) },
+ 			ReleaseLock: release,
+ 			Executable:  executable,
+ 			SpawnSuccessor: func(executable string) error {
+@@ -388,24 +387,6 @@ func writeDrivePausedNote(frictionDir, runID string, stop sheddriver.Stop) error
+ 	return nil
+ }
+ 
+-// dirtyPathsOutsideRecords lists the pair's uncommitted or untracked paths outside the run's own records directories.
+-// Both sides join onto the task worktree, since the records side reaches it through the `_lym` junction.
+-func dirtyPathsOutsideRecords(location *lymcwd.Location, runID string) ([]string, error) {
+-	fab, err := fabricengine.Open(location)
+-	if err != nil {
+-		return nil, err
+-	}
+-	entries, err := fab.Status()
+-	if err != nil {
+-		return nil, err
+-	}
+-	paths := make([]string, 0, len(entries))
+-	for _, entry := range entries {
+-		paths = append(paths, filepath.Join(location.WorktreePath(), filepath.FromSlash(entry.Path)))
+-	}
+-	return loomengine.PathsOutsideRunRecords(location, runID, paths), nil
+-}
+-
+ // newestAttemptsFor names the newest tackler and arbiter attempt directories recorded for key.
+ // Both are empty when there is none; tacklerApplied reports whether the tackler attempt has the applied mark.
+ func newestAttemptsFor(tacklerDir, arbiterDir string, key sheddriver.StopKey) (tackler, arbiter string, tacklerApplied bool, err error) {
+diff --git a/internal/sheddriver/drive.go b/internal/sheddriver/drive.go
+index aa5ce4d4..799a0668 100644
+--- a/internal/sheddriver/drive.go
++++ b/internal/sheddriver/drive.go
+@@ -17,7 +17,6 @@ import (
+ 	"path/filepath"
+ 	"slices"
+ 	"strconv"
+-	"strings"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/buildvcs"
+@@ -146,8 +145,6 @@ type HandOverSeam struct {
+ 	OnDiskBuild func() (buildvcs.Identity, error)
+ 	// BuildChanged reports whether the last step ran a known build other than onDisk.
+ 	BuildChanged func(onDisk buildvcs.Identity) bool
+-	// DirtyPaths lists the task pair's uncommitted or untracked paths outside the run's own records directories.
+-	DirtyPaths func() ([]string, error)
+ 	// ReleaseLock releases the driver lock.
+ 	ReleaseLock func() error
+ 	// Executable is the on-disk lym path resolved when the driver was wired, before any deploy replaced it.
+@@ -347,23 +344,19 @@ func handedOver(records []SettleRecord, key StopKey, build string) bool {
+ 
+ // handOver hands the run to a fresh driver of the on-disk build at a binary-eligible stop.
+ // It holds any pause first and runs only when the last step ran another build.
+-// A tree with uncommitted paths outside the run's records hands back with them in the stop report and spawns nothing.
+-// Otherwise it records the hand-over and leaves the stop report, the park and the unwatched parent's notice.
++// It hands over whatever the tree holds.
++// A step of the old build can fail midway, as on a board stencil installed after it started.
++// Such a step leaves its producer's output uncommitted, and only the on-disk build can re-step it.
++// It records the hand-over and leaves the stop report, the park and the unwatched parent's notice.
+ // It then releases the driver lock and spawns the successor.
+-// A failed spawn leaves the run parked with its report, for the parent or a watching batten to pick up.
++// A failed spawn leaves the run parked with its report for the parent;
++// a watching batten re-steps it only over a tree with no uncommitted paths outside the run's records.
+ // The seam must be set: the rule table reaches a hand-over only over facts that seam reads.
+ func (d *goDriver) handOver(ctx context.Context, stop Stop) error {
+ 	seam := d.deps.HandOver
+ 	if err := d.holdPause(ctx); err != nil {
+ 		return err
+ 	}
+-	dirty, err := seam.DirtyPaths()
+-	if err != nil {
+-		return d.handBackAs(stop, driveHandBack{Rules: []string{"reading the uncommitted paths: " + err.Error()}}, "the hand-over could not check the tree")
+-	}
+-	if len(dirty) > 0 {
+-		return d.handBackAs(stop, driveHandBack{Rules: []string{"the on-disk build changed but the tree has uncommitted paths outside the run's records, so no successor is spawned: " + strings.Join(dirty, ", ")}}, "the tree is not clean for a hand-over")
+-	}
+ 	onDisk, err := seam.OnDiskBuild()
+ 	if err != nil {
+ 		return d.handBackAs(stop, driveHandBack{Rules: []string{"reading the on-disk build: " + err.Error()}}, "the on-disk build could not be read")
+diff --git a/internal/sheddriver/drive_test.go b/internal/sheddriver/drive_test.go
+index 66f7dbe6..06f16548 100644
+--- a/internal/sheddriver/drive_test.go
++++ b/internal/sheddriver/drive_test.go
+@@ -215,9 +215,9 @@ func TestGoDriver_Settle(t *testing.T) {
+ 		restartAttempt bool
+ 		restartArbiter bool
+ 
+-		// The hand-over seams: whether the last step ran another build than the on-disk one, the uncommitted paths, and what the successor spawn fails with.
++		// buildChanged is whether the last step ran another build than the on-disk one.
++		// spawnErr is what the successor spawn fails with.
+ 		buildChanged bool
+-		dirty        []string
+ 		spawnErr     error
+ 
+ 		// Each no-group field leaves that optional group nil for the row.
+@@ -571,7 +571,7 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			wantReports: 2, wantParked: true, wantHandBack: true, wantExit: ExitHandBack,
+ 		},
+ 		{
+-			name:  "a changed build on a clean tree records the hand-over, parks, notifies before releasing the lock, spawns and exits",
++			name:  "a changed build records the hand-over, parks, notifies before releasing the lock, spawns and exits",
+ 			steps: []func(*testing.T) []byte{blocked}, buildChanged: true, orchRecorded: true,
+ 			wantCalls: []string{"step", "release", "spawn:" + wiredExecutable}, wantOrder: []string{"notify", "release", "spawn"},
+ 			wantActions: []string{shedrun.SettleHandOver}, wantSettlers: []string{shedrun.SettlerGoRule}, wantBuild: "newbuild1234",
+@@ -585,11 +585,6 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			wantActions: []string{shedrun.SettleHandOver, shedrun.SettleSpawn, shedrun.SettleHandBack},
+ 			wantReports: 2, wantParked: true, wantHandBack: true, wantExit: ExitHandBack,
+ 		},
+-		{
+-			name: "a dirty tree hands back naming its paths and spawns nothing", steps: []func(*testing.T) []byte{blocked}, buildChanged: true, dirty: []string{"a.go", "b.go"},
+-			wantCalls: []string{"step"}, wantActions: []string{shedrun.SettleHandBack}, wantReports: 1, wantParked: true, wantHandBack: true, wantExit: ExitHandBack,
+-			wantReportHas: map[int][]string{1: {"a.go, b.go"}},
+-		},
+ 		{
+ 			name: "a failing successor spawn leaves the report and the park marker on disk", steps: []func(*testing.T) []byte{blocked}, buildChanged: true, spawnErr: errors.New("no such binary"),
+ 			wantCalls: []string{"step", "release", "spawn:" + wiredExecutable}, wantActions: []string{shedrun.SettleHandOver}, wantBuild: "newbuild1234", wantReports: 1, wantParked: true, wantExit: ExitHandOver,
+@@ -872,7 +867,6 @@ func TestGoDriver_Settle(t *testing.T) {
+ 				HandOver: &HandOverSeam{
+ 					OnDiskBuild:  func() (buildvcs.Identity, error) { return buildvcs.Identity{Revision: "newbuild1234567"}, nil },
+ 					BuildChanged: func(buildvcs.Identity) bool { return tt.buildChanged },
+-					DirtyPaths:   func() ([]string, error) { return tt.dirty, nil },
+ 					ReleaseLock: func() error {
+ 						calls = append(calls, "release")
+ 						order = append(order, "release")
