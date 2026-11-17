@@ -1,6 +1,6 @@
 # A review lens that flags changes no decision asked for
 
-`unrequested-scope-lens` · Task · feature, lenses, burler · starting · Worktree-Create
+`unrequested-scope-lens` · Task · feature, lenses, burler · halted · Worktree-Create
 
 ## Seen (orch, 2026-11-17)
 
