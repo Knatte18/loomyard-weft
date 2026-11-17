@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Weaver: the cold-start implementer with model escalation, its run directory, reset verb and loom seam** | [`weaver-implementer`](design-weaver-implementer.md)<br>[Sketch](decision-weaver-implementer.md) | tapestry · solid | Webster | neve | 20h<br>20h | webster, weaver |
 | T16 | **lym retro: one command that audits recent runs from their transcripts and proposes fixes**<br>• Turn the hand-set transcript audits into one command with a fixed lym-scoped question set, routing each finding to a check, a rubric line or a deletion | [`lym-retro`](design-lym-retro.md) | darn · solid | Code-Burler-Review | neve | 20h<br>16h | friction, report, tools |
-| T20 | **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice<br>• `darn: writer fable` | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | darn · light | starting · Open-Window | neve | 12m<br>0m | gate |
+| T20 | **gate redundant: a runaway mutant eats all memory and freezes the machine**<br>• Mutant test binaries run four at once with a 10 s timeout floor and no memory cap; a runaway mutant in websterengine stalled the user slice and froze Neve twice<br>• `darn: writer fable` | [`redundant-mutant-memory-cap`](design-redundant-mutant-memory-cap.md) | darn · light | starting · Seed-IDE | neve | 12m<br>0m | gate |
 
 ### Ready (0)
 
