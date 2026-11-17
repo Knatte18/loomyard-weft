@@ -1,9 +1,9 @@
 # Card 4 — Deny the hold takeover to agents
 
 **Create:**
-- `plan:internal/shellguard#adoptTakeHoldCommandPattern` -> `const adoptTakeHoldCommandPattern = "pattern"`
-- `plan:internal/shellguard#steerAdoptTakeHoldDeny` -> `const steerAdoptTakeHoldDeny = "steer"`
-- `plan:internal/shellguard#noticeAdoptTakeHoldDeny` -> `const noticeAdoptTakeHoldDeny = "notice"`
+- `internal/shellguard#adoptTakeHoldCommandPattern`
+- `internal/shellguard#steerAdoptTakeHoldDeny`
+- `internal/shellguard#noticeAdoptTakeHoldDeny`
 
 **Edit:**
 - `internal/shellguard#rowsAfterRawGo`

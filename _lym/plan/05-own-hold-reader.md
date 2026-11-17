@@ -1,8 +1,8 @@
 # Card 5 — The orch watcher and the dobby read this machine's hold
 
 **Create:**
-- `plan:internal/orchcli#UnderOwnHold` -> `func UnderOwnHold(prime *lymcwd.Location) func(slug string) bool`
-- `plan:internal/orchcli#TestUnderOwnHold` -> `func TestUnderOwnHold(t *testing.T)`
+- `internal/orchcli#UnderOwnHold`
+- `internal/orchcli#TestUnderOwnHold`
 
 **Edit:**
 - `internal/orchcli#orchCLI.underAdoptWatch` -> `func (c *orchCLI) underAdoptWatch() (func(slug string) bool, string, error)`
