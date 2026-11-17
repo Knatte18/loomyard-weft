@@ -618,7 +618,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `codex-same-as-claude`.\n\nTakes: prompt-engine-per-launch's prompt engine on the spec, so Prepare knows the launch renders for Codex\nDelivers: Codex developer_instructions in D5's order with the 128 KiB refusal; the agents table's subagent effort and thread cap; the Claude user setup (global file, CLAUDE.md files above the root, skill listing, plugin session-start contexts) resolved in claudeengine and handed to codexengine through a shuttleengine seam; the leaf @-import expander that claudeengine and heddle share; project_doc_max_bytes and AGENTS.override.md carrying both files; the agents-prompt target, the two shipped entries on agents-file and the hub reconcile rendering file targets\nExports: the plugin session-start hook runner and Codex's sandbox probe as injectable seams of Prepare, so launch-manifest-parity can pass a faked runner and probe and a runner that lists each hook unrun; Codex text it adds in Go literals names none of D2's closed terms\n\nThe part changes these packages:\n\n- internal/shuttleengine/codexengine (about 600 changed lines)\n- internal/shuttleengine/claudeengine (about 400 changed lines)\n- internal/shuttleengine (about 120 changed lines)\n- internal/shuttleengines (about 60 changed lines)\n- internal/claudeimports (about 150 changed lines)\n- internal/heddleengine (about 350 changed lines)\n- internal/heddlecli (about 30 changed lines)\n- internal/hubreconcile (about 80 changed lines)\n",
-      "status": "running · Plan-Burler-Review",
+      "status": "running · Plan-Burler-Fix",
       "created": "2026-11-16T13:56:13Z",
       "revised": "2026-11-16T13:56:13Z",
       "profile": "solid",
