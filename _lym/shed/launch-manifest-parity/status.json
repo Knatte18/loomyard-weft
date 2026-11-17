@@ -1,13 +1,11 @@
 {
-  "current_producer": "Plan-Write",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
-  "entered_row": "Plan-Write",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Write",
-    "last": "Plan-Write → stuck",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Write → done",
     "wait": ""
   },
   "history": [
@@ -62,6 +60,23 @@
         }
       ],
       "budget_exempt": true,
+      "by": "shed"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/launch-manifest-parity/_lym/plan/00-overview.md",
+      "at": "2026-11-17T14:54:35Z",
+      "started_at": "2026-11-17T14:44:29Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-17T14:53:12.781364972Z",
+          "end": "2026-11-17T14:54:34.808635924Z"
+        }
+      ],
       "by": "shed"
     }
   ],

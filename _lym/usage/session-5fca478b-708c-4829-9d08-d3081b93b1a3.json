@@ -1,0 +1,14 @@
+{
+  "session_id": "5fca478b-708c-4829-9d08-d3081b93b1a3",
+  "row": "Plan-Write",
+  "role": "plan",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 122,
+  "cache_write_tokens": 235942,
+  "cache_read_tokens": 5010587,
+  "output_tokens": 85671,
+  "cost_usd": 3.895735399999999,
+  "started": "2026-11-17T14:44:29Z",
+  "ended": "2026-11-17T14:54:34Z"
+}
