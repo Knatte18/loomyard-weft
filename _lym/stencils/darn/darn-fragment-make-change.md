@@ -1,16 +1,15 @@
 <!-- This is the darn writer's Step 4 list for a run whose verify gate has no cold fixer:
      the writer and its subagents run the gate themselves.
-     internal/darnengine's DarnTable fills its one marker, {{.subagent_model}}, from loom.yaml's subagent_model,
+     internal/darnengine's DarnTable reads it for the writer's engine,
+     fills the {{.subagent_model}} marker its Claude engine block declares from loom.yaml's subagent_model,
      then fills the result whole into darn-template-write's make_change marker.
-lym-stencil: sha256=afa62950b0b58cc988323cecfe7e0d736447fa879bb0856d735653d894159a9f build=20bde20854a96db83ec9e4ff54ba96c30698c0e6 time=2026-11-15T13:00:09Z -->
+lym-stencil: sha256=0cb7d8c20ca73a29711d9047d128cb807ff58bf1971b1464fa7f91697170a9a9 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 1. Edit the repository to make the change.
    Follow the existing patterns, and the PATTERN entries in this prompt.
    Each commit is one change, with its own reads, edits and gate run.
-2. Hand work that needs no overview of the change to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`: a batch of lookups, and per-package work whose edits you have already decided, one subagent per package, each owning its own files.
-   Launch every subagent of a batch together in one message.
-   Give each Agent call the `effort`, and each prompt the skills, that the subagent passage of your system prompt names.
-   A fresh subagent sees none of this session, so each prompt names the files the subagent owns, the edits to make, and the gate rule from your system prompt with its Bash tool timeout, for the subagent to run on its own package.
+2. {{template "engine-darn-subagents"}}
+   A fresh subagent sees none of this session, so each prompt names the files the subagent owns, the edits to make, and the gate rule from {{template "engine-standing-instructions"}} with the timeout it names, for the subagent to run on its own package.
    Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
 3. Test with `lym gate test` after the last edit of each commit; it computes its scope from your changes, and when it answers `done: false` with exit 75 the run goes on, so run the same command again; never run a raw test command or a module-wide run.
    A gate line saying a tier ran no test of a project means the project skipped its own tests, and the gate's pass covers none of them.

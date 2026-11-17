@@ -1,9 +1,12 @@
-<!-- This is the Parts-Plan-Write chair's opening prompt: the lead of the table internal/loomengine's PartsPlanTable builds, filled by internal/seatengine from the lead's value map.
-     plan_dir, overview_path and join_path are seat values; decision_record_path, parts_path, parts_dir and specs_dir are table values;
-     parent_directive and edit_directive are rendered by the seat engine, and pattern_directive and friction_directive are optional.
-     It includes seat-directive-writer-chair and the plan-format blocks loom-block-plan-glyphs, loom-block-plan-format, loom-block-plan-overview and loom-block-plan-cards, each rendered from the same map; the blocks' gate_tiers and specs_dir come from the table.
+<!-- This is the Parts-Plan-Write chair's opening prompt.
+     It is the lead of the table internal/loomengine's PartsPlanTable builds, and internal/seatengine fills it from the lead's value map.
+     plan_dir, overview_path and join_path are seat values; decision_record_path, parts_path, parts_dir and specs_dir are table values.
+     parent_directive and edit_directive are rendered by the seat engine; pattern_directive and friction_directive are optional.
+     It includes seat-directive-writer-chair and the plan-format blocks, each rendered from the same map:
+     loom-block-plan-glyphs, loom-block-plan-format, loom-block-plan-overview and loom-block-plan-cards.
+     The blocks' gate_tiers and specs_dir come from the table.
      On a fresh start after a plan rotation the seat engine appends the prior-plan block to this prompt.
-lym-stencil: sha256=360c23b00a339a22d293918d3fa03bc931851a9973e450bba30c01621ba2d02f build=4ce42a8d6ab9bd70bec8bce9f559ee3941f94197 time=2026-11-01T14:06:50Z -->
+lym-stencil: sha256=58850bdcb4d1b11636a81bc27f306c75be0ee064da3f4bb57efa2ddc47b0857e build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 # Parts chair — join the parts into one plan
 
@@ -75,6 +78,6 @@ The verbs above are the whole of what `lym quarry` offers you — there is no fu
 Run `lym loom validate-plan`, which takes no arguments, and fix what it reports until it passes.
 Then write `{{.join_path}}` last, since its existence ends your step: for each part, whether its cards met its contract and what you sent back or fixed yourself; every ruling you made on a contract; and for each shared spot, the cards you wrote for it and where they went.
 
-## Never use `AskUserQuestion`
+## Never use {{template "engine-question-tool"}}
 
-Never call the `AskUserQuestion` tool: this session is autonomous, and no operator is present.
+Never call the {{template "engine-question-tool"}} tool: this session is autonomous, and no operator is present.

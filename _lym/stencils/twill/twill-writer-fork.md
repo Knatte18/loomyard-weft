@@ -1,8 +1,10 @@
-<!-- This is the twill writer-fork part: the host-neutral procedure in which one fork, fork0, writes the reviewed files while the writer explores before it and reviews what it wrote after.
-     internal/twilldirective renders it into the twill directive, and the spawning module hands that renderer every host value, so this block names no file, step, verb or section of any one host.
+<!-- This is the twill writer-fork part: the host-neutral procedure in which one fork, fork0, writes the reviewed files.
+     The writer explores before fork0 and reviews what it wrote after.
+     internal/twilldirective renders it into the twill directive.
+     The spawning module hands that renderer every host value, so this block names no file, step, verb or section of any one host.
      It declares these required markers:
      {{.explore_step}}, {{.input_record}}, {{.reviewed_files}}, {{.last_file}}, {{.files_dir}}, {{.format_step}}, {{.self_check_step}}, {{.self_check_command}} and {{.disposition_place}}.
-lym-stencil: sha256=94e96f7a7eb7a17bc964d03ef481b05b3e805b8ada6c2ee402259e2dfd0ba88a build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=79e3e7c5453c2c38170e6bc47eccc9164efa84e24ce6069054289b2a16bfe9ff build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 In this run one fork, fork0, writes the reviewed files: you explore, fork0 thinks and writes, and you review and finish what it wrote.
 Do these steps in place of running `{{.format_step}}` and `{{.self_check_step}}` yourself, in this order:
@@ -10,16 +12,16 @@ Do these steps in place of running `{{.format_step}}` and `{{.self_check_step}}`
 a. Explore per `{{.explore_step}}` until your context holds everything the reviewed files will name: every file, member, test, fake and fixture they will cite.
    Design none of their content, neither in a reply nor in a file.
 b. Do step 1 of the lens review below now, reading the rubric, so fork0 and every lens fork inherit it; when you run the lens review, skip its step 1.
-c. Spawn one fork, fork0, through the Agent tool with `subagent_type: "fork"`, never passing a `name`.
+c. Spawn one fork, fork0, {{template "engine-fork-spawn"}}.
    Its prompt is these lines, copied verbatim, and nothing else.
    Wait for it; ending your turn while it is outstanding is allowed.
    - You are fork0, the writer: your context holds {{.input_record}}, the exploration and the rubric.
    - Think the reviewed files through, then write them per `{{.format_step}}`, {{.last_file}} last, and run `{{.self_check_command}}` per `{{.self_check_step}}` until it passes.
    - Read only what your context lacks and the reviewed files need.
-   - Never call the Agent tool, never write {{.disposition_place}}, and run no git command.
+   - Spawn no fork or subagent, never write {{.disposition_place}}, and run no git command.
    - Return one line as your final message: the files you wrote and that `{{.self_check_command}}` passed.
      Add no reasoning, design note or summary.
-d. When fork0 has returned, read {{.reviewed_files}}, each in full with the Read tool, and take them as the files to review, not your own draft: you see them without fork0's reasoning.
+d. When fork0 has returned, read {{.reviewed_files}}, each in full, and take them as the files to review, not your own draft: you see them without fork0's reasoning.
    Run `{{.self_check_command}}` and fix what it reports until it passes.
 
 Then run the lens review below once; fork0 does not count against its one fork pass, and the writer it names is you.

@@ -1,8 +1,9 @@
-<!-- This is the job body of the cold fixer for a Webster card gate's red `lym gate test --gate card` call, joined behind the shared cold frame gatefix-frame-cold by internal/gatefixer's RenderPrompt and filled via internal/stencil.
-     Its three markers are required top-level {{.X}} substitutions ({{.worktree_root}}, {{.card_ids}}, {{.gate_call}});
-     stencil.FillOptional requires all of them non-empty.
-     There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=5be148921f4604736c9abe52dbf175c9834d058f8428994ac7759e56819c0bb9 build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
+<!-- This is the job body of the cold fixer for a Webster card gate's red `lym gate test --gate card` call.
+     internal/gatefixer's RenderPrompt joins it behind the shared cold frame gatefix-frame-cold and fills it via internal/stencil.
+     Its markers are required top-level {{.X}} substitutions ({{.worktree_root}}, {{.card_ids}}, {{.gate_call}}),
+     and stencil.FillOptional requires each to be non-empty.
+     There are no {{if}}/{{range}} conditionals in this file.
+lym-stencil: sha256=91138e95390fba7c9283fbcf3ae60040ce379af16290b4ff77a0bea5d6a7c663 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 ## The failure
 
@@ -12,8 +13,8 @@ You fix the code the failures point at.
 
 ## The rules
 
-Your session's working directory already is the worktree root, `{{.worktree_root}}`: run every Bash command from there, give the paths in Bash commands worktree-relative, and follow the gate rule in your system prompt for `cd` and for quick checks.
-Paths you pass to the Read, Write and Edit tools stay absolute.
+Your session's working directory already is the worktree root, `{{.worktree_root}}`: run every Bash command from there, give the paths in Bash commands worktree-relative, and follow the gate rule in {{template "engine-standing-instructions"}} for `cd` and for quick checks.
+{{template "engine-absolute-paths"}}
 You never run a Bash call in the background.
 
 - Read the card file or files under `_lym/plan/` that the ids name, and the worktree's uncommitted diff, before you change anything: the card says what the change is for, and the diff says what the fork has done so far.
@@ -24,4 +25,4 @@ You never run a Bash call in the background.
 - Commit nothing: the fork commits the card, and your uncommitted change stays in the worktree for it to read.
 - Leave every failure whose fix would add, remove or change a decision, an acceptance criterion, a PATTERN change, a card or a card's scope, or a test's intended assertion, or that needs a choice the plan or the card does not make.
   Name each one you leave in your reply, with why.
-- Re-run the check that failed first, then run `{{.gate_call}}` as a foreground Bash call under the gate rule in your system prompt, and fix what it still reports.
+- Re-run the check that failed first, then run `{{.gate_call}}` as a foreground Bash call under the gate rule in {{template "engine-standing-instructions"}}, and fix what it still reports.

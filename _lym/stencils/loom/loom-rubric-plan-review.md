@@ -1,12 +1,10 @@
-<!-- This is the Plan-Review rubric. It is read by the Bouncer row and the review row of the Plan-Review perch:
-     the Plan-Bouncer row interpolates it as bouncer-template-seed.md's and
-     bouncer-template-judge.md's rubric marker value, and the Plan-Burler-Review row interpolates it the
-     same way into internal/burlerengine's own review prompt.
-     It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
-     internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
-     sees it.
-     Among those markers, gate_tiers is filled by ReadRubric from the hub's gate.yaml tiers and gate lists, or none.
-lym-stencil: sha256=056fb2ce3ae6c1d63d3978ce7fda4f0ad8bab26ee5890c83c0e1573337198bc5 build=fb1b33a44c8c9ab4490f983285088908a4de53ce time=2026-11-03T12:14:35Z -->
+<!-- This is the Plan-Review rubric, read by the Bouncer row and the review row of the Plan-Review perch.
+     The Plan-Bouncer row passes it as the rubric marker value to bouncer-template-seed.md and bouncer-template-judge.md.
+     The Plan-Burler-Review row passes it the same way into internal/burlerengine's own review prompt.
+     It is a marker VALUE, never a template: its only markers are the ones ReadRubric fills.
+     ReadRubric fills gate_tiers from the hub's gate.yaml tiers and gate lists, or with none.
+     internal/stencil's StripLeadingComment removes this leading comment before either consumer sees it.
+lym-stencil: sha256=1ede858ef6c5f77ec335657469f83e799fc62701033771972bc01c10ce7678f9 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 # Plan-Review rubric
 
@@ -137,7 +135,7 @@ The rule narrows only which fix shapes a reviewer proposes; no defect becomes un
 Before writing a finding whose `fix` adds, drops, moves or pairs targets, or changes a verify command, the agent writing the review file checks the fixes against the plan gate with `lym loom validate-plan --overlay`, which checks proposed plan file contents in memory and writes no file.
 `lym loom validate-plan --help` shows the stdin format; this rubric does not restate it.
 It first runs `validate-plan --overlay` with `{}` as a baseline, never the flag-less run, so that no run writes a file.
-It then runs it once with every such fix applied together, with its Bash timeout raised to cover a type load, and proposes no fix whose run reports a blocking finding the baseline does not.
+It then runs it once with every such fix applied together, with its shell command's timeout raised to cover a type load, and proposes no fix whose run reports a blocking finding the baseline does not.
 When the combined run reports a new blocking finding, it re-runs with each fix overlaid alone.
 A fix whose solo run reports a new blocking finding is withheld, and its defect is reported with the constraining check named, as above for a defect with no admissible fix.
 A new blocking finding of the combined run that no solo run reproduces is a joint conflict: the fixes that finding names by card are withheld, and their defects are reported together the same way.

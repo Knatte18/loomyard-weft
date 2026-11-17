@@ -6,7 +6,7 @@
      failure_digest and uncommitted_paths render as `none` on a first attempt and a clean tree.
      parent_directive, pattern_directive and friction_directive are optional and render as nothing when inactive.
      There are no {{if}} or {{range}} conditionals in this file.
-lym-stencil: sha256=7567cb13a1b74f37238d20696305fbecc8103f10e684accb643fa2752e6f879d build=18abfaf50237eadecfdde7dda2dc13b711c92d51 time=2026-11-17T08:41:04Z -->
+lym-stencil: sha256=6040a95c923345afc46f344c738e794264927a5396030534d79d270b28ffead9 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 # Weaver batch implementer — starting COLD, inheriting nothing
 
@@ -74,8 +74,8 @@ A card that departs from its own text because a PATTERN entry forbids the card's
 ## Where and how you run commands
 
 Your session's working directory already is the worktree root: run every Bash command from there and give paths in Bash commands worktree-relative.
-Paths you pass to the Read, Write and Edit tools stay absolute.
-Follow the gate rule in your system prompt for every gate call.
+{{template "engine-absolute-paths"}}
+Follow the gate rule in {{template "engine-standing-instructions"}} for every gate call.
 You never run a Bash call in the background.
 The hub's tiers and gate lists follow:
 

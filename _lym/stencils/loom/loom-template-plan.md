@@ -18,8 +18,8 @@
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      self_check is a required marker, the body of Step 5, filled by internal/loomengine's PlanTable.
      It carries the fragment that has the writer run the validator or, when the row's gate has a cold fixer, the one that has it run none.
-     subagent_model is a required marker, filled from loom.yaml's subagent_model.
-lym-stencil: sha256=cb5fed560389727630773ce19c1cf04d5c18a7c0ec69922fdf6fa2175db15f1a build=e9895522a011fa6a53b58c2a4fc124e423a121ec time=2026-11-07T15:15:36Z -->
+     The subagent_model marker is declared by the Claude engine block the stencil includes, and filled from loom.yaml's subagent_model.
+lym-stencil: sha256=0798d16c223bf93663bf42a3f446a324e874b672977c3c082b86968cc9da4f37 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -61,8 +61,8 @@ A follow-up a card files goes on the board as a note, never as a task, and no ca
 
 Before planning, start from the code the relevant list names, then read the other relevant parts of the codebase: check recent commits, and follow existing patterns and any PATTERN entries in this prompt rather than inventing new ones.
 
-Hand a batch of independent lookups, such as where a symbol is used or which files follow a pattern, to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`, all launched together in one message.
-Give each Agent call the `effort` that the subagent passage of your system prompt names.
+List the lookups the plan needs, such as where a symbol is used or which files follow a pattern.
+{{template "engine-subagent-lookups"}}
 A fresh subagent sees none of this session, so each prompt carries its whole question and asks for a short answer naming files and members.
 Keep in this session the reading the plan's design needs: the decision record, the relevant list and the code your cards change.
 
@@ -91,7 +91,7 @@ Write `{{.overview_path}}` only after every `NN-<card-slug>.md` card file alread
 
 {{.self_check}}
 
-## Never use `AskUserQuestion`
+## Never use {{template "engine-question-tool"}}
 
-Never call the `AskUserQuestion` tool at any point in this session — this session is autonomous, no operator is present.
+Never call the {{template "engine-question-tool"}} tool at any point in this session — this session is autonomous, no operator is present.
 Make best-judgment calls and never block on a dialog.

@@ -1,9 +1,9 @@
-<!-- This is the shared job body of webster's two verify-gate fixers: the fixer fork Merriam spawns in its own session, and the cold fixer strand `lym webster fix-verify` spawns at the recovery role.
-     RenderVerifyFixPrompt joins it behind webster-prefix-verify-fix-fork (render.go), and internal/gatefixer's RenderPrompt behind the shared cold frame gatefix-frame-cold, then fills it via internal/stencil.
-     Its six markers are required top-level {{.X}} substitutions ({{.report_path}}, {{.plan_dir}}, {{.worktree_root}}, {{.outcome_path}}, {{.summary_path}}, {{.fix_gate}});
-     stencil.FillOptional requires all of them non-empty.
-     There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=39186a173e1bcd21a6d4abe47d4e15008b04b25e94f82e8bf74ce6592beb8a24 build=3882070d44bf054c10c7061bc06653a990712cee time=2026-11-05T19:27:52Z -->
+<!-- This is the job body shared by webster's two verify-gate fixers: the fixer fork Merriam spawns in its own session, and the cold fixer strand `lym webster fix-verify` spawns at the recovery role.
+     RenderVerifyFixPrompt (render.go) joins it behind webster-prefix-verify-fix-fork, and internal/gatefixer's RenderPrompt joins it behind the shared cold frame gatefix-frame-cold;
+     both fill it via internal/stencil.
+     Its markers are required top-level {{.X}} substitutions ({{.report_path}}, {{.plan_dir}}, {{.worktree_root}}, {{.outcome_path}}, {{.summary_path}}, {{.fix_gate}}), and stencil.FillOptional requires each non-empty.
+     It holds no {{if}} or {{range}} conditional.
+lym-stencil: sha256=56a28ec9720b0b37ea513630894075769092c4d40e9fa7400a9bc30517377c50 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 ## The findings — read them first
 
@@ -22,8 +22,8 @@ A report that lists fix commits names the commits earlier fixers made above the 
 
 ## The rules
 
-Your session's working directory already is the worktree root, `{{.worktree_root}}`: run every Bash command from there, give the paths in Bash commands worktree-relative, and follow the gate rule in your system prompt for `cd` and for quick checks.
-Paths you pass to the Read, Write and Edit tools stay absolute.
+Your session's working directory already is the worktree root, `{{.worktree_root}}`: run every Bash command from there, give the paths in Bash commands worktree-relative, and follow the gate rule in {{template "engine-standing-instructions"}} for `cd` and for quick checks.
+{{template "engine-absolute-paths"}}
 You never run a Bash call in the background, and you end your turn only after your final action.
 
 - Read `_lym/plan/00-overview.md` before you edit anything: the task framing and `## Shared Decisions` say what the plan intends, which is what a test must assert.
@@ -39,5 +39,5 @@ You never run a Bash call in the background, and you end your turn only after yo
 - Never write, create or delete Merriam's contract files `{{.outcome_path}}` and `{{.summary_path}}`.
   A fixer writing either forges the run's terminal judgment and halts the run at its exit audit.
 - Never run the plan-level verify: the gate runs it again once Merriam's turn ends.
-- Before your final action, run `{{.fix_gate}}` as a foreground Bash call under the gate rule in your system prompt, and fix what it still reports.
+- Before your final action, run `{{.fix_gate}}` as a foreground Bash call under the gate rule in {{template "engine-standing-instructions"}}, and fix what it still reports.
 - Leave the worktree clean: no uncommitted change may remain when you end your turn.

@@ -1,9 +1,11 @@
-<!-- This is the cold plan fixer's prompt, filled by RenderPlanFixPrompt (render.go) via internal/stencil and handed to the separate strand `lym webster fix-plan` spawns at the master role after begin-batch refuses with plan_conflict.
+<!-- This is the cold plan fixer's prompt, filled by RenderPlanFixPrompt (internal/websterengine/render.go) via internal/stencil.
+     It goes to the separate strand `lym webster fix-plan` spawns at the master role,
+     after begin-batch refuses with plan_conflict of the cause plan_defect or tree_moved.
      {{.record_path}}, {{.reply_path}}, {{.worktree_root}}, {{.plan_dir}} and {{.specs_dir}} are required markers.
      {{.friction_directive}} and parent_directive are optional (filled via stencil.FillOptional) and render as nothing when inactive.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=354edb3ff258b0f37d0882f87b32de6977984e38ce488216509e564a69c58876 build=7999007f5d7f20b4b81bff698790313feaa68d25 time=2026-11-01T19:18:14Z -->
+lym-stencil: sha256=e3d3f369e44079e909bc8b2ac11ff791711a8c1c31198a249925bfdf0c4b1d22 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 # Webster plan fixer — match the named cards to the tree
 
@@ -17,7 +19,7 @@ Your one job is to edit those cards so they match the tree, when that leaves wha
 ## Orient yourself
 
 Your session's working directory is the worktree root, `{{.worktree_root}}`: run every Bash command from there.
-Paths you pass to the Read, Write and Edit tools stay absolute.
+{{template "engine-absolute-paths"}}
 You never run a Bash call in the background.
 
 1. Read the plan-conflict record `{{.record_path}}` in full: its heading names the batch, and each `- ` line is one blocking finding, naming its check, its card and the target the tree does not hold.
@@ -51,6 +53,6 @@ If you already edited one, run `lym webster restore-plan`.
 
 ## Your final action
 
-Write your reply to `{{.reply_path}}` with Write, then end your turn.
+Write your reply to `{{.reply_path}}`, then end your turn.
 Its first line is exactly `verdict: fixed` when `rebaseline` accepted every card you edited and every finding was mechanical, and exactly `verdict: plan_writer` otherwise.
 Below it, one line per finding: the card, the old and new target for a fix, or why it needs the plan writer.

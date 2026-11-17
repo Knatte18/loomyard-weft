@@ -1,8 +1,13 @@
-<!-- This is a part writer's opening prompt: one writer seat per part of the parts file, in the Parts-Plan-Write row's table that internal/loomengine's PartsPlanTable builds, filled by internal/seatengine from the seat's value map.
-     part_name, plan_dir (the part's own directory) and overview_path (its 00-overview.md) are seat values; decision_record_path, relevant_path, parts_path and specs_dir are table values;
-     parent_directive and edit_directive are rendered by the seat engine, and pattern_directive and friction_directive are optional.
-     It includes seat-directive-writer and the plan-format blocks loom-block-plan-glyphs, loom-block-plan-format, loom-block-plan-overview and loom-block-plan-cards, each rendered from the same map; the blocks' gate_tiers and specs_dir come from the table.
-lym-stencil: sha256=335ec4c4f75499e634a3a3ee224d6c68ec9c44b6944a64e34727fcef13a750a6 build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
+<!-- This is a part writer's opening prompt: one writer seat per part of the parts file.
+     The seats sit in the Parts-Plan-Write row's table that internal/loomengine's PartsPlanTable builds,
+     and internal/seatengine fills the prompt from the seat's value map.
+     part_name, plan_dir (the part's own directory) and overview_path (its 00-overview.md) are seat values;
+     decision_record_path, relevant_path, parts_path and specs_dir are table values.
+     parent_directive and edit_directive are rendered by the seat engine; pattern_directive and friction_directive are optional.
+     It includes seat-directive-writer and the plan-format blocks loom-block-plan-glyphs, loom-block-plan-format,
+     loom-block-plan-overview and loom-block-plan-cards, each rendered from the same map.
+     The blocks' gate_tiers and specs_dir come from the table.
+lym-stencil: sha256=89a0bd52bdd71b0d88c495cfa5f92e24c824f59c18325606de6df563fe752bd3 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 # Part writer — turn one part's contract into plan cards
 
@@ -74,6 +79,6 @@ Never change a contract on your own: act on the chair's ruling, and on a ruling 
 Keep answering the chair until the step ends.
 When the chair asks you to fix your part, change only your own cards, run `lym loom validate-plan --part {{.part_name}}` again until it passes, and then reply to the chair that the fix is done.
 
-## Never use `AskUserQuestion`
+## Never use {{template "engine-question-tool"}}
 
-Never call the `AskUserQuestion` tool: this session is autonomous, and no operator is present.
+Never call the {{template "engine-question-tool"}} tool: this session is autonomous, and no operator is present.

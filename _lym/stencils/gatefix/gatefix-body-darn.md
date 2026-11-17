@@ -1,8 +1,9 @@
-<!-- This is the job body of the cold fixer for the Darn-Write row's gate, joined behind the shared cold frame gatefix-frame-cold by internal/gatefixer's RenderPrompt and filled via internal/stencil.
-     Its three markers are required top-level {{.X}} substitutions ({{.worktree_root}}, {{.decision_record_path}}, {{.fix_gate}});
-     stencil.FillOptional requires all of them non-empty.
-     There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=a058122deeb48baa49ebb30327a7e166e9c4910fc2194dd5dfb2fd06b7afc296 build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
+<!-- This is the job body of the cold fixer for the Darn-Write row's gate.
+     internal/gatefixer's RenderPrompt joins it behind the shared cold frame gatefix-frame-cold and fills it via internal/stencil.
+     Its markers are required top-level {{.X}} substitutions ({{.worktree_root}}, {{.decision_record_path}}, {{.fix_gate}}),
+     and stencil.FillOptional requires each to be non-empty.
+     There are no {{if}}/{{range}} conditionals in this file.
+lym-stencil: sha256=1f66d1185edfcda222e3a0bc3d38df6052abd501cb643c6b2aa3e03157dfe633 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 ## The failure
 
@@ -12,8 +13,8 @@ The darn writer's own work, the decision record at `{{.decision_record_path}}` i
 
 ## The rules
 
-Your session's working directory already is the worktree root, `{{.worktree_root}}`: run every Bash command from there, give the paths in Bash commands worktree-relative, and follow the gate rule in your system prompt for `cd` and for quick checks.
-Paths you pass to the Read, Write and Edit tools stay absolute.
+Your session's working directory already is the worktree root, `{{.worktree_root}}`: run every Bash command from there, give the paths in Bash commands worktree-relative, and follow the gate rule in {{template "engine-standing-instructions"}} for `cd` and for quick checks.
+{{template "engine-absolute-paths"}}
 You never run a Bash call in the background.
 
 - Read the source behind each failure before you change it, and fix every failure you can in one pass.
@@ -25,5 +26,5 @@ You never run a Bash call in the background.
 - A decision recorded in `{{.decision_record_path}}` wins over a finding it forbids fixing: leave that finding.
 - Leave every failure whose fix would add, remove or change a decision, an acceptance criterion, a PATTERN change, a card or a card's scope, or a test's intended assertion, or that needs a choice the record, plan or card does not make.
   Name each one you leave in your reply, with why.
-- Re-run the check that failed first, then run `{{.fix_gate}}` as a foreground Bash call under the gate rule in your system prompt, and fix what it still reports.
+- Re-run the check that failed first, then run `{{.fix_gate}}` as a foreground Bash call under the gate rule in {{template "engine-standing-instructions"}}, and fix what it still reports.
 - Leave the worktree clean: no uncommitted change may remain when you write your reply.

@@ -4,12 +4,12 @@
      The result becomes the review step's optional parent_rules marker value.
      A round with no parent-review ask renders the review step without it.
      It declares one required marker, {{.parent_origin}}, the origin value a kept parent finding carries.
-lym-stencil: sha256=049f1ead170557c90e5d7f4e8ddb64d32d4ebeb97887dc91a55316a2df80d365 build=32e8e32ed826c004e379e40e6215c71657c2bcb3 time=2026-11-12T17:04:48Z -->
+lym-stencil: sha256=cf76d0e5284e1f67dd02eea331e3b6f08a205204bb919e263bd95b823347fefa build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 ### The parent orch's review
 
 This round asked the run's parent orch to review the same target beside you.
 Before you consolidate, and before you write anything to the review file, wait for the parent's answer:
-run `lym loom parent-review await` in the foreground with the Bash tool's `timeout` at 3600000.
+run `lym loom parent-review await` in the foreground {{template "engine-foreground-timeout"}}.
 While it answers `ready: false`, run it again in a turn that does nothing else, until it answers `ready: true`.
 
 When it answers `ready: true` with `state: done`, read the parent's report at the path its `report` names.

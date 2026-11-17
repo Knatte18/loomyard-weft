@@ -1,12 +1,15 @@
-<!-- This is the shared cold frame every gate fixer's prompt opens with, joined ahead of one caller body stencil by internal/gatefixer's RenderPrompt via internal/stencil.
+<!-- This is the shared cold frame every gate fixer's prompt opens with.
+     internal/gatefixer's RenderPrompt joins it ahead of one caller body stencil via internal/stencil.
      The strand it opens starts cold and inherits nothing, so the frame carries its whole orientation and its final action.
      {{.report_path}} is a required marker: the report the strand reads.
-     {{.reply_path}} is a required marker: the reply file the strand writes as its final action, which is its shuttle output file.
+     {{.reply_path}} is a required marker: the reply file the strand writes as its final action.
+     That file is the strand's shuttle output file.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-     {{.pattern_directive}} and {{.friction_directive}} are optional (filled via stencil.FillOptional) and render as nothing when their own tier is inactive.
-     parent_directive is a third optional marker, rendered by internal/parentdirective.
-     There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=a53eca4104c5e52d2bd92bc5e8c8bdc9fa00a67363e3b9486fb89f83027ef55f build=fe753d409cad46ac575d6ca5c96b51058567644d time=2026-11-02T19:09:15Z -->
+     {{.pattern_directive}} and {{.friction_directive}} are optional (filled via stencil.FillOptional)
+     and render as nothing when their own tier is inactive.
+     parent_directive is also optional, rendered by internal/parentdirective.
+     There are no {{if}}/{{range}} conditionals in this file.
+lym-stencil: sha256=a56f35fd96ef1896959af5f08097291faca380db126cc00443f891d1c878ee73 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 # Cold gate fixer — starting COLD, inheriting nothing
 
@@ -27,6 +30,6 @@ Your only job is to fix the failures the report at `{{.report_path}}` lists, as 
 
 ## Your final action
 
-Your last action, after the rules below are met, is writing your reply to `{{.reply_path}}` with Write: a short markdown note naming each failure you fixed, and each you left with why.
+Your last action, after the rules below are met, is writing your reply to `{{.reply_path}}`: a short markdown note naming each failure you fixed, and each you left with why.
 That file is the one file you write outside the repository's code, and writing it ends your work: end your turn right after it.
 The gate is run again after you end, and that run, never you, judges the fix.

@@ -3,7 +3,7 @@
      Its required markers are {{.findings}}, {{.journal_path}}, {{.plan_dir}} and {{.worktree_root}}.
      The frame fills report_path and reply_path.
      It holds no {{if}} or {{range}} conditional.
-lym-stencil: sha256=e98b647b7857f7cde5ae5d44296c67038e5355218896498e0086ea9126cdb706 build=18abfaf50237eadecfdde7dda2dc13b711c92d51 time=2026-11-17T08:41:04Z -->
+lym-stencil: sha256=97b8b1e44da8b490181b27b28cc7171b19cbfa2352437f1d513681117a3db517 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 ## The findings — read them first
 
@@ -28,7 +28,7 @@ Read it for what the batches struggled with: the cause of a failure often sits i
 ## The rules
 
 Your session's working directory already is the worktree root, `{{.worktree_root}}`: run every Bash command from there and give paths in Bash commands worktree-relative.
-Paths you pass to the Read, Write and Edit tools stay absolute.
+{{template "engine-absolute-paths"}}
 You never run a Bash call in the background, and you end your turn only after your final action.
 
 - Read `_lym/plan/00-overview.md` before you edit anything: the task framing and `## Shared Decisions` say what the plan intends, which is what a test must assert.

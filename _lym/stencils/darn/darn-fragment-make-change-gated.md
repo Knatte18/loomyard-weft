@@ -1,9 +1,10 @@
 <!-- This is the darn writer's Step 4 list for a run whose verify gate has a cold fixer:
      the writer and its subagents run no gate, and the writer acts only on what the fixer leaves.
      The writer asks its parent for the single run of the test a task's reported failure names, before it diagnoses it.
-     internal/darnengine's DarnTable fills its one marker, {{.subagent_model}}, from loom.yaml's subagent_model,
+     internal/darnengine's DarnTable reads it for the writer's engine,
+     fills the {{.subagent_model}} marker its Claude engine block declares from loom.yaml's subagent_model,
      then fills the result whole into darn-template-write's make_change marker.
-lym-stencil: sha256=e62db44bdf476590eacf8da164697b5c1183b4bfe0bdb10ae95f21bbb8db6a08 build=343405cf3af2221b26ad0f5239d2f0c0d3551631 time=2026-11-15T14:24:11Z -->
+lym-stencil: sha256=4e816e6840acea4fb8a885ac3c55d192569eebf18cb32d8cccc603ed3e250088 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
 
 1. When the task starts from a reported test failure, ask your parent before you diagnose it or make any edit:
    send `lym creel post --parent --expect-reply "<text>"`, then end your turn to wait.
@@ -16,9 +17,7 @@ lym-stencil: sha256=e62db44bdf476590eacf8da164697b5c1183b4bfe0bdb10ae95f21bbb8db
    Edit the repository to make the change.
    Follow the existing patterns, and the PATTERN entries in this prompt.
    Each commit is one change, with its own reads and edits.
-2. Hand work that needs no overview of the change to fresh subagents through the Agent tool, each with `subagent_type: "general-purpose"` and `model: "{{.subagent_model}}"`: a batch of lookups, and per-package work whose edits you have already decided, one subagent per package, each owning its own files.
-   Launch every subagent of a batch together in one message.
-   Give each Agent call the `effort`, and each prompt the skills, that the subagent passage of your system prompt names.
+2. {{template "engine-darn-subagents"}}
    A fresh subagent sees none of this session, so each prompt names the files the subagent owns and the edits to make, and tells the subagent to run no `lym gate test`.
    Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
 3. Run no `lym gate test` yourself.
