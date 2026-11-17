@@ -29,6 +29,12 @@ Then it becomes a task: the per-machine or per-user layer for `branch_prefix`, a
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-17): The other personal keys keep their layers
+
+Decision: The review of the other personal keys is done and none of them moves to the per-machine layer: the pull request identity is gh's login, the Slack operator is recorded by lym slack setup in a per-machine credential file, and batten.open_ide, seed_ide, open_window, landing.pr_reviewer and agents.efforts stay category None.
+
+Rationale: The machine category closes a key to the local layer and to a task's run_settings, so moving those keys would take away the per-worktree and per-run setting they have now; a per-machine default for category-None keys would need a change to configengine's layer rule, which is outside this task.
+
 ## Constraints
 
 ## Auto-mode assumptions
