@@ -164,6 +164,14 @@ Rationale: os.ReadFile of a directory fails with a non-ErrNotExist error for eve
   - hook-timeout-row-load-bound-no-waitdelay (class design, severity BLOCKING, open in rounds 2)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - overview-codex-launch-docs (class consistency, severity MEDIUM, open in rounds 1)
+  - prepare-workdir-unresolved-anchor (class design, severity MEDIUM, open in rounds 1)
+  - unresolvable-config-dir-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - A Codex launch passes its standing items as `developer_instructions` in the stated order, its prompt file holds only the prompt, and an empty set omits the key;
