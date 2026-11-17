@@ -1,6 +1,6 @@
 # P2 Ideas borrowed from comparable agent orchestrators
 
-Rendered 2026-11-17 11:20 UTC; every age below is as of then.
+Rendered 2026-11-17 11:21 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 31m · Owner `neve`
@@ -21,8 +21,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md) | motif | Discussion-Burler-Fix | neve | 31m<br>23m | burler, shed, stencil |
-| T20 | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | darn · light | Darn-Write | neve | 31m<br>23m | webster, fabric |
+| T14 | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md) | motif | Discussion-Bouncer | neve | 31m<br>24m | burler, shed, stencil |
+| T20 | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | darn · light | Darn-Write | neve | 31m<br>24m | webster, fabric |
 
 ### Ready (0)
 
