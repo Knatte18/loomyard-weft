@@ -1,6 +1,6 @@
 # A machine registry and adopt holds in Bolt, and a catch-up from origin after every absence
 
-`machine-registry-holds-catchup` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut · running · Drift-Verify
+`machine-registry-holds-catchup` · Task · feature, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut · running · Code-Bouncer
 
 Decision record: [Sketch](decision-machine-registry-holds-catchup.md)
 
