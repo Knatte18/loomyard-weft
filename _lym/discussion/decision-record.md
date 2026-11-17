@@ -197,6 +197,12 @@ Decision: The operator said in chat (2026-11-17) that today's README works on th
 
 Rationale: The operator judged the phone view good enough as it is, so changing the README layout for it would be work nobody asked for.
 
+### Added after Discussion (parent, 2026-11-17): The prime's open chain and LY window title stay out
+
+Decision: The operator confirmed in chat (2026-11-17) that the prime's folderOpen chain (reed up then reed attach) and the LY: <name> window title stay out of this task, as the record's Scope Out says.
+
+Rationale: Both were changed on purpose after the old ide-prime-setup note was written (6b037083 dropped the open chain, b0e9f535 set the console window title), and the operator does not want them back.
+
 ## Constraints
 
 - `PATTERN-cwd-resolution`: nothing is linked or junctioned into a worktree; the hub path is resolved in lym.
