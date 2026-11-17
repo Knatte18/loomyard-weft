@@ -772,7 +772,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-17)\n\nThe decision record's decisions carry IDs (`internal/discussionparser/decisionids.go`), but no review checks a diff for work no decision asked for.\nSource: the survey F17 (`orchestrator-survey-ideas`), from Spec Kit's `/converge`, which classifies gaps as missing, partial, contradicting or unrequested.\n\n## Idea\n\n- A lens in code review that maps each change in the diff to a decision ID and flags a change that traces to none as unrequested scope.\n- It also flags a decision no change builds.\n",
-      "status": "running · Drift-Recheck",
+      "status": "running · Describe",
       "created": "2026-11-17T10:49:22Z",
       "revised": "2026-11-17T10:57:02Z",
       "profile": "light",
