@@ -1,0 +1,1 @@
+Review segment of task `launch-manifest-parity` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/launch-manifest-parity/_lym/reviews/plan/round-3-escalation.md` with a one-shot fork.
