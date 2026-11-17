@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-17 14:54 UTC; every age below is as of then.
+Rendered 2026-11-17 14:55 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 7d · Owner `neve`
@@ -36,7 +36,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Trial the coverage-map tooling before the redundancy sweep**<br>• Run lym gate test --map and lym gate redundant on two packages and check maps, timing, memory and leftovers | [`map-tooling-trial`](design-map-tooling-trial.md) | darn · docs | Darn-Write | neve | 18m<br>18m | gate, testkit |
+| T3 | **Trial the coverage-map tooling before the redundancy sweep**<br>• Run lym gate test --map and lym gate redundant on two packages and check maps, timing, memory and leftovers | [`map-tooling-trial`](design-map-tooling-trial.md) | darn · docs | Darn-Write | neve | 19m<br>18m | gate, testkit |
 
 ### Ready (0)
 
