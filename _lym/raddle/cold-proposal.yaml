@@ -1,0 +1,80 @@
+{
+  "sketch": "gate-builds-testmap",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "redundancy-sweep-existing", "revised": "2026-11-17T10:31:48Z"},
+    {"slug": "test-suite-trim", "revised": "2026-11-15T18:48:33Z"},
+    {"slug": "cortex-cost-measure", "revised": "2026-11-09T12:09:36Z"},
+    {"slug": "machine-registry-holds-catchup", "revised": "2026-11-16T10:22:19Z"}
+  ],
+  "parts": [
+    {
+      "slug": "gate-test-map-mode",
+      "title": "Build the coverage maps with lym gate test --map, one process per test in parallel, and retire lym gate testmap",
+      "type": "enhancement",
+      "labels": ["gate", "testkit", "dobby", "docs", "pattern"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"],
+      "packages": [
+        {"path": "internal/gatecli", "size": 3700},
+        {"path": "internal/testcover", "size": 2050},
+        {"path": "internal/gateslot", "size": 20},
+        {"path": "internal/dobbyengine", "size": 5},
+        {"path": "cmd/lym", "size": 2},
+        {"path": "docs", "size": 20},
+        {"path": "pattern", "size": 60},
+        {"path": "README.md", "size": 20}
+      ],
+      "contract": {
+        "takes": "the per-package measure loop of internal/gatecli/testmappackage.go and the testcover map reader, writer and profile reduction as they stand",
+        "delivers": "lym gate test --map over tiers 0 and 1 writing each package's map whole, with the verb lym gate testmap, its planning, audit, build lock, wait, --max, run-record ordering and lym build removed, the testcover code only that planning reached deleted, and every live doc, background and lym gate redundant refusal naming the flag",
+        "exports": "the --map flag of lym gate test and its detached-call key word; no new Go API outside internal/gatecli"
+      },
+      "depends_on": [],
+      "open_risks": [
+        "A test that writes the real home directory, a repository file or another fixed path can collide with its siblings in ways the alone-rerun hides as a pass.\nThe exploration found real-home reads only in smoke tests outside the mapped tiers; the D5 list is how a new case shows up."
+      ],
+      "criteria": [
+        "D1: `lym gate test --map <pkg>` writes the package's map holding an entry for each of its tier 0 and tier 1 tests, each with its own blocks.",
+        "D1: `--map` with `--tier`, `--upto`, `--gate`, `--guards`, `--stop-on-fail`, `--dir` or words after `--` is refused with a message naming `lym gate test --map` with targets as the way forward.",
+        "D1: `--map` on a hub whose tier 0 or tier 1 is not a `go-json` tier is refused, naming the tier.",
+        "D1: a detached `--map` call and a plain call over the same targets get different detached runs, and the detached map call writes the map.",
+        "D2: a map run over a package whose map already exists replaces every entry, so an entry of a deleted test is gone.",
+        "D2: a map run over a package whose last mapped test was deleted rewrites its map with no test entries.",
+        "D3: two tests of one package measured side by side each get only the blocks they cover alone.",
+        "D3: a spawn-marked test is not run and gets an entry with its spawn verdict; a skipped test gets a skipped entry with no blocks.",
+        "D4: the number of test processes side by side never passes the running tier's `parallel`, nor its `memory_mb` divided by the per-test cap when it sets `memory_mb`.",
+        "D4: a map call on a hub whose tier 0 or tier 1 sets `memory_mb` below `redundancy_test_memory_mb` is refused,\nnaming the tier, both values and `lym config gate` as the way forward.",
+        "D4: a test process the memory guard kills is named in the run's output, and the run goes on with the package's other tests.",
+        "D5: a test that fails or is killed beside others and passes alone gets a passing entry and is listed in the call's report.",
+        "D6: a package with a modified file the package or a linked package owns gets no map written, is listed as unmeasured naming the file, and the call exits non-zero.",
+        "D6: a package whose listing of its linked packages fails through an uncommitted edit, in its own files or a linked package's,\ngets no map written, is listed as unmeasured naming the file, and the call exits non-zero.",
+        "D6: when HEAD moves during a map run, the current package's map is not written and the call exits non-zero, naming the unmeasured packages.",
+        "D7: a map run holds gate slots while it measures, writes no run record, and a gate call after it over the same tree, with no green record from before the map run,\nruns its tiers rather than skipping them as green.",
+        "D7: a map run with a test that fails alone exits non-zero and still writes the package's map with the failed entry.",
+        "D7: a package whose coverage build fails keeps its old entries and records the build failure.",
+        "D8: a map run from the prime writes the hub's shared maps, and one from another worktree writes that worktree's anchor `.lym`.",
+        "D9: `lym gate testmap` is an unknown command.",
+        "D9: `lym gate redundant <pkg>` with no map, or with a map recording only a failed build, is refused, naming `lym gate test --map <pkg>`.",
+        "Review: D9, `README.md`, `docs/overview.md`, the package docs and the three PATTERN backgrounds name `lym gate test --map` and no longer name `lym gate testmap`,\nand `pattern/PATTERN-gate-slot.md` names the map run as holding the larger of tier 0's and tier 1's slot asks,\nwhere a tier asking for every slot ranks above any count."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 51,
+      "cost_line": "tapestry/solid stored-record fit, 17.41 fixed plus 0.568 per 100 changed lines over about 5900 lines (5 runs, correlation 0.87); about 3300 of those lines are deletions"
+    }
+  ],
+  "cost": {
+    "expected_usd": 51,
+    "line": "one tapestry/solid part of about 5900 changed lines on the stored-record fit (5 runs): 17.41 + 0.568 x 59",
+    "next_best": {
+      "split": "two chained parts: a tapestry/solid part adding --map beside the verb (D1-D8, internal/gatecli), then a darn/solid part removing the verb, its testcover planning code and the doc mentions (D9)",
+      "expected_usd": 48,
+      "line": "tapestry/solid fit over about 2500 lines (17.41 + 0.568 x 25 = 31.6) plus darn/solid stored-record fit over about 3700 lines (6.98 + 0.26 x 37 = 16.6); it leaves out the interim work of keeping the verb's planning running over the moved measure loop until the second part lands"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
