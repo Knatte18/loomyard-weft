@@ -2,6 +2,7 @@
   "current_producer": "Plan-Write",
   "state": "blocked",
   "error": "gate failed its first check and the session was never re-prompted, since its re-prompt could not be sent: shuttle: strand \"7607bc3bbc115195586bf06a8f38d487\" is not tracked by reed — either its run completed and was cleaned up, or reed's strand table was reset under it (a reed remove/down, or a lost or rebuilt reed.json); check \"lym reed status\"; findings: /home/knatte/Code/loomyard-LYMHUB/launch-manifest-parity/.lym/shed/launch-manifest-parity/gate-findings/Plan-Write.md",
+  "pending_by": "shed",
   "entered_row": "Plan-Write",
   "pause_requested": false,
   "activity": {
