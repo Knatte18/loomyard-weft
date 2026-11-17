@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 18:07 UTC; every age below is as of then.
+Rendered 2026-11-17 18:09 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T15 | **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | Darn-Write | neve | 1d<br>3h | codex, shuttle |
+| T15 | **Codex as darn writer, replayed on a landed task through the real producer** | [`codex-writer-bench`](design-codex-writer-bench.md) | darn · docs | Darn-Write | neve | 2d<br>3h | codex, shuttle |
 
 #### Ready (0)
 
@@ -119,7 +119,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 7d<br>31m | testkit, gate |
+| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 7d<br>34m | testkit, gate |
 
 ### Notes (0)
 
@@ -128,11 +128,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (12)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (13)</strong></summary>
 
 Owner `neve`
 
-### Tasks (3)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -158,13 +158,14 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>5h | claude, shuttle, config |
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | darn · solid |  | 0m<br>0m | board, ide, fabric |
+| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | darn · solid |  | 2m<br>2m | board, ide, fabric |
+| T4 | `draft` **Study: the work to support Gemini CLI or Antigravity as an agent engine**<br>• `darn: writer opus[high]` | [`gemini-engine-study`](design-gemini-engine-study.md) | darn · docs |  | 0m<br>0m | shuttle |
 
 ### Notes (9)
 
@@ -180,10 +181,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Record Codex edits for the edit-loop watch**<br>• Codex runs record no edits, so the edit-loop watch never notifies their parent | [`codex-edit-loop-recorder`](design-codex-edit-loop-recorder.md) | 5h<br>31m | codex, shuttle |
-| B2 |  | **lym gate redundant never mutates a data literal, so a test that pins one is listed redundant**<br>• Mutants change operators only, so a table row or string no other test asserts is no unique kill | [`redundant-mutants-skip-literals`](design-redundant-mutants-skip-literals.md) | 7m<br>7m |  |
+| B1 |  | **Record Codex edits for the edit-loop watch**<br>• Codex runs record no edits, so the edit-loop watch never notifies their parent | [`codex-edit-loop-recorder`](design-codex-edit-loop-recorder.md) | 5h<br>34m | codex, shuttle |
+| B2 |  | **lym gate redundant never mutates a data literal, so a test that pins one is listed redundant**<br>• Mutants change operators only, so a table row or string no other test asserts is no unique kill | [`redundant-mutants-skip-literals`](design-redundant-mutants-skip-literals.md) | 10m<br>10m |  |
 | B3 |  | **An old driver fails on board stencils a landing installed mid-run**<br>• A blocked hand-over leaves the old binary rendering new board copies whose includes it lacks | [`stale-driver-new-stencils`](design-stale-driver-new-stencils.md) | 3h<br>3h | stencil, shed |
-| B4 |  | **lym gate redundant lists a test redundant when its covers never feed a clause its input**<br>• Negating a condition is killed by any passing test, so a clause no cover exercises alone still counts as covered | [`redundant-clause-inputs-unfed`](design-redundant-clause-inputs-unfed.md) | 7m<br>7m |  |
+| B4 |  | **lym gate redundant lists a test redundant when its covers never feed a clause its input**<br>• Negating a condition is killed by any passing test, so a clause no cover exercises alone still counts as covered | [`redundant-clause-inputs-unfed`](design-redundant-clause-inputs-unfed.md) | 9m<br>9m |  |
 
 #### Enhancements (1)
 
