@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-17 11:09 UTC; every age below is as of then.
+Rendered 2026-11-17 11:12 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,17 +8,9 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (3)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
-
-### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Sweep read-only leftovers a killed test leaves under the scratch root** | [`readonly-test-leftovers`](design-readonly-test-leftovers.md) | darn · light | landing · Finalize | neve | 36m<br>28m | cleanup, testkit, webster |
 
 ### Ready (0)
 
@@ -32,7 +24,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>22h | claude, shuttle, config |
+| T1 | `draft` **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>23h | claude, shuttle, config |
 | T7 | `draft` **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid |  | 4d<br>4d | slack, creel, orch |
 
 ## Notes (7)
@@ -44,7 +36,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 7d<br>7d | gate, fabric |
-| R4 |  | **Bench Code Mode on a darn writer doing a repeated edit** | [`code-mode-darn-bench`](design-code-mode-darn-bench.md) | 21h<br>21h | claude, shuttle |
+| R4 |  | **Bench Code Mode on a darn writer doing a repeated edit** | [`code-mode-darn-bench`](design-code-mode-darn-bench.md) | 22h<br>22h | claude, shuttle |
 
 ### Features (5)
 
@@ -55,3 +47,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F4 |  | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | 6d<br>1d | config, fabric |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>11d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 6w<br>1d | board, ide, orch |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T6 | **Sweep read-only leftovers a killed test leaves under the scratch root** | [`readonly-test-leftovers`](design-readonly-test-leftovers.md) | 40m<br>32m | cleanup, testkit, webster |
