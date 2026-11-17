@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-17T06:50:22Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/retro-writer-opus/_lym/landing/summary.md",
+      "at": "2026-11-17T06:52:46Z",
+      "started_at": "2026-11-17T06:50:23Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T06:51:02.04006087Z",
+          "end": "2026-11-17T06:51:02.06063497Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T06:51:02.168213097Z",
+          "end": "2026-11-17T06:51:41.745984969Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-17T06:51:41.836236828Z",
+          "end": "2026-11-17T06:51:42.09131572Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-17T06:51:42.178965324Z",
+          "end": "2026-11-17T06:51:42.182710455Z"
+        }
+      ]
     }
   ],
   "product": {
