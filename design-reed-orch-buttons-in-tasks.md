@@ -1,6 +1,6 @@
 # reed: an RC button per agent, and Slack only in the orch's session
 
-`reed-orch-buttons-in-tasks` · Task · bug, reed, orch, slack · running · Drift-Await
+`reed-orch-buttons-in-tasks` · Task · bug, reed, orch, slack · running · Darn-Write
 
 ## Seen (operator, 2026-11-17)
 
