@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-17T15:52:59Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/leftover-pairs-teardown/_lym/landing/summary.md",
+      "at": "2026-11-17T16:20:37Z",
+      "started_at": "2026-11-17T15:53:07Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T16:06:37.525480343Z",
+          "end": "2026-11-17T16:06:37.537940526Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-17T16:19:12.645964066Z",
+          "end": "2026-11-17T16:19:12.654911153Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T16:06:37.590714155Z",
+          "end": "2026-11-17T16:19:03.150064761Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-17T16:19:03.584463071Z",
+          "end": "2026-11-17T16:19:12.609992722Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-17T16:19:12.706021276Z",
+          "end": "2026-11-17T16:20:07.525154085Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-17T16:20:07.567912326Z",
+          "end": "2026-11-17T16:20:07.753578019Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-17T16:20:07.795215028Z",
+          "end": "2026-11-17T16:20:07.79537597Z"
+        }
+      ]
     }
   ],
   "product": {
