@@ -1,6 +1,6 @@
 # Each launch writes its manifest, a parity test compares the engines per seat, and lym shuttle manifest prints both
 
-`launch-manifest-parity` · Task · feature, codex, shuttle, stencil, heddle · starting · Open-Window
+`launch-manifest-parity` · Task · feature, codex, shuttle, stencil, heddle · starting · Seed-IDE
 
 Decision record: [Sketch](decision-launch-manifest-parity.md)
 
