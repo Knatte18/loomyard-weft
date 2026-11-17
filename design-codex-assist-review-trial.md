@@ -75,3 +75,13 @@ No task released on OSL-1046 sets `code_assist_reviewer_model`; the settings on 
 The three darn parts the beam `adopt-build`'s resplit filed, `board-prints-root-beam`, `hub-stop-all` and `machine-start-launchers`, carry
 `{"loom":{"code_assist_reviewer_model":"astra[medium]","code_assist_reviewer_fan":"review-code"}}` in their `run_settings`; they run on Neve.
 Once all three have landed, a darn docs task reads their Code-Review rounds and gives the verdict.
+
+
+
+## Runs chosen (operator, 2026-11-17)
+
+
+
+Run the trial now, on the darns in flight: `redundant-literal-clause-mutants` (T5) carries the same `run_settings`, set in its running pair through `lym config loom --layer local` before its Code-Review.
+
+Every darn the hub orch releases on Neve from here on carries them too, until the verdict.
