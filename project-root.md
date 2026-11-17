@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-17 16:18 UTC; every age below is as of then.
+Rendered 2026-11-17 16:20 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -54,12 +54,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Record Codex edits for the edit-loop watch**<br>• Codex runs record no edits, so the edit-loop watch never notifies their parent | [`codex-edit-loop-recorder`](design-codex-edit-loop-recorder.md) | 3h<br>1h | codex, shuttle |
+| B1 |  | **Record Codex edits for the edit-loop watch**<br>• Codex runs record no edits, so the edit-loop watch never notifies their parent | [`codex-edit-loop-recorder`](design-codex-edit-loop-recorder.md) | 4h<br>1h | codex, shuttle |
 | B2 |  | **Edit-loop notices fire on a fixer editing one file**<br>• Fixers and one-document writers edit one file many times by design, so the edit-loop watch reports ordinary work as a loop | [`edit-loop-fixer-noise`](design-edit-loop-fixer-noise.md) | 3h<br>3h | shuttle |
 | B3 |  | **An old driver fails on board stencils a landing installed mid-run**<br>• A blocked hand-over leaves the old binary rendering new board copies whose includes it lacks | [`stale-driver-new-stencils`](design-stale-driver-new-stencils.md) | 1h<br>1h | stencil, shed |
 | B4 |  | **Coverage map rewrites funcs in another order on each build**<br>• Two --map runs on one commit give the same sets in a different array order | [`map-entry-order-unstable`](design-map-entry-order-unstable.md) | 1h<br>1h |  |
 | B5 |  | **Coverage map records 0 seconds for nearly every test**<br>• redundant lists every candidate at 0 seconds so its slowest-first pass has no order | [`map-test-seconds-zero`](design-map-test-seconds-zero.md) | 1h<br>1h |  |
-| B6 |  | **lym gate redundant counts a timeout or memory cap as a kill** | [`redundant-timeout-not-kill`](design-redundant-timeout-not-kill.md) | 37m<br>37m | gate, testkit |
+| B6 |  | **lym gate redundant counts a timeout or memory cap as a kill** | [`redundant-timeout-not-kill`](design-redundant-timeout-not-kill.md) | 39m<br>39m | gate, testkit |
 
 ### Enhancements (1)
 
