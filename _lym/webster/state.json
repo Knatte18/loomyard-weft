@@ -719,9 +719,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-a76f5848f92ab3b8d.jsonl"
       ]
+    },
+    "4": {
+      "slug": "machine-registration-setter",
+      "cards": [
+        "04-machine-registration-setter",
+        "05-bolt-hold-write",
+        "06-owner-write-registers"
+      ],
+      "cardHashes": {
+        "04-machine-registration-setter": "5a5aa325baa943de565ac6d3a33c3293d046cec4da561ec9450a724e52baf91b",
+        "05-bolt-hold-write": "402d385aa7a0306fcd14f9da3abb9e8043fefd83ff9074ca848de08d55edfd6d",
+        "06-owner-write-registers": "6dd2e1d1318bfd80599c4963c4f00e4aa169e1789dd03673d599e6f6339f240d"
+      },
+      "startSha": "fc1779cfaa96187b7e2b1bd8665ddbbc93dd7262",
+      "kind": "fork",
+      "spawnedAt": "2026-11-17T09:58:37Z",
+      "sessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "e7e489f4ae82479452af8e587574191e",
   "masterSessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
   "masterEngine": "claude",
