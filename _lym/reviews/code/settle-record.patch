@@ -1,0 +1,491 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index c16bb4fb..7c91c502 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -516,7 +516,8 @@ User-facing modules each get one `lym <module>` namespace:
+   The embedded template comes first, then the repo default at `<BoltDir>/_lym/config/<module>.yaml`.
+   The worktree's sparse file follows, and the untracked local override at `<anchor>/.lym/config/<module>.local.yaml` is last.
+   See [internal/configengine](../internal/configengine/doc.go).
+-  A module's machine keys, such as gate's `slots` and `tier_parallel` and codex's `sandbox_mode`, also take a machine override.
++  A module's machine keys also take a machine override.
++  Examples are gate's `slots` and `tier_parallel`, codex's `sandbox_mode` and fabric's `branch_prefix`.
+   The override lives at `<BoltDir>/.lym/config/<module>.machine.yaml` and is never tracked.
+   It is written from the prime beside the local override.
+   `lym config --layer default|worktree|machine|local` picks the layer a verb addresses,
+diff --git a/internal/configcli/configcli_test.go b/internal/configcli/configcli_test.go
+index 2a4fc8d5..34e658ec 100644
+--- a/internal/configcli/configcli_test.go
++++ b/internal/configcli/configcli_test.go
+@@ -1684,10 +1684,10 @@ func TestDispatchLayers(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name: "machine layer of a hub-wide module with no machine key is refused naming its hub file verb", module: "fabric", layer: "machine",
+-			setFlags: []string{"remote=origin"}, wantCode: 1, wantErr: "lym config fabric",
++			name: "machine layer of a hub-wide module with no machine key is refused naming its hub file verb", module: "slack", layer: "machine",
++			setFlags: []string{"remind_after_min=5"}, wantCode: 1, wantErr: "lym config slack",
+ 			check: func(t *testing.T, fx hubFixture, out string) {
+-				assertFile(t, configengine.MachineFile(fx.board, "fabric"), "", true)
++				assertFile(t, configengine.MachineFile(fx.board, "slack"), "", true)
+ 			},
+ 		},
+ 		{
+diff --git a/internal/configengine/doc.go b/internal/configengine/doc.go
+index 61131e12..4e4340e3 100644
+--- a/internal/configengine/doc.go
++++ b/internal/configengine/doc.go
+@@ -130,6 +130,7 @@
+ // The machine layer holds only keys classified [CategoryMachine].
+ // Such a key's value is a bound on a resource every worktree of the hub on that machine shares.
+ // It may instead be a fact of the machine, such as its desktop or a path on its disk.
++// It may also be a convention of the person working on that machine, such as the prefix of the branches made there.
+ // [MachineKeys] lists them, and the local layer keeps refusing them, since [CategoryMachine] is not [CategoryNone].
+ // [ValidateMachine] checks a machine document with the units, template-existence and shape checks of [ValidateLocal].
+ // It admits a unit only when the longest covering `Categories` entry or retired key is [CategoryMachine].
+diff --git a/internal/configengine/layers.go b/internal/configengine/layers.go
+index 9d4f822a..97018326 100644
+--- a/internal/configengine/layers.go
++++ b/internal/configengine/layers.go
+@@ -63,7 +63,9 @@ const (
+ 	// CategoryGuard is a key that switches off or hollows a guard, a review or an approval gate.
+ 	CategoryGuard Category = "guard"
+ 	// CategoryMachine is a key whose value is a machine property; the machine layer holds it and the local layer refuses it.
+-	// Such a value bounds a resource shared by a hub's worktrees, or a machine fact such as its desktop or disk path.
++	// Such a value bounds a resource shared by a hub's worktrees.
++	// It may also be a machine fact such as its desktop or disk path.
++	// It may also be a convention of the person working on the machine, such as the prefix of the branches made there.
+ 	CategoryMachine Category = "machine"
+ )
+ 
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index c71ae508..14b47ffb 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -193,6 +193,9 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 			if m.Name == "codex" {
+ 				wantMachineKeys = []string{"sandbox_mode"}
+ 			}
++			if m.Name == "fabric" {
++				wantMachineKeys = []string{"branch_prefix"}
++			}
+ 			if got := configengine.MachineKeys(spec); !slices.Equal(got, wantMachineKeys) {
+ 				t.Errorf("%s MachineKeys = %v; want %v, so no stray machine file is read by a registered loader; %s", m.Name, got, wantMachineKeys, keyListWayForward(fmt.Sprintf("the wantMachineKeys of %s", m.Name), got, wantMachineKeys))
+ 			}
+diff --git a/internal/fabricengine/add.go b/internal/fabricengine/add.go
+index 0940b015..1b448a68 100644
+--- a/internal/fabricengine/add.go
++++ b/internal/fabricengine/add.go
+@@ -183,6 +183,8 @@ func SourceDirtyPaths(l *lymcwd.Location) ([]string, error) {
+ // It deletes it only once its pre-flight refusals have passed, so a refused Add leaves the directory.
+ // A delete that fails returns an error wrapping ErrStrayPathKept and leaves the path on disk.
+ // With opts.AdoptOnly, Add re-makes a live pair and forks nothing.
++// It takes the pair's warp branch from the pair itself, so a pair made under another machine's prefix keeps its name;
++// a pair nothing names gets the current prefix's name.
+ // A weft branch that is not live is refused with *ErrNotLive (Records true).
+ // A task branch that is neither local nor on origin is refused with *ErrNotLive too.
+ // Both match ErrPairNotLive, and both are refused before any mutation.
+@@ -227,6 +229,14 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res Ad
+ 	defer releaseTeardown()
+ 
+ 	warpBranch := t.cfg.BranchPrefix + slug
++	if opts.AdoptOnly {
++		// A re-made pair keeps the branch it was made under, which another machine's prefix may have named.
++		adoptedBranch, branchErr := t.PairTaskBranchOrOrigin(l, slug)
++		if branchErr != nil {
++			return AddResult{}, fmt.Errorf("read the warp branch of pair %q: %w", slug, branchErr)
++		}
++		warpBranch = adoptedBranch
++	}
+ 	weftBranch := RecordsBranchName(warpBranch)
+ 
+ 	// A missing branch is not an error; a failed read is.
+diff --git a/internal/fabricengine/cleanupremotewarp.go b/internal/fabricengine/cleanupremotewarp.go
+index 1dba92fd..2a071b10 100644
+--- a/internal/fabricengine/cleanupremotewarp.go
++++ b/internal/fabricengine/cleanupremotewarp.go
+@@ -6,6 +6,7 @@ package fabricengine
+ import (
+ 	"errors"
+ 	"fmt"
++	"slices"
+ 	"sort"
+ 	"strings"
+ 
+@@ -216,7 +217,13 @@ func (t *Topology) keptReason(branch, defaultBranch string, weftBranches map[str
+ 	if slug == "" {
+ 		return "not fabric-managed: empty slug"
+ 	}
+-	if !hasWeftEvidence(slug, RecordsBranchName(branch), weftBranches, archiveTagRefs) {
++	// An archive tag is evidence only for a branch this machine's prefix names:
++	// the slug of any other branch is a guess at where its prefix stops, so a tag of that slug proves nothing of it.
++	evidenceTagRefs := archiveTagRefs
++	if !slices.Contains(pairBranchNames(t.cfg, slug), branch) {
++		evidenceTagRefs = nil
++	}
++	if !hasWeftEvidence(slug, RecordsBranchName(branch), weftBranches, evidenceTagRefs) {
+ 		return "not fabric-managed: the weft origin holds neither a weft branch nor an archive tag for it"
+ 	}
+ 	if checkedOut[branch] {
+diff --git a/internal/fabricengine/config.go b/internal/fabricengine/config.go
+index 54868dba..99370081 100644
+--- a/internal/fabricengine/config.go
++++ b/internal/fabricengine/config.go
+@@ -16,7 +16,7 @@ import (
+ // ExcludeListKey is fabric.yaml's key holding the warp exclude list.
+ const ExcludeListKey = "warp_exclude"
+ 
+-// Config holds the settings every pair shares: the warp branch prefix, the weft-sync pathspec and the warp exclude list.
++// Config holds fabric's settings: the warp branch prefix, the weft-sync pathspec and the warp exclude list.
+ type Config struct {
+ 	BranchPrefix string `yaml:"branch_prefix"`
+ 	Pathspec     string `yaml:"pathspec"`
+@@ -35,15 +35,18 @@ func (c Config) WarpExcludePaths() []string {
+ }
+ 
+ // ConfigSpec returns fabric's layered-load spec.
+-// Each key either shapes a pair at creation or reaches every worktree through the repository-wide exclude file.
+-// Every pair converges to the same value for each key, so none may be set in the local layer.
++// The pathspec and the warp exclude list reach every worktree of the hub, so every pair converges to one value of each.
++// The branch prefix is the convention of the person who makes pairs on a machine,
++// so a machine's override may set it over the hub file;
++// a pair keeps the branch name it was made with, whatever prefix another machine uses later.
++// No key may be set in the local layer.
+ func ConfigSpec() configengine.Spec {
+ 	return configengine.Spec{
+ 		Name:     "fabric",
+ 		Template: []byte(ConfigTemplate()),
+ 		HubWide:  true,
+ 		Categories: map[string]configengine.Category{
+-			"branch_prefix": configengine.CategoryCrossPair,
++			"branch_prefix": configengine.CategoryMachine,
+ 			"pathspec":      configengine.CategoryCrossPair,
+ 			ExcludeListKey:  configengine.CategoryCrossPair,
+ 		},
+diff --git a/internal/fabricengine/config_test.go b/internal/fabricengine/config_test.go
+index 849af238..f68dd1e8 100644
+--- a/internal/fabricengine/config_test.go
++++ b/internal/fabricengine/config_test.go
+@@ -20,7 +20,9 @@ import (
+ // a valid config with all template keys parses both fields and Dirs();
+ // an empty branch_prefix stays the empty string;
+ // an environment variable in branch_prefix is resolved;
+-// and a missing `_lym/` returns the fabric-specific not-initialized error, naming the reconcile verb that fixes it.
++// a missing `_lym/` returns the fabric-specific not-initialized error, naming the reconcile verb that fixes it;
++// a machine override's branch_prefix wins over the hub file's;
++// and a local pathspec or warp exclude list is refused.
+ //
+ //testtiming:keep LoadConfig parsing both fields and Dirs(), keeping an empty prefix, resolving env references and naming the reconcile verb when uninitialized; coverage of its blocks by other tests does not show an assertion of this
+ func TestLoadConfig(t *testing.T) {
+@@ -111,6 +113,29 @@ func TestLoadConfig(t *testing.T) {
+ 		})
+ 	}
+ 
++	t.Run("a machine override's branch_prefix wins over the hub file's", func(t *testing.T) {
++		board, anchor := t.TempDir(), t.TempDir()
++		for _, dir := range []string{configengine.ConfigDir(board), configengine.ScratchDir(board)} {
++			if err := os.MkdirAll(dir, 0755); err != nil {
++				t.Fatalf("failed to create %s: %v", dir, err)
++			}
++		}
++		if err := os.WriteFile(configengine.ConfigFile(board, "fabric"), []byte("branch_prefix: hub/\npathspec: _lym\n"), 0644); err != nil {
++			t.Fatalf("failed to write config: %v", err)
++		}
++		if err := os.WriteFile(configengine.MachineFile(board, "fabric"), []byte("branch_prefix: machine/\n"), 0644); err != nil {
++			t.Fatalf("failed to write machine config: %v", err)
++		}
++
++		cfg, err := fabricengine.LoadConfig(configengine.Dirs{Anchor: anchor, Board: board})
++		if err != nil {
++			t.Fatalf("LoadConfig() error = %v; want the machine override read", err)
++		}
++		if cfg.BranchPrefix != "machine/" || cfg.Pathspec != "_lym" {
++			t.Errorf("LoadConfig() = {BranchPrefix: %q, Pathspec: %q}; want {\"machine/\", \"_lym\"}", cfg.BranchPrefix, cfg.Pathspec)
++		}
++	})
++
+ 	for _, tt := range []struct{ key, line string }{
+ 		{"pathspec", "pathspec: docs\n"},
+ 		{"warp_exclude", "warp_exclude: x\n"},
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 27a848c8..e3f64f97 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -762,8 +762,13 @@
+ // A records worktree whose repository cannot be resolved is skipped, so a half-torn pair stays readable.
+ // `Topology.PairTaskBranchOrOrigin` reads the same for a caller that runs after the pair's local parts are gone.
+ // A pair no local worktree or branch names is named by the first of its names origin holds.
++// Failing that, it is named by the one origin branch ending in `/<slug>` whose records branch the weft origin holds.
++// That is how a pair made under another machine's prefix is found.
++// Two such branches are an error.
+ // A pair's names are the current `branch_prefix` plus slug and the bare slug of a pair made before the prefix was set.
+ // So `branch_prefix` names only the branches of pairs made after it changes, and it can be set while pairs are live.
++// It is a machine key: a machine's override file may set it over the hub file,
++// so each machine names its new pairs its own way.
+ // Every step that starts while a pair's worktree stands reads its branches this way;
+ // the remote teardown job carries the names read when the teardown started;
+ // and every step going from a branch to its slug accepts a branch with the current prefix and one without.
+diff --git a/internal/fabricengine/pairbranch.go b/internal/fabricengine/pairbranch.go
+index e3351775..ccae6bf4 100644
+--- a/internal/fabricengine/pairbranch.go
++++ b/internal/fabricengine/pairbranch.go
+@@ -24,10 +24,16 @@ func pairBranchNames(cfg Config, slug string) []string {
+ 	return []string{cfg.BranchPrefix + slug, slug}
+ }
+ 
+-// slugOfBranch returns the slug a warp branch names, which is the branch with the current prefix trimmed.
+-// A branch without the prefix, such as one a pair made before the prefix was set carries, is returned unchanged.
++// slugOfBranch returns the slug a warp branch names.
++// A branch carrying the current prefix has it trimmed.
++// Any other branch has everything through its last "/" trimmed, since a slug holds no "/",
++// so a branch another machine made under its own prefix names the same slug there as here.
++// A branch with neither, such as one a pair made before the prefix was set carries, is returned unchanged.
+ func slugOfBranch(cfg Config, branch string) string {
+-	return strings.TrimPrefix(branch, cfg.BranchPrefix)
++	if strings.HasPrefix(branch, cfg.BranchPrefix) {
++		return strings.TrimPrefix(branch, cfg.BranchPrefix)
++	}
++	return branch[strings.LastIndex(branch, "/")+1:]
+ }
+ 
+ // PairTaskBranch returns the task branch of slug's pair.
+@@ -50,7 +56,9 @@ func (t *Topology) PairTaskBranch(l *lymcwd.Location, slug string) (string, erro
+ // PairTaskBranchOrOrigin returns the task branch of slug's pair, read locally first.
+ // When nothing local names the pair, it returns the first of the pair's names whose task branch origin holds.
+ // Failing that, it returns the first whose records branch the weft origin holds.
+-// It returns the current prefix's name when origin holds neither.
++// Failing that, it returns the one origin branch another machine's prefix names for the slug.
++// originOtherPrefixBranch says how that branch is read.
++// It returns the current prefix's name when origin holds none.
+ // It asks origin only when nothing local names the pair, so a pair the local read names makes no network call.
+ // A repository with no origin remote is not asked, and a failed lookup on a configured origin is returned.
+ func (t *Topology) PairTaskBranchOrOrigin(l *lymcwd.Location, slug string) (string, error) {
+@@ -132,26 +140,90 @@ func worktreeBranchAt(repoDir, target string) (string, error) {
+ }
+ 
+ // originTaskBranch returns the first of slug's pair names whose task branch origin holds.
++// Failing that, it returns the branch another machine's prefix names, as originOtherPrefixBranch reads it.
+ // It returns "" when origin holds none.
+ // A repository with no origin remote gives "", and a failed lookup on a configured origin is returned.
+ func (t *Topology) originTaskBranch(l *lymcwd.Location, slug string) (string, error) {
++	found, err := t.originTaskBranchByName(l, slug)
++	if err != nil || found != "" {
++		return found, err
++	}
++	return t.originOtherPrefixBranch(l, slug)
++}
++
++// originTaskBranchByName returns the first of slug's pair names whose task branch origin holds, or "" when none.
++func (t *Topology) originTaskBranchByName(l *lymcwd.Location, slug string) (string, error) {
+ 	return firstOnOrigin(l.WorktreePath(), pairBranchNames(t.cfg, slug), func(name string) string { return name })
+ }
+ 
+ // originPairBranch returns the first of slug's pair names whose task branch origin holds.
+ // Failing that, it returns the first name whose records branch the weft origin holds.
+-// It returns "" when neither holds.
++// Failing that, it returns the branch another machine's prefix names, as originOtherPrefixBranch reads it.
++// It returns "" when none holds.
+ // A repository with no origin remote is not asked, and a failed lookup on a configured origin is returned.
+ func (t *Topology) originPairBranch(l *lymcwd.Location, slug string) (string, error) {
+-	found, err := t.originTaskBranch(l, slug)
++	found, err := t.originTaskBranchByName(l, slug)
++	if err != nil || found != "" {
++		return found, err
++	}
++	weftRoot, err := RecordsRepoRoot(l)
++	if err != nil {
++		return "", fmt.Errorf("resolve weft repo root: %w", err)
++	}
++	found, err = firstOnOrigin(weftRoot, pairBranchNames(t.cfg, slug), RecordsBranchName)
+ 	if err != nil || found != "" {
+ 		return found, err
+ 	}
++	return t.originOtherPrefixBranch(l, slug)
++}
++
++// originOtherPrefixBranch returns the warp branch of slug's pair that another machine's prefix names.
++// It is the one origin branch named "<prefix><slug>" for a prefix other than the current one.
++// Its records branch must be on the weft origin too, so an unrelated branch ending in the slug is not taken.
++// A slug holds no "/", so the branch ends in "/" and the slug with no ambiguity about where the prefix stops.
++// It returns "" when no branch matches, or when either repository has no origin remote.
++// More than one match is an error naming every candidate.
++func (t *Topology) originOtherPrefixBranch(l *lymcwd.Location, slug string) (string, error) {
++	repoDir := l.WorktreePath()
++	if _, err := gitrepo.New(repoDir).RemoteURL(originRemoteName); err != nil {
++		return "", nil
++	}
+ 	weftRoot, err := RecordsRepoRoot(l)
+ 	if err != nil {
+ 		return "", fmt.Errorf("resolve weft repo root: %w", err)
+ 	}
+-	return firstOnOrigin(weftRoot, pairBranchNames(t.cfg, slug), RecordsBranchName)
++	if _, err := gitrepo.New(weftRoot).RemoteURL(originRemoteName); err != nil {
++		return "", nil
++	}
++	warpTips, err := remoteBranchTips(repoDir)
++	if err != nil {
++		return "", err
++	}
++	var matches []string
++	for branch := range warpTips {
++		if strings.HasSuffix(branch, "/"+slug) {
++			matches = append(matches, branch)
++		}
++	}
++	if len(matches) == 0 {
++		return "", nil
++	}
++	weftTips, err := remoteBranchTips(weftRoot)
++	if err != nil {
++		return "", err
++	}
++	matches = slices.DeleteFunc(matches, func(branch string) bool {
++		_, held := weftTips[RecordsBranchName(branch)]
++		return !held
++	})
++	slices.Sort(matches)
++	switch len(matches) {
++	case 0:
++		return "", nil
++	case 1:
++		return matches[0], nil
++	}
++	return "", fmt.Errorf("origin holds more than one pair of slug %q under other prefixes: %s", slug, strings.Join(matches, ", "))
+ }
+ 
+ // firstOnOrigin returns the first of names whose branch, as branchOf maps it, exists on origin.
+diff --git a/internal/fabricengine/pairbranch_integration_test.go b/internal/fabricengine/pairbranch_integration_test.go
+index 8a9db50a..4e329238 100644
+--- a/internal/fabricengine/pairbranch_integration_test.go
++++ b/internal/fabricengine/pairbranch_integration_test.go
+@@ -252,6 +252,73 @@ func TestPairTaskBranch_ReadsThePairItself(t *testing.T) {
+ 	})
+ }
+ 
++// pairOnOriginUnderPrefixes makes slug's pair and removes it locally.
++// Origin holds its two branches under each of prefixes and not under the bare slug.
++// It returns the hub with a Topology whose branch_prefix is laterBranchPrefix, a prefix none of the pairs carries.
++func pairOnOriginUnderPrefixes(t *testing.T, slug string, prefixes ...string) (*hubforge.Hub, *fabricengine.Topology) {
++	t.Helper()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPair(t, h, slug)
++	recordsBranch := fabricengine.RecordsBranchName(slug)
++	gitkit.MustRun(t, h.PairCodeWorktree(slug), "git", "push", "origin", slug)
++	gitkit.MustRun(t, h.PrimeRecords(), "git", "push", "origin", recordsBranch)
++	for _, prefix := range prefixes {
++		gitkit.MustRun(t, h.PairCodeWorktree(slug), "git", "push", "origin", slug+":refs/heads/"+prefix+slug)
++		gitkit.MustRun(t, h.PrimeRecords(), "git", "push", "origin",
++			recordsBranch+":refs/heads/"+fabricengine.RecordsBranchName(prefix+slug))
++	}
++	// The pair goes by hand, not through Remove, which would archive its records and so end the pair's life.
++	removePairWorktreesByHand(t, h, slug)
++	gitkit.MustRun(t, h.PrimeWorktree(), "git", "branch", "-D", slug)
++	gitkit.MustRun(t, h.PrimeRecords(), "git", "branch", "-D", recordsBranch)
++	if parts, err := h.Topology.PairParts(h.Location, slug); err != nil || parts.Any() {
++		t.Fatalf("PairParts(%q) = %+v, %v after the local removal; want nothing left locally", slug, parts, err)
++	}
++	gitkit.Git(t, h.CodeBare, "branch", "-D", slug)
++	gitkit.Git(t, h.RecordsBare, "branch", "-D", recordsBranch)
++	return h, topologyWithPrefix(t, h.Location, laterBranchPrefix)
++}
++
++// TestBranchPrefixChange_PairMadeUnderAnotherMachinesPrefix pins two behaviors for a pair whose branches origin holds.
++// The prefix they carry is one the current machine does not use.
++// The pair is found by its slug and re-adopted on its own branch.
++func TestBranchPrefixChange_PairMadeUnderAnotherMachinesPrefix(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	t.Run("OneOtherPrefixIsFoundAndReAdopted", func(t *testing.T) {
++		t.Parallel()
++
++		const slug = "pm-readopt"
++		h, top := pairOnOriginUnderPrefixes(t, slug, earlierBranchPrefix)
++		want := earlierBranchPrefix + slug
++
++		if got, err := top.PairTaskBranchOrOrigin(h.Location, slug); err != nil || got != want {
++			t.Errorf("PairTaskBranchOrOrigin(%q) = %q, %v; want %q", slug, got, err, want)
++		}
++		if _, err := top.Add(h.Location, slug, fabricengine.AddOptions{AdoptLocal: true, AdoptOnly: true}); err != nil {
++			t.Fatalf("Add(%q, AdoptOnly) error = %v", slug, err)
++		}
++		if !gitkit.BranchExists(t, h.PrimeWorktree(), want) {
++			t.Errorf("Add(%q, AdoptOnly) left no local branch %q; want the pair re-made on it", slug, want)
++		}
++		if gitkit.BranchExists(t, h.PrimeWorktree(), laterBranchPrefix+slug) {
++			t.Errorf("Add(%q, AdoptOnly) made the branch %q; want the pair's own branch only", slug, laterBranchPrefix+slug)
++		}
++	})
++
++	t.Run("TwoOtherPrefixesAreRefused", func(t *testing.T) {
++		t.Parallel()
++
++		const slug = "pm-ambiguous"
++		h, top := pairOnOriginUnderPrefixes(t, slug, earlierBranchPrefix, "second/")
++		if got, err := top.PairTaskBranchOrOrigin(h.Location, slug); err == nil {
++			t.Errorf("PairTaskBranchOrOrigin(%q) = %q, nil; want an error naming both candidates", slug, got)
++		}
++	})
++}
++
+ // renamePairBranches renames slug's task branch to branch and its records branch to branch's records name.
+ // It renames them as a pair made under an earlier prefix carries its branches, while both worktrees stand.
+ func renamePairBranches(t *testing.T, h *hubforge.Hub, slug, branch string) {
+diff --git a/internal/fabricengine/pairparts.go b/internal/fabricengine/pairparts.go
+index 0d8ee79e..d6389203 100644
+--- a/internal/fabricengine/pairparts.go
++++ b/internal/fabricengine/pairparts.go
+@@ -48,6 +48,8 @@ func (t *Topology) PairParts(l *lymcwd.Location, slug string) (PairParts, error)
+ 
+ // TaskBranchOnOrigin reports whether slug's task branch exists on the task repository's origin.
+ // It matches the branch under the current branch prefix, or the bare slug of a pair made before the prefix was set.
++// Failing both, it matches the one branch another machine's prefix names, whose records branch the weft origin holds;
++// more than one such branch is an error.
+ // A repository with no origin remote reads false, and a failed lookup on a configured origin is returned.
+ func (t *Topology) TaskBranchOnOrigin(l *lymcwd.Location, slug string) (bool, error) {
+ 	found, err := t.originTaskBranch(l, slug)
+diff --git a/internal/fabricengine/pairparts_integration_test.go b/internal/fabricengine/pairparts_integration_test.go
+index f02667c3..14d2f11f 100644
+--- a/internal/fabricengine/pairparts_integration_test.go
++++ b/internal/fabricengine/pairparts_integration_test.go
+@@ -137,7 +137,7 @@ func TestTaskBranchSlugs(t *testing.T) {
+ 	}{
+ 		{"LocalAndOriginTrackingBranches", "", "adopt-fix-x-t", []string{"adopt-fix-x-t1", "adopt-fix-x-t3"}},
+ 		{"NoMatch", "", "nothing-", nil},
+-		{"BareAndPrefixedBranchesUnderABranchPrefix", "hanf/", "adopt-fix-x-t", []string{"adopt-fix-x-t1", "adopt-fix-x-t3", "adopt-fix-x-t4"}},
++		{"BareAndPrefixedAndOtherMachinesBranchesUnderABranchPrefix", "hanf/", "adopt-fix-x-t", []string{"adopt-fix-x-t1", "adopt-fix-x-t3", "adopt-fix-x-t4", "adopt-fix-x-t5"}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -154,6 +154,7 @@ func TestTaskBranchSlugs(t *testing.T) {
+ 			gitkit.MustRun(t, prime, "git", "push", "origin", "adopt-fix-x-t3")
+ 			gitkit.MustRun(t, prime, "git", "branch", "-D", "adopt-fix-x-t3")
+ 			gitkit.MustRun(t, prime, "git", "branch", "hanf/adopt-fix-x-t4")
++			gitkit.MustRun(t, prime, "git", "branch", "other-machine/adopt-fix-x-t5")
+ 
+ 			got, err := fabricengine.TaskBranchSlugs(h.Location, tt.prefix)
+ 			if err != nil {
+diff --git a/internal/fabricengine/template.yaml b/internal/fabricengine/template.yaml
+index 9de970dc..c86d2e0e 100644
+--- a/internal/fabricengine/template.yaml
++++ b/internal/fabricengine/template.yaml
+@@ -1,3 +1,3 @@
+-branch_prefix: ${env:LYM_BRANCH_PREFIX:-}  # prefix prepended to the slug of each new pair (e.g. "hanf/"); a pair keeps the branch name it was made with, so the value can change while pairs are live; empty = branch == slug
++branch_prefix: ${env:LYM_BRANCH_PREFIX:-}  # prefix prepended to the slug of each new pair (e.g. "hanf/"); a pair keeps the branch name it was made with, so the value can change while pairs are live; a machine key, so each machine may set its own with "lym config fabric --layer machine"; empty = branch == slug
+ pathspec: ""  # OPTIONAL per-repo directory path(s) relative to worktree root, whitespace-separated; _lym and .lym are structural and injected in code by internal/fabricengine, never read from here
+ warp_exclude: CLAUDE.local.md AGENTS.override.md .heddle .claude/settings.local.json  # OPTIONAL paths relative to a warp worktree's anchor, whitespace-separated, excluded through the warp repository's info/exclude; separate from pathspec and never wired as a junction
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index e0a44af3..37cd6147 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -25,7 +25,9 @@ Machine alone opens a key to the machine layer.
+   and the perch's rounds, rubric and whole-diff read are unchanged.
+ - **Machine**: the key's value is a property of the machine.
+   It is a bound on a resource every worktree of the hub on that machine shares, or a fact of the machine.
+-  Examples are the command run after lym opens a window and an `env.yaml` variable naming a path on its disk.
++  It may also be a convention of the person working on that machine.
++  Examples are the command run after lym opens a window, an `env.yaml` variable naming a path on its disk,
++  and fabric's `branch_prefix`.
+   It opens the key to the machine layer and keeps it closed to the local layer.
+ 
+ The test asks what a key's value can do to a guard, not what kind of key it is.
