@@ -9,7 +9,7 @@
 - `plan:internal/shedadapters#TestBuildRoundContext` -> `func TestBuildRoundContext(t *testing.T)`
 
 **Edit:**
-- `plan:internal/shedadapters#BurlerReviewProducer.recordRoundStart`
+- `internal/shedadapters#BurlerReviewProducer.recordRoundStart`
 - `internal/shedadapters#BurlerReviewProducer.roundProfile`
 - `internal/shedadapters#BurlerReviewProducer.Call`
 - `internal/shedadapters#TestBurlerReviewProducer_Call_ProfileAndOpts`
@@ -18,12 +18,12 @@
 - `internal/shedadapters/doc.go`
 
 **Uses:**
-- `plan:internal/burlerengine#ParseFixerReport`
-- `plan:internal/burlerengine#CheckFixerReport`
+- `internal/burlerengine#ParseFixerReport`
+- `internal/burlerengine#CheckFixerReport`
 - `internal/burlerengine#ParseReview`
 - `internal/burlerengine#ReadParentAsks`
-- `plan:internal/shedadapters#readRoundSnapshot`
-- `plan:internal/shedadapters#addedDecisionDigests`
+- `internal/shedadapters#readRoundSnapshot`
+- `internal/shedadapters#addedDecisionDigests`
 - `internal/shedadapters#readGenerationRecord`
 - `internal/shedadapters#roundSeed`
 - `internal/shedadapters#roundFixerReportPath`

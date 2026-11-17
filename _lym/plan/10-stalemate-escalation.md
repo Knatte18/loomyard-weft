@@ -25,13 +25,13 @@
 
 **Uses:**
 - `internal/shedadapters#designWrongKeys`
-- `plan:internal/shedadapters#readRoundSnapshot`
-- `plan:internal/shedadapters#updateRoundSnapshot`
-- `plan:internal/shedadapters#TargetSnapshot`
+- `internal/shedadapters#readRoundSnapshot`
+- `internal/shedadapters#updateRoundSnapshot`
+- `internal/shedadapters#TargetSnapshot`
 - `internal/shedadapters#roundFixerReportPath`
 - `internal/shedadapters#Bouncer.reviewFindings`
-- `plan:internal/burlerengine#ParseFixerReport`
-- `plan:internal/burlerengine#CheckFixerReport`
+- `internal/burlerengine#ParseFixerReport`
+- `internal/burlerengine#CheckFixerReport`
 - `internal/shedadapters#newBouncerFixture`
 - `internal/shedadapters#layoutCirclingBouncer`
 - `internal/shedadapters#sequencedJudge`

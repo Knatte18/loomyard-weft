@@ -1,14 +1,14 @@
 # Card 4 — The round's snapshot record, written by the review and fix producers
 
 **Create:**
-- `plan:internal/shedadapters#roundSnapshot` -> `type roundSnapshot struct`
-- `plan:internal/shedadapters#addedDecisionDigest` -> `type addedDecisionDigest struct`
-- `plan:internal/shedadapters#roundSnapshotPath` -> `func roundSnapshotPath(runDir string, n int) string`
-- `plan:internal/shedadapters#readRoundSnapshot` -> `func readRoundSnapshot(runDir string, n int) (roundSnapshot, bool, error)`
-- `plan:internal/shedadapters#updateRoundSnapshot` -> `func updateRoundSnapshot(runDir string, n int, mutate func(rec *roundSnapshot, found bool)) error`
-- `plan:internal/shedadapters#addedDecisionDigests` -> `func addedDecisionDigests(recordPath string) ([]addedDecisionDigest, error)`
-- `plan:internal/shedadapters#BurlerReviewProducer.recordRoundStart` -> `func (p *BurlerReviewProducer) recordRoundStart(round int)`
-- `plan:internal/shedadapters#TestBurlerReviewProducer_Call_RecordsRoundSnapshot` -> `func TestBurlerReviewProducer_Call_RecordsRoundSnapshot(t *testing.T)`
+- `internal/shedadapters#roundSnapshot`
+- `internal/shedadapters#addedDecisionDigest`
+- `internal/shedadapters#roundSnapshotPath`
+- `internal/shedadapters#readRoundSnapshot`
+- `internal/shedadapters#updateRoundSnapshot`
+- `internal/shedadapters#addedDecisionDigests`
+- `internal/shedadapters#BurlerReviewProducer.recordRoundStart`
+- `internal/shedadapters#TestBurlerReviewProducer_Call_RecordsRoundSnapshot`
 
 **Edit:**
 - `internal/shedadapters#BurlerHalfDeps`

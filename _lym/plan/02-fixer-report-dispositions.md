@@ -1,18 +1,18 @@
 # Card 2 — Fixer-report dispositions frontmatter and the fix check
 
 **Create:**
-- `plan:internal/burlerengine#Disposition` -> `type Disposition string`
-- `plan:internal/burlerengine#DispositionFixed` -> `const DispositionFixed Disposition = "fixed"`
-- `plan:internal/burlerengine#DispositionFixedDifferently` -> `const DispositionFixedDifferently Disposition = "fixed-differently"`
-- `plan:internal/burlerengine#DispositionDisputed` -> `const DispositionDisputed Disposition = "disputed"`
-- `plan:internal/burlerengine#DispositionDeferred` -> `const DispositionDeferred Disposition = "deferred"`
-- `plan:internal/burlerengine#DispositionRuling` -> `const DispositionRuling Disposition = "ruling"`
-- `plan:internal/burlerengine#FindingDisposition` -> `type FindingDisposition struct`
-- `plan:internal/burlerengine#FixerReport` -> `type FixerReport struct`
-- `plan:internal/burlerengine#ParseFixerReport` -> `func ParseFixerReport(content []byte) (FixerReport, error)`
-- `plan:internal/burlerengine#CheckFixerReport` -> `func CheckFixerReport(report FixerReport, findings []Finding, decisionsRouted bool) error`
-- `plan:internal/burlerengine#FixerReportGateEntry` -> `func FixerReportGateEntry(reportPath, reviewPath string, decisionsRouted bool) shuttleengine.GateEntry`
-- `plan:internal/burlerengine#TestCheckFixerReport` -> `func TestCheckFixerReport(t *testing.T)`
+- `internal/burlerengine#Disposition`
+- `internal/burlerengine#DispositionFixed`
+- `internal/burlerengine#DispositionFixedDifferently`
+- `internal/burlerengine#DispositionDisputed`
+- `internal/burlerengine#DispositionDeferred`
+- `internal/burlerengine#DispositionRuling`
+- `internal/burlerengine#FindingDisposition`
+- `internal/burlerengine#FixerReport`
+- `internal/burlerengine#ParseFixerReport`
+- `internal/burlerengine#CheckFixerReport`
+- `internal/burlerengine#FixerReportGateEntry`
+- `internal/burlerengine#TestCheckFixerReport`
 
 **Edit:**
 - `internal/burlerengine#skippedFixerReport`

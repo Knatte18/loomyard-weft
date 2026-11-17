@@ -28,7 +28,7 @@
 - `internal/burlerengine/doc.go`
 
 **Uses:**
-- `plan:internal/burlerengine#FindingDisposition`
+- `internal/burlerengine#FindingDisposition`
 - `internal/burlerengine#ReadParentReport`
 - `internal/burlerengine#fakeShuttle`
 - `internal/burlerengine#halfScript`

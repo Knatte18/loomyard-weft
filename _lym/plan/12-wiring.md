@@ -20,7 +20,7 @@
 
 **Uses:**
 - `internal/fabricengine#Open`
-- `plan:internal/shedadapters#TargetSnapshot`
+- `internal/shedadapters#TargetSnapshot`
 - `internal/reviewbudget#Route`
 - `internal/configreg#TestModules_EveryTemplateKeyClassified`
 - `internal/loomengine#TestConfigTemplate_ContainsEveryConfigYAMLTag`

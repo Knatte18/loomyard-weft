@@ -1,9 +1,9 @@
 # Card 1 — Fabric verbs for a working-tree id and a diff of two ids
 
 **Create:**
-- `plan:internal/fabricengine#Fabric.WorktreeTreeID` -> `func (f *Fabric) WorktreeTreeID() (string, error)`
-- `plan:internal/fabricengine#Fabric.ChangedPathsBetween` -> `func (f *Fabric) ChangedPathsBetween(fromTree, toTree string) ([]string, error)`
-- `plan:internal/fabricengine_test#TestFabric_WorktreeTreeID` -> `func TestFabric_WorktreeTreeID(t *testing.T)`
+- `internal/fabricengine#Fabric.WorktreeTreeID`
+- `internal/fabricengine#Fabric.ChangedPathsBetween`
+- `internal/fabricengine_test#TestFabric_WorktreeTreeID`
 
 **Extends:**
 - `internal/fabricengine/doc.go`

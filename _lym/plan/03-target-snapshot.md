@@ -1,12 +1,12 @@
 # Card 3 — Target snapshot seam for source and overlay scope
 
 **Create:**
-- `plan:internal/lymdirs#ReviewSnapshotDirName` -> `const ReviewSnapshotDirName = "review-snapshot"`
-- `plan:internal/shedadapters#TargetSnapshot` -> `type TargetSnapshot struct`
-- `plan:internal/shedadapters#TargetSnapshot.Take` -> `func (s TargetSnapshot) Take() (string, error)`
-- `plan:internal/shedadapters#TargetSnapshot.ID` -> `func (s TargetSnapshot) ID() (string, error)`
-- `plan:internal/shedadapters#TargetSnapshot.ChangedSince` -> `func (s TargetSnapshot) ChangedSince(fromID string) ([]string, bool)`
-- `plan:internal/shedadapters#TestTargetSnapshot` -> `func TestTargetSnapshot(t *testing.T)`
+- `internal/lymdirs#ReviewSnapshotDirName`
+- `internal/shedadapters#TargetSnapshot`
+- `internal/shedadapters#TargetSnapshot.Take`
+- `internal/shedadapters#TargetSnapshot.ID`
+- `internal/shedadapters#TargetSnapshot.ChangedSince`
+- `internal/shedadapters#TestTargetSnapshot`
 
 **Extends:**
 - `internal/shedadapters/doc.go`
