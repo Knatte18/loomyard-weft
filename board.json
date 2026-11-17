@@ -165,9 +165,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "redundant-timeout-not-kill"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-09)\n\nThe coverage maps (`internal/testcover`, built by `lym gate test --map` since `b92c95ee`) record, per package, the blocks each tier 0 and tier 1 test covers.\nThe gate report (the advisory redundancy step of `lym gate test`, landed as `7f21142e`) judges only the new tests of a diff against the map;\nnothing yet uses the maps to find redundant tests that already exist.\nThe operator wants the existing ones cut, across the packages, not only kept from growing.\n\nThe survey `redundancy-confirmed-survey` (`53d40bd0`, report `docs/research/speed/redundancy-confirmed-survey-2026-11-16/report.md`)\nran the mutation-confirmed `lym gate redundant` over 121 packages:\n430 tests stay confirmed, 2.89 s of removable standalone time, and 27 of 30 sampled are false confirmations,\neach asserting something its covering tests do not.\nSo the list is a reading filter, never a verdict:\nthe cut is a test-quality cleanup that reads every confirmed candidate against its covering tests, not a speed task.\n\n## Idea\n\n1. A candidate list per package from `lym gate redundant \u003cpackage\u003e`, which omits `//testtiming:keep` and spawn-marked tests.\n2. Cut tasks on that list, each run delegating the per-test reading to subagents:\n   a candidate is cut or folded into another test only when its assertions add nothing the covering tests check.\n   The survey names what to look for first: absent side effects, persisted state, and inputs the covering tests do not feed.\n3. `internal/fabricengine` was swept by hand on 2026-11-08, so it comes last or not at all.\n4. Before judging a package, the sweep builds that package's map fresh in its own worktree with `lym gate test --map`,\n   since no landing keeps the maps fresh; spawn-marked tests are neither candidates nor covers.\n",
@@ -502,28 +500,6 @@
       "body": "Found by the map-tooling-trial.\n\nNothing in lym compares a map entry with a single-test coverage run.\nThe trial did it by hand: `lym gate test --wait ./internal/\u003cpkg\u003e -- -run '^\u003cTest\u003e$' -count=1 -coverprofile=\u003cabs path\u003e`, then counted covered blocks per file in the profile against the map's `blocks` of that test grouped by file.\nThat agreed for both `internal/durfmt` tests and for `TestOutputs`, `TestStoreValidatesLabelsWithVocabulary` and `TestWriteSiblings` of `internal/boardengine`.\n\nTwo limits:\n- The map's blocks carry file, function and hash but no line range, so the check is by count per file, not block by block.\n- The map's `funcs` list (functions of linked packages a test reaches) has no single-test counterpart in a statement profile, so it is unchecked.\n\nAdd a verb, or a `--map` option, that re-measures named tests alone and reports any block or function that differs, and give blocks a line range.\n",
       "created": "2026-11-17T15:01:51Z",
       "revised": "2026-11-17T15:01:51Z"
-    },
-    {
-      "id": 1435,
-      "handle": "T3",
-      "slug": "redundant-timeout-not-kill",
-      "title": "Fix lym gate redundant kill counting and the map defects the trial found",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "gate",
-        "testkit"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (orch, 2026-11-17)\n\nThe trial `map-tooling-trial` (`a666e8b3`, report `docs/research/speed/map-tooling-trial-2026-11-17/report.md`) ran `lym gate redundant` on `internal/boardengine`.\nOf 30994 mutant test runs, 383 ended by timeout and 39 by the memory cap, and the verb counted every one as a kill.\nA timeout or memory cap is not proof that the test caught the mutant, so these runs inflate the kills of the tests around a candidate,\nwhich can make a candidate look redundant when it is not; the earlier survey found 27 of 30 sampled confirmations false.\n\n## Idea\n\nCount a run ended by timeout or the memory cap as unjudged, not as a kill, and report those mutants apart;\na candidate whose confirmation rests on such a run is listed as unconfirmed.\n\n## Also: funcs order (was B4)\n\nFound by the map-tooling-trial.\n\nTwo `lym gate test --wait --map internal/boardengine` runs on one commit (`b92c95ee`) wrote maps that hold the same sets per test but not the same bytes.\nBeside `built_at` and `measured_at`, the `funcs` array of four tests lists the same ids in another order: `TestHandles_AssignedLowestFreeAndStable`, `TestHoldsRaddleFiling`, `TestRunLock`, `TestSetStatusReleasingProject_ReleasesDraftMembers`.\nSet difference per test is empty in both directions, so only the order is unstable.\nTwo `internal/durfmt` runs differ in the timestamps alone.\n\nA map that rewrites with a spurious diff each build makes any map committed or compared by bytes churn.\nSort each test's `funcs` and `blocks` before writing.\n\n## Also: per-test seconds (was B5)\n\nFound by the map-tooling-trial.\n\nIn the `internal/boardengine` map from `lym gate test --wait --map`, 132 of 136 tests record `seconds: 0` and the slowest records 0.29.\n`lym gate redundant internal/boardengine` then lists every one of its 14 candidates with `seconds: 0`.\nIts \"greedy pass, slowest first\" has no order to work from, and the standalone seconds it reports say nothing about what deleting a test saves.\nRecord each test's time at a resolution that separates tests, or say in the report that the figure is a floor.\n",
-      "status": "done",
-      "created": "2026-11-17T15:01:51Z",
-      "revised": "2026-11-17T16:43:36Z",
-      "profile": "light"
     }
   ],
   "prime_owner": "neve",
