@@ -330,46 +330,12 @@
       "revised": "2026-11-16T11:13:59Z",
       "owner_machine": "neve",
       "order": [
-        "hub-stop-all",
         "machine-start-launchers"
       ],
       "beam": true,
       "beam_color": "#7d2d6b",
       "discussed": true,
       "record_body_sha256": "744ee6078ac045281f4b9d725ed32fba0f21d1c5f7c98aea70b00ad5f4b8d311"
-    },
-    {
-      "id": 1397,
-      "handle": "T10",
-      "slug": "hub-stop-all",
-      "title": "lym beam stop --all takes the hub down on this machine, behind a stop button",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "hibernate",
-        "workspaces",
-        "orch",
-        "reed"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `adopt-build-resplit`.\n\nTakes: hibernate's pause-and-confirm inline in carry (internal/hibernateengine/watch.go) with awaitConfirmation; beamcli's stop command and its start --all; orchcli.BeamDown and its callers (beam stop, a beam's cancel, pawl's Beam-Down row); runproc.EndSubject and RoleOrch; lym reed down's pair end (internal/reedcli/up.go); tenderengine.Reap and Lift; selfexec.LymBinary and fabricengine's logged detached spawn as the pattern; reed's prime button group in both templates; D1's pushed-or-owed transitions\nDelivers: hibernate's pause-and-confirm as one exported function hibernate's carrier and the stop both call, owning only an entry it added; lym beam stop --all re-starting itself detached with a logged spawn and running D9's sequence: hub pause and confirm, each task pair's processes and reed session through reed down's path, orchcli.BeamDown for the prime and each local beam, the beams' reed sessions, unowned run processes as Reap ends them, its own pause entry lifted through Lift, the prime's reed session last; orchcli.BeamDown ending the orch's registered Claude process through runproc as its last step for every caller; a stop entry with a confirm text in reed's prime button group of both templates; no tracked record, no per-run intent, a standing Bolt hold left as it is\nExports: hibernateengine's exported pause-and-confirm function; beamcli's stop --all; BeamDown's added end of the orch's Claude process. It touches no internal/dobbyengine, internal/machinecli or internal/termwindow code, which machine-start-launchers changes beside it\n\nThe part changes these packages:\n\n- internal/hibernateengine (about 180 changed lines)\n- internal/beamcli (about 120 changed lines)\n- internal/orchcli (about 70 changed lines)\n- internal/reedcli (about 40 changed lines)\n- internal/reedengine (about 15 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-16T10:22:19Z",
-      "revised": "2026-11-17T11:06:42Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "solid",
-      "project": "adopt-build-resplit",
-      "discussed": true,
-      "record_body_sha256": "ae401a903d4b9634688601c73d39c26734f56a9a5e5d256d713cfab49c1778f0"
     },
     {
       "id": 1398,

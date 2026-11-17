@@ -1,6 +1,6 @@
 # P4 Merge the remaining adopt-build members into one design and split it again on what landed
 
-Rendered 2026-11-17 17:53 UTC; every age below is as of then.
+Rendered 2026-11-17 17:54 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`adopt-build-resplit`](design-adopt-build-resplit.md) · Age 9d · Owner `neve`
@@ -142,11 +142,3 @@ _None._
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T10 | **lym beam stop --all takes the hub down on this machine, behind a stop button**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hub-stop-all`](design-hub-stop-all.md)<br>[Sketch](decision-hub-stop-all.md) | 1d<br>6h | hibernate, workspaces, orch, reed |
