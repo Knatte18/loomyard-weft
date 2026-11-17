@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Study: the work to support Gemini CLI or Antigravity as an agent engine**<br>• `darn: writer opus[high]` | [`gemini-engine-study`](design-gemini-engine-study.md) | darn · docs | starting · Worktree-Create | neve | 0m<br>0m | shuttle |
+| T4 | **Study: the work to support Gemini CLI or Antigravity as an agent engine**<br>• `darn: writer opus[high]` | [`gemini-engine-study`](design-gemini-engine-study.md) | darn · docs | starting · Seed-Child | neve | 0m<br>0m | shuttle |
 | T7 | **Build the Slack bridge that carries creel mail between orchs on two machines** | [`slack-machine-bridge-build`](design-slack-machine-bridge-build.md)<br>[Sketch](decision-slack-machine-bridge-build.md) | tapestry · solid | Webster | neve | 4d<br>4d | slack, creel, orch |
 
 ### Ready (0)
@@ -41,7 +41,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | darn · solid |  | 2m<br>2m | board, ide, fabric |
+| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | darn · solid |  | 3m<br>3m | board, ide, fabric |
 
 ## Notes (9)
 
