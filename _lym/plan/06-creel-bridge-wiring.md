@@ -19,6 +19,8 @@
 - `internal/creelcli#rig`
 - `internal/creelcli#rig.startDaemon`
 - `internal/creelcli#TestCreelCLI`
+- `internal/creelcli#trustField`
+- `cmd/lym#testOnlyCodeAllowed`
 
 **Extends:**
 - `internal/creelcli/doc.go`
@@ -39,6 +41,7 @@
 The wiring half of D3: the Go-client calls the relay makes, and the `MachineBridge` creel's daemon is told, filled from `internal/slackengine`.
 
 Each new `GoClient` method sends its verb under `goCallTimeout` and answers what the response carries (`MachineOutbound`, or `ID` for a deliver); a daemon refusal comes back as an error that `creelengine.IsDaemonRefusal` matches.
+No main reaches them until the relay calls them through its `Mailbox`, so `cmd/lym#testOnlyCodeAllowed` gains `internal/creelcli.GoClient.TakeMachine`, `.ReportMachine`, `.SettleMachineDelivered` and `.SettleMachineReturned`, each with the reason `no caller until card 10's relay sends machine mail; that card removes this entry`, and `internal/creelcli.GoClient.DeliverMachine` with the reason `no caller until card 11's relay delivers bridge mail; that card removes this entry`.
 
 `slackBridge` is creel's `MachineBridge` over the hub at hubPath, built by `newSlackBridge` from three function fields a test replaces: `geometry` (`hubgeom.SlackGeometry`), `beams` (the hub's beam slugs, read as `slackcli`'s `beamSlugs` reads them, through `hubgeom.DobbyStart` on the prime) and `names` (`machinename.Names`).
 Every call reads afresh, so a pressed button or a new token applies at the next post.
@@ -51,6 +54,7 @@ A failed geometry, beams or forwarding read is returned as it is.
 `serveDaemon` sets `Options.Bridge` to `newSlackBridge(hubPath)`, so creel takes a post across machines from here on.
 
 The JSON writers show machine mail as they show other-hub mail: `messageFields` emits `trust` (through `trustField`), `sending_id` and a `sending_machine` field for a message whose `SendingMachine` is set, and `logEntryFields` adds `receiving_machine`, `sending_machine` and `slack_ts` beside `sending_hub` and `receiving_hub`.
+`trustField`'s doc comment becomes: the trust value of a message from another hub or another machine.
 
 `TestSlackBridge` (tier 0) builds a `slackBridge` over a temp Slack geometry and stubbed beams, and is table-driven over orch and files: the prime orch with its button on and both tokens and a setup is ready; a beam orch likewise; a pair's orch is refused naming the hub's orch; a button off, a missing app token and a missing setup are each refused naming their way forward.
 `rig` gains a `bridge creelengine.MachineBridge` field, a `slackBridge` whose function fields are stubbed to ready, and `rig.startDaemon` passes it as `Options.Bridge`, so the rows below reach the bridge path the daemon serves.
@@ -59,6 +63,6 @@ The JSON writers show machine mail as they show other-hub mail: `messageFields` 
 - the same client delivers mail from `osl::zz:orch` to the hub's orch, the orch's `lym creel read` header shows `"osl::zz:orch" (other machine, trusted orch)`, and `lym creel read --json` shows its `trust`, `sending_id` and `sending_machine`.
 `internal/creelcli/doc.go` gains the machine verbs of the Go client, the bridge the daemon is told, and the machine fields of the read and log JSON.
 
-**ImpactSummary:** `serveDaemon` gains one option; the new client methods have no caller until card 10; `internal/creelcli` now imports `internal/slackengine` and `internal/machinename`, which import no `creelcli`, so no cycle forms.
+**ImpactSummary:** `serveDaemon` gains one option; four of the new client methods have no caller until card 10, and `DeliverMachine` none until card 11; `internal/creelcli` now imports `internal/slackengine` and `internal/machinename`, which import no `creelcli`, so no cycle forms.
 
 **Commit:** 6: creel's Go client and daemon reach the Slack bridge

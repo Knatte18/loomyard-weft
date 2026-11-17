@@ -25,6 +25,7 @@
 - `internal/creelengine#pool.logEntryFor`
 - `internal/creelengine#TestJournal_Fold`
 - `internal/creelengine#TestJournal_Retention`
+- `cmd/lym#testOnlyCodeAllowed`
 
 **Extends:**
 - `internal/creelengine/doc.go`
@@ -48,6 +49,7 @@ The hold reason of `machine-held` and the reason of `machine-returned` use the e
 `machineOutboundEntry` holds `ID`, `From` (the local orch), `To` (the full `<machine>::<name>` address), `ReceivingMachine`, `Kind`, `Body`, `ReplyTo` (the sending id on the other machine a reply answers), `Answers` (the local message it answers), `ExpectReply`, `Posted`, `State outboundState`, `HoldReason`, `Reason`, `SlackTS`, `Replied` and `origin`.
 `pool` gains `machineOutbound map[int64]*machineOutboundEntry`, made by `newPool`; it is apart from `outbound`, so `pendingOutbound`, `outboundHubs` and the per-hub worker never see a machine-outbound message.
 `message()` builds the `Message` a reply wait is answered with, as `outboundEntry.message` does.
+No main reaches it until card 3's `settledOutcomeLocked` answers a wait with it, so `cmd/lym#testOnlyCodeAllowed` gains `internal/creelengine.machineOutboundEntry.message` with the reason `no caller until card 3 answers a reply wait with it; that card removes this entry`.
 
 `apply` folds:
 - `machine-outbound` through `applyMachineOutbound`: a pending entry, idempotent by id, and `Replied` set on the local message it `Answers` when that message expects a reply.

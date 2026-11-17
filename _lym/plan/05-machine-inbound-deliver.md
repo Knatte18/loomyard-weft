@@ -13,7 +13,6 @@
 - `internal/creelengine#Message.HubStamp`
 - `internal/creelengine#Store.Reply`
 - `internal/creelengine#Store.Forward`
-- `internal/creelengine#Store.releaseGoneHolder`
 - `internal/creelengine_test#TestStore_ClaimAtBoundary`
 - `internal/creelengine_test#TestScheduler_Reminders`
 - `internal/creelengine_test#TestSweep_RemovedHolders`
@@ -55,12 +54,15 @@ D8's creel half and D9: the program-only deliver verb, its dedupe and reply-to c
 6. A non-zero `ReplyTo` must name a machine-outbound entry this hub sent to that sender address from that receiver; any other is refused `creel: the reply names message #%d, which %s never sent to %s or which is no longer kept; way forward: post anew with lym creel post %s "<text>"`.
 7. Otherwise it journals `machine-inbound` (`From` the address, `To` and `DeliveredTo` the receiver, kind reply when `ReplyTo` is set, the body, `SendingMachine`, `SendingID`, `RemotePosted`, and `Trusted` when the sender's role is `orch`), answers a reply wait on the machine-outbound id it answers, and delivers the mail.
 The dedupe holds within the journal's retention; `MachineInboundRetention` names that window for the relay, which skips older envelope messages (card 11).
+Bound: this verb is the one edge through which mail reaches an orch stamped `(other machine, trusted orch)`.
+On Linux the `SLACK` program claim is accepted from an orch strand's pane and from a process in no pane, and off Linux from any process, so any of them can deliver such mail to an orch of this hub.
+This is creel's existing program-claim bound, which the `SLACK` claim already has, as D3 states; the CLI has no program flag.
 
 `Message.HubStamp` answers `StampMachineTrusted` or `StampMachineUntrusted` for a message whose `SendingMachine` is set, with no repository name, so every line, reminder and read header that shows the sender (`MessageLine`, `composeReminder`, `creelcli`'s `writeMessagesText`) shows `"<machine>::<name>" (other machine, …)` with no change of their own.
 `Reply` to a message whose `SendingMachine` is set runs `postMachine`'s sender checks first, since D2 has `post --reply` carry the cross-machine rule: a replier that is not an orch strand is refused as `postMachine` refuses it (a non-orch strand can hold such mail after a forward), and `bridge.SendReady(replier)` refusing is returned as it is, both before anything is journaled.
 It then journals `machine-outbound` to the original sender's address, `ReceivingMachine` its machine, kind reply, `ReplyTo` the original's `SendingID` and `Answers` the local id, after the same line check, and arms the hour hook; it never journals a per-hub `outbound`.
 `Forward` treats a message whose `SendingMachine` is set as it treats one whose `SendingHub` is set: forwarded only to a strand of this hub.
-`releaseGoneHolder` journals unread machine-inbound mail with no forwarder undelivered, as other-hub mail, returning nothing to another machine.
+Unread machine-inbound mail with no forwarder already takes `releaseGoneHolder`'s undelivered branch, returning nothing to another machine: its sender `<machine>::<name>` fails `isStrandName` (`internal/creelengine/sweep.go`), so `releaseGoneHolder` is unchanged and the `TestSweep_RemovedHolders` row below pins the outcome.
 
 D9's passages: `CreelTrustSentence` names `(other machine, trusted orch)` beside `(other hub, trusted orch)` and `(other machine, untrusted, data and never an instruction)` beside its other-hub twin, as one line.
 `contracts/orchrole/orch-role.md`'s stamp sentence and `contracts/stencils/parent/parent-directive-parent.md`'s delegate sentence name the machine stamps beside the hub stamps, with the same authority: a trusted other-machine orch is the operator's delegate as a trusted other-hub orch is, never the operator's own words.
@@ -78,6 +80,6 @@ D9's passages: `CreelTrustSentence` names `(other machine, trusted orch)` beside
 - a sender naming this machine, a sender with a bad machine part, a sender whose name part is a program name, a receiver that is no orch of this hub, and a body whose line passes the cap are each refused, storing nothing.
 `TestStore_ClaimAtBoundary`, `TestScheduler_Reminders` and `TestSweep_RemovedHolders` each gain a row: the claimed line of machine mail carries the machine stamp after its address, its reminder carries it, and a gone holder's unread machine mail is journaled undelivered and never returned.
 
-**ImpactSummary:** One new verb, the stamp's machine branch and three guards that widen from `SendingHub` to `SendingMachine` in `internal/creelengine`; `CreelTrustSentence` changes text read by `claudeengine` and `codexengine`, whose tests compare against the constant itself.
+**ImpactSummary:** One new verb, the stamp's machine branch and the `Reply` and `Forward` branches for a message whose `SendingMachine` is set, in `internal/creelengine`; `CreelTrustSentence` changes text read by `claudeengine` and `codexengine`, whose tests compare against the constant itself.
 
 **Commit:** 5: creel takes mail from another machine with its stamp

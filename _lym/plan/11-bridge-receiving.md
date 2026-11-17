@@ -28,6 +28,7 @@
 - `internal/slackengine#wakeLoop.wake`
 - `internal/slackengine#RunRelay`
 - `internal/slackengine_test#TestSocketHolder`
+- `cmd/lym#testOnlyCodeAllowed`
 
 **Extends:**
 - `internal/slackengine/doc.go`
@@ -50,6 +51,8 @@
 - `plan:internal/creelengine#MachineMail`
 - `plan:internal/creelengine#MachineInboundRetention`
 - `plan:internal/creelengine#IsDaemonRefusal`
+- `plan:internal/creelengine#ErrDaemonRefusal`
+- `internal/slackengine#retryWindow`
 - `internal/slackengine#ReadChannelMap`
 - `internal/slackengine#ForwardingOn`
 - `internal/slackengine#inboundText`
@@ -64,6 +67,7 @@
 **Intent:**
 D8: the relay reads its bridge channels, delivers bridge mail to creel, handles the operator in a bridge channel, and finds channels it lacks.
 The reader goes in a new file `internal/slackengine/bridgein.go`; `export_test.go` gains `BridgeReader`, `NewBridgeReader`, `Read` and `Resync` for the external tests.
+This card is the first caller of `GoClient.DeliverMachine`, `programMailbox.DeliverMachine`, `bridgePoll.wake`, `ParseBridgeMessage`, `API.MemberChannels` and `API.PostThreadReply`, so it removes their `cmd/lym#testOnlyCodeAllowed` entries of cards 6, 7, 8 and 10.
 
 Routing.
 `socketHolder.route` routes an event in a channel a hub's bridge map holds to that hub as it routes an orch channel's, the hint named by the channel (`hintName`).
@@ -78,7 +82,13 @@ Reading.
 `handle` answers whether the delivery cursor moves past the message and whether it delivered; per message, in order:
 1. This bot's own posts are skipped.
 2. The operator's messages are handled once: only one after `OperatorCursor` is handled, then that cursor moves to it, so operator messages past a held peer message are handled and a reread handles none twice.
-   `operator` runs `parsePeerCommand`: an `approve` or `revoke` naming this channel's peer machine runs `runPeerCommand` and answers in the channel; one naming this machine is left to the peer's relay.
+   `operator` runs `parsePeerCommand`: an `approve` or `revoke` naming this channel's peer machine runs `runPeerCommand` and answers in the channel; one naming this machine, its current or a former name matched case-insensitively as card 9 matches it, is left to the peer's relay.
+   When `runPeerCommand` fails, `operator` returns its error and the cursor that holds the message does not move, so the read stops at the message and retries it at each poll.
+   The reader keeps its own failing key, `<channel id> <ts>`, and that key's first failure time.
+   Once the first failure is `retryWindow` old, it answers the failure where the command was written, with `PostThreadReply` for a thread reply, and moves the cursor that held the message past it: the operator cursor, or for a thread reply that thread's cursor.
+   The bridge poll's goroutine runs the reader and the wake loop's goroutine runs `inbound`.
+   `runPeerCommand` reads only `inbound` fields set when it is built and writes none (card 9);
+   the reader posts its answers through its `SlackClient`, never through `inbound.answer`, so it touches none of `inbound`'s failing key, episodes or owed reads.
    Any other operator text is answered once, by the relay of the end that sorts first in the channel's name, as not delivered, with a pointer to the local orch's own channel.
 3. Any other human's message, or one with no `bot_id`, is skipped.
 4. A message whose first line `ParseBridgeMessage` refuses is skipped.
@@ -113,18 +123,19 @@ Bound: a channel no approved bot made is never delivered from, and a resync read
 `TestBridgeReceive` (tier 0), rows over `fakeSlack`, `fakeMailbox` and `manualClock`:
 - a pinned-app message is delivered once from `<machine>::<name>`, and a reread delivers nothing new;
 - this bot's own envelope, another human's message, a bot message with no `bot_id`, a bot message whose first line is no envelope, and an envelope whose `to` is another orch are each skipped, delivering nothing and moving the cursor past them;
-- a deliver lost on a dropped connection holds the cursor and delivers at the next read; a deliver creel refuses (a receiver that is no orch of the hub) is skipped with one notice quoting the reason, and the next message delivers;
-- an operator `approve` or `revoke` naming this relay's own machine in a bridge channel pins nothing and answers nothing;
+- a deliver lost on a dropped connection holds the cursor and delivers at the next read;
+- a deliver whose reply-to creel refuses is skipped with one notice quoting the reason, and the next message delivers;
+- an operator `approve` or `revoke` naming this relay's own machine in a bridge channel, or its former name `Old_Box` typed as `old_box`, pins nothing and answers nothing;
 - two hubs of one machine sending id 7 to one orch both deliver;
 - another app's message is skipped with one notice, and later pinned messages deliver;
 - an unpinned machine holds the cursor with one notice; an operator `approve` after it in the channel is handled and delivers the held messages in order, skipping one past retention;
 - under a held message, `approve`, `revoke` and a plain line are each handled once across polls and the `revoke` stands; once both are handled, a reread posts no second notice; a new message held after that `revoke` posts a notice of its new episode;
 - an operator `approve` as a thread reply is handled once and answered in its thread;
+- a `users.list` refusal on an operator `approve` in a bridge channel holds the operator cursor and is retried at each poll, and after `retryWindow` of clock it is answered in the channel and the operator cursor moves past it;
 - a held message stays held past five minutes of clock;
 - a message to an orch whose button is off is held until the button is on;
 - an envelope naming this machine's former name as `to` is delivered, and as `from` is skipped with one notice;
 - a message to a retired orch is skipped with one notice naming it;
-- a reply-to creel refuses is skipped with a notice;
 - other operator text is answered once by the first-sorting end, and not by the other;
 - resync adds a channel made by an approved bot naming this hub's orch, ignoring a human-posted envelope in choosing the local orch, and leaves out one made by another creator or naming another hub; it adds one whose newest envelope names this machine's former name with this hub's shortname;
 - the poll round runs a resync at the relay's start and again once the clock passes `bridgePollCeiling`, and not between;

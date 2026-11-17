@@ -33,6 +33,7 @@
 - `internal/creelengine_test#TestStore_InjectAndHold`
 - `PATTERN.md`
 - `pattern/PATTERN-agent-addressing.md`
+- `cmd/lym#testOnlyCodeAllowed`
 
 **Extends:**
 - `internal/creelengine/doc.go`
@@ -79,6 +80,7 @@ The stamps are declared here because the width needs the longer one; card 5 show
 `refuseOtherHub` also refuses a name for which `IsMachineAddress` holds: `creel: %s is a name of another machine, and %s stays inside one hub; way forward: lym creel post %s "<text>"`, so `inject`, `interrupt`, `hold`, `release` and `post --interrupt` refuse it.
 `Forward` refuses a receiver for which `IsMachineAddress` holds, with the same way forward, before `checkReceiverLocked`.
 `WaitReply` accepts an id of `machineOutbound` posted by the caller, and `settledOutcomeLocked` answers a wait on a machine-outbound id with the oldest reply to it or, once returned, with `OutcomeReturned` and `message()`.
+These are the first callers of `ParseMachineAddress`, `IsMachineAddress` and `machineOutboundEntry.message`, so this card removes their `cmd/lym#testOnlyCodeAllowed` entries of cards 1 and 2.
 
 `creelfake.Bridge` is the test's `MachineBridge`: `NewBridge` takes the names, `Names` answers them unless `FailNames` set an error, and `SendReady` answers nil unless `Refuse` set an error for that orch.
 

@@ -6,6 +6,9 @@
 - `plan:internal/agentname#IsMachineAddress` -> `func IsMachineAddress(name string) bool`
 - `plan:internal/agentname#TestParseMachineAddress` -> `func TestParseMachineAddress(t *testing.T)`
 
+**Edit:**
+- `cmd/lym#testOnlyCodeAllowed`
+
 **Extends:**
 - `internal/agentname/agentname.go`
 
@@ -33,6 +36,7 @@ The parser does not judge the role.
 The machine rule is passed in as checkMachine, and every caller passes `machinename.CheckName`.
 This keeps the package on the standard library alone, which `TestAgentNameInvariant_StdlibOnly` holds (see `## Shared Decisions` in the overview).
 The package comment in `internal/agentname/agentname.go` (the package has no `doc.go`), in its paragraph on the cross-machine form, gains one sentence: `ParseMachineAddress` parses it and `IsMachineAddress` tells it apart.
+No main reaches either function until card 3 routes posts through them, so `cmd/lym#testOnlyCodeAllowed` gains `internal/agentname.ParseMachineAddress` and `internal/agentname.IsMachineAddress`, each with the reason `no caller until card 3 routes a post to another machine through it; that card removes this entry`.
 
 `TestParseMachineAddress` is a tier 0 table test in `internal/agentname/agentname_test.go`, each row an address, ownNames, a checker and the want (machine and name, or an error substring).
 Rows: `osl-1046::ly:orch` and `neve::ly:beam-x:orch` parse; a machine the checker refuses is refused with the checker's text; a name part `ly:SLACK` and one `ly` are refused; ownNames `neve` with `neve::ly:orch` is refused naming `ly:orch`; a former name `Old_Box` that a real `machinename`-style checker would refuse gets the own-name refusal, with a checker that fails the test if called; `ly:orch` (no separator), `::ly:orch` and `neve::` are refused.

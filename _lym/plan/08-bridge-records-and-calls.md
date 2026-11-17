@@ -33,6 +33,7 @@
 - `internal/hubgeom#SlackGeometry`
 - `internal/hubgeom#TestSlackGeometry`
 - `internal/hubgeom#TestSlackMachine`
+- `cmd/lym#testOnlyCodeAllowed`
 
 **Extends:**
 - `internal/slackengine/doc.go`
@@ -72,6 +73,10 @@ D11 holds: each call needs only a scope the manifest already holds (`users:read`
 `TestBridgeRecords` (tier 0) is table-driven over the two records: a missing file reads empty; an update keeps a key the record does not know; `ChannelOf` finds the open entry of a pair and skips an archived one.
 `TestSlackGeometry` and `TestSlackMachine` gain the new paths in their want.
 `internal/slackengine/doc.go`'s files paragraph gains the peers record, the bridge map, the notice record and the post record.
+No main reaches the new functions yet, so `cmd/lym#testOnlyCodeAllowed` gains an entry for each, its reason naming the card that adds the first caller and removes the entry:
+- `internal/slackengine.ReadPeers`, `internal/slackengine.UpdatePeers`, `internal/slackengine.API.BotUsersNamed` and `internal/slackengine.API.UserAppID`, with `no caller until card 9's approve and revoke; that card removes this entry`;
+- `internal/slackengine.ReadBridgeMap`, `internal/slackengine.UpdateBridgeMap`, `internal/slackengine.BridgeMap.ChannelOf` and `internal/slackengine.API.PostTimestamped`, with `no caller until card 10's relay posts to bridge channels; that card removes this entry`;
+- `internal/slackengine.API.MemberChannels` and `internal/slackengine.API.PostThreadReply`, with `no caller until card 11's relay reads bridge channels; that card removes this entry`.
 
 **ImpactSummary:** `SlackClient` grows six methods, implemented by `*API` and the tests' `fakeSlack`, its only implementers; the geometry gains fields every builder fills through `hubgeom.SlackGeometry`, and named-field literals elsewhere compile unchanged.
 

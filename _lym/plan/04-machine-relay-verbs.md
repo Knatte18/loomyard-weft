@@ -8,6 +8,8 @@
 - `plan:internal/creelengine#MachineUnsettled` -> `const MachineUnsettled = "bridge-unsettled"`
 - `plan:internal/creelengine#MachineOutbound` -> `type MachineOutbound struct`
 - `plan:internal/creelengine#IsDaemonRefusal` -> `func IsDaemonRefusal(err error) bool`
+- `plan:internal/creelengine#ErrDaemonRefusal` -> `var ErrDaemonRefusal = errors.New("creel: the daemon refused the request")`
+- `plan:internal/creelengine#daemonRefusal.Is` -> `func (e *daemonRefusal) Is(target error) bool`
 - `plan:internal/creelengine#Store.requireBridgeProgram` -> `func (s *Store) requireBridgeProgram(sender Sender, verb string) error`
 - `plan:internal/creelengine#Store.TakeMachineOutbound` -> `func (s *Store) TakeMachineOutbound(sender Sender) ([]MachineOutbound, error)`
 - `plan:internal/creelengine#Store.ReportMachineHold` -> `func (s *Store) ReportMachineHold(sender Sender, id int64, reason string) error`
@@ -34,6 +36,7 @@
 - `internal/creelengine#Store.settleReturned`
 - `internal/slackengine#SlackProgram`
 - `cmd/lym#unboundedWaitFiles`
+- `cmd/lym#testOnlyCodeAllowed`
 
 **Extends:**
 - `internal/creelengine/doc.go`
@@ -72,6 +75,9 @@ For a message already delivered it writes nothing and posts nothing.
 `noticeReturnedLocked` is re-signed to take the id, sender, receiver and reason, so both the per-hub and the machine return word one notice; `settleReturned` passes its entry's fields.
 For a machine return the notice's way forward also names what clears the hold reason, since posting again only holds the message again until the operator acts: `peer-unapproved` asks the operator to type `approve <machine>` in an orch channel of this machine; `bridge-name-taken` and `bridge-archived` point at the relay notice in the orch's channel; `button-off` names the slack button; any other code points at the relay notice for that code.
 `IsDaemonRefusal` reports whether err is or wraps a refusal the daemon answered, so the relay tells an answered settle from a lost connection (card 10).
+It is `errors.Is(err, ErrDaemonRefusal)`, and `daemonRefusal.Is` answers true for `ErrDaemonRefusal`, so every refusal `Client.do` builds matches it.
+A fake outside the package stands for an answered refusal by returning an error that wraps `ErrDaemonRefusal`.
+No main reaches `IsDaemonRefusal` until card 10's relay settles through it, so `cmd/lym#testOnlyCodeAllowed` gains `internal/creelengine.IsDaemonRefusal` with the reason `no caller until card 10's relay tells an answered settle from a lost connection; that card removes this entry`.
 
 `Request` gains `Reason string`, `Delivered bool` and `SlackTS string`; `Response` gains `MachineOutbound []MachineOutbound`.
 `daemon.dispatch` serves `machine-take` (answering the list), `machine-report` (`ID`, `Reason`) and `machine-settle` (`ID` with `Delivered` and `SlackTS`, or `Reason`), each through the resolved sender, so `requireBridgeProgram` judges it.

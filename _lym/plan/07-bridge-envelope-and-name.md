@@ -11,6 +11,7 @@
 
 **Edit:**
 - `internal/slackengine_test#TestChannelName`
+- `cmd/lym#testOnlyCodeAllowed`
 
 **Extends:**
 - `internal/slackengine/doc.go`
@@ -41,6 +42,7 @@ For example `osl-1046::ly:orch` and `neve::ly:orch` give `bridge-neve-ly-orch--o
 A row pins that the formatted first line's length never exceeds `creelengine.MachineEnvelopeWidth` of its sender and receiver, with a 63-character machine and the widest ids, so creel's line check covers the envelope (see `## Shared Decisions`).
 `TestChannelName` gains bridge rows: the example above; the same name with the ends given in either order; a long pair cut to 80 characters ending in the hash, and two such pairs sharing a prefix staying apart.
 `internal/slackengine/doc.go` gains a paragraph on bridge messages: their envelope, its sole parser, and the channel name.
+No main reaches the three functions yet, so `cmd/lym#testOnlyCodeAllowed` gains `internal/slackengine.FormatBridgeMessage` and `internal/slackengine.BridgeChannelName`, each with the reason `no caller until card 10's relay posts to bridge channels; that card removes this entry`, and `internal/slackengine.ParseBridgeMessage` with the reason `no caller until card 11's relay reads bridge channels; that card removes this entry`.
 
 **ImpactSummary:** New functions only, with one test row added to `TestChannelName`; nothing calls them until cards 10 and 11.
 

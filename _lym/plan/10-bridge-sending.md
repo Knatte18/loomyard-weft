@@ -44,8 +44,7 @@
 - `internal/slackengine_test#newRelayRun`
 - `internal/slackengine_test#TestRunRelay`
 - `cmd/lym#unboundedWaitFiles`
-
-**Extends:**
+- `cmd/lym#testOnlyCodeAllowed`
 - `internal/slackengine/doc.go`
 - `pattern/PATTERN-daemon-wakeups.md`
 
@@ -57,11 +56,13 @@
 - `plan:internal/creelcli#GoClient.SettleMachineReturned`
 - `plan:internal/creelcli#GoClient.DeliverMachine`
 - `plan:internal/creelengine#IsDaemonRefusal`
+- `plan:internal/creelengine#ErrDaemonRefusal`
 - `plan:internal/slackengine#FormatBridgeMessage`
 - `plan:internal/slackengine#BridgeChannelName`
 - `plan:internal/slackengine#ReadPeers`
 - `plan:internal/slackengine#UpdateBridgeMap`
 - `plan:internal/slackengine#ReadBridgeMap`
+- `plan:internal/slackengine#BridgeMap.ChannelOf`
 - `internal/slackengine#ForwardingOn`
 - `internal/slackengine#ReadSetup`
 - `internal/slackengine#channelKeeper.ensure`
@@ -84,6 +85,10 @@ The sender goes in a new file `internal/slackengine/bridgeout.go` and the poll i
 The tests are external (`slackengine_test`), so `export_test.go` gains `BridgeSender`, `BridgePoll`, their constructors, and `Send`, `SettleAccepted`, `Run` and `Wake`, as it exports the keeper and the outbound read.
 
 `Mailbox` gains `TakeMachine`, `ReportMachine`, `SettleMachineDelivered`, `SettleMachineReturned` and `DeliverMachine`, the program-only verbs of cards 4 and 5 (interface methods, no arrow); `programMailbox` forwards each to its `GoClient`, and `fakeMailbox` scripts a take queue and records every report, settle and deliver.
+`fakeMailbox` scripts a refusal creel answers as an error that wraps `creelengine.ErrDaemonRefusal`, so `IsDaemonRefusal` matches it.
+
+This card is the first caller of `IsDaemonRefusal`, the `GoClient` methods `TakeMachine`, `ReportMachine`, `SettleMachineDelivered` and `SettleMachineReturned`, `FormatBridgeMessage`, `BridgeChannelName`, `ReadBridgeMap`, `UpdateBridgeMap`, `BridgeMap.ChannelOf` and `API.PostTimestamped`, so it removes their `cmd/lym#testOnlyCodeAllowed` entries of cards 4, 6, 7 and 8.
+Nothing here calls `DeliverMachine` or `bridgePoll.wake`, so `cmd/lym#testOnlyCodeAllowed` gains `internal/slackcli.programMailbox.DeliverMachine` with the reason `no caller until card 11's relay delivers bridge mail; that card removes this entry`, and `internal/slackengine.bridgePoll.wake` with the reason `no caller until card 11's wake loop wakes the bridge poll; that card removes this entry`.
 
 Records, both through `internal/state` under the geometry's paths:
 - `bridgePosts` (`BridgePostsPath`) holds `Accepted map[int64]string`, the Slack timestamp of each message Slack accepted, and `Refusals map[int64]int`, apart from the outbox record of orch mail, so a confirmed orch-mail read never clears it.
@@ -141,7 +146,8 @@ While a `bridge-name-taken` or `bridge-archived` hold of the pair lasts, it trie
 - the bridge-post and bridge-notice records each keep a key they do not know across a write (`PATTERN-tolerant-records`);
 - a message creel returned at its hour, which take no longer returns, is not posted when its hold clears;
 - the poll's waits read 5, 10, 20, 40, 60 and 60 seconds while nothing is new, and 5 again after a post.
-`pattern/PATTERN-daemon-wakeups.md`'s list of the relay's loops gains the bridge poll, from five seconds doubling to sixty and never within a second of the previous round; `internal/slackengine/doc.go` gains the sending half.
+`pattern/PATTERN-daemon-wakeups.md`'s bullet of the Slack relay's loops gains the bridge poll, from five seconds doubling to sixty and never within a second of the previous round, and its final `and` moves to join the four loops.
+`internal/slackengine/doc.go` gains the sending half, and its line `It runs the socket holder, the outbound read and a wake loop.` names the bridge poll too.
 
 **ImpactSummary:** `Mailbox` grows five methods, implemented by `slackcli`'s `programMailbox` and the tests' `fakeMailbox`, its only implementers; `RunRelay` gains one goroutine and one call before it; orch mail's outbound read is untouched.
 
