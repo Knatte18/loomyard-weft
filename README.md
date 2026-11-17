@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-17 11:49 UTC; every age below is as of then.
+Rendered 2026-11-17 11:50 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -68,24 +68,23 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-borrowed-orchestrator-ideas.md">P2 Ideas borrowed from comparable agent orchestrators</a> (5)</strong></summary>
+<summary><strong><a href="project-borrowed-orchestrator-ideas.md">P2 Ideas borrowed from comparable agent orchestrators</a> (4)</strong></summary>
 
 [`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 1h · Owner `neve`
 
-### Tasks (4)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
-#### Running (4)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | darn · light | Darn-Write | neve | 1h<br>7m | stencil, shed |
-| T6 | **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | darn · light | Darn-Write | neve | 1h<br>7m | shuttle, friction |
-| T14 | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md) | motif | halted · Discussion-Bouncer | neve | 1h<br>52m | burler, shed, stencil |
-| T20 | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | darn · light | landing · Finalize | neve | 1h<br>52m | webster, fabric |
+| T5 | **Warn on resume when a run's stencils changed since it started** | [`stencil-pin-per-run`](design-stencil-pin-per-run.md) | darn · light | Darn-Write | neve | 1h<br>8m | stencil, shed |
+| T6 | **Flag an agent that edits the same file again and again** | [`edit-loop-detector`](design-edit-loop-detector.md) | darn · light | Darn-Write | neve | 1h<br>8m | shuttle, friction |
+| T14 | **Review rounds converge: fixer rebuttals, incremental re-review, stalemate on no tree change** | [`review-rounds-converge`](design-review-rounds-converge.md) | motif | halted · Discussion-Bouncer | neve | 1h<br>53m | burler, shed, stencil |
 
 #### Ready (0)
 
@@ -102,6 +101,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>1h | burler, shed, orch, quarry, report |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T20 | **Refuse a commit that adds a secret file** | [`sensitive-path-commit-guard`](design-sensitive-path-commit-guard.md) | 1h<br>53m | webster, fabric |
 
 </details>
 
@@ -175,7 +182,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Build the coverage maps as a mode of the gate run, one process per test in parallel** | [`gate-builds-testmap`](design-gate-builds-testmap.md)<br>[Sketch](decision-gate-builds-testmap.md) | raddle | Raddle-Write | neve | 1h<br>7m | gate, testkit |
+| T3 | **Build the coverage maps as a mode of the gate run, one process per test in parallel** | [`gate-builds-testmap`](design-gate-builds-testmap.md)<br>[Sketch](decision-gate-builds-testmap.md) | raddle | Raddle-Write | neve | 1h<br>8m | gate, testkit |
 
 #### Ready (0)
 
@@ -212,8 +219,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T16 | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | darn · light | Darn-Write | neve | 6d<br>7m | config, fabric |
-| T21 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | motif | Discussion-Write | neve | 6w<br>7m | board, ide, orch |
+| T16 | **config: per-machine or per-user branch_prefix, and a review of other per-user keys** | [`per-machine-branch-prefix`](design-per-machine-branch-prefix.md) | darn · light | Darn-Write | neve | 6d<br>8m | config, fabric |
+| T21 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | motif | Discussion-Write | neve | 6w<br>8m | board, ide, orch |
 
 #### Ready (1)
 
@@ -221,7 +228,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T22 | **Bench Code Mode on a darn writer doing a repeated edit** | [`code-mode-darn-bench`](design-code-mode-darn-bench.md) | darn · docs |  | 22h<br>7m | claude, shuttle |
+| T22 | **Bench Code Mode on a darn writer doing a repeated edit** | [`code-mode-darn-bench`](design-code-mode-darn-bench.md) | darn · docs |  | 22h<br>8m | claude, shuttle |
 
 #### Draft (2)
 
