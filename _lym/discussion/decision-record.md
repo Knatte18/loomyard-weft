@@ -2,8 +2,7 @@
 
 ## Goal
 
-Give the operator an interactive view of the board, with filters, opened from VS Code by one key instead of a typed lym command,
-and make the README easier to read on a phone in the GitHub app.
+Give the operator an interactive view of the board, with filters, opened from VS Code by one key instead of a typed lym command.
 
 ## Scope
 
@@ -15,7 +14,6 @@ In:
 - VS Code tasks `board open` and `beam start`, and two key bindings:
   `lym ide seed` and `lym ide spawn` write `board open` and the keys,
   and the hub workspace regeneration writes `beam start` through the ide module's workspace-content hook.
-- Collapsible Tasks, Notes and Done sections in every rendered board markdown file.
 
 Out:
 
@@ -40,7 +38,7 @@ The JSON is a view projection computed by the same code that builds the README, 
   and the design and decision file names when they exist.
 
 Timestamps are absolute; the viewer computes ages against the browser's clock.
-The JSON is encoded with Go's default HTML escaping, so a `<`, `>` or `&` in any field is written as its `<`-style unicode escape (`<`, `>`, `&`),
+The JSON is encoded with Go's default HTML escaping, so a `<`, `>` or `&` in any field is written as a JSON unicode escape, a backslash and `u` followed by the hex code `003c`, `003e` or `0026`,
 and a body holding `</script>` cannot end the script.
 
 Rationale: a projection keeps layering, handles, sections and project nesting in Go, where the README already computes them,
@@ -105,13 +103,15 @@ the case recurs on each board write by the older binary until that machine is up
 A new operator verb `lym board open` opens the hub's `board.html` in the default browser.
 
 - The board subtree's `PersistentPreRunE` (`internal/boardcli/cli.go`) resolves the `open` verb's cwd with `lymcwd.ResolveWithin`
-  instead of the `lymcwd.Resolve` it runs for the other board verbs, as a read-only verb may, so the verb runs from anywhere in a worktree.
-  From the resolved layout it loads the board config and sets the board directory as it does for the other board verbs,
-  so the subtree's `--board-path` flag points the verb at that directory's `board.html`;
-  the verb takes no argument of its own and opens no other file.
+  instead of the `lymcwd.Resolve` it runs for the other board verbs, as a read-only verb may,
+  so the verb runs from anywhere inside the worktree's anchored directory or its records sibling.
+  Without the subtree's `--board-path` flag, the board directory comes from the resolved layout, whose board config it loads as for the other board verbs.
+  `--board-path` bypasses resolution and config, and the verb opens `board.html` in that directory.
+  The verb takes no argument of its own and opens no other file.
 - When `board.html` is absent it refuses and starts nothing.
   The refusal names `lym board rerender` as the way forward and the worktree's anchored directory to run it from,
   since that verb keeps the strict resolution.
+  Under `--board-path` no worktree was resolved, so the refusal names `lym board rerender`, run from the anchored directory of a worktree of the hub.
   `lym board rerender` renders and syncs, so the file then exists and is committed.
 - The opener is a per-platform build file: `xdg-open <path>` on Linux, `rundll32 url.dll,FileProtocolHandler <path>` on Windows.
   The spawn is logged and waited on.
@@ -128,9 +128,9 @@ the same verb serves a terminal and the VS Code task.
 
 - `board open`, running the lym binary with `board open`, goes into every worktree's `.vscode/tasks.json` beside `reed attach`,
   written by `vscode.WriteConfig` from `lym ide seed` and `lym ide spawn`.
-  Its presentation sets `"reveal": "silent"`: the terminal stays hidden when the verb succeeds,
-  and comes forward when the verb fails with exit status 1, as D5's refusal and a failed opener do,
-  so their errors are seen; it does not take focus.
+  Its presentation sets `"reveal": "always"` and `"focus": false`:
+  the terminal shows the verb's output, so D5's refusal and a failed opener's error are seen, and it does not take focus.
+  The terminal panel therefore comes forward on every press, a successful one included.
 - `beam start` goes into the workspace files' `tasks` key, never into a folder's `tasks.json`, so a multi-root window holds exactly one:
   the hub's `<RepoName>.code-workspace` runs `lym beam start root` and each beam's `<RepoName>-<beam>.code-workspace` runs `lym beam start <beam>`,
   each with the prime's or that beam's anchor as its working directory.
@@ -139,10 +139,11 @@ the same verb serves a terminal and the VS Code task.
   `fabricengine` offers a general workspace-content seam, installed process-wide as `InstallPairFolderNamer` is.
   The installed hook is handed the hub path, the beam slug a workspace file belongs to (empty for the hub's own file) and that worktree's anchor path,
   and returns extra top-level members as raw JSON keyed by name.
-  `fabricengine.RegenerateHubWorkspace` splices them verbatim after `settings` and names no key itself,
-  so every caller of the regeneration writes them; with no hook installed a file carries no extra member.
-  A member named as a key the regeneration writes itself (`folders`, `settings` or the beam file's generated mark)
-  is a programmer error the regeneration returns, writing nothing.
+  `fabricengine.RegenerateHubWorkspace` reads only the members' names, to refuse one named as the beam file's generated mark, which fabric owns,
+  and passes the members on to `internal/vscode`, whose workspace builder behind `vscode.BuildWorkspace` splices them verbatim after `settings`.
+  Fabric so names no workspace key but its own mark, and every caller of the regeneration writes the members; with no hook installed a file carries no extra member.
+  The builder refuses a member named as a key it writes itself (`folders` or `settings`).
+  Either refusal is a programmer error the regeneration returns, writing nothing.
   `cmd/lym/main.go` installs the ide module's hook beside the pair folder namer;
   the hook builds the `tasks` member through `internal/vscode`.
 - Both commands run the absolute path `selfexec.LymBinary` returns in the writing process, through `ideengine.LymBinary`,
@@ -166,18 +167,6 @@ In a multi-root window several folders carry `board open`; every copy runs the s
 
 Rationale: tasks are the mechanism the `reed attach` binding already uses;
 a workspace-level `beam start` with an explicit slug starts the beam the window belongs to.
-
-### D7 — collapsible README sections
-
-In every rendered board markdown file (`README.md` and every `project-<slug>.md`), each project's Tasks, Notes and Done sections become `<details>` blocks
-with a `<summary>` holding the section name and count in bold.
-Tasks is open by default; Notes and Done are closed.
-The layer and note-type subsections inside stay headings.
-The README keeps its grouping by dependency layer and note type, and bodies stay in `design-<slug>.md`, linked from the slug as today.
-Area grouping is the viewer's area filter (D4), not a README grouping.
-
-Rationale: the entry asks for `<details>` blocks for the GitHub app, and the README already wraps each project in one;
-folding Notes and Done shortens the phone scroll to the running and ready work.
 
 ### Added after Discussion (arbiter, 2026-11-17): Per-body README folds are moot
 
@@ -203,11 +192,18 @@ Decision: The operator confirmed in chat (2026-11-17) that the prime's folderOpe
 
 Rationale: Both were changed on purpose after the old ide-prime-setup note was written (6b037083 dropped the open chain, b0e9f535 set the console window title), and the operator does not want them back.
 
+### Added after Discussion (arbiter, 2026-11-17): D6's workspace seam keeps the workspace schema in internal/vscode
+
+Decision: D6's third bullet as it now stands settles the round-2 fabric-boundary finding, and the task builds it as written. fabricengine.RegenerateHubWorkspace calls the installed workspace-content hook, reads only the returned members' names to refuse its own lym.generated mark, and hands the members on unread to internal/vscode. The workspace builder behind vscode.BuildWorkspace splices them after settings and refuses a member named folders or settings. Fabric names no VS Code workspace key besides the mark it already owns, and gains no knowledge of tasks, lym verbs or the lym binary. Do not move the splice or the folders and settings refusal back into fabric, and do not move the mark refusal into internal/vscode.
+
+Rationale: PATTERN-fabric-boundary says that a change touching fabric's existing internal/vscode import moves knowledge out and never extends it. Round 2's F2 fix asked for exactly this placement, and the round-2 fixer made it. In internal/fabricengine/hubworkspace.go, fabric already leaves the file's shape to vscode.BuildWorkspace and owns beamWorkspaceMark. Passing opaque members through that call adds no workspace-schema knowledge to fabric.
+
 ## Constraints
 
 - `PATTERN-cwd-resolution`: nothing is linked or junctioned into a worktree; the hub path is resolved in lym.
 - `PATTERN-fabric-boundary`: `fabricengine` gains no knowledge of tasks, verbs or the lym binary;
   `beam start` reaches the workspace files only through the general workspace-content seam of D6.
+  Fabric's existing `internal/vscode` import is not extended: the workspace file's key knowledge stays in `internal/vscode`.
 - `PATTERN-child-processes`: the opener spawn goes through `internal/logger` and is waited on.
 - `PATTERN-cli-cobra`: `lym board open` is a subcommand in the existing board cobra subtree.
 - `PATTERN-code-conventions`: `board.html`, `board-data.js` and the task labels are named constants;
@@ -222,17 +218,8 @@ Rationale: Both were changed on purpose after the old ide-prime-setup note was w
 - D4: the viewer groups like the README, not by the demo's Tasks/Bugs/Enhancements.
 - D4: ages are computed against the browser's clock.
 - D6: task labels `board open` and `beam start`; keys `alt+shift+9` and `alt+shift+0`.
-- D7: Notes and Done fold closed; Tasks stays open.
 
 ## Open risks
-
-- The entry's phone part asks for README sections grouped by type and area, with collapsible blocks per area and per body.
-  Landed work since then (`board-readme-per-project`, `af86384e`, `d54f5181`, `a99b3b4d`, `ffb53ae1`, `9cf88e2a`) groups tasks by dependency layer,
-  notes by type, and moves bodies to `design-<slug>.md`.
-  D7 builds collapsible sections over that structure; the parent confirms this reading of the phone goal, or asks for per-area grouping inside each project.
-- The entry's `Was ide-prime-setup` part is largely outdated by landed work:
-  console titles landed in `b0e9f535`, commit `6b037083` dropped the folderOpen chain, and nothing writes `launch.json`.
-  The record keeps only its tasks and keys; the parent confirms nothing else in that part is still wanted.
 
 ## Acceptance criteria
 
@@ -250,17 +237,18 @@ Rationale: Both were changed on purpose after the old ide-prime-setup note was w
   keeps only `http`, `https` and scheme-less relative links, renders `javascript:`, `data:`, `//host` and `/\host` targets as plain text,
   follows the colour scheme, and shows the `lym board rerender` line when the data is missing.
 - D5: `lym board open` with no `board.html` refuses naming `lym board rerender` and the anchored directory to run it from, and starts no process.
-- D5: `lym board open` run from a subdirectory of a worktree with `board.html` present hands the opener seam the absolute path of the hub's `board.html` and reports it.
+- D5: `lym board open` run from a subdirectory of a worktree's anchored directory with `board.html` present hands the opener seam the absolute path of the hub's `board.html` and reports it.
 - D5: an opener that fails surfaces its error naming the opener.
 - D6: seeding the prime, a beam and a task pair each writes `reed attach` and `board open` into the worktree's `tasks.json`, and none of them writes `beam start` there.
-- D6: the `board open` task's presentation sets `"reveal": "silent"`.
+- D6: the `board open` task's presentation sets `"reveal": "always"` and `"focus": false`.
 - D6: the hub workspace file holds one `beam start` task running `lym beam start root`, and a beam's workspace file holds one running `lym beam start <beam>`.
 - D6: a regeneration with no workspace-content hook installed writes workspace files with no `tasks` key.
 - D6: the keybindings block holds `alt+shift+0` running `beam start` and `alt+shift+9` running `board open`, and a second seed leaves exactly one of each.
-- D7: a rendered project section wraps Tasks in `<details open>` and Notes and Done in closed `<details>`, each summary naming the section and its count.
 
 ## Notes for the plan writer
 
+- The Added after Discussion entries name D7, the collapsible README sections of an earlier draft.
+  It was dropped once the parent answered that today's README serves the phone, so the task changes no README layout.
 - The README section names and order already live in the render code that builds `layerSection` and the Notes sections; the projection reads them from there.
 - `fabricengine.RegenerateHubWorkspace` writes the hub's and every beam's workspace file, rewriting each only when its bytes change;
   every caller of it, not only `lym ide seed`, runs the installed workspace-content hook.

@@ -55,11 +55,15 @@ All six lenses returned a report.
 - `fabricengine.RegenerateHubWorkspace` writing the `beam start` tasks itself: extends fabric's IDE knowledge, which `PATTERN-fabric-boundary` forbids.
 - The ide module writing the workspace files' `tasks` key after fabric's regeneration, preserved by fabric:
   a regeneration by any other caller, such as a fabric verb making a beam, would write a beam file with no `beam start` until the next seed.
+- Collapsible Tasks, Notes and Done sections in every rendered board markdown file (the former D7): dropped once the parent judged today's README good enough on the phone.
+- A `board open` task with `"reveal": "silent"`, relying on VS Code to reveal a failing task's terminal: that behaviour had no named source or release, so the task reveals always without focus.
 
 ## Review rounds
 
 - Round 1: fixed F1–F6 and F9–F15; F7 and F8 went to the parent as `decision` findings.
   `beam start` moved behind a general workspace-content hook (D6), and `lym board open` resolves with `ResolveWithin` in the board pre-run (D5).
+- Round 2: fixed F1–F7.
+  D7 and the phone goal are gone after the parent's answer, the workspace splice moved into `internal/vscode` (D6), and `board open` reveals always without focus.
 
 ## Question ledger
 
@@ -71,4 +75,5 @@ All six lenses returned a report.
 - Q6 Where `beam start` lives — auto-pick after the lens review: the hub and beam workspace files, with an explicit slug, so a multi-root window holds one.
 - Q7 Task labels and keys — auto-pick: `board open` and `beam start` after the `reed attach` style; `alt+shift+9` and `alt+shift+0` from the entry, clear of mill's `alt+shift+1` to `alt+shift+6`.
 - Q8 Phone README — auto-pick: collapsible Tasks, Notes and Done per project (D7); raised under Open risks for the parent, since the entry's area and body grouping is outdated by landed work.
+  Dropped in round 2 after the parent answered that today's README serves the phone.
 - Q9 `Was ide-prime-setup` items already landed — auto-pick: out of scope; raised under Open risks.
