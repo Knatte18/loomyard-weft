@@ -165,9 +165,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "redundant-candidates-check"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-09)\n\nThe coverage maps (`internal/testcover`, built by `lym gate test --map` since `b92c95ee`) record, per package, the blocks each tier 0 and tier 1 test covers.\nThe gate report (the advisory redundancy step of `lym gate test`, landed as `7f21142e`) judges only the new tests of a diff against the map;\nnothing yet uses the maps to find redundant tests that already exist.\nThe operator wants the existing ones cut, across the packages, not only kept from growing.\n\nThe survey `redundancy-confirmed-survey` (`53d40bd0`, report `docs/research/speed/redundancy-confirmed-survey-2026-11-16/report.md`)\nran the mutation-confirmed `lym gate redundant` over 121 packages:\n430 tests stay confirmed, 2.89 s of removable standalone time, and 27 of 30 sampled are false confirmations,\neach asserting something its covering tests do not.\nSo the list is a reading filter, never a verdict:\nthe cut is a test-quality cleanup that reads every confirmed candidate against its covering tests, not a speed task.\n\n## Idea\n\n1. A candidate list per package from `lym gate redundant \u003cpackage\u003e`, which omits `//testtiming:keep` and spawn-marked tests.\n2. Cut tasks on that list, each run delegating the per-test reading to subagents:\n   a candidate is cut or folded into another test only when its assertions add nothing the covering tests check.\n   The survey names what to look for first: absent side effects, persisted state, and inputs the covering tests do not feed.\n3. `internal/fabricengine` was swept by hand on 2026-11-08, so it comes last or not at all.\n4. Before judging a package, the sweep builds that package's map fresh in its own worktree with `lym gate test --map`,\n   since no landing keeps the maps fresh; spawn-marked tests are neither candidates nor covers.\n",
@@ -468,28 +466,6 @@
       "body": "Found by the map-tooling-trial.\n\nNothing in lym compares a map entry with a single-test coverage run.\nThe trial did it by hand: `lym gate test --wait ./internal/\u003cpkg\u003e -- -run '^\u003cTest\u003e$' -count=1 -coverprofile=\u003cabs path\u003e`, then counted covered blocks per file in the profile against the map's `blocks` of that test grouped by file.\nThat agreed for both `internal/durfmt` tests and for `TestOutputs`, `TestStoreValidatesLabelsWithVocabulary` and `TestWriteSiblings` of `internal/boardengine`.\n\nTwo limits:\n- The map's blocks carry file, function and hash but no line range, so the check is by count per file, not block by block.\n- The map's `funcs` list (functions of linked packages a test reaches) has no single-test counterpart in a statement profile, so it is unchecked.\n\nAdd a verb, or a `--map` option, that re-measures named tests alone and reports any block or function that differs, and give blocks a line range.\n",
       "created": "2026-11-17T15:01:51Z",
       "revised": "2026-11-17T15:01:51Z"
-    },
-    {
-      "id": 1435,
-      "handle": "T3",
-      "slug": "redundant-candidates-check",
-      "title": "Trial: check five lym gate redundant candidates by hand after the kill-count fix",
-      "kind": "task",
-      "labels": [
-        "research",
-        "gate",
-        "testkit"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (orch, 2026-11-17)\n\n`map-tooling-trial` (`a666e8b3`) found 14 candidates in `internal/boardengine` but checked none of them,\nand `redundant-timeout-not-kill` (`b904a1f8`) then stopped counting a timed-out or memory-capped mutant run as a kill and added an `unconfirmed` list.\nThe earlier survey found 27 of 30 sampled confirmations false. Before `redundancy-sweep-existing` relies on the list, the operator wants a few candidates checked (operator, 2026-11-17).\n\n## Idea\n\nA trial in the task's own worktree, with its report landed as a commit:\n\n- Build `internal/boardengine`'s map fresh with `lym gate test --map`, then run `lym gate redundant internal/boardengine` once.\n  Record wall time, peak memory, and the `candidates`, `unconfirmed` and `refuted` lists against the trial's 14 candidates.\n- Read five of the new candidates, picked across the list, against the tests that cover the same blocks,\n  and judge each: does it assert anything its covering tests do not (absent side effects, persisted state, inputs the others do not feed)?\n- Report how many of the five are true redundancies, with the assertion each false one adds.\n- Each defect found becomes its own note; the trial fixes nothing and deletes no test.\n\n## Cap\n\n- One package, one map build, one `lym gate redundant` run, five candidates read.\n- No model or effort choice: the report is written by the darn writer at its default model and effort.\n",
-      "status": "done",
-      "created": "2026-11-17T17:35:19Z",
-      "revised": "2026-11-17T17:35:19Z",
-      "profile": "docs"
     },
     {
       "id": 1436,
