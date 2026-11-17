@@ -775,16 +775,45 @@
       "spawnedAt": "2026-11-17T10:11:50Z",
       "sessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-owned-elsewhere-through-registry",
+        "status": "done",
+        "head_sha": "73db3dd108461052f48161ac2daec356240979f1",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/adoptcli/adopt.go",
+          "internal/battencli/owner.go",
+          "internal/beamcli/create.go",
+          "internal/beamcli/land.go",
+          "internal/loomcli/ownercheck_integration_test.go",
+          "internal/loomcli/pawlwiring.go",
+          "internal/orchcli/refusal.go",
+          "internal/orchcli/start_test.go",
+          "internal/pairteardown/originseams.go",
+          "internal/pairteardown/originseams_test.go",
+          "internal/pairteardown/runread.go"
+        ]
+      },
+      "cardShas": [
+        "73db3dd108461052f48161ac2daec356240979f1"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-ada6f38ee3b2521fd.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-ada6f38ee3b2521fd.jsonl"
+      ]
     }
   },
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "e7e489f4ae82479452af8e587574191e",
   "masterSessionId": "d32c0d70-2ae9-4871-b5ca-20112b8719f6",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-a76f5848f92ab3b8d.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-afe851529bbe29582.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-afe851529bbe29582.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-machine-registry-holds-catchup/d32c0d70-2ae9-4871-b5ca-20112b8719f6/subagents/agent-ada6f38ee3b2521fd.jsonl"
   ]
 }
