@@ -6,8 +6,8 @@
 - `internal/loomcli#TestRecipeKeyedWiring`
 
 **Create:**
-- `plan:internal/weaverengine#ArbiterNote` -> `func ArbiterNote(impl Implementer, anchorRoot string) string`
-- `plan:internal/weaverengine#TestArbiterNote` -> `func TestArbiterNote(t *testing.T)`
+- `internal/weaverengine#ArbiterNote`
+- `internal/weaverengine_test#TestArbiterNote`
 
 **Extends:**
 - `internal/weaverengine/doc.go`

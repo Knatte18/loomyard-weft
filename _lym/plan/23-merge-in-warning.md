@@ -1,9 +1,9 @@
 # Card 23 — merge-in-warning
 
 **Create:**
-- `plan:internal/weaverengine#RunInFlight` -> `func RunInFlight(anchorRoot string) (bool, error)`
-- `plan:internal/weaverengine#TestRunInFlight` -> `func TestRunInFlight(t *testing.T)`
-- `plan:internal/fabriccli_test#seedWeaverState` -> `func seedWeaverState(t *testing.T, h *hubforge.Hub, outcome string)`
+- `internal/weaverengine#RunInFlight`
+- `internal/weaverengine_test#TestRunInFlight`
+- `internal/fabriccli_test#seedWeaverState`
 
 **Edit:**
 - `internal/fabriccli#websterInFlightWarnings`

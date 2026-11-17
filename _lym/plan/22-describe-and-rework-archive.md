@@ -1,12 +1,12 @@
 # Card 22 — describe-and-rework-archive
 
 **Create:**
-- `plan:internal/loomshed#ReworkPriorWeaver` -> `const ReworkPriorWeaver = "weaver"`
-- `plan:internal/loomshed#ArchivedRunRecordDirs` -> `func ArchivedRunRecordDirs(reworkDir string) ([]string, error)`
-- `plan:internal/loomshed#TestArchivedRunRecordDirs` -> `func TestArchivedRunRecordDirs(t *testing.T)`
-- `plan:internal/loomcli#archiveRunRecords` -> `func archiveRunRecords(webster websterengine.Geometry, weaver weaverengine.Geometry) func(dest string) error`
-- `plan:internal/loomcli#activeRunRecordPath` -> `func activeRunRecordPath(active weaverengine.ActiveDeps) (string, error)`
-- `plan:internal/loomcli#TestImplementerRunRecords` -> `func TestImplementerRunRecords(t *testing.T)`
+- `internal/loomshed#ReworkPriorWeaver`
+- `internal/loomshed#ArchivedRunRecordDirs`
+- `internal/loomshed#TestArchivedRunRecordDirs`
+- `internal/loomcli#archiveRunRecords`
+- `internal/loomcli#activeRunRecordPath`
+- `internal/loomcli#TestImplementerRunRecords`
 
 **Delete:**
 - `internal/loomshed#ArchivedWebsterDirs`
