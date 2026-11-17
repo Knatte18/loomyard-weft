@@ -902,6 +902,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (orch, 2026-11-17)\n\nNo lym commit path refuses a secret file: `record-batch` and fabric's commit verbs commit whatever the agent staged.\nUnattended Codex and Claude sessions now commit on their own.\nSource: the survey F17 (`orchestrator-survey-ideas`), from ccswarm, which blocks `.env`, `*.pem`, `id_rsa`, `credentials*` and `secrets.y*ml`.\n\n## Idea\n\n- A Go check in `record-batch` and fabric's commit path refuses a commit that adds a path matching a deny-list of secret-file patterns.\n- The list ships with lym, and a hub may add patterns in its config.\n",
+      "status": "starting · Worktree-Create",
       "created": "2026-11-17T10:49:22Z",
       "revised": "2026-11-17T10:57:03Z",
       "profile": "light",
