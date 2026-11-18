@@ -513,7 +513,7 @@
       "id": 1500,
       "handle": "E1",
       "slug": "doc-go-trim-pass",
-      "title": "Trim the longest package doc.go files",
+      "title": "Trim every package doc.go of what is superfluous",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -522,10 +522,10 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "The comment rewrite did not shrink doc.go files: 27,301 lines in total; trim the largest, which restate the function docs",
-      "body": "## What was measured (2026-11-18, `comment-trim-second-pass`)\n\nProduction code has 103,762 comment lines against 268,614 code lines, a 27.9 % share.\nThe package `doc.go` files hold 27,301 of those comment lines; the comment rewrite last week did not shrink them.\nLargest: `fabricengine` 2,474, `websterengine` 1,284, `gatecli` 1,273, `reedengine` 1,174, `shuttleengine` 1,075.\nBy ratio to code: `orchengine` (27 %), `dobbyengine` (16 %), `landingshed` (13 %).\nThe full measurement is in the change description of that run, records commit `e1d2be8076` in `loomyard-weft`.\n\n## Idea\n\nA narrow pass on `doc.go` only: cut what restates the function docs, keep a package overview.\nStart with the largest by absolute size, then by ratio; the operator picks the packages.\n`fabricengine` and `landingshed` wait for the runs that change them now.\n",
+      "brief": "The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents",
+      "body": "## What was measured (2026-11-18, `comment-trim-second-pass`)\n\nProduction code has 103,762 comment lines against 268,614 code lines, a 27.9 % share.\nThe package `doc.go` files hold 27,301 of those comment lines; the comment rewrite last week did not shrink them.\nLargest: `fabricengine` 2,474, `websterengine` 1,284, `gatecli` 1,273, `reedengine` 1,174, `shuttleengine` 1,075.\nThe full measurement is in the change description of that run, records commit `e1d2be8076` in `loomyard-weft`.\n\n## Operator decision (2026-11-18)\n\nCut everything superfluous in every `doc.go`, not in a chosen set of packages.\nSuperfluous: text that restates the function or type docs, narrates how the code works step by step, repeats itself, or records history.\nWhat stays: a short package overview, the package's contracts and invariants, and a \"why\" where the code alone does not show it.\n\n## How the work is done (operator, 2026-11-18)\n\nThe writer fans the work out over many Agent-tool subagents on Sonnet at medium effort, each given a fixed small number of `doc.go` files,\nso no subagent's context grows large.\nThe writer sets the batch size by file length, splits the largest files (`fabricengine`, `websterengine`, `gatecli`) into a batch of their own,\nand checks each subagent's diff before committing.\nNo code changes; comments in other files are out of scope.\n",
       "created": "2026-11-18T20:11:01Z",
-      "revised": "2026-11-18T20:11:01Z",
+      "revised": "2026-11-18T20:13:20Z",
       "project": "code-cleanup"
     }
   ],
