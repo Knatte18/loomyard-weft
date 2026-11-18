@@ -1,6 +1,6 @@
 # C# hub: silent dotnet test exit, and runs failing in a hub with no tier0 or only inert changes
 
-`csharp-hub-gate-fixes` · Task · bug, dotnet, process, gate, config · running · Code-Burler-Review
+`csharp-hub-gate-fixes` · Task · bug, dotnet, process, gate, config · running · Code-Burler-Fix
 
 Two bugs met in the C# hub, bundled because both sit in the gate and its guard around a hub test command.
 
