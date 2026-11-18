@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 13:32 UTC; every age below is as of then.
+Rendered 2026-11-18 13:34 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -48,7 +48,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **lym gate redundant fails on an uncompilable mutant; a map build exits 1 on Windows-only tests**<br>• Keep a literal mutant type-correct, survive an unbuildable mutant, and leave platform-only tests out of failed_tests<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-check-fixes`](design-redundant-check-fixes.md) | darn · light | Darn-Write | neve | 22h<br>40m | gate, testkit |
+| T1 | **lym gate redundant fails on an uncompilable mutant; a map build exits 1 on Windows-only tests**<br>• Keep a literal mutant type-correct, survive an unbuildable mutant, and leave platform-only tests out of failed_tests<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-check-fixes`](design-redundant-check-fixes.md) | darn · light | Darn-Write | neve | 22h<br>42m | gate, testkit |
 
 #### Ready (0)
 
@@ -62,7 +62,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid | T1 | 8d<br>40m | testkit, gate |
+| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid | T1 | 8d<br>42m | testkit, gate |
 
 ### Notes (0)
 
@@ -79,22 +79,21 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (2)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review** | [`review-result-checks`](design-review-result-checks.md)<br>[Sketch](decision-review-result-checks.md) | tapestry · solid | Parent-Align | neve | 3h<br>2h | stencil, drift, fabric, burler, landing, loom, shed, testkit, docs |
+| T4 | **Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review** | [`review-result-checks`](design-review-result-checks.md)<br>[Sketch](decision-review-result-checks.md) | tapestry · solid | Parent-Align | neve | 3h<br>3h | stencil, drift, fabric, burler, landing, loom, shed, testkit, docs |
+| T5 | **The per-process memory cap sometimes does not hold, and a runaway process takes the machine down**<br>• RunMemoryCappedVia lets a child keep 384 MB under a 128 MB cap on some runs; find why, fix it, prove it on repeated runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`memory-cap-not-enforced`](design-memory-cap-not-enforced.md) | darn · solid | starting · Worktree-Create | neve | 3m<br>3m | process, gate |
 | T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Webster | neve | 3h<br>2h | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T5 | **The per-process memory cap sometimes does not hold, and a runaway process takes the machine down**<br>• RunMemoryCappedVia lets a child keep 384 MB under a 128 MB cap on some runs; find why, fix it, prove it on repeated runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`memory-cap-not-enforced`](design-memory-cap-not-enforced.md) | darn · solid |  | 0m<br>0m | process, gate |
+_None._
 
 #### Draft (1)
 
@@ -120,7 +119,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 1h<br>1h | landing |
-| E4 |  | **The Plan writer explorer forks cost more than the writer and show no gain**<br>• Drop the Plan writer exploration subagents; they cost about $6.50 per tapestry run | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | 1h<br>51m | loom, stencil |
+| E4 |  | **The Plan writer explorer forks cost more than the writer and show no gain**<br>• Drop the Plan writer exploration subagents; they cost about $6.50 per tapestry run | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | 1h<br>53m | loom, stencil |
 
 #### Features (3)
 

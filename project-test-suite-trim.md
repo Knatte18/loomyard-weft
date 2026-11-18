@@ -1,6 +1,6 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-18 13:32 UTC; every age below is as of then.
+Rendered 2026-11-18 13:34 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-suite-trim`](design-test-suite-trim.md) · Age 8d · Owner `neve`
@@ -36,7 +36,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **lym gate redundant fails on an uncompilable mutant; a map build exits 1 on Windows-only tests**<br>• Keep a literal mutant type-correct, survive an unbuildable mutant, and leave platform-only tests out of failed_tests<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-check-fixes`](design-redundant-check-fixes.md) | darn · light | Darn-Write | neve | 22h<br>40m | gate, testkit |
+| T1 | **lym gate redundant fails on an uncompilable mutant; a map build exits 1 on Windows-only tests**<br>• Keep a literal mutant type-correct, survive an unbuildable mutant, and leave platform-only tests out of failed_tests<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-check-fixes`](design-redundant-check-fixes.md) | darn · light | Darn-Write | neve | 22h<br>42m | gate, testkit |
 
 ### Ready (0)
 
@@ -50,7 +50,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid | T1 | 8d<br>40m | testkit, gate |
+| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid | T1 | 8d<br>42m | testkit, gate |
 
 ## Notes (0)
 
