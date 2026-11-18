@@ -389,6 +389,24 @@
       "created": "2026-11-18T16:44:29Z",
       "revised": "2026-11-18T16:44:29Z",
       "profile": "docs"
+    },
+    {
+      "id": 1475,
+      "handle": "F2",
+      "slug": "fabric-single-repo-mode",
+      "title": "Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside",
+      "body": "## What was seen\n\nEvery hub today needs two repositories: the warp (the code) and the weft (the piggyback repo that holds lym's housekeeping),\nwith `_lym` and `.lym` in each worktree as junctions into the weft.\nFor smaller work the operator wants lym's orchestration (creel, board, reed, runs) without setting up a second repository.\nThe warp/weft split is meant to be invisible from outside fabric, which this mode can use.\n\n## Idea (operator, 2026-11-18)\n\nA single-repo (\"monorepo\") mode: `_lym` and `.lym` are real directories in the warp repository, not junctions.\nEverything outside fabric looks and behaves the same; only fabric knows where the weft lives.\n\n## Open questions for its Discussion\n\n- How housekeeping commits stay apart from code commits: separate commits on the same branch, a separate orphan branch in the same repo, or a ref namespace.\n- What a landing does with `_lym` and `.lym`: excluded from the PR and the merge to the parent, or carried.\n- Which parts of today's weft (records branch, board, per-task branches, push transport) need a single-repo counterpart.\n- Whether code outside fabric assumes the split anywhere, which the invisibility promise rules out.\n\n## Relation\n\nThe operator finds `fabricengine` disproportionately large for its job (36,000 production lines, about 1,100 functions;\n`docs/research/rewrite/shrink-estimate-2026-11-18/report.md`) and wants this mode taken in if fabricengine is rewritten (note `clean-room-module-rewrite`).\n",
+      "created": "2026-11-18T17:14:29Z",
+      "revised": "2026-11-18T17:14:29Z"
     }
   ],
   "prime_owner": "neve",
