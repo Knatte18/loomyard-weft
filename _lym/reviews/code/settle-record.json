@@ -1,0 +1,13 @@
+{
+  "subject": {
+    "kind": "code",
+    "merge_base": "64e587958feacd8940304401801c039f015c63af",
+    "head": "64e587958feacd8940304401801c039f015c63af",
+    "full_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "base": "64e587958feacd8940304401801c039f015c63af",
+  "generation": 1,
+  "round": 0,
+  "settled_at": "2026-11-18T20:07:53Z",
+  "settled": true
+}
