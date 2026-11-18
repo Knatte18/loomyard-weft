@@ -1,0 +1,20 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Land",
+    "history_length": 7,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-18T11:09:20.603205378+01:00",
+  "deadline": "2026-11-18T11:19:20.603205378+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/shuttle-start-idle-and-prompt/drive-reports/drive-envelope-20261118-110920-8bb6.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/shuttle-start-idle-and-prompt/drive-reports/drive-report-20261118-110920-a127.md",
+  "strand_guid": "57f1b0951354389aca29227f5531a65e"
+}

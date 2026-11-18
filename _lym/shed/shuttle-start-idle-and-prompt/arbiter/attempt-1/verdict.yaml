@@ -1,0 +1,19 @@
+verdict: resume
+reason: |-
+  The stop is a race on the prime's shared records worktree, not an ended entry, and a plain re-launch of Land is safe.
+  Three runs on the prime commit to and push the shared branch main-weft in loomyard-weft.
+  This run's Land step created the status commit aa13796e at 11:09:17.639 (trace b8f7fbdbc337191a).
+  Run leftover-strands-and-runs (trace a22a28b5c65d9711) then committed 15c0ddfb on the same branch at 11:09:19.695 and pushed it at 11:09:22.995.
+  The pair push's pushRecordsSide (internal/fabricengine/pushanchored.go) got nil from the push, then ran HasUnpushed.
+  That check saw the other run's new commit 15c0ddfb not yet pushed, so it fell through to recordsSideNotLanded.
+  recordsSideNotLanded reports "ended on origin" as its fallback whenever no fresh deferred record is found.
+  The ended-entry check in checkOrigin/awaitOrigin applies only to a branch gone from origin.
+  main-weft is present on origin, at 15c0ddfb (git ls-remote), so the message is a fallback, not a real ended entry.
+  aa13796e is an ancestor of origin's main-weft, so this run's commit has landed and nothing of the run is stranded.
+  The local branch is now ahead by one commit, f5681c2d, which another run made; the next records push carries it.
+  Land failed at its opening status push, before pulling the prime, deploying or pruning, so re-running Land redoes no partial work.
+  The run is already at the Land row, so no goto is needed.
+  The misleading fallback message in fabricengine is outside this task's scope (shuttle prompt delivery), so I made no fix and no commit.
+verbs:
+  - |-
+    lym board get '{"slug":"shuttle-start-idle-and-prompt"}'
