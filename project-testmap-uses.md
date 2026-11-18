@@ -1,9 +1,9 @@
 # P3 Put the per-test coverage maps to use
 
-Rendered 2026-11-18 18:04 UTC; every age below is as of then.
+Rendered 2026-11-18 18:05 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`testmap-uses`](design-testmap-uses.md) · Age 0m · Owner `neve`
+[`testmap-uses`](design-testmap-uses.md) · Age 1m · Owner `neve`
 
 The reach note, the diff mutation check and failure triage, built on one reader of the maps
 
@@ -34,6 +34,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F4 |  | **Reach note for a diff: the tests reaching each changed function, and changed functions nothing reaches**<br>• A reader of the coverage maps feeds the code review and a read verb for writers; uses 1 and 3 of the map study read through it | [`testmap-reach-note`](design-testmap-reach-note.md) | 5m<br>0m | testmap, gate, burler |
-| F5 |  | **Mutation check of the code a diff changes, survivors to the code review**<br>• Mutate only the blocks a diff adds or changes, run only the tests covering each, report surviving mutants; start with a hand trial over about twenty landed diffs | [`testmap-diff-mutation`](design-testmap-diff-mutation.md) | 5m<br>0m | testmap, gate, burler |
-| F6 |  | **Failure triage: does a failing test reach what the run changed**<br>• The gate failure report and the fixer brief say which changed functions a failing test reaches, or that it reaches none, so a not-my-fault failure is seen at once | [`testmap-failure-triage`](design-testmap-failure-triage.md) | 5m<br>0m | testmap, gate, darn |
+| F4 |  | **Reach note for a diff: the tests reaching each changed function, and changed functions nothing reaches**<br>• A reader of the coverage maps feeds the code review and a read verb for writers; uses 1 and 3 of the map study read through it | [`testmap-reach-note`](design-testmap-reach-note.md) | 6m<br>0m | testmap, gate, burler |
+| F5 |  | **Mutation check of the code a diff changes, survivors to the code review**<br>• Mutate only the blocks a diff adds or changes, run only the tests covering each, report surviving mutants; start with a hand trial over about twenty landed diffs | [`testmap-diff-mutation`](design-testmap-diff-mutation.md) | 6m<br>0m | testmap, gate, burler |
+| F6 |  | **Failure triage: does a failing test reach what the run changed**<br>• The gate failure report and the fixer brief say which changed functions a failing test reaches, or that it reaches none, so a not-my-fault failure is seen at once | [`testmap-failure-triage`](design-testmap-failure-triage.md) | 6m<br>0m | testmap, gate, darn |
