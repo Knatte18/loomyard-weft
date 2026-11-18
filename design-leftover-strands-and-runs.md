@@ -1,6 +1,6 @@
 # Leftover strands and shuttle runs halt a gate re-prompt and a re-step
 
-`leftover-strands-and-runs` · Task · bug, gate, shuttle, reed, shed · running · Drift-Await
+`leftover-strands-and-runs` · Task · bug, gate, shuttle, reed, shed · running · Drift-Expect
 
 Depends on: [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md)
 
