@@ -1,0 +1,1 @@
+Review segment of task `claude-accounts-per-worktree` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/claude-accounts-per-worktree/_lym/reviews/plan/round-3-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept claude-accounts-per-worktree".
