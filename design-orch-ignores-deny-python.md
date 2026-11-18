@@ -1,6 +1,6 @@
 # lym orch launches keep the python guard although deny_python is false
 
-`orch-ignores-deny-python` · Task · bug, orch, shuttle, config · running · Darn-Write
+`orch-ignores-deny-python` · Task · bug, orch, shuttle, config · running · Drift-Verify
 
 ## Seen (odd hub orch, 2026-11-18, by creel)
 
