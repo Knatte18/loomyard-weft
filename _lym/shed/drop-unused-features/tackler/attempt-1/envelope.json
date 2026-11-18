@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The stop is a blocked Worktree-Create caused by a board push race, not by a fault in the run. The push of board commit 090e157 was refused with \"remote rejected: is at 090e157 but expected 9de29fe\". The expected value was the stale local tracking ref. Commit 090e157 is an ancestor of origin/main (git merge-base --is-ancestor, exit 0), so its content reached origin. Other sessions push the board constantly, and the driver's detached board sync pushed later board commits to origin/main between 21:05:24 and 21:05:43. The stop names the fix: run lym board sync, then re-run the verb. That is a plain re-launch, which I may not run myself. I did not confirm the board is clear at the moment of this verdict, because other syncs keep moving origin/main. Risk: the task branch drop-unused-features is absent from origin and locally, and the task worktree is not present, although the durable status says the pair was already created. If the re-run finds no live branches, the resume will stop naming the restore of each branch; that stop should be judged fresh, not resumed again.",
+  "question": "",
+  "goto": "Worktree-Create",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/drop-unused-features/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/drop-unused-features/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
