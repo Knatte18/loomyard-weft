@@ -333,32 +333,6 @@
       "profile": "light"
     },
     {
-      "id": 1450,
-      "handle": "T1",
-      "slug": "code-review-result-checks",
-      "title": "Code-Review lets result-level issues through to PR-Review",
-      "kind": "task",
-      "labels": [
-        "sketch",
-        "burler",
-        "stencil",
-        "drift"
-      ],
-      "issues": [
-        139
-      ],
-      "recipe": "raddle",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #139](https://github.com/Knatte18/loomyard/issues/139).\n\n## Seen\n\nA darn run (profile solid) passed Code-Review and reached PR-Review with substantive findings left: 17 items, of which the main ones were about results, not code.\n\n- Test limits widened 10-30x without a named cause, so a golden test no longer checked the behaviour its name states (steady turning).\n- Model departures kept on the strength of measurements the change itself had made obsolete.\n- A set-up difference between the model and its reference (one side had a fluid torque the other lacked) that the description presented as agreement.\n- No before and after figures for the comparison the task existed to move.\n\nThe PR-Review agent then has to make a full measuring and fixing round, which PR-Review is not meant for: at PR time only small things should remain.\n\n## Why Code-Review missed it\n\nThe code reviewer reads the diff against the task and checks code quality and correctness.\nIt is not told to check that assertions, tolerances and measured claims in the change still hold together, and a widened limit in a test looks like an ordinary edit.\n\n## Idea\n\n1. Add result checks to the code reviewer's brief in every recipe, generic across hubs:\n   - a widened assertion, tolerance or limit names its measured cause, or is a finding;\n   - a test whose limits changed still checks what its name and doc state;\n   - a claim of agreement with a reference or of an improvement carries before and after figures in the change description.\n   Domain rules, such as \"a kept departure from a reference model is measured on the current code\", belong in the repository's PATTERN, which reviewers already get.\n2. Drift compares results before and after, but a test whose limits are widened in the same change passes on both sides, so drift sees nothing.\n   Let Drift also flag every assertion, tolerance or limit the change widens or removes in an existing test, and require a stated measured cause for each, as it does for a moved baseline value.\n3. When PR-Review findings are more than small (by count or by a severity the reviewer gives), send the run back to Code-Review / Code-Burler instead of having the PR-Review agent fix them, and record that the earlier review missed them, so the miss is visible.\n",
-      "status": "done",
-      "created": "2026-11-18T08:07:55Z",
-      "revised": "2026-11-18T09:54:45Z",
-      "discussed": true,
-      "record_body_sha256": "2d98d94aa61d6562789a8ffa80becf8bf962cae41e3bfb5aff2a5252b31a2a9d"
-    },
-    {
       "id": 1458,
       "handle": "T6",
       "slug": "leftover-strands-and-runs",
