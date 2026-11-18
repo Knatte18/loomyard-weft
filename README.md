@@ -97,11 +97,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (12)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (15)</strong></summary>
 
 Owner `neve`
 
-### Tasks (4)
+### Tasks (7)
 
 Concrete and claimable; only a task can run.
 
@@ -120,7 +120,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (2)
+#### Draft (5)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -128,6 +128,9 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-disc-with`](design-wxb-disc-with.md) | tapestry |  | 0m<br>0m |  |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 1d<br>23h | board, ide, fabric |
+| T4 | `draft` **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-disc-without`](design-wxb-disc-without.md) | tapestry |  | 0m<br>0m |  |
+| T7 | `draft` **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-with`](design-wxb-plan-with.md) | tapestry |  | 0m<br>0m |  |
+| T8 | `draft` **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-without`](design-wxb-plan-without.md) | tapestry |  | 0m<br>0m |  |
 
 ### Notes (8)
 
