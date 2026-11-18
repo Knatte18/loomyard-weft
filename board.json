@@ -429,6 +429,27 @@
       "body": "Imported from [issue #145](https://github.com/Knatte18/loomyard/issues/145).\n\n## Seen\n\nWhile a darn run's Drift-Verify judge session was running, the parent recorded a decision with `lym loom decision add \u003cslug\u003e --by parent`.\nThe verb committed `_lym/discussion/decision-record.md` on the records side.\nWhen the judge finished, the run halted with `decision halt: the judge session changed what it may not: records: ... decision-record.md was changed`.\nThe judge had not touched the file; the parent's own verb had.\n\n## Workaround\n\nThe parent restored the record to the snapshot HEAD in the records worktree (`git checkout \u003csnapshot head\u003e -- .../decision-record.md`), deleted the capture's scratch directory, ran `lym loom resume`, and records the decision again after Drift-Verify ends.\n\n## Expected\n\n`lym loom decision add` is either refused while a drift judge session runs, naming when to retry, or its commits are excluded from the judge's snapshot check.\n",
       "created": "2026-11-18T08:07:43Z",
       "revised": "2026-11-18T08:07:43Z"
+    },
+    {
+      "id": 1446,
+      "handle": "B2",
+      "slug": "twill-fixer-fork-writes",
+      "title": "Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "burler",
+        "lenses"
+      ],
+      "issues": [
+        144
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #144](https://github.com/Knatte18/loomyard/issues/144).\n\nWhat happened: a loom run halted failed at the Code-Burler-Fix producer (anomaly producer-hard-failure) in round 1 attempt 1. The shedadapters guard reported that the burler twill fixer fork attempted 5 write/edit tool calls, and that a fork must never mutate a file. Way forward named by lym: inspect the target's working-tree changes, revert what the fork wrote, and resume the run. The preceding Code-Bouncer and Code-Burler-Review rows were both recorded as stuck.\n\nWhy it is abnormal: the fix round is the step meant to apply review findings, yet the fork it spawns is forbidden to write, and the fork tried anyway. Either the fixer fork's brief does not tell it that it is read-only and where to hand its fixes (so it reaches for Edit/Write), or the fix round routes work to a fork that should have been a writing session. Either way an ordinary run ends in a hard failure that needs manual revert-and-resume, and the writes may already have touched the working tree.\n\nWhat to do: make the Code-Burler-Fix fork's prompt state the no-mutation contract and the channel for returning fixes, or run the fixer as a session allowed to write; and consider having the guard block or revert the fork's writes itself, or retry the attempt once with a corrective message, instead of failing the whole run.\n\nProvenance: task slug leftover-pairs-teardown; note file loom-halt.md.",
+      "created": "2026-11-18T08:07:46Z",
+      "revised": "2026-11-18T08:07:46Z"
     }
   ],
   "prime_owner": "neve",
