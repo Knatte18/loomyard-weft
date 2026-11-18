@@ -1,6 +1,6 @@
 # Code-Review lets result-level issues through to PR-Review
 
-`code-review-result-checks` · Note · enhancement, burler, stencil, drift
+`code-review-result-checks` · Task · enhancement, burler, stencil, drift · draft
 
 Imported from [issue #139](https://github.com/Knatte18/loomyard/issues/139).
 

@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (7)
+## Tasks (9)
 
 Concrete and claimable; only a task can run.
 
@@ -26,7 +26,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (6)
+### Draft (8)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -37,9 +37,11 @@ Not released; nothing starts it until its status is cleared.
 | T5 | `draft` **Shuttle start: idle check misses an idle prompt, and a review strand misses its prompt turn**<br>• Two seat start bugs in shuttle prompt delivery<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md) | darn · solid |  | 48m<br>0m | shuttle, burler |
 | T6 | `draft` **Leftover strands and shuttle runs halt a gate re-prompt and a re-step**<br>• Gate re-prompt to an untracked strand, and a re-step tripping on a leftover shuttle run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`leftover-strands-and-runs`](design-leftover-strands-and-runs.md) | darn · solid |  | 48m<br>0m | gate, shuttle, reed, shed |
 | T7 | `draft` **C# hub: silent dotnet test exit, and runs failing in a hub with no tier0 or only inert changes**<br>• Make a refused dotnet test say so; let a hub with no tier0 or an all-inert change run and land<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`csharp-hub-gate-fixes`](design-csharp-hub-gate-fixes.md) | darn · solid |  | 48m<br>0m | dotnet, process, gate, config |
-| T8 | `draft` **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure** | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | darn |  | 48m<br>48m | burler, lenses |
+| T8 | `draft` **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | darn · light |  | 48m<br>0m | burler, lenses |
+| T9 | `draft` **Agents must never build or check out a repository under .scratch, .lym or _lym**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | darn · light |  | 48m<br>0m | stencil |
+| T10 | `draft` **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md) | motif |  | 48m<br>0m | burler, stencil, drift |
 
-## Notes (8)
+## Notes (7)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -60,13 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B5 |  | **Agents must never build or check out a repository under .scratch, .lym or _lym** | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | 48m<br>30m | stencil |
-
-### Enhancements (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| E2 |  | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md) | 48m<br>48m | burler, stencil, drift |
+| B1 |  | **selfreport -b takes a file path as the body text, losing the report**<br>• An agent passed a file path to -b and the issue body became the path | [`selfreport-body-path-as-text`](design-selfreport-body-path-as-text.md) | 0m<br>0m | selfreport |
 
 ### Features (3)
 
