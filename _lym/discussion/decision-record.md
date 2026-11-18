@@ -91,6 +91,12 @@ Decision: Design against the pair base f98a1ba0 as it stands; do not align with 
 
 Rationale: This run is a bench arm; both arms must work from the same base so they compare like for like.
 
+### Added after Discussion (arbiter, 2026-11-18): Redesign from this arm's base without reconciling with 7c23591
+
+Decision: This record designs the fix from this worktree's base f98a1ba0 and does not reconcile with parent commit 7c23591 ("Show a beam's pawl checklist in a second overview window"); D1 to D4 stand as written. The Open risks bullet on 7c23591 is answered by this decision and is dropped from the record; Plan and implementation read no code from 7c23591.
+
+Rationale: The board entry marks this task a bench arm of plan-writer-explorer-forks, never to be released. That beam's entry runs each arm from the reference run's frozen inputs and the base commit it started from, so reconciling with a later commit would change the bench's inputs. Settling this narrows nothing and widens no scope.
+
 ## Constraints
 
 - `PATTERN-shed-driver`: the seed and status file paths come from `internal/shedrun` only.
