@@ -658,9 +658,25 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/9142bc6e-f406-4b6c-8882-b8da16176a9c/subagents/agent-a520ada7971375532.jsonl"
       ]
+    },
+    "7": {
+      "slug": "known-config-dirs",
+      "cards": [
+        "07-known-config-dirs"
+      ],
+      "cardHashes": {
+        "07-known-config-dirs": "baa7103744ed746ff06fb6b8d0b12711e3d46550fe6ac5842632dfe2aad764e2"
+      },
+      "startSha": "7fdad554599c1de7dd127990b341fa5e4c8fcccc",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T15:23:01Z",
+      "sessionId": "9142bc6e-f406-4b6c-8882-b8da16176a9c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "135b8cd51e8ec48e4fd912379752b134",
   "masterSessionId": "9142bc6e-f406-4b6c-8882-b8da16176a9c",
   "masterEngine": "claude",
