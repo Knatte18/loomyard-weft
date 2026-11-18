@@ -3,41 +3,56 @@ lens: code-affected-set
 outcome: reported
 ```
 
-Lens: code-affected-set. For each change the diff makes, I traced what reads, calls, asserts or describes it, and judged whether the diff leaves that set correct.
+Lens: code-affected-set. I traced what each change in `71d6ee1a..HEAD` forces outside the lines it touches.
 
-**What each change reaches, and whether it is covered**
+**Per change, the set found and whether it is covered**
 
-1. **The python row is now installed in every launch, and its notice is decided separately** (claudeengine `shellSwitchInstalled`/`shellSwitchAnnounced`, codexengine `switchInstalled`/`switchAnnounced`).
-   - Covered: `buildDenyNotice`, `denyNotice`, both `manifest.go` notice and guard candidates (which read the artifacts as written), `codexengine.go` Prepare, the init() panic guard, the manifest tests, `settings_test.go`, `guards_test.go`, `prepare_test.go`, `usersetup_test.go`, the settings golden, `docs/overview.md:683`, both engines' `doc.go`, `shellguard/doc.go:50`, the `config.go` field doc and the `template.yaml` comment.
-   - Also checked and still correct: `shuttleengine/doc.go:75`, `spec.go:80` ("toggleable"), `claudeengine/doc.go:544`, `languageconfig/doc.go:36`, and the `pythonRefusal` steer in `shellguard/rows.go:79` (its way forward, "set deny_python: false", still holds).
-   - Left wrong: `shellguard/rows.go:21` (`SwitchDenyPython` doc) and `configcli/configcli.go:484` (help text). See F1 and F2.
-2. **New hidden verb `hook-python-allowed` and the `PythonAllowedHookVerb` constant.**
-   - Covered: the `shuttlecli/cli.go` pre-run skip and `AddCommand`, the `cli.go` file header, `engine.go`, both engines' hook commands, `docs/overview.md`, `hookpython_test.go`, and both hook-run tests.
-   - Nothing else registers or lists its sibling hidden hook verbs. A search for `hook-edit` and `EditHookVerb` found only the same set of places.
-3. **Hook commands that call bare `lym`.**
-   - The `selfexec.LymBinary` rule in `PATTERN-child-processes` guards against re-executing the test binary.
-   - The existing hooks (`editrecord.go`, `batchingnudge.go` and the creel hooks) already call bare `lym` from a hook, so this is no finding.
-4. **The `guardInputs` field doc and the `installedGuards` panic.**
-   - The field doc and the function doc are updated.
-   - The panic message is not. See F3.
-5. **Repository rules.**
-   - `PATTERN-shell-guard-table` (every engine renders every row) still holds.
-   - `PATTERN-refusal-way-forward` lists `python` only as a denied form, which is unchanged.
-   - `PATTERN-config-layers`: the meaning of `deny_python` (deny or allow) is unchanged, so no reinterpretation is needed. `deny_python` is `CategoryGuard`, so it is closed to the local layer, and the verb's `LoadConfig` respects that.
-   - No PATTERN changes are declared, and no `Pattern-Departure:` trailers appear in the range's commits.
-   - The commit messages match the diff.
+1. **Python row always installed on Claude and Codex** (`shellSwitchInstalled`, `switchInstalled`). This also covers Claude's new `announced` predicate and Codex's `denyNotice(…, in)` signature.
+   - Callers: `codexengine.go:168-179` covered; the `wantCreelHead` and `denyNotice` call sites in `prepare_test.go` and `usersetup_test.go` covered.
+   - Tests:
+     - the manifest tests (`manifest_test.go` in both engines) are covered: the `switched` var at claude :109 and codex :75 is still used only for the every-switch row, where the python row is present, so it is still right;
+     - `TestBuildSettings_DenyToggleMatrix`, `TestBuildSettings_NoAgentHookAndForkGuard` and the `TestPrepare_WritesArtifactsAndReturnsConsistentLaunch` counts are covered;
+     - `TestBuildDenyNotice_MatchesInstalledDenies`, `TestInstalledGuards_CoverEveryRow` and `TestGuardEntries_RenderEveryRowWithItsCodexText` are covered;
+     - the golden `settings-golden.json` is regenerated: covered.
+   - Docs:
+     - claudeengine `doc.go` covered;
+     - codexengine `doc.go` covered;
+     - shellguard `doc.go` and `rows.go` covered;
+     - `shuttleengine/config.go` covered;
+     - `template.yaml` covered;
+     - `docs/overview.md:683` (Claude paragraph) covered;
+     - `docs/overview.md:717` (Codex paragraph) **not covered**, see F1;
+     - `internal/shuttleengine/spec.go:79-80` still says "toggleable via … deny_python". That remains true of the deny's effect, so it is not a finding.
+   - The refusal text `pythonRefusal` (`rows.go:81`) names `deny_python: false` as the way forward. It is still correct, and now takes effect live. Covered.
+2. **New hidden verb `hook-python-allowed`** (`PythonAllowedHookVerb`, `hookpython.go`, the `cli.go` skip list and `AddCommand`).
+   - PATTERN-cli-cobra:
+     - the audience is `internal` and the command is `Hidden`: covered;
+     - the lower-case `Short` has no final period: covered;
+     - `RunE` checks `ShouldAbort` first: covered;
+     - errors go through `output.Err`: covered;
+     - the `Long` cap is fixed per commit `ac646ddc`: covered.
+   - Standalone wiring goes only through `cliwire`, and `standalonestate.Derive` is called only in `cliwire` (`standalone.go:55-58`): covered.
+   - PATTERN-cwd-resolution: `ResolveWithin` is called by a read-only verb a session runs: covered.
+   - PATTERN-config-layers: the config loads through `shuttleengine.LoadConfig`, which goes through configengine: covered.
+   - PATTERN-test-only-code: `StandaloneStateDir` has a production caller: covered.
+   - Tests: `hookpython_test.go` and `hookpython_standalone_test.go` cover it.
+3. **Hook commands that name the lym binary** (`pythonAllowedCheck` in both engines): see F2.
+4. **configcli help line** (`configcli.go:484`). `internal/configcli/doc.go:13` says the help names the switch's effect on "both the hook and the system-prompt sentence". The new line says it "lets Python through and drops the notice at launch", so the doc still holds. Covered.
+5. **The `shellguard.SwitchDenyPython` doc comment.** No other reader asserts the old text. Covered.
+6. **Commit messages.** No `Pattern-Departure:` trailer appears in the range, and the directive declares no PATTERN changes. Nothing to check.
 
 **Findings**
 
-- **F1 — LOW, consistency.** At `internal/shellguard/rows.go:21`, the `SwitchDenyPython` doc still reads "marks the row the python switch of the shuttle config turns off". The row is now installed in every run, and the switch only decides the hook's live answer and whether the notice appears at launch. The diff updated the same claim in `shellguard/doc.go:50` but left this one. Evidence: `internal/shellguard/rows.go:21`, and `claudeengine/settings.go` `shellSwitchInstalled` (`SwitchDenyPython` returns true).
-- **F2 — LOW, consistency.** At `internal/configcli/configcli.go:484`, the user-facing `lym config` help says "Python guard off for a hub (hook and notice)". Setting `deny_python=false` no longer removes the hook. The installed hook now lets Python through on its next call, and the notice is dropped only for sessions launched afterwards. Evidence: `internal/configcli/configcli.go:484-485`, and `template.yaml`'s new `deny_python` comment.
-- **F3 — NIT, consistency.** At `internal/shuttleengine/codexengine/guards.go`, `installedGuards` now panics when a switch is missing from either `switchInstalled` or `switchAnnounced`. Its message still says only "so the row would stay uninstalled", although the updated doc comment says "uninstalled or unannounced". Claude has a separate message for the announced case (`claudeengine/settings.go` init, "would stay unannounced"). Evidence: the diff hunk at `codexengine/guards.go` around lines 675-677.
-
-One item belongs to another lens: in standalone launches (`standalonegeom.ReedGeometry`, where PaneCwd is the target and the config lives in the state dir), the new verb resolves a different config than the launch read. That is for code-correctness or the handler.
+- **F1 — LOW, consistency, `docs/overview.md:717`.** The Codex paragraph still says Codex installs the shellguard rows "the python and publish rows following their switches". Under this diff the python row is installed in every Codex launch, and only its notice follows `deny_python`. The Claude paragraph at :683 was updated; the Codex one was left stale.
+  - Evidence: `docs/overview.md:717`; `internal/shuttleengine/codexengine/guards.go` `switchInstalled`, where `SwitchDenyPython` returns `true`.
+  - Fix: reword it to say the python row is installed in every launch and asks `lym shuttle hook-python-allowed` on a match, its notice following the value at launch.
+- **F2 — MEDIUM, consistency, `internal/shuttleengine/claudeengine/settings.go:339` and `internal/shuttleengine/codexengine/guards.go:38`.** The new hook commands name a bare `lym` on PATH. PATTERN-child-processes says a command naming the lym binary for "a hook" resolves it through `selfexec.LymBinary`, and `internal/selfexec/doc.go:8` repeats that hooks use it.
+  - No engine hook does this today. Claude's `creelMailCommand` (`settings.go:107`) and `creelWaitCommand` (:183) use bare `lym`, and so do Codex's `hook-edit` (`editrecord.go:28`), `hook-batching` (`batchingnudge.go:94`) and the creel commands (`command.go:205-206`). `grep selfexec.` over `internal/shuttleengine` and `internal/shuttleengines` finds no hit.
+  - So the new hook follows the engines' established convention, and the gap predates this diff.
+  - The handler should decide whether the rule's literal text binds here, which would make this BLOCKING by the constraint rule, or whether the uniform precedent makes it a pre-existing pattern gap, which is not this diff's to fix.
 
 Tool calls:
-1. Grepped `deny_python`, `DenyPython` and `SwitchDenyPython` across the repo to find readers and descriptions the manifest lacked.
-2. Read `shellguard/rows.go:15-25`, `shuttleengine/doc.go:70-82`, `spec.go:76-84`, `claudeengine/doc.go:538-548` and `configcli.go:478-490` to judge the hits from call 1.
-3. Read the `PATTERN-child-processes` LymBinary bullet and searched for python mentions in the rule files, to judge the hook's bare `lym`.
-4. Read `PATTERN-refusal-way-forward` lines 15-30 and searched specs and stencils for deny_python, to check the rule and its wording against the change.
-5. Grepped for the sibling hidden verbs to find any registry or golden that lists them.
+1. grep of `.md` docs and the manifest tests' `switched` var: to find the docs and test variables describing the python guard, which the manifest did not cover.
+2. grep of non-Go files, `EditHookVerb` registries and the tests naming the new verb: to find the stencils, specs and fixtures reading the changed outputs.
+3. Read of `spec.go:74-84`, the start of the golden diff and the `shuttleengine` doc mentions: to check the remaining `deny_python` statements for staleness.
+4. grep for `selfexec.` in the engines and for hooks in the `selfexec` doc: to check the PATTERN-child-processes rule against the engines' practice.

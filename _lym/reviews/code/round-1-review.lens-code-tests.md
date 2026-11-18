@@ -3,61 +3,47 @@ lens: code-tests
 outcome: reported
 ```
 
-Task: code-tests lens. For each behaviour the diff adds or changes, name the test row that pins it.
+Task: the code-tests lens. For each behaviour the diff adds or changes, name the test row that would fail if it broke.
 
 **Per behaviour, the test that pins it**
-
-1. **The verb exits 0 when `deny_python` is false and 1 when it is true, both at the hub's default layer, with nothing printed.**
-   Pinned by `TestHookPythonAllowedVerb_FollowsTheHubsDenyPython`, rows PythonAllowed, PythonDenied and AllowedAgainAfterAChange (`internal/shuttlecli/hookpython_test.go:188-190`).
-2. **The verb reads the value live, so a second write is seen.**
-   Pinned by the same test, row AllowedAgainAfterAChange (`hookpython_test.go:190`).
-3. **The verb exits 1 and reports on stderr when it cannot resolve a worktree.**
-   Pinned by row OutsideAWorktree (`hookpython_test.go:191`).
-4. **The verb exits 1 when the config does not load.**
-   It shares its error branch with item 3 (`hookpython.go:61-63`), so item 3's row pins that branch.
-   No row covers the config failure itself; acceptable.
-5. **The verb skips the shuttle pre-run and resolves through `ResolveWithin`, so it answers from below the anchor or from the records sibling.**
-   None: every row runs from the prime worktree's anchor or from outside any repo (`hookpython_test.go:195-198`).
-6. **The Claude python hook runs `lym shuttle hook-python-allowed` from `$CLAUDE_PROJECT_DIR`.**
-   Pinned by `TestShellGuardDenies_PythonRowAsksTheHubOnAMatch` (`hookcmd_integration_test.go:266-317`).
-   - It denies unless lym exits 0.
-   - It denies when lym is missing.
-   - It never asks lym on a non-python command.
-7. **The Codex python hook does the same, from its own working directory.**
-   Pinned by `TestGuardCommand_PythonRowAsksTheHubOnAMatch` (`guards_run_test.go:765-825`).
-8. **Claude installs the python row under every input.**
-   Pinned by `TestBuildSettings_DenyToggleMatrix` (`settings_test.go:500`) and `TestBuildSettings_NoAgentHookAndForkGuard` (`settings_test.go:665`).
-   Also by claude `TestPrepare_WritesTheManifest` and the settings golden.
-9. **Codex installs the python row under every input.**
-   Pinned by `TestInstalledGuards_CoverEveryRow`, row SwitchesOff (`guards_test.go:46`), and by codex `TestPrepare_WritesTheManifest` (`manifest_test.go:911`).
-10. **Claude's notice names python only while `DenyPython` was true at launch.**
-    Pinned by `TestBuildDenyNotice_MatchesInstalledDenies` (`settings_test.go:569`).
-11. **Codex's notice names python only while `denyPython` was true at launch.**
-    Pinned by `TestGuardEntries_RenderEveryRowWithItsCodexText`, through the `noticesWithoutPython` assertion (`guards_test.go:891`).
-12. **Init panics on a switch missing from the announced map, in both engines.**
-    None. That is a programmer-error guard, so no finding.
+1. The verb exits 0 or 1 by the hub's `deny_python` at the default layer, re-read on every call: `TestHookPythonAllowedVerb_FollowsTheHubsDenyPython`, rows PythonAllowed, PythonDenied and AllowedAgainAfterAChange.
+2. The verb resolves from a cwd below the anchor: same test, row AllowedFromBelowTheAnchor.
+3. The verb exits 1 with a JSON error when no worktree resolves and no state dir exists: same test, row OutsideAWorktree.
+4. The verb prints nothing on stdout when it allows or denies: same test (`out.Len() != 0` check) and `TestHookPythonAllowedVerb_FollowsAStandaloneRunsStateDirConfig`.
+5. The verb skips the shuttle group's shared pre-run: pinned indirectly. The standalone test runs from a non-repo dir and expects exit 0, which the pre-run's geometry resolution would refuse.
+6. Standalone fallback to the state dir derived for the target: `TestHookPythonAllowedVerb_FollowsAStandaloneRunsStateDirConfig`, but only for a target that is not a git repo (finding T1).
+7. A resolved worktree with no Board and no state dir falls back to the worktree's own layers (`hookpython.go:94`): none (T2).
+8. A config that fails to load gives exit 1 with a JSON error: none (T3).
+9. The verb skips the root stencil seed (`SkipStencilSeedAnnotation`): none for this verb (T4).
+10. The Claude hook runs `lym shuttle hook-python-allowed` from `$CLAUDE_PROJECT_DIR` and denies unless it exits 0; with no lym on PATH it denies; a non-python command never runs lym: `TestShellGuardDenies_PythonRowAsksTheHubOnAMatch`, all four rows.
+11. The Claude hook denies when the project dir cannot be entered: none (T5).
+12. The Codex hook asks lym from its own cwd, with the same allow, deny, no-lym and non-match behaviour: `TestGuardCommand_PythonRowAsksTheHubOnAMatch`.
+13. The python row is installed under every input:
+    - Claude: `TestBuildSettings_DenyToggleMatrix` (`!pythonInstalled`), `TestBuildSettings_NoAgentHookAndForkGuard` (exactly one python entry), and the PreToolUse counts in `TestPrepare_WritesArtifactsAndReturnsConsistentLaunch`.
+    - Codex: `TestInstalledGuards_CoverEveryRow`, row SwitchesOff.
+    - Both manifests: `TestPrepare_WritesTheManifest`, claude and codex.
+14. The notice names python only while `DenyPython` is true at launch:
+    - Claude: `TestBuildDenyNotice_MatchesInstalledDenies`.
+    - Codex: `TestGuardEntries_RenderEveryRowWithItsCodexText`, the "with python allowed" assertion.
+    - Codex `Prepare` threads `guardIn` into the notice: `TestPrepare_InstallsGuardsFromItsInputs` (`wantCreelHead(guards, tt.wantInputs)`).
+15. The orch launch wiring carries the default-layer `deny_python` into the notice and keeps the row: `TestOrchIntegration_WireCLILaunchFollowsDenyPythonAtTheDefaultLayer`, rows DenyPythonFalse and DenyPythonTrue.
+16. The Claude `buildDenyNotice` falls back to `installed` when `announced` is nil: `TestBuildDenyNotice_MatchesInstalledDenies`, through the claude-only denies.
+17. The init-time panic in claudeengine and codexengine for a switch neither switch map knows: none. This is a programmer-error guard and needs no test.
+18. Doc, template and help prose: exempt.
 
 **Findings**
 
-1. **LOW** · class `design` · `internal/shuttlecli/hookpython_test.go:188-191`
-   - **Gap:** no row runs the verb from below the worktree's anchor or from the records sibling.
-   - **What goes unpinned:** two behaviours the diff adds:
-     - skipping the shuttle pre-run (`cli.go:81`);
-     - resolving through `ResolveWithin`, documented as "anywhere under its anchored directory" (`hookpython.go:100-101`).
-   - **Why it matters:** if either regressed to the strict `Resolve` gate, every row would still pass, because every row runs from the anchor or from outside any repo (`hookpython_test.go:195-198`).
-   - **Fix:** add a row whose dir is a subdirectory of `hub.PrimeWorktree()` and expect exit 0 under `deny_python: false`.
-2. **LOW** · class `consistency` · `internal/shuttleengine/claudeengine/settings_test.go`, `TestBuildSettings_DenyToggleMatrix`
-   - **Report:** the redundancy report lists it as contained by `TestPrepare_WritesTheManifest`.
-   - **What only it asserts:** the python, raw-go and publish rows present for every interactive, fork and publish combination, and the exact PreToolUse count of 7 (`settings_test.go:500, 511`).
-   - **What the covering test asserts:** guard presence for one autonomous spec only (`manifest_test.go:132-142`).
-   - **Fix:** mark it `//testtiming:keep pins each Bash deny's presence and the PreToolUse count across every interactive, fork and publish combination, which TestPrepare_WritesTheManifest checks for one spec`.
-3. **LOW** · class `consistency` · `internal/shuttleengine/codexengine/guards_test.go:28`, `TestInstalledGuards_CoverEveryRow`
-   - **Report:** the redundancy report lists it as contained by `TestPrepare_InstallsGuardsFromItsInputs`.
-   - **Why the covering test cannot catch a drop:** it builds its expected guards and notice by calling `installedGuards` and `denyNotice` themselves (`prepare_test.go:362-367`). A wrongly dropped python row would therefore change the expectation along with the result.
-   - **What only it asserts:** only the literal row-name lists catch that drop, the SwitchesOff row included (`guards_test.go:46`).
-   - **Fix:** mark it `//testtiming:keep pins the literal installed row names per input, which TestPrepare_InstallsGuardsFromItsInputs derives from installedGuards itself`.
+- **T1, MEDIUM, design.** `internal/shuttlecli/hookpython_standalone_test.go:343`. The standalone test misses the real standalone path. Its target is a bare `t.TempDir()` with no `.git`, so `lymcwd.ResolveWithin` fails and the verb takes the error branch.
+  - A real standalone target is a git repo. There `ResolveWithin` succeeds with `hubDirs.Board == ""` (`hookpython.go:81-87`), and the cwd may sit below the target, so `RepositoryRootOf` has to climb.
+  - The expected dir comes from `cliwire.StandaloneStateDir`, the function under test, not from the launch's `ResolveStandalone(...).StateDir` (`internal/cliwire/standalone.go:84-89`). So nothing pins that the verb and the launch agree on the dir.
+  - A change that returned `hubDirs, nil` whenever `ResolveWithin` succeeded would pass this test.
+  - Fix: add a row whose target is a git repo, run once from a subdirectory, and take the expected state dir from the standalone launch's own resolution.
+- **T2, LOW, design.** `internal/shuttlecli/hookpython.go:94`. The branch where a worktree resolves with no Board and no standalone state dir returns the worktree's own layers, and no row covers it.
+- **T3, LOW, design.** `internal/shuttlecli/hookpython.go:88-91`. The load-failure path has no row: a config that does not load should give exit 1 and a `shuttle: ` JSON error. Only the resolve-failure error is pinned, by row OutsideAWorktree at `hookpython_test.go:455`.
+- **T4, LOW, design.** `internal/shuttlecli/hookpython.go:250` (the annotation map). Nothing pins that `hook-python-allowed` declines the root stencil seed, a behaviour the fix commit `47d84ce3` claims. `cmd/lym/stencilseedgate_test.go:36` checks the annotation's meaning on synthetic commands, not that this verb carries it.
+- **T5, NIT, design.** `internal/shuttleengine/claudeengine/settings.go:339`. The doc claims a project dir lym cannot enter keeps the deny, and `TestShellGuardDenies_PythonRowAsksTheHubOnAMatch` (`hookcmd_integration_test.go:543-546`) has no row for it.
+- **T6, NIT, consistency.** `internal/shuttleengine/claudeengine/settings_test.go:780-782`. In `TestBuildSettings_DenyToggleMatrix` the `pythonDeny` column no longer drives any assertion, since line 789 asserts the row unconditionally. The python_only rows now differ from the base rows only in a field nothing checks; they could be dropped or folded.
 
-**Outside my lens:** nothing tests a standalone launch, whose config lives in the state dir. The verb resolves the target repo's layers instead (`standalonegeom/reedgeom.go:44-45`). That belongs to correctness and is not filed here.
-
-Tool calls:
-1. Read `codexengine/prepare_test.go:311-395`, the `TestPrepare_InstallsGuardsFromItsInputs` table, to judge the containment claim against its assertions. My context held only the diff hunks of that test.
+**Tool calls**
+1. Read `cliwire.ResolveStandalone` and searched for `SkipStencilSeedAnnotation` tests and other `StandaloneStateDir` callers. My context did not hold the launch's state-dir derivation or the seed-skip tests.
+2. Read the test names in `stencilseedgate_test.go` and `resolveStandaloneTarget`. I needed to know whether the seed-gate test covers real commands and how the launch normalizes its target.

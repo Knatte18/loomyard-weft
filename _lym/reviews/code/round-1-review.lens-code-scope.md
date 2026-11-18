@@ -3,38 +3,35 @@ lens: code-scope
 outcome: reported
 ```
 
-Lens: code-scope. I traced each change in the diff to the decision record's goal points and its one added entry.
+Lens code-scope: tracing each change in the diff to the decision that asks for it.
 
 **Decisions**
-- G1 (Seen/Idea): find which config dirs the `lym orch` launch hands the shuttle config loader, and make it read the hub's layers.
-  - No change. The summary says the launch already uses `fabricengine.ConfigDirs`, and `internal/orchcli/cli.go:223` confirms it. That makes this a finding, not a gap.
-- G2 (Idea): a test where `deny_python: false` at the default layer gives an orch launch with neither the notice nor the hook row.
-  - The added entry overrides the "hook row" half. The "notice" half still stands.
-  - No change builds it. `internal/orchcli` and `internal/orchengine` have no test that mentions `deny_python`, `DenyPython`, the deny notice or `append-system-prompt`.
-  - Notice absence is pinned only at engine level, through `buildDenyNotice`/`denyNotice` called with a cfg the test builds itself. The config path from hub layers to the launch is never exercised.
-- A1 (Added after Discussion): the hook reads `deny_python` live on each call; the notice follows the value at launch. Built by C1–C4.
+- **G1:** Find which config dirs the orch launch hands the shuttle config loader, and make it read the hub's layers. This is a board entry goal point.
+- **G2:** Add a test showing that with `deny_python: false` at the default layer, an orch launch carries neither the notice nor the hook row. This is a board entry goal point.
+- **A1:** Added after Discussion, "The python hook reads deny_python live". The hook reads the value on each call, and the notice follows the value at launch.
+- **A2:** Added after Discussion, "Accept round 1 of Code-Review with its fixes". F2 is fixed by a standalone state-dir fallback inside the verb, with no change to hook commands or engine signatures.
 
-**Changes**
-- C1: new verb `hook-python-allowed` (`internal/shuttlecli/hookpython.go`, its `cli.go` wiring, `PythonAllowedHookVerb` in `engine.go`). Traces to A1.
-- C2: claudeengine always installs the python row with a live check, and splits installed from announced (`settings.go`). Traces to A1.
-- C3: codexengine does the same (`guards.go`, `codexengine.go`). Traces to A1, with engine parity forcing the Codex half.
-- C4: tests (`hookpython_test.go`, `hookcmd_integration_test.go`, `guards_run_test.go`, and the manifest, settings, guards, prepare and usersetup tests, plus the golden). They pin C1–C3 or follow changes C2/C3 force.
-- C5: docs (`docs/overview.md`, the `shellguard`, `claudeengine` and `codexengine` `doc.go` files, the `config.go` `DenyPython` field doc, `template.yaml`). C2/C3 made them stale, so they are forced edits.
-- C6: comment-reflow commits `d30e1558` and `0905e617`. These are forced by lint over lines the diff touches.
+**Per change**
+- **C1:** The hidden verb `hook-python-allowed`: `internal/shuttlecli/hookpython.go`, its registration and pre-run skip in `internal/shuttlecli/cli.go`, and `shuttleengine.PythonAllowedHookVerb` in `internal/shuttleengine/engine.go`. Traces to A1.
+- **C2:** Claude installs the python row always, announces it by launch value, and adds the live check (`internal/shuttleengine/claudeengine/settings.go`). Traces to A1.
+- **C3:** Codex does the same (`internal/shuttleengine/codexengine/guards.go`, `codexengine.go`). Traces to A1, with engine parity.
+- **C4:** The standalone fallback in `shuttleConfigDirs` plus `cliwire.StandaloneStateDir` (`internal/cliwire/standalone.go`), and `hookpython_standalone_test.go`. Traces to A2 (F2).
+  - The F2 commits are 47d84ce3 and ac646ddc. Hook commands stay pure functions of the row, so neither the hook commands nor the engines' `Prepare` signatures change.
+- **C5:** `internal/orchcli/denypython_integration_test.go`, the orch-launch test. Traces to G2 as amended by A1.
+  - The test asserts that the notice is absent for `false` and that the row stays installed. A1 overrides G2's "nor the hook row".
+- **C6:** Docs and comments: `docs/overview.md:683`, the doc.go files of `shellguard`, `claudeengine` and `codexengine`, the `rows.go` switch comment, the `config.go` field doc, `template.yaml`, and the `configcli.go` help line. Forced by C1–C3, which made the earlier statements stale.
+- **C7:** Updated tests: claudeengine `settings_test.go`, `manifest_test.go` and the settings golden; codexengine `guards_test.go`, `manifest_test.go`, `prepare_test.go` and `usersetup_test.go`; and the hook-run tests in `hookcmd_integration_test.go` and `guards_run_test.go`. Forced by C1–C3.
+- **C8:** The comment line-break commits (ccb9cf22, c3cde635, d30e1558, 0905e617). Forced by the gate's comment lint on C1–C7's comments.
 
-Every change traces to a decision or is forced by one. No unrequested scope.
+**Per decision**
+- **G1:** Built by investigation, not by a code change. `summary.md` says `orchcli.wireCLI` already loads `fabricengine.ConfigDirs(location)` (`internal/orchcli/cli.go:223`), and the context read confirms that. C5 exercises that wiring.
+- **G2:** Built by C5, as amended by A1.
+- **A1:** Built by C1, C2 and C3, with C6 and C7.
+- **A2:** Built by C4.
 
-**Findings**
-1. **MEDIUM, scope.** `internal/orchcli` has no test for the board entry's asked-for check.
-   - The Idea asks for an orch launch with `deny_python: false` at the default layer to carry no notice. That half survives the amendment, since the notice still follows the launch value.
-   - No test drives the orch launch's config loading from a hub's default layer to the notice.
-   - Evidence: `_lym/discussion/decision-record.md` `## Goal` Idea; `_lym/landing/summary.md` "The board entry's test is replaced"; no match in `internal/orchcli` or `internal/orchengine`.
-   - Fix: add an orch-launch (or `orchcli` wiring) test where a hub has `deny_python: false` at the default layer and the prepared launch's notice has no python sentence.
-2. **LOW, decision.** The writer dropped part of the board entry's Idea on their own call, outside the parent's added decision.
-   - The summary calls the "neither notice nor hook row" test "replaced". The added entry overrides only the hook row; no recorded entry drops the notice half or the orch-launch scope of the test.
-   - The summary treats this as the writer's design decision, not a parent correction, so it is not filed as an unrecorded parent correction.
-   - Evidence: `_lym/landing/summary.md` "Design decisions"; the decision record's added entry.
-   - Fix: covered by finding 1. Alternatively, the parent records the narrowed test with `lym loom decision add`.
+**Findings:** none. Every change traces to a decision or is forced by a traced change, and every decision is built.
+
+One stale line is outside my lens: `docs/overview.md:717` still says Codex installs "the python and publish rows following their switches". That belongs to code-affected-set.
 
 Tool calls:
-- grep of `internal/orchcli` and `internal/orchengine` for a `deny_python`/notice test: the manifest held only the `LoadConfig` call site in `orchcli`, not its tests.
+1. `git show --stat` of 47d84ce3, ac646ddc and f168372a, to confirm the F2 fix stayed inside the verb and `cliwire` as A2 requires. My context held the combined diff, not the per-commit split.

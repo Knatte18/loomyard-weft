@@ -11,16 +11,16 @@ review:
     engine: claude
     model: opus
     effort: medium
-    start: 2026-11-18T08:11:44Z
-    end: 2026-11-18T09:18:46.407850717+01:00
-    wall_seconds: 422.407850717
+    start: 2026-11-18T08:31:48Z
+    end: 2026-11-18T09:39:23.829660411+01:00
+    wall_seconds: 455.829660411
     tokens_known: true
-    fresh_tokens: 223670
-    cache_read_tokens: 5163826
+    fresh_tokens: 259355
+    cache_read_tokens: 4008628
     forks: 4
-    fork_fresh_tokens: 35196
-    fork_cache_read_tokens: 1363934
-    fork_fresh_share: 0.15735682031564358
+    fork_fresh_tokens: 42490
+    fork_cache_read_tokens: 1701867
+    fork_fresh_share: 0.16382950010603228
 seed:
     - engine: claude
       model: sonnet
