@@ -1,0 +1,739 @@
+diff --git a/contracts/stencils/friction/friction-template-reflection.md b/contracts/stencils/friction/friction-template-reflection.md
+index d699ef99..27265c26 100644
+--- a/contracts/stencils/friction/friction-template-reflection.md
++++ b/contracts/stencils/friction/friction-template-reflection.md
+@@ -53,7 +53,14 @@ For each issue, invoke `lym selfreport create` yourself, following its own guida
+ This prompt does not restate that contract.
+ File only through `lym selfreport create`, never through `gh`.
+ 
+-Each issue body states what happened, why it is abnormal and what to do, and then ends with a provenance line naming the task slug `{{.task_slug}}` and the file names of the notes the issue came from.
++Each issue body states what happened, why it is abnormal and what to do, and then gives a provenance line naming the task slug `{{.task_slug}}` and the file names of the notes the issue came from.
++The provenance line is the last of what you write; the sections that `--attach` appends follow it.
++Never file an issue with an empty body.
++
++When the problem rests on evidence in a run directory, such as a capture, a trace or a log line, the issue carries it inline:
++attach the file with `--attach`, or quote the lines that show the problem.
++A run directory is deleted with its worktree, so an issue that only names the path names a file nobody can read once the run is gone.
++An attachment obeys the content rule below like the rest of the body: quote an excerpt instead when the file holds anything the rule forbids.
+ 
+ Content rule, which is a hard rule: the repository these issues go to is public.
+ An issue body describes the lym problem and may quote lym's own output, verb names and repo-relative lym paths.
+diff --git a/docs/overview.md b/docs/overview.md
+index 54d35461..7ec53e1b 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -618,7 +618,8 @@ User-facing modules each get one `lym <module>` namespace:
+   Credentials resolve from `GH_TOKEN`/`GITHUB_TOKEN` first.
+   The `gh` CLI (`gh auth token`) is a bounded, non-blocking fallback token source, not a hard prerequisite.
+   Target repo is hardcoded;
+-  supports `--body` text, `--body-file` (either takes `-` for stdin) and `--label`;
++  supports `--body` text, `--body-file` (either takes `-` for stdin), `--attach` and `--label`;
++  `--attach` appends a file's contents under its base name, so evidence from a run directory outlives its worktree;
+   `--body` text that is one line naming an existing file is refused with `--body-file` as the way forward;
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index c0423bc7..3d53e451 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -185,6 +185,8 @@
+ // For a fold, `slug` is the entry folded into.
+ // A failed comment or close after the board write carries the same fields and the `close` payload in the error envelope.
+ // An already-recorded issue prints `recorded`.
++// An issue whose body is blank adds `"empty_body":true`.
++// An issue whose body or comments name paths under `.lym/` adds `"local_paths":[…]`.
+ //
+ // `raddle <slug>` takes a bare slug, not a payload.
+ // It prints, verbatim with no envelope, the approved raddle proposal of the store directory that holds the slug:
+diff --git a/internal/boardcli/intake.go b/internal/boardcli/intake.go
+index c473f0f8..90c9afa8 100644
+--- a/internal/boardcli/intake.go
++++ b/internal/boardcli/intake.go
+@@ -17,6 +17,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/hubissues"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/spf13/cobra"
+ )
+@@ -90,6 +91,9 @@ lym's own import pointers, are carried in the body. An issue an entry already re
+ recording entries and touches nothing on GitHub. A success prints slug, issue, labels and dropped,
+ the slug being the entry folded into for a fold. The board is written before GitHub is touched; when
+ the comment or close then fails, the error carries the slug, issue, labels and dropped it would have printed, and the "close" payload to run.
++An issue whose body is blank adds "empty_body": true, and one that names files under ` + lymdirs.DotLymDirName + `/ adds
++"local_paths"; the entry body carries an import note for each. The named files are deleted with their worktree, so do not
++search for them: only what the entry body quotes or attaches of them is available.
+ 
+ Examples:
+   lym board intake import '{"issue":12,"slug":"retry-backoff"}'
+@@ -312,6 +316,12 @@ func intakeImport(out io.Writer, b *boardengine.Board, repo *hubissues.Repo, pay
+ 		"labels":  result.Entry.Labels,
+ 		"dropped": dropped,
+ 	}
++	if result.EmptyBody {
++		short["empty_body"] = true
++	}
++	if len(result.LocalPaths) > 0 {
++		short["local_paths"] = result.LocalPaths
++	}
+ 	comment := importPointer(result.Entry.Slug)
+ 	if err := repo.CommentAndClose(number, comment, true); err != nil {
+ 		short["close"] = map[string]any{"issue": number, "reason": comment, "completed": true}
+diff --git a/internal/boardcli/intake_test.go b/internal/boardcli/intake_test.go
+index 4736662b..36895755 100644
+--- a/internal/boardcli/intake_test.go
++++ b/internal/boardcli/intake_test.go
+@@ -36,6 +36,8 @@ type fakeIssue struct {
+ 	stateReason string
+ 	pullRequest bool
+ 	labels      []string
++	// body is the issue body; nil serves "Body <number>.".
++	body *string
+ 	// thread holds the issue's comments, oldest first; each is dated 2026-01-02 plus its index in days.
+ 	thread []string
+ 	// failThread makes the comments endpoint answer with a server error.
+@@ -76,10 +78,14 @@ func (f *fakeInbox) issueJSON(issue fakeIssue) map[string]any {
+ 	for _, name := range issue.labels {
+ 		labels = append(labels, map[string]string{"name": name})
+ 	}
++	body := fmt.Sprintf("Body %d.", issue.number)
++	if issue.body != nil {
++		body = *issue.body
++	}
+ 	view := map[string]any{
+ 		"number":       issue.number,
+ 		"title":        fmt.Sprintf("Issue %d", issue.number),
+-		"body":         fmt.Sprintf("Body %d.", issue.number),
++		"body":         body,
+ 		"html_url":     fmt.Sprintf("https://example.test/issues/%d", issue.number),
+ 		"state":        issue.state,
+ 		"state_reason": issue.stateReason,
+@@ -423,6 +429,43 @@ func TestIntakeImport_NewNoteCommentsAndCloses(t *testing.T) {
+ 	}
+ }
+ 
++// TestIntakeImport_FlagsEvidenceGaps asserts that import output names a blank issue body.
++// It also asserts that import output names the local paths an issue names.
++// Each key is left out when its gap is absent.
++func TestIntakeImport_FlagsEvidenceGaps(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name           string
++		body           string
++		wantEmptyBody  any
++		wantLocalPaths string
++	}{
++		{"blank body", "", true, "<nil>"},
++		{"local paths", "Compare `.lym/shuttle/abc/startup-capture.txt`.", nil, "[.lym/shuttle/abc/startup-capture.txt]"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			inbox := newFakeInbox(t, fakeIssue{number: 7, state: "open", labels: []string{"bug"}, body: new(tt.body)})
++			b, _ := newIntakeBoard(t)
++
++			code, envelope := runHandler(t, func(out *bytes.Buffer) int {
++				return intakeImport(out, b, inbox.repo, `{"issue":7,"slug":"gap"}`)
++			})
++			if code != 0 {
++				t.Fatalf("exit %d: %v", code, envelope)
++			}
++			if envelope["empty_body"] != tt.wantEmptyBody {
++				t.Errorf("empty_body = %v, want %v", envelope["empty_body"], tt.wantEmptyBody)
++			}
++			if got := fmt.Sprint(envelope["local_paths"]); got != tt.wantLocalPaths {
++				t.Errorf("local_paths = %s, want %s", got, tt.wantLocalPaths)
++			}
++		})
++	}
++}
++
+ func TestIntakeImport_FoldIntoEntry(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -539,7 +582,7 @@ func TestIntakeImport_RefusedBeforeAnyWrite(t *testing.T) {
+ func TestIntakeImport_CloseFailureReportsShortResultAndClosePayload(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+-	inbox := newFakeInbox(t, fakeIssue{number: 16, state: "open", labels: []string{"bug"}})
++	inbox := newFakeInbox(t, fakeIssue{number: 16, state: "open", labels: []string{"bug"}, body: new("See .lym/x.log."), thread: []string{"A comment."}})
+ 	inbox.failClose = true
+ 	b, path := newIntakeBoard(t)
+ 
+@@ -555,6 +598,12 @@ func TestIntakeImport_CloseFailureReportsShortResultAndClosePayload(t *testing.T
+ 	if _, present := envelope["entry"]; present {
+ 		t.Errorf("envelope carries entry, want it left out")
+ 	}
++	if fmt.Sprint(envelope["local_paths"]) != "[.lym/x.log]" {
++		t.Errorf("envelope local_paths = %v, want [.lym/x.log]", envelope["local_paths"])
++	}
++	if _, present := envelope["empty_body"]; present {
++		t.Errorf("envelope carries empty_body for a non-blank body")
++	}
+ 	closePayload := envelope["close"].(map[string]any)
+ 	if closePayload["issue"] != 16.0 || closePayload["completed"] != true || closePayload["reason"] != "Imported into the board as `half-done`." {
+ 		t.Errorf("close payload = %v", closePayload)
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 47b6267e..627b81b6 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -449,6 +449,10 @@
+ // An imported or folded body carries the issue's comments after the issue body, the ones the caller kept, oldest first.
+ // Each comment is a heading naming its UTC creation date, one level below the body's own heading.
+ // The comment follows verbatim, its author not recorded.
++// An issue whose body is blank gets an import note naming its title in place of the body.
++// An issue that names paths under a worktree's `.lym` directory gets an import note listing them.
++// Those files are deleted with their worktree, and only what the issue quotes of them reaches the board.
++// ImportResult reports both gaps, so the caller can flag them.
+ //
+ // # Pull request
+ //
+diff --git a/internal/boardengine/intake.go b/internal/boardengine/intake.go
+index be7ba0f8..967230b1 100644
+--- a/internal/boardengine/intake.go
++++ b/internal/boardengine/intake.go
+@@ -8,9 +8,12 @@ package boardengine
+ 
+ import (
+ 	"fmt"
++	"regexp"
+ 	"slices"
+ 	"strings"
+ 	"time"
++
++	"github.com/Knatte18/loomyard/internal/lymdirs"
+ )
+ 
+ // InboxIssue is the part of a GitHub issue that intake reads.
+@@ -47,10 +50,15 @@ type ImportRequest struct {
+ // Recorded is non-empty when the issue was already recorded and the import was a no-op;
+ // then it holds the recording entries' slugs.
+ // Dropped holds the issue labels that were not carried over.
++// EmptyBody reports that the issue body was blank, so the entry holds only the title and the comments.
++// LocalPaths lists the paths under a worktree's never-tracked directory that the issue body and comments name.
++// Those files are deleted with their worktree, so the entry holds only what the issue quotes or attaches of them.
+ type ImportResult struct {
+-	Entry    Task
+-	Recorded []string
+-	Dropped  []string
++	Entry      Task
++	Recorded   []string
++	Dropped    []string
++	EmptyBody  bool
++	LocalPaths []string
+ }
+ 
+ // RecordingEntries returns the slugs of the entries whose issues list number, in board order.
+@@ -118,6 +126,8 @@ func (s *Store) importIssue(req ImportRequest) (ImportResult, error) {
+ 		return ImportResult{}, fmt.Errorf("issue #%d is closed and no entry records it: reopen it on GitHub to import it, or leave it closed", issue.Number)
+ 	}
+ 
++	var res ImportResult
++	var err error
+ 	if req.Into != "" {
+ 		if req.Title != "" || req.Brief != "" || req.Labels != nil {
+ 			return ImportResult{}, fmt.Errorf("into folds issue #%d into an existing entry and takes no title, brief or labels: drop them, or import as a new note with slug", issue.Number)
+@@ -125,12 +135,57 @@ func (s *Store) importIssue(req ImportRequest) (ImportResult, error) {
+ 		if req.Slug != "" {
+ 			return ImportResult{}, fmt.Errorf("slug and into both given for issue #%d: pass slug to import as a new note, or into to fold into an existing entry", issue.Number)
+ 		}
+-		return s.foldIssue(issue, req.Into)
++		res, err = s.foldIssue(issue, req.Into)
++	} else {
++		if req.Slug == "" {
++			return ImportResult{}, fmt.Errorf("neither slug nor into given for issue #%d: pass slug to import as a new note, or into to fold into an existing entry", issue.Number)
++		}
++		res, err = s.importNote(req)
++	}
++	if err != nil {
++		return ImportResult{}, err
++	}
++	res.EmptyBody = issueBodyEmpty(issue)
++	res.LocalPaths = localPathsNamed(issue)
++	return res, nil
++}
++
++// pathStopChars are the characters that end a path mentioned in markdown text, as a regexp character-class body.
++const pathStopChars = "\\s`'\"()\\[\\]<>|={}"
++
++// pathLeadChars are the characters that may precede a path: the stop characters and the emphasis and key-value markers.
++// They may also occur inside a path, so they end no path.
++const pathLeadChars = pathStopChars + "*_:"
++
++// localPathPattern matches a path that starts with, or has as a component, a worktree's never-tracked directory.
++// A path separates its components with a slash or a backslash.
++// Its first group is the path.
++var localPathPattern = regexp.MustCompile(`(?:^|[` + pathLeadChars + `])((?:[^` + pathStopChars + `]*[/\\])?` +
++	regexp.QuoteMeta(lymdirs.DotLymDirName) + `[/\\][^` + pathStopChars + `]*)`)
++
++// issueBodyEmpty reports whether the issue body holds nothing but white space.
++func issueBodyEmpty(issue InboxIssue) bool {
++	return strings.TrimSpace(issue.Body) == ""
++}
++
++// localPathsNamed returns the distinct local paths that the issue body and comments name.
++// A local path lies under a worktree's never-tracked directory.
++// They come in first-mention order, each without trailing sentence punctuation or emphasis markers.
++func localPathsNamed(issue InboxIssue) []string {
++	texts := []string{issue.Body}
++	for _, comment := range issue.Comments {
++		texts = append(texts, comment.Body)
+ 	}
+-	if req.Slug == "" {
+-		return ImportResult{}, fmt.Errorf("neither slug nor into given for issue #%d: pass slug to import as a new note, or into to fold into an existing entry", issue.Number)
++	var paths []string
++	for _, text := range texts {
++		for _, match := range localPathPattern.FindAllStringSubmatch(text, -1) {
++			path := strings.TrimRight(match[1], ".,;:!?*_")
++			if !slices.Contains(paths, path) {
++				paths = append(paths, path)
++			}
++		}
+ 	}
+-	return s.importNote(req)
++	return paths
+ }
+ 
+ // vocabulary returns the store's vocabulary, the zero value when it has none.
+@@ -142,11 +197,21 @@ func (s *Store) vocabulary() Vocabulary {
+ }
+ 
+ // issueContent is the link-back line followed by the issue body, then one section per comment, in order.
++// An import note follows the link-back line when the body is blank, naming the title the body leaves as the only content.
++// Another follows when the issue names paths under a worktree's never-tracked directory,
++// so a reader knows those files may be gone and the board holds only what the issue quotes.
+ // Each comment section is a commentHeading-prefixed heading naming the comment's UTC creation date;
+ // the comment body follows verbatim.
+ func issueContent(issue InboxIssue, commentHeading string) string {
+ 	content := fmt.Sprintf("Imported from [issue #%d](%s).", issue.Number, issue.URL)
+-	if issue.Body != "" {
++	if issueBodyEmpty(issue) {
++		content += fmt.Sprintf("\n\nImport note: the issue body was empty; the title \"%s\" and any comments below are all the issue carried.", issue.Title)
++	}
++	if paths := localPathsNamed(issue); len(paths) > 0 {
++		content += fmt.Sprintf("\n\nImport note: the issue names files under `%s/`, which is deleted with its worktree,"+
++			" so only what the issue quotes of them reached the board: `%s`.", lymdirs.DotLymDirName, strings.Join(paths, "`, `"))
++	}
++	if !issueBodyEmpty(issue) {
+ 		content += "\n\n" + issue.Body
+ 	}
+ 	for _, comment := range issue.Comments {
+diff --git a/internal/boardengine/intake_test.go b/internal/boardengine/intake_test.go
+index ba83cc81..c7575e28 100644
+--- a/internal/boardengine/intake_test.go
++++ b/internal/boardengine/intake_test.go
+@@ -39,6 +39,14 @@ func testIssueWithComments(number int, labels ...string) boardengine.InboxIssue
+ 	return issue
+ }
+ 
++// testIssueWithBody returns a bug issue with body and comments in place of the default body.
++func testIssueWithBody(number int, body string, comments ...boardengine.IssueComment) boardengine.InboxIssue {
++	issue := testIssue(number, "bug")
++	issue.Body = body
++	issue.Comments = comments
++	return issue
++}
++
+ func readBoardJSON(t *testing.T, boardPath string) string {
+ 	t.Helper()
+ 	raw, err := os.ReadFile(filepath.Join(boardPath, "board.json"))
+@@ -60,18 +68,25 @@ func mustUpsert(t *testing.T, b *boardengine.Board, fields map[string]any) {
+ // Labels the vocabulary lacks are dropped, and an explicit title, brief and label set are honoured.
+ // The issue's comments follow its body as second-level sections in order,
+ // and an issue without comments keeps the body without any.
++// A blank body and paths under `.lym/` in the body or comments each get an import note and a result flag.
+ func TestImportIssueNewEntry(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+-	const plainBody = "Imported from [issue #7](https://example.test/issues/1).\n\nIssue body."
++	const linkLine = "Imported from [issue #7](https://example.test/issues/1)."
++	const plainBody = linkLine + "\n\nIssue body."
++	const pathsBody = "Compare `.lym/shuttle/abc/startup-capture.txt` with wt/.lym/shuttle/def/x.txt. Not _lym/discussion/r.md."
++	const emphasisedPathsBody = `**.lym/a.txt** and |.lym/b|, key=.lym/c and .lym\shuttle\d.txt, foo.lym\e`
++	const pathsComment = "See .lym/x.log, and again `.lym/shuttle/abc/startup-capture.txt`."
+ 	tests := []struct {
+-		name        string
+-		req         boardengine.ImportRequest
+-		wantTitle   string
+-		wantBrief   string
+-		wantLabels  []string
+-		wantDropped []string
+-		wantBody    string
++		name           string
++		req            boardengine.ImportRequest
++		wantTitle      string
++		wantBrief      string
++		wantLabels     []string
++		wantDropped    []string
++		wantBody       string
++		wantEmptyBody  bool
++		wantLocalPaths []string
+ 	}{
+ 		{
+ 			name:        "issue labels filtered to the vocabulary",
+@@ -98,6 +113,39 @@ func TestImportIssueNewEntry(t *testing.T) {
+ 				"\n\n## Issue comment, 2026-01-03\n\nFirst comment." +
+ 				"\n\n## Issue comment, 2026-02-01\n\nSecond comment.\n\nWith a paragraph.",
+ 		},
++		{
++			name:          "blank body flagged with the title",
++			req:           boardengine.ImportRequest{Issue: testIssueWithBody(7, " \n"), Slug: "empty"},
++			wantTitle:     "Issue title",
++			wantLabels:    []string{"bug"},
++			wantEmptyBody: true,
++			wantBody:      linkLine + "\n\nImport note: the issue body was empty; the title \"Issue title\" and any comments below are all the issue carried.",
++		},
++		{
++			name:           "emphasised, delimited and backslash local paths flagged",
++			req:            boardengine.ImportRequest{Issue: testIssueWithBody(7, emphasisedPathsBody), Slug: "marked"},
++			wantTitle:      "Issue title",
++			wantLabels:     []string{"bug"},
++			wantLocalPaths: []string{".lym/a.txt", ".lym/b", ".lym/c", `.lym\shuttle\d.txt`},
++			wantBody: linkLine +
++				"\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board:" +
++				" `.lym/a.txt`, `.lym/b`, `.lym/c`, `.lym\\shuttle\\d.txt`." +
++				"\n\n" + emphasisedPathsBody,
++		},
++		{
++			name: "local paths in body and comments flagged",
++			req: boardengine.ImportRequest{
++				Issue: testIssueWithBody(7, pathsBody, boardengine.IssueComment{Body: pathsComment, CreatedAt: time.Date(2026, 3, 4, 0, 0, 0, 0, time.UTC)}),
++				Slug:  "paths",
++			},
++			wantTitle:      "Issue title",
++			wantLabels:     []string{"bug"},
++			wantLocalPaths: []string{".lym/shuttle/abc/startup-capture.txt", "wt/.lym/shuttle/def/x.txt", ".lym/x.log"},
++			wantBody: linkLine +
++				"\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board:" +
++				" `.lym/shuttle/abc/startup-capture.txt`, `wt/.lym/shuttle/def/x.txt`, `.lym/x.log`." +
++				"\n\n" + pathsBody + "\n\n## Issue comment, 2026-03-04\n\n" + pathsComment,
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -117,6 +165,12 @@ func TestImportIssueNewEntry(t *testing.T) {
+ 			if !slices.Equal(res.Dropped, tt.wantDropped) {
+ 				t.Errorf("dropped = %v, want %v", res.Dropped, tt.wantDropped)
+ 			}
++			if res.EmptyBody != tt.wantEmptyBody {
++				t.Errorf("empty body = %v, want %v", res.EmptyBody, tt.wantEmptyBody)
++			}
++			if !slices.Equal(res.LocalPaths, tt.wantLocalPaths) {
++				t.Errorf("local paths = %v, want %v", res.LocalPaths, tt.wantLocalPaths)
++			}
+ 		})
+ 	}
+ }
+@@ -167,6 +221,26 @@ func TestImportIssueFold(t *testing.T) {
+ 	if res.Entry.Body != wantBody {
+ 		t.Errorf("body with comments = %q, want %q", res.Entry.Body, wantBody)
+ 	}
++	if res.EmptyBody || len(res.LocalPaths) != 0 {
++		t.Errorf("plain fold flags = empty body %v, local paths %v, want none", res.EmptyBody, res.LocalPaths)
++	}
++
++	mustUpsert(t, b, map[string]any{"slug": "gaps", "kind": "task", "labels": bugLabels})
++	gapIssue := testIssueWithBody(8, " ", boardengine.IssueComment{Body: "See .lym/x.log.", CreatedAt: time.Date(2026, 3, 4, 0, 0, 0, 0, time.UTC)})
++	res, err = b.ImportIssue(boardengine.ImportRequest{Issue: gapIssue, Into: "gaps"})
++	if err != nil {
++		t.Fatalf("fold an issue with a blank body and a local path: %v", err)
++	}
++	wantBody = "## From issue #8\n\nImported from [issue #8](https://example.test/issues/1)." +
++		"\n\nImport note: the issue body was empty; the title \"Issue title\" and any comments below are all the issue carried." +
++		"\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/x.log`." +
++		"\n\n### Issue comment, 2026-03-04\n\nSee .lym/x.log."
++	if res.Entry.Body != wantBody {
++		t.Errorf("body with gaps = %q, want %q", res.Entry.Body, wantBody)
++	}
++	if !res.EmptyBody || !slices.Equal(res.LocalPaths, []string{".lym/x.log"}) {
++		t.Errorf("gap fold flags = empty body %v, local paths %v, want true and [.lym/x.log]", res.EmptyBody, res.LocalPaths)
++	}
+ }
+ 
+ func TestImportIssueFoldIntoStaleLabelRefused(t *testing.T) {
+diff --git a/internal/selfreportcli/cli.go b/internal/selfreportcli/cli.go
+index eaa353ae..d8287e01 100644
+--- a/internal/selfreportcli/cli.go
++++ b/internal/selfreportcli/cli.go
+@@ -6,13 +6,17 @@
+ // It takes the issue body as text through --body or from a file through --body-file.
+ // It refuses --body text that is one line naming an existing file.
+ // A path meant for --body-file is therefore never filed as the body itself.
++// --attach appends a file's contents to the body under the file's base name.
++// Evidence from a run directory therefore outlives the worktree that held it.
+ package selfreportcli
+ 
+ import (
+ 	"fmt"
+ 	"io"
+ 	"os"
++	"path/filepath"
+ 	"strings"
++	"unicode/utf8"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/output"
+@@ -29,6 +33,12 @@ const bodyFlag = "body"
+ // bodyFileFlag is the name of the flag that gives the issue body as a file path.
+ const bodyFileFlag = "body-file"
+ 
++// attachFlag is the name of the flag that appends a file's contents to the issue body.
++const attachFlag = "attach"
++
++// maxIssueBodyRunes is the most characters GitHub accepts in an issue body.
++const maxIssueBodyRunes = 65536
++
+ // stdin is the source that runCreate reads body content from when --body or --body-file is "-".
+ // Tests replace it with a strings.Reader so the stdin path runs without blocking on OS input.
+ var stdin io.Reader = os.Stdin
+@@ -69,6 +79,12 @@ Examples:
+       Create a bug issue whose body is the given text.
+       Text that is one line naming an existing file is refused: pass that file with --body-file.
+ 
++  lym selfreport create "Idle reading wrong" --body-file report.md --attach startup-capture.txt
++      Append the capture to the body, under its base name in a code fence.
++      A run directory is deleted with its worktree, so evidence a report rests on goes in the
++      issue this way or quoted in the body, never as a path alone.
++      A body the attachments push past GitHub's issue body limit is refused: attach an excerpt.
++
+   lym selfreport create "Add dark mode" --label enhancement
+       Create an enhancement issue; --label replaces the default "bug" label.
+ 
+@@ -82,6 +98,7 @@ Examples:
+ 	createCmd.Flags().StringP(bodyFlag, "b", "", `issue body text; use "-" to read from stdin`)
+ 	createCmd.Flags().String(bodyFileFlag, "", `file whose contents are the issue body; use "-" to read from stdin`)
+ 	createCmd.MarkFlagsMutuallyExclusive(bodyFlag, bodyFileFlag)
++	createCmd.Flags().StringArray(attachFlag, []string{}, `file whose contents are appended to the body (repeatable)`)
+ 	createCmd.Flags().StringArray("label", []string{}, `label to apply (repeatable); defaults to "bug" when omitted`)
+ 	cmd.AddCommand(createCmd)
+ 
+@@ -99,6 +116,11 @@ func runCreate(out io.Writer, args []string, cmd *cobra.Command) int {
+ 	if err != nil {
+ 		return output.Err(out, err.Error())
+ 	}
++	attachments, _ := cmd.Flags().GetStringArray(attachFlag)
++	body, err = appendAttachments(body, attachments)
++	if err != nil {
++		return output.Err(out, err.Error())
++	}
+ 
+ 	// Default to the "bug" label when no --label flag is given.
+ 	// Defect reports against LoomYard are the primary use of this command.
+@@ -166,6 +188,71 @@ func readBodySource(source string) (*string, error) {
+ 	return &bodyText, nil
+ }
+ 
++// appendAttachments returns body followed by one section per file in paths, in order.
++// It returns body unchanged when paths is empty.
++// Each section names the file by its base name.
++// That keeps a local directory such as a home path out of the public issue.
++// It refuses a body the sections push past GitHub's limit, since GitHub would reject the whole issue.
++// It refuses a file that is not valid UTF-8, since the JSON the issue travels in would replace its invalid bytes.
++func appendAttachments(body *string, paths []string) (*string, error) {
++	if len(paths) == 0 {
++		return body, nil
++	}
++	var sections []string
++	if body != nil && *body != "" {
++		sections = append(sections, strings.TrimRight(*body, "\n"))
++	}
++	for _, path := range paths {
++		content, err := os.ReadFile(path)
++		if err != nil {
++			return nil, fmt.Errorf("failed to read --%s %q: %w", attachFlag, path, err)
++		}
++		if !utf8.Valid(content) {
++			return nil, fmt.Errorf("--%s %q is not valid UTF-8 text, so the issue would hold altered bytes: "+
++				"attach a UTF-8 text excerpt of it", attachFlag, path)
++		}
++		sections = append(sections, attachmentSection(filepath.Base(path), string(content)))
++	}
++	text := strings.Join(sections, "\n\n")
++	if count := utf8.RuneCountInString(text); count > maxIssueBodyRunes {
++		return nil, fmt.Errorf("the issue body with its attachments is %d characters, over GitHub's limit of %d: "+
++			"attach an excerpt holding the lines the report rests on", count, maxIssueBodyRunes)
++	}
++	return &text, nil
++}
++
++// attachmentSection renders one attached file as a heading naming it and its contents in a code fence.
++// The fence is longer than any backtick run in the contents, so the contents cannot close it early.
++// The name is a code span delimited by more backticks than any run in the name, so the name cannot close it early.
++func attachmentSection(name, content string) string {
++	fence := strings.Repeat("`", max(3, longestBacktickRun(content)+1))
++	return fmt.Sprintf("## Attached %s\n\n%s\n%s\n%s", codeSpan(name), fence, strings.TrimRight(content, "\n"), fence)
++}
++
++// longestBacktickRun returns the length of the longest run of consecutive backticks in text.
++func longestBacktickRun(text string) int {
++	longestRun, run := 0, 0
++	for _, r := range text {
++		if r != '`' {
++			run = 0
++			continue
++		}
++		run++
++		longestRun = max(longestRun, run)
++	}
++	return longestRun
++}
++
++// codeSpan renders text as a markdown code span whose delimiter is longer than any backtick run in text.
++// It pads text with a space on each side when text starts or ends with a backtick, which a delimiter would merge with.
++func codeSpan(text string) string {
++	delimiter := strings.Repeat("`", longestBacktickRun(text)+1)
++	if strings.HasPrefix(text, "`") || strings.HasSuffix(text, "`") {
++		text = " " + text + " "
++	}
++	return delimiter + text + delimiter
++}
++
+ // existingFileNamedBy reports whether bodyText is one line naming an existing regular file.
+ // It returns that line as the path.
+ func existingFileNamedBy(bodyText string) (path string, ok bool) {
+diff --git a/internal/selfreportcli/cli_test.go b/internal/selfreportcli/cli_test.go
+index 527f0a1b..62931965 100644
+--- a/internal/selfreportcli/cli_test.go
++++ b/internal/selfreportcli/cli_test.go
+@@ -20,8 +20,10 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
++	"strconv"
+ 	"strings"
+ 	"testing"
++	"unicode/utf8"
+ 
+ 	"github.com/google/go-github/v75/github"
+ 
+@@ -122,12 +124,63 @@ const reportFileName = "report.md"
+ // reportFileContent is the content of the file that chdirToReportFile writes.
+ const reportFileContent = "## What happened\n\nThe report held in a file.\n"
+ 
+-// chdirToReportFile changes the working directory to a fresh temp directory holding reportFileName.
++// fencedFileName is the file that chdirToReportFile writes holding a code fence of its own.
++const fencedFileName = "fenced.md"
++
++// fencedFileContent is the content of fencedFileName.
++const fencedFileContent = "```go\nx\n```\n"
++
++// oversizedFileName is the file that chdirToReportFile writes, one character longer than GitHub's issue body limit.
++const oversizedFileName = "huge.log"
++
++// invalidUTF8FileName is the file that chdirToReportFile writes holding bytes that are not valid UTF-8.
++const invalidUTF8FileName = "binary.bin"
++
++// infixBacktickFileName and edgeBacktickFileName are files that chdirToReportFile writes whose names hold backticks.
++const (
++	infixBacktickFileName = "a`b.txt"
++	edgeBacktickFileName  = "`c`"
++)
++
++// namedFileContent is the content of the backtick-named files.
++const namedFileContent = "named\n"
++
++// limitBody is a multibyte --body whose attachments, with it, fill the issue body limit in characters but not in bytes.
++const limitBody = "ééé"
++
++// fitFileName and overFileName are the files that chdirToReportFile writes to hit the issue body limit with limitBody.
++// Filed after limitBody, the first makes the body exactly maxIssueBodyRunes characters and the second one more.
++const (
++	fitFileName  = "fit.log"
++	overFileName = "over.log"
++)
++
++// limitFillerContent returns multibyte content for the attachment called name.
++// Filed after limitBody, it makes the body maxIssueBodyRunes plus extraRunes characters.
++func limitFillerContent(name string, extraRunes int) string {
++	overhead := utf8.RuneCountInString(limitBody + "\n\n## Attached `" + name + "`\n\n```\n\n```")
++	return strings.Repeat("é", maxIssueBodyRunes+extraRunes-overhead)
++}
++
++// chdirToReportFile changes the working directory to a fresh temp directory.
++// The directory holds every file the constants above name.
+ func chdirToReportFile(t *testing.T) {
+ 	t.Helper()
+ 	dir := t.TempDir()
+-	if err := os.WriteFile(filepath.Join(dir, reportFileName), []byte(reportFileContent), 0o600); err != nil {
+-		t.Fatalf("os.WriteFile(%s): %v", reportFileName, err)
++	files := map[string]string{
++		reportFileName:        reportFileContent,
++		fencedFileName:        fencedFileContent,
++		oversizedFileName:     strings.Repeat("x", maxIssueBodyRunes+1),
++		invalidUTF8FileName:   "ok\xff\xfe",
++		infixBacktickFileName: namedFileContent,
++		edgeBacktickFileName:  namedFileContent,
++		fitFileName:           limitFillerContent(fitFileName, 0),
++		overFileName:          limitFillerContent(overFileName, 1),
++	}
++	for name, content := range files {
++		if err := os.WriteFile(filepath.Join(dir, name), []byte(content), 0o600); err != nil {
++			t.Fatalf("os.WriteFile(%s): %v", name, err)
++		}
+ 	}
+ 	t.Chdir(dir)
+ }
+@@ -180,6 +233,21 @@ func TestRunCreate_Success(t *testing.T) {
+ 		// A directory is not a file to refuse, and an empty body is filed as empty rather than omitted.
+ 		{"body text naming a directory", []string{"create", "T", "-b", "."}, "", withNumber, "T", []string{"bug"}, new("."), new(123.0)},
+ 		{"empty body via flag", []string{"create", "T", "-b", ""}, "", withNumber, "T", []string{"bug"}, new(""), new(123.0)},
++		// Attachments follow the body in order, each under its base name in a fence longer than any backtick run it holds.
++		{"attachments follow the body", []string{"create", "T", "-b", "details\n", "--attach", "./" + reportFileName, "--attach", fencedFileName}, "", withNumber, "T", []string{"bug"},
++			new("details\n\n## Attached `" + reportFileName + "`\n\n```\n## What happened\n\nThe report held in a file.\n```" +
++				"\n\n## Attached `" + fencedFileName + "`\n\n````\n```go\nx\n```\n````"), new(123.0)},
++		{"attachment alone is the body", []string{"create", "T", "--attach", reportFileName}, "", withNumber, "T", []string{"bug"},
++			new("## Attached `" + reportFileName + "`\n\n```\n## What happened\n\nThe report held in a file.\n```"), new(123.0)},
++		// An empty body adds no blank lines before the first section.
++		{"empty body with an attachment", []string{"create", "T", "-b", "", "--attach", reportFileName}, "", withNumber, "T", []string{"bug"},
++			new("## Attached `" + reportFileName + "`\n\n```\n## What happened\n\nThe report held in a file.\n```"), new(123.0)},
++		// A file name with a backtick is a code span delimited by a longer backtick run, padded at an edge backtick.
++		{"attachment names with backticks", []string{"create", "T", "--attach", infixBacktickFileName, "--attach", edgeBacktickFileName}, "", withNumber, "T", []string{"bug"},
++			new("## Attached ``a`b.txt``\n\n```\nnamed\n```\n\n## Attached `` `c` ``\n\n```\nnamed\n```"), new(123.0)},
++		// A body whose characters total the limit is filed, though its bytes exceed it.
++		{"body at the limit in characters", []string{"create", "T", "-b", limitBody, "--attach", fitFileName}, "", withNumber, "T", []string{"bug"},
++			new(limitBody + "\n\n## Attached `" + fitFileName + "`\n\n```\n" + limitFillerContent(fitFileName, 0) + "\n```"), new(123.0)},
+ 		// A response that carries no number leaves the envelope's number field absent.
+ 		{"number omitted when response has none", []string{"create", "T"}, "", withoutNumber, "T", []string{"bug"}, nil, nil},
+ 	}
+@@ -287,7 +355,12 @@ func TestRunCreate_Failure(t *testing.T) {
+ // A bare invocation lists create; an unknown subcommand gets the shared envelope;
+ // a wrong positional count gets cobra's "accepts 1 arg(s)" message.
+ // A body the flags cannot give is refused:
+-// --body text that is one line naming an existing file, both body flags together, and a missing body file.
++// --body text that is one line naming an existing file;
++// both body flags together;
++// a missing body file;
++// a missing attachment;
++// an attachment that pushes the body past GitHub's limit, by one character at the boundary or by a whole file;
++// an attachment that is not valid UTF-8.
+ // None of them reaches the transport.
+ func TestCommand_RefusedBeforeTransport(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -305,6 +378,11 @@ func TestCommand_RefusedBeforeTransport(t *testing.T) {
+ 		{"body text naming an existing file with padding", []string{"create", "T", "-b", " " + reportFileName + "\n"}, 1, `pass --body-file \"` + reportFileName + `\"`},
+ 		{"body and body file together", []string{"create", "T", "-b", "x", "--body-file", reportFileName}, 1, "[body body-file]"},
+ 		{"missing body file", []string{"create", "T", "--body-file", "missing.md"}, 1, "failed to read --body-file"},
++		{"missing attachment", []string{"create", "T", "--attach", "missing.txt"}, 1, "failed to read --attach"},
++		{"attachment over the body limit", []string{"create", "T", "--attach", oversizedFileName}, 1, "over GitHub's limit of " + strconv.Itoa(maxIssueBodyRunes)},
++		{"body and attachment one character over the limit", []string{"create", "T", "-b", limitBody, "--attach", overFileName}, 1,
++			"is " + strconv.Itoa(maxIssueBodyRunes+1) + " characters, over GitHub's limit"},
++		{"attachment not valid UTF-8", []string{"create", "T", "--attach", invalidUTF8FileName}, 1, "is not valid UTF-8"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index 55c2c283..ea46ba98 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -235,6 +235,9 @@ lym board intake close '{"issue":14,"reason":"Duplicate of #12."}'
+   Either way it comments on the issue with a pointer and closes it.
+   A new note gets its type and module labels through `import`'s `labels`.
+   `import` prints the slug, issue, labels and dropped labels, not the entry; `lym board get` shows the entry.
++  It adds `empty_body` for an issue with a blank body and `local_paths` for one that names files under `.lym/`;
++  the entry's import note then says the named files are deleted with their worktree, so do not search for them;
++  only what the entry body quotes or attaches of them is available.
+   A label `upsert` on a folded entry carries the entry's whole label list, since `labels` replaces it.
+ - `close` ends a noise issue with a stated `reason` and writes nothing to the board.
+ 
