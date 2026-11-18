@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (3)
+### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -20,15 +20,14 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Drift: a parent decision trips the judge snapshot check, and line-range expectations never match**<br>• Two drift bugs: parent decision commits blamed on the judge, and line-range entries that never match<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drift-judge-and-line-range`](design-drift-judge-and-line-range.md) | darn · solid | starting · Worktree-Create | neve | 48m<br>0m | drift, loom |
 | T4 | **lym orch launches keep the python guard although deny_python is false**<br>• An orch launch ignores deny_python: false in the hub shuttle config; notice and hook both stay<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-ignores-deny-python`](design-orch-ignores-deny-python.md) | darn · light | landing · Finalize | neve | 1h<br>1h | orch, shuttle, config |
+| T9 | **Agents must never build or check out a repository under .scratch, .lym or _lym**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | darn · light | starting · Worktree-Create | neve | 48m<br>0m | stencil |
 | T10 | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md) | motif | starting · Worktree-Create | neve | 48m<br>0m | burler, stencil, drift |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Agents must never build or check out a repository under .scratch, .lym or _lym**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | darn · light |  | 48m<br>0m | stencil |
+_None._
 
 ### Layer A (1)
 
