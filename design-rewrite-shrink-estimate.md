@@ -1,6 +1,6 @@
 # Estimate how much smaller a clean rewrite of the most patched modules would be
 
-`rewrite-shrink-estimate` · Task · research, landing · running · Darn-Write
+`rewrite-shrink-estimate` · Task · research, landing · running · Drift-Verify
 
 ## Why
 
