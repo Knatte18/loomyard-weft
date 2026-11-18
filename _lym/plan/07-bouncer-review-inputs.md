@@ -1,10 +1,10 @@
 # Card 7 — bouncer-review-inputs
 
 **Create:**
-- `plan:internal/shedadapters#ReviewInput` -> `type ReviewInput struct`
-- `plan:internal/shedadapters#ReviewInputNote` -> `func ReviewInputNote(runDir string) string`
-- `plan:internal/loomcli#reviewInputs` -> `func reviewInputs(scratchDir string) func() ([]shedadapters.ReviewInput, error)`
-- `plan:internal/loomcli#prFindingsFile` -> `func prFindingsFile(scratchDir string, n int) string`
+- `internal/shedadapters#ReviewInput`
+- `internal/shedadapters#ReviewInputNote`
+- `internal/loomcli#reviewInputs`
+- `internal/loomcli#prFindingsFile`
 
 **Edit:**
 - `internal/shedadapters#BouncerConfig`
