@@ -28,7 +28,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Remove code no path from any main reaches**<br>• Run golang.org/x/tools/cmd/deadcode over the repository and delete what it finds, with the tests that only cover it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`remove-unreachable-code`](design-remove-unreachable-code.md) | darn · light | Record-Write | neve | 1m<br>1m | tools |
+| T9 | **Remove code no path from any main reaches**<br>• Run golang.org/x/tools/cmd/deadcode over the repository and delete what it finds, with the tests that only cover it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`remove-unreachable-code`](design-remove-unreachable-code.md) | darn · light | Drift-Baseline | neve | 1m<br>1m | tools |
 
 ### Ready (0)
 
