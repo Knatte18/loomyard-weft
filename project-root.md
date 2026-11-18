@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 13:31 UTC; every age below is as of then.
+Rendered 2026-11-18 13:32 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -21,20 +21,21 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review** | [`review-result-checks`](design-review-result-checks.md)<br>[Sketch](decision-review-result-checks.md) | tapestry · solid | Parent-Align | neve | 3h<br>2h | stencil, drift, fabric, burler, landing, loom, shed, testkit, docs |
 | T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Webster | neve | 3h<br>2h | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | **The per-process memory cap sometimes does not hold, and a runaway process takes the machine down**<br>• RunMemoryCappedVia lets a child keep 384 MB under a 128 MB cap on some runs; find why, fix it, prove it on repeated runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`memory-cap-not-enforced`](design-memory-cap-not-enforced.md) | darn · solid |  | 0m<br>0m | process, gate |
 
-### Draft (2)
+### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 19h<br>18h | board, ide, fabric |
-| T5 | `draft` **The per-process memory cap sometimes does not hold, and a runaway process takes the machine down**<br>• RunMemoryCappedVia lets a child keep 384 MB under a 128 MB cap on some runs; find why, fix it, prove it on repeated runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`memory-cap-not-enforced`](design-memory-cap-not-enforced.md) | darn · solid |  | 0m<br>0m | process, gate |
 
 ## Notes (7)
 
@@ -52,7 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 1h<br>1h | landing |
-| E4 |  | **The Plan writer explorer forks cost more than the writer and show no gain**<br>• Drop the Plan writer exploration subagents; they cost about $6.50 per tapestry run | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | 1h<br>50m | loom, stencil |
+| E4 |  | **The Plan writer explorer forks cost more than the writer and show no gain**<br>• Drop the Plan writer exploration subagents; they cost about $6.50 per tapestry run | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | 1h<br>51m | loom, stencil |
 
 ### Features (3)
 
