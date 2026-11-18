@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap escalation at Discussion review round 3 with three open design-wrong findings (F26, F27, F28), all in D7's relaunch window.\nThe round-3 fixer ran after the review and the decision record's D7 now carries each finding's prescribed fix:\nF26, the relaunch's startup wait runs with the events proof off and decides on the pane capture alone, with a trust-dialog and never-ready criterion;\nF27, step 4 writes the session id, PromptLine, cleared started flag and prompt offset under the record's lock before reed relaunches the pane, and the bound covers a live strand (clear the mark, attach, DeliverPendingPrompt sends an unsent PromptLine);\nF28, one running-run predicate covers every runOutcomeRunning reader and StopStepRuns stops a relaunching run whatever its pane state.\nChecked against the code: checkLivenessTick's doc in internal/shuttleengine/wait.go confirms Wait's probe leaves eventsProof unset, stepstop.go filters exactly as F28 says, and DeliverPendingPrompt exists in run.go.\nThe fix in place answers every open finding, so the hard-cap rule allows accepting; the ruling is recorded as an arbiter decision and the segment accepted.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add claude-account-pick-simple --by arbiter --title \"Round-3 hard-cap ruling: F26 to F28 are answered by D7 as fixed\" --decision … --rationale …",
+    "lym loom circling accept claude-account-pick-simple"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/claude-account-pick-simple/_lym/shed/claude-account-pick-simple/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/claude-account-pick-simple/_lym/shed/claude-account-pick-simple/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step claude-account-pick-simple --until-stop --arbiter-attempt 1"
+}

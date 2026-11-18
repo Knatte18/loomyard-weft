@@ -1,0 +1,14 @@
+verdict: resume
+reason: |-
+  Hard-cap escalation at Discussion review round 3 with three open design-wrong findings (F26, F27, F28), all in D7's relaunch window.
+  The round-3 fixer ran after the review and the decision record's D7 now carries each finding's prescribed fix:
+  F26, the relaunch's startup wait runs with the events proof off and decides on the pane capture alone, with a trust-dialog and never-ready criterion;
+  F27, step 4 writes the session id, PromptLine, cleared started flag and prompt offset under the record's lock before reed relaunches the pane, and the bound covers a live strand (clear the mark, attach, DeliverPendingPrompt sends an unsent PromptLine);
+  F28, one running-run predicate covers every runOutcomeRunning reader and StopStepRuns stops a relaunching run whatever its pane state.
+  Checked against the code: checkLivenessTick's doc in internal/shuttleengine/wait.go confirms Wait's probe leaves eventsProof unset, stepstop.go filters exactly as F28 says, and DeliverPendingPrompt exists in run.go.
+  The fix in place answers every open finding, so the hard-cap rule allows accepting; the ruling is recorded as an arbiter decision and the segment accepted.
+verbs:
+  - |-
+    lym loom decision add claude-account-pick-simple --by arbiter --title "Round-3 hard-cap ruling: F26 to F28 are answered by D7 as fixed" --decision … --rationale …
+  - |-
+    lym loom circling accept claude-account-pick-simple
