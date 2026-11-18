@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-review-result-checks.md)
 
-Depends on: [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md)
+Depends on: [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md), [`records-push-main-weft-ended`](design-records-push-main-weft-ended.md)
 
 Filed from the Sketch `code-review-result-checks`.
 

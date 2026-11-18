@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-claude-accounts-per-worktree.md)
 
-Depends on: [`leftover-strands-and-runs`](design-leftover-strands-and-runs.md)
+Depends on: [`leftover-strands-and-runs`](design-leftover-strands-and-runs.md), [`records-push-main-weft-ended`](design-records-push-main-weft-ended.md)
 
 Filed from the Sketch `claude-account-pick-simple`.
 
