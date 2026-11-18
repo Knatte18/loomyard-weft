@@ -1,23 +1,27 @@
-<!-- This is the review half's explore step: explore the target and
-     understand what it is judged against.
-     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go),
-     seeded to the Bolt checkout's `_lym/stencils/burler/` and read from there at call time by composeReviewPrompt
-     (prompt.go) via internal/stencil, then read by the reviewer only when its seat stencil
-     (burler-template-reviewer.md) directs it here; the reviewer is its only reader. target, fasit, rubric, and tool_use_rules are top-level {{.X}} substitutions;
-     stencil.Fill requires all four non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive is the fifth marker,
-     optional, filled via stencil.FillOptional, and renders as nothing when PATTERN is inactive.
-     focus_directive is the sixth marker, optional, filled via stencil.FillOptional, and renders
-     nothing when the round has no directive.
+<!-- This is the review half's explore step: explore the target and understand what it is judged against.
+     It ships as an embedded default in contracts/stencils/stencils.go.
+     It is seeded to the Bolt checkout's `_lym/stencils/burler/`.
+     `composeReviewPrompt` (internal/burlerengine/prompt.go) reads it from there at call time through internal/stencil.
+     Only the reviewer reads it, and only when its seat stencil (burler-template-reviewer.md) directs it here.
+     target, fasit, rubric, and tool_use_rules are top-level {{.X}} substitutions.
+     The fill requires all four non-empty.
+     The file holds no {{if}}/{{range}} conditional:
+     a required marker inside a conditional branch would render silently blank when present-but-empty.
+     See internal/stencil/stencil.go.
+     pattern_directive is the fifth marker, optional, and renders as nothing when PATTERN is inactive.
+     focus_directive is the sixth marker, optional, and renders nothing when the round has no directive.
      Both stay at the top level, before the first work heading, so their optional-blank semantics hold.
-     fork_reading is the seventh marker, optional, filled via stencil.FillOptional, and renders nothing in a solo round;
+     fork_reading is the seventh marker, optional, and renders nothing in a solo round;
      it sits directly after tool_use_rules on the same line, so an empty value adds no byte.
-lym-stencil: sha256=888800379a24e7a547257ed1f0cb758952982e806bf6cf75ff372e69146091eb build=1834cebfde57af62a41a58438fcb466c16412d94 time=2026-11-01T16:53:16Z -->
+     diff_pieces is the eighth marker, optional, and renders nothing in a round with no diff;
+     it sits directly after target on the same line for the same reason.
+lym-stencil: sha256=f1540988f1364f3e03e4547a544312108a5c582e9ef65625d73453e31de80e61 build=0acf880f6bb388d1e7664a1dd42916ae09c1c05b time=2026-11-18T08:31:59Z -->
 
 {{.pattern_directive}}
 {{.focus_directive}}
 ## What to review (the target)
 
-{{.target}}
+{{.target}}{{.diff_pieces}}
 
 ## What to judge it against (the fasit)
 
