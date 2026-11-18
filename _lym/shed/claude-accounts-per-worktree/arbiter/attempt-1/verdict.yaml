@@ -1,0 +1,19 @@
+verdict: resume
+reason: |-
+  Plan review round 3 stopped at the hard cap with one open design-wrong finding, F17, on card 14 (14-in-run-relaunch).
+  The fix already in card 14 answers F17, checked against the code.
+  The card no longer returns the record-only stopped value (stop.go:14-16).
+  A StopStrand-ended start-path relaunch returns the run's identity with OutcomeDied beside an error wrapping ErrNotStarted.
+  It leaves startupStrandRemoved false, so startRetryable (run.go:645) never relaunches a stopped run.
+  A Start-driven row with an OnEndStrandProcess hook that runs StopStrand now reaches that branch.
+  The fixer's split by how the stop was made matches the code.
+  After the handle's Run.Stop, the relaunch finalizes OutcomeDied once, because Run.Stop reports no session end.
+  After StopStrand, it finalizes nothing, because stopRecorded already reports the session end (stop.go:98).
+  Every symbol the card uses exists: Run.identity, Run.markedStopped and removeStrandIfPresent.
+  Card 16's start-path return still reads consistently with card 14.
+  I recorded the ruling as an arbiter decision and accepted the segment.
+verbs:
+  - |-
+    lym loom decision add claude-accounts-per-worktree --by arbiter --title "A stop-ended start-path relaunch returns OutcomeDied (plan review F17 ruling)" --decision "…" --rationale "…"
+  - |-
+    lym loom circling accept claude-accounts-per-worktree

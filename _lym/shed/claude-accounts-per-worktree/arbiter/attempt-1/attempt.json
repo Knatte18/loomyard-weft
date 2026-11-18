@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Plan-Bouncer",
+    "history_length": 16,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-18T13:31:40.5994229+01:00",
+  "deadline": "2026-11-18T14:01:40.5994229+01:00",
+  "strand_guid": "8376e4eb0dbdd2b5e3407f070c2d3f07",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/claude-accounts-per-worktree/_lym/shed/claude-accounts-per-worktree/drive-reports/drive-envelope-20261118-133140-52e4.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/claude-accounts-per-worktree/_lym/shed/claude-accounts-per-worktree/drive-reports/drive-report-20261118-133140-e346.md",
+  "snapshot": {
+    "head": "3746960e13964897b204f08b3ad79ca499e27cb5",
+    "branch": "claude-accounts-per-worktree",
+    "dirty": {}
+  }
+}
