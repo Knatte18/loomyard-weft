@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 12:53 UTC; every age below is as of then.
+Rendered 2026-11-18 12:54 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -76,7 +76,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **lym gate redundant fails on an uncompilable mutant; a map build exits 1 on Windows-only tests**<br>• Keep a literal mutant type-correct, survive an unbuildable mutant, and leave platform-only tests out of failed_tests<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-check-fixes`](design-redundant-check-fixes.md) | darn · light | Drift-Expect | neve | 21h<br>1m | gate, testkit |
+| T1 | **lym gate redundant fails on an uncompilable mutant; a map build exits 1 on Windows-only tests**<br>• Keep a literal mutant type-correct, survive an unbuildable mutant, and leave platform-only tests out of failed_tests<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-check-fixes`](design-redundant-check-fixes.md) | darn · light | Darn-Write | neve | 21h<br>1m | gate, testkit |
 
 #### Ready (0)
 
@@ -114,7 +114,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review** | [`review-result-checks`](design-review-result-checks.md)<br>[Sketch](decision-review-result-checks.md) | tapestry · solid | Webster | neve | 2h<br>2h | stencil, drift, fabric, burler, landing, loom, shed, testkit, docs |
-| T6 | **Claude usage outside runs: orchs, beam orchs, dobby agents, other hubs**<br>• Weekly Claude usage W45 to W47 of every session tokencount does not count, set beside the run spend<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`token-spend-weekly-rise`](design-token-spend-weekly-rise.md) | darn · docs | Darn-Write | neve | 51m<br>6m | claude, report |
+| T6 | **Claude usage outside runs: orchs, beam orchs, dobby agents, other hubs**<br>• Weekly Claude usage W45 to W47 of every session tokencount does not count, set beside the run spend<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`token-spend-weekly-rise`](design-token-spend-weekly-rise.md) | darn · docs | Darn-Write | neve | 51m<br>7m | claude, report |
 | T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Webster | neve | 3h<br>1h | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
 #### Ready (0)
