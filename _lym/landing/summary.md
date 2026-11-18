@@ -1,30 +1,32 @@
 # selfreport create: add --body-file and refuse -b text naming a file
 
 An agent filed issue #136 with `lym selfreport create "<title>" -b .scratch/selfreport-missing-brief.md`.
-`-b` takes the body as text, so the issue's body became the path and the report in the file was lost.
+`-b` takes the body text, so the issue body became the path and the report the file held was lost.
 
-## What changes
+`lym selfreport create` now has two changes:
 
-- `lym selfreport create` gains `--body-file <path>`, which files the file's contents as the issue body.
-  `--body-file -` reads the body from stdin, as `-b -` already does.
-- `--body` and `--body-file` are mutually exclusive; cobra refuses both together.
-- `--body` text that, trimmed, is one line naming an existing regular file is refused before any GitHub call.
-  The error names the way forward, `pass --body-file <path> to file the file's contents`.
-  Text that mentions a path inside a longer line, or names a directory or a missing file, is still filed as text.
-- A `--body-file` that cannot be read fails with `failed to read --body-file: ...` and files nothing.
-- The command's `--help` examples show `--body-file` and the refusal, since the friction reflection and agents learn the flags from it.
-  `docs/overview.md`'s selfreport entry and the package doc say the same.
+- A `--body-file <path>` flag files the contents of a file as the issue body; `-` reads stdin, as `-b -` does.
+  It is mutually exclusive with `-b`/`--body`.
+- `-b` text that is one line naming an existing regular file is refused.
+  The error names `--body-file` with the path as the way forward.
+  Surrounding whitespace is trimmed before the check.
+  A directory, a multi-line text, a line that only mentions a file, and an empty body are filed as text as before.
+
+`docs/overview.md` and the command help carry the new flag and the refusal.
+
+Closes #136
 
 ## Design decisions
 
-- The guard refuses rather than warns: a warning on a JSON envelope that still reports success would let an agent file the path and move on,
-  which is the failure the task reports.
-- A relative path is resolved against the process's working directory, the same directory the caller's shell resolves it in,
-  so the check sees the file the caller meant.
+- The check refuses rather than warns, because a warning still files the wrong body and the report cannot be recovered afterwards.
+- Only regular files trigger the refusal, so `-b .` and similar text are not blocked.
+- Body resolution moved from `runCreate` into `resolveBody` and `readBodySource` in `internal/selfreportcli/cli.go`.
+  The `nil` body (neither flag given) and the empty body (`-b ""`) keep their earlier meaning.
 
-## Tests
+## To check
 
-`internal/selfreportcli/cli_test.go` adds rows to the existing tables:
-a body from a file, a body file read from stdin, and body text that mentions a file inside a longer line succeed with the expected request body;
-`-b` naming an existing file, both body flags together, and a missing body file are refused with no request sent.
-The rows run in a temp directory holding the report file, entered with `t.Chdir`.
+- The refusal is only as good as `os.Stat` from the working directory: text naming a file that exists elsewhere is filed as text.
+- Check `body-flag-names-raw-literals`: the flag names are now the constants `bodyFlag` and `bodyFileFlag`, and `stdinArgument` names `-`.
+  Confirm no raw `"body"`, `"body-file"` or `"-"` literal remains in `internal/selfreportcli/cli.go`.
+- Check `padded-path-trim-untested`: a test row now covers padded text (`" report.md\n"`) refused with the trimmed path in the message.
+- Not run by hand: an end-to-end `lym selfreport create` against GitHub; the tests use an `httptest` server.
