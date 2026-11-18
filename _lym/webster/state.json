@@ -576,6 +576,24 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a0ef6fd807272a962.jsonl"
       ]
     },
+    "11": {
+      "slug": "reed-hold-and-relaunch-ops",
+      "cards": [
+        "11-reed-hold-and-relaunch-ops",
+        "12-run-relaunching-record"
+      ],
+      "cardHashes": {
+        "11-reed-hold-and-relaunch-ops": "3ae4f4aba9d08390de28fffa97d2ad1f57382be3f82fdb84dde5a481e4edc0a4",
+        "12-run-relaunching-record": "28d86ed8d3b3f7e3944bbe950f7a3f7f3fd020d712701beafa8a50804f5a7730"
+      },
+      "startSha": "25622f1e87b27d692c427e9c8ee533b1a103dffa",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T15:52:29Z",
+      "sessionId": "9142bc6e-f406-4b6c-8882-b8da16176a9c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "3": {
       "slug": "engine-worktree-geometry",
       "cards": [
@@ -746,7 +764,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "135b8cd51e8ec48e4fd912379752b134",
   "masterSessionId": "9142bc6e-f406-4b6c-8882-b8da16176a9c",
   "masterEngine": "claude",
