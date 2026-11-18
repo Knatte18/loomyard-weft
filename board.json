@@ -367,6 +367,27 @@
       "body": "Imported from [issue #148](https://github.com/Knatte18/loomyard/issues/148).\n\n## What happened\n\nAn agent was given a task imported from a GitHub issue.\nThe task said to check a shuttle idle reading against `startup-capture.txt` in two run directories under `.lym/shuttle/`.\nNeither directory existed on the machine: the worktree of the source run was gone, and no hub log held the failure.\nThe agent spent a long time searching for the evidence before concluding it was unrecoverable.\nA second part of the task was imported from an issue whose body was empty, so only the title was available to work from.\n\n## Why this is abnormal\n\nThe board entry points at evidence (captures, log lines) that lives only in a run directory that can be deleted with its worktree.\nOnce the worktree is gone, the entry names files nobody can read.\nAn issue body that arrives empty gives the entry nothing to act on, and nothing flags the loss.\n\n## What to do\n\n- When the board imports an entry from an issue, copy the evidence the issue names into the entry, or into a file the entry references that outlives the source worktree.\n- Flag an import whose issue body is empty, so the empty entry is not mistaken for a complete one.\n- Consider a hint at issue-creation time (`lym selfreport create`) to include captured evidence inline, since run directories are not durable.\n\nProvenance: task slug `shuttle-start-idle-and-prompt`; note file `Darn-Write.md`.",
       "created": "2026-11-18T16:38:30Z",
       "revised": "2026-11-18T16:38:30Z"
+    },
+    {
+      "id": 1473,
+      "handle": "E3",
+      "slug": "drift-halt-note-repeats-rows",
+      "title": "Drift-Verify halt note repeats one judge rationale per row and buries the way forward",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "drift",
+        "loom"
+      ],
+      "issues": [
+        147
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #147](https://github.com/Knatte18/loomyard/issues/147).\n\n## What happened\n\n`lym loom` halted at `Drift-Verify` (state `blocked`, anomaly `escalation-to-human`) because the judge ruled that a change did not match its expectation.\nThe halt reason, which `lym loom` writes whole into the halt note under the friction directory, is one sentence per changed line of the compared capture.\nIt listed over a hundred changed lines (a ticked time series), each carrying the same judge rationale, and the note grew to about 44 KB.\nThe halt output ends with the way forward (`lym drift amend \u003cslug\u003e --entries \u003cfile\u003e` then `lym loom resume`, or `lym loom goto --to Darn-Write`) only after all of that text.\n\n## Why it is abnormal\n\n- The same rationale repeats on every row, so the actionable information (the one cause and the two ways forward) is buried.\n- A reader of the halt note or the pane has to scroll past the whole list to reach the way forward.\n- The same text goes into every consumer of the note (reflection, operator pane), which inflates their context.\n\n## What to do\n\n- Group judge findings that share a case, key and rationale into one entry with a row range and the first and last old/new values.\n- Cap the halt reason's length, point to the full findings file by repo-relative path, and put the way forward first.\n\nProvenance: task `dop-pumps-off-negative-spp`; note `loom-halt-4.md`.\n",
+      "created": "2026-11-18T16:38:33Z",
+      "revised": "2026-11-18T16:38:33Z"
     }
   ],
   "prime_owner": "neve",
