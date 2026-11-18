@@ -1,6 +1,6 @@
 # Seed-IDE fails: records push calls main-weft ended on origin
 
-`records-push-main-weft-ended` · Task · bug, fabric, batten · starting · Worktree-Create
+`records-push-main-weft-ended` · Task · bug, fabric, batten · starting · Seed-Child
 
 ## Seen
 
