@@ -16,10 +16,10 @@ Everything outside fabric looks and behaves the same; only fabric knows where th
 
 ## Open questions for its Discussion
 
-- How housekeeping commits stay apart from code commits: separate commits on the same branch, a separate orphan branch in the same repo, or a ref namespace.
+- Where housekeeping commits go. Every weft commit already goes through `lym fabric commit` (or `sync`/`push`) as its own "weft sync" commit, and `.lym` is never committed (a `.gitignore` entry suffices in this mode); the question is only whether `_lym` commits sit on the code branch or on a separate branch of the same repo.
 - What a landing does with `_lym` and `.lym`: excluded from the PR and the merge to the parent, or carried.
 - Which parts of today's weft (records branch, board, per-task branches, push transport) need a single-repo counterpart.
-- Whether code outside fabric assumes the split anywhere, which the invisibility promise rules out.
+- Whether code outside fabric assumes the split or commits `_lym` itself: several packages call git directly (`hubforge`, `websterengine`, `burlerengine` among them), most likely for warp commits; verify.
 
 ## Relation
 
