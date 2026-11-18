@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 2 escalated to the parent (cause: circling); brief at /home/knatte/Code/loomyard-LYMHUB/testmap-uses-design/_lym/reviews/discussion/round-2-escalation.md; decide with `lym loom circling accept testmap-uses-design` or `lym loom circling continue testmap-uses-design`, then run `lym loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `testmap-uses-design` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/testmap-uses-design/_lym/reviews/discussion/round-2-escalation.md` with a one-shot fork. Way forward: decide with \"lym loom circling accept testmap-uses-design\" or \"lym loom circling continue testmap-uses-design\".",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 2 escalated to the parent (cause: circling); brief at /home/knatte/Code/loomyard-LYMHUB/testmap-uses-design/_lym/reviews/discussion/round-2-escalation.md; decide with `lym loom circling accept testmap-uses-design` or `lym loom circling continue testmap-uses-design`, then run `lym loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -144,6 +145,13 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/testmap-uses-design/_lym/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-11-18T18:46:44Z",
+      "started_at": "2026-11-18T18:46:21Z"
     }
   ],
   "product": {

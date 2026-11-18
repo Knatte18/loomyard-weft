@@ -1,0 +1,1 @@
+Review segment of task `testmap-uses-design` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/testmap-uses-design/_lym/reviews/discussion/round-2-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept testmap-uses-design" or "lym loom circling continue testmap-uses-design".
