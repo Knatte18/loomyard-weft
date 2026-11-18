@@ -1,14 +1,15 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/wxb-plan-with/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add wxb-plan-with`, then decide with `lym loom circling accept wxb-plan-with` or `lym loom circling continue wxb-plan-with`, then run `lym loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `wxb-plan-with` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/wxb-plan-with/_lym/reviews/discussion/round-1-escalation.md` with a one-shot fork. Way forward: record each answer with \"lym loom decision add wxb-plan-with --by parent\", one entry per answered finding, then decide with \"lym loom circling accept wxb-plan-with\" or \"lym loom circling continue wxb-plan-with\".",
   "pause_requested": false,
   "pause_before": "Plan-Bouncer",
   "pause_before_by": "wxb-bench",
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/wxb-plan-with/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add wxb-plan-with`, then decide with `lym loom circling accept wxb-plan-with` or `lym loom circling continue wxb-plan-with`, then run `lym loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -99,6 +100,14 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer",
+      "block": "Motif"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/wxb-plan-with/_lym/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-11-18T18:41:40Z",
+      "started_at": "2026-11-18T18:41:17Z",
       "block": "Motif"
     }
   ],
