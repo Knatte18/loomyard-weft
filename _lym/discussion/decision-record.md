@@ -268,6 +268,12 @@ Decision: Design the single-repo mode as a build into the current internal/fabri
 
 Rationale: The operator judged a full fabricengine rewrite too large on 2026-11-18, and the clean-room rewrite note was removed from the board; no rewrite is planned.
 
+### Added after Discussion (operator, 2026-11-18): The motif writes the design only
+
+Decision: This motif changes no code. Its record is written as the design a later task builds into the current internal/fabricengine.
+
+Rationale: Operator, 2026-11-18: the motif rewrites nothing, but writes as if the work will be done.
+
 ## Constraints
 
 - The operator ruled that `_lym` is never in the exclude (board entry, 2026-11-18), and lym never force-adds (`PATTERN-gitrepo-client-boundary`).
