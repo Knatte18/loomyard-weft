@@ -2,8 +2,6 @@
 
 `leftover-strands-and-runs` · Task · bug, gate, shuttle, reed, shed · running · Darn-Write
 
-Depends on: [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md)
-
 Two bugs where a leftover strand or shuttle run stops a run, bundled because both sit in shuttle run tracking and the step that meets it.
 
 ## Part: a gate re-prompt finds its strand untracked

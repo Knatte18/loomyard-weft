@@ -2,8 +2,6 @@
 
 `twill-fixer-fork-writes` · Task · bug, burler, lenses · running · Darn-Write
 
-Depends on: [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md)
-
 Imported from [issue #144](https://github.com/Knatte18/loomyard/issues/144).
 
 What happened: a loom run halted failed at the Code-Burler-Fix producer (anomaly producer-hard-failure) in round 1 attempt 1. The shedadapters guard reported that the burler twill fixer fork attempted 5 write/edit tool calls, and that a fork must never mutate a file. Way forward named by lym: inspect the target's working-tree changes, revert what the fork wrote, and resume the run. The preceding Code-Bouncer and Code-Burler-Review rows were both recorded as stuck.
