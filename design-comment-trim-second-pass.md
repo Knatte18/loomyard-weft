@@ -1,6 +1,6 @@
 # Comments: check what the big comment rewrite left, before any new pass
 
-`comment-trim-second-pass` · Task · enhancement, docs · starting · Open-IDE
+`comment-trim-second-pass` · Task · enhancement, docs · running · Preflight
 
 ## What was seen
 
