@@ -1,10 +1,9 @@
 {
   "current_producer": "Plan-Bouncer",
-  "state": "running",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
-  "pause_before": "Plan-Bouncer",
-  "pause_before_by": "wxb-bench",
+  "pause_reason": "paused before Plan-Bouncer, as requested by wxb-bench",
   "activity": {
     "now": "Plan-Bouncer",
     "last": "Plan-Write → done",
