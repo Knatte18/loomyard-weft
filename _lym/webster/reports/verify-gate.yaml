@@ -1,0 +1,19 @@
+attempt: 1
+cap: 2
+command: lym gate test --wait --gate webster
+exit_code: 1
+failures:
+    - id: github.com/Knatte18/loomyard/internal/burlerengine.TestEngine_Fix_TableShapeAndFiles/single_fixer
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/burlerengine
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/burlerengine.TestEngine_Fix_TableShapeAndFiles/twill_fixer
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/burlerengine
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/burlerengine.TestTemplate_OptionalDirectives/fix_step_renders_an_empty_optional_marker_cleanly
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/burlerengine
+      tail: ""
+log_path: /home/knatte/Code/loomyard-LYMHUB/review-result-checks/.lym/verify/verify-2.log
+fixer: fork
