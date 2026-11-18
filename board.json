@@ -174,34 +174,6 @@
       "revised": "2026-11-17T18:54:35Z"
     },
     {
-      "id": 1469,
-      "handle": "T5",
-      "slug": "plan-writer-explorer-forks",
-      "title": "Bench the explorer subagents of the Discussion and Plan writers: with against without",
-      "kind": "task",
-      "labels": [
-        "research",
-        "loom",
-        "stencil"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Same frozen inputs, the writers run with and without the Agent-tool explore and lookup subagents; compare cost, time and plan or record quality",
-      "body": "## What was seen\n\nBoth writer stencils on main tell the writer to hand exploration and lookups to fresh subagents through the Agent tool:\n`contracts/stencils/loom/loom-template-discussion.md` (\"Start the exploration with explore subagents\", `3085f451`, 2026-11-05; lookups since `2d319fe5`)\nand `contracts/stencils/loom/loom-template-plan.md` (a batch of lookup subagents).\nThese are not the twill-plan forks; twill stays, since it makes the first plan version much better than a solo writer\n(operator, 2026-11-18; `docs/research/loom/plan-writer-bench-2026-11-12/report.md`).\n`tools/tokencount` counts every subagent transcript as a fork, so its \"Plan writer forks\" $137.84 (21 tapestry runs since 2026-11-03) mixes twill forks and explorers;\na subagent's meta file tells them apart (`agentType` `fork` against `general-purpose` or `Explore`).\nThe earlier measurement (`docs/research/turns/writer-lookups-measure-2026-11-04/report.md`) counted how writers use them, never whether they help.\nThe operator doubts they help much.\n\n## Bench, exact cap\n\n- Reference: one landed tapestry run with both a Discussion and a twill Plan, its records archived on its weft tag; the base commit it started from.\n- Arms, each once: Discussion-Write with explorers (stencil as on main) and without (the explorer and lookup lines removed in the bench pair's stencil copy);\n  Plan-Write with and without, both from the reference's frozen decision record, twill on in both. Four writer sessions in all, model and effort as the hub default.\n- Cost and time: from the session transcripts, with explorer subagents split out by `agentType`.\n- Quality: grading keys fixed before any bench output is read, from the reference run's own Discussion and Plan review findings, graded as in the 2026-11-12 plan bench (repeated, partly, avoided).\n- Also: the explorer share of \"Plan writer forks\" and of the Discussion writer over the 21 runs counted, from the meta files.\n- Cost cap $40 for the bench sessions.\n\n## Output\n\nA report under `docs/research/loom/writer-explorers-bench-\u003cdate\u003e/` with the cost, time and grade per arm, and a recommendation: keep the explorers, drop them, or keep them in one writer only.\n",
-      "status": "done",
-      "created": "2026-11-18T12:30:19Z",
-      "revised": "2026-11-18T18:10:11Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "docs"
-    },
-    {
       "id": 1472,
       "handle": "T4",
       "slug": "import-loses-issue-evidence",
@@ -364,36 +336,7 @@
       "brief": "The reach note, the diff mutation check and failure triage, built on one reader of the maps",
       "body": "The uses the map study ranked worth building (`docs/research/speed/testmap-use-cases-2026-11-18/report.md`, `884424fb`).\nWhat only the maps give is the lookup between a function and the tests that reach it, across packages; none of the uses saves test time.\n\nBuild order: the reach note first, since the other two read the maps through its reader; then failure triage; then the diff mutation check, starting with its hand trial.\nThe maps need no upkeep per landing for these: a stored map stays sound for days, and the packages a diff touches are mapped fresh in seconds.\n",
       "created": "2026-11-18T18:04:30Z",
-      "revised": "2026-11-18T18:07:14Z",
-      "order": [
-        "testmap-uses-design"
-      ]
-    },
-    {
-      "id": 1486,
-      "handle": "T2",
-      "slug": "testmap-uses-design",
-      "title": "Coverage map uses: reach note, failure triage and diff mutation check",
-      "kind": "task",
-      "labels": [
-        "sketch",
-        "testmap",
-        "gate",
-        "burler",
-        "darn"
-      ],
-      "issues": [],
-      "recipe": "raddle",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "One reader of the maps feeding a reach note for writer and review, failure triage in the gate report and fixer brief, and a mutation check of a diff changed blocks",
-      "body": "Design the three uses of the per-test coverage maps the map study ranked worth building (`docs/research/speed/testmap-use-cases-2026-11-18/report.md`, `884424fb`), as one design over one reader of the maps.\nBuild order: the reach note first, since the other two read through its reader; then failure triage; then the diff mutation check, which starts with its hand trial.\n\n## Reach note for a diff: the tests reaching each changed function, and changed functions nothing reaches\n\n### What was seen\n\nThe map-uses study (`docs/research/speed/testmap-use-cases-2026-11-18/report.md`, use 2) ranks this second and builds it first:\nuses 1 and 3 read the maps through the same reader.\nThe code review rubric already asks for \"a behavior the diff adds with no coverage\" and that a redundancy finding name its covering test;\ntoday the reviewer answers both by searching and reading.\nA name search cannot find tests that reach a function through callers: 793 reached functions are reached by no test of their own package,\nand half of all reached functions are reached from more than one test package.\n\n### Idea\n\n- A reader of the maps with an index (a lookup across packages reads up to 56 MB of JSON).\n- A finder of the functions a diff changes, comparing function texts (the old one went with the selector in `72b26d1a`).\n- A note in the code review: for each changed function the tests that reach it, own package first and most specific first, ranked and capped\n  (153 functions are reached by 500 tests or more); and the changed functions no test reaches,\n  saying when that may only mean a tier 2 or spawn-marked test runs it.\n- The writer gets the same note before review: its verify gate prints, once the tiers pass, the changed functions no test reaches and the tests reaching each changed function, so the writer adds the missing tests itself and review mostly finds none left (operator, 2026-11-18).\n- A read verb a writer can call for a function before it edits.\n- No upkeep per landing: a stored map stays sound for days (98.5 % of a fresh map's pairs after three days), plus a fresh map of the diff's packages.\n\nStudy estimate: 2 darns.\n\n## Failure triage: does a failing test reach what the run changed\n\n### What was seen\n\nThe map-uses study (`docs/research/speed/testmap-use-cases-2026-11-18/report.md`, use 3):\nall four flaky failures since 2026-11-01 that the maps hold were tests reaching no file their landing changed;\nDeFlaker's rule would have called them flaky before any rerun.\nToday a repeated failure that is not the run's own costs a round trip to the parent to test the base,\nand on 2026-11-18 a fixer chasing such a failure ran the memory hog that crashed Neve.\n\n### Idea\n\n- For each failing test the maps hold, a line in the gate's failure report and in the fixer's brief:\n  the run's changed functions it reaches, or \"reaches none of this run's changes\".\n- For a parent branch gone red, the same lookup over the landings since the last green names the landings whose changes the test reaches.\n- Reads through the reader of note `testmap-reach-note`.\n\nStudy estimate: 1 darn on top of the reach note.\n\n## Mutation check of the code a diff changes, survivors to the code review\n\n### What was seen\n\nThe map-uses study (`docs/research/speed/testmap-use-cases-2026-11-18/report.md`, use 1) ranks this first:\nthe only use that sees what tests assert. A mutant no test kills is a changed behaviour no test checks.\nGoogle runs this on changed lines in code review (Petrović et al.); developers first called 85 % of mutants unproductive, so a cap and a filter are part of the first build.\n`internal/testcover` already plans mutants per block, builds them into one test binary and judges kills.\nWith the map each mutant runs the tests covering its block (2 at the median) instead of the whole package (23.8 on average).\n\n### Idea\n\n1. Trial first: replay the step by hand over about twenty landed diffs, count survivors and read a sample, to learn how often a landed diff holds an unchecked change.\n2. If the trial pays: a gate report step after the tiers pass, mutants only in the diff's new or changed blocks, capped per diff,\n   uncovered blocks reported as uncovered without mutants, survivors to the code review with file, line and operator.\n   A survivor only another package's test could kill is discounted through the reach note (note `testmap-reach-note`).\n\nStudy estimate: a trial darn, then 3 to 4 darns.\n\n",
-      "status": "done",
-      "created": "2026-11-18T17:58:55Z",
-      "revised": "2026-11-18T18:54:34Z",
-      "project": "testmap-uses",
-      "discussed": true,
-      "record_body_sha256": "3d7e858a357b470cbc43db45378d1884d9890986d2719bd3338df3de3f11fec2"
+      "revised": "2026-11-18T18:07:14Z"
     },
     {
       "id": 1487,
@@ -439,7 +382,7 @@
       "isolated": false,
       "brief": "Run golang.org/x/tools/cmd/deadcode over the repository and delete what it finds, with the tests that only cover it",
       "body": "## What was seen\n\nThe shrink study (2026-11-18) found features in `landingshed` that nobody has checked for use.\nSome code may be reachable from no `main` at all, kept alive only by its own tests.\n\n## Scope\n\n1. Run `golang.org/x/tools/cmd/deadcode` over every `main` package in the repository: `cmd/lym` and the programs under `tools/`.\n   Run it without and with `-test`, so the report separates code nothing reaches from code only tests reach.\n2. Delete each unreachable function, and with it the tests that cover only that function.\n   Code only tests reach is deleted the same way, unless it is a test helper.\n3. Check each hit before deleting it: a function reached through reflection, a registry, a `go:linkname` or a build tag for another platform stays,\n   and the report names it with the reason.\n4. No behaviour change: the gate stays green, and nothing a user can call is removed.\n\nThe report lists the removed lines per package and every hit kept with its reason.\n",
-      "status": "running · Describe",
+      "status": "running · PR-Review",
       "created": "2026-11-18T18:49:00Z",
       "revised": "2026-11-18T18:49:00Z",
       "run_settings": {
