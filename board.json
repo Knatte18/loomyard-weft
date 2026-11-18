@@ -423,6 +423,24 @@
         }
       },
       "profile": "light"
+    },
+    {
+      "id": 1465,
+      "handle": "E2",
+      "slug": "clean-room-module-rewrite",
+      "title": "Clean-room rewrite of the most patched modules, landing first",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "landing"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed",
+      "body": "## What was seen\n\nMuch of lym's code, and its tests, grew by fixing bugs on bugs.\nFix commits over the past month cluster in a few packages:\n`loomcli`, `fabricengine`, `landingshed`, `shuttleengine`, then `battencli`, `websterengine` and `driftengine`.\nThe operator suspects these need a hard rewrite, tests included.\n\n## Idea\n\nRewrite one module at a time, clean-room, with its exported interface held fixed as the contract.\nInterface changes between modules wait for a later round, once both sides are rewritten.\n\n1. Spec: a darn docs run writes what the module must do and why:\n   its job, the invariants that always hold, and each special case with its reason.\n   It draws the reasons from the module's fix-commit history, never describing how the current code does it.\n2. Tests from the spec alone: another run writes new tests without seeing the old code or the old tests.\n   The tests use only the module's interface.\n   They run against the old code; each failure is either a spec error or an old bug,\n   and each is decided by the operator and written into the spec.\n3. Code from the spec and the new tests: a darn solid run deletes the old package and its tests in the worktree first,\n   then writes the module anew.\n   It must pass the new tests and every other module's tests, which this round leaves unchanged.\n4. Compare: lines of code and of tests, coverage, gate time, and any behaviour that changed.\n\n## Pilot\n\nRun the pilot on `landingshed` (mid-sized, clear boundary).\nIt measures one module's cost in tokens, wall time and operator decisions in step 2.\nOn its result the operator decides whether to go on, and with which of the most patched modules;\na study of those packages may set the order.\nModules with no shared code can then be rewritten in parallel.\n",
+      "created": "2026-11-18T11:58:24Z",
+      "revised": "2026-11-18T11:58:24Z"
     }
   ],
   "prime_owner": "neve",
