@@ -6,7 +6,7 @@
 
 The `landingshed` reading found about 340 lines of features a product owner could remove
 (the flaky rerun, the adopter-first repair note, the beam landing record among them); nobody has checked whether they are used.
-Code that no path reaches is removed by `remove-unreachable-code`; this note covers features that are reachable but unused.
+Code that no path reaches was removed by `remove-unreachable-code`, which has landed; this note covers features that are reachable but unused.
 
 ## Idea
 
