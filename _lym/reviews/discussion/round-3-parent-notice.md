@@ -1,0 +1,1 @@
+Review segment of task `fabric-single-repo-mode` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/fabric-single-repo-mode/_lym/reviews/discussion/round-3-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept fabric-single-repo-mode".
