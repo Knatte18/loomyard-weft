@@ -419,7 +419,8 @@
       "status": "starting · Open-IDE",
       "created": "2026-11-18T16:44:29Z",
       "revised": "2026-11-18T16:44:29Z",
-      "profile": "docs"
+      "profile": "docs",
+      "notify_on_land": true
     }
   ],
   "prime_owner": "neve",
