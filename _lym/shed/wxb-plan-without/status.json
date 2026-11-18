@@ -1,13 +1,13 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Plan-Bouncer",
   "pause_before_by": "wxb-bench",
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
+    "now": "Drift-Baseline",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -167,6 +167,14 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer",
+      "block": "Motif"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/wxb-plan-without/_lym/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-11-18T18:49:13Z",
+      "started_at": "2026-11-18T18:48:51Z",
       "block": "Motif"
     }
   ],
