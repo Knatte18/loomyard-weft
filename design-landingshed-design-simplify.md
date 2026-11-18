@@ -1,6 +1,6 @@
 # Pilot: simplify the design of landingshed without changing behaviour
 
-`landingshed-design-simplify` · Task · enhancement, landing · starting · Seed-Child
+`landingshed-design-simplify` · Task · enhancement, landing · starting · Open-Window
 
 ## Why
 
