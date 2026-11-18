@@ -1,6 +1,6 @@
 # Verdict on Codex as assistant Code-Review reviewer, from 14 rounds
 
-`codex-assist-verdict` · Task · research, codex, burler · starting · Seed-Child
+`codex-assist-verdict` · Task · research, codex, burler · starting · Open-Window
 
 Gives the verdict of the trial in note `codex-assist-review-trial` (R1): is Codex (`astra[medium]`) worth keeping as the non-gating assistant Code-Review reviewer beside the Claude reviewer?
 
