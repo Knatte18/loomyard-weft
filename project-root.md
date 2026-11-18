@@ -54,14 +54,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **VS Code often keeps showing a stale board file after lym rewrites it**<br>• The board renders every file by temp-write and rename, so the open markdown preview tracks a replaced inode; write rendered view files in place instead | [`board-view-not-refreshing`](design-board-view-not-refreshing.md) | 4m<br>4m | board, ide |
+| B1 |  | **VS Code often keeps showing a stale board file after lym rewrites it**<br>• The board renders every file by temp-write and rename, so the open markdown preview tracks a replaced inode; write rendered view files in place instead | [`board-view-not-refreshing`](design-board-view-not-refreshing.md) | 5m<br>5m | board, ide |
 
 ### Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty** | [`import-loses-issue-evidence`](design-import-loses-issue-evidence.md) | 1h<br>1h | board, selfreport |
-| E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 6h<br>42m | landing |
+| E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 6h<br>43m | landing |
 
 ### Features (3)
 
