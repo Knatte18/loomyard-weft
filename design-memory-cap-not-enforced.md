@@ -1,6 +1,6 @@
 # The per-process memory cap sometimes does not hold, and a runaway process takes the machine down
 
-`memory-cap-not-enforced` · Task · bug, process, gate · running · Code-Bouncer
+`memory-cap-not-enforced` · Task · bug, process, gate · running · Code-Burler-Review
 
 ## What was seen (2026-11-18)
 
