@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 18h<br>17h | board, ide, fabric |
-| T6 | `draft` **Where the Claude quota goes, and why it burns faster now than two weeks ago**<br>• Weekly Claude usage W44 to W47 by role, model, hub, recipe and session kind; name what drove the rise and the cuts<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`token-spend-weekly-rise`](design-token-spend-weekly-rise.md) | darn · docs |  | 16m<br>15m | claude, report |
+| T6 | `draft` **Where the Claude quota goes, and why it burns faster now than two weeks ago**<br>• Weekly Claude usage W44 to W47 by role, model, hub, recipe and session kind; name what drove the rise and the cuts<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`token-spend-weekly-rise`](design-token-spend-weekly-rise.md) | darn · docs |  | 16m<br>16m | claude, report |
 
 ## Notes (6)
 
