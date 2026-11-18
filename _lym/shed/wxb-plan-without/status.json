@@ -1,13 +1,13 @@
 {
-  "current_producer": "Drift-Baseline",
+  "current_producer": "Parts-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Plan-Bouncer",
   "pause_before_by": "wxb-bench",
   "activity": {
-    "now": "Drift-Baseline",
-    "last": "Discussion-Bouncer → done",
+    "now": "Parts-Write",
+    "last": "Drift-Baseline → skipped",
     "wait": ""
   },
   "history": [
@@ -176,6 +176,13 @@
       "at": "2026-11-18T18:49:13Z",
       "started_at": "2026-11-18T18:48:51Z",
       "block": "Motif"
+    },
+    {
+      "producer": "Drift-Baseline",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-18T18:49:24Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
