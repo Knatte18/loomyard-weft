@@ -1,11 +1,11 @@
 {
-  "current_producer": "Finalize",
+  "current_producer": "Beam-Down",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Finalize",
-    "last": "Beam-Await → done",
+    "now": "Beam-Down",
+    "last": "Finalize → done",
     "wait": ""
   },
   "history": [
@@ -37,6 +37,13 @@
       "at": "2026-11-18T07:20:40Z",
       "started_at": "2026-11-17T06:20:03Z",
       "by": "shed"
+    },
+    {
+      "producer": "Finalize",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-18T07:23:33Z",
+      "started_at": "2026-11-18T07:20:41Z"
     }
   ],
   "product": {
