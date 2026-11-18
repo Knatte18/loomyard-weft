@@ -1,6 +1,6 @@
 # P3 Put the per-test coverage maps to use
 
-Rendered 2026-11-18 18:47 UTC; every age below is as of then.
+Rendered 2026-11-18 18:48 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`testmap-uses`](design-testmap-uses.md) · Age 43m · Owner `neve`
@@ -26,7 +26,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Coverage map uses: reach note, failure triage and diff mutation check**<br>• One reader of the maps feeding a reach note for writer and review, failure triage in the gate report and fixer brief, and a mutation check of a diff changed blocks | [`testmap-uses-design`](design-testmap-uses-design.md) | motif | Discussion-Bouncer | neve | 49m<br>40m | testmap, gate, burler, darn |
+| T2 | **Coverage map uses: reach note, failure triage and diff mutation check**<br>• One reader of the maps feeding a reach note for writer and review, failure triage in the gate report and fixer brief, and a mutation check of a diff changed blocks | [`testmap-uses-design`](design-testmap-uses-design.md) | motif | Discussion-Burler-Review | neve | 49m<br>40m | testmap, gate, burler, darn |
 
 ### Ready (0)
 

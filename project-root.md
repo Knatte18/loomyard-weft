@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 18:47 UTC; every age below is as of then.
+Rendered 2026-11-18 18:48 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -22,8 +22,8 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`import-loses-issue-evidence`](design-import-loses-issue-evidence.md) | darn · light | Record-Write | neve | 2h<br>1m | board, selfreport |
 | T5 | **Bench the explorer subagents of the Discussion and Plan writers: with against without**<br>• Same frozen inputs, the writers run with and without the Agent-tool explore and lookup subagents; compare cost, time and plan or record quality<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | darn · docs | Darn-Write | neve | 6h<br>37m | loom, stencil |
 | T6 | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md) | motif | Discussion-Burler-Fix | neve | 1h<br>32m | fabric |
-| T7 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-with`](design-wxb-plan-with.md)<br>[Sketch](decision-wxb-plan-with.md) | tapestry | Plan-Write | neve | 29m<br>29m |  |
-| T8 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-without`](design-wxb-plan-without.md) | tapestry | Discussion-Burler-Fix | neve | 29m<br>29m |  |
+| T7 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-with`](design-wxb-plan-with.md)<br>[Sketch](decision-wxb-plan-with.md) | tapestry | Plan-Write | neve | 30m<br>30m |  |
+| T8 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-without`](design-wxb-plan-without.md) | tapestry | Discussion-Burler-Fix | neve | 30m<br>30m |  |
 
 ### Ready (0)
 
