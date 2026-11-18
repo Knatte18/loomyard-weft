@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 09:00 UTC; every age below is as of then.
+Rendered 2026-11-18 09:01 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -112,9 +112,9 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Drift: a parent decision trips the judge snapshot check, and line-range expectations never match**<br>• Two drift bugs: parent decision commits blamed on the judge, and line-range entries that never match<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drift-judge-and-line-range`](design-drift-judge-and-line-range.md) | darn · solid | Darn-Write | neve | 53m<br>4m | drift, loom |
-| T5 | **Shuttle start: idle check misses an idle prompt, and a review strand misses its prompt turn**<br>• Two seat start bugs in shuttle prompt delivery<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md) | darn · solid | starting · Seed-Child | neve | 52m<br>4m | shuttle, burler |
+| T5 | **Shuttle start: idle check misses an idle prompt, and a review strand misses its prompt turn**<br>• Two seat start bugs in shuttle prompt delivery<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md) | darn · solid | starting · Open-Window | neve | 53m<br>4m | shuttle, burler |
 | T9 | **Agents must never build or check out a repository under .scratch, .lym or _lym**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | darn · light | Darn-Write | neve | 53m<br>4m | stencil |
-| T10 | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md) | motif | Discussion-Write | neve | 52m<br>4m | burler, stencil, drift |
+| T10 | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md) | motif | Discussion-Write | neve | 53m<br>4m | burler, stencil, drift |
 
 #### Ready (0)
 
@@ -155,7 +155,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md)<br>[Sketch](decision-claude-account-pick-simple.md) | 2w<br>41m | claude, shuttle, config |
+| S1 |  | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md)<br>[Sketch](decision-claude-account-pick-simple.md) | 2w<br>42m | claude, shuttle, config |
 
 #### Research (2)
 
