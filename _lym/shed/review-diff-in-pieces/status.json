@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -196,6 +196,22 @@
       "output": "",
       "at": "2026-11-18T08:28:04Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/review-diff-in-pieces/_lym/landing/summary.md",
+      "at": "2026-11-18T08:28:38Z",
+      "started_at": "2026-11-18T08:28:08Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-18T08:28:38.25455552Z",
+          "end": "2026-11-18T08:28:38.254655737Z"
+        }
+      ]
     }
   ],
   "product": {
