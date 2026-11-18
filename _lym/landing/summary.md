@@ -1,53 +1,48 @@
-# Read deny_python live in the python guard hook
+# Python guard hook reads deny_python live on each call
 
-Turning `deny_python` off for a hub now reaches every running session at its next matching call, so no session or watcher needs a restart.
-Before, each engine fixed the value into a session's hook at launch, and a session launched before the change kept refusing Python.
+A hub that sets `deny_python: false` in its shuttle config could still have Python refused in running sessions.
+The python guard's hook was baked into the session's settings at launch, so flipping the flag reached a session only after a restart of the session and its watchers.
+
+The python guard row is now installed in every launch, for both the Claude and Codex engines.
+On a matching call its hook asks the hub's current config, and it denies only when Python is not allowed.
+The system-prompt notice still follows `deny_python` as it stood at launch.
 
 ## What changes
 
-- **Every session installs the python guard's hook.**
-  Claude and Codex both install the python row in every launch, whatever the launch's `deny_python`.
-  On a command that matches the row, the hook runs the new hidden verb `lym shuttle hook-python-allowed` and denies the call unless the verb exits 0.
-  A command that does not run Python never starts lym, so the guard adds no work to other calls.
-- **`lym shuttle hook-python-allowed`** (`internal/shuttlecli/hookpython.go`) resolves the worktree from its working directory with `lymcwd.ResolveWithin`.
-  It loads the shuttle config through `fabricengine.ConfigDirs`, the same layers `lym config --resolved shuttle` reads, and exits 0 only while `deny_python` is false.
-  It skips the shuttle group's shared pre-run, prints nothing on standard output and reports a failure on standard error.
-  A failure exits 1 like a deny, so a hook that cannot ask the hub keeps denying.
-- **Where the hook runs the verb.**
-  The Claude hook runs it from `$CLAUDE_PROJECT_DIR`, as the creel mail hook runs lym.
-  The Codex hook runs it from the hook's working directory, the session's own.
-  Both send the verb's output to `/dev/null`, so the hook prints the deny or nothing.
-- **The system-prompt notice still follows the value at launch.**
-  Each engine now keeps two switch maps, one deciding whether a row is installed and one whether it is announced.
-  The python switch is installed always and announced only when `DenyPython` was true at launch.
-  Claude's `standingDeny` gains an `announced` predicate, and Codex's `denyNotice` takes the guard inputs to filter the rows it announces.
-- The package docs of `claudeengine`, `codexengine` and `shellguard`, the `DenyPython` field doc, the template's `deny_python` comment and `docs/overview.md` now describe the live read.
+- New hidden verb `lym shuttle hook-python-allowed` (`shuttlecli/hookpython.go`), named by `shuttleengine.PythonAllowedHookVerb`.
+  It exits 0 when `deny_python` is false and 1 when it is true.
+  It prints nothing on standard output, and it skips the shared geometry and engine resolution of `lym shuttle`.
+- The verb finds the config from the session's working directory.
+  Under a worktree of a hub whose Bolt checkout holds `_lym`, it loads the hub's layers, as a launch's hub mode does.
+  Otherwise it loads the state directory a standalone run derives for the repository root, when that directory exists.
+  `cliwire.StandaloneStateDir` is added for this: it derives the directory without creating anything or redirecting a sink.
+- `claudeengine` and `codexengine` install the python row unconditionally.
+  The row's command is `! <check> && <deny>`, so a failing check keeps the deny.
+  Each engine has a separate "announced" switch table for the notice, so the notice follows the launch-time value while the hook follows the live one.
+- The hook runs the launching `lym` binary by absolute path, not whichever `lym` is on `PATH`.
+  `claudeengine.LymBinary` resolves it in `Prepare` and refuses a test binary, as `selfexec.LymBinary` does.
+  `Prepare` fails if the binary cannot be resolved.
+- The `lym config` help text, `template.yaml`, `shellguard` docs, `shuttleengine.Config` and `docs/overview.md` describe the new behaviour.
 
 ## Design decisions
 
-- **The launch path was not the bug.**
-  The board entry suspected that `lym orch` loads the shuttle config from different dirs than `lym config` resolves.
-  The orch wiring calls `shuttleengine.LoadConfig(fabricengine.ConfigDirs(location), "shuttle")`, the same dirs `lym config` uses.
-  In the odd hub, the orch launch at 08:35 on 2026-11-18, after `deny_python: false` was committed at 08:33, carries no python sentence in its `append-system-prompt.txt` and no python row in its `settings.json`.
-  The refusals the operator saw came from sessions launched before the change, whose hook still held the old value.
-  The parent's added decision covers that case, so no change to the launch's config loading was made.
-- **The board entry's test is replaced.**
-  The entry's Idea asked for an orch launch with `deny_python: false` to carry neither the notice nor the hook row.
-  Under the added decision the hook row stays and reads the value live.
-  The tests pin the notice's absence and the hook's live answer instead.
-- **The guard fails closed.**
-  A missing lym, a cwd the verb cannot resolve or a config that does not load all deny, as the guard did before the change.
-- **The guard command stays a pure function of the row.**
-  The verb finds the hub from the hook's working directory, so the rendered command holds no path.
-  Each engine renders it from the row alone, and its manifest proofs need no new inputs.
+- The check fails closed.
+  A missing or failing `lym`, a project directory the hook cannot enter, a config that cannot be found, or a config that does not load all exit non-zero, so the hook keeps denying.
+- The hook is installed even when `deny_python` is false at launch.
+  This is what lets a later change to true take effect without a restart as well.
+- The Claude hook runs the check from `${CLAUDE_PROJECT_DIR:-.}`; the Codex hook runs it from its own working directory, the session's.
+- No hook command or engine signature changes beyond the added `lymPath` argument to the settings and guard builders.
 
 ## Tests
 
-- `TestHookPythonAllowedVerb_FollowsTheHubsDenyPython` runs the verb over a `hubforge` hub.
-  It sets `deny_python` at the default layer to false, then true, then false again, and expects exit 0, 1 and 0.
-  It also expects exit 1 from a directory outside any worktree.
-- `TestShellGuardDenies_PythonRowAsksTheHubOnAMatch` (Claude) and `TestGuardCommand_PythonRowAsksTheHubOnAMatch` (Codex) run the rendered hook under `sh` with a stub `lym` on PATH.
-  A python command asks lym from the expected directory and is denied unless lym exits 0.
-  It is denied with no lym on PATH, and a command that runs no Python never starts lym.
-- The guard matrices, the manifest tests and the settings golden now expect the python row in every launch.
-  The deny-notice tests expect its sentence only while `DenyPython` is true.
+- `internal/orchcli/denypython_integration_test.go`: an orch launch with `deny_python: false` at the default layer carries no notice, and its hook allows Python.
+- `internal/shuttlecli/hookpython_test.go` and `hookpython_standalone_test.go` cover the verb in hub mode, in standalone mode, and on a config load failure.
+- The `claudeengine` and `codexengine` tests, including the settings golden file, cover the unconditional row, the live check and the separate announcement.
+- The `testmain_test.go` files across engines and CLIs point `claudeengine.LymBinary` at a stand-in, since a test binary is refused.
+
+## To check by hand
+
+- Not run: flip `deny_python` in a real hub with a running session open, and confirm that session's next `python` call is allowed without a restart, and that flipping it back denies again.
+- Failure path of the loaded config in `hook-python-allowed`: confirm that a hub config that fails to load keeps the hook denying and prints only a JSON error on standard error.
+- The hook's bare-`lym` resolution: confirm in a real launch that the settings carry the absolute path of the launching binary.
+- Standalone fallback in `shuttleConfigDirs`: it applies only when the state directory already exists; confirm a standalone run that has never created one keeps denying.
