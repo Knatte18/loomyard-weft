@@ -1,6 +1,6 @@
 # Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review
 
-`review-result-checks` · Task · enhancement, stencil, drift, fabric, burler, landing, loom, shed, testkit, docs · running · Describe
+`review-result-checks` · Task · enhancement, stencil, drift, fabric, burler, landing, loom, shed, testkit, docs · running · PR-Review
 
 Decision record: [Sketch](decision-review-result-checks.md)
 

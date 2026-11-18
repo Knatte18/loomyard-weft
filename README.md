@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 15:41 UTC; every age below is as of then.
+Rendered 2026-11-18 15:42 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -85,7 +85,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review** | [`review-result-checks`](design-review-result-checks.md)<br>[Sketch](decision-review-result-checks.md) | tapestry · solid | Describe | neve | 5h<br>5h | stencil, drift, fabric, burler, landing, loom, shed, testkit, docs |
+| T4 | **Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review** | [`review-result-checks`](design-review-result-checks.md)<br>[Sketch](decision-review-result-checks.md) | tapestry · solid | PR-Review | neve | 5h<br>5h | stencil, drift, fabric, burler, landing, loom, shed, testkit, docs |
 | T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Webster | neve | 6h<br>4h | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
 #### Ready (0)
