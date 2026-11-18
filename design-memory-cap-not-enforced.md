@@ -1,6 +1,6 @@
 # The per-process memory cap sometimes does not hold, and a runaway process takes the machine down
 
-`memory-cap-not-enforced` · Task · bug, process, gate · running · Drift-Await
+`memory-cap-not-enforced` · Task · bug, process, gate · running · Drift-Expect
 
 ## What was seen (2026-11-18)
 
