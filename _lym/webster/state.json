@@ -486,9 +486,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-result-checks/87c1e53d-6137-4f9b-96cf-6c7ccc843976/subagents/agent-aab57e298b0d7ffaf.jsonl"
       ]
+    },
+    "8": {
+      "slug": "loom-pr-findings-verb",
+      "cards": [
+        "08-loom-pr-findings-verb",
+        "09-pr-review-send-back-row"
+      ],
+      "cardHashes": {
+        "08-loom-pr-findings-verb": "7217c796e16ba28c8012f045d8b55b82a29c0191f21d70ef049e71e9f6a41611",
+        "09-pr-review-send-back-row": "cb5c5628c3c81a96885eecf241ba536e2ec5ae0e35d6418a5a4b6994ae3c4a0a"
+      },
+      "startSha": "095dfcfa54a06bb8150a58877f8a93d16693ca18",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T12:32:43Z",
+      "sessionId": "87c1e53d-6137-4f9b-96cf-6c7ccc843976",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "cc10af0f5a9b1757a33b3d5eaaed7b37",
   "masterSessionId": "87c1e53d-6137-4f9b-96cf-6c7ccc843976",
   "masterEngine": "claude",
