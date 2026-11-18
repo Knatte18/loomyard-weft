@@ -1,6 +1,6 @@
 # Code-Review lets result-level issues through to PR-Review
 
-`code-review-result-checks` · Task · enhancement, burler, stencil, drift · starting · Seed-Child
+`code-review-result-checks` · Task · enhancement, burler, stencil, drift · starting · Open-Window
 
 Imported from [issue #139](https://github.com/Knatte18/loomyard/issues/139).
 
