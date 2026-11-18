@@ -1,0 +1,89 @@
+{
+  "sketch": "code-review-result-checks",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "shuttle-start-idle-and-prompt", "revised": "2026-11-18T08:56:17Z"},
+    {"slug": "twill-fixer-fork-writes", "revised": "2026-11-18T08:56:17Z"},
+    {"slug": "leftover-strands-and-runs", "revised": "2026-11-18T08:56:17Z"},
+    {"slug": "board-viewer-build", "revised": "2026-11-17T19:04:06Z"},
+    {"slug": "borrowed-orchestrator-ideas", "revised": "2026-11-17T10:49:21Z"},
+    {"slug": "codexengine", "revised": "2026-11-17T14:44:09Z"}
+  ],
+  "parts": [
+    {
+      "slug": "review-result-checks",
+      "title": "Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review",
+      "type": "enhancement",
+      "labels": ["stencil", "drift", "fabric", "burler", "landing", "loom", "shed", "testkit", "docs"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7"],
+      "packages": [
+        {"path": "contracts/stencils", "size": 250},
+        {"path": "contracts/recipes", "size": 10},
+        {"path": "internal/driftengine", "size": 600},
+        {"path": "internal/fabricengine", "size": 200},
+        {"path": "internal/loomcli", "size": 500},
+        {"path": "internal/loomshed", "size": 60},
+        {"path": "internal/loomengine", "size": 40},
+        {"path": "internal/shedrecipe", "size": 80},
+        {"path": "internal/shedadapters", "size": 350},
+        {"path": "internal/landingshed", "size": 400},
+        {"path": "internal/pullrequest", "size": 60},
+        {"path": "internal/testkit/envkit", "size": 20},
+        {"path": "docs", "size": 30}
+      ],
+      "contract": {
+        "takes": "the Sketch's decision record; the review base from loomcli's taskMergeBase; burlerengine.ParseReview; shedengine's reroute history entries; internal/friction",
+        "delivers": "the rubric's result-check bullets and review-input reading, a shared Loosened-Check fragment in every committing brief, Drift's per-file loosened-check rulings with their Stuck and verdict lines, the pr-findings verb with its send-back mark, deferred clear and friction note, Code-Bouncer's full generation on a send-back file, and the figures rule in the Describe and darn writer briefs",
+        "exports": "the Loosened-Check commit trailer; lym loom pr-findings <file>; the loom.pr_review_small_max key; on_reroute: Code-Bouncer on PR-Review in tapestry, darn and sampler; the ReviewInput seam returning every input written after the settle"
+      },
+      "depends_on": [],
+      "open_risks": [
+        "A peer run, `drift-judge-and-line-range`, changes the drift judge's snapshot check and line-range matching in `internal/driftengine` at the same time; D3 touches the judge request and judgement in the same package, so the later run to land meets a merge there."
+      ],
+      "criteria": [
+        "Review: the Code-Review rubric carries the three result-check bullets of D1, worded for any language and hub, and accepts a trailer on any commit of the range.",
+        "Review: every brief of a session that commits code in a recipe with a Code-Review segment includes the shared fragment stating D2's trailer and its shape.",
+        "D2: a commit Go writes for a role carries the `Loosened-Check:` trailer lines that role's handoff gives.",
+        "D3: a Drift-Verify run over a change that widens a limit in a test existing at the review base, with no trailer in the range, spawns the judge even with no changed cell, and the `uncaused` ruling makes the row Stuck with ways forward naming a trailer commit or a revert and `lym loom resume`.",
+        "D3: after that Stuck, a commit adding only a `Loosened-Check:` trailer for the check, then `lym loom resume`, spawns the judge again, which rules the check `caused`, and Drift-Verify finishes Done.",
+        "D3: a test loosened by a parent commit a Parent-Align merge brought in is not listed to the judge.",
+        "D3: a judgement that leaves a listed file unruled, or carries an empty reason, is refused back to the judge.",
+        "D3: Drift-Recheck over files whose diffs and the range's trailers are unchanged reuses the stored rulings and spawns no judge for them.",
+        "D3: a judgement record written before this change, without loosened rulings, still reads.",
+        "D3: the regression check section lists each loosened check with its ruling and cause.",
+        "D4: `lym loom pr-findings` on a file with one BLOCKING finding reroutes PR-Review to Code-Bouncer, and on a file with more findings than `pr_review_small_max`, none BLOCKING, does the same.",
+        "D4: a set within `pr_review_small_max`, none BLOCKING, sends back when the fix-here count lifts the total past it.",
+        "D4: the re-entered Code-Bouncer, on a subject unchanged since its settle, starts a full generation whose review input names the send-back file in the loom scratch directory, and its reviewers can read that file.",
+        "D4: the PR-Review row re-entered after a send-back starts a new review session, since its entry after the persisted reroute cleared the recorded session id, and with `pr_review_ask_parent` on posts a new review request to the parent.",
+        "D4: on a file with at most `pr_review_small_max` findings and none BLOCKING, on a recipe whose PR-Review declares no `on_reroute`, with the target row's entry gate off, or with a Code-Review budget of 0 that stamps `zero_rounds` on Code-Bouncer, the verb answers fix-here and the row does not reroute.",
+        "D4: the verb refuses a dirty worktree, and a file the verdict parser refuses, each naming its way forward.",
+        "D4: a send-back mark the row's wake meets on a tree dirty after the stop halts the row Stuck with the way forward commit or discard, then `lym loom resume`, and the resumed row on a clean tree reroutes.",
+        "D4: a PR-Review row whose newest history entry is the reroute of its marked send-back starts with no mark and a fix-here count of zero.\nA re-step of the row keeps the count.\nA resume after a crash between the row's reroute verdict and shed's persist keeps the mark and the count and reroutes that send-back;\nso does the resume after a reroute-cap halt.",
+        "D4: the reroute cap halts PR-Review's send-back once exceeded, as for any reroute edge.",
+        "D5: `pr_review_small_max` loads with default 3 and a task's `run_settings` overrides it.",
+        "D6: each send-back writes its own friction note naming Code-Review's miss, the findings by severity and the findings file, and a second send-back leaves the first note in place.",
+        "Review: the rubric's `## Review input` section reads each input the review-input note names, and says to review the whole range and file each PR finding that holds (D6).",
+        "Review: the PR-Review brief tells the agent to run `lym loom pr-findings` with a verdict line on every findings set before fixing any of it (D4).",
+        "Review: the Describe brief and the darn writer's description rule carry D7's figures rule."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 34.5,
+      "cost_line": "tapestry/solid stored-record fit (12 runs): 23.73 fixed + 0.408 per 100 lines over about 2650 changed lines"
+    }
+  ],
+  "cost": {
+    "expected_usd": 34.5,
+    "line": "one tapestry/solid part of about 2650 changed lines on the stored-record fit (12 runs, correlation 0.74)",
+    "next_best": {
+      "split": "two chained darn/solid tasks: D1, D2, D3 and D7 (stencils, Drift, fabric, about 1100 lines), then D4 to D6 (PR-Review send-back, about 1550 lines)",
+      "expected_usd": 22.6,
+      "line": "darn/solid stored-record fit (18 runs, correlation 0.51): 7.74 fixed + 0.269 per 100 lines, twice, extrapolated past most of the cell's run sizes"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
