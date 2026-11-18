@@ -1,7 +1,0 @@
-{"stop_key":{"current_producer":"Seed-Child","history_length":1,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-11-18T09:58:00.716306795+01:00","target":"attempt-1"}
-{"stop_key":{"current_producer":"Seed-Child","history_length":1,"state":"failed"},"settler":"arbiter","action":"spawn","outcome":"arbiter spawned","at":"2026-11-18T09:58:46.919475191+01:00","target":"attempt-1"}
-{"stop_key":{"current_producer":"Seed-Child","history_length":1,"state":"failed"},"settler":"arbiter","action":"restep","outcome":"arbiter resume","at":"2026-11-18T09:58:46.919699741+01:00"}
-{"stop_key":{"current_producer":"Open-Window","history_length":2,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-11-18T09:59:40.847060501+01:00","target":"attempt-2"}
-{"stop_key":{"current_producer":"Open-Window","history_length":2,"state":"failed"},"settler":"tackler","action":"restep","outcome":"tackler resume","at":"2026-11-18T09:59:40.847485425+01:00"}
-{"stop_key":{"current_producer":"Run-Shed","history_length":5,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-11-18T10:09:37.001200331+01:00","target":"attempt-3"}
-{"stop_key":{"current_producer":"Run-Shed","history_length":5,"state":"failed"},"settler":"tackler","action":"restep","outcome":"tackler resume","at":"2026-11-18T10:09:37.001908736+01:00"}
