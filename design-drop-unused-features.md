@@ -1,6 +1,6 @@
 # List features nobody uses, for the operator to cut
 
-`drop-unused-features` · Task · enhancement, tools · starting · Worktree-Create
+`drop-unused-features` · Task · enhancement, tools · halted · Worktree-Create
 
 ## What was seen
 
