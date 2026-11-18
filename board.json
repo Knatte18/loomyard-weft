@@ -385,7 +385,7 @@
       "id": 1467,
       "handle": "T6",
       "slug": "token-spend-weekly-rise",
-      "title": "Where the Claude quota goes, and why it burns faster now than two weeks ago",
+      "title": "Claude usage outside runs: orchs, beam orchs, dobby agents, other hubs",
       "kind": "task",
       "labels": [
         "research",
@@ -396,11 +396,11 @@
       "recipe": "darn",
       "depends_on": [],
       "isolated": false,
-      "brief": "Weekly Claude usage W44 to W47 by role, model, hub, recipe and session kind; name what drove the rise and the cuts",
-      "body": "## Why\n\nThe operator's weekly Claude quota (Ultra) runs out faster than expected,\nand they believe it burns faster now than around 2026-11-04.\nThey want to know what the tokens and money go to, and what changed.\n\n## Tool\n\nUse `tools/tokencount` (`tools/tokencount/tokencount.sh`), which already reads run transcripts by role, segment and recipe, with the orch charge.\nRun it once per ISO week from W45 to W47 (`-since` with slugs chosen per week, or the run's own split of one `-since 2026-11-03` count),\nplus `-detail` where a role needs its token columns.\nSessions it does not count are only the gap to fill by hand:\nthe hub orchs and beam orchs beyond its orch charge, dobby agents (tidy, retro), raddle and motif runs if it skips them,\nother hubs (lyt, cs, odd) and sessions outside LoomYard.\nRead those transcripts under `~/.claude/projects` directly, priced the way tokencount prices.\nWhere tokencount cannot do a needed split, say so in the report as a gap in the tool; change no code.\nCodex usage is out of scope.\n\n## Report\n\nA report under `docs/research/tokens/` with:\n\n1. Usage per ISO week W45 to W47, and per day where the transcripts allow, so the rise (or its absence) is plain.\n2. Per week, the split by segment and role, by model, and by session kind (run, orch, beam orch, dobby agent, other hub, outside LoomYard).\n3. Per recipe and profile: runs per week and mean cost per run.\n4. What changed between W45 and W47: more runs, dearer runs, a role or model that grew, parallel runs, longer orch sessions,\n   or anything else the data shows, each with its share of the change.\n5. The five largest cuts the data supports, each with its estimated weekly saving, ranked.\n",
+      "brief": "Weekly Claude usage W45 to W47 of every session tokencount does not count, set beside the run spend",
+      "body": "## Why\n\nThe operator's weekly Claude quota (Ultra) runs out faster than expected.\nThe run spend is known: `tools/tokencount -since 2026-11-03` and `lym report cost --since 2026-11-01` (2026-11-18) show\ntapestry at about $62 per run, Plan about 45 % of that and Webster about 33 %, and the rise coming from more tapestry runs.\nWhat is not known is the usage outside runs.\n\n## Scope\n\nCount every Claude Code session on this machine from 2026-11-03 to 2026-11-18 that `tools/tokencount` does not count:\nthe hub orch sessions in full (beyond tokencount's per-run orch charge), beam orchs, dobby agents (tidy, retro, board agents),\nmotif and raddle runs, sessions in the other hubs (lyt, cs, odd) and sessions outside LoomYard.\nRead their transcripts under `~/.claude/projects`, priced as `tools/tokencount` prices.\nWhere tokencount could count a kind with a small change, say so in the report; change no code.\nCodex usage is out of scope.\n\n## Report\n\nA report under `docs/research/tokens/` with, per ISO week W45 to W47:\nthe usage of each session kind above, by model, set beside the run spend from `tools/tokencount`,\nthe share of the weekly total each takes, and any kind that grew markedly, with why.\n",
       "status": "draft",
       "created": "2026-11-18T12:02:36Z",
-      "revised": "2026-11-18T12:03:17Z",
+      "revised": "2026-11-18T12:46:59Z",
       "run_settings": {
         "loom": {
           "code_assist_reviewer_fan": "review-code",

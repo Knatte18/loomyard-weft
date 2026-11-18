@@ -1,32 +1,25 @@
-# Where the Claude quota goes, and why it burns faster now than two weeks ago
+# Claude usage outside runs: orchs, beam orchs, dobby agents, other hubs
 
 `token-spend-weekly-rise` · Task · research, claude, report · draft
 
 ## Why
 
-The operator's weekly Claude quota (Ultra) runs out faster than expected,
-and they believe it burns faster now than around 2026-11-04.
-They want to know what the tokens and money go to, and what changed.
+The operator's weekly Claude quota (Ultra) runs out faster than expected.
+The run spend is known: `tools/tokencount -since 2026-11-03` and `lym report cost --since 2026-11-01` (2026-11-18) show
+tapestry at about $62 per run, Plan about 45 % of that and Webster about 33 %, and the rise coming from more tapestry runs.
+What is not known is the usage outside runs.
 
-## Tool
+## Scope
 
-Use `tools/tokencount` (`tools/tokencount/tokencount.sh`), which already reads run transcripts by role, segment and recipe, with the orch charge.
-Run it once per ISO week from W45 to W47 (`-since` with slugs chosen per week, or the run's own split of one `-since 2026-11-03` count),
-plus `-detail` where a role needs its token columns.
-Sessions it does not count are only the gap to fill by hand:
-the hub orchs and beam orchs beyond its orch charge, dobby agents (tidy, retro), raddle and motif runs if it skips them,
-other hubs (lyt, cs, odd) and sessions outside LoomYard.
-Read those transcripts under `~/.claude/projects` directly, priced the way tokencount prices.
-Where tokencount cannot do a needed split, say so in the report as a gap in the tool; change no code.
+Count every Claude Code session on this machine from 2026-11-03 to 2026-11-18 that `tools/tokencount` does not count:
+the hub orch sessions in full (beyond tokencount's per-run orch charge), beam orchs, dobby agents (tidy, retro, board agents),
+motif and raddle runs, sessions in the other hubs (lyt, cs, odd) and sessions outside LoomYard.
+Read their transcripts under `~/.claude/projects`, priced as `tools/tokencount` prices.
+Where tokencount could count a kind with a small change, say so in the report; change no code.
 Codex usage is out of scope.
 
 ## Report
 
-A report under `docs/research/tokens/` with:
-
-1. Usage per ISO week W45 to W47, and per day where the transcripts allow, so the rise (or its absence) is plain.
-2. Per week, the split by segment and role, by model, and by session kind (run, orch, beam orch, dobby agent, other hub, outside LoomYard).
-3. Per recipe and profile: runs per week and mean cost per run.
-4. What changed between W45 and W47: more runs, dearer runs, a role or model that grew, parallel runs, longer orch sessions,
-   or anything else the data shows, each with its share of the change.
-5. The five largest cuts the data supports, each with its estimated weekly saving, ranked.
+A report under `docs/research/tokens/` with, per ISO week W45 to W47:
+the usage of each session kind above, by model, set beside the run spend from `tools/tokencount`,
+the share of the weekly total each takes, and any kind that grew markedly, with why.
