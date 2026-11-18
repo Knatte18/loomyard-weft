@@ -1,13 +1,13 @@
 # Card 3 — drift-verify-loosened-checks
 
 **Create:**
-- `plan:internal/driftengine#LoosenedCheckTrailerKey` -> `const LoosenedCheckTrailerKey = "Loosened-Check"`
-- `plan:internal/driftengine#loosenedTrailerLines` -> `func loosenedTrailerLines(messages []string) []string`
-- `plan:internal/driftengine#fileRulingKey` -> `func fileRulingKey(diff string, trailerLines []string) string`
-- `plan:internal/driftengine#listedFiles` -> `type listedFiles struct`
-- `plan:internal/driftengine#DriftVerify.listFiles` -> `func (p *DriftVerify) listFiles(rec Records) (listedFiles, error)`
-- `plan:internal/driftengine#uncausedReason` -> `func uncausedReason(checks []LoosenedCheck) string`
-- `plan:internal/driftengine#loosenedLines` -> `func loosenedLines(checks []LoosenedCheck) []string`
+- `internal/driftengine#LoosenedCheckTrailerKey`
+- `internal/driftengine#loosenedTrailerLines`
+- `internal/driftengine#fileRulingKey`
+- `internal/driftengine#listedFiles`
+- `internal/driftengine#DriftVerify.listFiles`
+- `internal/driftengine#uncausedReason`
+- `internal/driftengine#loosenedLines`
 
 **Edit:**
 - `internal/driftengine#Deps`
