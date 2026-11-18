@@ -100,6 +100,30 @@ Picks made in the fix:
 - F15, tool facts: pinned in a Constraint by documentation, an existing `gitrepo` test row, or the acceptance scenario.
 - F16 (build now or for the rewrite) went to the parent; Q6 stays open.
 
+### Round 2
+
+The review raised five blocking findings and one medium; every premise held against the code.
+Picks made in the fix:
+
+- F24, records commits during a merge: committed through a temporary index and a HEAD move, which git accepts mid-merge,
+  rather than the transition waiting out every code merge, since a parked conflict is when a run's Stuck transition matters most;
+  fabric's merge abort resets to the moved start; a fabric merge crashed before step 3 is aborted by the next records commit;
+  the transition waits only for a cherry-pick, revert or rebase, or a foreign merge whose index holds records unlike HEAD's.
+- F25, protected prime push: the transition completes with its records unpushed, declared as a `PATTERN-run-fsm` change,
+  since halting would stop every prime run for as long as the branch stays protected.
+- F26, cache dependence: the fabric-merge predicate is read from git alone; the prime's branch lives in a git config key.
+
+### Round 3
+
+The review raised two blocking findings; both premises held against the code.
+Picks made in the fix:
+
+- F30, records lost to the abort of a merge crashed before step 3: the records commit is made first,
+  from HEAD plus the worktree's records paths whose index entry equals HEAD's, and the abort resets onto it;
+  a records path the source changed keeps HEAD's version, and a write to it after the crash is a stated loss.
+- F31, re-running a merge verb: it keeps today's already-in-progress refusal, since aborting would drop a parked merge's resolutions;
+  `mergeresolve`'s abort-first and the landing's pre-merge abort of its own parked merge-in stay the only aborts before a new attempt.
+
 ## Question ledger
 
 - Q1 Code branch or separate branch for `_lym` commits? Resolved, auto-pick: code branch (D4).
@@ -107,4 +131,4 @@ Picks made in the fix:
 - Q3 Which weft parts need a counterpart? Resolved, auto-pick: D4, D6, D7, D8, D11.
 - Q4 Does code outside fabric commit `_lym`? Resolved from the code: no; it reads weft through fabric's accessors and assumes code identity by SHA (D9, D10).
 - Q5 How the layout is recorded? Resolved, auto-pick: the tracked anchor marker at the worktree root (D1).
-- Q6 Build now or only for the rewrite? Open, for the parent: recorded under Open risks.
+- Q6 Build now or only for the rewrite? Resolved by the parent: built into the current `internal/fabricengine` as a design a later task builds (Added after Discussion entries of 2026-11-18).
