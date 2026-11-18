@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 15:03 UTC; every age below is as of then.
+Rendered 2026-11-18 15:09 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -19,8 +19,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review** | [`review-result-checks`](design-review-result-checks.md)<br>[Sketch](decision-review-result-checks.md) | tapestry · solid | Parent-Align | neve | 4h<br>4h | stencil, drift, fabric, burler, landing, loom, shed, testkit, docs |
-| T5 | **The per-process memory cap sometimes does not hold, and a runaway process takes the machine down**<br>• RunMemoryCappedVia lets a child keep 384 MB under a 128 MB cap on some runs; find why, fix it, prove it on repeated runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`memory-cap-not-enforced`](design-memory-cap-not-enforced.md) | darn · solid | Code-Burler-Review | neve | 1h<br>1h | process, gate |
-| T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Webster | neve | 5h<br>3h | claude, shuttle, reed, orch, batten, cwd, config, tools |
+| T5 | **The per-process memory cap sometimes does not hold, and a runaway process takes the machine down**<br>• RunMemoryCappedVia lets a child keep 384 MB under a 128 MB cap on some runs; find why, fix it, prove it on repeated runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`memory-cap-not-enforced`](design-memory-cap-not-enforced.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>1h | process, gate |
+| T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Webster | neve | 5h<br>4h | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
 ### Ready (0)
 
@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 20h<br>19h | board, ide, fabric |
+| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 21h<br>20h | board, ide, fabric |
 
 ## Notes (9)
 
