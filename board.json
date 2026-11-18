@@ -482,7 +482,7 @@
       "isolated": false,
       "brief": "Run golang.org/x/tools/cmd/deadcode over the repository and delete what it finds, with the tests that only cover it",
       "body": "## What was seen\n\nThe shrink study (2026-11-18) found features in `landingshed` that nobody has checked for use.\nSome code may be reachable from no `main` at all, kept alive only by its own tests.\n\n## Scope\n\n1. Run `golang.org/x/tools/cmd/deadcode` over every `main` package in the repository: `cmd/lym` and the programs under `tools/`.\n   Run it without and with `-test`, so the report separates code nothing reaches from code only tests reach.\n2. Delete each unreachable function, and with it the tests that cover only that function.\n   Code only tests reach is deleted the same way, unless it is a test helper.\n3. Check each hit before deleting it: a function reached through reflection, a registry, a `go:linkname` or a build tag for another platform stays,\n   and the report names it with the reason.\n4. No behaviour change: the gate stays green, and nothing a user can call is removed.\n\nThe report lists the removed lines per package and every hit kept with its reason.\n",
-      "status": "running · Drift-Baseline",
+      "status": "running · Drift-Await",
       "created": "2026-11-18T18:49:00Z",
       "revised": "2026-11-18T18:49:00Z",
       "run_settings": {
