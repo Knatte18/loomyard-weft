@@ -413,7 +413,7 @@
       "isolated": false,
       "brief": "reconcileInterruptedStep keys on error text, so a leftover run with no interrupted record is not reconciled",
       "body": "Left open by the last code review of `leftover-strands-and-runs` (`3746960e`), at MEDIUM.\n\n`reconcileInterruptedStep` in `internal/shedverbs/loop.go` recognizes an interrupted stop from the status error text.\nA shuttle run left running by a step that wrote no interrupted record is therefore not reconciled on a re-step, and the re-step can still end on it.\n\nIdea: reconcile from the run records themselves (a run reading running whose waiting process is gone), not from the error text.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-18T11:17:13Z",
       "revised": "2026-11-18T11:33:51Z",
       "run_settings": {
