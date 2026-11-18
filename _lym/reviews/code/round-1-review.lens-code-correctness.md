@@ -3,33 +3,40 @@ lens: code-correctness
 outcome: reported
 ```
 
-Task: code-correctness lens. I ran each function, branch and error path the diff changes against a concrete input.
+Task: code-correctness lens on the RenderToDisk in-place write diff.
 
-**List: function or branch, the case I ran, and the result**
+**Cases run**
 
-1. **`RenderToDisk` write loop, existing output (`proposal-a.md` already on disk, new body).** `os.WriteFile` opens with `O_TRUNC`, writes the new content and keeps the inode and the existing mode. Correct.
-2. **`RenderToDisk` write loop, new output (first render into an empty `boardPath`).** `O_CREATE` with 0o600, the same mode `os.CreateTemp` gave before. Correct.
-3. **`RenderToDisk` write loop, `out.Readme = "wiki/Home.md"`, with no `wiki/` directory.** Before the diff, `AtomicWriteBytes` ran `MkdirAll(dir)`. Now `os.WriteFile` returns ENOENT, so `RenderToDisk` returns `write wiki/Home.md: …`. In `board.go:180-194` this happens after `store.Save()`, so every board write reports a render error and the board files never render. **Not correct (finding 1).**
-4. **`RenderToDisk` write loop, `out.Readme = "../outside.md"`.** This value can come from `board.yaml` or `LYM_README`, via `template.yaml:1`. Before, `PathGuard` refused it with "parent directory reference not allowed". Now `filepath.Join(boardPath, "../outside.md")` resolves to the board directory's parent, and the render writes, and on later renders truncates, a file outside `boardPath`. The manifest then records the name, and a later render's cleanup `os.Remove(filepath.Join(boardPath, name))` deletes that outside file. A `design_prefix` holding `../` takes the same path; `checkDesignPrefix` only checks the `decision-` clash. **Not correct (finding 2).**
-5. **`RenderToDisk` write loop, `out.Readme = ""`.** Before: `PathGuard` returned "empty path". Now `os.WriteFile(boardPath)` fails with EISDIR. Both return an error, so this is correct, with a different message.
-6. **`RenderToDisk` write loop, the write fails mid-file (ENOSPC or EIO on the second file).** Before, the temp file was removed and the old content stayed whole. Now the target is truncated or partial. `RenderToDisk` returns at once, so the manifest is not rewritten and the remaining files keep their old content. The board stays consistent: `board.json` is saved and the next render rebuilds every file. But a partial rendered `.md` now sits in the Bolt worktree. The next `lym board sync` `commitDirty` (`sync.go:60-74`) stages and commits it, and only a later successful render repairs it. The error is reported, not swallowed. **Not correct, at low severity (finding 3).**
-7. **Concurrent reader during the write.** All three callers render under the board write lock, which `commitDirty` also takes (`board.go` `boardCriticalSection` at lines 97-105, the comment at `replay.go:460`, the comment at `ownerset.go:226`). So git never stages a mid-write file. Only out-of-process readers such as an editor can see a partial file, and the next change event corrects it. Correct.
-8. **Error wrapping.** `fmt.Errorf("write %s: %w", relPath, err)`. The `*PathError` from `os.WriteFile` already holds the absolute path, so the message names the path twice. That is harmless. Correct.
-9. **`TestRenderToDiskRewritesAnExistingFileInPlace`.** On the old code, `os.CreateTemp` plus `os.Rename` gives a new inode, so `os.SameFile` is false and the test fails. On the new code it passes. `renderDesigns` builds the design file as header + `"\n"` + `e.Body`, and the body `"second body"` has no trailing newline, so `HasSuffix` holds. Correct.
+- `RenderToDisk` with an existing flat output file such as `proposal-a.md`: `os.WriteFile` truncates the file and rewrites it. The inode stays, the content is new and the error is nil. Correct.
+- `RenderToDisk` with a new flat output file: the file is created with mode 0600, the same mode `os.CreateTemp` gave the old writes. Correct.
+- `RenderToDisk` with an existing file of mode 0644, as a git checkout or sync leaves it: `os.WriteFile` keeps the file's existing mode. Correct.
+- `RenderToDisk` with a `relPath` holding a subdirectory, from `readme: docs/Board.md` or `design_prefix: designs/`: `os.WriteFile` returns ENOENT because `docs/` does not exist. The old `AtomicWriteBytes` called `MkdirAll` first. Incorrect: finding 1.
+- `RenderToDisk` with `readme: ../Board.md` or an absolute readme: the file is written outside `boardPath`. The old `PathGuard` refused this. Incorrect: finding 1.
+- `RenderToDisk` when `os.WriteFile` fails after truncating, for example ENOSPC on file k: file k is left empty or partial. The files before it hold the new render and the files after it hold the old one. The error is returned, so neither the manifest nor the cleanup runs. The next render rebuilds everything. Before the change, file k kept its old content. Finding 2, LOW.
+- Error message on a failed write: `write <relPath>: <err>` is wrapped with `%w`, so nothing is swallowed. Correct.
+- `board.go:192` when the render fails: `store.Save()` has already run, so the JSON is committed and the caller gets `render: …`. That was the same before the change and is not new.
+- `TestRenderToDiskRewritesAnExistingFileInPlace` run against the old `AtomicWrite`: the rename gives a new inode, so `os.SameFile` returns false and the test fails, so it does pin the change. The second-render body assertion is correct. Correct.
 
 **Findings**
 
-1. **MEDIUM, design.** `internal/boardengine/render.go:49`
-   - Summary: the swap from `fsx.AtomicWrite` drops the `MkdirAll` of each output's parent directory. A configured `readme` holding a subdirectory, such as `wiki/Home.md`, now fails every render with ENOENT, where it used to create the directory.
-   - Evidence: `internal/fsx/fsx.go:53` (the `MkdirAll`), `render.go:49`, `template.yaml:1` ("relative to board dir").
-   - Fix: restore the parent-directory creation, or refuse a nested `readme` at config load.
-2. **MEDIUM, design.** `internal/boardengine/render.go:49`
-   - Summary: the swap also drops `fsx.PathGuard`, the only check on the config-supplied `readme` and `design_prefix` output paths. A value holding `..` now makes the render write and truncate a file outside `boardPath`, and makes the manifest cleanup delete it later.
-   - Evidence: `internal/fsx/fsx.go:79-84`, `render.go:49` and `render.go:54-59`, `config.go:205-213` (`checkDesignPrefix` checks only the `decision-` prefix).
-   - Fix: keep `fsx.PathGuard(relPath)` before the in-place write.
-3. **LOW, design.** `internal/boardengine/render.go:49`
-   - Summary: when a write fails after `O_TRUNC`, the rendered file is left empty or partial, where the temp-and-rename path left the old content whole. A later `lym board sync` (`commitDirty`) commits and pushes that truncated file until a later render succeeds.
-   - Evidence: `render.go:48-51`, `sync.go:60-74`, `board.go:190-194` (the render error is returned after `store.Save()`).
-   - Fix: none is required for the fix's purpose. Accept it, and state it in the `RenderToDisk` doc's failure contract, or write in place only once the content is fully prepared, which `os.WriteFile` already does except on an I/O failure.
+1. **MEDIUM · design** · `internal/boardengine/render.go:49`
+   Replacing `fsx.AtomicWrite` with `os.WriteFile` dropped two things for every rendered `relPath`: the `PathGuard` check and the creation of the parent directory.
+   - A `readme` or `design_prefix` naming a subdirectory, which `template.yaml:1-2` documents as "relative to board dir", now makes every render fail with ENOENT.
+   - A `readme` of `../x` or an absolute path now writes outside the board directory.
+   - Nothing else checks these values: `config.go:198-210` validates only `design_prefix` against `decision-`, and `readme` is never validated.
+   - Slugs are not always validated either: `ValidateSlug` is nil for Boards that make no slug (`config.go:53-56`), and replay and owner renders do not validate.
 
-Tool calls: none. My context already held every definition and call site this lens needed.
+   Evidence: `internal/fsx/fsx.go:53` (`MkdirAll`), `internal/fsx/fsx.go:80` (`PathGuard`), `internal/boardengine/template.yaml:1`, `internal/boardengine/config.go:198-210`.
+
+   Fix: call `fsx.PathGuard(relPath)` before the write and `os.MkdirAll(filepath.Dir(path), 0o755)` before `os.WriteFile`. Both keep the in-place rewrite.
+
+2. **LOW · design** · `internal/boardengine/render.go:48-51`
+   A write that fails after `os.WriteFile` has truncated the file leaves that board file empty or partial until the next successful render. The old temp-and-rename write kept the previous content on failure.
+
+   Evidence: `internal/boardengine/render.go:49`, `internal/fsx/fsx.go:57-75`.
+
+   Fix: accept this, as the summary's design decision does, or say in the doc comment that a failed render can leave a truncated view.
+
+Tool calls:
+1. Grepped the yaml files for `readme:` and `design_prefix:` to see whether a configured output name can hold a directory. The manifest held only the struct and not the template's documented meaning.
+2. Grepped boardengine for slug validation to see whether a slug can reach a `relPath` unvalidated. The manifest did not cover slug validation.

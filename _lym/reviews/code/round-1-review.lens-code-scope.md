@@ -3,32 +3,32 @@ lens: code-scope
 outcome: reported
 ```
 
-Task: trace each hunk of the diff to the decision record's Goal points (code-scope lens).
+Task: code-scope lens. Trace each change in the diff to the goal points of the board entry.
 
-**Per change**
+**Decisions.** The answer key is the decision record alone. Its `## Goal` holds three points, and the record has no `Added after Discussion` entries.
+- G1: find the cause and state the evidence in the report.
+- G2: fix it where the cause is, and change how lym writes board files only if the cause is there.
+- G3: say in the report how the operator confirms the fix by hand.
 
-- C1, `internal/boardengine/render.go:49`, swaps `fsx.AtomicWrite` for `os.WriteFile`. It traces to Goal 2: "fix it where the cause is; change how lym writes board files only if the cause is there." The summary places the cause in the temp-and-rename write (`summary.md:11-26`) and rules out settings and a symlink (`summary.md:28-33`).
-- C2, the `RenderToDisk` doc comment (`render.go:37-39`) plus commit b05e3b1d, which re-breaks it. Forced by C1: the comment now describes the changed write.
-- C3, the `internal/boardengine/doc.go` paragraph (diff lines 9-10). Forced by C1: the package doc already describes what every write renders, and the paragraph adds how it writes.
-- C4, `TestRenderToDiskRewritesAnExistingFileInPlace` (`render_test.go`). Forced by C1: it is the test of the new behaviour.
+**Per change:**
+- C1, `internal/boardengine/render.go:49`: `fsx.AtomicWrite` replaced by an in-place `os.WriteFile`. Traces to G2.
+- C2, `render.go:37-39` (the `RenderToDisk` doc comment) and `internal/boardengine/doc.go:341-342` (the package doc paragraph): forced by C1, since they document the changed write.
+  Commit `b05e3b1d` only re-breaks those comment lines.
+- C3, `internal/boardengine/render_test.go:45-76` (`TestRenderToDiskRewritesAnExistingFileInPlace`): forced by C1, as the test of the new behaviour.
 
-**Per decision**
+No change traces to nothing. No `Pattern-Departure:` trailer is present or needed.
 
-- Goal 1 (find the cause and state the evidence in the report). Not in the diff; the report lives at `_lym/landing/summary.md:7-33`, which covers all three candidates the Goal names. Built.
-- Operator decision (find the cause first, without assuming one). The summary checks the operator's expected cause, the settings, first and rules it out with evidence (`summary.md:30-33`). Built.
-- Goal 2 (fix where the cause is). C1 builds it, for rendered board files only. Partial, see F1.
-- Goal 3 (how the operator confirms by hand). `summary.md:62-68`. Built.
-- Added after Discussion entries: none in the record.
+**Per decision:**
+- G1: no code change. It is carried by the report: `_lym/landing/summary.md` "Cause and evidence" and "Ruled out", plus the body of commit `28c270f4`. Satisfied outside the diff, as the goal asks.
+- G2: built by C1, which C2 and C3 follow. It is built only partly; see F1.
+- G3: no code change. It is carried by `_lym/landing/summary.md` "How to confirm by hand". Satisfied.
 
 **Findings**
 
-- F1. LOW · `scope` · `internal/boardengine/render.go:49`
-  - **Summary:** The fix covers only the files `RenderToDisk` writes. Decision records (`decision-<slug>.md`) still go through temp-and-rename, though they sit in the same `_bolt` root the workspace opens in the markdown preview. The same cause therefore still leaves an open preview of a Sketch stale, which falls short of Goal 2's "fix it where the cause is".
-  - **Evidence:**
-    - `internal/boardengine/decision.go:62` and `internal/boardengine/recordupsert.go:66` keep `fsx.AtomicWrite`.
-    - `_lym/landing/summary.md:40-41` keeps their atomic writes on purpose, because lym parses them back.
-    - `summary.md:60` lists the stale-preview risk itself.
-    - Board files link these records (`render.go:834-836`, `sketchLink`).
-  - **Why only LOW:** The summary's reason holds: lym parses those files back, so it needs atomic writes. The entry asks about "the board file the operator is looking at", and rendered files are its main subject. The fix text should do one of two things: write decision records in place under the board write lock, or leave the code and have the parent record the exclusion with `lym loom decision add`.
+F1. Severity LOW, class `scope`.
+Location: `internal/boardengine/decision.go:62` and `internal/boardengine/recordupsert.go:66`.
+Summary: G2 asks for the fix where the cause is. The diff removes temp-and-rename only for the rendered files. Decision record files, `decision-<slug>.md` in the same board directory, are still written by temp-and-rename through `fsx.AtomicWrite`. Every discussed entry's board file links its record, and the workspace opens that link in the markdown preview, so its preview can go stale after a board write that rewrites it.
+Evidence: the `fsx.AtomicWrite(b.boardPath, name, string(record))` call at `decision.go:62`, and the same call at `recordupsert.go:66`. The summary concedes the gap under "Open risks": "Decision record files still go through temp-and-rename, so a preview of one can go stale after an edit".
+Fix: either rewrite decision record files in place too, or record a parent decision that the gap is out of scope.
 
-Tool calls: none.
+Tool calls: none. My inherited context already held the diff, the record, the board entry, the summary and the `fsx.AtomicWrite` call sites.

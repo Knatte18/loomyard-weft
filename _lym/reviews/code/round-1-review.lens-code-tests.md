@@ -3,40 +3,31 @@ lens: code-tests
 outcome: reported
 ```
 
-The diff adds or changes three behaviours. Each one has a test that pins it, so this lens has no BLOCKING or MEDIUM finding.
+## code-tests lens: what pins each changed behaviour
 
-**Per behaviour, the test that pins it**
+- **Each output file is rewritten in place, keeping its inode** (`render.go:49`): pinned by `TestRenderToDiskRewritesAnExistingFileInPlace` (`internal/boardengine/render_test.go:43`).
+  - Its `os.SameFile` check would fail on the old code. `fsx.AtomicWrite` creates a temp file with `os.CreateTemp` while the old file still exists, so the temp file gets a different inode, then renames it over the target (`internal/fsx/fsx.go:57,72`).
+  - So the test was red on the old code and is green on the new.
+  - Testing only the design file is enough: README and the project files go through the same loop.
+- **A re-render writes the new content**: pinned by the same test's `HasSuffix(..., "second body")` check. `TestRenderToDiskManifestCleanup` (`render_test.go:78`) also covers it across consecutive renders.
+- **A new file is created on the first render**: covered by the first `RenderToDisk` call in both tests above.
+- **A missing parent directory is no longer created, and `PathGuard` no longer runs on output paths**: no test.
+  - A grep of `internal/boardengine` found no test with a `Readme` or `DesignPrefix` holding a `/`, and no `PathGuard` assertion. Only `internal/fsx/fsx_test.go:16` tests `PathGuard`, directly.
+  - Whether dropping the guard is a defect belongs to the correctness lens. Here the gap is only that nothing pins it.
+- **A failed write now leaves a truncated or partial file where the old content used to survive**: no test. `RenderToDisk` has no write-failure test, before or after the diff (grep of `render_test.go` found no `permkit` and no error-expecting call).
+- **Doc comments in `doc.go` and on `RenderToDisk`**: static prose, exempt.
 
-1. **A re-render rewrites an existing output file in place and keeps its inode** (`internal/boardengine/render.go:49`). Pinned by `TestRenderToDiskRewritesAnExistingFileInPlace` (`internal/boardengine/render_test.go:43-76`).
-   - The test calls `os.Stat` before and after a second render, then checks `os.SameFile`.
-   - It would fail on the old code: `fsx.AtomicWriteBytes` renames a fresh `os.CreateTemp` file over the target (`internal/fsx/fsx.go:57-72`), which gives the file a new inode.
-   - It is tier0, calls `t.Parallel`, uses `t.TempDir` and spawns nothing.
-   - The redundancy report lists it as unique.
-2. **A re-render writes the new content** (same line). Pinned by the same test's `os.ReadFile` assertion that the file ends with "second body" (`render_test.go:73`). `renderDesigns` appends the body byte for byte (`render.go:1024`), so the assertion is exact. `TestRenderToDiskManifestCleanup` and `TestRenderToDiskLinksOnlyAStoredDecisionRecord` also cover the first write of files and their content.
-3. **A failed write is returned as `write <relPath>: <err>`** (`render.go:49-50`). No test pins it. The wrapping text is the same as before the diff and only the callee changed, so this is not a new behaviour and needs no new row.
+The new test meets the repo's test conventions: `tiergate.Require(t, 0)` comes first, then `t.Parallel()`, `t.TempDir()`, and tier0 with no spawn. The redundancy report lists it as unique, and I found no existing test that checks file identity, so it is not redundant.
 
-Not behaviours that need a test:
+## Findings
 
-- **Mode `0o600` for a newly created file.** The old `os.CreateTemp` path gave the same mode, so it is unchanged. One difference is untested and I file nothing on it: the old code reset an existing file to 0600 on every render, while `os.WriteFile` keeps the existing file's mode.
-- **Doc-comment sentences** in `doc.go:341-342` and `render.go:37-39`. These are prose and exempt.
+1. **LOW**, class `design`, at `internal/boardengine/render.go:49`
+   - No test covers what the diff changed for nested output paths: a `readme` or `design_prefix` holding a subdirectory used to get its directory from `MkdirAll` and its path checked by `PathGuard`.
+   - Evidence: the removed `fsx.AtomicWrite` call (diff line 32), `internal/fsx/fsx.go:53,80`, and the grep that found no such test in `internal/boardengine`.
+2. **LOW**, class `design`, at `internal/boardengine/render.go:49-51`
+   - The failure path's outcome changed and no test covers it: a write that fails now returns `write <relPath>` and leaves the target truncated or partly written, where the old code left the previous content intact.
+   - Evidence: `fsx.go:62-75` (the temp file is removed on error and the target is untouched) against `os.WriteFile` truncating first. No failing-write test exists in `render_test.go`.
 
-**Dropped guard and directory creation**
-
-The diff no longer runs `PathGuard` or `MkdirAll` on the output paths. That changes behaviour, but no test at the review base covered it either:
-
-- My grep of the boardengine tests found no `Readme` or `DesignPrefix` value holding a `/` or `..`.
-- `TestRenderCustomOutputs` (`render_test.go:1389`) uses only plain file names.
-
-So no existing test loosened. Whether the change is itself a defect belongs to the code-correctness and code-affected-set lenses. If they keep it, its regression row has to come with the fix.
-
-**Findings**
-
-- **NIT** · class `consistency` · `internal/boardengine/render_test.go:45-46`
-  - Summary: the doc comment says the test pins that a re-render keeps "each output file's inode". The test checks only `proposal-a.md`, not `Home.md` or `project-root.md`.
-  - Fix: make the comment say "a design file's inode", or loop the `SameFile` check over every file the first render produced.
-  - Evidence: `render_test.go:56` and `render_test.go:66-72` stat and compare only `designPath`.
-
-**Tool calls**
-
-1. Grepped the boardengine tests for nested `Readme`/`DesignPrefix` values, mode checks and write-error assertions, and listed the `Test` functions in `render_test.go`. The manifest held only the test file's header and the new test, not the other tests.
-2. Grepped the `Readme:` values in the tests and read `TestRenderCustomOutputs` (`render_test.go:1389-1420`), to confirm no test uses an output path inside a subdirectory. That test was outside the manifest.
+Tool calls:
+1. Grepped `internal/boardengine` and `internal/fsx` tests for nested output paths and `PathGuard` assertions, because the manifest did not list the test bodies beyond lines 1–40.
+2. Grepped `render_test.go` for write-failure tests (`permkit`, expected errors), because I had not read the test file past its header.

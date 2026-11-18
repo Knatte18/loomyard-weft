@@ -3,39 +3,37 @@ lens: code-affected-set
 outcome: reported
 ```
 
-Task: the code-affected-set lens, covering everything outside the touched lines that the diff's changes force.
+Task: the code-affected-set lens. For each behaviour the diff changes, I looked for the callers, docs, tests and rules that depend on it.
 
-**Per change, the set found:**
+**Per change, the set found and whether it is covered:**
 
-1. **`RenderToDisk` now writes each rendered file in place with `os.WriteFile`, no longer through `fsx.AtomicWrite`.**
-   - Callers: `board.go:192` (`boardCriticalSection`), `replay.go:613`, `ownerset.go:336` (`renderOwnerWrite`). All are covered: none depends on the write's atomicity, inode or temp file, and all hold the board write lock.
-   - Readers:
-     - `sync.go:60-70` `commitDirty` takes the same `writeLockFile`, so a commit never reads a half-written file. Covered.
-     - `replay.go:805-845` `applyDesignFile` reads and writes design files through `AtomicWrite` and calls `RenderToDisk` afterwards. Covered.
-     - `isBoardOverview` reads only paths. Covered.
-   - Comments describing the write:
-     - `render.go:13` file header ("RenderToDisk writes the files…"): neutral. Covered.
-     - `doc.go:341` and the `RenderToDisk` doc: updated in the diff. Covered.
-     - `boardtest/concurrency_test.go:27` still says each write "performs an AtomicWrite of board.json, Home.md and _Sidebar.md". **Not covered.**
-   - `fsx.go`: unchanged and still true of `AtomicWrite`. Covered.
-   - `docs/overview.md`: no claim about how board render writes files. The `render_markdown` passage at lines 577-579 stays true. Covered.
-   - PATTERN: no entry or background file describes how board render writes files. `PATTERN-lym-files` governs temp files and does not reach this change. No PATTERN changes are declared. Covered.
-2. **New test `TestRenderToDiskRewritesAnExistingFileInPlace`.**
-   - The `render_test.go` file header (lines 1-7) lists what the file covers, the `RenderToDisk` manifest cleanup included, but not the in-place rewrite. **Not covered.**
-3. **Commit messages (28c270f4, b05e3b1d).** Neither carries a `Pattern-Departure:` or `Loosened-Check:` trailer, and neither is needed: no PATTERN entry forbids the change and no check was loosened. Covered.
+1. **`RenderToDisk` writes each output with `os.WriteFile` instead of `fsx.AtomicWrite`.** The old call also ran `PathGuard` and `MkdirAll`.
+   - Callers, signature unchanged:
+     - `board.go:192`
+     - `replay.go:613`
+     - `ownerset.go:336`, through `renderOwnerWrite`, which is reached from `board.go:241`, `ownerset.go:314`, `registrysetter.go:148` and `holdwrite.go:94`
+     - Covered: none needs a change.
+   - Config inputs that become output paths:
+     - `readme` (`template.yaml:1`, "relative to board dir")
+     - `design_prefix` (`config.go:198-213`, checked only against the `decision-` name)
+     - Not covered: neither key is checked for a subdirectory, an absolute path or `..`. The old write guarded these paths and created the parent directory; the new one does neither.
+   - `replay.go:842` writes origin's files with `AtomicWrite`, and `RenderToDisk` then rewrites the same paths in place. Covered: no change needed.
+   - `render.go:1-14` file header, "RenderToDisk writes the files": still true. Covered.
+   - `docs/research/loom/lym-state-map-2026-11-15.md:80` lists only the rendered files and their writer, not the write method. Covered.
+   - PATTERN entries and `pattern/` background files: none describes how board render output is written. This round declares no PATTERN changes. Covered.
+   - Tests: none in boardengine asserts a temp-file name, `PathGuard` on render outputs or a file mode. Covered.
+2. **The `RenderToDisk` doc comment and the `doc.go` paragraph state the in-place write.** No other doc in the package states the old atomic write: a grep of `doc.go` for atomic, temp file or rename found nothing else. Covered.
+3. **Commit messages of the range (`28c270f4`, `b05e3b1d`).** No `Pattern-Departure:` or `Loosened-Check:` trailer is needed, since no test check is loosened and no PATTERN way is departed from. Covered.
 
 **Findings:**
 
-- **LOW · consistency** · `internal/boardengine/boardtest/concurrency_test.go:27`
-  - The doc comment still says each write "performs an AtomicWrite of board.json, Home.md and _Sidebar.md". After the diff, Home.md and the other rendered files are rewritten in place, and only board.json and the manifest still go through temp and rename.
-  - Evidence: `concurrency_test.go:27`; `render.go:49`.
-  - Fix: reword the line so it names AtomicWrite only for board.json and says the rendered files are rewritten in place.
-- **NIT · consistency** · `internal/boardengine/render_test.go:1-7`
-  - The file header lists what the file covers, including `RenderToDisk`'s manifest cleanup. It does not mention the new test of in-place rewriting, so the header no longer describes the file's contents in full.
-  - Evidence: `render_test.go:6-7` and the new test at diff line 45.
-  - Fix: add a clause saying a re-render keeps each output file's inode.
+- **MEDIUM, design.** `internal/boardengine/render.go:49`
+  - Summary: dropping `fsx.AtomicWrite` also drops `PathGuard` and `MkdirAll` for render output paths. These paths come from the `readme` and `design_prefix` config keys, which no check limits to a plain file name. A `readme` such as `docs/Board.md` or a `design_prefix` such as `designs/` used to work, because the parent directory was created; every board write now fails with "no such file or directory". An absolute or `../` `readme` now writes outside the board directory instead of being refused.
+  - Evidence: `internal/fsx/fsx.go:53` (`MkdirAll`) and `fsx.go:79-84` (`PathGuard`); `internal/boardengine/template.yaml:1` (`readme` is "relative to board dir"); `internal/boardengine/config.go:198-213` (`checkDesignPrefix` checks only the `decision-` clash).
+  - Fix: put back the parent-directory creation and the path guard before `os.WriteFile`, for example `fsx.PathGuard(relPath)` plus `os.MkdirAll(filepath.Dir(...))`; or validate `readme` and `design_prefix` in `LoadConfig`.
 
-Tool calls:
-1. Searched boardengine, docs and pattern for "atomic" and in-place wording, and read `concurrency_test.go:20-35`. The manifest had neither the docs that describe board writes nor that test comment.
-2. Searched `concurrency_test.go` for reads of rendered files, and `docs/overview.md`, `PATTERN.md` and `pattern/` for preview or watcher text. Needed to check whether any test or doc depends on rendered files being written atomically.
-3. Read `docs/overview.md:572-584`. Needed to confirm the `render_markdown` passage makes no claim the change falsifies.
+**Tool calls:**
+
+1. Grepped `doc.go`, `docs`, `pattern` and `PATTERN.md` for atomic, temp or rename wording on render output. The manifest held no doc search beyond the diff.
+2. Grepped boardengine tests for `PathGuard`, mode and temp-file asserts, and all `RenderToDisk` and `renderOwnerWrite` callers. The manifest lacked the callers one hop beyond `renderOwnerWrite`.
+3. Grepped the state-map doc and the subdirectory config wording. These were hits from call 1 that the manifest had not read.

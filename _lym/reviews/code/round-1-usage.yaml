@@ -2,6 +2,25 @@ round: 1
 fan: review-code
 fix_fan: fix-code
 fans_recorded: true
+lenses:
+    - code-correctness
+    - code-affected-set
+    - code-tests
+    - code-scope
+review:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-11-18T19:07:30Z
+    end: 2026-11-18T20:13:24.706217831+01:00
+    wall_seconds: 354.706217831
+    tokens_known: true
+    fresh_tokens: 160385
+    cache_read_tokens: 2417878
+    forks: 4
+    fork_fresh_tokens: 20836
+    fork_cache_read_tokens: 968487
+    fork_fresh_share: 0.1299123982916108
 seed:
     - engine: claude
       model: sonnet
@@ -18,3 +37,4 @@ assist:
     model: gpt-6-astra
     effort: medium
 assist_fan: review-code
+assist_ending: done
