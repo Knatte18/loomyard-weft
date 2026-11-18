@@ -3,6 +3,7 @@
   "state": "awaiting",
   "error": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/hardener/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add hardener`, then decide with `lym loom circling accept hardener` or `lym loom circling continue hardener`, then run `lym loom resume` in the task worktree to resume",
   "parent_notice": "Review segment of task `hardener` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/hardener/_lym/reviews/discussion/round-1-escalation.md` with a one-shot fork. Way forward: record each answer with \"lym loom decision add hardener --by parent\", one entry per answered finding, then decide with \"lym loom circling accept hardener\" or \"lym loom circling continue hardener\".",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
