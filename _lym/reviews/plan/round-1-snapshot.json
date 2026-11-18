@@ -1,0 +1,13 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/plan"
+  ],
+  "target_id": "4c660962fe8fd3d1d202db4331ab32602347c96a0a82307b3344271c80b916c4",
+  "added_decisions": [
+    {
+      "title": "Round-3 hard-cap ruling: F26 to F28 are answered by D7 as fixed",
+      "digest": "ac10cc27a37461ddc7c4c01966d9e0ff595bf0fba535f5171024d1ad439c0b87"
+    }
+  ]
+}
