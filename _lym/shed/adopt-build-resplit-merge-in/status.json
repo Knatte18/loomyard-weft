@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-18T07:07:33Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit-merge-in/_lym/landing/summary.md",
+      "at": "2026-11-18T07:13:36Z",
+      "started_at": "2026-11-18T07:07:36Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-18T07:09:35.731788715Z",
+          "end": "2026-11-18T07:09:35.741912382Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-18T07:09:35.796895687Z",
+          "end": "2026-11-18T07:13:05.075267358Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-18T07:13:05.117010898Z",
+          "end": "2026-11-18T07:13:05.332687148Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-18T07:13:05.369447473Z",
+          "end": "2026-11-18T07:13:05.369601124Z"
+        }
+      ]
     }
   ],
   "product": {
