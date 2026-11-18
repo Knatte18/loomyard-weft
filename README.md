@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 12:03 UTC; every age below is as of then.
+Rendered 2026-11-18 12:07 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -76,7 +76,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Measure the coverage maps: build time, peak memory and whether their candidates hold**<br>• Full map build timed with peak memory, lym gate redundant on two packages, hand crosscheck against single-test runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`coverage-map-measurement`](design-coverage-map-measurement.md) | darn · docs | Darn-Write | neve | 4m<br>4m | gate, testkit |
+| T5 | **Measure the coverage maps: build time, peak memory and whether their candidates hold**<br>• Full map build timed with peak memory, lym gate redundant on two packages, hand crosscheck against single-test runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`coverage-map-measurement`](design-coverage-map-measurement.md) | darn · docs | Darn-Write | neve | 8m<br>8m | gate, testkit |
 
 #### Ready (0)
 
@@ -90,7 +90,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid | T5 | 8d<br>4m | testkit, gate |
+| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid | T5 | 8d<br>8m | testkit, gate |
 
 ### Notes (1)
 
@@ -119,9 +119,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A re-step reconciles a leftover shuttle run only when the status error text names an interrupted stop**<br>• reconcileInterruptedStep keys on error text, so a leftover run with no interrupted record is not reconciled<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`leftover-runs-not-reconciled`](design-leftover-runs-not-reconciled.md) | darn · light | Code-Burler-Fix | neve | 46m<br>29m | shed, shuttle |
+| T1 | **A re-step reconciles a leftover shuttle run only when the status error text names an interrupted stop**<br>• reconcileInterruptedStep keys on error text, so a leftover run with no interrupted record is not reconciled<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`leftover-runs-not-reconciled`](design-leftover-runs-not-reconciled.md) | darn · light | Code-Burler-Fix | neve | 50m<br>33m | shed, shuttle |
 | T4 | **Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review** | [`review-result-checks`](design-review-result-checks.md)<br>[Sketch](decision-review-result-checks.md) | tapestry · solid | Webster | neve | 1h<br>1h | stencil, drift, fabric, burler, landing, loom, shed, testkit, docs |
-| T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Plan-Burler-Fix | neve | 2h<br>58m | claude, shuttle, reed, orch, batten, cwd, config, tools |
+| T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Plan-Bouncer | neve | 2h<br>1h | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
 #### Ready (0)
 
@@ -135,8 +135,8 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 17h<br>16h | board, ide, fabric |
-| T6 | `draft` **Where the Claude quota goes, and why it burns faster now than two weeks ago**<br>• Weekly Claude usage W44 to W47 by role, model, hub, recipe and session kind; name what drove the rise and the cuts<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`token-spend-weekly-rise`](design-token-spend-weekly-rise.md) | darn · docs |  | 0m<br>0m | claude, report |
+| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 18h<br>17h | board, ide, fabric |
+| T6 | `draft` **Where the Claude quota goes, and why it burns faster now than two weeks ago**<br>• Weekly Claude usage W44 to W47 by role, model, hub, recipe and session kind; name what drove the rise and the cuts<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`token-spend-weekly-rise`](design-token-spend-weekly-rise.md) | darn · docs |  | 5m<br>4m | claude, report |
 
 ### Notes (6)
 
@@ -153,7 +153,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 4m<br>4m | landing |
+| E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 9m<br>9m | landing |
 
 #### Features (3)
 
