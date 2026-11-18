@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "run \"review-result-checks\" cannot act: a pause covers the run; way forward: run `lym tender resume review-result-checks`, then run \"lym batten run review-result-checks\" again",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Open-IDE → skipped",
-    "wait": ""
+    "wait": "run \"review-result-checks\" cannot act: a pause covers the run; way forward: run `lym tender resume review-result-checks`, then run \"lym batten run review-result-checks\" again"
   },
   "history": [
     {
@@ -49,5 +49,9 @@
       "reason": "batten.open_ide = false",
       "machine": "neve"
     }
-  ]
+  ],
+  "pause_intent": {
+    "by": "ly:orch",
+    "at": "2026-11-18T14:31:51+01:00"
+  }
 }
