@@ -18,7 +18,7 @@ A clean-room rewrite was judged too large for the gain (2026-11-18); this projec
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (0)
 
 Concrete and claimable; only a task can run.
 
@@ -27,14 +27,6 @@ Concrete and claimable; only a task can run.
 Waits on nothing open; can start now.
 
 _None._
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 8d<br>35m | testkit, gate |
 
 ## Notes (4)
 
