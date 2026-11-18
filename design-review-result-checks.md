@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-review-result-checks.md)
 
-Depends on: [`records-push-main-weft-ended`](design-records-push-main-weft-ended.md)
-
 Filed from the Sketch `code-review-result-checks`.
 
 Takes: the Sketch's decision record; the review base from loomcli's taskMergeBase; burlerengine.ParseReview; shedengine's reroute history entries; internal/friction

@@ -370,34 +370,6 @@
       "profile": "solid"
     },
     {
-      "id": 1461,
-      "handle": "T5",
-      "slug": "records-push-main-weft-ended",
-      "title": "Seed-IDE fails: records push calls main-weft ended on origin",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "fabric",
-        "batten"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A new run fails at Seed-IDE because the prime records branch is read as ended on origin; a rerun passes",
-      "body": "## Seen\n\nTwice on 2026-11-18 a newly started batten run failed at Seed-IDE, right after Open-Window, with:\n\n```\nfabricengine: push records side at /home/knatte/Code/loomyard-LYMHUB/loomyard-weft: the entry of branch main-weft is ended on origin, so the branch was not pushed and is left to its teardown\n```\n\nIt hit `retro-stencil-fixes` in the morning and `shuttle-start-idle-and-prompt` at 09:01Z, while other runs released in the same batch started cleanly.\nThe branch it names is the prime records branch `main-weft`, which is never ended; the message comes from `recordsSideNotLanded` in `internal/fabricengine/pushanchored.go`.\n\n## Workaround\n\nThe orch reran `lym batten run \u003cslug\u003e`; the run then went on through Run-Shed.\n\n## Expected\n\nA push of the prime records side never classifies `main-weft` as ended on origin, and a transient classification does not fail the run at Seed-IDE.\n",
-      "status": "done",
-      "created": "2026-11-18T09:14:23Z",
-      "revised": "2026-11-18T10:33:46Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
       "id": 1462,
       "handle": "T9",
       "slug": "claude-accounts-per-worktree",
@@ -417,8 +389,7 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "leftover-strands-and-runs",
-        "records-push-main-weft-ended"
+        "leftover-strands-and-runs"
       ],
       "isolated": false,
       "brief": "",
@@ -449,9 +420,7 @@
       ],
       "issues": [],
       "recipe": "tapestry",
-      "depends_on": [
-        "records-push-main-weft-ended"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `code-review-result-checks`.\n\nTakes: the Sketch's decision record; the review base from loomcli's taskMergeBase; burlerengine.ParseReview; shedengine's reroute history entries; internal/friction\nDelivers: the rubric's result-check bullets and review-input reading, a shared Loosened-Check fragment in every committing brief, Drift's per-file loosened-check rulings with their Stuck and verdict lines, the pr-findings verb with its send-back mark, deferred clear and friction note, Code-Bouncer's full generation on a send-back file, and the figures rule in the Describe and darn writer briefs\nExports: the Loosened-Check commit trailer; lym loom pr-findings \u003cfile\u003e; the loom.pr_review_small_max key; on_reroute: Code-Bouncer on PR-Review in tapestry, darn and sampler; the ReviewInput seam returning every input written after the settle\n\nThe part changes these packages:\n\n- contracts/stencils (about 250 changed lines)\n- contracts/recipes (about 10 changed lines)\n- internal/driftengine (about 600 changed lines)\n- internal/fabricengine (about 200 changed lines)\n- internal/loomcli (about 500 changed lines)\n- internal/loomshed (about 60 changed lines)\n- internal/loomengine (about 40 changed lines)\n- internal/shedrecipe (about 80 changed lines)\n- internal/shedadapters (about 350 changed lines)\n- internal/landingshed (about 400 changed lines)\n- internal/pullrequest (about 60 changed lines)\n- internal/testkit/envkit (about 20 changed lines)\n- docs (about 30 changed lines)\n",
