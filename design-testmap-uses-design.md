@@ -1,6 +1,6 @@
 # Coverage map uses: reach note, failure triage and diff mutation check
 
-`testmap-uses-design` · Task · sketch, testmap, gate, burler, darn · starting · Open-Window
+`testmap-uses-design` · Task · sketch, testmap, gate, burler, darn · starting · Seed-IDE
 
 Decision record: [Sketch](decision-testmap-uses-design.md)
 
