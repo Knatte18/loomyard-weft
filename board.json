@@ -426,5 +426,10 @@
     }
   ],
   "prime_owner": "neve",
-  "draft_status": true
+  "draft_status": true,
+  "machines": {
+    "14834fdb4adf6d09b6ec812ed05eb818": {
+      "name": "neve"
+    }
+  }
 }
