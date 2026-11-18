@@ -1,0 +1,21 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Seed-Child",
+    "history_length": 1,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-18T08:39:52.755727336+01:00",
+  "deadline": "2026-11-18T09:09:52.755727336+01:00",
+  "strand_guid": "c2181cc2e8355cc6697f4fb55c60bf60",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/refusal-names-segment/drive-reports/drive-envelope-20261118-083839-048e.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/refusal-names-segment/drive-reports/drive-report-20261118-083952-4f41.md",
+  "case_brief_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/refusal-names-segment/tackler/attempt-1/case-brief.md",
+  "snapshot": {
+    "head": "71d6ee1a044d76998b1a3ff37a5eaec9113b83d5",
+    "branch": "refusal-names-segment",
+    "dirty": {}
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "verdict": "resume",
+  "reason": "Error stop at Seed-Child, before the row's own work ran. The failing push was the hub\nrecords push of the status commit 34b476738c \"batten: Seed-Child -\u003e running\" on main-weft\nin loomyard-weft (step trace line at 08:38:27.897, refusal at 08:38:39.047).\nThat commit has landed since: git merge-base --is-ancestor 34b476738c origin/main-weft\nexits 0, and ls-remote shows main-weft on origin (now at 58f949b243). The run's own pair\nis intact and clean: refusal-names-segment and refusal-names-segment-weft both track\ntheir origin branches with nothing unpushed and nothing uncommitted (the weft holds only\nthe untracked _lym/usage/). status.json records Worktree-Create done and Seed-Child failed\nwith no further history, so no Seed-Child output exists to collide with on a re-run.\nThe message comes from the generic fallback of recordsSideNotLanded\n(internal/fabricengine/pushanchored.go:297-310), which fires whenever HasUnpushed is still\ntrue after a nil records push. main-weft is shared by every batten run on this hub, and\nother runs committed to it in the same seconds (c407f429 Open-Window at 08:38:38,\nb01637f87d at 08:38:55), so a racing writer or a racing origin read left the branch\n\"unpushed\" at the check; it is not a ledger ending of this run's entry. That is a hub\nfabricengine defect outside this task's scope (the task is the shell guard's refusal\ntext), so I made no fix; it is worth its own board entry. A plain re-launch re-runs\nSeed-Child against a landed records branch and is safe.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym board get '{\"slug\":\"refusal-names-segment\"}'",
+    "git -C /home/knatte/Code/loomyard-LYMHUB/loomyard-weft ls-remote origin main-weft",
+    "git -C /home/knatte/Code/loomyard-LYMHUB/loomyard-weft merge-base --is-ancestor 34b476738c933946ad51213a537c44dcfee2689d origin/main-weft",
+    "git -C /home/knatte/Code/loomyard-LYMHUB/refusal-names-segment status -sb",
+    "git -C /home/knatte/Code/loomyard-LYMHUB/refusal-names-segment-weft status -sb"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/refusal-names-segment/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/refusal-names-segment/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step refusal-names-segment --until-stop --arbiter-attempt 1"
+}
