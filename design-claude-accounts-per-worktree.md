@@ -1,6 +1,6 @@
 # Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit
 
-`claude-accounts-per-worktree` · Task · feature, claude, shuttle, reed, orch, batten, cwd, config, tools · running · Code-Bouncer
+`claude-accounts-per-worktree` · Task · feature, claude, shuttle, reed, orch, batten, cwd, config, tools · running · Code-Burler-Review
 
 Decision record: [Sketch](decision-claude-accounts-per-worktree.md)
 
