@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 17:20 UTC; every age below is as of then.
+Rendered 2026-11-18 17:21 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Pause holds no shared lock and works on a pair with no reed session**<br>• A held call waits without the fabric push lock, dobby starts no driver for a paused pair, and pause and status skip a pair with no reed session<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pause-after-crash-fixes`](design-pause-after-crash-fixes.md) | darn · solid | Darn-Write | neve | 3h<br>42m | tender, fabric, batten, reed |
-| T5 | **Drift-Verify halts: no false guard halt on record edits, and a short halt note with the way forward first**<br>• The judge guard tells a parent decision-record edit from a judge edit and a resume rechecks; the halt note groups repeated findings, caps its length and leads with the way forward<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drift-verify-halt-fixes`](design-drift-verify-halt-fixes.md) | darn · solid | Code-Bouncer | neve | 42m<br>41m | drift, loom |
+| T5 | **Drift-Verify halts: no false guard halt on record edits, and a short halt note with the way forward first**<br>• The judge guard tells a parent decision-record edit from a judge edit and a resume rechecks; the halt note groups repeated findings, caps its length and leads with the way forward<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drift-verify-halt-fixes`](design-drift-verify-halt-fixes.md) | darn · solid | Code-Burler-Review | neve | 42m<br>42m | drift, loom |
 | T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Code-Burler-Fix | neve | 7h<br>6h | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
 ### Ready (0)
@@ -60,7 +60,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>3w | burler |
-| F2 |  | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md) | 6m<br>3m | fabric |
+| F2 |  | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md) | 6m<br>4m | fabric |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 3d<br>9h | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>13d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
