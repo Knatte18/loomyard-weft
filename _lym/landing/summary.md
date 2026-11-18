@@ -1,32 +1,49 @@
-# Stage the Code-Review reviewer's diff in pieces that each read whole
+# Stage the reviewer diff in pieces that fit one Read
 
-The Code-Review reviewer had to derive the task's diff itself.
-On a large branch it wrote the whole diff to a scratch file, read it in spans, and had its last read refused for size.
-That put about 3,600 lines of diff in its context.
-Burler now writes the round's diff out before the reviewer starts, one piece per package, each small enough to read whole, and the explore step names every piece.
+A code reviewer used to build the task's diff itself.
+In one run it wrote a diff of about 3,600 lines to a scratch file, read it in five spans, had its last Read refused for size, and retried with `allow_large`.
+That session cost about three times the row median, with the whole diff in its context.
+
+Now burler writes the committed diff out as one file per package, each small enough for a single Read, and lists the files in the reviewer's explore step.
 
 ## What changes
 
-- **`internal/burlerengine`**: `Profile` gains `Diff`, the unified diff the round reviews.
-  `Engine.Review` writes a non-empty `Diff` into a `diff/` directory beside the reviewer's instruction files (`diffpieces.go`).
-  Each package's files go in one piece, and no piece passes `diffPieceMaxBytes` (60,000 bytes, well under the roughly 25,000-token limit of an agent's file read).
-  A package too large for one piece splits at file boundaries into numbered parts.
-  A single file that is too large splits at its hunk starts, then at line ends.
-  The explore step's new optional `diff_pieces` marker renders the new `burler-diff-pieces` stencil, which lists the pieces.
-  It tells the reviewer to read them in place of the range's `git diff`, and to run any other command the rubric names, such as `git show` of a merge commit, as before.
-  A round with no diff renders the same explore step as before. An assistant reviewer's explore step names the same pieces.
-- **`internal/shedadapters`**: `BurlerHalfDeps.Diff` is a reader the review producer calls once per spawning call, setting the spawned profile's `Diff`.
-  A failed read is logged, and the reviewer spawns with no pieces, which leaves it deriving the range from the rubric as before.
-  A probed or resumed reviewer is not affected.
-- **`internal/shedrecipe`**: the `BurlerReview` row takes the optional key `stage_diff`.
-  When it is set true, the row hands the full patch of `Env.CodeSubject` to the producer, the same diff against the task's merge base that the Code-Bouncer reads.
-  A subject that is not found, as in a standalone run, gives no diff.
-  A row that sets the key while `Env.CodeSubject` is nil is refused when it is built.
-- **Recipes**: the `Code-Burler-Review` rows of the tapestry, darn and sampler recipes set `stage_diff: true`.
+- `internal/burlerengine/diffpieces.go` splits a unified diff into pieces of one package each.
+  A piece is capped at 40,000 bytes and 1,500 lines.
+  A package over the cap splits at file boundaries into numbered parts.
+  A single file over the cap splits at hunk starts, then at line ends, on rune boundaries.
+  Each piece of a split file after the first repeats the file's header when that header fits within half a piece.
+  Piece file names bound the package part at 80 bytes.
+- The pieces are written beside the reviewer's instruction files.
+  The new stencil `contracts/stencils/burler/burler-diff-pieces.md` lists them, and `burler-step-1-explore.md` gains an optional `diff_pieces` marker that renders nothing in a round with no diff.
+  The text tells the reviewer to read the pieces instead of running `git diff` over the range, and to read every needed piece in one message.
+  Where the rubric narrows or refuses the range (a merge from the parent, an unreadable base), the rubric's range governs and the pieces are only a reading aid.
+- `BurlerReview` rows take an optional `stage_diff: true` key.
+  The `darn`, `sampler` and `tapestry` code-review rows set it.
+  A row that sets it while `Env.CodeDiff` is nil is refused when the recipe is built.
+- The diff comes from a new `Fabric.ReadCommittedDiff` in `internal/fabricengine/taskpatch.go`: the commits from the merge base to HEAD, with no uncommitted edit and no untracked file.
+  `internal/loomcli/subjects.go` wires it through `committedCodeDiff`, and shares the base lookup with `codeSubject` through `recordedTaskBase`.
+  A standalone run, with no recorded parent branch, gets no diff.
+- `BurlerReviewProducer` reads the diff once per spawning call.
+  A failed read is logged as a warning and the reviewer runs without pieces, as before.
 
 ## Design decisions
 
-- Burler stays free of git: the review producer reads the diff through the existing code-subject seam and hands burler only the text, so standalone burler runs need no repository.
-- The diff is read per spawning call, not when the row is built, because each round's fixer commits change it.
-- The Code-Review rubric still defines the review range, so a merge-parent task's narrowed range and the `none` base still go through its own rules.
-- The piece cap is a named constant, not a setting: it tracks a file-read limit, not an operator choice.
+- The diff is the committed range, not the patch `ReadTaskPatch` builds for the review's identity.
+  The reviewer's rubric reads the commits, so an uncommitted edit would show it lines the review range does not hold.
+- The stencil states that the rubric's range wins over the pieces, so the pieces cannot widen a range the rubric narrowed.
+- The cap counts bytes and lines.
+  Bytes alone let a file of very short lines pass the Read tool's default line limit.
+
+## To check by hand
+
+No end-to-end review run was done against a large branch.
+Run a code review on a branch with a diff well over 3,000 lines and check that the reviewer reads the pieces and runs no whole-range `git diff`.
+
+Findings a review left open, each to check in the diff:
+
+- `piece-cap-bytes-only`: `diffPieceMaxBytes` and `diffPieceMaxLines` in `internal/burlerengine/diffpieces.go` bound a piece; check that the byte cap alone is safe for dense or binary patches.
+- `split-order-and-assistant-pieces-unpinned`: check that piece order and the assistant reviewer's pieces are pinned by tests in `internal/burlerengine/diffpieces_test.go` and `assist_test.go`.
+- `staged-patch-not-committed-range`: check that the diff staged is the committed range (`ReadCommittedDiff` in `internal/fabricengine/taskpatch.go`) and not the working-tree patch.
+- `stencil-overrides-rubric-range`: check that `contracts/stencils/burler/burler-diff-pieces.md` leaves the rubric's range in force when it narrows or refuses the review range.
+- `template-tests-lack-keep-markers`: check that `internal/burlerengine/template_test.go` and `contracts/stencils/markers_test.go` cover the `diff_pieces` marker and that the marker survives the template's keep-marker handling.
