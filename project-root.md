@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 09:20 UTC; every age below is as of then.
+Rendered 2026-11-18 09:24 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,20 +8,19 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (8)
+## Tasks (7)
 
 Concrete and claimable; only a task can run.
 
-### Running (4)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Drift: a parent decision trips the judge snapshot check, and line-range expectations never match**<br>• Two drift bugs: parent decision commits blamed on the judge, and line-range entries that never match<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drift-judge-and-line-range`](design-drift-judge-and-line-range.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>24m | drift, loom |
-| T5 | **Shuttle start: idle check misses an idle prompt, and a review strand misses its prompt turn**<br>• Two seat start bugs in shuttle prompt delivery<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md) | darn · solid | Darn-Write | neve | 1h<br>24m | shuttle, burler |
-| T9 | **Agents must never build or check out a repository under .scratch, .lym or _lym**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | darn · light | landing · Finalize | neve | 1h<br>24m | stencil |
-| T10 | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md) | motif | Discussion-Burler-Review | neve | 1h<br>24m | burler, stencil, drift |
+| T1 | **Drift: a parent decision trips the judge snapshot check, and line-range expectations never match**<br>• Two drift bugs: parent decision commits blamed on the judge, and line-range entries that never match<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drift-judge-and-line-range`](design-drift-judge-and-line-range.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>27m | drift, loom |
+| T5 | **Shuttle start: idle check misses an idle prompt, and a review strand misses its prompt turn**<br>• Two seat start bugs in shuttle prompt delivery<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md) | darn · solid | Darn-Write | neve | 1h<br>27m | shuttle, burler |
+| T10 | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md) | motif | Discussion-Burler-Review | neve | 1h<br>27m | burler, stencil, drift |
 
 ### Ready (0)
 
@@ -35,8 +34,8 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Leftover strands and shuttle runs halt a gate re-prompt and a re-step**<br>• Gate re-prompt to an untracked strand, and a re-step tripping on a leftover shuttle run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`leftover-strands-and-runs`](design-leftover-strands-and-runs.md) | darn · solid | T5 | 1h<br>24m | gate, shuttle, reed, shed |
-| T8 | **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | darn · light | T5 | 1h<br>24m | burler, lenses |
+| T6 | **Leftover strands and shuttle runs halt a gate re-prompt and a re-step**<br>• Gate re-prompt to an untracked strand, and a re-step tripping on a leftover shuttle run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`leftover-strands-and-runs`](design-leftover-strands-and-runs.md) | darn · solid | T5 | 1h<br>27m | gate, shuttle, reed, shed |
+| T8 | **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | darn · light | T5 | 1h<br>27m | burler, lenses |
 
 ### Layer B (1)
 
@@ -44,7 +43,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **C# hub: silent dotnet test exit, and runs failing in a hub with no tier0 or only inert changes**<br>• Make a refused dotnet test say so; let a hub with no tier0 or an all-inert change run and land<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`csharp-hub-gate-fixes`](design-csharp-hub-gate-fixes.md) | darn · solid | T6 | 1h<br>24m | dotnet, process, gate, config |
+| T7 | **C# hub: silent dotnet test exit, and runs failing in a hub with no tier0 or only inert changes**<br>• Make a refused dotnet test say so; let a hub with no tier0 or an all-inert change run and land<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`csharp-hub-gate-fixes`](design-csharp-hub-gate-fixes.md) | darn · solid | T6 | 1h<br>27m | dotnet, process, gate, config |
 
 ### Draft (1)
 
@@ -75,8 +74,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **selfreport -b takes a file path as the body text, losing the report**<br>• An agent passed a file path to -b and the issue body became the path | [`selfreport-body-path-as-text`](design-selfreport-body-path-as-text.md) | 24m<br>24m | selfreport |
-| B2 |  | **Seed-IDE fails: records push calls main-weft ended on origin**<br>• A new run fails at Seed-IDE because the prime records branch is read as ended on origin; a rerun passes | [`records-push-main-weft-ended`](design-records-push-main-weft-ended.md) | 6m<br>6m | fabric, batten |
+| B1 |  | **selfreport -b takes a file path as the body text, losing the report**<br>• An agent passed a file path to -b and the issue body became the path | [`selfreport-body-path-as-text`](design-selfreport-body-path-as-text.md) | 27m<br>27m | selfreport |
+| B2 |  | **Seed-IDE fails: records push calls main-weft ended on origin**<br>• A new run fails at Seed-IDE because the prime records branch is read as ended on origin; a rerun passes | [`records-push-main-weft-ended`](design-records-push-main-weft-ended.md) | 9m<br>9m | fabric, batten |
 
 ### Features (3)
 
@@ -86,10 +85,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 2d<br>1h | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>12d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
-## Done (1)
+## Done (2)
 
 Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
 | T4 | **lym orch launches keep the python guard although deny_python is false**<br>• An orch launch ignores deny_python: false in the hub shuttle config; notice and hook both stay<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-ignores-deny-python`](design-orch-ignores-deny-python.md) | 1h<br>1h | orch, shuttle, config |
+| T9 | **Agents must never build or check out a repository under .scratch, .lym or _lym**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | 1h<br>27m | stencil |
