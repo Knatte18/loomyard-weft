@@ -1,0 +1,989 @@
+diff --git a/internal/shuttleengine/attach_test.go b/internal/shuttleengine/attach_test.go
+index 2f7598c6..39b8c5e7 100644
+--- a/internal/shuttleengine/attach_test.go
++++ b/internal/shuttleengine/attach_test.go
+@@ -18,6 +18,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/reedengine/render"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+@@ -1129,6 +1130,203 @@ func TestAttach_DeliversTheDeferredPrompt(t *testing.T) {
+ 	}
+ }
+ 
++// turnStartReed records a turn start carrying each typed text as its instruction, as a provider's hook does on submit.
++type turnStartReed struct {
++	*echoReed
++	eventsPath string
++}
++
++func (r *turnStartReed) SendText(guid, text string, submit bool) error {
++	if err := r.echoReed.SendText(guid, text, submit); err != nil {
++		return err
++	}
++	f, err := os.OpenFile(r.eventsPath, os.O_APPEND|os.O_WRONLY, 0o644)
++	if err != nil {
++		return err
++	}
++	defer f.Close()
++	_, err = f.WriteString("START:" + text + "\n")
++	return err
++}
++
++// activityReed is an echoReed whose operator-activity reading is scripted: a send is held while active answers true.
++type activityReed struct {
++	*echoReed
++	active func() bool
++}
++
++func (r *activityReed) OperatorActive(guid string) (bool, time.Duration, error) {
++	if r.active() {
++		return true, 5 * time.Second, nil
++	}
++	return r.echoReed.OperatorActive(guid)
++}
++
++// scheduledAction is a step a scheduledClock runs once.
++type scheduledAction struct {
++	at   time.Time
++	run  func()
++	done bool
++}
++
++// scheduledClock wraps a fakeClock and runs each action once.
++// An action runs in the first Sleep that leaves the clock at or past its time.
++type scheduledClock struct {
++	*fakeClock
++	actions []*scheduledAction
++}
++
++func (c *scheduledClock) Sleep(d time.Duration) {
++	c.fakeClock.Sleep(d)
++	for _, action := range c.actions {
++		if !action.done && !c.Now().Before(action.at) {
++			action.done = true
++			action.run()
++		}
++	}
++}
++
++var _ Clock = (*scheduledClock)(nil)
++
++// appendToEvents appends text to the events file at path.
++func appendToEvents(t *testing.T, path, text string) {
++	t.Helper()
++	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0o644)
++	if err != nil {
++		t.Errorf("open events: %v", err)
++		return
++	}
++	defer f.Close()
++	if _, err := f.WriteString(text); err != nil {
++		t.Errorf("append to events: %v", err)
++	}
++}
++
++// TestWait_RetypesAPromptLineThatStartedNoTurn pins the lost-prompt retype.
++// A prompt line typed through the handle that no turn start follows within the submit window is typed once more.
++// It is never typed a third time.
++// A line whose turn starts is typed once.
++// A turn start from before the typing is not the line's turn.
++// A retype held busy before it typed leaves the retype for a later tick.
++// A pause covering the run types nothing more.
++// Neither does an engine that parses no session signals, nor a timeout inside the submit window.
++func TestWait_RetypesAPromptLineThatStartedNoTurn(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const promptLine = "Read the task prompt and carry it out."
++	window := submitConfirmTimeout(fastConfig)
++	once := []string{promptLine}
++	twice := []string{promptLine, promptLine}
++	tests := []struct {
++		name string
++		// turnStarts makes every typed text start a turn.
++		turnStarts bool
++		// operatorTurn seeds a finished operator turn past the prompt offset, before the attach types the line.
++		operatorTurn bool
++		// operatorTurnDuringSend appends a finished operator turn while the attach's send waits to type the line.
++		operatorTurnDuringSend bool
++		// holdFirstRetype makes the first send after the submit window find an operator active in the pane.
++		holdFirstRetype bool
++		// pauseCoversRun covers the run with a hub pause after the attach typing, and ends the run while it lasts.
++		pauseCoversRun bool
++		// noSignals gives the engine no session signal parsing.
++		noSignals bool
++		// timeout is the run's timeout, three submit windows when zero.
++		timeout   time.Duration
++		wantTyped []string
++	}{
++		{name: "a line no turn follows is typed once more", wantTyped: twice},
++		{name: "a line whose turn starts is typed once", turnStarts: true, wantTyped: once},
++		{name: "an operator turn from before the typing is not the line's turn", operatorTurn: true, wantTyped: twice},
++		{name: "an operator turn that starts while the send waits is not the line's turn", operatorTurnDuringSend: true, wantTyped: twice},
++		{name: "a retype held busy before it typed is tried again", holdFirstRetype: true, wantTyped: twice},
++		{name: "a pause covering the run holds the retype", pauseCoversRun: true, wantTyped: once},
++		{name: "an engine that parses no session signals never retypes", noSignals: true, wantTyped: once},
++		{name: "a timeout inside the submit window ends the run before a retype", timeout: window / 2, wantTyped: once},
++		{name: "a retype due at the run's deadline is not typed", timeout: window, wantTyped: once},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			echo := &echoReed{fakeReed: &fakeReed{StatusQueue: []reedengine.StatusResult{liveStatus("strand-1", "%1")}}, pane: "❯ "}
++			reed := &turnStartReed{echoReed: echo}
++			fc := newFakeClock(time.Now())
++			start := fc.Now()
++			held := false
++			var ops ReedOps = echo
++			switch {
++			case tt.turnStarts:
++				ops = reed
++			case tt.holdFirstRetype:
++				ops = &activityReed{echoReed: echo, active: func() bool {
++					if held || fc.Now().Sub(start) < window {
++						return false
++					}
++					held = true
++					return true
++				}}
++			case tt.operatorTurnDuringSend:
++				appended := false
++				ops = &activityReed{echoReed: echo, active: func() bool {
++					if !appended {
++						appended = true
++						appendToEvents(t, reed.eventsPath, "START:an operator line\nSTOP:answered\n")
++					}
++					return false
++				}}
++			}
++			var engine Engine = &sessionFakeEngine{waitingEngine: waitingEngine{fakeEngine: fakeEngine{StartupScript: []StartupState{StartupReady}}}, liveness: LivenessAlive}
++			if tt.noSignals {
++				engine = &fakeEngine{StartupScript: []StartupState{StartupReady}}
++			}
++			scheduled := &scheduledClock{fakeClock: fc}
++			var clock Clock = fc
++			if tt.pauseCoversRun {
++				clock = scheduled
++			}
++			fx := newFixture(t, ops, engine, withConfig(fastConfig), withSeparateRunDir(), withClock(clock))
++			seedPresentReedState(t, fx.DotLym)
++			outputFile := filepath.Join(fx.RunRoot, "out.md")
++			runDir := seedAttachRun(t, fx.RunRoot, "run-1", seedAttachRunOpts{
++				strandGUID: "strand-1", sessionID: "session-1", outputFiles: []string{outputFile}, outcome: runOutcomeRunning, includeOutcome: true,
++				promptLine: promptLine, promptOffset: skillLoadOffset,
++			})
++			reed.eventsPath = filepath.Join(runDir, eventsFileName)
++			events := skillLoadEvents
++			if tt.operatorTurn {
++				events += "START:an operator line\nSTOP:answered\n"
++			}
++			if err := os.WriteFile(reed.eventsPath, []byte(events), 0o644); err != nil {
++				t.Fatalf("seed events: %v", err)
++			}
++			if tt.pauseCoversRun {
++				recordPath := filepath.Join(t.TempDir(), pauserecord.RecordFileName)
++				fx.Runner.SetPause(pauserecord.Geometry{RecordPath: recordPath, Slug: "slug"})
++				scheduled.actions = []*scheduledAction{
++					{at: start.Add(10 * time.Second), run: func() { addLiveEntry(t, recordPath, pauserecord.ScopeHub, fc.Now()) }},
++					{at: start.Add(window + 10*time.Second), run: func() {
++						touchOutputFile(t, outputFile)
++						appendToEvents(t, reed.eventsPath, "STOP:done\n")
++					}},
++				}
++			}
++
++			timeout := tt.timeout
++			if timeout == 0 {
++				timeout = 3 * window
++			}
++			if _, found, err := fx.Runner.Attach(Spec{OutputFiles: []string{outputFile}, Timeout: timeout}); err != nil || !found {
++				t.Fatalf("Attach() = (_, %v, %v); want found and no error", found, err)
++			}
++
++			if !slices.Equal(echo.typed, tt.wantTyped) {
++				t.Errorf("typed %q; want %q", echo.typed, tt.wantTyped)
++			}
++		})
++	}
++}
++
+ // TestAttach_StartedSeededTrue pins the started seed.
+ // Once the persisted Started is true, the startup probe must never run, whatever else is true of the run.
+ // Attaching to a strand whose run.json carries Started: true must not classify OutcomeDied after startup_timeout_s.
+diff --git a/internal/shuttleengine/claudeengine/session_test.go b/internal/shuttleengine/claudeengine/session_test.go
+index 61c36cf2..92ab487b 100644
+--- a/internal/shuttleengine/claudeengine/session_test.go
++++ b/internal/shuttleengine/claudeengine/session_test.go
+@@ -177,6 +177,9 @@ func TestInputBoxText(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	rule := "────────────────────────────────"
++	doneReplyLayout := "● ok\n\n✻ Cooked for 4s\n\n" + rule + "\n❯ \n" + rule + "\n  ⏵⏵ bypass permissions on (shift+tab to cycle)\n"
++	styledDoneReplyLayout := "● ok\n\n\x1b[2m✻ Cooked for 4s\x1b[0m\n\n" + rule + "\n❯ \n" + rule +
++		"\n  \x1b[2m⏵⏵ bypass permissions on (shift+tab to cycle)\x1b[0m\n"
+ 	tests := []struct {
+ 		name     string
+ 		capture  string
+@@ -184,6 +187,8 @@ func TestInputBoxText(t *testing.T) {
+ 		wantOK   bool
+ 	}{
+ 		{"empty box", readPaneFixture(t, "pane-idle-empty.txt"), "", true},
++		{"empty box under a done reply and the bypass-permissions footer", doneReplyLayout, "", true},
++		{"styled empty box under a done reply and the bypass-permissions footer", plainBox(styledDoneReplyLayout), "", true},
+ 		{"draft in box", readPaneFixture(t, "pane-idle-draft.txt"), "please also run the linter", true},
+ 		{"wrapped two-line draft", rule + "\n❯ first half of the draft\n  second half of the draft\n" + rule + "\n  ? for shortcuts\n", "first half of the draft second half of the draft", true},
+ 		{"collapsed paste placeholder", rule + "\n❯ [Pasted text #1 +42 lines]\n" + rule + "\n  ? for shortcuts\n", "[Pasted text #1 +42 lines]", true},
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index a8c82c78..5df2a971 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -276,6 +276,14 @@
+ // and a failed delivery is logged at Warn and tried again at the next held turn end.
+ // Bound: a prompt the provider queued while a turn ran starts its turn only when that turn ends,
+ // so a held turn end read before it can type the line a second time.
++// Wait also types the line once more when it went out through the handle at least the submit window ago,
++// and no turn start of any instruction lies past the events offset the line was typed at.
++// A provider can drop a submitted line and leave its input box empty, which the send reads as landed,
++// and an idle session ends no turn for a held turn end to type the line at.
++// That retype happens at most once per handle:
++// a retype held busy before it typed does not count, and the next tick tries again.
++// It happens only for an engine that parses session signals.
++// It also needs no pause covering the run and a run deadline not yet passed.
+ //
+ // # Pause
+ //
+@@ -569,6 +577,11 @@
+ // An attached run is the exception: it delivers a pending prompt without judging the API,
+ // so a driver that died during a hold has its prompt typed by the attach.
+ // PromptLine then goes out through the verified send path.
++// A start's prompt send whose idle wait holds the session busy typed nothing,
++// so the start sends it again with a fresh wait.
++// It does so up to startPromptBusyRetries times, while the run's deadline has not passed.
++// Each send's wait and submit window end by that deadline.
++// A prompt delivery that still fails tears the start down, and the capture it saves is the pane at the failure.
+ // Every verified send first waits for an idle session and types nothing until then.
+ // The wait lasts at most `send_ready_timeout_s` and never runs past the run's deadline.
+ // For an engine with the optional SessionCycler idle reading, every poll takes the readiness reading.
+diff --git a/internal/shuttleengine/hold.go b/internal/shuttleengine/hold.go
+index 1936a3c1..8b8e0fd3 100644
+--- a/internal/shuttleengine/hold.go
++++ b/internal/shuttleengine/hold.go
+@@ -3,10 +3,12 @@
+ // The checks cover a usage limit, background work a session wakes from, and a turn the operator typed.
+ // A deferred prompt line whose own turn never started is typed in place of the notice.
+ // It is typed when a turn ends held, and when Attach reconstructs a run.
++// A typed line that no turn followed within the submit window is typed once more.
+ 
+ package shuttleengine
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 	"strings"
+ 	"time"
+@@ -176,6 +178,49 @@ func (run *Run) deliverPromptOnAttach() {
+ 	}
+ }
+ 
++// retypeLostPrompt types the deferred prompt line once more when it was typed through this handle and no turn followed.
++// A provider can drop a submitted line and leave its input box empty, which the send reads as landed;
++// the idle session then ends no turn, so no held turn end types the line again.
++// It acts only for an engine that parses session signals.
++// It acts only while no pause covers the run and the run's deadline has not passed.
++// The line must have gone out at least the submit window ago.
++// No turn start of any instruction may lie past the events offset the line was last typed at.
++// A turn start past that offset ends the watch, so later ticks read nothing for it.
++// The send judges the prompt's turn again before it types, and its idle wait and submit window end by the run's deadline.
++// It acts at most once per handle:
++// a send held busy before it typed leaves the retype unused and is tried again at the next tick,
++// and any other failed send is logged at Warn and uses the retype up.
++func (run *Run) retypeLostPrompt() {
++	if run.covered || !run.clock.Now().Before(run.deadline) {
++		return
++	}
++	if _, parses := run.engine.(SessionSignalParser); !parses {
++		return
++	}
++	run.sendMu.Lock()
++	defer run.sendMu.Unlock()
++	if run.lostPromptRetyped || run.promptSentAt.IsZero() || run.clock.Now().Sub(run.promptSentAt) < submitConfirmTimeout(run.runner.cfg) {
++		return
++	}
++	if turnStartedSince(run.engine, run.state.EventsPath, run.promptSendOffset) {
++		run.promptSentAt = time.Time{}
++		return
++	}
++	sent, err := run.typePendingPrompt(run.deadline)
++	var busy *SessionBusyError
++	if errors.As(err, &busy) {
++		logger.Info("shuttle: the prompt line started no turn and the session was held busy, trying again at the next tick", "strandGUID", run.state.StrandGUID, "reason", busy.Reason)
++		return
++	}
++	run.lostPromptRetyped = true
++	switch {
++	case err != nil:
++		logger.Warn("shuttle: the prompt line started no turn and could not be typed again", "strandGUID", run.state.StrandGUID, "error", err)
++	case sent:
++		logger.Warn("shuttle: the prompt line started no turn within the submit window, typed it again", "strandGUID", run.state.StrandGUID)
++	}
++}
++
+ // apiErrorContinueLine is the line an agent gets to carry on after a turn ends on an API error across a machine sleep.
+ const apiErrorContinueLine = "[lym] Your last turn ended on an API error while the machine slept; it is awake again. Carry on with your task where you stopped."
+ 
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index eaa9502a..e1591bce 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -323,12 +323,23 @@ type Run struct {
+ 	stopMarked bool
+ 	// sendMu orders in-process sends on this run; Send and sendWithin hold it through the idle wait and the delivery check.
+ 	sendMu sync.Mutex
+-	// promptDelivered reports the deferred prompt typed through this handle, so no later call retypes it; sendMu guards it.
++	// promptDelivered reports the deferred prompt typed through this handle.
++	// No later DeliverPendingPrompt call retypes it.
++	// sendMu guards it.
+ 	promptDelivered bool
+ 	// attachPromptTried reports Wait judged the attach prompt, so no later tick does; only Wait's goroutine touches it.
+ 	attachPromptTried bool
+ 	// attached reports that Attach rebuilt this handle over a persisted record, so Wait first sends an unsent prompt.
+ 	attached bool
++	// promptSentAt is the run clock's time the deferred prompt line was last typed through this handle, zero when it was not;
++	// sendMu guards it.
++	promptSentAt time.Time
++	// promptSendOffset is the events file's size just before the prompt line was last typed through this handle;
++	// a turn start past it is the line's, and one before it never is; sendMu guards it.
++	promptSendOffset int64
++	// lostPromptRetyped reports that Wait typed the prompt line again after it started no turn, so no later tick does;
++	// sendMu guards it.
++	lostPromptRetyped bool
+ 
+ 	// offset is the byte offset already consumed from state.EventsPath.
+ 	offset int64
+@@ -358,6 +369,7 @@ type Run struct {
+ 	// lastStartupCapture is the last successful pane capture the startup step took, empty until the first one.
+ 	// checkLivenessTick, called from awaitStartup or Wait, takes the capture.
+ 	// On a not-ready teardown (abandonStartup) it is saved to startupCaptureFileName in the run directory.
++	// A prompt delivery that fails after the skills replaces it with the pane at the failure.
+ 	// It is the diagnosis artifact a later operator or attach reads.
+ 	lastStartupCapture string
+ 	// startupStrandRemoved is true once abandonStartup has removed the strand, which is what lets start launch the run again.
+@@ -813,6 +825,8 @@ func (run *Run) typeStartupColor(color segmentcolor.Color) {
+ // A pane that dies meanwhile is a died startup.
+ // Every other failure tears the run down through abandonStartup.
+ // A failed skill-load send, prompt-offset persist, or prompt delivery returns ErrNotStarted wrapped beside the cause.
++// A prompt send whose idle wait held the session busy typed nothing, so it is sent again, as sendStartPrompt says.
++// A prompt delivery that still fails keeps the pane at the failure as the capture the teardown saves.
+ // A prompt delivery reporting ErrSubmissionNotLanded counts as landed late if a turn start follows the pre-send offset.
+ // The run is then returned.
+ // That turn start may be the operator's, so Wait checks the prompt's own turn at each held turn end.
+@@ -858,31 +872,84 @@ func (run *Run) loadSkillsThenPrompt(promptLine string, color segmentcolor.Color
+ 			return run.abandonStartup(OutcomeDied, fmt.Errorf("shuttle: persist the prompt offset after loading skills: %w", err))
+ 		}
+ 	}
+-	if err := run.sendThroughPause(run.newSendContext(), promptLine); err != nil {
++	promptSendOffset := sentAt
++	if err := run.sendStartPrompt(promptLine, &promptSendOffset); err != nil {
+ 		if errors.Is(err, ErrSubmissionNotLanded) && turnStartedSince(run.engine, run.state.EventsPath, sentAt) {
+ 			return Result{}, nil
+ 		}
++		run.keepFailureCapture()
+ 		return run.abandonStartup(OutcomeDied, fmt.Errorf("shuttle: deliver the prompt after loading skills: %w", err))
+ 	}
++	run.sendMu.Lock()
++	run.promptSentAt = run.clock.Now()
++	run.promptSendOffset = promptSendOffset
++	run.sendMu.Unlock()
+ 	return Result{}, nil
+ }
+ 
++// startPromptBusyRetries is how many more times a start sends its prompt after an idle wait that held the session busy.
++// Such a wait typed nothing, so a later send cannot type the line twice.
++// One held reading then costs a wait instead of the whole start.
++const startPromptBusyRetries = 2
++
++// sendStartPrompt sends promptLine through the verified send path for a start.
++// A send whose idle wait held the session busy, a *SessionBusyError, is sent again with a fresh idle wait.
++// It is sent again up to startPromptBusyRetries times, and only while the run's deadline has not passed.
++// Each send's idle wait and submit window end by that deadline.
++// sentOffset receives the events file's size just before the line went out, and keeps its value when no send typed.
++// Every other result returns as the send gave it, and so does the last busy hold.
++func (run *Run) sendStartPrompt(promptLine string, sentOffset *int64) error {
++	for retry := 0; ; retry++ {
++		sc := run.newSendContext()
++		sc.deadline = run.deadline
++		sc.sentOffset = sentOffset
++		err := run.sendThroughPause(sc, promptLine)
++		var busy *SessionBusyError
++		if !errors.As(err, &busy) || retry == startPromptBusyRetries || !run.clock.Now().Before(run.deadline) {
++			return err
++		}
++		logger.Warn("shuttle: the start prompt was held busy, sending it again", "strandGUID", run.state.StrandGUID, "retry", retry+1, "reason", busy.Reason)
++	}
++}
++
++// keepFailureCapture takes the pane as a failed prompt delivery left it, for the teardown to save over the boot screen.
++// An engine whose box reading judges a styled capture keeps the styled one, escapes and all.
++// A capture that fails keeps the last startup capture.
++func (run *Run) keepFailureCapture() {
++	capture := run.runner.reed.CapturePane
++	if _, styled := run.engine.(StyledBoxReader); styled {
++		capture = run.runner.reed.CapturePaneStyled
++	}
++	if screen, err := capture(run.state.StrandGUID); err == nil {
++		run.lastStartupCapture = screen
++	}
++}
++
+ // sendThroughPause sends text over sc through the verified send path.
+ // When a pause refuses the send with ErrPaused, it waits out the pause and sends again.
+-// The wait judges the slug the refusal judged, and each resend builds a fresh context,
+-// so a second pause landing before the resend holds it again.
++// The wait judges the slug the refusal judged.
++// Each resend builds a fresh context that keeps sc's sent-offset target.
++// It also keeps sc's deadline, moved later by the wait, since a pause is not run time.
++// A second pause landing before the resend holds it again.
+ // Any other result returns as the send gave it, and a failed wait returns wrapped.
+ func (run *Run) sendThroughPause(sc sendContext, text string) error {
++	deadline, sentOffset := sc.deadline, sc.sentOffset
+ 	for {
+ 		err := sendVerified(sc, text)
+ 		var paused *PausedError
+ 		if !errors.As(err, &paused) {
+ 			return err
+ 		}
++		waitStart := run.clock.Now()
+ 		if waitErr := run.runner.waitWhileCovered(paused.Slug); waitErr != nil {
+ 			return fmt.Errorf("shuttle: wait for the pause to lift: %w", waitErr)
+ 		}
++		if !deadline.IsZero() {
++			deadline = deadline.Add(run.clock.Now().Sub(waitStart))
++		}
+ 		sc = run.newSendContext()
++		sc.deadline = deadline
++		sc.sentOffset = sentOffset
+ 	}
+ }
+ 
+@@ -903,6 +970,22 @@ func (run *Run) DeliverPendingPrompt() (bool, error) {
+ 	if run.promptDelivered {
+ 		return false, nil
+ 	}
++	sent, err := run.typePendingPrompt(time.Time{})
++	if sent {
++		run.promptDelivered = true
++	}
++	return sent, err
++}
++
++// typePendingPrompt reads the run record and types its deferred prompt line.
++// It types only when no turn start past the prompt offset carries the line.
++// It reports whether it typed the line.
++// It persists the events file's size as the prompt offset when none was recorded.
++// It clears any pending-send record first.
++// It keeps the typing's time as promptSentAt, and the events file's size just before it as promptSendOffset.
++// A non-zero deadline cuts the send's idle wait and submit window.
++// The caller holds sendMu.
++func (run *Run) typePendingPrompt(deadline time.Time) (bool, error) {
+ 	record, found, err := loadRunState(run.runDir)
+ 	if err != nil {
+ 		return false, fmt.Errorf("shuttle: read the run record in %s to deliver a pending prompt: %w", run.runDir, err)
+@@ -926,10 +1009,15 @@ func (run *Run) DeliverPendingPrompt() (bool, error) {
+ 	if err := clearPendingSend(run.runDir); err != nil {
+ 		logger.Warn("shuttle: pending send not cleared before delivering the pending prompt", "strandGUID", run.state.StrandGUID, "error", err)
+ 	}
+-	if err := run.sendThroughPause(run.newSendContext(), record.PromptLine); err != nil {
++	sendOffset := eventsSize(record.EventsPath)
++	sc := run.newSendContext()
++	sc.deadline = deadline
++	sc.sentOffset = &sendOffset
++	if err := run.sendThroughPause(sc, record.PromptLine); err != nil {
+ 		return false, fmt.Errorf("shuttle: deliver the pending prompt: %w", err)
+ 	}
+-	run.promptDelivered = true
++	run.promptSentAt = run.clock.Now()
++	run.promptSendOffset = sendOffset
+ 	return true, nil
+ }
+ 
+@@ -1661,6 +1749,9 @@ func typeVerified(sc sendContext, text string) error {
+ 	typing := engine.ComposeSend
+ 	var closeAt time.Time
+ 	sentAt := eventsSize(sc.eventsPath)
++	if sc.sentOffset != nil {
++		*sc.sentOffset = sentAt
++	}
+ 	if readsBox {
+ 		typing = reader.TypeSequence
+ 		closeAt = sc.clock.Now().Add(submitConfirmTimeout(sc.cfg))
+diff --git a/internal/shuttleengine/send.go b/internal/shuttleengine/send.go
+index 81fbb152..3f409eda 100644
+--- a/internal/shuttleengine/send.go
++++ b/internal/shuttleengine/send.go
+@@ -82,6 +82,9 @@ type sendContext struct {
+ 	landingStart SessionStartSource
+ 	keepUnlanded bool
+ 	recordless   bool
++	// sentOffset, when non-nil, receives the events file's size read just before the send's text goes out;
++	// a send that types nothing leaves it as it was.
++	sentOffset *int64
+ 	// paused reads whether a pause covers the target strand and returns the refusal when it does; nil reads uncovered.
+ 	paused func() error
+ 	// activityFailures holds the runner's operator-activity failure episodes, shared by every send and probe of one runner.
+@@ -618,6 +621,9 @@ func pasteVerified(sc sendContext, paster TextPaster, reader InputBoxReader, tex
+ 		}
+ 	}
+ 	sentAt := eventsSize(sc.eventsPath)
++	if sc.sentOffset != nil {
++		*sc.sentOffset = sentAt
++	}
+ 	if err := sc.reed.PasteSubmit(sc.guid, text, paster.PasteSubmits()); err != nil {
+ 		return fmt.Errorf("shuttle: paste text: %w", err)
+ 	}
+diff --git a/internal/shuttleengine/startup_test.go b/internal/shuttleengine/startup_test.go
+index 9a08dffb..e6afb199 100644
+--- a/internal/shuttleengine/startup_test.go
++++ b/internal/shuttleengine/startup_test.go
+@@ -16,6 +16,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -2130,16 +2131,23 @@ func TestStartup_SkillsRefusedWithoutSkillLoader(t *testing.T) {
+ type startSendEngine struct {
+ 	*skillFakeEngine
+ 
+-	idle   bool
+-	box    string
+-	onRead func()
++	idle bool
++	// idleWhen, when set, answers the idle reading in place of idle.
++	idleWhen func() bool
++	box      string
++	onRead   func()
+ }
+ 
+ func (e *startSendEngine) ContextTokens(Event) ContextReading { return ContextReading{} }
+ func (e *startSendEngine) CompactedSince(Event, time.Time) (CompactionBoundary, bool) {
+ 	return CompactionBoundary{}, false
+ }
+-func (e *startSendEngine) IdleSession(string) bool                   { return e.idle }
++func (e *startSendEngine) IdleSession(string) bool {
++	if e.idleWhen != nil {
++		return e.idleWhen()
++	}
++	return e.idle
++}
+ func (e *startSendEngine) PaneTooShort(string) bool                  { return false }
+ func (e *startSendEngine) ClearSessionSequence() []PaneInput         { return nil }
+ func (e *startSendEngine) ReloadPluginsSequence() []PaneInput        { return nil }
+@@ -2201,12 +2209,19 @@ func (r *brokenRunRecordReed) SendText(guid, text string, submit bool) error {
+ 
+ // TestStartup_SendFailuresTearDown pins that a send failing past AddStrand tears the run down as not started:
+ // the error wraps ErrNotStarted and the send's own sentinel, the strand is removed and the record reads died.
++// A failed prompt delivery saves the pane at the failure as the startup capture.
+ // A prompt that fails ErrSubmissionNotLanded landed late when a turn start lands past the pre-send offset;
+ // and start returns the run.
++// A prompt held busy for one whole send window is sent again, typed once, and start returns the run.
++// A prompt held busy on every send fails the start after startPromptBusyRetries more sends and types nothing.
++// One whose run deadline ends inside the first wait is not sent again.
++// The saved capture is the styled pane for an engine that reads a styled capture.
++// It is the boot capture when the failure capture itself fails.
+ func TestStartup_SendFailuresTearDown(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	const prompt = "do the task"
++	const bootScreen = "BOOT SCREEN"
+ 	skillMissing := []SkillLoadReport{{Verified: true, Missing: []string{"a"}}}
+ 	tests := []struct {
+ 		name  string
+@@ -2224,21 +2239,46 @@ func TestStartup_SendFailuresTearDown(t *testing.T) {
+ 		// active scripts the operator-activity answers of the fake reed.
+ 		active []bool
+ 		// paste gives the engine the paste path.
+-		paste       bool
+-		wantIs      []error
+-		wantStarted bool
++		paste bool
++		// busyFor holds the idle reading not idle for this long from its first reading, then idle.
++		busyFor time.Duration
++		// timeout is Spec.Timeout, left at its default when zero.
++		timeout time.Duration
++		// styled makes the engine read a styled capture, and is what a styled capture shows.
++		styled string
++		// failCaptureAfter makes every plain capture fail from this long after the start.
++		failCaptureAfter time.Duration
++		wantIs           []error
++		wantStarted      bool
++		// wantPromptTypings, when non-zero, is how many times the prompt is typed.
++		wantPromptTypings int
++		// wantWaits, when non-zero, is how many idle waits the start made.
++		wantWaits int
++		// wantNoSend asserts the prompt was neither typed nor pasted.
++		wantNoSend bool
++		// wantPastes, when non-zero, is how many times the prompt is pasted.
++		wantPastes int
++		// wantCaptureHolds, when set, is text the saved startup capture holds.
++		wantCaptureHolds string
++		// wantCaptureLacks, when set, is text the saved startup capture does not hold.
++		wantCaptureLacks string
+ 		// wantDiedRecord is false when the record itself is made unwritable.
+ 		wantDiedRecord bool
+ 		// wantOneTail asserts the pane's last lines appear once in the error: the cause carries them and the teardown adds none.
+ 		wantOneTail bool
+ 	}{
+ 		{name: "a skill-load send that stays busy", skill: true, reports: skillMissing, idle: false, wantIs: []error{ErrNotStarted, ErrSessionBusy}, wantDiedRecord: true, wantOneTail: true},
+-		{name: "a prompt delivery that does not land", idle: true, box: prompt, wantIs: []error{ErrNotStarted, ErrSubmissionNotLanded}, wantDiedRecord: true},
++		{name: "a prompt delivery that does not land", idle: true, box: prompt, wantIs: []error{ErrNotStarted, ErrSubmissionNotLanded}, wantDiedRecord: true, wantCaptureHolds: prompt},
+ 		{name: "a skill load held past the send window by an active operator", skill: true, reports: skillMissing, idle: true, active: []bool{true}, wantIs: []error{ErrNotStarted, ErrSessionBusy}, wantDiedRecord: true},
+ 		{name: "a prompt delivery held past the send window by an active operator", idle: true, active: []bool{true}, wantIs: []error{ErrNotStarted, ErrSessionBusy}, wantDiedRecord: true},
+-		{name: "a prompt delivery that finds a foreign box", idle: true, box: "somebody else's draft", paste: true, wantIs: []error{ErrNotStarted, ErrSessionBusy}, wantDiedRecord: true},
++		{name: "a prompt delivery that finds a foreign box", idle: true, box: "somebody else's draft", paste: true, wantIs: []error{ErrNotStarted, ErrSessionBusy}, wantDiedRecord: true, wantPastes: 1},
+ 		{name: "a prompt-offset persist that fails", skill: true, reports: skillMissing, idle: true, breakRecord: true, wantIs: []error{ErrNotStarted}},
+ 		{name: "an unlanded prompt followed by a turn start landed late", idle: true, box: prompt, startOnWindowClose: true, wantStarted: true},
++		{name: "a prompt held busy for one send window is sent again", busyFor: sendReadyTimeout(fastConfig) + time.Second, wantStarted: true, wantPromptTypings: 1, wantWaits: 2},
++		{name: "a prompt that stays busy is sent again up to the retry cap", wantIs: []error{ErrNotStarted, ErrSessionBusy}, wantDiedRecord: true, wantWaits: startPromptBusyRetries + 1, wantNoSend: true},
++		{name: "a busy prompt send past the run's deadline is not sent again", timeout: sendReadyTimeout(fastConfig) / 2, wantIs: []error{ErrNotStarted, ErrSessionBusy}, wantDiedRecord: true, wantWaits: 1, wantNoSend: true},
++		{name: "a failed prompt delivery saves the styled pane for an engine that reads one", idle: true, box: prompt, styled: "STYLED PANE", wantIs: []error{ErrNotStarted, ErrSubmissionNotLanded}, wantDiedRecord: true, wantCaptureHolds: "STYLED PANE", wantCaptureLacks: prompt},
++		{name: "a failure capture that fails keeps the boot capture", failCaptureAfter: time.Second, wantIs: []error{ErrNotStarted, ErrSessionBusy}, wantDiedRecord: true, wantCaptureHolds: bootScreen},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -2256,16 +2296,48 @@ func TestStartup_SendFailuresTearDown(t *testing.T) {
+ 				idle: tt.idle,
+ 				box:  tt.box,
+ 			}
+-			skills := &skillReed{fakeReed: base, Hangs: map[int]bool{}, Dies: map[int]bool{}}
++			skills := &skillReed{fakeReed: base, Hangs: map[int]bool{}, Dies: map[int]bool{}, Screen: bootScreen}
++			clock := newFakeClock(time.Now())
+ 			var reed ReedOps = skills
+ 			if tt.breakRecord {
+ 				reed = &brokenRunRecordReed{skillReed: skills}
+ 			}
+-			clock := newFakeClock(time.Now())
++			if tt.styled != "" || tt.failCaptureAfter > 0 {
++				scripted := &captureReed{skillReed: skills, styled: tt.styled, clock: clock}
++				if tt.failCaptureAfter > 0 {
++					scripted.failFrom = clock.Now().Add(tt.failCaptureAfter)
++				}
++				reed = scripted
++			}
++			idleAnswer := func() bool { return tt.idle }
++			if tt.busyFor > 0 {
++				var firstReading time.Time
++				idleAnswer = func() bool {
++					if firstReading.IsZero() {
++						firstReading = clock.Now()
++					}
++					return clock.Now().Sub(firstReading) >= tt.busyFor
++				}
++			}
++			// An idle wait sleeps between its own readings, so a reading made at the instant of the one before it opens a new wait.
++			waits, readings := 0, 0
++			var lastReading time.Time
++			engine.idleWhen = func() bool {
++				now := clock.Now()
++				if readings == 0 || now.Equal(lastReading) {
++					waits++
++				}
++				readings++
++				lastReading = now
++				return idleAnswer()
++			}
+ 			var runEngine Engine = engine
+ 			if tt.paste {
+ 				runEngine = &startPasteEngine{engine}
+ 			}
++			if tt.styled != "" {
++				runEngine = &styledStartSendEngine{engine}
++			}
+ 			fx := newFixture(t, reed, runEngine, withConfig(fastConfig), withClock(clock))
+ 			skills.EventsPath = func() string { return filepath.Join(soleStartupRunDir(t, fastConfig, fx.Anchor), eventsFileName) }
+ 			if tt.startOnWindowClose {
+@@ -2287,13 +2359,16 @@ func TestStartup_SendFailuresTearDown(t *testing.T) {
+ 					}
+ 				}
+ 			}
+-			spec := Spec{Prompt: "x", OutputFiles: []string{filepath.Join(t.TempDir(), "out.md")}}
++			spec := Spec{Prompt: "x", OutputFiles: []string{filepath.Join(t.TempDir(), "out.md")}, Timeout: tt.timeout}
+ 			if tt.skill {
+ 				spec.Skills = []string{"a"}
+ 			}
+ 
+ 			run, err := fx.Runner.Start(spec)
+ 
++			if tt.wantWaits > 0 && waits != tt.wantWaits {
++				t.Errorf("idle waits = %d; want %d", waits, tt.wantWaits)
++			}
+ 			if tt.wantStarted {
+ 				if err != nil || run == nil {
+ 					t.Fatalf("Start() = %v, %v; want the run started", run, err)
+@@ -2301,6 +2376,17 @@ func TestStartup_SendFailuresTearDown(t *testing.T) {
+ 				if len(base.RemoveStrandCalls) != 0 {
+ 					t.Errorf("RemoveStrandCalls = %+v; want none", base.RemoveStrandCalls)
+ 				}
++				if tt.wantPromptTypings > 0 {
++					typings := 0
++					for _, call := range base.SendTextCalls {
++						if call.Text == prompt {
++							typings++
++						}
++					}
++					if typings != tt.wantPromptTypings {
++						t.Errorf("prompt typed %d times; want %d", typings, tt.wantPromptTypings)
++					}
++				}
+ 				return
+ 			}
+ 			if run != nil {
+@@ -2314,11 +2400,40 @@ func TestStartup_SendFailuresTearDown(t *testing.T) {
+ 			if len(base.RemoveStrandCalls) != 1 {
+ 				t.Errorf("RemoveStrandCalls = %+v; want exactly one", base.RemoveStrandCalls)
+ 			}
++			typings, pastes := 0, 0
++			for _, call := range base.SendTextCalls {
++				if call.Text == prompt {
++					typings++
++				}
++			}
++			for _, call := range base.PasteSubmitCalls {
++				if call.Text == prompt {
++					pastes++
++				}
++			}
++			if tt.wantNoSend && typings+pastes != 0 {
++				t.Errorf("prompt typed %d and pasted %d times; want neither", typings, pastes)
++			}
++			if tt.wantPastes > 0 && pastes != tt.wantPastes {
++				t.Errorf("prompt pasted %d times; want %d", pastes, tt.wantPastes)
++			}
+ 			if tt.wantOneTail {
+ 				if got := strings.Count(err.Error(), "The pane's last lines:"); got != 1 {
+ 					t.Errorf("Start() error has the pane's last lines %d times; want once: %v", got, err)
+ 				}
+ 			}
++			if tt.wantCaptureHolds != "" {
++				saved, readErr := os.ReadFile(filepath.Join(soleStartupRunDir(t, fastConfig, fx.Anchor), startupCaptureFileName))
++				if readErr != nil {
++					t.Fatalf("read the startup capture: %v", readErr)
++				}
++				if !strings.Contains(string(saved), tt.wantCaptureHolds) {
++					t.Errorf("startup capture = %q; want it to hold %q", saved, tt.wantCaptureHolds)
++				}
++				if tt.wantCaptureLacks != "" && strings.Contains(string(saved), tt.wantCaptureLacks) {
++					t.Errorf("startup capture = %q; want it not to hold %q", saved, tt.wantCaptureLacks)
++				}
++			}
+ 			if !tt.wantDiedRecord {
+ 				return
+ 			}
+@@ -2333,6 +2448,180 @@ func TestStartup_SendFailuresTearDown(t *testing.T) {
+ 	}
+ }
+ 
++// styledStartSendEngine is a startSendEngine whose box reading judges a styled capture, which it takes as plain as it is.
++type styledStartSendEngine struct {
++	*startSendEngine
++}
++
++func (e *styledStartSendEngine) PlainBoxCapture(styled string) string { return styled }
++
++var _ StyledBoxReader = (*styledStartSendEngine)(nil)
++
++// captureReed is a skillReed whose captures a row scripts.
++// A non-empty styled is what CapturePaneStyled answers.
++// A plain capture fails once the clock has reached a non-zero failFrom.
++type captureReed struct {
++	*skillReed
++	styled   string
++	clock    Clock
++	failFrom time.Time
++}
++
++func (r *captureReed) CapturePane(guid string) (string, error) {
++	if !r.failFrom.IsZero() && !r.clock.Now().Before(r.failFrom) {
++		return "", errors.New("pane gone")
++	}
++	return r.skillReed.CapturePane(guid)
++}
++
++func (r *captureReed) CapturePaneStyled(guid string) (string, error) {
++	if r.styled != "" {
++		return r.styled, nil
++	}
++	return r.skillReed.CapturePaneStyled(guid)
++}
++
++// promptTurnStartReed is a skillReed whose typed prompt starts a turn when turnStarts is set.
++// The turn start is what a provider's hook records on submit.
++type promptTurnStartReed struct {
++	*skillReed
++	prompt     string
++	turnStarts bool
++}
++
++func (r *promptTurnStartReed) SendText(guid, text string, submit bool) error {
++	if err := r.skillReed.SendText(guid, text, submit); err != nil {
++		return err
++	}
++	if r.turnStarts && text == r.prompt {
++		return r.appendEvents("START\n")
++	}
++	return nil
++}
++
++// TestStart_RetypesAPromptLineThatStartedNoTurn pins the lost-prompt retype of a fresh start:
++// the prompt line a start typed that no turn start follows within the submit window is typed once more.
++// Wait does so while the run waits.
++// A line whose turn starts is typed once.
++func TestStart_RetypesAPromptLineThatStartedNoTurn(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const prompt = "do the task"
++	tests := []struct {
++		name        string
++		turnStarts  bool
++		wantTypings int
++	}{
++		{name: "a line no turn follows is typed once more", wantTypings: 2},
++		{name: "a line whose turn starts is typed once", turnStarts: true, wantTypings: 1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			base := &fakeReed{AddStrandResult: reedengine.Strand{GUID: "strand-1"}, StatusQueue: liveStrandStatus(true)}
++			engine := &startSendEngine{
++				skillFakeEngine: &skillFakeEngine{
++					fakeEngine: &fakeEngine{
++						PrepareLaunch: Launch{Cmd: "cmd", SessionID: "session-1", PromptLine: prompt},
++						StartupScript: []StartupState{StartupReady},
++					},
++					Timeout: time.Minute,
++				},
++				idle: true,
++			}
++			skills := &skillReed{fakeReed: base, Hangs: map[int]bool{}, Dies: map[int]bool{}}
++			reed := &promptTurnStartReed{skillReed: skills, prompt: prompt, turnStarts: tt.turnStarts}
++			fx := newFixture(t, reed, engine, withConfig(fastConfig), withClock(newFakeClock(time.Now())))
++			skills.EventsPath = func() string { return filepath.Join(soleStartupRunDir(t, fastConfig, fx.Anchor), eventsFileName) }
++			spec := Spec{Prompt: "x", OutputFiles: []string{filepath.Join(t.TempDir(), "out.md")}, Timeout: 3 * submitConfirmTimeout(fastConfig)}
++
++			if _, err := fx.Runner.Run(spec); err != nil {
++				t.Fatalf("Run() error = %v; want nil", err)
++			}
++
++			typings := 0
++			for _, call := range base.SendTextCalls {
++				if call.Text == prompt {
++					typings++
++				}
++			}
++			if typings != tt.wantTypings {
++				t.Errorf("prompt typed %d times; want %d", typings, tt.wantTypings)
++			}
++		})
++	}
++}
++
++// pausingReed is a skillReed that runs onAddStrand right after it adds the strand.
++type pausingReed struct {
++	*skillReed
++	onAddStrand func()
++}
++
++func (r *pausingReed) AddStrand(spec reedengine.AddSpec) (reedengine.Strand, error) {
++	strand, err := r.skillReed.AddStrand(spec)
++	if err == nil {
++		r.onAddStrand()
++	}
++	return strand, err
++}
++
++// TestStart_PromptSendWaitsOutAPauseLongerThanTheRunTimeout pins the pause rule of a start's prompt send.
++// A pause landing after the strand is added does not count against the run's timeout.
++// The start types its prompt once the pause lifts, and returns the run.
++func TestStart_PromptSendWaitsOutAPauseLongerThanTheRunTimeout(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const prompt = "do the task"
++	const timeout = 30 * time.Second
++	fc := newFakeClock(time.Now())
++	recordPath := filepath.Join(t.TempDir(), pauserecord.RecordFileName)
++	resumeAt := fc.Now().Add(4 * timeout)
++	clock := &scheduledClock{fakeClock: fc, actions: []*scheduledAction{{at: resumeAt, run: func() {
++		_, err := pauserecord.Update(recordPath, resumeAt, func(record *pauserecord.Record) error {
++			entry := record.Live[0]
++			entry.ResumedAt = resumeAt
++			record.Live = nil
++			record.Resumed = append(record.Resumed, entry)
++			return nil
++		})
++		if err != nil {
++			t.Errorf("resume the pause: %v", err)
++		}
++	}}}}
++	base := &fakeReed{AddStrandResult: reedengine.Strand{GUID: "strand-1"}, StatusQueue: liveStrandStatus(true)}
++	engine := &startSendEngine{
++		skillFakeEngine: &skillFakeEngine{
++			fakeEngine: &fakeEngine{
++				PrepareLaunch: Launch{Cmd: "cmd", SessionID: "session-1", PromptLine: prompt},
++				StartupScript: []StartupState{StartupReady},
++			},
++			Timeout: time.Minute,
++		},
++		idle: true,
++	}
++	skills := &skillReed{fakeReed: base, Hangs: map[int]bool{}, Dies: map[int]bool{}}
++	reed := &pausingReed{skillReed: skills, onAddStrand: func() { addLiveEntry(t, recordPath, pauserecord.ScopeHub, fc.Now()) }}
++	fx := newFixture(t, reed, engine, withConfig(fastConfig), withClock(clock))
++	fx.Runner.SetPause(pauserecord.Geometry{RecordPath: recordPath, Slug: "slug"})
++	skills.EventsPath = func() string { return filepath.Join(soleStartupRunDir(t, fastConfig, fx.Anchor), eventsFileName) }
++
++	run, err := fx.Runner.Start(Spec{Prompt: "x", OutputFiles: []string{filepath.Join(t.TempDir(), "out.md")}, Timeout: timeout})
++
++	if err != nil || run == nil {
++		t.Fatalf("Start() = %v, %v; want the run started", run, err)
++	}
++	typings := 0
++	for _, call := range base.SendTextCalls {
++		if call.Text == prompt {
++			typings++
++		}
++	}
++	if typings != 1 {
++		t.Errorf("prompt typed %d times; want once, after the pause lifted", typings)
++	}
++}
++
+ // TestRunner_AcceptStartupGate covers the seam that accepts a provider's startup gate on a live strand:
+ // a gate capture plays the engine's accept sequence with that same capture.
+ // A ready, pending or unlocatable-gate capture sends nothing.
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index 326b9df5..dec233d5 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -310,6 +310,7 @@ func (run *Run) Wait() (Result, error) {
+ 	for tick := 1; ; tick++ {
+ 		run.observePause()
+ 		run.deliverPromptOnAttach()
++		run.retypeLostPrompt()
+ 		outcome, held, err := run.pollEventsTick()
+ 		if err == nil && run.turnStartRead {
+ 			run.turnSince = run.clock.Now()
+@@ -801,7 +802,8 @@ func (run *Run) awaitStartup() (Result, error) {
+ // cause is nil when the provider never reached StartupReady inside its window.
+ // Otherwise cause is the error that ended the start, and the returned error wraps it beside ErrNotStarted.
+ //
+-// In order, it saves any capture that checkLivenessTick recorded to startupCaptureFileName.
++// In order, it saves lastStartupCapture to startupCaptureFileName:
++// the startup probe's last capture, or the pane at a failed prompt delivery.
+ // A write failure is a Warn, and the returned error then says no capture was saved.
+ // It calls run.finalize(outcome), which persists RunState.Outcome and logs "run finished".
+ // It skips the gate and cleanup, since outcome is never OutcomeDone here.
