@@ -1,0 +1,14 @@
+verdict: resume
+reason: |-
+  This is a review escalation at round 2 with cause `circling`, and round 2 is below the hard cap. The default hard cap is review_hard_max_bounces 4, and a round at the cap would have escalated as `hard-cap`. The continue verb also accepted the round.
+  Two design-wrong keys came back: copies-cannot-get-slots-in-live-gate (F4, then F18) and d5-reap-bounds-miss-cases (F11, then F19). Each changed in substance between rounds, so the fix is converging rather than repeating.
+  - F4 asked for an n-slot hold. F18 found that the call's own tier run still acquires slots. The round-2 fix now has the lease replace the tier run's acquires, keeps the key's tier command, counter and timeout, and pins acquireSlot and exe.inherited.
+  - F11 covered Finalize and the halts. F19 found that pairteardown was not covered. The round-2 fix has pairteardown spawn `lym harden sandbox clear`, names every teardown route, and keeps the worktree with a way forward when the clear fails.
+  The new BLOCKING findings F15, F16 and F17 all have fixes in place in the committed record: D9 classifies the keys, D6 bounds auto_accept, D2 and D4 refuse or mark red a live run that starts no test binary, and the treadle Open risks line is gone. A fresh round should re-review these fixes.
+  The record and the board settle one conflict, and the round-2 fixer deferred it to the parent or arbiter. The earlier arbiter entry still prescribes D8 rationale text that calls treadle "the open parent question". The operator's 2026-11-18 entry "Delete treadle when Hardener is built (F10)" settles that question. I recorded a ruling that the earlier entry is superseded, so the next round does not raise the stale text again.
+  I made no commit in the code tree, so no goto is needed.
+verbs:
+  - |-
+    lym loom decision add hardener --by arbiter --title "The 2026-11-18 operator treadle entry supersedes the arbiter's D8 rationale text" --decision "..." --rationale "..."
+  - |-
+    lym loom circling continue hardener
