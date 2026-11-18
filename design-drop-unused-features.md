@@ -1,6 +1,6 @@
 # List features nobody uses, for the operator to cut
 
-`drop-unused-features` · Task · enhancement, tools · running · Drift-Recheck
+`drop-unused-features` · Task · enhancement, tools · running · Describe
 
 ## What was seen
 
