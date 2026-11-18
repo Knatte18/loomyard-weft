@@ -1,6 +1,6 @@
 # Drift: a parent decision trips the judge snapshot check, and line-range expectations never match
 
-`drift-judge-and-line-range` · Task · bug, drift, loom · starting · Open-IDE
+`drift-judge-and-line-range` · Task · bug, drift, loom · running · Preflight
 
 Two drift bugs, bundled because both fixes sit in the drift package and its loom wiring.
 
