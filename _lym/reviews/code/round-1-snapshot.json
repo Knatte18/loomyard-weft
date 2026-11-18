@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "1ba3eb5e7da08a428a041e5a89692b5d51707c0a",
+  "added_decisions": [
+    {
+      "title": "F13 is answered by D4's deferred clear",
+      "digest": "d10c1098688505f89208d390db526409e9437fadae7e598e147c26719a73ae21"
+    }
+  ]
+}
