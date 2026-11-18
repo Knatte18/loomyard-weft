@@ -27,6 +27,17 @@
 - `internal/shedrecipe#Env`
 - `internal/shedrecipe#bouncerEntry`
 - `internal/shedrecipe#burlerReviewEntry`
+- `internal/shedrecipe#TestBurlerReviewEntry_RubricStencil`
+- `internal/shedadapters#BurlerHalfDeps`
+- `internal/shedadapters#BurlerReviewProducer`
+- `internal/shedadapters#NewBurlerReviewProducer`
+- `internal/shedadapters#BurlerReviewProducer.Call`
+- `internal/shedadapters#BurlerReviewProducer.roundProfile`
+- `internal/shedadapters#TestBurlerReviewProducer_Call_ProfileAndOpts`
+- `internal/shedadapters#halfProducerSpec`
+- `internal/shedadapters#newReviewProducer`
+- `internal/shedrecipe#burlerRoundProfile`
+- `//contracts/specs/shed-recipe-spec.md`
 - `internal/testkit/envkit#FullEnv`
 - `internal/testkit/envkit#nilLegal`
 - `internal/loomcli#loomCLI.wire`
@@ -59,6 +70,7 @@ The seam:
   `bouncerEntry` passes it on for a row with a subject, as today; `envkit`'s `FullEnv` fills it with an empty answer, and its `nilLegal` key `"ReviewInput"` becomes `"ReviewInputs"`, so `NilSeams` keeps skipping the field.
   The test helpers that build or read the seam follow the new shape: `withReviewInput` builds a one-input list, `amendmentInputRow` and `reentryInputRow` read the record's `ReviewInputs`, and `TestWire_DarnRecipe` and `TestWire_ReviewKeysReachTheEnv` check and call `ReviewInputs`.
   `doc.go`'s passages on the review input describe the list, its `Full` flag and the full generation it forces.
+  `shed-recipe-spec.md`'s Bouncer passage names `Env.ReviewInputs`, which stays optional, says the Bouncer takes every input written after the settle, and says an input marked full forces a full generation.
 - `loomcli`'s `reviewInputs(scratchDir)` answers the Parent-Align fixer report, through `fixerReportInput`, as a non-full input, and the newest `pr-findings-<n>.md` under `scratchDir`, the highest `n`, as a full one; `loomCLI.wire` sets it in place of `fixerReportInput` alone.
   `fixerReportInput` keeps its fallback to the retired name.
   `prFindingsFile(scratchDir, n)` is the one spelling of `<scratchDir>/pr-findings-<n>.md`, which card 8's verb writes.
@@ -73,7 +85,18 @@ The Bouncer:
 - `generationRecord` gains `ReviewInputs []string` (`review_inputs`, omitempty) holding each kept path, full or not; a record written before, holding only `review_input`, reads as that one path.
 - `AmendmentNote` keeps naming an amendment's review input, the Parent-Align fixer report, as today.
 - `ReviewInputNote(runDir)` renders, for a full generation whose record holds inputs, `This generation reviews the whole range; it was opened by review inputs written after the perch last settled, which you read besides the diff:` and one line per path; it renders `none` otherwise.
-- `RubricNotes` gains `ReviewInput`; `ReadRubric` fills the `review_input` marker from it, `none` when blank; `Bouncer.rubricNotes` and `burlerReviewEntry` set it from `ReviewInputNote`, beside the amendment note.
+- `RubricNotes` gains `ReviewInput`; `ReadRubric` fills the `review_input` marker from it, `none` when blank; `Bouncer.rubricNotes` sets it from `ReviewInputNote` at each call, beside the amendment note.
+
+The review row renders its rubric at each round.
+`lym loom run` builds the shed once, so a rubric filled when `burlerReviewEntry` builds the row holds the note of the generation open when the process started;
+a send-back rerouted inside that process would reach the reviewers as `none`.
+
+- `BurlerHalfDeps` gains `Rubric func() (string, error)`, which `NewBurlerReviewProducer` stores; nil keeps the profile's rubric, as a literal-rubric row does.
+- `BurlerReviewProducer.Call` reads it before it builds the round's profile, and `roundProfile` sets `Profile.Rubric` to its answer.
+  A failed read is an error of the call, returned before the profile is built, so no reviewer is spawned.
+- `burlerReviewEntry` sets it on a `rubric_stencil` row to a closure calling `ReadRubric` with the notes it builds today, `Amendment` and `ReviewInput` read through `AmendmentNote(runDir)` and `ReviewInputNote(runDir)` at each call.
+  The fill at build stays, so a bad stencil still fails construction.
+- The doc comments of `NewBurlerReviewProducer`, `roundProfile` and `burlerRoundProfile` name the rubric among the per-round fields, set from the seam's answer.
 
 The rubric, `loom-rubric-code-review.md`'s `## Review input` (D6): it carries `{{.review_input}}`, and reads each input that note or the amendment note names.
 The fixer report keeps today's rule.
@@ -90,7 +113,12 @@ Tests, tier0:
   a generation record written with only `review_input` reads as that one path.
 - `TestReviewInputSeams` asserts `reviewInputs` answers nothing with no file, the fixer report as non-full, and of `pr-findings-1.md` and `pr-findings-2.md` only the second, as full.
 - `TestReadRubric` gains the `review_input` note.
+- `TestBurlerReviewProducer_Call_ProfileAndOpts` gains rows, through a new `rubric` field of `halfProducerSpec` that `newReviewProducer` sets as `BurlerHalfDeps.Rubric`: a `Rubric` seam whose answer differs from the template's rubric sets the round's `Profile.Rubric` to that answer;
+  a failing `Rubric` seam fails the call and spawns no reviewer.
+- `TestBurlerReviewEntry_RubricStencil` gains a row (criterion D4) that builds the Code-Review row over `loom-rubric-code-review.md` with `burlerReviewEntry` itself, in a run directory with no generation record, and leaves `captureReview` untouched.
+  After the build it writes a full generation's record naming a `pr-findings-1.md` path among its review inputs, then calls the producer.
+  It reads the rubric from the `BurlerHalfRunner` fake's `GotReviewProfiles` and asserts it names that path.
 
-**ImpactSummary:** The review-input seam becomes a list with a full-generation flag across shedadapters, shedrecipe's Env, envkit and loom wiring; one new rubric marker; Parent-Align's amendment path is unchanged.
+**ImpactSummary:** The review-input seam becomes a list with a full-generation flag across shedadapters, shedrecipe's Env, envkit and loom wiring; one new rubric marker; the burler review row renders its rubric at each round; Parent-Align's amendment path is unchanged.
 
 **Commit:** `7: bouncer-review-inputs`

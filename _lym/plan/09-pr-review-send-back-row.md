@@ -5,6 +5,7 @@
 - `plan:internal/landingshed#PRReview.sendBack` -> `func (p *PRReview) sendBack(ctx context.Context, rec pullrequest.Record) (shedengine.Outcome, shedengine.OutputPointer, bool, error)`
 
 **Edit:**
+- `internal/landingshed#PRReview`
 - `internal/landingshed#PullRequestDeps`
 - `internal/landingshed#PRReview.Call`
 - `internal/landingshed#PRReview.checkWiring`
@@ -18,6 +19,8 @@
 - `//internal/landingshed/doc.go`
 - `internal/loomcli#pullRequestDeps`
 - `internal/testkit/envkit#LandingDeps`
+- `internal/battencli#intentionallyNil`
+- `internal/loomcli#intentionallyNil`
 
 **Uses:**
 - `internal/landingshed#stuckVerdict`
@@ -41,6 +44,8 @@
 
 - `PullRequestDeps` gains `ShedStatus func() (shedengine.Status, error)`, the run's shed status, since a producer's `Call` receives no history; `checkWiring` requires it.
   `loomcli`'s `pullRequestDeps` reads `shedrun.StatusFile` under its lock, as `samplerDoneCmd` does; `envkit`'s `LandingDeps` fills it.
+  batten leaves `Landing.PullRequest` unwired, so `battencli`'s `intentionallyNil` gains `Landing.PullRequest.ShedStatus` with the reason `loom-only seam, batten lands no branch`.
+  `loomCLI.wire` leaves it nil too, since run.go assembles `Env.Landing`, so `loomcli`'s `intentionallyNil` gains the same path with the reason its other `Landing.PullRequest.*` entries give, `Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly`.
 - `Call` runs `settleSendBack` after `checkWiring` and before `decide`, so before any session starts or resumes.
   With no mark it does nothing.
   With a mark, it reads the row's newest own history entry.
@@ -52,6 +57,8 @@
 - `sendBack` stops the live session through `stopLiveSession`, then reads the tree again, since the agent may have changed it after the verb answered.
   On a clean tree it returns `Stuck` with `Reroute` set and `Path` the mark's file, no `Halt`, and clears nothing; shed persists the reroute entry with that file as its output.
   On a dirty tree it halts Stuck for the parent with `pull request #<n> has findings sent back to Code-Review, but the task worktree has uncommitted changes: <paths>; way forward: commit or discard them in the task worktree, then run lym loom resume`; the resumed row meets the mark on a clean tree and reroutes.
+
+`PRReview`'s doc comment names the send-back's reroute to Code-Bouncer among the ways the row's wait ends.
 
 The reroute cap bounds the edge as for any reroute: the cap's halt keeps the mark and the count, and its resume reroutes that send-back within the reroutes it grants.
 Shed's generic cap, which holds for this edge with no PR-Review code, is pinned by `TestRun_RerouteCapHaltsOnFourthRerouteAndResumeGrantsThreeMore`.

@@ -36,13 +36,14 @@
 `prFindingsDeps` carries the seams the verb reads: the task worktree's dirty paths, the record path and lock, the loom scratch, friction and stencils directories, `smallMax func() (int, error)`, the run's `pr_review_small_max`, `edge func() (bool, string, error)`, which answers whether the send-back edge can fire and why not, and `commit func() error`, the record's commit.
 The command wires `smallMax` with `prReviewSmallMax(location)`, which reads `loomengine.LoadConfig(fabricengine.ConfigDirs(l), "loom")` at each call, so the task's `run_settings` reach it; `dirty` with `verifytree.DirtyPaths`; `edge` with `sendBackEdge` over the producers `loomrecipe.New` builds for the run's recipe and env, with the PR-Review row named by `loomrecipe.EngineRow`; and `commit` with `pullRequestRecordCommitter`, as `pr-continue` does.
 It runs under the full wiring, not the lightweight one.
+Its help text tells the agent to write the findings file under the task worktree's `.scratch/` directory, which git ignores, so the file is never one of the worktree's uncommitted paths.
 
 `sendBackEdge` decides from the built rows and the run's settings, never the recipe name (`PATTERN-shed-recipe-registry`).
 It answers false, with the reason, when the PR-Review row declares no `OnReroute`, when the target row's `EntryGate` does not hold, and when the target row's `MaxBounces` is 0, the Code-Review budget of 0 that stamps `zero_rounds` on Code-Bouncer so it approves without review.
 
 `prFindingsVerb`, in order, each refusal with its way forward (`PATTERN-refusal-way-forward`):
 
-1. A dirty worktree is refused: `loom: pr-findings: the task worktree has uncommitted paths: <paths>; way forward: commit or discard them, then run lym loom pr-findings <file> again`.
+1. A dirty worktree is refused: `loom: pr-findings: the task worktree has uncommitted paths: <paths>; way forward: commit or discard them, keeping the findings file under the task worktree's .scratch/ directory, which git ignores, then run lym loom pr-findings <file> again`.
 2. A file `burlerengine.ParseReview` refuses is refused, naming the parser's error: `…; way forward: write the findings in burler's review format, its verdict line and findings as <stencilsDir>/burler/burler-review-format.md defines, then run lym loom pr-findings <file> again`, the path spelled from the told stencils directory, the hub's seeded copy the agent can read.
 3. A run with no pull-request record is refused: `loom: pr-findings: this run has no pull request record, so there is no review to send findings from; way forward: wait until the PR-Review row has opened the pull request, then run lym loom pr-findings <file> again`.
 4. A failed read of `smallMax` or `edge` is an error envelope naming what failed, worded as `samplerDoneReadFailure` is, with `way forward: run lym loom pr-findings <file> again, and tell the operator when it keeps failing`; the record is left unchanged.

@@ -29,8 +29,11 @@
 - `internal/loomcli#loomCLI.wire`
 - `internal/loomcli#TestWire_ReviewKeysReachTheEnv`
 - `internal/shedrecipe#driftVerifyEntry`
+- `internal/shedrecipe#driftTestEnv`
+- `internal/shedrecipe#TestDriftEntries`
 - `internal/testkit/envkit#driftDeps`
 - `internal/testkit/envkit#nilLegal`
+- `internal/battencli#intentionallyNil`
 
 **Uses:**
 - `internal/loomcli#taskMergeBase`
@@ -54,6 +57,8 @@ Seams, on `Deps`:
 - `loomCLI.wire` sets the drift deps' `ReviewBase` to the same `verifyMergeBase` value it sets as `Env.ReviewBase`: `taskMergeBase(location)` when the origin record exists, nil otherwise.
   One value feeds both, so Drift's base is the Code-Review range's base, and a Parent-Align merge's parent commits lie below it, so a test they loosened is never listed (criterion D3).
 - `driftVerifyEntry` requires `Drift.ChangedFiles` and `Drift.CommitMessages`; `Drift.ReviewBase` is nil-legal, and `envkit`'s `nilLegal` lists it while its `driftDeps` fills the other two with empty answers.
+- batten wires no Drift row, so `battencli`'s `intentionallyNil` gains `Drift.ChangedFiles` and `Drift.CommitMessages` with the reason `loom- and darn-only seam, batten has no Drift row`.
+  `Drift.ReviewBase` needs no entry, since `NilSeams` skips the paths `envkit`'s `nilLegal` lists.
 
 Listing, `listFiles`, run by every pass that reaches the check (`checkAndJudge`, after its unexpected-cell and stored no-match halts, and `passCommand` before it reads the compare's exit):
 
@@ -78,6 +83,8 @@ The halt:
   When the same judge spawn also rules a cell or case `does not match`, that halt's reason comes first and the uncaused reason follows it in the one Stuck.
 - `uncausedReason` words it: `a test the change loosened has no measured cause: <path>: <test>: <what was loosened>: <reason>; …; way forward: commit a "Loosened-Check: <test> — <what was loosened> — <measured cause>" trailer on any commit of the range, with no change if need be, or commit a revert of the loosening, then lym loom resume`.
 - A `caused` or `none` ruling for every listed file lets the pass end as the cells and cases decide.
+- Bound: a trailer's measured cause is the committer's attestation, which neither the judge nor the code re-measures.
+  Its bound is the verdict's `Loosened checks` lines, which carry each check with its ruling and cause into the pull request's body and PR-Review's `drift_verdict`.
 
 The flow the criteria name: a widened limit in a test existing at the base, with no trailer, spawns the judge and halts on its `uncaused` ruling;
 a following commit adding only the trailer changes the file's key, so `lym loom resume` spawns the judge again, which rules `caused`, and the pass is Done.
@@ -102,6 +109,8 @@ A trailer-only commit is the fixture's `moveHead` with a changed `commitMessages
   a nil `ReviewBase` lists no file and spawns no judge.
 - `TestDriftVerify`, command mode: a compare that exits 0 with an unruled listed file spawns the judge for the file alone, and its `uncaused` ruling halts with the way forward above in place of the Done a passing compare gives today.
 - `TestVerdict`: a row whose last check holds a caused and an uncaused check renders the `- Loosened checks:` lines exactly.
+- `TestDriftEntries`: shedrecipe's `driftTestEnv` fills `Drift.ChangedFiles` and `Drift.CommitMessages` with empty answers, so `VerifyBuilds` still builds;
+  new rows `VerifyNilChangedFiles` and `VerifyNilCommitMessages`, beside `VerifyNilCompare`, refuse naming `Drift.ChangedFiles` and `Drift.CommitMessages`.
 - `TestWire_ReviewKeysReachTheEnv`: on a pair run the drift deps' `ReviewBase` answers the same commit as `Env.ReviewBase`.
 
 **ImpactSummary:** Drift-Verify and Drift-Recheck gain a file-listing step, the judge's file rulings and an uncaused halt; three new Deps seams wired in loomcli, required by the DriftVerify registry row and filled by envkit.
