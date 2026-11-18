@@ -597,6 +597,27 @@
       "body": "Imported from [issue #136](https://github.com/Knatte18/loomyard/issues/136).\n\n.scratch/selfreport-missing-brief.md",
       "created": "2026-11-18T08:08:02Z",
       "revised": "2026-11-18T08:08:02Z"
+    },
+    {
+      "id": 1454,
+      "handle": "B9",
+      "slug": "dotnet-test-silent-exit",
+      "title": "dotnet test exits 0 with no output in a darn session while lym gate test is off limits",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "dotnet",
+        "process"
+      ],
+      "issues": [
+        135
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #135](https://github.com/Knatte18/loomyard/issues/135).\n\nA darn-writer agent measuring a golden test ran `dotnet test` on a C# test project.\nThe command exited 0 and printed nothing, not even a test count, while `lym gate test` was off limits to that agent.\nThe agent could not tell that no test had run and spent several rounds before noticing.\nRunning the built test assembly through `dotnet vstest` with a `--TestCaseFilter` ran the tests normally.\n\nWhy this is abnormal: a silent exit 0 reads as a passing run.\nIf a lym guard refuses or neutralises `dotnet test`, it should refuse with a message and a nonzero exit.\nThe darn prompt also names no way to run a single test class while measuring.\n\nWhat to do:\n- Make a refused or neutered `dotnet test` say so.\n- Have the darn prompt name a permitted way to run one test class, for example the `dotnet vstest` route above.\n\nProvenance: task `td-stick-slip-surface-torque`; notes Darn-Write.md.\n",
+      "created": "2026-11-18T08:08:05Z",
+      "revised": "2026-11-18T08:08:05Z"
     }
   ],
   "prime_owner": "neve",
