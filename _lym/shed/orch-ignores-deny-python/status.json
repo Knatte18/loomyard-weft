@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-18T07:40:17Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/orch-ignores-deny-python/_lym/landing/summary.md",
+      "at": "2026-11-18T08:11:05Z",
+      "started_at": "2026-11-18T07:40:27Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-18T07:54:26.002292414Z",
+          "end": "2026-11-18T07:54:26.032005762Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-18T08:06:01.379582742Z",
+          "end": "2026-11-18T08:06:01.422545929Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-18T07:54:26.179074465Z",
+          "end": "2026-11-18T08:05:27.805583495Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-18T08:05:28.259240427Z",
+          "end": "2026-11-18T08:06:01.345845479Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-18T08:06:01.474361939Z",
+          "end": "2026-11-18T08:10:05.306799222Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-18T08:10:05.4220734Z",
+          "end": "2026-11-18T08:10:05.899248443Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-18T08:10:06.031574135Z",
+          "end": "2026-11-18T08:10:06.031787474Z"
+        }
+      ]
     }
   ],
   "product": {
