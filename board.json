@@ -194,21 +194,29 @@
     },
     {
       "id": 1477,
-      "handle": "E3",
+      "handle": "T8",
       "slug": "comment-trim-second-pass",
       "title": "Comments: check what the big comment rewrite left, before any new pass",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "docs"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "Last week a run of nearly 3,000 agents rewrote docstrings and doc files; measure what is still long before deciding on more",
       "body": "## What was seen\n\nLast week a large run (nearly 3,000 agents in parallel) rewrote and trimmed docstrings and doc files across lym.\nEven so, the shrink study (2026-11-18) still found comments at 20 to 31 % of production lines in the seven most patched modules,\nand in `landingshed` a 678-line `doc.go` that mostly restates the function docs.\n\n## Idea\n\nBefore any new comment pass, check whether that rewrite covered package `doc.go` files and how long they still are,\nand list the packages whose comment share stands out. Only then decide whether a narrow second pass (for example `doc.go` only) is worth it.\n",
       "created": "2026-11-18T17:23:24Z",
-      "revised": "2026-11-18T17:23:24Z",
+      "revised": "2026-11-18T20:04:32Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "docs",
       "project": "code-cleanup"
     },
     {
@@ -263,13 +271,20 @@
         "tools"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "List features, flags, config keys and verbs with no recent use; the operator decides which go",
       "body": "## What was seen\n\nThe `landingshed` reading found about 340 lines of features a product owner could remove\n(the flaky rerun, the adopter-first repair note, the beam landing record among them); nobody has checked whether they are used.\nCode that no path reaches was removed by `remove-unreachable-code`, which has landed; this note covers features that are reachable but unused.\n\n## Idea\n\nA list, not a deletion: features, flags, config keys and verbs with no use in run records, transcripts or hub configs over the last weeks.\nThe operator decides which go; only those are removed.\n",
-      "status": "draft",
       "created": "2026-11-18T17:23:25Z",
-      "revised": "2026-11-18T19:53:52Z",
+      "revised": "2026-11-18T20:04:32Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "docs",
       "project": "code-cleanup"
     },
     {

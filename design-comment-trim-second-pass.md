@@ -1,6 +1,6 @@
 # Comments: check what the big comment rewrite left, before any new pass
 
-`comment-trim-second-pass` · Note · enhancement, docs
+`comment-trim-second-pass` · Task · enhancement, docs
 
 ## What was seen
 
