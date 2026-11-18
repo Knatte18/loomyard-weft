@@ -20,7 +20,7 @@
 
 **Uses:**
 - `plan:internal/shuttleengines#AccountKeeper`
-- `plan:internal/hubgeom#EngineWorktree`
+- `internal/hubgeom#EngineWorktree`
 - `internal/fabricengine#ConfigDirs`
 - `plan:internal/shuttleengine/claudeengine#writeUsage`
 - `plan:internal/shuttleengine/claudeengine#updateAccountFile`

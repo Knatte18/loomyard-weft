@@ -1,17 +1,17 @@
 # Card 3 — Tell the engines the worktree they launch in
 
 **Create:**
-- `plan:internal/shuttleengine#Worktree` -> `type Worktree struct`
-- `plan:internal/shuttleengine#WorktreeKind` -> `type WorktreeKind string`
-- `plan:internal/shuttleengine#WorktreeTask` -> `const WorktreeTask WorktreeKind = "task"`
-- `plan:internal/shuttleengine#WorktreePrime` -> `const WorktreePrime WorktreeKind = "prime"`
-- `plan:internal/shuttleengine#WorktreeBeam` -> `const WorktreeBeam WorktreeKind = "beam"`
-- `plan:internal/lymdirs#ClaudeAccountsDirName` -> `const ClaudeAccountsDirName = "claude"`
-- `plan:internal/fabricengine#ClaudeAccountsDir` -> `func ClaudeAccountsDir(hub string) string`
-- `plan:internal/hubgeom#EngineWorktree` -> `func EngineWorktree(l *lymcwd.Location) shuttleengine.Worktree`
-- `plan:internal/hubgeom#TestEngineWorktree` -> `func TestEngineWorktree(t *testing.T)`
-- `plan:internal/shuttleengine/claudeengine#NewForWorktree` -> `func NewForWorktree(cfg shuttleengine.Config, dirs configengine.Dirs, worktree shuttleengine.Worktree) *Claude`
-- `plan:internal/shuttleengines#NewForWorktree` -> `func NewForWorktree(cfg shuttleengine.Config, dirs configengine.Dirs, worktree shuttleengine.Worktree) (shuttleengine.EngineSet, error)`
+- `internal/shuttleengine#Worktree`
+- `internal/shuttleengine#WorktreeKind`
+- `internal/shuttleengine#WorktreeTask`
+- `internal/shuttleengine#WorktreePrime`
+- `internal/shuttleengine#WorktreeBeam`
+- `internal/lymdirs#ClaudeAccountsDirName`
+- `internal/fabricengine#ClaudeAccountsDir`
+- `internal/hubgeom#EngineWorktree`
+- `internal/hubgeom_test#TestEngineWorktree`
+- `internal/shuttleengine/claudeengine#NewForWorktree`
+- `internal/shuttleengines#NewForWorktree`
 
 **Extends:**
 - `internal/shuttleengine/claudeengine#Claude`

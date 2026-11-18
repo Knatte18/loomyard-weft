@@ -28,7 +28,7 @@
 - `plan:internal/shuttleengine/claudeengine#updateAccountFile`
 - `plan:internal/shuttleengine/claudeengine#readUsage`
 - `plan:internal/shuttleengine/claudeengine#loggedIn`
-- `plan:internal/hubgeom#EngineWorktree`
+- `internal/hubgeom#EngineWorktree`
 
 **Intent:**
 D3's moments: the task run's Worktree-Create step, a new beam's creation (its pawl run makes the pair through the same Worktree-Create step), and each pair `lym adopt` adds.

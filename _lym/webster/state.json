@@ -1,17 +1,17 @@
 {
   "runGuid": "32003f8b31f52bbf18b4e4cb9872dc17",
-  "planFingerprint": "c843f12540563567fd37be3273a8fc607ece0600bd78542d15fc28d289038c41",
+  "planFingerprint": "b1341418f48fd004697c49ac2d6041227aa97a8aa3c4b1ac11c88643b13f6d4e",
   "planFileHashes": {
     "00-overview.md": "98b15a10330162bb77a58831776fd88a33301d67aff0d8edfa2d80a489069f65",
     "01-shell-unset-env.md": "92880154d64c79919f6ebc176ddb983a1dd08200a27f4d36df84387584deaffa",
     "02-claude-account-config.md": "aaa8a761228aa17dc2026c85bb13ba393b91a8f0fd317321e65b8ffd720c563f",
-    "03-engine-worktree-geometry.md": "7444b0c36f53bd89801824064e5bf768551d78f41f40a0785d7f3436ac8416f0",
+    "03-engine-worktree-geometry.md": "90060fb2b33545ecbbd80d57ae0672044e8950c0f410d7687ec7378bdedda576",
     "04-claude-account-store.md": "2db58545b045473b327e229d6f62b911a96a448156ec854ddeaee46d52b4a437",
-    "05-account-pick-at-making.md": "f58882bfd11ba9d6e997093660dc55dbadd6d938f2d993e5551edd9a30b0c0e7",
+    "05-account-pick-at-making.md": "3e3151acd58d88cff71c484528a6e2e958b239a9004114f8956cacd85a04bdbd",
     "06-launch-exports-account.md": "58957daa07a8c0fa4181903eb3bc9accc654149083f5cdbcd6d26caf012bbd08",
     "07-known-config-dirs.md": "4bd4eff9fdf61f372d11592562b48fecd5e67aeacda224b1c2ae24c011e560c8",
     "08-resume-carries-transcript.md": "705f9e615532ec419239a47f1fb3c70e0e6a30a5db41d14ddd59ce72054caf31",
-    "09-claude-account-verbs.md": "cd2288beacbb35128b006d4cd71a58787783fd67d1e8c6101eb7faf2230dfe28",
+    "09-claude-account-verbs.md": "5b087f992bfbd46553f69385fd053467787809429b33418dca134fa179992a7a",
     "10-status-line-settings.md": "d185a3dc0e4d87c04a858261aec0aa5d466696803cd94afc19f964ccc5bf6a48",
     "11-reed-hold-and-relaunch-ops.md": "3ae4f4aba9d08390de28fffa97d2ad1f57382be3f82fdb84dde5a481e4edc0a4",
     "12-run-relaunching-record.md": "28d86ed8d3b3f7e3944bbe950f7a3f7f3fd020d712701beafa8a50804f5a7730",
@@ -582,22 +582,43 @@
         "03-engine-worktree-geometry"
       ],
       "cardHashes": {
-        "03-engine-worktree-geometry": "7444b0c36f53bd89801824064e5bf768551d78f41f40a0785d7f3436ac8416f0"
+        "03-engine-worktree-geometry": "90060fb2b33545ecbbd80d57ae0672044e8950c0f410d7687ec7378bdedda576"
       },
       "startSha": "f04060ad0dd7f50a927a004fde651aea9452ce86",
       "kind": "fork",
       "spawnedAt": "2026-11-18T12:39:27Z",
       "sessionId": "0ad17d4c-a2b0-4598-8497-d2e3f0282dbc",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "03-engine-worktree-geometry",
+        "status": "done",
+        "head_sha": "7098adc48d603adb253000411d8d462e615ff741",
+        "deviations": [
+          "internal/hubgeom/engineworktree.go",
+          "internal/hubgeom/engineworktree_integration_test.go",
+          "internal/shuttleengine/claudeengine/worktree_test.go",
+          "internal/shuttleengines/shuttleengines.go"
+        ]
+      },
+      "cardShas": [
+        "7098adc48d603adb253000411d8d462e615ff741"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a986626d3daf43ca0.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a986626d3daf43ca0.jsonl"
+      ]
     }
   },
-  "currentBatch": 3,
+  "currentBatch": 0,
   "masterStrand": "5cbffc253a5bb4f6a5785956571107fa",
   "masterSessionId": "0ad17d4c-a2b0-4598-8497-d2e3f0282dbc",
   "masterEngine": "claude",
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a0ef6fd807272a962.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a0ef6fd807272a962.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a986626d3daf43ca0.jsonl"
   ]
 }
