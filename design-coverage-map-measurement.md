@@ -1,6 +1,6 @@
 # Measure the coverage maps: build time, peak memory and whether their candidates hold
 
-`coverage-map-measurement` · Task · research, gate, testkit · draft
+`coverage-map-measurement` · Task · research, gate, testkit
 
 ## Why
 
