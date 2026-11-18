@@ -1,0 +1,13 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/plan"
+  ],
+  "target_id": "454761527643bb4d2b0cb2e9743ab1f7df8ae1546b6cb84767c5572e697b4b93",
+  "added_decisions": [
+    {
+      "title": "F13 is answered by D4's deferred clear",
+      "digest": "d10c1098688505f89208d390db526409e9437fadae7e598e147c26719a73ae21"
+    }
+  ]
+}
