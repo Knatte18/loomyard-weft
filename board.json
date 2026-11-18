@@ -409,6 +409,7 @@
         "landing"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "Build the design simplifications the shrink study found in landingshed and measure the lines saved against its estimate, before any such pass on another module",
@@ -416,6 +417,13 @@
       "status": "draft",
       "created": "2026-11-18T19:23:31Z",
       "revised": "2026-11-18T19:23:31Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "solid",
       "project": "code-cleanup"
     }
   ],
