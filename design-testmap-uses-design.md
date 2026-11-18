@@ -1,6 +1,6 @@
 # Coverage map uses: reach note, failure triage and diff mutation check
 
-`testmap-uses-design` · Task · sketch, testmap, gate, burler, darn · running · Record-Write
+`testmap-uses-design` · Task · sketch, testmap, gate, burler, darn · running · Raddle-Write
 
 Decision record: [Sketch](decision-testmap-uses-design.md)
 
