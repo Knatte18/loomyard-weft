@@ -17,5 +17,10 @@ The maps are built only on command now; the gate no longer selects tests from th
 2. Landed: the pilot on one package and the verb that lists redundant-test candidates (`lym gate redundant`, `79f0eb4a`).
    Its report is `docs/research/speed/coverage-map-pilot-2026-11-12/report.md`.
    The maps stay as the input of this verb.
-3. Open: the cut stage, `redundancy-sweep-existing`.
+3. Landed: the measurement of the maps (`coverage-map-measurement`, `122a41f1`).
+   Its report is `docs/research/speed/coverage-map-measurement-2026-11-18/report.md`.
+   A full `lym gate test --map --all` took 12 min 49.7 s over 210 packages; the maps are fit for the cut stage.
+   `lym gate redundant` is not yet: `internal/boardengine` fails to build its mutant binary,
+   so `redundant-check-fixes` comes before the cut.
+4. Open: the cut stage, `redundancy-sweep-existing`.
    The operator reads the candidate lists first; the pilot found that equal coverage often hides a different assertion, so the cut stays a reading filter, not a verdict.
