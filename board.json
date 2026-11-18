@@ -375,6 +375,26 @@
         }
       },
       "profile": "solid"
+    },
+    {
+      "id": 1472,
+      "handle": "B1",
+      "slug": "paused-run-holds-push-lock",
+      "title": "A paused run held by its pause keeps the fabric push lock, blocking every other run",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "tender",
+        "fabric",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "batten run took fabric.push.lock, was then held by the pair pause, and kept the lock; another run could not start",
+      "body": "## What was seen (2026-11-18)\n\nWith `claude-accounts-per-worktree` paused by `lym tender pause \u003cslug\u003e`, dobby started `lym batten run claude-accounts-per-worktree` (pid 15436).\nIt took `loomyard-weft/.weft/fabric.push.lock`, then logged `tendercli: a network call is held by a pause` and waited, still holding the lock.\n`lym batten run memory-cap-not-enforced` then failed twice with `push lock busy ... held by pid 15436`; the orch had to kill pid 15436.\n\n## Idea\n\nA pause hold never waits while holding a shared lock: the held call releases the push lock before it waits and takes it again after,\nor the pause check runs before the lock is taken.\nDobby should also not start a batten driver for a paused pair at all.\n",
+      "created": "2026-11-18T13:34:51Z",
+      "revised": "2026-11-18T13:34:51Z"
     }
   ],
   "prime_owner": "neve",
