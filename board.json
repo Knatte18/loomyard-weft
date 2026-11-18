@@ -421,6 +421,26 @@
       "body": "## What was seen (operator, 2026-11-18)\n\nVS Code often does not update the board file the operator is looking at after a board write.\nThe files sit in `_bolt`, which is a folder of the hub workspace and not under the watcher-excluded `**/_lym/**`, so the watcher does see the folder.\nThe workspace opens every `.md` in the markdown preview editor (`workbench.editorAssociations`).\n\n## Likely cause\n\n`boardengine.RenderToDisk` writes each rendered file with `fsx.AtomicWrite`: a temp file renamed over the old one, so each write is a new inode.\nAn open preview of the old file can miss that replace and keep the old content until the file is reopened.\n\n## Idea\n\nConfirm by hand first (keep a board file open in the preview, run a board write, see whether it refreshes; repeat with an in-place write).\nIf the rename is the cause: write the rendered view files (README, project and design files) in place, truncate and write, keeping atomic writes for the board's data files.\nA torn view file is harmless; the next render rewrites it.\n",
       "created": "2026-11-18T18:15:32Z",
       "revised": "2026-11-18T18:15:32Z"
+    },
+    {
+      "id": 1488,
+      "handle": "T1",
+      "slug": "wxb-disc-with",
+      "title": "A beam session loses the pawl run checklist when the beam overview takes the overview window",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "research"
+      ],
+      "issues": [],
+      "recipe": "tapestry",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench arm of plan-writer-explorer-forks; never release",
+      "body": "## Seen (operator, 2026-11-03)\n\nA beam's pawl run is a shed run with its own checklist, the loom status strand a normal loom run shows in its session's overview window.\nOnce the beam is up, its session shows the beam overview, its orch and the shell, and the pawl run's checklist is nowhere, so the operator cannot see where pawl stands; that matters once pawl is advanced by hand.\n\n## Cause, from the code\n\n- At `lym beam start`, the pawl run's `lym loom start` puts the loom status strand into the session's one overview window.\n- `ensureRunsStrand` (`internal/orchcli/runs.go`) then puts the beam's runs strand in that window by replacing the loom status strand, since reed refuses a second overview strand; the checklist strand is gone, not moved.\n- `statusStrandAddSpec` (`internal/loomcli/bootstrap.go`) does give the checklist a window of its own beside the runs strand, but only when a later loom start or resume adds it, and that window keeps the viewer, so it is easy to miss.\n\n## Expected\n\nWhile a pawl run lives, the beam's session always shows its checklist in a window of its own, named for pawl, beside the beam overview:\n\n- When the runs strand takes the overview window from the loom status strand, the checklist is added again in its own window, or the beam start brings the runs strand up before the pawl run's loom start so the checklist never takes the overview window.\n- The beam overview may also carry one line with pawl's current row, pointing at that window.\n",
+      "status": "draft",
+      "created": "2026-11-18T18:17:58Z",
+      "revised": "2026-11-18T18:17:58Z"
     }
   ],
   "prime_owner": "neve",
