@@ -3,6 +3,8 @@
   "state": "running",
   "error": "",
   "pause_requested": false,
+  "pause_before": "Plan-Bouncer",
+  "pause_before_by": "wxb-bench",
   "activity": {
     "now": "",
     "last": "",
