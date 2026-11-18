@@ -1,6 +1,6 @@
 # P1 Code cleanup: cut and simplify lym code and tests
 
-Rendered 2026-11-18 20:24 UTC; every age below is as of then.
+Rendered 2026-11-18 20:25 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`code-cleanup`](design-code-cleanup.md) · Age 3h · Owner `neve`
@@ -28,7 +28,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Pilot: simplify the design of landingshed without changing behaviour**<br>• Build the design simplifications the shrink study found in landingshed and measure the lines saved against its estimate, before any such pass on another module<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`landingshed-design-simplify`](design-landingshed-design-simplify.md) | darn · solid | Describe | neve | 1h<br>1h | landing |
+| T2 | **Pilot: simplify the design of landingshed without changing behaviour**<br>• Build the design simplifications the shrink study found in landingshed and measure the lines saved against its estimate, before any such pass on another module<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`landingshed-design-simplify`](design-landingshed-design-simplify.md) | darn · solid | PR-Review | neve | 1h<br>1h | landing |
 
 ### Ready (0)
 
@@ -42,7 +42,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Remove lym verbs and features nobody uses**<br>• Follow-up to the unused-features study: the operator picks from its candidate list, then this task removes those verbs with their docs and prompt text | [`remove-unused-verbs`](design-remove-unused-verbs.md) | darn |  | 8m<br>8m | cli |
+| T8 | `draft` **Remove lym verbs and features nobody uses**<br>• Follow-up to the unused-features study: the operator picks from its candidate list, then this task removes those verbs with their docs and prompt text | [`remove-unused-verbs`](design-remove-unused-verbs.md) | darn |  | 9m<br>9m | cli |
 
 ## Notes (3)
 
@@ -52,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Trim every package doc.go of what is superfluous**<br>• The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents | [`doc-go-trim-pass`](design-doc-go-trim-pass.md) | 13m<br>11m | docs |
+| E1 |  | **Trim every package doc.go of what is superfluous**<br>• The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents | [`doc-go-trim-pass`](design-doc-go-trim-pass.md) | 14m<br>12m | docs |
 | E5 |  | **Design: simplify interfaces that make every caller handle too much**<br>• For example one result type instead of a four-value return handled at 60 call sites; find such spots per module and fix them one module at a time | [`design-simplify-callers`](design-design-simplify-callers.md) | 3h<br>3h | fabric, landing |
 | E6 |  | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | 3h<br>3h | fabric, loom, board |
 
