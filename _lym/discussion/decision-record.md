@@ -115,6 +115,14 @@ Rationale: The board entry marks this task a bench arm of plan-writer-explorer-f
   It is not in this worktree's base, and both rewrite `statusStrandAddSpec` and `ensureRunsStrand`.
   This entry is a bench arm marked never to be released; question for the parent: is the record meant to redesign the bug from this base without reconciling with `7c23591`?
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-1-review.md; fixer report: _lym/reviews/discussion/round-1-fixer-report.md.
+  - F1 (class design, severity BLOCKING, open in rounds 1)
+  - F2 (class decision, severity LOW, open in rounds 1; answered since by: Ignore commit 7c23591 (F2); Redesign from this arm's base without reconciling with 7c23591)
+  - d2-viewer-end-state-no-mechanism (class design, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - With a `loom-status` strand and no runs strand, `ensureRunsStrand` leaves the runs strand in the overview window and the `loom-status` strand in a window of its own with `KeepViewer` and the seed's recipe as `Title` (D1, D2).
