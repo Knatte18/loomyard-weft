@@ -259,7 +259,6 @@
         }
       },
       "profile": "docs",
-      "notify_on_land": true,
       "project": "code-cleanup"
     },
     {
