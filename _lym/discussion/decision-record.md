@@ -270,6 +270,12 @@ Decision: D3's reach-turn result goes to the writer alone, as the round-2 fix st
 
 Rationale: The board entry records the operator's wish (2026-11-18) that the writer get the note from its own verify gate, so it adds the missing tests itself; a cold fixer that receives the note and re-runs the gate to a pass would defeat that. The round-2 fixer applied exactly the fix round 2's F1 asked for, bound included, so the finding is answered in the record.
 
+### Added after Discussion (parent, 2026-11-18): Triage in the prime follows D7 (plan F10)
+
+Decision: In the prime, triage treats the call as having no parent branch: each mapped failing test gets the no-change-set line naming the missing parent branch, and no D8 command. Card 11's mergeBase answers no parent branch in the prime too; the overview's Shared Decisions bullet does not apply its prime-from-HEAD clause to triage lines.
+
+Rationale: D7 states this behaviour; HEAD as merge base in the prime gives an empty or misleading change set, and no decision licenses the departure.
+
 ## Constraints
 
 - `PATTERN-gate-slot`: every map refresh and mutant run holds a gate slot.
