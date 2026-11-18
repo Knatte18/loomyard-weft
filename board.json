@@ -341,7 +341,7 @@
       "isolated": false,
       "brief": "Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff",
       "body": "## Seen (retro, 2026-11-17)\n\nFrom `docs/research/retro/retro-20261116-115411/report.md`, proposal 1.\nIn `test-only-functions-in-prod`, the Code-Review reviewer (6b616569, turns 18 to 35) wrote the branch's production diff of about 3,600 lines to `.scratch/prod.diff` itself, read it in five spans, and had its last Read refused for size, so it retried with `allow_large`.\nThe session cost $5.40 against a row median of $1.63, with the whole diff in its context.\n\n## Idea\n\nBurler writes the round's diff as one file per package, each under the Read cap, and names them in the explore step (`internal/burlerengine/prompt.go`, `contracts/stencils/burler/burler-step-1-explore.md`).\nOne session shows this; a second oversized review would confirm it.\n",
-      "status": "running · Drift-Recheck",
+      "status": "running · Describe",
       "created": "2026-11-18T06:58:31Z",
       "revised": "2026-11-18T07:37:59Z",
       "run_settings": {

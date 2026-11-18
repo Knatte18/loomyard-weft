@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 08:27 UTC; every age below is as of then.
+Rendered 2026-11-18 08:28 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -112,7 +112,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **lym orch launches keep the python guard although deny_python is false**<br>• An orch launch ignores deny_python: false in the hub shuttle config; notice and hook both stay<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-ignores-deny-python`](design-orch-ignores-deny-python.md) | darn · light | Code-Burler-Fix | neve | 50m<br>50m | orch, shuttle, config |
-| T6 | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | darn · light | Drift-Recheck | neve | 1h<br>49m | burler, stencil |
+| T6 | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | darn · light | Describe | neve | 1h<br>50m | burler, stencil |
 
 #### Ready (0)
 
@@ -155,8 +155,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B4 |  | **drift: line-range expectation entries never match in diff mode lines** | [`drift-line-range-never-matches`](design-drift-line-range-never-matches.md) | 20m<br>20m | drift |
 | B5 |  | **Agents must never build or check out a repository under .scratch, .lym or _lym** | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | 20m<br>2m | stencil |
 | B6 |  | **shed step re-halts on the shuttle run left running by the earlier interrupted-stop** | [`restep-leftover-shuttle-run`](design-restep-leftover-shuttle-run.md) | 20m<br>20m | shed, shuttle |
-| B7 |  | **shuttle start fails with 'session is not idle' when the pane shows an idle input prompt after skill loading** | [`idle-check-after-skill-load`](design-idle-check-after-skill-load.md) | 19m<br>19m | shuttle |
-| B8 |  | **Review strand starts without the turn naming its prompt file, also after restart** | [`review-strand-no-prompt-turn`](design-review-strand-no-prompt-turn.md) | 19m<br>19m | shuttle, burler |
+| B7 |  | **shuttle start fails with 'session is not idle' when the pane shows an idle input prompt after skill loading** | [`idle-check-after-skill-load`](design-idle-check-after-skill-load.md) | 20m<br>20m | shuttle |
+| B8 |  | **Review strand starts without the turn naming its prompt file, also after restart** | [`review-strand-no-prompt-turn`](design-review-strand-no-prompt-turn.md) | 20m<br>20m | shuttle, burler |
 | B9 |  | **dotnet test exits 0 with no output in a darn session while lym gate test is off limits** | [`dotnet-test-silent-exit`](design-dotnet-test-silent-exit.md) | 19m<br>19m | dotnet, process |
 | B10 |  | **A run in a hub with no declared tier0 fails at shed build, even a docs-only darn** | [`no-tier0-fails-shed-build`](design-no-tier0-fails-shed-build.md) | 19m<br>19m | gate, config |
 
