@@ -1,51 +1,52 @@
-# Drift: decision adds pass the judge check; keyed cases refuse ranges
+# Drift: exempt parent decisions from the judge check, fix line ranges
 
-This change fixes two drift bugs, issues #145 and #141.
+A parent's `lym loom decision add` during a Drift-Verify judge session no longer halts the run as the judge's edit.
+Drift-Expect is now told to name keyed lines by `keys` entries, so the expectations it writes match.
 
-## A parent decision during Drift-Verify no longer halts the judge
+Closes #145
+Closes #141
 
-A parent can run `lym loom decision add` while a Drift-Verify judge session is running.
-The verb commits `_lym/discussion/decision-record.md` on the records side.
-When the judge finished, `JudgeSnapshot.Changes` counted that commit as the judge's edit,
-and the run halted with `records: ... decision-record.md was changed`.
+## What changes
 
-`TakeJudgeSnapshot` now also stores a copy of the decision record, named by the new `Deps.DecisionRecord`, beside the snapshot record.
-`Changes` exempts the record when it differs from that copy only by `Added after Discussion` entries and every entry the copy held is still there unchanged.
-The comparison uses `discussionparser.IdentityText` and `CheckAddedEntriesSubset`, so the check reuses the record format's own parser.
-An edit anywhere else in the record, or a dropped or rewritten entry, is still reported as a change.
-`loomcli`'s `driftDeps` sets the field from the run's decision record path.
+### Parent decisions during a judge session (#145)
 
-Design decisions:
+`TakeJudgeSnapshot` now also copies the decision record, named by the new `Deps.DecisionRecord`.
+`JudgeSnapshot.Changes` exempts the record when all of these hold:
 
-- The issue allowed two fixes: refuse `decision add` while a judge runs, or exclude its commits from the check.
-  This change takes the second, so the parent never has to wait for a judge or come back later to record a call.
-- The exemption is decided by content, not by commit, matching how the snapshot already judges paths.
-  `decision add` commits carry no trailer that marks them as lym's own commits.
-- Bound: an `Added after Discussion` entry or carry-over block that the judge session writes itself also goes unseen.
-  A `lym loom decision replace` during the session is still reported as a change.
-  The package doc states both.
+- the records checkout holds it committed, so an uncommitted write is still a change;
+- it differs from the copy only by entries added after the Discussion;
+- every entry and carry-over block the copy held is kept unchanged.
 
-## Line-range expectation entries over keyed cases are refused
+The carry-over comparison uses the new `discussionparser.CheckCarryOversNotLost`, which, unlike `CheckCarryOversKept`, does not report an added block.
+A change to any other file, or any other change to the record, is named as before.
+An empty `Deps.DecisionRecord` exempts nothing.
 
-When `key_patterns` keys every line of a case, each changed value is a keyed cell with line position 0.
-A `lines` range counts positions among unkeyed lines only, so a range such as `"1-"` or `"7-433"` on such a case could never match.
-The drift gate then failed on every changed value.
+`lym loom decision add` with `--amends-plan` or a PATTERN change is refused while the run's drift scope record holds an open judge session.
+Those forms write beside the record, which the check cannot tell from the judge's own edit.
+The refusal says to re-run once Drift-Verify has ended the session, or to record the decision without those forms.
+Plain entries are not refused.
 
-- `ParseExpectation` now refuses, under `diff: lines`, a `lines` entry for a baseline case where every line is keyed.
-  The refusal says that a range counts only unkeyed lines and tells the writer to use `keys` entries instead.
-  The expectation gate hands this refusal back to the expect agent, and `lym drift amend --entries` gives it to the parent.
-- The expect agent's format text now says that a keyed line is named only by a `keys` entry.
-  It also says that a range counts the listing's `line` positions, never file line numbers.
+### Line-range entries (#141)
 
-Design decision: the issue allowed giving cells real file line numbers instead.
-This change keeps a range's meaning as positions among unkeyed lines, which unkeyed identity pairing and existing expectations depend on.
-The refusal applies only when a case has keyed lines and no unkeyed line.
-Refusing ranges that hold no baseline position would also refuse a valid expectation of unkeyed lines that the change adds.
+The checker reports each changed keyed value at line 0, so no `lines` range covers it.
+Rather than change the line numbers, the `lines`-mode expectation format shown to Drift-Expect now says a `lines` range counts the `line` positions of unkeyed lines and covers no keyed line.
+It tells the seat to name a keyed line's value by a `keys` entry alone.
 
-## Tests
+## Design decisions
 
-- `TestJudgeSnapshot` gains three rows.
-  A committed added entry is no change.
-  An edit beside an added entry is reported.
-  A dropped entry is reported.
-- `TestParseExpectation` gains a row for a range over a case where every line is keyed.
+- The #145 fix excludes the parent's commits from the check instead of refusing every `decision add` during a judge session.
+  Only the forms the check cannot classify are refused.
+- A committed entry or carry-over block that the judge itself adds to the record is also exempt.
+  This is a stated bound in the `driftengine` package doc.
+  An uncommitted append, an edit or removal of an existing entry or block, and a `lym loom decision replace` during the session are still named as a change.
+- The #141 fix is a prompt change, not a change to the line numbers the checker reports.
+  A seat that ignores it and writes a `lines` range for a keyed value still fails the gate.
+
+## To check by hand
+
+- No regression check ran for this task, and nothing was run against a live darn run.
+  Confirm with a real Drift-Verify session that a `lym loom decision add --by parent` leaves the run going.
+- Confirm that a Drift-Expect seat given the new `lines` format text writes `keys` entries for keyed values.
+- Review findings left open at the last review, both fixed in the final commits but worth a look:
+  - `TestDriftDeps_CarryTheDecisionRecord` in `internal/loomcli/driftwiring_test.go` needed its `testtiming` keep marker.
+  - The `driftengine` package doc in `internal/driftengine/doc.go` must not describe the `loomcli` refusal, and must bound the exemption by `driftengine`'s own behavior.
