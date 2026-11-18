@@ -52,4 +52,11 @@ A changed value carries its real line number so line-range entries match, or Dri
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - drift-deps-test-missing-keep-marker (class consistency, severity BLOCKING, open in rounds 2)
+  - driftengine-doc-describes-loomcli-refusal (class consistency, severity BLOCKING, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
