@@ -2,7 +2,7 @@
      internal/editdirective.Directive renders it into the edit_directive marker of every spawned role's opening stencil
      whose prompt launches on Codex.
      It declares no marker and must stay marker-free.
-lym-stencil: sha256=5b7eac8014e8b9f2c2e0f884f6a93753d889a032160424b48fc74090754e4732 build=3a8546350f0e27fbbc92c6881b1a448e02812bf8 time=2026-11-17T10:35:58Z -->
+lym-stencil: sha256=59ac515cf7814e180f24820a8c3ecb61032a7576d62740c87d2facda5cb4663c build=3c7754c1c4985d395698f0410f77664bc4d8fdbd time=2026-11-18T09:23:56Z -->
 
 ## Editing files
 
@@ -16,8 +16,9 @@ A shell guard refuses a shell edit: never `sed -i`, never `perl -i`, and never a
 A Go file's formatting is fixed with `lym loom fmt <file>`.
 Scratch files go under `.scratch/` in the working directory, never a system temp directory, and are removed by their literal path.
 `.scratch` is a link to a directory kept for your task alone, so a file under it stays in your own task.
-A build under `.scratch/` resolves a relative reference from the link's target, not from the working directory;
-a project built there names the working tree's files by absolute path.
+`.scratch`, `.lym` and `_lym` hold scratch files and records, never a build:
+never build, restore or compile anything under them, and never create a git worktree, clone or checkout there.
+A build under the `.scratch` link sees each project under two paths and fails.
 A scratch file with a source extension such as `.md`, `.yaml` or `.sh` is written with `apply_patch`, not by a redirect.
 Work only in your own worktree: never edit, commit or push in another, and never create one, unless your parent or the operator says so for that case.
 When work belongs in another worktree, say so to your parent instead.

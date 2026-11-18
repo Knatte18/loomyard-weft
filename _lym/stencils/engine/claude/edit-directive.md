@@ -2,7 +2,7 @@
      internal/editdirective.Directive renders it into the edit_directive marker of every spawned role's opening stencil
      whose prompt launches on Claude.
      It declares no marker and must stay marker-free.
-lym-stencil: sha256=0f811a16c0b3bb7b9dcf45c7353b5847a072d3ac5b2682eb09f173b97b9d5ac6 build=7ecfcaeb3c698adbd2a491476a0e6a6a68c4c600 time=2026-11-18T07:57:47Z -->
+lym-stencil: sha256=d9f93084a1c948f184c28ebf09957b7a345c8bc251d4ae75f99dc791a0ac11fc build=3c7754c1c4985d395698f0410f77664bc4d8fdbd time=2026-11-18T09:23:56Z -->
 
 ## Editing files
 
@@ -16,8 +16,9 @@ A shell guard refuses a shell edit: never `sed -i`, never `perl -i`, and never a
 A Go file's formatting is fixed with `lym loom fmt <file>`.
 Scratch files go under `.scratch/` in the working directory, never a system temp directory, and are removed by their literal path.
 `.scratch` is a link to a directory kept for your task alone, so a file under it stays in your own task.
-A build under `.scratch/` resolves a relative reference from the link's target, not from the working directory;
-a project built there names the working tree's files by absolute path.
+`.scratch`, `.lym` and `_lym` hold scratch files and records, never a build:
+never build, restore or compile anything under them, and never create a git worktree, clone or checkout there.
+A build under the `.scratch` link sees each project under two paths and fails.
 A scratch file with a source extension such as `.md`, `.yaml` or `.sh` is written with Write, not by a redirect.
 Work only in your own worktree: never edit, commit or push in another, and never create one, unless your parent or the operator says so for that case.
 When work belongs in another worktree, say so to your parent instead.
