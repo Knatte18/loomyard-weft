@@ -1,6 +1,6 @@
 # Remove code no path from any main reaches
 
-`remove-unreachable-code` · Task · enhancement, tools · running · PR-Review
+`remove-unreachable-code` · Task · enhancement, tools · landing · Finalize
 
 ## What was seen
 
