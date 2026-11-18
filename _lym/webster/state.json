@@ -575,9 +575,25 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a0ef6fd807272a962.jsonl"
       ]
+    },
+    "3": {
+      "slug": "engine-worktree-geometry",
+      "cards": [
+        "03-engine-worktree-geometry"
+      ],
+      "cardHashes": {
+        "03-engine-worktree-geometry": "7444b0c36f53bd89801824064e5bf768551d78f41f40a0785d7f3436ac8416f0"
+      },
+      "startSha": "f04060ad0dd7f50a927a004fde651aea9452ce86",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T12:39:27Z",
+      "sessionId": "0ad17d4c-a2b0-4598-8497-d2e3f0282dbc",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "5cbffc253a5bb4f6a5785956571107fa",
   "masterSessionId": "0ad17d4c-a2b0-4598-8497-d2e3f0282dbc",
   "masterEngine": "claude",
