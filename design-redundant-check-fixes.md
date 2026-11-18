@@ -1,6 +1,6 @@
 # lym gate redundant fails on an uncompilable mutant; a map build exits 1 on Windows-only tests
 
-`redundant-check-fixes` · Task · bug, gate, testkit · starting · Open-Window
+`redundant-check-fixes` · Task · bug, gate, testkit · starting · Seed-IDE
 
 ## What was seen
 
