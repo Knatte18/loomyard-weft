@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 3 escalated to the parent (cause: hard-cap); brief at /home/knatte/Code/loomyard-LYMHUB/claude-account-pick-simple/_lym/reviews/discussion/round-3-escalation.md; the round is at or past the perch's hard cap, so it can only be accepted: decide with `lym loom circling accept claude-account-pick-simple`, then run `lym loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `claude-account-pick-simple` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/claude-account-pick-simple/_lym/reviews/discussion/round-3-escalation.md` with a one-shot fork. Way forward: decide with \"lym loom circling accept claude-account-pick-simple\".",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 3 escalated to the parent (cause: hard-cap); brief at /home/knatte/Code/loomyard-LYMHUB/claude-account-pick-simple/_lym/reviews/discussion/round-3-escalation.md; the round is at or past the perch's hard cap, so it can only be accepted: decide with `lym loom circling accept claude-account-pick-simple`, then run `lym loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -217,6 +218,13 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/claude-account-pick-simple/_lym/reviews/discussion/round-3-bouncer-ledger.md",
+      "at": "2026-11-18T08:17:50Z",
+      "started_at": "2026-11-18T08:17:21Z"
     }
   ],
   "product": {
