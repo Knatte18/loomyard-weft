@@ -1,6 +1,6 @@
 # Pilot: simplify the design of landingshed without changing behaviour
 
-`landingshed-design-simplify` · Task · enhancement, landing · running · Code-Burler-Review
+`landingshed-design-simplify` · Task · enhancement, landing · running · Code-Burler-Fix
 
 ## Why
 
