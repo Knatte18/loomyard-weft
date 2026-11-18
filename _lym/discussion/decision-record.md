@@ -18,6 +18,12 @@ Find which config dirs the orch launch hands the shuttle config loader, make it 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-18): The python hook reads deny_python live
+
+Decision: The python guard's hook reads the hub's current deny_python on each call instead of having the value baked in at launch, so flipping the flag takes effect in running sessions with no restart of the session or its watchers. The system prompt notice still follows the value at launch.
+
+Rationale: Operator, 2026-11-18: turning Python on must not need a restart of every session and watcher.
+
 ## Constraints
 
 ## Auto-mode assumptions
