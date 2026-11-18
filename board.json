@@ -383,7 +383,7 @@
       "kind": "task",
       "labels": [
         "research",
-        "testkit",
+        "testmap",
         "gate"
       ],
       "issues": [],
@@ -394,7 +394,7 @@
       "body": "## Why\n\nlym builds per-test coverage maps (`internal/testcover`, built by `lym gate test --map`): for each tier 0 and tier 1 test, the code blocks it runs.\nToday they have almost no job:\n\n- Test selection from the maps was retired on 2026-11-15 (`testmap-on-command`, `72b26d1a`): it saved the gate 0 to 4.2 s against 7.7 to 31 min of upkeep per landing.\n- `lym gate redundant` confirms redundant tests by mutation, but 27 of 30 sampled confirmations were false\n  (`docs/research/speed/redundancy-confirmed-survey-2026-11-16/report.md`).\n- The gate report's advisory redundancy step on a diff's new tests is the only use left.\n\nThe operator is sure the maps are good for something. Find what.\n\n## Scope, exact\n\n- One writer session, model Fable 5.2 (set in this entry's `run_settings`), no other model.\n- Search the web: research and industry practice on per-test coverage (test impact analysis, regression test selection, fault localisation such as spectrum-based methods,\n  test prioritisation, flaky-test triage, mutation testing guidance, change-risk scoring, code ownership, review aids, documentation of behaviour), and tools that use it.\n- Read lym's own map format and the reports named above, so each idea is judged against what the maps hold today and what they cost to build\n  (`docs/research/speed/coverage-map-measurement-2026-11-18/report.md`: a full build took 12 min 50 s over 210 packages).\n- Think in particular about lym's agents: a writer, reviewer or fixer that changes a function, meets a failing test or reviews a diff.\n- Runs: at most one `lym gate test --map` build of one package, to check a concrete idea against real data. No other test runs.\n\n## Output\n\nA report under `docs/research/speed/testmap-use-cases-\u003cdate\u003e/report.md`:\n\n- every use found, each with its source (a URL or paper for outside ideas), what it would need from lym, a rough build cost, and the expected gain;\n- a ranking, with the top three argued in full, including why each beats doing without the maps;\n- a plain statement for any use that is not worth it.\n\nNo code changes.\n",
       "status": "done",
       "created": "2026-11-18T17:28:47Z",
-      "revised": "2026-11-18T17:28:47Z",
+      "revised": "2026-11-18T18:04:38Z",
       "run_settings": {
         "darn": {
           "writer": "fable[high]"
@@ -415,7 +415,7 @@
       "kind": "note",
       "labels": [
         "feature",
-        "testkit",
+        "testmap",
         "gate",
         "burler"
       ],
@@ -425,7 +425,8 @@
       "brief": "A reader of the coverage maps feeds the code review and a read verb for writers; uses 1 and 3 of the map study read through it",
       "body": "## What was seen\n\nThe map-uses study (`docs/research/speed/testmap-use-cases-2026-11-18/report.md`, use 2) ranks this second and builds it first:\nuses 1 and 3 read the maps through the same reader.\nThe code review rubric already asks for \"a behavior the diff adds with no coverage\" and that a redundancy finding name its covering test;\ntoday the reviewer answers both by searching and reading.\nA name search cannot find tests that reach a function through callers: 793 reached functions are reached by no test of their own package,\nand half of all reached functions are reached from more than one test package.\n\n## Idea\n\n- A reader of the maps with an index (a lookup across packages reads up to 56 MB of JSON).\n- A finder of the functions a diff changes, comparing function texts (the old one went with the selector in `72b26d1a`).\n- A note in the code review: for each changed function the tests that reach it, own package first and most specific first, ranked and capped\n  (153 functions are reached by 500 tests or more); and the changed functions no test reaches,\n  saying when that may only mean a tier 2 or spawn-marked test runs it.\n- The writer gets the same note before review: its verify gate prints, once the tiers pass, the changed functions no test reaches and the tests reaching each changed function, so the writer adds the missing tests itself and review mostly finds none left (operator, 2026-11-18).\n- A read verb a writer can call for a function before it edits.\n- No upkeep per landing: a stored map stays sound for days (98.5 % of a fresh map's pairs after three days), plus a fresh map of the diff's packages.\n\nStudy estimate: 2 darns.\n",
       "created": "2026-11-18T17:58:55Z",
-      "revised": "2026-11-18T18:03:25Z"
+      "revised": "2026-11-18T18:04:37Z",
+      "project": "testmap-uses"
     },
     {
       "id": 1483,
@@ -435,7 +436,7 @@
       "kind": "note",
       "labels": [
         "feature",
-        "testkit",
+        "testmap",
         "gate",
         "burler"
       ],
@@ -445,7 +446,8 @@
       "brief": "Mutate only the blocks a diff adds or changes, run only the tests covering each, report surviving mutants; start with a hand trial over about twenty landed diffs",
       "body": "## What was seen\n\nThe map-uses study (`docs/research/speed/testmap-use-cases-2026-11-18/report.md`, use 1) ranks this first:\nthe only use that sees what tests assert. A mutant no test kills is a changed behaviour no test checks.\nGoogle runs this on changed lines in code review (Petrović et al.); developers first called 85 % of mutants unproductive, so a cap and a filter are part of the first build.\n`internal/testcover` already plans mutants per block, builds them into one test binary and judges kills.\nWith the map each mutant runs the tests covering its block (2 at the median) instead of the whole package (23.8 on average).\n\n## Idea\n\n1. Trial first: replay the step by hand over about twenty landed diffs, count survivors and read a sample, to learn how often a landed diff holds an unchecked change.\n2. If the trial pays: a gate report step after the tiers pass, mutants only in the diff's new or changed blocks, capped per diff,\n   uncovered blocks reported as uncovered without mutants, survivors to the code review with file, line and operator.\n   A survivor only another package's test could kill is discounted through the reach note (note `testmap-reach-note`).\n\nStudy estimate: a trial darn, then 3 to 4 darns.\n",
       "created": "2026-11-18T17:58:55Z",
-      "revised": "2026-11-18T17:58:55Z"
+      "revised": "2026-11-18T18:04:38Z",
+      "project": "testmap-uses"
     },
     {
       "id": 1484,
@@ -455,7 +457,7 @@
       "kind": "note",
       "labels": [
         "feature",
-        "testkit",
+        "testmap",
         "gate",
         "darn"
       ],
@@ -465,7 +467,8 @@
       "brief": "The gate failure report and the fixer brief say which changed functions a failing test reaches, or that it reaches none, so a not-my-fault failure is seen at once",
       "body": "## What was seen\n\nThe map-uses study (`docs/research/speed/testmap-use-cases-2026-11-18/report.md`, use 3):\nall four flaky failures since 2026-11-01 that the maps hold were tests reaching no file their landing changed;\nDeFlaker's rule would have called them flaky before any rerun.\nToday a repeated failure that is not the run's own costs a round trip to the parent to test the base,\nand on 2026-11-18 a fixer chasing such a failure ran the memory hog that crashed Neve.\n\n## Idea\n\n- For each failing test the maps hold, a line in the gate's failure report and in the fixer's brief:\n  the run's changed functions it reaches, or \"reaches none of this run's changes\".\n- For a parent branch gone red, the same lookup over the landings since the last green names the landings whose changes the test reaches.\n- Reads through the reader of note `testmap-reach-note`.\n\nStudy estimate: 1 darn on top of the reach note.\n",
       "created": "2026-11-18T17:58:55Z",
-      "revised": "2026-11-18T17:58:55Z"
+      "revised": "2026-11-18T18:04:37Z",
+      "project": "testmap-uses"
     },
     {
       "id": 1485,
@@ -484,7 +487,12 @@
       "brief": "The reach note, the diff mutation check and failure triage, built on one reader of the maps",
       "body": "The uses the map study ranked worth building (`docs/research/speed/testmap-use-cases-2026-11-18/report.md`, `884424fb`).\nWhat only the maps give is the lookup between a function and the tests that reach it, across packages; none of the uses saves test time.\n\nBuild order: the reach note first, since the other two read the maps through its reader; then failure triage; then the diff mutation check, starting with its hand trial.\nThe maps need no upkeep per landing for these: a stored map stays sound for days, and the packages a diff touches are mapped fresh in seconds.\n",
       "created": "2026-11-18T18:04:30Z",
-      "revised": "2026-11-18T18:04:37Z"
+      "revised": "2026-11-18T18:04:38Z",
+      "order": [
+        "testmap-reach-note",
+        "testmap-failure-triage",
+        "testmap-diff-mutation"
+      ]
     }
   ],
   "prime_owner": "neve",

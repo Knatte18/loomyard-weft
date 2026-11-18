@@ -42,7 +42,7 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T1 | **Find real uses for the per-test coverage maps**<br>• A research run on Fable searches the web and the code for what per-test coverage maps can do for lym and its agents, and ranks the uses<br>• `darn: writer fable[high]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-use-cases`](design-testmap-use-cases.md) | 35m<br>35m | testkit, gate |
+| T1 | **Find real uses for the per-test coverage maps**<br>• A research run on Fable searches the web and the code for what per-test coverage maps can do for lym and its agents, and ranks the uses<br>• `darn: writer fable[high]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-use-cases`](design-testmap-use-cases.md) | 35m<br>0m | testmap, gate |
 
 </details>
 
@@ -74,7 +74,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-testmap-uses.md">P3 Put the per-test coverage maps to use</a> (0)</strong></summary>
+<summary><strong><a href="project-testmap-uses.md">P3 Put the per-test coverage maps to use</a> (3)</strong></summary>
 
 [`testmap-uses`](design-testmap-uses.md) · Age 0m · Owner `neve`
 
@@ -90,14 +90,22 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (0)
+### Notes (3)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+#### Features (3)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| F4 |  | **Reach note for a diff: the tests reaching each changed function, and changed functions nothing reaches**<br>• A reader of the coverage maps feeds the code review and a read verb for writers; uses 1 and 3 of the map study read through it | [`testmap-reach-note`](design-testmap-reach-note.md) | 5m<br>0m | testmap, gate, burler |
+| F5 |  | **Mutation check of the code a diff changes, survivors to the code review**<br>• Mutate only the blocks a diff adds or changes, run only the tests covering each, report surviving mutants; start with a hand trial over about twenty landed diffs | [`testmap-diff-mutation`](design-testmap-diff-mutation.md) | 5m<br>0m | testmap, gate, burler |
+| F6 |  | **Failure triage: does a failing test reach what the run changed**<br>• The gate failure report and the fixer brief say which changed functions a failing test reaches, or that it reaches none, so a not-my-fault failure is seen at once | [`testmap-failure-triage`](design-testmap-failure-triage.md) | 5m<br>0m | testmap, gate, darn |
 
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (14)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (11)</strong></summary>
 
 Owner `neve`
 
@@ -127,7 +135,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 23h<br>23h | board, ide, fabric |
 
-### Notes (12)
+### Notes (9)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -146,16 +154,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 6h<br>26m | landing |
 | E4 |  | **The Plan writer explorer forks cost more than the writer and show no gain**<br>• Drop the Plan writer exploration subagents; they cost about $6.50 per tapestry run | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | 5h<br>5h | loom, stencil |
 
-#### Features (7)
+#### Features (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>3w | burler |
 | F2 |  | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md) | 50m<br>47m | fabric |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 3d<br>10h | batten, loom, board |
-| F4 |  | **Reach note for a diff: the tests reaching each changed function, and changed functions nothing reaches**<br>• A reader of the coverage maps feeds the code review and a read verb for writers; uses 1 and 3 of the map study read through it | [`testmap-reach-note`](design-testmap-reach-note.md) | 5m<br>1m | testkit, gate, burler |
-| F5 |  | **Mutation check of the code a diff changes, survivors to the code review**<br>• Mutate only the blocks a diff adds or changes, run only the tests covering each, report surviving mutants; start with a hand trial over about twenty landed diffs | [`testmap-diff-mutation`](design-testmap-diff-mutation.md) | 5m<br>5m | testkit, gate, burler |
-| F6 |  | **Failure triage: does a failing test reach what the run changed**<br>• The gate failure report and the fixer brief say which changed functions a failing test reaches, or that it reaches none, so a not-my-fault failure is seen at once | [`testmap-failure-triage`](design-testmap-failure-triage.md) | 5m<br>5m | testkit, gate, darn |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>13d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
 </details>

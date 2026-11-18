@@ -1,6 +1,6 @@
 # Find real uses for the per-test coverage maps
 
-`testmap-use-cases` · Task · research, testkit, gate · done
+`testmap-use-cases` · Task · research, testmap, gate · done
 
 ## Why
 

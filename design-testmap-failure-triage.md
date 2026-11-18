@@ -1,6 +1,6 @@
 # Failure triage: does a failing test reach what the run changed
 
-`testmap-failure-triage` · Note · feature, testkit, gate, darn
+`testmap-failure-triage` · Note · feature, testmap, gate, darn
 
 ## What was seen
 

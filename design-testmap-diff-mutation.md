@@ -1,6 +1,6 @@
 # Mutation check of the code a diff changes, survivors to the code review
 
-`testmap-diff-mutation` · Note · feature, testkit, gate, burler
+`testmap-diff-mutation` · Note · feature, testmap, gate, burler
 
 ## What was seen
 

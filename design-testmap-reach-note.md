@@ -1,6 +1,6 @@
 # Reach note for a diff: the tests reaching each changed function, and changed functions nothing reaches
 
-`testmap-reach-note` · Note · feature, testkit, gate, burler
+`testmap-reach-note` · Note · feature, testmap, gate, burler
 
 ## What was seen
 
