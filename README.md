@@ -29,7 +29,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Remove lym verbs and features nobody uses**<br>• Follow-up to the unused-features study: the operator picks from its candidate list, then this task removes those verbs with their docs and prompt text | [`remove-unused-verbs`](design-remove-unused-verbs.md) | darn |  | 36m<br>36m | cli |
+| T8 | `draft` **Remove lym verbs and features nobody uses**<br>• Follow-up to the unused-features study: the operator picks from its candidate list, then this task removes those verbs with their docs and prompt text | [`remove-unused-verbs`](design-remove-unused-verbs.md) | darn |  | 37m<br>37m | cli |
 
 ### Notes (3)
 
@@ -106,7 +106,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 <details open>
 <summary><strong><a href="project-single-repo-hub.md">P4 Single-repository hubs: records on each code branch, the board on lym-bolt</a> (2)</strong></summary>
 
-[`single-repo-hub`](design-single-repo-hub.md) · Age 59m · Owner `neve`
+[`single-repo-hub`](design-single-repo-hub.md) · Age 1h · Owner `neve`
 
 ### Tasks (2)
 
@@ -118,7 +118,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **One-repository layout in fabric: clone, worktrees, records commits, merges, pushes and replay** | [`single-repo-fabric-mode`](design-single-repo-fabric-mode.md)<br>[Sketch](decision-single-repo-fabric-mode.md) | tapestry · solid | Plan-Burler-Review | neve | 59m<br>59m | fabric, cwd, cli, landing, docs, pattern |
+| T5 | **One-repository layout in fabric: clone, worktrees, records commits, merges, pushes and replay** | [`single-repo-fabric-mode`](design-single-repo-fabric-mode.md)<br>[Sketch](decision-single-repo-fabric-mode.md) | tapestry · solid | Plan-Burler-Fix | neve | 1h<br>1h | fabric, cwd, cli, landing, docs, pattern |
 
 #### Ready (0)
 
@@ -132,7 +132,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Records-free code identity and pull request views for one-repository hubs** | [`single-repo-code-identity`](design-single-repo-code-identity.md)<br>[Sketch](decision-single-repo-code-identity.md) | tapestry · solid | T5 | 59m<br>59m | fabric, cwd, gate, git, weaver, drift, webster, lint, loom, landing, pawl, shed, arbiter |
+| T6 | **Records-free code identity and pull request views for one-repository hubs** | [`single-repo-code-identity`](design-single-repo-code-identity.md)<br>[Sketch](decision-single-repo-code-identity.md) | tapestry · solid | T5 | 1h<br>1h | fabric, cwd, gate, git, weaver, drift, webster, lint, loom, landing, pawl, shed, arbiter |
 
 ### Notes (0)
 

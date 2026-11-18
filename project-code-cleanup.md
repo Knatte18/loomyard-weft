@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Remove lym verbs and features nobody uses**<br>• Follow-up to the unused-features study: the operator picks from its candidate list, then this task removes those verbs with their docs and prompt text | [`remove-unused-verbs`](design-remove-unused-verbs.md) | darn |  | 36m<br>36m | cli |
+| T8 | `draft` **Remove lym verbs and features nobody uses**<br>• Follow-up to the unused-features study: the operator picks from its candidate list, then this task removes those verbs with their docs and prompt text | [`remove-unused-verbs`](design-remove-unused-verbs.md) | darn |  | 37m<br>37m | cli |
 
 ## Notes (3)
 
