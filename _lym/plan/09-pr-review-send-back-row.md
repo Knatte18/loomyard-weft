@@ -1,8 +1,8 @@
 # Card 9 — pr-review-send-back-row
 
 **Create:**
-- `plan:internal/landingshed#PRReview.settleSendBack` -> `func (p *PRReview) settleSendBack(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, bool, error)`
-- `plan:internal/landingshed#PRReview.sendBack` -> `func (p *PRReview) sendBack(ctx context.Context, rec pullrequest.Record) (shedengine.Outcome, shedengine.OutputPointer, bool, error)`
+- `internal/landingshed#PRReview.settleSendBack`
+- `internal/landingshed#PRReview.sendBack`
 
 **Edit:**
 - `internal/landingshed#PRReview`

@@ -1,6 +1,6 @@
 {
   "runGuid": "bd9a5bbf03759519237310dc5b9b90db",
-  "planFingerprint": "83476d27cb3912466296b8390328fb214c306c4d1348e491ea1824f01d943f89",
+  "planFingerprint": "54147e38ea4d4909a0fe0216a130f89b7430c54f005bade39d9f2ce30e12a99c",
   "planFileHashes": {
     "00-overview.md": "504e4a7810adb14efd7dfa3564cbec1580312bcc67dcbc51072f477eeb3bb049",
     "01-fabric-range-reads.md": "46004675d2cb4cf2f415406251d854c4405183424445df12d14f7cd0fc28bad2",
@@ -10,8 +10,8 @@
     "05-pull-request-send-back-record.md": "3ae587100fdc5a751e489e15eeb7d3daef432896e04bd29cb07ce3da1c02097b",
     "06-stencil-plain-includes.md": "c6e05ed5fdea76613b3bb9622f6f8ef34907eb15a291b3bd4f571cf1768d7b1e",
     "07-bouncer-review-inputs.md": "7a6533c94e52a324ddff9b6f88ce84d7cba428e575bb3c3aeaa2ea38e37d398e",
-    "08-loom-pr-findings-verb.md": "7217c796e16ba28c8012f045d8b55b82a29c0191f21d70ef049e71e9f6a41611",
-    "09-pr-review-send-back-row.md": "cb5c5628c3c81a96885eecf241ba536e2ec5ae0e35d6418a5a4b6994ae3c4a0a",
+    "08-loom-pr-findings-verb.md": "baff7684953da4da11ea3906271ba2b6ebe44129a6c1b41d67d6b66e7dc42a81",
+    "09-pr-review-send-back-row.md": "11b4be905a09935773d905b147b8cf928cd9cc9c95a2ca7531747c3b3383a68e",
     "10-recipes-pr-review-reroute.md": "68b5ee1a1262d4db814f700af6fd6ea9700f66098cc2fbe548f22fbedc738f5a",
     "11-loosened-check-fragment.md": "84d04025255ffd7a5a744cfeb58468d47722d76663bb8afbdb19b2be249a33f9",
     "12-result-check-wording.md": "175beb7e1da65573729e2828e1d947949fa1adb9d32fa33ad0de1c79a8cb52d1"
@@ -494,25 +494,49 @@
         "09-pr-review-send-back-row"
       ],
       "cardHashes": {
-        "08-loom-pr-findings-verb": "7217c796e16ba28c8012f045d8b55b82a29c0191f21d70ef049e71e9f6a41611",
-        "09-pr-review-send-back-row": "cb5c5628c3c81a96885eecf241ba536e2ec5ae0e35d6418a5a4b6994ae3c4a0a"
+        "08-loom-pr-findings-verb": "baff7684953da4da11ea3906271ba2b6ebe44129a6c1b41d67d6b66e7dc42a81",
+        "09-pr-review-send-back-row": "11b4be905a09935773d905b147b8cf928cd9cc9c95a2ca7531747c3b3383a68e"
       },
       "startSha": "095dfcfa54a06bb8150a58877f8a93d16693ca18",
       "kind": "fork",
       "spawnedAt": "2026-11-18T12:32:43Z",
       "sessionId": "87c1e53d-6137-4f9b-96cf-6c7ccc843976",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-loom-pr-findings-verb",
+        "status": "done",
+        "head_sha": "a46c6fabfcd776097ea943347d9df96d0b4c7fee",
+        "deviations": [
+          "internal/landingshed/prreview.go",
+          "internal/landingshed/prreview_test.go",
+          "internal/landingshed/prreview_wait_test.go",
+          "internal/loomcli/arm.go",
+          "internal/loomcli/landingdeps.go",
+          "internal/loomcli/prfindings.go",
+          "internal/loomcli/prfindings_test.go"
+        ]
+      },
+      "cardShas": [
+        "a46c6fabfcd776097ea943347d9df96d0b4c7fee"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-result-checks/87c1e53d-6137-4f9b-96cf-6c7ccc843976/subagents/agent-a889dbaf4abd788f6.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-result-checks/87c1e53d-6137-4f9b-96cf-6c7ccc843976/subagents/agent-a889dbaf4abd788f6.jsonl"
+      ]
     }
   },
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "cc10af0f5a9b1757a33b3d5eaaed7b37",
   "masterSessionId": "87c1e53d-6137-4f9b-96cf-6c7ccc843976",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-result-checks/87c1e53d-6137-4f9b-96cf-6c7ccc843976/subagents/agent-a82ab95ad91d27eb9.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-result-checks/87c1e53d-6137-4f9b-96cf-6c7ccc843976/subagents/agent-a9e1d4addb4f1a50e.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-result-checks/87c1e53d-6137-4f9b-96cf-6c7ccc843976/subagents/agent-aab57e298b0d7ffaf.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-result-checks/87c1e53d-6137-4f9b-96cf-6c7ccc843976/subagents/agent-aab57e298b0d7ffaf.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-result-checks/87c1e53d-6137-4f9b-96cf-6c7ccc843976/subagents/agent-a889dbaf4abd788f6.jsonl"
   ]
 }

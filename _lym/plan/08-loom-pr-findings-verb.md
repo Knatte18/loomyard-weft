@@ -1,14 +1,14 @@
 # Card 8 — loom-pr-findings-verb
 
 **Create:**
-- `plan:internal/loomcli#prFindingsDeps` -> `type prFindingsDeps struct`
-- `plan:internal/loomcli#prFindingsVerb` -> `func prFindingsVerb(out io.Writer, file string, deps prFindingsDeps) int`
-- `plan:internal/loomcli#sendBackEdge` -> `func sendBackEdge(producers []shedengine.ProducerDef, row string) (bool, string, error)`
-- `plan:internal/loomcli#writeSendBackNote` -> `func writeSendBackNote(frictionDir string, n int, findingsPath string, findings []burlerengine.Finding) error`
-- `plan:internal/loomcli#loomCLI.prFindingsCmd` -> `func (c *loomCLI) prFindingsCmd() *cobra.Command`
-- `plan:internal/loomcli#prReviewSmallMax` -> `func prReviewSmallMax(l *lymcwd.Location) func() (int, error)`
-- `plan:internal/loomcli#TestPRFindingsVerb` -> `func TestPRFindingsVerb(t *testing.T)`
-- `plan:internal/loomcli#TestPRReviewSmallMax_ReadsThePairsLayers` -> `func TestPRReviewSmallMax_ReadsThePairsLayers(t *testing.T)`
+- `internal/loomcli#prFindingsDeps`
+- `internal/loomcli#prFindingsVerb`
+- `internal/loomcli#sendBackEdge`
+- `internal/loomcli#writeSendBackNote`
+- `internal/loomcli#loomCLI.prFindingsCmd`
+- `internal/loomcli#prReviewSmallMax`
+- `internal/loomcli#TestPRFindingsVerb`
+- `internal/loomcli#TestPRReviewSmallMax_ReadsThePairsLayers`
 
 **Edit:**
 - `internal/loomcli#Command`
