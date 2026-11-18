@@ -472,6 +472,26 @@
       "body": "Imported from [issue #143](https://github.com/Knatte18/loomyard/issues/143).\n\nWhat happened: a `lym loom run` halted as blocked at Plan-Write with anomaly `escalation-to-human`, state `stuck`.\nThe reason reported by lym:\n\n```\ngate failed its first check and the session was never re-prompted, since its re-prompt could not be sent: shuttle: strand \"\u003cid\u003e\" is not tracked by reed — either its run completed and was cleaned up, or reed's strand table was reset under it (a reed remove/down, or a lost or rebuilt reed.json); check \"lym reed status\"\n```\n\nWhy it is abnormal: the gate failed, and the re-prompt to the session could not be delivered because reed no longer tracked the strand.\nNothing in the task asked for a reed reset, so either the strand was cleaned up while the producer was still running, or reed's strand table was lost or rebuilt during the run.\nThe run stalled for about 23 minutes before it halted, and the findings file under `.lym/shed/\u003cslug\u003e/gate-findings/Plan-Write.md` was left for a human.\nThis run followed a separate failed run in the same worktree (see the stencil include issue), so a stale or reset reed table after the earlier halt is a plausible cause.\n\nWhat to do: find why the strand was untracked at re-prompt time (cleanup racing the gate, or a reed.json reset after the earlier halt).\nWhen the strand is gone, have the gate path relaunch or resume the producer instead of halting, or fail fast with this message rather than after a long wait.\n\nProvenance: task slug `launch-manifest-parity`; notes `loom-halt-2.md`.\n",
       "created": "2026-11-18T08:07:48Z",
       "revised": "2026-11-18T08:07:48Z"
+    },
+    {
+      "id": 1448,
+      "handle": "B4",
+      "slug": "drift-line-range-never-matches",
+      "title": "drift: line-range expectation entries never match in diff mode lines",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "drift"
+      ],
+      "issues": [
+        141
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #141](https://github.com/Knatte18/loomyard/issues/141).\n\n## Seen\n\nIn a darn run with drift scope full and `diff: lines` (key_patterns set), Drift-Expect wrote `expected.yaml` entries with `lines: - range: \"1-\"` or `\"7-433\"` per case.\nThe drift gate then failed on every changed value in those cases: the checker reports each changed value at line 0, so no line range ever covers it, even `\"1-\"`.\n\n## Workaround\n\nThe parent amends the expectation with `lym drift amend \u003cslug\u003e --entries \u003cfile\u003e` using key-based entries (`keys: - key: ..., n: ..., why: ...`), which match.\n\n## Expected\n\nA changed value carries its real line number so line-range entries match, or Drift-Expect is told to write key-based entries when the diff reports by key.\n",
+      "created": "2026-11-18T08:07:50Z",
+      "revised": "2026-11-18T08:07:50Z"
     }
   ],
   "prime_owner": "neve",
