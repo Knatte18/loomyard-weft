@@ -1,6 +1,6 @@
 # P4 Merge the remaining adopt-build members into one design and split it again on what landed
 
-Rendered 2026-11-18 06:58 UTC; every age below is as of then.
+Rendered 2026-11-18 07:07 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`adopt-build-resplit`](design-adopt-build-resplit.md) · Age 9d · Owner `neve`
@@ -121,15 +121,17 @@ VS Code reopens its own windows on Kubuntu.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (0)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | **Merge main into the beam adopt-build-resplit**<br>• `pull_request: merge-in`<br>• `loom: code_hard_max_bounces 4`<br>• `loom: code_max_bounces 1` | [`adopt-build-resplit-merge-in`](design-adopt-build-resplit-merge-in.md) | darn |  | 0m<br>0m | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 
 ## Notes (0)
 
