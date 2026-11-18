@@ -1,0 +1,14 @@
+{
+  "session_id": "caf5d173-db3b-4822-bdad-5e3459e4c266",
+  "row": "Friction-Reflect",
+  "role": "arbiter",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 28,
+  "cache_write_tokens": 41477,
+  "cache_read_tokens": 436637,
+  "output_tokens": 8260,
+  "cost_usd": 0.46002440000000006,
+  "started": "2026-11-18T10:09:59Z",
+  "ended": "2026-11-18T10:11:24Z"
+}
