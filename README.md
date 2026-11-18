@@ -97,11 +97,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (11)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (12)</strong></summary>
 
 Owner `neve`
 
-### Tasks (6)
+### Tasks (7)
 
 Concrete and claimable; only a task can run.
 
@@ -123,13 +123,14 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 13h<br>12h | board, ide, fabric |
+| T8 | `draft` **Verdict on Codex as assistant Code-Review reviewer, from 14 rounds**<br>• Read the 14 archived Codex assist reviews against the Claude reviews and give a verdict proposal | [`codex-assist-verdict`](design-codex-assist-verdict.md) | darn · docs |  | 0m<br>0m | codex, burler |
 
 ### Notes (5)
 
