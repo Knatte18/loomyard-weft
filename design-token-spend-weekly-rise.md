@@ -1,6 +1,6 @@
 # Claude usage outside runs: orchs, beam orchs, dobby agents, other hubs
 
-`token-spend-weekly-rise` · Task · research, claude, report · running · Drift-Await
+`token-spend-weekly-rise` · Task · research, claude, report · running · Drift-Expect
 
 ## Why
 

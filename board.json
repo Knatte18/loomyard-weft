@@ -398,7 +398,7 @@
       "isolated": false,
       "brief": "Weekly Claude usage W45 to W47 of every session tokencount does not count, set beside the run spend",
       "body": "## Why\n\nThe operator's weekly Claude quota (Ultra) runs out faster than expected.\nThe run spend is known: `tools/tokencount -since 2026-11-03` and `lym report cost --since 2026-11-01` (2026-11-18) show\ntapestry at about $62 per run, Plan about 45 % of that and Webster about 33 %, and the rise coming from more tapestry runs.\nWhat is not known is the usage outside runs.\n\n## Scope\n\nCount every Claude Code session on this machine from 2026-11-03 to 2026-11-18 that `tools/tokencount` does not count:\nthe hub orch sessions in full (beyond tokencount's per-run orch charge), beam orchs, dobby agents (tidy, retro, board agents),\nmotif and raddle runs, sessions in the other hubs (lyt, cs, odd) and sessions outside LoomYard.\nRead their transcripts under `~/.claude/projects`, priced as `tools/tokencount` prices.\nWhere tokencount could count a kind with a small change, say so in the report; change no code.\nCodex usage is out of scope.\n\n## Report\n\nA report under `docs/research/tokens/` with, per ISO week W45 to W47:\nthe usage of each session kind above, by model, set beside the run spend from `tools/tokencount`,\nthe share of the weekly total each takes, and any kind that grew markedly, with why.\n",
-      "status": "running · Drift-Await",
+      "status": "running · Drift-Expect",
       "created": "2026-11-18T12:02:36Z",
       "revised": "2026-11-18T12:46:59Z",
       "run_settings": {
