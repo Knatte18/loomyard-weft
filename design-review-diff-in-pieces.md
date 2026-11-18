@@ -1,6 +1,6 @@
 # Stage the reviewer diff in pieces that fit one Read
 
-`review-diff-in-pieces` · Task · enhancement, burler, stencil · running · Code-Burler-Review
+`review-diff-in-pieces` · Task · enhancement, burler, stencil · running · Code-Burler-Fix
 
 ## Seen (retro, 2026-11-17)
 
