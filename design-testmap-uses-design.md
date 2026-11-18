@@ -1,6 +1,6 @@
 # Coverage map uses: reach note, failure triage and diff mutation check
 
-`testmap-uses-design` · Task · feature, testmap, gate, burler, darn · halted · Discussion-Bouncer
+`testmap-uses-design` · Task · feature, testmap, gate, burler, darn · running · Discussion-Bouncer
 
 Design the three uses of the per-test coverage maps the map study ranked worth building (`docs/research/speed/testmap-use-cases-2026-11-18/report.md`, `884424fb`), as one design over one reader of the maps.
 Build order: the reach note first, since the other two read through its reader; then failure triage; then the diff mutation check, which starts with its hand trial.
