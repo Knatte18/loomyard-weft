@@ -1,6 +1,6 @@
 # P4 Single-repository hubs: records on each code branch, the board on lym-bolt
 
-Rendered 2026-11-18 20:05 UTC; every age below is as of then.
+Rendered 2026-11-18 20:06 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`single-repo-hub`](design-single-repo-hub.md) · Age 13m · Owner `neve`
