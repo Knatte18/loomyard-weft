@@ -1,0 +1,14 @@
+{
+  "session_id": "5284c743-5b39-42c8-bc42-5949cdbaed1c",
+  "row": "Plan-Burler-Fix",
+  "role": "plan-burler-fix",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 82,
+  "cache_write_tokens": 168213,
+  "cache_read_tokens": 3771554,
+  "output_tokens": 60399,
+  "cost_usd": 2.8036837999999995,
+  "started": "2026-11-18T11:59:10Z",
+  "ended": "2026-11-18T12:07:43Z"
+}
