@@ -37,14 +37,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (2)
+## Notes (3)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Enhancements (2)
+### Enhancements (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
+| E1 |  | **Trim the longest package doc.go files**<br>• The comment rewrite did not shrink doc.go files: 27,301 lines in total; trim the largest, which restate the function docs | [`doc-go-trim-pass`](design-doc-go-trim-pass.md) | 0m<br>0m | docs |
 | E5 |  | **Design: simplify interfaces that make every caller handle too much**<br>• For example one result type instead of a four-value return handled at 60 call sites; find such spots per module and fix them one module at a time | [`design-simplify-callers`](design-design-simplify-callers.md) | 2h<br>2h | fabric, landing |
 | E6 |  | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | 2h<br>2h | fabric, loom, board |
 

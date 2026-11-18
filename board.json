@@ -508,6 +508,25 @@
       "body": "## What was seen (2026-11-18)\n\n`comment-trim-second-pass` (darn, profile `docs`) measured comment shares and wrote the result only into its change description (`_lym/landing/summary.md`).\nIt committed nothing to the repository, so Land landed an empty diff and dobby reported \"landed as 64e58795\", which was main's tip.\nThe finding then lived only in the archived records tag (`archive/comment-trim-second-pass/...`), where no one looks.\n\n## Idea\n\n- The darn writer stencil for profile `docs` requires the report as a committed file under `docs/research/`.\n- Land refuses, or at least flags in dobby's line, a run whose code diff against its parent is empty.\n",
       "created": "2026-11-18T20:11:01Z",
       "revised": "2026-11-18T20:11:01Z"
+    },
+    {
+      "id": 1500,
+      "handle": "E1",
+      "slug": "doc-go-trim-pass",
+      "title": "Trim the longest package doc.go files",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "docs"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The comment rewrite did not shrink doc.go files: 27,301 lines in total; trim the largest, which restate the function docs",
+      "body": "## What was measured (2026-11-18, `comment-trim-second-pass`)\n\nProduction code has 103,762 comment lines against 268,614 code lines, a 27.9 % share.\nThe package `doc.go` files hold 27,301 of those comment lines; the comment rewrite last week did not shrink them.\nLargest: `fabricengine` 2,474, `websterengine` 1,284, `gatecli` 1,273, `reedengine` 1,174, `shuttleengine` 1,075.\nBy ratio to code: `orchengine` (27 %), `dobbyengine` (16 %), `landingshed` (13 %).\nThe full measurement is in the change description of that run, records commit `e1d2be8076` in `loomyard-weft`.\n\n## Idea\n\nA narrow pass on `doc.go` only: cut what restates the function docs, keep a package overview.\nStart with the largest by absolute size, then by ratio; the operator picks the packages.\n`fabricengine` and `landingshed` wait for the runs that change them now.\n",
+      "created": "2026-11-18T20:11:01Z",
+      "revised": "2026-11-18T20:11:01Z",
+      "project": "code-cleanup"
     }
   ],
   "prime_owner": "neve",
