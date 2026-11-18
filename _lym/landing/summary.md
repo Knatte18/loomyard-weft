@@ -1,27 +1,27 @@
-# Retro prompt fixes: pin tool facts in decisions, drop the cat clause
+# Pin tool facts in decisions; drop the edit directive's cat clause
 
-Two prompt-text changes from the retro of 2026-11-17 (`docs/research/retro/retro-20261116-115411/report.md`, proposals 2 and 4).
+Two prompt-text changes from the 2026-11-17 retro (`docs/research/retro/retro-20261116-115411/report.md`).
 
-## Discussion-Review flags an unpinned tool fact
+## Discussion-review rubric: unpinned tool facts
 
-`contracts/stencils/loom/loom-rubric-discussion-review.md` gains an `Also flag` bullet.
-A Decision or Constraint that rests on how git or another tool behaves must state the observed result and where it is pinned:
-a test, a recorded command and its output, or the tool's documentation.
-A record that states the behavior without the result or the pin is a finding.
-In `decision-record-replace`, reviewers and a fixer in three separate rounds each rebuilt a scratch git repository to learn what `git commit --allow-empty -- <path>` commits when another path is staged,
-because the record stated the behavior without the result.
+`contracts/stencils/loom/loom-rubric-discussion-review.md` gains a finding: a Decision or Constraint that rests on how git or another tool behaves must state the observed result and where it is pinned (a test, a recorded command and its output, or the tool's documentation).
+Without that, each later round re-ran the same experiment; the retro saw three sessions each build a scratch repository to learn what `git commit --allow-empty -- <path>` commits when another path is staged.
 
-## The edit directive no longer forbids reading by shell
+## Edit directive: clause on cat, head and `sed -n` removed
 
-The Claude engine's edit directive (`contracts/stencils/engine/claude/edit-directive.md`) said it overrode any harness text that permits reading with `cat`, `head` or `sed -n`.
-Every sampled darn writer, code reviewer and plan writer read its first files with `cat`, batched with other lookups in one Bash call, which is the batching the same prompt asks for.
-No guard refused it and it caused no fault.
-The operator chose to delete the clause and add no guard row.
-The directive still overrides harness text that permits changing files by shell, matching the Codex copy's wording,
-and it still tells a role to read with Read and search with grep.
-`internal/editdirective/doc.go` drops "reading" from its account of the override to match.
+The retro found that darn writers, code reviewers and plan writers read their first files with `cat`, batched with other lookups in one Bash call.
+None was refused and none caused a fault, and the calls are the batching the same prompt asks for.
+The operator chose to delete the clause rather than add a shell guard row that refuses `cat <path>`.
+
+The override sentence in `contracts/stencils/engine/claude/edit-directive.md` now covers only changing files with `sed`, heredocs or short scripts.
+The `internal/editdirective/doc.go` package comment is updated to match.
+The shell guard is unchanged: `sed -i`, `perl -i` and redirects into source files stay refused.
 
 ## Design decisions
 
-- The rubric bullet sits beside "A deferred research question", which it narrows: that bullet asks for evidence behind any fact a design rests on, this one names the tool-behavior case and what counts as a pin.
-- No test pins either stencil's wording, so none changes.
+- No guard row for `cat`: reads by `cat` are allowed in practice, and a refusal would turn one batched call into several parallel Reads at the same turn count.
+- The rubric names the acceptable pins as a closed list of three, so a reviewer can tell a pinned fact from an asserted one.
+
+## To check
+
+- Whether the `internal/editdirective` tests that compare against the directive text still pass; this was not run as part of the description.
