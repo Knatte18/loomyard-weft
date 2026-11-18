@@ -37,8 +37,8 @@
 
 **Uses:**
 - `internal/shuttleengine/claudeengine#Claude.resolveLaunchAccount`
-- `plan:internal/shuttleengine/claudeengine#Claude.knownConfigDirs`
-- `plan:internal/shuttleengine/claudeengine#newestTranscript`
+- `internal/shuttleengine/claudeengine#Claude.knownConfigDirs`
+- `internal/shuttleengine/claudeengine#newestTranscript`
 - `internal/shuttleengine/claudeengine#projectDirUnder`
 - `internal/shuttleengine#TestRunnerStart_Resume_ChecksSessionAgainstPaneCwdBeforePrepare`
 

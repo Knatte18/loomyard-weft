@@ -1,11 +1,11 @@
 # Card 7 — Readers of Claude's config directory read every known directory
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#Claude.knownConfigDirs` -> `func (c *Claude) knownConfigDirs() []string`
-- `plan:internal/shuttleengine/claudeengine#Claude.sessionProjectDir` -> `func (c *Claude) sessionProjectDir(sessionID, workdir string) (string, error)`
-- `plan:internal/shuttleengine/claudeengine#newestTranscript` -> `func newestTranscript(configDirs []string, workdir, sessionID string) (string, bool)`
-- `plan:internal/shuttleengine/claudeengine#TestClaude_LiveReadersReadTheLaunchedDirectory` -> `func TestClaude_LiveReadersReadTheLaunchedDirectory(t *testing.T)`
-- `plan:tools/tokencount#TestLocateSessions_ListedAccount` -> `func TestLocateSessions_ListedAccount(t *testing.T)`
+- `internal/shuttleengine/claudeengine#Claude.knownConfigDirs`
+- `internal/shuttleengine/claudeengine#Claude.sessionProjectDir`
+- `internal/shuttleengine/claudeengine#newestTranscript`
+- `internal/shuttleengine/claudeengine#TestClaude_LiveReadersReadTheLaunchedDirectory`
+- `tools/tokencount#TestLocateSessions_ListedAccount`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#Claude.LocateSessions`
