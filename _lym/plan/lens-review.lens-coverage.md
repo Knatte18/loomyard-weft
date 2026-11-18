@@ -1,0 +1,24 @@
+```yaml
+lens: coverage
+outcome: reported
+```
+
+Coverage lens review: I mapped each decision, acceptance criterion and new branch to its card and planned test row, and report only the gaps.
+
+- **MEDIUM — D5, criterion "a task's `run_settings` overrides it".** Card 4 defers the local-layer check to card 8. Card 8's row ("`smallMax` read from a local layer holding `pr_review_small_max: 1`") cannot reach the load, because `prFindingsVerb(out, file, deps)` takes `smallMax` as a plain value in `prFindingsDeps`. The config load happens in `loomCLI.prFindingsCmd`, which `TestPRFindingsVerb` does not run. As written, no row would fail if the command read the hub layer only. The fix is a row that loads through `loomengine.LoadConfig(fabricengine.ConfigDirs(l), "loom")` with a local layer, the way `TestPullRequestDeps_ParentReviewWantedReadsThePairsLayers` (`internal/loomcli/landingdeps_test.go:466`) does. Another option is to move the read into a seam the verb test drives.
+- **MEDIUM — D3, criterion "a test loosened by a parent commit a Parent-Align merge brought in is not listed to the judge".** Card 3 argues this holds because `driftDeps` fills `ReviewBase` with `taskMergeBase`, and it plans no row. Every `TestDriftVerify` row sets `Deps.ReviewBase` and `Deps.ChangedFiles` by hand, so nothing pins that the wiring uses the merged-tip merge base rather than the branch point or `BranchPoint`. Evidence: card 3's tests list. `internal/loomcli#taskMergeBase` sits under Uses with no row, and `TestDriftDeps_*` is not extended.
+- **MEDIUM — D3 branch "a stored `uncaused` ruling, reused, halts".** Card 3 says any listed file's uncaused check "reused or new" halts. The rows cover a new uncaused ruling, a later `caused` ruling, and reuse of a `caused` ruling. No row covers a resume with no new commit, where the stored `uncaused` ruling must halt again without spawning the judge.
+- **MEDIUM — D3 branch "command mode, compare exits 0, stored or new `uncaused` file ruling halts".** Card 3's command-mode row spawns the judge for the file alone but asserts no outcome. No row checks that `passCommand` halts on an uncaused file ruling when the compare passed. That `Done` early return in `passCommand` is exactly what this change alters (`verify.go:818-823`).
+- **MEDIUM — D4 criterion "a send-back mark the row's wake meets on a tree dirty after the stop halts the row Stuck … and the resumed row on a clean tree reroutes".** Card 9's dirty-tree row is in `TestPRReview_Call` (the `settleSendBack` path). The `TestPRReview_Wait` row covers a wake with the mark on a clean tree only, so the wake's dirty-after-stop halt goes unreached.
+- **MEDIUM — card 8 refusals and branches without rows.**
+  - Branch 3, "a run with no pull-request record is refused", is a new refusal and `PATTERN-refusal-way-forward` requires a reaching test.
+  - Branch 4, "a record already holding a send-back mark answers the send-back again, writing nothing", has no row either.
+  - `TestPRFindingsVerb`'s row list (card 8) reaches neither.
+- **MEDIUM — D2 criterion "a commit Go writes for a role carries the `Loosened-Check:` trailer lines that role's handoff gives".** The plan carries this criterion with no card and no test. It rests on the Shared Decision "no Go-written role commit today", a claim of the writer's own. Under "Fidelity to the answer key", a criterion argued to hold without a test is a finding. The search behind the claim should be recorded where a reviewer can check it, or the parent asked to record the criterion as vacuous.
+- **LOW — D4, re-step "keeps the count".** The criterion "a re-step of the row keeps the count" is reached only with a mark present (card 9's row). No row covers the no-mark re-step, where `settleSendBack` must leave a non-zero `FixHereCount` alone.
+- **LOW — card 7, old generation record.** The branch "a record written before, holding only `review_input`, reads as that one path" has no row in `TestBouncer_Amendment` or elsewhere. Neither does the `reenterUnchanged` branch "a full input re-opens whatever `FullGeneration` says" with `FullGeneration` true.
+- **LOW — card 8, D6 note.** "An empty friction directory, Tier 2 off, writes none" has no row. The note's content (count by severity, each finding's title, the stored path) is not stated as asserted.
+- **LOW — card 1, unresolvable ref errors.** "A `base` that does not resolve is an error naming it" (`CommittedFileDiffs`) and the same for `CommitMessages` are stated, but no row reaches them.
+- **LOW — D4 criterion "the reroute cap halts PR-Review's send-back once exceeded, as for any reroute edge".** Card 9 states a bound but cites no test. The generic cap is covered by `internal/shedengine#TestRun_RerouteCapHaltsOnFourthRerouteAndResumeGrantsThreeMore`, which the card should name under Uses so the criterion is visibly carried.
+
+I made no further tool calls.
