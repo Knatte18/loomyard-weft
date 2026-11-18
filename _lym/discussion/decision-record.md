@@ -92,6 +92,12 @@ Decision: Design against the pair base f98a1ba0 as it stands; do not align with 
 
 Rationale: This run is a bench arm; both arms must work from the same base so they compare like for like.
 
+### Added after Discussion (arbiter, 2026-11-18): This bench arm designs against its own base and ignores parent commit 7c23591
+
+Decision: The record designs against this worktree's base f98a1ba0, where reed refuses a second overview strand, and neither aligns with nor cites parent commit 7c23591 ('Show a beam's pawl checklist in a second overview window'). D1, D2 and D3 stand as written. Remove the first bullet of the record's Open risks section, the one that begins 'Parent commit `7c23591`', whole; keep the second bullet on the hand `lym loom start` race. Mark Q6 in the support log's Question ledger as settled by this decision.
+
+Rationale: The board entry marks the task a bench arm of plan-writer-explorer-forks that is never released, so it lands on no branch where 7c23591 is present. The bench fixes each arm's base at f98a1ba0, the newest main commit before the reference run, so an arm's design is compared on that base; aligning with 7c23591 would design against code the worktree does not hold and copy the result the arm is measured against. The entry's Cause section describes this base's code: ensureRunsStrand replaces the status strand because reed refuses a second overview strand.
+
 ## Constraints
 
 - `ensureRunsStrand` never fails `lym beam start`: every failure is a returned warning, as in `internal/orchcli/runs.go` today.
