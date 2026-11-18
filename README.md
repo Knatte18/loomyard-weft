@@ -7,27 +7,6 @@ Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
 <details open>
-<summary><strong><a href="project-codexengine.md">P1 codexengine</a> (0)</strong></summary>
-
-[`codexengine`](design-codexengine.md) · Age 1d · Owner `neve`
-
-### Tasks (0)
-
-Concrete and claimable; only a task can run.
-
-#### Ready (0)
-
-Waits on nothing open; can start now.
-
-_None._
-
-### Notes (0)
-
-Not tasks: ideas and observations, merged into a task when one is promoted.
-
-</details>
-
-<details open>
 <summary><strong><a href="project-borrowed-orchestrator-ideas.md">P2 Ideas borrowed from comparable agent orchestrators</a> (1)</strong></summary>
 
 [`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 1d · Owner `neve`
@@ -139,7 +118,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 1h<br>1h | landing |
-| E4 |  | **The Plan writer explorer forks cost more than the writer and show no gain**<br>• Drop the Plan writer exploration subagents; they cost about $6.50 per tapestry run | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | 38m<br>26m | loom, stencil |
+| E4 |  | **The Plan writer explorer forks cost more than the writer and show no gain**<br>• Drop the Plan writer exploration subagents; they cost about $6.50 per tapestry run | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | 38m<br>27m | loom, stencil |
 
 #### Features (3)
 
