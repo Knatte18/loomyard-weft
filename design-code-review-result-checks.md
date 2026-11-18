@@ -1,6 +1,6 @@
 # Code-Review lets result-level issues through to PR-Review
 
-`code-review-result-checks` · Task · sketch, burler, stencil, drift · running · Raddle-File
+`code-review-result-checks` · Task · sketch, burler, stencil, drift · done
 
 Decision record: [Sketch](decision-code-review-result-checks.md)
 
