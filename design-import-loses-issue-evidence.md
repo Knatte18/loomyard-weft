@@ -1,6 +1,6 @@
 # Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty
 
-`import-loses-issue-evidence` · Task · enhancement, board, selfreport · starting · Open-Window
+`import-loses-issue-evidence` · Task · enhancement, board, selfreport · starting · Seed-IDE
 
 Imported from [issue #148](https://github.com/Knatte18/loomyard/issues/148).
 
