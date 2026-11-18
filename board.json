@@ -277,7 +277,7 @@
       "isolated": false,
       "brief": "List features, flags, config keys and verbs with no recent use; the operator decides which go",
       "body": "## What was seen\n\nThe `landingshed` reading found about 340 lines of features a product owner could remove\n(the flaky rerun, the adopter-first repair note, the beam landing record among them); nobody has checked whether they are used.\nCode that no path reaches was removed by `remove-unreachable-code`, which has landed; this note covers features that are reachable but unused.\n\n## Idea\n\nA list, not a deletion: features, flags, config keys and verbs with no use in run records, transcripts or hub configs over the last weeks.\nThe operator decides which go; only those are removed.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-11-18T17:23:25Z",
       "revised": "2026-11-18T20:04:32Z",
       "run_settings": {
