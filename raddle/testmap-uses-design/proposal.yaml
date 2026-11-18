@@ -1,0 +1,90 @@
+{
+  "sketch": "testmap-uses-design",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "testmap-uses", "revised": "2026-11-18T18:07:14Z"},
+    {"slug": "borrowed-orchestrator-ideas", "revised": "2026-11-17T10:49:21Z"},
+    {"slug": "remove-unreachable-code", "revised": "2026-11-18T18:49:00Z"}
+  ],
+  "parts": [
+    {
+      "slug": "testmap-reach-triage-mutate",
+      "title": "Coverage map uses: reader, reach note, failure triage and lym gate mutate",
+      "type": "feature",
+      "labels": ["testmap", "gate", "burler", "darn", "webster", "loom", "shed", "stencil", "pattern"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12"],
+      "packages": [
+        {"path": "internal/testreach", "size": 1100},
+        {"path": "internal/gatecli", "size": 2000},
+        {"path": "internal/gateslot", "size": 150},
+        {"path": "internal/testcover", "size": 700},
+        {"path": "internal/shedadapters", "size": 80},
+        {"path": "internal/loomcli", "size": 120},
+        {"path": "contracts/stencils/loom", "size": 20},
+        {"path": "internal/loomshed", "size": 250},
+        {"path": "internal/websterengine", "size": 300},
+        {"path": "internal/weaverengine", "size": 80},
+        {"path": "internal/runplan", "size": 60},
+        {"path": "internal/gatefixer", "size": 150},
+        {"path": "internal/shedrecipe", "size": 80},
+        {"path": "pattern", "size": 30}
+      ],
+      "contract": {
+        "takes": "the per-test maps and FuncKey of internal/testcover, the merge base and base file contents read through internal/fabricengine as the redundancy step reads them, and the existing mutant overlay, binary builder and runner",
+        "delivers": "D1 to D9, D11 and D12 in the record's build order: the reader and the reach note first, then failure triage, then the changed-line planner and lym gate mutate; D10 stays designed only and is built in a later darn, as the D11 board note asks",
+        "exports": "the package internal/testreach (new), the reach report step and reach.json, the reach_report rubric marker, the reach turn of the loomshed verify gate and the webster batch gate, the verbs lym gate reach and lym gate mutate, the changed-line planner of internal/testcover, and the gate.yaml keys reach_budget_min, mutation_max_mutants and mutation_budget_min"
+      },
+      "depends_on": [],
+      "open_risks": [
+        "A large package's refresh in D3 can take minutes, since each tier 0 and tier 1 test runs alone; `reach_budget_min` bounds it.",
+        "A writer that runs `lym gate test --gate batch` by hand on uncommitted edits gets a note from the maps there are, without its new functions;\nthe note says so, names the dirty package, linked or its own, and tells it to commit and run again."
+      ],
+      "criteria": [
+        "D1: for a function reached by a test of its own package and by a test of another package, the reader returns both, the own package's first.",
+        "D1: a worktree map whose file hashes match the worktree overrides the hub map for its package, and otherwise the later-built map is read.",
+        "D1: an absent index, or one whose stamps differ, including by a map file added since it was written, gives the same answer as a current one, and only `lym gate test --map` run from the prime writes the index.",
+        "D2: a new function and a function whose body changed are found; a function whose text is unchanged but whose lines moved, a function moved verbatim to another file of its package, a deleted function and a test file's function are not. A change to one of two build-constrained variants of a function is found in that variant's file alone.",
+        "D3: a passing gate key listing `reach` writes `reach.json` and prints the note. A red tier, a call outside a hub and a non-Go scoper each give a report with its note and no lookup. The gate's exit is unchanged in every case.",
+        "D3: a package whose worktree map matches the worktree is not refreshed. A package with an uncommitted file, one whose linked in-module package has one, one past `reach_budget_min` and every package of a call in the prime are answered from the existing maps, with a line saying which and why, naming a dirty linked package. No refresh writes the hub's shared maps.",
+        "D3: a loomshed verify gate or weaver batch gate whose passing verify wrote a matching `reach.json` listing an unreached function no earlier turn listed returns one failing result carrying the note. A later arrival whose report lists only functions an earlier turn listed gets no turn, and neither does an arrival one failure short of the entry's attempt budget.\nWith `darn.gate_fixer` set, a reach turn's result at Darn-Write spawns no cold fixer and reaches the Darn-Write writer's session.",
+        "D4: the note lists own-package tests before other packages', fewer-functions tests first within each, at most five per function plus the count of the rest, and the map commits it read.",
+        "D4: an unreached function whose package holds a tier 2 test or a spawn-marked entry carries the caveat. An unreached new function whose package other packages' older maps link carries a caveat naming those packages.",
+        "D5: the `reach_report` note lists the report when it matches HEAD's tree. It says no current report exists, and why, when HEAD's changed functions, their hashes or the hashed Go files of a changed or named package differ, test files included, and when the report was written on a red tier, outside a hub or under another scoper.",
+        "Review: the code review rubric tells the reviewer to read the reach note as evidence for \"a behavior the diff adds with no coverage\", and that an unreached function is a candidate, not a finding (D5).",
+        "D6: `lym gate reach <file>#<Func>` prints the note for that function with no build. A function the maps do not hold gives a line saying so, with exit 0. A call with both a function and `--test`, or neither, or with `--since` or `--branch` but no `--test`, is refused naming both forms.",
+        "D7: a failing gate's report gives a mapped failing test a first output line naming the changed functions it reaches, or \"reaches none of this run's changes\" followed by the D8 command on its own line, and an unmapped test \"not in the coverage maps\".",
+        "D7: a failed subtest is looked up by its top-level test, and `gateslot.FailedTests` parses a report holding triage lines to the same failed tests as without them, a report at the line cap included, where triage lines are dropped before any test output is cut.",
+        "D7: with no parent branch or an unreadable merge base, a mapped failing test's line says no change set exists and why, with no D8 command.",
+        "D7: a failed lookup adds no line, and every fixer's report holds the triage lines of its failed tests.",
+        "D8: `lym gate reach --test` lists, over the parent branch's first-parent commits after `--since`, each commit whose changed functions the test reaches, and names the map commit. `--branch` picks another branch.",
+        "D8: a missing `--since` and a range over the cap are refused, each naming its way forward.",
+        "D9: mutants land only on changed lines of covered blocks, at most one per line, in the operator order, under `mutation_max_mutants`. String constants, embedded lines and logger calls get none.",
+        "D9: a changed uncovered block is reported uncovered with no mutant, and a package without a fresh map is reported not judged. In the prime, a package whose hub map matches the worktree is judged.",
+        "D9: a mutant is killed by the first failing covering test, survives when every covering test passes, and is unjudged on a timeout or memory cap; a survivor lists other packages' reaching tests as possible killers.",
+        "D10, checked at D10's later build: a gate key listing `mutation` writes `mutation.json` and its summary line, and the `mutation_report` note lists survivors, uncovered blocks and packages not judged only when the report matches HEAD's tree.",
+        "D10, checked at D10's later build: a key listing `mutation` without `reach` is refused naming `reach`.",
+        "D11: `lym gate mutate` refreshes the changed packages' worktree maps and prints D9's survivors, uncovered blocks and packages not judged for the worktree's diff, and `--base` changes the base it diffs from.",
+        "Review: the run filed a board note asking for the trial and for the parent's decision, from its counts, on whether to build D10 and list `mutation` in the template's diff keys (D11).",
+        "D12: a hub key without `reports` gets the template's `reports` with `reach` first in each key that lists `redundancy` and in `batch`, and the config check accepts `reach` and the three new keys."
+      ],
+      "pattern_changes": ["PATTERN-coverage-map-reader", "PATTERN-test-speed"],
+      "expected_cost_usd": 45.4,
+      "cost_line": "tapestry/solid stored-record fit, 14 runs: 23.54 fixed plus 0.427 per 100 lines over about 5,100 changed lines"
+    }
+  ],
+  "cost": {
+    "expected_usd": 45.4,
+    "line": "one tapestry/solid part of about 5,100 changed lines on the stored-record fit (14 runs, r 0.76), about 7.3 hours on its hours fit",
+    "next_best": {
+      "split": "four chained darn/solid tasks: reader (D1, D2), reach note (D3 to D6, D12), failure triage (D7, D8), mutation planner and lym gate mutate (D9, D11), each after the one before since all but the reader change internal/gatecli",
+      "expected_usd": 44.7,
+      "line": "darn/solid stored-record fit, 18 runs, r 0.51: 7.74 fixed plus 0.269 per 100 lines over parts of about 1,180, 1,980, 740 and 1,200 lines; about 13.5 hours run back to back"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
