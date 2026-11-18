@@ -1,6 +1,6 @@
 # Bench the explorer subagents of the Discussion and Plan writers: with against without
 
-`plan-writer-explorer-forks` · Task · research, loom, stencil · starting · Worktree-Create
+`plan-writer-explorer-forks` · Task · research, loom, stencil · starting · Seed-Child
 
 ## What was seen
 
