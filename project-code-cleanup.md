@@ -1,6 +1,6 @@
 # P1 Code cleanup: cut and simplify lym code and tests
 
-Rendered 2026-11-18 20:09 UTC; every age below is as of then.
+Rendered 2026-11-18 20:11 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`code-cleanup`](design-code-cleanup.md) · Age 2h · Owner `neve`
@@ -28,8 +28,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **List features nobody uses, for the operator to cut**<br>• List features, flags, config keys and verbs with no recent use; the operator decides which go<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-unused-features`](design-drop-unused-features.md) | darn · docs | Darn-Write | neve | 2h<br>5m | tools |
-| T2 | **Pilot: simplify the design of landingshed without changing behaviour**<br>• Build the design simplifications the shrink study found in landingshed and measure the lines saved against its estimate, before any such pass on another module<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`landingshed-design-simplify`](design-landingshed-design-simplify.md) | darn · solid | Code-Burler-Fix | neve | 46m<br>46m | landing |
+| T1 | **List features nobody uses, for the operator to cut**<br>• List features, flags, config keys and verbs with no recent use; the operator decides which go<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-unused-features`](design-drop-unused-features.md) | darn · docs | Darn-Write | neve | 2h<br>6m | tools |
+| T2 | **Pilot: simplify the design of landingshed without changing behaviour**<br>• Build the design simplifications the shrink study found in landingshed and measure the lines saved against its estimate, before any such pass on another module<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`landingshed-design-simplify`](design-landingshed-design-simplify.md) | darn · solid | Code-Burler-Fix | neve | 47m<br>47m | landing |
 
 ### Ready (0)
 
@@ -54,4 +54,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T8 | **Comments: check what the big comment rewrite left, before any new pass**<br>• Last week a run of nearly 3,000 agents rewrote docstrings and doc files; measure what is still long before deciding on more<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`comment-trim-second-pass`](design-comment-trim-second-pass.md) | 2h<br>5m | docs |
+| T8 | **Comments: check what the big comment rewrite left, before any new pass**<br>• Last week a run of nearly 3,000 agents rewrote docstrings and doc files; measure what is still long before deciding on more<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`comment-trim-second-pass`](design-comment-trim-second-pass.md) | 2h<br>6m | docs |

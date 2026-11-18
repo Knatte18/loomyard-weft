@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 20:09 UTC; every age below is as of then.
+Rendered 2026-11-18 20:11 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -23,8 +23,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **List features nobody uses, for the operator to cut**<br>• List features, flags, config keys and verbs with no recent use; the operator decides which go<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-unused-features`](design-drop-unused-features.md) | darn · docs | Darn-Write | neve | 2h<br>5m | tools |
-| T2 | **Pilot: simplify the design of landingshed without changing behaviour**<br>• Build the design simplifications the shrink study found in landingshed and measure the lines saved against its estimate, before any such pass on another module<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`landingshed-design-simplify`](design-landingshed-design-simplify.md) | darn · solid | Code-Burler-Fix | neve | 46m<br>46m | landing |
+| T1 | **List features nobody uses, for the operator to cut**<br>• List features, flags, config keys and verbs with no recent use; the operator decides which go<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-unused-features`](design-drop-unused-features.md) | darn · docs | Darn-Write | neve | 2h<br>6m | tools |
+| T2 | **Pilot: simplify the design of landingshed without changing behaviour**<br>• Build the design simplifications the shrink study found in landingshed and measure the lines saved against its estimate, before any such pass on another module<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`landingshed-design-simplify`](design-landingshed-design-simplify.md) | darn · solid | Code-Burler-Fix | neve | 47m<br>47m | landing |
 
 #### Ready (0)
 
@@ -49,7 +49,7 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T8 | **Comments: check what the big comment rewrite left, before any new pass**<br>• Last week a run of nearly 3,000 agents rewrote docstrings and doc files; measure what is still long before deciding on more<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`comment-trim-second-pass`](design-comment-trim-second-pass.md) | 2h<br>5m | docs |
+| T8 | **Comments: check what the big comment rewrite left, before any new pass**<br>• Last week a run of nearly 3,000 agents rewrote docstrings and doc files; measure what is still long before deciding on more<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`comment-trim-second-pass`](design-comment-trim-second-pass.md) | 2h<br>6m | docs |
 
 </details>
 
@@ -97,7 +97,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Coverage map uses: reader, reach note, failure triage and lym gate mutate** | [`testmap-reach-triage-mutate`](design-testmap-reach-triage-mutate.md)<br>[Sketch](decision-testmap-reach-triage-mutate.md) | tapestry · solid | Plan-Burler-Review | neve | 55m<br>55m | testmap, gate, burler, darn, webster, loom, shed, stencil, pattern |
+| T7 | **Coverage map uses: reader, reach note, failure triage and lym gate mutate** | [`testmap-reach-triage-mutate`](design-testmap-reach-triage-mutate.md)<br>[Sketch](decision-testmap-reach-triage-mutate.md) | tapestry · solid | Plan-Burler-Review | neve | 56m<br>56m | testmap, gate, burler, darn, webster, loom, shed, stencil, pattern |
 
 #### Ready (0)
 
@@ -114,7 +114,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 <details open>
 <summary><strong><a href="project-single-repo-hub.md">P4 Single-repository hubs: records on each code branch, the board on lym-bolt</a> (2)</strong></summary>
 
-[`single-repo-hub`](design-single-repo-hub.md) · Age 17m · Owner `neve`
+[`single-repo-hub`](design-single-repo-hub.md) · Age 18m · Owner `neve`
 
 ### Tasks (2)
 
@@ -126,7 +126,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **One-repository layout in fabric: clone, worktrees, records commits, merges, pushes and replay** | [`single-repo-fabric-mode`](design-single-repo-fabric-mode.md)<br>[Sketch](decision-single-repo-fabric-mode.md) | tapestry · solid | Plan-Write | neve | 17m<br>17m | fabric, cwd, cli, landing, docs, pattern |
+| T5 | **One-repository layout in fabric: clone, worktrees, records commits, merges, pushes and replay** | [`single-repo-fabric-mode`](design-single-repo-fabric-mode.md)<br>[Sketch](decision-single-repo-fabric-mode.md) | tapestry · solid | Plan-Write | neve | 18m<br>18m | fabric, cwd, cli, landing, docs, pattern |
 
 #### Ready (0)
 
@@ -140,7 +140,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Records-free code identity and pull request views for one-repository hubs** | [`single-repo-code-identity`](design-single-repo-code-identity.md)<br>[Sketch](decision-single-repo-code-identity.md) | tapestry · solid | T5<br>T2 | 17m<br>17m | fabric, cwd, gate, git, weaver, drift, webster, lint, loom, landing, pawl, shed, arbiter |
+| T6 | **Records-free code identity and pull request views for one-repository hubs** | [`single-repo-code-identity`](design-single-repo-code-identity.md)<br>[Sketch](decision-single-repo-code-identity.md) | tapestry · solid | T5<br>T2 | 18m<br>18m | fabric, cwd, gate, git, weaver, drift, webster, lint, loom, landing, pawl, shed, arbiter |
 
 ### Notes (0)
 
@@ -149,7 +149,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (7)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (8)</strong></summary>
 
 Owner `neve`
 
@@ -163,7 +163,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Design the campaign that runs a live-substrate module in a sandbox until it converges, on lym modules as they stand; crucible is a Millhouse-era account only | [`hardener`](design-hardener.md) | motif | Discussion-Burler-Review | neve | 6w<br>18m | burler |
+| T4 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Design the campaign that runs a live-substrate module in a sandbox until it converges, on lym modules as they stand; crucible is a Millhouse-era account only | [`hardener`](design-hardener.md) | motif | Discussion-Burler-Review | neve | 6w<br>19m | burler |
 
 #### Ready (0)
 
@@ -179,7 +179,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 1d<br>1d | board, ide, fabric |
 
-### Notes (5)
+### Notes (6)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -190,11 +190,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 9d<br>9d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 1d<br>1d | shuttle |
 
-#### Bugs (1)
+#### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | 44m<br>44m | gate, tools |
+| B1 |  | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | 45m<br>45m | gate, tools |
+| B2 |  | **A docs darn can land with an empty diff and its report only in the change description**<br>• Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research | [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md) | 0m<br>0m | landing, darn |
 
 #### Features (2)
 

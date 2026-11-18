@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 20:09 UTC; every age below is as of then.
+Rendered 2026-11-18 20:11 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Design the campaign that runs a live-substrate module in a sandbox until it converges, on lym modules as they stand; crucible is a Millhouse-era account only | [`hardener`](design-hardener.md) | motif | Discussion-Burler-Review | neve | 6w<br>18m | burler |
+| T4 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Design the campaign that runs a live-substrate module in a sandbox until it converges, on lym modules as they stand; crucible is a Millhouse-era account only | [`hardener`](design-hardener.md) | motif | Discussion-Burler-Review | neve | 6w<br>19m | burler |
 
 ### Ready (0)
 
@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 1d<br>1d | board, ide, fabric |
 
-## Notes (5)
+## Notes (6)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -45,11 +45,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 9d<br>9d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 1d<br>1d | shuttle |
 
-### Bugs (1)
+### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | 44m<br>44m | gate, tools |
+| B1 |  | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | 45m<br>45m | gate, tools |
+| B2 |  | **A docs darn can land with an empty diff and its report only in the change description**<br>• Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research | [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md) | 0m<br>0m | landing, darn |
 
 ### Features (2)
 
