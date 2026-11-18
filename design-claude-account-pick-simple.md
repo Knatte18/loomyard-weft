@@ -1,6 +1,6 @@
 # Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account
 
-`claude-account-pick-simple` · Task · sketch, claude, shuttle, config · starting · Open-IDE
+`claude-account-pick-simple` · Task · sketch, claude, shuttle, config · running · Record-Write
 
 Decision record: [Sketch](decision-claude-account-pick-simple.md)
 
