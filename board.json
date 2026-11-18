@@ -385,7 +385,7 @@
       "isolated": false,
       "brief": "An agent passed a file path to -b and the issue body became the path",
       "body": "An agent filed issue #136 with `lym selfreport create \"\u003ctitle\u003e\" -b .scratch/selfreport-missing-brief.md`.\n`-b` takes the body text, so the issue body became the path and the report itself was lost.\n\nIdea: give `lym selfreport create` a `--body-file \u003cpath\u003e` flag (with `-` for stdin), and refuse or warn when `-b` text is a single line naming an existing file.\n",
-      "status": "running · PR-Review",
+      "status": "landing · Finalize",
       "created": "2026-11-18T08:56:12Z",
       "revised": "2026-11-18T10:33:45Z",
       "run_settings": {
