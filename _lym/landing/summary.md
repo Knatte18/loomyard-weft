@@ -1,47 +1,37 @@
-# Run tierless hubs and inert-only changes; route one-class test runs
+# gate: run with no tier0, skip inert-only Finalize, name a test route
 
-Two bugs met in a new C# hub, both in the gate and the guidance around a hub test command.
+A fresh hub with no declared tiers now runs and lands tasks, a change of inert files alone runs no tier at Finalize,
+and the darn writer has a permitted route to measure one test class.
 
-## A hub that declares no tier
+Closes #135
+Closes #133
 
-The gate template declares `tiers: {}` while every gate key names tier 0,
-so `gateslot.Config.Gate` refused every key in a fresh hub.
-Shed build renders the Darn-Write fixer's gate call through it, so every run failed before its first producer, whatever its diff.
+## What changes
 
-- `Config.Gate` (`internal/gateslot/tiers.go`) now resolves a key to no tiers, and no refusal, when the hub declares no tier at all.
-  A hub that declares some tiers but no `tier0` is still refused, as is a missing key, an empty list or an undeclared tier.
-- `lym gate test --gate <key>` (`internal/gatecli/run.go`) passes at once in such a hub, printing that the hub declares no tier and that `tier0` is declared with `lym config gate` once the repository has tests.
-  A call without `--gate` there is still refused, since it asks for a tier by name.
-
-## Finalize over an inert-only change
-
-A gate key of scope `all` (Finalize, webster, parent-align, adopt) ran every tier whole, ignoring `inert_paths`.
-A docs-only branch in a repository with no .NET project then failed its landing on `dotnet test .`.
-
-- `allScope` (`internal/gatecli/scope.go`) gives a `--gate` key of scope `all` the empty scope when every file changed since the merge base with the parent branch matches `inert_paths`.
-  Each tier then runs no command, as an inert-only computed scope already did; a `carry: false` tier still runs whole.
-- An explicit `--all`, a worktree with no parent branch and a merge base that cannot be read stay whole.
-
-## The silent `dotnet test`
-
-lym's guard does not neutralise `dotnet test`: a hub whose `refuse_raw` lists it gets a deny that names the refused part and the way forward.
-The silent exit 0 is a test project that sets `IsTestProject` false unless an MSBuild property is passed,
-which the gate already reports with its "ran no test of" line.
-The gap was that the gated darn writer is told to run no gate, so it had only a raw test command for measuring a value.
-
-- The gated darn fragment (`contracts/stencils/darn/darn-fragment-make-change-gated.md`) now names one exception:
-  to measure a value only a test run shows, run that one test class once through `lym gate test --tier <n> <target> -- <args>`.
-  It says a raw run can exit 0 having run no test, and to name to the parent a project the gate reports as running none.
+- `gateslot`: `Config.Gate` no longer refuses a hub that declares no tier at all, as the template does with `tiers: {}`.
+  It returns the key with no tiers, so shed build renders the gate calls of a fresh hub.
+  A hub that declares tiers but no `tier0`, and a key naming an undeclared tier, are still refused.
+- `gatecli`: a `--gate` call in a hub with no tier prints a line on stderr saying no tier runs, then runs only the key's lints.
+  Failing lints still fail the call.
+- `gatecli`: a `--gate` key of scope `all` now checks the diff from the merge base with the parent branch.
+  When every changed file matches `inert_paths`, the scope is empty and no tier runs, so Finalize no longer runs `dotnet test .` on a docs-only branch.
+  An explicit `--all`, a worktree with no parent branch and an unreadable merge base stay whole.
+  A tier with `carry: false` still runs whole.
+- Darn writer prompt (gated Step 4 fragment): the writer may make one measuring run of a single test class through `lym gate test --gate darn-write`.
+  It never runs a raw test command, since a raw run can exit 0 with no output when no test ran.
+  When the gate's report says a project ran no test, the prompt names the `IsTestProject` property and a rerun with `-p:<property>=true` after `--`.
+- Docs: the `gateslot` and `gatecli` package docs, `docs/dotnet-hub.md`, the `gate.yaml` template comments and the `gate test` help text describe both behaviours.
 
 ## Design decisions
 
-- The no-tier case passes rather than flagging a missing `tier0` at hub setup: the issue's preferred fix,
-  and it lets a hub with no tests run docs and code tasks alike until tests exist.
-- The measuring route goes through `lym gate test` rather than naming `dotnet vstest`, so the stencil hard-codes no language (`PATTERN-code-conventions`), and the gate's no-test notice covers the run.
-- The inert check applies only to scope `all` reached through a gate key, so a caller's explicit `--all` still runs everything.
+- Rendering a key with no tiers, instead of passing a key that names an undeclared tier, keeps the refusal for a half-configured hub.
+  The no-tier case applies only when `tiers` is empty.
+- The silent exit 0 of #135 is handled by routing the writer through the gate, whose report says when no test ran.
+  The guard around a raw `dotnet test` is not changed.
+- The scope-`all` inert check applies only to `--gate` calls, so a hand-run `--all` still means the whole tree.
 
-## Tests
+## To check by hand
 
-- `internal/gateslot/config_test.go`: `TierList` rows for a hub that declares no tier, with a held and a missing key.
-- `internal/gatecli/test_integration_test.go`: a `--gate finalize` call in a hub with no tier exits 0, names the missing tiers and runs no tier command.
-- `internal/gatecli/scopes_integration_test.go`: `--gate finalize` over a Markdown-only diff runs no tier command and names the inert diff.
+Not run: a darn task with profile `docs` in a real hub with no tests and `inert_paths` set,
+through shed build to Finalize.
+The behaviour is covered by the integration tests added in `internal/gatecli`.
