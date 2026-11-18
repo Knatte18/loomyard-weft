@@ -1,6 +1,6 @@
 # Hardener: an autonomous behavior-review campaign that replaces crucible
 
-`hardener` · Task · feature, burler · starting · Worktree-Create
+`hardener` · Task · feature, burler · starting · Seed-Child
 
 ## Goal
 
