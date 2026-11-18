@@ -22,13 +22,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Find real uses for the per-test coverage maps**<br>• A research run on Fable searches the web and the code for what per-test coverage maps can do for lym and its agents, and ranks the uses<br>• `darn: writer fable[high]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-use-cases`](design-testmap-use-cases.md) | darn · docs | starting · Worktree-Create | neve | 0m<br>0m | testkit, gate |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Find real uses for the per-test coverage maps**<br>• A research run on Fable searches the web and the code for what per-test coverage maps can do for lym and its agents, and ranks the uses<br>• `darn: writer fable[high]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-use-cases`](design-testmap-use-cases.md) | darn · docs |  | 0m<br>0m | testkit, gate |
+_None._
 
 ### Draft (1)
 
