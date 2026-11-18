@@ -381,6 +381,13 @@ Rationale: Plan review round 3 escalated at the hard cap with F17 open. The fix 
   - stop-ended-start-path-relaunch-outcome-not-a-result (class design, severity BLOCKING, open in rounds 3)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - missing-sessions-dir-reads-unreadable (class design, severity MEDIUM, open in rounds 1)
+  - record-before-relaunch-order-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a machine-layer `claude.accounts` list loads; a duplicate name, a relative path, two entries naming one directory once links are resolved, a negative weight, an unknown window or a threshold outside 1 to 100 is refused.
