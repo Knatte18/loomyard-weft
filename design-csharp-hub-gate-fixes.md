@@ -2,6 +2,8 @@
 
 `csharp-hub-gate-fixes` · Task · bug, dotnet, process, gate, config · draft
 
+Depends on: [`orch-ignores-deny-python`](design-orch-ignores-deny-python.md), [`leftover-strands-and-runs`](design-leftover-strands-and-runs.md)
+
 Two bugs met in the C# hub, bundled because both sit in the gate and its guard around a hub test command.
 
 ## Part: dotnet test exits 0 with no output

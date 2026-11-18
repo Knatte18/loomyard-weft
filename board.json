@@ -369,13 +369,15 @@
         144
       ],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "shuttle-start-idle-and-prompt"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #144](https://github.com/Knatte18/loomyard/issues/144).\n\nWhat happened: a loom run halted failed at the Code-Burler-Fix producer (anomaly producer-hard-failure) in round 1 attempt 1. The shedadapters guard reported that the burler twill fixer fork attempted 5 write/edit tool calls, and that a fork must never mutate a file. Way forward named by lym: inspect the target's working-tree changes, revert what the fork wrote, and resume the run. The preceding Code-Bouncer and Code-Burler-Review rows were both recorded as stuck.\n\nWhy it is abnormal: the fix round is the step meant to apply review findings, yet the fork it spawns is forbidden to write, and the fork tried anyway. Either the fixer fork's brief does not tell it that it is read-only and where to hand its fixes (so it reaches for Edit/Write), or the fix round routes work to a fork that should have been a writing session. Either way an ordinary run ends in a hard failure that needs manual revert-and-resume, and the writes may already have touched the working tree.\n\nWhat to do: make the Code-Burler-Fix fork's prompt state the no-mutation contract and the channel for returning fixes, or run the fixer as a session allowed to write; and consider having the guard block or revert the fork's writes itself, or retry the attempt once with a corrective message, instead of failing the whole run.\n\nProvenance: task slug leftover-pairs-teardown; note file loom-halt.md.",
       "status": "draft",
       "created": "2026-11-18T08:07:46Z",
-      "revised": "2026-11-18T08:56:11Z",
+      "revised": "2026-11-18T08:56:17Z",
       "run_settings": {
         "loom": {
           "code_assist_reviewer_fan": "review-code",
@@ -519,13 +521,16 @@
         138
       ],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "orch-ignores-deny-python",
+        "shuttle-start-idle-and-prompt"
+      ],
       "isolated": false,
       "brief": "Gate re-prompt to an untracked strand, and a re-step tripping on a leftover shuttle run",
       "body": "Two bugs where a leftover strand or shuttle run stops a run, bundled because both sit in shuttle run tracking and the step that meets it.\n\n## Part: a gate re-prompt finds its strand untracked\n\nImported from [issue #143](https://github.com/Knatte18/loomyard/issues/143).\n\nWhat happened: a `lym loom run` halted as blocked at Plan-Write with anomaly `escalation-to-human`, state `stuck`.\nThe reason reported by lym:\n\n```\ngate failed its first check and the session was never re-prompted, since its re-prompt could not be sent: shuttle: strand \"\u003cid\u003e\" is not tracked by reed — either its run completed and was cleaned up, or reed's strand table was reset under it (a reed remove/down, or a lost or rebuilt reed.json); check \"lym reed status\"\n```\n\nWhy it is abnormal: the gate failed, and the re-prompt to the session could not be delivered because reed no longer tracked the strand.\nNothing in the task asked for a reed reset, so either the strand was cleaned up while the producer was still running, or reed's strand table was lost or rebuilt during the run.\nThe run stalled for about 23 minutes before it halted, and the findings file under `.lym/shed/\u003cslug\u003e/gate-findings/Plan-Write.md` was left for a human.\nThis run followed a separate failed run in the same worktree (see the stencil include issue), so a stale or reset reed table after the earlier halt is a plausible cause.\n\nWhat to do: find why the strand was untracked at re-prompt time (cleanup racing the gate, or a reed.json reset after the earlier halt).\nWhen the strand is gone, have the gate path relaunch or resume the producer instead of halting, or fail fast with this message rather than after a long wait.\n\nProvenance: task slug `launch-manifest-parity`; notes `loom-halt-2.md`.\n\n\n## Part: a re-step halts on the shuttle run left by the interrupted stop\n\nImported from [issue #138](https://github.com/Knatte18/loomyard/issues/138).\n\n### What happened\n\nA `lym shed step lym-retro --until-stop` run halted `failed` at `Code-Burler-Review` with anomaly `interrupted-stop`: `loop-exited: loop ... ended without an envelope`, with no process marking the loop's exit.\nThe way forward in the status error was to read `loop.trace_copy` and `loop.stderr_path`, apply the interrupted rule, and re-run `lym shed step lym-retro --until-stop`.\n\nThe re-run halted the same way, again at `Code-Burler-Review`, with an identical 11-entry history and a new trace id.\nThe second halt's loop log carries this line:\n\n`shuttle: a run reads running but its waiting process is gone ... strand=ly:lym-retro:code-burler-review pid=\u003cpid\u003e`\n\nThe pid in that warning equals the pid in the first halt's trace file name, so the run it names was left over from the first interrupted step.\nThe re-run found that run still reading `running`, and the loop ended without an envelope.\n\n### Why it is abnormal\n\nFollowing the way forward lym itself printed did not move the run forward: the retry tripped on the leftover from the interruption it was meant to recover from.\nThe history did not change between the two halts (the last entries stay `Code-Bouncer / stuck`), so the second attempt made no progress.\nThe note also says `Code-Burler-Review` was in flight although the last history entry is `Code-Bouncer`.\n\n### What to do\n\n- On a re-step after an `interrupted-stop`, reconcile a shuttle run that reads `running` whose waiting process is gone (mark it interrupted or abandoned) before starting the step, so the retry does not end on it.\n- Check that the interrupted-step record names the step that was in flight, consistent with the history.\n- The first loop exit left no exit marker; whether that was an actual kill or a machine stop could not be told from the notes.\n  If a clean stop can look like this, record the cause where the loop exits.\n\nProvenance: task slug `lym-retro`; notes `loom-halt.md`, `loom-halt-2.md`.\n\n",
       "status": "draft",
       "created": "2026-11-18T08:07:48Z",
-      "revised": "2026-11-18T08:56:05Z",
+      "revised": "2026-11-18T08:56:17Z",
       "run_settings": {
         "loom": {
           "code_assist_reviewer_fan": "review-code",
@@ -552,13 +557,16 @@
         133
       ],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "orch-ignores-deny-python",
+        "leftover-strands-and-runs"
+      ],
       "isolated": false,
       "brief": "Make a refused dotnet test say so; let a hub with no tier0 or an all-inert change run and land",
       "body": "Two bugs met in the C# hub, bundled because both sit in the gate and its guard around a hub test command.\n\n## Part: dotnet test exits 0 with no output\n\nImported from [issue #135](https://github.com/Knatte18/loomyard/issues/135).\n\nA darn-writer agent measuring a golden test ran `dotnet test` on a C# test project.\nThe command exited 0 and printed nothing, not even a test count, while `lym gate test` was off limits to that agent.\nThe agent could not tell that no test had run and spent several rounds before noticing.\nRunning the built test assembly through `dotnet vstest` with a `--TestCaseFilter` ran the tests normally.\n\nWhy this is abnormal: a silent exit 0 reads as a passing run.\nIf a lym guard refuses or neutralises `dotnet test`, it should refuse with a message and a nonzero exit.\nThe darn prompt also names no way to run a single test class while measuring.\n\nWhat to do:\n- Make a refused or neutered `dotnet test` say so.\n- Have the darn prompt name a permitted way to run one test class, for example the `dotnet vstest` route above.\n\nProvenance: task `td-stick-slip-surface-torque`; notes Darn-Write.md.\n\n\n## Part: a hub with no tier0 fails at shed build, and Finalize ignores inert_paths\n\nImported from [issue #133](https://github.com/Knatte18/loomyard/issues/133).\n\n### Seen\n\nIn a new hub with no tests yet, a darn task with profile `docs` (drift scope off, a docs-only change) failed at once, before Darn-Write ran:\n\n```\nloomrecipe: shedbuild: producer 5 \"Darn-Write\": shedrecipe: Darn-Write: gate fixer: loomcli: render the Darn-Write fixer's gate call: gate config: the hub declares no tier0, so no gate has a tier to run\n```\n\nThe template's gate keys all name tier `[0]`, while the template declares `tiers: {}`.\nSo every run in a fresh hub fails at shed build, whatever its recipe or diff.\nThe tackler could not fix it, since the gate config is written only from the prime, and it handed the stop back.\n\n### Workaround\n\nFrom the prime, declare a tier0 and mark docs as inert:\n\n```\nlym config gate --layer default --set 'tiers.tier0={command: \"dotnet test {targets} {args}\", all_targets: ., timeout_min: 30, counter: vstest}' --set scoper=dotnet --set 'inert_paths=[\"*.md\", \"docs/*\"]'\n```\n\n### Expected\n\nA hub with no declared tiers can run a docs-only task: either the gate call is rendered only when a tier is needed,\nor a gate key naming no declared tier passes with nothing to run.\nAt least, hub setup or the first release should flag the missing tier0 before a run starts, instead of a failed run and a tackler attempt.\n\n\n### Issue comment, 2026-11-16\n\n### Seen: Finalize ignores `inert_paths`\n\nAfter the workaround above, the same docs-only darn run reached Finalize, and its landing gate failed with no failing test.\nThe branch held only `README.md` and a file under `docs/`, both covered by `inert_paths: [\"*.md\", \"docs/*\"]`.\nFinalize still ran tier0 over all targets (gate key `finalize`, scope `all`), and in a repository with no .NET project yet,\n`dotnet test .` exits with MSB1003 \"Specify a project or solution file\".\nThe Finalize fixer could not fix it on the task branch without adding code outside the task's bounds.\n\n### Workaround\n\nFrom the prime, make tier0 pass when no project exists:\n\n```\nlym config gate --layer default --set 'tiers.tier0.command=bash -c '\"'\"'if ls *.sln *.slnx *.csproj \u003e/dev/null 2\u003e\u00261; then dotnet test {targets} {args}; else echo no .NET project, nothing to test; fi'\"'\"''\n```\n\n### Expected\n\nA change whose files are all inert runs no tier at any gate key, Finalize included,\nor a scope-`all` gate in a repository with nothing to test passes instead of failing the landing.\n\n",
       "status": "draft",
       "created": "2026-11-18T08:08:05Z",
-      "revised": "2026-11-18T08:56:05Z",
+      "revised": "2026-11-18T08:56:17Z",
       "run_settings": {
         "loom": {
           "code_assist_reviewer_fan": "review-code",
