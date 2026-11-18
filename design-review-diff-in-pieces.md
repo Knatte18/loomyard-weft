@@ -1,6 +1,6 @@
 # Stage the reviewer diff in pieces that fit one Read
 
-`review-diff-in-pieces` · Task · enhancement, burler, stencil · landing · Finalize
+`review-diff-in-pieces` · Task · enhancement, burler, stencil · done
 
 ## Seen (retro, 2026-11-17)
 
