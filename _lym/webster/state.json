@@ -405,6 +405,26 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-review-result-checks/87c1e53d-6137-4f9b-96cf-6c7ccc843976/subagents/agent-a82ab95ad91d27eb9.jsonl"
       ]
     },
+    "10": {
+      "slug": "recipes-pr-review-reroute",
+      "cards": [
+        "10-recipes-pr-review-reroute",
+        "11-loosened-check-fragment",
+        "12-result-check-wording"
+      ],
+      "cardHashes": {
+        "10-recipes-pr-review-reroute": "68b5ee1a1262d4db814f700af6fd6ea9700f66098cc2fbe548f22fbedc738f5a",
+        "11-loosened-check-fragment": "84d04025255ffd7a5a744cfeb58468d47722d76663bb8afbdb19b2be249a33f9",
+        "12-result-check-wording": "175beb7e1da65573729e2828e1d947949fa1adb9d32fa33ad0de1c79a8cb52d1"
+      },
+      "startSha": "a46c6fabfcd776097ea943347d9df96d0b4c7fee",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T12:47:30Z",
+      "sessionId": "87c1e53d-6137-4f9b-96cf-6c7ccc843976",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "3": {
       "slug": "drift-verify-loosened-checks",
       "cards": [
@@ -529,7 +549,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "cc10af0f5a9b1757a33b3d5eaaed7b37",
   "masterSessionId": "87c1e53d-6137-4f9b-96cf-6c7ccc843976",
   "masterEngine": "claude",
