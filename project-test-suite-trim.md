@@ -36,7 +36,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **lym gate redundant fails on an uncompilable mutant; a map build exits 1 on Windows-only tests**<br>• Keep a literal mutant type-correct, survive an unbuildable mutant, and leave platform-only tests out of failed_tests<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-check-fixes`](design-redundant-check-fixes.md) | darn · light | starting · Open-IDE | neve | 21h<br>1m | gate, testkit |
+| T1 | **lym gate redundant fails on an uncompilable mutant; a map build exits 1 on Windows-only tests**<br>• Keep a literal mutant type-correct, survive an unbuildable mutant, and leave platform-only tests out of failed_tests<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-check-fixes`](design-redundant-check-fixes.md) | darn · light | Preflight | neve | 21h<br>1m | gate, testkit |
 
 ### Ready (0)
 
