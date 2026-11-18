@@ -1,6 +1,6 @@
 # Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure
 
-`twill-fixer-fork-writes` · Task · bug, burler, lenses · starting · Open-Window
+`twill-fixer-fork-writes` · Task · bug, burler, lenses · starting · Seed-IDE
 
 Depends on: [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md)
 
