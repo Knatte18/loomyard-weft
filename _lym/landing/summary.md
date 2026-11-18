@@ -1,45 +1,31 @@
-# Reconcile a gone step's shuttle runs from run records at each loop start
+# Reconcile leftover shuttle runs from run records, not status error text
 
-A re-step could still end on a shuttle run that an earlier step left reading `running`.
-Before this change, `reconcileInterruptedStep` in `internal/shedverbs/loop.go` reconciled leftovers only when two things held:
-the status error carried the text an interrupted stop writes, and an interrupted record in the steps directory named the step.
-A step that ended in an error, or died without writing an interrupted record, matched neither, so its runs were never stopped.
+A shed loop's re-step used to reconcile a leftover shuttle run only when the status error text named an interrupted stop.
+A step that died without writing an interrupted record left its run reading running, and the re-step could still end on it.
+The loop now reconciles from the run records themselves: a run reading running whose waiting process is gone is stopped before the first child starts.
 
-The loop now reconciles from the run records themselves.
+## What changes
 
-## Changes
-
-- **`shuttleengine.Runner.StopOrphanedStepRuns(stepsDir)`** (`internal/shuttleengine/stepstop.go`) stops each running run whose record names a step under `stepsDir` and whose waiting process is gone, or whose record names none.
-  It treats each run as `StopStepRuns` treats a run of its step:
-  stopped through the stop verb, listed under `Held` when a live process may hold its session, and listed under `Finished` when its output files all exist.
-  A run whose waiter lives is left alone.
-  So is a run of another steps directory and a run naming no step.
-  Both stops now share `stopStepRunsWhere`, which probes reed only once a run qualifies.
-  A stop with nothing to act on therefore no longer reports a reed probe failure.
-- **`shedverbs.LoopSpec.ReconcileOrphanedSteps`** replaces `reconcileInterruptedStep` and `newestInterruptedTraceID`.
-  Every loop calls it once before its first child, whatever the status file reads, and writes a non-empty note to the loop log.
-  The loop holds the loop lock then and no child is running, so any run tied to the run's steps whose waiter is gone is a leftover.
-  `OnStepOrphaned` keeps its per-child calls: after a child exits without an envelope, after a panic, and in the dead-loop stop.
-- **`internal/loomcli`** wires the hook to `StopOrphanedStepRuns` through `orphanedStepsNote`.
-  Rendering moved into `stepStopNote`, which the existing notes share.
-  Building the runner moved into `stepStopRunner`, so both stops use the same runner.
-  `loomCLI.stopOrphanedRuns` is the test seam beside `stopRuns`.
+- `shuttleengine`: `Runner.StopOrphanedStepRuns(stepsDir)` stops every running run that names a step under `stepsDir` and whose waiting process is gone or never recorded.
+  A run whose waiting process lives is left alone, and so is a run naming no step or a step of another steps directory.
+  Held, finished and failed runs are reported the way `StopStepRuns` reports them, and `Untied` stays empty.
+- `StopStepRuns` and the new stop share one scan, `stopStepRunsWhere`, which takes a selector.
+  Reed is now probed only when a candidate run exists, so a run directory with nothing to stop no longer needs a reachable reed.
+- `shedverbs`: `LoopSpec.ReconcileOrphanedSteps` replaces `reconcileInterruptedStep` and `newestInterruptedTraceID`.
+  `runLoop` calls it once before the first child, whatever the status file reads, and logs its note.
+- `loomcli`: the hook is wired to `Runner.StopOrphanedStepRuns` through `orphanedStepsNote`.
+  Runner construction moved into `stepStopRunner`, shared by both stops, and `stepStopNote` renders either report.
+- Docs in `shedverbs` and `shuttleengine` describe the new hook and stop.
 
 ## Design decisions
 
-- The reconcile runs on every loop start, not only on a failed status.
-  A leftover can follow any stop, and the check reads the run-directory root, which is cheap.
-  Reed is only probed once a run qualifies.
-- A record with no waiter pid counts as gone, the same reading `ReadAgentActivity` gives `WaiterGone`.
-  At loop start no step of the run can have a run mid-start, so no live run can match.
-- The dead-loop stop still writes the in-flight child's interrupted record.
-  The re-step no longer depends on that record, so its comment now states the record's remaining purpose.
+- The hook runs unconditionally at loop start.
+  No step of the run is in flight then, so every run whose waiting process is gone is a leftover.
+- Before stopping a candidate, the stop re-reads its record and skips it when it no longer reads running or no longer matches the selector.
+  A process may have attached to the run since the scan, and stopping it would end a live agent.
+- The interrupted-record write in `loopExitStop` stays; only its comment changed, since the re-step no longer depends on that record.
 
-## Tests
+## To check by hand
 
-- `TestRunner_StopOrphanedStepRuns_StopsOnlyRunsWhoseWaiterIsGone`: gone and unrecorded waiters are stopped across different steps.
-  A live waiter, another steps directory, an untied run and a terminal run are left alone, and an empty root never probes reed.
-- `TestLoop_ReconcilesOrphanedStepsBeforeTheFirstChild` replaces the text-keyed test.
-  It checks that the hook runs before the first child on a failed status with a producer error and on a running status, and that an empty note writes no mark.
-- The dead-loop subtest in `TestUntilStop_DeadLoopStopsLoopExited` now asserts the `OnStepOrphaned` call and the interrupted record directly.
-- The loomcli wiring test checks that `ReconcileOrphanedSteps` reaches the steps directory and renders its note.
+Nothing is outstanding beyond the unit tests added in `internal/shuttleengine/stop_test.go`, `internal/shedverbs` and `internal/loomcli`.
+No integration run or regression check was run for this change.
