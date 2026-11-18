@@ -1,0 +1,518 @@
+{
+  "runGuid": "55564e2c6983cfab5875811855cabccd",
+  "planFingerprint": "ea1a96d207b6ea4cae3b79312efcbdde4cf74f06a73c2126eaf851689787b405",
+  "planFileHashes": {
+    "00-overview.md": "60f0149d2ad266e455907c0d1f6ac189a2c7b065f5e6c2572875fd14cc856a23",
+    "01-testreach-changed-funcs.md": "fcff3833323aa506931d7ff19d5df207531e2573f53b872633559da0ba19fb30",
+    "02-testreach-reader.md": "d9bb4aa2c63aa32062334a2a996dc0c365be75591f4a0dcb8a04eeba86b8ce21",
+    "03-pattern-coverage-map-reader.md": "9e6b4b0c36ce5a15bccc53dd4ed54a5e0455b738ddafebb40f86078f88a23b09",
+    "04-gate-config-reach.md": "05cac83ba994559a9971d0f788e1daa30c6d5e614b7d874c1d663a57dea03d59",
+    "05-reach-step.md": "fb5a86d4d8130075a57c47e8221fd86721c6e78d7275a2c05ea4ba153b8ed9f5",
+    "06-map-run-writes-index.md": "1fa9a827722a6680de27a416670bed96fe70a933ec46fbdedd67fecdbc745a69",
+    "07-reach-review-note.md": "a34c681a8c142e5b81be187783de2e0978e06328d70ed05ffd839a3987c35b7b",
+    "08-rerun-mark-writer-only.md": "106b914fee9e91e30217b4aef61ae92a0e0be24c391a8141b4ffa9786f5bdf73",
+    "09-reach-turn.md": "2423b68ab7ff0f7e55280f5bbdb0b017dbe17d5ccb642fb45159c404264a319c",
+    "10-reach-verb.md": "4fabd6169703eeb666c64b57b63546213f1e6c3c78646868d97dfa4c0b0d6187",
+    "11-failure-triage.md": "0c2f9953093fa04131f8a22cb132a21357a49fde01599061d94d56d698b8bfec",
+    "12-triage-in-fixer-reports.md": "96365b3338dd82126aced69db6ffe5ac22096f59312edf24be77c487f4af4513",
+    "13-gate-mutate.md": "0327f7442300bdcfb85a95f589fe1dc28fdb1e7c492ea14b78852e61f2934c7c"
+  },
+  "planOverviewFrameHash": "c7f3d161756dc46f9b59032e8822b7ca3356dfdbb327cc6bddc0e8719b17e974",
+  "partition": [
+    {
+      "cards": [
+        "01-testreach-changed-funcs",
+        "02-testreach-reader",
+        "03-pattern-coverage-map-reader",
+        "04-gate-config-reach"
+      ],
+      "profile": "wide",
+      "estimate": 218894,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54940,
+        "read_union": 60928,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 612,
+            "reads": {
+              "file:docs/overview.md": 25176,
+              "package:docs": 2000,
+              "package:internal/testreach": 2000,
+              "tests:docs": 2000,
+              "tests:internal/testreach": 2000
+            },
+            "messages": 52,
+            "written": 16212
+          },
+          {
+            "card": 2,
+            "card_text": 1008,
+            "reads": {
+              "package:internal/testreach": 2000,
+              "tests:internal/testreach": 2000
+            },
+            "messages": 96,
+            "written": 29808
+          },
+          {
+            "card": 3,
+            "card_text": 480,
+            "reads": {
+              "file:PATTERN.md": 696,
+              "package:.": 2000,
+              "package:cmd/lym": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 52.5,
+            "written": 16230
+          },
+          {
+            "card": 4,
+            "card_text": 576,
+            "reads": {
+              "file:internal/gateslot/doc.go": 3708,
+              "file:internal/gateslot/template.yaml": 672,
+              "package:internal/gateslot": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 134,
+            "written": 40776
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-reach-step",
+        "06-map-run-writes-index"
+      ],
+      "profile": "wide",
+      "estimate": 244650,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61940,
+        "read_union": 81784,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 1692,
+            "reads": {
+              "file:PATTERN.md": 696,
+              "file:docs/overview.md": 25176,
+              "file:internal/gatecli/doc.go": 15276,
+              "file:internal/gateslot/doc.go": 3708,
+              "file:internal/gateslot/template.yaml": 672,
+              "file:pattern/PATTERN-gate-slot.md": 1812,
+              "file:pattern/PATTERN-test-speed.md": 4068,
+              "package:.": 2000,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 214,
+            "written": 65892
+          },
+          {
+            "card": 6,
+            "card_text": 684,
+            "reads": {
+              "file:docs/overview.md": 25176,
+              "file:internal/gatecli/doc.go": 15276,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/testreach": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/testreach": 2000
+            },
+            "messages": 114.5,
+            "written": 35034
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-reach-review-note"
+      ],
+      "profile": "wide",
+      "estimate": 257132,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68940,
+        "read_union": 72464,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 1128,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-code-review.md": 1968,
+              "file:internal/gatecli/doc.go": 15276,
+              "file:internal/loomcli/doc.go": 10332,
+              "file:internal/shedadapters/doc.go": 9036,
+              "file:internal/shedrecipe/doc.go": 2724,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 382,
+            "written": 115728
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-rerun-mark-writer-only"
+      ],
+      "profile": "wide",
+      "estimate": 131712,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75940,
+        "read_union": 22172,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 600,
+            "reads": {
+              "file:internal/gatefixer/doc.go": 672,
+              "file:internal/shuttleengine/doc.go": 12900,
+              "package:internal/gatefixer": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/gatefixer": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 110,
+            "written": 33600
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-reach-turn"
+      ],
+      "profile": "wide",
+      "estimate": 282374,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82940,
+        "read_union": 80892,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 1392,
+            "reads": {
+              "file:internal/gatecli/doc.go": 15276,
+              "file:internal/loomcli/doc.go": 10332,
+              "file:internal/shedrecipe/doc.go": 2724,
+              "file:internal/shuttleengine/doc.go": 12900,
+              "file:internal/verifytree/doc.go": 1080,
+              "file:internal/weaverengine/doc.go": 1188,
+              "package:internal/battencli": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gatefixer": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/verifytree": 2000,
+              "package:internal/weaverengine": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gatefixer": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/verifytree": 2000,
+              "tests:internal/weaverengine": 2000
+            },
+            "messages": 390.5,
+            "written": 118542
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-reach-verb"
+      ],
+      "profile": "wide",
+      "estimate": 248638,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89940,
+        "read_union": 87244,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 1104,
+            "reads": {
+              "file:docs/overview.md": 25176,
+              "file:internal/fabricengine/doc.go": 29688,
+              "file:internal/gatecli/doc.go": 15276,
+              "package:docs": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/testreach": 2000,
+              "tests:docs": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/testreach": 2000
+            },
+            "messages": 234.5,
+            "written": 71454
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-failure-triage",
+        "12-triage-in-fixer-reports"
+      ],
+      "profile": "wide",
+      "estimate": 251248,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96940,
+        "read_union": 65148,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 900,
+            "reads": {
+              "file:internal/gatecli/doc.go": 15276,
+              "file:internal/gateslot/doc.go": 3708,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 121.5,
+            "written": 37350
+          },
+          {
+            "card": 12,
+            "card_text": 660,
+            "reads": {
+              "file:internal/gateslot/doc.go": 3708,
+              "file:internal/loomshed/doc.go": 3708,
+              "file:internal/runplan/doc.go": 300,
+              "file:internal/weaverengine/doc.go": 1188,
+              "file:internal/websterengine/doc.go": 15408,
+              "package:internal/gateslot": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/runplan": 2000,
+              "package:internal/weaverengine": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/runplan": 2000,
+              "tests:internal/weaverengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 170.5,
+            "written": 51810
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-gate-mutate"
+      ],
+      "profile": "wide",
+      "estimate": 236876,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103940,
+        "read_union": 75768,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 1668,
+            "reads": {
+              "file:docs/overview.md": 25176,
+              "file:internal/gatecli/doc.go": 15276,
+              "file:internal/gateslot/doc.go": 3708,
+              "file:internal/gateslot/template.yaml": 672,
+              "file:internal/testcover/doc.go": 1200,
+              "file:pattern/PATTERN-test-speed.md": 4068,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/testcover": 2000,
+              "package:internal/testreach": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/testcover": 2000,
+              "tests:internal/testreach": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 185,
+            "written": 57168
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "testreach-changed-funcs",
+      "cards": [
+        "01-testreach-changed-funcs",
+        "02-testreach-reader",
+        "03-pattern-coverage-map-reader",
+        "04-gate-config-reach"
+      ],
+      "cardHashes": {
+        "01-testreach-changed-funcs": "fcff3833323aa506931d7ff19d5df207531e2573f53b872633559da0ba19fb30",
+        "02-testreach-reader": "d9bb4aa2c63aa32062334a2a996dc0c365be75591f4a0dcb8a04eeba86b8ce21",
+        "03-pattern-coverage-map-reader": "9e6b4b0c36ce5a15bccc53dd4ed54a5e0455b738ddafebb40f86078f88a23b09",
+        "04-gate-config-reach": "05cac83ba994559a9971d0f788e1daa30c6d5e614b7d874c1d663a57dea03d59"
+      },
+      "startSha": "221c68e3a55e300d43bee97ee738f1245e304560",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T20:15:26Z",
+      "sessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "cc2115949b2e99f9e861afb1569b42c9",
+  "masterSessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
+  "masterEngine": "claude"
+}
