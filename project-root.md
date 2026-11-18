@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 12:27 UTC; every age below is as of then.
+Rendered 2026-11-18 12:30 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -34,9 +34,9 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 18h<br>17h | board, ide, fabric |
-| T6 | `draft` **Where the Claude quota goes, and why it burns faster now than two weeks ago**<br>• Weekly Claude usage W44 to W47 by role, model, hub, recipe and session kind; name what drove the rise and the cuts<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`token-spend-weekly-rise`](design-token-spend-weekly-rise.md) | darn · docs |  | 24m<br>23m | claude, report |
+| T6 | `draft` **Where the Claude quota goes, and why it burns faster now than two weeks ago**<br>• Weekly Claude usage W44 to W47 by role, model, hub, recipe and session kind; name what drove the rise and the cuts<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`token-spend-weekly-rise`](design-token-spend-weekly-rise.md) | darn · docs |  | 27m<br>26m | claude, report |
 
-## Notes (6)
+## Notes (7)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -47,11 +47,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 9d<br>9d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 17h<br>17h | shuttle |
 
-### Enhancements (1)
+### Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 28m<br>28m | landing |
+| E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 31m<br>31m | landing |
+| E3 |  | **The comment check costs more than the plan review**<br>• comment-lead and its Haiku forks cost $335 over two weeks, 8 % of all run spend; find why and cut it | [`comment-lead-cost`](design-comment-lead-cost.md) | 0m<br>0m | lint, burler |
 
 ### Features (3)
 

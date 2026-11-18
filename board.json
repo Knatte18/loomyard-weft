@@ -408,6 +408,25 @@
         }
       },
       "profile": "docs"
+    },
+    {
+      "id": 1468,
+      "handle": "E3",
+      "slug": "comment-lead-cost",
+      "title": "The comment check costs more than the plan review",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "lint",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "comment-lead and its Haiku forks cost $335 over two weeks, 8 % of all run spend; find why and cut it",
+      "body": "## What was seen\n\n`tools/tokencount -since 2026-11-03` over 359 tapestry and darn runs (2026-11-18):\nthe `comment-lead` role cost $150.66 (Sonnet) and its forks $184.25 (about 20 500 Haiku messages), $334.91 together, 8 % of all run spend.\nThat is more than the whole Plan review of the tapestry runs in the same window.\n\n## Idea\n\nFind what drives the cost: how many forks a run spawns, what each reads, and whether it rereads files or the whole diff per comment.\nThen cut it, for example by checking only the comments the diff adds or changes, in one session without per-comment forks,\nor by leaving the check to the deterministic comment lint where that finds the same.\n",
+      "created": "2026-11-18T12:30:15Z",
+      "revised": "2026-11-18T12:30:15Z"
     }
   ],
   "prime_owner": "neve",
