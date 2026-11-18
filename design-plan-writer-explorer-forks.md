@@ -1,6 +1,6 @@
 # Bench the explorer subagents of the Discussion and Plan writers: with against without
 
-`plan-writer-explorer-forks` · Task · research, loom, stencil · starting · Open-IDE
+`plan-writer-explorer-forks` · Task · research, loom, stencil · running · Preflight
 
 ## What was seen
 
