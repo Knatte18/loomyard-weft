@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The bootstrap stop named the code tip a3b16a70926eeb7d63dd447d7381d3cde8a53f3e as not on origin, with machine neve owing the push. That has cleared. `git ls-remote origin refs/heads/claude-account-pick-simple` now answers 3c7754c1c4985d395698f0410f77664bc4d8fdbd, and `git merge-base --is-ancestor a3b16a70926eeb7d63dd447d7381d3cde8a53f3e 3c7754c1c4985d395698f0410f77664bc4d8fdbd` exits 0, so the commit is present on origin. The stop was a bootstrap refusal, not a blocked row, so no goto is needed. A plain re-launch of `lym batten run claude-account-pick-simple` should get past Seed-Child.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/claude-account-pick-simple/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/claude-account-pick-simple/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
