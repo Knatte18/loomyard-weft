@@ -1,6 +1,6 @@
 # Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account
 
-`claude-account-pick-simple` · Task · enhancement, claude, shuttle, config · running · Discussion-Burler-Review
+`claude-account-pick-simple` · Task · enhancement, claude, shuttle, config · running · Discussion-Burler-Fix
 
 ## Idea (operator, 2026-11-11)
 
