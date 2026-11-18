@@ -76,12 +76,17 @@ The three darn parts the beam `adopt-build`'s resplit filed, `board-prints-root-
 `{"loom":{"code_assist_reviewer_model":"astra[medium]","code_assist_reviewer_fan":"review-code"}}` in their `run_settings`; they run on Neve.
 Once all three have landed, a darn docs task reads their Code-Review rounds and gives the verdict.
 
-
-
 ## Runs chosen (operator, 2026-11-17)
-
-
 
 Run the trial now, on the darns in flight: `redundant-literal-clause-mutants` (T5) carries the same `run_settings`, set in its running pair through `lym config loom --layer local` before its Code-Review.
 
 Every darn the hub orch releases on Neve from here on carries them too, until the verdict.
+
+## Built since (tidy, 2026-11-18)
+
+Task `codex-assist-verdict` (`6a99d2f5`) read the 14 assistant reviews in the archived records of 12 landed darn runs and gave the verdict proposal; report `docs/research/codex/review/assist-verdict-2026-11-18/report.md`.
+
+- Totals: 29 real findings, 2 false (both text divergences the Chair held to be no defect), 14 unique real findings no Claude seat had first, 34 Claude findings Codex missed.
+- Added wait and tokens are recorded in no archived round, and no round shows the Chair waiting on the seat.
+- Proposal: keep Codex on every darn on Neve, non-gating, as a second opinion beside the Claude fan and not a replacement.
+  The verdict itself is the operator's; this note stays until the operator gives it.
