@@ -203,13 +203,21 @@
         "stencil"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "Same frozen inputs, the writers run with and without the Agent-tool explore and lookup subagents; compare cost, time and plan or record quality",
       "body": "## What was seen\n\nBoth writer stencils on main tell the writer to hand exploration and lookups to fresh subagents through the Agent tool:\n`contracts/stencils/loom/loom-template-discussion.md` (\"Start the exploration with explore subagents\", `3085f451`, 2026-11-05; lookups since `2d319fe5`)\nand `contracts/stencils/loom/loom-template-plan.md` (a batch of lookup subagents).\nThese are not the twill-plan forks; twill stays, since it makes the first plan version much better than a solo writer\n(operator, 2026-11-18; `docs/research/loom/plan-writer-bench-2026-11-12/report.md`).\n`tools/tokencount` counts every subagent transcript as a fork, so its \"Plan writer forks\" $137.84 (21 tapestry runs since 2026-11-03) mixes twill forks and explorers;\na subagent's meta file tells them apart (`agentType` `fork` against `general-purpose` or `Explore`).\nThe earlier measurement (`docs/research/turns/writer-lookups-measure-2026-11-04/report.md`) counted how writers use them, never whether they help.\nThe operator doubts they help much.\n\n## Bench, exact cap\n\n- Reference: one landed tapestry run with both a Discussion and a twill Plan, its records archived on its weft tag; the base commit it started from.\n- Arms, each once: Discussion-Write with explorers (stencil as on main) and without (the explorer and lookup lines removed in the bench pair's stencil copy);\n  Plan-Write with and without, both from the reference's frozen decision record, twill on in both. Four writer sessions in all, model and effort as the hub default.\n- Cost and time: from the session transcripts, with explorer subagents split out by `agentType`.\n- Quality: grading keys fixed before any bench output is read, from the reference run's own Discussion and Plan review findings, graded as in the 2026-11-12 plan bench (repeated, partly, avoided).\n- Also: the explorer share of \"Plan writer forks\" and of the Discussion writer over the 21 runs counted, from the meta files.\n- Cost cap $40 for the bench sessions.\n\n## Output\n\nA report under `docs/research/loom/writer-explorers-bench-\u003cdate\u003e/` with the cost, time and grade per arm, and a recommendation: keep the explorers, drop them, or keep them in one writer only.\n",
-      "status": "draft",
       "created": "2026-11-18T12:30:19Z",
-      "revised": "2026-11-18T18:10:08Z"
+      "revised": "2026-11-18T18:10:11Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "docs",
+      "notify_on_land": true
     },
     {
       "id": 1471,
