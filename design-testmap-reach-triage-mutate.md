@@ -1,6 +1,6 @@
 # Coverage map uses: reader, reach note, failure triage and lym gate mutate
 
-`testmap-reach-triage-mutate` · Task · feature, testmap, gate, burler, darn, webster, loom, shed, stencil, pattern · draft
+`testmap-reach-triage-mutate` · Task · feature, testmap, gate, burler, darn, webster, loom, shed, stencil, pattern
 
 Decision record: [Sketch](decision-testmap-reach-triage-mutate.md)
 
