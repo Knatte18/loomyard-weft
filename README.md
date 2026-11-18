@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 16:51 UTC; every age below is as of then.
+Rendered 2026-11-18 16:52 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -79,7 +79,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Pause holds no shared lock and works on a pair with no reed session**<br>• A held call waits without the fabric push lock, dobby starts no driver for a paused pair, and pause and status skip a pair with no reed session<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pause-after-crash-fixes`](design-pause-after-crash-fixes.md) | darn · solid | Darn-Write | neve | 3h<br>13m | tender, fabric, batten, reed |
 | T5 | **Drift-Verify halts: no false guard halt on record edits, and a short halt note with the way forward first**<br>• The judge guard tells a parent decision-record edit from a judge edit and a resume rechecks; the halt note groups repeated findings, caps its length and leads with the way forward<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drift-verify-halt-fixes`](design-drift-verify-halt-fixes.md) | darn · solid | Darn-Write | neve | 13m<br>12m | drift, loom |
-| T6 | **Estimate how much smaller a clean rewrite of the most patched modules would be**<br>• Mechanical duplicate count over seven modules, plus a spec and a size estimate of a clean landingshed; input to E2 | [`rewrite-shrink-estimate`](design-rewrite-shrink-estimate.md) | darn · docs | Drift-Verify | neve | 7m<br>7m | landing |
+| T6 | **Estimate how much smaller a clean rewrite of the most patched modules would be**<br>• Mechanical duplicate count over seven modules, plus a spec and a size estimate of a clean landingshed; input to E2 | [`rewrite-shrink-estimate`](design-rewrite-shrink-estimate.md) | darn · docs | Code-Bouncer | neve | 7m<br>7m | landing |
 | T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Webster | neve | 7h<br>5h | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
 #### Ready (0)
