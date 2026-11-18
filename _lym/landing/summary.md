@@ -1,0 +1,56 @@
+# Remove code no main or test reaches
+
+`golang.org/x/tools/cmd/deadcode` v0.42.0 ran over the Linux build in two modes:
+
+- `deadcode ./cmd/... ./tools/...` lists the functions no `main` reaches.
+- `deadcode -test ./...` lists the functions that neither a `main` nor any test binary reaches.
+  Running `-test` over `./cmd/... ./tools/...` alone adds only those packages' own tests, so the run covers every package.
+
+The second run found no production function that nothing reaches, since the guard in `cmd/lym/testonlycode_linux_test.go` already keeps them out.
+Every hit there was a test helper in a `_test.go` file that no test calls any more.
+The first run found production functions that only tests reach;
+all but one serve as test helpers and stay, as listed below.
+
+## Removed
+
+| Package | Net lines removed | What |
+|---|---|---|
+| `internal/runfsm` | 21 | `Order` and its subtest. It existed for a board display of a run's state that was never built. `TestDerive`'s "X over Y" rows still pin the precedence. |
+| `cmd/lym` | 1 | The guard's allowlist entry for `runfsm.Order`, which would otherwise fail as stale. |
+| `internal/burlerengine` | 48 | `fakeShuttle.stopCalls`, `fakeShuttle.stop`, `fakeShuttle.blocked`, `fakeHandle.settled`, and the `stoppedGUIDs` field that only `stopCalls` read |
+| `internal/shedadapters` | 41 | The `stopLog` and `probedHandle` types, never constructed, and the `withRubric` option |
+| `internal/fabricengine` | 23 | `pairPermittedRoots` and `reconcilePairFor` |
+| `internal/loomshed` | 12 | `testGateTiers` |
+| `internal/websterengine` | 11 | `failOutput` |
+| `internal/orchcli` | 10 | `liveFixture.sendTurn` |
+| `internal/shuttleengine` | 6 | `skillStartFixture`, a wrapper over `skillStartFixtureWith`, whose doc comment now stands alone |
+| `internal/reedengine` | 8 | `fakeTmux.answerSession` |
+| `internal/battenshed` | 5 | `noticeHarness.resumeFrom` |
+| `internal/reportengine` | 5 | `fakeRepo.commitOffChain` |
+
+Both `deadcode` runs are clean of these after the change, and no removal cascaded into another unreachable function.
+Nothing a user can call is removed: every function removed from a production file was unreachable from `cmd/lym` and every program under `tools/`.
+
+## Kept
+
+Each of these production functions is reached by tests alone, and stays as a test helper:
+
+| Function | Reason |
+|---|---|
+| `fabricengine.CoalescePushBothAt` | The `internal/hubforge` test-support package calls it to push a fixture pair, as do the fabric integration tests. |
+| `fslink.Remove` | `PATTERN-lym-files` makes `fslink` the one place links are handled. `internal/hubforge` and the integration tests of several packages remove links through it. |
+| `driftengine.UpdateScope`, `fabricengine.RecordPushFailure`, `slackengine.WriteSetup` | Each writes a record only its own package writes, for other packages' tests. Each is on the guard's allowlist. |
+| `loomrecipe.RecipeEngines`, `shedrecipe.Names`, `websterengine.ConflictRecordRel` | Oracles that other packages' tests check against. Each is on the guard's allowlist. |
+| `fabricvocab.SideTokens`, `fabricvocab.BareTokenInRootDoc`, `fabricvocab.IsOwner` | The vocabulary checks that enforcement tests run. Each is on the guard's allowlist. |
+| `hibernateengine.TerminalPhases`, `shortcutcli.Load`, `claudeengine.New` | Read package state or build an engine with its unexported state, for other packages' tests. Each is on the guard's allowlist. |
+
+The test-support packages `internal/testkit`, `internal/gitkit` and `internal/hubforge` appear in the mains-only run by design.
+The `-test` run shows every function in them is reached by some test.
+No hit is reached through reflection, a registry or `go:linkname`.
+
+## Bounds
+
+The analysis covers the Linux build only.
+The Windows build fails to load, because the `quarry` dependency needs cgo and a C toolchain to cross-compile.
+The darwin build does not compile, since `internal/proc` has no darwin implementation.
+A function that only a Windows-only file calls was therefore not checked.
