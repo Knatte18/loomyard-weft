@@ -325,6 +325,12 @@ Decision: Delete card 14's sentence on typing the record's deferred PromptLine i
 
 Rationale: The rule cannot work with SkipSkillLoadTurn and departs from D7; its only case, a limit on the skill-load turn, is settled by the next decision.
 
+### Added after Discussion (parent, 2026-11-18): A usage limit on the skill-load turn repeats the launch under the new account (F2)
+
+Decision: When the skill-load turn ends on a usage limit and the switch moves the run to another account, the relaunch repeats the original launch unchanged under the new account: the same Spec, with its skill-load turn and deferred prompt line. A fresh launch starts fresh again; a launch that resumed a session resumes the same session id, its transcript carried as D7 carries it. No continue line is typed on this path.
+
+Rationale: The limited load turn did no work, so repeating the launch as it was loses nothing and needs no special first turn.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: `CLAUDE_CONFIG_DIR`, the credentials file, the status line input, the account file, the pick and the copy live in `internal/shuttleengine/claudeengine`;
