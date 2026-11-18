@@ -1,12 +1,12 @@
 {
   "current_producer": "Code-Burler-Review",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Code-Burler-Review (burler-review): round 1 attempt 1: review: burler: round reached done but its review file is invalid: burler: review file frontmatter is not valid YAML: yaml: line 23: mapping values are not allowed in this context",
   "pause_requested": false,
   "activity": {
     "now": "Code-Burler-Review",
     "last": "Code-Bouncer → bounced to Code-Burler-Review",
-    "wait": ""
+    "wait": "shedadapters: Code-Burler-Review (burler-review): round 1 attempt 1: review: burler: round reached done but its review file is invalid: burler: review file frontmatter is not valid YAML: yaml: line 23: mapping values are not allowed in this context"
   },
   "history": [
     {
