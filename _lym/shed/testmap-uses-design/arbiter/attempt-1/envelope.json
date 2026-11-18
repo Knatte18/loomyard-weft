@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "Cause is decision at round 1, below the hard cap of 4, with no refusal named.\nThe one decision finding, F6 (trial order), is settled by the board entry: it orders the mutation check as \"Trial first\" and builds the gate report step only \"If the trial pays\".\nThe record establishes that the trial needs D9's planner and a hand verb (D11), so those stay as the trial's tooling, and D10 is built only after the trial pays.\nI recorded that ruling as an arbiter decision with concrete edits for the writer: Goal build order, D10 gating sentence, D11 output and board note, D12 config split, D10 criteria, and deleting the Open risk.\nThe answer needs another round's fix, and the round-1 fixer already addressed F1 to F5 and F7 to F15 in the record, so a continue gives fresh reviewers the amended record.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add testmap-uses-design --by arbiter --title \"Mutation check order: trial before the mutation step (F6)\" --decision \"…\" --rationale \"…\"",
+    "lym loom circling continue testmap-uses-design"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/testmap-uses-design/_lym/shed/testmap-uses-design/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/testmap-uses-design/_lym/shed/testmap-uses-design/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step testmap-uses-design --until-stop --arbiter-attempt 1"
+}
