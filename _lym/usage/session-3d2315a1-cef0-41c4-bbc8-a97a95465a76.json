@@ -1,0 +1,14 @@
+{
+  "session_id": "3d2315a1-cef0-41c4-bbc8-a97a95465a76",
+  "row": "Plan-Bouncer",
+  "role": "plan-bouncer-judge",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 12,
+  "cache_write_tokens": 33452,
+  "cache_read_tokens": 90139,
+  "output_tokens": 2956,
+  "cost_usd": 0.1312418,
+  "started": "2026-11-18T12:22:35Z",
+  "ended": "2026-11-18T12:23:00Z"
+}
