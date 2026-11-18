@@ -253,6 +253,12 @@ Decision: In D8's rationale, replace the clause "the operator's 2026-10-16 decis
 
 Rationale: The board entry's Status section says the stencils "are kept for Hardener but unmaintained, and are re-derived from the Bouncer judge (bouncer/bouncer-template-judge.md) when Hardener is built, so no dead-code sweep removes them (operator decision 2026-10-16)". It says nothing about keeping them only until Hardener is built, so the record's clause misquotes it (review round 1, F10).
 
+### Added after Discussion (operator, 2026-11-18): Delete treadle when Hardener is built (F10)
+
+Decision: Hardener is built on the perch machinery (Shed rows with the Bouncer and burler), as D3 decides. The task that builds Hardener deletes internal/treadleengine, the stencils under contracts/stencils/treadle/ and the treadle-judge and treadle-targeting roles, with the agents.yaml reinterpretation D8 describes. This replaces the 2026-10-16 decision to keep treadle for Hardener; the treadle stencils are not re-derived.
+
+Rationale: Operator, 2026-11-18: treadle was meant as the shared round-loop engine for perch and Tenter, but perch moved to the Shed, Bouncer and burler rows on 2026-08-21 and treadle has had no consumer since; one round-loop engine, not two.
+
 ## Constraints
 
 - PATTERN-lym-files: the sandbox root is a never-tracked directory under the worktree's `.lym`, and the archive lives under `_lym/harden/`, both named through `internal/lymdirs`.
