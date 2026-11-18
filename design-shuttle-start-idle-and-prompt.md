@@ -1,6 +1,6 @@
 # Shuttle start: idle check misses an idle prompt, and a review strand misses its prompt turn
 
-`shuttle-start-idle-and-prompt` · Task · bug, shuttle, burler · draft
+`shuttle-start-idle-and-prompt` · Task · bug, shuttle, burler
 
 Depends on: [`orch-ignores-deny-python`](design-orch-ignores-deny-python.md)
 
