@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 19:40 UTC; every age below is as of then.
+Rendered 2026-11-18 19:42 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -34,7 +34,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md)<br>[Sketch](decision-fabric-single-repo-mode.md) | 2h<br>20m | fabric |
+| S1 |  | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md)<br>[Sketch](decision-fabric-single-repo-mode.md) | 2h<br>23m | fabric |
 
 ### Research (2)
 
@@ -47,7 +47,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | 14m<br>14m | gate, tools |
+| B1 |  | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | 17m<br>17m | gate, tools |
 
 ### Features (3)
 
