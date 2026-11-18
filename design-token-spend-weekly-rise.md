@@ -1,6 +1,6 @@
 # Claude usage outside runs: orchs, beam orchs, dobby agents, other hubs
 
-`token-spend-weekly-rise` · Task · research, claude, report · starting · Worktree-Create
+`token-spend-weekly-rise` · Task · research, claude, report · starting · Seed-Child
 
 ## Why
 
