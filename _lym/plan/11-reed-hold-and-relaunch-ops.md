@@ -1,17 +1,17 @@
 # Card 11 — Reed ops: end a strand's process while holding it, relaunch it under the same GUID
 
 **Create:**
-- `plan:internal/reedengine#RelaunchSpec` -> `type RelaunchSpec struct`
-- `plan:internal/reedengine#Engine.EndStrandProcess` -> `func (e *Engine) EndStrandProcess(guid string) error`
-- `plan:internal/reedengine#Engine.ReleaseStrandHold` -> `func (e *Engine) ReleaseStrandHold(guid string) error`
-- `plan:internal/reedengine#Engine.RelaunchStrand` -> `func (e *Engine) RelaunchStrand(guid string, spec RelaunchSpec) error`
-- `plan:internal/reedengine#TestEndAndRelaunchStrand_KeepTheGUID` -> `func TestEndAndRelaunchStrand_KeepTheGUID(t *testing.T)`
-- `plan:internal/shuttleengine#fakeReed.EndStrandProcess` -> `func (f *fakeReed) EndStrandProcess(guid string) error`
-- `plan:internal/shuttleengine#fakeReed.ReleaseStrandHold` -> `func (f *fakeReed) ReleaseStrandHold(guid string) error`
-- `plan:internal/shuttleengine#fakeReed.RelaunchStrand` -> `func (f *fakeReed) RelaunchStrand(guid string, spec reedengine.RelaunchSpec) error`
-- `plan:internal/testkit/shuttlefake#Reed.EndStrandProcess` -> `func (r *Reed) EndStrandProcess(guid string) error`
-- `plan:internal/testkit/shuttlefake#Reed.ReleaseStrandHold` -> `func (r *Reed) ReleaseStrandHold(guid string) error`
-- `plan:internal/testkit/shuttlefake#Reed.RelaunchStrand` -> `func (r *Reed) RelaunchStrand(guid string, spec reedengine.RelaunchSpec) error`
+- `internal/reedengine#RelaunchSpec`
+- `internal/reedengine#Engine.EndStrandProcess`
+- `internal/reedengine#Engine.ReleaseStrandHold`
+- `internal/reedengine#Engine.RelaunchStrand`
+- `internal/reedengine#TestEndAndRelaunchStrand_KeepTheGUID`
+- `internal/shuttleengine#fakeReed.EndStrandProcess`
+- `internal/shuttleengine#fakeReed.ReleaseStrandHold`
+- `internal/shuttleengine#fakeReed.RelaunchStrand`
+- `internal/testkit/shuttlefake#Reed.EndStrandProcess`
+- `internal/testkit/shuttlefake#Reed.ReleaseStrandHold`
+- `internal/testkit/shuttlefake#Reed.RelaunchStrand`
 
 **Extends:**
 - `internal/reedengine#Strand`

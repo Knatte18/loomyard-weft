@@ -16,8 +16,8 @@
 - `internal/shuttleengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#RunState.relaunching`
-- `plan:internal/shuttleengine#updateRunState`
+- `internal/shuttleengine#RunState.relaunching`
+- `internal/shuttleengine#updateRunState`
 - `internal/shuttleengine#Run.deliverPromptOnAttach`
 - `internal/shuttleengine#Run.DeliverPendingPrompt`
 - `internal/shuttleengine#Run.finalize`

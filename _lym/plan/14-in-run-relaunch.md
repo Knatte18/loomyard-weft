@@ -33,8 +33,8 @@
 
 **Uses:**
 - `plan:internal/shuttleengine#AccountSwitcher`
-- `plan:internal/shuttleengine#updateRunState`
-- `plan:internal/shuttleengine#RunState.relaunching`
+- `internal/shuttleengine#updateRunState`
+- `internal/shuttleengine#RunState.relaunching`
 - `internal/shuttleengine#Runner.checkResume`
 - `internal/shuttleengine#Run.sendStartPrompt`
 - `internal/shuttleengine#Run.finalize`

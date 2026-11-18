@@ -1,11 +1,11 @@
 # Card 12 — A run record that reads relaunching, and one running predicate
 
 **Create:**
-- `plan:internal/shuttleengine#relaunchBound` -> `func relaunchBound(cfg Config) time.Duration`
-- `plan:internal/shuttleengine#RunState.relaunching` -> `func (rs RunState) relaunching(now time.Time, bound time.Duration) (within, past bool)`
-- `plan:internal/shuttleengine#updateRunState` -> `func updateRunState(runDir string, mutate func(rs RunState, found bool) (RunState, error)) error`
-- `plan:internal/shuttleengine#TestRunState_Relaunching` -> `func TestRunState_Relaunching(t *testing.T)`
-- `plan:internal/shuttleengine#TestStopStrand_RelaunchingRecordStopsAndRemovesTheHeldStrand` -> `func TestStopStrand_RelaunchingRecordStopsAndRemovesTheHeldStrand(t *testing.T)`
+- `internal/shuttleengine#relaunchBound`
+- `internal/shuttleengine#RunState.relaunching`
+- `internal/shuttleengine#updateRunState`
+- `internal/shuttleengine#TestRunState_Relaunching`
+- `internal/shuttleengine#TestStopStrand_RelaunchingRecordStopsAndRemovesTheHeldStrand`
 
 **Extends:**
 - `internal/shuttleengine#RunState`
