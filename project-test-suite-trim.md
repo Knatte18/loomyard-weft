@@ -1,9 +1,9 @@
 # P6 Coverage maps: build them, keep them fresh, and cut the test suite with them
 
-Rendered 2026-11-17 19:45 UTC; every age below is as of then.
+Rendered 2026-11-18 06:58 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`test-suite-trim`](design-test-suite-trim.md) · Age 7d · Owner `neve`
+[`test-suite-trim`](design-test-suite-trim.md) · Age 8d · Owner `neve`
 
 Builds the first full set of coverage maps and uses them to cut the test suite:
 cut existing redundant tests.
@@ -42,7 +42,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 8d<br>45m | testkit, gate |
+| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 8d<br>11h | testkit, gate |
 
 ## Notes (0)
 
