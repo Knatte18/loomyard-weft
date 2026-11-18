@@ -14,5 +14,6 @@
       "title": "This bench arm designs against its own base and ignores parent commit 7c23591",
       "digest": "66fb31f1e96c93a062d21e34c7c82a4f05cb11d2e431e0a960fbea357327501e"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
