@@ -1,0 +1,20 @@
+verdict: hand-on
+reason: |-
+  The stop is a round-1 review escalation with cause `decision`, round 1, no refusal named. Its one decision finding, F10, asks whether this run may delete internal/treadleengine, its stencils and its roles (D8). Neither the board entry nor the decision record settles that.
+  On the board entry, the 2026-11-18 operator decision names treadle among the modules to build on. The 2026-10-16 operator decision keeps the treadle judge stencils for Hardener, to be re-derived from the Bouncer judge when Hardener is built, "so no dead-code sweep removes them". The draft also says treadleengine's retirement "is a separate call, made once Tenter lands". The entry's Done-when names deleting crucible/, not treadle.
+  D8 deletes treadle on dead-code grounds (no consumer, reached from no main). D3 builds Hardener on the Bouncer instead of treadle, and support-log Q1 shows that was an auto-pick, not an operator answer. Q13 shows the writer left the deletion for the parent to overrule.
+  A yes would widen the task's scope beyond Done-when into a call the board reserves as separate, so I may not settle it that way. A no would also leave a choice open: whether this run re-derives the kept stencils, which the 2026-10-16 note expects when Hardener is built but which nothing in this design would use. So the question goes to the operator.
+  The one part of F10 the board does settle is that D8's rationale misquotes the 2026-10-16 note ("only until Hardener is built"). I recorded the exact replacement as an arbiter decision.
+  The round's BLOCKING findings F1, F2 and F3 are not decision findings. The committed record after round 1's fix already carries their fixes: D8 has the agentconfig premise and reinterpretation, D4 runs gate keys through --gate, and D5 routes the reaps through runproc.End with a PATTERN-child-processes change. A continue would put those fixes before fresh reviewers.
+verbs:
+  - |-
+    lym loom decision add hardener --by arbiter --title "D8's rationale quotes the 2026-10-16 treadle note as written" --decision "In D8's rationale, replace the clause \"the operator's 2026-10-16 decision kept its stencils only until Hardener is built.\" with \"the board entry records an operator decision of 2026-10-16 that keeps treadle's judge stencils for Hardener, unmaintained, to be re-derived from the Bouncer judge when Hardener is built, so that no dead-code sweep removes them; whether this run may delete treadle is the open parent question in Open risks.\" Make this replacement whatever the parent answers on deleting treadle, unless that answer removes D8 entirely." --rationale "..."
+question: |-
+  F10 for task `hardener`, which the operator needs to answer: may this Hardener run delete internal/treadleengine, the stencils under contracts/stencils/treadle/ and the treadle-judge and treadle-targeting roles (decision record D8, with its agents.yaml reinterpretation), or must they stay?
+  The decision record builds Hardener on the Bouncer and the burler rows, not on treadle (D3, an auto-pick). It then deletes treadle as unreachable code. Against that:
+  - The board's 2026-11-18 operator decision lists treadle among the modules to build on.
+  - The 2026-10-16 operator decision keeps treadle's judge stencils for Hardener, to be re-derived from the Bouncer judge when Hardener is built, so no dead-code sweep removes them.
+  - The draft calls treadleengine's retirement "a separate call, made once Tenter lands".
+  If the operator says keep: D8 and its reinterpretation come out of the record. The operator must also say whether this run re-derives the treadle stencils from the Bouncer judge or leaves them as they are.
+  If the operator says delete: the writer drops the Open risks line, and the D8 rationale correction I recorded as an arbiter decision applies.
+  Record the answer with `lym loom decision add hardener --by parent`. Then run `lym loom circling continue hardener`, since round 1 is below the hard cap and round 1's fixes for BLOCKING F1 to F3 still need a re-review. The arbiter made no commit in the code tree.
