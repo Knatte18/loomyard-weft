@@ -211,6 +211,13 @@ Rationale: Round 3's F13 found the clear ran inside Call before shed persisted t
   - d4-clear-before-reroute-persisted (class design, severity BLOCKING, open in rounds 3)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - card3-card9-battencli-intentionallynil-unlisted (class scope, severity BLOCKING, open in rounds 2)
+  - card7-capturereview-signature-breaks-tests (class scope, severity BLOCKING, open in rounds 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Review: the Code-Review rubric carries the three result-check bullets of D1, worded for any language and hub, and accepts a trailer on any commit of the range.
