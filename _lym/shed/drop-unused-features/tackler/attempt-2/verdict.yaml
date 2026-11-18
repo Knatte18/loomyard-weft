@@ -1,8 +1,0 @@
-verdict: resume
-reason: >-
-  The bootstrap stop (trace 451651ca4e132754, envelope kind=bootstrap) refused the Seed-Child step because the code tip
-  64e587958feacd8940304401801c039f015c63af named by the run's last transition was not on origin. Checked now:
-  `git ls-remote origin refs/heads/main` returns 64e587958feacd8940304401801c039f015c63af, so the tip is on origin and
-  the cause has cleared. The local commit also verifies as an ancestor of origin/main. The stop's own way forward is to
-  re-run `lym batten run drop-unused-features`, which is a plain re-launch with no goto (goto applies only to blocked stops).
-  This is the first resume of this stop, not a repeat of an unchanged one.
