@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 15:14 UTC; every age below is as of then.
+Rendered 2026-11-18 15:17 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,18 +8,17 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (4)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
-### Running (3)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review** | [`review-result-checks`](design-review-result-checks.md)<br>[Sketch](decision-review-result-checks.md) | tapestry · solid | Parent-Align | neve | 4h<br>4h | stencil, drift, fabric, burler, landing, loom, shed, testkit, docs |
-| T5 | **The per-process memory cap sometimes does not hold, and a runaway process takes the machine down**<br>• RunMemoryCappedVia lets a child keep 384 MB under a 128 MB cap on some runs; find why, fix it, prove it on repeated runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`memory-cap-not-enforced`](design-memory-cap-not-enforced.md) | darn · solid | landing · Finalize | neve | 1h<br>1h | process, gate |
 | T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Webster | neve | 5h<br>4h | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
 ### Ready (0)
@@ -68,3 +67,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>3w | burler |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 3d<br>7h | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>12d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T5 | **The per-process memory cap sometimes does not hold, and a runaway process takes the machine down**<br>• RunMemoryCappedVia lets a child keep 384 MB under a 128 MB cap on some runs; find why, fix it, prove it on repeated runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`memory-cap-not-enforced`](design-memory-cap-not-enforced.md) | 1h<br>1h | process, gate |
