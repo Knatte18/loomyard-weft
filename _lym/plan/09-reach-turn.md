@@ -42,8 +42,8 @@
 
 **Uses:**
 - `plan:internal/shuttleengine#RerunMark`
-- `plan:internal/gatecli#ReadReachReport`
-- `plan:internal/gatecli#ReachReportMatches`
+- `internal/gatecli#ReadReachReport`
+- `internal/gatecli#ReachReportMatches`
 - `internal/gatecli#ReachReport.NoteLines`
 - `internal/loomshed#NewVerifyGate`
 - `internal/weaverengine#batchGateClosure`

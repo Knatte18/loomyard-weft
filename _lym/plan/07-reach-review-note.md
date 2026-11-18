@@ -1,13 +1,13 @@
 # Card 7 — reach-review-note
 
 **Create:**
-- `plan:internal/gatecli#ReadReachReport` -> `func ReadReachReport(location *lymcwd.Location) (ReachReport, bool, error)`
-- `plan:internal/gatecli#ReachReportMatches` -> `func ReachReportMatches(location *lymcwd.Location, report ReachReport, rev string) (bool, error)`
-- `plan:internal/loomcli#reachReportNote` -> `func reachReportNote(location *lymcwd.Location) func() string`
-- `plan:internal/loomcli#renderReachReportNote` -> `func renderReachReportNote(report gatecli.ReachReport, found bool, matchesHead func() (bool, error)) string`
-- `plan:internal/loomcli#TestRenderReachReportNote` -> `func TestRenderReachReportNote(t *testing.T)`
-- `plan:internal/shedadapters#reachReportMarker` -> `const reachReportMarker = "reach_report"`
-- `plan:internal/shedadapters#reachReportNote` -> `func reachReportNote(rubric []byte, read func() string) (string, error)`
+- `internal/gatecli#ReadReachReport`
+- `internal/gatecli#ReachReportMatches`
+- `internal/loomcli#reachReportNote`
+- `internal/loomcli#renderReachReportNote`
+- `internal/loomcli#TestRenderReachReportNote`
+- `internal/shedadapters#reachReportMarker`
+- `internal/shedadapters#reachReportNote`
 
 **Edit:**
 - `internal/shedadapters#RubricNotes`

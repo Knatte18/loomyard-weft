@@ -1,6 +1,6 @@
 {
   "runGuid": "55564e2c6983cfab5875811855cabccd",
-  "planFingerprint": "d8ce8b78582062f830071d09d133b416713b0eba192b3ef38e752caa5d1e8730",
+  "planFingerprint": "bcb10ff0b2fccfab3ab628171da8ba3159204d1ff2e908ad1fde701bd35b0f0b",
   "planFileHashes": {
     "00-overview.md": "60f0149d2ad266e455907c0d1f6ac189a2c7b065f5e6c2572875fd14cc856a23",
     "01-testreach-changed-funcs.md": "9697c560dae0c978316d293e521026f00787cf923a8a5b4f9a0a5f8ae0c2eab5",
@@ -9,9 +9,9 @@
     "04-gate-config-reach.md": "30085a5305df8f8bf4ed0c72d6c4ebeed10b9b784cd0eee1b5b4cf76d1c36942",
     "05-reach-step.md": "d33661184e1a1ef9f5780e1067b0ecc90dfe514d4ede2b48de61110bd8950810",
     "06-map-run-writes-index.md": "fc071dc09ea0dc01eb25d9fc69d212e29a8069c4c553167802b34a97241df17e",
-    "07-reach-review-note.md": "0506a76150b6315056fa1422a7b822ae4464bb1f4dc13c7ea2e727d78360e791",
+    "07-reach-review-note.md": "59232d01bfe82831abbef059e992fd51060668db83caebdeba305dd2cbab5b26",
     "08-rerun-mark-writer-only.md": "106b914fee9e91e30217b4aef61ae92a0e0be24c391a8141b4ffa9786f5bdf73",
-    "09-reach-turn.md": "abd92195c3850dceeeb78f8f10254bfe8816a430be8b340e3be160a81e7aec09",
+    "09-reach-turn.md": "29557a675185fd77e5dc9757d922168f2942b3bcb2366660d26dcaef17467188",
     "10-reach-verb.md": "18eda4b23adcee61182358cd0efdc7c0865af94b6eb3ffc923207d030cbd91c8",
     "11-failure-triage.md": "5da4cec1187eeaf5ca6484dfd85dacfa5238a894fb2a5da6c8d100f91fc415dc",
     "12-triage-in-fixer-reports.md": "96365b3338dd82126aced69db6ffe5ac22096f59312edf24be77c487f4af4513",
@@ -581,23 +581,44 @@
         "07-reach-review-note"
       ],
       "cardHashes": {
-        "07-reach-review-note": "0506a76150b6315056fa1422a7b822ae4464bb1f4dc13c7ea2e727d78360e791"
+        "07-reach-review-note": "59232d01bfe82831abbef059e992fd51060668db83caebdeba305dd2cbab5b26"
       },
       "startSha": "1ac6a28730396ed50e60c8b8c8be59a0d7cc4e14",
       "kind": "fork",
       "spawnedAt": "2026-11-18T20:48:35Z",
       "sessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-reach-review-note",
+        "status": "done",
+        "head_sha": "e5def9f99b143385267c332251c0de3846526823",
+        "deviations": [
+          "contracts/stencils/rubric_test.go",
+          "internal/gatecli/reachreport.go",
+          "internal/loomcli/reachnote.go",
+          "internal/shedadapters/rubric.go"
+        ]
+      },
+      "cardShas": [
+        "e5def9f99b143385267c332251c0de3846526823"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-ac4a1e3636aa04fb3.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-ac4a1e3636aa04fb3.jsonl"
+      ]
     }
   },
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "cc2115949b2e99f9e861afb1569b42c9",
   "masterSessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-abfeb8a3764f9cdd3.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-ad6e523785aa3be05.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-ad6e523785aa3be05.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-ac4a1e3636aa04fb3.jsonl"
   ]
 }
