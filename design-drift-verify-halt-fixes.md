@@ -1,6 +1,6 @@
 # Drift-Verify halts: no false guard halt on record edits, and a short halt note with the way forward first
 
-`drift-verify-halt-fixes` · Task · bug, enhancement, drift, loom
+`drift-verify-halt-fixes` · Task · bug, enhancement, drift, loom · starting · Worktree-Create
 
 Bundles issues #146 and #147; both are Drift-Verify halts from task `dop-pumps-off-negative-spp`.
 
