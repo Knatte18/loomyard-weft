@@ -1,6 +1,6 @@
 # Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo
 
-`fabric-single-repo-mode` · Task · sketch, fabric · starting · Seed-IDE
+`fabric-single-repo-mode` · Task · sketch, fabric · starting · Open-IDE
 
 Decision record: [Sketch](decision-fabric-single-repo-mode.md)
 
