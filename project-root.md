@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 08:28 UTC; every age below is as of then.
+Rendered 2026-11-18 08:29 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **lym orch launches keep the python guard although deny_python is false**<br>• An orch launch ignores deny_python: false in the hub shuttle config; notice and hook both stay<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-ignores-deny-python`](design-orch-ignores-deny-python.md) | darn · light | Code-Burler-Fix | neve | 51m<br>51m | orch, shuttle, config |
-| T6 | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | darn · light | landing · Finalize | neve | 1h<br>50m | burler, stencil |
+| T4 | **lym orch launches keep the python guard although deny_python is false**<br>• An orch launch ignores deny_python: false in the hub shuttle config; notice and hook both stay<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-ignores-deny-python`](design-orch-ignores-deny-python.md) | darn · light | Code-Bouncer | neve | 52m<br>52m | orch, shuttle, config |
+| T6 | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | darn · light | landing · Finalize | neve | 1h<br>51m | burler, stencil |
 
 ### Ready (0)
 
@@ -43,7 +43,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md)<br>[Sketch](decision-claude-account-pick-simple.md) | 2w<br>9m | claude, shuttle, config |
+| S1 |  | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md)<br>[Sketch](decision-claude-account-pick-simple.md) | 2w<br>10m | claude, shuttle, config |
 
 ### Research (2)
 
@@ -56,22 +56,22 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **drift judge halt blames the judge for a parent's lym loom decision add during Drift-Verify** | [`drift-judge-parent-decision`](design-drift-judge-parent-decision.md) | 21m<br>21m | drift, loom |
-| B2 |  | **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure** | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | 20m<br>20m | burler, lenses |
-| B3 |  | **Gate re-prompt fails: shuttle strand not tracked by reed, Plan-Write halts blocked** | [`gate-reprompt-strand-untracked`](design-gate-reprompt-strand-untracked.md) | 20m<br>20m | gate, shuttle, reed |
-| B4 |  | **drift: line-range expectation entries never match in diff mode lines** | [`drift-line-range-never-matches`](design-drift-line-range-never-matches.md) | 20m<br>20m | drift |
-| B5 |  | **Agents must never build or check out a repository under .scratch, .lym or _lym** | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | 20m<br>3m | stencil |
-| B6 |  | **shed step re-halts on the shuttle run left running by the earlier interrupted-stop** | [`restep-leftover-shuttle-run`](design-restep-leftover-shuttle-run.md) | 20m<br>20m | shed, shuttle |
-| B7 |  | **shuttle start fails with 'session is not idle' when the pane shows an idle input prompt after skill loading** | [`idle-check-after-skill-load`](design-idle-check-after-skill-load.md) | 20m<br>20m | shuttle |
-| B8 |  | **Review strand starts without the turn naming its prompt file, also after restart** | [`review-strand-no-prompt-turn`](design-review-strand-no-prompt-turn.md) | 20m<br>20m | shuttle, burler |
-| B9 |  | **dotnet test exits 0 with no output in a darn session while lym gate test is off limits** | [`dotnet-test-silent-exit`](design-dotnet-test-silent-exit.md) | 20m<br>20m | dotnet, process |
-| B10 |  | **A run in a hub with no declared tier0 fails at shed build, even a docs-only darn** | [`no-tier0-fails-shed-build`](design-no-tier0-fails-shed-build.md) | 20m<br>20m | gate, config |
+| B1 |  | **drift judge halt blames the judge for a parent's lym loom decision add during Drift-Verify** | [`drift-judge-parent-decision`](design-drift-judge-parent-decision.md) | 22m<br>22m | drift, loom |
+| B2 |  | **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure** | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | 21m<br>21m | burler, lenses |
+| B3 |  | **Gate re-prompt fails: shuttle strand not tracked by reed, Plan-Write halts blocked** | [`gate-reprompt-strand-untracked`](design-gate-reprompt-strand-untracked.md) | 21m<br>21m | gate, shuttle, reed |
+| B4 |  | **drift: line-range expectation entries never match in diff mode lines** | [`drift-line-range-never-matches`](design-drift-line-range-never-matches.md) | 21m<br>21m | drift |
+| B5 |  | **Agents must never build or check out a repository under .scratch, .lym or _lym** | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | 21m<br>4m | stencil |
+| B6 |  | **shed step re-halts on the shuttle run left running by the earlier interrupted-stop** | [`restep-leftover-shuttle-run`](design-restep-leftover-shuttle-run.md) | 21m<br>21m | shed, shuttle |
+| B7 |  | **shuttle start fails with 'session is not idle' when the pane shows an idle input prompt after skill loading** | [`idle-check-after-skill-load`](design-idle-check-after-skill-load.md) | 21m<br>21m | shuttle |
+| B8 |  | **Review strand starts without the turn naming its prompt file, also after restart** | [`review-strand-no-prompt-turn`](design-review-strand-no-prompt-turn.md) | 21m<br>21m | shuttle, burler |
+| B9 |  | **dotnet test exits 0 with no output in a darn session while lym gate test is off limits** | [`dotnet-test-silent-exit`](design-dotnet-test-silent-exit.md) | 21m<br>21m | dotnet, process |
+| B10 |  | **A run in a hub with no declared tier0 fails at shed build, even a docs-only darn** | [`no-tier0-fails-shed-build`](design-no-tier0-fails-shed-build.md) | 21m<br>21m | gate, config |
 
 ### Enhancements (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E2 |  | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md) | 20m<br>20m | burler, stencil, drift |
+| E2 |  | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md) | 21m<br>21m | burler, stencil, drift |
 
 ### Features (3)
 
