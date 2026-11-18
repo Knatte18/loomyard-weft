@@ -679,6 +679,24 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/9142bc6e-f406-4b6c-8882-b8da16176a9c/subagents/agent-a41aed30768e3c431.jsonl"
       ]
     },
+    "17": {
+      "slug": "orch-switch-and-fresh",
+      "cards": [
+        "17-orch-switch-and-fresh",
+        "18-accounts-reference-doc"
+      ],
+      "cardHashes": {
+        "17-orch-switch-and-fresh": "75af5d0ce5ee5569009bfb31bfc63a38605c94c17b2e432086b12caf9ba8b491",
+        "18-accounts-reference-doc": "d518c1becf889be54f55870c0fefd0c38def3d08392b2f79ed9fc604b6061352"
+      },
+      "startSha": "559df40b623a8f636d66e4086c31185a6924a841",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T16:45:01Z",
+      "sessionId": "9142bc6e-f406-4b6c-8882-b8da16176a9c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "3": {
       "slug": "engine-worktree-geometry",
       "cards": [
@@ -849,7 +867,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 17,
   "masterStrand": "135b8cd51e8ec48e4fd912379752b134",
   "masterSessionId": "9142bc6e-f406-4b6c-8882-b8da16176a9c",
   "masterEngine": "claude",
