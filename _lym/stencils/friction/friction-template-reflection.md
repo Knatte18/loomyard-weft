@@ -1,10 +1,12 @@
 <!-- This is the reflection agent's own prompt.
-     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lym/stencils/friction/ and read from there at call time by internal/frictionengine,
-     which fills it through stencil.Fill and hands it to shuttle as the reflection agent's entire instruction set.
-     Every marker below is a top-level {{.X}} substitution;
-     stencil.Fill requires every marker (friction_dir, report_path, note_list, task_slug, parent_directive, edit_directive) non-empty, parent_directive being rendered by internal/parentdirective and edit_directive by internal/editdirective,
-     and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=7f34f000e7f690578e649dbf2a315dba0f2b9368b9ad64f55ed3a5bbac5337d7 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go),
+     seeded to the Bolt checkout's `_lym/stencils/friction/`.
+     internal/frictionengine reads it from there at call time and fills it through stencil.Fill.
+     It hands the result to shuttle as the reflection agent's entire instruction set.
+     Every marker below is a top-level {{.X}} substitution, and stencil.Fill requires each to be non-empty.
+     internal/parentdirective renders parent_directive, and internal/editdirective renders edit_directive.
+     There are no {{if}}/{{range}} conditionals in this file.
+lym-stencil: sha256=ce87ccb85be851c4034dbf629a9b19b3efdf032c3f291b46e12474abb16e34ca build=64e587958feacd8940304401801c039f015c63af time=2026-11-18T19:38:37Z -->
 
 # Reflection — read the friction notes, file every distinct lym problem
 
@@ -52,7 +54,14 @@ For each issue, invoke `lym selfreport create` yourself, following its own guida
 This prompt does not restate that contract.
 File only through `lym selfreport create`, never through `gh`.
 
-Each issue body states what happened, why it is abnormal and what to do, and then ends with a provenance line naming the task slug `{{.task_slug}}` and the file names of the notes the issue came from.
+Each issue body states what happened, why it is abnormal and what to do, and then gives a provenance line naming the task slug `{{.task_slug}}` and the file names of the notes the issue came from.
+The provenance line is the last of what you write; the sections that `--attach` appends follow it.
+Never file an issue with an empty body.
+
+When the problem rests on evidence in a run directory, such as a capture, a trace or a log line, the issue carries it inline:
+attach the file with `--attach`, or quote the lines that show the problem.
+A run directory is deleted with its worktree, so an issue that only names the path names a file nobody can read once the run is gone.
+An attachment obeys the content rule below like the rest of the body: quote an excerpt instead when the file holds anything the rule forbids.
 
 Content rule, which is a hard rule: the repository these issues go to is public.
 An issue body describes the lym problem and may quote lym's own output, verb names and repo-relative lym paths.
