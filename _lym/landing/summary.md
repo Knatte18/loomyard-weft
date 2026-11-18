@@ -1,32 +1,45 @@
-# Burler fix round: audit only the twill fixer's self-check forks
+# Burler fix round: stop failing on a fresh subagent's writes
 
-Issue #144 reported a loom run that halted at Code-Burler-Fix as producer-hard-failure, because the fix-round audit said a twill fixer fork attempted 5 write/edit calls.
-The fixer's session transcripts show that none of its four self-check forks wrote anything.
-The writes came from two `general-purpose` subagents that the fixer started to make its fixes, which it is allowed to do.
-The Claude fork audit reported every transcript under the session's `subagents/` directory as a fork,
-so `auditFixRound` took the delegates' writes for a fork's writes and failed the half.
+The burler twill fixer may start a fresh subagent to make its fixes, and that subagent writes on the fixer's behalf.
+The fork audit counted every subagent transcript as a self-check fork.
+It therefore read the fresh subagent's `Write`/`Edit` calls as a fork mutating a file.
+The fix round then halted as `producer-hard-failure`, even though the fixer had done what it was asked.
+
+The audit now tells a fork from a fresh subagent, and the fix round holds only the forks to the read-only rule.
+
+Closes #144
 
 ## What changes
 
-- `shuttleengine.ForkReport` gains `FreshSubagent`, which is true for a subagent started with a fresh context and false for a fork that inherits the parent's context.
-- `claudeengine` reads it from the `.meta.json` Claude Code writes beside each subagent transcript (`isFork`, `agentType`).
-  A transcript with no readable meta file reads as a fork, so the audit stays strict when Claude Code records nothing.
-  The meta read that already supplied the spawn-boundary `toolUseId` now returns both facts.
-- `burlerengine.auditFixRound` checks and counts only the forks.
-  A fresh subagent's writes are the fixer's own fixes, and the round's gate and later review rounds check them like any other fixer edit.
-  A self-check fork that writes, nests a spawn or runs a mutating git command is still a hard error with the same way forward.
+- `shuttleengine`: `ForkReport` gains `FreshSubagent`, and `ForkAudit` gains `NamedForkSpawns`.
+  The `ForkAuditor` docs now say the audit covers every subagent, forks and fresh ones alike.
+- `shuttleengine/claudeengine`: the audit reads the `.meta.json` beside each subagent transcript.
+  It marks a transcript as fresh only on positive evidence:
+  a parsed file that names a subagent type other than the fork type and does not flag a fork.
+  A transcript with a missing, unparseable or kind-less `.meta.json` still reads as a fork, so the check stays strict.
+  `NamedForkSpawns` counts the named spawns whose `subagent_type` is the fork type, via the existing `forkSubagentType`.
+- `burlerengine`: `auditFixRound` drops fresh subagents before it checks and counts forks.
+  A name given to a fresh subagent is no named-fork violation.
+  Forks that write, nest `Agent` calls or carry names still fail the round, with the same way-forward text.
+  The fork-count and unreturned-report warnings now cover the self-check forks only.
 
 ## Design decisions
 
-- **Prompts unchanged.** The issue offered a stricter fork brief as one fix.
-  The `burler-fix-self-check` boilerplate already says the forks are read-only and return their findings only in their final message, and the forks in the halted run obeyed it.
-  The fault was in the audit, so the brief is left as it is.
-- **No auto-revert or retry.** The issue also suggested having the guard revert or retry.
-  With delegate writes no longer misread, a fork-write error now means a real fork wrote, and the manual revert-and-resume way forward still fits that case.
-- **Review rounds and webster unchanged.** `auditClusterRound` still polices every subagent of a reviewer, since nothing in a review session may write.
-  Webster's audits ignore the new field, so their behavior is the same.
+- The fix is in the audit, not in the fixer's brief or in the guard's reaction.
+  A fresh subagent is the fixer's way to write, so the audit separates the kinds of subagent
+  instead of telling the fixer not to use one.
+- The guard still fails the run on a real fork write.
+  No revert or retry was added for that case.
 
-## Tests
+## To check by hand
 
-- `internal/burlerengine/cluster_test.go`: a fix-round audit that holds a fresh subagent with write calls beside two clean forks is clean, and it counts two forks.
-- `internal/shuttleengine/claudeengine/audit_spawnboundary_test.go`: `FreshSubagent` is read from fork, `general-purpose`, fork-type-without-flag, missing and unparseable meta files.
+- `fix-round-named-fresh-delegate-fails-as-named-fork` (design, medium), in `auditFixRound`:
+  a fixer that names a fresh delegate may still fail as a named fork.
+- `fresh-subagent-fork-literal-not-constant` (consistency, blocking), in the audit tests and `claudeengine`:
+  a fork-type literal where the `forkSubagentType` constant belongs.
+- `fresh-subagent-test-bypasses-public-audit-surface` (design, medium), in the `claudeengine` audit tests:
+  a fresh-subagent test that bypasses the public audit surface.
+- `meta-without-kind-reads-fresh` (design, medium), in `auditForkTranscript`:
+  a `.meta.json` without a kind may read as fresh instead of as a fork.
+- Not run against a live Claude session: the new `.meta.json` fields (`agentType`, `isFork`) are read from Claude Code's
+  on-disk layout, so check them against a real fixer run that starts a fresh subagent.
