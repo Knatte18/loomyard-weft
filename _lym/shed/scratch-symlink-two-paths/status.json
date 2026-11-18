@@ -1,11 +1,11 @@
 {
   "current_producer": "Worktree-Teardown",
-  "state": "running",
+  "state": "done",
   "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Teardown",
-    "last": "Land → done",
+    "last": "Worktree-Teardown → done",
     "wait": ""
   },
   "history": [
@@ -76,6 +76,14 @@
       "output": "",
       "at": "2026-11-18T09:25:04Z",
       "started_at": "2026-11-18T09:24:58Z",
+      "machine": "neve"
+    },
+    {
+      "producer": "Worktree-Teardown",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-18T09:25:08Z",
+      "started_at": "2026-11-18T09:25:08Z",
       "machine": "neve"
     }
   ]
