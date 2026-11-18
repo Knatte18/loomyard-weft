@@ -1,6 +1,6 @@
 # A shell guard refusal says nothing ran and names the refused segment
 
-`refusal-names-segment` · Task · enhancement, process · starting · Open-IDE
+`refusal-names-segment` · Task · enhancement, process · running · Preflight
 
 ## Seen (retro, 2026-11-17)
 
