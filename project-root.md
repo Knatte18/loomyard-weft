@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (3)
+## Tasks (6)
 
 Concrete and claimable; only a task can run.
 
@@ -26,7 +26,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (2)
+### Draft (5)
 
 Not released; nothing starts it until its status is cleared.
 
@@ -34,8 +34,11 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Drift: a parent decision trips the judge snapshot check, and line-range expectations never match**<br>• Two drift bugs: parent decision commits blamed on the judge, and line-range entries that never match<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drift-judge-and-line-range`](design-drift-judge-and-line-range.md) | darn · solid |  | 48m<br>0m | drift, loom |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 14h<br>13h | board, ide, fabric |
+| T5 | `draft` **Shuttle start: idle check misses an idle prompt, and a review strand misses its prompt turn**<br>• Two seat start bugs in shuttle prompt delivery<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md) | darn · solid |  | 48m<br>0m | shuttle, burler |
+| T6 | `draft` **Leftover strands and shuttle runs halt a gate re-prompt and a re-step**<br>• Gate re-prompt to an untracked strand, and a re-step tripping on a leftover shuttle run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`leftover-strands-and-runs`](design-leftover-strands-and-runs.md) | darn · solid |  | 48m<br>0m | gate, shuttle, reed, shed |
+| T7 | `draft` **C# hub: silent dotnet test exit, and runs failing in a hub with no tier0 or only inert changes**<br>• Make a refused dotnet test say so; let a hub with no tier0 or an all-inert change run and land<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`csharp-hub-gate-fixes`](design-csharp-hub-gate-fixes.md) | darn · solid |  | 48m<br>0m | dotnet, process, gate, config |
 
-## Notes (15)
+## Notes (9)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -52,18 +55,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 8d<br>8d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 14h<br>14h | shuttle |
 
-### Bugs (8)
+### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B2 |  | **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure** | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | 48m<br>48m | burler, lenses |
-| B3 |  | **Gate re-prompt fails: shuttle strand not tracked by reed, Plan-Write halts blocked** | [`gate-reprompt-strand-untracked`](design-gate-reprompt-strand-untracked.md) | 48m<br>48m | gate, shuttle, reed |
 | B5 |  | **Agents must never build or check out a repository under .scratch, .lym or _lym** | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | 48m<br>30m | stencil |
-| B6 |  | **shed step re-halts on the shuttle run left running by the earlier interrupted-stop** | [`restep-leftover-shuttle-run`](design-restep-leftover-shuttle-run.md) | 48m<br>48m | shed, shuttle |
-| B7 |  | **shuttle start fails with 'session is not idle' when the pane shows an idle input prompt after skill loading** | [`idle-check-after-skill-load`](design-idle-check-after-skill-load.md) | 48m<br>48m | shuttle |
-| B8 |  | **Review strand starts without the turn naming its prompt file, also after restart** | [`review-strand-no-prompt-turn`](design-review-strand-no-prompt-turn.md) | 48m<br>48m | shuttle, burler |
-| B9 |  | **dotnet test exits 0 with no output in a darn session while lym gate test is off limits** | [`dotnet-test-silent-exit`](design-dotnet-test-silent-exit.md) | 48m<br>48m | dotnet, process |
-| B10 |  | **A run in a hub with no declared tier0 fails at shed build, even a docs-only darn** | [`no-tier0-fails-shed-build`](design-no-tier0-fails-shed-build.md) | 47m<br>47m | gate, config |
 
 ### Enhancements (1)
 
