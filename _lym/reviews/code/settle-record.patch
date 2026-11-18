@@ -1,0 +1,693 @@
+diff --git a/docs/research/loom/writer-explorers-bench-2026-11-18/arms-rows.tsv b/docs/research/loom/writer-explorers-bench-2026-11-18/arms-rows.tsv
+new file mode 100644
+index 00000000..0d218180
+--- /dev/null
++++ b/docs/research/loom/writer-explorers-bench-2026-11-18/arms-rows.tsv
+@@ -0,0 +1,37 @@
++slug	role	session	kind	agent_type	turns	cost_usd	unpriced_messages
++wxb-plan-with	plan	65174c8e-e2fc-4d31-a949-189f0c65dba2	writer	-	29	2.6785804	0
++wxb-plan-with	plan	65174c8e-e2fc-4d31-a949-189f0c65dba2	explorer	general-purpose	5	0.1082272	0
++wxb-plan-with	plan	65174c8e-e2fc-4d31-a949-189f0c65dba2	fork	fork	10	1.133717	0
++wxb-plan-with	plan	65174c8e-e2fc-4d31-a949-189f0c65dba2	fork	fork	8	0.59288	0
++wxb-plan-with	plan	65174c8e-e2fc-4d31-a949-189f0c65dba2	fork	fork	3	0.2608304	0
++wxb-plan-with	plan	65174c8e-e2fc-4d31-a949-189f0c65dba2	fork	fork	3	0.301925	0
++wxb-plan-with	plan	65174c8e-e2fc-4d31-a949-189f0c65dba2	fork	fork	3	0.34494840000000004	0
++wxb-plan-with	plan	65174c8e-e2fc-4d31-a949-189f0c65dba2	explorer	general-purpose	8	0.1463959	0
++wxb-plan-with	plan	65174c8e-e2fc-4d31-a949-189f0c65dba2	explorer	general-purpose	4	0.1207368	0
++wxb-plan-with	plan	65174c8e-e2fc-4d31-a949-189f0c65dba2	fork	fork	3	0.2777408	0
++wxb-plan-with	discussion	72286aa8-b40d-4b83-9b90-b803921820ed	writer	-	26	1.8061636	0
++wxb-plan-with	discussion	72286aa8-b40d-4b83-9b90-b803921820ed	fork	fork	2	0.17907900000000002	0
++wxb-plan-with	discussion	72286aa8-b40d-4b83-9b90-b803921820ed	fork	fork	5	0.266591	0
++wxb-plan-with	discussion	72286aa8-b40d-4b83-9b90-b803921820ed	fork	fork	6	0.3280092	0
++wxb-plan-with	discussion	72286aa8-b40d-4b83-9b90-b803921820ed	fork	fork	3	0.1735854	0
++wxb-plan-with	discussion	72286aa8-b40d-4b83-9b90-b803921820ed	fork	fork	5	0.25458420000000004	0
++wxb-plan-with	discussion	72286aa8-b40d-4b83-9b90-b803921820ed	fork	fork	8	0.3965124	0
++wxb-plan-without	plan	50c2b5b9-4f6c-488a-aade-358ca234e4d5	writer	-	32	2.3627219999999998	0
++wxb-plan-without	plan	50c2b5b9-4f6c-488a-aade-358ca234e4d5	fork	fork	3	0.31122439999999996	0
++wxb-plan-without	plan	50c2b5b9-4f6c-488a-aade-358ca234e4d5	fork	fork	2	0.22191160000000001	0
++wxb-plan-without	plan	50c2b5b9-4f6c-488a-aade-358ca234e4d5	fork	fork	3	0.3573228	0
++wxb-plan-without	plan	50c2b5b9-4f6c-488a-aade-358ca234e4d5	fork	fork	4	0.2777404	0
++wxb-plan-without	plan	50c2b5b9-4f6c-488a-aade-358ca234e4d5	fork	fork	7	0.6135136	0
++wxb-plan-without	plan	50c2b5b9-4f6c-488a-aade-358ca234e4d5	explorer	general-purpose	5	0.1408585	0
++wxb-plan-without	plan	50c2b5b9-4f6c-488a-aade-358ca234e4d5	fork	fork	9	1.0814003999999997	0
++wxb-plan-without	discussion	89b75340-5577-4a29-8004-82deab946b7f	writer	-	29	1.7473557999999998	0
++wxb-plan-without	discussion	89b75340-5577-4a29-8004-82deab946b7f	explorer	general-purpose	5	0.11998480000000002	0
++wxb-plan-without	discussion	89b75340-5577-4a29-8004-82deab946b7f	fork	fork	2	0.12538339999999998	0
++wxb-plan-without	discussion	89b75340-5577-4a29-8004-82deab946b7f	explorer	general-purpose	5	0.11132299999999999	0
++wxb-plan-without	discussion	89b75340-5577-4a29-8004-82deab946b7f	fork	fork	6	0.2698126	0
++wxb-plan-without	discussion	89b75340-5577-4a29-8004-82deab946b7f	explorer	general-purpose	6	0.0902827	0
++wxb-plan-without	discussion	89b75340-5577-4a29-8004-82deab946b7f	fork	fork	5	0.2490262	0
++wxb-plan-without	discussion	89b75340-5577-4a29-8004-82deab946b7f	fork	fork	2	0.0901134	0
++wxb-plan-without	discussion	89b75340-5577-4a29-8004-82deab946b7f	explorer	general-purpose	4	0.0967276	0
++wxb-plan-without	discussion	89b75340-5577-4a29-8004-82deab946b7f	fork	fork	4	0.2179396	0
++wxb-plan-without	discussion	89b75340-5577-4a29-8004-82deab946b7f	fork	fork	4	0.1972894	0
+diff --git a/docs/research/loom/writer-explorers-bench-2026-11-18/keys.md b/docs/research/loom/writer-explorers-bench-2026-11-18/keys.md
+new file mode 100644
+index 00000000..c7fcb573
+--- /dev/null
++++ b/docs/research/loom/writer-explorers-bench-2026-11-18/keys.md
+@@ -0,0 +1,50 @@
++# Grading keys
++
++Fixed and committed before any bench output exists.
++Each key is a finding of the reference run's own review of the artifact an arm writes, so a key asks whether the arm's artifact repeats the defect the reference's writer left in it.
++
++Grades: R repeated, P partly, A avoided.
++
++## Reference
++
++`pawl-checklist-hidden-in-beam`, its records archived on the weft tag `archive/pawl-checklist-hidden-in-beam/fb0f145ec02c`.
++It is the smallest landed tapestry run with a Discussion review and a twill Plan with its review.
++The base commit is `f98a1ba0`, the newest commit of `main` before the run's seed at 2026-11-03T09:46:30Z.
++Its board entry body is `design-pawl-checklist-hidden-in-beam.md` in the bolt repository at `08c5342d1b`, the last revision before the run started.
++
++The task: while a beam's pawl run lives, the beam's session shows the run's checklist in a second overview window.
++The pawl run's own writers worked before `3085f451`, so they carried no explorer instruction; the keys do not depend on that.
++
++## Discussion keys
++
++From Discussion-Burler-Review round 1 (`_lym/reviews/discussion/round-1-review.md` on the tag).
++A Discussion arm's artifact is its `decision-record.md`, graded as written by the writer, before any review.
++Finding F3 is left out: it faults the reference's own support log, which an arm's log cannot repeat.
++
++| Key | Finding | Avoided when the record |
++|---|---|---|
++| DK1 | An old-build pawl driver calls `orchcli.BeamUp` in-process and runs the old `ensureRunsStrand`: it can drop the runs strand or replace the status strand again | names that driver and what it can do until the next `lym beam start` under the new build |
++| DK2 | The viewed-window-ending path has no acceptance criterion: with two overview windows, a viewer that ends must land on the other overview window | has a criterion that fails if that path yields nothing, the shell or the ending window |
++| DK3 | An older status strand tying the runs strand at the same order key puts the checklist first, so the focus fallback lands on it instead of the beam overview | states that consequence of the tie, or removes the tie |
++
++Partly: the record names the case but not its consequence, or its criterion cannot fail on the wrong outcome.
++
++## Plan keys
++
++From Plan-Burler-Review round 1 (`_lym/reviews/plan/round-1-review.md` on the tag).
++A Plan arm's artifact is `_lym/plan/` after Plan-Write and before any review, with twill on.
++The lens reviews of the reference's twill step (`_lym/plan/lens-review.md`) are not keys: both Plan arms run twill, and its fixes land in the plan before it is graded.
++
++| Key | Finding | Avoided when the plan |
++|---|---|---|
++| PK1 | `docs/overview.md` carries two statements that `ensureRunsStrand` replaces a loom status strand (the orch entry and the batten entry); the plan rewrites one | rewrites both, in a card that targets `docs/overview.md` |
++| PK2 | The sweep of comments saying one overview per session misses `isOverview`'s doc comment, the `runs.go` file header, `runsStrandAddSpec`'s doc comment and the `lym reed follow` help text | names all four, or each in a card's Intent |
++| PK3 | A relaunch test row for an `IfAbsent` relaunch says the relaunched pane runs the spec's command, though the relaunch launches the strand's stored command | has no such row, or states the stored command |
++
++Partly: the plan covers some of a key's sites, or names a site without saying what changes there.
++
++## Grading rules
++
++- One grader, the bench's author, reads each artifact once against these keys.
++- A grade cites the line of the artifact it rests on.
++- An arm is not told its keys, and the keys are not edited after the first arm's output is read.
+diff --git a/docs/research/loom/writer-explorers-bench-2026-11-18/no-explorers.patch b/docs/research/loom/writer-explorers-bench-2026-11-18/no-explorers.patch
+new file mode 100644
+index 00000000..2f4a6ee9
+--- /dev/null
++++ b/docs/research/loom/writer-explorers-bench-2026-11-18/no-explorers.patch
+@@ -0,0 +1,33 @@
++diff --git a/contracts/stencils/loom/loom-template-discussion.md b/contracts/stencils/loom/loom-template-discussion.md
++--- a/contracts/stencils/loom/loom-template-discussion.md
+++++ b/contracts/stencils/loom/loom-template-discussion.md
++@@ -67,13 +67,8 @@ Only unresolved design questions belong in the interview.
++ This exploration is bounded, the same way Step 3's interview categories are: at a coarse level you MAY establish which module boundary the work falls under and whether the design conflicts with an existing pattern.
++ You MUST NOT gather exact signatures, `file:line` citations, interface shapes, or dependency lists, and you MUST NOT do exhaustive existing-pattern research — that class of fact is computed fresh at Plan time.
++
++-Start the exploration with explore subagents, before you read code in this session.
++ Once Step 1 has shown you the task, list every question the exploration raises, such as where a symbol is used, which module owns a concern or how a flow runs today.
++-{{template "engine-subagent-lookups"}}
++-A fresh subagent sees none of this session, so each prompt carries its whole question, keeps to the bounds above, and asks for a short answer naming files and spans.
++-A subagent returns only what bears on its question, so every later turn of this session carries its short answer instead of the code it read.
++-Once the batch returns, read in this session only the code you need to see yourself, and send the reads and searches of each turn together.
++-A fork does not serve here: it inherits this session's whole context.
+++Read the code that answers them in this session, and send the reads and searches of each turn together.
++
++ A factual question the design rests on is settled here, never deferred.
++ Such a question asks a fact, not a choice: which version of a tool or dependency has a feature, how an upstream project behaves, what the code does today.
++diff --git a/contracts/stencils/loom/loom-template-plan.md b/contracts/stencils/loom/loom-template-plan.md
++--- a/contracts/stencils/loom/loom-template-plan.md
+++++ b/contracts/stencils/loom/loom-template-plan.md
++@@ -60,10 +60,7 @@ A follow-up a card files goes on the board as a note, never as a task, and no ca
++
++ Before planning, start from the code the relevant list names, then read the other relevant parts of the codebase: check recent commits, and follow existing patterns and any PATTERN entries in this prompt rather than inventing new ones.
++
++-List the lookups the plan needs, such as where a symbol is used or which files follow a pattern.
++-{{template "engine-subagent-lookups"}}
++-A fresh subagent sees none of this session, so each prompt carries its whole question and asks for a short answer naming files and members.
++-Keep in this session the reading the plan's design needs: the decision record, the relevant list and the code your cards change.
+++List the lookups the plan needs, such as where a symbol is used or which files follow a pattern, and read the code that answers them in this session.
++
++ {{template "loom-block-plan-glyphs"}}
++ This is the hard rule behind the glyph spelling rules Step 3 spells out below: a bare package-qualified symbol (`pkg.Symbol`) is a hard finding precisely because it is the one spelling that cannot have come verbatim from a quarry answer.
+diff --git a/docs/research/loom/writer-explorers-bench-2026-11-18/report.md b/docs/research/loom/writer-explorers-bench-2026-11-18/report.md
+new file mode 100644
+index 00000000..47c5d6fe
+--- /dev/null
++++ b/docs/research/loom/writer-explorers-bench-2026-11-18/report.md
+@@ -0,0 +1,119 @@
++# Writer explorers bench: Discussion and Plan writers with and without explorer subagents
++
++2026-11-18, board task `plan-writer-explorer-forks`.
++One reference, two arms, one run each; a direction from one sample, not an effect size.
++The tables record one run on one machine and are not claiming to stay true.
++
++## Question
++
++The Discussion-Write and Plan-Write stencils tell the writer to hand its exploration and lookups to fresh subagents through the Agent tool.
++They are not the twill forks, which stay.
++Do the explorers pay for themselves in cost, time and artifact quality?
++
++## Share of the writers' spend
++
++`share.sh` reads the Plan-Write and Discussion-Write transcripts of the landed tapestry runs in `slugs.txt` and splits each by the `agentType` of the subagent's meta file:
++`fork` is a twill or lens fork, `general-purpose` or `Explore` an explorer or lookup subagent.
++The runs are every landed tapestry run since 2026-11-03 that has transcripts on this machine, bench pairs left out.
++The earlier "21 runs" count of `tools/tokencount` is not reproduced: this table counts the runs of `slugs.txt`.
++Prices are the list prices of `internal/shuttleengine/claudeengine/pricing.go` as the earlier lookups measure used them, so the totals differ from `tokencount`'s.
++
++| Writer | Runs | Writer itself | Forks | Explorers (subagents) | Total | Explorer share of the total | Explorer share of forks plus explorers |
++|---|---|---|---|---|---|---|---|
++| Discussion-Write | 7 | $20.80 | $12.07 | $3.22 (17) | $36.08 | 8.9% | 21% |
++| Plan-Write | 23 | $141.06 | $158.90 | $18.62 (82) | $318.58 | 5.8% | 10% |
++
++- `tokencount`'s "Plan writer forks" line counts the forks and explorers together; the explorers are about a tenth of it.
++- Raw rows: `share-rows.tsv`; the table above is `share-totals.tsv`.
++- Three Plan messages ran on a model with no list price and count as zero.
++- Only seven runs have a Discussion-Write session, since later runs skipped it.
++
++## Bench
++
++### Reference
++
++`pawl-checklist-hidden-in-beam`, weft tag `archive/pawl-checklist-hidden-in-beam/fb0f145ec02c`, base commit `f98a1ba0`.
++It is the smallest landed tapestry run with both a Discussion review and a twill Plan with its review.
++The grading keys are in `keys.md`, committed before any arm ran.
++The board entry body each arm started from is the reference's, from the bolt repository at `08c5342d1b`.
++
++### Arms
++
++Both arms are full runs from a draft board entry through Discussion-Write, its review and approval, and Plan-Write with twill on, each paused before Plan-Bouncer.
++Each Plan therefore rests on its own arm's decision record.
++Pairs `wxb-plan-with` and `wxb-plan-without` started from `f98a1ba0`, with the hub's board stencils pinned at the run's first start.
++The without arm was started on board copies patched with `no-explorers.patch`, which the orch restored right after the pin.
++Pins differ for `loom-template-discussion` and `loom-template-plan` only.
++Model and effort are the hub defaults.
++
++The orch ran the pairs' decisions: both Discussion reviews escalated that commit `7c23591`, which fixes the same bug and sits on the parent branch but not on the base, contradicts the design.
++The recorded answer was to ignore it and design against `f98a1ba0`.
++The with arm accepted its round; the without arm continued into a second round.
++
++### Cost and time
++
++Cost covers the writer session, its twill and lens forks, and its explorer subagents, priced as in `share.sh`.
++Review and fix sessions are not counted.
++Wall time runs from the row's start to its end in the run's status history.
++
++| Measure | Discussion with | Discussion without | Plan with | Plan without |
++|---|---|---|---|---|
++| Writer session | $1.81 | $1.75 | $2.68 | $2.36 |
++| Forks | $1.60 (6) | $1.15 (6) | $2.91 (6) | $2.86 (6) |
++| Explorers | $0.00 (0) | $0.42 (4) | $0.38 (3) | $0.14 (1) |
++| Total | $3.40 | $3.31 | $5.97 | $5.37 |
++| Wall time | 9m45s | 7m34s | 13m05s | 10m53s |
++
++- The with arms spent $9.37 and the without arms $8.68 on writers, forks and explorers; the explorers' own spend is $0.38 against $0.56.
++- The without arm's writers still launched explorers, four in the Discussion and one in the Plan, though the stencil lines were gone.
++  The with arm's Discussion writer launched none though its stencil told it to start with explorers.
++  The stencil line therefore did not decide whether a writer used explorers in this sample.
++- Round 2 of the without arm's Discussion review, its fix and its second bouncer pass are outside the figures above.
++  The orch's own spend on the pairs and the review and fix sessions are not measured here; the writer sessions' total of about $18 leaves the $40 cap far from reached.
++
++### Grading
++
++Grades are R repeated, P partly, A avoided, as in the 2026-11-12 plan bench.
++The Discussion keys grade the record as the writer wrote it, before any review; the Plan keys grade the plan before Plan-Bouncer.
++
++| Key | With | Without |
++|---|---|---|
++| DK1 old-build driver bound | R: the record's Out line names an older build that dropped the strand, never a live old driver | R: no old driver named; a race with `lym loom start` is named instead |
++| DK2 viewed-window-ending criterion | A, by design: no second overview window, the viewer ends on the beam overview | A, by design: no reed change |
++| DK3 tie focus consequence | A, by design: no order key | A, by design: no order key |
++| PK1 both `docs/overview.md` statements | A: the orch bullet and the `lym beam start` paragraph | A: the orch and batten entries |
++| PK2 comment sweep of one-overview statements | A, by design: reed is untouched | A, by design: reed is untouched |
++| PK3 `IfAbsent` relaunch row | A: no relaunch row | A: no relaunch row |
++| R / P | 1 / 0 | 1 / 0 |
++
++Neither arm reproduced the reference's design of several overview strands.
++Both put the runs strand in the overview window and the checklist in a window of its own, because reed on the base refuses a second overview strand and the orch's decision pointed them at the base.
++Five of the six keys defend a defect of the reference's own design, so they did not discriminate between the arms.
++Round 1 of the Discussion review found 6 findings for the with arm (1 BLOCKING, 4 LOW, 1 NIT) and 9 for the without arm (2 BLOCKING, 3 MEDIUM, 3 LOW, 1 NIT); round 2 of the without arm raised one new BLOCKING finding.
++The designs differ, so the counts are not a measure of the explorers.
++
++## Recommendation
++
++Keep the explorers; this bench gives no reason to drop them from either writer.
++
++- Cost: the explorers are about 6% of the Plan-Write spend and 9% of the Discussion-Write spend over the landed runs, and $0.14 to $0.42 in the bench arms; removing the lines saves less than a dollar a run.
++- Behavior: the stencil lines did not control the writers in this sample, so removing them would not remove the explorers.
++- Time: the without arms' write rows were 2m11s and 2m12s shorter, one sample each, with different designs.
++- Quality: the keys did not discriminate, so no quality effect is shown either way.
++
++A bench that could say more needs a reference whose design the arms reproduce, or keys drawn from findings that do not depend on one design, and several runs per arm.
++
++## Deviations and limits
++
++- One reference, one run per arm, one grader; five of the six keys did not apply to either arm's design.
++- The first four pairs were set up for four arms; the orch removed the two Discussion-only arms after no verb could skip Discussion-Write for the plan pairs, and removed `wxb-disc-with` by mistake.
++- The pair branches were reset to `f98a1ba0` and force-pushed to origin, since a run's sync with origin undid a local reset.
++- The review of each arm saw the parent commit `7c23591` and escalated it, which a hub with no such commit would not.
++- Review and fix sessions are not priced; the 21-run count of `tokencount` is not reproduced.
++
++## Files
++
++- `keys.md`: the grading keys, committed before any arm ran.
++- `no-explorers.patch`: the stencil edits of the without arms, against `main` at the time of the bench.
++- `share.sh`, `slugs.txt`, `share-rows.tsv`, `share-totals.tsv`: the share measurement.
++- `arms-rows.tsv`: the bench arms' transcripts, priced by the same script.
+diff --git a/docs/research/loom/writer-explorers-bench-2026-11-18/share-rows.tsv b/docs/research/loom/writer-explorers-bench-2026-11-18/share-rows.tsv
+new file mode 100644
+index 00000000..7a9933bc
+--- /dev/null
++++ b/docs/research/loom/writer-explorers-bench-2026-11-18/share-rows.tsv
+@@ -0,0 +1,319 @@
++slug	role	session	kind	agent_type	turns	cost_usd	unpriced_messages
++adopt-foreground	plan	e6f43895-ef0a-4d90-8303-c5e487383344	writer	-	33	5.059886199999999	0
++adopt-foreground	plan	e6f43895-ef0a-4d90-8303-c5e487383344	explorer	general-purpose	6	0.1779818	0
++adopt-foreground	plan	e6f43895-ef0a-4d90-8303-c5e487383344	fork	fork	2	0.4450782	0
++adopt-foreground	plan	e6f43895-ef0a-4d90-8303-c5e487383344	explorer	general-purpose	7	0.18348920000000002	0
++adopt-foreground	plan	e6f43895-ef0a-4d90-8303-c5e487383344	fork	fork	7	0.7742448000000001	0
++adopt-foreground	plan	e6f43895-ef0a-4d90-8303-c5e487383344	explorer	general-purpose	5	0.2178008	0
++adopt-foreground	plan	e6f43895-ef0a-4d90-8303-c5e487383344	fork	fork	6	0.8725693999999999	0
++adopt-foreground	plan	e6f43895-ef0a-4d90-8303-c5e487383344	fork	fork	20	2.9817346000000002	0
++adopt-foreground	plan	e6f43895-ef0a-4d90-8303-c5e487383344	explorer	general-purpose	6	0.22057519999999997	0
++adopt-foreground	plan	e6f43895-ef0a-4d90-8303-c5e487383344	fork	fork	3	0.542638	0
++adopt-foreground	plan	e6f43895-ef0a-4d90-8303-c5e487383344	fork	fork	3	0.5326184	0
++adopt-worker-record	plan	f6b42ead-7625-425a-b177-713df699a073	writer	-	41	4.0115252	0
++adopt-worker-record	plan	f6b42ead-7625-425a-b177-713df699a073	fork	fork	4	0.4791252	0
++adopt-worker-record	plan	f6b42ead-7625-425a-b177-713df699a073	fork	fork	3	0.43169459999999993	0
++adopt-worker-record	plan	f6b42ead-7625-425a-b177-713df699a073	explorer	general-purpose	11	0.30834370000000005	0
++adopt-worker-record	plan	f6b42ead-7625-425a-b177-713df699a073	fork	fork	3	0.4801238	0
++adopt-worker-record	plan	f6b42ead-7625-425a-b177-713df699a073	fork	fork	4	0.4916966	0
++adopt-worker-record	plan	f6b42ead-7625-425a-b177-713df699a073	explorer	general-purpose	7	0.2231563	0
++adopt-worker-record	plan	f6b42ead-7625-425a-b177-713df699a073	fork	fork	7	0.6569028	0
++adopt-worker-record	plan	f6b42ead-7625-425a-b177-713df699a073	fork	fork	13	1.9506078	0
++batten-remote-order	discussion	2a21cc59-db9b-4250-8a2d-60cc010620dc	writer	-	32	2.7902925999999995	0
++batten-remote-order	discussion	2a21cc59-db9b-4250-8a2d-60cc010620dc	explorer	general-purpose	7	0.20300720000000003	0
++batten-remote-order	discussion	2a21cc59-db9b-4250-8a2d-60cc010620dc	fork	fork	5	0.2983432	0
++batten-remote-order	discussion	2a21cc59-db9b-4250-8a2d-60cc010620dc	fork	fork	5	0.5133928	0
++batten-remote-order	discussion	2a21cc59-db9b-4250-8a2d-60cc010620dc	fork	fork	3	0.2472856	0
++batten-remote-order	discussion	2a21cc59-db9b-4250-8a2d-60cc010620dc	fork	fork	5	0.356288	0
++batten-remote-order	discussion	2a21cc59-db9b-4250-8a2d-60cc010620dc	fork	fork	3	0.128999	0
++batten-remote-order	discussion	2a21cc59-db9b-4250-8a2d-60cc010620dc	explorer	general-purpose	8	0.31434490000000004	0
++batten-remote-order	discussion	2a21cc59-db9b-4250-8a2d-60cc010620dc	fork	fork	2	0.0935674	0
++batten-remote-order	discussion	2a21cc59-db9b-4250-8a2d-60cc010620dc	explorer	general-purpose	9	0.239793	0
++batten-remote-order	plan	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	writer	-	46	5.6272844000000015	0
++batten-remote-order	plan	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	fork	fork	7	0.9944442	0
++batten-remote-order	plan	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	explorer	general-purpose	11	0.39558580000000004	0
++batten-remote-order	plan	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	fork	fork	8	0.9547620000000001	0
++batten-remote-order	plan	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	explorer	general-purpose	4	0.2373652	0
++batten-remote-order	plan	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	fork	fork	4	0.6110864	0
++batten-remote-order	plan	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	explorer	general-purpose	10	0.3788542	0
++batten-remote-order	plan	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	fork	fork	4	0.6153476000000001	0
++batten-remote-order	plan	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	fork	fork	8	1.003327	0
++batten-remote-order	plan	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	fork	fork	16	2.5869406	0
++batten-remote-order	plan	a398e4f3-ba57-4b24-b1d6-596f17b4bd1f	explorer	general-purpose	8	0.26746410000000004	0
++claude-accounts-per-worktree	plan	757c2a05-0f4c-4764-b44e-23fec74ddffa	writer	-	44	5.8463812	0
++claude-accounts-per-worktree	plan	757c2a05-0f4c-4764-b44e-23fec74ddffa	explorer	general-purpose	6	0.226476	0
++claude-accounts-per-worktree	plan	757c2a05-0f4c-4764-b44e-23fec74ddffa	fork	fork	6	0.703188	0
++claude-accounts-per-worktree	plan	757c2a05-0f4c-4764-b44e-23fec74ddffa	fork	fork	22	3.7959222	0
++claude-accounts-per-worktree	plan	757c2a05-0f4c-4764-b44e-23fec74ddffa	explorer	general-purpose	6	0.1651672	0
++claude-accounts-per-worktree	plan	757c2a05-0f4c-4764-b44e-23fec74ddffa	fork	fork	4	0.701025	0
++claude-accounts-per-worktree	plan	757c2a05-0f4c-4764-b44e-23fec74ddffa	fork	fork	6	0.8758170000000001	0
++claude-accounts-per-worktree	plan	757c2a05-0f4c-4764-b44e-23fec74ddffa	fork	fork	5	0.7679488	0
++claude-accounts-per-worktree	plan	757c2a05-0f4c-4764-b44e-23fec74ddffa	explorer	general-purpose	8	0.29882849999999994	0
++claude-accounts-per-worktree	plan	757c2a05-0f4c-4764-b44e-23fec74ddffa	explorer	general-purpose	7	0.1908517	0
++claude-accounts-per-worktree	plan	757c2a05-0f4c-4764-b44e-23fec74ddffa	fork	fork	2	0.336719	0
++claude-accounts-per-worktree	plan	757c2a05-0f4c-4764-b44e-23fec74ddffa	explorer	general-purpose	5	0.2098588	0
++codex-standing-instructions	plan	066aace1-b898-4050-ac63-309da422604e	writer	-	46	4.453255999999999	0
++codex-standing-instructions	plan	066aace1-b898-4050-ac63-309da422604e	fork	fork	8	0.731192	0
++codex-standing-instructions	plan	066aace1-b898-4050-ac63-309da422604e	fork	fork	4	0.42016560000000003	0
++codex-standing-instructions	plan	066aace1-b898-4050-ac63-309da422604e	fork	fork	15	2.114052	0
++codex-standing-instructions	plan	066aace1-b898-4050-ac63-309da422604e	fork	fork	3	0.43264840000000004	0
++codex-standing-instructions	plan	066aace1-b898-4050-ac63-309da422604e	fork	fork	5	0.6209798	0
++codex-standing-instructions	plan	066aace1-b898-4050-ac63-309da422604e	fork	fork	3	0.48501920000000004	0
++creel-cross-hub-build	plan	cffe1866-1136-4b62-8c4c-797427511164	writer	-	21	4.419848	0
++creel-cross-hub-build	plan	cffe1866-1136-4b62-8c4c-797427511164	explorer	general-purpose	10	0.2934812	0
++creel-cross-hub-build	plan	cffe1866-1136-4b62-8c4c-797427511164	fork	fork	3	0.8276976	0
++creel-cross-hub-build	plan	cffe1866-1136-4b62-8c4c-797427511164	fork	fork	3	0.8297934	0
++creel-cross-hub-build	plan	cffe1866-1136-4b62-8c4c-797427511164	fork	fork	3	0.9816210000000001	0
++creel-cross-hub-build	plan	cffe1866-1136-4b62-8c4c-797427511164	fork	fork	5	1.0750336	0
++creel-cross-hub-build	plan	cffe1866-1136-4b62-8c4c-797427511164	explorer	general-purpose	10	0.2514883	0
++creel-cross-hub-build	plan	cffe1866-1136-4b62-8c4c-797427511164	fork	fork	8	2.2030781999999998	0
++creel-cross-hub-build	plan	cffe1866-1136-4b62-8c4c-797427511164	fork	fork	3	0.8126979999999999	0
++decision-record-on-board	plan	28d93419-263a-4ffe-8d12-419ea0b81ad9	writer	-	32	4.152351599999999	0
++decision-record-on-board	plan	28d93419-263a-4ffe-8d12-419ea0b81ad9	fork	fork	6	0.6641174	0
++decision-record-on-board	plan	28d93419-263a-4ffe-8d12-419ea0b81ad9	fork	fork	2	0.3182502	0
++decision-record-on-board	plan	28d93419-263a-4ffe-8d12-419ea0b81ad9	explorer	general-purpose	5	0.1792786	0
++decision-record-on-board	plan	28d93419-263a-4ffe-8d12-419ea0b81ad9	fork	fork	20	2.0106478	0
++decision-record-on-board	plan	28d93419-263a-4ffe-8d12-419ea0b81ad9	fork	fork	3	0.5078813999999999	0
++decision-record-on-board	plan	28d93419-263a-4ffe-8d12-419ea0b81ad9	explorer	general-purpose	5	0.1732147	0
++decision-record-on-board	plan	28d93419-263a-4ffe-8d12-419ea0b81ad9	fork	fork	7	0.6848044	0
++decision-record-on-board	plan	28d93419-263a-4ffe-8d12-419ea0b81ad9	fork	fork	5	0.6605924000000001	0
++decision-record-on-board	plan	28d93419-263a-4ffe-8d12-419ea0b81ad9	explorer	general-purpose	9	0.2107313	0
++decision-record-on-board	discussion	36602133-4927-4580-9929-a4f9bc571cd5	writer	-	33	3.3310260000000005	0
++decision-record-on-board	discussion	36602133-4927-4580-9929-a4f9bc571cd5	fork	fork	2	0.1435062	0
++decision-record-on-board	discussion	36602133-4927-4580-9929-a4f9bc571cd5	fork	fork	3	0.1777312	0
++decision-record-on-board	discussion	36602133-4927-4580-9929-a4f9bc571cd5	fork	fork	3	0.3052828	0
++decision-record-on-board	discussion	36602133-4927-4580-9929-a4f9bc571cd5	fork	fork	4	0.40944060000000004	0
++decision-record-on-board	discussion	36602133-4927-4580-9929-a4f9bc571cd5	fork	fork	4	0.300105	0
++decision-record-on-board	discussion	36602133-4927-4580-9929-a4f9bc571cd5	fork	fork	6	0.4321368	0
++decision-record-on-board	discussion	b6756453-ec14-4e68-9423-67de6eeeb9e0	writer	-	6	0.3636978	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	writer	-	59	9.881096400000002	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	explorer	general-purpose	9	0.29834150000000004	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	explorer	general-purpose	8	0.20571309999999998	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	fork	fork	7	1.1801205999999997	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	fork	fork	5	1.015895	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	fork	fork	70	8.9279138	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	fork	fork	6	1.0129408	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	fork	fork	7	1.0246574000000002	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	fork	fork	8	1.2965849999999999	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	explorer	general-purpose	9	0.2533359	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	explorer	general-purpose	6	0.20069340000000002	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	explorer	general-purpose	5	0.2231149	0
++drift-rework	plan	89b4b1d4-3c5e-4c3a-bf47-fbf2600b4df1	explorer	general-purpose	7	0.2556985	0
++drift-rework	discussion	dd4557e4-1447-46c1-83cb-11f519653af6	writer	-	29	2.8133632	0
++drift-rework	discussion	dd4557e4-1447-46c1-83cb-11f519653af6	fork	fork	5	0.33491439999999995	0
++drift-rework	discussion	dd4557e4-1447-46c1-83cb-11f519653af6	explorer	general-purpose	5	0.1291238	0
++drift-rework	discussion	dd4557e4-1447-46c1-83cb-11f519653af6	fork	fork	5	0.2744398	0
++drift-rework	discussion	dd4557e4-1447-46c1-83cb-11f519653af6	explorer	general-purpose	11	0.18182370000000003	0
++drift-rework	discussion	dd4557e4-1447-46c1-83cb-11f519653af6	fork	fork	3	0.35932379999999997	0
++drift-rework	discussion	dd4557e4-1447-46c1-83cb-11f519653af6	explorer	general-purpose	7	0.17430850000000003	0
++drift-rework	discussion	dd4557e4-1447-46c1-83cb-11f519653af6	fork	fork	2	0.173959	0
++drift-rework	discussion	dd4557e4-1447-46c1-83cb-11f519653af6	fork	fork	2	0.196909	0
++drift-rework	discussion	dd4557e4-1447-46c1-83cb-11f519653af6	explorer	general-purpose	6	0.163819	0
++drift-rework	discussion	dd4557e4-1447-46c1-83cb-11f519653af6	fork	fork	2	0.223929	0
++drift-rework	discussion	dd4557e4-1447-46c1-83cb-11f519653af6	explorer	general-purpose	8	0.258486	0
++gate-test-map-mode	plan	e6e0df0f-fa9d-4796-a7f9-8b43ec17a5aa	writer	-	33	4.081648199999999	0
++gate-test-map-mode	plan	e6e0df0f-fa9d-4796-a7f9-8b43ec17a5aa	explorer	general-purpose	4	0.1377384	0
++gate-test-map-mode	plan	e6e0df0f-fa9d-4796-a7f9-8b43ec17a5aa	fork	fork	7	0.6692904	0
++gate-test-map-mode	plan	e6e0df0f-fa9d-4796-a7f9-8b43ec17a5aa	fork	fork	3	0.4969422	0
++gate-test-map-mode	plan	e6e0df0f-fa9d-4796-a7f9-8b43ec17a5aa	fork	fork	3	0.437668	0
++gate-test-map-mode	plan	e6e0df0f-fa9d-4796-a7f9-8b43ec17a5aa	explorer	general-purpose	6	0.1648166	0
++gate-test-map-mode	plan	e6e0df0f-fa9d-4796-a7f9-8b43ec17a5aa	fork	fork	15	2.3346598000000003	0
++gate-test-map-mode	plan	e6e0df0f-fa9d-4796-a7f9-8b43ec17a5aa	explorer	general-purpose	7	0.37061499999999997	0
++gate-test-map-mode	plan	e6e0df0f-fa9d-4796-a7f9-8b43ec17a5aa	fork	fork	4	0.5325398	0
++gate-test-map-mode	plan	e6e0df0f-fa9d-4796-a7f9-8b43ec17a5aa	fork	fork	6	0.6690784000000001	0
++launch-manifest-parity	plan	0f961d73-ea21-477b-b4c2-64d74317e920	writer	-	38	4.566627	0
++launch-manifest-parity	plan	0f961d73-ea21-477b-b4c2-64d74317e920	fork	fork	16	2.1186728	0
++launch-manifest-parity	plan	0f961d73-ea21-477b-b4c2-64d74317e920	explorer	general-purpose	9	0.2852482	0
++launch-manifest-parity	plan	0f961d73-ea21-477b-b4c2-64d74317e920	fork	fork	6	0.6319266	0
++launch-manifest-parity	plan	0f961d73-ea21-477b-b4c2-64d74317e920	explorer	general-purpose	5	0.17389110000000002	0
++launch-manifest-parity	plan	0f961d73-ea21-477b-b4c2-64d74317e920	explorer	general-purpose	10	0.1608893	0
++launch-manifest-parity	plan	0f961d73-ea21-477b-b4c2-64d74317e920	explorer	general-purpose	6	0.12510929999999998	0
++launch-manifest-parity	plan	0f961d73-ea21-477b-b4c2-64d74317e920	fork	fork	2	0.4013778	0
++launch-manifest-parity	plan	0f961d73-ea21-477b-b4c2-64d74317e920	fork	fork	2	0.31538279999999996	0
++launch-manifest-parity	plan	0f961d73-ea21-477b-b4c2-64d74317e920	fork	fork	4	0.603636	0
++launch-manifest-parity	plan	0f961d73-ea21-477b-b4c2-64d74317e920	fork	fork	5	0.5916512	0
++launch-manifest-parity	plan	0f961d73-ea21-477b-b4c2-64d74317e920	explorer	general-purpose	7	0.159161	0
++launch-manifest-parity	plan	5fca478b-708c-4829-9d08-d3081b93b1a3	writer	-	24	1.9194411999999998	0
++launch-manifest-parity	plan	5fca478b-708c-4829-9d08-d3081b93b1a3	fork	fork	3	0.1744558	0
++launch-manifest-parity	plan	5fca478b-708c-4829-9d08-d3081b93b1a3	fork	fork	8	0.3641728	0
++launch-manifest-parity	plan	5fca478b-708c-4829-9d08-d3081b93b1a3	fork	fork	8	0.3107192	0
++launch-manifest-parity	plan	5fca478b-708c-4829-9d08-d3081b93b1a3	fork	fork	4	0.1866692	0
++launch-manifest-parity	plan	5fca478b-708c-4829-9d08-d3081b93b1a3	fork	fork	8	0.40632500000000005	0
++launch-manifest-parity	plan	5fca478b-708c-4829-9d08-d3081b93b1a3	fork	fork	4	0.7030698000000001	0
++machine-registry-holds-catchup	plan	0e4c2781-dbb4-43b3-84c1-caddfc8c647a	writer	-	36	7.9372446	0
++machine-registry-holds-catchup	plan	0e4c2781-dbb4-43b3-84c1-caddfc8c647a	fork	fork	24	4.7979002	0
++machine-registry-holds-catchup	plan	0e4c2781-dbb4-43b3-84c1-caddfc8c647a	explorer	general-purpose	6	0.1956378	0
++machine-registry-holds-catchup	plan	0e4c2781-dbb4-43b3-84c1-caddfc8c647a	explorer	general-purpose	7	0.31350849999999997	0
++machine-registry-holds-catchup	plan	0e4c2781-dbb4-43b3-84c1-caddfc8c647a	fork	fork	7	1.0069034	0
++machine-registry-holds-catchup	plan	0e4c2781-dbb4-43b3-84c1-caddfc8c647a	fork	fork	2	0.6804326	0
++machine-registry-holds-catchup	plan	0e4c2781-dbb4-43b3-84c1-caddfc8c647a	explorer	general-purpose	7	0.2509401	0
++machine-registry-holds-catchup	plan	0e4c2781-dbb4-43b3-84c1-caddfc8c647a	fork	fork	4	0.8052636000000001	0
++machine-registry-holds-catchup	plan	0e4c2781-dbb4-43b3-84c1-caddfc8c647a	fork	fork	3	0.7606124	0
++machine-registry-holds-catchup	plan	0e4c2781-dbb4-43b3-84c1-caddfc8c647a	explorer	general-purpose	8	0.27855640000000004	0
++machine-registry-holds-catchup	plan	0e4c2781-dbb4-43b3-84c1-caddfc8c647a	fork	fork	5	0.9649298000000001	0
++pawl-checklist-hidden-in-beam	plan	1d7c4b39-d0d4-4fad-ab24-83c010bc07db	writer	-	24	2.7509933999999996	0
++pawl-checklist-hidden-in-beam	plan	1d7c4b39-d0d4-4fad-ab24-83c010bc07db	fork	fork	3	0.33372040000000003	0
++pawl-checklist-hidden-in-beam	plan	1d7c4b39-d0d4-4fad-ab24-83c010bc07db	fork	fork	3	0.28477	0
++pawl-checklist-hidden-in-beam	plan	1d7c4b39-d0d4-4fad-ab24-83c010bc07db	fork	fork	7	0.8745836	0
++pawl-checklist-hidden-in-beam	plan	1d7c4b39-d0d4-4fad-ab24-83c010bc07db	fork	fork	5	0.4536332	0
++pawl-checklist-hidden-in-beam	plan	1d7c4b39-d0d4-4fad-ab24-83c010bc07db	fork	fork	3	0.455118	0
++pawl-checklist-hidden-in-beam	plan	1d7c4b39-d0d4-4fad-ab24-83c010bc07db	fork	fork	6	0.4901548	0
++pawl-checklist-hidden-in-beam	discussion	7970b7a1-750a-4d86-ad2c-649f5b9eb354	writer	-	25	2.1223523999999996	0
++pawl-checklist-hidden-in-beam	discussion	7970b7a1-750a-4d86-ad2c-649f5b9eb354	fork	fork	3	0.22027	0
++pawl-checklist-hidden-in-beam	discussion	7970b7a1-750a-4d86-ad2c-649f5b9eb354	fork	fork	6	0.34060819999999997	0
++pawl-checklist-hidden-in-beam	discussion	7970b7a1-750a-4d86-ad2c-649f5b9eb354	fork	fork	5	0.2792018	0
++pawl-checklist-hidden-in-beam	discussion	7970b7a1-750a-4d86-ad2c-649f5b9eb354	fork	fork	6	0.2886894	0
++pawl-checklist-hidden-in-beam	discussion	7970b7a1-750a-4d86-ad2c-649f5b9eb354	fork	fork	3	0.1278552	0
++pawl-checklist-hidden-in-beam	discussion	7970b7a1-750a-4d86-ad2c-649f5b9eb354	fork	fork	3	0.1965768	0
++pawl-orch-landing	discussion	8a5b3389-9acd-452e-a0e5-309131c7969f	writer	-	35	3.3948367999999998	0
++pawl-orch-landing	discussion	8a5b3389-9acd-452e-a0e5-309131c7969f	explorer	general-purpose	5	0.16828920000000003	0
++pawl-orch-landing	discussion	8a5b3389-9acd-452e-a0e5-309131c7969f	explorer	general-purpose	8	0.2227931	0
++pawl-orch-landing	discussion	8a5b3389-9acd-452e-a0e5-309131c7969f	explorer	general-purpose	6	0.15367920000000002	0
++pawl-orch-landing	discussion	8a5b3389-9acd-452e-a0e5-309131c7969f	fork	fork	7	0.4633322	0
++pawl-orch-landing	discussion	8a5b3389-9acd-452e-a0e5-309131c7969f	fork	fork	2	0.1959568	0
++pawl-orch-landing	discussion	8a5b3389-9acd-452e-a0e5-309131c7969f	fork	fork	5	0.28308880000000003	0
++pawl-orch-landing	discussion	8a5b3389-9acd-452e-a0e5-309131c7969f	explorer	general-purpose	7	0.15717420000000001	0
++pawl-orch-landing	discussion	8a5b3389-9acd-452e-a0e5-309131c7969f	fork	fork	2	0.1985468	0
++pawl-orch-landing	discussion	8a5b3389-9acd-452e-a0e5-309131c7969f	fork	fork	4	0.4013454	0
++pawl-orch-landing	discussion	8a5b3389-9acd-452e-a0e5-309131c7969f	fork	fork	4	0.3027732	0
++pawl-orch-landing	plan	e940a999-ae26-4684-9d8a-0c70e934ebd6	writer	-	56	8.760141599999999	0
++pawl-orch-landing	plan	e940a999-ae26-4684-9d8a-0c70e934ebd6	fork	fork	7	0.872655	0
++pawl-orch-landing	plan	e940a999-ae26-4684-9d8a-0c70e934ebd6	explorer	general-purpose	7	0.2324774	0
++pawl-orch-landing	plan	e940a999-ae26-4684-9d8a-0c70e934ebd6	fork	fork	8	1.0888372	0
++pawl-orch-landing	plan	e940a999-ae26-4684-9d8a-0c70e934ebd6	explorer	general-purpose	6	0.1960065	0
++pawl-orch-landing	plan	e940a999-ae26-4684-9d8a-0c70e934ebd6	explorer	general-purpose	5	0.20025020000000002	0
++pawl-orch-landing	plan	e940a999-ae26-4684-9d8a-0c70e934ebd6	fork	fork	4	0.7410052	0
++pawl-orch-landing	plan	e940a999-ae26-4684-9d8a-0c70e934ebd6	fork	fork	4	0.6729806	0
++pawl-orch-landing	plan	e940a999-ae26-4684-9d8a-0c70e934ebd6	explorer	general-purpose	8	0.2212192	0
++pawl-orch-landing	plan	e940a999-ae26-4684-9d8a-0c70e934ebd6	fork	fork	9	1.0965798	0
++pawl-orch-landing	plan	e940a999-ae26-4684-9d8a-0c70e934ebd6	fork	fork	51	5.772854400000001	0
++raddle-recipe	discussion	45a6e5c6-2692-4f21-bb50-4d02cd8afc8b	writer	-	35	3.186582	0
++raddle-recipe	discussion	45a6e5c6-2692-4f21-bb50-4d02cd8afc8b	fork	fork	3	0.18584260000000002	0
++raddle-recipe	discussion	45a6e5c6-2692-4f21-bb50-4d02cd8afc8b	explorer	general-purpose	7	0.14287650000000002	0
++raddle-recipe	discussion	45a6e5c6-2692-4f21-bb50-4d02cd8afc8b	explorer	general-purpose	6	0.1839441	0
++raddle-recipe	discussion	45a6e5c6-2692-4f21-bb50-4d02cd8afc8b	fork	fork	4	0.3045068	0
++raddle-recipe	discussion	45a6e5c6-2692-4f21-bb50-4d02cd8afc8b	explorer	general-purpose	6	0.1773337	0
++raddle-recipe	discussion	45a6e5c6-2692-4f21-bb50-4d02cd8afc8b	fork	fork	8	0.3969356	0
++raddle-recipe	discussion	45a6e5c6-2692-4f21-bb50-4d02cd8afc8b	fork	fork	8	0.431677	0
++raddle-recipe	discussion	45a6e5c6-2692-4f21-bb50-4d02cd8afc8b	explorer	general-purpose	5	0.12289800000000001	0
++raddle-recipe	discussion	45a6e5c6-2692-4f21-bb50-4d02cd8afc8b	fork	fork	5	0.3556076	0
++raddle-recipe	discussion	45a6e5c6-2692-4f21-bb50-4d02cd8afc8b	fork	fork	2	0.204967	0
++raddle-recipe	discussion	45a6e5c6-2692-4f21-bb50-4d02cd8afc8b	explorer	general-purpose	10	0.2218015	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	writer	-	56	7.5803715999999985	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	explorer	general-purpose	8	0.2219527	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	explorer	general-purpose	8	0.2546429	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	explorer	general-purpose	9	0.3987606	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	explorer	general-purpose	7	0.2898177	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	fork	fork	3	0.47924160000000005	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	fork	fork	69	7.176241199999996	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	explorer	general-purpose	7	0.29769769999999995	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	fork	fork	8	0.8552578	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	fork	fork	7	0.8543016000000001	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	explorer	general-purpose	7	0.2709719	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	fork	fork	5	0.6210264	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	explorer	general-purpose	5	0.19967669999999998	0
++raddle-recipe	plan	edb465a8-2bf5-4565-b49c-00b5559a62c4	fork	fork	2	0.5328526	0
++review-result-checks	plan	01dc90ad-19e7-4cd7-90ea-96013ea42a1e	writer	-	53	6.230056800000001	0
++review-result-checks	plan	01dc90ad-19e7-4cd7-90ea-96013ea42a1e	explorer	general-purpose	9	0.2282572	0
++review-result-checks	plan	01dc90ad-19e7-4cd7-90ea-96013ea42a1e	explorer	general-purpose	7	0.2830649	0
++review-result-checks	plan	01dc90ad-19e7-4cd7-90ea-96013ea42a1e	fork	fork	2	0.35522659999999995	0
++review-result-checks	plan	01dc90ad-19e7-4cd7-90ea-96013ea42a1e	fork	fork	7	0.7693102	0
++review-result-checks	plan	01dc90ad-19e7-4cd7-90ea-96013ea42a1e	explorer	general-purpose	4	0.1208845	0
++review-result-checks	plan	01dc90ad-19e7-4cd7-90ea-96013ea42a1e	fork	fork	8	1.2632844	0
++review-result-checks	plan	01dc90ad-19e7-4cd7-90ea-96013ea42a1e	fork	fork	8	0.9052188	0
++review-result-checks	plan	01dc90ad-19e7-4cd7-90ea-96013ea42a1e	fork	fork	6	0.843132	0
++review-result-checks	plan	01dc90ad-19e7-4cd7-90ea-96013ea42a1e	explorer	general-purpose	7	0.2715453	0
++review-result-checks	plan	01dc90ad-19e7-4cd7-90ea-96013ea42a1e	fork	fork	2	0.3977716	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	writer	-	34	4.3971438	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	explorer	general-purpose	6	0.1645252	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	explorer	general-purpose	5	0.12328470000000001	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	explorer	general-purpose	4	0.218642	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	explorer	general-purpose	5	0.16770859999999999	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	fork	fork	8	0.8980806	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	fork	fork	8	0.8742954	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	fork	fork	3	0.5530966	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	fork	fork	16	2.4101948	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	explorer	general-purpose	9	0.1959294	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	fork	fork	4	0.6383928000000001	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	fork	fork	5	0.8241872	0
++review-rounds-converge-build	plan	152094f7-175d-408c-9ec9-9675ece36ab0	explorer	general-purpose	6	0.12405459999999999	0
++run-fsm-tracked-records	plan	f4435268-2417-4152-9179-12705cafc5ff	writer	-	39	7.630021800000001	0
++run-fsm-tracked-records	plan	f4435268-2417-4152-9179-12705cafc5ff	explorer	general-purpose	6	0.1569989	0
++run-fsm-tracked-records	plan	f4435268-2417-4152-9179-12705cafc5ff	fork	fork	5	0.8090624	0
++run-fsm-tracked-records	plan	f4435268-2417-4152-9179-12705cafc5ff	fork	fork	8	1.115121	0
++run-fsm-tracked-records	plan	f4435268-2417-4152-9179-12705cafc5ff	fork	fork	3	0.5980924	0
++run-fsm-tracked-records	plan	f4435268-2417-4152-9179-12705cafc5ff	fork	fork	20	3.6783895999999996	0
++run-fsm-tracked-records	plan	f4435268-2417-4152-9179-12705cafc5ff	fork	fork	3	0.700822	0
++run-fsm-tracked-records	plan	f4435268-2417-4152-9179-12705cafc5ff	explorer	general-purpose	6	0.1956544	0
++run-fsm-tracked-records	plan	f4435268-2417-4152-9179-12705cafc5ff	explorer	general-purpose	5	0.1686839	0
++run-fsm-tracked-records	plan	f4435268-2417-4152-9179-12705cafc5ff	fork	fork	7	0.9240566	0
++shed-sub-run-block	discussion	02072f8e-c066-4701-a378-a4832af2946d	writer	-	26	2.7973606	0
++shed-sub-run-block	discussion	02072f8e-c066-4701-a378-a4832af2946d	fork	fork	2	0.20767460000000001	0
++shed-sub-run-block	discussion	02072f8e-c066-4701-a378-a4832af2946d	fork	fork	3	0.25298160000000003	0
++shed-sub-run-block	discussion	02072f8e-c066-4701-a378-a4832af2946d	fork	fork	5	0.39139960000000007	0
++shed-sub-run-block	discussion	02072f8e-c066-4701-a378-a4832af2946d	fork	fork	7	0.4724472	0
++shed-sub-run-block	discussion	02072f8e-c066-4701-a378-a4832af2946d	fork	fork	4	0.3608022	0
++shed-sub-run-block	discussion	02072f8e-c066-4701-a378-a4832af2946d	fork	fork	4	0.2349542	0
++shed-sub-run-block	plan	ff2ee39d-1896-4684-8752-c15b4f20d8f7	writer	-	37	4.702462000000001	0
++shed-sub-run-block	plan	ff2ee39d-1896-4684-8752-c15b4f20d8f7	fork	fork	12	1.8045417999999998	0
++shed-sub-run-block	plan	ff2ee39d-1896-4684-8752-c15b4f20d8f7	fork	fork	4	0.5625194	0
++shed-sub-run-block	plan	ff2ee39d-1896-4684-8752-c15b4f20d8f7	explorer	general-purpose	4	0.1941144	0
++shed-sub-run-block	plan	ff2ee39d-1896-4684-8752-c15b4f20d8f7	fork	fork	3	0.37942240000000005	0
++shed-sub-run-block	plan	ff2ee39d-1896-4684-8752-c15b4f20d8f7	fork	fork	6	0.7384034	0
++shed-sub-run-block	plan	ff2ee39d-1896-4684-8752-c15b4f20d8f7	explorer	general-purpose	6	0.22587669999999999	0
++shed-sub-run-block	plan	ff2ee39d-1896-4684-8752-c15b4f20d8f7	explorer	general-purpose	7	0.2345602	0
++shed-sub-run-block	plan	ff2ee39d-1896-4684-8752-c15b4f20d8f7	explorer	general-purpose	6	0.15137520000000002	0
++shed-sub-run-block	plan	ff2ee39d-1896-4684-8752-c15b4f20d8f7	fork	fork	9	1.0799172000000001	0
++shed-sub-run-block	plan	ff2ee39d-1896-4684-8752-c15b4f20d8f7	fork	fork	3	0.5089878	0
++slack-machine-bridge-build	plan	744307ca-14a1-46d8-9a9d-8b7bd6fa1e80	writer	-	43	5.864300000000001	0
++slack-machine-bridge-build	plan	744307ca-14a1-46d8-9a9d-8b7bd6fa1e80	fork	fork	9	2.390872	0
++slack-machine-bridge-build	plan	744307ca-14a1-46d8-9a9d-8b7bd6fa1e80	explorer	general-purpose	4	0.19287949999999998	0
++slack-machine-bridge-build	plan	744307ca-14a1-46d8-9a9d-8b7bd6fa1e80	fork	fork	3	0.598943	0
++slack-machine-bridge-build	plan	744307ca-14a1-46d8-9a9d-8b7bd6fa1e80	fork	fork	2	0.5545224	0
++slack-machine-bridge-build	plan	744307ca-14a1-46d8-9a9d-8b7bd6fa1e80	explorer	general-purpose	5	0.1362993	0
++slack-machine-bridge-build	plan	744307ca-14a1-46d8-9a9d-8b7bd6fa1e80	fork	fork	2	0.5303374	0
++slack-machine-bridge-build	plan	744307ca-14a1-46d8-9a9d-8b7bd6fa1e80	fork	fork	5	0.8552608	0
++slack-machine-bridge-build	plan	744307ca-14a1-46d8-9a9d-8b7bd6fa1e80	explorer	general-purpose	4	0.09527240000000001	0
++slack-machine-bridge-build	plan	744307ca-14a1-46d8-9a9d-8b7bd6fa1e80	fork	fork	2	0.6005174	0
++slack-machine-bridge-build	plan	744307ca-14a1-46d8-9a9d-8b7bd6fa1e80	explorer	general-purpose	11	0.2807677	0
++slack-push-channels	plan	a78753c4-7ea0-4674-8e2d-a10a24db85c1	writer	-	31	4.300771	0
++slack-push-channels	plan	a78753c4-7ea0-4674-8e2d-a10a24db85c1	fork	fork	11	2.5633103999999993	0
++slack-push-channels	plan	a78753c4-7ea0-4674-8e2d-a10a24db85c1	fork	fork	2	0.553993	0
++slack-push-channels	plan	a78753c4-7ea0-4674-8e2d-a10a24db85c1	fork	fork	5	0.8472366	0
++slack-push-channels	plan	a78753c4-7ea0-4674-8e2d-a10a24db85c1	fork	fork	4	0.6626424	0
++slack-push-channels	plan	a78753c4-7ea0-4674-8e2d-a10a24db85c1	fork	fork	2	0.562288	0
++slack-push-channels	plan	a78753c4-7ea0-4674-8e2d-a10a24db85c1	fork	fork	2	0.527783	0
++slack-relay	plan	6d4bff8c-1897-407c-addb-3f607c5c3e57	writer	-	62	6.9000128	0
++slack-relay	plan	6d4bff8c-1897-407c-addb-3f607c5c3e57	fork	fork	28	3.4664392000000004	0
++slack-relay	plan	6d4bff8c-1897-407c-addb-3f607c5c3e57	explorer	general-purpose	6	0.1775503	0
++slack-relay	plan	6d4bff8c-1897-407c-addb-3f607c5c3e57	explorer	general-purpose	6	0.1565126	0
++slack-relay	plan	6d4bff8c-1897-407c-addb-3f607c5c3e57	explorer	general-purpose	8	0.21212330000000001	0
++slack-relay	plan	6d4bff8c-1897-407c-addb-3f607c5c3e57	explorer	general-purpose	7	0.19178040000000002	0
++slack-relay	plan	6d4bff8c-1897-407c-addb-3f607c5c3e57	fork	fork	8	0.7865644	0
++slack-relay	plan	6d4bff8c-1897-407c-addb-3f607c5c3e57	fork	fork	6	0.7735019999999999	0
++slack-relay	plan	6d4bff8c-1897-407c-addb-3f607c5c3e57	fork	fork	4	0.6360543999999999	0
++slack-relay	plan	6d4bff8c-1897-407c-addb-3f607c5c3e57	fork	fork	4	0.579183	0
++slack-relay	plan	6d4bff8c-1897-407c-addb-3f607c5c3e57	fork	fork	2	0.384419	0
++transition-push-takeover	plan	051055ac-cfec-41c3-84a4-55006cfa5367	writer	-	52	8.712967400000005	2
++transition-push-takeover	plan	051055ac-cfec-41c3-84a4-55006cfa5367	explorer	general-purpose	6	0.2120002	0
++transition-push-takeover	plan	051055ac-cfec-41c3-84a4-55006cfa5367	fork	fork	8	1.0856103999999998	0
++transition-push-takeover	plan	051055ac-cfec-41c3-84a4-55006cfa5367	fork	fork	7	0.8884326	0
++transition-push-takeover	plan	051055ac-cfec-41c3-84a4-55006cfa5367	explorer	general-purpose	6	0.25052640000000004	0
++transition-push-takeover	plan	051055ac-cfec-41c3-84a4-55006cfa5367	fork	fork	4	0.657984	0
++transition-push-takeover	plan	051055ac-cfec-41c3-84a4-55006cfa5367	explorer	general-purpose	14	0.498302	0
++transition-push-takeover	plan	051055ac-cfec-41c3-84a4-55006cfa5367	explorer	general-purpose	11	0.33245690000000006	0
++transition-push-takeover	plan	051055ac-cfec-41c3-84a4-55006cfa5367	fork	fork	17	2.8780438000000004	0
++transition-push-takeover	plan	051055ac-cfec-41c3-84a4-55006cfa5367	fork	fork	2	0.4431908	0
++transition-push-takeover	plan	051055ac-cfec-41c3-84a4-55006cfa5367	explorer	general-purpose	5	0.1321949	0
++transition-push-takeover	plan	051055ac-cfec-41c3-84a4-55006cfa5367	fork	fork	4	0.6036584	0
++weaver-implementer	plan	dc95d02e-3d8d-4e94-9ca3-5536cb8df9a3	writer	-	55	11.2782996	0
++weaver-implementer	plan	dc95d02e-3d8d-4e94-9ca3-5536cb8df9a3	explorer	general-purpose	9	0.30914189999999997	0
++weaver-implementer	plan	dc95d02e-3d8d-4e94-9ca3-5536cb8df9a3	fork	fork	17	2.8034556000000004	0
++weaver-implementer	plan	dc95d02e-3d8d-4e94-9ca3-5536cb8df9a3	fork	fork	3	0.6961246	0
++weaver-implementer	plan	dc95d02e-3d8d-4e94-9ca3-5536cb8df9a3	explorer	general-purpose	8	0.31349889999999997	0
++weaver-implementer	plan	dc95d02e-3d8d-4e94-9ca3-5536cb8df9a3	fork	fork	31	4.3921466	1
++weaver-implementer	plan	dc95d02e-3d8d-4e94-9ca3-5536cb8df9a3	fork	fork	7	1.020658	0
++weaver-implementer	plan	dc95d02e-3d8d-4e94-9ca3-5536cb8df9a3	explorer	general-purpose	7	0.2588209	0
++weaver-implementer	plan	dc95d02e-3d8d-4e94-9ca3-5536cb8df9a3	fork	fork	3	0.567453	0
++weaver-implementer	plan	dc95d02e-3d8d-4e94-9ca3-5536cb8df9a3	fork	fork	3	0.7663949999999999	0
++weaver-implementer	plan	dc95d02e-3d8d-4e94-9ca3-5536cb8df9a3	fork	fork	2	0.5424506	0
+diff --git a/docs/research/loom/writer-explorers-bench-2026-11-18/share-totals.tsv b/docs/research/loom/writer-explorers-bench-2026-11-18/share-totals.tsv
+new file mode 100644
+index 00000000..34d766a5
+--- /dev/null
++++ b/docs/research/loom/writer-explorers-bench-2026-11-18/share-totals.tsv
+@@ -0,0 +1,3 @@
++role	runs	writer_usd	fork_usd	explorer_usd	explorer_subagents	total_usd	explorer_share	unpriced_messages
++discussion	7	20.80	12.07	3.22	17	36.08	0.089	0
++plan	23	141.06	158.90	18.62	82	318.58	0.058	3
+diff --git a/docs/research/loom/writer-explorers-bench-2026-11-18/share.sh b/docs/research/loom/writer-explorers-bench-2026-11-18/share.sh
+new file mode 100755
+index 00000000..fb2d2b98
+--- /dev/null
++++ b/docs/research/loom/writer-explorers-bench-2026-11-18/share.sh
+@@ -0,0 +1,60 @@
++#!/usr/bin/env bash
++# Usage: share.sh <out-dir>
++# Splits the cost of the Plan-Write and Discussion-Write sessions of the slugs in slugs.txt by who spent it:
++# the writer itself, its twill and lens forks (agentType fork), and its explorer and lookup subagents
++# (agentType general-purpose or Explore), read from each subagent's meta file.
++# Writes <out-dir>/share-rows.tsv, one row per transcript, and <out-dir>/share-totals.tsv, one row per writer role.
++# Each transcript is priced at its model's list price in USD per million tokens, as the earlier lookups measure priced it;
++# a model with no price counts as zero and its messages are counted in the unpriced column.
++# Needs bash, jq and awk; reads only, apart from the two tables.
++set -euo pipefail
++out=$1
++here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
++projects=${PROJECTS:-$HOME/.claude/projects}
++mkdir -p "$out"
++printf 'slug\trole\tsession\tkind\tagent_type\tturns\tcost_usd\tunpriced_messages\n' > "$out/share-rows.tsv"
++
++# turns, cost and unpriced message count of one transcript
++# shellcheck disable=SC2016
++costprog='
++def price($m): {"claude-opus-5-5": [4, 5, 8, 0.2, 20], "claude-sonnet-5-5": [2, 2.5, 4, 0.2, 10]}[$m];
++[.[] | select(.type == "assistant" and .message.id != null)] | group_by(.message.id)
++| map(max_by(.message.usage.output_tokens // 0)) as $t
++| [($t | length),
++   ([$t[] | .message.model as $m | .message.usage as $u | (price($m) // [0, 0, 0, 0, 0]) as $p
++     | (($u.input_tokens // 0) * $p[0] + (($u.cache_creation_input_tokens // 0) - ($u.cache_creation.ephemeral_1h_input_tokens // 0)) * $p[1]
++        + ($u.cache_creation.ephemeral_1h_input_tokens // 0) * $p[2] + ($u.cache_read_input_tokens // 0) * $p[3] + ($u.output_tokens // 0) * $p[4]) / 1e6] | add // 0),
++   ([$t[] | select(price(.message.model) == null)] | length)] | @tsv'
++
++while read -r slug; do
++  dir=$projects/-home-knatte-Code-loomyard-LYMHUB-$slug
++  [ -d "$dir" ] || continue
++  for f in "$dir"/*.jsonl; do
++    [ -e "$f" ] || continue
++    title=$(jq -r 'select(.type == "custom-title") | .customTitle' "$f" | tail -1)
++    role=${title##*:}; role=${role//\"/}
++    [ "$role" = plan ] || [ "$role" = discussion ] || continue
++    sid=$(basename "$f" .jsonl)
++    IFS=$'\t' read -r turns cost unpriced < <(jq -rs "$costprog" "$f")
++    printf '%s\t%s\t%s\twriter\t-\t%s\t%s\t%s\n' "$slug" "$role" "$sid" "$turns" "$cost" "$unpriced" >> "$out/share-rows.tsv"
++    for meta in "$dir/$sid"/subagents/*.meta.json; do
++      [ -e "$meta" ] || continue
++      sub=${meta%.meta.json}.jsonl
++      [ -e "$sub" ] || continue
++      type=$(jq -r '.agentType // "unknown"' "$meta")
++      kind=explorer; [ "$type" = fork ] && kind=fork
++      IFS=$'\t' read -r turns cost unpriced < <(jq -rs "$costprog" "$sub")
++      printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$slug" "$role" "$sid" "$kind" "$type" "$turns" "$cost" "$unpriced" >> "$out/share-rows.tsv"
++    done
++  done
++done < "$here/slugs.txt"
++
++awk -F'\t' -v OFS='\t' '
++NR == 1 { next }
++{ cost[$2, $4] += $7; total[$2] += $7; n[$2, $4]++; runs[$2, $1] = 1; unpriced[$2] += $8 }
++END {
++  print "role", "runs", "writer_usd", "fork_usd", "explorer_usd", "explorer_subagents", "total_usd", "explorer_share", "unpriced_messages"
++  for (key in runs) { split(key, p, SUBSEP); r[p[1]]++ }
++  for (role in total)
++    printf "%s\t%d\t%.2f\t%.2f\t%.2f\t%d\t%.2f\t%.3f\t%d\n", role, r[role], cost[role, "writer"], cost[role, "fork"], cost[role, "explorer"], n[role, "explorer"], total[role], cost[role, "explorer"] / total[role], unpriced[role]
++}' "$out/share-rows.tsv" > "$out/share-totals.tsv"
+diff --git a/docs/research/loom/writer-explorers-bench-2026-11-18/slugs.txt b/docs/research/loom/writer-explorers-bench-2026-11-18/slugs.txt
+new file mode 100644
+index 00000000..10688b1a
+--- /dev/null
++++ b/docs/research/loom/writer-explorers-bench-2026-11-18/slugs.txt
+@@ -0,0 +1,24 @@
++adopt-foreground
++adopt-worker-record
++batten-remote-order
++claude-accounts-per-worktree
++codex-standing-instructions
++creel-cross-hub-build
++decision-record-on-board
++drift-rework
++gate-test-map-mode
++launch-manifest-parity
++machine-name-verb
++machine-registry-holds-catchup
++pawl-checklist-hidden-in-beam
++pawl-orch-landing
++raddle-recipe
++review-result-checks
++review-rounds-converge-build
++run-fsm-tracked-records
++shed-sub-run-block
++slack-machine-bridge-build
++slack-push-channels
++slack-relay
++transition-push-takeover
++weaver-implementer
