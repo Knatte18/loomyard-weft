@@ -74,7 +74,16 @@ All six forks returned a report. Findings, merged across lenses:
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- F1: D3 adds the reach turn, the channel by which the loomshed verify gate and the weaver's batch gate hand a passing verify's note to their writer, once per HEAD tree. Dropping the writer from the note's purpose was the other path; it would leave the operator's ask unmet.
+- F2, F5, F14: D7 drops triage lines before any test output is cut, says no change set exists when D2 has none, and puts the D8 command on its own line.
+- F3, F13: D3 also checks linked packages for uncommitted files; the batch Open risk covers only a hand-run gate.
+- F4: D4 lists a new function that older cross-package maps may reach as new since those maps.
+- F7, F8, F9, F10, F11, F12: D9 and D11 judge from matching hub maps in the prime; D1 stamps the set of map files; D2 matches by package and name over two given sets of contents; D5 never matches a red-tier report; D6 refuses `--since` or `--branch` without `--test`.
+- F15: the repeated auto-mode assumption is cut.
+- F6 (trial order, class `decision`) is with the parent.
+- Self-check: the reach turn now fires once per unreached function rather than once per tree, and each gate is told its attempt budget. D4 keeps a function that older cross-package maps may reach in the unreached list, with a caveat, so the turn and the review still see it. D2 matches a name repeated across build-constrained files by file. D1 states the rebuild bound after an interrupted map run.
 
 ## Question ledger
 
