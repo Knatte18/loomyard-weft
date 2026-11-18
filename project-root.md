@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Bench the explorer subagents of the Discussion and Plan writers: with against without**<br>• Same frozen inputs, the writers run with and without the Agent-tool explore and lookup subagents; compare cost, time and plan or record quality<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | darn · docs | Darn-Write | neve | 6h<br>32m | loom, stencil |
 | T6 | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md) | motif | Discussion-Burler-Fix | neve | 1h<br>27m | fabric |
-| T7 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-with`](design-wxb-plan-with.md) | tapestry | halted · Discussion-Bouncer | neve | 24m<br>24m |  |
+| T7 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-with`](design-wxb-plan-with.md) | tapestry | Discussion-Bouncer | neve | 24m<br>24m |  |
 | T8 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-without`](design-wxb-plan-without.md) | tapestry | Discussion-Burler-Review | neve | 24m<br>24m |  |
 
 ### Ready (0)
@@ -52,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **VS Code often keeps showing a stale board file after lym rewrites it**<br>• The board renders every file by temp-write and rename, so the open markdown preview tracks a replaced inode; write rendered view files in place instead | [`board-view-not-refreshing`](design-board-view-not-refreshing.md) | 26m<br>26m | board, ide |
+| B1 |  | **VS Code often keeps showing a stale board file after lym rewrites it**<br>• The board renders every file by temp-write and rename, so the open markdown preview tracks a replaced inode; write rendered view files in place instead | [`board-view-not-refreshing`](design-board-view-not-refreshing.md) | 27m<br>27m | board, ide |
 
 ### Enhancements (2)
 
