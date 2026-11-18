@@ -1,0 +1,7 @@
+verdict: resume
+goto: Code-Burler-Review
+reason: |
+  The stop is a producer error from Code-Burler-Review: round 1 reached done, but the review file failed to parse as YAML at its line 23 (yaml: mapping values are not allowed in this context).
+  The review file is _lym/reviews/code/round-1-review-20261118T191943Z.md (the round-1-review.md name is gone; burler renamed it on join at 20:19:43 local). YAML line 23 is file line 24, the fix: value of finding F3, which reads "adding * = : and , to the leading boundary set". The ": " inside an unquoted plain scalar is what the parser rejects. Every other frontmatter line checked is clean.
+  The cause is in the reviewer's output, not in the code under review, so a re-run of Code-Burler-Review can settle it: a fresh round writes the review again, and the frontmatter can be quoted or reworded. The re-run is not guaranteed to avoid the same defect, so if the next stop is this same error, hand back rather than resume again.
+  Other facts checked: the review assist and chair sessions both ended done (20:13 and 20:19:28); the gate re-prompt failure at 20:19:27 was a pane with no input box after the review was already done, not the cause; the weft push retry at 20:19:52 succeeded.
