@@ -441,6 +441,35 @@
       "body": "## What was seen\n\nMuch of lym's code, and its tests, grew by fixing bugs on bugs.\nFix commits over the past month cluster in a few packages:\n`loomcli`, `fabricengine`, `landingshed`, `shuttleengine`, then `battencli`, `websterengine` and `driftengine`.\nThe operator suspects these need a hard rewrite, tests included.\n\n## Idea\n\nRewrite one module at a time, clean-room, with its exported interface held fixed as the contract.\nInterface changes between modules wait for a later round, once both sides are rewritten.\n\n1. Spec: a darn docs run writes what the module must do and why:\n   its job, the invariants that always hold, and each special case with its reason.\n   It draws the reasons from the module's fix-commit history, never describing how the current code does it.\n2. Tests from the spec alone: another run writes new tests without seeing the old code or the old tests.\n   The tests use only the module's interface.\n   They run against the old code; each failure is either a spec error or an old bug,\n   and each is decided by the operator and written into the spec.\n3. Code from the spec and the new tests: a darn solid run deletes the old package and its tests in the worktree first,\n   then writes the module anew.\n   It must pass the new tests and every other module's tests, which this round leaves unchanged.\n4. Compare: lines of code and of tests, coverage, gate time, and any behaviour that changed.\n\n## Pilot\n\nRun the pilot on `landingshed` (mid-sized, clear boundary).\nIt measures one module's cost in tokens, wall time and operator decisions in step 2.\nOn its result the operator decides whether to go on, and with which of the most patched modules;\na study of those packages may set the order.\nModules with no shared code can then be rewritten in parallel.\n",
       "created": "2026-11-18T11:58:24Z",
       "revised": "2026-11-18T11:58:24Z"
+    },
+    {
+      "id": 1466,
+      "handle": "T5",
+      "slug": "coverage-map-measurement",
+      "title": "Measure the coverage maps: build time, peak memory and whether their candidates hold",
+      "kind": "task",
+      "labels": [
+        "research",
+        "gate",
+        "testkit"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Full map build timed with peak memory, lym gate redundant on two packages, hand crosscheck against single-test runs",
+      "body": "## Why\n\nBefore the cut stage (`redundancy-sweep-existing`) the operator wants proof that the coverage maps are real and affordable.\nThe old `lym gate testmap` took about 45 minutes, and on 2026-11-17 a map build crashed the PC.\nSince then `lym gate test --map` (`b92c95ee`) runs each test in its own process under `redundancy_test_memory_mb`,\nand memory caps landed in `bd707e16`, `c75a2b5d` and `580b27a1`.\n`9ce7233b` never reran `internal/boardengine`, so no one has confirmed its five known false candidates are gone.\n\n## Runs (exact cap)\n\n1. One full map build, `lym gate test --map --all`, run once.\n   Record wall time, peak memory of the whole machine and of the largest test process, and whether any cap fired or any process was killed.\n   Stop the build and report if free memory falls below 2 GB.\n2. `lym gate redundant` on `internal/boardengine` and on one other package of the run's choosing, each run once and timed.\n   Compare the candidates with the lists in `docs/research/speed/coverage-map-pilot-2026-11-12/report.md`,\n   and check whether the five known false `boardengine` candidates are gone.\n3. Hand crosscheck: for five candidates across the two packages, run the single test alone with coverage\n   and compare the covered blocks with its map entry.\n\n## Report\n\nA report under `docs/research/speed/` with the three results, and a verdict:\nwhether the maps are fit for the cut stage, and whether `map-single-test-crosscheck` (E1) is needed before it\n(needed if any crosscheck disagrees).\n",
+      "status": "draft",
+      "created": "2026-11-18T11:58:45Z",
+      "revised": "2026-11-18T11:58:45Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "docs",
+      "project": "test-suite-trim"
     }
   ],
   "prime_owner": "neve",
