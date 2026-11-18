@@ -10,5 +10,6 @@
       "title": "Mutation check order: trial before the mutation step (F6)",
       "digest": "664be5d4da602cdc675f68bbf05284562c0045c85e241007fed1a19a666af2b7"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
