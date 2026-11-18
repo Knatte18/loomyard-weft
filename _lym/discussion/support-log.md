@@ -88,7 +88,17 @@ Six forks reviewed the first draft; every fork returned a report. Findings, merg
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+The review raised five blocking and eighteen further findings; every premise held against the code.
+Picks made in the fix:
+
+- F3, protected prime branch: `--single-repo` refuses at its marker push; a later protected refusal records a `protected` failed push that holds no run.
+- F4, D7's predicates: a merge commit fabric wrote is one whose SHA fabric recorded in the worktree's `.lym`; lacking means unreachable from every origin ref.
+- F10, records write between merge steps 2 and 3: step 3 compares and refuses, since records writers take no merge lock.
+- F12, the prime's records branch: fabric refuses records commits off the branch recorded at clone; reset and stash stay a documented bound.
+- F15, tool facts: pinned in a Constraint by documentation, an existing `gitrepo` test row, or the acceptance scenario.
+- F16 (build now or for the rewrite) went to the parent; Q6 stays open.
 
 ## Question ledger
 
