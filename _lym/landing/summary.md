@@ -1,65 +1,51 @@
-# Drift-Verify: no guard halt on decision-record edits, shorter halt notes
+# Drift-Verify: no false guard halt on record edits, shorter halt note
 
-Fixes issues #146 and #147, both Drift-Verify halts seen in task `dop-pumps-off-negative-spp`.
+Two Drift-Verify halts from task `dop-pumps-off-negative-spp` are fixed in `internal/driftengine`, with the wiring in `internal/loomcli`.
 
-## The judge guard and the decision record (#146)
+Closes #146
+Closes #147
 
-The judge guard compares both checkouts with the snapshot taken before the judge runs.
-It already exempted a committed `lym loom decision add`, but two cases still halted a run for an edit the parent made:
+## Judge guard and decision-record edits (#146)
 
-- the guard could read the record between the verb's write and its commit, when it shows as an uncommitted change;
-- a `lym loom decision replace` during the session was always named as a change.
+The judge-session guard halted a run when the parent edited the decision record with `lym loom decision add` or `lym loom decision replace` while the judge ran.
+A resume then repeated the first halt's text, so the operator could not tell whether a restore had taken effect.
 
-Changes, all in `internal/driftengine` and wired in `internal/loomcli/driftwiring.go`:
+- The judge snapshot and the guard comparison now hold the run's decision lock, so they never read a decision verb's write before its commit.
+  `Deps.LockDecisionRecord` is the seam, wired in `internal/loomcli/driftwiring.go` to the lock the `lym loom decision` verbs hold.
+- A decision record is no judge change when it differs from its base only by entries added after the Discussion.
+  The base is the snapshot's copy, or the record as the newest `lym loom decision replace` commit wrote it, provided that commit came after the snapshot's records head.
+  A replace that predates the snapshot is no base.
+  `Deps.ReplacedDecisionRecord` reads it, and `fabricengine.RecordsCommitIsAfter` orders the commits.
+- Each change in the halt note now carries the file's modification time against the judge session's window.
+  A file modified after the guard first halted the returned session reads as changed by another process.
+  A change with no file, such as a moved HEAD or a deleted path, carries no time.
+- The guard check is recorded on the session mark as `GuardHalt`.
+  A resume that re-checks says what still differs and what was restored since the last check, instead of repeating the first halt.
+  A check that finds nothing clears the record, and a check over records that differ from their commit writes nothing.
 
-- `TakeJudgeSnapshot` and `JudgeSnapshot.Changes` hold the run's decision lock, which every `lym loom decision` verb holds through its commit.
-  The guard therefore never reads a verb's write before it lands.
-  It reaches the lock through the new seam `Deps.LockDecisionRecord`, wired to loomcli's `holdDecisionLock`.
-- The decision record is also exempt when it differs only by added entries from the record as the newest `decision replace` commit wrote it.
-  That covers a replace during the session, and an add after one.
-  The new seam `Deps.ReplacedDecisionRecord` reads that commit's copy.
-  The wiring finds the newest `Lym-Record-Replaced` trailer that names the record, through loomcli's own trailer parser.
-- `Changes` returns `GuardChange` values: the text as before, plus the changed file's path.
-  The halt dates each change by its file's modification time against the judge session's window:
-  inside the window, before the session opened, or after the guard halted the returned session, which names another process.
-- The session mark records the guard's halt of a returned session (`guard_halt`: its time and the changes named).
-  A resume re-checks the guard against the snapshot first.
-  It then says "the resume re-checked the judge guard …", names what still differs and what was restored since the last check, and no longer repeats the first halt's text.
-  A check that finds nothing clears the halt.
+## Halt note for judge findings (#147)
 
-## The halt note over judge rulings (#147)
+The halt reason held one sentence per changed line, each with the same rationale, and put the way forward last.
 
-A Stuck over rulings of `does not match`, stored or fresh, under either diff mode, now leads with the count of findings and the way forward.
-The way forward is `lym drift amend <slug> --entries <file>` then `lym loom resume`, or the route that fixes code.
-Cells that share a case, key, kind and reason become one finding.
-Each such finding names its row range, its row count and the first and last rows' old and new values.
-The findings the reason carries are capped at 1500 characters, and the reason says how many it left out.
-Every per-cell finding goes to `_lym/drift/logs/verify-findings.md`, which the reason names by its worktree-relative path.
-The logs directory is already exempt from the judge guard.
-The halt note `lym loom` writes therefore stays short, whatever the number of changed rows.
+- Rulings that share a case, key, kind and reason become one finding.
+  It names the row range, the row count, and the old and new values of the first and last rows.
+  Rows are a key's occurrences for a keyed group and line positions otherwise.
+  A group of one, and an added or removed case, keep their own wording.
+- The halt reason opens with the lead, the finding count and the way forward.
+  It then carries the findings, capped at 1500 characters, whole findings only, with an `and N more` note for those left out.
+  A first finding that alone passes the cap is cut with an ellipsis.
+- Every finding, ungrouped, is written to `verify-findings.md` under the drift logs directory (`Paths.Findings`), which the reason names by its worktree-relative path.
+  The logs directory is outside the judge guard, so the write does not trip it.
+- Stuck halts over a failing compare and over stored case rulings use the same format.
 
 ## Design decisions
 
-- The decision record stays guarded, not excluded.
-  Only committed edits shaped like `decision add` or `decision replace` are exempt, so a judge's edit of the goal or decisions still halts.
-  Bound: a commit the judge session makes with a replace trailer naming the record goes unseen, as a committed added entry already did.
-- The guard tells the actor from modification times, as the issue suggests.
-  A time inside the window names "the judge session or a process working beside it", since a time alone cannot tell the two apart.
-- A guard check that runs before the judge has returned records no halt, so a judge chair that may still be live never makes its own later edit read as another process's.
-- Both issues share `verify.go`'s halt paths, so they land in one commit.
+- The decision record stays in the guarded set; a lock plus a base comparison replaces an exemption.
+  An exempt record would let a judge edit pass, and the comparison still rejects any change that is not an entry added after the Discussion.
+- The modification-time wording is evidence for the reader, not a verdict: an edit inside the window may be the judge's or a process beside it.
+- The cap counts separators and the omission note, so the reason never passes the limit.
 
-## Tests
+## To check by hand
 
-- `TestJudgeSnapshot` gains rows for:
-  a committed replace;
-  an add after a replace;
-  an edit after a replace, which is named;
-  an uncommitted replace, which is named.
-  Every row now also asserts that each checkout read happens under the decision lock and that the lock is released.
-- `TestDriftVerify` gains two cases.
-  The first covers the halt over many ruled cells:
-  a repeated key over 150 rows becomes one finding, 100 cases are capped,
-  the way forward comes first, and the findings file holds every finding.
-  The second covers a resume that names what still differs, what was restored and when each file changed.
-- The `replacedDecisionRecord` wiring in loomcli runs real git through the fabric and has no test of its own.
-  The exemption it feeds is pinned in `TestJudgeSnapshot`.
+- No run against a real `lym loom` Drift-Verify halt was made; the change is covered by unit tests and the record-history integration test in `internal/loomcli`.
+- Confirm that a parent's `lym loom decision add` made while a judge runs no longer halts the run, and that a judge's own edit of the record still does.
