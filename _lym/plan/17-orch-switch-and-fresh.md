@@ -1,14 +1,14 @@
 # Card 17 — The orch watcher switches the orch's account and restarts it
 
 **Create:**
-- `plan:internal/orchengine#OrchRestart` -> `type OrchRestart struct`
-- `plan:internal/orchengine#Watcher.WatchRestart` -> `func (w *Watcher) WatchRestart(restart OrchRestart)`
-- `plan:internal/orchengine#TestWatcher_UsageLimitSwitchRestartsTheOrch` -> `func TestWatcher_UsageLimitSwitchRestartsTheOrch(t *testing.T)`
-- `plan:internal/orchengine#TestWatcher_RefusedResumeStartsTheOrchFresh` -> `func TestWatcher_RefusedResumeStartsTheOrchFresh(t *testing.T)`
-- `plan:internal/orchcli#runnerSession.SwitchAccountOnLimit` -> `func (s runnerSession) SwitchAccountOnLimit(guid string, turnEnd shuttleengine.Event) (bool, error)`
-- `plan:internal/orchcli#runnerSession.RefusedResume` -> `func (s runnerSession) RefusedResume(guid string, turnEnd shuttleengine.Event) (bool, error)`
-- `plan:internal/orchcli#orchCLI.relaunchOrch` -> `func (c *orchCLI) relaunchOrch(st orchengine.State, fresh bool) (string, error)`
-- `plan:internal/orchcli#TestRelaunchOrch_RestartsOverTheLiveLimitedStrand` -> `func TestRelaunchOrch_RestartsOverTheLiveLimitedStrand(t *testing.T)`
+- `internal/orchengine#OrchRestart`
+- `internal/orchengine#Watcher.WatchRestart`
+- `internal/orchengine#TestWatcher_UsageLimitSwitchRestartsTheOrch`
+- `internal/orchengine#TestWatcher_RefusedResumeStartsTheOrchFresh`
+- `internal/orchcli#runnerSession.SwitchAccountOnLimit`
+- `internal/orchcli#runnerSession.RefusedResume`
+- `internal/orchcli#orchCLI.relaunchOrch`
+- `internal/orchcli#TestRelaunchOrch_RestartsOverTheLiveLimitedStrand`
 
 **Extends:**
 - `internal/orchengine#Session`
