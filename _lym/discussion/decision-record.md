@@ -4,14 +4,17 @@
 
 Put the per-test coverage maps of `internal/testcover` to the three uses the map study ranked worth building (`docs/research/speed/testmap-use-cases-2026-11-18/report.md`), over one reader of the maps:
 a reach note for a diff, for the writer and the code review; failure triage in the gate's failure report and the fixer's brief; and a mutation check of the lines a diff changes.
-Build order: the reader and the reach note, then failure triage, then the mutation check.
+Build order: the reader and the reach note, then failure triage, then the mutation planner and `lym gate mutate` (D9, D11), then the trial,
+then the `mutation` step (D10) only if the trial pays.
+This run builds up to `lym gate mutate`; the trial and D10 come after it.
 
 ## Scope
 
 In:
 
 - A new package `internal/testreach` (new): the one cross-package reader of the maps, its index, and the finder of a diff's changed functions.
-- The `reach` and `mutation` report steps of `lym gate test`, their report files, and their notes in the code review rubric.
+- The `reach` report step of `lym gate test`, its report file and its note in the code review rubric.
+- The `mutation` report step and its rubric note (D10), designed here and built after the trial.
 - The reach turn of the loomshed verify gate and the weaver's batch gate (D3).
 - The verbs `lym gate reach` and `lym gate mutate`.
 - Triage lines in the failure report.
@@ -94,8 +97,19 @@ A gate key whose `reports` lists `reach` runs a step after its tiers pass, befor
   The functions each turn listed, with their text hashes, are recorded in the gate's verify directory, so a function listed once never brings another turn.
   The next arrival runs the verify as usual and, with no new unreached function, passes or fails as that verify does.
   The turn spends one of the gate entry's attempts.
-  Each gate is told its entry's attempt budget and counts its own failing results since its last pass;
-  when one more failure would reach the budget, it passes without the turn.
+  Each gate is told its entry's attempt budget and counts its failing shuttle arrivals since its last pass;
+  when one more failing arrival would reach the budget, it passes without the turn.
+- A reach turn's failing result goes to the writer alone.
+  Darn-Write's verify entry carries a cold fixer, `darn.gate_fixer`,
+  which `gatefixer.WrapRowGate` hands a failing result before the writer hears of it.
+  The wrap gains a check on the entry's own gate closure, and on its forked closure when one is set:
+  it spawns no cold fixer for a result whose findings are the reach note.
+  Today's `SkipForked` closure does the same for a forked failure alone,
+  and Darn-Write sets no forked closure, so it cannot carry this bypass.
+  The bypass holds only for such a result, so every other verify failure still goes to the fixer first.
+- On an arrival that spawns a fixer, the wrap runs the inner gate a second time over the fixer's tree.
+  The wrap marks that second run as a re-run, and the gate adds no failure to its count for a re-run,
+  so the count of the attempt-budget rule above is one per shuttle arrival.
 
 Rationale: the operator asked that the writer get the note from its own gate before review, so it adds the missing tests itself.
 A writer that runs its gate by hand reads the note on stderr.
@@ -209,6 +223,8 @@ The map cuts each mutant's runs from the package's whole set to the tests coveri
 
 ### D10 — The `mutation` report step and its review note
 
+D10 is built only after the trial pays, in a later darn the parent opens from the decision the D11 board note asks for.
+
 A gate key whose `reports` lists `mutation` runs the check of D9 after the `reach` step, inside a gate slot, bounded by `mutation_budget_min`.
 
 - It writes `mutation.json` in the worktree's gate directory, matched against HEAD as D5 matches.
@@ -222,21 +238,22 @@ Rationale: the check needs the fresh maps D3 builds; the refusal keeps that orde
 
 ### D11 — The mutation trial
 
-`lym gate mutate` runs D3's refresh and then D9 over the worktree's diff, inside a gate slot under `reach_budget_min` and `mutation_budget_min`, and prints D10's report.
+`lym gate mutate` runs D3's refresh and then D9 over the worktree's diff, inside a gate slot under `reach_budget_min` and `mutation_budget_min`.
+It prints the survivors, uncovered blocks and packages not judged that D9 finds, in the form D10 names.
 `--base <rev>` picks another base.
 In the prime the refresh does nothing, and D9 judges the packages whose hub maps match the worktree.
-The `gate.yaml` template lists `mutation` in no key, so no gate runs the step until a hub lists it.
 The run files a board note asking for the trial the board entry describes: about twenty landed diffs replayed with `lym gate mutate`, counting survivors and reading a sample.
-The note also asks for a decision, from the counts, on whether the template's diff keys list `mutation`.
+The note also asks the parent, from the trial's counts, whether to build D10 and list `mutation` in the template's diff keys.
 
 Rationale: the trial needs the planner and runner D9 builds, and a worktree per landed commit, which no implementer of this run may create.
-Shipping the step unlisted keeps it from costing any gate before the trial says it pays.
+The `mutation` step is not built before the trial says it pays.
 
 ### D12 — Template defaults and config
 
 - The `gate.yaml` template lists `reach` first among the reports of every key that lists `redundancy`, and in `batch`, the gate of a tapestry's writers.
 - New keys beside `redundancy_max_tests` and `redundancy_budget_min`: `reach_budget_min`, `mutation_max_mutants` and `mutation_budget_min`, with defaults in the template.
-- The config check accepts `reach` and `mutation` as report names, alongside `redundancy`.
+- The config check accepts `reach` as a report name, alongside `redundancy`.
+  Its acceptance of `mutation`, and D10's refusal of `mutation` without `reach`, come with D10's later build.
 
 Rationale: the writers of both a darn and a tapestry get the note from their own gate, and the review reads it.
 An existing hub picks the defaults up with no reconcile: config load fills a template key that a tuned `gates` entry lacks, as `internal/gateslot/doc.go` states.
@@ -247,16 +264,22 @@ Decision: The board entry's order holds: the mutation trial comes before the `mu
 
 Rationale: The board entry orders the mutation check as '1. Trial first' and '2. If the trial pays: a gate report step', and its study estimate is a trial darn, then 3 to 4 darns. The record establishes that the trial needs D9's planner and a hand verb, so those are the trial's tooling and stay; building D10 before the trial would go past the entry's condition, while dropping D9 to D11 would leave the mutation check undesigned, which the entry asks this task to design.
 
+### Added after Discussion (arbiter, 2026-11-18): Reach turn bypasses Darn-Write's cold fixer (round 2 F1)
+
+Decision: D3's reach-turn result goes to the writer alone, as the round-2 fix states in D3: gatefixer.WrapRowGate gains a check on the fixer entry's own gate closure, and on its forked closure when set, that spawns no cold fixer for a result whose findings are the reach note; every other verify failure still goes to the fixer first. The wrap marks its post-fixer re-run, and the gate counts no failure for a re-run, so the attempt-budget count is one per failing shuttle arrival. A reach note produced by the re-run after a fixer is returned to the writer as the re-run's verdict. This change to internal/gatefixer is inside the task's scope, since it is what makes the reach note reach the writer. Reviewers treat D3's bypass and its re-run mark as settled and do not reopen the channel choice.
+
+Rationale: The board entry records the operator's wish (2026-11-18) that the writer get the note from its own verify gate, so it adds the missing tests itself; a cold fixer that receives the note and re-runs the gate to a pass would defeat that. The round-2 fixer applied exactly the fix round 2's F1 asked for, bound included, so the finding is answered in the record.
+
 ## Constraints
 
 - `PATTERN-gate-slot`: every map refresh and mutant run holds a gate slot.
 - `PATTERN-test-speed`: the background's "no gate builds a map" changes for D3's worktree maps; see `## PATTERN changes`.
 - `PATTERN-fabric-boundary` and `PATTERN-gitrepo-client-boundary`: base contents, the parent branch and first-parent commits are read through `internal/fabricengine`.
 - `PATTERN-lym-files`: the index is a cache beside the shared maps, named through `testcover.Dir`; its absence costs time and refuses nothing.
-- `PATTERN-tolerant-records`: the two report files and the index refuse no unknown key.
+- `PATTERN-tolerant-records`: the report files and the index refuse no unknown key.
 - `PATTERN-cli-cobra`: both verbs join the `gate` subtree.
-- `PATTERN-stencil-ownership`: the two rubric markers are filled by Go at fill time.
-- `PATTERN-refusal-way-forward`: each refusal of D6, D8 and D10 names its way forward, and a test reaches each.
+- `PATTERN-stencil-ownership`: the rubric markers are filled by Go at fill time.
+- `PATTERN-refusal-way-forward`: each refusal of D6 and D8 names its way forward, and a test reaches each.
 - `PATTERN-code-conventions`: report names, file names and caps are named constants; the Go-only scope adds no new language branch.
 
 ## Auto-mode assumptions
@@ -265,12 +288,6 @@ Rationale: The board entry orders the mutation check as '1. Trial first' and '2.
 
 ## Open risks
 
-- **Order of the mutation trial (decision for the parent).** The board entry says the trial comes first and the step is built only if the trial pays.
-  This record builds the planner, the step and the verb in this run, and leaves the step listed in no key until a trial run decides (D11).
-  The reason is that the trial needs that same planner and a worktree per landed commit, which the run's implementers may not create.
-  The cost is the study's 3 to 4 darns spent before the trial's counts exist.
-  If the trial never runs, the unlisted step is the kind of unused feature board note `drop-unused-features` looks for.
-  The alternative is for the parent to run the trial first as its own darn and cut D9 to D11 from this run; the parent decides.
 - A large package's refresh in D3 can take minutes, since each tier 0 and tier 1 test runs alone; `reach_budget_min` bounds it.
 - A writer that runs `lym gate test --gate batch` by hand on uncommitted edits gets a note from the maps there are, without its new functions;
   the note says so, names the dirty package, linked or its own, and tells it to commit and run again.
@@ -284,6 +301,7 @@ Rationale: The board entry orders the mutation check as '1. Trial first' and '2.
 - D3: a passing gate key listing `reach` writes `reach.json` and prints the note. A red tier, a call outside a hub and a non-Go scoper each give a report with its note and no lookup. The gate's exit is unchanged in every case.
 - D3: a package whose worktree map matches the worktree is not refreshed. A package with an uncommitted file, one whose linked in-module package has one, one past `reach_budget_min` and every package of a call in the prime are answered from the existing maps, with a line saying which and why, naming a dirty linked package. No refresh writes the hub's shared maps.
 - D3: a loomshed verify gate or weaver batch gate whose passing verify wrote a matching `reach.json` listing an unreached function no earlier turn listed returns one failing result carrying the note. A later arrival whose report lists only functions an earlier turn listed gets no turn, and neither does an arrival one failure short of the entry's attempt budget.
+  With `darn.gate_fixer` set, a reach turn's result at Darn-Write spawns no cold fixer and reaches the Darn-Write writer's session.
 - D4: the note lists own-package tests before other packages', fewer-functions tests first within each, at most five per function plus the count of the rest, and the map commits it read.
 - D4: an unreached function whose package holds a tier 2 test or a spawn-marked entry carries the caveat. An unreached new function whose package other packages' older maps link carries a caveat naming those packages.
 - D5: the `reach_report` note lists the report when it matches HEAD's tree. It says no current report exists, and why, when HEAD's changed functions, their hashes or the hashed Go files of a changed or named package differ, test files included, and when the report was written on a red tier, outside a hub or under another scoper.
@@ -298,17 +316,17 @@ Rationale: The board entry orders the mutation check as '1. Trial first' and '2.
 - D9: mutants land only on changed lines of covered blocks, at most one per line, in the operator order, under `mutation_max_mutants`. String constants, embedded lines and logger calls get none.
 - D9: a changed uncovered block is reported uncovered with no mutant, and a package without a fresh map is reported not judged. In the prime, a package whose hub map matches the worktree is judged.
 - D9: a mutant is killed by the first failing covering test, survives when every covering test passes, and is unjudged on a timeout or memory cap; a survivor lists other packages' reaching tests as possible killers.
-- D10: a gate key listing `mutation` writes `mutation.json` and its summary line, and the `mutation_report` note lists survivors, uncovered blocks and packages not judged only when the report matches HEAD's tree.
-- D10: a key listing `mutation` without `reach` is refused naming `reach`.
-- D11: `lym gate mutate` refreshes the changed packages' worktree maps and prints the report of D10 for the worktree's diff, and `--base` changes the base it diffs from.
-- Review: the `gate.yaml` template lists `mutation` in no key, and the run filed a board note asking for the trial (D11).
-- D12: a hub key without `reports` gets the template's `reports` with `reach` first in each key that lists `redundancy` and in `batch`, and the config check accepts `reach`, `mutation` and the three new keys.
+- D10, checked at D10's later build: a gate key listing `mutation` writes `mutation.json` and its summary line, and the `mutation_report` note lists survivors, uncovered blocks and packages not judged only when the report matches HEAD's tree.
+- D10, checked at D10's later build: a key listing `mutation` without `reach` is refused naming `reach`.
+- D11: `lym gate mutate` refreshes the changed packages' worktree maps and prints D9's survivors, uncovered blocks and packages not judged for the worktree's diff, and `--base` changes the base it diffs from.
+- Review: the run filed a board note asking for the trial and for the parent's decision, from its counts, on whether to build D10 and list `mutation` in the template's diff keys (D11).
+- D12: a hub key without `reports` gets the template's `reports` with `reach` first in each key that lists `redundancy` and in `batch`, and the config check accepts `reach` and the three new keys.
 
 ## PATTERN changes
 
 - `PATTERN-coverage-map-reader` — adds: Reading the coverage maps across packages or finding a diff's changed functions: only through `internal/testreach` (new); only the prime's `--map` run writes its index; a report step's review note is used only when it matches HEAD's tree. (test)
-- `PATTERN-test-speed` — changes: Writing or running a test: via `lym gate test` by key; one `tiergate.Require` tier, lowest that fits; it pins behavior no other test covers, which the redundancy, reach and mutation reports check; skips, clocks, `t.Parallel`, `//lym:seam` and `//lym:watch` per the background. (test)
+- `PATTERN-test-speed` — changes: Writing or running a test: via `lym gate test` by key; one `tiergate.Require` tier, lowest that fits; it pins behavior no other test covers, which the redundancy and reach reports check; skips, clocks, `t.Parallel`, `//lym:seam` and `//lym:watch` per the background. (test)
 
 ## Notes for the plan writer
 
-- The `PATTERN-test-speed` background's coverage-map section needs its "built only on command" sentence changed for D3's worktree refresh, and paragraphs for the reach and mutation steps.
+- The `PATTERN-test-speed` background's coverage-map section needs its "built only on command" sentence changed for D3's worktree refresh, and a paragraph for the reach step.

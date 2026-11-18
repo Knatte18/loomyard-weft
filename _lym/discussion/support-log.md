@@ -65,7 +65,7 @@ All six forks returned a report. Findings, merged across lenses:
 - **Triage lines added to each fixer stencil.** Rejected: the fixer already reads the failure report, so the lines reach it there.
 - **A "last green" record for the parent branch.** Rejected: no code keeps one, and adding it is a project of its own; the caller names `--since`.
 - **Running the mutation trial inside this run.** Rejected: it needs a worktree per landed commit, which no implementer of the run may create.
-- **Cutting the mutation check from this run until the trial reports.** Not chosen by this writer, since the task asks to design all three uses; it is offered to the parent under Open risks.
+- **Cutting the mutation check from this run until the trial reports.** Rejected by the parent's ruling, which keeps D9 and D11 as the trial's tooling and builds D10 only after the trial pays.
 - **Mutating string constants and embedded lines on changed lines.** Rejected: they produce the mutants reviewers call unproductive, such as message text.
 - **Making the tests-per-function cap and the commit-range cap config keys.** Rejected under YAGNI; they are named constants.
 - **The redundancy step reading the maps the reach step refreshed.** Rejected after the lens review: a fresh worktree map holds the diff's own new tests, which changes what the redundancy step judges against.
@@ -85,6 +85,13 @@ All six forks returned a report. Findings, merged across lenses:
 - F6 (trial order, class `decision`) is with the parent.
 - Self-check: the reach turn now fires once per unreached function rather than once per tree, and each gate is told its attempt budget. D4 keeps a function that older cross-package maps may reach in the unreached list, with a caveat, so the turn and the review still see it. D2 matches a name repeated across build-constrained files by file. D1 states the rebuild bound after an interrupted map run.
 
+### Round 2
+
+- F1: a reach turn's failing result goes to the writer alone; Darn-Write's cold fixer is not spawned for it, and the turn's attempt count counts shuttle arrivals.
+- F2: the parent ruled on round 1's F6 in the added entry "Mutation check order: trial before the mutation step (F6)".
+  The record applies it: D10 is built only after the trial pays, D11 prints D9's findings and its board note asks whether to build D10,
+  D12's config check accepts `reach` alone for now, and the Open risk on the trial's order is gone.
+
 ## Question ledger
 
 - Q1 (auto-pick): Where does the cross-package reader live? Picked a new package `internal/testreach`, beside `internal/testcover`, which keeps the map format. Rationale: the reader, index and finder serve three callers and are not part of the map's format.
@@ -97,5 +104,5 @@ All six forks returned a report. Findings, merged across lenses:
 - Q7 (auto-pick): How does triage reach the fixer? Through the failure report the fixer already reads. Rationale: no new channel.
 - Q8 (auto-pick): Where does "last green" come from for a red parent? The caller passes `--since`; the verb refuses without it. Rationale: no such record exists.
 - Q9 (auto-pick): What filter and cap does the mutation check start with? One mutant per changed line, an operator order, no string, embed or logger mutants, a per-diff cap and a budget. Rationale: Google's finding that a cap and a filter belong in the first build.
-- Q10 (auto-pick): How is the trial handled? The step ships unlisted, a verb runs it by hand, and a board note asks for the trial and the listing decision. Rationale: the trial needs worktrees per landed commit. Raised under Open risks for the parent.
+- Q10 (auto-pick): How is the trial handled? The step ships unlisted, a verb runs it by hand, and a board note asks for the trial and the listing decision. Rationale: the trial needs worktrees per landed commit. Raised under Open risks for the parent, whose ruling in Round 2 builds the step only after the trial pays.
 - Q11 (auto-pick): Which PATTERN entries change? A new `PATTERN-coverage-map-reader`, and `PATTERN-test-speed`, whose background says no gate builds a map. Rationale: D1 and D3.
