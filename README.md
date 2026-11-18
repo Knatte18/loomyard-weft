@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 07:24 UTC; every age below is as of then.
+Rendered 2026-11-18 07:34 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -105,7 +105,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | Discussion-Write | neve | 2w<br>18h | claude, shuttle, config |
+| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | Discussion-Bouncer | neve | 2w<br>18h | claude, shuttle, config |
 
 #### Ready (0)
 
@@ -137,10 +137,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **No lym check compares a map entry with a single-test coverage run**<br>• The trial cross-checked by hand; blocks have no line range and funcs have no profile counterpart | [`map-single-test-crosscheck`](design-map-single-test-crosscheck.md) | 16h<br>16h |  |
-| E2 |  | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | 25m<br>25m | burler, stencil |
-| E3 |  | **Discussion rubric: a decision states the observed tool behaviour it rests on**<br>• So later rounds read the result instead of repeating the experiment | [`rubric-pin-tool-facts`](design-rubric-pin-tool-facts.md) | 25m<br>25m | stencil, loom |
-| E4 |  | **A shell guard refusal says nothing ran and names the refused segment**<br>• Saves the agent working out which part of a compound command failed | [`refusal-names-segment`](design-refusal-names-segment.md) | 25m<br>25m | process |
-| E5 |  | **The edit directive cat, head and sed -n clause has no effect**<br>• Every agent batches reads with cat anyway; delete the clause or guard it | [`edit-directive-cat-clause`](design-edit-directive-cat-clause.md) | 25m<br>25m | stencil |
+| E2 |  | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | 36m<br>36m | burler, stencil |
+| E3 |  | **Discussion rubric: a decision states the observed tool behaviour it rests on**<br>• So later rounds read the result instead of repeating the experiment | [`rubric-pin-tool-facts`](design-rubric-pin-tool-facts.md) | 36m<br>36m | stencil, loom |
+| E4 |  | **A shell guard refusal says nothing ran and names the refused segment**<br>• Saves the agent working out which part of a compound command failed | [`refusal-names-segment`](design-refusal-names-segment.md) | 36m<br>36m | process |
+| E5 |  | **The edit directive cat, head and sed -n clause has no effect**<br>• Every agent batches reads with cat anyway; delete the clause or guard it | [`edit-directive-cat-clause`](design-edit-directive-cat-clause.md) | 36m<br>36m | stencil |
 
 #### Features (3)
 
