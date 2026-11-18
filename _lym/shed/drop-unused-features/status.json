@@ -1,11 +1,11 @@
 {
-  "current_producer": "Open-Window",
+  "current_producer": "Seed-IDE",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Open-Window",
-    "last": "Seed-Child → done",
+    "now": "Seed-IDE",
+    "last": "Open-Window → done",
     "wait": ""
   },
   "history": [
@@ -39,6 +39,14 @@
       "at": "2026-11-18T20:06:55Z",
       "started_at": "2026-11-18T20:06:55Z",
       "by": "shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Open-Window",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-18T20:07:09Z",
+      "started_at": "2026-11-18T20:07:07Z",
       "machine": "neve"
     }
   ]
