@@ -492,6 +492,27 @@
       "body": "Imported from [issue #141](https://github.com/Knatte18/loomyard/issues/141).\n\n## Seen\n\nIn a darn run with drift scope full and `diff: lines` (key_patterns set), Drift-Expect wrote `expected.yaml` entries with `lines: - range: \"1-\"` or `\"7-433\"` per case.\nThe drift gate then failed on every changed value in those cases: the checker reports each changed value at line 0, so no line range ever covers it, even `\"1-\"`.\n\n## Workaround\n\nThe parent amends the expectation with `lym drift amend \u003cslug\u003e --entries \u003cfile\u003e` using key-based entries (`keys: - key: ..., n: ..., why: ...`), which match.\n\n## Expected\n\nA changed value carries its real line number so line-range entries match, or Drift-Expect is told to write key-based entries when the diff reports by key.\n",
       "created": "2026-11-18T08:07:50Z",
       "revised": "2026-11-18T08:07:50Z"
+    },
+    {
+      "id": 1449,
+      "handle": "B5",
+      "slug": "scratch-symlink-two-paths",
+      "title": "Worktree .scratch is a symlink into .lym/scratch; tools given a path through it see each project under two paths",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric",
+        "cwd"
+      ],
+      "issues": [
+        140
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #140](https://github.com/Knatte18/loomyard/issues/140).\n\nA task agent needed a scratch checkout to build an external .NET harness. The worktree's `.scratch` directory is a symlink into the weft's `.lym/scratch`.\nThe agent passed a repository path through that symlink to the build, and MSBuild saw each project under two paths, the symlinked one and the resolved one.\nThe build then failed on a missing project reference; only the fully resolved real path built.\n\nAbnormal: the instructions send scratch files to `.scratch/`, yet a path under it is not a safe build input, and nothing says so.\nThe agent lost build attempts to the duplicate-path failure.\n\nTo do: document in the agent instructions that tools which compare or deduplicate paths (MSBuild, git, other build systems) need the resolved real path of a `.scratch` location, or have lym expose the resolved path to agents, or make `.scratch` a real directory.\n\nProvenance: task td-stick-slip-static-offset; note Darn-Write.md.",
+      "created": "2026-11-18T08:07:53Z",
+      "revised": "2026-11-18T08:07:53Z"
     }
   ],
   "prime_owner": "neve",
