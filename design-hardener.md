@@ -4,15 +4,19 @@
 
 ## Goal
 
-Replace `crucible`, the hand-run review-and-fix loop, with `Hardener`.
-Hardener is an on-demand campaign after loom that runs a live-substrate module in a sandbox, reviews its behavior round after round, and fixes what it finds until the gates are green.
-Then retire `crucible/`, which still writes to `_mill/` and runs its rounds through hand-spawned `crucible-reviewer-<effort>` agents.
+Build `Hardener`: an on-demand campaign after loom that runs a live-substrate module in a sandbox, reviews its behavior round after round, and fixes what it finds until the gates are green.
+Then retire `crucible/`.
+
+## Operator decision (2026-11-18)
+
+`crucible` is not operational in this repository: it was written for Millhouse, writes to `_mill/` and runs through hand-spawned `crucible-reviewer-<effort>` agents.
+Design Hardener on lym's own modules as they stand today (`shed`, `treadle`, `burler`, the gate and the sandbox work), not by porting crucible.
+`crucible/README.md` and the draft below are only an account of the method and of what hand runs taught; check every module and mechanism they name against the current code before relying on it.
 
 ## Starting point
 
-- The design under `## Design` (DRAFT): `Tenter` is the round loop on `Treadle`, and `Hardener` is `Shed` wrapping `Tenter` with its own Preflight.
+- The design under `## Design` (DRAFT, written when crucible was live): `Tenter` is the round loop on `Treadle`, and `Hardener` is `Shed` wrapping `Tenter` with its own Preflight.
   Rounds respawn every time instead of keeping a persistent thread, and a `progress-judge` runs before and after each round.
-- `crucible/README.md` is the method Hardener automates.
 
 ## Open before Discussion
 
