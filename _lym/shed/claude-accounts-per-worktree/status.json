@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Review",
+  "current_producer": "Plan-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Review",
-    "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
+    "now": "Plan-Burler-Fix",
+    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -123,6 +123,30 @@
       "at": "2026-11-18T12:08:20Z",
       "started_at": "2026-11-18T12:07:51Z",
       "routed_to": "Plan-Burler-Review"
+    },
+    {
+      "producer": "Plan-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/claude-accounts-per-worktree/_lym/reviews/plan/round-2-review.md",
+      "at": "2026-11-18T12:16:20Z",
+      "started_at": "2026-11-18T12:08:26Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-18T12:16:19.285201846Z",
+          "end": "2026-11-18T12:16:19.286089276Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-18T12:16:19.448660795Z",
+          "end": "2026-11-18T12:16:19.451789976Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Burler-Fix"
     }
   ],
   "product": {
