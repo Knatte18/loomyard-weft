@@ -1,0 +1,13 @@
+---
+round: 1
+focus:
+  - "internal/loomcli/prfindings.go and the PR-Review row in internal/shedrecipe/entries_burler.go: does the send-back/fix-here decision follow D4 (BLOCKING or count plus fix-here count over pr_review_small_max; fall back to fix-here when no on_reroute, the entry gate fails, or zero_rounds), decided from built rows and never the recipe name?"
+  - "The send-back mark lifecycle: is the mark, fix-here count, parent_review_asked and session id cleared only when the row's newest shed history entry is an OutcomeReroute whose Output is the mark's pr-findings-<n>.md file, and kept on re-step, crash, dirty-tree resume, cap-halt resume and goto? Does a dirty tree at wake halt Stuck with a way forward?"
+  - "internal/shedadapters/amendment.go, bouncer.go, burlerreview.go, settlerecord.go: does a send-back file written after the settle force a full generation on an unchanged subject, does ReviewInput return every input, is each path kept in the generation record, and does the round prompt carry a review-input note separate from the amendment note?"
+  - "Drift loosened-check path in internal/driftengine and internal/fabricengine: is the listing limited to files existing at the review base (taskMergeBase), are rulings keyed by a hash of the file diff plus the range's Loosened-Check trailer lines, is an empty reason or an unruled file refused, are old judgement records still read, and does an uncaused ruling make the row Stuck with ways forward? Is git run only in fabricengine?"
+  - "Stencils and rubric wording against D1, D2, D6 and D7: three result-check bullets in the Code-Review rubric, the shared Loosened-Check fragment included (never restated) by every code-committing brief in tapestry, darn and sampler, the rubric's Review input reading each input the review-input note names, the PR-Review brief's pr-findings rule, and the Describe and darn writer figures rule."
+  - "Friction note and pullrequest record: one note per send-back at its own path through internal/friction, naming Code-Review's miss, findings by severity and titles, and the stored file; do the pullrequest record changes keep unknown keys?"
+  - "Test economy: the diff's new tests in prfindings_test.go, bouncer_amendment_test.go and the loomrecipe tests; check the contained test TestPRReview_WaitSendBackHaltedOnADirtyTreeReroutesOnTheNextCallOnACleanTree against TestPRReview_Wait and TestPRReview_Call, and TestRouting_ProgressAt and TestRecipe_PRReviewReroutesToCodeBouncer against their covering tests."
+---
+
+Focus covers the four decision areas with the most new logic (D4 row and verb, D4 forced generation, D3 Drift rulings) and the wording deliverables.
