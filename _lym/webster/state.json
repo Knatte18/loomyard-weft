@@ -534,9 +534,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-abfeb8a3764f9cdd3.jsonl"
       ]
+    },
+    "5": {
+      "slug": "reach-step",
+      "cards": [
+        "05-reach-step",
+        "06-map-run-writes-index"
+      ],
+      "cardHashes": {
+        "05-reach-step": "fcbcb52a596f68a4a16f12d23e925546b2c2b5f8f812c81ec5d646cc5ed5cd45",
+        "06-map-run-writes-index": "f30f58ab357007c6fdfde37a5d3992de943e9aec4dcae8b6824a0496451b06ce"
+      },
+      "startSha": "7b7e582854d3a74d52675eea1971fc361d79ffa3",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T20:30:33Z",
+      "sessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "cc2115949b2e99f9e861afb1569b42c9",
   "masterSessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
   "masterEngine": "claude",
