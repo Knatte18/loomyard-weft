@@ -26,7 +26,7 @@ Four explore subagents mapped the ground before any design call:
 
 Every lens returned a report. Duplicates across lenses are merged into one line.
 
-- interactions, walkthrough (BLOCKING): burler's model lists clamp, so rounds past three ran one model and the different-model convergence rule could never hold. Fixed: D3's perch expands the lists cyclically to the cap; criterion added.
+- interactions, walkthrough (BLOCKING): burler's model lists clamp, so rounds past three ran one model and the different-model convergence rule could never hold. Fixed: D3's perch expands the lists cyclically to the cap, which round 1's review (F6) moved to the hard cap; criterion added.
 - interactions, existing-paths, bound-breaker (BLOCKING): a process-owned lymtemp directory is swept when `sandbox new` exits. Fixed: D5's root is a fixed directory under the worktree's `.lym`, shared by every process of the run.
 - interactions, walkthrough, bound-breaker (MEDIUM): the Bouncer's commit seam fires only on an approved settle. Fixed: D7 archives at the end of every fix row; the seam keeps only the final ledger, with the halt case bounded.
 - interactions, existing-paths, walkthrough, bound-breaker (MEDIUM): `verify_source: tree_scope` reads `darn.yaml`'s scope and attempts. Fixed: D1 has the arm read them from `hardener.yaml`; D9 gains the keys; criterion added.
@@ -42,7 +42,7 @@ Every lens returned a report. Duplicates across lenses are merged into one line.
 - walkthrough, bound-breaker (LOW): the gate's deploy step served none of the gate's own runs. Fixed: the deploy moved to `sandbox new`.
 - interactions, bound-breaker (LOW): tmuxkit's stray check covers only packages calling `tmuxkit.Main`, on Linux. Fixed: D4 states the bound; the live report names uncovered packages.
 - walkthrough (LOW): a round that changes reed's socket-key derivation can leave a server the reap misses. Fixed by stating the bound in D5.
-- bound-breaker (LOW): `internal/agentconfig` refuses no unknown role. Fixed: D8 drops the reinterpretation.
+- bound-breaker (LOW): whether a hub `agents.yaml` naming a retired role still loads. This line first recorded the false premise that `internal/agentconfig` refuses no unknown role, and D8 dropped the reinterpretation; round 1's review (F1) showed `agentconfig.Load` refuses such a role, so D8 ships a reinterpretation on the `agents` module.
 - board-scope (MEDIUM, decision): the operator note lists treadle to build on. Kept D8 and turned the Open risks line into a question for the parent.
 - board-scope (LOW, decision): "the sandbox work" may mean the bwrap note. Fixed: D5's rationale states the reading; no parent question, since the bwrap note is unbuilt and D5 conflicts with nothing in it.
 - board-scope (LOW): the `manifest-retire` list was not addressed. Fixed: Scope's Out says no file holds it.

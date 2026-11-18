@@ -14,8 +14,9 @@ In:
 - A behavior-review round: the burler review and fix rows with a Hardener rubric, and a Hardener fix engine carrying a Go-run live gate.
 - Throwaway sandbox hubs a round agent makes and clears through `lym harden sandbox`, and Go's reap and stray record around each round row.
 - The campaign's handoff: what the Bouncer's facts carry for a Hardener round, and the archive of each round under `_lym/harden/`.
-- A `hardener.yaml` config unit, and a `--copies` flag on `lym gate test`.
-- Retiring `internal/treadleengine` (removed), its stencils and roles, and the `Tenter` name.
+- A `hardener.yaml` config unit, the Hardener gate keys, and a `--copies` flag on `lym gate test`.
+- Retiring `internal/treadleengine` (removed), its stencils and roles, and the `Tenter` name,
+  with a reinterpretation of every hub `agents.yaml` that names a retired role.
 - Deleting `crucible/` and moving its durable method into `internal/hardenshed` (new) docs and the rubric stencil, with the docs that name crucible, Tenter or the Hardener draft brought in line.
 
 Out:
@@ -47,6 +48,11 @@ PATTERN-dobby-runs and PATTERN-landing hold unchanged: the run starts only throu
 Record-Write turns the task's body into the run's decision record, which is the campaign charter: the module, its code paths, the high-yield invariants to drive, what is out of scope, and whether the module drives a real LLM.
 The task's `run_settings` set the two `hardener.yaml` keys Go needs for one campaign: `packages`, the Go package directories the live gate runs, empty by default, and `llm_driving`, false by default, true when the module's live tests spawn a real LLM session.
 Preflight refuses a `hardener` run whose `packages` is empty or names a directory the worktree lacks; the refusal names the `run_settings` write that fixes it as its way forward (PATTERN-refusal-way-forward).
+Preflight also refuses a `reviewer` list whose cyclic expansion (D3) puts one model in two adjacent rounds, a one-entry list or one whose first and last entries match included;
+the refusal names the `run_settings` write of a `reviewer` list without such a pair as its way forward.
+It refuses a `max_bounces` above `hard_max_bounces` the same way, naming the `run_settings` write that lowers it.
+It refuses a run whose hub's own `gate.yaml` sets no `harden-live` key, or no `harden-live-copies` key when concurrent copies will run (D4), and one whose live key names tier 3;
+each of these refusals names the `lym config gate --set` write of the key as its way forward.
 
 Rationale: the operator front-loads into the charter the gating the hand-run campaign asked of them, so the run needs no operator during its rounds.
 `run_settings` carry a unit's config keys, so the two values are keys of the unit with defaults that make Preflight's refusal fire on a task that set none.
@@ -59,33 +65,58 @@ The review row runs with `tool-use: true`, `fix-scope: source` and `language-ski
 Its rubric is a new stencil, `harden-rubric-review`, read by the Bouncer judge and the review row alike.
 `HardenFix` is the `BurlerFix` constructor with `fix-scope: source` and its gates fixed to `clean`, `verify` and `live` (D4), so a recipe cannot configure the live gate off.
 Its `verify` gate runs the hub `gate.yaml` key `harden-burler-fix`, shipped the way `code-burler-fix` is.
+For a round diff wholly under `hardener.yaml`'s `tree_scope` trees, it runs that key over the touched trees' targets,
+as darn's verify gate does with `code-burler-fix` (`internal/loomcli/darnwiring.go` `darnTreeScope`).
+lym's own hub sets `harden-burler-fix` to the tiers below its live tier, `[0, 1]`, so a live-tier failure reaches the fixer only through the `live` gate (D4).
 The fixer commits each fix as it lands, as Code-Burler-Fix does.
-The loom wiring gains a Harden perch for the segment: its round cap, fans, auto-accept and its judge, seed, reviewer and fixer models come from `hardener.yaml`.
-The perch expands the reviewer and fixer lists cyclically to the round cap before handing them to burler's per-round model lists, so round n takes entry n modulo the list's length.
+The loom wiring gains a Harden perch for the segment: its round cap, hard cap, fans, auto-accept and its judge, seed, reviewer and fixer models come from `hardener.yaml`.
+The segment-budget projection takes Harden-Review's cap from `hardener.yaml` too,
+the lightweight reader behind status and routing (`loomCLI.reviewBudget` in `internal/loomcli/arm.go`) included.
+The perch expands the reviewer and fixer lists cyclically to its hard cap, `hard_max_bounces` (D9), before handing them to burler's per-round model lists,
+so round n takes entry n modulo the list's length, a round a parent's continue runs past `max_bounces` included.
 
 Rationale: burler already splits a round into a review half whose only write is the review file and a fix half spawned after it, which enforces crucible's review-before-fix order in Go, and `tool-use: true` already lets the reviewer build, run and test.
 The Bouncer already carries the finding ledger, circling detection and a per-round focus file, which is the pre-round targeting the draft gave Tenter.
-Burler's lists clamp to their last entry, so without the cyclic expansion every round past the list's length runs one model and D6's convergence rule could never hold.
+Burler's lists clamp to their last entry (`internal/burlerengine/models.go` `pickRound`, behind `RoundModels.Pick`),
+so without the cyclic expansion every round past the list's length runs one model and D6's convergence rule could never hold.
+Expanding to the hard cap rather than `max_bounces` keeps the rotation going in every round a parent's continue adds.
 
 ### D4 — The live gate is Go's independent verification of each round
 
-The `live` gate runs on the committed tree after each fix round, in held gate slots (PATTERN-gate-slot), and re-prompts the fixer with its findings like any row gate:
+The `live` gate runs on the committed tree after each fix round and re-prompts the fixer with its findings like any row gate.
+It runs two hub `gate.yaml` keys through `lym gate test --gate <key>`, with `packages` as the explicit targets that replace the key's scope:
+`harden-live`, the merge-bar run, and `harden-live-copies`, the concurrent run.
+Both ship in the gate template the way `code-burler-fix` is, with tiers `[0]`, since a key may name only a tier the hub declares;
+a hub sets each to its live tier in its `gate.yaml`, which Preflight checks (D2), and lym's own hub sets both to `[2]`.
 
-1. It runs `lym gate test --tier 2` over `packages` once, serially.
+1. It runs `harden-live` once.
    A failure fails the gate.
-2. When `llm_driving` is false and `concurrency` is above 1, it runs `lym gate test --tier 2 --copies <concurrency>` over the same packages.
+2. When `llm_driving` is false and `concurrency` is above 1, it runs `harden-live-copies` with `--copies <concurrency>`.
    Their failures never fail the gate: they go into the round's live report (D6).
 3. It never runs tier 3: a billed LLM session is driven by the round agent, one named test at a time, as the rubric says.
+   Preflight refuses a run whose live key names tier 3 (D2).
 
-`lym gate test` gains `--copies <n>`: it runs n concurrent copies of each named package's compiled test binary inside the slots the call holds.
-Bound: it is refused with tier 3 and with no package named; it holds no slot past its own call; when the pool grants fewer slots than n, it runs one copy per held slot and records the shortfall in its output, which the live report carries.
+The `live` gate holds no gate slot of its own, so each of its calls is a top-level gate run that acquires its own slots (PATTERN-gate-slot).
+A call nested in a held slot would run inside that slot without acquiring,
+and a multi-slot acquire waits until it holds every slot it asks for, never granting part of them (`internal/gateslot/doc.go`).
+
+The `live` gate re-prompts the fixer at most `live_attempts` times (D9) on a failing `harden-live` run.
+When they run out, the gate ends the row instead of halting the run:
+the live report is marked red and records each failing test as a deferred finding, which the Bouncer's facts and carry-over read (D6).
+
+`lym gate test` gains `--copies <n>`: it acquires n slots for the call and runs n concurrent copies of each named package's compiled test binary inside them.
+Bound: it needs `--gate` and is refused without it, with a key naming tier 3 and with no package named; it holds no slot past its own call.
+An n above the pool's slot count is clamped to every slot, as `gateslot.Pool.AcquireSlots` clamps it;
+the call then runs one copy per held slot and records the clamp in its output, which the live report carries.
 
 The gate's stray-state check is the one `tmuxkit.Main` makes: a tier-2 package fails when a process referencing its run directory survives, and when its run directory holds a socket of a live server, which it then kills.
 Bound: that check covers only packages whose `TestMain` calls `tmuxkit.Main`, and its process scan reads `/proc`, so Linux only; the live report names each package outside that cover.
 
-Rationale: crucible's merge bar is a green serial live run with zero stray state, and its N-way concurrent run is a diagnostic amplifier, never a merge gate; the gate keeps that split.
+Rationale: crucible's merge bar is one green live run with zero stray state, and its N-way concurrent run is a diagnostic amplifier, never a merge gate; the gate keeps that split.
 Go re-running the gates on the committed tree replaces the hand-run orchestrator's cold re-verification, so a round's own "merge-ready" never gates anything.
-PATTERN-test-speed runs every test through `lym gate test`, so the concurrent copies are a flag of it rather than raw test binaries the gate starts.
+PATTERN-test-speed runs every test through `lym gate test` by gate key, and a site names a key, never a tier list;
+so the live runs are keys, and the concurrent copies are a flag of the call rather than raw test binaries the gate starts.
+Ending the row once its attempts are spent lets a red gate whose cause the fixer deferred reach the judge as a fact instead of halting an unattended campaign.
 Bound: the gate checks only the packages `packages` names; a defect outside them is the reviewer's to find.
 
 ### D5 — lym provisions throwaway local hubs; the operator provisions nothing
@@ -94,13 +125,28 @@ Bound: the gate checks only the packages `packages` names; a defect outside them
 The hubs live under the run's sandbox root, a fixed directory under the run worktree's `.lym` named through `internal/lymdirs`, so every process of the run, the verbs and the shed driver alike, derives the same root, and the root goes with the worktree at teardown.
 Before the hub's first pair exists, `new` commits a `loom.yaml` with `selfreport: false` and `friction: ""` onto the hub's prime records, so every pair the round creates inherits it.
 `new` also deploys the worktree's HEAD into its `.dev-bin` through `tools/deploy` with `-dev` when the deployed build is not HEAD's, and prints, as JSON, the hub's path and the absolute path of that `.dev-bin` lym, which the rubric makes the only lym a round invokes against a sandbox hub.
+`new` records each hub path it makes in a hub list in the root, which only `clear` and the reaps prune, once that hub's server is stopped.
 `lym harden sandbox list` lists the root's hubs, and `lym harden sandbox clear` stops each hub's reed server and removes the root's hubs.
-At the start and at the end of every Harden-Burler-Review and Harden-Burler-Fix row, Go lists the reed servers and processes still tied to the root, writes each to the round's stray report, kills them and removes the root's hubs.
+At the start and at the end of every Harden-Burler-Review and Harden-Burler-Fix row, Go reaps the root.
+The reap lists the reed servers and processes still tied to the root and appends each to the round's one stray report,
+every entry naming its row and its reap point.
+It then ends each sandbox hub's recorded processes through `runproc.End` over every owner that hub's records name,
+stops each listed reed server, kills by the `/proc` scan only the processes no record names, and removes the root's hubs.
+That `/proc` kill is a new orphan reaper beside `lym tender reap` (PATTERN changes).
 A start-of-row reap marks what it finds as left by an interrupted row, so a crash or pause never charges one round's leftovers to the next.
 
-Bounds: the verbs refuse outside a worktree whose run's recipe is `hardener`; `new` writes only under the root; `clear` and the reaps touch only reed servers whose socket key derives from a hub path under the root and processes whose cwd, executable or argv names the root.
+Bounds: the verbs refuse outside a worktree whose run's recipe is `hardener`; `new` writes only under the root.
+`clear` and the reaps touch only reed servers whose socket key derives from a hub path the root's hub list records, whether or not that hub's directory still exists,
+and processes whose cwd, executable or argv names the root.
+A hub made outside the root is outside every reap, and the rubric forbids a round making one.
+Finalize runs the reap before the worktree's teardown, and a campaign halted capped or circling runs it as it halts,
+since the root lies in the worktree's ignored `.lym`,
+and fabric's cleaner of a leftover worktree's ignored paths refuses one holding a `.git` at any depth, as every sandbox hub does
+(`internal/fabricengine/destroy.go` `ignoredTaskPathDeletable`).
 The process scan reads `/proc` on Linux and is skipped elsewhere, where only the reed servers are checked.
 The reaps derive socket keys with the running lym's derivation; a round that changes that derivation can leave a server only the next round's reviewer will see.
+Likewise they read the sandbox hubs' process records with the running lym's runproc;
+a round that changes the record format leaves its processes to the `/proc` kill, reported as unrecorded.
 
 Rationale: concurrent, destructive scenarios need several independent hubs at once, a second hub for every concurrency claim, and no shared GitHub state, which the single GitHub-backed sandbox hub cannot give.
 "The sandbox work" of the entry's operator note is read as the dev-bin deploy and sandbox tooling lym ships, not the unbuilt bwrap note.
@@ -108,26 +154,31 @@ Rationale: concurrent, destructive scenarios need several independent hubs at on
 A process-owned `internal/lymtemp` directory is swept once its owner exits, so it cannot hold hubs a later process drives.
 A round's agents create pairs from the hub's committed prime records, so an override left uncommitted would not reach them.
 Recording what a round left before reaping it keeps "zero stray state" an observed invariant without letting one round's leftovers poison the next.
+The hub list outlives a hub's directory because `reedengine.ServerName` hashes the hub path;
+its readable half is only the directory's base name, which alone cannot place a server under the root.
+Ending recorded processes through runproc keeps PATTERN-child-processes' owner rule, leaving the `/proc` kill only what no record names.
 
 ### D6 — The Bouncer's facts carry the campaign's handoff
 
 The Bouncer's ledger stays the lossless finding-recurrence record.
 Go writes four more per-round files into the segment's shared run directory: the round's reviewer and fixer models, written when the review row starts; the live report, written by the `live` gate; the fix commits, written by `HardenFix` from the commits its round added; and the stray report (D5).
-For a Hardener round the Bouncer's facts rendering reads them beside the reviews and ledgers, and also lists the findings the fixer left deferred.
+For a Hardener round the Bouncer's facts rendering reads them beside the reviews and ledgers,
+and also lists the deferred findings: those the fixer left and those a `live` gate whose attempts ran out recorded (D4).
 The Harden-Bouncer judge reads the facts, so convergence, circling and the next round's focus rest on facts no agent wrote.
 The rubric's judge section settles three calls:
 
 - CONVERGED needs a round whose review records no BLOCKING or MEDIUM finding, a green live gate, and a reviewer model different from the previous round's.
+  A live gate left red by deferred failures therefore blocks CONVERGED, so such a campaign ends capped and its parent decides from the facts.
 - The focus file derives the next round's assignment from what the last round left standing; when the open findings repeat a shape, it assigns an enumeration sweep of that shape before the judge rules CIRCLING.
 - A finding whose fix is a feature or a refactor outside the module is deferred by the fixer and carried into the record's `## Open risks` by the Bouncer's carry-over, never fixed in the round.
 
-The round cap is `hardener.yaml`'s `max_bounces`; a capped or circling campaign escalates to the run's parent through the Bouncer's existing parent notice and decision verbs.
+The round cap is `hardener.yaml`'s `max_bounces`, and a parent's continue runs rounds up to `hard_max_bounces`; a capped or circling campaign escalates to the run's parent through the Bouncer's existing parent notice and decision verbs.
 
 Rationale: what a live orchestrator held implicitly was which model ran each round, what the gates observed, what was left behind and what was deferred; Go now writes each of them down.
 
 ### D7 — Each round is archived on the records side
 
-At the end of every Harden-Burler-Fix row, after its gates, Go copies the round's review, fixer report, models, live report, fix commits, stray report and the latest ledger from the run directory to `_lym/harden/round-<n>/` and commits them through fabric (PATTERN-fabric-boundary).
+At the end of every Harden-Burler-Fix row, after its gates and then its end-of-row reap (D5), Go copies the round's review, fixer report, models, live report, fix commits, stray report and the latest ledger from the run directory to `_lym/harden/round-<n>/` and commits them through fabric (PATTERN-fabric-boundary).
 Harden-Bouncer's approved settle runs a `harden` commit seam that archives the final ledger the same way.
 Bound: a campaign halted capped or circling keeps its last round's ledger only in the run directory until the parent's decision settles the Bouncer.
 
@@ -138,7 +189,11 @@ The Bouncer's commit seam runs only on an approved settle, so the per-round arch
 
 `internal/treadleengine` (removed), the stencils under `contracts/stencils/treadle/` (removed) and the `treadle-judge` and `treadle-targeting` roles are deleted, with the tests that name them.
 The name `Tenter` is dropped from the docs and the glossary; the glossary's treadle row becomes free.
-A hub `agents.yaml` that still names a retired role keeps loading: `internal/agentconfig` refuses no unknown role, so no reinterpretation ships.
+A hub `agents.yaml` that still names a retired role would stop loading:
+`agentconfig.Load` refuses a `skills` or `efforts` key naming a role outside the roles lym starts
+(`internal/agentconfig/config.go` `skillLists`; `config_test.go` rows `UnknownRole` and `PairWithUnknownRole`).
+A `configreg.Reinterpretation` on the `agents` module therefore strips the `treadle-judge` and `treadle-targeting` keys from `skills`
+and the keys naming either role from `efforts`, applied by `hubreconcile`'s walk (PATTERN-config-layers).
 
 Rationale: the Bouncer already does what treadle's judge, handoff ledger and pre-round targeting were kept for, live, in every loom review ring.
 Treadle has no consumer and is reachable from no `main`, against PATTERN-test-only-code;
@@ -150,10 +205,13 @@ A new config unit `hardener.yaml`, loaded only through `internal/configengine` w
 
 - `packages` (default empty) and `llm_driving` (default false), set per task (D2);
 - `max_bounces`, the round cap, default 7;
+- `hard_max_bounces`, the cap a parent's continue cannot pass and the length the model lists expand to (D3), default 10;
 - `reviewer` and `fixer`, model lists rotated per round (D3), default Opus, Fable, Sonnet;
 - the Harden-Bouncer's `judge` and `seed`, and `reviewer_fan`, `fixer_fan` and `auto_accept`;
 - `concurrency`, the live gate's concurrent copies, default 3;
-- `tree_scope` and `verify_attempts`, the run's verify scope and the `verify` gate's attempts (D1).
+- `live_attempts`, the live gate's fixer re-prompts before it ends the row red (D4), default 2;
+- `tree_scope`, the trees that narrow the `harden-burler-fix` key to a round diff wholly under them,
+  and `verify_attempts`, the `verify` gate's attempts (D1, D3).
 
 A task's `run_settings` may override any of them for one campaign.
 
@@ -164,7 +222,11 @@ The defaults follow the reed and fabric campaigns: seven rounds and a three-way 
 
 `HardenFix` joins `shedrecipe.LoomBuildEngines`.
 The contract's order clause places a build row that carries a segment at its segment's Bouncer, so Harden-Burler-Fix counts as lying after Record-Write because Harden-Bouncer does.
-Bound: the rule reads only build rows that carry a segment; every recipe whose build row carries none is checked as today.
+A segmented build row must be reached from its segment's Bouncer by the ring's on_done or on_stuck edges;
+one no such edge reaches is refused, with the edge to add as its way forward.
+A segmented build row whose segment holds no Bouncer is refused, with adding the segment's Bouncer row as its way forward.
+Bound: the rule reads only build rows that carry a segment, and those two refusals are its whole reach beyond today's check;
+every recipe whose build row carries none is checked as today.
 
 Rationale: in a Hardener run the fix row is the row that turns the record into the change, but it sits on the ring's on_stuck edges, never on the on_done path the clause walks.
 
@@ -185,6 +247,12 @@ the `harden-rubric-review` stencil carries every rule a round and its judge act 
 Rationale: the board entry's done-when puts the design's durable content in package docs;
 the operational rules belong where the agents read them, the rubric.
 
+### Added after Discussion (arbiter, 2026-11-18): D8's rationale quotes the 2026-10-16 treadle note as written
+
+Decision: In D8's rationale, replace the clause "the operator's 2026-10-16 decision kept its stencils only until Hardener is built." with "the board entry records an operator decision of 2026-10-16 that keeps treadle's judge stencils for Hardener, unmaintained, to be re-derived from the Bouncer judge when Hardener is built, so that no dead-code sweep removes them; whether this run may delete treadle is the open parent question in Open risks." Make this replacement whatever the parent answers on deleting treadle, unless that answer removes D8 entirely.
+
+Rationale: The board entry's Status section says the stencils "are kept for Hardener but unmaintained, and are re-derived from the Bouncer judge (bouncer/bouncer-template-judge.md) when Hardener is built, so no dead-code sweep removes them (operator decision 2026-10-16)". It says nothing about keeping them only until Hardener is built, so the record's clause misquotes it (review round 1, F10).
+
 ## Constraints
 
 - PATTERN-lym-files: the sandbox root is a never-tracked directory under the worktree's `.lym`, and the archive lives under `_lym/harden/`, both named through `internal/lymdirs`.
@@ -195,6 +263,11 @@ the operational rules belong where the agents read them, the rubric.
 - `fabriccli.CloneAndWire` wires a full hub from local bare repos: `internal/hubforge` builds every test hub that way (its package doc).
 - `internal/lymtemp` gives each process one locked run directory and sweeps those of dead owners (its package doc, read by the lens review).
 - The Bouncer's commit seam runs only on an approved settle (`internal/shedadapters/bouncer.go`, read by the lens review).
+- Batten admits a child recipe only from a closed list (`internal/battencli/wire.go` `childRecipeSupported`); D1 rests on it.
+
+## PATTERN changes
+
+- `PATTERN-child-processes` — changes: the Run process owner section admits the Hardener sandbox reaper beside `lym tender reap` as a user of `EndProcess`, bounded to processes under a `hardener` run's sandbox root that no record names (D5).
 
 ## Auto-mode assumptions
 
@@ -208,23 +281,40 @@ the operational rules belong where the agents read them, the rubric.
 
 ## Acceptance criteria
 
-- The `hardener` recipe builds under the loom contract, and a recipe holding two `HardenFix` rows, or a `HardenFix` row whose segment's Bouncer lies before the record row, is refused with its way forward (D1, D10).
+- The `hardener` recipe builds under the loom contract, and a recipe holding two `HardenFix` rows, a `HardenFix` row whose segment's Bouncer lies before the record row,
+  one no edge from its segment's Bouncer reaches, or one whose segment holds no Bouncer, is refused with its way forward (D1, D10).
 - A recipe whose build row carries no segment is checked exactly as before D10 (D10).
 - A board task with `recipe: hardener` is started by batten's Run-Shed through dobby, and its run walks Preflight, Record-Write and the Harden-Review ring (D1).
 - A `hardener` run's verify scope and verify attempts come from `hardener.yaml`, and changing `darn.yaml` leaves them unchanged (D1, D9).
 - A capped Harden-Bouncer's parent decision verb finds its run directory (D1, D6).
 - Preflight refuses a `hardener` run whose `packages` is empty or names a missing directory, and the refusal names the `run_settings` write as its way forward (D2).
-- The Harden-Burler-Review row spawns with tool use, source fix scope and the `harden-rubric-review` rubric; a recipe cannot configure `HardenFix`'s `live` gate off; its `verify` gate runs the `harden-burler-fix` key (D3).
-- With a three-entry model list and a cap of 7, rounds 1 to 7 get entries 1, 2, 3, 1, 2, 3, 1, and the round cap and judge models come from `hardener.yaml`, not `loom.yaml` (D3, D9).
-- The `live` gate fails on a failing serial tier-2 run, passes a green one, and writes concurrent-copy failures to the live report without failing (D4).
+- Preflight refuses a one-entry `reviewer` list and one whose cyclic expansion puts one model in two adjacent rounds,
+  naming the `run_settings` write as its way forward (D2, D3).
+- The Harden-Burler-Review row spawns with tool use, source fix scope and the `harden-rubric-review` rubric; a recipe cannot configure `HardenFix`'s `live` gate off;
+  its `verify` gate runs the `harden-burler-fix` key, over the touched trees' targets when the round diff lies wholly under `tree_scope` (D3).
+- With a three-entry model list, a cap of 7 and a hard cap of 10, rounds 1 to 9 get entries 1, 2, 3, 1, 2, 3, 1, 2, 3, where rounds 8 and 9 run after a parent's continue;
+  the round cap, hard cap and judge models come from `hardener.yaml`, not `loom.yaml` (D3, D9).
+- `lym loom status` on a `hardener` run reports `max_bounces` as the Harden-Review budget (D3).
+- The `live` gate fails on a red `harden-live` run, passes a green one, and writes `harden-live-copies` failures to the live report without failing;
+  it runs both through `lym gate test --gate` with `packages` as targets and names no tier (D4).
 - With `llm_driving` true, the `live` gate runs no concurrent copy, and it never runs tier 3 (D4).
-- `lym gate test --copies 3` runs three concurrent copies inside its held slots, runs fewer and reports the shortfall when granted fewer, and is refused with tier 3 or no package (D4).
+- Preflight refuses a run whose hub sets no `harden-live` key of its own or whose live key names tier 3,
+  and a `max_bounces` above `hard_max_bounces`, each refusal naming its write as its way forward (D2, D4).
+- When the `live` gate's `live_attempts` run out on a red `harden-live` run, the row ends with the live report marked red and the failures deferred,
+  the run goes on, the next Harden-Bouncer's facts carry both, and the judge does not rule CONVERGED while the gate stays red (D4, D6).
+- `lym gate test --gate harden-live-copies --copies 3`, called from the `live` gate, acquires three slots of its own and runs three concurrent copies inside them;
+  on a pool of two slots it runs two and reports the clamp, and it is refused without `--gate`, with a key naming tier 3 or with no package (D4).
 - `lym harden sandbox new` builds a wired hub under the run's sandbox root with no GitHub remote, whose prime records hold a committed `loom.yaml` with `selfreport: false` and `friction: ""`, and redeploys `.dev-bin` only when it is not HEAD's build (D5).
 - `clear` removes every hub under the root and nothing outside it; a hub made by one process is listed and cleared by another; each verb refuses outside a `hardener` run worktree with its way forward (D5, D11).
 - A reed server left alive for a sandbox hub is recorded in the stray report, killed and its hub removed, by the end-of-row reap and, marked as left by an interrupted row, by the next row's start-of-row reap (D5).
+- A stray left by the review row appears, with its row and reap point, in round-<n>'s archived stray report (D5, D7).
+- A reap ends a sandbox hub's recorded processes through `runproc.End` and kills by the `/proc` scan only a process no record names;
+  it stops the reed server of a recorded hub whose directory is already gone (D5).
+- Finalize reaps the sandbox root before teardown, and a campaign halted capped or circling reaps it as it halts, so no sandbox hub blocks fabric's leftover cleaners (D5).
+- PATTERN-child-processes names the Hardener sandbox reaper beside `lym tender reap` as a user of `EndProcess`, bounded to the sandbox root (D5).
 - The facts of a Hardener round carry the round's models, live outcome, stray report, deferred findings and fix commits (D6).
 - Every finished Harden-Burler-Fix row commits its round's artifacts under `_lym/harden/round-<n>/`, and an approved Harden-Bouncer settle commits the final ledger (D7).
-- `internal/treadleengine` and the treadle stencils and roles are gone, and a hub `agents.yaml` naming `treadle-judge` still loads (D8).
+- `internal/treadleengine` and the treadle stencils and roles are gone, and a hub `agents.yaml` naming `treadle-judge` is rewritten by the reinterpretation and then loads (D8).
 - `hardener.yaml` loads through configengine with D9's defaults, and a task's `run_settings` override one for that run (D9).
 - `lym harden sandbox` is reachable from the root command (D11).
 - Review: `harden-rubric-review` states the convergence rule, the sweep-on-recurring-shape rule and the deferral of large findings of D6, and the round rules crucible's method taught: review before fix, log as you go, deploy first after every source change, drive the real substrate rather than trace code, sabotage-prove every new regression test and re-drive each prior round's fixes, a sequential control and a second hub for every concurrency claim, one named tier-3 test at a time for an LLM-driving module, teardown with zero stray state, never `lym selfreport create`, and a convergence verdict that states what it did not drive (D6, D12).
