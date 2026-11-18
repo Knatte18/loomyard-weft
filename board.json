@@ -450,6 +450,28 @@
       "body": "Imported from [issue #144](https://github.com/Knatte18/loomyard/issues/144).\n\nWhat happened: a loom run halted failed at the Code-Burler-Fix producer (anomaly producer-hard-failure) in round 1 attempt 1. The shedadapters guard reported that the burler twill fixer fork attempted 5 write/edit tool calls, and that a fork must never mutate a file. Way forward named by lym: inspect the target's working-tree changes, revert what the fork wrote, and resume the run. The preceding Code-Bouncer and Code-Burler-Review rows were both recorded as stuck.\n\nWhy it is abnormal: the fix round is the step meant to apply review findings, yet the fork it spawns is forbidden to write, and the fork tried anyway. Either the fixer fork's brief does not tell it that it is read-only and where to hand its fixes (so it reaches for Edit/Write), or the fix round routes work to a fork that should have been a writing session. Either way an ordinary run ends in a hard failure that needs manual revert-and-resume, and the writes may already have touched the working tree.\n\nWhat to do: make the Code-Burler-Fix fork's prompt state the no-mutation contract and the channel for returning fixes, or run the fixer as a session allowed to write; and consider having the guard block or revert the fork's writes itself, or retry the attempt once with a corrective message, instead of failing the whole run.\n\nProvenance: task slug leftover-pairs-teardown; note file loom-halt.md.",
       "created": "2026-11-18T08:07:46Z",
       "revised": "2026-11-18T08:07:46Z"
+    },
+    {
+      "id": 1447,
+      "handle": "B3",
+      "slug": "gate-reprompt-strand-untracked",
+      "title": "Gate re-prompt fails: shuttle strand not tracked by reed, Plan-Write halts blocked",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "shuttle",
+        "reed"
+      ],
+      "issues": [
+        143
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #143](https://github.com/Knatte18/loomyard/issues/143).\n\nWhat happened: a `lym loom run` halted as blocked at Plan-Write with anomaly `escalation-to-human`, state `stuck`.\nThe reason reported by lym:\n\n```\ngate failed its first check and the session was never re-prompted, since its re-prompt could not be sent: shuttle: strand \"\u003cid\u003e\" is not tracked by reed — either its run completed and was cleaned up, or reed's strand table was reset under it (a reed remove/down, or a lost or rebuilt reed.json); check \"lym reed status\"\n```\n\nWhy it is abnormal: the gate failed, and the re-prompt to the session could not be delivered because reed no longer tracked the strand.\nNothing in the task asked for a reed reset, so either the strand was cleaned up while the producer was still running, or reed's strand table was lost or rebuilt during the run.\nThe run stalled for about 23 minutes before it halted, and the findings file under `.lym/shed/\u003cslug\u003e/gate-findings/Plan-Write.md` was left for a human.\nThis run followed a separate failed run in the same worktree (see the stencil include issue), so a stale or reset reed table after the earlier halt is a plausible cause.\n\nWhat to do: find why the strand was untracked at re-prompt time (cleanup racing the gate, or a reed.json reset after the earlier halt).\nWhen the strand is gone, have the gate path relaunch or resume the producer instead of halting, or fail fast with this message rather than after a long wait.\n\nProvenance: task slug `launch-manifest-parity`; notes `loom-halt-2.md`.\n",
+      "created": "2026-11-18T08:07:48Z",
+      "revised": "2026-11-18T08:07:48Z"
     }
   ],
   "prime_owner": "neve",
