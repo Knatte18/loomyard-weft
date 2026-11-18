@@ -1,6 +1,6 @@
 # Bench the explorer subagents of the Discussion and Plan writers: with against without
 
-`plan-writer-explorer-forks` · Task · research, loom, stencil · running · Code-Bouncer
+`plan-writer-explorer-forks` · Task · research, loom, stencil · running · Drift-Recheck
 
 ## What was seen
 
