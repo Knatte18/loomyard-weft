@@ -205,6 +205,12 @@ Rationale: Round 3's F13 found the clear ran inside Call before shed persisted t
 
 - A peer run, `drift-judge-and-line-range`, changes the drift judge's snapshot check and line-range matching in `internal/driftengine` at the same time; D3 touches the judge request and judgement in the same package, so the later run to land meets a merge there.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - d4-clear-before-reroute-persisted (class design, severity BLOCKING, open in rounds 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - Review: the Code-Review rubric carries the three result-check bullets of D1, worded for any language and hub, and accepts a trailer on any commit of the range.
