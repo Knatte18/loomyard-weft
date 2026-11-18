@@ -14,18 +14,18 @@
 - `plan:internal/shuttleengine/claudeengine#TestClaude_SetAccount` -> `func TestClaude_SetAccount(t *testing.T)`
 
 **Extends:**
-- `plan:internal/shuttleengine#AccountKeeper`
+- `internal/shuttleengine#AccountKeeper`
 - `cmd/lym#newRoot`
 - `internal/shuttleengine/claudeengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengines#AccountKeeper`
+- `internal/shuttleengines#AccountKeeper`
 - `internal/hubgeom#EngineWorktree`
 - `internal/fabricengine#ConfigDirs`
-- `plan:internal/shuttleengine/claudeengine#writeUsage`
-- `plan:internal/shuttleengine/claudeengine#updateAccountFile`
-- `plan:internal/shuttleengine/claudeengine#resolveAccount`
-- `plan:internal/shuttleengine/claudeengine#hasHeadroom`
+- `internal/shuttleengine/claudeengine#writeUsage`
+- `internal/shuttleengine/claudeengine#updateAccountFile`
+- `internal/shuttleengine/claudeengine#resolveAccount`
+- `internal/shuttleengine/claudeengine#hasHeadroom`
 
 **Intent:**
 `AccountKeeper` gains `SetAccount(name string) error`, `ShowAccounts() (string, error)` and `RecordStatusLine(name string, input []byte) (string, error)`.

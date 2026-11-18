@@ -9,13 +9,13 @@
 - `internal/shuttleengine/claudeengine#Claude.OpenLaunch`
 - `internal/shuttleengine/claudeengine#writeOpenFiles` -> `func writeOpenFiles(dir, creelFlagDirPosix string, scope sessionScope, statusLine string) (settingsPath, appendPromptPath string, err error)`
 - `internal/shuttleengine/claudeengine#TestOpenLaunch`
-- `plan:internal/shuttleengine/claudeengine#TestPrepare_ExportsTheResolvedAccount`
+- `internal/shuttleengine/claudeengine#TestPrepare_ExportsTheResolvedAccount`
 
 **Extends:**
 - `internal/shuttleengine/claudeengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine/claudeengine#Claude.resolveLaunchAccount`
+- `internal/shuttleengine/claudeengine#Claude.resolveLaunchAccount`
 - `internal/shuttleengine/claudeengine#shQuote`
 - `internal/shuttleengine/claudeengine#LymBinary`
 - `internal/shuttleengine/claudeengine#TestPrepare_WritesArtifactsAndReturnsConsistentLaunch`

@@ -36,7 +36,7 @@
 - `internal/shuttleengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine/claudeengine#Claude.resolveLaunchAccount`
+- `internal/shuttleengine/claudeengine#Claude.resolveLaunchAccount`
 - `plan:internal/shuttleengine/claudeengine#Claude.knownConfigDirs`
 - `plan:internal/shuttleengine/claudeengine#newestTranscript`
 - `internal/shuttleengine/claudeengine#projectDirUnder`

@@ -16,12 +16,12 @@
 - `internal/shuttleengine#UsageLimitReader`
 - `internal/shuttleengine#FindRun`
 - `internal/shuttleengine/claudeengine#Claude.TurnEndActivity`
-- `plan:internal/shuttleengine/claudeengine#readLaunchedAccount`
-- `plan:internal/shuttleengine/claudeengine#recordBlocked`
-- `plan:internal/shuttleengine/claudeengine#updateAccountFile`
-- `plan:internal/shuttleengine/claudeengine#pickAccount`
-- `plan:internal/shuttleengine/claudeengine#resolveAccount`
-- `plan:internal/shuttleengine/claudeengine#hasHeadroom`
+- `internal/shuttleengine/claudeengine#readLaunchedAccount`
+- `internal/shuttleengine/claudeengine#recordBlocked`
+- `internal/shuttleengine/claudeengine#updateAccountFile`
+- `internal/shuttleengine/claudeengine#pickAccount`
+- `internal/shuttleengine/claudeengine#resolveAccount`
+- `internal/shuttleengine/claudeengine#hasHeadroom`
 - `internal/shuttleengine#fakeEngine`
 
 **Intent:**

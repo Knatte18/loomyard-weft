@@ -22,7 +22,7 @@
 - `internal/shuttleengine/claudeengine#Claude.Prepare`
 - `internal/shuttleengine/claudeengine#Claude.OpenLaunch`
 - `internal/shuttleengine/claudeengine#Claude.resolvedCandidates`
-- `plan:internal/shuttleengine/claudeengine#TestPrepare_ExportsTheResolvedAccount`
+- `internal/shuttleengine/claudeengine#TestPrepare_ExportsTheResolvedAccount`
 - `internal/shuttleengine/claudeengine#TestLocateSessions`
 - `internal/shuttleengine/claudeengine#TestSessionHolder`
 - `internal/shuttleengine/claudeengine#TestProcessLiveness`
@@ -44,7 +44,7 @@
 - `internal/shuttleengine/claudeengine#canonicalConfigDir`
 - `internal/shuttleengine/claudeengine#projectDirUnder`
 - `internal/shuttleengine/claudeengine#locateSessions`
-- `plan:internal/shuttleengine/claudeengine#Claude.resolveLaunchAccount`
+- `internal/shuttleengine/claudeengine#Claude.resolveLaunchAccount`
 - `internal/envconfig#LoadConfig`
 - `internal/fabricengine#ConfigDirs`
 - `internal/reedcli/doc.go`

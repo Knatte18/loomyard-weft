@@ -1,24 +1,24 @@
 # Card 4 — The account file, the usage records, the pick and the resolution
 
 **Create:**
-- `plan:internal/lymdirs#ClaudeAccountsFileName` -> `const ClaudeAccountsFileName = "accounts.json"`
-- `plan:internal/lymdirs#ClaudeUsageDirName` -> `const ClaudeUsageDirName = "usage"`
-- `plan:internal/shuttleengine/claudeengine#accountFile` -> `type accountFile struct`
-- `plan:internal/shuttleengine/claudeengine#usageWindow` -> `type usageWindow struct`
-- `plan:internal/shuttleengine/claudeengine#usageRecord` -> `type usageRecord struct`
-- `plan:internal/shuttleengine/claudeengine#readAccountFile` -> `func readAccountFile(dir string) (accountFile, error)`
-- `plan:internal/shuttleengine/claudeengine#updateAccountFile` -> `func updateAccountFile(dir string, mutate func(accountFile) (accountFile, error)) error`
-- `plan:internal/shuttleengine/claudeengine#readUsage` -> `func readUsage(dir string, accounts []AccountConfig) (map[string]usageRecord, error)`
-- `plan:internal/shuttleengine/claudeengine#mergeUsage` -> `func mergeUsage(stored, read usageRecord) usageRecord`
-- `plan:internal/shuttleengine/claudeengine#writeUsage` -> `func writeUsage(dir, account string, read usageRecord) error`
-- `plan:internal/shuttleengine/claudeengine#recordBlocked` -> `func recordBlocked(dir, account string, until time.Time) error`
-- `plan:internal/shuttleengine/claudeengine#hasHeadroom` -> `func hasHeadroom(account AccountConfig, usage usageRecord, now time.Time) bool`
-- `plan:internal/shuttleengine/claudeengine#loggedIn` -> `func loggedIn(goos string, account AccountConfig) bool`
-- `plan:internal/shuttleengine/claudeengine#pickRequest` -> `type pickRequest struct`
-- `plan:internal/shuttleengine/claudeengine#pickAccount` -> `func pickAccount(file accountFile, req pickRequest) (accountFile, string, bool)`
-- `plan:internal/shuttleengine/claudeengine#resolveAccount` -> `func resolveAccount(claude Config, worktree shuttleengine.Worktree, file accountFile, usage map[string]usageRecord, now time.Time) (AccountConfig, bool)`
-- `plan:internal/shuttleengine/claudeengine#TestPickAccount` -> `func TestPickAccount(t *testing.T)`
-- `plan:internal/shuttleengine/claudeengine#TestMergeUsage` -> `func TestMergeUsage(t *testing.T)`
+- `internal/lymdirs#ClaudeAccountsFileName`
+- `internal/lymdirs#ClaudeUsageDirName`
+- `internal/shuttleengine/claudeengine#accountFile`
+- `internal/shuttleengine/claudeengine#usageWindow`
+- `internal/shuttleengine/claudeengine#usageRecord`
+- `internal/shuttleengine/claudeengine#readAccountFile`
+- `internal/shuttleengine/claudeengine#updateAccountFile`
+- `internal/shuttleengine/claudeengine#readUsage`
+- `internal/shuttleengine/claudeengine#mergeUsage`
+- `internal/shuttleengine/claudeengine#writeUsage`
+- `internal/shuttleengine/claudeengine#recordBlocked`
+- `internal/shuttleengine/claudeengine#hasHeadroom`
+- `internal/shuttleengine/claudeengine#loggedIn`
+- `internal/shuttleengine/claudeengine#pickRequest`
+- `internal/shuttleengine/claudeengine#pickAccount`
+- `internal/shuttleengine/claudeengine#resolveAccount`
+- `internal/shuttleengine/claudeengine#TestPickAccount`
+- `internal/shuttleengine/claudeengine#TestMergeUsage`
 
 **Extends:**
 - `internal/shuttleengine/claudeengine/doc.go`

@@ -1,11 +1,11 @@
 # Card 5 — Pick a worktree's account when it is made on the machine
 
 **Create:**
-- `plan:internal/shuttleengine#AccountKeeper` -> `type AccountKeeper interface`
-- `plan:internal/shuttleengine/claudeengine#Claude.PickAccount` -> `func (c *Claude) PickAccount(keepEntry bool) error`
-- `plan:internal/shuttleengines#AccountKeeper` -> `func AccountKeeper(dirs configengine.Dirs, worktree shuttleengine.Worktree) (shuttleengine.AccountKeeper, bool)`
-- `plan:internal/shuttleengine/claudeengine#TestClaude_PickAccount` -> `func TestClaude_PickAccount(t *testing.T)`
-- `plan:internal/battencli#TestWire_CreateWorktreePicksTheNewWorktreesAccount` -> `func TestWire_CreateWorktreePicksTheNewWorktreesAccount(t *testing.T)`
+- `internal/shuttleengine#AccountKeeper`
+- `internal/shuttleengine/claudeengine#Claude.PickAccount`
+- `internal/shuttleengines#AccountKeeper`
+- `internal/shuttleengine/claudeengine#TestClaude_PickAccount`
+- `internal/battencli#TestWire_CreateWorktreePicksTheNewWorktreesAccount`
 
 **Extends:**
 - `internal/battencli#battenCLI`
@@ -24,10 +24,10 @@
 - `internal/adoptcli#world.deps`
 
 **Uses:**
-- `plan:internal/shuttleengine/claudeengine#pickAccount`
-- `plan:internal/shuttleengine/claudeengine#updateAccountFile`
-- `plan:internal/shuttleengine/claudeengine#readUsage`
-- `plan:internal/shuttleengine/claudeengine#loggedIn`
+- `internal/shuttleengine/claudeengine#pickAccount`
+- `internal/shuttleengine/claudeengine#updateAccountFile`
+- `internal/shuttleengine/claudeengine#readUsage`
+- `internal/shuttleengine/claudeengine#loggedIn`
 - `internal/hubgeom#EngineWorktree`
 
 **Intent:**

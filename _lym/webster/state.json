@@ -1,21 +1,21 @@
 {
   "runGuid": "32003f8b31f52bbf18b4e4cb9872dc17",
-  "planFingerprint": "b1341418f48fd004697c49ac2d6041227aa97a8aa3c4b1ac11c88643b13f6d4e",
+  "planFingerprint": "892f13a60f4c6859f85e9b16bf32de2536fd0d87baa617514e970083e8a14cf2",
   "planFileHashes": {
     "00-overview.md": "98b15a10330162bb77a58831776fd88a33301d67aff0d8edfa2d80a489069f65",
     "01-shell-unset-env.md": "92880154d64c79919f6ebc176ddb983a1dd08200a27f4d36df84387584deaffa",
     "02-claude-account-config.md": "aaa8a761228aa17dc2026c85bb13ba393b91a8f0fd317321e65b8ffd720c563f",
     "03-engine-worktree-geometry.md": "90060fb2b33545ecbbd80d57ae0672044e8950c0f410d7687ec7378bdedda576",
-    "04-claude-account-store.md": "2db58545b045473b327e229d6f62b911a96a448156ec854ddeaee46d52b4a437",
-    "05-account-pick-at-making.md": "3e3151acd58d88cff71c484528a6e2e958b239a9004114f8956cacd85a04bdbd",
-    "06-launch-exports-account.md": "58957daa07a8c0fa4181903eb3bc9accc654149083f5cdbcd6d26caf012bbd08",
-    "07-known-config-dirs.md": "4bd4eff9fdf61f372d11592562b48fecd5e67aeacda224b1c2ae24c011e560c8",
-    "08-resume-carries-transcript.md": "705f9e615532ec419239a47f1fb3c70e0e6a30a5db41d14ddd59ce72054caf31",
-    "09-claude-account-verbs.md": "5b087f992bfbd46553f69385fd053467787809429b33418dca134fa179992a7a",
-    "10-status-line-settings.md": "d185a3dc0e4d87c04a858261aec0aa5d466696803cd94afc19f964ccc5bf6a48",
+    "04-claude-account-store.md": "06eab41cd22957a166e90f302a8e331c200bbed6b393ad169eb8ff3fbf053ac5",
+    "05-account-pick-at-making.md": "51141112ccf24d4609eccf668a9505ec9ca7b84efb6c5444716e972d44619691",
+    "06-launch-exports-account.md": "b09d1119879a61640f3e8648a17cb9d96b6d292d505ec2763002e67db03dd0d6",
+    "07-known-config-dirs.md": "baa7103744ed746ff06fb6b8d0b12711e3d46550fe6ac5842632dfe2aad764e2",
+    "08-resume-carries-transcript.md": "92655e14f691fce1f08f7862cd475af5e521c22bb390c33d290ff016012ddfd0",
+    "09-claude-account-verbs.md": "e41486d5a53e06bb3a2e845eda315aaae25d3862760eda90441dfd2062053fc5",
+    "10-status-line-settings.md": "dc48cfd3684972a2fc4ec988287fb5cf26b2c423816d31592ed19610e3d559ec",
     "11-reed-hold-and-relaunch-ops.md": "3ae4f4aba9d08390de28fffa97d2ad1f57382be3f82fdb84dde5a481e4edc0a4",
     "12-run-relaunching-record.md": "28d86ed8d3b3f7e3944bbe950f7a3f7f3fd020d712701beafa8a50804f5a7730",
-    "13-account-switch-on-limit.md": "f47869055a90eba976df34ea2755926c296f8f6c4de86b53a532c79a015e9f7c",
+    "13-account-switch-on-limit.md": "10a9d9876000c593a490def24da1d91f1eda7ddf5bc923c12707fa7cc633f412",
     "14-in-run-relaunch.md": "02ea68a26305af5b6576d0b09fa145ab6c444d170c59ce42b69ef7b8c19a0184",
     "15-relaunch-bound-on-attach.md": "90a4fc1beb63bcd635af242307e66afab2adba7599124c71ef589cfce8338681",
     "16-refused-resume-starts-fresh.md": "11fad0de8173fe50da60e3208bf5050c74b2e78dfd4f493cc7559c86e32c0024",
@@ -620,25 +620,53 @@
         "06-launch-exports-account"
       ],
       "cardHashes": {
-        "04-claude-account-store": "2db58545b045473b327e229d6f62b911a96a448156ec854ddeaee46d52b4a437",
-        "05-account-pick-at-making": "3e3151acd58d88cff71c484528a6e2e958b239a9004114f8956cacd85a04bdbd",
-        "06-launch-exports-account": "58957daa07a8c0fa4181903eb3bc9accc654149083f5cdbcd6d26caf012bbd08"
+        "04-claude-account-store": "06eab41cd22957a166e90f302a8e331c200bbed6b393ad169eb8ff3fbf053ac5",
+        "05-account-pick-at-making": "51141112ccf24d4609eccf668a9505ec9ca7b84efb6c5444716e972d44619691",
+        "06-launch-exports-account": "b09d1119879a61640f3e8648a17cb9d96b6d292d505ec2763002e67db03dd0d6"
       },
       "startSha": "7098adc48d603adb253000411d8d462e615ff741",
       "kind": "fork",
       "spawnedAt": "2026-11-18T15:21:23Z",
       "sessionId": "9142bc6e-f406-4b6c-8882-b8da16176a9c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-claude-account-store",
+        "status": "done",
+        "head_sha": "7fdad554599c1de7dd127990b341fa5e4c8fcccc",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/adoptcli/adopt_test.go",
+          "internal/battencli/accountpick.go",
+          "internal/shuttleengine/accountkeeper.go",
+          "internal/shuttleengine/claudeengine/accountenv.go",
+          "internal/shuttleengine/claudeengine/accountenv_test.go",
+          "internal/shuttleengine/claudeengine/accountkeeper.go",
+          "internal/shuttleengine/claudeengine/accountpick.go",
+          "internal/shuttleengine/claudeengine/accountpick_test.go",
+          "internal/shuttleengine/claudeengine/accountstore.go",
+          "internal/shuttleengines/shuttleengines_test.go"
+        ]
+      },
+      "cardShas": [
+        "7fdad554599c1de7dd127990b341fa5e4c8fcccc"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/9142bc6e-f406-4b6c-8882-b8da16176a9c/subagents/agent-a520ada7971375532.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/9142bc6e-f406-4b6c-8882-b8da16176a9c/subagents/agent-a520ada7971375532.jsonl"
+      ]
     }
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "135b8cd51e8ec48e4fd912379752b134",
   "masterSessionId": "9142bc6e-f406-4b6c-8882-b8da16176a9c",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a0ef6fd807272a962.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a986626d3daf43ca0.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a986626d3daf43ca0.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/9142bc6e-f406-4b6c-8882-b8da16176a9c/subagents/agent-a520ada7971375532.jsonl"
   ]
 }

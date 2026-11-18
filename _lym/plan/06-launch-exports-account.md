@@ -14,14 +14,14 @@
 - `internal/testkit/tmuxkit#ServerEnviron`
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#accountEnv` -> `type accountEnv struct`
-- `plan:internal/shuttleengine/claudeengine#accountEnv.wrap` -> `func (e accountEnv) wrap(sh shell.Shell, cmd string) string`
-- `plan:internal/shuttleengine/claudeengine#launchedAccount` -> `type launchedAccount struct`
-- `plan:internal/shuttleengine/claudeengine#launchedAccountFileName` -> `const launchedAccountFileName = "account.json"`
-- `plan:internal/shuttleengine/claudeengine#writeLaunchedAccount` -> `func writeLaunchedAccount(dir string, launched launchedAccount) error`
-- `plan:internal/shuttleengine/claudeengine#readLaunchedAccount` -> `func readLaunchedAccount(dir string) (launchedAccount, bool, error)`
-- `plan:internal/shuttleengine/claudeengine#Claude.resolveLaunchAccount` -> `func (c *Claude) resolveLaunchAccount(claude Config) (accountEnv, launchedAccount, error)`
-- `plan:internal/shuttleengine/claudeengine#TestPrepare_ExportsTheResolvedAccount` -> `func TestPrepare_ExportsTheResolvedAccount(t *testing.T)`
+- `internal/shuttleengine/claudeengine#accountEnv`
+- `internal/shuttleengine/claudeengine#accountEnv.wrap`
+- `internal/shuttleengine/claudeengine#launchedAccount`
+- `internal/shuttleengine/claudeengine#launchedAccountFileName`
+- `internal/shuttleengine/claudeengine#writeLaunchedAccount`
+- `internal/shuttleengine/claudeengine#readLaunchedAccount`
+- `internal/shuttleengine/claudeengine#Claude.resolveLaunchAccount`
+- `internal/shuttleengine/claudeengine#TestPrepare_ExportsTheResolvedAccount`
 
 **Extends:**
 - `internal/shuttleengine/claudeengine/doc.go`
@@ -29,9 +29,9 @@
 **Uses:**
 - `internal/shell#Shell`
 - `internal/envconfig#LoadConfig`
-- `plan:internal/shuttleengine/claudeengine#resolveAccount`
-- `plan:internal/shuttleengine/claudeengine#readAccountFile`
-- `plan:internal/shuttleengine/claudeengine#readUsage`
+- `internal/shuttleengine/claudeengine#resolveAccount`
+- `internal/shuttleengine/claudeengine#readAccountFile`
+- `internal/shuttleengine/claudeengine#readUsage`
 - `internal/shuttleengine/claudeengine#canonicalConfigDir`
 - `internal/shuttleengine/claudeengine#claudeHomeDir`
 - `internal/shuttleengine/claudeengine#TestPrepare_ThreadsSpecIntoLaunchCmds`
