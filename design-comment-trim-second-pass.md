@@ -1,6 +1,6 @@
 # Comments: check what the big comment rewrite left, before any new pass
 
-`comment-trim-second-pass` · Task · enhancement, docs · starting · Worktree-Create
+`comment-trim-second-pass` · Task · enhancement, docs · starting · Seed-Child
 
 ## What was seen
 
