@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=e4f23284a506f0ee5e440454d4d4bafcc6d554a6a4c7f20d18ed086925a9a4b2 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
+<!-- lym-stencil: sha256=b737d42bbe18a7aefe43150c2b9dc481d7ece232089d0b5d39f573e9eeec61ce build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -88,6 +88,8 @@ Make exactly the changes the card describes, in exactly the targets its type lab
    Never amend, squash, rebase or reset a commit already made: a status push may have published it, and a rewritten commit leaves the task branch diverged from origin.
 
 A card that departs from its own text because a PATTERN entry forbids the card's way records the departure as a `Pattern-Departure:` trailer in that card's commit, in the shape the `## Pattern-Departure trailer` section of `{{.specs_dir}}/loom/loom-plan-spec.md` defines.
+
+{{template "loom-fragment-loosened-check"}}
 
 If any card's gate fails, or a test the card broke fails, and you cannot fix it within your self-fix bound (see next section), stop and report `status: FAILED` — do not continue to a later card on top of a broken one.
 

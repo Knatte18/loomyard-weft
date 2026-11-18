@@ -8,7 +8,7 @@
      drift_verdict (the regression check's section, or a line saying none ran),
      parent_directive (rendered by internal/parentdirective) and edit_directive (rendered by internal/editdirective).
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=694e58a9793ff3b5e124bec50e96fcf8fc7e2bb94d51d0f53f4525406711944b build=57f125ebb8d49248bcd537e48f1c8d67149a92bf time=2026-11-15T12:56:51Z -->
+lym-stencil: sha256=dfd6c83bc9e7cdab86b90eac257fde7431e990ac5387dcecd1c22fb0d1b46b1a build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
 
 # PR-Review — discuss the pull request with the operator
 
@@ -47,13 +47,23 @@ Answer from it, and never ask the operator to run a regression compare it settle
 
 The run ends on the pull request's state, not on this session, so after each answer you wait for the operator's next message.
 
+{{template "loom-fragment-loosened-check"}}
+
+## Findings you receive
+
+Run `lym loom pr-findings <file>` on every set of findings you receive before you fix any of them: your parent's review, and a list of findings the operator gives you.
+Write the findings first in the review format the burler reviewer uses, with its verdict line, in a file under `{{.task_worktree}}/.scratch/`, which git ignores, and pass that file.
+When the verb sends the findings back, end your turn.
+When it answers fix-here, fix them as you would the operator's requests.
+A single change the operator asks for is no findings set: go straight to the fix.
+
 ## Your parent's review
 
 Your parent orch may review the pull request.
 lym asks it on its own when the hub or the task turns `pr_review_ask_parent` on;
 otherwise ask it only when the operator asks you to, with `lym creel post --parent --expect-reply`, naming the pull request.
 Its answer arrives as creel mail: either that it is satisfied, or its findings.
-Fix the findings as you would the operator's requests, commit, and tell the operator in this pane what you changed.
+Run `lym loom pr-findings <file>` on its findings first, as the section above says, then fix them as you would the operator's requests, commit, and tell the operator in this pane what you changed.
 Then ask your parent to look again with `lym creel post --parent --expect-reply`, naming your commits, until it is satisfied.
 
 ## The operator's ending

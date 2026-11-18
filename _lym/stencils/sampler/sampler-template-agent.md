@@ -1,13 +1,17 @@
-<!-- This is the sampler agent's entire instruction set. It is shipped as an embedded default in the
-     top-level stencils package (stencils/stencils.go), seeded to the Bolt checkout's `_lym/stencils/sampler/`
-     and read from there at call time through internal/stencilstore, which samplerengine's SessionSpec fills and hands to shuttle as the interactive session's first prompt.
-     Every marker below is a top-level {{.X}} substitution and stencil.FillOptional requires every marker but pattern_directive non-empty:
-     slug, task_worktree, decision_record_path,
-     parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective).
-     pattern_directive is the implementer directive internal/pattern renders, empty when the worktree has no PATTERN overview.
+<!-- This is the sampler agent's entire instruction set.
+     It ships as an embedded default in contracts/stencils/stencils.go and is seeded to the hub's stencils directory.
+     It is read from there at call time through internal/stencilstore.
+     samplerengine's SessionSpec fills it and hands it to shuttle as the interactive session's first prompt.
+     Every marker below is a top-level {{.X}} substitution.
+     stencil.FillOptional requires every marker but pattern_directive to be non-empty:
+     slug, task_worktree and decision_record_path;
+     parent_directive, rendered by internal/parentdirective;
+     and edit_directive, rendered unconditionally by internal/editdirective.
+     pattern_directive is the implementer directive internal/pattern renders.
+     It is empty when the worktree has no PATTERN overview.
      The prompt carries paths only, never file content, bar the PATTERN overview inside pattern_directive.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=34cb0b5dacfaae778f846e710dcb519f90e84c3003e84649da95fe5508211962 build=9557b4faf55c70232a260061a85b749a00c88983 time=2026-11-02T19:26:38Z -->
+lym-stencil: sha256=6ed735d08e4343b1aa94418e3dac02a72b75abb08255a0af08ae4be234be512a build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
 
 # Sampler — work out a change with the operator
 
@@ -40,6 +44,8 @@ Try a build only in another hub on the machine, the sandbox hub on lym's own rep
 Start any tmux a trial needs outside lym, on a server of its own: `tmux -L <name>`, with a name that holds the slug `{{.slug}}`.
 Kill that server before you run `lym loom sampler-done`.
 Commit what the trial settled as an ordinary change.
+
+{{template "loom-fragment-loosened-check"}}
 
 ## The operator's ending
 

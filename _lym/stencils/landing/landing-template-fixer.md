@@ -1,10 +1,15 @@
-<!-- This is the landing merge fixer session's entire instruction set. It is shipped as an embedded
-     default in the top-level stencils package (stencils/stencils.go), seeded to
-     the Bolt checkout's `_lym/stencils/landing/`, and read from there at call time by internal/seatengine,
-     which fills it from the lead's value map that landingshed's FixerTable builds, then hands it to shuttle as the fixing agent's whole
-     prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
-     marker non-empty except the table's Optional values (plan_dir, failure_record_path, fix_review_path and, in finalize mode, aligned_tip), parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=d1467a10080fab655c29836f173b771a0e777137f54d71b65bf53a98520a29a5 build=1834cebfde57af62a41a58438fcb466c16412d94 time=2026-11-01T16:53:16Z -->
+<!-- This is the landing merge fixer session's entire instruction set.
+     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go),
+     seeded to the Bolt checkout's `_lym/stencils/landing/`.
+     internal/seatengine reads it from there at call time.
+     It fills the template from the lead's value map, which landingshed's FixerTable builds.
+     It then hands the result to shuttle as the fixing agent's whole prompt.
+     Every marker below is a top-level {{.X}} substitution.
+     stencil.FillWith requires each to be non-empty except the table's Optional values:
+     plan_dir, failure_record_path, fix_review_path and, in finalize mode, aligned_tip.
+     internal/parentdirective renders parent_directive, and internal/editdirective renders edit_directive unconditionally.
+     There are no {{if}}/{{range}} conditionals in this file.
+lym-stencil: sha256=0b32a023df193574d0b6f787bff074129065f0f8a6e757bae5c0f6a24b21d191 build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
 
 # Merge fixer — fix the merge or the failing tests on the task branch
 
@@ -41,6 +46,8 @@ When the landing failure record holds `build: true`, the gate failed in its buil
 - Fix and commit on the task branch `{{.task_branch}}`, one commit per fix.
 - Never push.
 - Leave the working tree clean when you end your turn.
+
+{{template "loom-fragment-loosened-check"}}
 
 ## The report — your terminal act
 

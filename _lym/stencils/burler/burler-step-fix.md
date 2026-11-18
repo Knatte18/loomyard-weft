@@ -12,7 +12,7 @@
      There are no {{if}}/{{range}} conditionals in this file:
      a required marker inside a conditional branch would render silently blank when present-but-empty
      (see internal/stencil/stencil.go).
-lym-stencil: sha256=f34d3562bcac75a279a415ee46ff5be2eb05cf8754ddf69da623c4ccb1e6e84b build=44431fefaa213479d4f2b60d6dfca49853474a4d time=2026-11-17T15:49:12Z -->
+lym-stencil: sha256=69cfbf1033d26588b4a965a20d25cb719561799ed99bfca79a3473d88be84c5d build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
 
 {{.friction_directive}}
 
@@ -87,6 +87,8 @@ Never write a `spawned` key; only the engine writes it.
 Below the frontmatter, include what you changed, a `Disputed` section (empty if you disputed nothing), a deferred-with-reason section (empty if nothing was deferred) and a `Rulings` section (empty if no parent ruling reached you).
 The review at `{{.review_path}}` is the reviewer's file: you never write it.
 The round is not done until `{{.fixer_report_path}}` exists on disk — a skipped fixer-report leaves the round looking unfinished.
+
+{{template "loom-fragment-loosened-check"}}
 
 ## Never push, never touch `_lym`
 

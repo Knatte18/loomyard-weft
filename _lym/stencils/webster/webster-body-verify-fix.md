@@ -3,7 +3,7 @@
      both fill it via internal/stencil.
      Its markers are required top-level {{.X}} substitutions ({{.report_path}}, {{.plan_dir}}, {{.worktree_root}}, {{.outcome_path}}, {{.summary_path}}, {{.fix_gate}}), and stencil.FillOptional requires each non-empty.
      It holds no {{if}} or {{range}} conditional.
-lym-stencil: sha256=56a28ec9720b0b37ea513630894075769092c4d40e9fa7400a9bc30517377c50 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
+lym-stencil: sha256=bb5f19eaa31dc7757f688b95deabc865c73849e1aad2acefb2f3d335bb4ed0cd build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
 
 ## The findings — read them first
 
@@ -41,3 +41,5 @@ You never run a Bash call in the background, and you end your turn only after yo
 - Never run the plan-level verify: the gate runs it again once Merriam's turn ends.
 - Before your final action, run `{{.fix_gate}}` as a foreground Bash call under the gate rule in {{template "engine-standing-instructions"}}, and fix what it still reports.
 - Leave the worktree clean: no uncommitted change may remain when you end your turn.
+
+{{template "loom-fragment-loosened-check"}}

@@ -3,7 +3,7 @@
      Its required markers are {{.findings}}, {{.journal_path}}, {{.plan_dir}} and {{.worktree_root}}.
      The frame fills report_path and reply_path.
      It holds no {{if}} or {{range}} conditional.
-lym-stencil: sha256=97b8b1e44da8b490181b27b28cc7171b19cbfa2352437f1d513681117a3db517 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
+lym-stencil: sha256=355d28dfce7b5c16fd6b7bf352d3a3f3e87555af47ac561be15aa0d92f2bcb7b build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
 
 ## The findings — read them first
 
@@ -41,3 +41,5 @@ You never run a Bash call in the background, and you end your turn only after yo
 - A fix that departs from a PATTERN entry because the entry forbids the way the findings call for records the departure as a `Pattern-Departure:` trailer in that `fix:` commit.
 - Never run the plan-level verify yourself: Weaver runs it again once you end.
 - Leave the worktree clean: no uncommitted change may remain when you end your turn.
+
+{{template "loom-fragment-loosened-check"}}

@@ -1,10 +1,13 @@
-<!-- This is the landing Describe session's entire instruction set. It is shipped as an embedded
-     default in the top-level stencils package (stencils/stencils.go), seeded to
-     the Bolt checkout's `_lym/stencils/landing/`, and read from there at call time by internal/seatengine,
-     which fills it from the lead's value map that landingshed's DescribeTable builds, then hands it to shuttle as the describing agent's whole
-     prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
-     marker non-empty, parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=b6091be504b1e7e70695de2cf490c45645b33401e7eadf264b5835bd99b57d08 build=58a85abf84fdc42b17b224e854ea7f4baef53f76 time=2026-11-03T17:52:02Z -->
+<!-- This is the landing Describe session's entire instruction set.
+     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go),
+     seeded to the Bolt checkout's `_lym/stencils/landing/`.
+     internal/seatengine reads it from there at call time.
+     It fills the template from the lead's value map, which landingshed's DescribeTable builds.
+     It then hands the result to shuttle as the describing agent's whole prompt.
+     Every marker below is a top-level {{.X}} substitution, and stencil.FillWith requires each to be non-empty.
+     internal/parentdirective renders parent_directive, and internal/editdirective renders edit_directive unconditionally.
+     There are no {{if}}/{{range}} conditionals in this file.
+lym-stencil: sha256=d80df604585ea061ec1b716dfcb33e0731b436ad098963233ede9703473b43ce build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
 
 # Change description — write the one description this task lands under
 
@@ -54,6 +57,9 @@ Write exactly one file, `{{.description_path}}`, in the format of the final-summ
 
 Never describe the pipeline's process: no batches, cards, forks, the Master, verify gates, glyph deviations or review rounds.
 Naming a module is fine when the change touches it.
+
+A claim that a result agrees with a reference, or that the change improves one, carries before and after figures from the current code, taken from the commits or the regression check.
+Leave out a claim that has none.
 
 ## Rules
 

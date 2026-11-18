@@ -1,16 +1,20 @@
-<!-- This is the darn writer's entire instruction set. It is shipped as an embedded default in the
-     top-level stencils package (stencils/stencils.go), seeded to the Bolt checkout's `_lym/stencils/darn/`
-     and read from there at call time by internal/seatengine, which fills it from the lead's value map that darnengine's DarnTable builds, then hands it to
-     shuttle as the writer's whole prompt.
-     Every marker below is a top-level {{.X}} substitution;
-     stencil.FillWith requires every marker except pattern_directive, project_directive, friction_directive and parent_directive non-empty, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-     project_directive is rendered by internal/loomengine.ProjectRecordDirective for a run under a beam, and shares the pattern directive's line so an empty value leaves the prompt's bytes unchanged.
-     decision_record_path is a required marker, naming the decision record the writer reads as its scope; stop_marker_path is a required marker, naming the file the writer creates when it stops;
-     condition_stop_marker_path is a required marker, naming the second file the writer creates when it stops on a condition the task's body names.
-     prior_work is never empty: DarnTable fills it with (none) when it has nothing to tell.
-     edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-     make_change is a required marker holding Step 4's list: DarnTable fills it with darn-fragment-make-change, or with darn-fragment-make-change-gated when a cold fixer clears the row's verify gate.
-lym-stencil: sha256=82fd1e2d8147502d5fcccfbef1592433a4926ca6569029dd1158e3363018fd27 build=3882070d44bf054c10c7061bc06653a990712cee time=2026-11-05T19:27:52Z -->
+<!-- This is the darn writer's entire instruction set.
+     It ships as an embedded default in the top-level stencils package (contracts/stencils/stencils.go).
+     It is seeded to the Bolt checkout's `_lym/stencils/darn/`, and internal/seatengine reads it from there at call time.
+     seatengine fills it from the lead's value map that `darnengine.DarnTable` builds.
+     It then hands the result to shuttle as the writer's whole prompt.
+     Every marker below is a top-level {{.X}} substitution, and the file has no {{if}}/{{range}} conditionals.
+     Every marker must be non-empty except pattern_directive, project_directive, friction_directive and parent_directive.
+     project_directive is rendered by internal/loomengine.ProjectRecordDirective for a run under a beam.
+     It shares the pattern directive's line, so an empty value leaves the prompt's bytes unchanged.
+     decision_record_path names the decision record the writer reads as its scope.
+     stop_marker_path names the file the writer creates when it stops.
+     condition_stop_marker_path names the second file the writer creates when it stops on a condition the task's body names.
+     prior_work is never empty: `darnengine.DarnTable` fills it with (none) when it has nothing to tell.
+     edit_directive is rendered unconditionally by internal/editdirective.
+     make_change holds Step 4's list: `darnengine.DarnTable` fills it with darn-fragment-make-change,
+     or with darn-fragment-make-change-gated when a cold fixer clears the row's verify gate.
+lym-stencil: sha256=b81ee877da1acdac6d6059147c8025736207868de39fa831a023fa4d37ee9fd1 build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -65,6 +69,8 @@ Check whether landed work, another board entry or another run overtook or contra
 Write the change description to `{{.description_path}}`, in the format the final-summary spec defines at `{{.specs_dir}}/loom/loom-final-summary-spec.md`.
 Read that spec for the format; it is authoritative and this prompt does not restate it.
 Write the description for a reviewer who knows the codebase but has not seen this session, and never describe the session's own process.
+A claim that a result agrees with a reference, or that the change improves one, carries before and after figures from the current code, taken from your commits or the drift verdict.
+Leave out a claim that has none.
 
 Before handing off, run `lym loom validate-description` and fix every finding it reports.
 A clean `validate-description` run is the last thing you do before you end your turn.
@@ -93,6 +99,8 @@ The `drift` gate entry checks after each turn that every changed value of the ca
 Fix such a value in the code yourself.
 When the change is intended, leave it: only the run's parent amends the expectation, at the Stuck that follows.
 `lym drift check` runs the same check on demand.
+
+{{template "loom-fragment-loosened-check"}}
 
 ## What happens after you hand off
 

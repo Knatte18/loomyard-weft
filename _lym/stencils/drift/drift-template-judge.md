@@ -1,12 +1,12 @@
-<!-- This is the drift judge's entire instruction set. It is shipped as an embedded default in the
-     top-level stencils package (stencils/stencils.go), seeded to the Bolt checkout's `_lym/stencils/drift/`
-     and read from there at call time by internal/seatengine, which fills it from the lead's value map that driftengine's JudgeTable builds, then hands it to
-     shuttle as the agent's whole prompt.
-     Every marker below is a top-level substitution;
-     the engine fills the parent and edit directives, and JudgeTable fills the rest,
-     mode_rules with the autonomous or the operator text by drift.yaml's judge_interactive.
-     There are no conditionals anywhere in this file.
-lym-stencil: sha256=5536e780f82b614d3b5a28d83404452bb1c6874c94272ef3ee991cbaae70cb9d build=3882070d44bf054c10c7061bc06653a990712cee time=2026-11-05T19:27:52Z -->
+<!-- This is the drift judge's entire instruction set.
+     It ships as an embedded default in the top-level stencils package (contracts/stencils/stencils.go).
+     It is seeded to the Bolt checkout's `_lym/stencils/drift/`, and internal/seatengine reads it from there at call time.
+     seatengine fills it from the lead's value map that `driftengine.JudgeTable` builds.
+     It then hands the result to shuttle as the agent's whole prompt.
+     Every marker below is a top-level substitution, and the file has no conditionals.
+     The engine fills the parent and edit directives, and `driftengine.JudgeTable` fills the rest;
+     mode_rules holds the autonomous or the operator text, chosen by drift.yaml's judge_interactive.
+lym-stencil: sha256=a066d7cec81f548a46855eeade650b191ac6a1c85dac92f5b656c5db5e8bb6f3 build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
 
 # Drift judge — rule on each change the task made
 
@@ -21,6 +21,8 @@ You change no code, no expectation and no record: your one output is the judgeme
 - The request: `{{.request_path}}`, a JSON file.
   Its `spawn_id` names this spawn and its `mode` says which of the two parts of Step 2 applies.
   Its `expectation` and `amendments` are the expectation and the parent's amendments as text.
+  Its `files` and `commit_messages`, present under either mode, are the changed files of the task's range with their diffs
+  and the whole messages of its commits, newest first.
 - The task's subject: {{.subject_reading}}.
 
 ## Step 2 — Rule
@@ -47,6 +49,17 @@ Read the log, the expectation and the capture files the failing cases name, and 
 - `does not match` when the expectation says the case differs but the difference is not the expected one.
 - `unexpected` when the failure is of a case the expectation does not explain.
 
+Under either mode, rule on every file of the request's `files` once.
+Decide from the file's diff what is a test and what is loosened; no language or path tells you.
+
+- `none` when the diff widens or removes no assertion, tolerance or limit in a test.
+- `loosened` otherwise, with one check per loosened assertion, naming the test and what was loosened.
+
+Rule each check:
+
+- `caused` when a `Loosened-Check:` trailer in `commit_messages` names that check with a measured cause; copy the cause into `cause`.
+- `uncaused` otherwise, a cause that is no measurement, such as "flaky", included.
+
 ## Step 3 — Write the judgement
 
 Write your rulings to `{{.judgement_path}}`, copying the request's `spawn_id` into it:
@@ -67,10 +80,22 @@ cases:
   - case: <the case's name>
     ruling: matches   # or: does not match, or: unexpected
     reason: <why>
+# either mode
+files:
+  - id: <the file's id>
+    ruling: loosened  # or: none
+    reason: <what you read in the diff>
+    checks:           # only under loosened, one per loosened assertion
+      - test: <the test holding the check>
+        loosened: <what was loosened>
+        ruling: caused  # or: uncaused
+        cause: <the measured cause from the trailer; only under caused>
+        reason: <why>
 ```
 
 Rule on every listed cell once and list every listed open range, and write only the keys of the request's mode.
-Every `reason` and `checked` must be non-empty.
+Rule on every listed file once, and write `files` under either mode.
+Every `reason` and `checked`, and every file and check `reason`, must be non-empty.
 
 ## Step 4 — End your turn
 
