@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 09:54 UTC; every age below is as of then.
+Rendered 2026-11-18 09:55 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -111,8 +111,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md)<br>[Sketch](decision-code-review-result-checks.md) | raddle | starting · Seed-Child | neve | 1h<br>0m | burler, stencil, drift |
-| T5 | **Shuttle start: idle check misses an idle prompt, and a review strand misses its prompt turn**<br>• Two seat start bugs in shuttle prompt delivery<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>58m | shuttle, burler |
+| T1 | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md)<br>[Sketch](decision-code-review-result-checks.md) | raddle | starting · Open-Window | neve | 1h<br>0m | burler, stencil, drift |
+| T5 | **Shuttle start: idle check misses an idle prompt, and a review strand misses its prompt turn**<br>• Two seat start bugs in shuttle prompt delivery<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>59m | shuttle, burler |
 
 #### Ready (0)
 
@@ -126,8 +126,8 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Leftover strands and shuttle runs halt a gate re-prompt and a re-step**<br>• Gate re-prompt to an untracked strand, and a re-step tripping on a leftover shuttle run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`leftover-strands-and-runs`](design-leftover-strands-and-runs.md) | darn · solid | T5 | 1h<br>58m | gate, shuttle, reed, shed |
-| T8 | **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | darn · light | T5 | 1h<br>58m | burler, lenses |
+| T6 | **Leftover strands and shuttle runs halt a gate re-prompt and a re-step**<br>• Gate re-prompt to an untracked strand, and a re-step tripping on a leftover shuttle run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`leftover-strands-and-runs`](design-leftover-strands-and-runs.md) | darn · solid | T5 | 1h<br>59m | gate, shuttle, reed, shed |
+| T8 | **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | darn · light | T5 | 1h<br>59m | burler, lenses |
 
 #### Layer B (2)
 
@@ -135,7 +135,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **C# hub: silent dotnet test exit, and runs failing in a hub with no tier0 or only inert changes**<br>• Make a refused dotnet test say so; let a hub with no tier0 or an all-inert change run and land<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`csharp-hub-gate-fixes`](design-csharp-hub-gate-fixes.md) | darn · solid | T6 | 1h<br>58m | dotnet, process, gate, config |
+| T7 | **C# hub: silent dotnet test exit, and runs failing in a hub with no tier0 or only inert changes**<br>• Make a refused dotnet test say so; let a hub with no tier0 or an all-inert change run and land<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`csharp-hub-gate-fixes`](design-csharp-hub-gate-fixes.md) | darn · solid | T6 | 1h<br>59m | dotnet, process, gate, config |
 | T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | T6 | 16m<br>16m | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
 #### Draft (1)
@@ -161,7 +161,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **selfreport -b takes a file path as the body text, losing the report**<br>• An agent passed a file path to -b and the issue body became the path | [`selfreport-body-path-as-text`](design-selfreport-body-path-as-text.md) | 58m<br>58m | selfreport |
+| B1 |  | **selfreport -b takes a file path as the body text, losing the report**<br>• An agent passed a file path to -b and the issue body became the path | [`selfreport-body-path-as-text`](design-selfreport-body-path-as-text.md) | 59m<br>59m | selfreport |
 | B2 |  | **Seed-IDE fails: records push calls main-weft ended on origin**<br>• A new run fails at Seed-IDE because the prime records branch is read as ended on origin; a rerun passes | [`records-push-main-weft-ended`](design-records-push-main-weft-ended.md) | 40m<br>40m | fabric, batten |
 
 #### Features (3)
