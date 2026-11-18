@@ -2,6 +2,8 @@
 
 `shuttle-start-idle-and-prompt` · Task · bug, shuttle, burler · draft
 
+Depends on: [`orch-ignores-deny-python`](design-orch-ignores-deny-python.md)
+
 Two shuttle startup bugs, bundled because both sit in the prompt delivery after a seat session starts.
 
 ## Part: the idle check misses an idle prompt after skill loading
