@@ -1,6 +1,6 @@
 # Find why VS Code keeps showing a stale board file, and fix it
 
-`board-view-not-refreshing` · Task · bug, board, ide · starting · Seed-IDE
+`board-view-not-refreshing` · Task · bug, board, ide · starting · Open-IDE
 
 ## What was seen (operator, 2026-11-18)
 
