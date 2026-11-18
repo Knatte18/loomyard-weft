@@ -1,6 +1,6 @@
 # C# hub: silent dotnet test exit, and runs failing in a hub with no tier0 or only inert changes
 
-`csharp-hub-gate-fixes` · Task · bug, dotnet, process, gate, config · starting · Worktree-Create
+`csharp-hub-gate-fixes` · Task · bug, dotnet, process, gate, config · starting · Seed-Child
 
 Depends on: [`leftover-strands-and-runs`](design-leftover-strands-and-runs.md)
 
