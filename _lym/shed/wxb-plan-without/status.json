@@ -1,14 +1,13 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Discussion-Burler-Review",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "pause_before": "Plan-Bouncer",
   "pause_before_by": "wxb-bench",
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Bouncer → awaiting",
+    "now": "Discussion-Burler-Review",
+    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -108,6 +107,16 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/wxb-plan-without/_lym/reviews/discussion/round-1-bouncer-ledger.md",
       "at": "2026-11-18T18:40:15Z",
       "started_at": "2026-11-18T18:39:55Z",
+      "block": "Motif"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/wxb-plan-without/_lym/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-11-18T18:41:54Z",
+      "started_at": "2026-11-18T18:41:54Z",
+      "routed_to": "Discussion-Burler-Review",
+      "by": "shed",
       "block": "Motif"
     }
   ],
