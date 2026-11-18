@@ -333,7 +333,7 @@
       "id": 1480,
       "handle": "E7",
       "slug": "drop-unused-features",
-      "title": "Remove features nobody uses",
+      "title": "List features nobody uses, for the operator to cut",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -342,10 +342,10 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "Find unreachable code mechanically and list features with no recent use; the operator decides which go",
-      "body": "## What was seen\n\nThe `landingshed` reading found about 340 lines of features a product owner could remove\n(the flaky rerun, the adopter-first repair note, the beam landing record among them); nobody has checked whether they are used.\n\n## Idea\n\n1. Mechanical: run `golang.org/x/tools/cmd/deadcode` over `cmd/lym` to find functions no path from `main` reaches; delete those.\n2. A list, not a deletion: features, flags, config keys and verbs with no use in run records, transcripts or hub configs over the last weeks.\n   The operator decides which go; only those are removed.\n",
+      "brief": "List features, flags, config keys and verbs with no recent use; the operator decides which go",
+      "body": "## What was seen\n\nThe `landingshed` reading found about 340 lines of features a product owner could remove\n(the flaky rerun, the adopter-first repair note, the beam landing record among them); nobody has checked whether they are used.\nCode that no path reaches is removed by `remove-unreachable-code`; this note covers features that are reachable but unused.\n\n## Idea\n\nA list, not a deletion: features, flags, config keys and verbs with no use in run records, transcripts or hub configs over the last weeks.\nThe operator decides which go; only those are removed.\n",
       "created": "2026-11-18T17:23:25Z",
-      "revised": "2026-11-18T17:23:25Z",
+      "revised": "2026-11-18T18:49:00Z",
       "project": "code-cleanup"
     },
     {
@@ -463,6 +463,34 @@
       "status": "running · Discussion-Bouncer",
       "created": "2026-11-18T18:17:59Z",
       "revised": "2026-11-18T18:17:59Z"
+    },
+    {
+      "id": 1492,
+      "handle": "T9",
+      "slug": "remove-unreachable-code",
+      "title": "Remove code no path from any main reaches",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "tools"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Run golang.org/x/tools/cmd/deadcode over the repository and delete what it finds, with the tests that only cover it",
+      "body": "## What was seen\n\nThe shrink study (2026-11-18) found features in `landingshed` that nobody has checked for use.\nSome code may be reachable from no `main` at all, kept alive only by its own tests.\n\n## Scope\n\n1. Run `golang.org/x/tools/cmd/deadcode` over every `main` package in the repository: `cmd/lym` and the programs under `tools/`.\n   Run it without and with `-test`, so the report separates code nothing reaches from code only tests reach.\n2. Delete each unreachable function, and with it the tests that cover only that function.\n   Code only tests reach is deleted the same way, unless it is a test helper.\n3. Check each hit before deleting it: a function reached through reflection, a registry, a `go:linkname` or a build tag for another platform stays,\n   and the report names it with the reason.\n4. No behaviour change: the gate stays green, and nothing a user can call is removed.\n\nThe report lists the removed lines per package and every hit kept with its reason.\n",
+      "status": "draft",
+      "created": "2026-11-18T18:49:00Z",
+      "revised": "2026-11-18T18:49:00Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light",
+      "project": "code-cleanup"
     }
   ],
   "prime_owner": "neve",
