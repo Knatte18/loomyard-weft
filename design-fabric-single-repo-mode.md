@@ -1,6 +1,8 @@
 # Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo
 
-`fabric-single-repo-mode` · Task · feature, fabric · running · Discussion-Bouncer
+`fabric-single-repo-mode` · Note · sketch, fabric
+
+Decision record: [Sketch](decision-fabric-single-repo-mode.md)
 
 ## What was seen
 
