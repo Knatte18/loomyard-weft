@@ -1,12 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Expect → skipped",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -258,6 +257,29 @@
       "output": "",
       "at": "2026-11-18T12:32:58Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/claude-accounts-per-worktree/_lym/webster/summary.md",
+      "at": "2026-11-18T16:58:15Z",
+      "started_at": "2026-11-18T15:21:01Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-18T16:53:40.721910896Z",
+          "end": "2026-11-18T16:53:40.941277704Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-18T16:53:40.98309256Z",
+          "end": "2026-11-18T16:58:14.418017303Z"
+        }
+      ],
+      "by": "shed"
     }
   ],
   "product": {
