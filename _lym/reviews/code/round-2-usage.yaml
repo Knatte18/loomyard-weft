@@ -1,0 +1,25 @@
+round: 2
+fan: ""
+fix_fan: fix-code
+fans_recorded: true
+review:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-11-18T17:59:32Z
+    end: 2026-11-18T19:05:14.761265582+01:00
+    wall_seconds: 342.761265582
+    tokens_known: true
+    fresh_tokens: 163590
+    cache_read_tokens: 3616536
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
+attempt: "2"
+assist:
+    engine: codex
+    model: gpt-6-astra
+    effort: medium
+assist_fan: review-code
+assist_ending: done
