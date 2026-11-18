@@ -1,0 +1,23 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "e41d6109a8cf430b94d8839c5021ef112b8bf89c",
+  "added_decisions": [
+    {
+      "title": "Round-3 hard-cap ruling: F26 to F28 are answered by D7 as fixed",
+      "digest": "ac10cc27a37461ddc7c4c01966d9e0ff595bf0fba535f5171024d1ad439c0b87"
+    },
+    {
+      "title": "Drop card 14's deferred-prompt rule (F7)",
+      "digest": "6b9900a4408a0a4bed5d17838c44bb3df186046ff0c54eed66ab8f4ace889077"
+    },
+    {
+      "title": "A usage limit on the skill-load turn repeats the launch under the new account (F2)",
+      "digest": "24d3997ca55f2a3e4e9370879a4340b95b683569e72d35ed404fba03d7687420"
+    },
+    {
+      "title": "A stop-ended start-path relaunch returns OutcomeDied (plan review F17 ruling)",
+      "digest": "077aba392e2f44fe21bbcdbc8d43bb3192e68b3f46869aa1e408a76e9ae53437"
+    }
+  ]
+}
