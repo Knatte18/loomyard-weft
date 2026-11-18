@@ -1,0 +1,566 @@
+{
+  "runGuid": "32003f8b31f52bbf18b4e4cb9872dc17",
+  "planFingerprint": "5f3636f7e03d60e496704943e9c622c405dccc4ac04b231cd4f861df3bb28a73",
+  "planFileHashes": {
+    "00-overview.md": "98b15a10330162bb77a58831776fd88a33301d67aff0d8edfa2d80a489069f65",
+    "01-shell-unset-env.md": "f90107b91ec4fa9455b01d31585964c1ee81dabf7cb4cfc194290bacc92b934b",
+    "02-claude-account-config.md": "bfd34f751aee13dc3a0bda08d334107fe3e6d210a4f8ab8416cb943b0bebcc58",
+    "03-engine-worktree-geometry.md": "7444b0c36f53bd89801824064e5bf768551d78f41f40a0785d7f3436ac8416f0",
+    "04-claude-account-store.md": "7f8ec66182257b760138886b0efa9bc3212cdf575e54479fdea8613d7de58a1b",
+    "05-account-pick-at-making.md": "f58882bfd11ba9d6e997093660dc55dbadd6d938f2d993e5551edd9a30b0c0e7",
+    "06-launch-exports-account.md": "633f28ba9654bd26623e2bc08cc7a5857a027123755213201cabf55bb995f8b1",
+    "07-known-config-dirs.md": "ec0b57a3beeb61434d5af999753fa588c6ccc768ab57fbcada069ebab6683549",
+    "08-resume-carries-transcript.md": "705f9e615532ec419239a47f1fb3c70e0e6a30a5db41d14ddd59ce72054caf31",
+    "09-claude-account-verbs.md": "cd2288beacbb35128b006d4cd71a58787783fd67d1e8c6101eb7faf2230dfe28",
+    "10-status-line-settings.md": "d185a3dc0e4d87c04a858261aec0aa5d466696803cd94afc19f964ccc5bf6a48",
+    "11-reed-hold-and-relaunch-ops.md": "3ae4f4aba9d08390de28fffa97d2ad1f57382be3f82fdb84dde5a481e4edc0a4",
+    "12-run-relaunching-record.md": "28d86ed8d3b3f7e3944bbe950f7a3f7f3fd020d712701beafa8a50804f5a7730",
+    "13-account-switch-on-limit.md": "f47869055a90eba976df34ea2755926c296f8f6c4de86b53a532c79a015e9f7c",
+    "14-in-run-relaunch.md": "02ea68a26305af5b6576d0b09fa145ab6c444d170c59ce42b69ef7b8c19a0184",
+    "15-relaunch-bound-on-attach.md": "90a4fc1beb63bcd635af242307e66afab2adba7599124c71ef589cfce8338681",
+    "16-refused-resume-starts-fresh.md": "11fad0de8173fe50da60e3208bf5050c74b2e78dfd4f493cc7559c86e32c0024",
+    "17-orch-switch-and-fresh.md": "5b2cbe48d0e02ea4ba74612db915b56c22f3ec447702f49ffa26f39d9c3d8f1e",
+    "18-accounts-reference-doc.md": "d518c1becf889be54f55870c0fefd0c38def3d08392b2f79ed9fc604b6061352"
+  },
+  "planOverviewFrameHash": "8f737b9eb672d3b2292cc32ccf578158c4dd09dea5ff5e9d22c981b51d727644",
+  "partition": [
+    {
+      "cards": [
+        "01-shell-unset-env",
+        "02-claude-account-config"
+      ],
+      "profile": "wide",
+      "estimate": 119794,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54772,
+        "read_union": 22260,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 288,
+            "reads": {
+              "package:internal/shell": 2000,
+              "tests:internal/shell": 2000
+            },
+            "messages": 29,
+            "written": 8988
+          },
+          {
+            "card": 2,
+            "card_text": 624,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 8928,
+              "file:internal/shuttleengine/claudeengine/template.yaml": 420,
+              "package:internal/configreg": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 110.5,
+            "written": 33774
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-engine-worktree-geometry"
+      ],
+      "profile": "wide",
+      "estimate": 359274,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61772,
+        "read_union": 132268,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 984,
+            "reads": {
+              "file:internal/burlercli/doc.go": 288,
+              "file:internal/fabricengine/doc.go": 29556,
+              "file:internal/gatecli/doc.go": 15168,
+              "file:internal/hubgeom/doc.go": 1092,
+              "file:internal/loomcli/doc.go": 10188,
+              "file:internal/lymdirs/doc.go": 144,
+              "file:internal/shuttleengine/claudeengine/doc.go": 8928,
+              "file:internal/shuttleengine/doc.go": 11868,
+              "file:internal/shuttleengines/doc.go": 600,
+              "file:internal/webstercli/doc.go": 1452,
+              "package:internal/battencli": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/lymdirs": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengines": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/lymdirs": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengines": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 547.5,
+            "written": 165234
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-claude-account-store",
+        "05-account-pick-at-making",
+        "06-launch-exports-account"
+      ],
+      "profile": "wide",
+      "estimate": 277324,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68772,
+        "read_union": 53872,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 780,
+            "reads": {
+              "file:internal/lymdirs/doc.go": 144,
+              "file:internal/shuttleengine/claudeengine/doc.go": 8928,
+              "package:internal/lymdirs": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/lymdirs": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 143.5,
+            "written": 43830
+          },
+          {
+            "card": 5,
+            "card_text": 744,
+            "reads": {
+              "file:internal/adoptcli/doc.go": 2052,
+              "file:internal/shuttleengine/claudeengine/doc.go": 8928,
+              "file:internal/shuttleengine/doc.go": 11868,
+              "file:internal/shuttleengines/doc.go": 600,
+              "package:internal/adoptcli": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengines": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengines": 2000
+            },
+            "messages": 201.5,
+            "written": 61194
+          },
+          {
+            "card": 6,
+            "card_text": 756,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 8928,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengines": 2000,
+              "package:internal/testkit/tmuxkit": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengines": 2000,
+              "tests:internal/testkit/tmuxkit": 2000
+            },
+            "messages": 163,
+            "written": 49656
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-known-config-dirs"
+      ],
+      "profile": "wide",
+      "estimate": 257672,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75772,
+        "read_union": 65056,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 1044,
+            "reads": {
+              "file:internal/gatecli/doc.go": 15168,
+              "file:internal/loomcli/doc.go": 10188,
+              "file:internal/reedcli/doc.go": 1128,
+              "file:internal/shuttleengine/claudeengine/doc.go": 8928,
+              "file:internal/shuttleengines/doc.go": 600,
+              "package:internal/battencli": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengines": 2000,
+              "package:tools/tokencount": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengines": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 386,
+            "written": 116844
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-resume-carries-transcript",
+        "09-claude-account-verbs",
+        "10-status-line-settings"
+      ],
+      "profile": "wide",
+      "estimate": 271984,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82772,
+        "read_union": 42704,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 840,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 8928,
+              "file:internal/shuttleengine/doc.go": 11868,
+              "package:internal/orchcli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 231.5,
+            "written": 70290
+          },
+          {
+            "card": 9,
+            "card_text": 612,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 8928,
+              "package:cmd/lym": 2000,
+              "package:internal/claudecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/claudecli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 175,
+            "written": 53112
+          },
+          {
+            "card": 10,
+            "card_text": 456,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 8928,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 75.5,
+            "written": 23106
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-reed-hold-and-relaunch-ops",
+        "12-run-relaunching-record"
+      ],
+      "profile": "wide",
+      "estimate": 267820,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89772,
+        "read_union": 43456,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 684,
+            "reads": {
+              "file:internal/reedengine/doc.go": 13896,
+              "file:internal/shuttleengine/doc.go": 11868,
+              "package:internal/reedengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/testkit/shuttlefake": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/testkit/shuttlefake": 2000
+            },
+            "messages": 199,
+            "written": 60384
+          },
+          {
+            "card": 12,
+            "card_text": 1008,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 11868,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 244,
+            "written": 74208
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-account-switch-on-limit",
+        "14-in-run-relaunch",
+        "15-relaunch-bound-on-attach",
+        "16-refused-resume-starts-fresh"
+      ],
+      "profile": "wide",
+      "estimate": 296330,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96772,
+        "read_union": 42592,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 612,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 8928,
+              "file:internal/shuttleengine/doc.go": 11868,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 114.5,
+            "written": 34962
+          },
+          {
+            "card": 14,
+            "card_text": 1680,
+            "reads": {
+              "file:PATTERN.md": 696,
+              "file:internal/shuttleengine/doc.go": 11868,
+              "file:pattern/PATTERN-shuttle-provider-seam.md": 1584,
+              "package:.": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 205,
+            "written": 63180
+          },
+          {
+            "card": 15,
+            "card_text": 564,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 11868,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 95,
+            "written": 29064
+          },
+          {
+            "card": 16,
+            "card_text": 660,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 11868,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 97,
+            "written": 29760
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "17-orch-switch-and-fresh",
+        "18-accounts-reference-doc"
+      ],
+      "profile": "wide",
+      "estimate": 173462,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103772,
+        "read_union": 26052,
+        "cards": [
+          {
+            "card": 17,
+            "card_text": 696,
+            "reads": {
+              "file:internal/orchcli/doc.go": 4236,
+              "file:internal/orchengine/doc.go": 8928,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 136.5,
+            "written": 41646
+          },
+          {
+            "card": 18,
+            "card_text": 192,
+            "reads": {
+              "package:docs/reference": 2000,
+              "tests:docs/reference": 2000
+            },
+            "messages": 6,
+            "written": 1992
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "shell-unset-env",
+      "cards": [
+        "01-shell-unset-env",
+        "02-claude-account-config"
+      ],
+      "cardHashes": {
+        "01-shell-unset-env": "f90107b91ec4fa9455b01d31585964c1ee81dabf7cb4cfc194290bacc92b934b",
+        "02-claude-account-config": "bfd34f751aee13dc3a0bda08d334107fe3e6d210a4f8ab8416cb943b0bebcc58"
+      },
+      "startSha": "3746960e13964897b204f08b3ad79ca499e27cb5",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T12:33:34Z",
+      "sessionId": "0ad17d4c-a2b0-4598-8497-d2e3f0282dbc",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "5cbffc253a5bb4f6a5785956571107fa",
+  "masterSessionId": "0ad17d4c-a2b0-4598-8497-d2e3f0282dbc",
+  "masterEngine": "claude"
+}
