@@ -1,6 +1,6 @@
 # A shell guard refusal says nothing ran and names the refused segment
 
-`refusal-names-segment` · Task · enhancement, process · running · Code-Burler-Review
+`refusal-names-segment` · Task · enhancement, process · running · Code-Burler-Fix
 
 ## Seen (retro, 2026-11-17)
 
