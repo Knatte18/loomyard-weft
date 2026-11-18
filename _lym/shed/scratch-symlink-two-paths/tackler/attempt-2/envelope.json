@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The Open-Window producer stop says the main-weft push was not landed because its entry is ended on origin. Read-only checks contradict that. The commit the stop names, d744e4b266 (fabric commit_created, trace bb2b79a5571d3b1b at 09:58:48.110), is an ancestor of origin/main-weft, which is the remote tip e594a32f50 per git ls-remote origin refs/heads/main-weft; merge-base --is-ancestor returns yes for both. So the named commit is present on origin, and nothing in the run's state is ended on origin. The same catch-all message (\"entry ... is ended on origin\") was judged a false reading in the Seed-Child stop by the attempt-1 arbiter, which resumed it. This stop is a new stop at a later producer (the run advanced past Seed-Child; status_moved is true), not a stop already resumed that came back unchanged, so one resume is permitted. A plain re-launch of Open-Window is the fix. Caveat: the first push attempt logged a real remote rejection (\"! [remote rejected] main-weft -\u003e main-weft (failed)\", trace line 9), which the arbiter did not explain; the re-launch should confirm the push lands. Local loomyard-weft also holds one unpushed commit, 0725da628e (\"batten: Seed-IDE -\u003e running\"), which the re-launch will push with the rest.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/scratch-symlink-two-paths/tackler/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/scratch-symlink-two-paths/tackler/attempt-2/verdict.yaml",
+  "case_brief_path": ""
+}

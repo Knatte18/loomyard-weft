@@ -1,0 +1,20 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Open-Window",
+    "history_length": 2,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-18T09:59:05.800227749+01:00",
+  "deadline": "2026-11-18T10:09:05.800227749+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/scratch-symlink-two-paths/drive-reports/drive-envelope-20261118-095905-3759.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/scratch-symlink-two-paths/drive-reports/drive-report-20261118-095905-f802.md",
+  "strand_guid": "01852320d2ceabc4b8ab5850588cee61"
+}
