@@ -1,0 +1,3 @@
+verdict: resume
+reason: >-
+  The bootstrap refusal said code tip bd00aab14fe7088f78342897f3837a08343aa590 was not on origin and that machine neve owed a push. Read now, that is no longer true. `git ls-remote origin` returns bd00aab14fe7088f78342897f3837a08343aa590 as the tip of refs/heads/landingshed-design-simplify, and `git merge-base --is-ancestor bd00aab1... origin/fabric-single-repo-mode` succeeds (origin/fabric-single-repo-mode is 64e587958feacd8940304401801c039f015c63af, the run's current tip). So the commit is present on origin, and the refusal condition has cleared. The run's own step only needs a plain re-launch of `lym batten run fabric-single-repo-mode`, which is what the refusal asked for once the code push landed. No goto is needed.
