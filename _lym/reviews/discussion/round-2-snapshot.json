@@ -1,0 +1,18 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/discussion/decision-record.md",
+    "_lym/discussion/support-log.md"
+  ],
+  "target_id": "29e550e7cf2beeb8bbc7f766468dffa727592930cc30e08094e9c94854a689a7",
+  "added_decisions": [
+    {
+      "title": "D8's rationale quotes the 2026-10-16 treadle note as written",
+      "digest": "45d5a9fcd58ed1cd4012fa6a72cbb34552a785761b72735af55a288a965f143d"
+    },
+    {
+      "title": "Delete treadle when Hardener is built (F10)",
+      "digest": "01f072ecfaa58b9e834f7b742c52d9a5a810d615fb154176588b27899bc78125"
+    }
+  ]
+}
