@@ -1,0 +1,25 @@
+verdict: resume
+reason: |-
+  Cause hard-cap at round 3. The two open design-wrong findings are F30 and F31, both first raised in round 3.
+  The round-3 fix already in the decision record answers both.
+  F30: D4 (decision-record.md lines 112-123) now gives a mechanism, which the finding said was missing.
+  For a fabric merge stopped before D5 step 3, the records commit, and MergeAbort, build a commit from a
+  temporary index seeded from HEAD. It takes the worktree's content of every records path whose index
+  entry equals HEAD's, or that neither holds, and HEAD's version of every path step 2 wrote from the
+  source. It moves HEAD and WarpStart onto that commit, then hard-resets to it, all under one hold of the
+  write lock. So the status file the transition wrote is in the commit and survives the reset.
+  D4's Bound (lines 133-134) states the loss: a records write after the crash to a path the source changed.
+  The D4 acceptance row names the status file surviving in HEAD, the worktree and origin.
+  This is the rule the finding's own fix proposed.
+  F31: D5 (lines 156-167) replaces the "Either way ... aborts" sentence as the finding asked.
+  A merge verb run again keeps today's already-in-progress refusal and never aborts. It checks that guard
+  before step 1 and before its dirtiness guards commit records. Its way forward names --abort, and
+  --continue only for a merge past step 3. The abort-first paths are named as the only ones:
+  mergeresolve's, and the landing's abort of its own parked merge-in.
+  I checked the code facts against the tree. mergeReasonAlreadyInProgress guards
+  internal/fabricengine/merge.go:72. mergeresolve.Resolve aborts first (mergeresolve.go:46).
+  landingdeps.go:203-212 aborts the row's own parked merge-in. finalize.go has parkedMergeWayForward.
+  No finding is left unanswered, so the segment is accepted at the hard cap. No commit was made.
+verbs:
+  - |-
+    lym loom circling accept fabric-single-repo-mode

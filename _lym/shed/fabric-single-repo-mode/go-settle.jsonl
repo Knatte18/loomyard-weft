@@ -1,2 +1,4 @@
 {"stop_key":{"current_producer":"Discussion-Bouncer","history_length":5,"state":"awaiting"},"settler":"arbiter","action":"spawn","outcome":"arbiter spawned","at":"2026-11-18T19:50:24.43884554+01:00","target":"attempt-1"}
 {"stop_key":{"current_producer":"Discussion-Bouncer","history_length":5,"state":"awaiting"},"settler":"parent","action":"hand-back","outcome":"the arbiter handed the stop on","at":"2026-11-18T19:50:24.439083274+01:00"}
+{"stop_key":{"current_producer":"Discussion-Bouncer","history_length":12,"state":"awaiting"},"settler":"arbiter","action":"spawn","outcome":"arbiter spawned","at":"2026-11-18T20:19:38.244466707+01:00","target":"attempt-2"}
+{"stop_key":{"current_producer":"Discussion-Bouncer","history_length":12,"state":"awaiting"},"settler":"arbiter","action":"restep","outcome":"arbiter resume","at":"2026-11-18T20:19:38.244614774+01:00"}

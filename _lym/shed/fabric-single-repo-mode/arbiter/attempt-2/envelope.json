@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Cause hard-cap at round 3. The two open design-wrong findings are F30 and F31, both first raised in round 3.\nThe round-3 fix already in the decision record answers both.\nF30: D4 (decision-record.md lines 112-123) now gives a mechanism, which the finding said was missing.\nFor a fabric merge stopped before D5 step 3, the records commit, and MergeAbort, build a commit from a\ntemporary index seeded from HEAD. It takes the worktree's content of every records path whose index\nentry equals HEAD's, or that neither holds, and HEAD's version of every path step 2 wrote from the\nsource. It moves HEAD and WarpStart onto that commit, then hard-resets to it, all under one hold of the\nwrite lock. So the status file the transition wrote is in the commit and survives the reset.\nD4's Bound (lines 133-134) states the loss: a records write after the crash to a path the source changed.\nThe D4 acceptance row names the status file surviving in HEAD, the worktree and origin.\nThis is the rule the finding's own fix proposed.\nF31: D5 (lines 156-167) replaces the \"Either way ... aborts\" sentence as the finding asked.\nA merge verb run again keeps today's already-in-progress refusal and never aborts. It checks that guard\nbefore step 1 and before its dirtiness guards commit records. Its way forward names --abort, and\n--continue only for a merge past step 3. The abort-first paths are named as the only ones:\nmergeresolve's, and the landing's abort of its own parked merge-in.\nI checked the code facts against the tree. mergeReasonAlreadyInProgress guards\ninternal/fabricengine/merge.go:72. mergeresolve.Resolve aborts first (mergeresolve.go:46).\nlandingdeps.go:203-212 aborts the row's own parked merge-in. finalize.go has parkedMergeWayForward.\nNo finding is left unanswered, so the segment is accepted at the hard cap. No commit was made.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom circling accept fabric-single-repo-mode"
+  ],
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/fabric-single-repo-mode/_lym/shed/fabric-single-repo-mode/arbiter/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/fabric-single-repo-mode/_lym/shed/fabric-single-repo-mode/arbiter/attempt-2/verdict.yaml",
+  "relaunch": "lym shed step fabric-single-repo-mode --until-stop --arbiter-attempt 2"
+}
