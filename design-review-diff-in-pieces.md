@@ -1,6 +1,6 @@
 # Stage the reviewer diff in pieces that fit one Read
 
-`review-diff-in-pieces` · Task · enhancement, burler, stencil
+`review-diff-in-pieces` · Task · enhancement, burler, stencil · starting · Worktree-Create
 
 ## Seen (retro, 2026-11-17)
 
