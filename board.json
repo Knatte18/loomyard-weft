@@ -395,6 +395,25 @@
       "body": "## What was seen (2026-11-18)\n\nWith `claude-accounts-per-worktree` paused by `lym tender pause \u003cslug\u003e`, dobby started `lym batten run claude-accounts-per-worktree` (pid 15436).\nIt took `loomyard-weft/.weft/fabric.push.lock`, then logged `tendercli: a network call is held by a pause` and waited, still holding the lock.\n`lym batten run memory-cap-not-enforced` then failed twice with `push lock busy ... held by pid 15436`; the orch had to kill pid 15436.\n\n## Idea\n\nA pause hold never waits while holding a shared lock: the held call releases the push lock before it waits and takes it again after,\nor the pause check runs before the lock is taken.\nDobby should also not start a batten driver for a paused pair at all.\n",
       "created": "2026-11-18T13:34:51Z",
       "revised": "2026-11-18T13:34:51Z"
+    },
+    {
+      "id": 1473,
+      "handle": "B2",
+      "slug": "pause-fails-no-reed-session",
+      "title": "A hub pause after a crash fails on a pair with no reed session",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "tender",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "lym tender pause and status error out when a pair lost its tmux session, so nothing can be paused right after a crash",
+      "body": "## What was seen (2026-11-18, Neve, two minutes after a hard power-off)\n\n`lym tender pause` failed with\n`pause: list the sessions of claude-accounts-per-worktree: no reed session (2 strands persisted); run \"lym reed resume\" to rebuild, or \"lym reed up\" for a bare substrate`,\nand `lym tender status` failed the same way. Meanwhile dobby had already restarted `review-result-checks`.\nThe orch had to run `lym reed up` in each pair's worktree before the pause went through.\n\n## Idea\n\nA pause must work exactly when the machine just came back: a pair with no reed session has no running turn to interrupt,\nso pause records its entry, reports that pair under skipped, and goes on; status reports it the same way.\n",
+      "created": "2026-11-18T13:34:56Z",
+      "revised": "2026-11-18T13:34:56Z"
     }
   ],
   "prime_owner": "neve",
