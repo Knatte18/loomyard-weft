@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Write",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Write",
-    "last": "Parts-Plan-Write → skipped",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,22 @@
       "output": "",
       "at": "2026-11-18T11:17:34Z",
       "reason": "tapestry.plan_split = false"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/claude-accounts-per-worktree/_lym/plan/00-overview.md",
+      "at": "2026-11-18T11:46:51Z",
+      "started_at": "2026-11-18T11:17:46Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-18T11:44:58.95176868Z",
+          "end": "2026-11-18T11:46:50.469318894Z"
+        }
+      ]
     }
   ],
   "product": {
