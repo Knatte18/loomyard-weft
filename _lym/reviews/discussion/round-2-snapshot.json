@@ -14,5 +14,6 @@
       "title": "Delete treadle when Hardener is built (F10)",
       "digest": "01f072ecfaa58b9e834f7b742c52d9a5a810d615fb154176588b27899bc78125"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
