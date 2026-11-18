@@ -1,6 +1,6 @@
 # A re-step reconciles a leftover shuttle run only when the status error text names an interrupted stop
 
-`leftover-runs-not-reconciled` · Task · bug, shed, shuttle · starting · Open-Window
+`leftover-runs-not-reconciled` · Task · bug, shed, shuttle · starting · Seed-IDE
 
 Left open by the last code review of `leftover-strands-and-runs` (`3746960e`), at MEDIUM.
 
