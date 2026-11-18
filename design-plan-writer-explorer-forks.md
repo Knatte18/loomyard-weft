@@ -1,6 +1,6 @@
 # Bench the explorer subagents of the Discussion and Plan writers: with against without
 
-`plan-writer-explorer-forks` · Task · research, loom, stencil · running · PR-Review
+`plan-writer-explorer-forks` · Task · research, loom, stencil · landing · Finalize
 
 ## What was seen
 
