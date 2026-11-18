@@ -17,7 +17,7 @@ Every lens returned a report.
 - interactions 3 (no rule for a failed runs add after the move): fixed, D2 failure bullet and criterion.
 - walkthrough 2, bound-breaker 3 and existing-paths 1 (reed restart leaves the checklist dead): fixed, D2 case 2 relaunches a dead `loom-status` beside a runs strand.
 - walkthrough 3 and bound-breaker 4 (move repeats on an own-window `loom-status`; "in the overview window" not checkable): fixed, D2 case 1 states it and the criterion drops the precondition.
-- bound-breaker 5 and existing-paths 3 (viewer landing unstated): fixed, D2 states the viewer ends on the beam overview, with a criterion.
+- bound-breaker 5 and existing-paths 3 (viewer landing unstated): fixed, D2 states where reed's rules leave the viewer after each case.
 - bound-breaker 6 and existing-paths 4 (title colliding with a reserved window name): fixed, D3 falls back to the role name.
 - existing-paths 2 and interactions 4 (loomcli's recipe defaults to tapestry; builder's recipe input implicit): fixed, D1 reads the seed in both callers with no default.
 - interactions 1 (overview line may point at a missing window): rejected, the missing-window cases are warned failures with a way forward, and checking reed from every frame costs more than the rare case.
@@ -35,7 +35,7 @@ Every lens returned a report.
 ## Rejected alternatives
 
 - Bring the runs strand up before the pawl run's `lym loom start`: the beam is marked and brought up by the pawl run's own Beam-Up row, after loom start; reordering would make loom start own orch's runs strand.
-- Put the pawl checklist in its own window from the first `lym loom start` by recipe: keys placement on a recipe, against `PATTERN-loom-contract` and `PATTERN-no-hard-coded-choice`, and leaves older sessions broken.
+- Put the pawl checklist in its own window from the first `lym loom start` by recipe: keys placement on a recipe, against `PATTERN-loom-contract`, and leaves older sessions broken.
 - Leave the move to the next `lym loom start` or resume: that is today's behaviour and the bug.
 - Skip the sidecar write after the move: the next loom start would relaunch the checklist pane for no reason.
 - Name the window by a new role: the role `loom-status` is pinned for lookups.
