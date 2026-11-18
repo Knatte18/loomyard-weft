@@ -68,7 +68,31 @@ Every fork returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- F1 (BLOCKING, trailer-only commit reuses the uncaused ruling): fixed; the ruling key adds the range's trailer lines, with a criterion that a trailer commit clears the Stuck.
+- F2 (BLOCKING, send-back file archived by the new generation): fixed; the file lives in the loom scratch directory.
+- F3 (BLOCKING, send-back into a perch turned off): fixed; fix-here when the target perch approves without review.
+- F4 (full generation with a review input is new): fixed; D4 states the mechanism and D6 aligns the rubric.
+- F5 (parent not asked again): fixed; the reroute clears `parent_review_asked`.
+- F6 (new session vs resume): fixed; the reroute clears the session id.
+- F7 (verb skipped or shaped): fixed; an episode fix-here count bounds successive sets, and skipping is an accepted risk with its limit.
+- F8 (trailer cause unverified): fixed; D2's Bound names the attestation and the regression section as its bound.
+- F9 (dirty tree after the verb): fixed differently; the wake stops the session and re-reads the tree, and on a dirty one halts Stuck for the parent instead of waiting on an idle agent.
+- Self-check: the fix-here cap is scoped to runs where the edge can fire, the count clears per episode, the accepted-risk limit no longer claims a review before merge, and the amendment note keeps the fixer report.
+- F10 (Go-appended trailer untested): fixed; a D2 criterion.
+- F11 (Auto-mode duplicate): fixed; the bullet points to D4 and the ledger.
+
+### Round 2
+
+- F12 (BLOCKING, fix-here count has no reset point): fixed;
+  the clean-tree reroute clears the count with the mark, and nothing else does, so the cap holds between send-backs.
+
+### Round 3
+
+- F13 (BLOCKING, the clear ran before shed persisted the reroute): fixed differently;
+  the row clears at its next entry, only when its newest history entry is a reroute whose output is the mark's file,
+  so a crash or a reroute-cap halt keeps the send-back and the count.
 
 ## Question ledger
 
@@ -76,7 +100,9 @@ _No rounds yet._
 - Which findings trigger the send-back? Auto-pick: a findings set from the parent's review or an operator's review, not a single change request.
 - What threshold is "more than small"? Auto-pick: any BLOCKING, or more findings than `loom.pr_review_small_max`, default 3.
 - Where does the send-back re-enter? Auto-pick, revised after the lens review: Code-Bouncer, as a full generation with the PR findings as review input.
-- How is the send-back bounded? Auto-pick: Shed's existing reroute cap, plus fix-here where the recipe declares no edge or the target row's entry gate does not hold.
+- How is the send-back bounded? Auto-pick: Shed's existing reroute cap, plus fix-here where the recipe declares no edge, the target row's entry gate does not hold or the target perch approves without review.
+- Where is the send-back file stored? Auto-pick, after round 1: the loom scratch directory, which a new Code-Review generation does not archive.
+- Does the re-entered PR-Review resume the old session? Auto-pick, after round 1: no; the row's entry after the persisted reroute clears the session id, so a new session starts.
 - Which findings count against the threshold? Auto-pick: every finding, whatever its severity.
 - What is a loosened check diffed against? Auto-pick: the review base, the last merged parent tip.
 - How is the miss recorded? Auto-pick: a friction note through `internal/friction`.
