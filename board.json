@@ -248,7 +248,7 @@
       "isolated": false,
       "brief": "Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside",
       "body": "## What was seen\n\nEvery hub today needs two repositories: the warp (the code) and the weft (the piggyback repo that holds lym's housekeeping),\nwith `_lym` and `.lym` in each worktree as junctions into the weft.\nFor smaller work the operator wants lym's orchestration (creel, board, reed, runs) without setting up a second repository.\nThe warp/weft split is meant to be invisible from outside fabric, which this mode can use.\n\n## Idea (operator, 2026-11-18)\n\nA single-repo (\"monorepo\") mode: `_lym` and `.lym` are real directories in the warp repository, not junctions.\nEverything outside fabric looks and behaves the same; only fabric knows where the weft lives.\n\n## Open questions for its Discussion\n\n- Where housekeeping commits go. Every weft commit already goes through `lym fabric commit` (or `sync`/`push`) as its own \"weft sync\" commit, and `.lym` is never committed and stays in `.git/info/exclude` as today; `_lym` must then not be in the exclude (operator, 2026-11-18); the question is only whether `_lym` commits sit on the code branch or on a separate branch of the same repo.\n- What a landing does with `_lym` and `.lym`: excluded from the PR and the merge to the parent, or carried.\n- Which parts of today's weft (records branch, board, per-task branches, push transport) need a single-repo counterpart.\n- Whether code outside fabric assumes the split or commits `_lym` itself: several packages call git directly (`hubforge`, `websterengine`, `burlerengine` among them), most likely for warp commits; verify.\n\n## Relation\n\nThe operator finds `fabricengine` disproportionately large for its job (36,000 production lines, about 1,100 functions;\n`docs/research/rewrite/shrink-estimate-2026-11-18/report.md`) and wants this mode taken in if fabricengine is rewritten (note `clean-room-module-rewrite`).\n",
-      "status": "running · Discussion-Bouncer",
+      "status": "halted · Discussion-Bouncer",
       "created": "2026-11-18T17:14:29Z",
       "revised": "2026-11-18T18:15:21Z"
     },
@@ -460,9 +460,11 @@
       "isolated": false,
       "brief": "Bench arm of plan-writer-explorer-forks; never release",
       "body": "## Seen (operator, 2026-11-03)\n\nA beam's pawl run is a shed run with its own checklist, the loom status strand a normal loom run shows in its session's overview window.\nOnce the beam is up, its session shows the beam overview, its orch and the shell, and the pawl run's checklist is nowhere, so the operator cannot see where pawl stands; that matters once pawl is advanced by hand.\n\n## Cause, from the code\n\n- At `lym beam start`, the pawl run's `lym loom start` puts the loom status strand into the session's one overview window.\n- `ensureRunsStrand` (`internal/orchcli/runs.go`) then puts the beam's runs strand in that window by replacing the loom status strand, since reed refuses a second overview strand; the checklist strand is gone, not moved.\n- `statusStrandAddSpec` (`internal/loomcli/bootstrap.go`) does give the checklist a window of its own beside the runs strand, but only when a later loom start or resume adds it, and that window keeps the viewer, so it is easy to miss.\n\n## Expected\n\nWhile a pawl run lives, the beam's session always shows its checklist in a window of its own, named for pawl, beside the beam overview:\n\n- When the runs strand takes the overview window from the loom status strand, the checklist is added again in its own window, or the beam start brings the runs strand up before the pawl run's loom start so the checklist never takes the overview window.\n- The beam overview may also carry one line with pawl's current row, pointing at that window.\n",
-      "status": "running · Discussion-Bouncer",
+      "status": "running · Drift-Baseline",
       "created": "2026-11-18T18:17:59Z",
-      "revised": "2026-11-18T18:17:59Z"
+      "revised": "2026-11-18T18:17:59Z",
+      "discussed": true,
+      "record_body_sha256": "b1b983f87c3b078ecf467d53f3eff0efca88664c42910e2492178ae87122db9e"
     },
     {
       "id": 1492,
@@ -480,7 +482,7 @@
       "isolated": false,
       "brief": "Run golang.org/x/tools/cmd/deadcode over the repository and delete what it finds, with the tests that only cover it",
       "body": "## What was seen\n\nThe shrink study (2026-11-18) found features in `landingshed` that nobody has checked for use.\nSome code may be reachable from no `main` at all, kept alive only by its own tests.\n\n## Scope\n\n1. Run `golang.org/x/tools/cmd/deadcode` over every `main` package in the repository: `cmd/lym` and the programs under `tools/`.\n   Run it without and with `-test`, so the report separates code nothing reaches from code only tests reach.\n2. Delete each unreachable function, and with it the tests that cover only that function.\n   Code only tests reach is deleted the same way, unless it is a test helper.\n3. Check each hit before deleting it: a function reached through reflection, a registry, a `go:linkname` or a build tag for another platform stays,\n   and the report names it with the reason.\n4. No behaviour change: the gate stays green, and nothing a user can call is removed.\n\nThe report lists the removed lines per package and every hit kept with its reason.\n",
-      "status": "starting · Worktree-Create",
+      "status": "starting · Seed-Child",
       "created": "2026-11-18T18:49:00Z",
       "revised": "2026-11-18T18:49:00Z",
       "run_settings": {
