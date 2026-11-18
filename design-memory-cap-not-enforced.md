@@ -1,6 +1,6 @@
 # The per-process memory cap sometimes does not hold, and a runaway process takes the machine down
 
-`memory-cap-not-enforced` · Task · bug, process, gate · starting · Seed-IDE
+`memory-cap-not-enforced` · Task · bug, process, gate · starting · Open-IDE
 
 ## What was seen (2026-11-18)
 
