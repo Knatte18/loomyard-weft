@@ -1,0 +1,25 @@
+# Relevant files
+
+- `crucible/README.md` — the hand-run method whose durable content moves into the package doc and rubric
+- `crucible/orchestrator-prompt.md` — the orchestrator's hard rules and verification protocol the live gate and judge replace
+- `crucible/review-prompt-template.md` — the round agent's rules the Hardener rubric carries
+- `internal/treadleengine/doc.go` — the engine retired in favour of the Bouncer
+- `contracts/recipes/tapestry-recipe.yaml` — the review-ring edges and Code-Burler rows the Harden-Review ring copies
+- `contracts/recipes/motif-recipe.yaml` — the Discussion ring and its commit seam
+- `contracts/recipes/darn-recipe.yaml` — the record-from-board loom recipe Hardener is shaped like
+- `contracts/recipes/sampler-recipe.yaml` — a second record-from-board loom recipe with one build session
+- `internal/shedbuild/loomcontract.go` `checkLoomContract`, `recordOnly`, `onlyRowOf` — the contract D10 changes
+- `internal/shedrecipe/registry.go` `LoomBuildEngines`, `LoomRecordEngines`, `LoomFinalizeEngine` — the engine sets HardenFix joins
+- `internal/shedrecipe/entries_bouncer.go` — the Bouncer row's keys, including commit_seam
+- `internal/shedcli/table.go` — the recipe table the hardener recipe joins
+- `internal/shedrun/seed.go` — the closed recipe vocabulary
+- `internal/hubforge/doc.go` — proof that CloneAndWire builds a full hub from local bares
+- `internal/fabriccli/clone.go` `CloneAndWire` — the wiring the sandbox builder calls
+- `internal/testkit/tmuxkit/tmuxkit.go` `sweep`, `killServer` — the stray-process check tier-2 packages already make
+- `internal/reedengine/attach.go` — reed's `-L` socket naming the reaper keys on
+- `tools/sandbox/doc.go` — the operator's GitHub-backed sandbox suites, left unchanged
+- `docs/sandbox-howto.md` — deploy-dev and the per-worktree .dev-bin
+- `docs/sandbox-hub.md` — the shared GitHub sandbox hub Hardener does not use
+- `docs/overview.md` — names crucible, Tenter and the Hardener draft
+- `docs/reference/weaving-glossary.md` — treadle and tenter rows
+- `docs/skills.md` — names hardener as a burler-discipline consumer
