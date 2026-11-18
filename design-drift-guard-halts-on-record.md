@@ -1,0 +1,33 @@
+# Drift judge guard halts on decision-record edits and a resume repeats the same halt
+
+`drift-guard-halts-on-record` · Note · bug, drift, loom
+
+Imported from [issue #146](https://github.com/Knatte18/loomyard/issues/146).
+
+## What happened
+
+`lym loom` halted at `Drift-Verify` (state `blocked`, anomaly `escalation-to-human`) with:
+
+```
+decision halt: the judge session changed what it may not: records: src/csharp/NORCE.Models/_lym/discussion/decision-record.md was changed; the snapshot taken before it ran ... way forward: the parent or the operator resets a moved branch to its snapshot HEAD, restores a changed tracked file from its HEAD ... deletes an added path and the current capture's scratch directory ..., keeps the snapshot directory, which the resume compares against, then runs lym loom resume
+```
+
+The run was resumed and halted a second time with the same message.
+The second halt names the same capture scratch directory (`.lym/drift/current/<timestamp>-<pid>`) as the first, although it came from a new trace file.
+Both halts show identical history (8 entries, `Drift-Verify / stuck`).
+
+## Why it is abnormal
+
+- The changed path is the run's decision record, which the parent legitimately edits with `lym loom decision add` and `lym loom decision replace`.
+  The judge-session guard cannot tell a parent edit made while the judge ran from an edit by the judge, so it can halt a run for a change the judge never made.
+  The note gives no way to tell which actor changed the file.
+- The recovery text asks the operator to restore files and delete a scratch directory by hand, then resume.
+  A resume that re-halts on the same stale capture directory gives no signal whether the restore was applied or incomplete.
+
+## What to do
+
+- Record who changed the guarded path (judge session or another process) in the halt note, for example by comparing the file's mtime to the judge's start and end.
+- Exclude the decision record from the guarded set, or snapshot it under a lock that `lym loom decision add` and `lym loom decision replace` honour.
+- On resume, re-check the guard against the snapshot and say in the output which path still differs, rather than repeating the first halt's text.
+
+Provenance: task `dop-pumps-off-negative-spp`; notes `loom-halt-2.md`, `loom-halt-3.md`.
