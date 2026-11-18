@@ -86,7 +86,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review** | [`review-result-checks`](design-review-result-checks.md)<br>[Sketch](decision-review-result-checks.md) | tapestry · solid | Parent-Align | neve | 3h<br>3h | stencil, drift, fabric, burler, landing, loom, shed, testkit, docs |
-| T5 | **The per-process memory cap sometimes does not hold, and a runaway process takes the machine down**<br>• RunMemoryCappedVia lets a child keep 384 MB under a 128 MB cap on some runs; find why, fix it, prove it on repeated runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`memory-cap-not-enforced`](design-memory-cap-not-enforced.md) | darn · solid | Preflight | neve | 4m<br>4m | process, gate |
+| T5 | **The per-process memory cap sometimes does not hold, and a runaway process takes the machine down**<br>• RunMemoryCappedVia lets a child keep 384 MB under a 128 MB cap on some runs; find why, fix it, prove it on repeated runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`memory-cap-not-enforced`](design-memory-cap-not-enforced.md) | darn · solid | Record-Write | neve | 4m<br>4m | process, gate |
 | T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Webster | neve | 3h<br>2h | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
 #### Ready (0)
@@ -119,7 +119,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A paused run held by its pause keeps the fabric push lock, blocking every other run**<br>• batten run took fabric.push.lock, was then held by the pair pause, and kept the lock; another run could not start | [`paused-run-holds-push-lock`](design-paused-run-holds-push-lock.md) | 1m<br>1m | tender, fabric, batten |
-| B2 |  | **A hub pause after a crash fails on a pair with no reed session**<br>• lym tender pause and status error out when a pair lost its tmux session, so nothing can be paused right after a crash | [`pause-fails-no-reed-session`](design-pause-fails-no-reed-session.md) | 0m<br>0m | tender, reed |
+| B2 |  | **A hub pause after a crash fails on a pair with no reed session**<br>• lym tender pause and status error out when a pair lost its tmux session, so nothing can be paused right after a crash | [`pause-fails-no-reed-session`](design-pause-fails-no-reed-session.md) | 1m<br>1m | tender, reed |
 
 #### Enhancements (2)
 
