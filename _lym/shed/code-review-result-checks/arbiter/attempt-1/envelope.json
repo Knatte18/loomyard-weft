@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap escalation at round 3 with one open design-wrong finding, F13: D4 cleared the send-back mark, fix-here count, parent_review_asked and session id inside the row's Call, before shed persisted the reroute.\nThe round-3 fixer's change already answers it. D4 now has the row return Stuck with Reroute set and the mark's pr-findings-\u003cn\u003e.md file as output and clear nothing. The clear moves to the start of the row's next Call, and runs only when its newest own history entry is a reroute whose output is the mark's file. A crash before the persist, a re-step, the dirty-tree resume, the reroute-cap resume and a goto all keep the mark and the count, and the Bound and criteria say so.\nI checked the code facts this relies on: ShedProducer.Call takes only a context (producer.go:90). rerouteStuck stores Output: output.Path on the OutcomeReroute entry and on the RerouteCapped entry (reroute.go:59,70). A crash before the persist re-calls the producer (run.go:405). foldsInto never folds a reroute entry (run.go:744). rerouteCount stops at RerouteCapped.\nI recorded the ruling as an arbiter decision and accepted the segment. No fix of my own was made and nothing was committed.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add code-review-result-checks --by arbiter --title \"F13 is answered by D4's deferred clear\" --decision … --rationale …",
+    "lym loom circling accept code-review-result-checks"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/code-review-result-checks/_lym/shed/code-review-result-checks/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/code-review-result-checks/_lym/shed/code-review-result-checks/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step code-review-result-checks --until-stop --arbiter-attempt 1"
+}
