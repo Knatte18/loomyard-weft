@@ -1,7 +1,0 @@
-verdict: resume
-reason: >-
-  The bootstrap stop named the code tip 3c7754c1c4985d395698f0410f77664bc4d8fdbd as not on origin, owed by machine neve.
-  That has cleared. `git ls-remote origin` now shows refs/heads/code-review-result-checks at bc7737df2fbc161f2049de859a70752b831fb40b.
-  `git merge-base --is-ancestor 3c7754c1c4985d395698f0410f77664bc4d8fdbd bc7737df2fbc161f2049de859a70752b831fb40b` exits 0, so the stop commit is on origin as an ancestor of the remote tip.
-  The stop was raised at 10:55:03 from trace fcdec69289b8dfe4 (steps/fcdec69289b8dfe4.stderr.log line 1). The drive report shows no earlier attempts, so this is the first resume.
-  A plain re-launch of `lym batten run code-review-result-checks` should now pass the bootstrap check. No goto is needed: this is a bootstrap stop, not a blocked row.
