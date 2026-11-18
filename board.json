@@ -618,6 +618,27 @@
       "body": "Imported from [issue #135](https://github.com/Knatte18/loomyard/issues/135).\n\nA darn-writer agent measuring a golden test ran `dotnet test` on a C# test project.\nThe command exited 0 and printed nothing, not even a test count, while `lym gate test` was off limits to that agent.\nThe agent could not tell that no test had run and spent several rounds before noticing.\nRunning the built test assembly through `dotnet vstest` with a `--TestCaseFilter` ran the tests normally.\n\nWhy this is abnormal: a silent exit 0 reads as a passing run.\nIf a lym guard refuses or neutralises `dotnet test`, it should refuse with a message and a nonzero exit.\nThe darn prompt also names no way to run a single test class while measuring.\n\nWhat to do:\n- Make a refused or neutered `dotnet test` say so.\n- Have the darn prompt name a permitted way to run one test class, for example the `dotnet vstest` route above.\n\nProvenance: task `td-stick-slip-surface-torque`; notes Darn-Write.md.\n",
       "created": "2026-11-18T08:08:05Z",
       "revised": "2026-11-18T08:08:05Z"
+    },
+    {
+      "id": 1455,
+      "handle": "B10",
+      "slug": "no-tier0-fails-shed-build",
+      "title": "A run in a hub with no declared tier0 fails at shed build, even a docs-only darn",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "config"
+      ],
+      "issues": [
+        133
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #133](https://github.com/Knatte18/loomyard/issues/133).\n\n## Seen\n\nIn a new hub with no tests yet, a darn task with profile `docs` (drift scope off, a docs-only change) failed at once, before Darn-Write ran:\n\n```\nloomrecipe: shedbuild: producer 5 \"Darn-Write\": shedrecipe: Darn-Write: gate fixer: loomcli: render the Darn-Write fixer's gate call: gate config: the hub declares no tier0, so no gate has a tier to run\n```\n\nThe template's gate keys all name tier `[0]`, while the template declares `tiers: {}`.\nSo every run in a fresh hub fails at shed build, whatever its recipe or diff.\nThe tackler could not fix it, since the gate config is written only from the prime, and it handed the stop back.\n\n## Workaround\n\nFrom the prime, declare a tier0 and mark docs as inert:\n\n```\nlym config gate --layer default --set 'tiers.tier0={command: \"dotnet test {targets} {args}\", all_targets: ., timeout_min: 30, counter: vstest}' --set scoper=dotnet --set 'inert_paths=[\"*.md\", \"docs/*\"]'\n```\n\n## Expected\n\nA hub with no declared tiers can run a docs-only task: either the gate call is rendered only when a tier is needed,\nor a gate key naming no declared tier passes with nothing to run.\nAt least, hub setup or the first release should flag the missing tier0 before a run starts, instead of a failed run and a tackler attempt.\n\n\n## Issue comment, 2026-11-16\n\n## Seen: Finalize ignores `inert_paths`\n\nAfter the workaround above, the same docs-only darn run reached Finalize, and its landing gate failed with no failing test.\nThe branch held only `README.md` and a file under `docs/`, both covered by `inert_paths: [\"*.md\", \"docs/*\"]`.\nFinalize still ran tier0 over all targets (gate key `finalize`, scope `all`), and in a repository with no .NET project yet,\n`dotnet test .` exits with MSB1003 \"Specify a project or solution file\".\nThe Finalize fixer could not fix it on the task branch without adding code outside the task's bounds.\n\n## Workaround\n\nFrom the prime, make tier0 pass when no project exists:\n\n```\nlym config gate --layer default --set 'tiers.tier0.command=bash -c '\"'\"'if ls *.sln *.slnx *.csproj \u003e/dev/null 2\u003e\u00261; then dotnet test {targets} {args}; else echo no .NET project, nothing to test; fi'\"'\"''\n```\n\n## Expected\n\nA change whose files are all inert runs no tier at any gate key, Finalize included,\nor a scope-`all` gate in a repository with nothing to test passes instead of failing the landing.\n",
+      "created": "2026-11-18T08:08:08Z",
+      "revised": "2026-11-18T08:08:08Z"
     }
   ],
   "prime_owner": "neve",
