@@ -1,0 +1,17 @@
+verdict: resume
+reason: |-
+  Cause is circling at round 2, below the hard cap of 4 (review_hard_max_bounces default; no override for the Discussion perch).
+  The fix is converging: round 1 had 15 findings, round 2 has 2, and the round-2 fixer has already applied both to the decision record.
+  F1 (reach-note-misses-writer, reopened at Darn-Write's cold fixer) is a real finding, not a wrong one.
+  The board entry settles it: the operator (2026-11-18) wants the writer to get the note from its own verify gate.
+  D3 now routes a reach-note result to the writer alone, bypassing gatefixer.WrapRowGate's cold fixer only for that result.
+  It also marks the wrap's re-run so the attempt count is one per shuttle arrival, and adds the Darn-Write acceptance case.
+  I recorded that ruling as an arbiter decision so later rounds do not reopen the channel choice.
+  F2 (mechanical) asked for the six edits of the earlier arbiter entry on the mutation trial order.
+  The record now carries them: Goal, Scope, D10's opening, D11's output and board note, D12, the narrowed refusal constraint, the D10 criteria marked for the later build, and the deleted Open risk.
+  A continue lets round 3 confirm both fixes, per the round-3 focus.
+verbs:
+  - |-
+    lym loom decision add testmap-uses-design --by arbiter --title "Reach turn bypasses Darn-Write's cold fixer (round 2 F1)" --decision "…" --rationale "…"
+  - |-
+    lym loom circling continue testmap-uses-design
