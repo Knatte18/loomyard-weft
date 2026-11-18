@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 18:06 UTC; every age below is as of then.
+Rendered 2026-11-18 18:07 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -74,13 +74,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-testmap-uses.md">P3 Put the per-test coverage maps to use</a> (3)</strong></summary>
+<summary><strong><a href="project-testmap-uses.md">P3 Put the per-test coverage maps to use</a> (1)</strong></summary>
 
 [`testmap-uses`](design-testmap-uses.md) · Age 2m · Owner `neve`
 
 The reach note, the diff mutation check and failure triage, built on one reader of the maps
 
-### Tasks (0)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -90,17 +90,17 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (3)
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **Coverage map uses: reach note, failure triage and diff mutation check**<br>• One reader of the maps feeding a reach note for writer and review, failure triage in the gate report and fixer brief, and a mutation check of a diff changed blocks | [`testmap-uses-design`](design-testmap-uses-design.md) | motif |  | 8m<br>0m | testmap, gate, burler, darn |
+
+### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-#### Features (3)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| F4 |  | **Reach note for a diff: the tests reaching each changed function, and changed functions nothing reaches**<br>• A reader of the coverage maps feeds the code review and a read verb for writers; uses 1 and 3 of the map study read through it | [`testmap-reach-note`](design-testmap-reach-note.md) | 8m<br>2m | testmap, gate, burler |
-| F5 |  | **Mutation check of the code a diff changes, survivors to the code review**<br>• Mutate only the blocks a diff adds or changes, run only the tests covering each, report surviving mutants; start with a hand trial over about twenty landed diffs | [`testmap-diff-mutation`](design-testmap-diff-mutation.md) | 8m<br>2m | testmap, gate, burler |
-| F6 |  | **Failure triage: does a failing test reach what the run changed**<br>• The gate failure report and the fixer brief say which changed functions a failing test reaches, or that it reaches none, so a not-my-fault failure is seen at once | [`testmap-failure-triage`](design-testmap-failure-triage.md) | 8m<br>2m | testmap, gate, darn |
 
 </details>
 
@@ -159,7 +159,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>3w | burler |
-| F2 |  | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md) | 52m<br>49m | fabric |
+| F2 |  | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md) | 52m<br>50m | fabric |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 3d<br>10h | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>13d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
