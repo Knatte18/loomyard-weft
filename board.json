@@ -107,9 +107,9 @@
       "body": "## Seen (orch, 2026-11-09)\n\nThe coverage maps (`internal/testcover`, built by `lym gate test --map` since `b92c95ee`) record, per package, the blocks each tier 0 and tier 1 test covers.\nThe gate report (the advisory redundancy step of `lym gate test`, landed as `7f21142e`) judges only the new tests of a diff against the map;\nnothing yet uses the maps to find redundant tests that already exist.\nThe operator wants the existing ones cut, across the packages, not only kept from growing.\n\nThe survey `redundancy-confirmed-survey` (`53d40bd0`, report `docs/research/speed/redundancy-confirmed-survey-2026-11-16/report.md`)\nran the mutation-confirmed `lym gate redundant` over 121 packages:\n430 tests stay confirmed, 2.89 s of removable standalone time, and 27 of 30 sampled are false confirmations,\neach asserting something its covering tests do not.\nSo the list is a reading filter, never a verdict:\nthe cut is a test-quality cleanup that reads every confirmed candidate against its covering tests, not a speed task.\n\n## Idea\n\n1. A candidate list per package from `lym gate redundant \u003cpackage\u003e`, which omits `//testtiming:keep` and spawn-marked tests.\n2. Cut tasks on that list, each run delegating the per-test reading to subagents:\n   a candidate is cut or folded into another test only when its assertions add nothing the covering tests check.\n   The survey names what to look for first: absent side effects, persisted state, and inputs the covering tests do not feed.\n3. `internal/fabricengine` was swept by hand on 2026-11-08, so it comes last or not at all.\n4. Before judging a package, the sweep builds that package's map fresh in its own worktree with `lym gate test --map`,\n   since no landing keeps the maps fresh; spawn-marked tests are neither candidates nor covers.\n",
       "status": "draft",
       "created": "2026-11-09T18:47:33Z",
-      "revised": "2026-11-18T12:52:07Z",
+      "revised": "2026-11-18T17:23:24Z",
       "profile": "solid",
-      "project": "test-suite-trim"
+      "project": "code-cleanup"
     },
     {
       "id": 1279,
@@ -424,6 +424,85 @@
       "body": "Make lym smaller without changing what it does, one mechanical pass at a time.\n\nBackground: `docs/research/rewrite/shrink-estimate-2026-11-18/report.md` found almost no copy-paste duplication (under 1 %).\nThe size sits in tests (about 2 test lines per code line), comments,\nnear-identical helpers a duplicate detector misses, design that makes every caller handle more than it needs,\ncompatibility and migration code, and features nobody uses.\nA clean-room rewrite was judged too large for the gain (2026-11-18); this project cuts in place instead.\n",
       "created": "2026-11-18T17:23:24Z",
       "revised": "2026-11-18T17:23:24Z"
+    },
+    {
+      "id": 1477,
+      "handle": "E3",
+      "slug": "comment-trim-second-pass",
+      "title": "Comments: check what the big comment rewrite left, before any new pass",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "docs"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Last week a run of nearly 3,000 agents rewrote docstrings and doc files; measure what is still long before deciding on more",
+      "body": "## What was seen\n\nLast week a large run (nearly 3,000 agents in parallel) rewrote and trimmed docstrings and doc files across lym.\nEven so, the shrink study (2026-11-18) still found comments at 20 to 31 % of production lines in the seven most patched modules,\nand in `landingshed` a 678-line `doc.go` that mostly restates the function docs.\n\n## Idea\n\nBefore any new comment pass, check whether that rewrite covered package `doc.go` files and how long they still are,\nand list the packages whose comment share stands out. Only then decide whether a narrow second pass (for example `doc.go` only) is worth it.\n",
+      "created": "2026-11-18T17:23:24Z",
+      "revised": "2026-11-18T17:23:24Z",
+      "project": "code-cleanup"
+    },
+    {
+      "id": 1478,
+      "handle": "E5",
+      "slug": "design-simplify-callers",
+      "title": "Design: simplify interfaces that make every caller handle too much",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "landing"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "For example one result type instead of a four-value return handled at 60 call sites; find such spots per module and fix them one module at a time",
+      "body": "## What was seen\n\nReading `landingshed` for the shrink study found design that spreads code over every caller:\na four-value return handled at about 60 call sites where one result type would do,\nnear-identical helpers with different names and types (about 340 lines, of which a duplicate detector saw 36),\nsingle-caller or test-only seams and adapters, and a lock-release layer around the fixer that a different order would remove.\n\n## Idea\n\nPer module, a run lists such spots with a line estimate each, then simplifies them without changing behaviour,\nbehind the module's existing tests. Start with the largest modules; `fabricengine` (36,000 production lines, about 1,100 functions) first,\nsince the operator finds it disproportionately large for its job.\n",
+      "created": "2026-11-18T17:23:24Z",
+      "revised": "2026-11-18T17:23:24Z",
+      "project": "code-cleanup"
+    },
+    {
+      "id": 1479,
+      "handle": "E6",
+      "slug": "drop-compat-migration-code",
+      "title": "Remove compatibility and migration code no hub needs any more",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "loom",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest",
+      "body": "## What was seen\n\nOutside tests, \"retired\" appears in 127 files, \"migrat\" in 57 and \"legacy\" in 65 (2026-11-18);\n`fabricengine` leads with 18 files, then `loomcli` 11 and `boardengine` 10.\nSome of it is a deliberate refusal of an old name or key with a pointer to the new one, which is cheap and stays.\nSome is real migration code: `landingshed` alone carries about 100 lines (the retired `Merge-In` row name,\na scratch-to-records attempt migration, a key-rename migration).\n\n## Idea\n\nA mechanical pass, module by module: classify each hit as a refusal (keep) or a migration or compatibility path\nwhose data no hub still holds (delete), with the operator confirming the list of hubs and their state before deletion.\n",
+      "created": "2026-11-18T17:23:24Z",
+      "revised": "2026-11-18T17:23:24Z",
+      "project": "code-cleanup"
+    },
+    {
+      "id": 1480,
+      "handle": "E7",
+      "slug": "drop-unused-features",
+      "title": "Remove features nobody uses",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "tools"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Find unreachable code mechanically and list features with no recent use; the operator decides which go",
+      "body": "## What was seen\n\nThe `landingshed` reading found about 340 lines of features a product owner could remove\n(the flaky rerun, the adopter-first repair note, the beam landing record among them); nobody has checked whether they are used.\n\n## Idea\n\n1. Mechanical: run `golang.org/x/tools/cmd/deadcode` over `cmd/lym` to find functions no path from `main` reaches; delete those.\n2. A list, not a deletion: features, flags, config keys and verbs with no use in run records, transcripts or hub configs over the last weeks.\n   The operator decides which go; only those are removed.\n",
+      "created": "2026-11-18T17:23:25Z",
+      "revised": "2026-11-18T17:23:25Z",
+      "project": "code-cleanup"
     }
   ],
   "prime_owner": "neve",
