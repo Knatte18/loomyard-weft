@@ -2,7 +2,7 @@
 
 `leftover-strands-and-runs` · Task · bug, gate, shuttle, reed, shed
 
-Depends on: [`orch-ignores-deny-python`](design-orch-ignores-deny-python.md), [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md)
+Depends on: [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md)
 
 Two bugs where a leftover strand or shuttle run stops a run, bundled because both sit in shuttle run tracking and the step that meets it.
 
