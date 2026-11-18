@@ -12,12 +12,12 @@
 - `internal/configreg#TestModules_EveryTemplateKeyClassified`
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#AccountConfig` -> `type AccountConfig struct`
-- `plan:internal/shuttleengine/claudeengine#AccountPins` -> `type AccountPins struct`
-- `plan:internal/shuttleengine/claudeengine#validateAccounts` -> `func validateAccounts(claude *Config, home string) error`
-- `plan:internal/shuttleengine/claudeengine#refuseTrackedAccountKeys` -> `func refuseTrackedAccountKeys(dirs configengine.Dirs) error`
-- `plan:internal/shuttleengine/claudeengine#canonicalConfigDir` -> `func canonicalConfigDir(dir string) string`
-- `plan:internal/shuttleengine/claudeengine#AccountConfig.retired` -> `func (a AccountConfig) retired() bool`
+- `internal/shuttleengine/claudeengine#AccountConfig`
+- `internal/shuttleengine/claudeengine#AccountPins`
+- `internal/shuttleengine/claudeengine#validateAccounts`
+- `internal/shuttleengine/claudeengine#refuseTrackedAccountKeys`
+- `internal/shuttleengine/claudeengine#canonicalConfigDir`
+- `internal/shuttleengine/claudeengine#AccountConfig.retired`
 
 **Uses:**
 - `internal/configengine#Layers`

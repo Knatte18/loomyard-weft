@@ -32,7 +32,7 @@
 - `plan:internal/shuttleengine/claudeengine#resolveAccount`
 - `plan:internal/shuttleengine/claudeengine#readAccountFile`
 - `plan:internal/shuttleengine/claudeengine#readUsage`
-- `plan:internal/shuttleengine/claudeengine#canonicalConfigDir`
+- `internal/shuttleengine/claudeengine#canonicalConfigDir`
 - `internal/shuttleengine/claudeengine#claudeHomeDir`
 - `internal/shuttleengine/claudeengine#TestPrepare_ThreadsSpecIntoLaunchCmds`
 

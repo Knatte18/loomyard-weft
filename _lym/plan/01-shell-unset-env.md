@@ -4,9 +4,9 @@
 - `internal/shell#Shell`
 
 **Create:**
-- `plan:internal/shell#posixShell.UnsetEnv` -> `func (p posixShell) UnsetEnv(key string) string`
-- `plan:internal/shell#pwshShell.UnsetEnv` -> `func (p pwshShell) UnsetEnv(key string) string`
-- `plan:internal/shell#TestShell_UnsetEnv` -> `func TestShell_UnsetEnv(t *testing.T)`
+- `internal/shell#posixShell.UnsetEnv`
+- `internal/shell#pwshShell.UnsetEnv`
+- `internal/shell#TestShell_UnsetEnv`
 
 **Uses:**
 - `internal/shell#posixShell.ExportEnv`

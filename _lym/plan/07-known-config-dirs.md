@@ -41,7 +41,7 @@
 - `internal/shuttleengines/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine/claudeengine#canonicalConfigDir`
+- `internal/shuttleengine/claudeengine#canonicalConfigDir`
 - `internal/shuttleengine/claudeengine#projectDirUnder`
 - `internal/shuttleengine/claudeengine#locateSessions`
 - `plan:internal/shuttleengine/claudeengine#Claude.resolveLaunchAccount`

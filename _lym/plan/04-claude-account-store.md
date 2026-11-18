@@ -26,8 +26,8 @@
 **Uses:**
 - `internal/state#UpdateJSON`
 - `internal/state#ReadJSON`
-- `plan:internal/shuttleengine/claudeengine#AccountConfig`
-- `plan:internal/shuttleengine/claudeengine#canonicalConfigDir`
+- `internal/shuttleengine/claudeengine#AccountConfig`
+- `internal/shuttleengine/claudeengine#canonicalConfigDir`
 - `internal/lymdirs/doc.go`
 
 **Intent:**

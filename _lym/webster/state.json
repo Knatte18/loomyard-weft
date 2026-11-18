@@ -1,15 +1,15 @@
 {
   "runGuid": "32003f8b31f52bbf18b4e4cb9872dc17",
-  "planFingerprint": "5f3636f7e03d60e496704943e9c622c405dccc4ac04b231cd4f861df3bb28a73",
+  "planFingerprint": "c843f12540563567fd37be3273a8fc607ece0600bd78542d15fc28d289038c41",
   "planFileHashes": {
     "00-overview.md": "98b15a10330162bb77a58831776fd88a33301d67aff0d8edfa2d80a489069f65",
-    "01-shell-unset-env.md": "f90107b91ec4fa9455b01d31585964c1ee81dabf7cb4cfc194290bacc92b934b",
-    "02-claude-account-config.md": "bfd34f751aee13dc3a0bda08d334107fe3e6d210a4f8ab8416cb943b0bebcc58",
+    "01-shell-unset-env.md": "92880154d64c79919f6ebc176ddb983a1dd08200a27f4d36df84387584deaffa",
+    "02-claude-account-config.md": "aaa8a761228aa17dc2026c85bb13ba393b91a8f0fd317321e65b8ffd720c563f",
     "03-engine-worktree-geometry.md": "7444b0c36f53bd89801824064e5bf768551d78f41f40a0785d7f3436ac8416f0",
-    "04-claude-account-store.md": "7f8ec66182257b760138886b0efa9bc3212cdf575e54479fdea8613d7de58a1b",
+    "04-claude-account-store.md": "2db58545b045473b327e229d6f62b911a96a448156ec854ddeaee46d52b4a437",
     "05-account-pick-at-making.md": "f58882bfd11ba9d6e997093660dc55dbadd6d938f2d993e5551edd9a30b0c0e7",
-    "06-launch-exports-account.md": "633f28ba9654bd26623e2bc08cc7a5857a027123755213201cabf55bb995f8b1",
-    "07-known-config-dirs.md": "ec0b57a3beeb61434d5af999753fa588c6ccc768ab57fbcada069ebab6683549",
+    "06-launch-exports-account.md": "58957daa07a8c0fa4181903eb3bc9accc654149083f5cdbcd6d26caf012bbd08",
+    "07-known-config-dirs.md": "4bd4eff9fdf61f372d11592562b48fecd5e67aeacda224b1c2ae24c011e560c8",
     "08-resume-carries-transcript.md": "705f9e615532ec419239a47f1fb3c70e0e6a30a5db41d14ddd59ce72054caf31",
     "09-claude-account-verbs.md": "cd2288beacbb35128b006d4cd71a58787783fd67d1e8c6101eb7faf2230dfe28",
     "10-status-line-settings.md": "d185a3dc0e4d87c04a858261aec0aa5d466696803cd94afc19f964ccc5bf6a48",
@@ -547,20 +547,41 @@
         "02-claude-account-config"
       ],
       "cardHashes": {
-        "01-shell-unset-env": "f90107b91ec4fa9455b01d31585964c1ee81dabf7cb4cfc194290bacc92b934b",
-        "02-claude-account-config": "bfd34f751aee13dc3a0bda08d334107fe3e6d210a4f8ab8416cb943b0bebcc58"
+        "01-shell-unset-env": "92880154d64c79919f6ebc176ddb983a1dd08200a27f4d36df84387584deaffa",
+        "02-claude-account-config": "aaa8a761228aa17dc2026c85bb13ba393b91a8f0fd317321e65b8ffd720c563f"
       },
       "startSha": "3746960e13964897b204f08b3ad79ca499e27cb5",
       "kind": "fork",
       "spawnedAt": "2026-11-18T12:33:34Z",
       "sessionId": "0ad17d4c-a2b0-4598-8497-d2e3f0282dbc",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shell-unset-env",
+        "status": "done",
+        "head_sha": "f04060ad0dd7f50a927a004fde651aea9452ce86",
+        "deviations": [
+          "internal/shell/shell.go",
+          "internal/shuttleengine/claudeengine/accountconfig.go"
+        ]
+      },
+      "cardShas": [
+        "f04060ad0dd7f50a927a004fde651aea9452ce86"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a0ef6fd807272a962.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a0ef6fd807272a962.jsonl"
+      ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "5cbffc253a5bb4f6a5785956571107fa",
   "masterSessionId": "0ad17d4c-a2b0-4598-8497-d2e3f0282dbc",
-  "masterEngine": "claude"
+  "masterEngine": "claude",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a0ef6fd807272a962.jsonl"
+  ]
 }
