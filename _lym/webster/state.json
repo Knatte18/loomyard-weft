@@ -1,0 +1,396 @@
+{
+  "runGuid": "bd9a5bbf03759519237310dc5b9b90db",
+  "planFingerprint": "762dd5616e24a3ce042263bf57e9e83ba0d6a18208ebdb44283a6332d5b14f4a",
+  "planFileHashes": {
+    "00-overview.md": "504e4a7810adb14efd7dfa3564cbec1580312bcc67dcbc51072f477eeb3bb049",
+    "01-fabric-range-reads.md": "e896c7eb5acb45d24761c73677d73f6014df34a00873128d4fb2d871525350c3",
+    "02-drift-loosened-judgement.md": "4048b809234f9c5c7e54f721eda634c09fc7374db5903a3d718f4fbc53d4f096",
+    "03-drift-verify-loosened-checks.md": "3945ee950d1daf2aa7afdf6db789b4c4903ca4e310cb2bf1e9c74f920705b6a5",
+    "04-pr-review-small-max-setting.md": "3ff29758a33bde65d1fc98fea3914d9a55bfd80ff69240a9e989281e90615028",
+    "05-pull-request-send-back-record.md": "3ae587100fdc5a751e489e15eeb7d3daef432896e04bd29cb07ce3da1c02097b",
+    "06-stencil-plain-includes.md": "c6e05ed5fdea76613b3bb9622f6f8ef34907eb15a291b3bd4f571cf1768d7b1e",
+    "07-bouncer-review-inputs.md": "9f5fe68bc292c0e590276213f77848abd74ad535ed8ade30600bc6db18edd78e",
+    "08-loom-pr-findings-verb.md": "7217c796e16ba28c8012f045d8b55b82a29c0191f21d70ef049e71e9f6a41611",
+    "09-pr-review-send-back-row.md": "cb5c5628c3c81a96885eecf241ba536e2ec5ae0e35d6418a5a4b6994ae3c4a0a",
+    "10-recipes-pr-review-reroute.md": "68b5ee1a1262d4db814f700af6fd6ea9700f66098cc2fbe548f22fbedc738f5a",
+    "11-loosened-check-fragment.md": "84d04025255ffd7a5a744cfeb58468d47722d76663bb8afbdb19b2be249a33f9",
+    "12-result-check-wording.md": "175beb7e1da65573729e2828e1d947949fa1adb9d32fa33ad0de1c79a8cb52d1"
+  },
+  "planOverviewFrameHash": "35c0a22631ab5fcdf592a1849a127b557e57e595cad1c5a544962220a306491e",
+  "partition": [
+    {
+      "cards": [
+        "01-fabric-range-reads",
+        "02-drift-loosened-judgement"
+      ],
+      "profile": "wide",
+      "estimate": 176488,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54652,
+        "read_union": 43608,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 360,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29556,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 152.5,
+            "written": 46110
+          },
+          {
+            "card": 2,
+            "card_text": 768,
+            "reads": {
+              "file:contracts/stencils/drift/drift-template-judge.md": 924,
+              "package:contracts/stencils/drift": 2000,
+              "package:internal/driftengine": 2000,
+              "tests:contracts/stencils/drift": 2000,
+              "tests:internal/driftengine": 2000
+            },
+            "messages": 104.5,
+            "written": 32118
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-drift-verify-loosened-checks",
+        "04-pr-review-small-max-setting",
+        "05-pull-request-send-back-record"
+      ],
+      "profile": "wide",
+      "estimate": 249724,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61652,
+        "read_union": 70280,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 1416,
+            "reads": {
+              "file:internal/driftengine/doc.go": 7248,
+              "file:internal/shedrecipe/doc.go": 2724,
+              "package:internal/battencli": 2000,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 322.5,
+            "written": 98166
+          },
+          {
+            "card": 4,
+            "card_text": 312,
+            "reads": {
+              "file:docs/overview.md": 25056,
+              "file:internal/loomengine/template.yaml": 684,
+              "package:docs": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 47.5,
+            "written": 14562
+          },
+          {
+            "card": 5,
+            "card_text": 264,
+            "reads": {
+              "file:internal/pullrequest/doc.go": 576,
+              "package:internal/pullrequest": 2000,
+              "tests:internal/pullrequest": 2000
+            },
+            "messages": 16,
+            "written": 5064
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-stencil-plain-includes",
+        "07-bouncer-review-inputs"
+      ],
+      "profile": "wide",
+      "estimate": 264880,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68652,
+        "read_union": 59404,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 336,
+            "reads": {
+              "file:internal/samplerengine/doc.go": 372,
+              "file:internal/stencilstore/doc.go": 576,
+              "package:internal/landingshed": 2000,
+              "package:internal/samplerengine": 2000,
+              "package:internal/stencilstore": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/samplerengine": 2000,
+              "tests:internal/stencilstore": 2000
+            },
+            "messages": 65.5,
+            "written": 19986
+          },
+          {
+            "card": 7,
+            "card_text": 1488,
+            "reads": {
+              "file:contracts/specs/shed-recipe-spec.md": 3168,
+              "file:contracts/stencils/loom/loom-rubric-code-review.md": 1788,
+              "file:internal/shedadapters/doc.go": 8952,
+              "file:internal/shedrecipe/doc.go": 2724,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 384.5,
+            "written": 116838
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-loom-pr-findings-verb",
+        "09-pr-review-send-back-row"
+      ],
+      "profile": "wide",
+      "estimate": 262380,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75652,
+        "read_union": 65276,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 1068,
+            "reads": {
+              "file:docs/overview.md": 25056,
+              "file:internal/loomcli/doc.go": 10188,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 148,
+            "written": 45468
+          },
+          {
+            "card": 9,
+            "card_text": 984,
+            "reads": {
+              "file:internal/landingshed/doc.go": 7980,
+              "file:internal/loomcli/doc.go": 10188,
+              "package:internal/battencli": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 250,
+            "written": 75984
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-recipes-pr-review-reroute",
+        "11-loosened-check-fragment",
+        "12-result-check-wording"
+      ],
+      "profile": "wide",
+      "estimate": 204694,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82652,
+        "read_union": 72200,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 372,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 3588,
+              "file:contracts/recipes/sampler-recipe.yaml": 3132,
+              "file:contracts/recipes/tapestry-recipe.yaml": 6540,
+              "file:internal/loomrecipe/doc.go": 1812,
+              "package:contracts/recipes": 2000,
+              "package:internal/loomrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/loomrecipe": 2000
+            },
+            "messages": 54,
+            "written": 16572
+          },
+          {
+            "card": 11,
+            "card_text": 480,
+            "reads": {
+              "file:contracts/stencils/burler/burler-step-fix.md": 1140,
+              "file:contracts/stencils/darn/darn-template-write.md": 1296,
+              "file:contracts/stencils/gatefix/gatefix-body-darn.md": 348,
+              "file:contracts/stencils/landing/landing-template-fixer.md": 624,
+              "file:contracts/stencils/landing/landing-template-pr-review.md": 804,
+              "file:contracts/stencils/sampler/sampler-template-agent.md": 660,
+              "file:contracts/stencils/weaver/weaver-body-verify-fix.md": 504,
+              "file:contracts/stencils/weaver/weaver-template-batch.md": 1428,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 2160,
+              "file:contracts/stencils/webster/webster-body-verify-fix.md": 504,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/burler": 2000,
+              "package:contracts/stencils/darn": 2000,
+              "package:contracts/stencils/gatefix": 2000,
+              "package:contracts/stencils/landing": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:contracts/stencils/sampler": 2000,
+              "package:contracts/stencils/weaver": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/burler": 2000,
+              "tests:contracts/stencils/darn": 2000,
+              "tests:contracts/stencils/gatefix": 2000,
+              "tests:contracts/stencils/landing": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/sampler": 2000,
+              "tests:contracts/stencils/weaver": 2000,
+              "tests:contracts/stencils/webster": 2000
+            },
+            "messages": 84.5,
+            "written": 25830
+          },
+          {
+            "card": 12,
+            "card_text": 240,
+            "reads": {
+              "file:contracts/stencils/darn/darn-template-write.md": 1296,
+              "file:contracts/stencils/landing/landing-template-describe.md": 780,
+              "file:contracts/stencils/landing/landing-template-pr-review.md": 804,
+              "file:contracts/stencils/loom/loom-rubric-code-review.md": 1788,
+              "package:contracts/stencils/darn": 2000,
+              "package:contracts/stencils/landing": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/darn": 2000,
+              "tests:contracts/stencils/landing": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 24,
+            "written": 7440
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "fabric-range-reads",
+      "cards": [
+        "01-fabric-range-reads",
+        "02-drift-loosened-judgement"
+      ],
+      "cardHashes": {
+        "01-fabric-range-reads": "e896c7eb5acb45d24761c73677d73f6014df34a00873128d4fb2d871525350c3",
+        "02-drift-loosened-judgement": "4048b809234f9c5c7e54f721eda634c09fc7374db5903a3d718f4fbc53d4f096"
+      },
+      "startSha": "744c720fc772bdd099644da80043052a68985aef",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T11:52:16Z",
+      "sessionId": "87c1e53d-6137-4f9b-96cf-6c7ccc843976",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "cc10af0f5a9b1757a33b3d5eaaed7b37",
+  "masterSessionId": "87c1e53d-6137-4f9b-96cf-6c7ccc843976",
+  "masterEngine": "claude"
+}
