@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "The stop is a producer error at Seed-IDE: the push of main-weft was refused by origin, and the pushAnchored path reports that the entry of branch main-weft is ended on origin, so the branch is left to its teardown (internal/fabricengine/pushanchored.go:297-310, stop text in drive-envelope ee03 and trace 6232af401d4d4c2e at 10:01:30 and 10:01:33). A re-run of Seed-IDE cannot fix this: the origin entry is ended, so the same refusal returns. The commit the stop names, fc263a7c7e (batten: Seed-IDE -\u003e running), is present on origin: ls-remote origin refs/heads/main-weft returns 1676a1f72d, and fc263a7 is an ancestor of that tip by merge-base --is-ancestor. The run has also moved on past Seed-IDE: origin holds the Land commit 1676a1f72d, and local main-weft carries the Worktree-Teardown commit dc83e7eeab, ahead of origin by one. So the stop is stale rather than a missing push. Whether the run closes out through its teardown, and whether the stale Seed-IDE stop is cleared, is a decision for the run's parent, not a plain re-launch.",
+  "question": "Run shuttle-start-idle-and-prompt stopped at Seed-IDE with a producer error: origin refused the main-weft push because its entry is ended. Origin already holds the Seed-IDE commit fc263a7c7e (an ancestor of origin's main-weft tip 1676a1f72d, which is the Land commit), and the local worktree is one commit ahead with the Worktree-Teardown commit dc83e7eeab. Do you want the run to close out through its teardown, with the Seed-IDE stop cleared as stale, or do you want another path taken?",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/shuttle-start-idle-and-prompt/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/shuttle-start-idle-and-prompt/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
