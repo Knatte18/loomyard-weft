@@ -1,6 +1,6 @@
 # Merge the remaining adopt-build members into one design and split it again on what landed
 
-`adopt-build-resplit` · Project · feature, enhancement, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut · landing · Finalize
+`adopt-build-resplit` · Project · feature, enhancement, batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut · done
 
 Decision record: [Sketch](decision-adopt-build-resplit.md)
 

@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 07:20 UTC; every age below is as of then.
+Rendered 2026-11-18 07:23 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,19 +12,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Layer A (1)
-
-Waits only on Running, Ready or Draft entries.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>18h | claude, shuttle, config |
+| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 2w<br>18h | claude, shuttle, config |
 
 ### Draft (1)
 
@@ -50,10 +44,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **No lym check compares a map entry with a single-test coverage run**<br>• The trial cross-checked by hand; blocks have no line range and funcs have no profile counterpart | [`map-single-test-crosscheck`](design-map-single-test-crosscheck.md) | 16h<br>16h |  |
-| E2 |  | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | 22m<br>22m | burler, stencil |
-| E3 |  | **Discussion rubric: a decision states the observed tool behaviour it rests on**<br>• So later rounds read the result instead of repeating the experiment | [`rubric-pin-tool-facts`](design-rubric-pin-tool-facts.md) | 22m<br>22m | stencil, loom |
-| E4 |  | **A shell guard refusal says nothing ran and names the refused segment**<br>• Saves the agent working out which part of a compound command failed | [`refusal-names-segment`](design-refusal-names-segment.md) | 22m<br>22m | process |
-| E5 |  | **The edit directive cat, head and sed -n clause has no effect**<br>• Every agent batches reads with cat anyway; delete the clause or guard it | [`edit-directive-cat-clause`](design-edit-directive-cat-clause.md) | 22m<br>22m | stencil |
+| E2 |  | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | 24m<br>24m | burler, stencil |
+| E3 |  | **Discussion rubric: a decision states the observed tool behaviour it rests on**<br>• So later rounds read the result instead of repeating the experiment | [`rubric-pin-tool-facts`](design-rubric-pin-tool-facts.md) | 24m<br>24m | stencil, loom |
+| E4 |  | **A shell guard refusal says nothing ran and names the refused segment**<br>• Saves the agent working out which part of a compound command failed | [`refusal-names-segment`](design-refusal-names-segment.md) | 24m<br>24m | process |
+| E5 |  | **The edit directive cat, head and sed -n clause has no effect**<br>• Every agent batches reads with cat anyway; delete the clause or guard it | [`edit-directive-cat-clause`](design-edit-directive-cat-clause.md) | 24m<br>24m | stencil |
 
 ### Features (3)
 
@@ -62,3 +56,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>3w | burler |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 2d<br>14h | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>12d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+
+## Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| P4 | **[Merge the remaining adopt-build members into one design and split it again on what landed](project-adopt-build-resplit.md)** | [`adopt-build-resplit`](design-adopt-build-resplit.md)<br>[Sketch](decision-adopt-build-resplit.md) | 9d<br>1d | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |

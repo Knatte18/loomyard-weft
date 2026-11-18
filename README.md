@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 07:20 UTC; every age below is as of then.
+Rendered 2026-11-18 07:23 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -30,7 +30,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 11d<br>12h | codex, shuttle |
-| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 8d<br>11h | codex, shuttle |
+| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 8d<br>12h | codex, shuttle |
 
 </details>
 
@@ -58,27 +58,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>20h | burler, shed, orch, quarry, report |
-
-</details>
-
-<details open>
-<summary><strong><a href="project-adopt-build-resplit.md">P4 Merge the remaining adopt-build members into one design and split it again on what landed</a> (0)</strong></summary>
-
-[`adopt-build-resplit`](design-adopt-build-resplit.md) · Age 9d · Owner `neve`
-
-### Tasks (0)
-
-Concrete and claimable; only a task can run.
-
-#### Ready (0)
-
-Waits on nothing open; can start now.
-
-_None._
-
-### Notes (0)
-
-Not tasks: ideas and observations, merged into a task when one is promoted.
 
 </details>
 
@@ -120,19 +99,13 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Layer A (1)
-
-Waits only on Running, Ready or Draft entries.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | P4 | 2w<br>18h | claude, shuttle, config |
+| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif |  | 2w<br>18h | claude, shuttle, config |
 
 #### Draft (1)
 
@@ -158,10 +131,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **No lym check compares a map entry with a single-test coverage run**<br>• The trial cross-checked by hand; blocks have no line range and funcs have no profile counterpart | [`map-single-test-crosscheck`](design-map-single-test-crosscheck.md) | 16h<br>16h |  |
-| E2 |  | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | 22m<br>22m | burler, stencil |
-| E3 |  | **Discussion rubric: a decision states the observed tool behaviour it rests on**<br>• So later rounds read the result instead of repeating the experiment | [`rubric-pin-tool-facts`](design-rubric-pin-tool-facts.md) | 22m<br>22m | stencil, loom |
-| E4 |  | **A shell guard refusal says nothing ran and names the refused segment**<br>• Saves the agent working out which part of a compound command failed | [`refusal-names-segment`](design-refusal-names-segment.md) | 22m<br>22m | process |
-| E5 |  | **The edit directive cat, head and sed -n clause has no effect**<br>• Every agent batches reads with cat anyway; delete the clause or guard it | [`edit-directive-cat-clause`](design-edit-directive-cat-clause.md) | 22m<br>22m | stencil |
+| E2 |  | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | 24m<br>24m | burler, stencil |
+| E3 |  | **Discussion rubric: a decision states the observed tool behaviour it rests on**<br>• So later rounds read the result instead of repeating the experiment | [`rubric-pin-tool-facts`](design-rubric-pin-tool-facts.md) | 24m<br>24m | stencil, loom |
+| E4 |  | **A shell guard refusal says nothing ran and names the refused segment**<br>• Saves the agent working out which part of a compound command failed | [`refusal-names-segment`](design-refusal-names-segment.md) | 24m<br>24m | process |
+| E5 |  | **The edit directive cat, head and sed -n clause has no effect**<br>• Every agent batches reads with cat anyway; delete the clause or guard it | [`edit-directive-cat-clause`](design-edit-directive-cat-clause.md) | 24m<br>24m | stencil |
 
 #### Features (3)
 
@@ -170,5 +143,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>3w | burler |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 2d<br>14h | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>12d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| P4 | **[Merge the remaining adopt-build members into one design and split it again on what landed](project-adopt-build-resplit.md)** | [`adopt-build-resplit`](design-adopt-build-resplit.md)<br>[Sketch](decision-adopt-build-resplit.md) | 9d<br>1d | batten, tender, dobby, orch, fabric, loom, cleanup, workspaces, shuttle, board, reed, termwindow, shortcut |
 
 </details>
