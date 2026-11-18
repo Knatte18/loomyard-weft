@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 7,
+    "state": "awaiting"
+  },
+  "pause_before": "Plan-Bouncer",
+  "pause_after": "",
+  "spawned_at": "2026-11-18T19:41:45.270742548+01:00",
+  "deadline": "2026-11-18T20:11:45.270742548+01:00",
+  "strand_guid": "5fdaf31d5f3d64a6ebc487b2e7b149b3",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/wxb-plan-with/_lym/shed/wxb-plan-with/drive-reports/drive-envelope-20261118-194145-8869.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/wxb-plan-with/_lym/shed/wxb-plan-with/drive-reports/drive-report-20261118-194145-5f39.md",
+  "snapshot": {
+    "head": "f98a1ba016ebcd88c934a1264d6726812787464c",
+    "branch": "wxb-plan-with",
+    "dirty": {}
+  }
+}

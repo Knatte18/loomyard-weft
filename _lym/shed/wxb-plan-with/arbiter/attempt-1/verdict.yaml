@@ -1,0 +1,22 @@
+verdict: resume
+reason: |-
+  Review escalation at Discussion-Bouncer round 1, cause decision, no refusal named.
+  The one decision finding, F2 (whether this arm redesigns from base f98a1ba0 without
+  reconciling with parent commit 7c23591), is settled by the board entries: this task is
+  a never-released bench arm of plan-writer-explorer-forks, whose entry runs each arm from
+  the reference run's frozen inputs and base commit. The answer narrows nothing and widens
+  no scope. I recorded it as an arbiter decision. The parent had already recorded the same
+  answer ("Ignore commit 7c23591 (F2)", --by parent), and the two entries agree.
+  The round-1 fixer already applied F1 (fixed differently: the false viewer sentence and its
+  criterion are gone, and D2 states where reed's rules leave the viewer) and F3 to F6, so the
+  round converges on another review over the amended record. The round is below the hard cap.
+  `lym loom circling continue` refused because a circling decision for this round is already
+  recorded, and its way forward is a plain `lym loom resume`. No code was changed and nothing
+  was committed in the worktree, so a plain re-launch is safe with no goto.
+  Round 2's fixer should drop the stale Open risks bullet on 7c23591, which both decisions
+  now answer.
+verbs:
+  - |-
+    lym loom decision add wxb-plan-with --by arbiter --title "Redesign from this arm's base without reconciling with 7c23591" --decision "This record designs the fix from this worktree's base f98a1ba0 and does not reconcile with parent commit 7c23591 (...); D1 to D4 stand as written. The Open risks bullet on 7c23591 is answered by this decision and is dropped from the record; Plan and implementation read no code from 7c23591." --rationale "The board entry marks this task a bench arm of plan-writer-explorer-forks, never to be released. ..."
+  - |-
+    lym loom circling continue wxb-plan-with
