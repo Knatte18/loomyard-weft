@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "6dc953ea23c45f354f5ce848c274f112f106c320",
+  "added_decisions": [
+    {
+      "title": "The python hook reads deny_python live",
+      "digest": "c794f33b7f4a9738d820927deea6c33b217f89f6e74d5020336d46885b81bf68"
+    }
+  ]
+}
