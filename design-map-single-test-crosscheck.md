@@ -1,6 +1,6 @@
 # No lym check compares a map entry with a single-test coverage run
 
-`map-single-test-crosscheck` · Note · enhancement
+`map-single-test-crosscheck` · Note · enhancement, gate
 
 Found by the map-tooling-trial.
 

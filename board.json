@@ -269,7 +269,8 @@
       "title": "No lym check compares a map entry with a single-test coverage run",
       "kind": "note",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "gate"
       ],
       "issues": [],
       "depends_on": [],
@@ -277,7 +278,8 @@
       "brief": "The trial cross-checked by hand; blocks have no line range and funcs have no profile counterpart",
       "body": "Found by the map-tooling-trial.\n\nNothing in lym compares a map entry with a single-test coverage run.\nThe trial did it by hand: `lym gate test --wait ./internal/\u003cpkg\u003e -- -run '^\u003cTest\u003e$' -count=1 -coverprofile=\u003cabs path\u003e`, then counted covered blocks per file in the profile against the map's `blocks` of that test grouped by file.\nThat agreed for both `internal/durfmt` tests and for `TestOutputs`, `TestStoreValidatesLabelsWithVocabulary` and `TestWriteSiblings` of `internal/boardengine`.\n\nTwo limits:\n- The map's blocks carry file, function and hash but no line range, so the check is by count per file, not block by block.\n- The map's `funcs` list (functions of linked packages a test reaches) has no single-test counterpart in a statement profile, so it is unchecked.\n\nAdd a verb, or a `--map` option, that re-measures named tests alone and reports any block or function that differs, and give blocks a line range.\n",
       "created": "2026-11-17T15:01:51Z",
-      "revised": "2026-11-17T15:01:51Z"
+      "revised": "2026-11-18T07:42:33Z",
+      "project": "test-suite-trim"
     },
     {
       "id": 1438,
