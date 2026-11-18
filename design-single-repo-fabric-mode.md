@@ -1,6 +1,6 @@
 # One-repository layout in fabric: clone, worktrees, records commits, merges, pushes and replay
 
-`single-repo-fabric-mode` · Task · feature, fabric, cwd, cli, landing, docs, pattern · running · Motif
+`single-repo-fabric-mode` · Task · feature, fabric, cwd, cli, landing, docs, pattern · running · Drift-Baseline
 
 Decision record: [Sketch](decision-single-repo-fabric-mode.md)
 
