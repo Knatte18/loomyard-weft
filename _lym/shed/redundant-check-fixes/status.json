@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "run \"redundant-check-fixes\" cannot act: a pause covers the run; way forward: run `lym tender resume redundant-check-fixes`, then run \"lym batten run redundant-check-fixes\" again",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Open-IDE → skipped",
-    "wait": ""
+    "wait": "run \"redundant-check-fixes\" cannot act: a pause covers the run; way forward: run `lym tender resume redundant-check-fixes`, then run \"lym batten run redundant-check-fixes\" again"
   },
   "history": [
     {
