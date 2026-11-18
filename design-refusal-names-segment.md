@@ -1,6 +1,6 @@
 # A shell guard refusal says nothing ran and names the refused segment
 
-`refusal-names-segment` · Task · enhancement, process · landing · Finalize
+`refusal-names-segment` · Task · enhancement, process · done
 
 ## Seen (retro, 2026-11-17)
 
