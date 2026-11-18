@@ -1,0 +1,11 @@
+{
+  "verdict": "escalate",
+  "reason": "The Seed-Child producer stop says the main-weft branch was not pushed because its entry is ended on origin. Read-only checks show the branch is on origin at this run's own commit 540a6c49 (an ancestor of the later tip), so the stop's premise is contradicted by origin. The cause sits in fabric's \"entry ended\" check, which needs code read and judgment. A plain re-launch would hit the same check, and a teardown lock for this slug written at prime time (trace line 35) is a suspect. The cause is not named from what I read. Full facts and pointers are in case-brief.md.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/scratch-symlink-two-paths/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/scratch-symlink-two-paths/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/scratch-symlink-two-paths/tackler/attempt-1/case-brief.md"
+}
