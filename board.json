@@ -206,9 +206,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Drop the Plan writer exploration subagents; they cost about $6.50 per tapestry run",
-      "body": "## What was seen\n\n`tools/tokencount -since 2026-11-03` over the 21 tapestry runs since then (2026-11-18):\nthe Plan writer's forks cost $137.84, more than the Plan writer itself ($126.24), about $6.50 per run.\nThey are the exploration subagents the Plan writer was set up to spawn.\nThe operator judges they add little to the plan beyond their cost.\n\n## Idea\n\nStop the Plan writer from spawning exploration subagents; it reads the code itself and writes one version of the plan.\nThe plan review stays as it is and is the safety net: a plan that misses something costs at most an extra review round.\n\n## Check afterwards\n\nCompare the next tapestry runs' plan review rounds and blocking findings with the runs counted above.\nIf they rise, turn the explorer subagents back on.\n",
+      "body": "## What was seen\n\n`tools/tokencount -since 2026-11-03` over the 21 tapestry runs since then (2026-11-18):\nthe Plan writer's forks cost $137.84, more than the Plan writer itself ($126.24), about $6.50 per run.\ntokencount counts every subagent transcript under the Plan writer as a fork, so this figure mixes the twill-plan forks (one fork writes the plan, one fork per lens reviews it) with the exploration subagents the writer spawns through the Agent tool. The split is not measured yet; measure it first.\nThe operator judges they add little to the plan beyond their cost.\n\n## Idea\n\nStop the Plan writer from spawning exploration subagents through the Agent tool; it reads the code itself. Twill stays: it makes the first plan version much better than a solo writer (operator, 2026-11-18; `docs/research/loom/plan-writer-bench-2026-11-12/report.md`).\nThe plan review stays as it is.\n\n## Check afterwards\n\nCompare the next tapestry runs' plan review rounds and blocking findings with the runs counted above.\nIf they rise, turn the explorer subagents back on.\n",
       "created": "2026-11-18T12:30:19Z",
-      "revised": "2026-11-18T12:41:26Z"
+      "revised": "2026-11-18T18:06:55Z"
     },
     {
       "id": 1471,
