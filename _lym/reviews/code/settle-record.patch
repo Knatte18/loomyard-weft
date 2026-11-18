@@ -1,0 +1,1826 @@
+diff --git a/internal/loomcli/arm.go b/internal/loomcli/arm.go
+index 5da14a7e..66ae2650 100644
+--- a/internal/loomcli/arm.go
++++ b/internal/loomcli/arm.go
+@@ -442,6 +442,7 @@ func (c *loomCLI) specFor(verb string) shedverbs.Spec {
+ 		spec.RunID = shedrun.ResolveRunID(c.location, c.runID)
+ 		spec.Loop = loopSpecFor(c.location, c.runID, c.loopExecutable(), c.stepIdleTimeout, agentActivityFor(c.location, c.runID, c.shuttleCfg))
+ 		spec.Loop.OnWatchdogKill = watchdogKillNote(c.stopStepRuns, spec.StepsDir)
++		spec.Loop.OnStepOrphaned = orphanedStepNote(c.stopStepRuns, spec.StepsDir)
+ 		locks := &parentlock.Store{Dir: parentlock.Dir(fabricengine.BoltDir(c.location.HubPath))}
+ 		self := selfLockOwner(c.location, c.runID)
+ 		spec.Loop.OnExit = loopLockExit(locks, self)
+diff --git a/internal/loomcli/cli.go b/internal/loomcli/cli.go
+index 68debd17..21c16ca4 100644
+--- a/internal/loomcli/cli.go
++++ b/internal/loomcli/cli.go
+@@ -79,6 +79,10 @@ type loomCLI struct {
+ 	// endFixers, when set, is what an admitted goto calls to end the pair's gate fixers; nil means endRunFixers.
+ 	// Tests set it to record the call.
+ 	endFixers func() error
++	// stopRuns, when set, stops the shuttle runs of a shed step in place of the receiver's runner.
++	// Nil means the runner stops them.
++	// A test sets it to record the call.
++	stopRuns func(shuttleengine.StepTie) (shuttleengine.StepStopReport, error)
+ 	// runner is the constructed shuttle runner.
+ 	// It is carried on the struct so run.go can pass it to landingDeps as the landing seam's Shuttle value.
+ 	runner *shuttleengine.Runner
+diff --git a/internal/loomcli/cli_test.go b/internal/loomcli/cli_test.go
+index ce1c38ba..ddd68540 100644
+--- a/internal/loomcli/cli_test.go
++++ b/internal/loomcli/cli_test.go
+@@ -21,6 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/shedverbs"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/spf13/cobra"
+ )
+@@ -352,6 +353,28 @@ func TestSpecFor_ScratchAndFrictionDir(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("LoopHooksStopTheStepsShuttleRuns", func(t *testing.T) {
++		var ties []shuttleengine.StepTie
++		c := &loomCLI{location: loc, runID: "self", stopRuns: func(tie shuttleengine.StepTie) (shuttleengine.StepStopReport, error) {
++			ties = append(ties, tie)
++			return shuttleengine.StepStopReport{Stopped: []string{"a:1:plan"}}, nil
++		}}
++		spec := c.specFor("step")
++		if spec.Loop.OnWatchdogKill == nil || spec.Loop.OnStepOrphaned == nil {
++			t.Fatalf("loop watchdog hook set %v, orphaned-step hook set %v; want both", spec.Loop.OnWatchdogKill != nil, spec.Loop.OnStepOrphaned != nil)
++		}
++
++		note := spec.Loop.OnStepOrphaned("trace-7")
++
++		wantTie := shuttleengine.StepTie{StepsDir: spec.StepsDir, TraceID: "trace-7"}
++		if len(ties) != 1 || ties[0] != wantTie {
++			t.Errorf("stop ties = %+v; want the one tie %+v", ties, wantTie)
++		}
++		if note != "stopped shuttle runs: a:1:plan" {
++			t.Errorf("OnStepOrphaned note = %q; want the stopped runs named", note)
++		}
++	})
++
+ 	t.Run("LoopExecutableEmptyWhenTheLookupFails", func(t *testing.T) {
+ 		c := &loomCLI{lymBinary: func() (string, error) { return "", errors.New("no executable") }}
+ 		if got := c.loopExecutable(); got != "" {
+diff --git a/internal/loomcli/looparm.go b/internal/loomcli/looparm.go
+index a6e7ef71..3a84a475 100644
+--- a/internal/loomcli/looparm.go
++++ b/internal/loomcli/looparm.go
+@@ -89,34 +89,58 @@ func registerRunProcess(loc *lymcwd.Location, owner, role string) {
+ 	}
+ }
+ 
++// stepRunsNote stops the shuttle runs of the step traceID names under stepsDir through stop and renders what it did.
++// The note joins with "; " the runs it stopped.
++// It then names the runs whose output files all exist, which stay running.
++// It names the runs a live process may still hold, which it leaves running.
++// It then names the live runs whose record names no step, which it leaves alone.
++// It ends with each stop that failed and the failure of the stop itself.
++// It is empty when there was nothing to report.
++func stepRunsNote(stop func(shuttleengine.StepTie) (shuttleengine.StepStopReport, error), stepsDir, traceID string) string {
++	report, err := stop(shuttleengine.StepTie{StepsDir: stepsDir, TraceID: traceID})
++	var parts []string
++	if len(report.Stopped) > 0 {
++		parts = append(parts, "stopped shuttle runs: "+strings.Join(report.Stopped, ", "))
++	}
++	if len(report.Finished) > 0 {
++		parts = append(parts, "left runs whose output files all exist: "+strings.Join(report.Finished, ", "))
++	}
++	if len(report.Held) > 0 {
++		parts = append(parts, "left running the runs a live process may still hold: "+strings.Join(report.Held, ", "))
++	}
++	if len(report.Untied) > 0 {
++		parts = append(parts, "left live runs naming no step: "+strings.Join(report.Untied, ", "))
++	}
++	for _, failure := range report.Failed {
++		parts = append(parts, fmt.Sprintf("could not stop the run %s: %s", failure.Strand, failure.Error))
++	}
++	if err != nil {
++		parts = append(parts, "could not stop the step's runs: "+err.Error())
++	}
++	return strings.Join(parts, "; ")
++}
++
+ // watchdogKillNote returns the hook the loop calls after the watchdog killed a step.
+-// The hook stops the killed step's shuttle runs through stop, given the steps directory and the kill's trace id;
+-// it renders the note that ends the interrupted cause:
+-// the runs it stopped, the live runs whose record names no step, which it leaves alone, and a stop that failed.
++// The hook stops the killed step's shuttle runs through stop, given the steps directory and the kill's trace id,
++// and returns the note that ends the interrupted cause.
+ func watchdogKillNote(stop func(shuttleengine.StepTie) (shuttleengine.StepStopReport, error), stepsDir string) func(shedverbs.WatchdogKill) string {
+-	return func(kill shedverbs.WatchdogKill) string {
+-		report, err := stop(shuttleengine.StepTie{StepsDir: stepsDir, TraceID: kill.TraceID})
+-		var parts []string
+-		if len(report.Stopped) > 0 {
+-			parts = append(parts, "stopped shuttle runs: "+strings.Join(report.Stopped, ", "))
+-		}
+-		if len(report.Untied) > 0 {
+-			parts = append(parts, "left live runs naming no step: "+strings.Join(report.Untied, ", "))
+-		}
+-		for _, failure := range report.Failed {
+-			parts = append(parts, fmt.Sprintf("could not stop the run %s: %s", failure.Strand, failure.Error))
+-		}
+-		if err != nil {
+-			parts = append(parts, "could not stop the step's runs: "+err.Error())
+-		}
+-		return strings.Join(parts, "; ")
+-	}
++	return func(kill shedverbs.WatchdogKill) string { return stepRunsNote(stop, stepsDir, kill.TraceID) }
++}
++
++// orphanedStepNote returns the hook the loop calls for a step whose process is gone without an envelope.
++// The hook stops that step's shuttle runs through stop, given the steps directory and the step's trace id.
++// It returns the note that ends the interrupted cause.
++func orphanedStepNote(stop func(shuttleengine.StepTie) (shuttleengine.StepStopReport, error), stepsDir string) func(traceID string) string {
++	return func(traceID string) string { return stepRunsNote(stop, stepsDir, traceID) }
+ }
+ 
+ // stopStepRuns stops the shuttle runs recorded under tie.
+ // The receiver's runner is used when `wire` built one;
+ // a receiver wired lightly gets the pair's runner built the way `wire` builds it.
+ func (c *loomCLI) stopStepRuns(tie shuttleengine.StepTie) (shuttleengine.StepStopReport, error) {
++	if c.stopRuns != nil {
++		return c.stopRuns(tie)
++	}
+ 	runner := c.runner
+ 	if runner == nil {
+ 		configDirs := fabricengine.ConfigDirs(c.location)
+diff --git a/internal/loomcli/looparm_test.go b/internal/loomcli/looparm_test.go
+index a6b94253..798d0470 100644
+--- a/internal/loomcli/looparm_test.go
++++ b/internal/loomcli/looparm_test.go
+@@ -70,8 +70,18 @@ func TestRegisterRunProcess(t *testing.T) {
+ 	}
+ }
+ 
+-func TestWatchdogKillNote_StopsTheKilledStepsRunsAndNamesTheRest(t *testing.T) {
++func TestStepRunsNote_StopsTheStepsRunsAndNamesTheRest(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	type stopFunc = func(shuttleengine.StepTie) (shuttleengine.StepStopReport, error)
++	hooks := []struct {
++		name string
++		note func(stop stopFunc) string
++	}{
++		{"WatchdogKill", func(stop stopFunc) string {
++			return watchdogKillNote(stop, "/steps")(shedverbs.WatchdogKill{TraceID: "trace-9"})
++		}},
++		{"OrphanedStep", func(stop stopFunc) string { return orphanedStepNote(stop, "/steps")("trace-9") }},
++	}
+ 	tests := []struct {
+ 		name     string
+ 		report   shuttleengine.StepStopReport
+@@ -84,6 +94,15 @@ func TestWatchdogKillNote_StopsTheKilledStepsRunsAndNamesTheRest(t *testing.T) {
+ 			report:   shuttleengine.StepStopReport{Stopped: []string{"a:1:plan", "a:1:review"}, Untied: []string{"a:1:driver"}},
+ 			wantNote: "stopped shuttle runs: a:1:plan, a:1:review; left live runs naming no step: a:1:driver",
+ 		},
++		{
++			name: "finished and held runs are named after the stopped ones",
++			report: shuttleengine.StepStopReport{
++				Stopped:  []string{"a:1:plan"},
++				Finished: []string{"a:1:review"},
++				Held:     []string{"a:1:driver"},
++			},
++			wantNote: "stopped shuttle runs: a:1:plan; left runs whose output files all exist: a:1:review; left running the runs a live process may still hold: a:1:driver",
++		},
+ 		{
+ 			name:     "a run whose stop failed names its error",
+ 			report:   shuttleengine.StepStopReport{Failed: []shuttleengine.StepStopFailure{{Strand: "a:1:plan", Error: "strand busy"}}},
+@@ -96,21 +115,23 @@ func TestWatchdogKillNote_StopsTheKilledStepsRunsAndNamesTheRest(t *testing.T) {
+ 		},
+ 	}
+ 	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			var ties []shuttleengine.StepTie
+-			stop := func(tie shuttleengine.StepTie) (shuttleengine.StepStopReport, error) {
+-				ties = append(ties, tie)
+-				return tt.report, tt.stopErr
+-			}
++		for _, hook := range hooks {
++			t.Run(tt.name+"/"+hook.name, func(t *testing.T) {
++				var ties []shuttleengine.StepTie
++				stop := func(tie shuttleengine.StepTie) (shuttleengine.StepStopReport, error) {
++					ties = append(ties, tie)
++					return tt.report, tt.stopErr
++				}
+ 
+-			note := watchdogKillNote(stop, "/steps")(shedverbs.WatchdogKill{TraceID: "trace-9"})
++				note := hook.note(stop)
+ 
+-			if want := []shuttleengine.StepTie{{StepsDir: "/steps", TraceID: "trace-9"}}; !reflect.DeepEqual(ties, want) {
+-				t.Errorf("stop ties = %+v; want %+v", ties, want)
+-			}
+-			if note != tt.wantNote {
+-				t.Errorf("note = %q; want %q", note, tt.wantNote)
+-			}
+-		})
++				if want := []shuttleengine.StepTie{{StepsDir: "/steps", TraceID: "trace-9"}}; !reflect.DeepEqual(ties, want) {
++					t.Errorf("stop ties = %+v; want %+v", ties, want)
++				}
++				if note != tt.wantNote {
++					t.Errorf("note = %q; want %q", note, tt.wantNote)
++				}
++			})
++		}
+ 	}
+ }
+diff --git a/internal/shedverbs/doc.go b/internal/shedverbs/doc.go
+index cdb4b758..da442589 100644
+--- a/internal/shedverbs/doc.go
++++ b/internal/shedverbs/doc.go
+@@ -198,6 +198,13 @@
+ // The loop never re-steps an interrupted step itself;
+ // loop.interrupt_policy and loop.status_moved let the driver's rule decide.
+ // A child that exits on its own with a non-zero status and no record keeps cause exited with the exit status.
++// Such a child, which the watchdog did not kill, goes to Spec.Loop.OnStepOrphaned with its trace id.
++// The note the hook returns ends the cause.
++// A loop that starts on a failed status naming an interrupted step first reconciles that step.
++// It hands the trace id of the newest interrupted record in the steps directory to the same hook.
++// It does so before its first child starts.
++// A stop that failed at the interruption then does not leave its runs to the re-step.
++// The note goes to the loop log.
+ // The watch kills only the loop's own in-flight child and its process group or job.
+ //
+ // A loop ends without an envelope by a signal that kills it.
+@@ -206,6 +213,7 @@
+ // the loop lock not taken, the teardown's mark, an undelivered envelope or a dead loop's pid file.
+ // A panic while stepping is recovered:
+ // the in-flight child's step tree is killed, and the stop is interrupted with the cause loop-panicked: <value>.
++// That child goes to Spec.Loop.OnStepOrphaned with its trace id, and the note the hook returns ends the cause.
+ // A terminating signal is SIGINT, SIGTERM or SIGHUP, received through Spec.Loop.Signals.
+ // The loop writes it to the loop log as a mark of the loop, and then ends the process through Spec.Loop.Raise.
+ // By default Spec.Loop.Raise sends the signal again with its default action.
+@@ -240,6 +248,8 @@
+ //
+ // A loop that is gone without an envelope ends in the dead-loop stop.
+ // It kills what is left of the loop's step tree from the pid file's child record.
++// It then hands the in-flight child's trace id to Spec.Loop.OnStepOrphaned.
++// The note the hook returns ends loop.detail.
+ // It writes the run failed while the status file still reads running.
+ // It reports an interrupted stop with cause loop-exited.
+ // loop.status_moved compares the recorded producer and history length against the status file.
+diff --git a/internal/shedverbs/loop.go b/internal/shedverbs/loop.go
+index e72ed2f0..26458621 100644
+--- a/internal/shedverbs/loop.go
++++ b/internal/shedverbs/loop.go
+@@ -85,6 +85,14 @@ type LoopSpec struct {
+ 	Pause func(now time.Time) (pauserecord.Coverage, error)
+ 	// OnWatchdogKill runs once after the watchdog killed a child, before the loop reads back what the child left, and returns a note the interrupted cause ends with; nil is skipped.
+ 	OnWatchdogKill func(kill WatchdogKill) string
++	// OnStepOrphaned runs for a step whose process is gone without an envelope and that the watchdog did not kill.
++	// It runs once per such child the loop reads back, and once for the step a panic or a dead loop leaves in flight.
++	// A loop that starts on a failed status naming an interrupted step also runs it once, before its first child.
++	// That call is for the step of the newest interrupted record in the steps directory.
++	// It gets the step's trace id.
++	// It returns a note the interrupted cause ends with, naming what it did with the runs the step left.
++	// A nil hook is skipped, and so is an empty note.
++	OnStepOrphaned func(traceID string) string
+ 	// OnStart runs once in runLoop after the pid file is written and the start is logged, and before the first step; nil is skipped.
+ 	// A loop that refuses before its first step never runs it.
+ 	// The loop's keeper also runs it once after it has started the loop process, whether or not that loop then refuses;
+@@ -228,6 +236,9 @@ func runLoop(ctx context.Context, spec *Spec, loopID string, argv []string, out
+ 		loop.OnStart()
+ 	}
+ 	obj := loopObject{FirstProducer: first.CurrentProducer}
++	if note := reconcileInterruptedStep(spec, first); note != "" {
++		appendLoopLogMark(loop.LogPath, loopLogMark(loopID, note))
++	}
+ 	run := stepUntilStop(ctx, spec, loopID, argv, &pid, first, &obj)
+ 	if endedBySignal() {
+ 		return 1
+@@ -348,6 +359,7 @@ type steppedRun struct {
+ 
+ // stepUntilStop runs child steps from the status file first read until one stops the run, writing each child's start and exit into pid and counting the steps and a re-step into obj.
+ // A panic while stepping is recovered as an interrupted stop with the cause loop-panicked: <value>, after the in-flight child's step tree is killed, so the loop still writes its envelope.
++// The cause then ends with the note LoopSpec.OnStepOrphaned returns for that child.
+ func stepUntilStop(ctx context.Context, spec *Spec, loopID string, argv []string, pid *LoopPIDRecord, first shedengine.Status, obj *loopObject) (run steppedRun) {
+ 	loop := spec.Loop
+ 	idleWindow := idleWindowOf(loop)
+@@ -365,7 +377,13 @@ func stepUntilStop(ctx context.Context, spec *Spec, loopID string, argv []string
+ 		}
+ 		logger.Error("shed: loop panicked while stepping", "loop_id", loopID, "panic", fmt.Sprint(recovered), "stack", string(debug.Stack()))
+ 		killStepTree(*pid)
+-		run.res = childResult{traceID: traceID, cause: fmt.Sprintf("loop-panicked: %v", recovered)}
++		cause := fmt.Sprintf("loop-panicked: %v", recovered)
++		if pid.hasChild() && pid.TraceID != "" && loop.OnStepOrphaned != nil {
++			if note := loop.OnStepOrphaned(pid.TraceID); note != "" {
++				cause += "; " + note
++			}
++		}
++		run.res = childResult{traceID: traceID, cause: cause}
+ 		run.stop = LoopStopInterrupted
+ 	}()
+ 
+@@ -437,6 +455,64 @@ func stepUntilStop(ctx context.Context, spec *Spec, loopID string, argv []string
+ 	}
+ }
+ 
++// reconcileInterruptedStep settles the step a failed run was last interrupted in, before the loop's first child starts.
++// It hands that step's trace id to LoopSpec.OnStepOrphaned.
++// It covers an interrupted stop whose own hook call failed or never ran.
++// The leftover of that step then never meets the re-step.
++// The status reads an interrupted stop when it is failed and its error carries the text interruptedError writes.
++// The step is the newest kind-interrupted record in the steps directory.
++// It returns the note to write to the loop log.
++// The note is empty when the hook is nil or the status reads no interrupted stop.
++// It is empty too when no record names an interrupted step or the hook returns no note.
++func reconcileInterruptedStep(spec *Spec, first shedengine.Status) string {
++	if spec.Loop.OnStepOrphaned == nil || first.State != shedengine.StateFailed || !strings.Contains(first.Error, " interrupted (") {
++		return ""
++	}
++	traceID := newestInterruptedTraceID(spec.StepsDir)
++	if traceID == "" {
++		return ""
++	}
++	note := spec.Loop.OnStepOrphaned(traceID)
++	if note == "" {
++		return ""
++	}
++	return "reconciled the interrupted step " + traceID + ": " + note
++}
++
++// newestInterruptedTraceID returns the trace id of the newest kind-interrupted record in stepsDir.
++// It returns empty when there is none.
++func newestInterruptedTraceID(stepsDir string) string {
++	entries, err := os.ReadDir(stepsDir)
++	if err != nil {
++		return ""
++	}
++	newest, newestWritten := "", time.Time{}
++	for _, entry := range entries {
++		if entry.IsDir() || !strings.HasSuffix(entry.Name(), envelopeSuffix) {
++			continue
++		}
++		info, err := entry.Info()
++		if err != nil {
++			continue
++		}
++		data, err := os.ReadFile(filepath.Join(stepsDir, entry.Name()))
++		if err != nil {
++			continue
++		}
++		var record struct {
++			Kind    string `json:"kind"`
++			TraceID string `json:"trace_id"`
++		}
++		if json.Unmarshal(data, &record) != nil || record.Kind != KindInterrupted || record.TraceID == "" {
++			continue
++		}
++		if newest == "" || info.ModTime().After(newestWritten) {
++			newest, newestWritten = record.TraceID, info.ModTime()
++		}
++	}
++	return newest
++}
++
+ // recordTerminatingSignals watches for a terminating signal until the function it returns first is called.
+ // A signal that arrives is written to the loop log as a mark of loopID, and then ends the process through LoopSpec.Raise.
+ // Such a signal comes from whatever ends the run's processes, as a cancel, a teardown or a reap does, and it reaches the step child too, so the loop writes no envelope and leaves the stop to the waiter's dead-loop stop, which reads the mark.
+@@ -526,6 +602,7 @@ func loopStartRefusal(loop LoopSpec) string {
+ // The child's own record, <StepsDir>/<traceID>.json, is its full envelope;
+ // a child that refused before its step body ran left an error envelope on stdout instead;
+ // a child that left neither is reported interrupted for the cause its exit gives, followed by its command line and an excerpt of its captured stderr, or for the cause the watchdog's kill renders when the idle watch killed it, which ends with the note OnWatchdogKill returned.
++// The exit cause ends with the note OnStepOrphaned returned for the child's trace id, when it returned one.
+ // record is told the child's process tree when it starts and the zero record when it has exited.
+ // idleWindow is the window of the child's idle watch, and zero disarms it.
+ func runChild(ctx context.Context, spec *Spec, argv []string, traceID string, idleWindow time.Duration, record func(proc.TreeRecord)) childResult {
+@@ -592,6 +669,11 @@ func runChild(ctx context.Context, spec *Spec, argv []string, traceID string, id
+ 	if excerpt := stderrExcerpt(stderrPath); excerpt != "" {
+ 		cause += "; stderr: " + excerpt
+ 	}
++	if loop.OnStepOrphaned != nil {
++		if note := loop.OnStepOrphaned(traceID); note != "" {
++			cause += "; " + note
++		}
++	}
+ 	return childResult{traceID: traceID, cause: cause}
+ }
+ 
+diff --git a/internal/shedverbs/loop_test.go b/internal/shedverbs/loop_test.go
+index 009b1bb6..cf33e5cb 100644
+--- a/internal/shedverbs/loop_test.go
++++ b/internal/shedverbs/loop_test.go
+@@ -356,11 +356,76 @@ func TestLoop_RunsUntilStopAndPrintsOneEnvelope(t *testing.T) {
+ 	}
+ }
+ 
++// TestLoop_ReconcilesTheInterruptedStepBeforeTheFirstChild covers a loop that starts on a run whose status reads failed.
++// It hands the newest interrupted record's trace id to OnStepOrphaned before its first child starts.
++// It also writes the note to the loop log.
++// A run that does not read an interrupted stop settles nothing first.
++func TestLoop_ReconcilesTheInterruptedStepBeforeTheFirstChild(t *testing.T) {
++	tiergate.Require(t, 0)
++	tests := []struct {
++		name        string
++		state       shedengine.State
++		statusError string
++		wantCalls   []string
++		wantMark    bool
++	}{
++		{
++			"a failed run that was interrupted settles the interrupted step first", shedengine.StateFailed,
++			"shedverbs: step A interrupted (exited: exit status 3); way forward: re-run", []string{"stop trace-old", "run", "stop child"}, true,
++		},
++		{"a failed run with a producer error settles nothing first", shedengine.StateFailed, "producer failed", []string{"run", "stop child"}, false},
++		{"a running run settles nothing first", shedengine.StateRunning, "", []string{"run", "stop child"}, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			var calls []string
++			fx := newLoopFixture(t, func(*loopFixture, string, ChildRequest) error {
++				calls = append(calls, "run")
++				return errors.New("exit status 3")
++			})
++			status := shedengine.Status{CurrentProducer: "A", State: tt.state, Error: tt.statusError, History: historyOf(0)}
++			if err := state.WriteJSON(fx.paths.StatusPath, fx.paths.StatusLockPath, status); err != nil {
++				t.Fatalf("write status: %v", err)
++			}
++			if err := os.MkdirAll(fx.stepsDir, 0o755); err != nil {
++				t.Fatalf("create the steps directory: %v", err)
++			}
++			record := `{"ok":false,"kind":"interrupted","trace_id":"trace-old"}`
++			if err := os.WriteFile(filepath.Join(fx.stepsDir, "trace-old.json"), []byte(record), 0o644); err != nil {
++				t.Fatalf("write the interrupted record: %v", err)
++			}
++			fx.spec.Loop.OnStepOrphaned = func(traceID string) string {
++				if traceID == "trace-old" {
++					calls = append(calls, "stop trace-old")
++				} else {
++					calls = append(calls, "stop child")
++				}
++				return "stopped shuttle runs: a:1:plan"
++			}
++
++			fx.execute()
++
++			if !reflect.DeepEqual(calls, tt.wantCalls) {
++				t.Errorf("calls = %v; want %v", calls, tt.wantCalls)
++			}
++			// A loop that wrote no mark and ran no child with output leaves no log file.
++			log, err := os.ReadFile(fx.spec.Loop.LogPath)
++			if err != nil && !errors.Is(err, os.ErrNotExist) {
++				t.Fatalf("read the loop log: %v", err)
++			}
++			if got := strings.Contains(string(log), "reconciled the interrupted step trace-old: stopped shuttle runs: a:1:plan"); got != tt.wantMark {
++				t.Errorf("loop log holds the reconcile mark = %v; want %v; log: %s", got, tt.wantMark, log)
++			}
++		})
++	}
++}
++
+ func TestLoop_InterruptedChildFillsTheErrorForm(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Run("child ends without an envelope", func(t *testing.T) {
+ 		var hookArgs []string
+ 		var traceFile string
++		var orphaned []string
+ 		fx := newLoopFixture(t, func(fx *loopFixture, traceID string, _ ChildRequest) error {
+ 			traceFile = filepath.Join(t.TempDir(), "trace-"+traceID+".log")
+ 			if err := os.WriteFile(traceFile, []byte("time=t level=INFO msg=started\n"), 0o644); err != nil {
+@@ -369,6 +434,10 @@ func TestLoop_InterruptedChildFillsTheErrorForm(t *testing.T) {
+ 			fx.traces[traceID] = []string{traceFile}
+ 			return errors.New("exit status 3")
+ 		})
++		fx.spec.Loop.OnStepOrphaned = func(traceID string) string {
++			orphaned = append(orphaned, traceID)
++			return "stopped shuttle runs: a:1:plan"
++		}
+ 		fx.spec.Hooks.AfterInterrupt = func(_ context.Context, producer, cause, file string) string {
+ 			hookArgs = []string{producer, cause, file}
+ 			return "reflected"
+@@ -377,7 +446,10 @@ func TestLoop_InterruptedChildFillsTheErrorForm(t *testing.T) {
+ 		env, code := fx.execute()
+ 
+ 		id := fx.childIDs()[0]
+-		wantText := "shedverbs: step A interrupted (exited: exit status 3; command: lym-fake); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step run-1 --until-stop"
++		if !reflect.DeepEqual(orphaned, []string{id}) {
++			t.Errorf("OnStepOrphaned trace ids = %v; want one call with the child's trace id %s", orphaned, id)
++		}
++		wantText := "shedverbs: step A interrupted (exited: exit status 3; command: lym-fake; stopped shuttle runs: a:1:plan); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step run-1 --until-stop"
+ 		recordPath := filepath.Join(fx.stepsDir, id+".json")
+ 		if code != 1 || env["kind"] != KindInterrupted || env["error"] != wantText || env["transient"] != "" || env["run_id"] != "run-1" {
+ 			t.Errorf("exit/kind/error/transient/run_id = %d/%v/%v/%v/%v; want 1/%s/%q/empty/run-1", code, env["kind"], env["error"], env["transient"], env["run_id"], KindInterrupted, wantText)
+@@ -385,7 +457,7 @@ func TestLoop_InterruptedChildFillsTheErrorForm(t *testing.T) {
+ 		if env["trace_file"] != traceFile || env["friction"] != "reflected" || env["envelope_path"] != recordPath {
+ 			t.Errorf("trace_file/friction/envelope_path = %v/%v/%v; want %s/reflected/%s", env["trace_file"], env["friction"], env["envelope_path"], traceFile, recordPath)
+ 		}
+-		if !reflect.DeepEqual(hookArgs, []string{"A", "exited: exit status 3; command: lym-fake", traceFile}) {
++		if !reflect.DeepEqual(hookArgs, []string{"A", "exited: exit status 3; command: lym-fake; stopped shuttle runs: a:1:plan", traceFile}) {
+ 			t.Errorf("AfterInterrupt args = %v; want the stop row, the cause and the first trace file", hookArgs)
+ 		}
+ 
+@@ -480,6 +552,48 @@ func TestLoop_InterruptedChildFillsTheErrorForm(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("the loop panics with a child in flight", func(t *testing.T) {
++		var orphaned []string
++		var cause string
++		fx := newLoopFixture(t, func(*loopFixture, string, ChildRequest) error { return nil })
++		// The clock is read after the child's process tree is recorded and before the child exits.
++		fx.spec.Loop.Now = func() time.Time { panic("boom") }
++		fx.spec.Loop.OnStepOrphaned = func(traceID string) string {
++			orphaned = append(orphaned, traceID)
++			return "stopped shuttle runs: a:1:plan"
++		}
++		fx.spec.Hooks.AfterInterrupt = func(_ context.Context, _, gotCause, _ string) string {
++			cause = gotCause
++			return ""
++		}
++
++		_, code := fx.execute()
++
++		id := fx.childIDs()[0]
++		if !reflect.DeepEqual(orphaned, []string{id}) {
++			t.Errorf("OnStepOrphaned trace ids = %v; want one call with the in-flight child's trace id %s", orphaned, id)
++		}
++		if want := "loop-panicked: boom; stopped shuttle runs: a:1:plan"; code != 1 || cause != want {
++			t.Errorf("exit/hook cause = %d/%q; want 1/%q", code, cause, want)
++		}
++	})
++
++	t.Run("an empty orphaned note leaves the cause bare", func(t *testing.T) {
++		var cause string
++		fx := newLoopFixture(t, func(*loopFixture, string, ChildRequest) error { return errors.New("exit status 3") })
++		fx.spec.Loop.OnStepOrphaned = func(string) string { return "" }
++		fx.spec.Hooks.AfterInterrupt = func(_ context.Context, _, gotCause, _ string) string {
++			cause = gotCause
++			return ""
++		}
++
++		fx.execute()
++
++		if want := "exited: exit status 3; command: lym-fake"; cause != want {
++			t.Errorf("AfterInterrupt cause = %q; want %q with no trailing separator", cause, want)
++		}
++	})
++
+ 	t.Run("child dies leaving the status without a producer", func(t *testing.T) {
+ 		fx := newLoopFixture(t, func(fx *loopFixture, _ string, _ ChildRequest) error {
+ 			fx.setStatus("", shedengine.StateRunning, 1)
+@@ -1313,6 +1427,11 @@ func TestLoop_WatchdogKillsAnIdleChild(t *testing.T) {
+ 				kills = append(kills, kill)
+ 				return "stopped runs"
+ 			}
++			var orphaned []string
++			fx.spec.Loop.OnStepOrphaned = func(traceID string) string {
++				orphaned = append(orphaned, traceID)
++				return "orphaned note"
++			}
+ 			fx.spec.Loop.Runner = func(_ context.Context, req ChildRequest) (Child, error) {
+ 				fx.mu.Lock()
+ 				fx.requests = append(fx.requests, req)
+@@ -1361,6 +1480,9 @@ func TestLoop_WatchdogKillsAnIdleChild(t *testing.T) {
+ 			if tt.wantStop != LoopStopInterrupted && len(kills) != 0 {
+ 				t.Errorf("OnWatchdogKill calls = %+v; want none for a child the watchdog did not kill", kills)
+ 			}
++			if len(orphaned) != 0 {
++				t.Errorf("OnStepOrphaned calls = %v; want none, since the watchdog or no kill left a record or a kill note", orphaned)
++			}
+ 			if tt.quiet && clock.sleepCount() != 0 {
+ 				t.Errorf("clock slept %d times; want none under a disarmed watchdog", clock.sleepCount())
+ 			}
+diff --git a/internal/shedverbs/loopwait.go b/internal/shedverbs/loopwait.go
+index 937d3905..2e39d423 100644
+--- a/internal/shedverbs/loopwait.go
++++ b/internal/shedverbs/loopwait.go
+@@ -544,6 +544,8 @@ func awaitLoopProcessExitMark(ctx context.Context, loop LoopSpec, loopID string)
+ // Then come how the loop ended, from the loop log after a bounded wait for the keeper's exit mark,
+ // and an excerpt of the in-flight child's captured stderr;
+ // and last whether its step tree was still running, which a loop killed from outside leaves behind.
++// With a child in flight under a recorded trace id, it then hands that id to LoopSpec.OnStepOrphaned.
++// It ends the detail with the note the hook returns.
+ // A child moves the status file itself when it skips gated rows.
+ // A moved status file therefore still names the child that was in flight.
+ // For a dead loop it then writes the stop as the loop's envelope under its recorded id, delivers it and retires the pid file.
+@@ -578,6 +580,11 @@ func deadLoopStop(ctx context.Context, spec *Spec, rec LoopPIDRecord, out io.Wri
+ 		if killStepTree(rec) {
+ 			detail += "; its step tree was still running and was killed"
+ 		}
++		if inFlight && rec.TraceID != "" && spec.Loop.OnStepOrphaned != nil {
++			if note := spec.Loop.OnStepOrphaned(rec.TraceID); note != "" {
++				detail += "; " + note
++			}
++		}
+ 	}
+ 
+ 	envelope, busy := loopExitStop(ctx, spec, rec, detail)
+@@ -612,6 +619,8 @@ func loopExitedEarlyStop(ctx context.Context, spec *Spec, loopID string, out io.
+ // It gets the loop log when rec records no child in flight or that child has no trace file.
+ // loop.stderr_path names that child's captured stderr, and loop.trace_copy a copy of its trace files when it has any.
+ // With no child in flight both are empty.
++// With a child in flight under a trace id it also keeps that child's interrupted record in the steps directory.
++// It writes none when one exists.
+ // It reports busy, with the busy stop as its envelope, when another holder has the run lock; nothing is written then.
+ func loopExitStop(ctx context.Context, spec *Spec, rec LoopPIDRecord, detail string) (envelope []byte, busy bool) {
+ 	before, _ := readStatusFile(spec)
+@@ -659,15 +668,21 @@ func loopExitStop(ctx context.Context, spec *Spec, rec LoopPIDRecord, detail str
+ 	}
+ 
+ 	friction := ""
+-	if rec.LoopID != TeardownLoopID && spec.Hooks.AfterInterrupt != nil {
+-		traceFile := spec.Loop.LogPath
+-		if rec.TraceID != "" && rec.hasChild() {
+-			if files := traceFilesOf(spec.Loop, rec.TraceID); len(files) > 0 {
+-				traceFile = files[0]
+-			}
++	traceFile := spec.Loop.LogPath
++	if rec.TraceID != "" && rec.hasChild() {
++		if files := traceFilesOf(spec.Loop, rec.TraceID); len(files) > 0 {
++			traceFile = files[0]
+ 		}
++	}
++	if rec.LoopID != TeardownLoopID && spec.Hooks.AfterInterrupt != nil {
+ 		friction = spec.Hooks.AfterInterrupt(ctx, producer, "loop-exited: "+detail, traceFile)
+ 	}
++	// The record is what lets the re-step find the in-flight child to reconcile when this stop's own hook call failed.
++	if rec.LoopID != TeardownLoopID && rec.hasChild() && rec.TraceID != "" && spec.StepsDir != "" {
++		if _, statErr := os.Stat(filepath.Join(spec.StepsDir, rec.TraceID+envelopeSuffix)); os.IsNotExist(statErr) {
++			interruptedRecord(spec, rec.TraceID, message+"; way forward: "+wayForward, traceFile, friction)
++		}
++	}
+ 	locations := StepLocations{TraceFile: logger.TraceFile(), FrictionDir: spec.FrictionDir, ScratchDir: spec.ScratchDir, TraceID: logger.TraceID(), RunID: spec.RunID}
+ 	step := shortStepErrFields(stepErrFields(KindInterrupted, "", friction, locations), "")
+ 	output.ErrFields(&buf, message+"; way forward: "+wayForward, loopEnvelope(step, obj))
+diff --git a/internal/shedverbs/loopwait_test.go b/internal/shedverbs/loopwait_test.go
+index 6d223fd5..9e6cf767 100644
+--- a/internal/shedverbs/loopwait_test.go
++++ b/internal/shedverbs/loopwait_test.go
+@@ -15,6 +15,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
++	"slices"
+ 	"strings"
+ 	"sync"
+ 	"sync/atomic"
+@@ -477,6 +478,30 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a dead loop's stop keeps an interrupted record the re-step reconciles when the stop's own hook call failed", func(t *testing.T) {
++		w := newWaitWorld(t)
++		w.setStatus("A", shedengine.StateRunning, 0)
++		w.writePID(LoopPIDRecord{LoopID: "dead-1", Child: proc.TreeRecord{PID: 4242}, TraceID: "trace-dead", CurrentProducer: "A"})
++		var orphaned []string
++		w.spec.Loop.OnStepOrphaned = func(traceID string) string {
++			orphaned = append(orphaned, traceID)
++			return "a run stayed held"
++		}
++
++		w.wait()
++
++		if got := newestInterruptedTraceID(w.stepsDir); got != "trace-dead" {
++			t.Fatalf("newest interrupted trace id = %q; want the dead loop's in-flight trace-dead", got)
++		}
++		orphaned = nil
++		if note := reconcileInterruptedStep(w.spec, w.readStatus()); note != "reconciled the interrupted step trace-dead: a run stayed held" {
++			t.Errorf("reconcile note = %q; want the dead loop's in-flight step reconciled", note)
++		}
++		if !slices.Equal(orphaned, []string{"trace-dead"}) {
++			t.Errorf("OnStepOrphaned trace ids on the re-step = %v; want the dead loop's trace-dead", orphaned)
++		}
++	})
++
+ 	t.Run("a dead loop's stop waits for the keeper's exit mark that lands after the loop released its lock", func(t *testing.T) {
+ 		w := deadLoopWorld(t)
+ 		if err := os.WriteFile(w.spec.Loop.LogPath, []byte(loopLogMark("dead-1", loopStartingMark)), 0o644); err != nil {
+@@ -671,6 +696,12 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 						}
+ 					}
+ 				}
++				const orphanedNote = "stopped shuttle runs: a:1:plan"
++				var orphaned []string
++				w.spec.Loop.OnStepOrphaned = func(traceID string) string {
++					orphaned = append(orphaned, traceID)
++					return orphanedNote
++				}
+ 				var producer, cause, file string
+ 				w.spec.Hooks.AfterInterrupt = func(_ context.Context, gotProducer, gotCause, gotFile string) string {
+ 					producer, cause, file = gotProducer, gotCause, gotFile
+@@ -692,6 +723,15 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 					t.Errorf("loop status_moved = %v; want %v", got, wantStatusMoved)
+ 				}
+ 				wantCause := "loop-exited: loop dead-1 ended without an envelope; its output is in " + w.spec.Loop.LogPath + tt.wantCause
++				// The hook runs only for a child in flight under a recorded trace id.
++				wantOrphaned := ""
++				if tt.traceID != "" && !tt.noChild {
++					wantOrphaned = tt.traceID
++					wantCause += "; " + orphanedNote
++				}
++				if got := strings.Join(orphaned, ","); got != wantOrphaned {
++					t.Errorf("OnStepOrphaned trace ids = %q; want %q", got, wantOrphaned)
++				}
+ 				if producer != tt.wantProducer || cause != wantCause || file != tt.wantFile(w) {
+ 					t.Errorf("AfterInterrupt(%q, %q, %q); want (%q, %q, %q)", producer, cause, file, tt.wantProducer, wantCause, tt.wantFile(w))
+ 				}
+diff --git a/internal/shuttleengine/claudeengine/claudeengine.go b/internal/shuttleengine/claudeengine/claudeengine.go
+index 15fb0e80..6dbca1c5 100644
+--- a/internal/shuttleengine/claudeengine/claudeengine.go
++++ b/internal/shuttleengine/claudeengine/claudeengine.go
+@@ -122,6 +122,8 @@ func validateSessionID(id string) error {
+ // Prepare writes prompt.md, settings.json and the Bash env file bash-env.sh into runDir and returns the Launch command strings.
+ // The launch line carries a pointer to prompt.md rather than the prompt, so a prompt of any size launches.
+ // A spec that names skills carries the skill-load message on the launch line instead and returns the pointer as Launch.PromptLine, for shuttle to send after the skills load.
++// A spec that sets SkipSkillLoadTurn keeps the pointer on the launch line, whatever skills it names.
++// It returns no Launch.PromptLine.
+ // It loads claude.yaml and the hub's gate config, whose refuse_raw list the run's shell guard installs and whose failure to load refuses the spawn, then validates spec.Effort, spec.Model, spec.PermissionMode, spec.ResumeSessionID, the prompt-cache TTL config, the keep-warm caps and the batching nudge before writing any artifacts.
+ // With the batching nudge on it also seeds the nudge's state file beside the settings.
+ // The settings carry the session's scope, resolved from claude.yaml's session_scope, spec.Skills and spec.Role.
+@@ -205,8 +207,9 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 			len(pointer), maxLaunchPromptBytes, promptPath,
+ 		)
+ 	}
++	loadsSkills := len(spec.Skills) > 0 && !spec.SkipSkillLoadTurn
+ 	skillLoadMessage := ""
+-	if len(spec.Skills) > 0 {
++	if loadsSkills {
+ 		skillLoadMessage = c.SkillLoadMessage(spec.Skills)
+ 		if len(skillLoadMessage) > maxLaunchPromptBytes {
+ 			return shuttleengine.Launch{}, fmt.Errorf(
+@@ -290,7 +293,7 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 	sh := shell.ForGOOS()
+ 	// A spec that names skills launches with the load message as its first turn, and the pointer goes out after the skills as Launch.PromptLine.
+ 	launchArg, promptLine := pointer, ""
+-	if len(spec.Skills) > 0 {
++	if loadsSkills {
+ 		launchArg, promptLine = skillLoadMessage, pointer
+ 	}
+ 	launchLine := buildLaunchCmd(sh, bin, launchArg, settingsPath, sessionID, resolvedModel, spec.Effort, appendPromptPath, envFilePath, promptCacheTTL, spec.RemoteControlName, resume, skipPermissions, spec.ForkSubagents)
+diff --git a/internal/shuttleengine/claudeengine/prepare_test.go b/internal/shuttleengine/claudeengine/prepare_test.go
+index 94a38533..3a229d61 100644
+--- a/internal/shuttleengine/claudeengine/prepare_test.go
++++ b/internal/shuttleengine/claudeengine/prepare_test.go
+@@ -501,6 +501,33 @@ func TestPrepare_ResumeSessionID(t *testing.T) {
+ 	}
+ }
+ 
++// TestPrepare_SkipSkillLoadTurn proves that SkipSkillLoadTurn keeps the prompt pointer on the launch line.
++// That holds for a spec naming skills, fresh or resumed.
++// It returns no PromptLine and puts no skill-load message on the line.
++func TestPrepare_SkipSkillLoadTurn(t *testing.T) {
++	tiergate.Require(t, 0)
++	const id = "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d"
++	skills := []string{"scribe:prose"}
++	for _, resume := range []bool{false, true} {
++		spec := shuttleengine.Spec{Prompt: "do the thing", PromptEngine: engineName, Skills: skills, SkipSkillLoadTurn: true}
++		if resume {
++			spec.ResumeSessionID = id
++		}
++		runDir := t.TempDir()
++		launch, err := engineWith(t, templateConfig(t)).Prepare(runDir, spec, shuttleengine.Config{})
++		if err != nil {
++			t.Fatalf("Prepare(resume=%v) error: %v", resume, err)
++		}
++		pointer := launchPointer(filepath.Join(runDir, "prompt.md"))
++		if !strings.Contains(launch.Cmd, pointer) || strings.Contains(launch.Cmd, New().SkillLoadMessage(skills)) {
++			t.Errorf("resume=%v: Launch.Cmd = %q; want the prompt pointer and no skill-load message", resume, launch.Cmd)
++		}
++		if launch.PromptLine != "" {
++			t.Errorf("resume=%v: PromptLine = %q; want empty", resume, launch.PromptLine)
++		}
++	}
++}
++
+ // TestPrepare_SkillsDeferPromptPointer proves that a spec naming skills puts the skill-load message on the launch line.
+ // For fresh and resumed launches, it returns the prompt pointer as PromptLine.
+ // Without skills, the pointer stays on the line and PromptLine is empty.
+diff --git a/internal/shuttleengine/claudeengine/resume.go b/internal/shuttleengine/claudeengine/resume.go
+index 59d44820..84e19fed 100644
+--- a/internal/shuttleengine/claudeengine/resume.go
++++ b/internal/shuttleengine/claudeengine/resume.go
+@@ -116,21 +116,33 @@ func checkResumable(sessionID, projectDir, registryDir string, alive func(pid in
+ 
+ // sessionHolder returns the pid of the live process a registry entry in registryDir names as holding sessionID.
+ // It applies the resume check's rule, so a pid whose start time differs from the entry's procStart holds nothing.
+-// Unreadable and undecodable entries are skipped, and an unreadable registry is an error.
++// An unreadable registry is an error.
++// So is an unreadable or undecodable entry when no live holder is found.
++// A holder behind such an entry cannot be ruled out.
++// A live holder found in another entry is still returned.
+ func sessionHolder(sessionID, registryDir string, alive func(pid int) bool, startTime func(pid int) (string, bool)) (int, bool, error) {
+ 	records, err := readRegistry(registryDir)
+ 	if err != nil {
+ 		return 0, false, fmt.Errorf("claudeengine: read session registry %s: %w", registryDir, err)
+ 	}
++	var unreadable error
+ 	for _, record := range records {
+-		if record.ReadErr != nil || record.DecodeErr != nil || record.Entry.SessionID != sessionID {
++		if record.ReadErr != nil {
++			unreadable = fmt.Errorf("claudeengine: read session registry entry %s: %w", record.Path, record.ReadErr)
++			continue
++		}
++		if record.DecodeErr != nil {
++			unreadable = fmt.Errorf("claudeengine: decode session registry entry %s: %w", record.Path, record.DecodeErr)
++			continue
++		}
++		if record.Entry.SessionID != sessionID {
+ 			continue
+ 		}
+ 		if held, _ := liveHolder(record.Entry, alive, startTime); held {
+ 			return record.Entry.PID, true, nil
+ 		}
+ 	}
+-	return 0, false, nil
++	return 0, false, unreadable
+ }
+ 
+ // liveHolder reports whether entry's process is alive and may still be the one that registered.
+diff --git a/internal/shuttleengine/claudeengine/resume_test.go b/internal/shuttleengine/claudeengine/resume_test.go
+index 54a94cab..d4cef089 100644
+--- a/internal/shuttleengine/claudeengine/resume_test.go
++++ b/internal/shuttleengine/claudeengine/resume_test.go
+@@ -218,6 +218,8 @@ func TestSessionHolder(t *testing.T) {
+ 		name string
+ 		// entry is the one registry file's content; empty leaves the registry empty.
+ 		entry string
++		// laterEntry, when set, is a second registry file read after entry.
++		laterEntry string
+ 		// missingRegistry points the read at a registry directory that does not exist.
+ 		missingRegistry bool
+ 		alive           bool
+@@ -232,6 +234,8 @@ func TestSessionHolder(t *testing.T) {
+ 		{name: "DeadPIDHoldsNothing", entry: `{"pid":4242,"sessionId":%q,"procStart":"100"}`, startReadable: true},
+ 		{name: "AnotherSessionsEntryHoldsNothing", entry: `{"pid":4242,"sessionId":"ffffffff-ffff-4fff-8fff-ffffffffffff%.0s"}`, alive: true, startReadable: true},
+ 		{name: "UnreadableRegistryIsAnError", missingRegistry: true, wantErr: true},
++		{name: "UndecodableEntryIsAnError", entry: "{not json", alive: true, startReadable: true, wantErr: true},
++		{name: "LiveHolderBehindAnUndecodableEntryIsStillFound", entry: "{not json", laterEntry: `{"pid":4242,"sessionId":%q,"procStart":"100"}`, alive: true, startReadable: true, wantPID: 4242, wantFound: true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -240,6 +244,9 @@ func TestSessionHolder(t *testing.T) {
+ 			if tt.entry != "" {
+ 				writeRegistryEntry(t, registryDir, "a.json", fmt.Sprintf(tt.entry, resumeTestID))
+ 			}
++			if tt.laterEntry != "" {
++				writeRegistryEntry(t, registryDir, "b.json", fmt.Sprintf(tt.laterEntry, resumeTestID))
++			}
+ 			if tt.missingRegistry {
+ 				registryDir = filepath.Join(registryDir, "missing")
+ 			}
+diff --git a/internal/shuttleengine/codexengine/codexengine.go b/internal/shuttleengine/codexengine/codexengine.go
+index 9a37d78a..6c39e17e 100644
+--- a/internal/shuttleengine/codexengine/codexengine.go
++++ b/internal/shuttleengine/codexengine/codexengine.go
+@@ -260,7 +260,7 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 	firstTurn, promptLine := launchPointer(promptPath), ""
+ 	// The roots come from the codex.yaml this launch already loaded, so one load serves the whole launch.
+ 	skillRoots := c.expandSkillRoots(codex)
+-	if len(spec.Skills) > 0 {
++	if len(spec.Skills) > 0 && !spec.SkipSkillLoadTurn {
+ 		firstTurn, promptLine = skillLoadOver(spec.Skills, skillRoots), firstTurn
+ 	}
+ 
+diff --git a/internal/shuttleengine/codexengine/skillload_test.go b/internal/shuttleengine/codexengine/skillload_test.go
+index a13bb736..e41ed4d9 100644
+--- a/internal/shuttleengine/codexengine/skillload_test.go
++++ b/internal/shuttleengine/codexengine/skillload_test.go
+@@ -308,3 +308,29 @@ func TestPrepare_SkillsLoadFirst(t *testing.T) {
+ 		t.Errorf("Launch.Cmd = %q; want the load line %q as its first turn and no pointer", launch.Cmd, loadLine)
+ 	}
+ }
++
++// TestPrepare_SkipSkillLoadTurn pins that SkipSkillLoadTurn keeps the prompt pointer as the first turn.
++// That holds for a spec naming skills.
++// It returns no prompt line and puts no load line on the launch line.
++func TestPrepare_SkipSkillLoadTurn(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	root := t.TempDir()
++	writeSkill(t, root, "market", "scribe", "1.0.0", "prose")
++	engine := skillEngine(t, root)
++	runDir := t.TempDir()
++
++	launch, err := engine.Prepare(runDir, shuttleengine.Spec{Prompt: "p", PromptEngine: engineName, Skills: []string{"scribe:prose"}, SkipSkillLoadTurn: true}, shuttleengine.Config{})
++	if err != nil {
++		t.Fatalf("Prepare() error: %v", err)
++	}
++	pointer := launchPointer(filepath.Join(runDir, "prompt.md"))
++	if launch.PromptLine != "" {
++		t.Errorf("Launch.PromptLine = %q; want empty", launch.PromptLine)
++	}
++	loadLine := engine.SkillLoadMessage([]string{"scribe:prose"})
++	if !strings.Contains(launch.Cmd, pointer) || strings.Contains(launch.Cmd, loadLine) {
++		t.Errorf("Launch.Cmd = %q; want the pointer %q and no load line", launch.Cmd, pointer)
++	}
++}
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 5df2a971..38a3c32a 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -394,8 +394,16 @@
+ // A StepTie holds the steps directory and the step's trace id.
+ // Every run the runner starts records that step in run.json as `step`, and a runner never told one writes no step.
+ // Runner.StopStepRuns stops, through the same record-then-remove order, every run under the runner's run-directory root.
+-// A run qualifies when it still reads running, has a live or not-live own-window strand and records the given step.
+-// A running run with such a strand and no step is listed under StepStopReport.Untied and left alone.
++// A run qualifies when it still reads running and records the given step.
++// Its strand is removed when it is live or a not-live own-window one;
++// a run whose strand is dead but not removable only has its record stopped, since no process waits on it.
++// A run whose strand reed does not track, or tracks with its pane binding cleared, may have a live agent.
++// That agent works in a pane reed cannot address.
++// It is stopped only when its record's engine can name the process holding its session and finds none;
++// otherwise it stays running and is listed under StepStopReport.Held.
++// A run whose output files all exist keeps reading running through the stop and is listed under StepStopReport.Finished.
++// A running run with no step is left alone and listed under StepStopReport.Untied.
++// That holds only when its strand is live or a not-live own-window one.
+ // A run of another step is left alone.
+ // A stop that fails is listed under Failed while the stop goes on.
+ // Attach's removal of a superseded run's strand goes through the same record-then-remove order.
+@@ -771,6 +779,17 @@
+ // A renderer returning several lines, or an empty or whitespace-only line, fails the send.
+ // That ends the loop with the attempts spent so far.
+ // A re-prompt held by a busy session spends no attempt and is re-sent on a later tick.
++// A re-prompt whose strand can take no keys resumes the writer's session in a fresh strand.
++// A strand takes no keys when reed lost it, holds no pane for it or its pane died.
++// The re-prompt is the resumed session's first turn.
++// The run keeps its run directory, events file and gate state, and its record names the new strand.
++// The old strand is removed only after the record names the new one.
++// The resume's launch replaces the run directory's prompt.md.
++// The new provider's startup reads the events file only past its size at the resume.
++// The resumed session keeps the run's skills for its settings and passages but takes no skill-load turn.
++// The resume needs an engine that can resume a session and name the process holding one, and no live holder,
++// and a resume check that confirms the session;
++// otherwise the loop ends as for any send that failed, naming both failures.
+ // One held by a pane showing no input box maxNoInputBoxReprompts times in a row ends the loop.
+ // It ends with the attempts spent so far.
+ // So a picker shuttle cannot dismiss ends the wait instead of holding the run until its deadline.
+diff --git a/internal/shuttleengine/gate_test.go b/internal/shuttleengine/gate_test.go
+index 78916b9e..d3dd9933 100644
+--- a/internal/shuttleengine/gate_test.go
++++ b/internal/shuttleengine/gate_test.go
+@@ -505,6 +505,292 @@ func TestGate_SendFailsMidLoop_EndsLoopWithAttemptsSoFar(t *testing.T) {
+ 	}
+ }
+ 
++// resumableFakeEngine is a fakeEngine that can resume a session and name the process holding one.
++// A session reads held by its heldSessions entry when it has one, and by holder otherwise; 0 is no process.
++// CheckResume answers checkWarning and checkErr, and a failing holder lookup answers holderErr.
++type resumableFakeEngine struct {
++	*fakeEngine
++	holder       int
++	heldSessions map[string]int
++	holderErr    error
++	checkWarning string
++	checkErr     error
++}
++
++func (e *resumableFakeEngine) CheckResume(string, string) (string, error) {
++	return e.checkWarning, e.checkErr
++}
++
++func (e *resumableFakeEngine) SessionHolder(sessionID string) (int, bool, error) {
++	if e.holderErr != nil {
++		return 0, false, e.holderErr
++	}
++	pid, found := e.heldSessions[sessionID]
++	if !found {
++		pid = e.holder
++	}
++	return pid, pid != 0, nil
++}
++
++// resumableFakeEngine is checked at compile time against both capabilities the resume needs.
++var (
++	_ SessionResumer      = (*resumableFakeEngine)(nil)
++	_ SessionHolderFinder = (*resumableFakeEngine)(nil)
++)
++
++// signalingFakeEngine is a resumableFakeEngine that reads two events lines as session signals.
++// SESSION_START is a session start and TURN_START is a turn start.
++type signalingFakeEngine struct{ *resumableFakeEngine }
++
++func (e *signalingFakeEngine) ParseSessionSignals(data []byte) ([]SessionSignal, int) {
++	var signals []SessionSignal
++	for _, line := range strings.Split(string(data), "\n") {
++		switch strings.TrimSpace(line) {
++		case "SESSION_START":
++			signals = append(signals, SessionSignal{Kind: SessionSignalSessionStart})
++		case "TURN_START":
++			signals = append(signals, SessionSignal{Kind: SessionSignalTurnStart})
++		}
++	}
++	return signals, len(data)
++}
++
++var _ SessionSignalParser = (*signalingFakeEngine)(nil)
++
++// TestGate_RepromptToGoneStrand covers a re-prompt whose strand can take no keys.
++// The strand is untracked, has a dead pane or has a cleared pane binding.
++// With an engine that can resume the session and no live process holding it, the session resumes in a fresh strand.
++// The re-prompt is its first turn and counts as an attempt.
++// The resumed launch keeps the run's skills and takes no skill-load turn.
++// The strand carries no done-when list, the run's record names it, and its manifest copy is kept.
++// A removable old strand is removed after the record names the new one.
++// A resumed provider that never becomes ready ends the wait with the startup teardown's result.
++// That holds even when the events file already holds an earlier session's session start and turn start.
++// These end the loop with no attempt: a live holder, a failing holder lookup, or an engine that cannot name a holder.
++// So do a refused or unconfirming resume check, and a failing prepare, strand add or record save.
++// That end names the gone strand and why the session was not resumed, and leaves no new strand behind.
++//
++//testtiming:keep pins that a re-prompt to a strand that takes no keys resumes the writer's session in a fresh strand and that every refusal or failure of the resume ends the loop instead
++func TestGate_RepromptToGoneStrand(t *testing.T) {
++	tiergate.Require(t, 0)
++	// deadOwnWindow is a strand reed still tracks, whose pane died in a window of its own, so a stop removes it.
++	deadOwnWindow := reedengine.StrandStatus{GUID: "strand-1", PaneID: "%1", OwnWindow: true, Present: true}
++	tests := []struct {
++		name         string
++		resumable    bool
++		holder       int
++		holderErr    error
++		checkWarning string
++		checkErr     error
++		prepareErr   error
++		addStrandErr error
++		saveFails    bool
++		neverReady   bool
++		// oldStrand is the strand reed reports for the run's strand; the zero value is an untracked strand.
++		oldStrand reedengine.StrandStatus
++		// wantEndedEarly is a text the gate's EndedEarly holds; empty when the session resumes.
++		wantEndedEarly string
++		wantAddCalls   int
++		wantRemoved    []string
++	}{
++		{name: "a resumable session with no holder resumes", resumable: true},
++		{
++			name: "a dead own-window pane resumes and its strand is removed", resumable: true,
++			oldStrand:   deadOwnWindow,
++			wantRemoved: []string{"strand-1"},
++		},
++		{name: "a cleared pane binding resumes", resumable: true, oldStrand: reedengine.StrandStatus{GUID: "strand-1"}},
++		{name: "a live holder keeps the session", resumable: true, holder: 4242, wantEndedEarly: "process 4242 still holds session"},
++		{name: "an engine that cannot name a holder", wantEndedEarly: "cannot name the process holding a session"},
++		{name: "a failing holder lookup", resumable: true, holderErr: errors.New("registry unreadable"), wantEndedEarly: "registry unreadable"},
++		{name: "a refused resume check", resumable: true, checkErr: errors.New("transcript missing"), wantEndedEarly: "transcript missing"},
++		{
++			name: "a resume check that cannot rule out a holder", resumable: true, checkWarning: "registry entry unreadable",
++			wantEndedEarly: "could not be ruled out: registry entry unreadable",
++		},
++		{name: "a failing prepare", resumable: true, prepareErr: errors.New("disk full"), wantEndedEarly: "prepare the resumed session: disk full"},
++		{
++			name: "a failing strand add keeps a removable old strand", resumable: true, addStrandErr: errors.New("reed refused"),
++			oldStrand: deadOwnWindow, wantEndedEarly: "add the resumed session's strand: reed refused", wantAddCalls: 1,
++		},
++		{
++			name: "a failing record save removes the new strand and keeps a removable old one", resumable: true, saveFails: true,
++			oldStrand: deadOwnWindow, wantEndedEarly: "record the resumed session's strand", wantAddCalls: 1, wantRemoved: []string{"strand-2"},
++		},
++		{name: "a resumed provider that never becomes ready", resumable: true, neverReady: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			runDir := t.TempDir()
++			eventsPath := filepath.Join(runDir, eventsFileName)
++			outputFile := filepath.Join(runDir, "out.md")
++			touchOutputFile(t, outputFile)
++			events := "STOP:turn1\n"
++			if tt.neverReady {
++				// The first session's session start and turn start, which the resumed strand's startup must not read as its own.
++				events = "SESSION_START\nTURN_START\nSTOP:turn1\n"
++			}
++			if err := os.WriteFile(eventsPath, []byte(events), 0o644); err != nil {
++				t.Fatalf("seed events: %v", err)
++			}
++			findingsPath := filepath.Join(runDir, gateFindingsFileName)
++			gateCalls := 0
++			gate := func() (GateResult, error) {
++				gateCalls++
++				return GateResult{Passed: gateCalls > 1, Findings: "fix the thing"}, nil
++			}
++
++			oldStatus := reedengine.StatusResult{}
++			if tt.oldStrand.GUID != "" {
++				oldStatus = reedengine.StatusResult{Strands: []reedengine.StrandStatus{tt.oldStrand}}
++			}
++			reed := &fakeReed{
++				StatusQueue:     []reedengine.StatusResult{oldStatus, oldStatus, liveStatus("strand-2", "%2")},
++				AddStrandResult: reedengine.Strand{GUID: "strand-2", Name: "writer-2"},
++				AddStrandErr:    tt.addStrandErr,
++			}
++			fake := readyAgentEngine()
++			fake.PrepareLaunch = Launch{SessionID: "session-1", RecordsSessionStarts: tt.neverReady}
++			fake.PrepareErr = tt.prepareErr
++			if tt.neverReady {
++				fake.StartupScript = []StartupState{StartupPending}
++			}
++			fake.PrepareHook = func(dir string) {
++				if err := WriteManifest(dir, Manifest{}); err != nil {
++					t.Errorf("write the manifest: %v", err)
++				}
++				if tt.neverReady {
++					// A present output file would make the startup window's expiry read done, so the teardown would never run.
++					if err := os.Remove(outputFile); err != nil {
++						t.Errorf("remove the output file: %v", err)
++					}
++				}
++				if tt.saveFails {
++					// A directory named run.json makes the record save fail.
++					recordPath := filepath.Join(dir, runStateFileName)
++					if err := os.RemoveAll(recordPath); err != nil {
++						t.Errorf("remove the record: %v", err)
++					}
++					if err := os.Mkdir(recordPath, 0o755); err != nil {
++						t.Errorf("plant the blocking directory: %v", err)
++					}
++				}
++			}
++			var engine Engine = fake
++			if tt.resumable {
++				resumable := &resumableFakeEngine{fakeEngine: fake, holder: tt.holder, holderErr: tt.holderErr, checkWarning: tt.checkWarning, checkErr: tt.checkErr}
++				engine = resumable
++				if tt.neverReady {
++					engine = &signalingFakeEngine{resumable}
++				}
++			}
++			fx := newFixture(t, reed, engine, withConfig(gateConfig))
++			stubInputSleep(t)
++
++			fc := newFakeClock(time.Now())
++			mc := &multiStepClock{fakeClock: fc, steps: []func(){
++				func() { appendEventsLine(t, eventsPath, "STOP:turn2") },
++			}}
++			skills := []string{"scribe:prose", "scribe:testing"}
++			run := fx.newRun(Spec{OutputFiles: []string{outputFile}, Timeout: time.Hour, KeepPane: true, Skills: skills},
++				withRunDir(runDir),
++				withRunState(RunState{RunID: "run-1", StrandGUID: "strand-1", SessionID: "session-1", EventsPath: eventsPath}),
++				withRunClock(mc, mc.Now().Add(time.Hour)),
++				withRunGate(GateSpec{{Gate: gate, Attempts: 3}}))
++
++			result, err := run.Wait()
++			if tt.neverReady {
++				if !errors.Is(err, ErrNotStarted) {
++					t.Fatalf("Wait() error = %v; want it to wrap ErrNotStarted", err)
++				}
++				if result.Outcome != OutcomeDied {
++					t.Errorf("Outcome = %q, want %q: the startup teardown's result", result.Outcome, OutcomeDied)
++				}
++				if len(fake.StartupCalls) == 0 {
++					t.Error("Startup calls = 0, want the resumed pane read before the gate goes on")
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("Wait() error: %v", err)
++			}
++			if result.Outcome != OutcomeDone {
++				t.Errorf("Outcome = %q, want %q", result.Outcome, OutcomeDone)
++			}
++			if result.Gate == nil {
++				t.Fatalf("Gate = nil, want a verdict")
++			}
++			if len(reed.SendTextCalls) != 0 {
++				t.Errorf("SendText calls = %+v, want none: the gone strand takes no keys", reed.SendTextCalls)
++			}
++
++			if tt.wantEndedEarly != "" {
++				if result.Gate.Passed || result.Gate.Attempts != 0 {
++					t.Errorf("Gate = %+v, want a failed verdict with no attempt", result.Gate)
++				}
++				goneText := "is not tracked by reed"
++				if tt.oldStrand.GUID != "" {
++					goneText = "has no live pane"
++				}
++				for _, want := range []string{goneText, tt.wantEndedEarly} {
++					if !strings.Contains(result.Gate.EndedEarly, want) {
++						t.Errorf("EndedEarly = %q, want it to hold %q", result.Gate.EndedEarly, want)
++					}
++				}
++				if len(reed.AddStrandCalls) != tt.wantAddCalls {
++					t.Errorf("AddStrand calls = %+v, want %d", reed.AddStrandCalls, tt.wantAddCalls)
++				}
++				if got := removedStrandGUIDs(reed); !reflect.DeepEqual(got, tt.wantRemoved) {
++					t.Errorf("RemoveStrand calls = %v, want %v", got, tt.wantRemoved)
++				}
++				if result.StrandGUID != "strand-1" {
++					t.Errorf("Result.StrandGUID = %q, want strand-1: the failed resume leaves the record on the old strand", result.StrandGUID)
++				}
++				return
++			}
++
++			if got := removedStrandGUIDs(reed); !reflect.DeepEqual(got, tt.wantRemoved) {
++				t.Errorf("RemoveStrand calls = %v, want %v", got, tt.wantRemoved)
++			}
++			copyPath := filepath.Join(runDirRoot(fx.Runner.cfg, fx.Runner.anchorPath), manifestsDirName, "run-1.json")
++			if _, err := os.Stat(copyPath); err != nil {
++				t.Errorf("the resumed launch's manifest copy %s: %v, want it kept", copyPath, err)
++			}
++			if !result.Gate.Passed || result.Gate.Attempts != 1 {
++				t.Errorf("Gate = %+v, want a passed verdict after one attempt", result.Gate)
++			}
++			if len(reed.AddStrandCalls) != 1 || reed.AddStrandCalls[0].DoneWhen != nil || reed.AddStrandCalls[0].SessionID != "session-1" {
++				t.Errorf("AddStrand calls = %+v, want one for session-1 with no done-when list", reed.AddStrandCalls)
++			}
++			if len(fake.PrepareCalls) != 1 {
++				t.Fatalf("Prepare calls = %d, want 1", len(fake.PrepareCalls))
++			}
++			prepared := fake.PrepareCalls[0]
++			if prepared.RunDir != runDir || prepared.Spec.ResumeSessionID != "session-1" || prepared.Spec.Prompt != gateRepromptText(findingsPath) ||
++				!reflect.DeepEqual(prepared.Spec.Skills, skills) || !prepared.Spec.SkipSkillLoadTurn {
++				t.Errorf("Prepare(%q, spec) resumes %q with prompt %q, skills %v, skip skill-load turn %t; want %q, session-1, the re-prompt, %v and the skip",
++					prepared.RunDir, prepared.Spec.ResumeSessionID, prepared.Spec.Prompt, prepared.Spec.Skills, prepared.Spec.SkipSkillLoadTurn, runDir, skills)
++			}
++			record, _, err := loadRunState(runDir)
++			if err != nil {
++				t.Fatalf("loadRunState: %v", err)
++			}
++			if record.StrandGUID != "strand-2" || record.StrandName != "writer-2" || !record.Started {
++				t.Errorf("record names strand %q (%q), started %t; want strand-2 (writer-2), started", record.StrandGUID, record.StrandName, record.Started)
++			}
++		})
++	}
++}
++
++// removedStrandGUIDs returns the guids reed was asked to remove, in call order.
++func removedStrandGUIDs(reed *fakeReed) []string {
++	var guids []string
++	for _, call := range reed.RemoveStrandCalls {
++		guids = append(guids, call.GUID)
++	}
++	return guids
++}
++
+ // TestGate_DeadlineExpiresBetweenAttempts covers a run that ends mid-loop after one successful re-prompt.
+ // The run ends by its deadline or by a lost session.
+ // The loop stops, and the Done classification runs the gate once more.
+diff --git a/internal/shuttleengine/relaunch.go b/internal/shuttleengine/relaunch.go
+new file mode 100644
+index 00000000..1d74a483
+--- /dev/null
++++ b/internal/shuttleengine/relaunch.go
+@@ -0,0 +1,107 @@
++// relaunch.go resumes a gated run's session in a fresh strand.
++// It applies when the strand a re-prompt was meant for can take no keys.
++
++package shuttleengine
++
++import (
++	"errors"
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// relaunchForReprompt resumes the run's session in a fresh strand, with text as the resumed session's first turn.
++// It exists for a gated run whose writer must be re-prompted while its strand can take no keys:
++// reed lost the strand, holds no pane for it, or its pane died.
++// The session is resumed only when the engine can resume a session and name the process holding one,
++// and no live process holds the session, so a writer still working in a pane reed lost is never run twice.
++// A resume check that cannot rule out a live holder refuses the resume.
++// The run keeps its run directory, its events file and its gate state.
++// The engine's Prepare replaces the run directory's prompt.md with text.
++// Only the strand changes.
++// The record names the new strand before the old strand is removed and before the new provider's startup is awaited.
++// That startup reads the events file only past its size at the resume.
++// So the first session's lines never mark it started.
++// It returns a non-nil err, with no strand added, when the session cannot be resumed safely.
++// It does so too when the launch fails before the strand registers.
++// When the new provider never becomes ready, the startup teardown finalizes the run:
++// finished is then true, with the teardown's result and error.
++func (run *Run) relaunchForReprompt(text string) (result Result, finished bool, err error) {
++	if run.state.SessionID == "" {
++		return Result{}, false, errors.New("the run records no session to resume")
++	}
++	finder, ok := run.engine.(SessionHolderFinder)
++	if !ok {
++		return Result{}, false, fmt.Errorf("engine %q cannot name the process holding a session, so a resume could run the session twice", run.engineName)
++	}
++	holder, held, err := finder.SessionHolder(run.state.SessionID)
++	if err != nil {
++		return Result{}, false, fmt.Errorf("look for a process holding session %q: %w", run.state.SessionID, err)
++	}
++	if held {
++		return Result{}, false, fmt.Errorf("process %d still holds session %q in a pane reed cannot address", holder, run.state.SessionID)
++	}
++
++	runner := run.runner
++	spec := run.spec
++	spec.ResumeSessionID = run.state.SessionID
++	spec.Prompt = text
++	// The resumed session keeps the skills it loaded, so its first turn is the re-prompt itself.
++	// The skills still shape the settings and passages the resumed session runs under.
++	spec.SkipSkillLoadTurn = true
++	warning, err := runner.checkResume(spec, run.engine)
++	if err != nil {
++		return Result{}, false, err
++	}
++	if warning != "" {
++		return Result{}, false, fmt.Errorf("a live process holding session %q could not be ruled out: %s", run.state.SessionID, warning)
++	}
++	startupEventsOffset := eventsSize(run.state.EventsPath)
++	launch, err := run.engine.Prepare(run.runDir, spec, runner.cfg)
++	if err != nil {
++		return Result{}, false, fmt.Errorf("prepare the resumed session: %w", err)
++	}
++	// A gated run's outputs existing does not mean the gate passed, so the strand carries no done-when list.
++	strand, err := runner.reed.AddStrand(strandAddSpec(spec, run.engineName, launch, nil))
++	if err != nil {
++		return Result{}, false, fmt.Errorf("add the resumed session's strand: %w", err)
++	}
++	goneStrandGUID := run.state.StrandGUID
++	logger.Warn("shuttle: gate: the re-prompt's strand was gone; resumed the session in a fresh strand", "runDir", run.runDir, "oldStrandGUID", goneStrandGUID, "strandGUID", strand.GUID, "sessionID", launch.SessionID)
++
++	run.recordMu.Lock()
++	previous := run.state
++	run.state.StrandGUID, run.state.StrandName = strand.GUID, strand.Name
++	run.state.SessionID = launch.SessionID
++	run.state.Started = false
++	run.state.PromptLine = ""
++	run.state.RecordsSessionStarts = launch.RecordsSessionStarts
++	saveErr := run.saveState()
++	if saveErr != nil {
++		run.state = previous
++	}
++	run.recordMu.Unlock()
++	if saveErr != nil {
++		// No record names the new strand, so nothing could find or stop it later.
++		if _, rerr := runner.reed.RemoveStrand(strand.GUID, false); rerr != nil {
++			logger.Warn("shuttle: gate: remove the resumed session's strand after a failed record save (non-fatal)", "strandGUID", strand.GUID, "error", rerr)
++		}
++		return Result{}, false, fmt.Errorf("record the resumed session's strand in %s: %w", run.runDir, saveErr)
++	}
++
++	// The run directory's record stands when the copy cannot be kept, so a failure here never fails the resume.
++	if err := copyManifest(runDirRoot(runner.cfg, runner.anchorPath), run.state.RunID, run.runDir); err != nil {
++		logger.Warn("shuttle: gate: keep the resumed launch's manifest copy failed (non-fatal)", "runDir", run.runDir, "error", err)
++	}
++	// The record names the new strand now, so removing the old one leaves no running record naming a removed strand.
++	// A failed removal leaves a strand reed reconciles later, and never fails the resume.
++	if err := removeStrandIfPresent(runner.reed, goneStrandGUID); err != nil {
++		logger.Warn("shuttle: gate: remove the replaced strand after the resume (non-fatal)", "strandGUID", goneStrandGUID, "error", err)
++	}
++
++	run.startupEventsOffset = startupEventsOffset
++	if result, err := run.awaitStartup(); err != nil {
++		return result, true, err
++	}
++	return Result{}, false, nil
++}
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index e1591bce..e9d060bb 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -376,6 +376,9 @@ type Run struct {
+ 	startupStrandRemoved bool
+ 	// sessionLiveness is the per-wait state of sessionGone, reset at the entry of Wait and awaitStartup.
+ 	sessionLiveness sessionLivenessState
++	// startupEventsOffset is the events file's size when a resume started this run's current strand, zero for a first launch.
++	// The startup wait reads the file only past it, so the lines of an earlier session prove nothing about the new one.
++	startupEventsOffset int64
+ 	// startupHookReason is why the latest startup probe held a ready pane back for want of a session-start line, empty when it held nothing back.
+ 	startupHookReason string
+ 	// dismissed reports that this run sent a key to dismiss the startup gate; dismissedAt is when, on the run's clock.
+@@ -678,19 +681,7 @@ func (r *Runner) launch(spec Spec, gate GateSpec, engine Engine, engineName, res
+ 		doneWhen = spec.OutputFiles
+ 	}
+ 
+-	strand, err := r.reed.AddStrand(reedengine.AddSpec{
+-		Role:         spec.Role,
+-		NameOverride: spec.NameOverride,
+-		Segment:      string(spec.Segment),
+-		Provider:     engineName,
+-		CreelHooks:   launch.CreelHooks,
+-		Parent:       spec.Parent,
+-		Cmd:          launch.Cmd,
+-		ResumeCmd:    launch.ResumeCmd,
+-		SessionID:    launch.SessionID,
+-		Display:      spec.Display,
+-		DoneWhen:     doneWhen,
+-	})
++	strand, err := r.reed.AddStrand(strandAddSpec(spec, engineName, launch, doneWhen))
+ 	if err != nil {
+ 		// Nothing to resume: the strand never registered, so the run
+ 		// directory this attempt created is cleaned up rather than left as
+@@ -796,6 +787,25 @@ func (r *Runner) launch(spec Spec, gate GateSpec, engine Engine, engineName, res
+ 	return run, Result{}, nil
+ }
+ 
++// strandAddSpec returns the reed request that registers the strand of a run of spec.
++// The run is launched through launch on the engine engineName.
++// doneWhen is the strand's done-when list, nil for a strand reed must never drop as finished.
++func strandAddSpec(spec Spec, engineName string, launch Launch, doneWhen []string) reedengine.AddSpec {
++	return reedengine.AddSpec{
++		Role:         spec.Role,
++		NameOverride: spec.NameOverride,
++		Segment:      string(spec.Segment),
++		Provider:     engineName,
++		CreelHooks:   launch.CreelHooks,
++		Parent:       spec.Parent,
++		Cmd:          launch.Cmd,
++		ResumeCmd:    launch.ResumeCmd,
++		SessionID:    launch.SessionID,
++		Display:      spec.Display,
++		DoneWhen:     doneWhen,
++	}
++}
++
+ // typeStartupColor types color into the run's pane, doing nothing for an empty color.
+ // The color is display only: a failed typing is logged and never fails the launch.
+ func (run *Run) typeStartupColor(color segmentcolor.Color) {
+@@ -1512,6 +1522,17 @@ type paneNotReadyError struct{ msg string }
+ func (e paneNotReadyError) Error() string { return e.msg }
+ func (e paneNotReadyError) Unwrap() error { return ErrPaneNotReady }
+ 
++// errStrandGone reports that a strand can take no keys.
++// Reed does not track it, holds no pane id for it, or its pane is dead.
++var errStrandGone = errors.New("shuttle: the strand can take no keys")
++
++// strandGoneError carries the liveness lookup's full message while it satisfies errors.Is(err, errStrandGone).
++// The message is kept exactly as operators and tests know it.
++type strandGoneError struct{ msg string }
++
++func (e strandGoneError) Error() string { return e.msg }
++func (e strandGoneError) Unwrap() error { return errStrandGone }
++
+ // requireLiveStrand fails unless guid's strand is tracked by reed and bound
+ // to a live pane. This guards against tmux send-keys exiting 0 on dead panes.
+ func requireLiveStrand(reed ReedOps, guid string) error {
+@@ -1520,7 +1541,8 @@ func requireLiveStrand(reed ReedOps, guid string) error {
+ }
+ 
+ // liveStrand returns guid's strand as reed reports it.
+-// It fails unless the strand is tracked and bound to a live pane.
++// It fails unless the strand is tracked and bound to a live pane;
++// an untracked strand, a cleared pane binding and a dead pane fail with an error wrapping errStrandGone.
+ func liveStrand(reed ReedOps, guid string) (reedengine.StrandStatus, error) {
+ 	status, err := reed.Status()
+ 	if err != nil {
+@@ -1536,16 +1558,16 @@ func liveStrand(reed ReedOps, guid string) (reedengine.StrandStatus, error) {
+ 			// For the second, naming a terminal outcome or a dead pane is wrong:
+ 			// the agent may still be working in a pane tmux reports alive, so the error names the dropped binding.
+ 			if s.PaneID == "" {
+-				return reedengine.StrandStatus{}, fmt.Errorf("shuttle: reed tracks strand %q but holds no pane id for it — either its pane binding was cleared as stale (reed does that when the persisted pane generation is not the session incarnation now running: a restored backup, a copied .lym, or a reed.json older than the session) or the strand was added anchor:hidden and never given a pane. Its agent may still be working in a pane reed can no longer address, so keys have nowhere to go; check \"lym reed status\"", guid)
++				return reedengine.StrandStatus{}, strandGoneError{msg: fmt.Sprintf("shuttle: reed tracks strand %q but holds no pane id for it — either its pane binding was cleared as stale (reed does that when the persisted pane generation is not the session incarnation now running: a restored backup, a copied .lym, or a reed.json older than the session) or the strand was added anchor:hidden and never given a pane. Its agent may still be working in a pane reed can no longer address, so keys have nowhere to go; check \"lym reed status\"", guid)}
+ 			}
+-			return reedengine.StrandStatus{}, fmt.Errorf("shuttle: strand %q has no live pane — its run already reached a terminal outcome or its pane died; keys would be silently dropped", guid)
++			return reedengine.StrandStatus{}, strandGoneError{msg: fmt.Sprintf("shuttle: strand %q has no live pane — its run already reached a terminal outcome or its pane died; keys would be silently dropped", guid)}
+ 		}
+ 		return s, nil
+ 	}
+ 	// The same branch is reached by a completed run, and also by several causes with the run still unfinished:
+ 	// a `lym reed remove`, a `down`/`up` cycle, or a server rebirth.
+ 	// So the message states what was observed, then lists the causes.
+-	return reedengine.StrandStatus{}, fmt.Errorf("shuttle: strand %q is not tracked by reed — either its run completed and was cleaned up, or reed's strand table was reset under it (a reed remove/down, or a lost or rebuilt reed.json); check \"lym reed status\"", guid)
++	return reedengine.StrandStatus{}, strandGoneError{msg: fmt.Sprintf("shuttle: strand %q is not tracked by reed — either its run completed and was cleaned up, or reed's strand table was reset under it (a reed remove/down, or a lost or rebuilt reed.json); check \"lym reed status\"", guid)}
+ }
+ 
+ // playInputs sends inputs to guid's pane through reed in order.
+diff --git a/internal/shuttleengine/spec.go b/internal/shuttleengine/spec.go
+index 4ccc1508..e4033fe5 100644
+--- a/internal/shuttleengine/spec.go
++++ b/internal/shuttleengine/spec.go
+@@ -153,6 +153,11 @@ type Spec struct {
+ 	// The engine realizes the list through its skill-loader capability.
+ 	// An engine without that capability refuses a non-empty list at start.
+ 	Skills []string
++	// SkipSkillLoadTurn, when true, makes the engine's Prepare keep the prompt pointer on the launch line.
++	// Prepare then returns no Launch.PromptLine.
++	// The session then takes no skill-load turn, while Skills still shape its scope, settings and standing passages.
++	// A resume sets it, since the resumed session already holds the skills its first launch loaded.
++	SkipSkillLoadTurn bool
+ 	// SkillLoadTimeout bounds each load turn's wait before skipping its skills; zero takes the engine's default.
+ 	// A turn still open at the timeout is awaited until it ends or the run's deadline fails the start;
+ 	// a turn the provider's API fails is run again however long that takes, so neither skips a skill at this bound.
+diff --git a/internal/shuttleengine/stepstop.go b/internal/shuttleengine/stepstop.go
+index bd1af85b..d9b6622b 100644
+--- a/internal/shuttleengine/stepstop.go
++++ b/internal/shuttleengine/stepstop.go
+@@ -28,8 +28,12 @@ type StepStopFailure struct {
+ // StepStopReport reports the outcome of a step stop.
+ // It names each run by its strand name, or by its strand guid when the record has no name.
+ type StepStopReport struct {
+-	// Stopped holds the runs of the step that were stopped.
++	// Stopped holds the runs of the step whose record the stop set to stopped.
+ 	Stopped []string
++	// Finished holds the runs of the step whose output files all exist, so the stop left their record running.
++	Finished []string
++	// Held holds the runs of the step left running because a live process may still hold their session.
++	Held []string
+ 	// Untied holds the live running runs that carry no step and were left alone.
+ 	Untied []string
+ 	// Failed holds the runs of the step whose stop failed; the stop went on past each.
+@@ -42,14 +46,21 @@ func (r *Runner) SetStepTie(tie StepTie) {
+ 	r.step = &tie
+ }
+ 
+-// StopStepRuns stops every run under the runner's run-directory root that is still running and has a removable strand.
+-// It stops only runs whose record names tie as its step.
++// StopStepRuns stops every run under the runner's run-directory root that is still running.
++// A run qualifies when its record names tie as its step.
++// Each is stopped through the stop verb, which records the stop before removing the strand.
+ // A strand is removable when it is live, or an own-window strand whose pane is present but not live.
+ // That covers a dead pane or one showing only its shell.
+ // So a step stop ends the window of a run whose own-window agent died.
+-// Each is stopped through the stop verb, which records the stop before removing the strand.
+-// A removable running run with no step is listed under Untied without being touched.
+-// A run of another step and a run with a terminal record or a dead window 0 strand are left alone.
++// A run of the step whose strand is dead but not removable has its record stopped.
++// No strand is removed, since no process waits on it.
++// A run whose strand reed does not track, or tracks with no pane bound, may have a live agent.
++// That agent works in a pane reed cannot address.
++// Such a run is stopped only when its record's engine names no live process holding its session.
++// When a holder is live, or the engine cannot name one, the run stays running and is listed under Held.
++// A run whose output files all exist keeps reading running through the stop and is listed under Finished.
++// A running run with no step and a removable strand is listed under Untied without being touched.
++// A run of another step, a run with a terminal record and an untied run without a removable strand are left alone.
+ // A record that does not decode is skipped.
+ // A stop that fails is listed under Failed and the stop goes on with the next run.
+ func (r *Runner) StopStepRuns(tie StepTie) (StepStopReport, error) {
+@@ -78,24 +89,49 @@ func (r *Runner) StopStepRuns(tie StepTie) (StepStopReport, error) {
+ 		if err != nil || !found || rs.Outcome != runOutcomeRunning {
+ 			continue
+ 		}
+-		if strand, tracked := strandStatusByGUID(status.Strands, rs.StrandGUID); !tracked || !strandRemovable(strand) {
+-			continue
+-		}
+ 		name := rs.StrandName
+ 		if name == "" {
+ 			name = rs.StrandGUID
+ 		}
++		strand, tracked := strandStatusByGUID(status.Strands, rs.StrandGUID)
+ 		switch {
+ 		case rs.Step == nil:
+-			report.Untied = append(report.Untied, name)
+-		case *rs.Step != tie:
+-		default:
++			if tracked && strandRemovable(strand) {
++				report.Untied = append(report.Untied, name)
++			}
++		case *rs.Step == tie:
++			if (!tracked || (!strand.Live && strand.PaneID == "")) && r.sessionMayBeHeld(rs) {
++				report.Held = append(report.Held, name)
++				continue
++			}
+ 			if err := r.stopRecorded(runDir, rs.StrandGUID); err != nil {
+ 				report.Failed = append(report.Failed, StepStopFailure{Strand: name, Error: err.Error()})
+ 				continue
+ 			}
++			if after, found, err := loadRunState(runDir); err == nil && found && after.Outcome == runOutcomeRunning {
++				report.Finished = append(report.Finished, name)
++				continue
++			}
+ 			report.Stopped = append(report.Stopped, name)
+ 		}
+ 	}
+ 	return report, nil
+ }
++
++// sessionMayBeHeld reports whether a live process may hold the session rs records.
++// It is false only when rs's engine can name the process holding a session, and finds none for a recorded session.
++// A record with no session reads held.
++// So does an engine the set no longer holds, an engine that cannot name a holder, and a failed lookup.
++// Each leaves a live holder unruled out.
++func (r *Runner) sessionMayBeHeld(rs RunState) bool {
++	engine, _, err := r.engineFor(rs)
++	if err != nil {
++		return true
++	}
++	finder, ok := engine.(SessionHolderFinder)
++	if !ok || rs.SessionID == "" {
++		return true
++	}
++	_, held, err := finder.SessionHolder(rs.SessionID)
++	return err != nil || held
++}
+diff --git a/internal/shuttleengine/stop_test.go b/internal/shuttleengine/stop_test.go
+index aaae6069..e4f8ee26 100644
+--- a/internal/shuttleengine/stop_test.go
++++ b/internal/shuttleengine/stop_test.go
+@@ -200,11 +200,16 @@ func TestStopStrand_GuidWithNoRunRecordIsRemovedByStrandAlone(t *testing.T) {
+ 	}
+ }
+ 
+-// TestRunner_StopStepRuns_StopsOnlyTheKilledStepsLiveRuns covers the step form over one run-directory root:
+-// only a running run tied to the step is stopped when its strand is live or a dead own-window one;
+-// an untied run is listed and left alone; a dead window 0 strand is left alone;
++// TestRunner_StopStepRuns_StopsOnlyTheStepsRuns covers the step form over one run-directory root:
++// every running run tied to the step is stopped, and only a live or dead own-window strand is removed;
++// a run whose strand is a dead window 0 one has its record stopped with no removal;
++// a run whose strand is untracked or has its pane binding cleared is stopped only when no live process holds its session;
++// otherwise it is listed as held and left running;
++// a run whose output files all exist is listed as finished and keeps reading running;
++// an untied run with a removable strand is listed and left alone;
++// a run of another step and a terminal run are left alone;
+ // and a failed stop is reported and skipped.
+-func TestRunner_StopStepRuns_StopsOnlyTheKilledStepsLiveRuns(t *testing.T) {
++func TestRunner_StopStepRuns_StopsOnlyTheStepsRuns(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+@@ -218,9 +223,13 @@ func TestRunner_StopStepRuns_StopsOnlyTheKilledStepsLiveRuns(t *testing.T) {
+ 		{GUID: "guid-dead-own", PaneID: "%6", OwnWindow: true, Present: true},
+ 		{GUID: "guid-dead-window0", PaneID: "%7", Present: true},
+ 		{GUID: "guid-failing", PaneID: "%5", Live: true},
++		{GUID: "guid-cleared"},
+ 	}
+ 	fake := &fakeReed{StatusQueue: []reedengine.StatusResult{{Strands: strands}}}
+-	fx := newFixture(t, fake, &fakeEngine{}, withConfig(fastConfig), withSeparateRunDir())
++	engine := &resumableFakeEngine{fakeEngine: &fakeEngine{}, heldSessions: map[string]int{"session-held": 4242}}
++	fx := newFixture(t, fake, engine, withConfig(fastConfig), withSeparateRunDir())
++	finishedFile := filepath.Join(t.TempDir(), "finished.md")
++	touchOutputFile(t, finishedFile)
+ 	seed := func(id string, record RunState) string {
+ 		t.Helper()
+ 		runDir := filepath.Join(fx.RunRoot, id)
+@@ -229,7 +238,9 @@ func TestRunner_StopStepRuns_StopsOnlyTheKilledStepsLiveRuns(t *testing.T) {
+ 		}
+ 		record.RunID = id
+ 		// A run with no output file reads finished, which a stop never turns into a stopped record.
+-		record.OutputFiles = []string{filepath.Join(fx.RunRoot, "never-written.md")}
++		if record.OutputFiles == nil {
++			record.OutputFiles = []string{filepath.Join(fx.RunRoot, "never-written.md")}
++		}
+ 		if err := saveRunState(runDir, record); err != nil {
+ 			t.Fatalf("saveRunState: %v", err)
+ 		}
+@@ -242,19 +253,25 @@ func TestRunner_StopStepRuns_StopsOnlyTheKilledStepsLiveRuns(t *testing.T) {
+ 		"terminal":     seed("run-4", RunState{StrandGUID: "guid-terminal", StrandName: "name-terminal", Outcome: "died", Step: &tie}),
+ 		"dead-own":     seed("run-5", RunState{StrandGUID: "guid-dead-own", StrandName: "name-dead-own", Outcome: runOutcomeRunning, Step: &tie}),
+ 		"dead-window0": seed("run-6", RunState{StrandGUID: "guid-dead-window0", StrandName: "name-dead-window0", Outcome: runOutcomeRunning, Step: &tie}),
++		"untracked":    seed("run-8", RunState{StrandGUID: "guid-untracked", StrandName: "name-untracked", SessionID: "session-free", Outcome: runOutcomeRunning, Step: &tie}),
++		"cleared":      seed("run-9", RunState{StrandGUID: "guid-cleared", StrandName: "name-cleared", SessionID: "session-free", Outcome: runOutcomeRunning, Step: &tie}),
++		"held":         seed("run-91", RunState{StrandGUID: "guid-held", StrandName: "name-held", SessionID: "session-held", Outcome: runOutcomeRunning, Step: &tie}),
++		"finished":     seed("run-92", RunState{StrandGUID: "guid-finished", StrandName: "name-finished", SessionID: "session-free", OutputFiles: []string{finishedFile}, Outcome: runOutcomeRunning, Step: &tie}),
+ 	}
+ 
+ 	report, err := fx.Runner.StopStepRuns(tie)
+ 	if err != nil {
+ 		t.Fatalf("StopStepRuns() error = %v", err)
+ 	}
+-	if !slices.Equal(report.Stopped, []string{"name-tied", "name-dead-own"}) || !slices.Equal(report.Untied, []string{"name-untied"}) || len(report.Failed) != 0 {
+-		t.Errorf("report = %+v; want the tied live run and the tied dead own-window run stopped and the untied one listed", report)
++	if !slices.Equal(report.Stopped, []string{"name-tied", "name-dead-own", "name-dead-window0", "name-untracked", "name-cleared"}) ||
++		!slices.Equal(report.Held, []string{"name-held"}) || !slices.Equal(report.Finished, []string{"name-finished"}) ||
++		!slices.Equal(report.Untied, []string{"name-untied"}) || len(report.Failed) != 0 {
++		t.Errorf("report = %+v; want the unheld tied runs stopped, the held one and the finished one listed, and the untied one listed", report)
+ 	}
+ 	if len(fake.RemoveStrandCalls) != 2 || fake.RemoveStrandCalls[0].GUID != "guid-tied" || fake.RemoveStrandCalls[1].GUID != "guid-dead-own" {
+ 		t.Errorf("RemoveStrand calls = %v; want the removals of guid-tied and guid-dead-own", fake.RemoveStrandCalls)
+ 	}
+-	for name, wantOutcome := range map[string]string{"tied": runOutcomeStopped, "other": runOutcomeRunning, "untied": runOutcomeRunning, "terminal": "died", "dead-own": runOutcomeStopped, "dead-window0": runOutcomeRunning} {
++	for name, wantOutcome := range map[string]string{"tied": runOutcomeStopped, "other": runOutcomeRunning, "untied": runOutcomeRunning, "terminal": "died", "dead-own": runOutcomeStopped, "dead-window0": runOutcomeStopped, "untracked": runOutcomeStopped, "cleared": runOutcomeStopped, "held": runOutcomeRunning, "finished": runOutcomeRunning} {
+ 		record, _, err := loadRunState(dirs[name])
+ 		if err != nil {
+ 			t.Fatalf("loadRunState %s: %v", name, err)
+@@ -278,6 +295,20 @@ func TestRunner_StopStepRuns_StopsOnlyTheKilledStepsLiveRuns(t *testing.T) {
+ 			t.Errorf("failure = %+v; want a strand name and the removal error text", failure)
+ 		}
+ 	}
++
++	// A failing holder lookup leaves a live holder unruled out, so an untracked run stays running and is listed as held.
++	engine.holderErr = errors.New("registry entry unreadable")
++	lookupFailedDir := seed("run-93", RunState{StrandGUID: "guid-lookup-failed", StrandName: "name-lookup-failed", SessionID: "session-free", Outcome: runOutcomeRunning, Step: &tie})
++	report, err = fx.Runner.StopStepRuns(tie)
++	if err != nil {
++		t.Fatalf("StopStepRuns() with a failing holder lookup error = %v", err)
++	}
++	if !slices.Contains(report.Held, "name-lookup-failed") || slices.Contains(report.Stopped, "name-lookup-failed") {
++		t.Errorf("report = %+v; want the run with a failing holder lookup listed as held and not stopped", report)
++	}
++	if record, _, err := loadRunState(lookupFailedDir); err != nil || record.Outcome != runOutcomeRunning {
++		t.Errorf("lookup-failed run outcome = %q (err %v); want %q", record.Outcome, err, runOutcomeRunning)
++	}
+ }
+ 
+ // TestStop_WaitThatSeesTheStoppedStrandGoEndsDied covers a Wait on a handle whose own Stop removed the strand:
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index dec233d5..bf2719df 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -64,6 +64,7 @@
+ // the pane reading idle for turnStartIdleOverride restores it too, unless the engine reads that turn in flight.
+ // Every gate send goes through sendWithin, so its idle wait and submit window end by the run deadline.
+ // A re-prompt that fails busy or unlanded spends no attempt and is re-sent on a later tick, bounded by the run deadline.
++// A re-prompt whose strand is gone resumes the writer's session in a fresh strand.
+ // Held maxNoInputBoxReprompts times in a row, a pane with no input box ends the loop with the attempts spent so far.
+ // The loop thus ends before a picker that shuttle cannot dismiss holds the run until its deadline.
+ // A gated run off the boundary also asks each entry's read-only Expired probe once per gateRecheckEvery.
+@@ -564,6 +565,9 @@ func gateEntryError(name, problem string) error {
+ // so a later tick re-sends it until the run deadline.
+ // When maxNoInputBoxReprompts such failures follow each other from a pane with no input box, the loop finalizes done.
+ // The attempts spent so far are kept.
++// A re-prompt whose strand can take no keys resumes the writer's session in a fresh strand.
++// The re-prompt is its first turn and counts as a delivered re-prompt.
++// A resume refused or failed before its strand registers ends the loop, naming both failures.
+ // Any other re-prompt send failure ends the loop.
+ // A pending result sends its Send text when non-empty and keeps polling.
+ // A failed pending send warns once per entry and episode, naming the entry, the error and the closure's way-forward.
+@@ -603,7 +607,19 @@ func (run *Run) handleGatedBoundary() (Result, bool, error) {
+ 	if render := run.gate[failed].Reprompt; render != nil {
+ 		reprompt = render(run.gateFindingsPath)
+ 	}
+-	if serr := run.sendWithin(reprompt); serr != nil {
++	serr := run.sendWithin(reprompt)
++	if errors.Is(serr, errStrandGone) {
++		result, finished, rerr := run.relaunchForReprompt(reprompt)
++		switch {
++		case finished:
++			return result, true, rerr
++		case rerr != nil:
++			serr = fmt.Errorf("%w; resuming the session in a fresh strand failed: %v", serr, rerr)
++		default:
++			serr = nil
++		}
++	}
++	if serr != nil {
+ 		if errors.Is(serr, ErrSessionBusy) || errors.Is(serr, ErrSubmissionNotLanded) || errors.Is(serr, ErrPaused) {
+ 			var busy *SessionBusyError
+ 			if errors.As(serr, &busy) && busy.NoInputBox {
+@@ -1449,11 +1465,15 @@ func allOutputFilesExist(files []string) bool {
+ // Until then the tick stays not started, records the reason on the run for the teardown, and answers as a still-booting pane does.
+ // Gate detection and dismissal run as for any run.
+ // A session-start line an earlier launch of the same run left satisfies the line half; the pane half still gates it.
++// A resumed strand's startup is the exception: both halves read the events file only past run.startupEventsOffset.
+ //
+ // With eventsProof set, a record with `RecordsSessionStarts` also starts once the events file holds a session start followed by a turn start.
+ // That check runs before the pane capture; a false answer falls through to the capture path, so a recognized gate is still dismissed.
+-// Only the launch's own startup wait sets eventsProof.
+-// Its events file is created fresh for the launch, so only this launch's hooks satisfy it.
++// Only a strand's own startup wait sets eventsProof.
++// It reads the events file from run.startupEventsOffset.
++// A launch's file is created fresh and its offset is zero, so only that launch's hooks satisfy it.
++// A resume keeps the file, and its offset is the file's size at the resume.
++// So only the resumed session's hooks satisfy it.
+ // The wait's probe of a not-yet-started run may read an earlier incarnation's lines, so it leaves eventsProof unset.
+ func (run *Run) checkLivenessTick(started *bool, startupDeadline time.Time, eventsProof bool) (Outcome, error) {
+ 	status, err := run.runner.reed.Status()
+@@ -1497,7 +1517,7 @@ func (run *Run) checkLivenessTick(started *bool, startupDeadline time.Time, even
+ 		return "", nil
+ 	}
+ 
+-	if eventsProof && run.state.RecordsSessionStarts && turnStartedAfterSessionStart(run.engine, run.state.EventsPath) {
++	if eventsProof && run.state.RecordsSessionStarts && turnStartedAfterSessionStart(run.engine, run.state.EventsPath, run.startupEventsOffset) {
+ 		*started = true
+ 		run.markStarted()
+ 		return "", nil
+@@ -1519,7 +1539,7 @@ func (run *Run) checkLivenessTick(started *bool, startupDeadline time.Time, even
+ 	switch run.engine.Startup(capture) {
+ 	case StartupReady:
+ 		if run.state.RecordsSessionStarts {
+-			recorded, readErr := sessionStartRecorded(run.engine, run.state.EventsPath)
++			recorded, readErr := sessionStartRecorded(run.engine, run.state.EventsPath, run.startupEventsOffset)
+ 			switch {
+ 			case readErr != nil:
+ 				run.startupHookReason = fmt.Sprintf("the events file %s could not be read for a session-start line: %v", run.state.EventsPath, readErr)
+@@ -1642,10 +1662,10 @@ func (run *Run) sessionGone() bool {
+ }
+ 
+ // sessionStartRecorded reports whether the events file holds a session-start signal of any source.
+-// It reads the file from its start.
++// It reads the file from byte offset onward.
+ // An absent file reports false with no error, and an unreadable one returns the read error.
+ // An engine that does not parse session signals reports false.
+-func sessionStartRecorded(engine Engine, eventsPath string) (bool, error) {
++func sessionStartRecorded(engine Engine, eventsPath string, offset int64) (bool, error) {
+ 	parser, ok := engine.(SessionSignalParser)
+ 	if !ok {
+ 		return false, nil
+@@ -1657,7 +1677,7 @@ func sessionStartRecorded(engine Engine, eventsPath string) (bool, error) {
+ 	if err != nil {
+ 		return false, err
+ 	}
+-	signals, _ := parser.ParseSessionSignals(data)
++	signals, _ := parser.ParseSessionSignals(eventsFrom(data, offset))
+ 	for _, signal := range signals {
+ 		if signal.Kind == SessionSignalSessionStart {
+ 			return true, nil
+@@ -1667,10 +1687,10 @@ func sessionStartRecorded(engine Engine, eventsPath string) (bool, error) {
+ }
+ 
+ // turnStartedAfterSessionStart reports whether the events file holds a turn-start signal after a session-start signal.
+-// Signals are taken in file order, from the file's start.
++// Signals are taken in file order, from byte offset onward.
+ // An absent or unreadable file, and an engine that does not parse session signals, report false.
+ // It reads signals through the engine's parser, never by a provider's hook names.
+-func turnStartedAfterSessionStart(engine Engine, eventsPath string) bool {
++func turnStartedAfterSessionStart(engine Engine, eventsPath string, offset int64) bool {
+ 	parser, ok := engine.(SessionSignalParser)
+ 	if !ok {
+ 		return false
+@@ -1679,7 +1699,7 @@ func turnStartedAfterSessionStart(engine Engine, eventsPath string) bool {
+ 	if err != nil {
+ 		return false
+ 	}
+-	signals, _ := parser.ParseSessionSignals(data)
++	signals, _ := parser.ParseSessionSignals(eventsFrom(data, offset))
+ 	sessionStarted := false
+ 	for _, signal := range signals {
+ 		switch signal.Kind {
+@@ -1694,6 +1714,14 @@ func turnStartedAfterSessionStart(engine Engine, eventsPath string) bool {
+ 	return false
+ }
+ 
++// eventsFrom returns data from byte offset onward, and nothing when offset is at or past its end.
++func eventsFrom(data []byte, offset int64) []byte {
++	if offset >= int64(len(data)) {
++		return nil
++	}
++	return data[offset:]
++}
++
+ // classifyStartupWindow reports the outcome once startupDeadline has passed.
+ // On a run whose provider has not reached StartupReady, it returns "" while the window is still open.
+ //
