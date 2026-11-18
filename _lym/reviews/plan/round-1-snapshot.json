@@ -13,5 +13,6 @@
       "title": "The motif writes the design only",
       "digest": "4378b8881eb5f9fab3eb78518ba20f6f487d2275fcd3c6394dc6345b472aff8f"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
