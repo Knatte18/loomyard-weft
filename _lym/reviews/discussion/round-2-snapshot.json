@@ -1,0 +1,14 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/discussion/decision-record.md",
+    "_lym/discussion/support-log.md"
+  ],
+  "target_id": "fcf6ebe2944a2562b4b598114ccb714b68c479910d39aab8d627ccd62137fb7a",
+  "added_decisions": [
+    {
+      "title": "Mutation check order: trial before the mutation step (F6)",
+      "digest": "664be5d4da602cdc675f68bbf05284562c0045c85e241007fed1a19a666af2b7"
+    }
+  ]
+}
