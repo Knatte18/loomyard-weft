@@ -1,0 +1,874 @@
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 1473554b..1ca1b4dc 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -1119,6 +1119,7 @@
+ // It records the failure and HEAD in its `Failure`.
+ // With no such map the call writes a map of the file hashes with no tests and the failure as its `BuildFailure`.
+ // No later call at that HEAD queues the package again.
++// A test of a file only another platform compiles is no mapped test, so it never counts as failed.
+ // A test the `testcover.ScanSpawns` scan marks out of process or unresolved is never run;
+ // a whole rebuild records it with its verdict.
+ // A timed-out test is listed.
+@@ -1185,7 +1186,10 @@
+ // It builds the package's coverage binary over the package alone and reads its block table from a run of no test.
+ // `testcover.PlanMutants` gives the mutants of the contained tests' blocks,
+ // and `testcover.Toolchain.BuildMutantBinary` builds one test binary holding them all.
+-// A refused build drops the mutants on the lines the compiler names and builds again, up to `mutantBuildRounds` builds.
++// A refused build drops the mutants on the lines the compiler names and builds again, counting them unbuildable.
++// From build `mutantBuildRounds` on, it drops every mutant of the files the compiler names.
++// When the compiler names no line or file of a mutant, it drops every mutant left,
++// so a mutant that does not compile never fails the check.
+ // A contained test's covering tests here are those `testcover.CoveringTests` picks among the other judged tests.
+ // The pick ignores what the greedy pass removed, so it never depends on the tests' seconds.
+ // A source-checking test is no covering test, since it kills no mutant.
+diff --git a/internal/gatecli/redundant_integration_test.go b/internal/gatecli/redundant_integration_test.go
+index 05b72f67..7f73933a 100644
+--- a/internal/gatecli/redundant_integration_test.go
++++ b/internal/gatecli/redundant_integration_test.go
+@@ -7,7 +7,12 @@ import (
+ 	"bytes"
+ 	"context"
+ 	"encoding/json"
++	"errors"
++	"fmt"
+ 	"os"
++	"os/exec"
++	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -37,7 +42,7 @@ import (
+ // Hoard panics at hoardStop megabytes, so a memory cap that does not hold fails the test and never the machine.
+ // TestAllowedChecked checks what TestAllowedRun only runs: an || chain and an && chain that one clause each decides,
+ // and the lines of an embedded file.
+-// TestAll and TestDoubleChecked also call Timeout, whose constant does not compile behind the mutant helper.
++// TestAll and TestDoubleChecked also call Timeout, whose integer constant in a float context does not compile mutated.
+ // The module stands in its own tiergate, at the import path a coverage map reads tiers from, so it builds alone.
+ var redundantModuleFiles = map[string]string{
+ 	"go.mod":                                "module github.com/Knatte18/loomyard\n\ngo 1.21\n",
+@@ -79,7 +84,7 @@ func Double(n int) int {
+ }
+ 
+ func Timeout() time.Duration {
+-	return 5 * time.Second
++	return time.Duration(5 * float64(time.Second))
+ }
+ 
+ func Tally(n int) int {
+@@ -232,6 +237,58 @@ func TestHoardCheckedAgain(t *testing.T) {
+ // redundantTestSecond is the length of one `redundancy_test_timeout_sec` second in TestGateRedundant.
+ const redundantTestSecond = 2 * time.Second
+ 
++// The mutants of the fixture package cov: those that build, and Timeout's constant, which does not compile mutated.
++const (
++	redundantBuildableMutants   = 20
++	redundantUnbuildableMutants = 1
++)
++
++// helperRoleRedundantGo makes the test binary a `go` that refuses the first mutantBuildRounds mutant builds.
++// Each refusal names the next line of redundantRefusedLines in cov.go; every other call goes to the real go command.
++const helperRoleRedundantGo = "redundant-go"
++
++// redundantBuildsEnv names the file the stand-in records one line into for each mutant build it gets.
++const redundantBuildsEnv = "GATECLI_TEST_REDUNDANT_BUILDS"
++
++// redundantRefusedLines are lines of cov.go that mutants span, one per refused build.
++// Each is a line the earlier builds left in place.
++var redundantRefusedLines = []int{13, 18, 26, 27, 29}
++
++func init() {
++	helperRoles[helperRoleRedundantGo] = runRedundantBuildCapStandIn
++}
++
++// runRedundantBuildCapStandIn acts as `go`: a `test -c -overlay=...` build is the mutant build.
++// The first len(redundantRefusedLines) mutant builds fail with a compile error at the line each names.
++// Every other call, and every later mutant build, runs the real go command.
++func runRedundantBuildCapStandIn() int {
++	args := os.Args[1:]
++	if slices.ContainsFunc(args, func(arg string) bool { return strings.HasPrefix(arg, "-overlay=") }) {
++		builds := os.Getenv(redundantBuildsEnv)
++		if appendLine(builds, "mutant build") != nil {
++			return 1
++		}
++		recorded, err := os.ReadFile(builds)
++		if err != nil {
++			return 1
++		}
++		if built := strings.Count(string(recorded), "\n"); built <= len(redundantRefusedLines) {
++			fmt.Fprintf(os.Stderr, "# cov\n./cov.go:%d:9: refused by the stand-in\n", redundantRefusedLines[built-1])
++			return 1
++		}
++	}
++	cmd := exec.Command(defaultGoBinary, args...)
++	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
++	if err := cmd.Run(); err != nil {
++		var exit *exec.ExitError
++		if errors.As(err, &exit) {
++			return exit.ExitCode()
++		}
++		return 1
++	}
++	return 0
++}
++
+ // TestGateRedundant confirms a built map's candidates by mutation and refuses where no map can be judged.
+ func TestGateRedundant(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -338,8 +395,9 @@ func TestGateRedundant(t *testing.T) {
+ 			t.Errorf("redundant ./cov lists %d removable candidates; want at most 1, one of the pair", removable)
+ 		}
+ 		// Timeout's constant is the one mutant that does not compile.
+-		if got.Mutation.Mutants != 20 || got.Mutation.Unbuildable != 1 {
+-			t.Errorf("redundant ./cov mutation = %+v; want 20 buildable mutants and 1 unbuildable", got.Mutation)
++		if got.Mutation.Mutants != redundantBuildableMutants || got.Mutation.Unbuildable != redundantUnbuildableMutants {
++			t.Errorf("redundant ./cov mutation = %+v; want %d buildable mutants and %d unbuildable",
++				got.Mutation, redundantBuildableMutants, redundantUnbuildableMutants)
+ 		}
+ 		// Each involved test runs once with no mutant on, and each contained test once with each mutant of its blocks.
+ 		// Each covering test then runs with each mutant a contained test killed or left unjudged, when it covers the mutant.
+@@ -411,6 +469,43 @@ func TestGateRedundant(t *testing.T) {
+ 		if diff := cmp.Diff(want, got); diff != "" {
+ 			t.Errorf("redundant ./cov mismatch (-want +got):\n%s", diff)
+ 		}
++
++		// It reads the map this subtest built, so it runs inside it, and in sequence.
++		t.Run("DropsEveryMutantOfTheFileAtTheBuildCapInsteadOfFailing", func(t *testing.T) {
++			if len(redundantRefusedLines) != mutantBuildRounds {
++				t.Fatalf("redundantRefusedLines = %v; want one line per build up to mutantBuildRounds (%d)", redundantRefusedLines, mutantBuildRounds)
++			}
++			standIn, err := os.Executable()
++			if err != nil {
++				t.Fatal(err)
++			}
++			builds := filepath.Join(t.TempDir(), "mutant-builds")
++			var capped bytes.Buffer
++			code := runRedundant(lymcwd.WithCwd(context.Background(), prime), &capped, redundantRequest{
++				pkg: "./cov", goBinary: standIn,
++				environ:    append(os.Environ(), helperEnv+"="+helperRoleRedundantGo, redundantBuildsEnv+"="+builds),
++				secondUnit: redundantTestSecond, minuteUnit: time.Minute, grace: defaultPipeWaitDelay,
++				cappedParallel: func(int, int64) int { return 2 },
++			})
++			var got struct {
++				OK       bool          `json:"ok"`
++				Mutation mutationStats `json:"mutation"`
++			}
++			if err := json.Unmarshal(capped.Bytes(), &got); err != nil || code != 0 || !got.OK {
++				t.Fatalf("redundant ./cov with refused mutant builds = %d, %s; want exit 0 and a JSON envelope (%v)", code, capped.Bytes(), err)
++			}
++			// The build at the cap drops every mutant of cov.go: the buildable ones and Timeout's, which never compiles.
++			if want := redundantBuildableMutants + redundantUnbuildableMutants; got.Mutation.Mutants != 0 || got.Mutation.Unbuildable != want {
++				t.Errorf("redundant ./cov mutation = %+v; want 0 mutants left and all %d of cov.go unbuildable", got.Mutation, want)
++			}
++			recorded, err := os.ReadFile(builds)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if built, want := strings.Count(string(recorded), "\n"), mutantBuildRounds+1; built != want {
++				t.Errorf("redundant ./cov started %d mutant builds; want %d, the refused ones and one that builds", built, want)
++			}
++		})
+ 	})
+ 
+ 	t.Run("AnswersEmptyListsForAMapHoldingNoContainedTest", func(t *testing.T) {
+diff --git a/internal/gatecli/redundantmutants.go b/internal/gatecli/redundantmutants.go
+index 1ba9ef1c..dc2a60b3 100644
+--- a/internal/gatecli/redundantmutants.go
++++ b/internal/gatecli/redundantmutants.go
+@@ -32,8 +32,9 @@ import (
+ // redundantSite labels the slot holder record of a `lym gate redundant` call.
+ const redundantSite = "lym gate redundant"
+ 
+-// mutantBuildRounds caps the builds of one call's mutant binary.
+-// Each refused build drops the mutants on the lines the compiler names, such as a constant a typed context needs.
++// mutantBuildRounds is the build of one call's mutant binary from which a refused build drops whole files.
++// A refused build from it on drops every mutant of the files the compiler names;
++// the builds before it drop only the mutants of the lines the compiler refuses.
+ const mutantBuildRounds = 5
+ 
+ // A test runs with a mutant on for at most mutantTimeoutFactor times its unmutated seconds.
+@@ -386,8 +387,11 @@ func (c *mutationCheck) planMutants(targets testcover.BlockSet) (*testcover.Muta
+ }
+ 
+ // buildMutants builds the binary holding every mutant of plan and returns it with the mutants dropped on the way.
+-// A build the compiler refuses drops each mutant on a line it names and builds again, up to mutantBuildRounds builds.
+-// The error reports a build that failed otherwise, refused a line no mutant spans or still failed at the last round.
++// A build the compiler refuses drops the mutants it blames and builds again.
++// Those are the mutants on a line it names, from round mutantBuildRounds on every mutant of a file it names.
++// With none there, they are every mutant left, since the package built unmutated for the plan.
++// Each round drops a mutant, so the rounds end.
++// The error reports a build that failed otherwise, or one that failed with every mutant dropped.
+ func (c *mutationCheck) buildMutants(plan *testcover.MutantPlan) (string, map[int]bool, error) {
+ 	dropped := map[int]bool{}
+ 	bin := filepath.Join(c.tmp, "mutants.test")
+@@ -404,8 +408,8 @@ func (c *mutationCheck) buildMutants(plan *testcover.MutantPlan) (string, map[in
+ 		if err == nil {
+ 			return bin, dropped, nil
+ 		}
+-		unbuildable := plan.UnbuildableMutants(err, dropped)
+-		if len(unbuildable) == 0 || round == mutantBuildRounds {
++		unbuildable := plan.UnbuildableMutants(err, dropped, round >= mutantBuildRounds)
++		if len(unbuildable) == 0 {
+ 			return "", nil, err
+ 		}
+ 		for _, id := range unbuildable {
+diff --git a/internal/gatecli/testmap_integration_test.go b/internal/gatecli/testmap_integration_test.go
+index 8a57b8c9..9e63a5f8 100644
+--- a/internal/gatecli/testmap_integration_test.go
++++ b/internal/gatecli/testmap_integration_test.go
+@@ -1634,7 +1634,7 @@ func TestGateTestMapLinkedPackages(t *testing.T) {
+ 		"go.sum":                "example.com/dependency v1.0.0 h1:placeholder=\n",
+ 		"caller/caller.go":      testMapSource("caller"),
+ 		"caller/caller_test.go": testMapTestFile("caller", map[string]int{"TestCallerCalls": 0, "TestCallerElsewhere": 0}),
+-		"caller/spawn_tier1_test.go": "//go:build tier1\n\npackage caller\n\nimport (\n\t\"os\"\n\t\"testing\"\n\n\t\"github.com/Knatte18/loomyard/internal/testkit/tiergate\"\n)\n\n" +
++		"caller/spawn_tier1_test.go": "package caller\n\nimport (\n\t\"os\"\n\t\"testing\"\n\n\t\"github.com/Knatte18/loomyard/internal/testkit/tiergate\"\n)\n\n" +
+ 			"func TestCallerSpawns(t *testing.T) {\n\ttiergate.Require(t, 1)\n\t_, _ = os.Executable()\n}\n\n" +
+ 			"func TestCallerUnresolved(t *testing.T) {\n\ttiergate.Require(t, 1)\n\tcall := func() {}\n\tcall()\n}\n",
+ 		"caller/testdata/fixture.txt": "fixture\n",
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index 82db065d..9aae4edf 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -23,7 +23,7 @@
+ // That error is how the cap shows where the host fails the allocation instead.
+ // A failed test whose pid the toolchain's GuardKilled names comes back marked GuardKilled.
+ // Such a kill reflects the machine's memory, not the test, so a caller judges nothing from it.
+-// ScanTestFuncs reads a package's top-level Test functions.
++// ScanTestFuncs reads a package's top-level Test functions, leaving out those of a file only another platform compiles.
+ // Each comes with its file, the tier its `tiergate.Require` names and the hash of its source text.
+ // ParseTestFuncs reads them from one test file's source, such as the file as a commit stores it.
+ //
+@@ -45,14 +45,20 @@
+ // Another deletes one operand of a chain of && or ||, so a clause only one test feeds has a mutant that test alone kills;
+ // the operand is still evaluated, and only its value is replaced.
+ // Another changes an integer, rune or string constant: a literal, or a use of a package-level constant holding one.
++// An integer or rune constant c becomes `c` plus a shift of an untyped 1, which keeps the type c takes in its context.
++// A constant of an expression built from integer and rune constants alone stays.
++// The shift would make that expression non-constant, and an intermediate value could overflow its type.
+ // A literal of a package-level variable's value is a site of each block that names the variable.
+ // It is also a site of each block that names a variable whose value names it.
+ // At a use of a string variable an embed directive fills, one mutant per non-blank line of the file changes that line.
++// On a line whose first `: ` or `=` has text after it, the mutant changes that value and keeps the key,
++// so a loader that refuses an unknown key does not make every test that loads the file kill it.
+ // MutantPlan.WriteOverlay writes every mutant into one copy of the changed files and an overlay naming them.
+ // Each mutant sits behind a helper that changes its value only while MutantEnv names the mutant's ID.
+ // No line moves, so a compiler error names the mutant's own line.
+ // BuildMutantBinary builds the package's test binary with the overlay;
+-// a refused build is a MutantBuildError, and UnbuildableMutants names the mutants on its lines for the caller to drop.
++// a refused build is a MutantBuildError, and UnbuildableMutants names the mutants it blames for the caller to drop.
++// Those are the mutants on its lines, else those of its files, else every mutant left.
+ // RunAlone with no profile runs a test of that binary.
+ // JudgeMutants calls a candidate redundant when it kills a mutant and a covering test kills each one it kills;
+ // a candidate that kills a mutant no covering test kills is refuted.
+diff --git a/internal/testcover/mutant.go b/internal/testcover/mutant.go
+index de0c7922..9a707296 100644
+--- a/internal/testcover/mutant.go
++++ b/internal/testcover/mutant.go
+@@ -40,12 +40,21 @@ const (
+ 	OperatorNegateComparison = "negate comparison"
+ 	// OperatorDeleteClause replaces an operand of a && or || chain with the value that ignores it.
+ 	// The operand is still evaluated, and only its value is replaced, so a side effect of the operand stays.
+-	OperatorDeleteClause       = "delete clause"
+-	OperatorDropStatement      = "drop statement"
+-	OperatorChangeConstant     = "change constant"
++	OperatorDeleteClause   = "delete clause"
++	OperatorDropStatement  = "drop statement"
++	OperatorChangeConstant = "change constant"
++	// OperatorChangeEmbeddedLine marks one line of an embedded file with a ~.
++	// On a line whose first `: ` or `=` has text after it, the mark opens that value and the key stays,
++	// so a loader that refuses an unknown key does not fail every test that loads the file.
+ 	OperatorChangeEmbeddedLine = "change embedded line"
+ )
+ 
++// stepHelper is the helper an integer or rune constant's mutant calls.
++// The mutant writes the constant c as `(c + 1>>stepHelper(id))`, which adds one while the mutant is on.
++// The untyped 1 of a shift whose count is not constant takes the type c takes there,
++// so the sum keeps the type of the constant it replaces, a byte or a rune included.
++const stepHelper = "lymMutantStep"
++
+ // mutantHelpers is the source of the file the overlay adds, after its package clause.
+ // Each helper changes its value only while the mutant whose ID it gets is on.
+ // The import names carry the prefix so they never meet a name the package declares.
+@@ -83,11 +92,11 @@ func lymMutantKeep(id int) bool {
+ 	return id != lymMutantActive
+ }
+ 
+-func lymMutantInt[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr](v T, id int) T {
++func ` + stepHelper + `(id int) int {
+ 	if id == lymMutantActive {
+-		return v + 1
++		return 0
+ 	}
+-	return v
++	return 1
+ }
+ 
+ func lymMutantString[T ~string](v T, id int) T {
+@@ -103,8 +112,20 @@ func lymMutantLine[T ~string](v T, line, id int) T {
+ 	}
+ 	lines := lymmutantstrings.SplitAfter(string(v), "\n")
+ 	text := lines[line-1]
+-	indent := len(text) - len(lymmutantstrings.TrimLeft(text, " \t"))
+-	lines[line-1] = text[:indent] + "~" + text[indent:]
++	at := len(text) - len(lymmutantstrings.TrimLeft(text, " \t"))
++	separator := -1
++	for _, mark := range []string{": ", "="} {
++		if i := lymmutantstrings.Index(text, mark); i >= 0 && (separator < 0 || i < separator) {
++			separator = i
++		}
++	}
++	if separator >= 0 {
++		value := lymmutantstrings.TrimLeft(text[separator+1:], " \t")
++		if lymmutantstrings.TrimSpace(value) != "" {
++			at = len(text) - len(value)
++		}
++	}
++	lines[line-1] = text[:at] + "~" + text[at:]
+ 	return T(lymmutantstrings.Join(lines, ""))
+ }
+ `
+@@ -143,8 +164,11 @@ func (m Mutant) InBlocks(blocks BlockSet) bool {
+ 
+ // opening returns the text the mutant inserts before its site.
+ func (m Mutant) opening() string {
+-	if m.helper == "" {
++	switch m.helper {
++	case "":
+ 		return fmt.Sprintf("if lymMutantKeep(%d) { ", m.ID)
++	case stepHelper:
++		return "("
+ 	}
+ 	return m.helper + "("
+ }
+@@ -154,6 +178,8 @@ func (m Mutant) closing() string {
+ 	switch {
+ 	case m.helper == "":
+ 		return " }"
++	case m.helper == stepHelper:
++		return fmt.Sprintf(" + 1>>%s(%d))", stepHelper, m.ID)
+ 	case m.args != "":
+ 		return fmt.Sprintf(", %s, %d)", m.args, m.ID)
+ 	}
+@@ -215,6 +241,8 @@ type packageDecls struct {
+ // The literals of a package-level variable's value are sites too.
+ // A literal of a constant declaration, an array length or a field tag stays, since it must be constant.
+ // So does a composite literal's key unless it is a string literal, which only a map key can be.
++// So does a literal or constant of an expression built from integer and rune constants alone.
++// The step rewrite makes such an expression non-constant, so an intermediate that overflows its type changes the value.
+ // A file that does not parse, an embedded file that cannot be read, or a block outside its file is an error.
+ func PlanMutants(dir, importPath string, profile []ProfileBlock, targets BlockSet) (*MutantPlan, error) {
+ 	var own []ProfileBlock
+@@ -493,7 +521,7 @@ func localNames(fn *ast.FuncDecl) map[string]bool {
+ func literalHelper(kind token.Token) string {
+ 	switch kind {
+ 	case token.INT, token.CHAR:
+-		return "lymMutantInt"
++		return stepHelper
+ 	case token.STRING:
+ 		return "lymMutantString"
+ 	}
+@@ -539,6 +567,42 @@ func markFixed(node ast.Node, fixed map[ast.Node]bool) {
+ 	}
+ }
+ 
++// markConstantIntegerExpression records in fixed the literals and constant names below expr.
++// It does so only when expr is built from integer and rune constants alone.
++// The step rewrite of one of them makes the expression non-constant, so the compiler no longer evaluates it exactly.
++// An intermediate value that overflows the type of the context then changes the result with no mutant on.
++// locals holds the names the enclosing function declares; a use of one of them is no package-level constant.
++func markConstantIntegerExpression(expr *ast.BinaryExpr, locals map[string]bool, decls packageDecls, fixed map[ast.Node]bool) {
++	if !isConstantInteger(expr, locals, decls) {
++		return
++	}
++	ast.Inspect(expr, func(n ast.Node) bool {
++		switch n.(type) {
++		case *ast.BasicLit, *ast.Ident:
++			fixed[n] = true
++		}
++		return true
++	})
++}
++
++// isConstantInteger reports whether expr is built from integer and rune literals and package-level constants of one.
++// It looks through parentheses, unary operators and binary operators.
++func isConstantInteger(expr ast.Expr, locals map[string]bool, decls packageDecls) bool {
++	switch e := expr.(type) {
++	case *ast.BasicLit:
++		return e.Kind == token.INT || e.Kind == token.CHAR
++	case *ast.Ident:
++		return !locals[e.Name] && decls.constants[e.Name] == stepHelper
++	case *ast.ParenExpr:
++		return isConstantInteger(e.X, locals, decls)
++	case *ast.UnaryExpr:
++		return isConstantInteger(e.X, locals, decls)
++	case *ast.BinaryExpr:
++		return isConstantInteger(e.X, locals, decls) && isConstantInteger(e.Y, locals, decls)
++	}
++	return false
++}
++
+ // variableReads finds each identifier of file's function bodies that names a package-level variable.
+ // It returns their offsets by variable name.
+ func variableReads(file *ast.File, tokenFile *token.File, decls packageDecls) map[string][]int {
+@@ -636,6 +700,8 @@ func fileSites(file *ast.File, tokenFile *token.File, decls packageDecls) []site
+ 						switch n := n.(type) {
+ 						case *ast.FuncLit:
+ 							return false
++						case *ast.BinaryExpr:
++							markConstantIntegerExpression(n, nil, decls, fixed)
+ 						case *ast.BasicLit:
+ 							if helper := literalHelper(n.Kind); helper != "" && !fixed[n] {
+ 								add(n, OperatorChangeConstant, helper, "", variables)
+@@ -662,6 +728,7 @@ func fileSites(file *ast.File, tokenFile *token.File, decls packageDecls) []site
+ 						add(n.Cond, OperatorNegateCondition, "lymMutantBool", "", nil)
+ 					}
+ 				case *ast.BinaryExpr:
++					markConstantIntegerExpression(n, locals, decls, fixed)
+ 					if isComparison(n.Op) && !conditions[n] {
+ 						add(n, OperatorNegateComparison, "lymMutantBool", "", nil)
+ 					}
+@@ -823,23 +890,34 @@ func applyMutants(text []byte, mutants []Mutant) []byte {
+ 	return []byte(out.String())
+ }
+ 
+-// UnbuildableMutants returns the IDs of the mutants outside dropped that span a source line the compiler refused.
+-// It returns none when err holds no *MutantBuildError or names no line a mutant spans.
+-func (p *MutantPlan) UnbuildableMutants(err error, dropped map[int]bool) []int {
++// UnbuildableMutants returns the IDs of the mutants outside dropped that err, a refused build, blames.
++// Those are the mutants spanning a source line the compiler refused.
++// When no mutant spans one, or wholeFiles is set, they are the mutants of each file the compiler named.
++// When no mutant lies in such a file either, they are every mutant outside dropped.
++// It returns none when err holds no *MutantBuildError or every mutant is in dropped.
++func (p *MutantPlan) UnbuildableMutants(err error, dropped map[int]bool, wholeFiles bool) []int {
+ 	var buildErr *MutantBuildError
+ 	if !errors.As(err, &buildErr) {
+ 		return nil
+ 	}
+-	var ids []int
+-	for _, m := range p.Mutants {
+-		if dropped[m.ID] {
+-			continue
+-		}
+-		if slices.ContainsFunc(buildErr.Lines, func(l SourceLine) bool {
+-			return l.File == m.File && m.Line <= l.Line && l.Line <= m.lastLine
+-		}) {
+-			ids = append(ids, m.ID)
++	blamed := func(blames func(Mutant, SourceLine) bool) []int {
++		var ids []int
++		for _, m := range p.Mutants {
++			if !dropped[m.ID] && slices.ContainsFunc(buildErr.Lines, func(l SourceLine) bool { return blames(m, l) }) {
++				ids = append(ids, m.ID)
++			}
+ 		}
++		return ids
++	}
++	var ids []int
++	if !wholeFiles {
++		ids = blamed(func(m Mutant, l SourceLine) bool { return l.File == m.File && m.Line <= l.Line && l.Line <= m.lastLine })
++	}
++	if len(ids) == 0 {
++		ids = blamed(func(m Mutant, l SourceLine) bool { return l.File == m.File })
++	}
++	if len(ids) == 0 {
++		ids = blamed(func(Mutant, SourceLine) bool { return true })
+ 	}
+ 	return ids
+ }
+diff --git a/internal/testcover/mutant_test.go b/internal/testcover/mutant_test.go
+index 51f1c121..ef79e690 100644
+--- a/internal/testcover/mutant_test.go
++++ b/internal/testcover/mutant_test.go
+@@ -84,6 +84,10 @@ func Tagged(a bool) string {
+ 	}
+ 	return tag
+ }
++
++func Half() uint64 {
++	return (1 << 63) / 2
++}
+ `
+ 
+ // mutantVariables is the fixture file that holds only a package-level variable, which two blocks of mutantSource read.
+@@ -109,6 +113,7 @@ const (
+ 	blockReads
+ 	blockTaggedTrue
+ 	blockTaggedTail
++	blockHalf
+ )
+ 
+ // mutantBlocks returns the coverage blocks of mutantSource, each spanning the text from one marker to the end of another.
+@@ -130,6 +135,7 @@ func mutantBlocks(t *testing.T) []testcover.ProfileBlock {
+ 		{"{\n\treturn len(set)", "len(all)\n}"},
+ 		{"return tag\n\t}", "return tag\n\t}"},
+ 		{"return tag\n}", "return tag\n}"},
++		{"{\n\treturn (1 << 63)", "/ 2\n}"},
+ 	}
+ 	var blocks []testcover.ProfileBlock
+ 	for _, span := range spans {
+@@ -293,6 +299,10 @@ func TestPlanMutants(t *testing.T) {
+ 			file:    "fixvars.go",
+ 			want:    []site{{3, testcover.OperatorChangeConstant, []int{blockTaggedTrue, blockTaggedTail}}},
+ 		},
++		{
++			name:    "the literals of an expression of integer constants alone stay, as its intermediate value may overflow once it is not constant",
++			targets: []int{blockHalf},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -357,7 +367,7 @@ func TestMutantPlan_WriteOverlay(t *testing.T) {
+ 		`[]string{"a", "b"}`, `[]string{lymMutantString("a", 6), lymMutantString("b", 7)}`,
+ 		"if a && b || s == names[0] {",
+ 		"if lymMutantBool(lymMutantDropOr(lymMutantDropAnd(a, 10) && lymMutantDropAnd(b, 11), 9) || "+
+-			"lymMutantDropOr(lymMutantBool(s == names[lymMutantInt(0, 14)], 13), 12), 8) {",
++			"lymMutantDropOr(lymMutantBool(s == names[(0 + 1>>lymMutantStep(14))], 13), 12), 8) {",
+ 		"return s + suffix", "return s + lymMutantString(suffix, 15)",
+ 		"return text\n}", "return lymMutantLine(lymMutantLine(text, 3, 17), 1, 16)\n}",
+ 	).Replace(mutantSource)
+@@ -378,25 +388,33 @@ func TestMutantPlan_UnbuildableMutants(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	classify := []int{blockClassifyHead, blockClassifyNegative}
++	// The targets hold mutants 1 and 2 on line 4 and 3 on line 5 of fix.go, and mutant 4 on line 3 of fixvars.go.
++	targets := []int{blockClassifyHead, blockClassifyNegative, blockTaggedTail}
++	refused := func(file string, line int) error {
++		return &testcover.MutantBuildError{Lines: []testcover.SourceLine{{File: file, Line: line}}}
++	}
+ 	tests := []struct {
+-		name    string
+-		targets []int
+-		err     error
+-		dropped map[int]bool
+-		want    []int
++		name       string
++		targets    []int
++		err        error
++		dropped    map[int]bool
++		wholeFiles bool
++		want       []int
+ 	}{
+-		{name: "every mutant spanning a refused line", targets: classify, err: &testcover.MutantBuildError{Lines: []testcover.SourceLine{{File: "fix.go", Line: 4}}}, want: []int{1, 2}},
+-		{name: "a dropped mutant stays dropped", targets: classify, err: &testcover.MutantBuildError{Lines: []testcover.SourceLine{{File: "fix.go", Line: 4}}}, dropped: map[int]bool{1: true}, want: []int{2}},
+-		{name: "a line of another file", targets: classify, err: &testcover.MutantBuildError{Lines: []testcover.SourceLine{{File: "other.go", Line: 5}}}},
+-		{name: "an error that names no line", targets: classify, err: errors.New("mutant binary: timed out")},
+-		{name: "a mutant spanning two lines when the second is refused", targets: []int{blockJoinSplitStatement}, err: &testcover.MutantBuildError{Lines: []testcover.SourceLine{{File: "fix.go", Line: 23}}}, want: []int{1}},
++		{name: "every mutant spanning a refused line", targets: targets, err: refused("fix.go", 4), want: []int{1, 2}},
++		{name: "a dropped mutant stays dropped", targets: targets, err: refused("fix.go", 4), dropped: map[int]bool{1: true}, want: []int{2}},
++		{name: "every mutant of the file when no mutant spans its refused line", targets: targets, err: refused("fix.go", 1), want: []int{1, 2, 3}},
++		{name: "every mutant of the file of a refused line with wholeFiles", targets: targets, err: refused("fix.go", 4), wholeFiles: true, want: []int{1, 2, 3}},
++		{name: "every mutant left for a line of a file holding none", targets: targets, err: refused("other.go", 5), dropped: map[int]bool{2: true}, want: []int{1, 3, 4}},
++		{name: "none once every mutant is dropped", targets: targets, err: refused("other.go", 5), dropped: map[int]bool{1: true, 2: true, 3: true, 4: true}},
++		{name: "an error that names no line", targets: targets, err: errors.New("mutant binary: timed out")},
++		{name: "a mutant spanning two lines when the second is refused", targets: []int{blockJoinSplitStatement}, err: refused("fix.go", 23), want: []int{1}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			_, plan, _ := planFixture(t, tt.targets...)
+-			if got := plan.UnbuildableMutants(tt.err, tt.dropped); !reflect.DeepEqual(got, tt.want) {
++			if got := plan.UnbuildableMutants(tt.err, tt.dropped, tt.wholeFiles); !reflect.DeepEqual(got, tt.want) {
+ 				t.Errorf("UnbuildableMutants = %v; want %v", got, tt.want)
+ 			}
+ 		})
+diff --git a/internal/testcover/mutantbuild_integration_test.go b/internal/testcover/mutantbuild_integration_test.go
+new file mode 100644
+index 00000000..9a86a479
+--- /dev/null
++++ b/internal/testcover/mutantbuild_integration_test.go
+@@ -0,0 +1,195 @@
++// mutantbuild_integration_test.go builds a real mutant binary with the go command and runs its test with each mutant on.
++// It is Tier 1: it spawns the go command and the binary it builds.
++
++package testcover_test
++
++import (
++	"os"
++	"path/filepath"
++	"strconv"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// typedLiteralSource holds a rune literal compared with a byte and an integer literal divided into one.
++// A mutant that turned either literal into an int or a rune would not compile.
++const typedLiteralSource = `package p
++
++func Leading(s string) bool {
++	return s[0] == '0'
++}
++
++func Halve(b byte) byte {
++	return b / 2
++}
++`
++
++// typedLiteralTest checks both functions of typedLiteralSource, so every mutant of theirs fails it.
++const typedLiteralTest = `package p
++
++import "testing"
++
++func TestTyped(t *testing.T) {
++	if !Leading("01") || Halve(4) != 2 {
++		t.Fatal("Leading or Halve is wrong")
++	}
++}
++`
++
++// embeddedLineSource returns the text an embed directive fills from text.txt.
++const embeddedLineSource = `package p
++
++import _ "embed"
++
++//go:embed text.txt
++var text string
++
++func Text() string {
++	return text
++}
++`
++
++// embeddedLineTest passes only when Text returns the text the WANT_TEXT variable holds.
++const embeddedLineTest = `package p
++
++import (
++	"os"
++	"testing"
++)
++
++func TestText(t *testing.T) {
++	if got, want := Text(), os.Getenv("WANT_TEXT"); got != want {
++		t.Fatalf("Text() = %q; want %q", got, want)
++	}
++}
++`
++
++// embeddedLineText is the embedded file.
++// It holds a colon key and value, an equals key and value, and a bare key.
++// It also holds an equals before a colon, a colon followed by blanks only, and a plain line.
++const embeddedLineText = "name: lym\nnote = x\nlist:\na=b: c\nkey:  \n\n  plain\n"
++
++// buildFixtureMutants writes a module whose package p holds files.
++// It plans the mutants of the blocks of p.go that spans mark and builds their binary.
++// The test fails when a mutant does not compile.
++// It returns the plan, the package directory, the binary and the environment to run the binary in.
++func buildFixtureMutants(t *testing.T, files map[string]string, spans [][2]string) (*testcover.MutantPlan, string, string, []string) {
++	t.Helper()
++	module := t.TempDir()
++	pkgDir := filepath.Join(module, "p")
++	if err := os.Mkdir(pkgDir, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(filepath.Join(module, "go.mod"), []byte("module m\n\ngo 1.22\n"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	for name, text := range files {
++		if err := os.WriteFile(filepath.Join(pkgDir, name), []byte(text), 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++	source := files["p.go"]
++	var blocks []testcover.ProfileBlock
++	for _, span := range spans {
++		start := strings.Index(source, span[0])
++		end := start + strings.Index(source[start:], span[1]) + len(span[1])
++		startLine, startCol := lineCol(source, start)
++		endLine, endCol := lineCol(source, end)
++		blocks = append(blocks, testcover.ProfileBlock{File: "m/p/p.go", StartLine: startLine, StartCol: startCol, EndLine: endLine, EndCol: endCol, Statements: 1})
++	}
++	keys, err := testcover.KeyBlocks(pkgDir, blocks)
++	if err != nil {
++		t.Fatal(err)
++	}
++	targets := testcover.BlockSet{}
++	for _, key := range keys {
++		targets[key.String()] = struct{}{}
++	}
++	plan, err := testcover.PlanMutants(pkgDir, "m/p", blocks, targets)
++	if err != nil {
++		t.Fatal(err)
++	}
++	overlay, err := plan.WriteOverlay(t.TempDir(), nil)
++	if err != nil {
++		t.Fatal(err)
++	}
++	env := append(os.Environ(), "GOFLAGS=", "GOWORK=off", "GOTOOLCHAIN=local")
++	bin := filepath.Join(t.TempDir(), "mutants.test")
++	if err := (testcover.Toolchain{Go: "go", Env: env, Dir: module}).BuildMutantBinary("m/p", overlay, bin); err != nil {
++		t.Fatalf("BuildMutantBinary = %v; want every mutant to compile", err)
++	}
++	return plan, pkgDir, bin, env
++}
++
++func TestMutantBinary_KeepsTheTypeOfAByteContextLiteral(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	plan, pkgDir, bin, env := buildFixtureMutants(t,
++		map[string]string{"p.go": typedLiteralSource, "p_test.go": typedLiteralTest},
++		[][2]string{{"{\n\treturn s[0]", "'0'\n}"}, {"{\n\treturn b / 2", "2\n}"}})
++	// Leading holds a comparison, the index 0 and the rune '0'; Halve holds the 2.
++	if len(plan.Mutants) != 4 {
++		t.Fatalf("PlanMutants = %+v; want 4 mutants", plan.Mutants)
++	}
++	for id := range len(plan.Mutants) + 1 {
++		want := testcover.ActionFail
++		if id == 0 {
++			want = testcover.ActionPass
++		}
++		runner := testcover.Toolchain{Env: append(env, testcover.MutantEnv+"="+strconv.Itoa(id))}
++		result, err := runner.RunAlone(bin, pkgDir, "", "TestTyped")
++		if err != nil {
++			t.Fatal(err)
++		}
++		if result.Action != want {
++			t.Errorf("RunAlone(TestTyped) with mutant %d = %q; want %q", id, result.Action, want)
++		}
++	}
++}
++
++func TestMutantBinary_ChangesTheValueOfAnEmbeddedKeyValueLine(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	plan, pkgDir, bin, env := buildFixtureMutants(t,
++		map[string]string{"p.go": embeddedLineSource, "p_test.go": embeddedLineTest, "text.txt": embeddedLineText},
++		[][2]string{{"{\n\treturn text", "text\n}"}})
++	// marked returns the embedded file with its line replaced by markedLine.
++	marked := func(line, markedLine string) string {
++		return strings.Replace(embeddedLineText, line, markedLine, 1)
++	}
++	// The mutants count from 1 in the order of the file's non-blank lines.
++	tests := []struct {
++		name string
++		id   int
++		want string
++	}{
++		{"NoMutant", 0, embeddedLineText},
++		{"ColonLine_ValueChangesKeyStays", 1, marked("name: lym", "name: ~lym")},
++		{"EqualsLine_ValueChangesKeyStays", 2, marked("note = x", "note = ~x")},
++		{"KeyWithNoValue_LineChangesAtItsStart", 3, marked("list:", "~list:")},
++		{"EqualsBeforeColon_EarlierSeparatorOpensTheValue", 4, marked("a=b: c", "a=~b: c")},
++		{"ColonFollowedByBlanks_LineChangesAtItsStart", 5, marked("key:  ", "~key:  ")},
++		{"PlainLine_ChangesAfterItsIndent", 6, marked("  plain", "  ~plain")},
++	}
++	if len(plan.Mutants) != len(tests)-1 {
++		t.Fatalf("PlanMutants = %+v; want one mutant per non-blank line, %d", plan.Mutants, len(tests)-1)
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			runner := testcover.Toolchain{Env: append(env, testcover.MutantEnv+"="+strconv.Itoa(tt.id), "WANT_TEXT="+tt.want)}
++			result, err := runner.RunAlone(bin, pkgDir, "", "TestText")
++			if err != nil {
++				t.Fatal(err)
++			}
++			if result.Action != testcover.ActionPass {
++				t.Errorf("RunAlone(TestText) with mutant %d = %q; want %q, Text() returning %q", tt.id, result.Action, testcover.ActionPass, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/testcover/runner.go b/internal/testcover/runner.go
+index 6de06b97..3a685a46 100644
+--- a/internal/testcover/runner.go
++++ b/internal/testcover/runner.go
+@@ -331,7 +331,8 @@ func (tc Toolchain) runTestBinary(cmd *exec.Cmd) (killed bool, err error) {
+ }
+ 
+ // compileErrorLine matches a compiler error line, capturing its file and line.
+-var compileErrorLine = regexp.MustCompile(`(?m)^(\S+\.go):(\d+):\d+: `)
++// The column is optional, since some errors of the type checker name none.
++var compileErrorLine = regexp.MustCompile(`(?m)^(\S+\.go):(\d+)(?::\d+)?: `)
+ 
+ // MutantBuildError is a mutant build the compiler refused, with the source lines its errors name.
+ type MutantBuildError struct {
+diff --git a/internal/testcover/runner_test.go b/internal/testcover/runner_test.go
+index 085b5539..d39adbd5 100644
+--- a/internal/testcover/runner_test.go
++++ b/internal/testcover/runner_test.go
+@@ -138,7 +138,7 @@ func TestBuildMutantBinary(t *testing.T) {
+ 		{
+ 			name:      "NamesTheLinesOfARefusedBuild",
+ 			env:       []string{standInCompileErrorsEnv + "=1"},
+-			wantLines: []testcover.SourceLine{{File: "x.go", Line: 4}, {File: "y.go", Line: 12}},
++			wantLines: []testcover.SourceLine{{File: "x.go", Line: 4}, {File: "y.go", Line: 12}, {File: "z.go", Line: 62}},
+ 		},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/testcover/testfuncs.go b/internal/testcover/testfuncs.go
+index 867221b2..844a5378 100644
+--- a/internal/testcover/testfuncs.go
++++ b/internal/testcover/testfuncs.go
+@@ -6,6 +6,7 @@ package testcover
+ import (
+ 	"fmt"
+ 	"go/ast"
++	"go/build"
+ 	"go/parser"
+ 	"go/token"
+ 	"os"
+@@ -33,7 +34,8 @@ type TestFunc struct {
+ 
+ // ScanTestFuncs returns the top-level Test functions of the `_test.go` files directly in dir, sorted by name.
+ // A Test function is one `go test` runs as a test; TestMain and methods are not.
+-// Build constraints are not read, so a file only another platform compiles still counts.
++// It reads only the files the default build context takes, so a test only another platform compiles is left out;
++// a build tag set through GOFLAGS is not read.
+ // A test file that cannot be read or parsed is an error naming it.
+ func ScanTestFuncs(dir string) ([]TestFunc, error) {
+ 	entries, err := os.ReadDir(dir)
+@@ -45,6 +47,11 @@ func ScanTestFuncs(dir string) ([]TestFunc, error) {
+ 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), "_test.go") {
+ 			continue
+ 		}
++		if match, err := build.Default.MatchFile(dir, entry.Name()); err != nil {
++			return nil, err
++		} else if !match {
++			continue
++		}
+ 		filename := filepath.Join(dir, entry.Name())
+ 		src, err := os.ReadFile(filename)
+ 		if err != nil {
+diff --git a/internal/testcover/testfuncs_test.go b/internal/testcover/testfuncs_test.go
+index 9d79749d..0aca89bc 100644
+--- a/internal/testcover/testfuncs_test.go
++++ b/internal/testcover/testfuncs_test.go
+@@ -4,6 +4,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
++	"runtime"
+ 	"strings"
+ 	"testing"
+ 
+@@ -30,6 +31,8 @@ func TestScanTestFuncs(t *testing.T) {
+ 					tiered + "\n\nfunc TestMain(m *testing.M) {}\n\nfunc Testlower(t *testing.T) {}\n\nfunc helper() {}\n",
+ 				"b_test.go": "package p\n\nimport \"testing\"\n\ntype suite struct{}\n\nfunc (suite) TestMethod(t *testing.T) {}\n\n" + untiered + "\n",
+ 				"c.go":      "package p\n\nfunc TestInAFileThatIsNoTestFile() {}\n",
++				// No platform but another one compiles this file.
++				"d_test.go": "//go:build !" + runtime.GOOS + "\n\npackage p\n\nimport \"testing\"\n\nfunc TestOnAnotherPlatform(t *testing.T) {}\n",
+ 			},
+ 			want: []testcover.TestFunc{
+ 				{Name: "TestTiered", File: "a_test.go", Tier: 1, Tiered: true, Hash: testcover.ContentHash([]byte(tiered))},
+diff --git a/internal/testcover/testmain_test.go b/internal/testcover/testmain_test.go
+index a7b0c58f..e2163acf 100644
+--- a/internal/testcover/testmain_test.go
++++ b/internal/testcover/testmain_test.go
+@@ -50,8 +50,10 @@ const standInHangBuildEnv = "TESTCOVER_STAND_IN_HANG_BUILD"
+ // standInCompileErrorsEnv makes the stand-in `go test -c` fail with standInCompileErrors on stderr.
+ const standInCompileErrorsEnv = "TESTCOVER_STAND_IN_COMPILE_ERRORS"
+ 
+-// standInCompileErrors is what the stand-in build prints when the compiler refuses the package: two errors in two files.
+-const standInCompileErrors = "# m/p\n./overlay-1/x.go:4:9: cannot use v (value of type int) as time.Duration value\n/abs/y.go:12:3: mismatched types\n"
++// standInCompileErrors is what the stand-in build prints when the compiler refuses the package:
++// three errors in three files, the last with no column.
++const standInCompileErrors = "# m/p\n./overlay-1/x.go:4:9: cannot use v (value of type int) as time.Duration value\n/abs/y.go:12:3: mismatched types\n" +
++	"/abs/overlay-3/z.go:62: invalid operation: digits[0] == lymMutantInt('0', 275) (mismatched types byte and rune)\n"
+ 
+ // standInChildSleep is how long the child standInHoldsPipe leaves behind holds the output pipe.
+ // The test's cleanup kills the child long before.
