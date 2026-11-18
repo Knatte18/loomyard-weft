@@ -1,0 +1,13 @@
+contracts/stencils/darn/darn-fragment-make-change-gated.md
+contracts/stencils/stencils.go
+docs/dotnet-hub.md
+internal/darnengine/doc.go
+internal/darnengine/spec.go
+internal/gatecli/cli.go
+internal/gatecli/doc.go
+internal/gatecli/run.go
+internal/gatecli/scopes_integration_test.go
+internal/gatecli/test_integration_test.go
+internal/gateslot/doc.go
+internal/gateslot/template.yaml
+internal/gateslot/tiers.go
