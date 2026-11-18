@@ -1,6 +1,6 @@
 # Comments: check what the big comment rewrite left, before any new pass
 
-`comment-trim-second-pass` · Task · enhancement, docs · starting · Open-Window
+`comment-trim-second-pass` · Task · enhancement, docs · starting · Seed-IDE
 
 ## What was seen
 

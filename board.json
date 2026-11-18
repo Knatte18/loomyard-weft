@@ -208,7 +208,7 @@
       "isolated": false,
       "brief": "Last week a run of nearly 3,000 agents rewrote docstrings and doc files; measure what is still long before deciding on more",
       "body": "## What was seen\n\nLast week a large run (nearly 3,000 agents in parallel) rewrote and trimmed docstrings and doc files across lym.\nEven so, the shrink study (2026-11-18) still found comments at 20 to 31 % of production lines in the seven most patched modules,\nand in `landingshed` a 678-line `doc.go` that mostly restates the function docs.\n\n## Idea\n\nBefore any new comment pass, check whether that rewrite covered package `doc.go` files and how long they still are,\nand list the packages whose comment share stands out. Only then decide whether a narrow second pass (for example `doc.go` only) is worth it.\n",
-      "status": "starting · Open-Window",
+      "status": "starting · Seed-IDE",
       "created": "2026-11-18T17:23:24Z",
       "revised": "2026-11-18T20:04:32Z",
       "run_settings": {
