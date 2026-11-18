@@ -1,6 +1,6 @@
 # A beam session loses the pawl run checklist when the beam overview takes the overview window
 
-`wxb-plan-without` · Task · bug, research · running · Plan-Bouncer
+`wxb-plan-without` · Task · bug, research · paused · Plan-Bouncer
 
 Decision record: [Sketch](decision-wxb-plan-without.md)
 
