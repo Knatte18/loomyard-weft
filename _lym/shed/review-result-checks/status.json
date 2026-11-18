@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Expect → skipped",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -192,6 +192,46 @@
       "output": "",
       "at": "2026-11-18T11:51:37Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/review-result-checks/_lym/webster/summary.md",
+      "at": "2026-11-18T13:05:24Z",
+      "started_at": "2026-11-18T11:51:56Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-18T12:52:27.802747504Z",
+          "end": "2026-11-18T12:52:28.163670646Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-18T13:00:13.663584203Z",
+          "end": "2026-11-18T13:00:14.111667961Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-18T12:52:28.242935733Z",
+          "end": "2026-11-18T12:57:20.583503591Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-18T12:57:20.980185921Z",
+          "end": "2026-11-18T13:00:13.579783959Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-18T13:00:14.244654321Z",
+          "end": "2026-11-18T13:05:23.025215068Z"
+        }
+      ]
     }
   ],
   "product": {
