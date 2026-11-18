@@ -42,7 +42,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid |  | 8d<br>16h | testkit, gate |
+| T2 | `draft` **Cut the existing redundant tests of every package, found by the coverage maps** | [`redundancy-sweep-existing`](design-redundancy-sweep-existing.md) | darn · solid | T5 | 8d<br>0m | testkit, gate |
 | T5 | `draft` **Measure the coverage maps: build time, peak memory and whether their candidates hold**<br>• Full map build timed with peak memory, lym gate redundant on two packages, hand crosscheck against single-test runs<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`coverage-map-measurement`](design-coverage-map-measurement.md) | darn · docs |  | 0m<br>0m | gate, testkit |
 
 ## Notes (1)
