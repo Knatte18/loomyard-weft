@@ -1,8 +1,8 @@
 # Card 15 — A relaunch past its bound ends or resumes on the next attach
 
 **Create:**
-- `plan:internal/shuttleengine#Run.settleStaleRelaunch` -> `func (run *Run) settleStaleRelaunch() (Result, bool, error)`
-- `plan:internal/shuttleengine#TestAttach_RelaunchingRecordPastItsBound` -> `func TestAttach_RelaunchingRecordPastItsBound(t *testing.T)`
+- `internal/shuttleengine#Run.settleStaleRelaunch`
+- `internal/shuttleengine#TestAttach_RelaunchingRecordPastItsBound`
 
 **Edit:**
 - `internal/shuttleengine#dispositionCandidate`

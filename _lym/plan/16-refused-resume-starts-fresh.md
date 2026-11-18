@@ -1,10 +1,10 @@
 # Card 16 — A copied resume whose first turn ends on an API error starts fresh
 
 **Create:**
-- `plan:internal/shuttleengine#refusedResume` -> `func refusedResume(rs RunState, signal SessionSignal, firstTurnEnd, usageLimited bool) bool`
-- `plan:internal/shuttleengine#Runner.RefusedResume` -> `func (r *Runner) RefusedResume(guid string, turnEnd Event) (bool, error)`
-- `plan:internal/shuttleengine#TestWait_RefusedResumeStartsFresh` -> `func TestWait_RefusedResumeStartsFresh(t *testing.T)`
-- `plan:internal/shuttleengine#loadRefusedResumeError` -> `type loadRefusedResumeError struct`
+- `internal/shuttleengine#refusedResume`
+- `internal/shuttleengine#Runner.RefusedResume`
+- `internal/shuttleengine#TestWait_RefusedResumeStartsFresh`
+- `internal/shuttleengine#loadRefusedResumeError`
 
 **Edit:**
 - `internal/shuttleengine#Run.retryAPIError`
@@ -17,11 +17,11 @@
 - `internal/shuttleengine#apiErrorWatch`
 
 **Uses:**
-- `plan:internal/shuttleengine#Run.relaunchUnderAccount`
+- `internal/shuttleengine#Run.relaunchUnderAccount`
 - `internal/shuttleengine#UsageLimitReader`
 - `internal/shuttleengine#FindRun`
-- `plan:internal/shuttleengine#switchFakeEngine`
-- `plan:internal/shuttleengine#TestWait_UsageLimitSwitchRelaunchesInTheRun`
+- `internal/shuttleengine#switchFakeEngine`
+- `internal/shuttleengine#TestWait_UsageLimitSwitchRelaunchesInTheRun`
 
 **Intent:**
 D6's refused resume: a resume whose check copied the transcript (`RunState.TranscriptCopied`, card 8) and whose first turn ends on an API error other than a usage limit is a refused resume, and starts the session fresh.

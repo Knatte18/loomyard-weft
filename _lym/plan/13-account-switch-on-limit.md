@@ -1,12 +1,12 @@
 # Card 13 — Record the limit hit and switch the worktree's account
 
 **Create:**
-- `plan:internal/shuttleengine#AccountSwitcher` -> `type AccountSwitcher interface`
-- `plan:internal/shuttleengine/claudeengine#Claude.SwitchAccount` -> `func (c *Claude) SwitchAccount(runDir string, turnEnd shuttleengine.Event) (bool, error)`
-- `plan:internal/shuttleengine/claudeengine#usageLimitFallback` -> `const usageLimitFallback = 30 * time.Minute`
-- `plan:internal/shuttleengine#Runner.SwitchAccountOnLimit` -> `func (r *Runner) SwitchAccountOnLimit(guid string, turnEnd Event) (bool, error)`
-- `plan:internal/shuttleengine/claudeengine#TestClaude_SwitchAccount` -> `func TestClaude_SwitchAccount(t *testing.T)`
-- `plan:internal/shuttleengine#TestRunner_SwitchAccountOnLimit` -> `func TestRunner_SwitchAccountOnLimit(t *testing.T)`
+- `internal/shuttleengine#AccountSwitcher`
+- `internal/shuttleengine/claudeengine#Claude.SwitchAccount`
+- `internal/shuttleengine/claudeengine#usageLimitFallback`
+- `internal/shuttleengine#Runner.SwitchAccountOnLimit`
+- `internal/shuttleengine/claudeengine#TestClaude_SwitchAccount`
+- `internal/shuttleengine#TestRunner_SwitchAccountOnLimit`
 
 **Extends:**
 - `internal/shuttleengine/doc.go`

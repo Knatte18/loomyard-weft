@@ -1,17 +1,17 @@
 # Card 14 — Relaunch a switched session inside its run
 
 **Create:**
-- `plan:internal/shuttleengine#Run.stopForRelaunch` -> `func (run *Run) stopForRelaunch() (bool, error)`
-- `plan:internal/shuttleengine#relaunchLaunch` -> `type relaunchLaunch int`
-- `plan:internal/shuttleengine#relaunchContinue` -> `const relaunchContinue relaunchLaunch = iota`
-- `plan:internal/shuttleengine#relaunchFresh` -> `const relaunchFresh`
-- `plan:internal/shuttleengine#relaunchRepeat` -> `const relaunchRepeat`
-- `plan:internal/shuttleengine#loadAccountSwitchedError` -> `type loadAccountSwitchedError struct`
-- `plan:internal/shuttleengine#Run.relaunchUnderAccount` -> `func (run *Run) relaunchUnderAccount(launch relaunchLaunch, startPath bool) (Result, bool, error)`
-- `plan:internal/shuttleengine#Run.switchAccountAtLimit` -> `func (run *Run) switchAccountAtLimit(held *heldTurnEnd) (Result, bool, bool, error)`
-- `plan:internal/shuttleengine#accountSwitchContinueLine` -> `const accountSwitchContinueLine = "[lym] Your Claude account was switched after a usage limit. Carry on with your task where you stopped."`
-- `plan:internal/shuttleengine#switchFakeEngine` -> `type switchFakeEngine struct`
-- `plan:internal/shuttleengine#TestWait_UsageLimitSwitchRelaunchesInTheRun` -> `func TestWait_UsageLimitSwitchRelaunchesInTheRun(t *testing.T)`
+- `internal/shuttleengine#Run.stopForRelaunch`
+- `internal/shuttleengine#relaunchLaunch`
+- `internal/shuttleengine#relaunchContinue`
+- `internal/shuttleengine#relaunchFresh`
+- `internal/shuttleengine#relaunchRepeat`
+- `internal/shuttleengine#loadAccountSwitchedError`
+- `internal/shuttleengine#Run.relaunchUnderAccount`
+- `internal/shuttleengine#Run.switchAccountAtLimit`
+- `internal/shuttleengine#accountSwitchContinueLine`
+- `internal/shuttleengine#switchFakeEngine`
+- `internal/shuttleengine#TestWait_UsageLimitSwitchRelaunchesInTheRun`
 
 **Edit:**
 - `internal/shuttleengine#Run.Wait`
@@ -32,7 +32,7 @@
 - `internal/shuttleengine#apiErrorWatch`
 
 **Uses:**
-- `plan:internal/shuttleengine#AccountSwitcher`
+- `internal/shuttleengine#AccountSwitcher`
 - `internal/shuttleengine#updateRunState`
 - `internal/shuttleengine#RunState.relaunching`
 - `internal/shuttleengine#Runner.checkResume`

@@ -23,8 +23,8 @@
 - `internal/orchcli#orchCLI.watchCmd`
 
 **Uses:**
-- `plan:internal/shuttleengine#Runner.SwitchAccountOnLimit`
-- `plan:internal/shuttleengine#Runner.RefusedResume`
+- `internal/shuttleengine#Runner.SwitchAccountOnLimit`
+- `internal/shuttleengine#Runner.RefusedResume`
 - `internal/orchengine#recordUsageLimit`
 - `internal/orchengine#Watcher.tickUsageLimit`
 - `internal/orchengine#limitedWatchEnv`
