@@ -22,10 +22,11 @@ Picked the move-in-`ensureRunsStrand` fix over reordering, one shared spec build
 All six forks returned a report.
 
 - interactions 1 (concurrent loom start adds the role first): fixed; D1 counts a role-held refusal as done, and the loom-start side race is an open risk.
+  Round 1 replaced the refusal with an `AddStrandUnless` skip on both sides.
 - interactions 2 (failed re-add not retried, warning names the wrong verb): fixed; the warning names `lym loom start`, and the runs sidecar stays written.
 - interactions 3 / walkthrough 1 (builder fed the pre-replace strand list): fixed; D2's builder takes the placement as input and D1 asks for beside-runs.
 - existing-paths 1 / bound-breaker 1 / walkthrough 3 ("halted" and "finished" are not shed states): fixed; done is `shedengine.StateDone`, pinned to `runStatusUnfinished`, and every other state shows.
-- existing-paths 2 (seed and sidecar of which worktree): fixed; D1 names the session's own worktree, which bound-breaker found `bringUpLocation` already resolves.
+- existing-paths 2 (seed and sidecar of which worktree): fixed; D1 names the session's own worktree, which `wireCLI` already sets as the orch's location.
 - existing-paths 3 (re-add for a done run): fixed; D1 re-adds only for a self run not done.
 - existing-paths 4 / bound-breaker 2 / walkthrough 2 (overview names a window that may not exist; `window_share_max` 0): fixed; D3 reads the window from reed, and the share rule is a pinned Constraint.
 - walkthrough 2, side point (KeepViewer on a new shared window): fixed; checked `internal/reedengine/spawn.go`, pinned as a Constraint.
@@ -52,7 +53,14 @@ All six forks returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- F1: fixed; D3 derives the window from the strand's group and reed's shared record, with a `window_share_max` 0 criterion.
+- F2, F3: fixed; D1's re-add and the loom bootstrap's add go through `AddStrandUnless`, a skip counting as done.
+- F4: fixed; the re-add runs whatever the runs sidecar write returns, and a failed replace names `lym loom start`.
+- F5: held for the run's parent, as Q6.
+- F6: fixed; the overview's lock Constraint names reed's shared read lock.
+- F7, F8, F9: fixed.
 
 ## Question ledger
 
