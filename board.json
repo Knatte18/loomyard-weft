@@ -436,47 +436,6 @@
       "body": "## Seen (retro, 2026-11-17)\n\nFrom `docs/research/retro/retro-20261116-115411/report.md`, proposal 4.\nEvery sampled darn writer, code reviewer and plan writer read its first files with `cat`, batched with other lookups in one Bash call, against the edit directive's clause on `cat`, `head` and `sed -n` (`contracts/stencils/edit/edit-directive.md` and `contracts/stencils/engine/claude/edit-directive.md`).\nNone was refused and none caused a visible fault; the calls are the batching the same prompt asks for.\n\n## Idea\n\nThe operator chooses: delete the clause, or add a shell guard row that refuses `cat \u003cpath\u003e` with a pointer to Read, which turns one batched call into several parallel Reads at the same turn count.\n",
       "created": "2026-11-18T06:58:31Z",
       "revised": "2026-11-18T06:58:31Z"
-    },
-    {
-      "id": 1444,
-      "handle": "T4",
-      "slug": "adopt-build-resplit-merge-in",
-      "title": "Merge main into the beam adopt-build-resplit",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "enhancement",
-        "batten",
-        "tender",
-        "dobby",
-        "orch",
-        "fabric",
-        "loom",
-        "cleanup",
-        "workspaces",
-        "shuttle",
-        "board",
-        "reed",
-        "termwindow",
-        "shortcut"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Merge in from parent: bring the parent branch main into the beam adopt-build-resplit.\nThis task's branch forks from the beam, so its landing carries the merge into the beam, as a true merge with no pull request.\nFiled by `lym beam merge-parent adopt-build-resplit`.\n\n- Run `lym fabric merge-in main` in this task's worktree.\n  On a conflict, settle each path it lists, stage them with `lym fabric merge-stage \u003cpaths\u003e` and conclude with `lym fabric merge --continue`.\n- Make the gate pass on the merged tree: fix what the merge broke, on either side, and nothing else.\n- Make no change the merge does not need: no refactor, no feature and no fix of an older fault.\n- When the merge is already up to date, change nothing and say so in the change description.\n- The Code-Review perch reviews the merge alone: each merge commit's conflict resolution and every commit after the merge, never the parent's own commits the merge brings in.\n  Checking the project's goal is no part of this task.\n",
-      "status": "done",
-      "created": "2026-11-18T07:07:07Z",
-      "revised": "2026-11-18T07:07:07Z",
-      "run_settings": {
-        "loom": {
-          "code_hard_max_bounces": 4,
-          "code_max_bounces": 1
-        }
-      },
-      "pull_request": "merge-in",
-      "project": "adopt-build-resplit"
     }
   ],
   "prime_owner": "neve",
