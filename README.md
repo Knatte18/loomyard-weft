@@ -70,13 +70,19 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Concrete and claimable; only a task can run.
 
-#### Ready (1)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **lym gate redundant fails on an uncompilable mutant; a map build exits 1 on Windows-only tests**<br>• Keep a literal mutant type-correct, survive an unbuildable mutant, and leave platform-only tests out of failed_tests<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-check-fixes`](design-redundant-check-fixes.md) | darn · light | starting · Worktree-Create | neve | 21h<br>0m | gate, testkit |
+
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **lym gate redundant fails on an uncompilable mutant; a map build exits 1 on Windows-only tests**<br>• Keep a literal mutant type-correct, survive an unbuildable mutant, and leave platform-only tests out of failed_tests<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`redundant-check-fixes`](design-redundant-check-fixes.md) | darn · light |  | 21h<br>0m | gate, testkit |
+_None._
 
 #### Draft (1)
 
@@ -141,7 +147,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 53m<br>53m | landing |
-| E4 |  | **The Plan writer explorer forks cost more than the writer and show no gain**<br>• Drop the Plan writer exploration subagents; they cost about $6.50 per tapestry run | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | 21m<br>10m | loom, stencil |
+| E4 |  | **The Plan writer explorer forks cost more than the writer and show no gain**<br>• Drop the Plan writer exploration subagents; they cost about $6.50 per tapestry run | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | 22m<br>10m | loom, stencil |
 
 #### Features (3)
 
