@@ -1,7 +1,7 @@
 # Card 10 — recipes-pr-review-reroute
 
 **Create:**
-- `plan:internal/loomrecipe#TestRecipe_PRReviewReroutesToCodeBouncer` -> `func TestRecipe_PRReviewReroutesToCodeBouncer(t *testing.T)`
+- `internal/loomrecipe#TestRecipe_PRReviewReroutesToCodeBouncer`
 
 **Edit:**
 - `//contracts/recipes/tapestry-recipe.yaml`
