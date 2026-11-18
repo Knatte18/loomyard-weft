@@ -3,51 +3,78 @@ lens: code-correctness
 outcome: reported
 ```
 
-Task: the code-correctness lens. I traced each changed function and branch with concrete inputs.
+Lens: code-correctness. I traced each changed function and branch by hand against concrete inputs.
 
-**Per function or branch: the case I ran, and whether it is correct**
+## Cases run
 
-- `importIssue`, new-note branch, body `" \n"`, slug given: `importNote` writes. `EmptyBody=true`, and `LocalPaths=nil`. Correct.
-- `importIssue`, fold branch, the target is missing: `foldIssue` errors, and the code returns `ImportResult{}` with no flags computed. Correct.
-- `importIssue`, an issue that is already recorded: it returns early with `Recorded` only and no flags. The CLI prints only `recorded`, so this is consistent. Correct.
-- `importIssue`, does the note agree with the result? `issueContent` and the post-write flags call the same pure functions on the same `issue`, so they cannot disagree. The `ImportResult` re-read in `board.go:155-157` keeps `EmptyBody` and `LocalPaths` on the copy. Correct.
-- `issueBodyEmpty`, inputs `""`, `" \n"` and `"x"`: true, true, false. Correct.
-- `issueContent`, whitespace-only body: the note is written and the whitespace body is dropped. Before the diff a `" \n"` body was appended. That is a deliberate change. Correct.
-- `issueContent`, empty body plus comments, in the fold section: the title note sits inside `## From issue #N`. Correct.
-- `issueContent`, a title holding `"`: `%q` renders `\"` in markdown. That is cosmetic and not a finding.
-- `localPathsNamed`, the test inputs (backtick-wrapped, `wt/.lym/…x.txt.`, a duplicate in a comment, `_lym/…`): these give the expected three paths. Correct.
-- `localPathsNamed`, `[x](.lym/a)`, a fenced line `\n.lym/a\n`, and `.lym/a .lym/b`: each path is matched. The leading stop character is consumed but the trailing one is not, so adjacent matches survive. Correct.
-- `localPathsNamed`, `foo.lym/bar` and `a/foo.lym/x`: neither is matched. Correct.
-- `localPathsNamed`, `**.lym/x**`, `*.lym/x*`, `path=.lym/x` and `files:.lym/x`: **none is matched**, because the path must be preceded by start of text or a stop character. Wrong (F1).
-- `localPathsNamed`, `` everything under `.lym/` is a cache ``: this yields the path `.lym/`, the bare directory. The import note then lists `` `.lym/` `` as a "file". Wrong (F2).
-- `localPathsNamed`, Windows `.lym\shuttle\x`: not matched. Issues name lym paths with forward slashes, so I accept this.
-- `localPathsNamed`, `https://host/.lym/x`: matched. This is a rare false positive, and I accept it.
-- `appendAttachments`, an empty `paths`: the body comes back unchanged, and the limit is not checked, which is the existing behaviour. Correct.
-- `appendAttachments`, a nil body with one attachment: the attachment alone is the body. Correct.
-- `appendAttachments`, `-b ""` with an attachment: the attachment alone is the body. Correct.
-- `appendAttachments`, `-b -` from stdin plus `--attach`: stdin is read by `resolveBody`, then the attachment is appended. Correct.
-- `appendAttachments`, a missing file or a directory: `os.ReadFile` errors, the error is wrapped with the flag and the path, and nothing is sent. Correct.
-- `appendAttachments`, `--attach -`: this reads a file literally named `-`. That is inconsistent with the body flags, but nothing breaks; the error says "no such file".
-- `appendAttachments`, an empty attachment: an empty fenced block. Correct.
-- `appendAttachments`, binary or non-UTF-8 content: `RuneCountInString` counts each invalid byte as one. `json.Marshal` replaces invalid bytes with U+FFFD, so the count still holds. Correct.
-- `appendAttachments`, the limit at exactly 65536 runes: accepted, and 65537 is refused. The count is of the final text, headings included. Correct.
-- `appendAttachments`, a body of `"x\r\n"`: `TrimRight("\n")` leaves `\r`. This is cosmetic and not a finding.
-- `attachmentSection`, content `` ```go\nx\n``` ``: the longest run is 3, so the fence is 4 backticks. Correct.
-- `attachmentSection`, no backticks: a 3-backtick fence. Correct.
-- `attachmentSection`, a base name holding a backtick: the heading's code span breaks. This is cosmetic and not a finding.
-- `intakeImport`, flags present and `CommentAndClose` failing: the flags are carried in the `ErrFields` envelope. Correct.
+**`importIssue`**, changed control flow (`internal/boardengine/intake.go:129-150`):
+- Fold with an issue whose body is `" \n"` and has no comments. `foldIssue` writes, then `EmptyBody=true` and `LocalPaths=nil`. `issueContent` sees the same issue, so the note and the flags agree. Correct.
+- Into and slug both given. The refusal comes before any write, so nothing is saved. Correct.
+- Neither given: the same refusal message as before. Correct.
+- `foldIssue` or `importNote` returns an error. A zero result and the error propagate, and no flags are set. Correct.
+- Already recorded. The early return at :122-123 carries no flags; the import is a no-op that prints `recorded`, so no flag is expected. Correct.
 
-**Findings**
+**`issueBodyEmpty`**: tried `""`, `" \n"` and `"x"`. Correct.
 
-- F1. Severity LOW, class `design`, location `internal/boardengine/intake.go` `localPathPattern`, about line 157.
-  A `.lym/` path preceded by any character outside `pathStopChars` is missed entirely: markdown emphasis (`**.lym/x**`, `*.lym/x*`), `=`, `:` or `,` with no space.
-  The import then reports no gap for evidence the issue names.
-  Evidence: the regexp `(?:^|[` + pathStopChars + `])((?:[^…]*/)?\.lym/…)` at `intake.go` about lines 157-158, with `pathStopChars` at about line 153.
-- F2. Severity LOW, class `design`, location `internal/boardengine/intake.go` `localPathsNamed`, about lines 166-180.
-  A bare mention of the directory, such as `` `.lym/` `` or `.lym/*`-style text with an empty tail, is reported as a local path.
-  The import note then tells the reader that a file `` `.lym/` `` did not reach the board, and `local_paths` carries `.lym/`.
-  Evidence: the group's tail `[^stop]*` allows zero characters, and `TrimRight(match[1], ".,;:!?")` keeps `.lym/`.
+**`issueContent`** (:200-216):
+- Blank body with comments: link line, the empty-body note, then the comments. The whitespace body is no longer appended, where before `" \n"` was. Correct.
+- Body plus paths: link line, the paths note, then the body. Correct.
+- Title holding `"` or a backtick: `%q` gives Go escaping, so `Say "hi"` renders as `"Say \"hi\""` in the markdown note. Cosmetic; see NIT 3.
 
-**Tool calls**
+**`localPathsNamed` and `localPathPattern`** (:153-184):
+- `` `.lym/a` ``, `(.lym/a)`, `[x](.lym/a)`, `".lym/a"`, `wt/.lym/a.`, `.lym/a,` and a path at the start of the text: all matched, trailing punctuation trimmed, duplicates dropped. Correct.
+- `foo.lym/x` and `_lym/x`: not matched. Correct.
+- Two paths separated by one space: both matched, because the stop character is consumed only as the leading delimiter. Correct.
+- `**.lym/x**`, `_.lym/x_`, `|.lym/x|`, `key=.lym/x` and `path:.lym/x`: not matched. `*`, `_`, `|`, `=` and `:` are not stop characters, and the optional prefix must end in `/`. Missed paths; see LOW 1.
+- `see .lym/x**`: the path comes out as `.lym/x**`, because the trim strips only `.,;:!?`. See LOW 1.
+- `C:\wt\.lym\x`: not matched (backslash separators). See LOW 1.
+- `https://host/.lym/x`: the whole URL is flagged as a local path. Rare false positive; see LOW 1.
+- Prose such as "the `.lym/` directory": flagged as path `.lym/`. Harmless, since the note then names the directory.
 
-None.
+**`intakeImport`**, new keys (`internal/boardcli/intake.go:315-323`):
+- `EmptyBody` false and `LocalPaths` nil: both keys absent. Correct.
+- Both set and `CommentAndClose` fails: the keys are in `short` before the call, so the error envelope carries them, as `doc.go` says. Correct.
+
+**`appendAttachments`** (`internal/selfreportcli/cli.go:196-217`):
+- No paths: body returned unchanged. Correct.
+- Nil body plus one attachment: the body is the section alone. Correct.
+- `--body ""` plus an attachment: the empty body is dropped and the body is the section alone. Correct.
+- `--body -` from stdin plus an attachment: stdin is read in `resolveBody`, then the attachment is appended. Correct.
+- `--attach -`: `os.ReadFile("-")` fails with `failed to read --attach "-": open -: no such file…`. Stdin is not supported for attachments, but the error is clear and no doc claims it is. Correct.
+- Missing file: the error is wrapped with the path, and nothing reaches the transport. Correct.
+- Empty file: the section holds an empty fenced block. Correct.
+- Invalid UTF-8: each invalid byte counts as one rune, so the limit check stays conservative. The JSON encoding downstream substitutes U+FFFD. No error is swallowed. Correct.
+- A total of exactly 65536 runes passes and 65537 is refused. This matches GitHub's limit of 65536 characters. Correct.
+- The body without `--attach` is still unchecked against the limit. That is the behaviour at the review base, not a change.
+
+**`attachmentSection`** (:221-233):
+- Content `` ```go\nx\n``` ``: longest backtick run 3, so a fence of 4. Correct.
+- No backticks: a fence of 3. Correct.
+- Content not ending in a newline: the closing fence still sits on its own line. Correct.
+- A base name holding a backtick, such as ``a`b.txt``: the heading's inline code span breaks. Cosmetic; see NIT 2.
+
+## Findings
+
+1. **LOW** · design · `internal/boardengine/intake.go:153-159` (`pathStopChars` and `localPathPattern`)
+   The detector misses real `.lym/` paths and keeps trailing markup.
+   - A path directly after `*`, `_`, `|`, `=` or `:` is not matched: `**.lym/shuttle/x**`, `|.lym/x|`, `key=.lym/x`. Those characters are not in `pathStopChars`, and the optional prefix must end in `/`.
+   - A path followed by trailing emphasis keeps it (`.lym/x**`), because :177 trims only `.,;:!?`.
+   - Backslash-separated Windows paths are never matched.
+   - An `https://…/.lym/…` URL is flagged as a local path.
+
+   Evidence: `internal/boardengine/intake.go:154`, `:158-159` and `:177`.
+   Fix: add `*`, `_`, `|`, `=`, `{` and `}` to the stop set (`:` needs care because of Windows drive letters), and accept `\` as a separator.
+
+2. **NIT** · design · `internal/selfreportcli/cli.go:232` (`attachmentSection`)
+   A base name holding a backtick breaks the heading's single-backtick code span.
+   Evidence: `cli.go:232`, format string ``"## Attached `%s`…"``.
+   Fix: wrap the name in a backtick run longer than any run in the name, as is already done for the content fence.
+
+3. **NIT** · design · `internal/boardengine/intake.go:203` (`issueContent`)
+   `%q` renders the title with Go string escaping, so a title holding `"`, `\` or a non-printable character shows escaped in the markdown note.
+   Evidence: `intake.go:203`.
+   Fix: quote the title as markdown, for example `"%s"` or a code span, instead of `%q`.
+
+No other correctness defect: `importIssue`'s result flags and the note in the entry body come from the same issue and cannot disagree.
+
+Tool calls: none.
