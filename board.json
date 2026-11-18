@@ -408,6 +408,27 @@
       },
       "profile": "light",
       "notify_on_land": true
+    },
+    {
+      "id": 1445,
+      "handle": "B1",
+      "slug": "drift-judge-parent-decision",
+      "title": "drift judge halt blames the judge for a parent's lym loom decision add during Drift-Verify",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "drift",
+        "loom"
+      ],
+      "issues": [
+        145
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #145](https://github.com/Knatte18/loomyard/issues/145).\n\n## Seen\n\nWhile a darn run's Drift-Verify judge session was running, the parent recorded a decision with `lym loom decision add \u003cslug\u003e --by parent`.\nThe verb committed `_lym/discussion/decision-record.md` on the records side.\nWhen the judge finished, the run halted with `decision halt: the judge session changed what it may not: records: ... decision-record.md was changed`.\nThe judge had not touched the file; the parent's own verb had.\n\n## Workaround\n\nThe parent restored the record to the snapshot HEAD in the records worktree (`git checkout \u003csnapshot head\u003e -- .../decision-record.md`), deleted the capture's scratch directory, ran `lym loom resume`, and records the decision again after Drift-Verify ends.\n\n## Expected\n\n`lym loom decision add` is either refused while a drift judge session runs, naming when to retry, or its commits are excluded from the judge's snapshot check.\n",
+      "created": "2026-11-18T08:07:43Z",
+      "revised": "2026-11-18T08:07:43Z"
     }
   ],
   "prime_owner": "neve",
