@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler-Review",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler-Review",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -108,6 +108,30 @@
       "started_at": "2026-11-18T18:50:48Z",
       "routed_to": "Discussion-Burler-Review",
       "by": "shed"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/fabric-single-repo-mode/_lym/reviews/discussion/round-2-review.md",
+      "at": "2026-11-18T18:57:23Z",
+      "started_at": "2026-11-18T18:50:53Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-18T18:57:22.562991149Z",
+          "end": "2026-11-18T18:57:22.566885763Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-18T18:57:22.699929254Z",
+          "end": "2026-11-18T18:57:22.709723871Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
     }
   ],
   "product": {
