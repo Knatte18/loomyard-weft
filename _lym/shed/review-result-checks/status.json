@@ -1,12 +1,13 @@
 {
   "current_producer": "Run-Shed",
-  "state": "failed",
-  "error": "run \"review-result-checks\" cannot act: a pause covers the run; way forward: run `lym tender resume review-result-checks`, then run \"lym batten run review-result-checks\" again",
+  "state": "running",
+  "error": "",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Open-IDE → skipped",
-    "wait": "run \"review-result-checks\" cannot act: a pause covers the run; way forward: run `lym tender resume review-result-checks`, then run \"lym batten run review-result-checks\" again"
+    "wait": ""
   },
   "history": [
     {
