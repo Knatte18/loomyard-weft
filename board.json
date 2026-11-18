@@ -192,7 +192,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #148](https://github.com/Knatte18/loomyard/issues/148).\n\n## What happened\n\nAn agent was given a task imported from a GitHub issue.\nThe task said to check a shuttle idle reading against `startup-capture.txt` in two run directories under `.lym/shuttle/`.\nNeither directory existed on the machine: the worktree of the source run was gone, and no hub log held the failure.\nThe agent spent a long time searching for the evidence before concluding it was unrecoverable.\nA second part of the task was imported from an issue whose body was empty, so only the title was available to work from.\n\n## Why this is abnormal\n\nThe board entry points at evidence (captures, log lines) that lives only in a run directory that can be deleted with its worktree.\nOnce the worktree is gone, the entry names files nobody can read.\nAn issue body that arrives empty gives the entry nothing to act on, and nothing flags the loss.\n\n## What to do\n\n- When the board imports an entry from an issue, copy the evidence the issue names into the entry, or into a file the entry references that outlives the source worktree.\n- Flag an import whose issue body is empty, so the empty entry is not mistaken for a complete one.\n- Consider a hint at issue-creation time (`lym selfreport create`) to include captured evidence inline, since run directories are not durable.\n\nProvenance: task slug `shuttle-start-idle-and-prompt`; note file `Darn-Write.md`.",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-18T16:38:30Z",
       "revised": "2026-11-18T18:46:49Z",
       "run_settings": {
