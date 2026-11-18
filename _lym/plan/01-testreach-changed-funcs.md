@@ -3,11 +3,11 @@
 **Create:**
 - `internal/testreach/doc.go`
 - `internal/testreach/testmain_test.go`
-- `plan:internal/testreach#Module` -> `type Module struct`
-- `plan:internal/testreach#FileSet` -> `type FileSet map[string][]byte`
-- `plan:internal/testreach#ChangedFunc` -> `type ChangedFunc struct`
-- `plan:internal/testreach#ChangedFuncs` -> `func ChangedFuncs(module Module, base, head FileSet) ([]ChangedFunc, error)`
-- `plan:internal/testreach#TestChangedFuncs` -> `func TestChangedFuncs(t *testing.T)`
+- `internal/testreach#Module`
+- `internal/testreach#FileSet`
+- `internal/testreach#ChangedFunc`
+- `internal/testreach#ChangedFuncs`
+- `internal/testreach_test#TestChangedFuncs`
 
 **Extends:**
 - `docs/overview.md`

@@ -1,19 +1,19 @@
 # Card 2 — testreach-reader
 
 **Create:**
-- `plan:internal/testreach#Reader` -> `type Reader struct`
-- `plan:internal/testreach#Reach` -> `type Reach struct`
-- `plan:internal/testreach#MapSource` -> `type MapSource struct`
-- `plan:internal/testreach#Open` -> `func Open(module Module, sharedDir, worktreeDir string) (*Reader, error)`
-- `plan:internal/testreach#Reader.TestsReaching` -> `func (r *Reader) TestsReaching(fn testcover.FuncKey) []Reach`
-- `plan:internal/testreach#Reader.Maps` -> `func (r *Reader) Maps() []MapSource`
-- `plan:internal/testreach#Reader.SpawnMarked` -> `func (r *Reader) SpawnMarked(pkg string) bool`
-- `plan:internal/testreach#Reader.StaleLinkers` -> `func (r *Reader) StaleLinkers(pkg string) ([]string, error)`
-- `plan:internal/testreach#Fresh` -> `func Fresh(module Module, pkg string, m testcover.Map) (bool, error)`
-- `plan:internal/testreach#ReadPackageMap` -> `func ReadPackageMap(dir, pkg string) (testcover.Map, bool, error)`
-- `plan:internal/testreach#TestReader` -> `func TestReader(t *testing.T)`
-- `plan:internal/testreach#TestFresh` -> `func TestFresh(t *testing.T)`
-- `plan:internal/testreach#TestReaderIndex` -> `func TestReaderIndex(t *testing.T)`
+- `internal/testreach#Reader`
+- `internal/testreach#Reach`
+- `internal/testreach#MapSource`
+- `internal/testreach#Open`
+- `internal/testreach#Reader.TestsReaching`
+- `internal/testreach#Reader.Maps`
+- `internal/testreach#Reader.SpawnMarked`
+- `internal/testreach#Reader.StaleLinkers`
+- `internal/testreach#Fresh`
+- `internal/testreach#ReadPackageMap`
+- `internal/testreach_test#TestReader`
+- `internal/testreach_test#TestFresh`
+- `internal/testreach_test#TestReaderIndex`
 
 **Extends:**
 - `internal/testreach/doc.go`

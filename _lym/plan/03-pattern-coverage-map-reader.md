@@ -2,7 +2,7 @@
 
 **Create:**
 - `pattern/PATTERN-coverage-map-reader.md`
-- `plan:cmd/lym#TestCoverageMapReaderBoundary` -> `func TestCoverageMapReaderBoundary(t *testing.T)`
+- `cmd/lym#TestCoverageMapReaderBoundary`
 
 **Extends:**
 - `PATTERN.md`

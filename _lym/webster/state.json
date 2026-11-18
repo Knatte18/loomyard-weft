@@ -1,21 +1,21 @@
 {
   "runGuid": "55564e2c6983cfab5875811855cabccd",
-  "planFingerprint": "ea1a96d207b6ea4cae3b79312efcbdde4cf74f06a73c2126eaf851689787b405",
+  "planFingerprint": "47772c381aa642a5ec6a854063e9bdf0f0c3e90e4a09a4b5bfbe974c8cd6d43c",
   "planFileHashes": {
     "00-overview.md": "60f0149d2ad266e455907c0d1f6ac189a2c7b065f5e6c2572875fd14cc856a23",
-    "01-testreach-changed-funcs.md": "fcff3833323aa506931d7ff19d5df207531e2573f53b872633559da0ba19fb30",
-    "02-testreach-reader.md": "d9bb4aa2c63aa32062334a2a996dc0c365be75591f4a0dcb8a04eeba86b8ce21",
-    "03-pattern-coverage-map-reader.md": "9e6b4b0c36ce5a15bccc53dd4ed54a5e0455b738ddafebb40f86078f88a23b09",
-    "04-gate-config-reach.md": "05cac83ba994559a9971d0f788e1daa30c6d5e614b7d874c1d663a57dea03d59",
-    "05-reach-step.md": "fb5a86d4d8130075a57c47e8221fd86721c6e78d7275a2c05ea4ba153b8ed9f5",
-    "06-map-run-writes-index.md": "1fa9a827722a6680de27a416670bed96fe70a933ec46fbdedd67fecdbc745a69",
+    "01-testreach-changed-funcs.md": "9697c560dae0c978316d293e521026f00787cf923a8a5b4f9a0a5f8ae0c2eab5",
+    "02-testreach-reader.md": "33fbed2dcca2fa052ca4bf9102e8b3468848b7b6876fa9bb9ae0d5740f41240e",
+    "03-pattern-coverage-map-reader.md": "4c6b41bad4481dafd39c7bfe3ce767afb0b6343f28696946e405072c6c065d06",
+    "04-gate-config-reach.md": "30085a5305df8f8bf4ed0c72d6c4ebeed10b9b784cd0eee1b5b4cf76d1c36942",
+    "05-reach-step.md": "fcbcb52a596f68a4a16f12d23e925546b2c2b5f8f812c81ec5d646cc5ed5cd45",
+    "06-map-run-writes-index.md": "f30f58ab357007c6fdfde37a5d3992de943e9aec4dcae8b6824a0496451b06ce",
     "07-reach-review-note.md": "a34c681a8c142e5b81be187783de2e0978e06328d70ed05ffd839a3987c35b7b",
     "08-rerun-mark-writer-only.md": "106b914fee9e91e30217b4aef61ae92a0e0be24c391a8141b4ffa9786f5bdf73",
     "09-reach-turn.md": "2423b68ab7ff0f7e55280f5bbdb0b017dbe17d5ccb642fb45159c404264a319c",
-    "10-reach-verb.md": "4fabd6169703eeb666c64b57b63546213f1e6c3c78646868d97dfa4c0b0d6187",
-    "11-failure-triage.md": "0c2f9953093fa04131f8a22cb132a21357a49fde01599061d94d56d698b8bfec",
+    "10-reach-verb.md": "3e1ba3cbd982983684217f088daf03707977abd229f031778454c94dec94742b",
+    "11-failure-triage.md": "39ced5f98bbcc6f2c6f78e6806c965740bf8848eac6b1e23cefa44ab26f267c1",
     "12-triage-in-fixer-reports.md": "96365b3338dd82126aced69db6ffe5ac22096f59312edf24be77c487f4af4513",
-    "13-gate-mutate.md": "0327f7442300bdcfb85a95f589fe1dc28fdb1e7c492ea14b78852e61f2934c7c"
+    "13-gate-mutate.md": "dc8941330d152537e5c8e772e55ea80ef0a9f7151af4c4e99c3c2743ac4ef7c5"
   },
   "planOverviewFrameHash": "c7f3d161756dc46f9b59032e8822b7ca3356dfdbb327cc6bddc0e8719b17e974",
   "partition": [
@@ -497,22 +497,50 @@
         "04-gate-config-reach"
       ],
       "cardHashes": {
-        "01-testreach-changed-funcs": "fcff3833323aa506931d7ff19d5df207531e2573f53b872633559da0ba19fb30",
-        "02-testreach-reader": "d9bb4aa2c63aa32062334a2a996dc0c365be75591f4a0dcb8a04eeba86b8ce21",
-        "03-pattern-coverage-map-reader": "9e6b4b0c36ce5a15bccc53dd4ed54a5e0455b738ddafebb40f86078f88a23b09",
-        "04-gate-config-reach": "05cac83ba994559a9971d0f788e1daa30c6d5e614b7d874c1d663a57dea03d59"
+        "01-testreach-changed-funcs": "9697c560dae0c978316d293e521026f00787cf923a8a5b4f9a0a5f8ae0c2eab5",
+        "02-testreach-reader": "33fbed2dcca2fa052ca4bf9102e8b3468848b7b6876fa9bb9ae0d5740f41240e",
+        "03-pattern-coverage-map-reader": "4c6b41bad4481dafd39c7bfe3ce767afb0b6343f28696946e405072c6c065d06",
+        "04-gate-config-reach": "30085a5305df8f8bf4ed0c72d6c4ebeed10b9b784cd0eee1b5b4cf76d1c36942"
       },
       "startSha": "221c68e3a55e300d43bee97ee738f1245e304560",
       "kind": "fork",
       "spawnedAt": "2026-11-18T20:15:26Z",
       "sessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-testreach-changed-funcs",
+        "status": "done",
+        "head_sha": "7b7e582854d3a74d52675eea1971fc361d79ffa3",
+        "deviations": [
+          "cmd/lym/coveragemapreader_test.go",
+          "internal/testreach/changedfuncs.go",
+          "internal/testreach/changedfuncs_test.go",
+          "internal/testreach/export_test.go",
+          "internal/testreach/fresh.go",
+          "internal/testreach/index.go",
+          "internal/testreach/mapread.go",
+          "internal/testreach/reader.go",
+          "internal/testreach/reader_test.go"
+        ]
+      },
+      "cardShas": [
+        "7b7e582854d3a74d52675eea1971fc361d79ffa3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-abfeb8a3764f9cdd3.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-abfeb8a3764f9cdd3.jsonl"
+      ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "cc2115949b2e99f9e861afb1569b42c9",
   "masterSessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
-  "masterEngine": "claude"
+  "masterEngine": "claude",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-abfeb8a3764f9cdd3.jsonl"
+  ]
 }

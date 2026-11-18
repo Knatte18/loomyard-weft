@@ -21,7 +21,7 @@
 - `internal/gateslot/doc.go`
 
 **Uses:**
-- `plan:internal/testreach#Open`
+- `internal/testreach#Open`
 - `plan:internal/testreach#Reader.FuncsReachedBy`
 - `plan:internal/gatecli#changedFuncsAt`
 - `internal/gatecli#parentMergeBase`

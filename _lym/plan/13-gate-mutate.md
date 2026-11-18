@@ -33,10 +33,10 @@
 - `internal/testcover#KeyBlocks`
 - `internal/testcover_test#planFixture`
 - `internal/testcover_test#TestPlanMutants`
-- `plan:internal/testreach#Fresh`
-- `plan:internal/testreach#ReadPackageMap`
-- `plan:internal/testreach#Open`
-- `plan:internal/testreach#Reader.TestsReaching`
+- `internal/testreach#Fresh`
+- `internal/testreach#ReadPackageMap`
+- `internal/testreach#Open`
+- `internal/testreach#Reader.TestsReaching`
 - `plan:internal/gatecli#changedFuncsAt`
 - `plan:internal/gatecli#reachStep`
 - `internal/gatecli#mutationCheck.holdSlot`

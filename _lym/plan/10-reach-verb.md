@@ -12,7 +12,7 @@
 **Edit:**
 - `internal/gatecli#newCommand`
 - `docs/overview.md`
-- `plan:internal/testreach#TestReader`
+- `internal/testreach_test#TestReader`
 
 **Extends:**
 - `internal/gatecli/doc.go`
@@ -20,8 +20,8 @@
 - `internal/testreach/doc.go`
 
 **Uses:**
-- `plan:internal/testreach#Open`
-- `plan:internal/testreach#Reader.TestsReaching`
+- `internal/testreach#Open`
+- `internal/testreach#Reader.TestsReaching`
 - `plan:internal/gatecli#changedFuncsAt`
 - `plan:internal/gatecli#ReachReport.NoteLines`
 - `internal/fabricengine#ReadOrigin`

@@ -1,7 +1,7 @@
 # Card 4 — gate-config-reach
 
 **Create:**
-- `plan:internal/gateslot#ReportReach` -> `const ReportReach = "reach"`
+- `internal/gateslot#ReportReach`
 
 **Edit:**
 - `internal/gateslot#Config`

@@ -15,7 +15,7 @@
 - `internal/gatecli#runTest`
 - `internal/gatecli#testMapRun`
 - `internal/gatecli#testMapRun.mapPackages`
-- `plan:cmd/lym#TestCoverageMapReaderBoundary`
+- `cmd/lym#TestCoverageMapReaderBoundary`
 - `PATTERN.md`
 - `pattern/PATTERN-test-speed.md`
 - `docs/overview.md`
@@ -25,15 +25,15 @@
 - `pattern/PATTERN-gate-slot.md`
 
 **Uses:**
-- `plan:internal/testreach#Open`
-- `plan:internal/testreach#Reader.Maps`
-- `plan:internal/testreach#ChangedFuncs`
-- `plan:internal/testreach#Fresh`
-- `plan:internal/testreach#ReadPackageMap`
-- `plan:internal/testreach#Reader.TestsReaching`
-- `plan:internal/testreach#Reader.SpawnMarked`
-- `plan:internal/testreach#Reader.StaleLinkers`
-- `plan:internal/gateslot#ReportReach`
+- `internal/testreach#Open`
+- `internal/testreach#Reader.Maps`
+- `internal/testreach#ChangedFuncs`
+- `internal/testreach#Fresh`
+- `internal/testreach#ReadPackageMap`
+- `internal/testreach#Reader.TestsReaching`
+- `internal/testreach#Reader.SpawnMarked`
+- `internal/testreach#Reader.StaleLinkers`
+- `internal/gateslot#ReportReach`
 - `internal/gatecli#parentMergeBase`
 - `internal/gatecli#redundancyModule`
 - `internal/gatecli#goFileHashes`

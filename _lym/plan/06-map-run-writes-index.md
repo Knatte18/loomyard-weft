@@ -4,11 +4,11 @@
 - `plan:internal/testreach#WriteIndex` -> `func WriteIndex(module Module, sharedDir string) error`
 
 **Edit:**
-- `plan:internal/testreach#TestReaderIndex`
+- `internal/testreach_test#TestReaderIndex`
 - `internal/gatecli#runTestMap`
 - `internal/gatecli#TestGateTestMap`
 - `internal/gatecli#TestGateTestMapInATaskWorktreeKeepsItsOwnMaps`
-- `plan:cmd/lym#TestCoverageMapReaderBoundary`
+- `cmd/lym#TestCoverageMapReaderBoundary`
 
 **Extends:**
 - `internal/testreach/doc.go`
@@ -16,8 +16,8 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/testreach#Module`
-- `plan:internal/testreach#Reader.TestsReaching`
+- `internal/testreach#Module`
+- `internal/testreach#Reader.TestsReaching`
 - `internal/testcover#WriteMap`
 - `internal/state#WriteJSON`
 - `internal/gatecli#coverageMapsDir`
