@@ -1,0 +1,28 @@
+# Relevant files
+
+- `internal/shuttleengine/claudeengine/command.go` `buildLaunchCmd`, `buildResumeCmd`, `buildOpenCmd`, `OpenLaunch` — builds the launch and resume lines that gain the account export
+- `internal/shuttleengine/claudeengine/claudeengine.go` `Prepare` — prepares a session; where the account resolves and the resume copy runs
+- `internal/shuttleengine/claudeengine/settings.go` `buildSettings`, `buildOpenSettings` — renders the `--settings` document that gains the status line
+- `internal/shuttleengine/claudeengine/scrub.go` `ScrubbedEnv` — the scrub list that gains `CLAUDE_CONFIG_DIR`
+- `internal/shuttleengine/claudeengine/scope.go` `claudeConfigDir` — the one current reader honouring `CLAUDE_CONFIG_DIR`, for plugins
+- `internal/shuttleengine/claudeengine/resume.go` `CheckResume`, `SessionHolder` — resume check and live-holder test over the session registry
+- `internal/shuttleengine/claudeengine/transcriptread.go` `LocateSessions`, `ReadSession` — transcript readers to widen to every known directory
+- `internal/shuttleengine/claudeengine/prober.go` `ProcessLiveness` — id-only liveness read
+- `internal/shuttleengine/claudeengine/audit.go` `claudeHomeDir` — hard-coded home lookup the readers share
+- `internal/shuttleengine/claudeengine/config.go` `ConfigSpec` — the `claude` module where the machine keys go
+- `internal/shuttleengine/claudeengine/activity.go` — classifies a usage-limit turn end
+- `internal/shuttleengine/claudeengine/usagelimit.go` `usageLimitResetsAt` — parses the limit's reset
+- `internal/shuttleengine/hold.go` `UsageLimitReader` — engine-neutral capability the switch capability sits beside
+- `internal/shuttleengine/apierrorretry.go` — today's handling of a limit in a shuttle run
+- `internal/shuttleengine/run.go` — runner holding the worktree, and the resume check call
+- `internal/orchengine/usagelimit.go` — orch watcher that waits out a limit today
+- `internal/shuttleengines/shuttleengines.go` — sole constructor of engines and wiring of the scrub list
+- `internal/envconfig/config.go` — the `env` module allowing `CLAUDE_CONFIG_DIR`
+- `internal/reedengine/panebin.go` — exports the `env` module ahead of the launch command
+- `internal/configengine/layers.go` — `CategoryMachine` and the machine layer
+- `internal/lymdirs/dirs.go` — names the new `.lym` paths
+- `internal/battenshed/create.go` — task Worktree-Create, a pick point
+- `internal/beamcli/create.go` — beam creation, a pick point
+- `internal/adoptcli` — adopt adding pairs to a machine, a pick point
+- `tools/tokencount/reads.go` — token count reading sessions through `LocateSessions`
+- `internal/shedadapters/sessionusage.go` — session-end usage record reading through `LocateSessions`
