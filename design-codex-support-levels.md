@@ -15,7 +15,7 @@ Level 2 below is where that doubt is tested, and the bench is its first work.
 ## Levels
 
 1. **Review.** Codex as the non-gating assistant reviewer beside the Claude reviewer.
-   Partly proven: runs and benches under `docs/research/codex/review/`; the open work is in `codex-assist-review-trial`.
+   Partly proven: runs and benches under `docs/research/codex/review/`; the verdict proposal of 2026-11-18 is in `docs/research/codex/review/assist-verdict-2026-11-18/report.md`, and the operator's verdict is open in `codex-assist-review-trial`.
 2. **Darn.** Codex as the writer of a whole darn run that lands with no resumption.
    Open: the 2026-11-05 trial (`docs/research/codex/engine-trial/codex-engine-trial-darn-e2e-2026-11-05.md`) stopped at Darn-Write because the sandbox made the worktree's git directory read-only, so the commit was refused.
    `sandbox_mode: danger-full-access` (`codex.yaml`, set with `lym config codex --layer machine`) is built but checked by unit tests only; no real Codex session has run with it.
