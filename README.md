@@ -78,6 +78,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 [`testmap-uses`](design-testmap-uses.md) · Age 0m · Owner `neve`
 
+The reach note, the diff mutation check and failure triage, built on one reader of the maps
+
 ### Tasks (0)
 
 Concrete and claimable; only a task can run.
