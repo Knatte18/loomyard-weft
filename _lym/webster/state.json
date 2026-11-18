@@ -610,9 +610,25 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-ac4a1e3636aa04fb3.jsonl"
       ]
+    },
+    "8": {
+      "slug": "rerun-mark-writer-only",
+      "cards": [
+        "08-rerun-mark-writer-only"
+      ],
+      "cardHashes": {
+        "08-rerun-mark-writer-only": "106b914fee9e91e30217b4aef61ae92a0e0be24c391a8141b4ffa9786f5bdf73"
+      },
+      "startSha": "e5def9f99b143385267c332251c0de3846526823",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T20:57:10Z",
+      "sessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "cc2115949b2e99f9e861afb1569b42c9",
   "masterSessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
   "masterEngine": "claude",
