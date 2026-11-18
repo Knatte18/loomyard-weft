@@ -22,4 +22,13 @@ Provenance: task slug leftover-pairs-teardown; note file loom-halt.md.
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - fix-round-named-fresh-delegate-fails-as-named-fork (class design, severity MEDIUM, open in rounds 1)
+  - fresh-subagent-fork-literal-not-constant (class consistency, severity BLOCKING, open in rounds 1)
+  - fresh-subagent-test-bypasses-public-audit-surface (class design, severity MEDIUM, open in rounds 1)
+  - meta-without-kind-reads-fresh (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
