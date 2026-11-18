@@ -1,6 +1,6 @@
 # Remove code no path from any main reaches
 
-`remove-unreachable-code` · Task · enhancement, tools · starting · Open-Window
+`remove-unreachable-code` · Task · enhancement, tools · starting · Seed-IDE
 
 ## What was seen
 
