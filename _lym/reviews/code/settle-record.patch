@@ -1,0 +1,416 @@
+diff --git a/cmd/lym/testonlycode_linux_test.go b/cmd/lym/testonlycode_linux_test.go
+index 26d0620e..1f1070ab 100644
+--- a/cmd/lym/testonlycode_linux_test.go
++++ b/cmd/lym/testonlycode_linux_test.go
+@@ -55,7 +55,6 @@ var testOnlyCodeAllowed = []scankit.Entry{
+ 	{Key: "internal/hibernateengine.TerminalPhases", Why: "reads the package's terminal phase list for internal/fabriccli's hibernate daemon test"},
+ 	{Key: "internal/shortcutcli.Load", Why: "reads the embedded shortcut file for cmd/lym's shortcut test"},
+ 	{Key: "internal/shuttleengine/claudeengine.New", Why: "builds the engine, unexported state included, for the tests of the packages that drive it"},
+-	{Key: "internal/runfsm.Order", Why: "no caller until the board displays a run's state from the FSM; that card removes this entry"},
+ 	{Key: "internal/slackengine.WriteSetup", Why: "writes the credentials file slackengine alone writes, for internal/slackcli's and internal/beamcli's tests"},
+ 	{Key: "internal/websterengine.ConflictRecordRel", Why: "oracle of the conflict record path in internal/loomrecipe's recipe test"},
+ }
+diff --git a/internal/battenshed/notice_test.go b/internal/battenshed/notice_test.go
+index 01ad8ee9..9b224a47 100644
+--- a/internal/battenshed/notice_test.go
++++ b/internal/battenshed/notice_test.go
+@@ -126,11 +126,6 @@ func (h *noticeHarness) coverFrom(since, until time.Time) {
+ 	}
+ }
+ 
+-// resumeFrom lifts the cover, leaving the interval from since to until behind as a resumed pause.
+-func (h *noticeHarness) resumeFrom(since, until time.Time) {
+-	h.pause = pauserecord.Coverage{Intervals: []pauserecord.Interval{{Start: since, End: until}}}
+-}
+-
+ // parked is a child halted in state, with a history of two entries.
+ func parked(state shedengine.State) shedengine.Status {
+ 	return shedengine.Status{State: state, Error: "stuck", CurrentProducer: "Publish", History: make([]shedengine.HistoryEntry, 2)}
+diff --git a/internal/burlerengine/engine_test.go b/internal/burlerengine/engine_test.go
+index 3239c230..8ce47486 100644
+--- a/internal/burlerengine/engine_test.go
++++ b/internal/burlerengine/engine_test.go
+@@ -7,7 +7,6 @@ package burlerengine
+ import (
+ 	"os"
+ 	"path/filepath"
+-	"slices"
+ 	"strings"
+ 	"sync"
+ 	"sync/atomic"
+@@ -166,15 +165,6 @@ type fakeShuttle struct {
+ 	// stopErr makes a handle's Stop fail, for every handle or only the one named by stopErrGuid when that is set.
+ 	stopErr     error
+ 	stopErrGuid string
+-	// stoppedGUIDs holds the strand guid of every Stop call, in call order.
+-	stoppedGUIDs []string
+-}
+-
+-// stopCalls returns the strand guids of the Stop calls so far, in call order.
+-func (f *fakeShuttle) stopCalls() []string {
+-	f.mu.Lock()
+-	defer f.mu.Unlock()
+-	return slices.Clone(f.stoppedGUIDs)
+ }
+ 
+ // fakeHandle is one started fake seat.
+@@ -218,10 +208,9 @@ func (h *fakeHandle) stop() {
+ 	h.stopOnce.Do(func() { close(h.stopped) })
+ }
+ 
+-// Stop records the call and, unless the shuttle was told to fail it, ends the handle's Wait as died.
++// Stop ends the handle's Wait as died, unless the shuttle was told to fail it.
+ func (h *fakeHandle) Stop() error {
+ 	h.shuttle.mu.Lock()
+-	h.shuttle.stoppedGUIDs = append(h.shuttle.stoppedGUIDs, h.guid)
+ 	failed := h.shuttle.stopErr != nil && (h.shuttle.stopErrGuid == "" || h.shuttle.stopErrGuid == h.guid)
+ 	err := h.shuttle.stopErr
+ 	h.shuttle.mu.Unlock()
+@@ -232,19 +221,6 @@ func (h *fakeHandle) Stop() error {
+ 	return nil
+ }
+ 
+-// settled reports whether the handle is no longer blocked: its Wait returned, or it was stopped.
+-func (h *fakeHandle) settled() bool {
+-	if h.returned.Load() {
+-		return true
+-	}
+-	select {
+-	case <-h.stopped:
+-		return true
+-	default:
+-		return false
+-	}
+-}
+-
+ // diedResult is what a stopped handle's Wait reports.
+ func (h *fakeHandle) diedResult() shuttleengine.Result {
+ 	return shuttleengine.Result{Outcome: shuttleengine.OutcomeDied, StrandGUID: h.guid, SessionID: h.role + "-session", RunDir: h.runDir}
+@@ -430,30 +406,6 @@ func (f *fakeShuttle) ProbeGated(spec shuttleengine.Spec, gate shuttleengine.Gat
+ 	return f.registerLocked(spec, gate, f.scriptFor(spec)), true, nil
+ }
+ 
+-// stop ends the blocked Wait of the handle with guid, if one was started.
+-func (f *fakeShuttle) stop(guid string) {
+-	f.mu.Lock()
+-	defer f.mu.Unlock()
+-	for _, h := range f.handles {
+-		if h.guid == guid {
+-			h.stop()
+-		}
+-	}
+-}
+-
+-// blocked returns the roles of started handles that are neither done waiting nor stopped.
+-func (f *fakeShuttle) blocked() []string {
+-	f.mu.Lock()
+-	defer f.mu.Unlock()
+-	var roles []string
+-	for role, h := range f.handles {
+-		if !h.settled() {
+-			roles = append(roles, role)
+-		}
+-	}
+-	return roles
+-}
+-
+ // newEngineTestProfile builds a minimal valid Profile rooted at a fresh temp dir.
+ // Its paths are relative: the engine resolves them against root when a half validates.
+ func newEngineTestProfile(t *testing.T) (root string, p Profile) {
+diff --git a/internal/fabricengine/livestate_verbs_test.go b/internal/fabricengine/livestate_verbs_test.go
+index 333c8d57..403798b6 100644
+--- a/internal/fabricengine/livestate_verbs_test.go
++++ b/internal/fabricengine/livestate_verbs_test.go
+@@ -288,17 +288,6 @@ func firstWiredJunctionLink(tb testing.TB, h *hubforge.Hub, slug string) string
+ 	return fabricengine.WarpJunctions(h.Location, slug, names)[0].Link
+ }
+ 
+-// pairPermittedRoots returns the hub-relative roots a pair's full teardown or creation may touch:
+-// its warp worktree and its weft sibling.
+-func pairPermittedRoots(tb testing.TB, h *hubforge.Hub, slug string) []string {
+-	tb.Helper()
+-
+-	return []string{
+-		hubRelative(tb, h, h.PairCodeWorktree(slug)),
+-		hubRelative(tb, h, h.PairRecordsSibling(slug)),
+-	}
+-}
+-
+ // slugPermittedRoots returns the hub-relative roots a pair named slug may occupy:
+ // its warp worktree, its weft sibling and their git-admin entries in the prime worktrees.
+ // A VerbCase's Expect closure has no *hubforge.Hub to resolve an accessor against, only the state name.
+diff --git a/internal/fabricengine/reconcile_stale_registration_test.go b/internal/fabricengine/reconcile_stale_registration_test.go
+index 4fecae2e..07d3ce49 100644
+--- a/internal/fabricengine/reconcile_stale_registration_test.go
++++ b/internal/fabricengine/reconcile_stale_registration_test.go
+@@ -492,15 +492,3 @@ func TestCleanup_VerdictIsIndependentOfDryRunAndForce(t *testing.T) {
+ 		t.Errorf("unmanaged branch %q was deleted by Cleanup(apply, force=true); want it to survive", unmanaged)
+ 	}
+ }
+-
+-// reconcilePairFor returns the result entry for slug's pair, failing the test when the result has none.
+-func reconcilePairFor(t *testing.T, result fabricengine.ReconcileResult, slug string) fabricengine.ReconcilePairResult {
+-	t.Helper()
+-	for _, pair := range result.Pairs {
+-		if filepath.Base(pair.CodeWorktree) == slug {
+-			return pair
+-		}
+-	}
+-	t.Fatalf("Reconcile() reported no pair for slug %q", slug)
+-	return fabricengine.ReconcilePairResult{}
+-}
+diff --git a/internal/loomshed/publishfailure_test.go b/internal/loomshed/publishfailure_test.go
+index fbdae644..4ca32900 100644
+--- a/internal/loomshed/publishfailure_test.go
++++ b/internal/loomshed/publishfailure_test.go
+@@ -3,7 +3,6 @@
+ package loomshed
+ 
+ import (
+-	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"testing"
+@@ -14,17 +13,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/websterengine"
+ )
+ 
+-// testGateTiers is a tier-list lookup over fixed `landing` and `publish` lists, refusing any other gate.
+-func testGateTiers(gate string) ([]int, error) {
+-	switch gate {
+-	case "landing":
+-		return []int{0, 1}, nil
+-	case "publish":
+-		return []int{2}, nil
+-	}
+-	return nil, fmt.Errorf("gates holds no list for %q", gate)
+-}
+-
+ func TestWebsterRecordNote(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/orchcli/smoke_live_test.go b/internal/orchcli/smoke_live_test.go
+index 6b5f036d..0baf43d6 100644
+--- a/internal/orchcli/smoke_live_test.go
++++ b/internal/orchcli/smoke_live_test.go
+@@ -157,16 +157,6 @@ func (f *liveFixture) stopOrch(t *testing.T) {
+ 	}
+ }
+ 
+-// sendTurn sends text to guid and waits for the turn it starts to end.
+-func (f *liveFixture) sendTurn(t *testing.T, guid, eventsPath, text string, attempts int) {
+-	t.Helper()
+-	before := turnEnds(eventsPath)
+-	if err := f.reed.SendText(guid, text, true); err != nil {
+-		t.Fatalf("send turn: %v", err)
+-	}
+-	waitFor(t, attempts, "the turn to end", func() bool { return turnEnds(eventsPath) > before })
+-}
+-
+ // permissionDialogMarker is the text Claude Code's permission dialog shows.
+ const permissionDialogMarker = "Do you want to"
+ 
+diff --git a/internal/reedengine/faketmux_test.go b/internal/reedengine/faketmux_test.go
+index 9880d961..019985ff 100644
+--- a/internal/reedengine/faketmux_test.go
++++ b/internal/reedengine/faketmux_test.go
+@@ -135,14 +135,6 @@ func (f *fakeTmux) answerWindowPanes(out string, err error) {
+ 	f.windowPanes = &tmuxAnswer{out, err}
+ }
+ 
+-// answerSession scripts the answers a session with live panes gives:
+-// list-panes, the generation probe and the live window-size query.
+-func (f *fakeTmux) answerSession(live []LivePane, box string, boxErr error) {
+-	f.answer("list-panes", encodeLivePanes(live), nil)
+-	f.answerFormat(paneGenerationFormat, "$0|1|1000", nil)
+-	f.answer("display-message", box, boxErr)
+-}
+-
+ // mustNotCall fails the test, at the call, whenever one of verbs runs.
+ func (f *fakeTmux) mustNotCall(verbs ...string) {
+ 	f.mu.Lock()
+diff --git a/internal/reportengine/fake_test.go b/internal/reportengine/fake_test.go
+index c689c1fa..f123706e 100644
+--- a/internal/reportengine/fake_test.go
++++ b/internal/reportengine/fake_test.go
+@@ -88,11 +88,6 @@ func (f *fakeRepo) commitOnChainWith(sha string, at time.Time, message string, o
+ 	f.chain = append(f.chain, sha)
+ }
+ 
+-// commitOffChain adds a commit outside the main line holding exactly files, with no parent.
+-func (f *fakeRepo) commitOffChain(sha string, at time.Time, files map[string]string) {
+-	f.commitOffChainOn(sha, "", at, "", files)
+-}
+-
+ // commitOffChainOn adds a commit outside the main line holding exactly files.
+ // It sets message as the commit's message and parent as its only parent when parent is not empty.
+ func (f *fakeRepo) commitOffChainOn(sha, parent string, at time.Time, message string, files map[string]string) {
+diff --git a/internal/runfsm/state.go b/internal/runfsm/state.go
+index 3414f006..3389a546 100644
+--- a/internal/runfsm/state.go
++++ b/internal/runfsm/state.go
+@@ -102,16 +102,7 @@ var order = []struct {
+ 	{NoRun, func(Records) bool { return true }},
+ }
+ 
+-// Order returns the run states, highest precedence first.
+-func Order() []State {
+-	states := make([]State, len(order))
+-	for i, entry := range order {
+-		states[i] = entry.state
+-	}
+-	return states
+-}
+-
+-// Derive returns the state of the run the records describe: the first state of Order whose condition holds.
++// Derive returns the state of the run the records describe: the highest-precedence state whose condition holds.
+ // A batten record whose shed state is cancelled while its task branch is gone from origin counts as no record.
+ // It is the leftover of a cancel that crashed after removing the pair.
+ func Derive(r Records) Reading {
+diff --git a/internal/runfsm/state_test.go b/internal/runfsm/state_test.go
+index 19941b14..20591cce 100644
+--- a/internal/runfsm/state_test.go
++++ b/internal/runfsm/state_test.go
+@@ -3,7 +3,6 @@
+ package runfsm_test
+ 
+ import (
+-	"reflect"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/runfsm"
+@@ -71,17 +70,6 @@ func TestDerive(t *testing.T) {
+ 			}
+ 		})
+ 	}
+-
+-	t.Run("OrderListsEveryStateHighestFirst", func(t *testing.T) {
+-		t.Parallel()
+-		want := []runfsm.State{
+-			runfsm.Landed, runfsm.Cancelled, runfsm.Cancelling, runfsm.Paused, runfsm.Halted,
+-			runfsm.Landing, runfsm.Running, runfsm.Starting, runfsm.Queued, runfsm.NoRun,
+-		}
+-		if got := runfsm.Order(); !reflect.DeepEqual(got, want) {
+-			t.Errorf("Order() = %v; want %v", got, want)
+-		}
+-	})
+ }
+ 
+ func TestTransitionState(t *testing.T) {
+diff --git a/internal/shedadapters/attachprobe_test.go b/internal/shedadapters/attachprobe_test.go
+index 59add2ff..29417556 100644
+--- a/internal/shedadapters/attachprobe_test.go
++++ b/internal/shedadapters/attachprobe_test.go
+@@ -14,7 +14,6 @@ import (
+ 	"path/filepath"
+ 	"reflect"
+ 	"strings"
+-	"sync"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -42,38 +41,6 @@ func stampedSiblingCount(t *testing.T, dir, base string) int {
+ 	return count
+ }
+ 
+-// stopLog records the strand guid of every Stop call on the handles built over it.
+-// Each Stop call returns err when err is set.
+-type stopLog struct {
+-	mu      sync.Mutex
+-	err     error
+-	stopped []string
+-}
+-
+-// probedHandle is a burlerengine.Handle for an agent that a probe reports live.
+-// A producer reads its strand guid and stops it.
+-// A nil log makes Stop a no-op.
+-type probedHandle struct {
+-	guid string
+-	log  *stopLog
+-}
+-
+-func (h probedHandle) StrandGUID() string { return h.guid }
+-
+-func (h probedHandle) RunDir() string { return "/kept/" + h.guid }
+-
+-func (h probedHandle) Wait() (shuttleengine.Result, error) { return shuttleengine.Result{}, nil }
+-
+-func (h probedHandle) Stop() error {
+-	if h.log == nil {
+-		return nil
+-	}
+-	h.log.mu.Lock()
+-	defer h.log.mu.Unlock()
+-	h.log.stopped = append(h.log.stopped, h.guid)
+-	return h.log.err
+-}
+-
+ // --- Bouncer, judge pass ---
+ 
+ //testtiming:keep pins that the judge pass attaches to a live judge without archiving its declared outputs out from under it
+diff --git a/internal/shedadapters/bouncer_fixture_test.go b/internal/shedadapters/bouncer_fixture_test.go
+index 7ca3aafc..dd943a59 100644
+--- a/internal/shedadapters/bouncer_fixture_test.go
++++ b/internal/shedadapters/bouncer_fixture_test.go
+@@ -48,14 +48,6 @@ type bouncerFixtureSpec struct {
+ 
+ type bouncerFixtureOpt func(*bouncerFixtureSpec)
+ 
+-// withRubric names the rubric stencil and sets its body.
+-func withRubric(name, body string) bouncerFixtureOpt {
+-	return func(s *bouncerFixtureSpec) {
+-		s.rubricName = name
+-		s.rubricBody = body
+-	}
+-}
+-
+ // withRubricName names the rubric stencil and keeps the default body.
+ func withRubricName(name string) bouncerFixtureOpt {
+ 	return func(s *bouncerFixtureSpec) { s.rubricName = name }
+diff --git a/internal/shuttleengine/startup_test.go b/internal/shuttleengine/startup_test.go
+index e6afb199..1f83c1e0 100644
+--- a/internal/shuttleengine/startup_test.go
++++ b/internal/shuttleengine/startup_test.go
+@@ -1423,17 +1423,12 @@ func TestStartup_FailedStartThenAttach_RespawnEligible(t *testing.T) {
+ 	}
+ }
+ 
+-// skillStartFixture starts a run whose launch defers its prompt, over a skillReed and skillFakeEngine.
++// skillStartFixtureWith starts a run whose launch defers its prompt.
++// The run's doubles are a skillReed that adds strand and a skillFakeEngine.
+ // The reports script each load turn's classification.
+ // Hangs and dies name the load turns, counted from zero, that never end or kill the pane.
++// When configure is set, it lets the test adjust the doubles before the start.
+ // It returns the started run (nil with the error on a refused start), the reed double and the virtual time Start took.
+-func skillStartFixture(t *testing.T, spec Spec, reports []SkillLoadReport, hangs, dies []int) (*Run, *skillReed, time.Duration, error) {
+-	t.Helper()
+-	return skillStartFixtureWith(t, reedengine.Strand{GUID: "strand-1"}, spec, reports, hangs, dies, nil)
+-}
+-
+-// skillStartFixtureWith is skillStartFixture over a reed that adds the given strand;
+-// when configure is set, it lets the test adjust the doubles before the start.
+ func skillStartFixtureWith(t *testing.T, strand reedengine.Strand, spec Spec, reports []SkillLoadReport, hangs, dies []int, configure func(*skillReed, *skillFakeEngine)) (*Run, *skillReed, time.Duration, error) {
+ 	t.Helper()
+ 	base := &fakeReed{
+diff --git a/internal/websterengine/triage_test.go b/internal/websterengine/triage_test.go
+index 689e3746..f6779a4a 100644
+--- a/internal/websterengine/triage_test.go
++++ b/internal/websterengine/triage_test.go
+@@ -15,17 +15,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// failOutput renders go test output failing the named tests in pkg, each at its subtest nesting depth.
+-func failOutput(pkg string, tests ...string) string {
+-	var b strings.Builder
+-	for _, name := range tests {
+-		indent := strings.Repeat("    ", strings.Count(name, "/"))
+-		b.WriteString(indent + "--- FAIL: " + name + " (0.00s)\n" + indent + "    x_test.go:1: boom " + name + "\n")
+-	}
+-	b.WriteString("FAIL\nFAIL\t" + pkg + "\t0.01s\n")
+-	return b.String()
+-}
+-
+ func TestTriageWarnings(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	cases := []struct {
