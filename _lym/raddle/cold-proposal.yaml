@@ -1,0 +1,116 @@
+{
+  "sketch": "fabric-single-repo-mode",
+  "shape": "project",
+  "project": {"slug": "single-repo-hub", "title": "Single-repository hubs: records on each code branch, the board on lym-bolt", "type": "feature"},
+  "board_checked": [
+    {"slug": "board-viewer-build", "revised": "2026-11-17T19:04:06Z"},
+    {"slug": "landingshed-design-simplify", "revised": "2026-11-18T19:23:31Z"},
+    {"slug": "code-cleanup", "revised": "2026-11-18T17:23:24Z"},
+    {"slug": "testmap-reach-triage-mutate", "revised": "2026-11-18T19:14:26Z"},
+    {"slug": "design-simplify-callers", "revised": "2026-11-18T17:23:24Z"},
+    {"slug": "drop-compat-migration-code", "revised": "2026-11-18T17:23:24Z"},
+    {"slug": "sandbox-closed-area-build", "revised": "2026-11-05T17:03:32Z"},
+    {"slug": "cortex-cost-measure", "revised": "2026-11-09T12:09:36Z"}
+  ],
+  "parts": [
+    {
+      "slug": "single-repo-fabric-mode",
+      "title": "One-repository layout in fabric: clone, worktrees, records commits, merges, pushes and replay",
+      "type": "feature",
+      "labels": ["fabric", "cwd", "cli", "landing", "docs", "pattern"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D11", "D12"],
+      "packages": [
+        {"path": "internal/fabricengine", "size": 4500},
+        {"path": "internal/hubforge", "size": 600},
+        {"path": "internal/lymcwd", "size": 250},
+        {"path": "internal/statuscommit", "size": 200},
+        {"path": "internal/fabriccli", "size": 150},
+        {"path": "internal/landingshed", "size": 60},
+        {"path": "docs", "size": 90},
+        {"path": "README.md", "size": 60},
+        {"path": "pattern", "size": 80}
+      ],
+      "contract": {
+        "takes": "the decision record's D1 to D7, D11 and D12; fabricengine's CloneHub (clone.go), Add and createWeftWorktreeDroppingRuns (add.go, forkrecords.go), junction wiring and adoption (junction.go, weftwiring.go), the exclude mutator (gitexclude.go, recordsgit.go's seedWeftArtifactExcludes), scratchlink.go, hubworkspace.go, the records commit (commit.go, recordsgit.go, trailercommit.go), the merge (merge.go, mergelifecycle.go, mergestate.go, mergestateactive.go, parenttips.go's FastForwardPair), the push (pushanchored.go, pushclassified.go, failedpush.go, handover.go, codetipsettle.go, originreads.go), replay.go, pull.go, originreconcile.go, archive and teardown, bolt.go and anchorchange.go; lymcwd's readRecordedAnchor, Resolve and ResolveWithin; statuscommit's mid-merge skip and failureDisposition; landingshed's protectedBranchRefusal and Finalize's mid-merge way forward; hubforge's two-repository builder",
+        "delivers": "the one-repository layout read from .lym-anchor at the worktree root; lym fabric clone by one URL over an origin holding lym-bolt and with --single-repo; Add, the path-limited records commit under the worktree write lock with its index.lock retry and mid-merge route, D5's records strip at every merge, the one-branch pair push, teardown, the records-only replay and the guarded prime push with the lym.primeBranch key in that layout; statuscommit's wait in place of its mid-merge skip and its completion on protected-only push failures; the Bolt on orphan lym-bolt; hubforge's one-repository hub with the D1 to D7, D11 and D12 scenarios; the docs D2 names; PATTERN-single-repo-hub, the PATTERN-run-fsm and PATTERN-cwd-resolution changes and the background paragraphs the record's Constraints list",
+        "exports": "lymcwd's one-repository predicate; fabricengine.RecordsPathsAt, a commit's records paths as D5 defines them; fabric's records-only-commit and fabric-written-merge-commit predicates as D7 defines them, and the merge trailer constant; the lym-view/ ref prefix constant, whose ref teardown deletes and the next part publishes; the operator_unpushed and protected failed-push class constants; the lym.primeBranch key constant; hubforge's one-repository hub builder"
+      },
+      "depends_on": [],
+      "open_risks": [
+        "D7 puts records commits on the operator's code branch in the prime; an operator who rebases that branch rewrites fabric's records commits too."
+      ],
+      "criteria": [
+        "D1: a worktree with `.lym-anchor` at its root reads as one repository, with `_bolt` missing too; a two-repository worktree with its weft sibling missing still reads as two.",
+        "D2: clone of a URL whose origin holds `lym-bolt` makes a one-repository hub; `--single-repo` on a fresh origin commits the marker on the prime's branch, pushes it, then creates and pushes `lym-bolt`; `--single-repo` refuses an origin holding `lym-bolt` or a weft binding, and a second URL; a `--single-repo` whose marker push is refused, as a protected branch or otherwise, leaves no `lym-bolt` on origin and no hub directory, and the protected refusal names the protection; a one-URL clone of an origin holding `lym-bolt` whose prime branch lacks `.lym-anchor` refuses, naming the missing marker.",
+        "D3: `Add` in a one-repository hub leaves `_lym` and `.lym` as real directories, `.lym-anchor` tracked at the root, `.lym` excluded, no `_lym` or weft-artifact exclude line, and no sibling worktree; a task forked from a parent carrying run records starts with none; `lym fabric reconcile` reports no junction cause; `lymcwd.Resolve` returns the anchor from the marker.",
+        "D4: a records commit with code staged by another process commits only records paths, leaves the code staged, and names the prior HEAD in `Warp-SHA`; an empty records commit made while code is staged lands and leaves the code staged; a fabric records commit and a fabric code commit started together in one worktree run one after the other; a held `index.lock` released within the bound lets the commit land; `fabricengine.RecordsRepoRoot` returns the one repository; a transition made while the worktree holds an unfinished code merge commits and pushes its records before the run acts past it, and concluding that merge, `git merge --abort` and `lym fabric merge --abort` each keep the records commit; a transition made during a cherry-pick, or during a merge fabric did not start whose index holds a records path unlike HEAD's, neither skips its commit and push nor lets the run act past it until the operation ends and the commit lands; a transition after a fabric merge crashed before D5 step 3 commits the status file it wrote, aborts that merge and pushes, leaving the status file in HEAD, the worktree and origin and no source records in any of them; `lym fabric merge --abort` of such a merge keeps an uncommitted receiving-side records edit in the commit it makes.",
+        "D5: a local merge and a squash merge of a task into its parent, with uncommitted parent records and conflicting records edits on both sides, leave the parent's records equal to its own pre-merge records in index and worktree, with no task-only records file; a merge-in from the parent keeps the task's records; a merge whose source is a fast-forward of the receiver makes a merge commit carrying the merge trailer; an anchor-change commit merged into the parent changes no parent code path; a merge whose source edited `.lym-anchor` to another anchor refuses, naming the marker change; a receiving-side records write between step 2 and step 3 on a path the source changed makes the merge refuse; a merge verb run over a parked merge past step 3 refuses as already in progress and leaves its resolved conflicts in place; `lym fabric merge --continue` on a merge stopped before step 3 refuses, and Finalize over a parent pair holding one names only `lym fabric merge --abort` as its way forward.",
+        "D6: a pair push pushes the branch once; a refused push leaves one failed-push record read as owed; after a takeover in a one-repository hub, origin's branch keeps every transition commit; teardown pushes the archive tag before deleting the branch on origin, deletes the view ref, and succeeds when origin already lost the view ref.",
+        "D7: a pull over a diverged task branch with local records-only commits replays them with each trailer that named a replayed commit rewritten to the fork point; with a code commit among origin's new commits it replays them all the same, and no trailer names that commit; with a local code commit it rewrites nothing and stops naming it; a commit changing code paths whose message carries fabric's merge trailer is neither replayed nor admitted by the prime guard; a prime records push with an operator commit unpushed, including one fast-forwarded from a branch origin holds, pushes nothing and leaves an `operator_unpushed` failed push naming that commit and listing the prime runs, its notice is sent, and a run in the prime with that push owed does not act past its transition until the push lands; a prime records push refused as a protected branch leaves a `protected` failed push, and the run completes that transition and acts on with its records unpushed; a records commit in a prime switched off its recorded branch refuses, naming both branches, and leaves the records on disk; a records commit in a prime whose `lym.primeBranch` (new) key is absent refuses, naming the key; a fabric merge on the prime's branch made before the prime's `.lym` was removed is still admitted by the prime guard.",
+        "D11: a board write in a one-repository hub commits and pushes on `lym-bolt` and changes no code branch.",
+        "D12: `hubforge` builds a one-repository hub that the D1 to D11 scenarios run on.",
+        "Review: D2: `docs/getting-started.md` and `README.md` describe cloning a one-repository hub, what it puts on code branches, the `--single-repo` hazard on a two-repository hub's code repository, and the hazards of switching, resetting or stashing in the prime."
+      ],
+      "pattern_changes": ["PATTERN-single-repo-hub", "PATTERN-run-fsm", "PATTERN-cwd-resolution"],
+      "expected_cost_usd": 49,
+      "cost_line": "tapestry/solid with a stored record (14 runs): fit 23.54 fixed + 0.427 per 100 changed lines over about 5,990 lines"
+    },
+    {
+      "slug": "single-repo-code-identity",
+      "title": "Records-free code identity and pull request views for one-repository hubs",
+      "type": "feature",
+      "labels": ["fabric", "cwd", "gate", "git", "weaver", "drift", "webster", "lint", "loom", "landing", "pawl", "shed", "arbiter"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D8", "D9", "D10"],
+      "packages": [
+        {"path": "internal/recordspaths", "size": 200},
+        {"path": "internal/fabricengine", "size": 900},
+        {"path": "internal/landingshed", "size": 600},
+        {"path": "internal/websterengine", "size": 400},
+        {"path": "internal/driftengine", "size": 250},
+        {"path": "internal/driftcli", "size": 30},
+        {"path": "internal/verifytree", "size": 200},
+        {"path": "internal/gatecli", "size": 200},
+        {"path": "internal/gitrepo", "size": 150},
+        {"path": "internal/beamcli", "size": 150},
+        {"path": "internal/loomcli", "size": 120},
+        {"path": "internal/weaverengine", "size": 80},
+        {"path": "internal/weavercli", "size": 40},
+        {"path": "internal/commentlint", "size": 60},
+        {"path": "internal/loomshed", "size": 60},
+        {"path": "internal/pullrequest", "size": 60},
+        {"path": "internal/sheddriver", "size": 40},
+        {"path": "internal/shedarbiter", "size": 40}
+      ],
+      "contract": {
+        "takes": "single-repo-fabric-mode's exports: fabricengine.RecordsPathsAt, the records-only-commit and fabric-written-merge-commit predicates, the merge trailer constant, the lym-view/ ref prefix constant and hubforge's one-repository hub; landingshed after landingshed-design-simplify lands; verifytree.Verify and DirtyPaths, gatecli's green record and testmap head reads, gitrepo's ChangedFilesSince and WorktreeChangedFiles, weaverengine's verify, driftengine's head and dirty reads, websterengine's gitwrap.go card checks and reconcileHead, findingtext.go and audit.go, commentlint's diff, loomshed's and loomcli's dirty readers, landingshed's Finalize, finalize_pr.go, prreview.go and parentalign.go, beamcli's pr verb, pullrequest's merge-state head check, sheddriver's and shedarbiter's head comparisons, fabricengine's HoldsWork, ParentHoldsTaskWork, OriginParentHoldsTaskWork and ReadParentTips",
+        "delivers": "a leaf package on lymdirs that strips given records paths from trees, diffs and path sets and reads no git; every code identity judgment by tree, diff, dirtiness, changed files or held work excludes the records paths in both layouts; held work read as merging the task's code changes no code; webster's write audit tests records paths before the worktree-root case; fabric's general view-publish verb, its idempotent lym-view/<branch> commit and force-push, the view refresh on a pair push, and PR-Review, Finalize's pull-request path and lym beam pr opening, comparing and recording pull requests on the view tip",
+        "exports": "the leaf package's records-path strip functions; fabricengine's view-publish verb returning the pull request head ref"
+      },
+      "depends_on": ["single-repo-fabric-mode", "landingshed-design-simplify"],
+      "open_risks": [],
+      "criteria": [
+        "D8: the view's three-way merge into the parent changes the parent's code as the branch does and leaves its records unchanged; two publishes of an unchanged branch leave the view ref on the same SHA and push nothing the second time, and a publish after origin lost the view ref pushes it again; a publish against a base other than the origin record's `parent_branch` refuses, naming both; a push after a new commit refreshes the view; a transition whose view refresh fails leaves a failed-push record, and the run acts past that transition once its branch push lands; after a GitHub merge of the view, Finalize brings the local parent level, makes no merge commit, and reads the task as landed; an already merged beam pull request whose head is the published view reads as landed; with uncommitted and unpushed parent records, a pull-request landing and a local landing both complete; in a two-repository hub the verb returns the branch and pushes nothing.",
+        "D9: a records-only commit leaves the verify tree identity and the gate green record valid; uncommitted records edits do not make `verifytree.DirtyPaths` report dirt; changed-file sets omit records paths; `fabricengine.Fabric.HoldsWork` reads true for a parent that merged the task's code with D5's strip, and after a squash landing whose parent and task records both changed since the fork; a webster card check does not accept a records-only commit as code work; a records commit made during a webster batch does not refuse the batch; a parent merge-in made during a webster batch, with conflicting records on both sides, does not refuse the batch.",
+        "D10: a webster write under `_lym` gets the same audit verdict in both layouts."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 39,
+      "cost_line": "tapestry/solid with a stored record (14 runs): fit 23.54 fixed + 0.427 per 100 changed lines over about 3,640 lines"
+    }
+  ],
+  "order_departures": [],
+  "cost": {
+    "expected_usd": 88,
+    "line": "two chained tapestry/solid parts with stored records, each on the 14-run fit: 49 for about 5,990 lines plus 39 for about 3,640 lines",
+    "next_best": {
+      "split": "one tapestry building D1 to D12 over every package of both parts, held behind landingshed-design-simplify",
+      "expected_usd": 65,
+      "line": "one tapestry/solid with a stored record on the 14-run fit: 23.54 fixed + 0.427 per 100 lines over about 9,630 lines, one fixed start fewer"
+    },
+    "cells": [{"recipe": "tapestry", "profile": "solid", "stored_record": true}]
+  }
+}
