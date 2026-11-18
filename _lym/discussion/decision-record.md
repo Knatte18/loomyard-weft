@@ -375,6 +375,12 @@ Rationale: Plan review round 3 escalated at the hard cap with F17 open. The fix 
   - d7-running-readers-skip-relaunching (class design, severity BLOCKING, open in rounds 3)
 <!-- /lym:carry-over Discussion-Review -->
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
+  - stop-ended-start-path-relaunch-outcome-not-a-result (class design, severity BLOCKING, open in rounds 3)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1: a machine-layer `claude.accounts` list loads; a duplicate name, a relative path, two entries naming one directory once links are resolved, a negative weight, an unknown window or a threshold outside 1 to 100 is refused.
