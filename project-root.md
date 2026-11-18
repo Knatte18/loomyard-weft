@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 08:16 UTC; every age below is as of then.
+Rendered 2026-11-18 08:17 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,9 +18,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | Discussion-Burler-Fix | neve | 2w<br>19h | claude, shuttle, config |
-| T4 | **lym orch launches keep the python guard although deny_python is false**<br>• An orch launch ignores deny_python: false in the hub shuttle config; notice and hook both stay<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-ignores-deny-python`](design-orch-ignores-deny-python.md) | darn · light | Code-Burler-Review | neve | 39m<br>39m | orch, shuttle, config |
-| T6 | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | darn · light | Code-Burler-Fix | neve | 1h<br>38m | burler, stencil |
+| T1 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md) | motif | Discussion-Bouncer | neve | 2w<br>19h | claude, shuttle, config |
+| T4 | **lym orch launches keep the python guard although deny_python is false**<br>• An orch launch ignores deny_python: false in the hub shuttle config; notice and hook both stay<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-ignores-deny-python`](design-orch-ignores-deny-python.md) | darn · light | Code-Burler-Review | neve | 40m<br>39m | orch, shuttle, config |
+| T6 | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | darn · light | Code-Burler-Fix | neve | 1h<br>39m | burler, stencil |
 
 ### Ready (0)
 
@@ -56,11 +56,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **Gate re-prompt fails: shuttle strand not tracked by reed, Plan-Write halts blocked** | [`gate-reprompt-strand-untracked`](design-gate-reprompt-strand-untracked.md) | 9m<br>9m | gate, shuttle, reed |
 | B4 |  | **drift: line-range expectation entries never match in diff mode lines** | [`drift-line-range-never-matches`](design-drift-line-range-never-matches.md) | 9m<br>9m | drift |
 | B5 |  | **Worktree .scratch is a symlink into .lym/scratch; tools given a path through it see each project under two paths** | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | 9m<br>9m | fabric, cwd |
-| B6 |  | **shed step re-halts on the shuttle run left running by the earlier interrupted-stop** | [`restep-leftover-shuttle-run`](design-restep-leftover-shuttle-run.md) | 8m<br>8m | shed, shuttle |
-| B7 |  | **shuttle start fails with 'session is not idle' when the pane shows an idle input prompt after skill loading** | [`idle-check-after-skill-load`](design-idle-check-after-skill-load.md) | 8m<br>8m | shuttle |
-| B8 |  | **Review strand starts without the turn naming its prompt file, also after restart** | [`review-strand-no-prompt-turn`](design-review-strand-no-prompt-turn.md) | 8m<br>8m | shuttle, burler |
-| B9 |  | **dotnet test exits 0 with no output in a darn session while lym gate test is off limits** | [`dotnet-test-silent-exit`](design-dotnet-test-silent-exit.md) | 8m<br>8m | dotnet, process |
-| B10 |  | **A run in a hub with no declared tier0 fails at shed build, even a docs-only darn** | [`no-tier0-fails-shed-build`](design-no-tier0-fails-shed-build.md) | 8m<br>8m | gate, config |
+| B6 |  | **shed step re-halts on the shuttle run left running by the earlier interrupted-stop** | [`restep-leftover-shuttle-run`](design-restep-leftover-shuttle-run.md) | 9m<br>9m | shed, shuttle |
+| B7 |  | **shuttle start fails with 'session is not idle' when the pane shows an idle input prompt after skill loading** | [`idle-check-after-skill-load`](design-idle-check-after-skill-load.md) | 9m<br>9m | shuttle |
+| B8 |  | **Review strand starts without the turn naming its prompt file, also after restart** | [`review-strand-no-prompt-turn`](design-review-strand-no-prompt-turn.md) | 9m<br>9m | shuttle, burler |
+| B9 |  | **dotnet test exits 0 with no output in a darn session while lym gate test is off limits** | [`dotnet-test-silent-exit`](design-dotnet-test-silent-exit.md) | 9m<br>9m | dotnet, process |
+| B10 |  | **A run in a hub with no declared tier0 fails at shed build, even a docs-only darn** | [`no-tier0-fails-shed-build`](design-no-tier0-fails-shed-build.md) | 9m<br>9m | gate, config |
 
 ### Enhancements (1)
 
@@ -82,4 +82,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T7 | **A shell guard refusal says nothing ran and names the refused segment**<br>• Saves the agent working out which part of a compound command failed<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`refusal-names-segment`](design-refusal-names-segment.md) | 1h<br>38m | process |
+| T7 | **A shell guard refusal says nothing ran and names the refused segment**<br>• Saves the agent working out which part of a compound command failed<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`refusal-names-segment`](design-refusal-names-segment.md) | 1h<br>39m | process |
