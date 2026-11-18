@@ -10,5 +10,6 @@
       "title": "Build the mode into the current fabricengine (F16)",
       "digest": "d0e806c8d3ffbbe296c11136ae31a9c8f2cc0c0dac8c4f0790ab6177a2066ede"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
