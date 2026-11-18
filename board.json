@@ -464,6 +464,25 @@
       "created": "2026-11-18T17:58:55Z",
       "revised": "2026-11-18T18:07:14Z",
       "project": "testmap-uses"
+    },
+    {
+      "id": 1487,
+      "handle": "B1",
+      "slug": "board-view-not-refreshing",
+      "title": "VS Code often keeps showing a stale board file after lym rewrites it",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board",
+        "ide"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The board renders every file by temp-write and rename, so the open markdown preview tracks a replaced inode; write rendered view files in place instead",
+      "body": "## What was seen (operator, 2026-11-18)\n\nVS Code often does not update the board file the operator is looking at after a board write.\nThe files sit in `_bolt`, which is a folder of the hub workspace and not under the watcher-excluded `**/_lym/**`, so the watcher does see the folder.\nThe workspace opens every `.md` in the markdown preview editor (`workbench.editorAssociations`).\n\n## Likely cause\n\n`boardengine.RenderToDisk` writes each rendered file with `fsx.AtomicWrite`: a temp file renamed over the old one, so each write is a new inode.\nAn open preview of the old file can miss that replace and keep the old content until the file is reopened.\n\n## Idea\n\nConfirm by hand first (keep a board file open in the preview, run a board write, see whether it refreshes; repeat with an in-place write).\nIf the rename is the cause: write the rendered view files (README, project and design files) in place, truncate and write, keeping atomic writes for the board's data files.\nA torn view file is harmless; the next render rewrites it.\n",
+      "created": "2026-11-18T18:15:32Z",
+      "revised": "2026-11-18T18:15:32Z"
     }
   ],
   "prime_owner": "neve",
