@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 18:46 UTC; every age below is as of then.
+Rendered 2026-11-18 18:47 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -112,11 +112,11 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Find why VS Code keeps showing a stale board file, and fix it**<br>• Find the cause first, most likely in VS Code settings or how the workspace reaches the board files; change lym code only if the cause is there<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-view-not-refreshing`](design-board-view-not-refreshing.md) | darn · light | Darn-Write | neve | 31m<br>2m | board, ide |
-| T4 | **Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`import-loses-issue-evidence`](design-import-loses-issue-evidence.md) | darn · light | starting · Seed-Child | neve | 2h<br>0m | board, selfreport |
+| T4 | **Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`import-loses-issue-evidence`](design-import-loses-issue-evidence.md) | darn · light | starting · Open-Window | neve | 2h<br>0m | board, selfreport |
 | T5 | **Bench the explorer subagents of the Discussion and Plan writers: with against without**<br>• Same frozen inputs, the writers run with and without the Agent-tool explore and lookup subagents; compare cost, time and plan or record quality<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | darn · docs | Darn-Write | neve | 6h<br>36m | loom, stencil |
 | T6 | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md) | motif | Discussion-Burler-Fix | neve | 1h<br>31m | fabric |
-| T7 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-with`](design-wxb-plan-with.md)<br>[Sketch](decision-wxb-plan-with.md) | tapestry | Plan-Write | neve | 28m<br>28m |  |
-| T8 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-without`](design-wxb-plan-without.md) | tapestry | Discussion-Burler-Fix | neve | 28m<br>28m |  |
+| T7 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-with`](design-wxb-plan-with.md)<br>[Sketch](decision-wxb-plan-with.md) | tapestry | Plan-Write | neve | 29m<br>29m |  |
+| T8 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-without`](design-wxb-plan-without.md) | tapestry | Discussion-Burler-Fix | neve | 29m<br>29m |  |
 
 #### Ready (0)
 
