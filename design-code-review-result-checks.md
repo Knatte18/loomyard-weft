@@ -1,6 +1,6 @@
 # Code-Review lets result-level issues through to PR-Review
 
-`code-review-result-checks` · Task · sketch, burler, stencil, drift · starting · Open-Window
+`code-review-result-checks` · Task · sketch, burler, stencil, drift · starting · Seed-IDE
 
 Decision record: [Sketch](decision-code-review-result-checks.md)
 
