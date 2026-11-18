@@ -1,6 +1,6 @@
 # List features nobody uses, for the operator to cut
 
-`drop-unused-features` · Task · enhancement, tools · landing · Finalize
+`drop-unused-features` · Task · enhancement, tools · done
 
 ## What was seen
 
