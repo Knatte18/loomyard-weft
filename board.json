@@ -241,25 +241,6 @@
       "revised": "2026-11-17T10:49:21Z"
     },
     {
-      "id": 1434,
-      "handle": "E1",
-      "slug": "map-single-test-crosscheck",
-      "title": "No lym check compares a map entry with a single-test coverage run",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "gate"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The trial cross-checked by hand; blocks have no line range and funcs have no profile counterpart",
-      "body": "Found by the map-tooling-trial.\n\nNothing in lym compares a map entry with a single-test coverage run.\nThe trial did it by hand: `lym gate test --wait ./internal/\u003cpkg\u003e -- -run '^\u003cTest\u003e$' -count=1 -coverprofile=\u003cabs path\u003e`, then counted covered blocks per file in the profile against the map's `blocks` of that test grouped by file.\nThat agreed for both `internal/durfmt` tests and for `TestOutputs`, `TestStoreValidatesLabelsWithVocabulary` and `TestWriteSiblings` of `internal/boardengine`.\n\nTwo limits:\n- The map's blocks carry file, function and hash but no line range, so the check is by count per file, not block by block.\n- The map's `funcs` list (functions of linked packages a test reaches) has no single-test counterpart in a statement profile, so it is unchecked.\n\nAdd a verb, or a `--map` option, that re-measures named tests alone and reports any block or function that differs, and give blocks a line range.\n",
-      "created": "2026-11-17T15:01:51Z",
-      "revised": "2026-11-18T07:42:33Z",
-      "project": "test-suite-trim"
-    },
-    {
       "id": 1438,
       "handle": "T3",
       "slug": "board-viewer-build",
@@ -427,6 +408,35 @@
       "body": "## What was seen\n\n`tools/tokencount -since 2026-11-03` over the 21 tapestry runs since then (2026-11-18):\nthe Plan writer's forks cost $137.84, more than the Plan writer itself ($126.24), about $6.50 per run.\nThey are the exploration subagents the Plan writer was set up to spawn.\nThe operator judges they add little to the plan beyond their cost.\n\n## Idea\n\nStop the Plan writer from spawning exploration subagents; it reads the code itself and writes one version of the plan.\nThe plan review stays as it is and is the safety net: a plan that misses something costs at most an extra review round.\n\n## Check afterwards\n\nCompare the next tapestry runs' plan review rounds and blocking findings with the runs counted above.\nIf they rise, turn the explorer subagents back on.\n",
       "created": "2026-11-18T12:30:19Z",
       "revised": "2026-11-18T12:41:26Z"
+    },
+    {
+      "id": 1470,
+      "handle": "T1",
+      "slug": "redundant-check-fixes",
+      "title": "lym gate redundant fails on an uncompilable mutant; a map build exits 1 on Windows-only tests",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "gate",
+        "testkit"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Keep a literal mutant type-correct, survive an unbuildable mutant, and leave platform-only tests out of failed_tests",
+      "body": "## What was seen\n\n`docs/research/speed/coverage-map-measurement-2026-11-18/report.md` (`122a41f1`):\n\n1. `lym gate redundant internal/boardengine` fails after 5 s:\n   `overlay-3/handles.go:62: invalid operation: digits[lymMutantInt(0, 274)] == lymMutantInt('0', 275) (mismatched types byte and rune)`.\n   `9ce7233b` (\"testcover: mutate data literals and delete boolean-chain operands\") rewrites a rune literal as a call returning an `int`,\n   so a comparison with a `byte` no longer compiles, and the verb takes that one failed compile of the whole mutant binary as a failure of the check.\n   The runs of 2026-11-17 handled 52 unbuildable mutants and finished, so the data-literal operator is the cause.\n2. A full `lym gate test --map --all` on Linux exits 1: `failed_tests` lists ten tests that only run on Windows, though nothing failed.\n\n## Fix\n\n- The literal operator keeps the type of the literal it mutates (a rune or byte literal stays one), or skips a literal whose type it cannot keep.\n- A mutant that does not compile is dropped and counted as unbuildable, never failing the whole check.\n- A test skipped or unrunnable on the host platform is not a failed test, so a clean map build exits 0.\n\n## Done when\n\n`lym gate redundant internal/boardengine` finishes, and the five false `boardengine` candidates from the 2026-11-12 pilot\n(`docs/research/speed/coverage-map-pilot-2026-11-12/report.md`) are no longer listed; the run states which are gone in its change description.\n",
+      "status": "draft",
+      "created": "2026-11-17T15:01:51Z",
+      "revised": "2026-11-18T12:52:07Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light",
+      "project": "test-suite-trim"
     }
   ],
   "prime_owner": "neve",
