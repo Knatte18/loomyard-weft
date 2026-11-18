@@ -388,8 +388,7 @@
       "status": "done",
       "created": "2026-11-18T16:44:29Z",
       "revised": "2026-11-18T16:44:29Z",
-      "profile": "docs",
-      "notify_on_land": true
+      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
