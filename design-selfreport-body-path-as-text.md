@@ -1,6 +1,6 @@
 # selfreport -b takes a file path as the body text, losing the report
 
-`selfreport-body-path-as-text` · Task · bug, selfreport · running · Drift-Verify
+`selfreport-body-path-as-text` · Task · bug, selfreport · running · Code-Bouncer
 
 An agent filed issue #136 with `lym selfreport create "<title>" -b .scratch/selfreport-missing-brief.md`.
 `-b` takes the body text, so the issue body became the path and the report itself was lost.
