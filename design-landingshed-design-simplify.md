@@ -1,6 +1,6 @@
 # Pilot: simplify the design of landingshed without changing behaviour
 
-`landingshed-design-simplify` · Task · enhancement, landing · landing · Finalize
+`landingshed-design-simplify` · Task · enhancement, landing · done
 
 ## Why
 
