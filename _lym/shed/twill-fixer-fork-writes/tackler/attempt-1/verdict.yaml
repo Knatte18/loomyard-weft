@@ -1,0 +1,9 @@
+verdict: escalate
+reason: >-
+  The stop is a producer error at Seed-Child: the records push of the prime's main-weft returned nil with commits still unpushed,
+  and recordsSideNotLanded (internal/fabricengine/pushanchored.go:297-310) reported the branch's entry as ended on origin.
+  The logs and remote reads contradict that reading: main-weft is present on origin (three ls-remote reads gave a tip each time),
+  and the named commit c3801592 is an ancestor of origin's tip. The design note _bolt/design-records-push-main-weft-ended.md says
+  main-weft is never ended, and the same message has hit other runs today. I cannot name which pushClassified path returned nil
+  without a landed push or a deferred record, because the trace has no line for it. Naming the cause needs the fabric code judged,
+  which a stronger agent or the run's parent should do; a plain re-launch might clear it but is not established.

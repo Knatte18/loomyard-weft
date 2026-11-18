@@ -1,0 +1,16 @@
+verdict: resume
+reason: |-
+  Error stop at Seed-Child: the prime records push in loomyard-weft returned without landing and the
+  recordsSideNotLanded fallback reported main-weft as "ended on origin". That reading is false and
+  the records it was pushing have since landed: origin's refs/heads/main-weft exists (now 15c0ddfb2e,
+  equal to the local tip), and the stop's commit c3801592 is an ancestor of origin/main-weft
+  (merge-base --is-ancestor exits 0). The task's own pair is fine: twill-fixer-fork-writes and
+  twill-fixer-fork-writes-weft are in step with origin (weft tip 444bdbd5 is on origin).
+  The defect is in the fabric code (internal/fabricengine/pushanchored.go, pushclassified.go), outside
+  this task's scope, and is already filed as the board note records-push-main-weft-ended
+  (_bolt/design-records-push-main-weft-ended.md), which records that a plain rerun of the run got
+  retro-stencil-fixes and shuttle-start-idle-and-prompt through the same stop the same day.
+  Another writer was pushing main-weft concurrently, which fits a transient misclassification.
+  Nothing in the run's state needs repair, so a plain re-launch at the current row is safe.
+  No fix was made and nothing was committed.
+verbs: []

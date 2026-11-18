@@ -1,0 +1,3 @@
+{"stop_key":{"current_producer":"Seed-Child","history_length":1,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-11-18T11:09:46.04642486+01:00","target":"attempt-1"}
+{"stop_key":{"current_producer":"Seed-Child","history_length":1,"state":"failed"},"settler":"arbiter","action":"spawn","outcome":"arbiter spawned","at":"2026-11-18T11:10:12.775173793+01:00","target":"attempt-1"}
+{"stop_key":{"current_producer":"Seed-Child","history_length":1,"state":"failed"},"settler":"arbiter","action":"restep","outcome":"arbiter resume","at":"2026-11-18T11:10:12.775257159+01:00"}

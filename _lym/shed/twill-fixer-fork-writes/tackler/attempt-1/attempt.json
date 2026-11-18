@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Seed-Child",
+    "history_length": 1,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-18T11:08:47.333005274+01:00",
+  "deadline": "2026-11-18T11:18:47.333005274+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/twill-fixer-fork-writes/drive-reports/drive-envelope-20261118-110847-4c05.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/twill-fixer-fork-writes/drive-reports/drive-report-20261118-110847-97f1.md",
+  "strand_guid": "ca7b7b5e99d27d2225c2f566886210d6"
+}
