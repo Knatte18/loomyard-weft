@@ -1,0 +1,17 @@
+{
+  "current_producer": "",
+  "state": "running",
+  "error": "",
+  "pause_requested": false,
+  "activity": {
+    "now": "",
+    "last": "",
+    "wait": ""
+  },
+  "history": [],
+  "product": {
+    "slug": "wxb-plan-with",
+    "parent": "plan-writer-explorer-forks",
+    "start_sha": null
+  }
+}

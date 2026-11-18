@@ -1,0 +1,8 @@
+{
+  "recipe": "tapestry",
+  "driver": "go",
+  "params": {
+    "parent": "plan-writer-explorer-forks"
+  },
+  "started_at": "2026-11-18T18:21:43Z"
+}
