@@ -9,7 +9,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 <details open>
 <summary><strong><a href="project-code-cleanup.md">P1 Code cleanup: cut and simplify lym code and tests</a> (4)</strong></summary>
 
-[`code-cleanup`](design-code-cleanup.md) · Age 57m · Owner `neve`
+[`code-cleanup`](design-code-cleanup.md) · Age 58m · Owner `neve`
 
 Make lym smaller without changing behaviour: fewer tests, leaner design, no dead compatibility code, no unused features
 
@@ -31,10 +31,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E3 |  | **Comments: check what the big comment rewrite left, before any new pass**<br>• Last week a run of nearly 3,000 agents rewrote docstrings and doc files; measure what is still long before deciding on more | [`comment-trim-second-pass`](design-comment-trim-second-pass.md) | 57m<br>57m | docs |
-| E5 |  | **Design: simplify interfaces that make every caller handle too much**<br>• For example one result type instead of a four-value return handled at 60 call sites; find such spots per module and fix them one module at a time | [`design-simplify-callers`](design-design-simplify-callers.md) | 57m<br>57m | fabric, landing |
-| E6 |  | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | 57m<br>57m | fabric, loom, board |
-| E7 |  | **Remove features nobody uses**<br>• Find unreachable code mechanically and list features with no recent use; the operator decides which go | [`drop-unused-features`](design-drop-unused-features.md) | 57m<br>57m | tools |
+| E3 |  | **Comments: check what the big comment rewrite left, before any new pass**<br>• Last week a run of nearly 3,000 agents rewrote docstrings and doc files; measure what is still long before deciding on more | [`comment-trim-second-pass`](design-comment-trim-second-pass.md) | 58m<br>58m | docs |
+| E5 |  | **Design: simplify interfaces that make every caller handle too much**<br>• For example one result type instead of a four-value return handled at 60 call sites; find such spots per module and fix them one module at a time | [`design-simplify-callers`](design-design-simplify-callers.md) | 58m<br>58m | fabric, landing |
+| E6 |  | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | 58m<br>58m | fabric, loom, board |
+| E7 |  | **Remove features nobody uses**<br>• Find unreachable code mechanically and list features with no recent use; the operator decides which go | [`drop-unused-features`](design-drop-unused-features.md) | 58m<br>58m | tools |
 
 </details>
 
@@ -68,7 +68,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 <details open>
 <summary><strong><a href="project-testmap-uses.md">P3 Put the per-test coverage maps to use</a> (1)</strong></summary>
 
-[`testmap-uses`](design-testmap-uses.md) · Age 16m · Owner `neve`
+[`testmap-uses`](design-testmap-uses.md) · Age 17m · Owner `neve`
 
 The reach note, the diff mutation check and failure triage, built on one reader of the maps
 
@@ -82,7 +82,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Coverage map uses: reach note, failure triage and diff mutation check**<br>• One reader of the maps feeding a reach note for writer and review, failure triage in the gate report and fixer brief, and a mutation check of a diff changed blocks | [`testmap-uses-design`](design-testmap-uses-design.md) | motif | Discussion-Burler-Review | neve | 22m<br>13m | testmap, gate, burler, darn |
+| T2 | **Coverage map uses: reach note, failure triage and diff mutation check**<br>• One reader of the maps feeding a reach note for writer and review, failure triage in the gate report and fixer brief, and a mutation check of a diff changed blocks | [`testmap-uses-design`](design-testmap-uses-design.md) | motif | Discussion-Burler-Review | neve | 22m<br>14m | testmap, gate, burler, darn |
 
 #### Ready (0)
 
@@ -97,11 +97,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (15)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (14)</strong></summary>
 
 Owner `neve`
 
-### Tasks (7)
+### Tasks (6)
 
 Concrete and claimable; only a task can run.
 
@@ -112,7 +112,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Bench the explorer subagents of the Discussion and Plan writers: with against without**<br>• Same frozen inputs, the writers run with and without the Agent-tool explore and lookup subagents; compare cost, time and plan or record quality<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | darn · docs | Darn-Write | neve | 5h<br>11m | loom, stencil |
-| T6 | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md) | motif | Discussion-Write | neve | 1h<br>5m | fabric |
+| T6 | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md) | motif | Discussion-Write | neve | 1h<br>6m | fabric |
 
 #### Ready (0)
 
@@ -120,13 +120,12 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (5)
+#### Draft (4)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-disc-with`](design-wxb-disc-with.md) | tapestry |  | 3m<br>3m |  |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 1d<br>23h | board, ide, fabric |
 | T4 | `draft` **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-disc-without`](design-wxb-disc-without.md) | tapestry |  | 3m<br>3m |  |
 | T7 | `draft` **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-with`](design-wxb-plan-with.md) | tapestry |  | 3m<br>3m |  |
@@ -147,7 +146,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **VS Code often keeps showing a stale board file after lym rewrites it**<br>• The board renders every file by temp-write and rename, so the open markdown preview tracks a replaced inode; write rendered view files in place instead | [`board-view-not-refreshing`](design-board-view-not-refreshing.md) | 5m<br>5m | board, ide |
+| B1 |  | **VS Code often keeps showing a stale board file after lym rewrites it**<br>• The board renders every file by temp-write and rename, so the open markdown preview tracks a replaced inode; write rendered view files in place instead | [`board-view-not-refreshing`](design-board-view-not-refreshing.md) | 6m<br>6m | board, ide |
 
 #### Enhancements (2)
 
