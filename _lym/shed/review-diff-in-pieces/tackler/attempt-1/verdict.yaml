@@ -1,0 +1,13 @@
+verdict: resume
+reason: >-
+  The stop is a producer error at Seed-IDE: origin refused the push of main-weft
+  ("entry of branch main-weft is ended on origin"; trace de0dccfc6589692f, stderr log
+  line 1-2, trace log lines 12-13). The commit the stop names, bc6161af36 (Seed-IDE, 08:38:49),
+  is not lost: `git merge-base --is-ancestor bc6161af36 <tip>` returns 0 for the current
+  origin tip 6a1e09b26c (`git ls-remote origin refs/heads/main-weft` answers that line), so the
+  commit is present on origin. The same run then pushed later commits on top of it
+  (b01637f87d 08:38:55, 0481674498 08:39:03, a2605e01aa 08:39:08, b1ab55484a 08:39:12,
+  6a1e09b26c 08:39:21), so the refusal did not persist and the branch accepts pushes again.
+  A plain re-launch of the failed Seed-IDE row settles it. Caveat: the run is still advancing
+  at 08:39 while the drive status reads failed, so the resume should be checked against the
+  live run to avoid a second drive of the same rows.
