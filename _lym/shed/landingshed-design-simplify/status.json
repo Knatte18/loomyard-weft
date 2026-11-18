@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -116,6 +116,54 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/landingshed-design-simplify/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-18T20:14:37Z",
+      "started_at": "2026-11-18T20:08:33Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-18T20:11:37.185332116Z",
+          "end": "2026-11-18T20:11:37.194169797Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-18T20:11:50.89604821Z",
+          "end": "2026-11-18T20:11:50.906575352Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-18T20:11:37.236935503Z",
+          "end": "2026-11-18T20:11:37.42356905Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-18T20:11:37.809982615Z",
+          "end": "2026-11-18T20:11:50.863631052Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-18T20:11:50.95474226Z",
+          "end": "2026-11-18T20:14:36.118183074Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-18T20:14:36.167449009Z",
+          "end": "2026-11-18T20:14:36.169537044Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
