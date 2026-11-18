@@ -1,25 +1,18 @@
-```yaml
-lens: fix-proposal
-outcome: reported
-```
+Lens: fix-proposal. I challenged the reviewer's proposals for F1 and F4 as the fixer carried them out.
 
-Task: challenge the reviewer's proposals that the fixer carried out as proposed (F1, F3–F10; F2 was the fixer's own change).
+**MEDIUM — F1, `claudeengine.LymBinary` and `codexengine.LymBinary` (the `Prepare` change)**
+- Summary: `Prepare` now returns an error whenever `selfexec.LymBinary` refuses, which it always does under `go test`. The stand-in is set in only 5 test binaries: `claudeengine`, `codexengine`, `shuttleengines`, `orchcli` and `shuttleparity`.
+- Evidence: the search found 9 other test files that build real engines through `NewFromConfig` or `shuttleengines.New`. They are `internal/treadleengine/smoke_judge_test.go`, `seatengine/smoke_seats_test.go`, `orchcli/smoke_live_test.go` (covered by the orchcli TestMain), `shuttlecli/smoke_interrupt_test.go`, `webstercli/smoke_test.go`, `burlerengine/smoke_{assist,cluster,round}_test.go` and `creelcli/smoke_llm_test.go`.
+- Where it breaks: if any of these runs a real `Prepare` under its own test binary, the launch fails with `ErrTestBinary`.
+- Why the gate missed it: I assume these are live-tier smoke tests that tiers 0 and 1 skip. The run covered only the touched packages, so none of the other packages' tests ran.
+- Not checked: I did not open those files, so I don't know whether they set a stand-in elsewhere.
 
-**Findings**
+**LOW — F4, `shuttleConfigDirs` in `hookpython.go` (`preflight.BoardLymPresent`)**
+- Summary: the hook now treats a hub whose Bolt checkout has no `_lym` as standalone, but the orch launch does not.
+- Evidence: the landing summary says the orch wiring loads `shuttleengine.LoadConfig(fabricengine.ConfigDirs(location), "shuttle")` regardless of `BoardLymPresent`.
+- Case: for such a damaged hub where a standalone state directory exists, the orch launch reads the hub layers and the hook reads the state directory. This reverses the mismatch the review described for the standalone-capable launches.
+- Scope: narrow, since the two differ only when a state directory also exists.
+- Other proposals: I found no wrong case for F2, F3, F5, F8 or F9. F6 and F7 are not this lens's.
 
-1. **LOW** — `internal/configcli/configcli.go`, the reworded help line for F8.
-   - **Summary:** the new text reads as if "from the prime" belongs to the sessions, not to the command that follows.
-   - **Evidence:** the text is `deny_python=false lets Python through in running sessions at their next call and drops the notice\nfrom sessions launched afterwards, from the prime:\n  lym config shuttle ...`. "from sessions launched afterwards, from the prime" reads ambiguously. The old line named the prime as where the command runs. The review's `fix` key said to keep the example line, so the reword should end with a clause that attaches to the command, such as "Set it from the prime:".
-
-2. **LOW** — `internal/orchcli/denypython_integration_test.go`, the F3 test.
-   - **Summary:** the test launches the real engine set from `c.engines`, so the claude engine reads the machine's own Claude Code directory.
-   - **Evidence:** the claudeengine tests set `engine.claudeDir = t.TempDir()` in `engineWithAnchor`, "so the scope it writes names no plugin of the machine running the test". The orchcli test cannot reach that unexported field, so the written `settings.json` depends on the machine. The assertions only check the python sentence and the `hook-python-allowed` verb, so today's result does not change. Still, the test now reads machine state, which the testing skill's isolation rule rules out. Reasonable ways out are an engine seam, or accepting that the test ignores the scope, with a comment saying so.
-
-Nothing found for F1, F4, F5, F6, F7, F9 or F10:
-- **F1:** the hook discards stderr, and the packages' tier 0 and tier 1 runs passed.
-- **F6:** the annotation sits beside the existing audience annotation.
-- **F4, F5:** markers only.
-- **F7, F10:** comment and message text only.
-- **F9:** the new row's directory sits under the prime and leaves later rows' cwd unchanged.
-
-**Calls made:** none. My context already held every file I needed.
+Calls made:
+1. `grep -rln` for real-engine constructors in `*_test.go` files, and `grep -rn "LymBinary = "` across test files. My context did not show which other test packages build real engines, or where the stand-in is set.

@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -264,6 +264,54 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/orch-ignores-deny-python/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-18T08:52:49Z",
+      "started_at": "2026-11-18T08:39:44Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-18T08:49:28.483318574Z",
+          "end": "2026-11-18T08:49:28.493317828Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-18T08:50:01.264169661Z",
+          "end": "2026-11-18T08:50:01.274400217Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-18T08:49:28.536173372Z",
+          "end": "2026-11-18T08:49:28.771759064Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-18T08:49:29.156700437Z",
+          "end": "2026-11-18T08:50:01.236097634Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-18T08:50:01.321061224Z",
+          "end": "2026-11-18T08:52:48.211127699Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-18T08:52:48.250642041Z",
+          "end": "2026-11-18T08:52:48.251236474Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
