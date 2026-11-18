@@ -1,20 +1,27 @@
-# VS Code often keeps showing a stale board file after lym rewrites it
+# Find why VS Code keeps showing a stale board file, and fix it
 
 `board-view-not-refreshing` · Note · bug, board, ide
 
 ## What was seen (operator, 2026-11-18)
 
 VS Code often does not update the board file the operator is looking at after a board write.
-The files sit in `_bolt`, which is a folder of the hub workspace and not under the watcher-excluded `**/_lym/**`, so the watcher does see the folder.
-The workspace opens every `.md` in the markdown preview editor (`workbench.editorAssociations`).
+The files sit in `_bolt`, a folder of the hub workspace.
+The workspace opens every `.md` in the markdown preview editor (`workbench.editorAssociations` in `loomyard.code-workspace`).
 
-## Likely cause
+## Operator decision (2026-11-18)
 
-`boardengine.RenderToDisk` writes each rendered file with `fsx.AtomicWrite`: a temp file renamed over the old one, so each write is a new inode.
-An open preview of the old file can miss that replace and keep the old content until the file is reopened.
+Find out why first; do not assume a cause.
+The operator expects the cause in VS Code's settings, not in LoomYard.
 
-## Idea
+## Scope
 
-Confirm by hand first (keep a board file open in the preview, run a board write, see whether it refreshes; repeat with an in-place write).
-If the rename is the cause: write the rendered view files (README, project and design files) in place, truncate and write, keeping atomic writes for the board's data files.
-A torn view file is harmless; the next render rewrites it.
+1. Find the cause and state the evidence in the report.
+   Candidates to check, none confirmed:
+   - workspace settings such as `files.watcherExclude`, `files.watcherInclude` or the markdown preview settings;
+   - how the workspace reaches `_bolt` (a symlink or junction, which VS Code's file watcher may not follow);
+   - the board's temp-and-rename writes in `boardengine.RenderToDisk`, which give each rendered file a new inode.
+   Use VS Code's own documentation and issue tracker for how its watcher and the markdown preview behave.
+2. Fix it where the cause is.
+   A settings fix goes into the workspace file or the code lym uses to write it.
+   Change how lym writes board files only if the cause is there.
+3. Say in the report how the operator can confirm the fix by hand, since a run cannot watch VS Code.
