@@ -24,6 +24,12 @@ Decision: The python guard's hook reads the hub's current deny_python on each ca
 
 Rationale: Operator, 2026-11-18: turning Python on must not need a restart of every session and watcher.
 
+### Added after Discussion (parent, 2026-11-18): Accept round 1 of Code-Review with its fixes
+
+Decision: Round 1's ten findings are all fixed; F2 is accepted as fixed differently: the verb falls back to the standalone state dir when no hub resolves, with no change to hook commands or engine signatures. No second review round.
+
+Rationale: Every finding has a concrete fix and the gate passed; F2's fallback keeps the change inside the verb, which is the smaller of the two fixes the review offered. A second round costs more than the remaining risk.
+
 ## Constraints
 
 ## Auto-mode assumptions
