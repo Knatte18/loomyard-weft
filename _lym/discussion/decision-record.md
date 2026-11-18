@@ -23,7 +23,7 @@ Out:
 
 - Converting an existing two-repository hub, or the reverse.
 - Any change to two-repository hubs' behaviour.
-- Rewriting `internal/fabricengine`; the mode is built into the current package (see Open risks).
+- Rewriting `internal/fabricengine`; the mode is built into the current package (see the added entry on F16).
 
 ## Decisions
 
@@ -96,10 +96,42 @@ Fabric's records commit (`lym fabric commit`, `sync`, the transition commit, `we
 - Its `Warp-SHA` trailer names HEAD before the commit; `Run-Transition` stays.
 - `fabricengine.RecordsWorktree` and `fabricengine.RecordsRepoRoot` return the worktree and its repository,
   so weft-side readers outside fabric (`weavercli`, `battencli`'s catch-up, `reportcli`, `reportengine`) read the same repository unchanged.
+- A records commit never skips while the worktree is mid-merge.
+  `fabricengine.MergeStateActive` (`internal/fabricengine/mergestateactive.go`) reads the one worktree there,
+  and git refuses a path-limited commit during a merge, a cherry-pick or a rebase (Constraints).
+  While `MERGE_HEAD` is present, fabric writes the records commit from a temporary index seeded from HEAD
+  with the records paths taken from the worktree, moves HEAD onto it,
+  and stages those records paths in the worktree's index;
+  concluding the merge then carries them.
+  It does so only while the index holds every records path as HEAD does.
+  It holds the write lock above, which fabric's merge abort takes too,
+  and moves the start fabric's merge record holds (`WarpStart`) onto the new commit,
+  so `fabricengine.Fabric.MergeAbort` resets to that commit,
+  and its conclude-landed guard does not read it as a landed conclude;
+  `git merge --abort` keeps it as well.
+  In a one-repository hub, `fabricengine.Fabric.MergeAbort` first commits the worktree's records the same way,
+  or by the rule below for a merge stopped before D5 step 3.
+  A merge fabric started that stopped before D5 step 3, as fabric's merge record notes, holds no conflict resolution yet,
+  and its index holds the records step 2 took from the source, so the route above refuses it.
+  A records commit that finds one, and `fabricengine.Fabric.MergeAbort` on one, build the commit from a temporary index seeded from HEAD
+  with the worktree's content of every records path whose index entry equals HEAD's or that neither holds, a new file,
+  and HEAD's version of every other records path;
+  they move HEAD and `WarpStart` onto it as above, and only then reset to it as the abort does,
+  all under one hold of the write lock, so no records write lands between the commit and the reset.
+  The reset is hard, so the records the commit carries stay in HEAD and the worktree.
+  A records path whose index entry differs from HEAD's, or is unmerged, is one step 2 wrote from the source:
+  its worktree holds step 2's result, so the commit keeps HEAD's version.
+  `fabricengine.MergeStateActive` reports any other merge whose index holds a records path unlike HEAD's,
+  and a cherry-pick, revert or rebase in progress, since aborting one of those drops a commit made during it.
+  The transition seam (`internal/statuscommit`) then waits in place of its skip, re-probing as it retries an owed push,
+  with a warning naming the operation and its way forward: conclude or abort it.
+  A run never acts past a transition whose records commit has not landed.
 - Archive and owner archive tags live in that repository.
 
 Bound: an agent's own `git add -A` can put records paths into a code commit;
 D5, D9 and D10 strip records by path, never by commit, so that is tolerated.
+A records write made after a fabric merge stopped before D5 step 3, to a records path the source changed,
+is lost when that merge is aborted.
 
 ### D5 — Every merge keeps the receiving side's records
 
@@ -116,8 +148,23 @@ In a one-repository hub, every fabric verb that brings one branch's commits into
    restores what the source changed and deletes what only the source holds;
    before it does, it compares each path it restores against what step 2 wrote,
    and refuses the merge, as today's dirty refusal does, when a path changed in between;
-4. hands the remaining code conflicts to today's handling, then commits with fabric's merge trailer, a named constant,
-   and records the merge commit's SHA in the receiving worktree's `.lym`.
+4. hands the remaining code conflicts to today's handling, then commits with fabric's merge trailer, a named constant.
+
+Steps 1 to 3 hold D4's write lock, so no records commit lands while the index holds the source's records;
+step 4 releases it before it hands conflicts over and takes it again for its commit.
+Fabric's merge record notes when step 3 is done.
+A crash before step 3 leaves a merge that the next records commit, or `lym fabric merge --abort`, commits around and aborts (D4);
+the abort's reset drops the source's records step 2 wrote and keeps that records commit.
+A crash after it leaves today's parked merge, which records commits pass through by D4.
+A merge verb run again over either refuses with today's already-in-progress guard and never aborts the merge;
+it checks that guard before step 1 and before its dirtiness guards commit records, so neither aborts the merge first.
+Way forward: `lym fabric merge --abort`, or for a merge past step 3, `lym fabric merge --continue` once its conflicts are resolved.
+`lym fabric merge --continue` on a merge stopped before step 3 refuses, naming the unfinished records step;
+way forward: `lym fabric merge --abort`, then merge again.
+Fabric's mid-merge read tells a merge stopped before step 3 apart from a parked one,
+and Finalize's way forward out of a fabric merge in the parent pair names only `lym fabric merge --abort` for it.
+`mergeresolve`'s abort of an in-progress merge before its attempt, and the landing's pre-merge abort of the row's own parked merge-in,
+stay as they are and are the only paths that abort a merge before merging again.
 
 A merge whose source changed `.lym-anchor` other than through fabric's anchor-change commit refuses, naming the marker change;
 way forward: revert the marker edit on the source branch, or make the anchor change through fabric, then merge again.
@@ -155,7 +202,8 @@ Rationale: keeps `PATTERN-lym-files`' rule that records are per-branch and never
 The predicates below are git reads:
 
 - A records-only commit is a non-merge commit whose changed paths all lie under its records paths (D5), whatever trailer it carries.
-- A merge commit fabric wrote is a merge commit carrying fabric's merge trailer whose SHA fabric recorded in the worktree's `.lym` when it wrote it (D5).
+- A merge commit fabric wrote is a merge commit carrying fabric's merge trailer whose tree equals its first parent's records paths
+  over the clean merge of its two parents' records-stripped trees (D5).
 - A commit origin lacks is a commit not reachable from origin's ref of the branch being pushed or replayed.
 
 A commit message alone never admits a commit that changes code paths.
@@ -174,26 +222,36 @@ on any code branch:
 `lym-bolt` keeps today's by-entry Bolt replay.
 
 A records push of the prime's branch, which is also the operator's code branch, pushes only when every commit origin lacks is a records-only commit,
-a merge commit fabric wrote, or a commit such a merge brings in through its second parent.
+a merge commit fabric wrote, or a commit such a merge brings in through a second parent that some origin ref holds.
 Otherwise it is owed: its failed-push record has a new class `operator_unpushed`, a named constant,
-which `fabricengine.FailedPushesOwedBy` reads as owed and whose creel notice is sent as a refused push's is,
+which `fabricengine.FailedPushesOwedBy` and `fabricengine.IsPushOwed` read as owed and whose creel notice is sent as a refused push's is,
 and its runs list the prime runs whose transition the push carries.
 Its notice names the operator's unpushed commits and `git push` as the way forward,
 and a run in the prime waits at its transition until the operator pushes.
 
 A prime records push that origin refuses as a protected branch, as fabric's push classification recognises it (D2),
-records a failed push of a new class `protected`, a named constant the act rule does not read as owed, so no run waits on it.
+records a failed push of a new class `protected`, a named constant
+that neither `fabricengine.FailedPushesOwedBy` nor `fabricengine.IsPushOwed` reads as owed.
 Once such a record exists for the prime's branch, the guard's refusal is recorded as `protected` too.
+The transition seam (`internal/statuscommit`) completes a transition whose push fails with `protected` failures only,
+logging a warning that names the protection, so the run acts with that transition's records unpushed (PATTERN changes).
 The notice names the protection; way forward: allow direct pushes to the branch for the account lym pushes as, after which the next records push of the prime carries the records.
 
 The prime's live records sit on the operator's checked-out branch.
-`lym fabric clone` records the prime's branch in the prime's `.lym`, which no checkout changes.
+`lym fabric clone` records the prime's branch in the prime repository's git config key `lym.primeBranch` (new), a named constant,
+which no checkout changes and which a lost `.lym` keeps.
 Fabric refuses to commit records in the prime while it is not on that branch, naming both branches, and leaves the records uncommitted on disk;
 way forward: switch the prime back to the recorded branch, with `git switch --merge` when git refuses to carry the uncommitted records.
+When the key is absent, fabric refuses to commit records in the prime, naming the key, and leaves the records on disk;
+way forward: run `git config lym.primeBranch <branch>` in the prime, naming the branch its records live on, then run the step again.
 
 Bound: fabric rewrites only its own unpushed records-only commits and never a code commit.
 The guard binds records pushes; a landing's push of its parent carries the operator's unpushed commits on that branch, as it does today in both layouts.
-While the prime's branch refuses direct pushes, the prime's records stay unpushed and no other machine sees them.
+A squash landing's commit, and a merge fabric wrote over hand-resolved code conflicts,
+do not read as a merge commit fabric wrote;
+the guard owes each as `operator_unpushed` until it reaches origin, through a landing's push of its parent or the operator's `git push`.
+While the prime's branch refuses direct pushes, the prime's records stay unpushed, no other machine sees them,
+and prime runs act past transitions whose records are unpushed.
 While the prime is off its recorded branch, every prime run's records commit refuses, so prime runs stall until the switch back.
 A `git reset` or `git stash` in the prime can drop its uncommitted live records.
 The docs D2 requires warn of both.
@@ -219,7 +277,10 @@ Fabric gains one general verb that publishes a view of a branch against a given 
   Finalize's merge's expected head, the recorded and gated head, the merged-head check of a recorded beam landing and `lym beam pr`'s pushed head.
   A merged pull request counts as holding the task's work when its head is the view published from the task tip,
   or when D9's held-work check reads true; commit ancestry is never used.
-- Fabric's push of a branch that has a local view ref refreshes the view against the origin record's `parent_branch`; a failed view push leaves a failed-push record that holds no run, and the publish before a merge retries it.
+- Fabric's push of a branch that has a local view ref refreshes the view against the origin record's `parent_branch`.
+  A failed view push leaves a failed-push record of a class `fabricengine.FailedPushesOwedBy` does not read as owed,
+  and is never returned in the pair push's error, so a transition's push result is the branch push alone;
+  the publish before a merge retries it.
 - After GitHub merges a view, Finalize makes no local merge of the task:
   it brings the local parent level with origin's parent tip by D5's rule, and the landed judgment is D9's held-work check.
 
@@ -230,6 +291,9 @@ review comments on a refreshed view read as outdated; GitHub calls stay with `in
 
 Every judgment of code by tree, diff, dirtiness, changed files or held work excludes the records paths (D5),
 through one helper built on `lymdirs`, in a leaf package its readers may import.
+The helper takes the records paths, or the anchors they derive from, as input and reads no git.
+A reader outside fabric gets a commit's records paths from one fabric read, `fabricengine.RecordsPathsAt` (new),
+a general seam that reads the commit's marker and its parent's, or is handed them by its caller.
 It applies in both layouts; in a two-repository hub the paths are absent from the code tree, so nothing changes there.
 
 - Tree identity: `verifytree.Verify`'s HEAD tree and the gate green record's (`internal/gatecli/green.go`) use the stripped tree.
@@ -240,6 +304,9 @@ It applies in both layouts; in a two-repository hub the paths are absent from th
   a check that HEAD moved, meaning code was committed (webster's card checks in `internal/websterengine/gitwrap.go`), requires the code tree to change.
 - Walks of the commits between two SHAs that allow only certain commits (webster's `reconcileHead` in `internal/websterengine/gitwrap.go`):
   records-only commits, as D7 defines them, pass such a walk as a clean parent merge does.
+  Merge commits fabric wrote, as D7 defines them, pass it too:
+  D7's test over the parents' records-stripped trees takes the place of the walk's clean-merge tree test,
+  and the walk's other checks on a merge stay.
 - The local-versus-upstream tip relation (`fabricengine.Fabric.ReadParentTips`, Finalize's parent alignment) judges code commits only,
   so unpushed records-only commits leave a parent equal to or behind its upstream.
 - Ancestry checks that ask whether a commit is in a branch's history stay.
@@ -282,14 +349,25 @@ Rationale: Operator, 2026-11-18: the motif rewrites nothing, but writes as if th
 - `PATTERN-lym-files`: `lymdirs` stays the only declarer of `_lym` and `.lym`.
 - `PATTERN-cwd-resolution`: only `lymcwd` resolves the anchor; only fabric writes the marker or reads it from git.
 - `PATTERN-code-conventions`: `lym-bolt`, `lym-view/`, the merge trailer, the `index.lock` retry bound,
-  the `operator_unpushed` and `protected` failed-push classes and the view commit's identity and dates are named constants.
+  the `operator_unpushed` and `protected` failed-push classes, the `lym.primeBranch` (new) config key
+  and the view commit's identity and dates are named constants.
 - The Webster card that adds `PATTERN-single-repo-hub` also adds a one-repository paragraph to the backgrounds of `PATTERN-fabric-boundary` (excludes, Bolt `.gitignore`, teardown),
-  `PATTERN-lym-files`, `PATTERN-cwd-resolution` (marker at the worktree root) and `PATTERN-pair-remote` (one push, guarded prime push);
+  `PATTERN-lym-files`, `PATTERN-cwd-resolution` (marker at the worktree root), `PATTERN-pair-remote` (one push, guarded prime push)
+  and `PATTERN-run-fsm` (the owed `operator_unpushed` class and the `protected` exception, in "An owed push holds the run");
   the overview lines of `PATTERN-fabric-boundary`, `PATTERN-lym-files` and `PATTERN-pair-remote` stay.
 - Tool facts the Decisions rest on, each with its pin:
   - D4: `git commit -- <paths>` commits only those paths and leaves other staged entries staged.
     Pin: the `git-commit` documentation (`--only`, the default with paths),
     and `TestCommitPathAllowEmpty`'s row `UnchangedPathWithAnotherPathStaged` (`internal/gitrepo/commitpathallowempty_integration_test.go`).
+  - D4: `git commit -- <paths>` during a merge fails with `fatal: cannot do a partial commit during a merge.`,
+    and during a cherry-pick or a rebase with the matching message.
+    Pin: the merge case observed with git in a scratch repository in review round 2
+    and stated in `failureDisposition`'s doc in `internal/statuscommit/statuscommit.go`;
+    git's `builtin/commit.c` holds all three messages.
+  - D4: a merge commit takes HEAD as it stands at commit time as its first parent,
+    and `git merge --abort` resets to HEAD, so a commit moved onto HEAD during a merge survives both.
+    Pin: the `git-merge` documentation (`--abort` is `git reset --merge` while `MERGE_HEAD` is present);
+    the D4 acceptance scenario is its observed result.
   - D5: `git merge --no-commit --no-ff`, then restoring paths from HEAD in index and worktree and removing source-only paths, resolves the conflicts on those paths.
     Pin: the `git-merge` documentation (`--no-commit`) and the `git-restore` documentation (`--staged --worktree --source`);
     the D5 acceptance scenario is its observed result.
@@ -312,21 +390,26 @@ Rationale: Operator, 2026-11-18: the motif rewrites nothing, but writes as if th
 
 ## Open risks
 
-- Board note `clean-room-module-rewrite`, and `design-simplify-callers`: the entry says the operator wants this mode taken in if fabricengine is rewritten, and both notes aim to shrink the package this record grows.
-  This record builds the mode into the current package now. Whether the parent wants that, or a spec for the rewrite only, is the parent's call.
 - D7 puts records commits on the operator's code branch in the prime; an operator who rebases that branch rewrites fabric's records commits too.
+
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - merge-verb-rerun-abort-removes-in-progress-guard (class design, severity BLOCKING, open in rounds 3)
+  - records-commit-abort-resets-live-records (class design, severity BLOCKING, open in rounds 3)
+<!-- /lym:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
 - D1: a worktree with `.lym-anchor` at its root reads as one repository, with `_bolt` missing too; a two-repository worktree with its weft sibling missing still reads as two.
 - D2: clone of a URL whose origin holds `lym-bolt` makes a one-repository hub; `--single-repo` on a fresh origin commits the marker on the prime's branch, pushes it, then creates and pushes `lym-bolt`; `--single-repo` refuses an origin holding `lym-bolt` or a weft binding, and a second URL; a `--single-repo` whose marker push is refused, as a protected branch or otherwise, leaves no `lym-bolt` on origin and no hub directory, and the protected refusal names the protection; a one-URL clone of an origin holding `lym-bolt` whose prime branch lacks `.lym-anchor` refuses, naming the missing marker.
 - D3: `Add` in a one-repository hub leaves `_lym` and `.lym` as real directories, `.lym-anchor` tracked at the root, `.lym` excluded, no `_lym` or weft-artifact exclude line, and no sibling worktree; a task forked from a parent carrying run records starts with none; `lym fabric reconcile` reports no junction cause; `lymcwd.Resolve` returns the anchor from the marker.
-- D4: a records commit with code staged by another process commits only records paths, leaves the code staged, and names the prior HEAD in `Warp-SHA`; an empty records commit made while code is staged lands and leaves the code staged; a fabric records commit and a fabric code commit started together in one worktree run one after the other; a held `index.lock` released within the bound lets the commit land; `fabricengine.RecordsRepoRoot` returns the one repository.
-- D5: a local merge and a squash merge of a task into its parent, with uncommitted parent records and conflicting records edits on both sides, leave the parent's records equal to its own pre-merge records in index and worktree, with no task-only records file; a merge-in from the parent keeps the task's records; a merge whose source is a fast-forward of the receiver makes a merge commit carrying the merge trailer; an anchor-change commit merged into the parent changes no parent code path; a merge whose source edited `.lym-anchor` to another anchor refuses, naming the marker change; a receiving-side records write between step 2 and step 3 on a path the source changed makes the merge refuse.
+- D4: a records commit with code staged by another process commits only records paths, leaves the code staged, and names the prior HEAD in `Warp-SHA`; an empty records commit made while code is staged lands and leaves the code staged; a fabric records commit and a fabric code commit started together in one worktree run one after the other; a held `index.lock` released within the bound lets the commit land; `fabricengine.RecordsRepoRoot` returns the one repository; a transition made while the worktree holds an unfinished code merge commits and pushes its records before the run acts past it, and concluding that merge, `git merge --abort` and `lym fabric merge --abort` each keep the records commit; a transition made during a cherry-pick, or during a merge fabric did not start whose index holds a records path unlike HEAD's, neither skips its commit and push nor lets the run act past it until the operation ends and the commit lands; a transition after a fabric merge crashed before D5 step 3 commits the status file it wrote, aborts that merge and pushes, leaving the status file in HEAD, the worktree and origin and no source records in any of them; `lym fabric merge --abort` of such a merge keeps an uncommitted receiving-side records edit in the commit it makes.
+- D5: a local merge and a squash merge of a task into its parent, with uncommitted parent records and conflicting records edits on both sides, leave the parent's records equal to its own pre-merge records in index and worktree, with no task-only records file; a merge-in from the parent keeps the task's records; a merge whose source is a fast-forward of the receiver makes a merge commit carrying the merge trailer; an anchor-change commit merged into the parent changes no parent code path; a merge whose source edited `.lym-anchor` to another anchor refuses, naming the marker change; a receiving-side records write between step 2 and step 3 on a path the source changed makes the merge refuse; a merge verb run over a parked merge past step 3 refuses as already in progress and leaves its resolved conflicts in place; `lym fabric merge --continue` on a merge stopped before step 3 refuses, and Finalize over a parent pair holding one names only `lym fabric merge --abort` as its way forward.
 - D6: a pair push pushes the branch once; a refused push leaves one failed-push record read as owed; after a takeover in a one-repository hub, origin's branch keeps every transition commit; teardown pushes the archive tag before deleting the branch on origin, deletes the view ref, and succeeds when origin already lost the view ref.
-- D7: a pull over a diverged task branch with local records-only commits replays them with each trailer that named a replayed commit rewritten to the fork point; with a code commit among origin's new commits it replays them all the same, and no trailer names that commit; with a local code commit it rewrites nothing and stops naming it; a commit changing code paths whose message carries fabric's merge trailer is neither replayed nor admitted by the prime guard; a prime records push with an operator commit unpushed, including one fast-forwarded from a branch origin holds, pushes nothing and leaves an `operator_unpushed` failed push naming that commit and listing the prime runs, its notice is sent, and a run in the prime with that push owed does not act past its transition until the push lands; a prime records push refused as a protected branch leaves a `protected` failed push that holds no run; a records commit in a prime switched off its recorded branch refuses, naming both branches, and leaves the records on disk.
-- D8: the view's three-way merge into the parent changes the parent's code as the branch does and leaves its records unchanged; two publishes of an unchanged branch leave the view ref on the same SHA and push nothing the second time, and a publish after origin lost the view ref pushes it again; a publish against a base other than the origin record's `parent_branch` refuses, naming both; a push after a new commit refreshes the view; after a GitHub merge of the view, Finalize brings the local parent level, makes no merge commit, and reads the task as landed; an already merged beam pull request whose head is the published view reads as landed; with uncommitted and unpushed parent records, a pull-request landing and a local landing both complete; in a two-repository hub the verb returns the branch and pushes nothing.
-- D9: a records-only commit leaves the verify tree identity and the gate green record valid; uncommitted records edits do not make `verifytree.DirtyPaths` report dirt; changed-file sets omit records paths; `fabricengine.Fabric.HoldsWork` reads true for a parent that merged the task's code with D5's strip, and after a squash landing whose parent and task records both changed since the fork; a webster card check does not accept a records-only commit as code work; a records commit made during a webster batch does not refuse the batch.
+- D7: a pull over a diverged task branch with local records-only commits replays them with each trailer that named a replayed commit rewritten to the fork point; with a code commit among origin's new commits it replays them all the same, and no trailer names that commit; with a local code commit it rewrites nothing and stops naming it; a commit changing code paths whose message carries fabric's merge trailer is neither replayed nor admitted by the prime guard; a prime records push with an operator commit unpushed, including one fast-forwarded from a branch origin holds, pushes nothing and leaves an `operator_unpushed` failed push naming that commit and listing the prime runs, its notice is sent, and a run in the prime with that push owed does not act past its transition until the push lands; a prime records push refused as a protected branch leaves a `protected` failed push, and the run completes that transition and acts on with its records unpushed; a records commit in a prime switched off its recorded branch refuses, naming both branches, and leaves the records on disk; a records commit in a prime whose `lym.primeBranch` (new) key is absent refuses, naming the key; a fabric merge on the prime's branch made before the prime's `.lym` was removed is still admitted by the prime guard.
+- D8: the view's three-way merge into the parent changes the parent's code as the branch does and leaves its records unchanged; two publishes of an unchanged branch leave the view ref on the same SHA and push nothing the second time, and a publish after origin lost the view ref pushes it again; a publish against a base other than the origin record's `parent_branch` refuses, naming both; a push after a new commit refreshes the view; a transition whose view refresh fails leaves a failed-push record, and the run acts past that transition once its branch push lands; after a GitHub merge of the view, Finalize brings the local parent level, makes no merge commit, and reads the task as landed; an already merged beam pull request whose head is the published view reads as landed; with uncommitted and unpushed parent records, a pull-request landing and a local landing both complete; in a two-repository hub the verb returns the branch and pushes nothing.
+- D9: a records-only commit leaves the verify tree identity and the gate green record valid; uncommitted records edits do not make `verifytree.DirtyPaths` report dirt; changed-file sets omit records paths; `fabricengine.Fabric.HoldsWork` reads true for a parent that merged the task's code with D5's strip, and after a squash landing whose parent and task records both changed since the fork; a webster card check does not accept a records-only commit as code work; a records commit made during a webster batch does not refuse the batch; a parent merge-in made during a webster batch, with conflicting records on both sides, does not refuse the batch.
 - D10: a webster write under `_lym` gets the same audit verdict in both layouts.
 - D11: a board write in a one-repository hub commits and pushes on `lym-bolt` and changes no code branch.
 - D12: `hubforge` builds a one-repository hub that the D1 to D11 scenarios run on.
@@ -335,6 +418,7 @@ Rationale: Operator, 2026-11-18: the motif rewrites nothing, but writes as if th
 ## PATTERN changes
 
 - `PATTERN-single-repo-hub` — adds: Running a hub as one repository: records on each code branch, the board on `lym-bolt`; merges, pull request views and code identity strip the records paths.
+- `PATTERN-run-fsm` — changes: a transition commits and pushes before the run acts, except a prime records push failing as `protected`, which completes the transition with its records unpushed; an `operator_unpushed` push is owed.
 - `PATTERN-cwd-resolution` — changes: the overview line reads the anchor from the worktree's own `.lym-anchor` at its records root, the weft root in a two-repository hub and the worktree root in a one-repository hub.
 
 ## Notes for the plan writer
