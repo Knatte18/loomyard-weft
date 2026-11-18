@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 19:02 UTC; every age below is as of then.
+Rendered 2026-11-18 19:04 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Remove code no path from any main reaches**<br>• Run golang.org/x/tools/cmd/deadcode over the repository and delete what it finds, with the tests that only cover it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`remove-unreachable-code`](design-remove-unreachable-code.md) | darn · light | Darn-Write | neve | 13m<br>13m | tools |
+| T9 | **Remove code no path from any main reaches**<br>• Run golang.org/x/tools/cmd/deadcode over the repository and delete what it finds, with the tests that only cover it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`remove-unreachable-code`](design-remove-unreachable-code.md) | darn · light | Darn-Write | neve | 15m<br>15m | tools |
 
 #### Ready (0)
 
@@ -42,7 +42,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **Comments: check what the big comment rewrite left, before any new pass**<br>• Last week a run of nearly 3,000 agents rewrote docstrings and doc files; measure what is still long before deciding on more | [`comment-trim-second-pass`](design-comment-trim-second-pass.md) | 1h<br>1h | docs |
 | E5 |  | **Design: simplify interfaces that make every caller handle too much**<br>• For example one result type instead of a four-value return handled at 60 call sites; find such spots per module and fix them one module at a time | [`design-simplify-callers`](design-design-simplify-callers.md) | 1h<br>1h | fabric, landing |
 | E6 |  | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | 1h<br>1h | fabric, loom, board |
-| E7 |  | **List features nobody uses, for the operator to cut**<br>• List features, flags, config keys and verbs with no recent use; the operator decides which go | [`drop-unused-features`](design-drop-unused-features.md) | 1h<br>13m | tools |
+| E7 |  | **List features nobody uses, for the operator to cut**<br>• List features, flags, config keys and verbs with no recent use; the operator decides which go | [`drop-unused-features`](design-drop-unused-features.md) | 1h<br>15m | tools |
 
 </details>
 
@@ -76,7 +76,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 <details open>
 <summary><strong><a href="project-testmap-uses.md">P3 Put the per-test coverage maps to use</a> (1)</strong></summary>
 
-[`testmap-uses`](design-testmap-uses.md) · Age 58m · Owner `neve`
+[`testmap-uses`](design-testmap-uses.md) · Age 59m · Owner `neve`
 
 The reach note, the diff mutation check and failure triage, built on one reader of the maps
 
@@ -90,7 +90,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Coverage map uses: reach note, failure triage and diff mutation check**<br>• One reader of the maps feeding a reach note for writer and review, failure triage in the gate report and fixer brief, and a mutation check of a diff changed blocks | [`testmap-uses-design`](design-testmap-uses-design.md)<br>[Sketch](decision-testmap-uses-design.md) | raddle | Raddle-Write | neve | 1h<br>8m | testmap, gate, burler, darn |
+| T2 | **Coverage map uses: reach note, failure triage and diff mutation check**<br>• One reader of the maps feeding a reach note for writer and review, failure triage in the gate report and fixer brief, and a mutation check of a diff changed blocks | [`testmap-uses-design`](design-testmap-uses-design.md)<br>[Sketch](decision-testmap-uses-design.md) | raddle | Raddle-Write | neve | 1h<br>9m | testmap, gate, burler, darn |
 
 #### Ready (0)
 
@@ -119,10 +119,10 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Find why VS Code keeps showing a stale board file, and fix it**<br>• Find the cause first, most likely in VS Code settings or how the workspace reaches the board files; change lym code only if the cause is there<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-view-not-refreshing`](design-board-view-not-refreshing.md) | darn · light | Code-Burler-Review | neve | 47m<br>18m | board, ide |
-| T4 | **Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`import-loses-issue-evidence`](design-import-loses-issue-evidence.md) | darn · light | Darn-Write | neve | 2h<br>16m | board, selfreport |
-| T5 | **Bench the explorer subagents of the Discussion and Plan writers: with against without**<br>• Same frozen inputs, the writers run with and without the Agent-tool explore and lookup subagents; compare cost, time and plan or record quality<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | darn · docs | Darn-Write | neve | 6h<br>52m | loom, stencil |
-| T6 | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md) | motif | Discussion-Burler-Fix | neve | 1h<br>47m | fabric |
+| T1 | **Find why VS Code keeps showing a stale board file, and fix it**<br>• Find the cause first, most likely in VS Code settings or how the workspace reaches the board files; change lym code only if the cause is there<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-view-not-refreshing`](design-board-view-not-refreshing.md) | darn · light | Code-Burler-Review | neve | 48m<br>19m | board, ide |
+| T4 | **Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`import-loses-issue-evidence`](design-import-loses-issue-evidence.md) | darn · light | Darn-Write | neve | 2h<br>17m | board, selfreport |
+| T5 | **Bench the explorer subagents of the Discussion and Plan writers: with against without**<br>• Same frozen inputs, the writers run with and without the Agent-tool explore and lookup subagents; compare cost, time and plan or record quality<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | darn · docs | Drift-Verify | neve | 6h<br>54m | loom, stencil |
+| T6 | **Fabric single-repo mode: the weft lives inside the warp repo, no piggyback repo**<br>• Let a hub run with _lym and .lym as real directories in the warp repo instead of junctions to a separate weft repo, same as today from outside | [`fabric-single-repo-mode`](design-fabric-single-repo-mode.md) | motif | Discussion-Burler-Fix | neve | 1h<br>48m | fabric |
 
 #### Ready (0)
 
@@ -136,7 +136,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 1d<br>23h | board, ide, fabric |
+| T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 1d<br>1d | board, ide, fabric |
 
 ### Notes (5)
 
