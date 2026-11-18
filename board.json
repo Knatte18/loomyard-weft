@@ -498,6 +498,26 @@
       "created": "2026-11-18T20:11:01Z",
       "revised": "2026-11-18T20:13:20Z",
       "project": "code-cleanup"
+    },
+    {
+      "id": 1501,
+      "handle": "T8",
+      "slug": "remove-unused-verbs",
+      "title": "Remove lym verbs and features nobody uses",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "cli"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Follow-up to the unused-features study: the operator picks from its candidate list, then this task removes those verbs with their docs and prompt text",
+      "body": "## Source\n\n`docs/research/cleanup/unused-features-2026-11-18/report.md` (`702fae2d`) lists 34 of 250 verbs that no Claude transcript ran from 2026-10-28 to 2026-11-18,\nand the config keys no layer of this hub overrides.\n\n## Before release\n\nThe operator picks which candidates go; this body then lists them, and only those are removed.\nNot yet decided (operator, 2026-11-18: a follow-up, not now).\n\nStrongest candidates, named by nothing outside their own package:\n`board rerender`, `ide menu`, `board retire-legacy`, `creel forward`, `creel hold`, `creel release`, `webster await-batch`, `loom restore-renumber`,\n`orch withdraw`, `slack away`, `stencil promote`, `report raddle`, `fabric diff`, `config menu`.\n`claude account` is new (landed 2026-11-18) and is not a candidate.\n\nWeaker candidates, named by a stencil, recipe or another package: see the report's second table; each caller needs a look before removal.\n\n## Scope once picked\n\nRemove each chosen verb, its engine code that nothing else reaches, its tests, and every doc, stencil and refusal text that names it.\n",
+      "status": "draft",
+      "created": "2026-11-18T20:15:50Z",
+      "revised": "2026-11-18T20:15:50Z",
+      "project": "code-cleanup"
     }
   ],
   "prime_owner": "neve",
