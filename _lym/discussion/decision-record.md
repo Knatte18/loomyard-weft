@@ -218,6 +218,12 @@ Rationale: Round 3's F13 found the clear ran inside Call before shed persisted t
   - card7-capturereview-signature-breaks-tests (class scope, severity BLOCKING, open in rounds 2)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - resolve-run-id-pr-findings-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - Review: the Code-Review rubric carries the three result-check bullets of D1, worded for any language and hub, and accepts a trailer on any commit of the range.
