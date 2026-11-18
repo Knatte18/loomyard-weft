@@ -1,12 +1,11 @@
 {
-  "current_producer": "Beam-Await",
+  "current_producer": "Finalize",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Beam-Await",
-    "last": "Beam-Up → done",
+    "now": "Finalize",
+    "last": "Beam-Await → done",
     "wait": ""
   },
   "history": [
@@ -30,6 +29,14 @@
       "output": "",
       "at": "2026-11-16T12:01:22Z",
       "started_at": "2026-11-16T12:01:12Z"
+    },
+    {
+      "producer": "Beam-Await",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-18T07:20:40Z",
+      "started_at": "2026-11-17T06:20:03Z",
+      "by": "shed"
     }
   ],
   "product": {
