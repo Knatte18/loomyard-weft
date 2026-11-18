@@ -33,7 +33,7 @@ All six forks returned a report.
 - walkthrough 4 (both build identities must match): rejected; a plan-time check, not a design gap.
 - bound-breaker 3 (hand loom start races beam start, "always" overclaims): fixed as an open risk, since the race predates this task.
 - bound-breaker 4 / leanness 1 (binary-mismatch "risk" is no risk): fixed; cut.
-- board-scope 1 (parent commit `7c23591` lands a different design): fixed as an open risk for the run's parent, class decision.
+- board-scope 1 (parent commit `7c23591` lands a different design): fixed as an open risk for the run's parent, class decision; round 2 cut that risk once the added entries settled it.
 - board-scope 2 (reorder left out): rejected; the fork itself says no fix is needed.
 - leanness 2 (Scope Out reorder bullet repeats a rejected alternative): rejected; the entry offers the reorder as an option, so the plan writer must see it is not taken.
 - leanness 3 (never-fail stated twice): fixed; D1 keeps the new add's failure, the Constraint the general rule.
@@ -62,6 +62,10 @@ All six forks returned a report.
 - F6: fixed; the overview's lock Constraint names reed's shared read lock.
 - F7, F8, F9: fixed.
 
+### Round 2
+
+- F10: fixed; the Open risks bullet on commit `7c23591` is cut, and Q6 is marked settled.
+
 ## Question ledger
 
 - Q1 (auto-pick): where to fix — in `ensureRunsStrand`, which re-adds the checklist right after taking its window. Rationale: the one place that knows it displaced it, and it covers both orders.
@@ -69,4 +73,4 @@ All six forks returned a report.
 - Q3 (auto-pick): build the overview line the entry marks optional. Rationale: it points the operator at the window and reuses readers the overview has.
 - Q4 (auto-pick): show every state but done in the overview line. Rationale: the entry's motive is a pawl advanced by hand.
 - Q5 (auto-pick): leave status strand removal at run end out. Rationale: not asked, and no path removes it today.
-- Q6 (open, for the run's parent): does this bench arm ignore parent commit `7c23591`, which lands a multi-overview design, or align with it? Recorded under the record's Open risks.
+- Q6 (settled by the parent's and the arbiter's added entries): this bench arm designs against base f98a1ba0 and ignores parent commit `7c23591`, which lands a multi-overview design.
