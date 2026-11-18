@@ -1,0 +1,18 @@
+{
+  "verdict": "resume",
+  "reason": "Error stop at Seed-Child. It is a false refusal caused by a race, and the state it left is now consistent, so a plain re-launch is safe.\nThe step finished Worktree-Create, which is done in history. It then committed this run's transition d357fa4 (\"batten: Seed-Child -\u003e running\") in the shared prime records worktree loomyard-weft. The failure came from the push of that transition, before any Seed-Child work ran.\npushRecordsSide (internal/fabricengine/pushanchored.go:204-221) got nil from the push and then checked HasUnpushed(). By that time sibling runs on the same hub had committed into loomyard-weft: 2bb7fa72 at 09:56:39 (drift-judge-and-line-range) and 540a6c49 at 09:56:40 (scratch-symlink-two-paths). So HasUnpushed() was true for their commits, not ours. No deferred record existed, so recordsSideNotLanded fell through to its default \"entry ... is ended on origin\" text. That text is false: no \"main\" entry is ended.\nNow: d357fa4 and the sibling commits are all on origin/main-weft, and loomyard-weft is level with origin/main-weft (status \"## main-weft...origin/main-weft\", up to df4958665b). Only uncommitted shed status files and untracked report directories remain.\nSeed-Child has not written anything yet. The task weft's _lym/config files date from Worktree-Create at 09:56:38, and the task worktree code-review-result-checks is clean and level with its origin branch.\nThe underlying defect is that the post-push HasUnpushed check misreads concurrent commits from other runs as an ended entry. That is in fabricengine and outside this task's scope, so I made no fix and no commit. The run's parent may want to file it.\nThe run sits at its failed row Seed-Child, so the re-launch re-runs that row and no goto is needed.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym board get '{\"slug\":\"code-review-result-checks\"}'",
+    "git -C /home/knatte/Code/loomyard-LYMHUB/loomyard-weft status -sb",
+    "git -C /home/knatte/Code/loomyard-LYMHUB/loomyard-weft log --format='%h %ci %s' -8 origin/main-weft",
+    "git -C /home/knatte/Code/loomyard-LYMHUB/loomyard-weft diff --stat",
+    "git -C /home/knatte/Code/loomyard-LYMHUB/code-review-result-checks status -sb"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/code-review-result-checks/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/code-review-result-checks/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step code-review-result-checks --until-stop --arbiter-attempt 1"
+}
