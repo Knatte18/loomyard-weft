@@ -105,22 +105,22 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
+#### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md)<br>[Sketch](decision-code-review-result-checks.md) | raddle | Raddle-Write | neve | 2h<br>13m | burler, stencil, drift |
+| T8 | **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | darn · light | starting · Worktree-Create | neve | 2h<br>1h | burler, lenses |
 
-#### Ready (2)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Leftover strands and shuttle runs halt a gate re-prompt and a re-step**<br>• Gate re-prompt to an untracked strand, and a re-step tripping on a leftover shuttle run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`leftover-strands-and-runs`](design-leftover-strands-and-runs.md) | darn · solid |  | 2h<br>1h | gate, shuttle, reed, shed |
-| T8 | **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | darn · light |  | 2h<br>1h | burler, lenses |
 
 #### Layer A (2)
 
@@ -155,7 +155,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **selfreport -b takes a file path as the body text, losing the report**<br>• An agent passed a file path to -b and the issue body became the path | [`selfreport-body-path-as-text`](design-selfreport-body-path-as-text.md) | 1h<br>1h | selfreport |
-| B2 |  | **Seed-IDE fails: records push calls main-weft ended on origin**<br>• A new run fails at Seed-IDE because the prime records branch is read as ended on origin; a rerun passes | [`records-push-main-weft-ended`](design-records-push-main-weft-ended.md) | 53m<br>53m | fabric, batten |
+| B2 |  | **Seed-IDE fails: records push calls main-weft ended on origin**<br>• A new run fails at Seed-IDE because the prime records branch is read as ended on origin; a rerun passes | [`records-push-main-weft-ended`](design-records-push-main-weft-ended.md) | 54m<br>54m | fabric, batten |
 
 #### Features (3)
 
