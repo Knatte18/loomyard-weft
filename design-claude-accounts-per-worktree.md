@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-claude-accounts-per-worktree.md)
 
-Depends on: [`leftover-strands-and-runs`](design-leftover-strands-and-runs.md)
-
 Filed from the Sketch `claude-account-pick-simple`.
 
 Takes: the Sketch's decision record; main with leftover-strands-and-runs and shuttle-start-idle-and-prompt landed, which change shuttle's run tracking, startup wait and prompt delivery in internal/shuttleengine that D7's relaunch builds on
