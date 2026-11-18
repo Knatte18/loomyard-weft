@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (6)
+## Tasks (7)
 
 Concrete and claimable; only a task can run.
 
@@ -30,15 +30,16 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (1)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 1d<br>23h | board, ide, fabric |
+| T4 | `draft` **Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty** | [`import-loses-issue-evidence`](design-import-loses-issue-evidence.md) | darn |  | 2h<br>2h | board, selfreport |
 
-## Notes (6)
+## Notes (5)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -48,12 +49,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 9d<br>9d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 23h<br>23h | shuttle |
-
-### Enhancements (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| E1 |  | **Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty** | [`import-loses-issue-evidence`](design-import-loses-issue-evidence.md) | 2h<br>2h | board, selfreport |
 
 ### Features (3)
 
