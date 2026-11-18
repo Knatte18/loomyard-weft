@@ -1,0 +1,702 @@
+diff --git a/internal/discussionparser/replacecheck.go b/internal/discussionparser/replacecheck.go
+index a64bea2f..4c90654f 100644
+--- a/internal/discussionparser/replacecheck.go
++++ b/internal/discussionparser/replacecheck.go
+@@ -22,6 +22,22 @@ const (
+ // A record with no `## Open risks` heading holds no blocks.
+ // A malformed marker set in current or in next yields one Finding carrying the scan error, for each record that has one.
+ func CheckCarryOversKept(current, next []byte) []Finding {
++	return carryOverFindings(current, next, true)
++}
++
++// CheckCarryOversNotLost returns one Finding per carry-over block that next drops or changes.
++// It reads the blocks of the `## Open risks` section.
++// A block that next adds is no finding.
++// A block is its lines from the opening marker through the closing marker, compared byte for byte.
++// Findings come sorted by segment, and each Detail names the segment.
++// A malformed marker set in current or in next yields one Finding carrying the scan error, for each record that has one.
++func CheckCarryOversNotLost(current, next []byte) []Finding {
++	return carryOverFindings(current, next, false)
++}
++
++// carryOverFindings compares the carry-over blocks of current and next.
++// It reports a block that next adds only when includeAdded is set.
++func carryOverFindings(current, next []byte, includeAdded bool) []Finding {
+ 	currentBlocks, currentErr := carryOverBlockTexts(current)
+ 	nextBlocks, nextErr := carryOverBlockTexts(next)
+ 	var findings []Finding
+@@ -55,6 +71,8 @@ func CheckCarryOversKept(current, next []byte) []Finding {
+ 		switch {
+ 		case !inNext:
+ 			what = "dropped"
++		case !inCurrent && !includeAdded:
++			continue
+ 		case !inCurrent:
+ 			what = "added"
+ 		case currentText != nextText:
+diff --git a/internal/discussionparser/replacecheck_test.go b/internal/discussionparser/replacecheck_test.go
+index c2ef9b8c..970a00d6 100644
+--- a/internal/discussionparser/replacecheck_test.go
++++ b/internal/discussionparser/replacecheck_test.go
+@@ -68,6 +68,50 @@ func TestCheckCarryOversKept(t *testing.T) {
+ 	}
+ }
+ 
++// TestCheckCarryOversNotLost asserts a record may gain carry-over blocks but never lose or change one.
++func TestCheckCarryOversNotLost(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	planReview := renderedEntry(carryOverEntry("Plan-Review", "cache-key"))
++	planReviewChanged := renderedEntry(carryOverEntry("Plan-Review", "other-key"))
++	describe := renderedEntry(carryOverEntry("Describe", "describe-key"))
++	withBlocks := func(blocks ...string) []byte {
++		body := "\n"
++		for _, block := range blocks {
++			body += block + "\n\n"
++		}
++		return []byte(recordWithOpenRisks(body))
++	}
++
++	tests := []struct {
++		name    string
++		current []byte
++		next    []byte
++		// wantDetails holds the text each finding's Detail must contain, in finding order.
++		wantDetails []string
++	}{
++		{"identical records", withBlocks(planReview), withBlocks(planReview), nil},
++		{"an added block", withBlocks(planReview), withBlocks(planReview, describe), nil},
++		{"a dropped block", withBlocks(planReview), withBlocks(), []string{"dropped"}},
++		{"a changed block", withBlocks(planReview), withBlocks(planReviewChanged), []string{"changed"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got := CheckCarryOversNotLost(tt.current, tt.next)
++			if len(got) != len(tt.wantDetails) {
++				t.Fatalf("CheckCarryOversNotLost() = %+v; want %d findings", got, len(tt.wantDetails))
++			}
++			for i, finding := range got {
++				if !strings.Contains(finding.Detail, tt.wantDetails[i]) {
++					t.Errorf("finding %d detail %q does not contain %q", i, finding.Detail, tt.wantDetails[i])
++				}
++			}
++		})
++	}
++}
++
+ // TestCheckAddedEntriesSubset asserts every added entry of the replacement equals its own entry of the current record.
+ // Dropping entries is no finding; an inserted or rewritten entry is one finding naming its heading.
+ // A heading inside a fenced block starts no entry.
+diff --git a/internal/driftengine/deps.go b/internal/driftengine/deps.go
+index c893325a..681a12cc 100644
+--- a/internal/driftengine/deps.go
++++ b/internal/driftengine/deps.go
+@@ -61,6 +61,11 @@ type Deps struct {
+ 	// LoomRecordsDirs are the records paths loom itself writes during a row, relative to the records checkout's root:
+ 	// each a directory or, ending in `-`, a path prefix.
+ 	LoomRecordsDirs []string
++	// DecisionRecord is the task's decision record in the worktree.
++	// The parent may append entries to it while a judge runs.
++	// A committed change made only of such entries, with every entry and carry-over block it held kept, is no judge's edit.
++	// Empty exempts no change of it.
++	DecisionRecord string
+ 	// StartCapture starts the detached capture and returns once its record exists.
+ 	StartCapture func() error
+ 	// RunCapture runs the capture in the calling process and returns its final record.
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index 95e59378..aa584b19 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -250,6 +250,7 @@
+ // TakeJudgeSnapshot records under Deps.JudgeSnapshotDir:
+ // both checkouts' HEAD;
+ // a content hash of every changed tracked path and every untracked path, with a copy of each untracked file;
++// a copy of the decision record, Deps.DecisionRecord;
+ // and the hash of every file of the current capture's scratch directory.
+ // ReadJudgeSnapshot reads it back, found false when it is gone.
+ // A new snapshot clears only the copies and replaces the record in one atomic write;
+@@ -268,8 +269,16 @@
+ // A hand edit or an unstamped commit of either is therefore still the judge's.
+ // A moved records HEAD counts only through the paths Deps.RecordsChangedSince names since the snapshot's head.
+ // Loom's own commits are therefore never read as the judge's edits.
++// The decision record is exempt when the records checkout holds it committed.
++// It must also differ from its copy only by entries added after the Discussion.
++// Every entry and carry-over block the copy held must be kept unchanged.
++// A `lym loom decision add` of plain entries the parent runs during the judge session is therefore no judge's edit.
++// Any other change to the record, and any change to a file outside it, is not exempt and is named as a change.
+ // Bound: an edit the judge session makes under the exempt loom paths or the drift logs goes unseen;
+ // they are lym's own run bookkeeping and hold no code, no expectation and neither record.
++// So does a committed added entry or carry-over block the judge session adds to the decision record.
++// An uncommitted append, an edit or removal of an existing entry or block,
++// and a `lym loom decision replace` during the session are still named as a change.
+ //
+ // # Records
+ //
+diff --git a/internal/driftengine/expectation_test.go b/internal/driftengine/expectation_test.go
+index c3e5e6b8..86bc5428 100644
+--- a/internal/driftengine/expectation_test.go
++++ b/internal/driftengine/expectation_test.go
+@@ -74,6 +74,12 @@ func TestParseExpectation(t *testing.T) {
+ 		{name: "OccurrenceBeyondBaseline", mode: DiffLines, data: "cases:\n  keyed.txt:\n    keys:\n      - {key: other, n: 2, why: a}\n", wantErr: `names occurrence 2, but the baseline holds 1`},
+ 		{name: "MalformedRange", mode: DiffLines, data: "cases:\n  plain.txt:\n    lines:\n      - {range: 3-1, why: a}\n", wantErr: `range "3-1"`},
+ 		{name: "RangeBelowOne", mode: DiffLines, data: "cases:\n  plain.txt:\n    lines:\n      - {range: 0-2, why: a}\n", wantErr: `range "0-2"`},
++		{
++			name: "RangeOverFullyKeyedBaselineCase",
++			mode: DiffLines,
++			data: "cases:\n  keyed.txt:\n    lines:\n      - {range: 1-, why: unkeyed line the change adds}\n",
++			want: Expectation{Cases: map[string]ExpectedCase{"keyed.txt": {Lines: []LineEntry{{Range: "1-", Why: "unkeyed line the change adds"}}}}},
++		},
+ 		{name: "EmptyWhy", mode: DiffLines, data: "cases:\n  plain.txt:\n    lines:\n      - {range: 1, why: '  '}\n", wantErr: "has an empty why"},
+ 		{name: "OccurrenceBelowOne", mode: DiffLines, data: "cases:\n  keyed.txt:\n    keys:\n      - {key: other, n: 0, why: a}\n", wantErr: "is below 1"},
+ 		{name: "CaseLevelWhyUnderLines", mode: DiffLines, data: "cases:\n  plain.txt:\n    why: whole file\n", wantErr: "case-level why"},
+diff --git a/internal/driftengine/judgesnapshot.go b/internal/driftengine/judgesnapshot.go
+index d78d07ad..bf7c2786 100644
+--- a/internal/driftengine/judgesnapshot.go
++++ b/internal/driftengine/judgesnapshot.go
+@@ -4,6 +4,7 @@
+ package driftengine
+ 
+ import (
++	"bytes"
+ 	"crypto/sha256"
+ 	"encoding/hex"
+ 	"errors"
+@@ -16,6 +17,7 @@ import (
+ 	"sort"
+ 	"strings"
+ 
++	"github.com/Knatte18/loomyard/internal/discussionparser"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -26,6 +28,8 @@ const (
+ 	judgeSnapshotFileName = "snapshot.json"
+ 	// judgeSnapshotUntrackedDir holds the copies of the untracked files, one subdirectory per checkout.
+ 	judgeSnapshotUntrackedDir = "untracked"
++	// judgeSnapshotRecordCopy is the copy of the decision record as the records checkout held it, beside the record.
++	judgeSnapshotRecordCopy = "decision-record.md"
+ 	// absentHash is the content hash recorded for a path that is not on disk.
+ 	absentHash = "absent"
+ )
+@@ -132,6 +136,7 @@ func judgeSnapshotLock(d Deps) string {
+ // The record holds each checkout's HEAD and a content hash of every changed tracked path and every untracked path.
+ // It also holds the path and hash of every file under scratchDir.
+ // A copy of each untracked file lies beside the record.
++// So does a copy of the decision record Deps.DecisionRecord names when the records checkout holds it.
+ // Only the copies are cleared first.
+ // The earlier record stays until one atomic write replaces it,
+ // so a reader never finds the snapshot gone while one is taken.
+@@ -151,6 +156,10 @@ func TakeJudgeSnapshot(d Deps, scratchDir string) (JudgeSnapshot, error) {
+ 	if err := os.RemoveAll(copies); err != nil {
+ 		return JudgeSnapshot{}, fmt.Errorf("drift: clear the judge snapshot's copies %s: %w", copies, err)
+ 	}
++	recordCopy := filepath.Join(d.JudgeSnapshotDir, judgeSnapshotRecordCopy)
++	if err := os.Remove(recordCopy); err != nil && !errors.Is(err, fs.ErrNotExist) {
++		return JudgeSnapshot{}, fmt.Errorf("drift: clear the judge snapshot's copy of the decision record %s: %w", recordCopy, err)
++	}
+ 
+ 	snapshot := JudgeSnapshot{ScratchDir: scratchDir}
+ 	if snapshot.Code, err = snapshotCheckout(code, filepath.Join(copies, "code")); err != nil {
+@@ -159,6 +168,17 @@ func TakeJudgeSnapshot(d Deps, scratchDir string) (JudgeSnapshot, error) {
+ 	if snapshot.Records, err = snapshotCheckout(records, filepath.Join(copies, "records")); err != nil {
+ 		return JudgeSnapshot{}, err
+ 	}
++	if d.DecisionRecord != "" {
++		source, err := recordsCheckoutPath(d, records.Root, d.DecisionRecord)
++		if err != nil {
++			return JudgeSnapshot{}, err
++		}
++		if _, statErr := os.Stat(source); statErr == nil {
++			if err := copyFile(source, recordCopy); err != nil {
++				return JudgeSnapshot{}, err
++			}
++		}
++	}
+ 	if scratchDir != "" {
+ 		if _, statErr := os.Stat(scratchDir); statErr == nil {
+ 			if snapshot.Scratch, err = hashDirectory(scratchDir); err != nil {
+@@ -195,6 +215,9 @@ func ReadJudgeSnapshot(d Deps) (JudgeSnapshot, bool, error) {
+ // every path under a loom records directory or starting with one of its prefixes, and the drift logs.
+ // The scope.json and judged.json records are exempt only while both match their newest Drift-Records commit,
+ // so a hand edit of either is still a change.
++// The decision record is exempt when the records checkout holds it committed.
++// It must also differ from its copy in the snapshot only by entries added after the Discussion.
++// Every entry and carry-over block the copy held must be kept unchanged.
+ // A path is judged by content.
+ // A path the snapshot recorded is a change only when its content now differs from the recorded content,
+ // so a later commit of content that was already there is no change.
+@@ -223,6 +246,10 @@ func (s JudgeSnapshot) Changes(d Deps) ([]string, error) {
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	appendedRecord, err := appendedDecisionRecord(d, records)
++	if err != nil {
++		return nil, err
++	}
+ 
+ 	var changes []string
+ 	if code.Head != s.Code.Head {
+@@ -241,7 +268,7 @@ func (s JudgeSnapshot) Changes(d Deps) ([]string, error) {
+ 		}
+ 	}
+ 	recordsExempt := func(rel string) bool {
+-		return isJudgementPath(judgementRel, rel) || isLoomRecordsPath(lymWritten, rel)
++		return isJudgementPath(judgementRel, rel) || isLoomRecordsPath(lymWritten, rel) || rel == appendedRecord
+ 	}
+ 	recordsChanges, err := checkoutChanges("records", s.Records, records, committed, recordsExempt)
+ 	if err != nil {
+@@ -265,6 +292,57 @@ func worktreeRel(d Deps, path string) (string, error) {
+ 	return filepath.ToSlash(rel), nil
+ }
+ 
++// recordsCheckoutPath returns the file of the records checkout rooted at recordsRoot that path names in the worktree.
++func recordsCheckoutPath(d Deps, recordsRoot, path string) (string, error) {
++	rel, err := worktreeRel(d, path)
++	if err != nil {
++		return "", err
++	}
++	return filepath.Join(recordsRoot, filepath.FromSlash(rel)), nil
++}
++
++// appendedDecisionRecord returns the decision record's path relative to the worktree root, or empty.
++// It returns the path when the record is committed in the records checkout.
++// The record must also have changed since the snapshot only by entries added after the Discussion.
++// Every entry and carry-over block the snapshot's copy held must be kept unchanged.
++// It returns empty when Deps.DecisionRecord is unset, the snapshot holds no copy or the record is gone.
++// It also returns empty when the checkout lists the record as changed or untracked, which names an uncommitted write.
++// It also returns empty when the record differs in any other way.
++// Carry-over blocks the record gained are left out of the comparison, since lym settles them.
++func appendedDecisionRecord(d Deps, records fabricengine.CheckoutState) (string, error) {
++	if d.DecisionRecord == "" {
++		return "", nil
++	}
++	rel, err := worktreeRel(d, d.DecisionRecord)
++	if err != nil {
++		return "", err
++	}
++	if slices.Contains(records.Changed, rel) || slices.Contains(records.Untracked, rel) {
++		return "", nil
++	}
++	before, err := os.ReadFile(filepath.Join(d.JudgeSnapshotDir, judgeSnapshotRecordCopy))
++	if errors.Is(err, fs.ErrNotExist) {
++		return "", nil
++	}
++	if err != nil {
++		return "", fmt.Errorf("drift: read the judge snapshot's copy of the decision record: %w", err)
++	}
++	current := filepath.Join(records.Root, filepath.FromSlash(rel))
++	now, err := os.ReadFile(current)
++	if errors.Is(err, fs.ErrNotExist) {
++		return "", nil
++	}
++	if err != nil {
++		return "", fmt.Errorf("drift: read the decision record %s: %w", current, err)
++	}
++	if !bytes.Equal(discussionparser.IdentityText(before), discussionparser.IdentityText(now)) ||
++		len(discussionparser.CheckAddedEntriesSubset(now, before)) > 0 ||
++		len(discussionparser.CheckCarryOversNotLost(before, now)) > 0 {
++		return "", nil
++	}
++	return rel, nil
++}
++
+ // lymWrittenRecords returns the records paths lym writes itself around a judge session.
+ // They are the loom records entries and the drift logs.
+ // The scope and judged records join them while both match their newest Drift-Records commit.
+diff --git a/internal/driftengine/judgesnapshot_test.go b/internal/driftengine/judgesnapshot_test.go
+index 5f049104..9a21d285 100644
+--- a/internal/driftengine/judgesnapshot_test.go
++++ b/internal/driftengine/judgesnapshot_test.go
+@@ -20,6 +20,18 @@ const (
+ 	testFrictionPrefix = testFrictionRel + "-"
+ 	testReviewRel      = "_lym/loom/reviews/review-1.md"
+ 	testJudgementRel   = "_lym/drift/judgement.yaml"
++	testRecordRel      = "_lym/discussion/decision-record.md"
++)
++
++// Decision records the parent's decision verb and other edits leave behind.
++const (
++	testRecord      = "## Goal\n\nDo it.\n\n## Decisions\n\n## Constraints\n"
++	testRecordEntry = "## Goal\n\nDo it.\n\n## Decisions\n\n### Added after Discussion (parent, 2026-11-18): Retry\n\nDecision: retry.\n\nRationale: flaky.\n\n## Constraints\n"
++	testRecordEdit  = "## Goal\n\nDo more.\n\n## Decisions\n\n### Added after Discussion (parent, 2026-11-18): Retry\n\nDecision: retry.\n\nRationale: flaky.\n\n## Constraints\n"
++
++	testRecordRisks       = "## Goal\n\nDo it.\n\n## Decisions\n\n## Open risks\n\n<!-- lym:carry-over Plan-Review -->\n- Plan-Review, round 1: converged.\n<!-- /lym:carry-over Plan-Review -->\n\n## Constraints\n"
++	testRecordRisksEdited = "## Goal\n\nDo it.\n\n## Decisions\n\n## Open risks\n\n<!-- lym:carry-over Plan-Review -->\n- Plan-Review, round 2: converged.\n<!-- /lym:carry-over Plan-Review -->\n\n## Constraints\n"
++	testRecordRisksEntry  = "## Goal\n\nDo it.\n\n## Decisions\n\n### Added after Discussion (parent, 2026-11-18): Retry\n\nDecision: retry.\n\nRationale: flaky.\n\n## Open risks\n\n<!-- lym:carry-over Plan-Review -->\n- Plan-Review, round 1: converged.\n<!-- /lym:carry-over Plan-Review -->\n\n## Constraints\n"
+ )
+ 
+ // judgeFixture holds the fake code and records checkouts and a scratch directory.
+@@ -46,6 +58,7 @@ func newJudgeFixture(t *testing.T) *judgeFixture {
+ 		WorktreeRoot:     f.code.Root,
+ 		JudgeSnapshotDir: filepath.Join(t.TempDir(), "snapshot"),
+ 		LoomRecordsDirs:  []string{testRunDirRel, testFrictionRel, testFrictionPrefix},
++		DecisionRecord:   filepath.Join(f.code.Root, filepath.FromSlash(testRecordRel)),
+ 		Checkouts: func() (fabricengine.CheckoutState, fabricengine.CheckoutState, error) {
+ 			return f.code, f.records, nil
+ 		},
+@@ -311,6 +324,96 @@ func TestJudgeSnapshot(t *testing.T) {
+ 			},
+ 			nil,
+ 		},
++		{
++			"DecisionEntryCommittedIsNoChange",
++			func(t *testing.T, f *judgeFixture) { writeTestFile(t, f.records.Root, testRecordRel, testRecord) },
++			func(t *testing.T, f *judgeFixture) {
++				writeTestFile(t, f.records.Root, testRecordRel, testRecordEntry)
++				f.records.Head, f.recordsChanged = "records-2", []string{testRecordRel}
++			},
++			nil,
++		},
++		{
++			"DecisionRecordEditedBesideAnEntryIsNamed",
++			func(t *testing.T, f *judgeFixture) { writeTestFile(t, f.records.Root, testRecordRel, testRecord) },
++			func(t *testing.T, f *judgeFixture) {
++				writeTestFile(t, f.records.Root, testRecordRel, testRecordEdit)
++				f.records.Head, f.recordsChanged = "records-2", []string{testRecordRel}
++			},
++			[]string{"records: " + testRecordRel + " was changed"},
++		},
++		{
++			"DecisionEntryDroppedIsNamed",
++			func(t *testing.T, f *judgeFixture) { writeTestFile(t, f.records.Root, testRecordRel, testRecordEntry) },
++			func(t *testing.T, f *judgeFixture) {
++				writeTestFile(t, f.records.Root, testRecordRel, testRecord)
++				f.records.Changed = []string{testRecordRel}
++			},
++			[]string{"records: " + testRecordRel + " was changed"},
++		},
++		{
++			"DecisionEntryUncommittedIsNamed",
++			func(t *testing.T, f *judgeFixture) { writeTestFile(t, f.records.Root, testRecordRel, testRecord) },
++			func(t *testing.T, f *judgeFixture) {
++				writeTestFile(t, f.records.Root, testRecordRel, testRecordEntry)
++				f.records.Changed = []string{testRecordRel}
++			},
++			[]string{"records: " + testRecordRel + " was changed"},
++		},
++		{
++			"DecisionEntryBesideAKeptCarryOverBlockIsNoChange",
++			func(t *testing.T, f *judgeFixture) { writeTestFile(t, f.records.Root, testRecordRel, testRecordRisks) },
++			func(t *testing.T, f *judgeFixture) {
++				writeTestFile(t, f.records.Root, testRecordRel, testRecordRisksEntry)
++				f.records.Head, f.recordsChanged = "records-2", []string{testRecordRel}
++			},
++			nil,
++		},
++		{
++			"DecisionCarryOverBlockEditedIsNamed",
++			func(t *testing.T, f *judgeFixture) { writeTestFile(t, f.records.Root, testRecordRel, testRecordRisks) },
++			func(t *testing.T, f *judgeFixture) {
++				writeTestFile(t, f.records.Root, testRecordRel, testRecordRisksEdited)
++				f.records.Head, f.recordsChanged = "records-2", []string{testRecordRel}
++			},
++			[]string{"records: " + testRecordRel + " was changed"},
++		},
++		{
++			"DecisionEntryWithNoDecisionRecordSetIsNamed",
++			func(t *testing.T, f *judgeFixture) {
++				f.deps.DecisionRecord = ""
++				writeTestFile(t, f.records.Root, testRecordRel, testRecord)
++			},
++			func(t *testing.T, f *judgeFixture) {
++				writeTestFile(t, f.records.Root, testRecordRel, testRecordEntry)
++				f.records.Head, f.recordsChanged = "records-2", []string{testRecordRel}
++			},
++			[]string{"records: " + testRecordRel + " was changed"},
++		},
++		{
++			"DecisionRecordAbsentAtTheSnapshotIsNamed",
++			func(*testing.T, *judgeFixture) {},
++			func(t *testing.T, f *judgeFixture) {
++				writeTestFile(t, f.records.Root, testRecordRel, testRecordEntry)
++				f.records.Head, f.recordsChanged = "records-2", []string{testRecordRel}
++			},
++			[]string{"records: " + testRecordRel + " was changed"},
++		},
++		{
++			"DecisionRecordCopyClearedByALaterSnapshotIsNamed",
++			func(t *testing.T, f *judgeFixture) {
++				writeTestFile(t, f.records.Root, testRecordRel, testRecord)
++				if _, err := TakeJudgeSnapshot(f.deps, f.scratch); err != nil {
++					t.Fatalf("first TakeJudgeSnapshot() = _, %v; want nil error", err)
++				}
++				removeTestFile(t, f.records.Root, testRecordRel)
++			},
++			func(t *testing.T, f *judgeFixture) {
++				writeTestFile(t, f.records.Root, testRecordRel, testRecordEntry)
++				f.records.Head, f.recordsChanged = "records-2", []string{testRecordRel}
++			},
++			[]string{"records: " + testRecordRel + " was changed"},
++		},
+ 		{
+ 			"DeletedScratchDirectoryIsLeftOut",
+ 			func(t *testing.T, f *judgeFixture) { writeTestFile(t, f.scratch, "case.txt", "one") },
+diff --git a/internal/driftengine/seats.go b/internal/driftengine/seats.go
+index ecd4380d..c5c33bc1 100644
+--- a/internal/driftengine/seats.go
++++ b/internal/driftengine/seats.go
+@@ -44,6 +44,7 @@ const (
+ const (
+ 	linesExpectationFormat = "The listing holds `mode: lines`: for each case of the baseline, each line with its identity and text.\n" +
+ 		"A keyed line carries its `key`, and its occurrence `n` when the key occurs more than once in the case; an unkeyed line carries `line`, its position among the case's unkeyed lines.\n" +
++		"Name a keyed line's value by a `keys` entry alone: a `lines` range counts the `line` positions of unkeyed lines, never file line numbers, and covers no keyed line.\n" +
+ 		"Write expected.yaml as a mapping with these keys, each optional:\n\n" +
+ 		"```yaml\n" +
+ 		"cases:\n" +
+diff --git a/internal/loomcli/decision.go b/internal/loomcli/decision.go
+index 1b106774..5075c37d 100644
+--- a/internal/loomcli/decision.go
++++ b/internal/loomcli/decision.go
+@@ -97,6 +97,7 @@ const (
+ 	decisionWayAmendsDarn      = `way forward: record the decision without --amends-plan`
+ 	decisionWayNoticeTooLong   = "way forward: shorten the decision or rationale, put the detail in a file and name that file in the entry"
+ 	decisionWayLock            = `way forward: re-run the verb; nothing was written`
++	decisionWayJudgeOpen       = `way forward: re-run the call once Drift-Verify has ended its judge session: wait for a running judge, or run "lym loom resume" when the row is halted; or record the decision now without --amends-plan and without a PATTERN change; nothing was written`
+ 
+ 	replaceWayRebuild   = `way forward: re-read the record, rebuild the --from file from it and re-run "lym loom decision replace" with the sha256 of the record you read as --base-sha256`
+ 	replaceWayAdd       = `way forward: record the call with "lym loom decision add"`
+@@ -350,6 +351,8 @@ type decisionDeps struct {
+ 	// It also reports whether the board holds every one of them as filed from the run.
+ 	// An absent or unparseable proposal holds no parts.
+ 	raddleBoardFiling func() ([]string, bool, error)
++	// judgeSessionOpen reports whether the run's drift scope record holds an open judge session.
++	judgeSessionOpen func() (bool, error)
+ }
+ 
+ // decisionNoticeError is one notice the verb could not send, reported on its success envelope.
+@@ -907,6 +910,8 @@ func planApprovedReader(anchorPath string) func() (bool, error) {
+ // A perch-mode raddle run standing at its RaddleFile row is refused, since no split reads a decision recorded there.
+ // So is a raddle run whose filing is done.
+ // The call holds the run's decision lock from its first precondition through its commit and board copy.
++// A call with --amends-plan or a PATTERN change is refused while the run's drift judge session is open.
++// The judge's check cannot tell what those forms write beside the record from the judge's own edit.
+ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionInput) int {
+ 	refuse := func(format string, args ...any) int {
+ 		return output.Err(out, fmt.Sprintf("loom: %s add: ", decisionGroup)+fmt.Sprintf(format, args...))
+@@ -985,6 +990,17 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 		}
+ 	}
+ 
++	if input.amendsPlan || entriesChangePattern(entries) {
++		open, err := deps.judgeSessionOpen()
++		if err != nil {
++			return refuse("%s; %s", err, decisionWayRetry)
++		}
++		if open {
++			return refuse("a Drift-Verify judge session is open, and --amends-plan and a PATTERN change write beside the decision record, "+
++				"which the judge's check would read as the judge's edit; %s", decisionWayJudgeOpen)
++		}
++	}
++
+ 	date := deps.now().UTC()
+ 	added := make([]discussionparser.AddedDecision, 0, len(entries))
+ 	titles := make([]string, 0, len(entries))
+@@ -1104,6 +1120,16 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 	return output.Ok(out, result)
+ }
+ 
++// entriesChangePattern reports whether any entry carries the PATTERN-change form.
++func entriesChangePattern(entries []decisionEntry) bool {
++	for _, entry := range entries {
++		if strings.TrimSpace(entry.PatternEntry) != "" {
++			return true
++		}
++	}
++	return false
++}
++
+ // raddleFilingRefusal returns the refusal text for a raddle run whose filing bars a decision call.
+ // It returns empty for any other run.
+ // A perch-mode run standing at its RaddleFile row before its filing is refused:
+@@ -1557,6 +1583,7 @@ func (s *decisionState) preRun(cmd *cobra.Command, args []string) error {
+ 			return !found || task.Kind == boardengine.KindTask, err
+ 		},
+ 		raddleBoardFiling: func() ([]string, bool, error) { return raddleBoardFiling(target) },
++		judgeSessionOpen:  driftJudgeSessionOpen(target),
+ 		append: func(ds []discussionparser.AddedDecision) ([]discussionparser.Finding, error) {
+ 			return discussionparser.AppendDecisions(recordPath, supportLogPath, ds)
+ 		},
+diff --git a/internal/loomcli/decision_test.go b/internal/loomcli/decision_test.go
+index 823fd316..f782aa5f 100644
+--- a/internal/loomcli/decision_test.go
++++ b/internal/loomcli/decision_test.go
+@@ -190,6 +190,9 @@ type decisionFake struct {
+ 	recordWrites int
+ 	// writeFirstErr makes only the first record write fail; writeAllErr makes every record write fail.
+ 	writeFirstErr, writeAllErr error
++	// judgeOpen makes the drift judge session read as open, and judgeOpenErr makes the read fail.
++	judgeOpen    bool
++	judgeOpenErr error
+ }
+ 
+ // decisionPost is one notice the verb posted.
+@@ -409,7 +412,8 @@ func (f *decisionFake) deps() decisionDeps {
+ 		raddleBoardFiling: func() ([]string, bool, error) {
+ 			return f.boardFilingParts, f.boardFilingHeld, nil
+ 		},
+-		recordRel: "_lym/discussion/decision-record.md",
++		judgeSessionOpen: func() (bool, error) { return f.judgeOpen, f.judgeOpenErr },
++		recordRel:        "_lym/discussion/decision-record.md",
+ 		lockRecord: func() (func() error, error) {
+ 			if f.lockOverride != nil {
+ 				return f.lockOverride()
+@@ -549,7 +553,10 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 		perchAtRaddleWrite bool
+ 		// perchWithoutFileRow runs a perch-mode raddle state over a recipe with no RaddleFile row.
+ 		perchWithoutFileRow bool
++		// judgeOpen makes the run's drift judge session read as open.
++		judgeOpen bool
+ 	}{
++		{name: "a plain entry while a drift judge session is open", by: "parent", judgeOpen: true},
+ 		{name: "a raddle run outside perch mode at its Raddle-File row", by: "parent", atRaddleFile: true},
+ 		{name: "a perch-mode raddle run at its Raddle-Write row", by: "parent", perchAtRaddleWrite: true},
+ 		{name: "a perch-mode raddle state over a recipe with no Raddle-File row", by: "parent", perchWithoutFileRow: true},
+@@ -579,6 +586,7 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 			f.arbiterName = tc.arbiterName
+ 			f.samplerName = tc.samplerName
+ 			f.samplerErr = tc.samplerErr
++			f.judgeOpen = tc.judgeOpen
+ 			if tc.programNameFails {
+ 				f.programNameErr = errors.New("geometry boom")
+ 			}
+@@ -974,6 +982,24 @@ func TestDecisionVerb_Refusals(t *testing.T) {
+ 			},
+ 			want: []string{"discussion check flags the record", "sections: missing ## Scope", "way forward:", "the record is restored"},
+ 		},
++		{
++			name: "PATTERN change while a judge session is open",
++			setup: func(f *decisionFake, in *decisionInput) {
++				in.patternEntry, in.patternAction, in.patternText = "PATTERN-x", "adds", "New rule."
++				f.judgeOpen = true
++			},
++			inputRefusal: true,
++			want:         []string{"a Drift-Verify judge session is open", "PATTERN change", "way forward:", "once Drift-Verify has ended its judge session", "nothing was written"},
++		},
++		{
++			name: "judge session read failure with a PATTERN change",
++			setup: func(f *decisionFake, in *decisionInput) {
++				in.patternEntry, in.patternAction, in.patternText = "PATTERN-x", "adds", "New rule."
++				f.judgeOpenErr = errors.New("scope boom")
++			},
++			inputRefusal: true,
++			want:         []string{"scope boom", "way forward:", "nothing is appended"},
++		},
+ 		{
+ 			name:         "pattern action without an entry",
+ 			setup:        func(_ *decisionFake, in *decisionInput) { in.patternAction = "adds" },
+@@ -1965,6 +1991,11 @@ func TestDecisionVerb_AmendsPlan(t *testing.T) {
+ 			setup: func(_ *testing.T, f *decisionFake) { f.planApproved = false },
+ 			want:  []string{"no approved plan to amend", "way forward:", "without --amends-plan", "Plan-Write and Plan-Review read the decision record"},
+ 		},
++		{
++			name:  "JudgeSessionOpen_Refused",
++			setup: func(_ *testing.T, f *decisionFake) { f.judgeOpen = true },
++			want:  []string{"a Drift-Verify judge session is open", "--amends-plan", "way forward:", "once Drift-Verify has ended its judge session"},
++		},
+ 		{
+ 			name:  "PlanReadError_RefusedWithRetry",
+ 			setup: func(_ *testing.T, f *decisionFake) { f.planErr = errors.New("stat boom") },
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 34220893..6a5310d4 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -163,6 +163,9 @@
+ // A filing the raddle store has not marked done is seen from the entry's kind or from the board.
+ // Its refusal names `lym loom resume` first.
+ //
++// `decision add` with `--amends-plan` or a PATTERN change is refused while the run's drift judge session is open.
++// Its refusal says to re-run the call once Drift-Verify has ended the session.
++//
+ // `decision replace` writes a whole record from a file and commits it with a `Lym-Record-Replaced` trailer.
+ // It holds the run's decision lock, `holdDecisionLock`, which `add`, `store` and `writeCarryOver` take too,
+ // so its base check and its write are one step against every other Go writer of the record.
+diff --git a/internal/loomcli/driftwiring.go b/internal/loomcli/driftwiring.go
+index 88a09c93..d7c497d5 100644
+--- a/internal/loomcli/driftwiring.go
++++ b/internal/loomcli/driftwiring.go
+@@ -8,6 +8,7 @@ import (
+ 	"context"
+ 	"errors"
+ 	"fmt"
++	"io/fs"
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
+@@ -75,6 +76,22 @@ func driftRecordsDeps(location *lymcwd.Location) driftengine.Deps {
+ 	}
+ }
+ 
++// driftJudgeSessionOpen returns the seam that reports whether location's scope record holds an open judge session.
++// A worktree with no scope record has none, and the read then creates no directory.
++func driftJudgeSessionOpen(location *lymcwd.Location) func() (bool, error) {
++	return func() (bool, error) {
++		paths := driftengine.NewPaths(location.AnchorPath())
++		if _, err := os.Stat(paths.Scope); errors.Is(err, fs.ErrNotExist) {
++			return false, nil
++		}
++		scope, found, err := driftengine.ReadScope(paths)
++		if err != nil {
++			return false, fmt.Errorf("read the drift scope record: %w", err)
++		}
++		return found && scope.JudgeSession.Open, nil
++	}
++}
++
+ // driftDeps builds the seams the Drift rows read over location's worktree.
+ // statusPath and statusLockPath locate the run status.
+ // The seat runner, clock and gate findings file are left unset.
+@@ -246,6 +263,7 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, tab
+ 		},
+ 		JudgeSnapshotDir: filepath.Join(fabricengine.HubScratchDir(location.HubPath), lymdirs.DriftJudgeDirName, seedSlug(location.WorktreeName)),
+ 		LoomRecordsDirs:  loomRecordsDirs(location, tables.runID),
++		DecisionRecord:   tables.decisionRecordPath,
+ 		EndRoles:         tables.endRoles,
+ 	}
+ }
+diff --git a/internal/loomcli/driftwiring_test.go b/internal/loomcli/driftwiring_test.go
+index 2d085835..84a5ead7 100644
+--- a/internal/loomcli/driftwiring_test.go
++++ b/internal/loomcli/driftwiring_test.go
+@@ -59,6 +59,24 @@ func TestLoomRecordsDirs_HoldTheUsageDirectoryUnderTheAnchor(t *testing.T) {
+ 	}
+ }
+ 
++// TestDriftDeps_CarryTheDecisionRecord covers the decision record path the judge snapshot copies.
++// The run's agent tables name that path.
++//
++//testtiming:keep pins that driftDeps copies the agent tables' decision record path into Deps.DecisionRecord, which TestDriftDeps_RunWhereTheStepsDirResolves never asserts
++func TestDriftDeps_CarryTheDecisionRecord(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	location := &lymcwd.Location{HubPath: filepath.Join(t.TempDir(), "hub"), WorktreeName: "pair", AnchorRel: "."}
++	record := filepath.Join(location.HubPath, "pair", "_lym", "discussion", "decision-record.md")
++
++	deps := loomcli.DriftDepsWithDecisionRecord(location, "status.json", "status.lock", record)
++
++	if deps.DecisionRecord != record {
++		t.Errorf("DriftDeps() DecisionRecord = %q; want %q", deps.DecisionRecord, record)
++	}
++}
++
+ // TestStrandRoleStopper_StopsOnlyTheToldRoles covers which strands of reed's table the seam ends.
+ // It ends only a live or present own-window strand of exactly a told role.
+ // It leaves alone other roles, numbered forms, dead strands and retiring ones.
+diff --git a/internal/loomcli/export_test.go b/internal/loomcli/export_test.go
+index 185b3727..3b375633 100644
+--- a/internal/loomcli/export_test.go
++++ b/internal/loomcli/export_test.go
+@@ -12,6 +12,11 @@ func DriftDepsAt(location *lymcwd.Location, statusPath, statusLockPath string) d
+ 	return driftDeps(location, statusPath, statusLockPath, driftTables{})
+ }
+ 
++// DriftDepsWithDecisionRecord builds the Drift seams over location with decisionRecordPath set in the agent tables.
++func DriftDepsWithDecisionRecord(location *lymcwd.Location, statusPath, statusLockPath, decisionRecordPath string) driftengine.Deps {
++	return driftDeps(location, statusPath, statusLockPath, driftTables{decisionRecordPath: decisionRecordPath})
++}
++
+ // LoomRecordsDirs re-exports the records paths the judge snapshot leaves out.
+ var LoomRecordsDirs = loomRecordsDirs
+ 
