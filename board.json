@@ -221,36 +221,6 @@
       "notify_on_land": true
     },
     {
-      "id": 1471,
-      "handle": "T4",
-      "slug": "pause-after-crash-fixes",
-      "title": "Pause holds no shared lock and works on a pair with no reed session",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "tender",
-        "fabric",
-        "batten",
-        "reed"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A held call waits without the fabric push lock, dobby starts no driver for a paused pair, and pause and status skip a pair with no reed session",
-      "body": "## 1. A paused run keeps the fabric push lock\n\nSeen 2026-11-18: with `claude-accounts-per-worktree` paused by `lym tender pause \u003cslug\u003e`, dobby started `lym batten run claude-accounts-per-worktree` (pid 15436).\nIt took `loomyard-weft/.weft/fabric.push.lock`, then logged `tendercli: a network call is held by a pause` and waited, still holding the lock.\n`lym batten run memory-cap-not-enforced` then failed twice with `push lock busy ... held by pid 15436`; the orch had to kill pid 15436.\n\nFix:\n\n- A pause hold never waits while holding a shared lock:\n  the held call releases the push lock before it waits and takes it again after, or the pause check runs before the lock is taken.\n- Dobby starts no batten driver for a paused pair.\n\n## 2. Pause and status fail on a pair with no reed session\n\nSeen 2026-11-18 on Neve, two minutes after a hard power-off: `lym tender pause` failed with\n`pause: list the sessions of claude-accounts-per-worktree: no reed session (2 strands persisted); run \"lym reed resume\" to rebuild, or \"lym reed up\" for a bare substrate`,\nand `lym tender status` failed the same way. Meanwhile dobby had already restarted `review-result-checks`.\nThe orch had to run `lym reed up` in each pair's worktree before the pause went through.\n\nFix: a pair with no reed session has no running turn to interrupt,\nso pause records its entry, reports that pair under skipped, and goes on; status reports it the same way.\n\n## Done when\n\n- A test shows a call held by a pause does not hold the push lock, and another pair's batten run takes it meanwhile.\n- A test shows dobby starts no driver for a paused pair.\n- A test shows `lym tender pause` and `lym tender status` succeed with a pair that has no reed session, naming it as skipped.\n",
-      "status": "done",
-      "created": "2026-11-18T13:34:51Z",
-      "revised": "2026-11-18T16:38:18Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "solid"
-    },
-    {
       "id": 1472,
       "handle": "E1",
       "slug": "import-loses-issue-evidence",
@@ -385,38 +355,6 @@
       "body": "## What was seen\n\nThe `landingshed` reading found about 340 lines of features a product owner could remove\n(the flaky rerun, the adopter-first repair note, the beam landing record among them); nobody has checked whether they are used.\n\n## Idea\n\n1. Mechanical: run `golang.org/x/tools/cmd/deadcode` over `cmd/lym` to find functions no path from `main` reaches; delete those.\n2. A list, not a deletion: features, flags, config keys and verbs with no use in run records, transcripts or hub configs over the last weeks.\n   The operator decides which go; only those are removed.\n",
       "created": "2026-11-18T17:23:25Z",
       "revised": "2026-11-18T17:23:25Z",
-      "project": "code-cleanup"
-    },
-    {
-      "id": 1481,
-      "handle": "T1",
-      "slug": "testmap-use-cases",
-      "title": "Find real uses for the per-test coverage maps",
-      "kind": "task",
-      "labels": [
-        "research",
-        "testmap",
-        "gate"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A research run on Fable searches the web and the code for what per-test coverage maps can do for lym and its agents, and ranks the uses",
-      "body": "## Why\n\nlym builds per-test coverage maps (`internal/testcover`, built by `lym gate test --map`): for each tier 0 and tier 1 test, the code blocks it runs.\nToday they have almost no job:\n\n- Test selection from the maps was retired on 2026-11-15 (`testmap-on-command`, `72b26d1a`): it saved the gate 0 to 4.2 s against 7.7 to 31 min of upkeep per landing.\n- `lym gate redundant` confirms redundant tests by mutation, but 27 of 30 sampled confirmations were false\n  (`docs/research/speed/redundancy-confirmed-survey-2026-11-16/report.md`).\n- The gate report's advisory redundancy step on a diff's new tests is the only use left.\n\nThe operator is sure the maps are good for something. Find what.\n\n## Scope, exact\n\n- One writer session, model Fable 5.2 (set in this entry's `run_settings`), no other model.\n- Search the web: research and industry practice on per-test coverage (test impact analysis, regression test selection, fault localisation such as spectrum-based methods,\n  test prioritisation, flaky-test triage, mutation testing guidance, change-risk scoring, code ownership, review aids, documentation of behaviour), and tools that use it.\n- Read lym's own map format and the reports named above, so each idea is judged against what the maps hold today and what they cost to build\n  (`docs/research/speed/coverage-map-measurement-2026-11-18/report.md`: a full build took 12 min 50 s over 210 packages).\n- Think in particular about lym's agents: a writer, reviewer or fixer that changes a function, meets a failing test or reviews a diff.\n- Runs: at most one `lym gate test --map` build of one package, to check a concrete idea against real data. No other test runs.\n\n## Output\n\nA report under `docs/research/speed/testmap-use-cases-\u003cdate\u003e/report.md`:\n\n- every use found, each with its source (a URL or paper for outside ideas), what it would need from lym, a rough build cost, and the expected gain;\n- a ranking, with the top three argued in full, including why each beats doing without the maps;\n- a plain statement for any use that is not worth it.\n\nNo code changes.\n",
-      "status": "done",
-      "created": "2026-11-18T17:28:47Z",
-      "revised": "2026-11-18T18:04:38Z",
-      "run_settings": {
-        "darn": {
-          "writer": "fable[high]"
-        },
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "docs",
       "project": "code-cleanup"
     },
     {
