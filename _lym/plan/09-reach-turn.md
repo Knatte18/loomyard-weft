@@ -41,7 +41,7 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#RerunMark`
+- `internal/shuttleengine#RerunMark`
 - `internal/gatecli#ReadReachReport`
 - `internal/gatecli#ReachReportMatches`
 - `internal/gatecli#ReachReport.NoteLines`

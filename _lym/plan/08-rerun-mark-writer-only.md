@@ -1,8 +1,8 @@
 # Card 8 — rerun-mark-writer-only
 
 **Create:**
-- `plan:internal/shuttleengine#RerunMark` -> `type RerunMark struct`
-- `plan:internal/shuttleengine#RerunMark.Run` -> `func (m *RerunMark) Run(gate Gate) (GateResult, error)`
+- `internal/shuttleengine#RerunMark`
+- `internal/shuttleengine#RerunMark.Run`
 
 **Edit:**
 - `internal/shuttleengine#GateResult`
