@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-18T16:39:51Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/pause-after-crash-fixes/_lym/landing/summary.md",
+      "at": "2026-11-18T17:35:11Z",
+      "started_at": "2026-11-18T16:40:02Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-18T16:49:05.723638247Z",
+          "end": "2026-11-18T16:49:05.734339812Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-18T17:30:24.360954705Z",
+          "end": "2026-11-18T17:30:24.38035073Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-18T16:49:05.784916835Z",
+          "end": "2026-11-18T17:29:17.450252719Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-18T17:29:18.062790805Z",
+          "end": "2026-11-18T17:30:24.304556218Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-18T17:30:24.480176786Z",
+          "end": "2026-11-18T17:34:19.342415399Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-18T17:34:19.400645669Z",
+          "end": "2026-11-18T17:34:19.697160255Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-18T17:34:19.744315755Z",
+          "end": "2026-11-18T17:34:19.744455456Z"
+        }
+      ]
     }
   ],
   "product": {
