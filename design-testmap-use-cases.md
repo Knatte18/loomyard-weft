@@ -1,6 +1,6 @@
 # Find real uses for the per-test coverage maps
 
-`testmap-use-cases` · Task · research, testkit, gate · starting · Open-Window
+`testmap-use-cases` · Task · research, testkit, gate · starting · Seed-IDE
 
 ## Why
 
