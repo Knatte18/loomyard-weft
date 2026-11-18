@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The bootstrap stop said the code tip e3ca0c118798fad547ccd8a404c78597c666e627 was not on origin yet, and that the way forward was to re-run once the code push landed. Read now: `git ls-remote origin` answers refs/heads/scratch-symlink-two-paths at e3ca0c118798fad547ccd8a404c78597c666e627, exactly the named commit, and `git cat-file -t` confirms it exists locally. The cause has cleared, so a plain re-launch settles it. No goto: this is a bootstrap stop, not a blocked one. The stop was refused at step e69e733de46d043f (trace log line 3), and the drive report's Attempts section is empty, so I found no earlier resume that returned unchanged.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 3,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/scratch-symlink-two-paths/tackler/attempt-3",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/scratch-symlink-two-paths/tackler/attempt-3/verdict.yaml",
+  "case_brief_path": ""
+}
