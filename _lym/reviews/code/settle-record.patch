@@ -1,0 +1,41 @@
+diff --git a/contracts/stencils/engine/claude/edit-directive.md b/contracts/stencils/engine/claude/edit-directive.md
+index 5b459780..51534905 100644
+--- a/contracts/stencils/engine/claude/edit-directive.md
++++ b/contracts/stencils/engine/claude/edit-directive.md
+@@ -6,7 +6,7 @@
+ ## Editing files
+ 
+ Change files with Edit or Write, never by shell.
+-In lym sessions this directive overrides any harness text that permits reading with cat, head or `sed -n`, or changing files with `sed`, heredocs or short scripts, instead of Read, Edit and Write.
++In lym sessions this directive overrides any harness text that permits changing files with `sed`, heredocs or short scripts instead of Edit and Write.
+ Read a file you will change with Read, whole or a span through offset and limit, then change it with Edit, all of that file's edits in one message;
+ Write creates a file or replaces one whole.
+ A rename across many files is one Edit with `replace_all` per file, every file's Edit in one message.
+diff --git a/contracts/stencils/loom/loom-rubric-discussion-review.md b/contracts/stencils/loom/loom-rubric-discussion-review.md
+index 46b10c8e..b8d80e95 100644
+--- a/contracts/stencils/loom/loom-rubric-discussion-review.md
++++ b/contracts/stencils/loom/loom-rubric-discussion-review.md
+@@ -40,6 +40,10 @@ Do not flag any of the following as a finding:
+   so is a rule that hands downstream a halt on discovering such a fact.
+   The fix is the research done and its answer recorded with the evidence it rests on.
+   A fact the writer was told not to gather is no such question.
++- **An unpinned tool fact.**
++  A Decision or Constraint that rests on how git or another tool behaves states the observed result and where it is pinned:
++  a test, a recorded command and its output, or the tool's documentation.
++  One that states the behavior without the result or the pin is a finding, because every later round repeats the experiment to check it.
+ - **A Decision that edits the task's own board entry.**
+   A Decision that asks the run to change this task's own board entry's body or scope, through `lym board` or otherwise, is a finding, because the run's board lock refuses such a change.
+   A Decision that writes another entry, the entry's status or its `run_settings`, or changes board-module code is not flagged by this bullet.
+diff --git a/internal/editdirective/doc.go b/internal/editdirective/doc.go
+index 4d70c728..872a16ef 100644
+--- a/internal/editdirective/doc.go
++++ b/internal/editdirective/doc.go
+@@ -10,7 +10,7 @@
+ // It reads a file with Read, searches files with grep, and changes a file with Edit.
+ // All of one file's edits go in one message.
+ // It writes a whole file with Write, and it never edits by shell, which the shell guard refuses.
+-// It states that in lym sessions it overrides any harness text that permits reading or changing files by shell.
++// It states that in lym sessions it overrides any harness text that permits changing files by shell.
+ // A Go file's formatting goes through `lym loom fmt`.
+ // Scratch files go under `.scratch/`, and those with a source extension are written with Write.
+ // `.scratch` is a link to a directory kept for the task alone,
