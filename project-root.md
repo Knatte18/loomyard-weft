@@ -23,19 +23,20 @@ Held by a run; its scope is locked until the run ends.
 | T7 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-with`](design-wxb-plan-with.md)<br>[Sketch](decision-wxb-plan-with.md) | tapestry | Plan-Write | neve | 26m<br>26m |  |
 | T8 | **A beam session loses the pawl run checklist when the beam overview takes the overview window**<br>• Bench arm of plan-writer-explorer-forks; never release | [`wxb-plan-without`](design-wxb-plan-without.md) | tapestry | Discussion-Burler-Review | neve | 26m<br>26m |  |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Find why VS Code keeps showing a stale board file, and fix it**<br>• Find the cause first, most likely in VS Code settings or how the workspace reaches the board files; change lym code only if the cause is there<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-view-not-refreshing`](design-board-view-not-refreshing.md) | darn · light |  | 28m<br>0m | board, ide |
 
-### Draft (2)
+### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Find why VS Code keeps showing a stale board file, and fix it**<br>• Find the cause first, most likely in VS Code settings or how the workspace reaches the board files; change lym code only if the cause is there | [`board-view-not-refreshing`](design-board-view-not-refreshing.md) | darn |  | 28m<br>0m | board, ide |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 1d<br>23h | board, ide, fabric |
 
 ## Notes (7)
