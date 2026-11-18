@@ -339,7 +339,7 @@
       "isolated": false,
       "brief": "Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff",
       "body": "## Seen (retro, 2026-11-17)\n\nFrom `docs/research/retro/retro-20261116-115411/report.md`, proposal 1.\nIn `test-only-functions-in-prod`, the Code-Review reviewer (6b616569, turns 18 to 35) wrote the branch's production diff of about 3,600 lines to `.scratch/prod.diff` itself, read it in five spans, and had its last Read refused for size, so it retried with `allow_large`.\nThe session cost $5.40 against a row median of $1.63, with the whole diff in its context.\n\n## Idea\n\nBurler writes the round's diff as one file per package, each under the Read cap, and names them in the explore step (`internal/burlerengine/prompt.go`, `contracts/stencils/burler/burler-step-1-explore.md`).\nOne session shows this; a second oversized review would confirm it.\n",
-      "status": "starting · Seed-IDE",
+      "status": "starting · Open-IDE",
       "created": "2026-11-18T06:58:31Z",
       "revised": "2026-11-18T07:37:59Z",
       "run_settings": {
@@ -395,7 +395,7 @@
       "isolated": false,
       "brief": "An orch launch ignores deny_python: false in the hub shuttle config; notice and hook both stay",
       "body": "## Seen (odd hub orch, 2026-11-18, by creel)\n\nIn hub `odd` (repository `Knatte18/oddments`), `deny_python: false` is set in the shuttle config at the default layer, committed in `_bolt`; `lym config --resolved shuttle` shows `deny_python: false # default`.\nYet every new orch session that `lym orch` launches, also after a full restart, still carries the python guard's notice in its system prompt, and the old session's hook still refused Python.\nHubs whose repositories develop Python cannot work.\n\nThe row hangs on `shellguard.SwitchDenyPython`, and `claudeengine`'s `shellSwitchInstalled` reads `cfg.DenyPython`; the `# default` mark suggests the resolved value comes from the template, not the hub's layer, so the launch path of `lym orch` may load the shuttle config from other dirs than `lym config` resolves.\n\n## Idea\n\nFind which config dirs the orch launch hands the shuttle config loader, make it read the hub's layers, and add a test: with `deny_python: false` at the default layer, an orch launch carries neither the notice nor the hook row.\n",
-      "status": "running · Preflight",
+      "status": "running · Record-Write",
       "created": "2026-11-18T07:37:10Z",
       "revised": "2026-11-18T07:37:37Z",
       "run_settings": {
@@ -424,7 +424,7 @@
       "isolated": false,
       "brief": "Discussion rubric line on observed tool behaviour; delete the edit directive cat, head and sed -n clause",
       "body": "Two prompt-text changes from the retro of 2026-11-17 (`docs/research/retro/retro-20261116-115411/report.md`), both in `contracts/stencils/`.\n\n# Rubric: pin the tool facts a decision rests on\n\n### Seen (retro, 2026-11-17)\n\nFrom `docs/research/retro/retro-20261116-115411/report.md`, proposal 2.\nIn `decision-record-replace`, three sessions in different rounds (reviewers 91782c57 turn 20 and e44fb294 turn 14, fixer 2c77f780 turn 21) each built a scratch git repository to learn what `git commit --allow-empty -- \u003cpath\u003e` commits when another path is staged.\nThe record stated the behaviour its decision relied on without the observed result, so each round repeated the experiment.\n\n### Idea\n\nA rubric line in `contracts/stencils/loom/loom-rubric-discussion-review.md`: a decision that rests on how git or another tool behaves states the observed result and where it is pinned.\n\n# Delete the cat, head and sed -n clause\n\n### Seen (retro, 2026-11-17)\n\nFrom `docs/research/retro/retro-20261116-115411/report.md`, proposal 4.\nEvery sampled darn writer, code reviewer and plan writer read its first files with `cat`, batched with other lookups in one Bash call, against the edit directive's clause on `cat`, `head` and `sed -n` (`contracts/stencils/edit/edit-directive.md` and `contracts/stencils/engine/claude/edit-directive.md`).\nNone was refused and none caused a visible fault; the calls are the batching the same prompt asks for.\n\n### Idea\n\nThe operator chooses: delete the clause, or add a shell guard row that refuses `cat \u003cpath\u003e` with a pointer to Read, which turns one batched call into several parallel Reads at the same turn count.\n\nDecision (operator, 2026-11-18): delete the clause; no guard row.\n",
-      "status": "running · Drift-Await",
+      "status": "running · Darn-Write",
       "created": "2026-11-18T06:58:31Z",
       "revised": "2026-11-18T07:37:58Z",
       "run_settings": {

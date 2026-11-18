@@ -1,6 +1,6 @@
 # Stage the reviewer diff in pieces that fit one Read
 
-`review-diff-in-pieces` · Task · enhancement, burler, stencil · starting · Seed-IDE
+`review-diff-in-pieces` · Task · enhancement, burler, stencil · starting · Open-IDE
 
 ## Seen (retro, 2026-11-17)
 

@@ -1,6 +1,6 @@
 # Retro prompt fixes: pin tool facts in decisions, drop the cat clause
 
-`retro-stencil-fixes` · Task · enhancement, stencil, loom · running · Drift-Await
+`retro-stencil-fixes` · Task · enhancement, stencil, loom · running · Darn-Write
 
 Two prompt-text changes from the retro of 2026-11-17 (`docs/research/retro/retro-20261116-115411/report.md`), both in `contracts/stencils/`.
 
