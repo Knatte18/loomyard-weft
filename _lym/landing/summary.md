@@ -1,41 +1,42 @@
-# Push a records side again instead of reading it as ended on origin
+# fabricengine: stop reading the prime records branch as ended on origin
 
-`PushPairAnchored` treats its records side as landed when the push returns nil and the worktree then holds nothing unpushed.
-When commits were still unpushed and no fresh deferral record existed, `recordsSideNotLanded` fell through to one answer:
-the branch's entry is ended on origin.
-That fallback never asked origin.
-Two transient states reach it on the prime's `main-weft`, which other runs also commit to:
+A newly started batten run could fail at Seed-IDE with `the entry of branch main-weft is ended on origin, so the branch was not pushed and is left to its teardown`.
+The branch is the prime records branch `main-weft`, which is never ended.
+A rerun passed.
 
-- a commit made to the records worktree after the push read HEAD and before the `HasUnpushed` check;
-- a push that landed but left the tracking ref unmoved, because the tracking-ref write failed and was only logged.
+`PushPairAnchored` read any records side still unpushed after its push as an ended entry.
+A commit landing on the records worktree while the push ran, or a tracking ref the push left unmoved, produced the same state, so the push was misclassified and the run failed.
 
-Either one failed a new run at Seed-IDE with "the entry of branch main-weft is ended on origin", and a rerun passed.
+## What changes
 
-## Change
+`recordsSideNotLanded` in `internal/fabricengine/pushanchored.go` now looks the branch up on origin before it classifies:
 
-- `recordsSideNotLanded` now looks the branch up on origin after ruling out a deferral.
-  A branch origin still holds returns an error wrapping the new `errRecordsUnpushedPastPush`.
-  Only a branch gone from origin keeps the "ended on origin" message,
-  since the classified push skips a gone branch only when its entry ended.
-  A failed lookup returns that lookup's error, never the ended message.
-- `PushPairAnchored`'s records side pushes again on `errRecordsUnpushedPastPush`,
-  sleeping the push backoff delays through `SyncOptions.BackoffSleep`.
-  It returns the error only once the backoff is spent.
-  Each retry runs the full classified push, so a deferral, rejection or ended entry found on a retry is reported as before.
-- The `PushPairAnchored` doc comment and the package doc in `internal/fabricengine/doc.go` state the retry,
-  and that only a branch gone from origin reads as ended.
+- A branch origin still holds returns an error wrapping `errRecordsUnpushedPastPush`.
+  `PushPairAnchored` pushes the records side again over the push backoff (`gitrepo.PushBackoffDelays`), sleeping through `SyncOptions.BackoffSleep`.
+- A records side still unpushed once the backoff is spent records a failed push of class `PushFailureDeferred`.
+- A lookup that cannot reach origin records one of class `PushFailureTransport`.
+- Both are returned as a `*PushFailedError`, so `IsPushOwed` is true and a run's transition retries the push instead of failing.
+- Only a records branch gone from origin reads as one whose entry ended.
+- Any other failed lookup returns its error unclassified.
 
-## Design decisions
-
-- The fix reads origin rather than trusting the local tracking ref, so the ended claim rests on the same evidence the push's own origin check uses.
-  The cost is one `ls-remote`, paid only on the not-landed path.
-- The retry reuses the push backoff schedule rather than a new constant, matching the other retries in the push path.
-- Commits that arrive during the push could be left to their committer's own push.
-  The retry pushes them anyway: the caller cannot tell its own commits from another writer's, and pushing records commits early is harmless.
+`recordOwedRecordsPush` writes the failed-push record and mails the orch through the existing notifier.
+`SyncOptions.BackoffSleep` now documents the backoff between a push's retries, and `doc.go` describes the new behaviour.
 
 ## Tests
 
-`TestPushPairAnchored_PushesBothSidesRetriesAndReportsEachSide` gains `PrimeRecordsCommitDuringThePushIsPushedAgain`.
-A one-shot `post-receive` hook on the records bare commits to the prime's records worktree while the push runs.
-The subtest asserts that the push returns nil, that origin holds the commit the hook made, and that no failed-push record was written.
-The existing ended-entry subtests in `pushclasses_integration_test.go` still expect "ended on origin" for a branch deleted from origin, and the new lookup keeps that.
+`pushanchored_integration_test.go` gains a `post-receive` hook helper that commits to the prime's records worktree during the push.
+It covers three cases:
+
+- a commit during the push is pushed again and lands, with one backoff sleep and no failed-push record;
+- a branch that keeps gaining commits is owed as `PushFailureDeferred` once the backoff is spent, with one sleep per delay;
+- an origin lookup that cannot reach origin is owed as `PushFailureTransport`, with no sleep.
+
+It also removes a duplicated comment line from the existing test's doc.
+
+## To check by hand
+
+- `records-push-retry-failure-paths-untested` (design, MEDIUM): the records re-push's failure paths in `PushPairAnchored` were left open by the last review.
+  The new `PrimeRecordsPushOwed_*` rows cover the spent backoff and the transport lookup failure; check that no path is left untested, such as an unclassified lookup error or an unreadable branch in `recordOwedRecordsPush`.
+- `records-push-transient-not-owed` (design, MEDIUM): check in `recordsSideNotLanded` and the retry loop in `PushPairAnchored` that every transient state of the records side ends as an owed push and none as a hard failure.
+
+No regression check ran for this change, and the integration tests were not run by hand against a live batten run.
