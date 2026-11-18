@@ -1,6 +1,6 @@
 # P1 Code cleanup: cut and simplify lym code and tests
 
-Rendered 2026-11-18 20:23 UTC; every age below is as of then.
+Rendered 2026-11-18 20:24 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`code-cleanup`](design-code-cleanup.md) · Age 3h · Owner `neve`
@@ -28,7 +28,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Pilot: simplify the design of landingshed without changing behaviour**<br>• Build the design simplifications the shrink study found in landingshed and measure the lines saved against its estimate, before any such pass on another module<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`landingshed-design-simplify`](design-landingshed-design-simplify.md) | darn · solid | Code-Burler-Fix | neve | 1h<br>1h | landing |
+| T2 | **Pilot: simplify the design of landingshed without changing behaviour**<br>• Build the design simplifications the shrink study found in landingshed and measure the lines saved against its estimate, before any such pass on another module<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`landingshed-design-simplify`](design-landingshed-design-simplify.md) | darn · solid | Code-Bouncer | neve | 1h<br>1h | landing |
 
 ### Ready (0)
 
@@ -42,7 +42,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Remove lym verbs and features nobody uses**<br>• Follow-up to the unused-features study: the operator picks from its candidate list, then this task removes those verbs with their docs and prompt text | [`remove-unused-verbs`](design-remove-unused-verbs.md) | darn |  | 7m<br>7m | cli |
+| T8 | `draft` **Remove lym verbs and features nobody uses**<br>• Follow-up to the unused-features study: the operator picks from its candidate list, then this task removes those verbs with their docs and prompt text | [`remove-unused-verbs`](design-remove-unused-verbs.md) | darn |  | 8m<br>8m | cli |
 
 ## Notes (3)
 
