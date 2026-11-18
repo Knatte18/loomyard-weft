@@ -1,65 +1,43 @@
-# Shuttle start: retry a busy prompt, save its failure, retype a lost one
+# shuttleengine: retry a busy start prompt and retype a dropped one
 
-Two seat start bugs in shuttle's prompt delivery after the skills load: issue #137, and issue #136, which kept only its title.
+A seat start no longer dies on one transient "session is not idle" reading, and a prompt line the provider dropped is typed again.
+Both fixes sit in the prompt delivery of `internal/shuttleengine`.
 
-## A prompt send held busy no longer ends the start at once
+Closes #137
+Closes #136
 
-`Run.loadSkillsThenPrompt` sent the prompt line once.
-When the send's idle wait ran out with the session held, which is a `*SessionBusyError` from a wait that typed nothing, the strand was torn down as died.
-Two such starts in a row halt the run as `producer-hard-failure`, which is what issue #137 reports.
+## Why
 
-The idle wait already polls for the whole `send_ready_timeout_s` window (60 s by default), so a miss on a single poll could not end the start.
-In the reported runs, every poll of that window read no input box.
-The new `sendStartPrompt` sends the line again with a fresh idle wait, up to `startPromptBusyRetries` (2) more times while the run's deadline has not passed.
-Only a `*SessionBusyError` is retried.
-`ErrSentTextInDraft` and `ErrForeignBoxText` also wrap `ErrSessionBusy`, but they come after the paste, so they still end the start as before.
+A `burler-review` seat died twice in a row in `shuttle` with `deliver the prompt after loading skills: the session is not idle`.
+The session had finished loading its skills and showed an empty `❯` box, yet the idle wait held the send busy and the strand was removed.
+One transient miss then cost a whole attempt, and two halted the loom run.
 
-## The saved capture now shows the failure
+Issue #136 survives only as a title: a review strand starts without the turn that names its prompt file, also after a restart.
+The cause in the code path is that the send reads a submitted line as landed once the input box is empty.
+A provider can drop a submitted line and leave the box empty, and an idle session ends no turn for a held turn end to type the line at.
 
-The issue asked to check the idle reading against `startup-capture.txt` in the two run directories.
-Those directories are gone, and the file would not have helped anyway:
-`abandonStartup` saves `lastStartupCapture`, which is the startup probe's boot screen, taken before the skills load.
-`keepFailureCapture` now replaces it with the pane at the failed delivery.
-For an engine whose box reading judges a styled capture (`StyledBoxReader`, which Claude implements), it keeps the styled capture with its escapes, since that is the form the box reading parses.
-A capture that fails keeps the boot screen.
-The exact cause of the missed box in #137 is still unknown.
-The next time the box is missed, the saved file holds the screen the reading actually judged.
+## What changes
 
-## A prompt line that started no turn is typed once more
+- A start's prompt send that the idle wait held busy typed nothing, so `sendStartPrompt` sends it again with a fresh wait.
+  It does so up to `startPromptBusyRetries` times, only while the run's deadline has not passed.
+  Each send's idle wait and submit window now end by that deadline.
+- `Wait` calls the new `retypeLostPrompt` each tick.
+  It types the deferred prompt line once more when the line went out at least the submit window ago and no turn start lies past the events offset it was typed at.
+  It happens at most once per handle, only for an engine that parses session signals, and only with no pause covering the run and the deadline not passed.
+  A retype held busy before it typed does not use up the one retype.
+- A prompt delivery that still fails tears the start down with the pane at the failure as `startup-capture.txt`, in place of the boot screen.
+- `sendThroughPause` keeps the send's deadline, moved later by the pause wait, and its sent-offset target across a resend.
+- `DeliverPendingPrompt` now shares `typePendingPrompt` with the retype, which records `promptSentAt` and `promptSendOffset` on the run.
 
-The prompt send counts an empty input box as landed.
-If the provider drops the submitted line, the box is empty and no turn starts.
-The session then sits idle and ends no turn, so `deliverPromptAtHold`, which runs only at a held turn end, never types the line again.
-The strand stays up with no task until its timeout.
-This matches #136's title ("starts without the turn naming its prompt file").
-An attach after a restart delivers the line once through `DeliverPendingPrompt`, and that delivery can be lost the same way, which matches "also after restart".
+## Design decisions
 
-Wait now calls `retypeLostPrompt` on every tick.
-It types the line again only when all of these hold:
+- The saved captures show the existing box reading already recognizes the `✻ … · done` layout above the `❯` box.
+  The fix is therefore the bounded retry, not a change to the idle detection.
+  `TestInputBoxText` gains cases pinning that layout, plain and styled.
+- The retry covers only a `*SessionBusyError`, which guarantees nothing was typed, so a retry cannot type the line twice.
+- The retype needs the turn-start offset recorded just before the line goes out (`sendContext.sentOffset`), so an earlier turn start never reads as the line's.
 
-- the line went out through this handle at least the submit window ago (`submit_confirm_timeout_s`);
-- no turn start of any instruction lies past the prompt offset;
-- the engine parses session signals;
-- no pause covers the run.
+## To check by hand
 
-It does this at most once per handle.
-A turn start past the offset ends the watch.
-The typing itself goes through the new `typePendingPrompt`, which is the body `DeliverPendingPrompt` already ran.
-`typePendingPrompt` judges the prompt's turn again, records `promptSentAt` and skips `DeliverPendingPrompt`'s once-per-handle latch.
-So a line delivered at attach can still get its one retype.
-
-## Tests
-
-- `TestStartup_SendFailuresTearDown` gains two checks:
-  - a new row where the session reads busy for one whole send window, then idle: the start sends again, types the prompt once and returns the run;
-  - the row "a prompt delivery that does not land" now also checks that the saved capture holds the failure screen.
-  `startSendEngine` gains `idleWhen` to script the idle reading.
-- `TestWait_RetypesAPromptLineThatStartedNoTurn` attaches to a run whose prompt the attach types:
-  - with no turn start after it, the line is typed exactly twice;
-  - when typing records a turn start, it is typed once.
-
-## Notes for the reviewer
-
-- A Wait test whose run has a deferred prompt line, a fake that records no turn start for it, and a timeout longer than the submit window now sees the line typed a second time.
-  The existing held-turn and attach tests use a 10 s timeout, which is shorter than that window.
-- The retype relies on the turn-start hook recording the line, the same signal `DeliverPendingPrompt` and the held-turn delivery already rely on.
+- Not run against a live provider: that a seat start survives an idle reading that lags the redrawn prompt.
+- The retype after a dropped line was exercised only by the new tests in `startup_test.go` and `attach_test.go`.
