@@ -319,6 +319,12 @@ Decision: The three open design-wrong findings of Discussion review round 3 stan
 
 Rationale: Checked against the code: checkLivenessTick's doc (internal/shuttleengine/wait.go) says only the launch's own startup wait sets eventsProof and Wait's probe of a not-yet-started run leaves it unset, so the relaunch's wait matches an existing path; StopStepRuns (stepstop.go) filters on rs.Outcome != runOutcomeRunning and strandRemovable, which D7 now overrides for a relaunching run; DeliverPendingPrompt exists (run.go). Each finding's prescribed fix is in the record, so no fix remains to be made and the hard cap allows accepting.
 
+### Added after Discussion (parent, 2026-11-18): Drop card 14's deferred-prompt rule (F7)
+
+Decision: Delete card 14's sentence on typing the record's deferred PromptLine in place of the continue line, and its row. D7 step 2 stands: the in-run relaunch's first turn is the continue line and its PromptLine is empty.
+
+Rationale: The rule cannot work with SkipSkillLoadTurn and departs from D7; its only case, a limit on the skill-load turn, is settled by the next decision.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: `CLAUDE_CONFIG_DIR`, the credentials file, the status line input, the account file, the pick and the copy live in `internal/shuttleengine/claudeengine`;
