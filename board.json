@@ -427,6 +427,25 @@
       "body": "## What was seen\n\n`tools/tokencount -since 2026-11-03` over 359 tapestry and darn runs (2026-11-18):\nthe `comment-lead` role cost $150.66 (Sonnet) and its forks $184.25 (about 20 500 Haiku messages), $334.91 together, 8 % of all run spend.\nThat is more than the whole Plan review of the tapestry runs in the same window.\n\n## Idea\n\nFind what drives the cost: how many forks a run spawns, what each reads, and whether it rereads files or the whole diff per comment.\nThen cut it, for example by checking only the comments the diff adds or changes, in one session without per-comment forks,\nor by leaving the check to the deterministic comment lint where that finds the same.\n",
       "created": "2026-11-18T12:30:15Z",
       "revised": "2026-11-18T12:30:15Z"
+    },
+    {
+      "id": 1469,
+      "handle": "E4",
+      "slug": "plan-writer-explorer-forks",
+      "title": "The Plan writer explorer forks cost more than the writer and show no gain",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Drop the Plan writer exploration subagents; they cost about $6.50 per tapestry run",
+      "body": "## What was seen\n\n`tools/tokencount -since 2026-11-03` over the 21 tapestry runs since then (2026-11-18):\nthe Plan writer's forks cost $137.84, more than the Plan writer itself ($126.24), about $6.50 per run.\nThey are the exploration subagents the Plan writer was set up to spawn.\nThe operator judges they add little to the plan beyond their cost.\n\n## Idea\n\nStop the Plan writer from spawning exploration subagents; it reads the code itself, as it did before.\nThe plan review stays as it is, so a plan that misses something is still caught there.\n",
+      "created": "2026-11-18T12:30:19Z",
+      "revised": "2026-11-18T12:30:19Z"
     }
   ],
   "prime_owner": "neve",
