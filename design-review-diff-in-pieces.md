@@ -1,6 +1,6 @@
 # Stage the reviewer diff in pieces that fit one Read
 
-`review-diff-in-pieces` · Task · enhancement, burler, stencil · running · Drift-Await
+`review-diff-in-pieces` · Task · enhancement, burler, stencil · running · Drift-Expect
 
 ## Seen (retro, 2026-11-17)
 
