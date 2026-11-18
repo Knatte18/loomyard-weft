@@ -1,0 +1,43 @@
+verdict: hand-on
+reason: |-
+  The escalation's cause is `decision` with one decision finding, F16 (ledger key build-now-or-only-for-rewrite):
+  whether the record builds the single-repo mode into the current `internal/fabricengine` now, or is only a spec
+  for a later fabricengine rewrite. Neither the board entry nor the decision record settles it.
+  The board entry's only word on it is its Relation passage: the operator finds fabricengine disproportionately
+  large and "wants this mode taken in if fabricengine is rewritten (note clean-room-module-rewrite)". That passage
+  is not marked as an operator decision. It names what a rewrite should include. It does not say whether to build
+  now or to defer. The note `clean-room-module-rewrite` it cites is not on the board (`lym board find` and
+  `lym board list` return no such slug). The related note `design-simplify-callers` aims to shrink the package
+  that this record grows.
+  The support log's Interview holds no operator answers (autonomous run) and keeps Q6 open for the parent.
+  The record's Non-goals and Open risks say "built into the current package now" only as the writer's pick and
+  pass the call to the parent.
+  Picking "build now" would confirm the wider scope, and the brief forbids settling a question whose answer
+  widens the task's scope. Picking "spec only" is a choice between designs that the board entry leaves open.
+  So the arbiter records nothing and runs no circling verb.
+  The BLOCKING findings F1 to F5 are design findings for the run's own fixer and reviewers, not decision
+  questions. The round-1 fix already amended the record for them: D8 makes the view publish idempotent and has
+  an acceptance row for it; D5 and D8 cover parent alignment with unpushed records; D2 and D7 cover a protected
+  prime branch; D7 defines its predicates as git reads; D6 stops the owed-code-tip, given-up-branch and
+  previous-transition paths in a one-repository hub. A continue's next round re-reviews these.
+verbs:
+  - |-
+    lym board get '{"slug":"fabric-single-repo-mode"}'
+  - |-
+    lym board get '{"slug":"design-simplify-callers"}'
+  - |-
+    lym board find '{"text":"clean-room"}'
+  - |-
+    lym board list
+question: |-
+  F16 of the Discussion review (round 1, cause `decision`, support-log Q6): should this task's decision record
+  design the single-repo mode as a build into the current `internal/fabricengine` now, as the record does today
+  (Non-goals: "the mode is built into the current package"), or only as a spec for the future fabricengine
+  rewrite? The board entry says only that the operator wants the mode taken in if fabricengine is rewritten,
+  citing a note `clean-room-module-rewrite` that is not on the board, and it records no dated operator decision.
+  Please get the operator's answer and record it with `lym loom decision add fabric-single-repo-mode --by parent`.
+  Then run `lym loom circling continue fabric-single-repo-mode`. The round is 1, and BLOCKING design findings
+  F1 to F5 plus ten MEDIUM design findings are open. The round-1 fix has already amended the record for them,
+  but a fresh round has not re-reviewed it. If the answer is "spec for the rewrite only", the next round's fixer
+  must also rewrite the Non-goals line and the Open risks bullet. Then resume with `lym loom resume`.
+  No commit was made.
