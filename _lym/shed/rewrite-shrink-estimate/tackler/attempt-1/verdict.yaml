@@ -1,3 +1,0 @@
-verdict: resume
-reason: >-
-  The stop is bootstrap (trace 719416019d8e6977, stderr log line 3): the run's last transition names code tip 74a91ea16bc64987e2d12f02fbf5f2cbe376cf45, which the step reported as not on origin. Read now with git ls-remote origin, that commit is present: refs/heads/rewrite-shrink-estimate points at 74a91ea16bc64987e2d12f02fbf5f2cbe376cf45 (commit subject "Estimate the size of a clean rewrite of the seven most patched modules"). The commit also exists locally and is contained in remotes/origin/rewrite-shrink-estimate. The cause has cleared, and the stop's own way forward is to re-run lym batten run rewrite-shrink-estimate once the code push lands. A plain re-launch settles it; no goto is needed because this is not a blocked stop.
