@@ -63,23 +63,22 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (13)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (12)</strong></summary>
 
 Owner `neve`
 
-### Tasks (5)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
-#### Running (4)
+#### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Pause holds no shared lock and works on a pair with no reed session**<br>• A held call waits without the fabric push lock, dobby starts no driver for a paused pair, and pause and status skip a pair with no reed session<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pause-after-crash-fixes`](design-pause-after-crash-fixes.md) | darn · solid | Darn-Write | neve | 3h<br>14m | tender, fabric, batten, reed |
-| T5 | **Drift-Verify halts: no false guard halt on record edits, and a short halt note with the way forward first**<br>• The judge guard tells a parent decision-record edit from a judge edit and a resume rechecks; the halt note groups repeated findings, caps its length and leads with the way forward<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drift-verify-halt-fixes`](design-drift-verify-halt-fixes.md) | darn · solid | Darn-Write | neve | 13m<br>13m | drift, loom |
-| T6 | **Estimate how much smaller a clean rewrite of the most patched modules would be**<br>• Mechanical duplicate count over seven modules, plus a spec and a size estimate of a clean landingshed; input to E2 | [`rewrite-shrink-estimate`](design-rewrite-shrink-estimate.md) | darn · docs | landing · Finalize | neve | 7m<br>7m | landing |
+| T5 | **Drift-Verify halts: no false guard halt on record edits, and a short halt note with the way forward first**<br>• The judge guard tells a parent decision-record edit from a judge edit and a resume rechecks; the halt note groups repeated findings, caps its length and leads with the way forward<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drift-verify-halt-fixes`](design-drift-verify-halt-fixes.md) | darn · solid | Darn-Write | neve | 14m<br>13m | drift, loom |
 | T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Webster | neve | 7h<br>5h | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
 #### Ready (0)
@@ -111,7 +110,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty** | [`import-loses-issue-evidence`](design-import-loses-issue-evidence.md) | 13m<br>13m | board, selfreport |
+| E1 |  | **Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty** | [`import-loses-issue-evidence`](design-import-loses-issue-evidence.md) | 14m<br>14m | board, selfreport |
 | E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 4h<br>4h | landing |
 | E4 |  | **The Plan writer explorer forks cost more than the writer and show no gain**<br>• Drop the Plan writer exploration subagents; they cost about $6.50 per tapestry run | [`plan-writer-explorer-forks`](design-plan-writer-explorer-forks.md) | 4h<br>4h | loom, stencil |
 
@@ -122,5 +121,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 6w<br>3w | burler |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 3d<br>8h | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>12d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T6 | **Estimate how much smaller a clean rewrite of the most patched modules would be**<br>• Mechanical duplicate count over seven modules, plus a spec and a size estimate of a clean landingshed; input to E2 | [`rewrite-shrink-estimate`](design-rewrite-shrink-estimate.md) | 8m<br>8m | landing |
 
 </details>
