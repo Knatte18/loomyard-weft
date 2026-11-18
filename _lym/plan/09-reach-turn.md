@@ -20,7 +20,7 @@
 - `internal/shedrecipe#TestResolveGateSpec_ValidOneEntryPerVocabularyName`
 - `internal/gatefixer#TestWrapRowGate`
 - `internal/gatefixer#scriptedGate`
-- `plan:internal/gatecli#TestGateTestReachStep`
+- `internal/gatecli#TestGateTestReachStep`
 - `internal/battencli#TestWire_EverySeamFilled`
 - `internal/loomcli#TestWire_BeamRecipe`
 - `internal/loomcli#TestWire_DarnRecipe`
@@ -44,7 +44,7 @@
 - `plan:internal/shuttleengine#RerunMark`
 - `plan:internal/gatecli#ReadReachReport`
 - `plan:internal/gatecli#ReachReportMatches`
-- `plan:internal/gatecli#ReachReport.NoteLines`
+- `internal/gatecli#ReachReport.NoteLines`
 - `internal/loomshed#NewVerifyGate`
 - `internal/weaverengine#batchGateClosure`
 - `internal/weaverengine#batchGateAttempts`

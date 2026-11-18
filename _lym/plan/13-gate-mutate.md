@@ -37,8 +37,8 @@
 - `internal/testreach#ReadPackageMap`
 - `internal/testreach#Open`
 - `internal/testreach#Reader.TestsReaching`
-- `plan:internal/gatecli#changedFuncsAt`
-- `plan:internal/gatecli#reachStep`
+- `internal/gatecli#changedFuncsAt`
+- `internal/gatecli#reachStep`
 - `internal/gatecli#mutationCheck.holdSlot`
 - `internal/gatecli#mutationCheck.buildMutants`
 - `internal/gatecli#mutationCheck.runJob`

@@ -1,7 +1,7 @@
 # Card 6 — map-run-writes-index
 
 **Create:**
-- `plan:internal/testreach#WriteIndex` -> `func WriteIndex(module Module, sharedDir string) error`
+- `internal/testreach#WriteIndex`
 
 **Edit:**
 - `internal/testreach_test#TestReaderIndex`

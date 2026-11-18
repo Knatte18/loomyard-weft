@@ -22,8 +22,8 @@
 **Uses:**
 - `internal/testreach#Open`
 - `internal/testreach#Reader.TestsReaching`
-- `plan:internal/gatecli#changedFuncsAt`
-- `plan:internal/gatecli#ReachReport.NoteLines`
+- `internal/gatecli#changedFuncsAt`
+- `internal/gatecli#ReachReport.NoteLines`
 - `internal/fabricengine#ReadOrigin`
 - `internal/fabricengine#Fabric.ChangedPathsBothSides`
 - `internal/gitrepo#Repo.ResolveSHA`

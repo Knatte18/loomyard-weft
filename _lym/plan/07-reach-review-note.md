@@ -34,7 +34,7 @@
 - `internal/testkit/envkit#TestNilSeams_ReportsExactPaths`
 - `internal/testkit/envkit#TestNilSeams_SkipsNilLegalPaths`
 - `internal/testkit/envkit#TestSeamMarkers_ReflectiveTestsAreMarked`
-- `plan:internal/gatecli#TestGateTestReachStep`
+- `internal/gatecli#TestGateTestReachStep`
 
 **Extends:**
 - `internal/gatecli/doc.go`
@@ -43,9 +43,9 @@
 - `internal/shedrecipe/doc.go`
 
 **Uses:**
-- `plan:internal/gatecli#ReachReport`
-- `plan:internal/gatecli#ReachReport.NoteLines`
-- `plan:internal/gatecli#changedFuncsAt`
+- `internal/gatecli#ReachReport`
+- `internal/gatecli#ReachReport.NoteLines`
+- `internal/gatecli#changedFuncsAt`
 - `internal/gatecli#goFileHashes`
 - `internal/fabricengine#Fabric.ChangedPathsBothSides`
 - `internal/loomcli#redundancyReportNote`

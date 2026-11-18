@@ -1,15 +1,15 @@
 # Card 5 — reach-step
 
 **Create:**
-- `plan:internal/gatecli#ReachReport` -> `type ReachReport struct`
-- `plan:internal/gatecli#ReachFunction` -> `type ReachFunction struct`
-- `plan:internal/gatecli#ReachReport.NoteLines` -> `func (r ReachReport) NoteLines(path string) []string`
-- `plan:internal/gatecli#reachStep` -> `type reachStep struct`
-- `plan:internal/gatecli#execution.reachStep` -> `func (e *execution) reachStep() reachStep`
-- `plan:internal/gatecli#reachStep.run` -> `func (s reachStep) run(red, inHub bool)`
-- `plan:internal/gatecli#changedFuncsAt` -> `func changedFuncsAt(head redundancyTree, fabric *fabricengine.Fabric, base string, module goModule, changed []string) ([]testreach.ChangedFunc, error)`
-- `plan:internal/gatecli#TestReachReport_NoteLines` -> `func TestReachReport_NoteLines(t *testing.T)`
-- `plan:internal/gatecli#TestGateTestReachStep` -> `func TestGateTestReachStep(t *testing.T)`
+- `internal/gatecli#ReachReport`
+- `internal/gatecli#ReachFunction`
+- `internal/gatecli#ReachReport.NoteLines`
+- `internal/gatecli#reachStep`
+- `internal/gatecli#execution.reachStep`
+- `internal/gatecli#reachStep.run`
+- `internal/gatecli#changedFuncsAt`
+- `internal/gatecli#TestReachReport_NoteLines`
+- `internal/gatecli#TestGateTestReachStep`
 
 **Edit:**
 - `internal/gatecli#runTest`
