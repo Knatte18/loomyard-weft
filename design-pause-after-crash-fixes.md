@@ -1,6 +1,6 @@
 # Pause holds no shared lock and works on a pair with no reed session
 
-`pause-after-crash-fixes` · Task · bug, tender, fabric, batten, reed · starting · Worktree-Create
+`pause-after-crash-fixes` · Task · bug, tender, fabric, batten, reed · starting · Seed-Child
 
 ## 1. A paused run keeps the fabric push lock
 
