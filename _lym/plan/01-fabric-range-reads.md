@@ -1,11 +1,11 @@
 # Card 1 — fabric-range-reads
 
 **Create:**
-- `plan:internal/fabricengine#FileDiff` -> `type FileDiff struct`
-- `plan:internal/fabricengine#Fabric.CommittedFileDiffs` -> `func (f *Fabric) CommittedFileDiffs(base string) ([]FileDiff, error)`
-- `plan:internal/fabricengine#Fabric.CommitMessages` -> `func (f *Fabric) CommitMessages(from, to string) ([]string, error)`
-- `plan:internal/fabricengine_test#TestCommittedFileDiffs_ListsFilesThatExistAtTheBase` -> `func TestCommittedFileDiffs_ListsFilesThatExistAtTheBase(t *testing.T)`
-- `plan:internal/fabricengine_test#TestCommitMessages_ListsWholeMessagesNewestFirst` -> `func TestCommitMessages_ListsWholeMessagesNewestFirst(t *testing.T)`
+- `internal/fabricengine#FileDiff`
+- `internal/fabricengine#Fabric.CommittedFileDiffs`
+- `internal/fabricengine#Fabric.CommitMessages`
+- `internal/fabricengine_test#TestCommittedFileDiffs_ListsFilesThatExistAtTheBase`
+- `internal/fabricengine_test#TestCommitMessages_ListsWholeMessagesNewestFirst`
 
 **Uses:**
 - `internal/fabricengine#Fabric.CommitLog`

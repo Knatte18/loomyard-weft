@@ -1,12 +1,12 @@
 # Card 2 — drift-loosened-judgement
 
 **Create:**
-- `plan:internal/driftengine#JudgeFile` -> `type JudgeFile struct`
-- `plan:internal/driftengine#FileRuling` -> `type FileRuling struct`
-- `plan:internal/driftengine#LoosenedRuling` -> `type LoosenedRuling struct`
-- `plan:internal/driftengine#filesFindings` -> `func filesFindings(judgement Judgement, want JudgementWant) []string`
-- `plan:internal/driftengine#JudgedFile` -> `type JudgedFile struct`
-- `plan:internal/driftengine#LoosenedCheck` -> `type LoosenedCheck struct`
+- `internal/driftengine#JudgeFile`
+- `internal/driftengine#FileRuling`
+- `internal/driftengine#LoosenedRuling`
+- `internal/driftengine#filesFindings`
+- `internal/driftengine#JudgedFile`
+- `internal/driftengine#LoosenedCheck`
 
 **Edit:**
 - `internal/driftengine#JudgeRequest`
