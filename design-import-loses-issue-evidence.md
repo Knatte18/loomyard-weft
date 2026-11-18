@@ -1,6 +1,6 @@
 # Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty
 
-`import-loses-issue-evidence` · Task · enhancement, board, selfreport · running · Code-Burler-Review
+`import-loses-issue-evidence` · Task · enhancement, board, selfreport · running · Code-Burler-Fix
 
 Imported from [issue #148](https://github.com/Knatte18/loomyard/issues/148).
 
