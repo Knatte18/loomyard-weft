@@ -1,0 +1,18 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/discussion/decision-record.md",
+    "_lym/discussion/support-log.md"
+  ],
+  "target_id": "f67de09a5e038789911867ba288f2a6b24fd588d8eed0c8c573c6179f1ba2641",
+  "added_decisions": [
+    {
+      "title": "Mutation check order: trial before the mutation step (F6)",
+      "digest": "664be5d4da602cdc675f68bbf05284562c0045c85e241007fed1a19a666af2b7"
+    },
+    {
+      "title": "Reach turn bypasses Darn-Write's cold fixer (round 2 F1)",
+      "digest": "74f61df0ddabfc4e82001668286705295dd1f5a24e9d9edd449aa6243704674a"
+    }
+  ]
+}
