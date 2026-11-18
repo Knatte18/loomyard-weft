@@ -339,34 +339,6 @@
       "revised": "2026-11-18T18:07:14Z"
     },
     {
-      "id": 1487,
-      "handle": "T1",
-      "slug": "board-view-not-refreshing",
-      "title": "Find why VS Code keeps showing a stale board file, and fix it",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "board",
-        "ide"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Find the cause first, most likely in VS Code settings or how the workspace reaches the board files; change lym code only if the cause is there",
-      "body": "## What was seen (operator, 2026-11-18)\n\nVS Code often does not update the board file the operator is looking at after a board write.\nThe files sit in `_bolt`, a folder of the hub workspace.\nThe workspace opens every `.md` in the markdown preview editor (`workbench.editorAssociations` in `loomyard.code-workspace`).\n\n## Operator decision (2026-11-18)\n\nFind out why first; do not assume a cause.\nThe operator expects the cause in VS Code's settings, not in LoomYard.\n\n## Scope\n\n1. Find the cause and state the evidence in the report.\n   Candidates to check, none confirmed:\n   - workspace settings such as `files.watcherExclude`, `files.watcherInclude` or the markdown preview settings;\n   - how the workspace reaches `_bolt` (a symlink or junction, which VS Code's file watcher may not follow);\n   - the board's temp-and-rename writes in `boardengine.RenderToDisk`, which give each rendered file a new inode.\n   Use VS Code's own documentation and issue tracker for how its watcher and the markdown preview behave.\n2. Fix it where the cause is.\n   A settings fix goes into the workspace file or the code lym uses to write it.\n   Change how lym writes board files only if the cause is there.\n3. Say in the report how the operator can confirm the fix by hand, since a run cannot watch VS Code.\n",
-      "status": "done",
-      "created": "2026-11-18T18:15:32Z",
-      "revised": "2026-11-18T18:44:27Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
       "id": 1493,
       "handle": "T7",
       "slug": "testmap-reach-triage-mutate",
