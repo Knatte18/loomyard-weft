@@ -4,13 +4,14 @@
 
 Imported from [issue #140](https://github.com/Knatte18/loomyard/issues/140).
 
-A task agent needed a scratch checkout to build an external .NET harness. The worktree's `.scratch` directory is a symlink into the weft's `.lym/scratch`.
-The agent passed a repository path through that symlink to the build, and MSBuild saw each project under two paths, the symlinked one and the resolved one.
-The build then failed on a missing project reference; only the fully resolved real path built.
+A task agent in the cs hub (task td-stick-slip-static-offset, Darn-Write) made a scratch checkout under `.scratch` to build an external .NET harness.
+`.scratch` is a link into the weft, so MSBuild saw each project under two paths and the build failed on a missing project reference.
 
-Abnormal: the instructions send scratch files to `.scratch/`, yet a path under it is not a safe build input, and nothing says so.
-The agent lost build attempts to the duplicate-path failure.
+## Decision (operator, 2026-11-18)
 
-To do: document in the agent instructions that tools which compare or deduplicate paths (MSBuild, git, other build systems) need the resolved real path of a `.scratch` location, or have lym expose the resolved path to agents, or make `.scratch` a real directory.
+Nothing is ever built in `.scratch`, `.lym` or `_lym`: they are scratch and record folders, never a build location.
+`.scratch` stays a link; it does not become a real directory.
 
-Provenance: task td-stick-slip-static-offset; note Darn-Write.md.
+## To do
+
+Tell agents in the instructions lym ships (stencils and skills) that they never build, restore or compile anything under `.scratch`, `.lym` or `_lym`.

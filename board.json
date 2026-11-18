@@ -483,9 +483,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #140](https://github.com/Knatte18/loomyard/issues/140).\n\nA task agent needed a scratch checkout to build an external .NET harness. The worktree's `.scratch` directory is a symlink into the weft's `.lym/scratch`.\nThe agent passed a repository path through that symlink to the build, and MSBuild saw each project under two paths, the symlinked one and the resolved one.\nThe build then failed on a missing project reference; only the fully resolved real path built.\n\nAbnormal: the instructions send scratch files to `.scratch/`, yet a path under it is not a safe build input, and nothing says so.\nThe agent lost build attempts to the duplicate-path failure.\n\nTo do: document in the agent instructions that tools which compare or deduplicate paths (MSBuild, git, other build systems) need the resolved real path of a `.scratch` location, or have lym expose the resolved path to agents, or make `.scratch` a real directory.\n\nProvenance: task td-stick-slip-static-offset; note Darn-Write.md.",
+      "body": "Imported from [issue #140](https://github.com/Knatte18/loomyard/issues/140).\n\nA task agent in the cs hub (task td-stick-slip-static-offset, Darn-Write) made a scratch checkout under `.scratch` to build an external .NET harness.\n`.scratch` is a link into the weft, so MSBuild saw each project under two paths and the build failed on a missing project reference.\n\n## Decision (operator, 2026-11-18)\n\nNothing is ever built in `.scratch`, `.lym` or `_lym`: they are scratch and record folders, never a build location.\n`.scratch` stays a link; it does not become a real directory.\n\n## To do\n\nTell agents in the instructions lym ships (stencils and skills) that they never build, restore or compile anything under `.scratch`, `.lym` or `_lym`.\n",
       "created": "2026-11-18T08:07:53Z",
-      "revised": "2026-11-18T08:07:53Z"
+      "revised": "2026-11-18T08:24:44Z"
     },
     {
       "id": 1450,
