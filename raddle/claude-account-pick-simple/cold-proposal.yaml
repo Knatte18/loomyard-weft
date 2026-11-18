@@ -1,0 +1,117 @@
+{
+  "sketch": "claude-account-pick-simple",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "shuttle-start-idle-and-prompt", "revised": "2026-11-18T08:56:17Z"},
+    {"slug": "leftover-strands-and-runs", "revised": "2026-11-18T08:56:17Z"},
+    {"slug": "csharp-hub-gate-fixes", "revised": "2026-11-18T08:56:17Z"},
+    {"slug": "codexengine", "revised": "2026-11-17T14:44:09Z"},
+    {"slug": "borrowed-orchestrator-ideas", "revised": "2026-11-17T10:49:21Z"},
+    {"slug": "sandbox-closed-area-build", "revised": "2026-11-05T17:03:32Z"}
+  ],
+  "parts": [
+    {
+      "slug": "claude-accounts-per-worktree",
+      "title": "Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit",
+      "type": "feature",
+      "labels": ["claude", "shuttle", "reed", "orch", "batten", "cwd", "config", "tools"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10"],
+      "packages": [
+        {"path": "internal/shuttleengine/claudeengine", "size": 900},
+        {"path": "internal/shuttleengine", "size": 650},
+        {"path": "internal/reedengine", "size": 200},
+        {"path": "internal/claudecli", "size": 200},
+        {"path": "internal/orchcli", "size": 150},
+        {"path": "internal/orchengine", "size": 80},
+        {"path": "internal/shuttleengines", "size": 40},
+        {"path": "internal/battencli", "size": 40},
+        {"path": "internal/adoptcli", "size": 30},
+        {"path": "internal/configengine", "size": 30},
+        {"path": "tools/tokencount", "size": 20},
+        {"path": "internal/lymdirs", "size": 10},
+        {"path": "cmd/lym", "size": 5}
+      ],
+      "contract": {
+        "takes": "the Sketch's decision record; main with leftover-strands-and-runs and shuttle-start-idle-and-prompt landed, which change shuttle's run tracking, startup wait and prompt delivery in internal/shuttleengine that D7's relaunch builds on",
+        "delivers": "machine-local Claude accounts and pins, a per-hub account file with the weighted pick at worktree making, account resolution and export at every claude engine launch, headroom from the status line and limit hits, transcript carry on resume, readers over every known config directory, and the switch on a usage limit with shuttle's in-run relaunch and the orch watcher's restart",
+        "exports": "claude module keys accounts and account_pins (machine layer); lym claude account set and show; the status line verb; reed ops that end a strand's process while holding it and relaunch its pane under the same GUID; shuttle's stop verb relaunch mode and one running-run predicate on the run record"
+      },
+      "depends_on": ["leftover-strands-and-runs"],
+      "open_risks": [
+        "The manual check (D10) is the first run of a copied transcript resuming under the second account (D6).",
+        "The headroom view is per hub, and several hubs share the accounts; a hub can pick an account another hub has spent until its own sessions see the figures or hit the limit.",
+        "Claude Code may rename the status line fields; the verb then writes nothing and the pick falls back to weights and limit hits."
+      ],
+      "criteria": [
+        "D1: a machine-layer `claude.accounts` list loads; a duplicate name, a relative path, two entries naming one directory once links are resolved, a negative weight, an unknown window or a threshold outside 1 to 100 is refused.",
+        "D1: a non-empty `accounts`, `account_pins.hub` or `account_pins.beams` in a tracked `claude.yaml` is refused, also when the machine file holds the key, naming `lym config claude --layer machine`; a pin naming no listed account, or a retired one, is refused.",
+        "D1: with one account of positive weight no pick runs at worktree making; a pin naming it is still exported.",
+        "D2: an entry whose account name left the list, or whose account is retired, reads as no entry; a missing or empty account file leaves every launch of an unpinned worktree unchanged from today.",
+        "D2: a pick drops the entry of a worktree whose name the told names reader lacks, and keeps the entry of a worktree made while the pick waited for the lock.",
+        "D3: with weights 2 and 1 and both eligible, six picks give four and two, never the second account twice in a row.",
+        "D3: an account with a listed window at or above its threshold and a future reset is passed over; with its reset passed it is eligible.",
+        "D3: an account listing no windows with a future `blocked_until` is passed over.",
+        "D3: an account whose directory lacks `.credentials.json`, or of weight 0, is never picked; with no candidate the name's entry is removed.",
+        "D3: with every candidate short, the pick takes the one whose latest blocking reset is earliest, a tie to the earlier entry.",
+        "D3: an added or reweighted account's count is set to the lowest count over weight among the unchanged accounts of positive weight times its weight; an account listed throughout under one weight keeps its count.",
+        "D3: two picks at once for one worktree end with one entry and one increment.",
+        "D3: the task run's Worktree-Create step, a new beam's creation and an adopt adding a beam or task worktree each pick, replacing an entry the name already had; a pinned worktree and the prime are not picked.",
+        "D4: a worktree whose account is on a non-default directory gets launch and resume commands, and `OpenLaunch` lines, exporting `CLAUDE_CONFIG_DIR` as it after any `env` module export.",
+        "D4: an account on `~/.claude` gets `CLAUDE_CONFIG_DIR` unset; no account gets neither.",
+        "D4: a hub pin wins over the entry and over a beams pin; a beams pin applies to the prime and a beam worktree and not to a task worktree.",
+        "D4: a beams-pinned account with a future `blocked_until` yields to the worktree's entry; a beams-pinned worktree with no entry still launches under the pin; a hub-pinned account never yields.",
+        "D4: the run directory records the launch's effective directory and the listed account it equals, also for a worktree with no entry on a listed directory.",
+        "D4: a tmux server spawned from a process carrying `CLAUDE_CONFIG_DIR` carries none.",
+        "D5: the verb, given a listed name and input with both windows, writes both; given input without `rate_limits`, or an unlisted name, it writes nothing.",
+        "D5: a window outside 0 to 100, or reset beyond its length ahead, is dropped and the other written; the merge keeps the later reset, the higher percentage at one reset, and `blocked_until`.",
+        "D5: a session whose launched account is listed gets settings carrying the status line command with its name, an `OpenLaunch` session with no creel flag directory included; a session on an unlisted directory gets none.",
+        "D5: a usage-limit hit records `blocked_until` on the launched account at its reset, or 30 minutes on with none, and the account has no headroom until then.",
+        "D6: a resume whose transcript sits only under another known directory copies it, with its session directory, into the resolved directory before the resume check stats it, and passes; the source stays.",
+        "D6: a resume whose resolved directory holds an older copy than another known directory gets the newer copy; a transcript found nowhere is refused as today.",
+        "D6: the resume check refuses a session registered live in any known directory's registry.",
+        "D6: an orch resume in a prime whose account changed resumes its session under the new account and does not launch fresh.",
+        "D6: a shuttle resume whose check copied the transcript and whose first turn ends on an API error other than a usage limit starts the session fresh in the same run, and records no API-error re-send for it;\nthe orch watcher starts the orch fresh in the same case.",
+        "D6: a shuttle resume and an orch resume through `StartSession` whose check copied the transcript record the copy in the new run's directory,\nalso when the first resume was refused for a live holder, and a first-turn API error other than a usage limit then starts the session fresh.",
+        "D7: a shuttle session hitting a limit with another eligible candidate switches the worktree's entry, increments its count, and relaunches inside the same run as a resume of the same session id under the new account; the run records no stopped outcome.\nAfter the relaunch the launched-account record, the settings' status line name and reed's stored resume command all name the new account, the resume is not refused for a live holder, and the run record keeps its strand GUID.\nThe session's first new turn is the continue line, neither a skill load nor the task prompt, and the relaunched pane passed its startup gates.",
+        "D7: an attach probe during the relaunch reads the run live; a relaunch whose `Prepare` fails ends the run as a strand that died.",
+        "D7: an attach after the `Wait` process is killed between step 1 and reed's relaunch in step 4 ends the run as a strand that died once the bound passes;\na sibling `Start`'s orphan sweep during a relaunch keeps the run directory; a `StopStrand` during a relaunch leaves the run stopped and no strand up.",
+        "D7: an attach after the `Wait` process is killed between reed's relaunch and the mark's clear, once the bound passes, attaches the live run,\nreads the new session id and prompt offset from the record, and does not read the limited turn end again.",
+        "D7: a relaunched pane that shows a trust dialog has it dismissed before the relaunch completes, though the events file already holds the limited session's session-start and turn-start lines;\na relaunched pane that never reaches ready ends the run as a strand that died, or as a timeout when the run's own deadline passes first.",
+        "D7: a `StopStepRuns` during a relaunch leaves the run stopped and no strand up; a sibling `Start`'s carry-over read does not treat a relaunching run within its bound as unfinished;\nthe activity read of a relaunching run reports no usage limit.",
+        "D7: `StopStrand` and attach given the strand's GUID from before the relaunch reach the relaunched run; the stop records stopped and removes the strand.",
+        "D7: a relaunch that falls back to a fresh launch leaves the run record and reed's strand naming the new session id.",
+        "D7: a switched run on a spec with `APIErrorRetries` records no API-error re-send for the limited turn end and does not end `OutcomeAPIError`.",
+        "D7: with no other eligible account the entry is unchanged and the limit is handled as today.",
+        "D7: a beams-pinned worktree whose pinned account hits a limit switches to the entry, and its first launch after the `blocked_until` returns to the pin.",
+        "D7: a hub-pinned worktree whose account hits a limit keeps its pin and switches nothing.",
+        "D7: a worktree with no entry on a listed directory that hits a limit switches to another account, never to its own.",
+        "D7: two sessions of one worktree hitting the limit at once make one switch, and both resume under the new account.",
+        "D7: the orch watcher on a switch ends the still-live limited orch process, then restarts the orch through its resume under the new account instead of waiting;\nafter the restart reed holds no old orch strand, the orch state names the new strand, and the new process is registered as the worktree's orch.",
+        "D7: `lym claude account set` writes the entry, refuses an unlisted or retired account, and the worktree's next launch uses it; under a hub pin it is refused, naming the pin.",
+        "D8: `LocateSessions` finds a worktree's sessions under every known directory, a retired account's included, and returns a session copied by D6 once, the most recent copy.",
+        "D8: after `lym claude account set` moves a worktree, a running session's fork audit and outstanding-forks read still read its transcript under its launched directory.",
+        "D8: the liveness read, built for a hub, finds a session registered only under a listed non-default directory; dead needs a dead entry and no unreadable registry.",
+        "D8: `tools/tokencount` and the session-end usage record count a session run on a listed non-default account.",
+        "D9: an orch and a dobby in the prime under a beams pin run under the pinned account; `lym adopt root` writes no entry for the prime.",
+        "Review: the task's landing notes state how the second account is wired (D10) and the manual check's steps."
+      ],
+      "pattern_changes": ["PATTERN-shuttle-provider-seam"],
+      "expected_cost_usd": 33.34,
+      "cost_line": "tapestry/solid stored-record fit, $23.73 fixed + $0.41 per 100 changed lines over about 2,360 lines (12 runs, correlation 0.74)"
+    }
+  ],
+  "cost": {
+    "expected_usd": 33.34,
+    "line": "one tapestry/solid part: $23.73 fixed + $0.41 per 100 lines over about 2,360 lines, from the stored-record cell of 12 runs (correlation 0.74)",
+    "next_best": {
+      "split": "two chained tapestry/solid tasks: accounts core (D1-D6, D8-D10, the set and show verbs, about 1,350 lines), then the switch with shuttle's in-run relaunch, reed's ops and the orch restart (D6's refused resume and D7, about 1,000 lines)",
+      "expected_usd": 57.07,
+      "line": "two tapestry/solid fixed starts of $23.73 each + $0.41 per 100 lines over the same 2,360 lines, from the same cell"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
