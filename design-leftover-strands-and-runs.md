@@ -1,6 +1,6 @@
 # Leftover strands and shuttle runs halt a gate re-prompt and a re-step
 
-`leftover-strands-and-runs` · Task · bug, gate, shuttle, reed, shed · running · Code-Burler-Review
+`leftover-strands-and-runs` · Task · bug, gate, shuttle, reed, shed · running · Code-Burler-Fix
 
 Two bugs where a leftover strand or shuttle run stops a run, bundled because both sit in shuttle run tracking and the step that meets it.
 
