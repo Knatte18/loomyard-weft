@@ -355,27 +355,6 @@
       "notify_on_land": true
     },
     {
-      "id": 1445,
-      "handle": "B1",
-      "slug": "drift-judge-parent-decision",
-      "title": "drift judge halt blames the judge for a parent's lym loom decision add during Drift-Verify",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "drift",
-        "loom"
-      ],
-      "issues": [
-        145
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #145](https://github.com/Knatte18/loomyard/issues/145).\n\n## Seen\n\nWhile a darn run's Drift-Verify judge session was running, the parent recorded a decision with `lym loom decision add \u003cslug\u003e --by parent`.\nThe verb committed `_lym/discussion/decision-record.md` on the records side.\nWhen the judge finished, the run halted with `decision halt: the judge session changed what it may not: records: ... decision-record.md was changed`.\nThe judge had not touched the file; the parent's own verb had.\n\n## Workaround\n\nThe parent restored the record to the snapshot HEAD in the records worktree (`git checkout \u003csnapshot head\u003e -- .../decision-record.md`), deleted the capture's scratch directory, ran `lym loom resume`, and records the decision again after Drift-Verify ends.\n\n## Expected\n\n`lym loom decision add` is either refused while a drift judge session runs, naming when to retry, or its commits are excluded from the judge's snapshot check.\n",
-      "created": "2026-11-18T08:07:43Z",
-      "revised": "2026-11-18T08:07:43Z"
-    },
-    {
       "id": 1446,
       "handle": "B2",
       "slug": "twill-fixer-fork-writes",
@@ -417,26 +396,6 @@
       "body": "Imported from [issue #143](https://github.com/Knatte18/loomyard/issues/143).\n\nWhat happened: a `lym loom run` halted as blocked at Plan-Write with anomaly `escalation-to-human`, state `stuck`.\nThe reason reported by lym:\n\n```\ngate failed its first check and the session was never re-prompted, since its re-prompt could not be sent: shuttle: strand \"\u003cid\u003e\" is not tracked by reed — either its run completed and was cleaned up, or reed's strand table was reset under it (a reed remove/down, or a lost or rebuilt reed.json); check \"lym reed status\"\n```\n\nWhy it is abnormal: the gate failed, and the re-prompt to the session could not be delivered because reed no longer tracked the strand.\nNothing in the task asked for a reed reset, so either the strand was cleaned up while the producer was still running, or reed's strand table was lost or rebuilt during the run.\nThe run stalled for about 23 minutes before it halted, and the findings file under `.lym/shed/\u003cslug\u003e/gate-findings/Plan-Write.md` was left for a human.\nThis run followed a separate failed run in the same worktree (see the stencil include issue), so a stale or reset reed table after the earlier halt is a plausible cause.\n\nWhat to do: find why the strand was untracked at re-prompt time (cleanup racing the gate, or a reed.json reset after the earlier halt).\nWhen the strand is gone, have the gate path relaunch or resume the producer instead of halting, or fail fast with this message rather than after a long wait.\n\nProvenance: task slug `launch-manifest-parity`; notes `loom-halt-2.md`.\n",
       "created": "2026-11-18T08:07:48Z",
       "revised": "2026-11-18T08:07:48Z"
-    },
-    {
-      "id": 1448,
-      "handle": "B4",
-      "slug": "drift-line-range-never-matches",
-      "title": "drift: line-range expectation entries never match in diff mode lines",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "drift"
-      ],
-      "issues": [
-        141
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #141](https://github.com/Knatte18/loomyard/issues/141).\n\n## Seen\n\nIn a darn run with drift scope full and `diff: lines` (key_patterns set), Drift-Expect wrote `expected.yaml` entries with `lines: - range: \"1-\"` or `\"7-433\"` per case.\nThe drift gate then failed on every changed value in those cases: the checker reports each changed value at line 0, so no line range ever covers it, even `\"1-\"`.\n\n## Workaround\n\nThe parent amends the expectation with `lym drift amend \u003cslug\u003e --entries \u003cfile\u003e` using key-based entries (`keys: - key: ..., n: ..., why: ...`), which match.\n\n## Expected\n\nA changed value carries its real line number so line-range entries match, or Drift-Expect is told to write key-based entries when the diff reports by key.\n",
-      "created": "2026-11-18T08:07:50Z",
-      "revised": "2026-11-18T08:07:50Z"
     },
     {
       "id": 1449,
@@ -583,6 +542,37 @@
       "body": "Imported from [issue #133](https://github.com/Knatte18/loomyard/issues/133).\n\n## Seen\n\nIn a new hub with no tests yet, a darn task with profile `docs` (drift scope off, a docs-only change) failed at once, before Darn-Write ran:\n\n```\nloomrecipe: shedbuild: producer 5 \"Darn-Write\": shedrecipe: Darn-Write: gate fixer: loomcli: render the Darn-Write fixer's gate call: gate config: the hub declares no tier0, so no gate has a tier to run\n```\n\nThe template's gate keys all name tier `[0]`, while the template declares `tiers: {}`.\nSo every run in a fresh hub fails at shed build, whatever its recipe or diff.\nThe tackler could not fix it, since the gate config is written only from the prime, and it handed the stop back.\n\n## Workaround\n\nFrom the prime, declare a tier0 and mark docs as inert:\n\n```\nlym config gate --layer default --set 'tiers.tier0={command: \"dotnet test {targets} {args}\", all_targets: ., timeout_min: 30, counter: vstest}' --set scoper=dotnet --set 'inert_paths=[\"*.md\", \"docs/*\"]'\n```\n\n## Expected\n\nA hub with no declared tiers can run a docs-only task: either the gate call is rendered only when a tier is needed,\nor a gate key naming no declared tier passes with nothing to run.\nAt least, hub setup or the first release should flag the missing tier0 before a run starts, instead of a failed run and a tackler attempt.\n\n\n## Issue comment, 2026-11-16\n\n## Seen: Finalize ignores `inert_paths`\n\nAfter the workaround above, the same docs-only darn run reached Finalize, and its landing gate failed with no failing test.\nThe branch held only `README.md` and a file under `docs/`, both covered by `inert_paths: [\"*.md\", \"docs/*\"]`.\nFinalize still ran tier0 over all targets (gate key `finalize`, scope `all`), and in a repository with no .NET project yet,\n`dotnet test .` exits with MSB1003 \"Specify a project or solution file\".\nThe Finalize fixer could not fix it on the task branch without adding code outside the task's bounds.\n\n## Workaround\n\nFrom the prime, make tier0 pass when no project exists:\n\n```\nlym config gate --layer default --set 'tiers.tier0.command=bash -c '\"'\"'if ls *.sln *.slnx *.csproj \u003e/dev/null 2\u003e\u00261; then dotnet test {targets} {args}; else echo no .NET project, nothing to test; fi'\"'\"''\n```\n\n## Expected\n\nA change whose files are all inert runs no tier at any gate key, Finalize included,\nor a scope-`all` gate in a repository with nothing to test passes instead of failing the landing.\n",
       "created": "2026-11-18T08:08:08Z",
       "revised": "2026-11-18T08:08:08Z"
+    },
+    {
+      "id": 1456,
+      "handle": "T1",
+      "slug": "drift-judge-and-line-range",
+      "title": "Drift: a parent decision trips the judge snapshot check, and line-range expectations never match",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "drift",
+        "loom"
+      ],
+      "issues": [
+        145,
+        141
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Two drift bugs: parent decision commits blamed on the judge, and line-range entries that never match",
+      "body": "Two drift bugs, bundled because both fixes sit in the drift package and its loom wiring.\n\n## Part: a parent decision during Drift-Verify halts the judge\n\nImported from [issue #145](https://github.com/Knatte18/loomyard/issues/145).\n\n### Seen\n\nWhile a darn run's Drift-Verify judge session was running, the parent recorded a decision with `lym loom decision add \u003cslug\u003e --by parent`.\nThe verb committed `_lym/discussion/decision-record.md` on the records side.\nWhen the judge finished, the run halted with `decision halt: the judge session changed what it may not: records: ... decision-record.md was changed`.\nThe judge had not touched the file; the parent's own verb had.\n\n### Workaround\n\nThe parent restored the record to the snapshot HEAD in the records worktree (`git checkout \u003csnapshot head\u003e -- .../decision-record.md`), deleted the capture's scratch directory, ran `lym loom resume`, and records the decision again after Drift-Verify ends.\n\n### Expected\n\n`lym loom decision add` is either refused while a drift judge session runs, naming when to retry, or its commits are excluded from the judge's snapshot check.\n\n\n## Part: line-range expectation entries never match\n\nImported from [issue #141](https://github.com/Knatte18/loomyard/issues/141).\n\n### Seen\n\nIn a darn run with drift scope full and `diff: lines` (key_patterns set), Drift-Expect wrote `expected.yaml` entries with `lines: - range: \"1-\"` or `\"7-433\"` per case.\nThe drift gate then failed on every changed value in those cases: the checker reports each changed value at line 0, so no line range ever covers it, even `\"1-\"`.\n\n### Workaround\n\nThe parent amends the expectation with `lym drift amend \u003cslug\u003e --entries \u003cfile\u003e` using key-based entries (`keys: - key: ..., n: ..., why: ...`), which match.\n\n### Expected\n\nA changed value carries its real line number so line-range entries match, or Drift-Expect is told to write key-based entries when the diff reports by key.\n\n",
+      "status": "draft",
+      "created": "2026-11-18T08:07:43Z",
+      "revised": "2026-11-18T08:56:05Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "solid"
     }
   ],
   "prime_owner": "neve",
