@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-18 11:27 UTC; every age below is as of then.
+Rendered 2026-11-18 11:29 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -30,7 +30,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Codex as assistant Code-Review reviewer on real darn runs**<br>• Set Codex as the non-gating assistant reviewer on real runs and read what it adds beside the Claude reviewer | [`codex-assist-review-trial`](design-codex-assist-review-trial.md) | 12d<br>2h | codex, shuttle |
-| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 8d<br>2h | codex, shuttle |
+| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 9d<br>2h | codex, shuttle |
 
 </details>
 
@@ -111,9 +111,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review** | [`review-result-checks`](design-review-result-checks.md)<br>[Sketch](decision-review-result-checks.md) | tapestry · solid | Plan-Burler-Review | neve | 1h<br>53m | stencil, drift, fabric, burler, landing, loom, shed, testkit, docs |
-| T7 | **C# hub: silent dotnet test exit, and runs failing in a hub with no tier0 or only inert changes**<br>• Make a refused dotnet test say so; let a hub with no tier0 or an all-inert change run and land<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`csharp-hub-gate-fixes`](design-csharp-hub-gate-fixes.md) | darn · solid | Darn-Write | neve | 3h<br>2h | dotnet, process, gate, config |
-| T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Plan-Write | neve | 1h<br>22m | claude, shuttle, reed, orch, batten, cwd, config, tools |
+| T4 | **Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review** | [`review-result-checks`](design-review-result-checks.md)<br>[Sketch](decision-review-result-checks.md) | tapestry · solid | Plan-Burler-Review | neve | 1h<br>55m | stencil, drift, fabric, burler, landing, loom, shed, testkit, docs |
+| T7 | **C# hub: silent dotnet test exit, and runs failing in a hub with no tier0 or only inert changes**<br>• Make a refused dotnet test say so; let a hub with no tier0 or an all-inert change run and land<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`csharp-hub-gate-fixes`](design-csharp-hub-gate-fixes.md) | darn · solid | Drift-Verify | neve | 3h<br>2h | dotnet, process, gate, config |
+| T9 | **Claude accounts per worktree: pick, pins, headroom, transcript carry and switch on a usage limit** | [`claude-accounts-per-worktree`](design-claude-accounts-per-worktree.md)<br>[Sketch](decision-claude-accounts-per-worktree.md) | tapestry · solid | Plan-Write | neve | 1h<br>24m | claude, shuttle, reed, orch, batten, cwd, config, tools |
 
 #### Ready (0)
 
@@ -144,7 +144,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A re-step reconciles a leftover shuttle run only when the status error text names an interrupted stop**<br>• reconcileInterruptedStep keys on error text, so a leftover run with no interrupted record is not reconciled | [`leftover-runs-not-reconciled`](design-leftover-runs-not-reconciled.md) | 10m<br>10m | shed, shuttle |
+| B1 |  | **A re-step reconciles a leftover shuttle run only when the status error text names an interrupted stop**<br>• reconcileInterruptedStep keys on error text, so a leftover run with no interrupted record is not reconciled | [`leftover-runs-not-reconciled`](design-leftover-runs-not-reconciled.md) | 11m<br>11m | shed, shuttle |
 
 #### Features (3)
 
