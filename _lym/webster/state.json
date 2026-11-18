@@ -696,9 +696,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/9142bc6e-f406-4b6c-8882-b8da16176a9c/subagents/agent-ab407481b3665aaed.jsonl"
       ]
+    },
+    "8": {
+      "slug": "resume-carries-transcript",
+      "cards": [
+        "08-resume-carries-transcript",
+        "09-claude-account-verbs",
+        "10-status-line-settings"
+      ],
+      "cardHashes": {
+        "08-resume-carries-transcript": "ed24ea63af20a9a552773c88d7effabcea93470d731d6c89cdcf3f44ea12638c",
+        "09-claude-account-verbs": "e41486d5a53e06bb3a2e845eda315aaae25d3862760eda90441dfd2062053fc5",
+        "10-status-line-settings": "dc48cfd3684972a2fc4ec988287fb5cf26b2c423816d31592ed19610e3d559ec"
+      },
+      "startSha": "8c0ef122271fae47aa75be34cef892e8f0203426",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T15:34:50Z",
+      "sessionId": "9142bc6e-f406-4b6c-8882-b8da16176a9c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "135b8cd51e8ec48e4fd912379752b134",
   "masterSessionId": "9142bc6e-f406-4b6c-8882-b8da16176a9c",
   "masterEngine": "claude",
