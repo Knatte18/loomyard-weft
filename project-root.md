@@ -8,11 +8,11 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (8)
+## Tasks (7)
 
 Concrete and claimable; only a task can run.
 
-### Running (4)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -21,7 +21,6 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Drift: a parent decision trips the judge snapshot check, and line-range expectations never match**<br>• Two drift bugs: parent decision commits blamed on the judge, and line-range entries that never match<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drift-judge-and-line-range`](design-drift-judge-and-line-range.md) | darn · solid | Code-Burler-Review | neve | 1h<br>41m | drift, loom |
 | T4 | **Two Claude accounts, chosen per worktree, with orchs and beams pinnable to one account**<br>• Revised design of claude-account-weights without a per-worktree record; reuses its decision record and body | [`claude-account-pick-simple`](design-claude-account-pick-simple.md)<br>[Sketch](decision-claude-account-pick-simple.md) | raddle | Raddle-Write | neve | 2w<br>6m | claude, shuttle, config |
 | T5 | **Shuttle start: idle check misses an idle prompt, and a review strand misses its prompt turn**<br>• Two seat start bugs in shuttle prompt delivery<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md) | darn · solid | Code-Burler-Review | neve | 1h<br>41m | shuttle, burler |
-| T10 | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md) | motif | Discussion-Bouncer | neve | 1h<br>41m | burler, stencil, drift |
 
 ### Ready (0)
 
@@ -54,9 +53,15 @@ Not released; nothing starts it until its status is cleared.
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 15h<br>14h | board, ide, fabric |
 
-## Notes (7)
+## Notes (8)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Sketches (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| S1 |  | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md)<br>[Sketch](decision-code-review-result-checks.md) | 1h<br>0m | burler, stencil, drift |
 
 ### Research (2)
 
