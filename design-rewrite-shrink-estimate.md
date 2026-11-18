@@ -1,6 +1,6 @@
 # Estimate how much smaller a clean rewrite of the most patched modules would be
 
-`rewrite-shrink-estimate` · Task · research, landing · starting · Seed-Child
+`rewrite-shrink-estimate` · Task · research, landing · starting · Open-Window
 
 ## Why
 
