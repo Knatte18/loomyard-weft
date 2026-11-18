@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -178,6 +178,22 @@
       "output": "",
       "at": "2026-11-18T10:38:47Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/twill-fixer-fork-writes/_lym/landing/summary.md",
+      "at": "2026-11-18T10:39:13Z",
+      "started_at": "2026-11-18T10:38:51Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-18T10:39:12.435663125Z",
+          "end": "2026-11-18T10:39:12.435696487Z"
+        }
+      ]
     }
   ],
   "product": {
