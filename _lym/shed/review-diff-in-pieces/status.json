@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Drift-Recheck",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
+    "now": "Drift-Recheck",
+    "last": "Code-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -182,6 +182,13 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Bouncer"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/review-diff-in-pieces/_lym/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-11-18T08:27:58Z",
+      "started_at": "2026-11-18T08:27:33Z"
     }
   ],
   "product": {

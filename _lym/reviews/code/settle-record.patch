@@ -1,0 +1,1425 @@
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index c5664e42..f5858a1f 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -192,6 +192,9 @@ producers:
+       role_prefix: code
+       reviewer_fan_setting: loom.code_reviewer_fan
+       fixer_fan_setting: loom.code_fixer_fan
++      # The reviewer gets the task's diff written out in per-package pieces, each small enough to
++      # read whole, so it never prints or reads the whole diff at once.
++      stage_diff: true
+       profile:
+         target:
+           # No paths key: a diff has no file on disk for the profile's path check to stat.
+diff --git a/contracts/recipes/sampler-recipe.yaml b/contracts/recipes/sampler-recipe.yaml
+index f46a0f39..ac1e46b9 100644
+--- a/contracts/recipes/sampler-recipe.yaml
++++ b/contracts/recipes/sampler-recipe.yaml
+@@ -154,6 +154,9 @@ producers:
+       role_prefix: code
+       reviewer_fan_setting: loom.code_reviewer_fan
+       fixer_fan_setting: loom.code_fixer_fan
++      # The reviewer gets the task's diff written out in per-package pieces, each small enough to
++      # read whole, so it never prints or reads the whole diff at once.
++      stage_diff: true
+       profile:
+         target:
+           # No paths key: a diff has no file on disk for the profile's path check to stat.
+diff --git a/contracts/recipes/tapestry-recipe.yaml b/contracts/recipes/tapestry-recipe.yaml
+index e3342ff2..aed86c75 100644
+--- a/contracts/recipes/tapestry-recipe.yaml
++++ b/contracts/recipes/tapestry-recipe.yaml
+@@ -416,6 +416,9 @@ producers:
+       role_prefix: code
+       reviewer_fan_setting: loom.code_reviewer_fan
+       fixer_fan_setting: loom.code_fixer_fan
++      # The reviewer gets the task's diff written out in per-package pieces, each small enough to
++      # read whole, so it never prints or reads the whole diff at once.
++      stage_diff: true
+       profile:
+         target:
+           # No paths key, deliberately: burlerengine's own Profile.validate resolves and stats
+diff --git a/contracts/stencils/burler/burler-diff-pieces.md b/contracts/stencils/burler/burler-diff-pieces.md
+new file mode 100644
+index 00000000..bcfd15d0
+--- /dev/null
++++ b/contracts/stencils/burler/burler-diff-pieces.md
+@@ -0,0 +1,16 @@
++<!-- This is burler's diff-pieces part: the list of a round's diff, written out in pieces, in the explore step.
++     `diffPiecesBlock` (internal/burlerengine/prompt.go) fills it, with piece_list as one bullet per piece.
++     `composeReviewPrompt` injects the result as burler-step-1-explore's optional diff_pieces marker value.
++     It does so only in a round whose profile carries a diff. -->
++## The diff under review, in pieces
++
++The task's full diff against its merge base is already written out below, in pieces of one package each, every piece small enough to read whole.
++A package too large for one piece is split at file, hunk or line boundaries into numbered parts.
++A file split across pieces repeats its header at the top of each piece after its first, so every piece names the file it changes.
++Read these pieces in place of the review range's `git diff`: never print the whole diff, and never write it to a file of your own.
++Where the rubric narrows or refuses the review range, as for a merge from the parent or an unreadable base,
++the rubric's range governs, and the pieces serve only as reading aid for the commits that range names.
++Read every piece the review needs together in one message, each piece whole.
++A command the rubric names beside the diff, such as `git log` over the range or `git show` of a merge commit, you still run.
++
++{{.piece_list}}
+diff --git a/contracts/stencils/burler/burler-step-1-explore.md b/contracts/stencils/burler/burler-step-1-explore.md
+index c63b292f..ac9b3652 100644
+--- a/contracts/stencils/burler/burler-step-1-explore.md
++++ b/contracts/stencils/burler/burler-step-1-explore.md
+@@ -12,13 +12,15 @@
+      focus_directive is the sixth marker, optional, and renders nothing when the round has no directive.
+      Both stay at the top level, before the first work heading, so their optional-blank semantics hold.
+      fork_reading is the seventh marker, optional, and renders nothing in a solo round;
+-     it sits directly after tool_use_rules on the same line, so an empty value adds no byte. -->
++     it sits directly after tool_use_rules on the same line, so an empty value adds no byte.
++     diff_pieces is the eighth marker, optional, and renders nothing in a round with no diff;
++     it sits directly after target on the same line for the same reason. -->
+ 
+ {{.pattern_directive}}
+ {{.focus_directive}}
+ ## What to review (the target)
+ 
+-{{.target}}
++{{.target}}{{.diff_pieces}}
+ 
+ ## What to judge it against (the fasit)
+ 
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index c22d7986..327cb080 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -29,6 +29,7 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 	}{
+ 		{"burler-focus-directive", BurlerFocusDirective, []string{"focus_path"}},
+ 		{"burler-fork-reading", BurlerForkReading, nil},
++		{"burler-diff-pieces", BurlerDiffPieces, []string{"piece_list"}},
+ 		{"burler-cluster-solo", BurlerClusterSolo, nil},
+ 		{"burler-cluster-fan", BurlerClusterFan, []string{"lens_list", "lens_report_path", "lens_report_spec_path"}},
+ 		{"burler-fix-self-check", BurlerFixSelfCheck, []string{"lens_list", "lens_report_path", "lens_report_spec_path", "rubric_path"}},
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index a960aaea..beb2ee05 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -270,6 +270,13 @@ var BurlerFocusDirective []byte
+ //go:embed burler/burler-fork-reading.md
+ var BurlerForkReading []byte
+ 
++// BurlerDiffPieces is burler's shipped-default diff-pieces part.
++// It lists a round's diff, written out in per-package pieces, in the explore step.
++// A round whose profile carries no diff renders nothing there.
++//
++//go:embed burler/burler-diff-pieces.md
++var BurlerDiffPieces []byte
++
+ // BurlerClusterSolo is burler's shipped-default cluster-rules part of a round that names no fan:
+ // the single-reviewer statement.
+ //
+@@ -928,6 +935,7 @@ var entries = []registryEntry{
+ 	{"burler-step-fix", &BurlerStepFix},
+ 	{"burler-focus-directive", &BurlerFocusDirective},
+ 	{"burler-fork-reading", &BurlerForkReading},
++	{"burler-diff-pieces", &BurlerDiffPieces},
+ 	{"burler-cluster-solo", &BurlerClusterSolo},
+ 	{"burler-cluster-fan", &BurlerClusterFan},
+ 	{"burler-fix-self-check", &BurlerFixSelfCheck},
+diff --git a/internal/burlerengine/assist_test.go b/internal/burlerengine/assist_test.go
+index 7450030b..be0f2bff 100644
+--- a/internal/burlerengine/assist_test.go
++++ b/internal/burlerengine/assist_test.go
+@@ -213,6 +213,7 @@ func TestEngine_Review_AssistedRound(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			root, p := newAssistProfile(t)
++			p.Diff = fileSection("internal/alpha/a.go", "-old\n+new\n") + fileSection("internal/beta/b.go", "-x\n+y\n")
+ 			opts := assistOpts()
+ 			shuttle := newAssistShuttle(halfScript{result: tt.result})
+ 			e := newAssistEngine(t, root, shuttle)
+@@ -261,6 +262,21 @@ func TestEngine_Review_AssistedRound(t *testing.T) {
+ 			if strings.Contains(string(assistStep), "origin: assist:assist") || !strings.Contains(string(assistStep), report) {
+ 				t.Errorf("assistant review step holds the consolidation part or lacks its own report path %q", report)
+ 			}
++			chairExplorePath := firstGlob(t, filepath.Join(root, ".lym", "burler", "review-*", "instruction-1-explore.md"))
++			chairExplore, err := os.ReadFile(chairExplorePath)
++			if err != nil {
++				t.Fatalf("ReadFile(chair explore step) = %v; want nil", err)
++			}
++			assistExplore, err := os.ReadFile(firstGlob(t, filepath.Join(root, ".lym", "burler", "assist-*", "instruction-1-explore.md")))
++			if err != nil {
++				t.Fatalf("ReadFile(assistant explore step) = %v; want nil", err)
++			}
++			for _, name := range []string{"001-internal-alpha.diff", "002-internal-beta.diff"} {
++				piece := "`" + filepath.Join(filepath.Dir(chairExplorePath), diffDirName, name) + "`"
++				if !strings.Contains(string(chairExplore), piece) || !strings.Contains(string(assistExplore), piece) {
++					t.Errorf("chair and assistant explore steps do not both name the piece %s", piece)
++				}
++			}
+ 
+ 			if len(got.Assists) != 1 {
+ 				t.Fatalf("Assists = %+v; want one outcome", got.Assists)
+diff --git a/internal/burlerengine/diffpieces.go b/internal/burlerengine/diffpieces.go
+new file mode 100644
+index 00000000..b1f360b5
+--- /dev/null
++++ b/internal/burlerengine/diffpieces.go
+@@ -0,0 +1,312 @@
++// diffpieces.go splits a review round's unified diff into pieces of one package each.
++// Every piece is small enough to read whole, and the pieces are written beside the reviewer's instruction files.
++
++package burlerengine
++
++import (
++	"fmt"
++	"os"
++	"path"
++	"path/filepath"
++	"strconv"
++	"strings"
++	"unicode/utf8"
++)
++
++// diffPieceMaxBytes caps the size of one diff piece.
++// An agent's file read refuses a file whose text passes about 25,000 tokens.
++// Dense text such as a base85 binary patch runs near two bytes per token.
++// 40,000 bytes of diff stays under that.
++const diffPieceMaxBytes = 40_000
++
++// diffPieceMaxLines caps the number of lines of one diff piece.
++// An agent's file read returns 2,000 lines by default, so a piece under this cap reads whole.
++const diffPieceMaxLines = 1_500
++
++// diffPieceNameMaxBytes caps the package part of a piece's file name.
++// A deep package path would otherwise push the name past a filesystem's name limit.
++const diffPieceNameMaxBytes = 80
++
++// diffDirName is the directory under a review half's instruction directory that holds the round's diff pieces.
++const diffDirName = "diff"
++
++// rootPackage is the package of a file at the repository root.
++const rootPackage = "."
++
++// pieceCap bounds one diff piece by its size in bytes and by its number of line breaks.
++type pieceCap struct {
++	maxBytes int
++	maxLines int
++}
++
++// fits reports whether text of the given size and line-break count is within the cap.
++func (c pieceCap) fits(size, lineBreaks int) bool {
++	return size <= c.maxBytes && lineBreaks <= c.maxLines
++}
++
++// diffPiece is one written piece of a round's diff.
++// Package is the directory its files sit in, and Part counts from 1 among the Parts pieces of that package.
++type diffPiece struct {
++	Path    string
++	Package string
++	Part    int
++	Parts   int
++}
++
++// packageDiff is the diff text of one package's files, in the order git wrote them.
++type packageDiff struct {
++	pkg   string
++	files []string
++}
++
++// diffUnit is a run of diff text that is never split across pieces.
++// Continuation is the file header a piece repeats when it opens with this unit, so its hunks stay tied to their file.
++// It is empty for the first unit of a file, which carries the header itself.
++type diffUnit struct {
++	text         string
++	continuation string
++}
++
++// writeDiffPieces writes diff into dir as pieces of one package each and returns them in order.
++// No piece passes limit in bytes or in lines.
++// A package whose files pass limit is split at file boundaries into numbered parts.
++// One file that passes limit is split at its hunk starts, then at line ends.
++// Each piece of it after the first opens with the file's header, when that header fits within half a piece.
++// A whitespace-only diff writes nothing, creates no directory and returns no piece.
++func writeDiffPieces(dir, diff string, limit pieceCap) ([]diffPiece, error) {
++	if strings.TrimSpace(diff) == "" {
++		return nil, nil
++	}
++	if err := os.MkdirAll(dir, 0o755); err != nil {
++		return nil, fmt.Errorf("burler: stage the diff: %w", err)
++	}
++	var pieces []diffPiece
++	for _, group := range groupDiffByPackage(diff) {
++		var units []diffUnit
++		for _, file := range group.files {
++			units = append(units, boundedUnits(file, limit)...)
++		}
++		texts := packUnits(units, limit)
++		for i, text := range texts {
++			piece := diffPiece{Package: group.pkg, Part: i + 1, Parts: len(texts)}
++			piece.Path = filepath.Join(dir, pieceFileName(len(pieces)+1, piece))
++			if err := os.WriteFile(piece.Path, []byte(text), 0o644); err != nil {
++				return nil, fmt.Errorf("burler: stage the diff: %w", err)
++			}
++			pieces = append(pieces, piece)
++		}
++	}
++	return pieces, nil
++}
++
++// pieceFileName names the seq-th piece of a diff after its package, with its part number when the package has several.
++// A package path past diffPieceNameMaxBytes keeps its last bytes, which hold its innermost directories.
++func pieceFileName(seq int, piece diffPiece) string {
++	name := strings.ReplaceAll(piece.Package, "/", "-")
++	if piece.Package == rootPackage {
++		name = "root"
++	}
++	if len(name) > diffPieceNameMaxBytes {
++		name = name[len(name)-diffPieceNameMaxBytes:]
++		for !utf8.RuneStart(name[0]) {
++			name = name[1:]
++		}
++	}
++	if piece.Parts > 1 {
++		name += fmt.Sprintf("-part%d", piece.Part)
++	}
++	return fmt.Sprintf("%03d-%s.diff", seq, name)
++}
++
++// groupDiffByPackage splits diff into its per-file sections and groups them by the directory of each file's path.
++// Groups keep the order of their first file, and each group keeps its files' order.
++func groupDiffByPackage(diff string) []packageDiff {
++	var groups []packageDiff
++	index := map[string]int{}
++	for _, file := range splitBeforeLines(diff, "diff --git ") {
++		pkg := diffFilePackage(file)
++		i, ok := index[pkg]
++		if !ok {
++			i = len(groups)
++			index[pkg] = i
++			groups = append(groups, packageDiff{pkg: pkg})
++		}
++		groups[i].files = append(groups[i].files, file)
++	}
++	return groups
++}
++
++// diffFilePackage returns the directory of the file a diff section changes.
++// It reads the section's `+++` line, or its `---` line for a deleted file, so a path holding " b/" is read whole.
++// A section with neither, such as a binary change, is read from its `diff --git` line instead.
++// A section with no path, and a file at the repository root, belong to rootPackage.
++func diffFilePackage(section string) string {
++	var oldSide, newSide string
++	for _, line := range strings.Split(section, "\n") {
++		if strings.HasPrefix(line, "@@ ") {
++			break
++		}
++		if rest, ok := strings.CutPrefix(line, "--- "); ok {
++			oldSide = diffSidePath(rest)
++		} else if rest, ok := strings.CutPrefix(line, "+++ "); ok {
++			newSide = diffSidePath(rest)
++		}
++	}
++	switch {
++	case strings.HasPrefix(newSide, "b/"):
++		return path.Dir(newSide[len("b/"):])
++	case newSide == "/dev/null" && strings.HasPrefix(oldSide, "a/"):
++		return path.Dir(oldSide[len("a/"):])
++	}
++	return diffHeaderPackage(section)
++}
++
++// diffSidePath returns the path a `---` or `+++` line names after its marker.
++// Git ends a path holding a space with a tab and writes a path holding special bytes as a quoted C string.
++func diffSidePath(rest string) string {
++	rest = strings.TrimSuffix(rest, "\t")
++	if strings.HasPrefix(rest, `"`) {
++		if unquoted, err := strconv.Unquote(rest); err == nil {
++			return unquoted
++		}
++	}
++	return rest
++}
++
++// diffHeaderPackage returns the directory of the file a section's `diff --git` line names on its new side.
++// A section with no such line belongs to rootPackage.
++func diffHeaderPackage(section string) string {
++	header, _, _ := strings.Cut(section, "\n")
++	header = strings.ReplaceAll(header, `"`, "")
++	i := strings.LastIndex(header, " b/")
++	if !strings.HasPrefix(header, "diff --git ") || i < 0 {
++		return rootPackage
++	}
++	return path.Dir(header[i+len(" b/"):])
++}
++
++// boundedUnits breaks one file's diff into consecutive units that each fit a piece.
++// A file within limit is one unit.
++// A larger file is cut at its hunk starts first and at line ends after,
++// and every unit after its header repeats that header when it opens a piece.
++// A single line longer than a piece is cut at a rune boundary.
++func boundedUnits(file string, limit pieceCap) []diffUnit {
++	if limit.fits(len(file), strings.Count(file, "\n")) {
++		return []diffUnit{{text: file}}
++	}
++	header := continuationHeader(file, limit)
++	room := pieceCap{maxBytes: limit.maxBytes - len(header), maxLines: limit.maxLines - strings.Count(header, "\n")}
++	var units []diffUnit
++	for _, hunk := range splitBeforeLines(file[len(header):], "@@ ") {
++		if room.fits(len(hunk), strings.Count(hunk, "\n")) {
++			units = append(units, diffUnit{text: hunk, continuation: header})
++			continue
++		}
++		for _, line := range strings.SplitAfter(hunk, "\n") {
++			for len(line) > room.maxBytes {
++				cut := runeBoundaryAtOrBefore(line, room.maxBytes)
++				units = append(units, diffUnit{text: line[:cut], continuation: header})
++				line = line[cut:]
++			}
++			if line != "" {
++				units = append(units, diffUnit{text: line, continuation: header})
++			}
++		}
++	}
++	if header != "" {
++		// The header travels with the file's first unit, so no piece ends on a header alone.
++		units[0] = diffUnit{text: header + units[0].text}
++	}
++	return units
++}
++
++// continuationHeader returns the text of file before its first hunk.
++// It returns "" when the file has no hunk, or when that text passes half of limit and would leave little room for hunks.
++func continuationHeader(file string, limit pieceCap) string {
++	chunks := splitBeforeLines(file, "@@ ")
++	if len(chunks) < 2 {
++		return ""
++	}
++	header := chunks[0]
++	if 2*len(header) > limit.maxBytes || 2*strings.Count(header, "\n") > limit.maxLines {
++		return ""
++	}
++	return header
++}
++
++// runeBoundaryAtOrBefore returns the largest offset of text, at most limit, that does not fall inside a UTF-8 rune.
++// It returns limit when no such offset above 0 exists, which only invalid UTF-8 causes.
++// The text must be longer than limit.
++func runeBoundaryAtOrBefore(text string, limit int) int {
++	cut := limit
++	for cut > 0 && !utf8.RuneStart(text[cut]) {
++		cut--
++	}
++	if cut == 0 {
++		return limit
++	}
++	return cut
++}
++
++// packUnits joins consecutive units into texts that each fit limit, each unit whole in one text.
++// A text that opens with a unit carrying a continuation header starts with that header.
++// Every unit, with its continuation, is assumed to fit limit alone.
++func packUnits(units []diffUnit, limit pieceCap) []string {
++	var texts []string
++	var current strings.Builder
++	breaks := 0
++	for _, unit := range units {
++		unitBreaks := strings.Count(unit.text, "\n")
++		if current.Len() > 0 && !limit.fits(current.Len()+len(unit.text), breaks+unitBreaks) {
++			texts = append(texts, current.String())
++			current.Reset()
++			breaks = 0
++		}
++		if current.Len() == 0 {
++			current.WriteString(unit.continuation)
++			breaks += strings.Count(unit.continuation, "\n")
++		}
++		current.WriteString(unit.text)
++		breaks += unitBreaks
++	}
++	if current.Len() > 0 {
++		texts = append(texts, current.String())
++	}
++	return texts
++}
++
++// splitBeforeLines splits text before every line that starts with prefix, keeping every byte.
++// Text before the first such line is a chunk of its own.
++func splitBeforeLines(text, prefix string) []string {
++	var chunks []string
++	start := 0
++	for at := 0; at < len(text); {
++		if at > start && strings.HasPrefix(text[at:], prefix) {
++			chunks = append(chunks, text[start:at])
++			start = at
++		}
++		end := strings.IndexByte(text[at:], '\n')
++		if end < 0 {
++			break
++		}
++		at += end + 1
++	}
++	return append(chunks, text[start:])
++}
++
++// formatDiffPieces renders pieces as one backtick-wrapped bullet each.
++// A bullet names the piece's package, and its part when the package has several.
++func formatDiffPieces(pieces []diffPiece) string {
++	var b strings.Builder
++	for _, piece := range pieces {
++		fmt.Fprintf(&b, "- `%s` — `%s`", piece.Path, piece.Package)
++		if piece.Package == rootPackage {
++			b.WriteString(" (the repository root)")
++		}
++		if piece.Parts > 1 {
++			fmt.Fprintf(&b, ", part %d of %d", piece.Part, piece.Parts)
++		}
++		b.WriteString("\n")
++	}
++	return b.String()
++}
+diff --git a/internal/burlerengine/diffpieces_test.go b/internal/burlerengine/diffpieces_test.go
+new file mode 100644
+index 00000000..07a36d12
+--- /dev/null
++++ b/internal/burlerengine/diffpieces_test.go
+@@ -0,0 +1,282 @@
++// diffpieces_test.go pins how a round's diff is split into per-package pieces under the size cap,
++// and that Engine.Review writes the pieces and names them in the explore step.
++
++package burlerengine
++
++import (
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++	"unicode/utf8"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// fileSection returns a diff section for path with one hunk per body.
++func fileSection(path string, hunks ...string) string {
++	section := "diff --git a/" + path + " b/" + path + "\nindex 1111111..2222222 100644\n--- a/" + path + "\n+++ b/" + path + "\n"
++	for _, hunk := range hunks {
++		section += "@@ -1,1 +1,1 @@\n" + hunk
++	}
++	return section
++}
++
++// repeatedLines returns count lines of the form "+<prefix>NN", numbered from first.
++func repeatedLines(prefix string, first, count int) string {
++	var lines strings.Builder
++	for i := first; i < first+count; i++ {
++		lines.WriteString("+" + prefix + string(rune('0'+i/10)) + string(rune('0'+i%10)) + "\n")
++	}
++	return lines.String()
++}
++
++// TestWriteDiffPieces proves each package's files land in pieces of their own, in order, every piece under the cap.
++// It proves the pieces of a package hold its files' text exactly, split at file, hunk and then line boundaries.
++// It proves a split file's later pieces open with its header, and an empty diff writes nothing.
++// It also proves a package is read from the file's path and a deep package still gets a file name.
++// A directory or piece that cannot be written is an error.
++func TestWriteDiffPieces(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	alpha := fileSection("internal/alpha/a.go", "-old\n+new\n")
++	alphaTwo := fileSection("internal/alpha/b.go", "-x\n+y\n")
++	beta := fileSection("internal/beta/c.go", "-p\n+q\n")
++	root := fileSection("README.md", "-r\n+s\n")
++	spaced := fileSection("docs/foo b/bar.md", "-m\n+n\n")
++	longLine := fileSection("internal/wide/w.go", "+"+strings.Repeat("z", 500)+"\n")
++	multibyteLine := fileSection("internal/wide/w.go", "+"+strings.Repeat("é", 300)+"\n")
++	manyShortLines := fileSection("internal/lines/l.go", strings.Repeat("+x\n", 40))
++	deepPackage := strings.Repeat("deep/", 70) + "leaf"
++	deep := fileSection(deepPackage+"/d.go", "-d\n+e\n")
++	deepName := strings.ReplaceAll(deepPackage, "/", "-")
++	deepName = deepName[len(deepName)-diffPieceNameMaxBytes:]
++
++	// bigFile holds three hunks under a header of its own, which every piece after its first repeats.
++	// The cap lets the header and the first hunk fill the first piece, and not the second hunk.
++	// The second hunk fits a piece of its own, and the third does not, so it is cut at line ends.
++	const bigPath = "internal/big/h.go"
++	bigHeader := fileSection(bigPath)
++	hunkOne := "@@ -1,1 +1,1 @@\n" + strings.Repeat("+aaaa\n", 10)
++	hunkTwo := "@@ -1,1 +1,1 @@\n" + strings.Repeat("+bbbb\n", 20)
++	hunkThree := "@@ -1,1 +1,1 @@\n" + repeatedLines("c", 1, 50)
++	bigFile := bigHeader + hunkOne + hunkTwo + hunkThree
++	bigCap := len(bigHeader) + len(hunkOne) + len(hunkTwo) - 1
++	smallBesideBig := fileSection("internal/big/a.go", "-s\n+t\n")
++
++	type wantPiece struct {
++		pkg          string
++		part, parts  int
++		name         string
++		wantContents string
++	}
++	tests := []struct {
++		name  string
++		diff  string
++		limit pieceCap
++		want  []wantPiece
++		// wantJoined, per package, is the text its pieces must join to when their contents are not pinned one by one.
++		wantJoined map[string]string
++		// blocked names what stands in the way of the write: "directory" or "piece".
++		blocked string
++	}{
++		{name: "EmptyDiffWritesNothing", diff: " \n", limit: pieceCap{1000, 1000}},
++		{
++			name: "OnePiecePerPackageInFirstSeenOrder", diff: alpha + beta + alphaTwo + root, limit: pieceCap{1000, 1000},
++			want: []wantPiece{
++				{pkg: "internal/alpha", part: 1, parts: 1, name: "001-internal-alpha.diff", wantContents: alpha + alphaTwo},
++				{pkg: "internal/beta", part: 1, parts: 1, name: "002-internal-beta.diff", wantContents: beta},
++				{pkg: rootPackage, part: 1, parts: 1, name: "003-root.diff", wantContents: root},
++			},
++		},
++		{
++			name: "PackageOverTheByteCapSplitsAtFiles", diff: alpha + alphaTwo, limit: pieceCap{len(alpha) + 1, 1000},
++			want: []wantPiece{
++				{pkg: "internal/alpha", part: 1, parts: 2, name: "001-internal-alpha-part1.diff", wantContents: alpha},
++				{pkg: "internal/alpha", part: 2, parts: 2, name: "002-internal-alpha-part2.diff", wantContents: alphaTwo},
++			},
++		},
++		{
++			name: "PackageOverTheLineCapSplitsAtFiles", diff: alpha + alphaTwo, limit: pieceCap{100_000, strings.Count(alpha, "\n")},
++			want: []wantPiece{
++				{pkg: "internal/alpha", part: 1, parts: 2, name: "001-internal-alpha-part1.diff", wantContents: alpha},
++				{pkg: "internal/alpha", part: 2, parts: 2, name: "002-internal-alpha-part2.diff", wantContents: alphaTwo},
++			},
++		},
++		{
++			name: "FileOverTheCapSplitsAtHunksThenLineEnds", diff: bigFile, limit: pieceCap{bigCap, 1000},
++			want: []wantPiece{
++				{pkg: "internal/big", part: 1, parts: 3, name: "001-internal-big-part1.diff", wantContents: bigHeader + hunkOne},
++				{
++					pkg: "internal/big", part: 2, parts: 3, name: "002-internal-big-part2.diff",
++					wantContents: bigHeader + hunkTwo + "@@ -1,1 +1,1 @@\n" + repeatedLines("c", 1, 11),
++				},
++				{pkg: "internal/big", part: 3, parts: 3, name: "003-internal-big-part3.diff", wantContents: bigHeader + repeatedLines("c", 12, 39)},
++			},
++		},
++		{
++			// The small file and the big file's header fit one piece together, and the header's first hunk does not.
++			// The header then moves to the next piece with that hunk, so no piece ends on a bare header.
++			name: "SplitFileHeaderNeverEndsAPiece", diff: smallBesideBig + bigFile, limit: pieceCap{bigCap, 1000},
++			want: []wantPiece{
++				{pkg: "internal/big", part: 1, parts: 4, name: "001-internal-big-part1.diff", wantContents: smallBesideBig},
++				{pkg: "internal/big", part: 2, parts: 4, name: "002-internal-big-part2.diff", wantContents: bigHeader + hunkOne},
++				{
++					pkg: "internal/big", part: 3, parts: 4, name: "003-internal-big-part3.diff",
++					wantContents: bigHeader + hunkTwo + "@@ -1,1 +1,1 @@\n" + repeatedLines("c", 1, 11),
++				},
++				{pkg: "internal/big", part: 4, parts: 4, name: "004-internal-big-part4.diff", wantContents: bigHeader + repeatedLines("c", 12, 39)},
++			},
++		},
++		{name: "ManyShortLinesOverTheLineCapSplit", diff: manyShortLines, limit: pieceCap{100_000, 6}, wantJoined: map[string]string{"internal/lines": manyShortLines}},
++		{name: "LineOverTheCapIsCut", diff: longLine, limit: pieceCap{120, 1000}, wantJoined: map[string]string{"internal/wide": longLine}},
++		{name: "LineOverTheCapIsCutOnARuneBoundary", diff: multibyteLine, limit: pieceCap{200, 1000}, wantJoined: map[string]string{"internal/wide": multibyteLine}},
++		{
++			name: "PackageIsReadFromThePathNotTheHeader", diff: spaced, limit: pieceCap{1000, 1000},
++			want: []wantPiece{{pkg: "docs/foo b", part: 1, parts: 1, name: "001-docs-foo b.diff", wantContents: spaced}},
++		},
++		{
++			name: "DeepPackageNameIsCapped", diff: deep, limit: pieceCap{10_000, 1000},
++			want: []wantPiece{{pkg: deepPackage, part: 1, parts: 1, name: "001-" + deepName + ".diff", wantContents: deep}},
++		},
++		{name: "DirectoryThatCannotBeCreatedIsAnError", diff: alpha, limit: pieceCap{1000, 1000}, blocked: "directory"},
++		{name: "PieceThatCannotBeWrittenIsAnError", diff: alpha, limit: pieceCap{1000, 1000}, blocked: "piece"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := filepath.Join(t.TempDir(), diffDirName)
++			switch tt.blocked {
++			case "directory":
++				if err := os.WriteFile(dir, nil, 0o644); err != nil {
++					t.Fatalf("WriteFile(%s) = %v; want nil", dir, err)
++				}
++			case "piece":
++				if err := os.MkdirAll(filepath.Join(dir, "001-internal-alpha.diff"), 0o755); err != nil {
++					t.Fatalf("MkdirAll(piece) = %v; want nil", err)
++				}
++			}
++
++			pieces, err := writeDiffPieces(dir, tt.diff, tt.limit)
++
++			if tt.blocked != "" {
++				if err == nil {
++					t.Fatalf("writeDiffPieces() = %+v, nil; want an error with a %s that cannot be written", pieces, tt.blocked)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("writeDiffPieces() = %v; want nil error", err)
++			}
++			if tt.want == nil && tt.wantJoined == nil {
++				if len(pieces) != 0 {
++					t.Errorf("writeDiffPieces() = %+v; want no piece", pieces)
++				}
++				if _, err := os.Stat(dir); !os.IsNotExist(err) {
++					t.Errorf("Stat(%s) = %v; want the directory absent", dir, err)
++				}
++				return
++			}
++			joined := map[string]string{}
++			for i, piece := range pieces {
++				data, err := os.ReadFile(piece.Path)
++				if err != nil {
++					t.Fatalf("ReadFile(piece %d) = %v; want nil", i, err)
++				}
++				if len(data) > tt.limit.maxBytes || strings.Count(string(data), "\n") > tt.limit.maxLines {
++					t.Errorf("piece %d is %d bytes and %d line breaks; want at most %d and %d", i, len(data), strings.Count(string(data), "\n"), tt.limit.maxBytes, tt.limit.maxLines)
++				}
++				if !utf8.Valid(data) {
++					t.Errorf("piece %d is not valid UTF-8", i)
++				}
++				joined[piece.Package] += string(data)
++				if tt.want == nil {
++					continue
++				}
++				want := tt.want[i]
++				if piece.Package != want.pkg || piece.Part != want.part || piece.Parts != want.parts || filepath.Base(piece.Path) != want.name || filepath.Dir(piece.Path) != dir {
++					t.Errorf("piece %d = %+v; want package %q part %d of %d at %s in %s", i, piece, want.pkg, want.part, want.parts, want.name, dir)
++				}
++				if string(data) != want.wantContents {
++					t.Errorf("piece %d contents = %q; want %q", i, data, want.wantContents)
++				}
++			}
++			if tt.want != nil && len(pieces) != len(tt.want) {
++				t.Errorf("writeDiffPieces() wrote %d pieces; want %d", len(pieces), len(tt.want))
++			}
++			for pkg, want := range tt.wantJoined {
++				if joined[pkg] != want {
++					t.Errorf("pieces of %s join to %q; want %q", pkg, joined[pkg], want)
++				}
++				if len(pieces) < 2 {
++					t.Errorf("writeDiffPieces() wrote %d pieces of %s; want it split", len(pieces), pkg)
++				}
++			}
++		})
++	}
++}
++
++// TestEngine_Review_StagesTheDiff proves a profile with a diff gets its pieces written beside the instruction files.
++// Each piece is named in the explore step, with the root and a split package labelled,
++// and a profile without a diff gets neither.
++func TestEngine_Review_StagesTheDiff(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	// Two files of a thousand lines each pass the line cap together, so their package splits in two parts.
++	lines := strings.Repeat("+x\n", 1000)
++	diff := fileSection("internal/alpha/a.go", "-old\n+new\n") + fileSection("internal/beta/b.go", "-x\n+y\n") +
++		fileSection("README.md", "-r\n+s\n") + fileSection("internal/gamma/one.go", lines) + fileSection("internal/gamma/two.go", lines)
++	tests := []struct {
++		name       string
++		diff       string
++		wantPieces []string
++		wantText   []string
++	}{
++		{
++			name: "DiffIsStaged", diff: diff,
++			wantPieces: []string{"001-internal-alpha.diff", "002-internal-beta.diff", "003-root.diff", "004-internal-gamma-part1.diff", "005-internal-gamma-part2.diff"},
++			wantText:   []string{"(the repository root)", "part 1 of 2", "part 2 of 2"},
++		},
++		{name: "NoDiffStagesNothing"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			root, p := newEngineTestProfile(t)
++			p.Diff = tt.diff
++			e := newEngineForTest(t, root, doneReview(approvedReview))
++
++			if _, err := e.Review(p, RunOpts{}); err != nil {
++				t.Fatalf("Review() = %v; want nil error", err)
++			}
++
++			explores, err := filepath.Glob(filepath.Join(root, ".lym", "burler", "review-*", "instruction-1-explore.md"))
++			if err != nil || len(explores) != 1 {
++				t.Fatalf("Glob(explore step) = %v, %v; want one file", explores, err)
++			}
++			explore, err := os.ReadFile(explores[0])
++			if err != nil {
++				t.Fatalf("ReadFile(explore step) = %v; want nil", err)
++			}
++			pieceDir := filepath.Join(filepath.Dir(explores[0]), diffDirName)
++			for _, name := range tt.wantPieces {
++				piece := filepath.Join(pieceDir, name)
++				if _, err := os.Stat(piece); err != nil {
++					t.Errorf("Stat(%s) = %v; want the piece written", piece, err)
++				}
++				requireContains(t, string(explore), "`"+piece+"`")
++			}
++			for _, want := range tt.wantText {
++				requireContains(t, string(explore), want)
++			}
++			if tt.wantPieces == nil {
++				if _, err := os.Stat(pieceDir); !os.IsNotExist(err) {
++					t.Errorf("Stat(%s) = %v; want no diff directory", pieceDir, err)
++				}
++				requireNotContains(t, string(explore), "in pieces")
++			}
++		})
++	}
++}
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index ccf07fca..8cde173b 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -67,6 +67,14 @@
+ // It sets ForkSubagents exactly when the profile names a cluster fan.
+ // The review half's files are the explore step, the review step and the review-file format.
+ // They are written to a fresh directory under the anchor's .lym.
++// A profile whose Diff is set gets that diff written to the same directory's diff subdirectory.
++// The diff is written in pieces of one package each.
++// No piece passes diffPieceMaxBytes or diffPieceMaxLines, so each piece reads whole.
++// A package too large for one piece is split at file boundaries, and a file too large at hunk starts, then line ends.
++// Each piece of a split file after its first opens with the file's header, when that header fits within half a piece.
++// The explore step's optional diff_pieces marker renders the burler-diff-pieces stencil, which lists the pieces;
++// a round with no diff renders nothing there.
++// An assistant reviewer's explore step names the same pieces.
+ // The reviewer's prompt carries the PATTERN directive; it carries no friction directive.
+ // acceptReview accepts a done reviewer's end:
+ // the cluster audit for a fanned round, then ParseCurrentReview on the review file.
+diff --git a/internal/burlerengine/profile.go b/internal/burlerengine/profile.go
+index be49d2b8..5be79ccb 100644
+--- a/internal/burlerengine/profile.go
++++ b/internal/burlerengine/profile.go
+@@ -56,6 +56,13 @@ type Profile struct {
+ 	FixerReportPath   string
+ 	PriorReviews      []string
+ 	PriorFixerReports []string
++	// Diff is the unified diff the round reviews, empty for a round whose target is no diff.
++	// The review half writes a non-empty Diff beside its instruction files in pieces of one package each.
++	// Every piece is small enough to read whole, and the explore step names them.
++	// The reviewer so never writes or reads the whole diff at once.
++	Diff string
++	// diffPieces are the written pieces of Diff, set by the review half before it composes the prompts.
++	diffPieces []diffPiece
+ 	// FocusDirective is an optional path to this round's focus directive file.
+ 	// It is steering input the reviewer reads before forming findings,
+ 	// and it is exempt from the prior-rounds clean-room rule.
+diff --git a/internal/burlerengine/prompt.go b/internal/burlerengine/prompt.go
+index 0183ed7d..6c130ce1 100644
+--- a/internal/burlerengine/prompt.go
++++ b/internal/burlerengine/prompt.go
+@@ -136,15 +136,20 @@ func composeReviewPrompt(stencilsDir, specsDir, engine string, p *Profile, patte
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
++	diffPieces, err := diffPiecesBlock(stencilsDir, engine, p.diffPieces)
++	if err != nil {
++		return halfPrompt{}, err
++	}
+ 	explore, err := stencil.FillWith(exploreTemplate, exploreBlocks, map[string]string{
+ 		"pattern_directive": patternDirective,
+ 		focusMarkerName:     focusDirective,
+ 		"target":            formatFileSet(p.Target),
++		"diff_pieces":       diffPieces,
+ 		"fasit":             formatFileSet(p.Fasit),
+ 		"rubric":            p.Rubric,
+ 		"tool_use_rules":    toolUseRules(p.ToolUse),
+ 		"fork_reading":      forkReading,
+-	}, []string{"pattern_directive", focusMarkerName, "fork_reading"})
++	}, []string{"pattern_directive", focusMarkerName, "diff_pieces", "fork_reading"})
+ 	if err != nil {
+ 		return halfPrompt{}, fmt.Errorf("burler: compose prompt: %w", err)
+ 	}
+@@ -513,6 +518,21 @@ func forkReadingBlock(stencilsDir, engine string, p *Profile) (string, error) {
+ 	return "\n\n" + strings.TrimRight(string(reading), "\n"), nil
+ }
+ 
++// diffPiecesBlock renders the diff-pieces stencil for engine, as the explore step's optional diff_pieces marker.
++// It lists pieces, and a round with no piece returns "" without reading anything.
++// The value leads with the blank line that separates it from the target,
++// and its trailing newline is left to the explore stencil.
++func diffPiecesBlock(stencilsDir, engine string, pieces []diffPiece) (string, error) {
++	if len(pieces) == 0 {
++		return "", nil
++	}
++	block, err := fillInstruction(stencilsDir, engine, "burler-diff-pieces", map[string]string{"piece_list": formatDiffPieces(pieces)}, nil)
++	if err != nil {
++		return "", err
++	}
++	return "\n\n" + strings.TrimRight(string(block), "\n"), nil
++}
++
+ // selfCheckBlock renders the fix self-check stencil for engine, for the fix step's optional self_check marker.
+ // A profile with no FixFan returns "" without reading anything.
+ // Otherwise it fills the stencil with the deployed fix-check rubric path and p's fixer lenses.
+diff --git a/internal/burlerengine/prompt_test.go b/internal/burlerengine/prompt_test.go
+index 0f39d3e6..e572a95a 100644
+--- a/internal/burlerengine/prompt_test.go
++++ b/internal/burlerengine/prompt_test.go
+@@ -523,7 +523,7 @@ func TestComposePrompt_ClusterRules(t *testing.T) {
+ 			"fasit":          formatFileSet(p.Fasit),
+ 			"rubric":         p.Rubric,
+ 			"tool_use_rules": toolUseRules(p.ToolUse),
+-		}, []string{"pattern_directive", focusMarkerName})
++		}, []string{"pattern_directive", focusMarkerName, "diff_pieces"})
+ 		if err != nil {
+ 			t.Fatalf("stencil.FillOptional(explore without fork_reading) = %v; want nil", err)
+ 		}
+diff --git a/internal/burlerengine/review.go b/internal/burlerengine/review.go
+index 2f117989..c29a9ab0 100644
+--- a/internal/burlerengine/review.go
++++ b/internal/burlerengine/review.go
+@@ -94,6 +94,7 @@ func (p *Profile) reviewTable(opts RunOpts, values map[string]string, skills []s
+ // Review runs the review half for p, tuned by opts: one fresh reviewer session that writes the review file.
+ // It validates p and resolves the PATTERN directive.
+ // It composes the reviewer's instruction files into a fresh directory under the anchor's ephemeral burler directory.
++// It writes p's diff there in per-package pieces that the explore step names.
+ // Then it runs the review table.
+ // When opts names an assistant, the table also holds the assistant seat.
+ // The assistant's own instruction files are composed for its engine into a directory of their own;
+@@ -122,6 +123,10 @@ func (e *Engine) Review(p Profile, opts RunOpts) (ReviewResult, error) {
+ 	if err != nil {
+ 		return ReviewResult{}, err
+ 	}
++	p.diffPieces, err = writeDiffPieces(filepath.Join(dir, diffDirName), p.Diff, pieceCap{maxBytes: diffPieceMaxBytes, maxLines: diffPieceMaxLines})
++	if err != nil {
++		return ReviewResult{}, err
++	}
+ 	chairEngine := e.seatEngine(opts.Review)
+ 	assistRules, err := assistRulesBlock(e.stencilsDir, chairEngine, opts)
+ 	if err != nil {
+diff --git a/internal/burlerengine/template_test.go b/internal/burlerengine/template_test.go
+index f3696988..66b93165 100644
+--- a/internal/burlerengine/template_test.go
++++ b/internal/burlerengine/template_test.go
+@@ -70,12 +70,13 @@ func fixStepMarkerValues() map[string]string {
+ }
+ 
+ // instruction1MarkerValues returns a values map with a placeholder for each marker of the explore step.
+-// The optional markers pattern_directive, focus_directive and fork_reading are included too.
++// The optional markers pattern_directive, focus_directive, diff_pieces and fork_reading are included too.
+ // Tests delete one key at a time to prove the per-marker error of stencil.FillOptional.
+ func instruction1MarkerValues() map[string]string {
+ 	return map[string]string{
+ 		"pattern_directive": "## Constraints — do this before you judge anything\n\n- Read the overview.",
+ 		"focus_directive":   "## Focus directive for this round",
++		"diff_pieces":       "\n\n## The diff under review, in pieces",
+ 		"fork_reading":      "\n\n## Reading for the fork reviewers",
+ 		"target":            "target placeholder",
+ 		"fasit":             "fasit placeholder",
+@@ -85,10 +86,12 @@ func instruction1MarkerValues() map[string]string {
+ }
+ 
+ // TestTemplate_FillsWithAllMarkers asserts each embedded asset fills through stencil when given its full marker set.
+-// For the explore step that set includes the optional pattern_directive and focus_directive.
++// For the explore step that set includes its optional markers.
+ // The test fails, naming the marker, when any single required marker of an asset is absent.
+-// pattern_directive and focus_directive are excluded from the explore step's deletion sweep.
+-// They are optional markers, so deleting either must not error.
++// The explore step's optional markers are excluded from its deletion sweep.
++// Deleting an optional marker must not error.
++//
++//testtiming:keep pins the explore, review and fix steps' per-marker missing-value errors, which TestAnswerParentAsk never renders
+ func TestTemplate_FillsWithAllMarkers(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	tests := []struct {
+@@ -135,7 +138,7 @@ func TestTemplate_FillsWithAllMarkers(t *testing.T) {
+ 			name:            "explore step",
+ 			template:        stencils.BurlerStep1Explore,
+ 			values:          instruction1MarkerValues(),
+-			optional:        []string{"pattern_directive", "focus_directive", "fork_reading"},
++			optional:        []string{"pattern_directive", "focus_directive", "diff_pieces", "fork_reading"},
+ 			requiredMarkers: []string{"target", "fasit", "rubric", "tool_use_rules"},
+ 		},
+ 	}
+@@ -172,16 +175,19 @@ func TestTemplate_FillsWithAllMarkers(t *testing.T) {
+ }
+ 
+ // TestTemplate_OptionalDirectives asserts the explore step's optional markers render cleanly when empty.
+-// They are pattern_directive, focus_directive and fork_reading.
++// They are pattern_directive, focus_directive, diff_pieces and fork_reading.
+ // An empty value leaves no leftover `{{`, no orphan heading and, for pattern_directive, no stray blank-line block.
+ // A non-empty value places the two directives ahead of the first work instruction.
+-// It places the fork reading after the tool-use rules at the end of the stencil.
++// It places the diff pieces after the target and ahead of the fasit,
++// and the fork reading after the tool-use rules at the end of the stencil.
+ // The fix step's friction_directive and self_check each render an empty value cleanly too.
++//
++//testtiming:keep pins that each optional explore and fix marker renders empty cleanly and lands in its place, which TestAnswerParentAsk never renders
+ func TestTemplate_OptionalDirectives(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	optional := []string{"pattern_directive", "focus_directive", "fork_reading"}
++	optional := []string{"pattern_directive", "focus_directive", "diff_pieces", "fork_reading"}
+ 	tests := []struct {
+ 		marker            string
+ 		orphanHeading     string
+@@ -192,6 +198,7 @@ func TestTemplate_OptionalDirectives(t *testing.T) {
+ 	}{
+ 		{marker: "pattern_directive", orphanHeading: "## Constraints", noStrayBlankBlock: true, placement: "precedes the first work instruction", wantBefore: true, anchor: "## What to review (the target)"},
+ 		{marker: "focus_directive", orphanHeading: "## Focus directive", placement: "precedes the first work instruction", wantBefore: true, anchor: "## What to review (the target)"},
++		{marker: "diff_pieces", orphanHeading: "## The diff under review", placement: "precedes the fasit", wantBefore: true, anchor: "## What to judge it against (the fasit)"},
+ 		{marker: "fork_reading", orphanHeading: "## Reading for the fork reviewers", placement: "follows the tool-use rules", anchor: "## Tool-use rules — how you gather evidence"},
+ 	}
+ 
+diff --git a/internal/fabricengine/taskpatch.go b/internal/fabricengine/taskpatch.go
+index 933b2e1a..6d0d7b99 100644
+--- a/internal/fabricengine/taskpatch.go
++++ b/internal/fabricengine/taskpatch.go
+@@ -1,5 +1,6 @@
+ // taskpatch.go — the read-only git reads a code segment's identity needs on a Fabric:
+-// the task's patch against its merge base, the merge-in-only test of its history, and the weft HEAD.
++// the task's patch against its merge base and the task's committed diff.
++// It also holds the merge-in-only test of the task's history and the weft HEAD.
+ 
+ package fabricengine
+ 
+@@ -64,6 +65,16 @@ func (f *Fabric) ReadTaskPatch(base string, skip []string) (TaskPatch, error) {
+ 	return TaskPatch{Head: head, Full: full, FullHash: hex.EncodeToString(sum[:]), PatchID: patchID}, nil
+ }
+ 
++// ReadCommittedDiff returns the full diff of the commits from base to the warp checkout's HEAD.
++// It holds neither an uncommitted edit nor an untracked file, so it is the range a code review reads.
++func (f *Fabric) ReadCommittedDiff(base string) (string, error) {
++	diff, err := gitexec.Run([]string{"diff", "--no-color", "--no-ext-diff", "--no-textconv", "--no-renames", "--binary", "-U3", base, "HEAD", "--"}, f.warpPath)
++	if err != nil {
++		return "", fmt.Errorf("fabricengine: read committed diff: diff %s to HEAD: %w", base, err)
++	}
++	return diff, nil
++}
++
+ // skippedPath reports whether the untracked path is exempted by a skip entry.
+ func skippedPath(path string, skip []string) bool {
+ 	for _, entry := range skip {
+diff --git a/internal/fabricengine/taskpatch_integration_test.go b/internal/fabricengine/taskpatch_integration_test.go
+index 64caa90d..2f86894b 100644
+--- a/internal/fabricengine/taskpatch_integration_test.go
++++ b/internal/fabricengine/taskpatch_integration_test.go
+@@ -120,6 +120,31 @@ func readPatchAroundScratchWrite(t *testing.T, fx taskPatchFixture, linked bool)
+ 	return before, after
+ }
+ 
++// TestFabric_ReadCommittedDiff proves the committed diff holds the commits past the base and nothing else:
++// an uncommitted edit and an untracked file stay out of it.
++func TestFabric_ReadCommittedDiff(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	fx := newTaskPatchFixture(t)
++	gitkit.CommitFile(t, fx.warpDir, "task.txt", "committed\n", "task change")
++	writeTaskPatchFile(t, fx.warpDir, "lib.txt", strings.Replace(fx.baseFile, "line 15\n", "line 15 edited\n", 1))
++	writeTaskPatchFile(t, fx.warpDir, "untracked.txt", "new\n")
++
++	diff, err := fx.fabric.ReadCommittedDiff(fx.baseSHA)
++
++	if err != nil {
++		t.Fatalf("ReadCommittedDiff(%q) error = %v; want nil", fx.baseSHA, err)
++	}
++	if !strings.Contains(diff, diffHeader("task.txt")) {
++		t.Errorf("ReadCommittedDiff() lacks the committed change %q:\n%s", diffHeader("task.txt"), diff)
++	}
++	for _, path := range []string{"lib.txt", "untracked.txt"} {
++		if strings.Contains(diff, diffHeader(path)) {
++			t.Errorf("ReadCommittedDiff() holds %q; want only the committed change:\n%s", diffHeader(path), diff)
++		}
++	}
++}
++
+ // TestFabric_ReadTaskPatch covers which changes the patch holds and how skip exempts untracked paths;
+ // it also covers what its hashes follow, and that a root `.scratch` never enters the patch.
+ func TestFabric_ReadTaskPatch(t *testing.T) {
+diff --git a/internal/loomcli/subjects.go b/internal/loomcli/subjects.go
+index 209556ed..4b611358 100644
+--- a/internal/loomcli/subjects.go
++++ b/internal/loomcli/subjects.go
+@@ -151,15 +151,8 @@ func taskMergeBase(l *lymcwd.Location) func() (string, error) {
+ // Bound: a change confined to harnessOwnFiles reads as an unchanged subject.
+ // The landing gate at Parent-Align and Finalize bounds it.
+ func codeSubject(location *lymcwd.Location, runID string) (shedadapters.Subject, bool, error) {
+-	origin, found, err := fabricengine.ReadOrigin(location)
+-	if err != nil {
+-		return shedadapters.Subject{}, false, err
+-	}
+-	if !found || origin.ParentBranch == "" {
+-		return shedadapters.Subject{}, false, nil
+-	}
+-	base, err := taskMergeBase(location)()
+-	if err != nil {
++	base, found, err := recordedTaskBase(location)
++	if err != nil || !found {
+ 		return shedadapters.Subject{}, false, err
+ 	}
+ 	handle, err := fabricengine.Open(location)
+@@ -181,6 +174,41 @@ func codeSubject(location *lymcwd.Location, runID string) (shedadapters.Subject,
+ 	}, true, nil
+ }
+ 
++// recordedTaskBase returns the commit the task's diff is taken from.
++// A run with no recorded parent branch, a standalone run, answers not found.
++func recordedTaskBase(location *lymcwd.Location) (string, bool, error) {
++	origin, found, err := fabricengine.ReadOrigin(location)
++	if err != nil {
++		return "", false, err
++	}
++	if !found || origin.ParentBranch == "" {
++		return "", false, nil
++	}
++	base, err := taskMergeBase(location)()
++	if err != nil {
++		return "", false, err
++	}
++	return base, true, nil
++}
++
++// committedCodeDiff returns the reader of the task's committed diff, from its merge base to HEAD.
++// It holds no uncommitted edit and no untracked file.
++// A standalone run, which records no parent branch, reads as no diff.
++// The base and the fabric are read on each call, so a commit made since wiring is read as it stands.
++func committedCodeDiff(location *lymcwd.Location) func() (string, error) {
++	return func() (string, error) {
++		base, found, err := recordedTaskBase(location)
++		if err != nil || !found {
++			return "", err
++		}
++		handle, err := fabricengine.Open(location)
++		if err != nil {
++			return "", err
++		}
++		return handle.ReadCommittedDiff(base)
++	}
++}
++
+ // patchSkipEntries returns the skip entries of a code subject's patch.
+ // They are each of the run's own state directories under the worktree, as `/`-ended entries, then harnessOwnFiles.
+ // A standalone run keeps those directories inside the worktree, which is where they would show as untracked.
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 49de2581..14e893b7 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -1158,6 +1158,7 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		// Each reads on demand and opens nothing at wire time.
+ 		DocumentSubject: documentSubjectWithHead(location, recordHead(location)),
+ 		CodeSubject:     func() (shedadapters.Subject, bool, error) { return codeSubject(location, c.runID) },
++		CodeDiff:        committedCodeDiff(location),
+ 		MergeInOnly:     parentMergeInOnly(location),
+ 		RecordHead:      recordHead(location),
+ 		// ReviewInput is the merge fixer's latest Parent-Align report.
+diff --git a/internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml b/internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml
+index e85d0ad5..c2a07690 100644
+--- a/internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml
++++ b/internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml
+@@ -517,6 +517,9 @@ producers:
+       role_prefix: code
+       reviewer_fan_setting: loom.code_reviewer_fan
+       fixer_fan_setting: loom.code_fixer_fan
++      # The reviewer gets the task's diff written out in per-package pieces, each small enough to
++      # read whole, so it never prints or reads the whole diff at once.
++      stage_diff: true
+       profile:
+         target:
+           # No paths key, deliberately: burlerengine's own Profile.validate resolves and stats
+diff --git a/internal/shedadapters/burlerreview.go b/internal/shedadapters/burlerreview.go
+index 55db67fb..df823920 100644
+--- a/internal/shedadapters/burlerreview.go
++++ b/internal/shedadapters/burlerreview.go
+@@ -76,6 +76,9 @@ type BurlerHalfDeps struct {
+ 	Snapshot *TargetSnapshot
+ 	// DecisionRecordPath is the decision record whose added entries the round's start records; empty records none.
+ 	DecisionRecordPath string
++	// Diff reads the unified diff a spawned reviewer is given in pieces, read by the review producer once per spawning call.
++	// Nil gives no diff, and so does a failed read, which is logged.
++	Diff func() (string, error)
+ }
+ 
+ // AssistSettings is one review segment's assistant reviewer seat: the per-round model and fan lists, the keys they came from and the assistant's run bound.
+@@ -145,6 +148,8 @@ type BurlerReviewProducer struct {
+ 	snapshot *TargetSnapshot
+ 	// decisionRecordPath, when non-empty, is the decision record whose added entries each round's start records.
+ 	decisionRecordPath string
++	// diff, when non-nil, reads the diff a spawned reviewer is given.
++	diff func() (string, error)
+ 	// gateFindingsPath, when non-empty, is the file cleared once the review's gate has passed.
+ 	gateFindingsPath string
+ 	profile          burlerengine.Profile
+@@ -170,7 +175,7 @@ func NewBurlerReviewProducer(name string, deps BurlerHalfDeps, profile burlereng
+ 	if now == nil {
+ 		now = time.Now
+ 	}
+-	return &BurlerReviewProducer{name: name, runner: deps.Runner, models: deps.Models, fans: deps.Fans, assist: deps.Assist, parent: deps.Parent, snapshot: deps.Snapshot, decisionRecordPath: deps.DecisionRecordPath, gateFindingsPath: deps.GateFindingsPath, profile: profile, opts: opts, runDir: runDir, now: now}, nil
++	return &BurlerReviewProducer{name: name, runner: deps.Runner, models: deps.Models, fans: deps.Fans, assist: deps.Assist, parent: deps.Parent, snapshot: deps.Snapshot, decisionRecordPath: deps.DecisionRecordPath, diff: deps.Diff, gateFindingsPath: deps.GateFindingsPath, profile: profile, opts: opts, runDir: runDir, now: now}, nil
+ }
+ 
+ // recordRoundStart writes round's snapshot record when none exists yet.
+@@ -368,6 +373,7 @@ func (p *BurlerReviewProducer) Call(ctx context.Context) (shedengine.Outcome, sh
+ 		}
+ 	}
+ 
++	profile.Diff = p.readDiff(round)
+ 	assist, assistFan := p.assist.pick(round)
+ 	var priorResult burlerengine.ReviewResult
+ 	var priorToken string
+@@ -448,6 +454,20 @@ func (p *BurlerReviewProducer) Call(ctx context.Context) (shedengine.Outcome, sh
+ 	return "", shedengine.OutputPointer{}, fmt.Errorf("shedadapters: %s (%s): round %d: attempt loop exited without a verdict", p.name, burlerReviewEngineLabel, round)
+ }
+ 
++// readDiff returns the diff round's spawned reviewer is given, or "" when the row reads none.
++// A failed read is logged and gives no diff: the reviewer then derives the range from its rubric, as without one.
++func (p *BurlerReviewProducer) readDiff(round int) string {
++	if p.diff == nil {
++		return ""
++	}
++	diff, err := p.diff()
++	if err != nil {
++		logger.Warn("shedadapters: burler review could not read the round's diff; the reviewer gets no pieces", "producer", p.name, "engine", burlerReviewEngineLabel, "round", round, "error", err)
++		return ""
++	}
++	return diff
++}
++
+ // forkMismatchError builds the failure of a round whose two attempts both failed, one of them on the chair's fork count.
+ // It names each attempt by its error, or by its outcome when it has none.
+ // The message carries the chair's strand and the session states the chair passed through,
+diff --git a/internal/shedadapters/burlerreview_test.go b/internal/shedadapters/burlerreview_test.go
+index d3be3a37..abe3c607 100644
+--- a/internal/shedadapters/burlerreview_test.go
++++ b/internal/shedadapters/burlerreview_test.go
+@@ -50,6 +50,8 @@ type halfProducerSpec struct {
+ 	snapshot *TargetSnapshot
+ 	// decisionRecordPath is the deps' decision record; empty records no added entries.
+ 	decisionRecordPath string
++	// diff is the deps' diff reader; nil gives no diff.
++	diff func() (string, error)
+ }
+ 
+ // newHalfSpec returns a spec over the minimal profile and a fixed clock.
+@@ -60,7 +62,7 @@ func newHalfSpec() halfProducerSpec {
+ // newReviewProducer builds a BurlerReviewProducer over runDir, failing the test on constructor error.
+ func newReviewProducer(t *testing.T, runDir string, runner *shedfake.BurlerHalfRunner, spec halfProducerSpec) *BurlerReviewProducer {
+ 	t.Helper()
+-	p, err := NewBurlerReviewProducer("burler-review", BurlerHalfDeps{Runner: runner, Models: spec.models, Fans: spec.fans, RequiresFans: spec.requiresFans, GateFindingsPath: spec.gateFindingsPath, NotifyParent: spec.notifyParent, DecisionsEscalated: spec.decisionsEscalated, Assist: spec.assist, Parent: spec.parent, Snapshot: spec.snapshot, DecisionRecordPath: spec.decisionRecordPath}, spec.profile, spec.opts, runDir, spec.now)
++	p, err := NewBurlerReviewProducer("burler-review", BurlerHalfDeps{Runner: runner, Models: spec.models, Fans: spec.fans, RequiresFans: spec.requiresFans, GateFindingsPath: spec.gateFindingsPath, NotifyParent: spec.notifyParent, DecisionsEscalated: spec.decisionsEscalated, Assist: spec.assist, Parent: spec.parent, Snapshot: spec.snapshot, DecisionRecordPath: spec.decisionRecordPath, Diff: spec.diff}, spec.profile, spec.opts, runDir, spec.now)
+ 	if err != nil {
+ 		t.Fatalf("NewBurlerReviewProducer() error = %v; want nil", err)
+ 	}
+@@ -429,6 +431,53 @@ func TestBurlerReviewProducer_Call_ProfileAndOpts(t *testing.T) {
+ 		}
+ 	})
+ 
++	diffRows := []struct {
++		name     string
++		diff     func() (string, error)
++		wantDiff string
++	}{
++		{name: "the told diff reaches the spawned profile", diff: func() (string, error) { return "diff --git a/x b/x\n", nil }, wantDiff: "diff --git a/x b/x\n"},
++		{name: "a failed diff read spawns with no diff", diff: func() (string, error) { return "", errors.New("no merge base") }},
++		{name: "no diff reader spawns with no diff"},
++	}
++	for _, tt := range diffRows {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			spec := newHalfSpec()
++			spec.diff = tt.diff
++			runner := &shedfake.BurlerHalfRunner{ReviewResults: []burlerengine.ReviewResult{reviewDone("d")}}
++
++			shedfake.CallOK(t, newReviewProducer(t, filepath.Join(t.TempDir(), "run"), runner, spec))
++
++			if got := runner.GotReviewProfiles[0].Diff; got != tt.wantDiff {
++				t.Errorf("spawned profile's Diff = %q; want %q", got, tt.wantDiff)
++			}
++		})
++	}
++
++	t.Run("a retried attempt shares the one diff read", func(t *testing.T) {
++		t.Parallel()
++		const told = "diff --git a/x b/x\n"
++		reads := 0
++		spec := newHalfSpec()
++		spec.diff = func() (string, error) {
++			reads++
++			return told, nil
++		}
++		runDir := filepath.Join(t.TempDir(), "run")
++		runner := &shedfake.BurlerHalfRunner{ReviewResults: []burlerengine.ReviewResult{{Outcome: shuttleengine.OutcomeDied}, reviewDone("d")}}
++		runner.DuringReview = func(int) { writeRoundFile(t, roundReviewPath(runDir, 1)) }
++
++		shedfake.CallOK(t, newReviewProducer(t, runDir, runner, spec))
++
++		if reads != 1 {
++			t.Errorf("diff reads = %d; want 1 shared by both attempts", reads)
++		}
++		if len(runner.GotReviewProfiles) != 2 || runner.GotReviewProfiles[0].Diff != told || runner.GotReviewProfiles[1].Diff != told {
++			t.Errorf("spawned profiles = %+v; want two, both carrying the told diff", runner.GotReviewProfiles)
++		}
++	})
++
+ 	t.Run("round 1 has no round context", func(t *testing.T) {
+ 		t.Parallel()
+ 		runner := &shedfake.BurlerHalfRunner{ReviewResults: []burlerengine.ReviewResult{reviewDone("d")}}
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index e7540bab..2eb9cf17 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -584,6 +584,9 @@
+ // The `fans_recorded` key, never the `fan` key, says the names are there.
+ // A live reviewer is probed and resumed under the fan already recorded for its round.
+ // A list edited since therefore changes only rounds spawned after the edit.
++// A row told BurlerHalfDeps.Diff reads the diff once per spawning call and sets it as the spawned profile's Diff.
++// burlerengine writes that Diff out in per-package pieces for the reviewer.
++// A failed read is logged and spawns with none.
+ // A row told BurlerHalfDeps.Assist picks the round's assistant reviewer and its fan from the per-round lists.
+ // An entry with no model runs no assistant.
+ // The row passes the assistant's key, capped timeout and skip reason on.
+diff --git a/internal/shedrecipe/doc.go b/internal/shedrecipe/doc.go
+index 87feff8d..5a83e3de 100644
+--- a/internal/shedrecipe/doc.go
++++ b/internal/shedrecipe/doc.go
+@@ -142,6 +142,9 @@
+ // "document" selects Env.DocumentSubject and Env.RecordHead, and "code" Env.CodeSubject and Env.MergeInOnly.
+ // A named seam the Env does not carry, and a value outside the two, are refused when the row is built;
+ // an absent key tells no subject.
++// BurlerReview takes the optional key "stage_diff", a bool.
++// Set true, it gives each spawned reviewer the task's committed diff from Env.CodeDiff.
++// The diff is written out in per-package pieces, and a nil Env.CodeDiff is refused when the row is built.
+ // BurlerReview renders the amendment note of its run directory into the rubric's amendment marker.
+ // BurlerReview and the Bouncer hand Env.RedundancyReport to the rubric's redundancy_report marker.
+ // The rubric reads it only when it carries the marker.
+diff --git a/internal/shedrecipe/entries_burler.go b/internal/shedrecipe/entries_burler.go
+index 396ff838..952803d0 100644
+--- a/internal/shedrecipe/entries_burler.go
++++ b/internal/shedrecipe/entries_burler.go
+@@ -60,6 +60,9 @@ func reviewTargetSnapshot(env Env, runSubdir string) shedadapters.TargetSnapshot
+ 
+ // burlerReviewEntry is the Constructor for the "BurlerReview" registry row.
+ // It takes no "gates" key: its only gate is the engine's review-parse entry.
++// The optional "stage_diff" key, set true, gives each spawned reviewer the task's committed diff from Env.CodeDiff.
++// burlerengine writes that diff out in per-package pieces.
++// A nil Env.CodeDiff then refuses the row when it is built.
+ // Its producer records each round's target id, through a snapshot over the profile's fix scope and target paths.
+ // Its models, review key, assistant and parent seat come from its segment's settings.
+ // The fan lists come from the settings named by reviewer_fan_setting and fixer_fan_setting.
+@@ -88,9 +91,20 @@ func burlerReviewEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedPro
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	if err := configRejectUnknown(cfg, "run_subdir", "profile", "timeout_s", "color_segment", "role_prefix", "reviewer_fan_setting", "fixer_fan_setting"); err != nil {
++	stageDiff, err := configBool(cfg, "stage_diff", false)
++	if err != nil {
++		return nil, err
++	}
++	if err := configRejectUnknown(cfg, "run_subdir", "profile", "timeout_s", "color_segment", "role_prefix", "reviewer_fan_setting", "fixer_fan_setting", "stage_diff"); err != nil {
+ 		return nil, err
+ 	}
++	var diff func() (string, error)
++	if stageDiff {
++		if err := requireSeam("BurlerReview", "CodeDiff", env.CodeDiff); err != nil {
++			return nil, err
++		}
++		diff = env.CodeDiff
++	}
+ 	segment, err := rowSegment("BurlerReview", row, env)
+ 	if err != nil {
+ 		return nil, err
+@@ -145,7 +159,7 @@ func burlerReviewEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedPro
+ 	snapshot := reviewTargetSnapshot(env, runSubdir)
+ 	snapshot.Scope, snapshot.Paths = profile.FixScope, profile.Target.Paths
+ 	opts := burlerengine.RunOpts{Timeout: burlerRowTimeout(timeoutS, env), ReviewKey: segment.ReviewKey}
+-	producer, err := shedadapters.NewBurlerReviewProducer(row.Name, shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: segment.Models, Fans: fans, Assist: segment.Assist, Parent: segment.Parent, GateFindingsPath: env.gateFindingsPath(row.Name), Snapshot: &snapshot, DecisionRecordPath: env.DecisionRecordPath}, profile, opts, runDir, env.Now)
++	producer, err := shedadapters.NewBurlerReviewProducer(row.Name, shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: segment.Models, Fans: fans, Assist: segment.Assist, Parent: segment.Parent, GateFindingsPath: env.gateFindingsPath(row.Name), Snapshot: &snapshot, DecisionRecordPath: env.DecisionRecordPath, Diff: diff}, profile, opts, runDir, env.Now)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("shedrecipe: BurlerReview: %w", err)
+ 	}
+diff --git a/internal/shedrecipe/entries_burlerhalves_test.go b/internal/shedrecipe/entries_burlerhalves_test.go
+index 296f3c59..ae7dd26c 100644
+--- a/internal/shedrecipe/entries_burlerhalves_test.go
++++ b/internal/shedrecipe/entries_burlerhalves_test.go
+@@ -5,6 +5,7 @@ package shedrecipe
+ import (
+ 	"context"
+ 	"encoding/json"
++	"errors"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+@@ -196,6 +197,53 @@ func TestBurlerReviewEntry_ProfileMapping(t *testing.T) {
+ 			t.Errorf("round-1 added_decisions = %+v; want the one entry titled %q", record.AddedDecisions, "First call")
+ 		}
+ 	})
++
++	t.Run("StageDiffGivesTheCommittedDiff", func(t *testing.T) {
++		tests := []struct {
++			name     string
++			diff     func() (string, error)
++			wantDiff string
++		}{
++			{name: "DiffRead", diff: func() (string, error) { return "diff --git a/x b/x\n", nil }, wantDiff: "diff --git a/x b/x\n"},
++			{name: "NoDiff", diff: func() (string, error) { return "", nil }},
++			{name: "DiffReadFails", diff: func() (string, error) { return "", errors.New("no merge base") }},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				env := newTestEnv(t)
++				env.CodeDiff = tt.diff
++				cfg := minimalReviewConfig()
++				cfg["stage_diff"] = true
++
++				profile, _ := captureReview(t, "review-row", cfg, env)
++
++				if profile.Diff != tt.wantDiff {
++					t.Errorf("profile.Diff = %q; want %q", profile.Diff, tt.wantDiff)
++				}
++			})
++		}
++	})
++
++	t.Run("StageDiffWithoutCodeDiffIsRefused", func(t *testing.T) {
++		env := newTestEnv(t)
++		env.CodeDiff = nil
++		cfg := minimalReviewConfig()
++		cfg["stage_diff"] = true
++
++		_, err := burlerReviewEntry(reviewRow("review-row"), cfg, env)
++
++		if err == nil || !strings.Contains(err.Error(), "Env.CodeDiff") {
++			t.Errorf("burlerReviewEntry() error = %v; want it to name Env.CodeDiff", err)
++		}
++	})
++
++	t.Run("NoStageDiffGivesNoDiff", func(t *testing.T) {
++		profile, _ := captureReview(t, "review-row", minimalReviewConfig(), newTestEnv(t))
++
++		if profile.Diff != "" {
++			t.Errorf("profile.Diff = %q; want none", profile.Diff)
++		}
++	})
+ }
+ 
+ // TestBurlerReviewEntry_RubricStencil covers the profile.rubric_stencil key:
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index 13ecb49c..5d39228c 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -290,6 +290,9 @@ type Env struct {
+ 	// CodeSubject is the injected closure reading a code segment's subject.
+ 	// The Bouncer's subject key reads it when set to "code"; nil is legal when no row names one.
+ 	CodeSubject func() (shedadapters.Subject, bool, error)
++	// CodeDiff is the injected closure reading the full diff of the commits a code segment's task holds past its merge base.
++	// A BurlerReview row's stage_diff key reads it; nil is legal when no row sets that key.
++	CodeDiff func() (string, error)
+ 	// MergeInOnly reports whether the history after the since commit holds only merge-ins.
+ 	// It is told to a Bouncer whose subject is "code"; nil is legal when no row names one.
+ 	MergeInOnly func(since string) (bool, error)
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 1804e5a6..513234c2 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -139,6 +139,7 @@ var nilLegal = map[string]bool{
+ 	"Drift.Now":                        true,
+ 	"DocumentSubject":                  true,
+ 	"CodeSubject":                      true,
++	"CodeDiff":                         true,
+ 	"MergeInOnly":                      true,
+ 	"RecordHead":                       true,
+ 	"ReviewInput":                      true,
+@@ -548,6 +549,7 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 		CodeSubject: func() (shedadapters.Subject, bool, error) {
+ 			return shedadapters.Subject{Kind: shedadapters.SubjectCode, MergeBase: "merge-base", Head: "head", FullHash: "full-hash", PatchID: "patch-id"}, true, nil
+ 		},
++		CodeDiff:           func() (string, error) { return "", nil },
+ 		MergeInOnly:        func(string) (bool, error) { return false, nil },
+ 		RecordHead:         func() (string, error) { return "record-head", nil },
+ 		ReviewInput:        func() (string, time.Time, bool, error) { return "", time.Time{}, false, nil },
