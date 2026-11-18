@@ -1,6 +1,6 @@
 # P1 codexengine
 
-Rendered 2026-11-18 13:07 UTC; every age below is as of then.
+Rendered 2026-11-18 13:08 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`codexengine`](design-codexengine.md) · Age 1d · Owner `neve`
@@ -80,12 +80,6 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (1)
+## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Research (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| R2 |  | **Codex support in levels: review, darn, then the rest of tapestry**<br>• Say lym supports Codex only at a level proven on real runs; the first work is a darn-writer bench | [`codex-support-levels`](design-codex-support-levels.md) | 9d<br>4h | codex, shuttle |
