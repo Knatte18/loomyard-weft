@@ -1,6 +1,6 @@
 # Remove code no path from any main reaches
 
-`remove-unreachable-code` · Task · enhancement, tools · running · Drift-Recheck
+`remove-unreachable-code` · Task · enhancement, tools · running · Describe
 
 ## What was seen
 
