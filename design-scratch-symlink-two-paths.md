@@ -1,6 +1,6 @@
 # Agents must never build or check out a repository under .scratch, .lym or _lym
 
-`scratch-symlink-two-paths` · Task · bug, stencil · running · Darn-Write
+`scratch-symlink-two-paths` · Task · bug, stencil · running · Drift-Verify
 
 Imported from [issue #140](https://github.com/Knatte18/loomyard/issues/140).
 
