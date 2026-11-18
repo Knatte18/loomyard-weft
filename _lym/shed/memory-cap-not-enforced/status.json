@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Review",
+  "current_producer": "Code-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Review",
-    "last": "Code-Bouncer → bounced to Code-Burler-Review",
+    "now": "Code-Burler-Fix",
+    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -92,6 +92,42 @@
       "at": "2026-11-18T14:13:25Z",
       "started_at": "2026-11-18T14:13:01Z",
       "routed_to": "Code-Burler-Review"
+    },
+    {
+      "producer": "Code-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/memory-cap-not-enforced/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-18T14:22:12Z",
+      "started_at": "2026-11-18T14:13:31Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-18T14:21:38.652300723Z",
+          "end": "2026-11-18T14:21:38.652583522Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-11-18T14:21:39.059866648Z",
+          "end": "2026-11-18T14:21:57.109108779Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-18T14:21:57.137596925Z",
+          "end": "2026-11-18T14:21:57.138480689Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-18T14:21:57.185739852Z",
+          "end": "2026-11-18T14:21:57.186094496Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Fix"
     }
   ],
   "product": {
