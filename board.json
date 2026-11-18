@@ -252,37 +252,6 @@
       "record_body_sha256": "ebe292b4491546cf059710bc9d8ccf8e7ea8a11a0e73122f06280c5d87a9b038"
     },
     {
-      "id": 1463,
-      "handle": "T4",
-      "slug": "review-result-checks",
-      "title": "Result checks in Code-Review, loosened-check rulings in Drift, and PR-Review send-backs to Code-Review",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "stencil",
-        "drift",
-        "fabric",
-        "burler",
-        "landing",
-        "loom",
-        "shed",
-        "testkit",
-        "docs"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `code-review-result-checks`.\n\nTakes: the Sketch's decision record; the review base from loomcli's taskMergeBase; burlerengine.ParseReview; shedengine's reroute history entries; internal/friction\nDelivers: the rubric's result-check bullets and review-input reading, a shared Loosened-Check fragment in every committing brief, Drift's per-file loosened-check rulings with their Stuck and verdict lines, the pr-findings verb with its send-back mark, deferred clear and friction note, Code-Bouncer's full generation on a send-back file, and the figures rule in the Describe and darn writer briefs\nExports: the Loosened-Check commit trailer; lym loom pr-findings \u003cfile\u003e; the loom.pr_review_small_max key; on_reroute: Code-Bouncer on PR-Review in tapestry, darn and sampler; the ReviewInput seam returning every input written after the settle\n\nThe part changes these packages:\n\n- contracts/stencils (about 250 changed lines)\n- contracts/recipes (about 10 changed lines)\n- internal/driftengine (about 600 changed lines)\n- internal/fabricengine (about 200 changed lines)\n- internal/loomcli (about 500 changed lines)\n- internal/loomshed (about 60 changed lines)\n- internal/loomengine (about 40 changed lines)\n- internal/shedrecipe (about 80 changed lines)\n- internal/shedadapters (about 350 changed lines)\n- internal/landingshed (about 400 changed lines)\n- internal/pullrequest (about 60 changed lines)\n- internal/testkit/envkit (about 20 changed lines)\n- docs (about 30 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-18T10:22:51Z",
-      "revised": "2026-11-18T10:33:46Z",
-      "profile": "solid",
-      "discussed": true,
-      "record_body_sha256": "ee25400eb64d9877c5ff08b3a229e94403968b68d265583bd50647825491f97a"
-    },
-    {
       "id": 1465,
       "handle": "E2",
       "slug": "clean-room-module-rewrite",
@@ -347,34 +316,6 @@
       },
       "profile": "light",
       "project": "test-suite-trim"
-    },
-    {
-      "id": 1471,
-      "handle": "T5",
-      "slug": "memory-cap-not-enforced",
-      "title": "The per-process memory cap sometimes does not hold, and a runaway process takes the machine down",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "process",
-        "gate"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "RunMemoryCappedVia lets a child keep 384 MB under a 128 MB cap on some runs; find why, fix it, prove it on repeated runs",
-      "body": "## What was seen (2026-11-18)\n\n`internal/proc`'s `TestRunMemoryCappedVia_StartsThroughItsStartAndReportsAChildKilledAtTheCap` passed in a tier-1 gate at 13:03 UTC\nand failed at 13:10 and 13:12 UTC (gate logs `20261118T131024Z-tier1-808563` and `20261118T131227Z-tier1-1218541` under `_bolt/.lym/gate/runs/`):\n\n`memorycap_linux_test.go:128: RunMemoryCappedVia of a shell whose child keeps 384 MB under 134217728 = tree killed false, \u003cnil\u003e, 1 starts, output \"survived\\n\"`\n\nSo the cap did not hold: the child kept 384 MB in a 128 MB scope.\nRight after, a fixer probing this by hand ran `systemd-run --user --scope -p MemoryMax=134217728 -p MemorySwapMax=0 -p OOMPolicy=continue -- sh -c '... timeout 20 tail /dev/zero ...' | tail -8`;\na `tail` process grew to 11.4 GB outside any cap, the load reached 265 and Neve hung until a power-off at 14:24 local (journal of boot -1, `memsample` lines).\nEarlier the same day the cap did hold: `lym gate redundant`'s `mutants.test` processes were killed at their 2 GB cgroup cap at 14:10 local.\nThe cap came with `bd707e16`, `c75a2b5d` and `580b27a1` (2026-11-17); the failure is intermittent, which is how it landed.\n\n## Fix\n\n- Find why the cap sometimes does not apply: for example a race between the scope's creation and the child's start,\n  a process that ends up outside the scope's cgroup, swap or `MemorySwapMax` handling, or a fallback path that runs the command uncapped without saying so.\n- Fix it so a capped command can never run uncapped silently: if the cap cannot be set, the call fails or says so loudly.\n- Never reproduce the fault with an unbounded memory hog on the shared machine: every probe and test hog is bounded in size (a fixed number of MB) and in time.\n\n## Done when\n\n- The memory cap tests in `internal/proc` pass on many repeated runs in a row (state the count), also with other gate work running beside them.\n- The change description names the root cause and how the fix closes it.\n",
-      "status": "done",
-      "created": "2026-11-18T13:31:40Z",
-      "revised": "2026-11-18T13:31:40Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "solid"
     },
     {
       "id": 1472,
