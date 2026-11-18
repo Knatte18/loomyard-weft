@@ -315,59 +315,6 @@
       "revised": "2026-11-18T16:38:30Z"
     },
     {
-      "id": 1473,
-      "handle": "T5",
-      "slug": "drift-verify-halt-fixes",
-      "title": "Drift-Verify halts: no false guard halt on record edits, and a short halt note with the way forward first",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "enhancement",
-        "drift",
-        "loom"
-      ],
-      "issues": [
-        146,
-        147
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The judge guard tells a parent decision-record edit from a judge edit and a resume rechecks; the halt note groups repeated findings, caps its length and leads with the way forward",
-      "body": "Bundles issues #146 and #147; both are Drift-Verify halts from task `dop-pumps-off-negative-spp`.\n\n## 1. The judge guard halts on decision-record edits (issue #146)\n\n### What happened\n\n`lym loom` halted at `Drift-Verify` (state `blocked`, anomaly `escalation-to-human`) with:\n\n```\ndecision halt: the judge session changed what it may not: records: src/csharp/NORCE.Models/_lym/discussion/decision-record.md was changed; the snapshot taken before it ran ... way forward: the parent or the operator resets a moved branch to its snapshot HEAD, restores a changed tracked file from its HEAD ... deletes an added path and the current capture's scratch directory ..., keeps the snapshot directory, which the resume compares against, then runs lym loom resume\n```\n\nThe run was resumed and halted a second time with the same message.\nThe second halt names the same capture scratch directory (`.lym/drift/current/\u003ctimestamp\u003e-\u003cpid\u003e`) as the first, although it came from a new trace file.\nBoth halts show identical history (8 entries, `Drift-Verify / stuck`).\n\n### Why it is abnormal\n\n- The changed path is the run's decision record, which the parent legitimately edits with `lym loom decision add` and `lym loom decision replace`.\n  The judge-session guard cannot tell a parent edit made while the judge ran from an edit by the judge, so it can halt a run for a change the judge never made.\n  The note gives no way to tell which actor changed the file.\n- The recovery text asks the operator to restore files and delete a scratch directory by hand, then resume.\n  A resume that re-halts on the same stale capture directory gives no signal whether the restore was applied or incomplete.\n\n### What to do\n\n- Record who changed the guarded path (judge session or another process) in the halt note, for example by comparing the file's mtime to the judge's start and end.\n- Exclude the decision record from the guarded set, or snapshot it under a lock that `lym loom decision add` and `lym loom decision replace` honour.\n- On resume, re-check the guard against the snapshot and say in the output which path still differs, rather than repeating the first halt's text.\n\nProvenance: task `dop-pumps-off-negative-spp`; notes `loom-halt-2.md`, `loom-halt-3.md`.\n\n## 2. The halt note repeats one rationale per row (issue #147)\n\n### What happened\n\n`lym loom` halted at `Drift-Verify` (state `blocked`, anomaly `escalation-to-human`) because the judge ruled that a change did not match its expectation.\nThe halt reason, which `lym loom` writes whole into the halt note under the friction directory, is one sentence per changed line of the compared capture.\nIt listed over a hundred changed lines (a ticked time series), each carrying the same judge rationale, and the note grew to about 44 KB.\nThe halt output ends with the way forward (`lym drift amend \u003cslug\u003e --entries \u003cfile\u003e` then `lym loom resume`, or `lym loom goto --to Darn-Write`) only after all of that text.\n\n### Why it is abnormal\n\n- The same rationale repeats on every row, so the actionable information (the one cause and the two ways forward) is buried.\n- A reader of the halt note or the pane has to scroll past the whole list to reach the way forward.\n- The same text goes into every consumer of the note (reflection, operator pane), which inflates their context.\n\n### What to do\n\n- Group judge findings that share a case, key and rationale into one entry with a row range and the first and last old/new values.\n- Cap the halt reason's length, point to the full findings file by repo-relative path, and put the way forward first.\n\nProvenance: task `dop-pumps-off-negative-spp`; note `loom-halt-4.md`.\n",
-      "status": "done",
-      "created": "2026-11-18T16:38:33Z",
-      "revised": "2026-11-18T16:39:04Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "solid"
-    },
-    {
-      "id": 1474,
-      "handle": "T6",
-      "slug": "rewrite-shrink-estimate",
-      "title": "Estimate how much smaller a clean rewrite of the most patched modules would be",
-      "kind": "task",
-      "labels": [
-        "research",
-        "landing"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Mechanical duplicate count over seven modules, plus a spec and a size estimate of a clean landingshed; input to E2",
-      "body": "## Why\n\nThe operator weighs a clean-room rewrite of the most patched modules (note `clean-room-module-rewrite`).\nThe gain sought is less code and fewer test lines, so each run reads less, the gate runs faster and reviews shrink.\nThis study estimates that gain before any rewrite starts.\n\n## Scope, exact\n\n- Modules: `loomcli`, `fabricengine`, `landingshed`, `shuttleengine`, `battencli`, `websterengine`, `driftengine` under `internal/`.\n- No agent reads all of them. Only `landingshed`'s code is read in full, once; its tests are sampled, not read whole.\n\n## Steps\n\n1. Mechanical, all seven modules: count lines of code, comment and blank lines, and test lines per module.\n   Run one duplicate-code detector (for example `dupl` at a threshold of 50 tokens) once per module over code and over tests;\n   record duplicated lines and the largest clone groups. Fetch the tool with `go run` at a pinned version; install nothing globally.\n2. `landingshed` only: write a spec of what the module must do and why: its job, its invariants, and each special case with its reason,\n   drawing reasons from its fix-commit history, never from how the current code does it.\n3. From that spec, estimate the size of a clean version: list the parts a clean design needs with a line estimate each,\n   and estimate the test lines a spec-driven suite needs, by behaviour.\n   Name what in today's code a clean version would drop (duplication, dead paths, workaround layers, over-long comments).\n4. Extrapolate to the other six modules only from step 1's numbers and the landingshed ratio, and say plainly that it is an extrapolation.\n\n## Output\n\nA report under `docs/research/rewrite/shrink-estimate-\u003cdate\u003e/` with:\nthe per-module table from step 1; the landingshed spec as its own file (reusable as step 1 of a pilot);\nthe clean-size estimate with today's size beside it; and the extrapolated range for the seven modules.\nNo code changes. No test runs beyond what step 1's tools need.\n",
-      "status": "done",
-      "created": "2026-11-18T16:44:29Z",
-      "revised": "2026-11-18T16:44:29Z",
-      "profile": "docs"
-    },
-    {
       "id": 1475,
       "handle": "F2",
       "slug": "fabric-single-repo-mode",
