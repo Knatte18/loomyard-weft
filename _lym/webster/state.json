@@ -611,9 +611,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-claude-accounts-per-worktree/0ad17d4c-a2b0-4598-8497-d2e3f0282dbc/subagents/agent-a986626d3daf43ca0.jsonl"
       ]
+    },
+    "4": {
+      "slug": "claude-account-store",
+      "cards": [
+        "04-claude-account-store",
+        "05-account-pick-at-making",
+        "06-launch-exports-account"
+      ],
+      "cardHashes": {
+        "04-claude-account-store": "2db58545b045473b327e229d6f62b911a96a448156ec854ddeaee46d52b4a437",
+        "05-account-pick-at-making": "3e3151acd58d88cff71c484528a6e2e958b239a9004114f8956cacd85a04bdbd",
+        "06-launch-exports-account": "58957daa07a8c0fa4181903eb3bc9accc654149083f5cdbcd6d26caf012bbd08"
+      },
+      "startSha": "7098adc48d603adb253000411d8d462e615ff741",
+      "kind": "fork",
+      "spawnedAt": "2026-11-18T12:48:31Z",
+      "sessionId": "0ad17d4c-a2b0-4598-8497-d2e3f0282dbc",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "5cbffc253a5bb4f6a5785956571107fa",
   "masterSessionId": "0ad17d4c-a2b0-4598-8497-d2e3f0282dbc",
   "masterEngine": "claude",
