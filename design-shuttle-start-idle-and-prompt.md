@@ -1,6 +1,6 @@
 # Shuttle start: idle check misses an idle prompt, and a review strand misses its prompt turn
 
-`shuttle-start-idle-and-prompt` · Task · bug, shuttle, burler · running · Code-Bouncer
+`shuttle-start-idle-and-prompt` · Task · bug, shuttle, burler · running · Code-Burler-Review
 
 Two shuttle startup bugs, bundled because both sit in the prompt delivery after a seat session starts.
 
