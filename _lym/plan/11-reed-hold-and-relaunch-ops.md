@@ -18,10 +18,10 @@
 - `internal/reedengine#StrandStatus`
 - `internal/shuttleengine#ReedOps`
 - `internal/shuttleengine#fakeReed`
-- `internal/reedengine/doc.go`
 - `internal/shuttleengine/doc.go`
 
 **Edit:**
+- `internal/reedengine/doc.go`
 - `internal/reedengine#planResumeLaunches`
 - `internal/reedengine#TestPlanResumeLaunches_ThreeLifecycleStates`
 - `internal/reedengine#Engine.Status`
@@ -42,6 +42,10 @@ D7's two reed ops; `ReplaceStrand` mints a new GUID, so neither exists today.
 - `RelaunchStrand(guid, spec)`, under the op lock and on a held strand, replaces the stored `Cmd`, `ResumeCmd` and `SessionID` with `RelaunchSpec`'s, launches the pane through `launchStrandLocked` with the new `Cmd`, clears the mark, and saves; the GUID never changes.
   A strand that is not held, or not tracked, is refused, so a stop that removed the strand during the relaunch wins.
 - `RemoveStrand` removes a held strand like any other.
+
+Reed resume and reconcile skip a held strand for as long as it is held, so a `Wait` process that dies between D7's step 1 and step 4 leaves the strand down.
+The hold ends at the stop verb's removal, `ReleaseStrandHold`, `RelaunchStrand`, or card 15's settle at the next attach or `Wait` past the relaunch bound; nothing else clears it.
+`reedengine/doc.go`'s sentences that Resume relaunches every non-live strand with no list or a missing path, and drops every non-live strand whose list is complete, gain the held strand's exception: Resume neither relaunches nor drops it.
 
 `ReedOps` gains the three methods; `fakeReed` records each call in its `CallLog` with a scripted error and runs an optional `OnEndStrandProcess func()` field after recording that call, so a test can interleave a stop, and `shuttlefake.Reed` implements them over its strand table, so `skillReed`, which embeds `fakeReed`, and every `ReedOps` user still compile.
 

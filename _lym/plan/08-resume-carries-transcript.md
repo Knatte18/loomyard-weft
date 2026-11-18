@@ -19,6 +19,7 @@
 - `internal/orchcli#orchCLI.resumeOrch`
 - `internal/orchcli#TestStart_ResumeOverALiveHolder`
 - `internal/shuttleengine/claudeengine#TestClaudeProjectDirFor_EncodesNonAlnumBytes`
+- `internal/shuttleengine/claudeengine/doc.go`
 
 **Delete:**
 - `internal/shuttleengine/claudeengine#claudeProjectDirFor`
@@ -33,7 +34,6 @@
 - `internal/shuttleengine/claudeengine#writeSessionTranscript`
 - `internal/shuttleengine/claudeengine#replaceTranscriptWithDirectory`
 - `internal/shuttleengine/doc.go`
-- `internal/shuttleengine/claudeengine/doc.go`
 
 **Uses:**
 - `plan:internal/shuttleengine/claudeengine#Claude.resolveLaunchAccount`
@@ -57,6 +57,7 @@ After card 7 and this card, `claudeProjectDirFor`, `projectsRoot` and `sessionRe
 `Claude.CarryTranscript` resolves the account by D4 (`resolveLaunchAccount`), finds `<session>.jsonl` under the worktree's project in every known directory (card 7), the resolved one included, and when the newest copy is not the resolved directory's copies it over the resolved directory's, with its `<session>/` directory when present, leaving the source in place; `copyTranscript` creates the resolved directory's project directory when the account never ran in the worktree.
 Found nowhere, it copies nothing and reports false; `CheckResume` then refuses with its no-transcript error as today, and the caller starts fresh or fails as it does today.
 `CheckResume` stats the transcript in the resolved directory's project, and `checkResumable`'s live-holder test reads the registries of every known directory as one set, as `sessionHolder` does after card 7.
+`claudeengine/doc.go`'s resume paragraph is rewritten to match: the no-transcript refusal names the resolved directory's project instead of the pane cwd's project directory, and the resume check reads every known directory's registry as one set, as `SessionHolder` and the prober do after card 7.
 
 Tests are tier0:
 `TestClaude_CarryTranscript`, on fake directories: a transcript only under another known directory is copied with its session directory into the resolved one, reports true, and the source stays; a resolved directory holding an older copy gets the newer one; a resolved directory holding the newest copies nothing and reports false; a resolved account with no project directory for the worktree gets it created and the copy; a transcript nowhere reports false and `CheckResume` then refuses with `ErrNoTranscript`; with the prime's account changed by a beams pin the copy lands in the pinned directory, so the orch's resume passes and does not launch fresh (D6).

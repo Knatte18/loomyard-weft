@@ -38,6 +38,7 @@
 - `internal/shuttlecli#Command`
 - `internal/battencli#battenCLI.wire`
 - `internal/battencli#battenCLI.primeShuttle`
+- `internal/battencli#primeShuttleRunner`
 - `internal/webstercli#websterCLI.wireHub`
 - `internal/gatecli#newStrandRig`
 
@@ -68,12 +69,14 @@ The zero value is "told no worktree": card 6 then resolves only the hub pin.
 `shuttleengines`' unexported `constructor` type gains the worktree parameter, the registry's claude constructor calls `claudeengine.NewForWorktree` and codex's ignores it; `build`, `New`, `NewWithSeams`, `SessionNamers` and `RecordReaders` pass `shuttleengine.Worktree{}`, and the new `NewForWorktree` passes its own.
 Every caller that launches sessions and holds a `*lymcwd.Location` switches from `shuttleengines.New(cfg, fabricengine.ConfigDirs(loc))` to `shuttleengines.NewForWorktree(cfg, fabricengine.ConfigDirs(loc), hubgeom.EngineWorktree(loc))`: the listed members.
 `battenCLI.primeShuttle` passes the prime's location, so its sessions read as the prime's (D9).
+`primeShuttleRunner` switches from `shuttleengines.New(shuttleConfig, dirs)` to `shuttleengines.NewForWorktree(shuttleConfig, dirs, hubgeom.EngineWorktree(location))`.
+`beamcli`'s `runnerTidyShuttle.Start` launches the dobby's board-tidy agent in the beam worktree through `battencli.ShuttleRunner`, which returns that runner, so the agent runs under the beam's account (D4, D9).
 Readers that only stop or read records keep `New`, since the known directories of card 7 come from the dirs, not the worktree.
 
 `TestEngineWorktree` is tier1, in package `hubgeom`: on a `hubforge` hub with its prime, a task pair, a beam pair marked through the origin record and a pair whose board entry carries the beam flag before any origin mark, it asserts each location's `Name` and `Kind`, the last reading beam, the `AccountDir` path under the Bolt's `.lym`, and that `Names` lists all three and drops a pair whose directory was removed.
 `keepWarmWith` and the constructor map literal of `TestKeepWarm` take the new parameter.
 `TestNew` (tier0) gains a row that `NewForWorktree`'s claude engine carries the told worktree and `New`'s carries the zero value.
 
-**ImpactSummary:** One told value added; `New`, `NewWithSeams`, `NewFromConfig` keep their signatures, and the eight launching wiring members switch to `NewForWorktree`, each a one-line change beside a Location it already holds.
+**ImpactSummary:** One told value added; `New`, `NewWithSeams`, `NewFromConfig` keep their signatures, and the nine launching wiring members switch to `NewForWorktree`, each a one-line change beside a Location it already holds.
 
 **Commit:** 3: shuttleengines: tell launching engines their worktree's name, kind and account directory

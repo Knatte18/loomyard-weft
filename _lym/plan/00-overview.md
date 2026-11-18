@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -41,7 +41,7 @@ The cards build bottom-up: the shell statement and the config keys, the told wor
 - The account file keeps D2's `worktrees` map and adds a `picked` map of entry times, which makes two picks at once for one worktree leave one entry and one increment (D3's criterion).
 - The live-transcript readers (fork audit, outstanding forks, session-name drift, session usage) read the launched directory (D8) as the known directory whose session registry holds the session's live entry, since shuttle hands them only a session id and a workdir, not the run directory holding `account.json`; a session with no live entry reads under the worktree's resolution, then the other known directories (card 7).
 - A new beam is made by its pawl run's Worktree-Create step before Beam-Up marks it, and `hubgeom`'s `pairIsBeam` already reads the board's beam flag for that window, so `EngineWorktree` reads it as a beam and no pick runs for it under a beams pin (D3).
-- `PATTERN-shuttle-provider-seam`'s overview line stays as it is; card 14 fences it and changes the background's Shuttle stop section, so the overview does not grow.
+- `PATTERN-shuttle-provider-seam`'s overview line stays as it is; card 14 fences it and changes the background's Shuttle stop section and done-when paragraph, so the overview does not grow.
 
 ## PATTERN changes
 

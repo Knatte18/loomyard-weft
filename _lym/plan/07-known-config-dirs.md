@@ -37,8 +37,6 @@
 - `internal/battencli#battenCLI.primeShuttle`
 - `internal/gatecli#newStrandRig`
 - `tools/tokencount#main`
-
-**Extends:**
 - `internal/shuttleengine/claudeengine/doc.go`
 - `internal/shuttleengines/doc.go`
 
@@ -68,8 +66,12 @@ A `claude.accounts` that fails to load is logged at Warn and the remaining direc
 The live readers get only a session id and a workdir from shuttle, so they find the launched directory through the live registry entry Claude Code writes under it, not through card 6's `account.json` in a run directory they are not told.
 
 Every engine that reads the known directories is built with the hub's config `Dirs`: `SessionNamers` and `RecordReaders` gain a `dirs` parameter and pass it to the constructors.
-Callers: `loomCLI.wire`, `loomCLI.stopStepRuns`, `battenCLI.wire`, `battenCLI.primeShuttle` and `newStrandRig` pass the `ConfigDirs` of the location they already hold; `reedcli`'s `enterSession` resolves the hub's prime location from its `hub` and passes its `ConfigDirs`, passing `configengine.Dirs{}` when that fails; `tokencount`'s `main` resolves the worktree it is pointed at through `lymcwd` and passes its `ConfigDirs`, and `configengine.Dirs{}` outside a hub.
+Callers: `loomCLI.wire`, `loomCLI.stopStepRuns`, `battenCLI.wire`, `battenCLI.primeShuttle` and `newStrandRig` pass the `ConfigDirs` of the location they already hold; `reedcli`'s `enterSession` passes `fabricengine.ConfigDirs(location)` of the watched session's location it already resolves, so the namers read that worktree's `env` value; `tokencount`'s `main` resolves the worktree it is pointed at through `lymcwd` and passes its `ConfigDirs`, and `configengine.Dirs{}` outside a hub.
 Hook-driven readers take `transcript_path` from the payload and do not change.
+
+The docs' one-directory sentences are rewritten.
+In `claudeengine/doc.go`: the worktree's project directory as `<home>/.claude/projects/<dir>` becomes the project directory under every known directory; the plugins file under `CLAUDE_CONFIG_DIR` or else `~/.claude`, and the config directory as `CLAUDE_CONFIG_DIR`, else `.claude` under the home directory, become the launch's effective directory; the prober's liveness read from one registry, and the one reader of registry entries the resume check and the prober share, become every known directory's registry read as one set by `SessionHolder` and the prober.
+In `shuttleengines/doc.go`: `RecordReaders` built with no config directories, as `SessionNamers` builds its engines, becomes both built with the hub's `Dirs`.
 
 Tests are tier0 with `HOME` and the account directories under `t.TempDir()`:
 `TestLocateSessions` rows: a session under a listed non-default directory and one under a retired account's directory are found; a session id in two directories is returned once, as the newer copy; a machine layer whose `accounts` fails to load is logged and `~/.claude` is still read; an engine told no board directory reads the process's `CLAUDE_CONFIG_DIR` and `~/.claude`.

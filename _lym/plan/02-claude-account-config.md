@@ -9,6 +9,7 @@
 - `internal/shuttleengine/claudeengine#ConfigSpec`
 - `internal/shuttleengine/claudeengine#LoadConfig`
 - `internal/shuttleengine/claudeengine#TestLoadConfig`
+- `internal/configreg#TestModules_EveryTemplateKeyClassified`
 
 **Create:**
 - `plan:internal/shuttleengine/claudeengine#AccountConfig` -> `type AccountConfig struct`
@@ -31,6 +32,7 @@ D1's keys join claude.yaml.
 `AccountConfig` holds `Name` (`name`), `ConfigDir` (`config_dir`), `Weight int` (`weight`) and `Windows map[string]int` (`windows`, window name to the used percentage at or above which the account is passed over in that window).
 `AccountPins` holds `Hub` (`hub`) and `Beams` (`beams`).
 The template gains `accounts: []` and `account_pins: {hub: "", beams: ""}`, and `ConfigSpec` classifies `accounts` and `account_pins` `configengine.CategoryMachine`, so `lym config claude --layer machine` writes them and the local layer refuses them (`PATTERN-config-layers`; new keys, so no reinterpretation).
+`configreg`'s `TestModules_EveryTemplateKeyClassified` pins every module's machine keys and local-denied keys, and a machine key is local-denied too, so its `wantMachineKeys` gains a claude case wanting `[]string{"account_pins", "accounts"}` and its `wantLocalDenied["claude"]` becomes `{"account_pins", "accounts", "binary", "deny_ask_user_question"}`.
 
 `LoadConfig` validates after the merge, before it returns, and every refusal is marked with `configengine.MarkInvalid`, so `Prepare` and `OpenLaunch` refuse the launch through `loadConfigOrRefuse` and a bad value never degrades to no accounts:
 - `refuseTrackedAccountKeys` reads `configengine.Layers(dirs, ConfigSpec())` and refuses a non-empty `accounts`, `account_pins.hub` or `account_pins.beams` in the default or worktree layer, also when the machine layer holds the key.

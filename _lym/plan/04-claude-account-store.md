@@ -18,7 +18,6 @@
 - `plan:internal/shuttleengine/claudeengine#pickAccount` -> `func pickAccount(file accountFile, req pickRequest) (accountFile, string, bool)`
 - `plan:internal/shuttleengine/claudeengine#resolveAccount` -> `func resolveAccount(claude Config, worktree shuttleengine.Worktree, file accountFile, usage map[string]usageRecord, now time.Time) (AccountConfig, bool)`
 - `plan:internal/shuttleengine/claudeengine#TestPickAccount` -> `func TestPickAccount(t *testing.T)`
-- `plan:internal/shuttleengine/claudeengine#TestResolveAccount` -> `func TestResolveAccount(t *testing.T)`
 - `plan:internal/shuttleengine/claudeengine#TestMergeUsage` -> `func TestMergeUsage(t *testing.T)`
 
 **Extends:**
@@ -59,7 +58,6 @@ A hub pin is never skipped; a zero `Worktree` reaches only the hub pin.
 
 Tests are tier0 over directories under `t.TempDir()`, each logged-in account an empty `.credentials.json` (D10):
 `TestPickAccount` rows: weights 2 and 1, both eligible, six picks give four and two and never the second twice in a row; a listed window at or above its threshold with a future reset is passed over, and with its reset passed it is taken; an account listing no windows with a future `BlockedUntil` is passed over; an account without `.credentials.json` and one of weight 0 are never taken; no candidate returns not ok; every candidate short takes the earliest latest blocking reset, a tie to the earlier entry; with the fallback off it returns not ok; an added and a reweighted account get the lowest unchanged count over weight times their weight, and an account listed throughout under one weight keeps its count; the excluded account is never taken; `darwin` needs no credentials file.
-`TestResolveAccount` rows: hub pin over entry and beams pin; beams pin on prime and beam, not task; a blocked beams pin yields to the entry and stands with no entry; a blocked hub pin stands; an entry naming a removed or retired account reads as none; a zero worktree gets only the hub pin.
 `TestMergeUsage` rows: a later reset replaces, the same reset keeps the higher percentage, an earlier reset is dropped, and `BlockedUntil` survives a merge; a missing usage file reads as the zero record; an undecodable account file and an undecodable usage file read as zero records.
 
 **ImpactSummary:** New file of unexported functions and two new `lymdirs` constants; nothing existing changes behaviour until cards 5, 6, 9 and 13 call it.

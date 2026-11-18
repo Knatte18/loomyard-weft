@@ -40,7 +40,7 @@ Under a beams pin the switch writes the limited worktree's entry only; the pinne
 A worktree with no entry on a listed directory switches to another account, never its own.
 
 `Runner.SwitchAccountOnLimit(guid, turnEnd)` finds the run by its strand GUID and asks its engine; an engine without the capability answers false.
-It is how the orch watcher (card 17) asks for the same switch; card 14's `Wait` asks its own engine directly.
+It is how the orch watcher (card 17) asks for the same switch; card 14's `Wait` and load hold ask their own engine directly.
 
 Tests are tier0 over a temporary hub and fake account directories:
 `TestClaude_SwitchAccount` rows: a hit with a stated reset records it as `blocked_until`, and one with none records 30 minutes on, an earlier hit never lowering a stored later one, and the account then has no headroom until it passes; another eligible candidate becomes the entry with its count incremented and the result is true; no other eligible account leaves the entry unchanged and returns false; a hub pin changes nothing and returns false; a beams-pinned worktree's entry is written while the pin's account is blocked, and resolution returns to the pin once `blocked_until` passes; an entry-less worktree on a listed directory switches to the other account; two calls for two sessions of one worktree at once make one switch, the second returning true with no write; an unlisted launched directory records nothing; with one account of positive weight it records the limit and returns false; after a switch, `Prepare` with the session as `ResumeSessionID` writes `account.json`, the status line and a `ResumeCmd` naming the new account, and `CheckResume` passes once `CarryTranscript` copied the transcript.
