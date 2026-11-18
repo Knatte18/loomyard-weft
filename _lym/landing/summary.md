@@ -1,25 +1,30 @@
 # Tell agents never to build or check out under .scratch, .lym or _lym
 
-Fixes #140.
+A task agent built an external .NET harness in a scratch checkout under `.scratch`.
+`.scratch` is a link into the weft, so MSBuild saw each project under two paths and the build failed on a missing project reference.
+Agents have also checked out a worktree or clone under `.scratch/`, which nests one git repository inside another.
 
-A task agent built an external .NET harness from a checkout under `.scratch`.
-`.scratch` is a link into the weft, so MSBuild saw each project under two paths and failed on a missing project reference.
-The edit directive invited this: it explained how a build under `.scratch/` resolves relative references and told the agent to name the working tree's files by absolute path.
+The instructions lym ships now say that `.scratch`, `.lym` and `_lym` are scratch and record folders, never a build location.
+An agent never builds, restores or compiles anything under them, and never creates a git worktree, clone or checkout there.
 
-## Changes
+Closes #140
 
-- **Edit directive, both engine copies** (`contracts/stencils/engine/claude/edit-directive.md`, `contracts/stencils/engine/codex/edit-directive.md`):
-  the build-resolution sentences are replaced by a ban.
-  `.scratch`, `.lym` and `_lym` hold scratch files and records, never a build:
-  nothing is built, restored or compiled under them, and no git worktree, clone or checkout is created there.
-  Every spawned role's opening stencil carries this directive, on Claude and on Codex alike.
-- **Orch role** (`contracts/orchrole/orch-role.md`): its notes carry the same ban,
-  since an orch session gets the role text rather than the edit directive.
-- **`internal/editdirective`**: the package doc states the ban in place of the old build guidance,
-  and `TestDirective_ReadsTheEnginesCopyWithoutBanner` asserts that each engine's copy contains it.
+## What changes
+
+- The Claude and Codex edit-directive stencils (`contracts/stencils/engine/{claude,codex}/edit-directive.md`) carry the ban.
+  It replaces the earlier advice to build under `.scratch/` and name the working tree's files by absolute path.
+- The orch role contract (`contracts/orchrole/orch-role.md`) carries the same ban in its notes and orch rules.
+- The `internal/editdirective` package doc matches the new stencil content.
 
 ## Design decisions
 
-- `.scratch` stays a link, as the operator decided; only the instructions change.
-- The `fabricengine` package doc still records that a build under the link resolves references from the link's target.
-  That is a true fact about the link, and the new ban rests on it, so it stays.
+- `.scratch` stays a link; it does not become a real directory, per the operator's decision on the issue.
+  The fix is instruction text only, with no guard or code change that enforces the ban.
+- The absolute-path workaround is dropped rather than kept beside the ban, so the stencils no longer suggest that building under `.scratch` is possible.
+
+## To check by hand
+
+- The stencil prose was not run against a live agent session, so whether agents now follow the ban is unverified.
+- Code-review finding `edit-directive-test-pins-stencil-prose` in `internal/editdirective`:
+  a test assertion pinned the stencil's wording.
+  The latest commit drops that assertion; confirm no remaining test pins the new prose.
