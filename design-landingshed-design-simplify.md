@@ -1,6 +1,6 @@
 # Pilot: simplify the design of landingshed without changing behaviour
 
-`landingshed-design-simplify` · Task · enhancement, landing · running · Drift-Expect
+`landingshed-design-simplify` · Task · enhancement, landing · running · Darn-Write
 
 ## Why
 
