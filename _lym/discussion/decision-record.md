@@ -121,9 +121,13 @@ Rationale: The board entry marks the task a bench arm of plan-writer-explorer-fo
 
 ## Open risks
 
-- Parent commit `7c23591` ("Show a beam's pawl checklist in a second overview window", listed by `lym loom peers`, not an ancestor of this worktree's HEAD) fixes the same bug by letting reed hold several overview strands.
-  This record designs against the worktree's base, where reed refuses a second overview strand; the run's parent decides whether this bench arm ignores that commit or aligns with it.
 - A hand `lym loom start` racing `lym beam start` with neither strand present can still have its overview add refused once the runs strand lands first; that race predates this task and D1 does not widen it.
+
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-2-review.md; fixer report: _lym/reviews/discussion/round-2-fixer-report.md.
+  - open-risk-q6-settled-by-added-entries (class consistency, severity BLOCKING, open in rounds 2)
+<!-- /lym:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
