@@ -13,6 +13,8 @@ In:
 - A `hardener` recipe on Shed, its rows, its arm, its review perch in the loom wiring and its board recipe value.
 - A behavior-review round: the burler review and fix rows with a Hardener rubric, and a Hardener fix engine carrying a Go-run live gate.
 - Throwaway sandbox hubs a round agent makes and clears through `lym harden sandbox`, and Go's reap and stray record around each round row.
+- A sandbox clear that `internal/pairteardown` runs before it removes a worktree holding a sandbox root,
+  and a bound on the Bouncer's auto-accept that never accepts a Harden-Bouncer round whose live report is red.
 - The campaign's handoff: what the Bouncer's facts carry for a Hardener round, and the archive of each round under `_lym/harden/`.
 - A `hardener.yaml` config unit, the Hardener gate keys, and a `--copies` flag on `lym gate test`.
 - Retiring `internal/treadleengine` (removed), its stencils and roles, and the `Tenter` name,
@@ -48,6 +50,13 @@ PATTERN-dobby-runs and PATTERN-landing hold unchanged: the run starts only throu
 Record-Write turns the task's body into the run's decision record, which is the campaign charter: the module, its code paths, the high-yield invariants to drive, what is out of scope, and whether the module drives a real LLM.
 The task's `run_settings` set the two `hardener.yaml` keys Go needs for one campaign: `packages`, the Go package directories the live gate runs, empty by default, and `llm_driving`, false by default, true when the module's live tests spawn a real LLM session.
 Preflight refuses a `hardener` run whose `packages` is empty or names a directory the worktree lacks; the refusal names the `run_settings` write that fixes it as its way forward (PATTERN-refusal-way-forward).
+Both keys are CategoryNone (D9), each with a bound:
+`packages` narrows only the live gate's targets, never the verify gate's, and Preflight refuses an empty or missing package;
+`llm_driving` true removes only the concurrent copies, whose failures never fail the gate (D4).
+Preflight refuses a run any of whose `packages` holds no test of a tier the hub's `harden-live` key names,
+or, when concurrent copies will run, of a tier its `harden-live-copies` key names,
+read from each test's `tiergate.Require` the way `lym gate test` narrows `{test_targets}` (PATTERN-test-speed, Four tiers);
+the refusal names the package and key, and the `run_settings` write of `packages` and the `lym config gate --set` write of that key as its ways forward.
 Preflight also refuses a `reviewer` list whose cyclic expansion (D3) puts one model in two adjacent rounds, a one-entry list or one whose first and last entries match included;
 the refusal names the `run_settings` write of a `reviewer` list without such a pair as its way forward.
 It refuses a `max_bounces` above `hard_max_bounces` the same way, naming the `run_settings` write that lowers it.
@@ -55,7 +64,8 @@ It refuses a run whose hub's own `gate.yaml` sets no `harden-live` key, or no `h
 each of these refusals names the `lym config gate --set` write of the key as its way forward.
 
 Rationale: the operator front-loads into the charter the gating the hand-run campaign asked of them, so the run needs no operator during its rounds.
-`run_settings` carry a unit's config keys, so the two values are keys of the unit with defaults that make Preflight's refusal fire on a task that set none.
+`run_settings` carry a unit's CategoryNone keys, so the two values are such keys of the unit with defaults that make Preflight's refusal fire on a task that set none.
+A package with no test of a live key's tiers starts no test binary in that key's run, so the live gate would read green on a package it never ran.
 
 ### D3 — A round is the Bouncer, the burler review row and a Hardener fix row
 
@@ -96,6 +106,12 @@ a hub sets each to its live tier in its `gate.yaml`, which Preflight checks (D2)
 3. It never runs tier 3: a billed LLM session is driven by the round agent, one named test at a time, as the rubric says.
    Preflight refuses a run whose live key names tier 3 (D2).
 
+The live report records the test binaries each live run started.
+A live run that started none reads as red: a `harden-live` run that started none fails the gate as a failing run does,
+and a `harden-live-copies` run that started none is recorded in the live report like its failures, never failing the gate.
+The live report's red or green mark is `harden-live`'s outcome alone,
+so D6's convergence rule never reads a run that verified nothing as a green live gate, and a copies run never blocks it.
+
 The `live` gate holds no gate slot of its own, so each of its calls is a top-level gate run that acquires its own slots (PATTERN-gate-slot).
 A call nested in a held slot would run inside that slot without acquiring,
 and a multi-slot acquire waits until it holds every slot it asks for, never granting part of them (`internal/gateslot/doc.go`).
@@ -104,10 +120,18 @@ The `live` gate re-prompts the fixer at most `live_attempts` times (D9) on a fai
 When they run out, the gate ends the row instead of halting the run:
 the live report is marked red and records each failing test as a deferred finding, which the Bouncer's facts and carry-over read (D6).
 
-`lym gate test` gains `--copies <n>`: it acquires n slots for the call and runs n concurrent copies of each named package's compiled test binary inside them.
-Bound: it needs `--gate` and is refused without it, with a key naming tier 3 and with no package named; it holds no slot past its own call.
-An n above the pool's slot count is clamped to every slot, as `gateslot.Pool.AcquireSlots` clamps it;
-the call then runs one copy per held slot and records the clamp in its output, which the live report carries.
+`lym gate test` gains `--copies <n>`.
+Today a call takes each tier run's slots through `acquireSlot`, which calls `gateslot.Pool.AcquireSlots` (`internal/gatecli/run.go`),
+and skips that acquire only when `LYM_GATE_SLOT` names a slot an enclosing process holds (the `exe.inherited` path).
+A `--copies` call takes one lease of n times the tier's own slot count,
+and that lease replaces its tier runs' own acquires, so its tier run holds no slot beyond the lease.
+Its n copies are n concurrent runs of the key's rendered tier command over the same targets, each in its tier's share of the lease,
+each under the tier's counter, timeout, CPU watchdog and memory guard, never raw compiled test binaries.
+Bound: it needs `--gate` and is refused without it, with a key naming tier 3 or more than one tier, and with no package named;
+it holds no slot past its own call.
+A lease above the pool's slot count is clamped to every slot, as `gateslot.Pool.AcquireSlots` clamps it;
+the call then runs one copy per whole tier share of the held slots and records the clamp in its output, which the live report carries.
+A call holding every slot drains the hub's pool for the length of its call.
 
 The gate's stray-state check is the one `tmuxkit.Main` makes: a tier-2 package fails when a process referencing its run directory survives, and when its run directory holds a socket of a live server, which it then kills.
 Bound: that check covers only packages whose `TestMain` calls `tmuxkit.Main`, and its process scan reads `/proc`, so Linux only; the live report names each package outside that cover.
@@ -126,7 +150,8 @@ The hubs live under the run's sandbox root, a fixed directory under the run work
 Before the hub's first pair exists, `new` commits a `loom.yaml` with `selfreport: false` and `friction: ""` onto the hub's prime records, so every pair the round creates inherits it.
 `new` also deploys the worktree's HEAD into its `.dev-bin` through `tools/deploy` with `-dev` when the deployed build is not HEAD's, and prints, as JSON, the hub's path and the absolute path of that `.dev-bin` lym, which the rubric makes the only lym a round invokes against a sandbox hub.
 `new` records each hub path it makes in a hub list in the root, which only `clear` and the reaps prune, once that hub's server is stopped.
-`lym harden sandbox list` lists the root's hubs, and `lym harden sandbox clear` stops each hub's reed server and removes the root's hubs.
+`lym harden sandbox list` lists the root's hubs, and `lym harden sandbox clear` runs the reap below over the root:
+it ends the root's processes, stops each hub's reed server and removes the root's hubs.
 At the start and at the end of every Harden-Burler-Review and Harden-Burler-Fix row, Go reaps the root.
 The reap lists the reed servers and processes still tied to the root and appends each to the round's one stray report,
 every entry naming its row and its reap point.
@@ -135,12 +160,17 @@ stops each listed reed server, kills by the `/proc` scan only the processes no r
 That `/proc` kill is a new orphan reaper beside `lym tender reap` (PATTERN changes).
 A start-of-row reap marks what it finds as left by an interrupted row, so a crash or pause never charges one round's leftovers to the next.
 
-Bounds: the verbs refuse outside a worktree whose run's recipe is `hardener`; `new` writes only under the root.
+Bounds: the verbs refuse outside a worktree whose run's recipe is `hardener`,
+except that `clear` also runs in a worktree whose sandbox root exists, whatever its run record says; `new` writes only under the root.
 `clear` and the reaps touch only reed servers whose socket key derives from a hub path the root's hub list records, whether or not that hub's directory still exists,
 and processes whose cwd, executable or argv names the root.
 A hub made outside the root is outside every reap, and the rubric forbids a round making one.
-Finalize runs the reap before the worktree's teardown, and a campaign halted capped or circling runs it as it halts,
-since the root lies in the worktree's ignored `.lym`,
+Finalize runs the reap before the worktree's teardown, and a campaign halted capped or circling runs it as it halts.
+`internal/pairteardown` also runs it before it removes a worktree whose sandbox root exists,
+by spawning `lym harden sandbox clear` in that worktree through `selfexec.LymBinary`, so it learns only the root's `internal/lymdirs` path and the verb.
+That covers every teardown route: Finalize, the capped or circling halt, `lym fabric remove` and Worktree-Teardown.
+When that `clear` fails, pairteardown keeps the worktree and reports the failure, naming `lym harden sandbox clear` run in that worktree as its way forward.
+Each reap is needed since the root lies in the worktree's ignored `.lym`,
 and fabric's cleaner of a leftover worktree's ignored paths refuses one holding a `.git` at any depth, as every sandbox hub does
 (`internal/fabricengine/destroy.go` `ignoredTaskPathDeletable`).
 The process scan reads `/proc` on Linux and is skipped elsewhere, where only the reed servers are checked.
@@ -173,6 +203,9 @@ The rubric's judge section settles three calls:
 - A finding whose fix is a feature or a refactor outside the module is deferred by the fixer and carried into the record's `## Open risks` by the Bouncer's carry-over, never fixed in the round.
 
 The round cap is `hardener.yaml`'s `max_bounces`, and a parent's continue runs rounds up to `hard_max_bounces`; a capped or circling campaign escalates to the run's parent through the Bouncer's existing parent notice and decision verbs.
+With `auto_accept` set in the hub's `hardener.yaml` (D9), a spent budget turns a CONTINUE or CIRCLING round into an accept (`internal/shedadapters/bouncer.go` `NewBouncer`);
+a Harden-Bouncer never auto-accepts a round whose live report is red, and escalates it to the parent as a capped campaign does,
+so no campaign lands past a red live gate without a parent decision.
 
 Rationale: what a live orchestrator held implicitly was which model ran each round, what the gates observed, what was left behind and what was deferred; Go now writes each of them down.
 
@@ -197,7 +230,8 @@ and the keys naming either role from `efforts`, applied by `hubreconcile`'s walk
 
 Rationale: the Bouncer already does what treadle's judge, handoff ledger and pre-round targeting were kept for, live, in every loom review ring.
 Treadle has no consumer and is reachable from no `main`, against PATTERN-test-only-code;
-the operator's 2026-10-16 decision kept its stencils only until Hardener is built.
+the board entry records an operator decision of 2026-10-16 that kept treadle's judge stencils for Hardener, unmaintained, to be re-derived from the Bouncer judge when Hardener is built;
+the operator's decision of 2026-11-18, recorded under Added after Discussion, replaces it and deletes treadle without re-deriving the stencils.
 
 ### D9 — `hardener.yaml` holds the campaign's tuning
 
@@ -213,7 +247,18 @@ A new config unit `hardener.yaml`, loaded only through `internal/configengine` w
 - `tree_scope`, the trees that narrow the `harden-burler-fix` key to a round diff wholly under them,
   and `verify_attempts`, the `verify` gate's attempts (D1, D3).
 
-A task's `run_settings` may override any of them for one campaign.
+The unit's `ConfigSpec` classifies every key by what its value can do to a guard (PATTERN-config-layers, Categories):
+
+- Guard, set only in the hub's `hardener.yaml`:
+  `auto_accept`, which lets a spent budget settle a round as accepted, as `<perch>_auto_accept` is (`internal/reviewbudget/reviewbudget.go` `Categories`), bounded in D6;
+  `reviewer_fan` and `fixer_fan`, as loom's fixer and split fans are (`internal/loomengine/config.go` `ConfigSpec`);
+  and `tree_scope`, which picks the diffs the narrower targets run, as darn's is, set by no `run_settings` (`internal/darnengine/config.go` `ConfigSpec`).
+- CategoryNone: every other key.
+  `packages` and `llm_driving` carry the bounds D2 states, and `concurrency` is clamped to the hub's slot pool (D4).
+
+A task's `run_settings` reach a run only as the pair's local layer, which holds only CategoryNone keys (`internal/configengine/doc.go`, The local rule).
+They may set `packages`, `llm_driving`, `max_bounces`, `hard_max_bounces`, `reviewer`, `fixer`, `judge`, `seed`, `concurrency`, `live_attempts` and `verify_attempts` for one campaign.
+A Guard key in them is refused at seed, the refusal naming the hub's `hardener.yaml` write as its way forward through the spec's `HubOnlyWayForward`.
 
 Rationale: a perch outside loom.yaml has its own unit, as the plan perch has `tapestry.yaml`.
 The defaults follow the reed and fabric campaigns: seven rounds and a three-way concurrent run.
@@ -259,6 +304,12 @@ Decision: Hardener is built on the perch machinery (Shed rows with the Bouncer a
 
 Rationale: Operator, 2026-11-18: treadle was meant as the shared round-loop engine for perch and Tenter, but perch moved to the Shed, Bouncer and burler rows on 2026-08-21 and treadle has had no consumer since; one round-loop engine, not two.
 
+### Added after Discussion (arbiter, 2026-11-18): The 2026-11-18 operator treadle entry supersedes the arbiter's D8 rationale text
+
+Decision: The added entry "D8's rationale quotes the 2026-10-16 treadle note as written" (arbiter, 2026-11-18) is superseded and no longer prescribes any text: its replacement clause, which calls deleting treadle "the open parent question in Open risks" and keeps the stencils "to be re-derived", is not applied. D8's rationale stays as the round-2 fix wrote it: it quotes the 2026-10-16 note as written and cites the operator's 2026-11-18 entry "Delete treadle when Hardener is built (F10)" as replacing it. No Open risks line on treadle is restored, and support-log Q13 stays resolved. A reviewer or fixer reads no conflict between the two added entries and edits neither.
+
+Rationale: The arbiter entry was written before the operator answered F10, and it says it applies "whatever the parent answers ... unless that answer removes D8 entirely". Its quoting fix is still carried out, since D8's rationale now quotes the 2026-10-16 note as written. But its wording about an open question is out of date: the operator's later entry settles that question, so no parent question is left open. The round-2 fixer deferred this conflict because only the parent or arbiter may rule on it (round-2-fixer-report.md, Deferred).
+
 ## Constraints
 
 - PATTERN-lym-files: the sandbox root is a never-tracked directory under the worktree's `.lym`, and the archive lives under `_lym/harden/`, both named through `internal/lymdirs`.
@@ -283,7 +334,6 @@ Rationale: Operator, 2026-11-18: treadle was meant as the shared round-loop engi
 ## Open risks
 
 - A round agent can still run `lym selfreport create` by hand, which files on the real upstream whatever the hub's config says; the committed override stops only the automatic paths, and the rubric forbids the call.
-- Question for the parent: the entry's operator note lists `treadle` among the modules to build on, and its 2026-10-16 note keeps treadle's stencils for Hardener; D8 builds on the Bouncer instead and deletes treadle. May treadle be deleted, or must it stay?
 
 ## Acceptance criteria
 
@@ -294,6 +344,8 @@ Rationale: Operator, 2026-11-18: treadle was meant as the shared round-loop engi
 - A `hardener` run's verify scope and verify attempts come from `hardener.yaml`, and changing `darn.yaml` leaves them unchanged (D1, D9).
 - A capped Harden-Bouncer's parent decision verb finds its run directory (D1, D6).
 - Preflight refuses a `hardener` run whose `packages` is empty or names a missing directory, and the refusal names the `run_settings` write as its way forward (D2).
+- Preflight refuses a run one of whose `packages` holds no test of a tier the hub's `harden-live` key names, or of a tier its `harden-live-copies` key names when copies will run,
+  naming the package, the key, the `run_settings` write of `packages` and the `lym config gate --set` write of that key as its ways forward (D2).
 - Preflight refuses a one-entry `reviewer` list and one whose cyclic expansion puts one model in two adjacent rounds,
   naming the `run_settings` write as its way forward (D2, D3).
 - The Harden-Burler-Review row spawns with tool use, source fix scope and the `harden-rubric-review` rubric; a recipe cannot configure `HardenFix`'s `live` gate off;
@@ -304,24 +356,31 @@ Rationale: Operator, 2026-11-18: treadle was meant as the shared round-loop engi
 - The `live` gate fails on a red `harden-live` run, passes a green one, and writes `harden-live-copies` failures to the live report without failing;
   it runs both through `lym gate test --gate` with `packages` as targets and names no tier (D4).
 - With `llm_driving` true, the `live` gate runs no concurrent copy, and it never runs tier 3 (D4).
+- A `harden-live` run that starts no test binary fails the gate and marks the live report red;
+  a `harden-live-copies` run that starts none is recorded in the live report without failing the gate or changing its mark (D4).
 - Preflight refuses a run whose hub sets no `harden-live` key of its own or whose live key names tier 3,
   and a `max_bounces` above `hard_max_bounces`, each refusal naming its write as its way forward (D2, D4).
 - When the `live` gate's `live_attempts` run out on a red `harden-live` run, the row ends with the live report marked red and the failures deferred,
   the run goes on, the next Harden-Bouncer's facts carry both, and the judge does not rule CONVERGED while the gate stays red (D4, D6).
-- `lym gate test --gate harden-live-copies --copies 3`, called from the `live` gate, acquires three slots of its own and runs three concurrent copies inside them;
-  on a pool of two slots it runs two and reports the clamp, and it is refused without `--gate`, with a key naming tier 3 or with no package (D4).
+- `lym gate test --gate harden-live-copies --copies <n>`, called from the `live` gate with a lease equal to the pool's slot count, completes and runs n concurrent copies of the key's tier command inside its one lease;
+  with a lease above the pool's slot count it runs one copy per whole tier share and reports the clamp,
+  and it is refused without `--gate`, with a key naming tier 3 or more than one tier, or with no package (D4).
 - `lym harden sandbox new` builds a wired hub under the run's sandbox root with no GitHub remote, whose prime records hold a committed `loom.yaml` with `selfreport: false` and `friction: ""`, and redeploys `.dev-bin` only when it is not HEAD's build (D5).
 - `clear` removes every hub under the root and nothing outside it; a hub made by one process is listed and cleared by another; each verb refuses outside a `hardener` run worktree with its way forward (D5, D11).
 - A reed server left alive for a sandbox hub is recorded in the stray report, killed and its hub removed, by the end-of-row reap and, marked as left by an interrupted row, by the next row's start-of-row reap (D5).
 - A stray left by the review row appears, with its row and reap point, in round-<n>'s archived stray report (D5, D7).
 - A reap ends a sandbox hub's recorded processes through `runproc.End` and kills by the `/proc` scan only a process no record names;
   it stops the reed server of a recorded hub whose directory is already gone (D5).
-- Finalize reaps the sandbox root before teardown, and a campaign halted capped or circling reaps it as it halts, so no sandbox hub blocks fabric's leftover cleaners (D5).
+- Finalize reaps the sandbox root before teardown, a campaign halted capped or circling reaps it as it halts,
+  and `lym fabric remove` and Worktree-Teardown of a `hardener` pair clear its sandbox root, its processes included, before removing the worktree,
+  keeping the worktree with a way forward when the clear fails, so no sandbox hub blocks fabric's leftover cleaners (D5).
 - PATTERN-child-processes names the Hardener sandbox reaper beside `lym tender reap` as a user of `EndProcess`, bounded to the sandbox root (D5).
 - The facts of a Hardener round carry the round's models, live outcome, stray report, deferred findings and fix commits (D6).
 - Every finished Harden-Burler-Fix row commits its round's artifacts under `_lym/harden/round-<n>/`, and an approved Harden-Bouncer settle commits the final ledger (D7).
 - `internal/treadleengine` and the treadle stencils and roles are gone, and a hub `agents.yaml` naming `treadle-judge` is rewritten by the reinterpretation and then loads (D8).
-- `hardener.yaml` loads through configengine with D9's defaults, and a task's `run_settings` override one for that run (D9).
+- `hardener.yaml` loads through configengine with D9's defaults; a task's `run_settings` setting `packages` and `llm_driving` load for that run,
+  and one setting a Guard key (`auto_accept`, `reviewer_fan`, `fixer_fan` or `tree_scope`) is refused at seed with the hub file write as its way forward (D9).
+- With `auto_accept` set and the budget spent, a Harden-Bouncer escalates a round whose live report is red to the parent instead of accepting it (D6, D9).
 - `lym harden sandbox` is reachable from the root command (D11).
 - Review: `harden-rubric-review` states the convergence rule, the sweep-on-recurring-shape rule and the deferral of large findings of D6, and the round rules crucible's method taught: review before fix, log as you go, deploy first after every source change, drive the real substrate rather than trace code, sabotage-prove every new regression test and re-drive each prior round's fixes, a sequential control and a second hub for every concurrency claim, one named tier-3 test at a time for an LLM-driving module, teardown with zero stray state, never `lym selfreport create`, and a convergence verdict that states what it did not drive (D6, D12).
 - Review: `crucible/` is gone, the package doc of `internal/hardenshed` (new) carries D12's method, and no doc names crucible or Tenter (D12).

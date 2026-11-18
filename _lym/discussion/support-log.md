@@ -43,7 +43,7 @@ Every lens returned a report. Duplicates across lenses are merged into one line.
 - interactions, bound-breaker (LOW): tmuxkit's stray check covers only packages calling `tmuxkit.Main`, on Linux. Fixed: D4 states the bound; the live report names uncovered packages.
 - walkthrough (LOW): a round that changes reed's socket-key derivation can leave a server the reap misses. Fixed by stating the bound in D5.
 - bound-breaker (LOW): whether a hub `agents.yaml` naming a retired role still loads. This line first recorded the false premise that `internal/agentconfig` refuses no unknown role, and D8 dropped the reinterpretation; round 1's review (F1) showed `agentconfig.Load` refuses such a role, so D8 ships a reinterpretation on the `agents` module.
-- board-scope (MEDIUM, decision): the operator note lists treadle to build on. Kept D8 and turned the Open risks line into a question for the parent.
+- board-scope (MEDIUM, decision): the operator note lists treadle to build on. Kept D8 and turned the Open risks line into a question for the parent; the operator's 2026-11-18 entry later settled it, and round 2 removed the line (Q13).
 - board-scope (LOW, decision): "the sandbox work" may mean the bwrap note. Fixed: D5's rationale states the reading; no parent question, since the bwrap note is unbuilt and D5 conflicts with nothing in it.
 - board-scope (LOW): the `manifest-retire` list was not addressed. Fixed: Scope's Out says no file holds it.
 - leanness (LOW): Constraints restated PATTERN entries. Fixed: cut to task-specific bullets.
@@ -86,4 +86,4 @@ _No rounds yet._
 - Q10 (open, carried to Open risks) A hand-run `lym selfreport create` from a round cannot be blocked by hub config.
 - Q11 (auto-pick) Where does the sandbox root live? Under the worktree's `.lym`, since a lymtemp process directory is swept when its owner exits (D5).
 - Q12 (auto-pick) How do concurrent copies get slots? A `--copies` flag on `lym gate test`, inside one call's held slots (D4).
-- Q13 (open, carried to Open risks) May treadle be deleted when the operator note lists it among the modules to build on? Decided yes for the design (D8); the parent may overrule.
+- Q13 (resolved) May treadle be deleted when the operator note lists it among the modules to build on? Yes (D8), settled by the operator's 2026-11-18 Added after Discussion entry, Delete treadle when Hardener is built (F10).
