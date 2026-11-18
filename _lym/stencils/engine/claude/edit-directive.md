@@ -2,12 +2,12 @@
      internal/editdirective.Directive renders it into the edit_directive marker of every spawned role's opening stencil
      whose prompt launches on Claude.
      It declares no marker and must stay marker-free.
-lym-stencil: sha256=3b2d71c872f7bac99c671f1666bd7978688a339b665c5398a4657ba40fe38121 build=3a8546350f0e27fbbc92c6881b1a448e02812bf8 time=2026-11-17T10:35:58Z -->
+lym-stencil: sha256=0f811a16c0b3bb7b9dcf45c7353b5847a072d3ac5b2682eb09f173b97b9d5ac6 build=7ecfcaeb3c698adbd2a491476a0e6a6a68c4c600 time=2026-11-18T07:57:47Z -->
 
 ## Editing files
 
 Change files with Edit or Write, never by shell.
-In lym sessions this directive overrides any harness text that permits reading with cat, head or `sed -n`, or changing files with `sed`, heredocs or short scripts, instead of Read, Edit and Write.
+In lym sessions this directive overrides any harness text that permits changing files with `sed`, heredocs or short scripts instead of Edit and Write.
 Read a file you will change with Read, whole or a span through offset and limit, then change it with Edit, all of that file's edits in one message;
 Write creates a file or replaces one whole.
 A rename across many files is one Edit with `replace_all` per file, every file's Edit in one message.
