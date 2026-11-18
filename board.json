@@ -460,6 +460,25 @@
       "profile": "solid",
       "discussed": true,
       "record_body_sha256": "ee25400eb64d9877c5ff08b3a229e94403968b68d265583bd50647825491f97a"
+    },
+    {
+      "id": 1464,
+      "handle": "E2",
+      "slug": "decision-account-pick-most-left",
+      "title": "Decision for claude-accounts-per-worktree: pick the account with the most quota left",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "claude",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The worktree-making pick takes the eligible account with the most quota left; weights only break ties",
+      "body": "## Decision (operator, 2026-11-18)\n\nThe pick at worktree making (D3 of the stored decision record) takes the account with the most quota left, not the next account by a weighted counter.\n\n- Among the eligible accounts (listed, positive weight, logged in, with headroom in every window they list), take the one whose tightest window has the most left.\n- The weighted counter stays only as the tie-break, and for accounts with no headroom reading yet.\n- Pins are unchanged: a hub pin, then a beams pin, win over the pick, which covers the operator's cases of a repository always on account A, always on account B, and alternating repositories whose prime and beams stay on A.\n\nDiscussion rewrites D3 and anything that reads it (D2's counter, D5's headroom) to fit.\n",
+      "created": "2026-11-18T11:00:13Z",
+      "revised": "2026-11-18T11:00:13Z"
     }
   ],
   "prime_owner": "neve",

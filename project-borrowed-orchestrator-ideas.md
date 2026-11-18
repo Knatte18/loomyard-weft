@@ -1,6 +1,6 @@
 # P2 Ideas borrowed from comparable agent orchestrators
 
-Rendered 2026-11-18 10:56 UTC; every age below is as of then.
+Rendered 2026-11-18 11:00 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 1d · Owner `neve`
