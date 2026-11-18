@@ -1,6 +1,6 @@
 # List features nobody uses, for the operator to cut
 
-`drop-unused-features` · Task · enhancement, tools · starting · Seed-IDE
+`drop-unused-features` · Task · enhancement, tools · starting · Open-IDE
 
 ## What was seen
 
