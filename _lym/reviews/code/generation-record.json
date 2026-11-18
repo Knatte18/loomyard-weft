@@ -3,10 +3,10 @@
   "judge_subject": {
     "kind": "code",
     "merge_base": "72c3e192e7b9afff71558513de71d385538ff8cf",
-    "head": "461b4742852b02151e41c907ff2638415f5d4122",
-    "full_hash": "1cd4b32afffacecc3bc3315b222207a0e8c6f103729a1d530d6e3354dfd4dee8",
-    "patch_id": "ee375fb7de09f6894d54f779e92566baa285d74a"
+    "head": "647875f3e6fdf9cb4063cf27fdd561df02af5036",
+    "full_hash": "a846d1589a32a5ae09c9a95750bde4439246d124bacbe1ad25013c14c6f804c1",
+    "patch_id": "9354e8eee6a7346eff083abb9984a17ec0f37424"
   },
   "judge_base": "72c3e192e7b9afff71558513de71d385538ff8cf",
-  "judge_at": "2026-11-18T17:59:01Z"
+  "judge_at": "2026-11-18T18:10:40Z"
 }

@@ -1,0 +1,1471 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 1cda8380..54d35461 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -866,12 +866,13 @@ User-facing modules each get one `lym <module>` namespace:
+   ✅ Implemented. See the `internal/retrocli` package documentation.
+ - **tender** — the one ordered pause that makes the hub safe to suspend within seconds (`internal/tendercli` + `internal/tenderengine`; `lym tender pause [<slug>] [--grace <seconds>]`, `lym tender resume [<slug>]`, `lym tender revive [<slug>]`, `lym tender status` and `lym tender reap`, from any worktree of the hub; `lym p` and `lym r` are shortcuts for the first two verbs).
+   `lym tender pause` records an entry, waits a short grace for busy agent sessions and network operations to finish, interrupts every covered session still in a running turn with Esc and holds every path that would start agent or network work;
++  a pair with no reed session is reported under `skipped` and the pause goes on;
+   the orchestrator is interrupted by its own watcher at the grace end.
+   `lym tender resume` lifts the entry and gives each interrupted session one line to carry on.
+   `lym tender revive [<slug>]` gives one fixed carry-on line to each session stalled on an API error, and the orch a checked creel inject, reported with its id;
+   each send runs under the pause record's write lock, one at a time,
+   so it types only while the session still reads stalled, sends no key and kills nothing.
+-  `lym tender status` lists the live entries, the network operations in flight and the parent locks held, every live session in the hub with its state, cause and whether an entry covers it, the lym processes running a replaced binary, the processes registered to runs with their orphans, and each pair's owner machine with the run-held entries owned by another machine;
++  `lym tender status` lists the live entries, the network operations in flight and the parent locks held, every live session in the hub with its state, cause and whether an entry covers it, each pair with no reed session under `skipped`, the lym processes running a replaced binary, the processes registered to runs with their orphans, and each pair's owner machine with the run-held entries owned by another machine;
+   it changes nothing, and any caller may run it.
+   `lym tender reap` ends the orphans of one fresh reading of that processes part, which are the processes of a slug with no pair and no running batten and the unregistered lym processes in a deleted hub directory, never a hub-owner process or one working inside a registered worktree;
+   the orch and an external caller may run it,
+diff --git a/internal/boardcli/syncdeferral_test.go b/internal/boardcli/syncdeferral_test.go
+index c0d8d772..46625c0a 100644
+--- a/internal/boardcli/syncdeferral_test.go
++++ b/internal/boardcli/syncdeferral_test.go
+@@ -5,6 +5,7 @@ package boardcli
+ 
+ import (
+ 	"bytes"
++	"context"
+ 	"encoding/json"
+ 	"path/filepath"
+ 	"testing"
+@@ -18,7 +19,7 @@ import (
+ // TestSync_DeferrableExitsUnderACoveringPause runs sync against a board path that does not exist,
+ // so a sync that reaches the board errors:
+ // a deferrable sync under a Defer gate a hub entry covers succeeds without touching the board;
+-// a plain sync reports the board error;
++// a plain sync waits once at the gate, before the board's push lock, and reports the board error once the pause lifts;
+ // and a deferrable sync with nothing covering proceeds to the board and reports the same error.
+ // Serial: it installs the process's network gate.
+ func TestSync_DeferrableExitsUnderACoveringPause(t *testing.T) {
+@@ -31,10 +32,11 @@ func TestSync_DeferrableExitsUnderACoveringPause(t *testing.T) {
+ 		covered   bool
+ 		wantOK    bool
+ 		wantError bool
++		wantWaits int
+ 	}{
+-		{"DeferrableCoveredSucceedsUntouched", []string{"--board-path", missingBoard, "sync", "--deferrable"}, true, true, false},
+-		{"PlainCoveredReachesTheBoard", []string{"--board-path", missingBoard, "sync"}, true, false, true},
+-		{"DeferrableUncoveredReachesTheBoard", []string{"--board-path", missingBoard, "sync", "--deferrable"}, false, false, true},
++		{"DeferrableCoveredSucceedsUntouched", []string{"--board-path", missingBoard, "sync", "--deferrable"}, true, true, false, 0},
++		{"PlainCoveredWaitsThenReachesTheBoard", []string{"--board-path", missingBoard, "sync"}, true, false, true, 1},
++		{"DeferrableUncoveredReachesTheBoard", []string{"--board-path", missingBoard, "sync", "--deferrable"}, false, false, true, 0},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -48,10 +50,23 @@ func TestSync_DeferrableExitsUnderACoveringPause(t *testing.T) {
+ 			}); err != nil {
+ 				t.Fatal(err)
+ 			}
+-			t.Cleanup(pauserecord.InstallGate(pauserecord.Gate{Geometry: pauserecord.Geometry{RecordPath: recordPath}, Defer: true}))
++			waits := 0
++			// A wait lifts the pause, so a sync the gate holds goes on to the board.
++			lift := func(context.Context, time.Duration) error {
++				waits++
++				_, err := pauserecord.Update(recordPath, now, func(r *pauserecord.Record) error {
++					r.Live = nil
++					return nil
++				})
++				return err
++			}
++			t.Cleanup(pauserecord.InstallGate(pauserecord.Gate{Geometry: pauserecord.Geometry{RecordPath: recordPath}, Defer: true, Notify: func(string) {}, Sleep: lift}))
+ 
+ 			var stdout bytes.Buffer
+ 			code := clihelp.Execute(Command(), &stdout, tt.args)
++			if waits != tt.wantWaits {
++				t.Errorf("sync %q waited at the gate %d times; want %d", tt.args, waits, tt.wantWaits)
++			}
+ 			var envelope struct {
+ 				OK    bool   `json:"ok"`
+ 				Error string `json:"error"`
+diff --git a/internal/fabricengine/bolt.go b/internal/fabricengine/bolt.go
+index a18a166b..ac62d2cc 100644
+--- a/internal/fabricengine/bolt.go
++++ b/internal/fabricengine/bolt.go
+@@ -16,6 +16,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ )
+ 
+ // Bolt is a handle over a single weft:main-backed repo path with no paired warp side.
+@@ -204,6 +205,7 @@ type BoltWriteResult struct {
+ // When Bolt cannot be brought up to date, nothing is written and the result's Skipped says why.
+ // With no upstream there is nothing to pull, and the writes run.
+ //
++// It passes the process's pause gate before it takes the board write lock and stays admitted until it returns.
+ // The board write lock is held across the pull and every write.
+ // A write or commit error stops the sequence and is returned with the commits already landed kept in the result.
+ // An empty path list commits nothing.
+@@ -211,6 +213,8 @@ type BoltWriteResult struct {
+ // A path HEAD does not hold either is left out of the commit.
+ // It never pushes.
+ func (b *Bolt) PullThenCommitWritten(writes []BoltWrite, rec *Mutations) (res BoltWriteResult, err error) {
++	leaveGate := pauserecord.Admit(pushLockGateOp)
++	defer leaveGate()
+ 	l, err := b.acquireWriteLock()
+ 	if err != nil {
+ 		return BoltWriteResult{}, err
+@@ -265,10 +269,13 @@ func (b *Bolt) PullThenCommitWritten(writes []BoltWrite, rec *Mutations) (res Bo
+ // A dirty or diverged Bolt cannot be brought up to date:
+ // it returns a non-empty skip with a detail naming the way forward.
+ // A Bolt with no upstream, and a pull honoring SkipGit, does nothing.
++// It passes the process's pause gate before it takes the board write lock and stays admitted until it returns.
+ func (b *Bolt) Pull(opts SyncOptions, rec *Mutations) (BoltSkip, string, error) {
+ 	if opts.SkipGit {
+ 		return "", "", nil
+ 	}
++	leaveGate := pauserecord.Admit(pushLockGateOp)
++	defer leaveGate()
+ 	l, err := b.acquireWriteLock()
+ 	if err != nil {
+ 		return "", "", err
+@@ -283,6 +290,7 @@ func (b *Bolt) Pull(opts SyncOptions, rec *Mutations) (BoltSkip, string, error)
+ // pullFirst also holds the board checkout's push lock for its whole run, taken after the board write lock.
+ // A coalesced push rebases the board under that lock and never takes the write lock.
+ // Without that lock, a push could rebase the board mid-drop.
++// The caller has passed the process's pause gate before it took the board write lock, so a pause never holds this call.
+ //
+ // A Bolt with no upstream is left alone.
+ // Commits ahead of a moved upstream are replayed onto it by entry;
+diff --git a/internal/fabricengine/boltpullfirst_integration_test.go b/internal/fabricengine/boltpullfirst_integration_test.go
+index 0cae4403..11e77a79 100644
+--- a/internal/fabricengine/boltpullfirst_integration_test.go
++++ b/internal/fabricengine/boltpullfirst_integration_test.go
+@@ -103,6 +103,98 @@ func kindsOf(rec *fabricengine.Mutations) []fabricengine.Kind {
+ 	return kinds
+ }
+ 
++// TestBolt_PullHeldByAPauseWithoutTheBoardWriteLock covers a pull a pause holds.
++// While the pause holds the call, the board write lock is free for another writer.
++// Once the pause lifts, the call takes the lock and does its normal work after one wait.
++// Serial: it installs the process's network gate.
++func TestBolt_PullHeldByAPauseWithoutTheBoardWriteLock(t *testing.T) {
++	tiergate.Require(t, 1)
++	tests := []struct {
++		name string
++		run  func(t *testing.T, f *boltFixture)
++	}{
++		{"Pull", func(t *testing.T, f *boltFixture) {
++			skip, detail, err := f.bolt.Pull(fabricengine.SyncOptions{}, fabricengine.NewMutations(f.hub.Path))
++			if skip != "" || detail != "" || err != nil {
++				t.Errorf("Pull() = (%q, %q, %v); want (\"\", \"\", nil)", skip, detail, err)
++			}
++		}},
++		{"PullThenCommitWritten", func(t *testing.T, f *boltFixture) {
++			runs := 0
++			write := f.writeOf("notes/a.md", "a\n", "write a", &runs)
++			res, err := f.bolt.PullThenCommitWritten([]fabricengine.BoltWrite{write}, fabricengine.NewMutations(f.hub.Path))
++			if err != nil || res.Skipped != "" || !res.Committed || runs != 1 {
++				t.Errorf("PullThenCommitWritten() = (%+v, %v) with %d writes; want one committed write", res, err, runs)
++			}
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			f := newBoltFixture(t)
++			writeLockPath, err := fabricengine.BoltLockPath(f.board, fabricengine.BoardWriteLockFile)
++			if err != nil {
++				t.Fatalf("BoltLockPath: %v", err)
++			}
++			cover, waits := fabricengine.PauseGateForTest(t, func() {
++				held, acquired, err := lock.TryAcquireWriteLock(writeLockPath)
++				if err != nil || !acquired {
++					t.Errorf("TryAcquireWriteLock while the pause held the call = (%v, %v); want the board write lock free", acquired, err)
++					return
++				}
++				_ = held.Release()
++			})
++			cover()
++
++			tt.run(t, f)
++
++			if *waits != 1 {
++				t.Errorf("gate waits = %d; want 1, before the board write lock", *waits)
++			}
++		})
++	}
++}
++
++// TestBolt_PushRecordedRetryHeldByAPauseWithoutTheBoardLocks covers a rejected board push whose replay a pause holds.
++// At every wait the pause makes, the board write lock and the board push lock are free for another holder.
++// The push then lands the board's commit on top of origin's.
++// Serial: it installs the process's network gate.
++func TestBolt_PushRecordedRetryHeldByAPauseWithoutTheBoardLocks(t *testing.T) {
++	tiergate.Require(t, 1)
++	boardkit.InstallReplay(t)
++	f := newBoltFixture(t)
++	gitkit.CommitFile(t, f.board, "notes/a.md", "a\n", "board change")
++	upstream := f.moveUpstream("notes/up.md", "up\n")
++	writeLockPath, err := fabricengine.BoltLockPath(f.board, fabricengine.BoardWriteLockFile)
++	if err != nil {
++		t.Fatalf("BoltLockPath: %v", err)
++	}
++	pushLockPath, err := gitrepo.New(f.board).PushLockPath()
++	if err != nil {
++		t.Fatalf("PushLockPath: %v", err)
++	}
++	waits := fabricengine.PassingPauseGateForTest(t, func() {
++		for name, path := range map[string]string{"board write lock": writeLockPath, "board push lock": pushLockPath} {
++			if !fabricengine.LockFreeForTest(t, path) {
++				t.Errorf("the %s was held while the pause held a call of the push; want it free", name)
++			}
++		}
++	})
++
++	if err := f.bolt.PushRecorded(fabricengine.SyncOptions{}, fabricengine.NewMutations(f.hub.Path)); err != nil {
++		t.Fatalf("PushRecorded: %v", err)
++	}
++
++	if *waits == 0 {
++		t.Errorf("the pause held no call of the push; want at least one")
++	}
++	if !gitkit.IsAncestor(t, f.board, upstream, "HEAD") {
++		t.Errorf("upstream %s missing under HEAD; want the board commit replayed onto it", upstream)
++	}
++	if got, want := gitkit.RevParse(t, f.hub.RecordsBare, "refs/heads/"+f.branch), f.head(); got != want {
++		t.Errorf("origin tip = %s; want the pushed board tip %s", got, want)
++	}
++}
++
+ // entriesOfKind returns the entries of rec's snapshot of the given kind, in order.
+ func entriesOfKind(rec *fabricengine.Mutations, kind fabricengine.Kind) []fabricengine.Mutation {
+ 	var entries []fabricengine.Mutation
+diff --git a/internal/fabricengine/coalesce.go b/internal/fabricengine/coalesce.go
+index bb44ae39..2a74b2bc 100644
+--- a/internal/fabricengine/coalesce.go
++++ b/internal/fabricengine/coalesce.go
+@@ -15,10 +15,18 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ )
+ 
++// pushLockGateOp names the pause-gate operation a process marks while it wants or holds a push lock.
++// A pusher passes the gate under this name before it takes its first lock and stays admitted until it releases the last,
++// so a pause holds a pusher only while it holds no lock that other pushers wait on.
++const pushLockGateOp = "push-lock"
++
+ // coalescePush runs step under one absorbing lock, looping while step reports progressed=true.
+ // It returns on the first false or error from step and releases the lock.
++// It passes the process's pause gate before it takes the lock and stays admitted until the release.
+ // step supplies all commit, stage and push policy.
+ func coalescePush(lockPath string, step func() (progressed bool, err error)) error {
++	leaveGate := pauserecord.Admit(pushLockGateOp)
++	defer leaveGate()
+ 	l, err := lock.AcquireWriteLock(lockPath)
+ 	if err != nil {
+ 		return fmt.Errorf("fabricengine: acquire push lock: %w", err)
+@@ -113,8 +121,9 @@ func CoalescePushRequest(req PushSpawn, opts SyncOptions, here MachineNames) (re
+ // The prime has no such slug, so it reads req.PauseSlug.
+ // caller names the public entry point in the error for a missing weft path.
+ // The code side goes out with SyncOptions.AfterRecords set, after the records side landed.
+-// For the duration of the call it installs a gate deferral that a pause triggers:
+-// the flags of the owed sides not yet pushed go back, and the process exits.
++// For the duration of the call it installs a gate deferral.
++// A pause triggers it at the gate before an acquire of the lock:
++// the flags of the owed sides go back, and the process exits.
+ func coalescePushSides(req PushSpawn, opts SyncOptions, here MachineNames, caller string, acquire func(lockPath string) (*lock.FileLock, bool, error)) (res PushResult, err error) {
+ 	warpPath, weftPath := req.WarpPath, req.WeftPath
+ 	hubRoot := ""
+@@ -146,15 +155,11 @@ func coalescePushSides(req PushSpawn, opts SyncOptions, here MachineNames, calle
+ 		owed[pushSideCode] = PushSpawn{WarpPath: warpPath, PauseSlug: req.PauseSlug, TeardownSlug: req.TeardownSlug, ParentLocked: req.ParentLocked}
+ 	}
+ 
+-	// pushed records the sides the current step has pushed,
+-	// so a deferral restores the flag of every owed side the step has not reached.
+-	pushed := map[string]bool{}
+ 	codeOpts := opts
+ 	codeOpts.AfterRecords = true
+-	defer pauserecord.SetGateDeferral(pushDeferral(lockDir, owed, pushed, exitDeferred))()
++	defer pauserecord.SetGateDeferral(pushDeferral(lockDir, owed, exitDeferred))()
+ 
+ 	step := func() (progressed bool, err error) {
+-		clear(pushed)
+ 		beforeWarp, err := headOrEmpty(warpPath)
+ 		if err != nil {
+ 			return false, err
+@@ -175,14 +180,10 @@ func coalescePushSides(req PushSpawn, opts SyncOptions, here MachineNames, calle
+ 				return false, err
+ 			}
+ 		}
+-		pushed[pushSideRecords] = true
+-		if recordsLanded {
+-			if warpPath != "" && beforeWarp != "" {
+-				if _, err := pushSideDetached(rec, hubPath, failedPushSideCode, warpPath, codeOpts, nil); err != nil {
+-					return false, err
+-				}
++		if recordsLanded && warpPath != "" && beforeWarp != "" {
++			if _, err := pushSideDetached(rec, hubPath, failedPushSideCode, warpPath, codeOpts, nil); err != nil {
++				return false, err
+ 			}
+-			pushed[pushSideCode] = true
+ 		}
+ 
+ 		afterWarp, err := headOrEmpty(warpPath)
+diff --git a/internal/fabricengine/coalesce_test.go b/internal/fabricengine/coalesce_test.go
+index b7d7e1ff..021b7866 100644
+--- a/internal/fabricengine/coalesce_test.go
++++ b/internal/fabricengine/coalesce_test.go
+@@ -10,7 +10,6 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
+-	"slices"
+ 	"strings"
+ 	"testing"
+ 
+@@ -140,49 +139,30 @@ func newPendingFlagFixture(t *testing.T) pendingFlagFixture {
+ 	}
+ }
+ 
+-// TestPushDeferral_PutsBackTheUnpushedFlags covers the deferral a detached push child installs:
+-// every owed side not yet pushed gets its flag back with its path and slugs;
+-// a pushed side's flag stays off, and the exit runs once.
+-func TestPushDeferral_PutsBackTheUnpushedFlags(t *testing.T) {
++// TestPushDeferral_PutsBackEveryOwedFlag covers the deferral a detached push child installs:
++// every owed side gets its flag back with its path and slugs, and the exit runs once.
++func TestPushDeferral_PutsBackEveryOwedFlag(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+-	tests := []struct {
+-		name      string
+-		pushed    map[string]bool
+-		wantFlags []string
+-	}{
+-		{"NeitherPushed", map[string]bool{}, []string{pushSideCode, pushSideRecords}},
+-		{"CodePushed", map[string]bool{pushSideCode: true}, []string{pushSideRecords}},
+-		{"BothPushed", map[string]bool{pushSideCode: true, pushSideRecords: true}, nil},
++	f := newPendingFlagFixture(t)
++	owed := map[string]PushSpawn{
++		pushSideCode:    {WarpPath: f.code, PauseSlug: "feat", TeardownSlug: "feat", ParentLocked: true},
++		pushSideRecords: {WeftPath: f.records, PauseSlug: "feat", TeardownSlug: "feat", ParentLocked: true},
+ 	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-			f := newPendingFlagFixture(t)
+-			owed := map[string]PushSpawn{
+-				pushSideCode:    {WarpPath: f.code, PauseSlug: "feat", TeardownSlug: "feat", ParentLocked: true},
+-				pushSideRecords: {WeftPath: f.records, PauseSlug: "feat", TeardownSlug: "feat", ParentLocked: true},
+-			}
+-			exits := 0
+-			pushDeferral(f.lockDir, owed, tt.pushed, func() { exits++ })()
++	exits := 0
++	pushDeferral(f.lockDir, owed, func() { exits++ })()
+ 
+-			if exits != 1 {
+-				t.Errorf("exit ran %d times; want 1", exits)
+-			}
+-			for _, side := range []string{pushSideCode, pushSideRecords} {
+-				flag, found, err := takePending(f.lockDir, side)
+-				if err != nil {
+-					t.Fatalf("takePending(%s): %v", side, err)
+-				}
+-				wantFound := slices.Contains(tt.wantFlags, side)
+-				if found != wantFound {
+-					t.Errorf("flag of %s on disk = %v; want %v", side, found, wantFound)
+-				}
+-				if found && flag != owed[side] {
+-					t.Errorf("flag of %s = %+v; want %+v", side, flag, owed[side])
+-				}
+-			}
+-		})
++	if exits != 1 {
++		t.Errorf("exit ran %d times; want 1", exits)
++	}
++	for _, side := range []string{pushSideCode, pushSideRecords} {
++		flag, found, err := takePending(f.lockDir, side)
++		if err != nil {
++			t.Fatalf("takePending(%s): %v", side, err)
++		}
++		if !found || flag != owed[side] {
++			t.Errorf("flag of %s = %+v, on disk %v; want %+v on disk", side, flag, found, owed[side])
++		}
+ 	}
+ }
+ 
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index d540e5f1..6750775c 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -1241,6 +1241,13 @@
+ // The lock is an OS lock its holder's exit frees, so a dead holder never keeps it and nothing clears it by hand;
+ // a record naming a pid with no running process may be stale, left by a holder that died.
+ // The next holder overwrites it.
++// Every taker of a push lock, `fabric.push.lock` or the board checkout's, passes the process's pause gate first.
++// It passes through `pauserecord.Admit` before it takes its first lock and stays admitted until it releases the last.
++// The first lock is the outermost one it takes:
++// the board write lock for `Bolt.Pull` and `Bolt.PullThenCommitWritten`,
++// and the pair's teardown lock for `PushPairAnchored` and `TakeOverRun`.
++// A pause therefore holds a pusher only while it holds no lock, and another pair's push takes the lock meanwhile.
++// A pause that starts while a pusher holds the lock reads its operation in flight and lets it finish.
+ //
+ // The hub-wide scratch tree also holds two sibling directories.
+ // `AdoptScratchDir(hub)` holds the adopt check's files.
+@@ -1294,12 +1301,16 @@
+ // A registration failure is logged at Warn and never fails the spawn.
+ // A child run by hand with a wrong or empty teardown slug takes no lock of the pair and can race a removal.
+ // A detached push under a pause defers instead of waiting.
+-// It pushes nothing more, leaves its commits local and its pending flags in place, and exits with one Info line.
++// It pushes nothing more.
++// It leaves what it has not pushed local and its pending flags in place.
++// It exits with one Info line.
+ // The push is deferred and not failed, so no failed-push record and no creel mail are written.
+ // When `pauserecord.GateCovered` reads covered, `DetachedPush` exits before it takes the teardown lock or marks a flag.
+ // `coalescePushSides` installs a deferral for the call's life.
+-// The deferral puts back the flag of every owed side the running push step has not pushed.
+-// It then exits through `exitDeferred`.
++// It fires at the gate before each acquire of the push lock, never while the lock is held.
++// On the first acquire nothing has been pushed;
++// on a later acquire after earlier steps pushed, the flags it puts back may name sides with nothing left to push.
++// The deferral puts back the flag of every owed side and exits through `exitDeferred`.
+ // The deferral fires only in a process whose gate defers.
+ // Only the detached push and board sync children install such a gate,
+ // so `CoalescePushBothAt` in an ordinary process is unaffected.
+diff --git a/internal/fabricengine/export_test.go b/internal/fabricengine/export_test.go
+index ecb0c24a..d065df8f 100644
+--- a/internal/fabricengine/export_test.go
++++ b/internal/fabricengine/export_test.go
+@@ -932,6 +932,97 @@ func HoldHubPauseForTest(t *testing.T, slug string) {
+ 	}))
+ }
+ 
++// PauseGateForTest installs a gate over a temp pause record that holds no live entry.
++// cover adds one live hub entry.
++// Each time the gate sleeps it counts one wait, runs atWait when it is not nil, and then lifts the entry.
++// The gate stays installed until the test ends.
++// It changes process-global state, so the calling test must not be parallel.
++func PauseGateForTest(t *testing.T, atWait func()) (cover func(), waits *int) {
++	t.Helper()
++
++	recordPath := filepath.Join(t.TempDir(), pauserecord.RecordFileName)
++	pausedAt := time.Date(2026, 11, 18, 12, 0, 0, 0, time.UTC)
++	setLive := func(live ...pauserecord.Entry) {
++		t.Helper()
++		if _, err := pauserecord.Update(recordPath, pausedAt, func(r *pauserecord.Record) error {
++			r.Live = live
++			return nil
++		}); err != nil {
++			t.Errorf("pauserecord.Update: %v", err)
++		}
++	}
++	setLive()
++	waits = new(int)
++	t.Cleanup(pauserecord.InstallGate(pauserecord.Gate{
++		Geometry: pauserecord.Geometry{RecordPath: recordPath, Slug: "held-pair"},
++		Notify:   func(string) {},
++		Sleep: func(context.Context, time.Duration) error {
++			*waits++
++			if atWait != nil {
++				atWait()
++			}
++			setLive()
++			return nil
++		},
++	}))
++	return func() { setLive(pauserecord.Entry{Scope: pauserecord.ScopeHub, PausedAt: pausedAt}) }, waits
++}
++
++// PassingPauseGateForTest installs a gate over a temp pause record that holds one live hub entry for the whole test.
++// Each wait the gate makes counts once and runs atWait, and then the call goes through with the entry still live.
++// atWait therefore runs at every point where a call would be held, until a call admits the process.
++// The gate stays installed until the test ends.
++// It changes process-global state, so the calling test must not be parallel.
++func PassingPauseGateForTest(t *testing.T, atWait func()) (waits *int) {
++	t.Helper()
++
++	recordPath := filepath.Join(t.TempDir(), pauserecord.RecordFileName)
++	pausedAt := time.Date(2026, 11, 18, 12, 0, 0, 0, time.UTC)
++	if _, err := pauserecord.Update(recordPath, pausedAt, func(r *pauserecord.Record) error {
++		r.Live = []pauserecord.Entry{{Scope: pauserecord.ScopeHub, PausedAt: pausedAt}}
++		return nil
++	}); err != nil {
++		t.Fatal(err)
++	}
++	waits = new(int)
++	t.Cleanup(pauserecord.InstallGate(pauserecord.Gate{
++		Geometry: pauserecord.Geometry{RecordPath: recordPath, Slug: "held-pair"},
++		Notify:   func(string) {},
++		Sleep: func(context.Context, time.Duration) error {
++			*waits++
++			atWait()
++			return errors.New("the test's pause lets the call through")
++		},
++	}))
++	return waits
++}
++
++// Lock file names in a records worktree's lock directory.
++const (
++	WeftPushLockFileForTest  = weftPushLockFile
++	WeftWriteLockFileForTest = weftWriteLockFile
++)
++
++// LockFreeForTest reports whether another holder could take the lock at path now.
++// It creates the lock's directory when it is missing, takes the lock by one try and releases it at once.
++func LockFreeForTest(t *testing.T, path string) bool {
++	t.Helper()
++
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Errorf("MkdirAll(%s): %v", filepath.Dir(path), err)
++		return false
++	}
++	held, acquired, err := lock.TryAcquireWriteLock(path)
++	if err != nil {
++		t.Errorf("TryAcquireWriteLock(%s) error = %v", path, err)
++		return false
++	}
++	if acquired {
++		_ = held.Release()
++	}
++	return acquired
++}
++
+ // PendingFlagPathForTest is pendingFlagPath, the path of a side's pending flag in a lock directory.
+ var PendingFlagPathForTest = pendingFlagPath
+ 
+diff --git a/internal/fabricengine/pendingflags.go b/internal/fabricengine/pendingflags.go
+index ed1d18cd..ca21b645 100644
+--- a/internal/fabricengine/pendingflags.go
++++ b/internal/fabricengine/pendingflags.go
+@@ -19,6 +19,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ )
+ 
+ const (
+@@ -57,23 +58,23 @@ func PairPushDeferred(l *lymcwd.Location) bool {
+ var exitDeferred = func() { os.Exit(0) }
+ 
+ // pushDeferral returns the function a detached push child's gate calls when a pause covers it:
+-// it marks pending again every owed side not in pushed, logs the sides left local, and calls exit.
+-// The commits stay local and the flags stay on disk for the next push, so the push is deferred and not failed.
+-func pushDeferral(lockDir string, owed map[string]PushSpawn, pushed map[string]bool, exit func()) func() {
++// it marks every owed side pending again, logs the sides, and calls exit.
++// The gate is passed before each acquire of the push lock and stays passed while the lock is held.
++// On the first acquire nothing has been pushed yet.
++// On a later acquire, after earlier steps pushed, the flags it puts back may name sides with nothing left to push.
++// The commits not yet pushed stay local and the flags stay on disk for the next push,
++// so the push is deferred and not failed.
++func pushDeferral(lockDir string, owed map[string]PushSpawn, exit func()) func() {
+ 	return func() {
+-		left := map[string]PushSpawn{}
+ 		var sides []string
+-		for side, req := range owed {
+-			if !pushed[side] {
+-				left[side] = req
+-				sides = append(sides, side)
+-			}
++		for side := range owed {
++			sides = append(sides, side)
+ 		}
+ 		sort.Strings(sides)
+-		if err := markPending(lockDir, left); err != nil {
++		if err := markPending(lockDir, owed); err != nil {
+ 			logger.Warn("fabricengine: pending flags of a deferred push not written; the commits stay local for the next push", "lock_dir", lockDir, "error", err)
+ 		}
+-		logger.Info("fabricengine: a pause covers the push; exiting with the commits left local", "sides", sides)
++		logger.Info("fabricengine: a pause covers the push; exiting with its pending flags put back", "sides", sides)
+ 		exit()
+ 	}
+ }
+@@ -133,6 +134,8 @@ func takePending(lockDir, side string) (req PushSpawn, found bool, err error) {
+ 
+ // coalesceFlagged is the holder loop of fabric.push.lock under lockDir.
+ // It marks the owed sides pending and acquires the lock.
++// Before each acquire it passes the process's pause gate, and it stays admitted until it releases the lock,
++// so a pause holds it only while it holds no lock and never while other pushers wait on it.
+ // It writes its holder record.
+ // It runs step with the owed flags taken before each run, looping while step reports progress.
+ // After the last run it releases the lock and re-reads the flags.
+@@ -148,15 +151,16 @@ func coalesceFlagged(lockDir string, owed map[string]PushSpawn, acquire func(loc
+ 	lockPath := filepath.Join(lockDir, weftPushLockFile)
+ 
+ 	for {
++		leaveGate := pauserecord.Admit(pushLockGateOp)
+ 		held, ok, err := acquire(lockPath)
+-		if err != nil {
++		if err != nil || !ok {
++			leaveGate()
+ 			return acquired, err
+ 		}
+-		if !ok {
+-			return acquired, nil
+-		}
+ 		acquired = true
+-		if err := runHeld(holdPushLock(held, lockDir, time.Now()), lockDir, owed, step); err != nil {
++		err = runHeld(holdPushLock(held, lockDir, time.Now()), lockDir, owed, step)
++		leaveGate()
++		if err != nil {
+ 			return true, err
+ 		}
+ 
+diff --git a/internal/fabricengine/pull.go b/internal/fabricengine/pull.go
+index 8214b79b..2dd9dbd1 100644
+--- a/internal/fabricengine/pull.go
++++ b/internal/fabricengine/pull.go
+@@ -24,6 +24,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ )
+ 
+@@ -493,24 +494,29 @@ func (f *Fabric) hubLocation() (*lymcwd.Location, error) {
+ }
+ 
+ // lockWeftForReplay takes the weft write lock and then the absorbing push lock, and returns the release of both.
++// It passes the process's pause gate before it takes the write lock and stays admitted until the release.
+ func (f *Fabric) lockWeftForReplay() (release func(), err error) {
+ 	lockDir, err := f.ensureWeftLockDir()
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	leaveGate := pauserecord.Admit(pushLockGateOp)
+ 	writeLock, err := lock.AcquireWriteLock(filepath.Join(lockDir, weftWriteLockFile))
+ 	if err != nil {
++		leaveGate()
+ 		return nil, fmt.Errorf("fabricengine: acquire weft write lock: %w", err)
+ 	}
+ 	pushLock, err := lock.AcquireWriteLock(filepath.Join(lockDir, weftPushLockFile))
+ 	if err != nil {
+ 		_ = writeLock.Release()
++		leaveGate()
+ 		return nil, fmt.Errorf("fabricengine: acquire push lock: %w", err)
+ 	}
+ 	releasePush := holdPushLock(pushLock, lockDir, time.Now())
+ 	return func() {
+ 		_ = releasePush()
+ 		_ = writeLock.Release()
++		leaveGate()
+ 	}, nil
+ }
+ 
+diff --git a/internal/fabricengine/pull_integration_test.go b/internal/fabricengine/pull_integration_test.go
+index e05dfad2..1fa55f61 100644
+--- a/internal/fabricengine/pull_integration_test.go
++++ b/internal/fabricengine/pull_integration_test.go
+@@ -353,6 +353,44 @@ func newDivergedWeftFixture(t *testing.T, originRel, originContent, originMarker
+ 	}
+ }
+ 
++// TestPull_ReplayHeldByAPauseWithoutTheWeftLocks covers a pull whose weft replay a pause holds.
++// At every wait the pause makes, the weft write lock and the push lock are free for another holder.
++// The pull then replays the local weft commit onto origin's.
++// The replay makes no network call, so the admission before its locks is the only wait of its own.
++// The test pins the count of waits made while the weft head still sits at the local commit:
++// the pull's gated calls before the replay, plus that admission.
++// Serial: it installs the process's network gate.
++func TestPull_ReplayHeldByAPauseWithoutTheWeftLocks(t *testing.T) {
++	tiergate.Require(t, 1)
++	fx := newDivergedWeftFixture(t, "from-clone-b.txt", "b", "", "local-only.txt", "local weft change", "")
++	lockDir := fabricengine.RecordsLockDirPath(fx.weftPath)
++	waitsBeforeReplay := 0
++	waits := fabricengine.PassingPauseGateForTest(t, func() {
++		for _, name := range []string{fabricengine.WeftWriteLockFileForTest, fabricengine.WeftPushLockFileForTest} {
++			if !fabricengine.LockFreeForTest(t, filepath.Join(lockDir, name)) {
++				t.Errorf("%s was held while the pause held a call of the pull; want it free", name)
++			}
++		}
++		if fabricengine.CurrentSHAForTest(t, fx.weftPath) == fx.localSHA {
++			waitsBeforeReplay++
++		}
++	})
++
++	result, err := fx.f.Pull(fabricengine.SyncOptions{})
++
++	if err != nil || !result.WeftPulled {
++		t.Errorf("Pull() = (%+v, %v); want the weft replayed", result, err)
++	}
++	if *waits == 0 {
++		t.Errorf("the pause held no call of the pull; want at least one")
++	}
++	const wantWaitsBeforeReplay = 3
++	if waitsBeforeReplay != wantWaitsBeforeReplay {
++		t.Errorf("waits before the replay = %d; want %d: the gated calls of the pull before it, and the admission before the weft locks",
++			waitsBeforeReplay, wantWaitsBeforeReplay)
++	}
++}
++
+ // TestPull_WeftDivergedWarpAdvancesCleanly covers a weft that this machine and origin both moved.
+ // The weft's local commit replays onto origin's and the pull succeeds.
+ // A replay conflict and an uncommitted change on a replayed path each return a *WeftStopError.
+diff --git a/internal/fabricengine/pushanchored.go b/internal/fabricengine/pushanchored.go
+index b9e59609..5fac8cdd 100644
+--- a/internal/fabricengine/pushanchored.go
++++ b/internal/fabricengine/pushanchored.go
+@@ -16,6 +16,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
+@@ -133,6 +134,8 @@ func pushLockBusyError(lockDir string, lockWait time.Duration) error {
+ // It returns a *TakeoverError, or an error wrapping ErrHandedOver after this machine handed the run over.
+ // Each side it pushes is marked pending before the lock is taken and re-read after it is released,
+ // so a code commit made while another holder pushes is pushed by whichever holder releases last.
++// It passes the process's pause gate before it takes any lock and stays admitted until it returns,
++// so a pause never holds it while it holds the pair's teardown lock or the push lock.
+ // For a pair, not the prime, it first takes the pair's teardown lock shared and holds it through the push.
+ // While any holder has that lock exclusive, it pushes nothing.
+ // push.TeardownWait zero makes one try, and a positive value polls the lock for at most that long.
+@@ -155,6 +158,8 @@ func PushPairAnchored(l *lymcwd.Location, opts SyncOptions, push PairPush) (res
+ 	if opts.SkipGit || opts.SkipPush {
+ 		return PushResult{}, nil
+ 	}
++	leaveGate := pauserecord.Admit(pushLockGateOp)
++	defer leaveGate()
+ 
+ 	isPrime, err := IsPrimeWorktree(l)
+ 	if err != nil {
+diff --git a/internal/fabricengine/pushclassified.go b/internal/fabricengine/pushclassified.go
+index 1de985ec..2ec1733e 100644
+--- a/internal/fabricengine/pushclassified.go
++++ b/internal/fabricengine/pushclassified.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/weftname"
+ )
+ 
+@@ -799,6 +800,7 @@ func fetchBoltBranch(hubPath string) error {
+ // retryBoltPush replays the board's local commits onto origin's and pushes again, after a rejected push.
+ // It try-acquires the board write lock, then takes the push lock, in the order the pull path uses.
+ // It holds both locks across the replay and the push.
++// It passes the process's pause gate before it tries the write lock and stays admitted until both are released.
+ // A held write lock and an uncommitted change on a path the replay touches report a deferral, with nothing changed.
+ // A replay that stops returns ErrReplayConflict, and a second rejection returns gitrepo.ErrPushRejected.
+ func retryBoltPush(rec *Mutations, boardDir string) (deferred bool, err error) {
+@@ -806,6 +808,8 @@ func retryBoltPush(rec *Mutations, boardDir string) (deferred bool, err error) {
+ 	if err != nil {
+ 		return false, err
+ 	}
++	leaveGate := pauserecord.Admit(pushLockGateOp)
++	defer leaveGate()
+ 	writeLock, held, err := lock.TryAcquireWriteLock(writeLockPath)
+ 	if err != nil {
+ 		return false, fmt.Errorf("fabricengine: acquire board write lock: %w", err)
+diff --git a/internal/fabricengine/pushdeferral_integration_test.go b/internal/fabricengine/pushdeferral_integration_test.go
+index 01b84cd6..559b0b57 100644
+--- a/internal/fabricengine/pushdeferral_integration_test.go
++++ b/internal/fabricengine/pushdeferral_integration_test.go
+@@ -1,6 +1,6 @@
+-// pushdeferral_integration_test.go covers the order of a detached push child's two sides,
+-// and a child whose first gated push meets a covering pause;
+-// it runs over plain code and records repos with local bare origins.
++// pushdeferral_integration_test.go covers the order of a detached push child's two sides.
++// It also covers a child that meets a covering pause, and a push a pause holds before it takes the push lock.
++// It runs over plain code and records repos with local bare origins.
+ 
+ package fabricengine
+ 
+@@ -13,44 +13,71 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// withBareOrigin gives a plain repo a bare origin holding its main and returns the origin's path.
++func withBareOrigin(t *testing.T, repo string) string {
++	t.Helper()
++	bare := newBoltBareRemote(t, t.TempDir())
++	gitkit.MustRun(t, repo, "git", "remote", "add", "origin", filepath.ToSlash(bare))
++	gitkit.MustRun(t, repo, "git", "push", "-u", "origin", "main")
++	return bare
++}
++
++// newChangedPair returns a code and a records repo, each with a bare origin and one unpushed commit.
++func newChangedPair(t *testing.T) (warpPath, warpBare, weftPath, weftBare string) {
++	t.Helper()
++	warpPath = newPlainWarpRepo(t)
++	warpBare = withBareOrigin(t, warpPath)
++	weftPath = newPlainWarpRepo(t)
++	weftBare = withBareOrigin(t, weftPath)
++	gitkit.CommitFile(t, warpPath, "warp-file.txt", "warp change", "warp change")
++	gitkit.CommitFile(t, weftPath, "weft-file.txt", "weft change", "weft change")
++	return warpPath, warpBare, weftPath, weftBare
++}
++
++// pushLockFree reports whether another process could take the push lock of the records repo at weftPath now.
++// It takes the lock by one try and releases it at once.
++func pushLockFree(t *testing.T, weftPath string) bool {
++	t.Helper()
++	path := filepath.Join(RecordsLockDirPath(weftPath), weftPushLockFile)
++	held, acquired, err := lock.TryAcquireWriteLock(path)
++	if err != nil {
++		t.Errorf("TryAcquireWriteLock(%s) error = %v", path, err)
++		return false
++	}
++	if acquired {
++		_ = held.Release()
++	}
++	return acquired
++}
++
+ // TestCoalescePushRequest_CoveredCallDefers covers a detached child over a code and a records repo with bare origins.
+-// A child whose first gated push meets a covering pause defers at the records side's push, the first side pushed.
++// A covered child defers at the pause gate, before it takes the push lock, with the lock free.
+ // The exit runs once, and both pending flags are back on disk.
+ // Origin holds neither commit, and no failed push is recorded.
+ // An uncovered child pushes the records side before the code side.
+ // Serial: the covered row installs the process's network gate and swaps the deferral's exit.
+ func TestCoalescePushRequest_CoveredCallDefers(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	// withBareOrigin gives a plain repo a bare origin holding its main and returns the origin's path.
+-	withBareOrigin := func(t *testing.T, repo string) string {
+-		bare := newBoltBareRemote(t, t.TempDir())
+-		gitkit.MustRun(t, repo, "git", "remote", "add", "origin", filepath.ToSlash(bare))
+-		gitkit.MustRun(t, repo, "git", "push", "-u", "origin", "main")
+-		return bare
+-	}
+-	// newChangedPair returns a code and a records repo, each with a bare origin and one unpushed commit.
+-	newChangedPair := func(t *testing.T) (warpPath, warpBare, weftPath, weftBare string) {
+-		warpPath = newPlainWarpRepo(t)
+-		warpBare = withBareOrigin(t, warpPath)
+-		weftPath = newPlainWarpRepo(t)
+-		weftBare = withBareOrigin(t, weftPath)
+-		gitkit.CommitFile(t, warpPath, "warp-file.txt", "warp change", "warp change")
+-		gitkit.CommitFile(t, weftPath, "weft-file.txt", "weft change", "weft change")
+-		return warpPath, warpBare, weftPath, weftBare
+-	}
+ 
+-	t.Run("CoveredCallDefersAtTheRecordsPush", func(t *testing.T) {
++	t.Run("CoveredCallDefersBeforeThePushLock", func(t *testing.T) {
+ 		warpPath, warpBare, weftPath, weftBare := newChangedPair(t)
+ 		warpBefore := BareBranchSHAForTest(t, warpBare, "main")
+ 		weftBefore := BareBranchSHAForTest(t, weftBare, "main")
+ 
+ 		HoldHubPauseForTest(t, "")
+ 		exits := 0
++		lockFreeAtExit := false
+ 		previousExit := exitDeferred
+-		exitDeferred = func() { exits++; runtime.Goexit() }
++		exitDeferred = func() {
++			exits++
++			lockFreeAtExit = pushLockFree(t, weftPath)
++			runtime.Goexit()
++		}
+ 		t.Cleanup(func() { exitDeferred = previousExit })
+ 
+ 		finished := make(chan struct{})
+@@ -60,8 +87,8 @@ func TestCoalescePushRequest_CoveredCallDefers(t *testing.T) {
+ 		}()
+ 		<-finished
+ 
+-		if exits != 1 {
+-			t.Errorf("deferral exits = %d; want 1, at the first gated push", exits)
++		if exits != 1 || !lockFreeAtExit {
++			t.Errorf("deferral exits = %d with the push lock free %v; want 1, at the gate before the lock is taken", exits, lockFreeAtExit)
+ 		}
+ 		lockDir := RecordsLockDirPath(weftPath)
+ 		for _, side := range []string{pushSideCode, pushSideRecords} {
+@@ -80,6 +107,31 @@ func TestCoalescePushRequest_CoveredCallDefers(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("AMissedAcquireLeavesNoAdmissionBehind", func(t *testing.T) {
++		warpPath, _, weftPath, _ := newChangedPair(t)
++		lockDir, err := ensureWeftLockDirAt(weftPath)
++		if err != nil {
++			t.Fatalf("ensureWeftLockDirAt(%s): %v", weftPath, err)
++		}
++		holder, err := lock.AcquireWriteLock(filepath.Join(lockDir, weftPushLockFile))
++		if err != nil {
++			t.Fatalf("AcquireWriteLock: %v", err)
++		}
++		defer func() { _ = holder.Release() }()
++		cover, waits := PauseGateForTest(t, nil)
++
++		if _, err := CoalescePushRequest(PushSpawn{WarpPath: warpPath, WeftPath: weftPath}, SyncOptions{}, MachineNames{}); err != nil {
++			t.Fatalf("CoalescePushRequest() with the push lock held error = %v; want nil", err)
++		}
++		cover()
++		_, done := pauserecord.Network("probe")
++		done()
++
++		if *waits != 1 {
++			t.Errorf("gate waits of a network call after the missed acquire = %d; want 1, so no admission was left standing", *waits)
++		}
++	})
++
+ 	t.Run("UncoveredCallPushesTheRecordsSideBeforeTheCodeSide", func(t *testing.T) {
+ 		warpPath, warpBare, weftPath, weftBare := newChangedPair(t)
+ 		order := filepath.Join(t.TempDir(), "push-order.log")
+@@ -103,3 +155,36 @@ func TestCoalescePushRequest_CoveredCallDefers(t *testing.T) {
+ 		}
+ 	})
+ }
++
++// TestCoalescePushBothAt_HeldByAPauseWithoutThePushLock covers a push a pause holds.
++// It runs over a code and a records repo with bare origins.
++// While the pause holds the call, the push lock is free, so another pair's push takes it meanwhile.
++// Once the pause lifts, the call takes the lock and pushes both sides.
++// Serial: it installs the process's network gate.
++func TestCoalescePushBothAt_HeldByAPauseWithoutThePushLock(t *testing.T) {
++	tiergate.Require(t, 1)
++	warpPath, warpBare, weftPath, weftBare := newChangedPair(t)
++	cover, waits := PauseGateForTest(t, func() {
++		if !pushLockFree(t, weftPath) {
++			t.Errorf("the push lock was held while the pause held the call; want it free for another pair's push")
++		}
++	})
++	cover()
++
++	if _, err := CoalescePushBothAt(warpPath, weftPath, SyncOptions{}); err != nil {
++		t.Fatalf("CoalescePushBothAt() error = %v; want nil", err)
++	}
++
++	if *waits != 1 {
++		t.Errorf("gate waits = %d; want 1, before the push lock", *waits)
++	}
++	for _, side := range []struct{ repo, bare string }{{warpPath, warpBare}, {weftPath, weftBare}} {
++		head, err := headOrEmpty(side.repo)
++		if err != nil {
++			t.Fatalf("headOrEmpty(%s): %v", side.repo, err)
++		}
++		if got := BareBranchSHAForTest(t, side.bare, "main"); got != head {
++			t.Errorf("bare main of %s = %q; want the pushed head %q", side.repo, got, head)
++		}
++	}
++}
+diff --git a/internal/fabricengine/takeoverrun_integration_test.go b/internal/fabricengine/takeoverrun_integration_test.go
+index c86d5b13..6538d833 100644
+--- a/internal/fabricengine/takeoverrun_integration_test.go
++++ b/internal/fabricengine/takeoverrun_integration_test.go
+@@ -8,6 +8,7 @@ package fabricengine_test
+ 
+ import (
+ 	"errors"
++	"path/filepath"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -107,6 +108,36 @@ func TestTakeOverRun(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("APauseHoldsTheTakeoverWithoutAnyTeardownOrPushLockAndTheEntryStillLands", func(t *testing.T) {
++		f := newTakeoverFixture(t)
++		lockPaths := []string{
++			fabricengine.TeardownLockPath(f.hub.Location.HubPath, takeoverRunSlug),
++			// The takeover's parent is the prime, whose teardown lock is named root.
++			fabricengine.TeardownLockPath(f.hub.Location.HubPath, "root"),
++		}
++		for _, weft := range []string{f.weftPath, f.primeWeft} {
++			lockPaths = append(lockPaths, filepath.Join(fabricengine.RecordsLockDirPath(weft), fabricengine.WeftPushLockFileForTest))
++		}
++		waits := fabricengine.PassingPauseGateForTest(t, func() {
++			for _, path := range lockPaths {
++				if !fabricengine.LockFreeForTest(t, path) {
++					t.Errorf("%s was held while the pause held the takeover; want it free", path)
++				}
++			}
++		})
++
++		if _, err := fabricengine.TakeOverRun(f.hub.Location, f.request()); err != nil {
++			t.Fatalf("TakeOverRun() error = %v; want nil", err)
++		}
++
++		if *waits == 0 {
++			t.Errorf("the pause held no call of the takeover; want at least one")
++		}
++		if entry, found := f.originTakeover(t, f.weftPath); !found || entry != f.wantEntry() {
++			t.Errorf("origin's pair records branch entry = %+v, found %v; want %+v", entry, found, f.wantEntry())
++		}
++	})
++
+ 	t.Run("ATakeoverPushRejectedOverTheOldOwnersLaterTransitionWritesOntoOriginsTipAndLands", func(t *testing.T) {
+ 		f := newTakeoverFixture(t)
+ 		planted := false
+diff --git a/internal/fabricengine/takeoverwrite.go b/internal/fabricengine/takeoverwrite.go
+index 6cb865a4..d1e76438 100644
+--- a/internal/fabricengine/takeoverwrite.go
++++ b/internal/fabricengine/takeoverwrite.go
+@@ -14,6 +14,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -73,6 +74,8 @@ type takeoverBranch struct {
+ }
+ 
+ // TakeOverRun moves the run req names to this machine and leaves the takeover entry on origin.
++// It passes the process's pause gate before it takes the first teardown lock and stays admitted until it returns,
++// so a pause never holds it while it holds a teardown lock or a push lock.
+ // It takes the moved slug's teardown lock and then the parent slug's, `root` for the prime, each exclusive.
+ // It holds both until it returns, so no push of either pair runs meanwhile.
+ // A lock still held when its wait runs out refuses with an error wrapping ErrPairPushRunning, before anything is fetched.
+@@ -103,6 +106,8 @@ func TakeOverRun(prime *lymcwd.Location, req TakeOverRequest) (TakeOverResult, e
+ 		lockWait = StatusPushLockWait
+ 	}
+ 
++	leaveGate := pauserecord.Admit(pushLockGateOp)
++	defer leaveGate()
+ 	for _, slug := range []string{req.Slug, parentSlug} {
+ 		if err := ensureTeardownLockDir(hubPath, slug); err != nil {
+ 			return TakeOverResult{}, err
+@@ -158,6 +163,7 @@ func TakeOverRun(prime *lymcwd.Location, req TakeOverRequest) (TakeOverResult, e
+ }
+ 
+ // land writes the takeover entry on the branch, commits it and pushes it under the records push lock.
++// The caller has passed the process's pause gate, so a pause never holds it while it holds the lock.
+ // retries counts each push it repeated.
+ func (b *takeoverBranch) land(rec *Mutations, req TakeOverRequest, entry shedengine.Takeover, retries *int) error {
+ 	delays := req.Delays
+diff --git a/internal/fabricengine/teardownlock_integration_test.go b/internal/fabricengine/teardownlock_integration_test.go
+index dd464113..36934771 100644
+--- a/internal/fabricengine/teardownlock_integration_test.go
++++ b/internal/fabricengine/teardownlock_integration_test.go
+@@ -218,6 +218,43 @@ func TestRemove_TeardownLockAgainstThePairsPush(t *testing.T) {
+ 	})
+ }
+ 
++// TestPushPairAnchored_HeldByAPauseWithoutTheTeardownLock covers a pair push a pause holds.
++// At every wait the pause makes, the pair's teardown lock is free for an exclusive taker such as a removal.
++// The push then lands the pair's records commit.
++// Serial: it installs the process's network gate.
++func TestPushPairAnchored_HeldByAPauseWithoutTheTeardownLock(t *testing.T) {
++	tiergate.Require(t, 1)
++	const slug = "lock-pair-pause"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
++	pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(slug))
++	if err != nil {
++		t.Fatalf("resolve the pair's location: %v", err)
++	}
++	if _, err := fabricengine.PushPairAnchored(pair, fabricengine.SyncOptions{}, fabricengine.PairPush{LockWait: fabricengine.LockWaitUnbounded}); err != nil {
++		t.Fatalf("first PushPairAnchored error = %v; want nil", err)
++	}
++	gitkit.CommitFile(t, h.PairRecordsSibling(slug), "paused.txt", "paused\n", "records work under a pause")
++	teardownLockPath := fabricengine.TeardownLockPath(h.Path, slug)
++	waits := fabricengine.PassingPauseGateForTest(t, func() {
++		if !fabricengine.LockFreeForTest(t, teardownLockPath) {
++			t.Errorf("the teardown lock was held while the pause held the push; want it free")
++		}
++	})
++
++	if _, err := fabricengine.PushPairAnchored(pair, fabricengine.SyncOptions{}, fabricengine.PairPush{LockWait: fabricengine.LockWaitUnbounded}); err != nil {
++		t.Fatalf("PushPairAnchored under a pause error = %v; want nil", err)
++	}
++
++	if *waits == 0 {
++		t.Errorf("the pause held no call of the push; want at least one")
++	}
++	weftBranch := fabricengine.RecordsBranchName(slug)
++	if got, want := gitkit.RevParse(t, h.RecordsBare, weftBranch), gitkit.RevParse(t, h.PairRecordsSibling(slug), "HEAD"); got != want {
++		t.Errorf("origin weft tip = %s; want the pushed %s", got, want)
++	}
++}
++
+ // TestTeardownLock_SerialisesAddDiscardAndPairPush holds the slug's teardown lock exclusive, one hub per row.
+ // It meets Add, the task-branch discard and the synchronous pair push with that hold.
+ // Each row sets its wait on its own Topology, and the test releases the holder,
+diff --git a/internal/pauserecord/doc.go b/internal/pauserecord/doc.go
+index 844cd55b..9875d32f 100644
+--- a/internal/pauserecord/doc.go
++++ b/internal/pauserecord/doc.go
+@@ -58,7 +58,7 @@
+ // The CLI root installs a Gate once per process, and a call waits at entry while a pause covers the process.
+ // It then writes a marker under `NetDir` that its returned function removes.
+ // ListNetOps lists the markers of live processes, which are the operations in flight.
+-// An operation named remote-refs marks a lock hold.
++// An operation an Admit caller names, such as remote-refs or push-lock, marks a lock hold.
+ // The hold lasts from before the lock is taken until its release, and it covers the git calls and retries made under it.
+ // Network returns the time it held the call, zero unless the wait slept,
+ // so a caller can move its own deadline later by that time.
+diff --git a/internal/tendercli/cli.go b/internal/tendercli/cli.go
+index 258e19f0..789129d6 100644
+--- a/internal/tendercli/cli.go
++++ b/internal/tendercli/cli.go
+@@ -101,7 +101,9 @@ with Esc, and holds every path that would start agent or network work until
+ 
+ A second Esc goes only after the provider's settle time, and only into a pane
+ still showing a running turn. A session whose turn ended with background work
+-is sent no Esc and is reported under "background".
++is sent no Esc and is reported under "background". A pair with no reed session,
++as after a crash, has no running turn: it is reported under "skipped" and the
++pause goes on.
+ 
+ With no slug it covers the whole hub; with a slug it covers that pair. A repeated
+ pause adds no entry and interrupts only the sessions in a running turn now. The
+@@ -276,7 +278,8 @@ func reviveCmd() *cobra.Command {
+ 		Long: `revive types one fixed carry-on line into each session whose last turn stopped
+ on an API error, the case a network outage without a machine sleep leaves
+ behind. A session in any other state is skipped with the state read, and a
+-session a live pause covers is left to "lym tender resume".
++session a live pause covers is left to "lym tender resume". A pair with no reed
++session, as after a crash, is reported under "skipped" and the revive goes on.
+ 
+ With no slug it covers the whole hub, the orchestrator included: the orch gets
+ the line as a checked creel inject, reported with its id. With a slug it covers that pair. Every send is refused at once when
+@@ -338,6 +341,7 @@ func statusCmd() *cobra.Command {
+ 		Long: `status prints the live pause entries, the network operations in flight and the
+ parent locks held, then every live session in the hub with its state, cause and
+ whether an entry covers it, and the lym processes running a replaced binary.
++skipped lists each pair, the prime included, with no reed session, whose sessions are not read.
+ processes lists every live process registered to a run, by owner, with its role,
+ pid and age and whether it is an orphan: its owner has no pair and no live batten,
+ and it works outside every registered worktree.
+diff --git a/internal/tenderengine/doc.go b/internal/tenderengine/doc.go
+index b8619d96..850d2918 100644
+--- a/internal/tenderengine/doc.go
++++ b/internal/tenderengine/doc.go
+@@ -30,6 +30,8 @@
+ // Only then is it interrupted through shuttle's guarded interrupt.
+ // A pause killed before its Esc therefore leaves the session recorded.
+ // The caller's own session and a session another live entry owns are skipped.
++// A covered pair with no reed session, as after a crash, has no running turn to interrupt.
++// The pause keeps its entry, reports the pair under `skipped` with reed's refusal as the reason, and goes on.
+ // The keys go in passes over the sessions, each followed by one wait of the provider's settle time;
+ // a pause therefore waits each settle once, whatever the number of sessions.
+ // A session that still reads a running turn after the first settle is guarded and interrupted again, so at most twice.
+@@ -115,6 +117,7 @@
+ // For each live session of each task pair in scope, Revive reads the session's state.
+ // It skips a session that does not read idle-stalled with cause `api-error`, reporting the state read.
+ // It never waits for a session.
++// A pair in scope with no reed session has no session to read: Revive reports it under `Skipped` and goes on.
+ // A stalled session is then sent `ReviveLine` through the conditioned send.
+ // The send re-reads the state at its ready reading.
+ // It refuses at once if the session does not read stalled on an API error.
+@@ -169,6 +172,7 @@
+ //     A prime session is covered only by a hub entry.
+ //     A session busy on background work lists the kind of each outstanding task under `background`.
+ //     A session whose state reading fails is listed with the state `unknown` and the error as its cause.
++//     A pair or prime with no reed session lists no session and is reported under `skipped` instead.
+ //   - The processes running a replaced binary:
+ //     each process whose exe is a deleted file with the running lym's own file name.
+ //     Its cwd must be the hub or inside it.
+diff --git a/internal/tenderengine/pause.go b/internal/tenderengine/pause.go
+index 5ca0bd76..52dbf083 100644
+--- a/internal/tenderengine/pause.go
++++ b/internal/tenderengine/pause.go
+@@ -9,6 +9,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
++	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
+@@ -86,6 +87,7 @@ type PauseReport struct {
+ 	// Refused holds the sessions refused on interrupt or reading, with the error's message.
+ 	Refused []SessionNote `json:"refused"`
+ 	// Skipped holds the sessions left alone: the caller's own and those owned by another live entry.
++	// It also holds each covered pair with no reed session, with no strand named.
+ 	Skipped []SessionNote `json:"skipped"`
+ 	// NetOps holds the covered network operations still in flight.
+ 	NetOps []NetOpReport `json:"net_ops"`
+@@ -170,10 +172,11 @@ func Pause(deps Deps, req PauseRequest) (PauseReport, error) {
+ 		}
+ 	}
+ 
+-	covered, err := coveredSessions(deps, scope)
++	covered, noSession, err := coveredSessions(deps, scope)
+ 	if err != nil {
+ 		return report, err
+ 	}
++	report.Skipped = append(report.Skipped, noSession...)
+ 	covers := func(slug string) bool { return scope == pauserecord.ScopeHub || slug == scope }
+ 
+ 	for {
+@@ -230,21 +233,25 @@ func Pause(deps Deps, req PauseRequest) (PauseReport, error) {
+ }
+ 
+ // coveredSessions lists the live sessions of every pair scope covers.
+-func coveredSessions(deps Deps, scope string) ([]session, error) {
+-	var sessions []session
++// A pair with no reed session has no running turn, so it lists no session and is returned in noSession instead.
++func coveredSessions(deps Deps, scope string) (sessions []session, noSession []SessionNote, err error) {
+ 	for _, pair := range deps.Pairs {
+ 		if scope != pauserecord.ScopeHub && pair.Slug() != scope {
+ 			continue
+ 		}
+ 		infos, err := pair.Sessions()
++		if errors.Is(err, reedengine.ErrNoSession) {
++			noSession = append(noSession, noReedSessionNote(pair.Slug(), err))
++			continue
++		}
+ 		if err != nil {
+-			return nil, fmt.Errorf("pause: list the sessions of %s: %w", pair.Slug(), err)
++			return nil, nil, fmt.Errorf("pause: list the sessions of %s: %w", pair.Slug(), err)
+ 		}
+ 		for _, info := range infos {
+ 			sessions = append(sessions, session{SessionInfo: info, pair: pair})
+ 		}
+ 	}
+-	return sessions, nil
++	return sessions, noSession, nil
+ }
+ 
+ // anyBusy reports whether a session reads busy; a session whose busy reading fails does not hold the grace.
+diff --git a/internal/tenderengine/pause_test.go b/internal/tenderengine/pause_test.go
+index 4ed1e9dc..635657ad 100644
+--- a/internal/tenderengine/pause_test.go
++++ b/internal/tenderengine/pause_test.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+@@ -29,6 +30,8 @@ type fakePair struct {
+ 	mu       sync.Mutex
+ 	slug     string
+ 	sessions []SessionInfo
++	// sessionsErr fails Sessions while set.
++	sessionsErr error
+ 	// busy holds each session's scripted busy answers, consumed in order with the last repeating; a session with none reads idle.
+ 	busy map[string][]bool
+ 	dead map[string]bool
+@@ -85,10 +88,16 @@ func newPair(slug string, strands ...string) *fakePair {
+ }
+ 
+ func (p *fakePair) Slug() string                     { return p.slug }
+-func (p *fakePair) Sessions() ([]SessionInfo, error) { return p.sessions, nil }
++func (p *fakePair) Sessions() ([]SessionInfo, error) { return p.sessions, p.sessionsErr }
+ func (p *fakePair) Running() (string, bool, error)   { return p.producer, p.running, nil }
+ func (p *fakePair) Live(guid string) (bool, error)   { return !p.dead[guid], nil }
+ 
++// errNoReedSession is the refusal a pair with no reed session answers Sessions with, as reed's Status words it.
++var errNoReedSession = fmt.Errorf("no reed session (2 strands persisted): %w", reedengine.ErrNoSession)
++
++// errSessionsRead is a Sessions failure that is not reed's missing-session refusal.
++var errSessionsRead = errors.New("reading the sessions failed")
++
+ func (p *fakePair) State(guid string) (shuttleengine.SessionState, error) {
+ 	if err := p.stateErr[guid]; err != nil {
+ 		return shuttleengine.SessionState{}, err
+@@ -485,6 +494,35 @@ func TestPause(t *testing.T) {
+ 				t.Errorf("report = %+v with %d Esc; want scope hub and a interrupted by the first Esc alone", report, len(p.interrupts))
+ 			}
+ 		}},
++		{"a pair with no reed session is skipped and the pause goes on to the other pairs", func(t *testing.T) {
++			gone := newPair("p1")
++			gone.sessionsErr = errNoReedSession
++			p := newPair("p2", "b")
++			// The readings are the grace's probe, the step's check, then the one after the Esc.
++			p.busy["g-b"] = []bool{true, true, false}
++			e := newEnv(t, gone, p)
++
++			report := e.pause("", 0)
++
++			wantSkipped := []SessionNote{{Slug: "p1", Reason: "no reed session, so no running turn: " + errNoReedSession.Error()}}
++			if !reflect.DeepEqual(report.Skipped, wantSkipped) {
++				t.Errorf("skipped = %+v; want %+v", report.Skipped, wantSkipped)
++			}
++			if !reflect.DeepEqual(report.Interrupted, []string{"b"}) || len(e.record().Live) != 1 {
++				t.Errorf("interrupted %v with live entries %+v; want b interrupted under the one hub entry", report.Interrupted, e.record().Live)
++			}
++		}},
++		{"a sessions error other than no reed session fails the pause and lists the pair under no skipped", func(t *testing.T) {
++			broken := newPair("p1")
++			broken.sessionsErr = errSessionsRead
++			e := newEnv(t, broken)
++
++			report, err := Pause(e.deps(), PauseRequest{})
++
++			if !errors.Is(err, errSessionsRead) || len(report.Skipped) != 0 {
++				t.Errorf("Pause() = %+v, %v; want the sessions error and nothing skipped", report, err)
++			}
++		}},
+ 		{"Added is called once with the added entry, before any Esc and before the grace, and not for a repeated pause", func(t *testing.T) {
+ 			p := newPair("p1", "a")
+ 			p.busy["g-a"] = []bool{true}
+diff --git a/internal/tenderengine/report.go b/internal/tenderengine/report.go
+index 3fd62571..2051803d 100644
+--- a/internal/tenderengine/report.go
++++ b/internal/tenderengine/report.go
+@@ -29,6 +29,7 @@ type Pair interface {
+ 	// Slug is the pair's slug.
+ 	Slug() string
+ 	// Sessions lists the pair's live shuttle-run strands, the loom driver included.
++	// It fails with an error wrapping reedengine.ErrNoSession when the pair has no reed session.
+ 	Sessions() ([]SessionInfo, error)
+ 	// State reads the session's state from its run's files, the zero state when the strand has none.
+ 	State(guid string) (shuttleengine.SessionState, error)
+@@ -132,6 +133,12 @@ type SessionNote struct {
+ 	Reason string `json:"reason"`
+ }
+ 
++// noReedSessionNote returns the note of the pair slug whose reed session is gone, with reed's refusal err as the cause.
++// Such a pair has no running turn, so pause and status pass it over instead of failing.
++func noReedSessionNote(slug string, err error) SessionNote {
++	return SessionNote{Slug: slug, Reason: "no reed session, so no running turn: " + err.Error()}
++}
++
+ // NetOpReport is one network operation in flight.
+ type NetOpReport struct {
+ 	Op     string `json:"op"`
+diff --git a/internal/tenderengine/resume.go b/internal/tenderengine/resume.go
+index dfb34da8..cd35df0f 100644
+--- a/internal/tenderengine/resume.go
++++ b/internal/tenderengine/resume.go
+@@ -13,6 +13,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/runfsm"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+@@ -58,6 +59,8 @@ type StatusReport struct {
+ 	Holds holdReport `json:"holds"`
+ 	// Sessions holds every live session of the hub's task pairs and of the prime.
+ 	Sessions []SessionStatus `json:"sessions"`
++	// Skipped holds each pair, the prime included, whose sessions were not read because it has no reed session.
++	Skipped []SessionNote `json:"skipped"`
+ 	// Stale holds the processes running a replaced binary.
+ 	Stale StaleReport `json:"stale"`
+ 	// Processes holds the registered run processes, the orphans among them, and the lym processes no record owns.
+@@ -441,6 +444,7 @@ type ReviveReport struct {
+ 	// Paused holds the sessions a live entry covers, which resume gives their line.
+ 	Paused []SessionNote `json:"paused"`
+ 	// Skipped holds the sessions that did not read stalled on an API error, each with the state read.
++	// It also holds each pair in scope with no reed session, with no strand named.
+ 	Skipped []SessionNote `json:"skipped"`
+ 	// Refused holds the sessions whose state reading or guarded send was refused, each with the reason.
+ 	Refused []SessionNote `json:"refused"`
+@@ -472,10 +476,11 @@ func Revive(deps Deps, req ReviveRequest) (ReviveReport, error) {
+ 	if req.Slug != "" {
+ 		scope = req.Slug
+ 	}
+-	sessions, err := coveredSessions(deps, scope)
++	sessions, noSession, err := coveredSessions(deps, scope)
+ 	if err != nil {
+ 		return report, err
+ 	}
++	report.Skipped = append(report.Skipped, noSession...)
+ 	for _, s := range sessions {
+ 		if err := reviveSession(deps, s, &report); err != nil {
+ 			return report, err
+@@ -624,13 +629,14 @@ func describeState(state shuttleengine.SessionState) string {
+ // It reports the processes running a replaced binary and the processes registered to runs, with the orphans among them.
+ // It reports the owners of the pairs.
+ // A failed state, process or owners reading is reported inside its own part and leaves the rest of the report intact.
++// A pair with no reed session is reported under Skipped, and the other pairs' sessions are still read.
+ func Status(deps Deps) (StatusReport, error) {
+ 	record, err := pauserecord.Read(deps.RecordPath)
+ 	if err != nil {
+ 		return StatusReport{}, err
+ 	}
+ 	report := StatusReport{Live: append([]pauserecord.Entry{}, record.Live...), Stale: StaleReport{Supported: true, Processes: []StaleProcess{}}, Processes: ProcessReport{Owned: []OwnedProcess{}, Unregistered: []StaleProcess{}, UnregisteredSupported: true}, Owners: []PairOwner{}}
+-	if report.Sessions, err = sessionStatuses(deps, record); err != nil {
++	if report.Sessions, report.Skipped, err = sessionStatuses(deps, record); err != nil {
+ 		return report, err
+ 	}
+ 	if deps.Owners != nil {
+@@ -666,7 +672,8 @@ func Status(deps Deps) (StatusReport, error) {
+ 
+ // sessionStatuses lists every live session of every task pair and then of the prime, each with its state.
+ // A session whose state reading fails is listed with the state "unknown" and the error as its cause.
+-func sessionStatuses(deps Deps, record pauserecord.Record) ([]SessionStatus, error) {
++// A pair with no reed session lists no session; it is returned in skipped instead.
++func sessionStatuses(deps Deps, record pauserecord.Record) (statuses []SessionStatus, skipped []SessionNote, err error) {
+ 	type scope struct {
+ 		pair  Pair
+ 		prime bool
+@@ -678,11 +685,15 @@ func sessionStatuses(deps Deps, record pauserecord.Record) ([]SessionStatus, err
+ 	if deps.Prime != nil {
+ 		scopes = append(scopes, scope{pair: deps.Prime, prime: true})
+ 	}
+-	statuses := []SessionStatus{}
++	statuses, skipped = []SessionStatus{}, []SessionNote{}
+ 	for _, covered := range scopes {
+ 		sessions, err := covered.pair.Sessions()
++		if errors.Is(err, reedengine.ErrNoSession) {
++			skipped = append(skipped, noReedSessionNote(covered.pair.Slug(), err))
++			continue
++		}
+ 		if err != nil {
+-			return nil, err
++			return nil, nil, err
+ 		}
+ 		for _, session := range sessions {
+ 			_, paused := record.Covering(session.Slug)
+@@ -702,7 +713,7 @@ func sessionStatuses(deps Deps, record pauserecord.Record) ([]SessionStatus, err
+ 			statuses = append(statuses, status)
+ 		}
+ 	}
+-	return statuses, nil
++	return statuses, skipped, nil
+ }
+ 
+ // deletedSuffix is what the kernel appends to an exe or cwd link whose target was removed.
+diff --git a/internal/tenderengine/resume_test.go b/internal/tenderengine/resume_test.go
+index 1a7bb67b..1b402eaf 100644
+--- a/internal/tenderengine/resume_test.go
++++ b/internal/tenderengine/resume_test.go
+@@ -616,6 +616,20 @@ func TestRevive(t *testing.T) {
+ 				t.Errorf("b's skip reason = %q; want the state read", report.Skipped[0].Reason)
+ 			}
+ 		}},
++		{"a pair with no reed session is skipped and the other pairs are still revived", func(t *testing.T) {
++			gone := newPair("p1")
++			gone.sessionsErr = errNoReedSession
++			p := newPair("p2", "b")
++			p.states["g-b"] = stalled
++			e := newEnv(t, gone, p)
++
++			report := revive(t, e, "")
++
++			wantSkipped := []SessionNote{{Slug: "p1", Reason: "no reed session, so no running turn: " + errNoReedSession.Error()}}
++			if !reflect.DeepEqual(report.Skipped, wantSkipped) || !reflect.DeepEqual(report.Sent, []string{"b"}) || !reflect.DeepEqual(p.conditioned, []string{"g-b"}) {
++				t.Errorf("report %+v, sent to %v; want p1 skipped for no reed session and b sent", report, p.conditioned)
++			}
++		}},
+ 		{"a session a live entry covers is reported paused and sent nothing", func(t *testing.T) {
+ 			p := newPair("p1", "a")
+ 			p.states["g-a"] = stalled
+@@ -915,6 +929,37 @@ func TestStatus(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a pair and a prime with no reed session are skipped and the other pairs still read", func(t *testing.T) {
++		gone, p2, prime := newPair("p1"), newPair("p2", "b"), newPair("prime")
++		gone.sessionsErr, prime.sessionsErr = errNoReedSession, errNoReedSession
++		e := newEnv(t, gone, p2)
++		e.prime = prime
++
++		report := read(t, e)
++
++		reason := "no reed session, so no running turn: " + errNoReedSession.Error()
++		wantSkipped := []SessionNote{{Slug: "p1", Reason: reason}, {Slug: "prime", Reason: reason}}
++		if !reflect.DeepEqual(report.Skipped, wantSkipped) {
++			t.Errorf("skipped = %+v; want %+v", report.Skipped, wantSkipped)
++		}
++		wantSessions := []SessionStatus{{Slug: "p2", Strand: "b", State: "idle-done", Cause: "done"}}
++		if !reflect.DeepEqual(report.Sessions, wantSessions) {
++			t.Errorf("sessions = %+v; want %+v", report.Sessions, wantSessions)
++		}
++	})
++
++	t.Run("a sessions error other than no reed session fails the status and lists the pair under no skipped", func(t *testing.T) {
++		broken := newPair("p1")
++		broken.sessionsErr = errSessionsRead
++		e := newEnv(t, broken)
++
++		report, err := Status(e.deps())
++
++		if !errors.Is(err, errSessionsRead) || len(report.Skipped) != 0 {
++			t.Errorf("Status() = %+v, %v; want the sessions error and nothing skipped", report, err)
++		}
++	})
++
+ 	t.Run("a session busy on background work lists the kind of each outstanding task", func(t *testing.T) {
+ 		p := newPair("p1", "a")
+ 		p.states["g-a"] = shuttleengine.SessionState{
