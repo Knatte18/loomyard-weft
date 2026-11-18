@@ -27,3 +27,23 @@ The part changes these packages:
 - tools/tokencount (about 20 changed lines)
 - internal/lymdirs (about 10 changed lines)
 - cmd/lym (about 5 changed lines)
+
+## Decision (operator, 2026-11-18): the pick takes the account with the most quota left
+
+
+
+This replaces the weighted counter of D3 in the stored decision record.
+
+
+
+- Among the eligible accounts (listed, positive weight, logged in, with headroom in every window they list), take the one whose tightest window has the most left.
+
+- The weighted counter stays only as the tie-break, and for accounts with no headroom reading yet.
+
+- Pins are unchanged: a hub pin, then a beams pin, win over the pick.
+
+  That covers a repository always on account A, one always on account B, and alternating repositories whose prime and beams stay on A.
+
+
+
+Discussion rewrites D3, and what reads it in D2 and D5, to fit.
