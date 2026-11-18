@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -139,6 +139,22 @@
       "output": "",
       "at": "2026-11-18T07:16:20Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/adopt-build-resplit-merge-in/_lym/landing/summary.md",
+      "at": "2026-11-18T07:16:41Z",
+      "started_at": "2026-11-18T07:16:22Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-18T07:16:41.069695264Z",
+          "end": "2026-11-18T07:16:41.069739737Z"
+        }
+      ]
     }
   ],
   "product": {
