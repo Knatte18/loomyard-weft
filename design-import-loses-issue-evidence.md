@@ -1,6 +1,6 @@
 # Board entry imported from an issue loses the evidence the issue names, and an issue body can arrive empty
 
-`import-loses-issue-evidence` · Task · enhancement, board, selfreport · running · Record-Write
+`import-loses-issue-evidence` · Task · enhancement, board, selfreport · running · Drift-Baseline
 
 Imported from [issue #148](https://github.com/Knatte18/loomyard/issues/148).
 
