@@ -1,0 +1,14 @@
+{
+  "session_id": "46b1206f-1782-4487-824d-e726e463ab5b",
+  "row": "Plan-Burler-Review",
+  "role": "plan-burler-review",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 34,
+  "cache_write_tokens": 136101,
+  "cache_read_tokens": 1196514,
+  "output_tokens": 32051,
+  "cost_usd": 0.9001332999999999,
+  "started": "2026-11-18T12:23:06Z",
+  "ended": "2026-11-18T12:27:00Z"
+}
