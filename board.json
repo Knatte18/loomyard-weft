@@ -366,7 +366,7 @@
       "isolated": false,
       "brief": "Saves the agent working out which part of a compound command failed",
       "body": "## Seen (retro, 2026-11-17)\n\nFrom `docs/research/retro/retro-20261116-115411/report.md`, proposal 3.\nThree refused compound commands opened with a probe or scratch step (`sed -i.bak` on `/dev/null`, `python3 -V`, `rm -rf $d`) followed by useful read-only work; the guard refused the whole command and the next turn re-ran the parts still needed.\nMoments: `test-only-functions-in-prod` agent-ae723f78 turn 7, `codex-same-as-claude` agent-acbe71dc turn 3, `decision-record-replace` 2c77f780 turn 21.\n\n## Idea\n\nThe shell guard's refusal says that nothing in the command ran and names the refused segment.\nFirst check whether the current text already says so.\n",
-      "status": "starting · Open-Window",
+      "status": "starting · Seed-IDE",
       "created": "2026-11-18T06:58:31Z",
       "revised": "2026-11-18T07:37:59Z",
       "run_settings": {
