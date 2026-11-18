@@ -1,0 +1,14 @@
+{
+  "session_id": "5146edc5-1b92-4c33-8bdd-ec53db1e10e4",
+  "row": "",
+  "role": "tackler",
+  "model": "claude-haiku-5-5",
+  "engine": "claude",
+  "input_tokens": 18,
+  "cache_write_tokens": 41426,
+  "cache_read_tokens": 268723,
+  "output_tokens": 11542,
+  "cost_usd": 0.01363828,
+  "started": "2026-11-18T08:56:58Z",
+  "ended": "2026-11-18T08:57:59Z"
+}
