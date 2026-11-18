@@ -1,6 +1,6 @@
 # A shell guard refusal says nothing ran and names the refused segment
 
-`refusal-names-segment` · Task · enhancement, process · running · Drift-Baseline
+`refusal-names-segment` · Task · enhancement, process · running · Drift-Await
 
 ## Seen (retro, 2026-11-17)
 
