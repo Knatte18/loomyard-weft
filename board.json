@@ -422,7 +422,8 @@
           "code_assist_reviewer_model": "astra[medium]"
         }
       },
-      "profile": "light"
+      "profile": "light",
+      "notify_on_land": true
     }
   ],
   "prime_owner": "neve",
