@@ -50,10 +50,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **No lym check compares a map entry with a single-test coverage run**<br>• The trial cross-checked by hand; blocks have no line range and funcs have no profile counterpart | [`map-single-test-crosscheck`](design-map-single-test-crosscheck.md) | 16h<br>16h |  |
-| E2 |  | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | 17m<br>17m | burler, stencil |
-| E3 |  | **Discussion rubric: a decision states the observed tool behaviour it rests on**<br>• So later rounds read the result instead of repeating the experiment | [`rubric-pin-tool-facts`](design-rubric-pin-tool-facts.md) | 17m<br>17m | stencil, loom |
-| E4 |  | **A shell guard refusal says nothing ran and names the refused segment**<br>• Saves the agent working out which part of a compound command failed | [`refusal-names-segment`](design-refusal-names-segment.md) | 17m<br>17m | process |
-| E5 |  | **The edit directive cat, head and sed -n clause has no effect**<br>• Every agent batches reads with cat anyway; delete the clause or guard it | [`edit-directive-cat-clause`](design-edit-directive-cat-clause.md) | 17m<br>17m | stencil |
+| E2 |  | **Stage the reviewer diff in pieces that fit one Read**<br>• Burler writes the round diff per package under the Read cap, so a reviewer never reads one huge diff | [`review-diff-in-pieces`](design-review-diff-in-pieces.md) | 18m<br>18m | burler, stencil |
+| E3 |  | **Discussion rubric: a decision states the observed tool behaviour it rests on**<br>• So later rounds read the result instead of repeating the experiment | [`rubric-pin-tool-facts`](design-rubric-pin-tool-facts.md) | 18m<br>18m | stencil, loom |
+| E4 |  | **A shell guard refusal says nothing ran and names the refused segment**<br>• Saves the agent working out which part of a compound command failed | [`refusal-names-segment`](design-refusal-names-segment.md) | 18m<br>18m | process |
+| E5 |  | **The edit directive cat, head and sed -n clause has no effect**<br>• Every agent batches reads with cat anyway; delete the clause or guard it | [`edit-directive-cat-clause`](design-edit-directive-cat-clause.md) | 18m<br>18m | stencil |
 
 ### Features (3)
 
