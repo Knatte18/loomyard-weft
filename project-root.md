@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md)<br>[Sketch](decision-code-review-result-checks.md) | raddle | starting · Seed-IDE | neve | 1h<br>1m | burler, stencil, drift |
+| T1 | **Code-Review lets result-level issues through to PR-Review** | [`code-review-result-checks`](design-code-review-result-checks.md)<br>[Sketch](decision-code-review-result-checks.md) | raddle | starting · Open-IDE | neve | 1h<br>1m | burler, stencil, drift |
 | T5 | **Shuttle start: idle check misses an idle prompt, and a review strand misses its prompt turn**<br>• Two seat start bugs in shuttle prompt delivery<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`shuttle-start-idle-and-prompt`](design-shuttle-start-idle-and-prompt.md) | darn · solid | Code-Bouncer | neve | 1h<br>59m | shuttle, burler |
 
 ### Ready (0)
