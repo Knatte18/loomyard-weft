@@ -1,0 +1,742 @@
+diff --git a/internal/loomcli/arm.go b/internal/loomcli/arm.go
+index 66ae2650..d9947b32 100644
+--- a/internal/loomcli/arm.go
++++ b/internal/loomcli/arm.go
+@@ -443,6 +443,7 @@ func (c *loomCLI) specFor(verb string) shedverbs.Spec {
+ 		spec.Loop = loopSpecFor(c.location, c.runID, c.loopExecutable(), c.stepIdleTimeout, agentActivityFor(c.location, c.runID, c.shuttleCfg))
+ 		spec.Loop.OnWatchdogKill = watchdogKillNote(c.stopStepRuns, spec.StepsDir)
+ 		spec.Loop.OnStepOrphaned = orphanedStepNote(c.stopStepRuns, spec.StepsDir)
++		spec.Loop.ReconcileOrphanedSteps = orphanedStepsNote(c.stopOrphanedStepRuns, spec.StepsDir)
+ 		locks := &parentlock.Store{Dir: parentlock.Dir(fabricengine.BoltDir(c.location.HubPath))}
+ 		self := selfLockOwner(c.location, c.runID)
+ 		spec.Loop.OnExit = loopLockExit(locks, self)
+diff --git a/internal/loomcli/cli.go b/internal/loomcli/cli.go
+index 21c16ca4..898b035d 100644
+--- a/internal/loomcli/cli.go
++++ b/internal/loomcli/cli.go
+@@ -83,6 +83,10 @@ type loomCLI struct {
+ 	// Nil means the runner stops them.
+ 	// A test sets it to record the call.
+ 	stopRuns func(shuttleengine.StepTie) (shuttleengine.StepStopReport, error)
++	// stopOrphanedRuns, when set, stops the shuttle runs gone steps of a shed run left in place of the receiver's runner.
++	// Nil means the runner stops them.
++	// A test sets it to record the call.
++	stopOrphanedRuns func(stepsDir string) (shuttleengine.StepStopReport, error)
+ 	// runner is the constructed shuttle runner.
+ 	// It is carried on the struct so run.go can pass it to landingDeps as the landing seam's Shuttle value.
+ 	runner *shuttleengine.Runner
+diff --git a/internal/loomcli/cli_test.go b/internal/loomcli/cli_test.go
+index ddd68540..f712b6f2 100644
+--- a/internal/loomcli/cli_test.go
++++ b/internal/loomcli/cli_test.go
+@@ -355,16 +355,21 @@ func TestSpecFor_ScratchAndFrictionDir(t *testing.T) {
+ 
+ 	t.Run("LoopHooksStopTheStepsShuttleRuns", func(t *testing.T) {
+ 		var ties []shuttleengine.StepTie
++		var orphanedDirs []string
+ 		c := &loomCLI{location: loc, runID: "self", stopRuns: func(tie shuttleengine.StepTie) (shuttleengine.StepStopReport, error) {
+ 			ties = append(ties, tie)
+ 			return shuttleengine.StepStopReport{Stopped: []string{"a:1:plan"}}, nil
++		}, stopOrphanedRuns: func(stepsDir string) (shuttleengine.StepStopReport, error) {
++			orphanedDirs = append(orphanedDirs, stepsDir)
++			return shuttleengine.StepStopReport{Stopped: []string{"a:1:review"}}, nil
+ 		}}
+ 		spec := c.specFor("step")
+-		if spec.Loop.OnWatchdogKill == nil || spec.Loop.OnStepOrphaned == nil {
+-			t.Fatalf("loop watchdog hook set %v, orphaned-step hook set %v; want both", spec.Loop.OnWatchdogKill != nil, spec.Loop.OnStepOrphaned != nil)
++		if spec.Loop.OnWatchdogKill == nil || spec.Loop.OnStepOrphaned == nil || spec.Loop.ReconcileOrphanedSteps == nil {
++			t.Fatalf("loop watchdog hook set %v, orphaned-step hook set %v, reconcile hook set %v; want all three", spec.Loop.OnWatchdogKill != nil, spec.Loop.OnStepOrphaned != nil, spec.Loop.ReconcileOrphanedSteps != nil)
+ 		}
+ 
+ 		note := spec.Loop.OnStepOrphaned("trace-7")
++		reconcileNote := spec.Loop.ReconcileOrphanedSteps()
+ 
+ 		wantTie := shuttleengine.StepTie{StepsDir: spec.StepsDir, TraceID: "trace-7"}
+ 		if len(ties) != 1 || ties[0] != wantTie {
+@@ -373,6 +378,12 @@ func TestSpecFor_ScratchAndFrictionDir(t *testing.T) {
+ 		if note != "stopped shuttle runs: a:1:plan" {
+ 			t.Errorf("OnStepOrphaned note = %q; want the stopped runs named", note)
+ 		}
++		if len(orphanedDirs) != 1 || orphanedDirs[0] != spec.StepsDir {
++			t.Errorf("orphaned stop steps directories = %v; want the one %s", orphanedDirs, spec.StepsDir)
++		}
++		if reconcileNote != "stopped shuttle runs: a:1:review" {
++			t.Errorf("ReconcileOrphanedSteps note = %q; want the stopped runs named", reconcileNote)
++		}
+ 	})
+ 
+ 	t.Run("LoopExecutableEmptyWhenTheLookupFails", func(t *testing.T) {
+diff --git a/internal/loomcli/looparm.go b/internal/loomcli/looparm.go
+index 3a84a475..6d8cebfa 100644
+--- a/internal/loomcli/looparm.go
++++ b/internal/loomcli/looparm.go
+@@ -90,14 +90,18 @@ func registerRunProcess(loc *lymcwd.Location, owner, role string) {
+ }
+ 
+ // stepRunsNote stops the shuttle runs of the step traceID names under stepsDir through stop and renders what it did.
+-// The note joins with "; " the runs it stopped.
++func stepRunsNote(stop func(shuttleengine.StepTie) (shuttleengine.StepStopReport, error), stepsDir, traceID string) string {
++	return stepStopNote(stop(shuttleengine.StepTie{StepsDir: stepsDir, TraceID: traceID}))
++}
++
++// stepStopNote renders a step stop's report and error as a note.
++// The note joins with "; " the runs the stop stopped.
+ // It then names the runs whose output files all exist, which stay running.
+ // It names the runs a live process may still hold, which it leaves running.
+ // It then names the live runs whose record names no step, which it leaves alone.
+ // It ends with each stop that failed and the failure of the stop itself.
+ // It is empty when there was nothing to report.
+-func stepRunsNote(stop func(shuttleengine.StepTie) (shuttleengine.StepStopReport, error), stepsDir, traceID string) string {
+-	report, err := stop(shuttleengine.StepTie{StepsDir: stepsDir, TraceID: traceID})
++func stepStopNote(report shuttleengine.StepStopReport, err error) string {
+ 	var parts []string
+ 	if len(report.Stopped) > 0 {
+ 		parts = append(parts, "stopped shuttle runs: "+strings.Join(report.Stopped, ", "))
+@@ -115,7 +119,7 @@ func stepRunsNote(stop func(shuttleengine.StepTie) (shuttleengine.StepStopReport
+ 		parts = append(parts, fmt.Sprintf("could not stop the run %s: %s", failure.Strand, failure.Error))
+ 	}
+ 	if err != nil {
+-		parts = append(parts, "could not stop the step's runs: "+err.Error())
++		parts = append(parts, "could not stop the runs: "+err.Error())
+ 	}
+ 	return strings.Join(parts, "; ")
+ }
+@@ -134,38 +138,66 @@ func orphanedStepNote(stop func(shuttleengine.StepTie) (shuttleengine.StepStopRe
+ 	return func(traceID string) string { return stepRunsNote(stop, stepsDir, traceID) }
+ }
+ 
++// orphanedStepsNote returns the hook the loop calls before its first child.
++// The hook stops through stop the shuttle runs that steps under stepsDir left with their waiting process gone.
++// It returns the note the loop writes to its log.
++func orphanedStepsNote(stop func(stepsDir string) (shuttleengine.StepStopReport, error), stepsDir string) func() string {
++	return func() string { return stepStopNote(stop(stepsDir)) }
++}
++
+ // stopStepRuns stops the shuttle runs recorded under tie.
+-// The receiver's runner is used when `wire` built one;
+-// a receiver wired lightly gets the pair's runner built the way `wire` builds it.
+ func (c *loomCLI) stopStepRuns(tie shuttleengine.StepTie) (shuttleengine.StepStopReport, error) {
+ 	if c.stopRuns != nil {
+ 		return c.stopRuns(tie)
+ 	}
+-	runner := c.runner
+-	if runner == nil {
+-		configDirs := fabricengine.ConfigDirs(c.location)
+-		reedCfg, err := reedengine.LoadConfig(configDirs, "reed")
+-		if err != nil {
+-			return shuttleengine.StepStopReport{}, err
+-		}
+-		shuttleCfg, err := shuttleengine.LoadConfig(configDirs, "shuttle")
+-		if err != nil {
+-			return shuttleengine.StepStopReport{}, err
+-		}
+-		reedGeom, err := hubgeom.ReedGeometry(c.location)
+-		if err != nil {
+-			return shuttleengine.StepStopReport{}, err
+-		}
+-		engines, err := shuttleengines.New(shuttleCfg, configDirs)
+-		if err != nil {
+-			return shuttleengine.StepStopReport{}, err
+-		}
+-		runner = shuttleengine.NewRunner(reedengine.New(reedCfg, reedGeom, shuttleengines.EnvScrub()), engines, reedGeom.AnchorPath, reedGeom.WorktreeRoot, shuttleCfg)
+-		runner.SetSessionEnd(shedadapters.UsageRecorder(c.location, shuttleengines.RecordReaders()))
++	runner, err := c.stepStopRunner()
++	if err != nil {
++		return shuttleengine.StepStopReport{}, err
+ 	}
+ 	return runner.StopStepRuns(tie)
+ }
+ 
++// stopOrphanedStepRuns stops the running shuttle runs that steps under stepsDir left with their waiting process gone.
++func (c *loomCLI) stopOrphanedStepRuns(stepsDir string) (shuttleengine.StepStopReport, error) {
++	if c.stopOrphanedRuns != nil {
++		return c.stopOrphanedRuns(stepsDir)
++	}
++	runner, err := c.stepStopRunner()
++	if err != nil {
++		return shuttleengine.StepStopReport{}, err
++	}
++	return runner.StopOrphanedStepRuns(stepsDir)
++}
++
++// stepStopRunner returns the shuttle runner a step stop goes through.
++// The receiver's runner is used when `wire` built one;
++// a receiver wired lightly gets the pair's runner built the way `wire` builds it.
++func (c *loomCLI) stepStopRunner() (*shuttleengine.Runner, error) {
++	if c.runner != nil {
++		return c.runner, nil
++	}
++	configDirs := fabricengine.ConfigDirs(c.location)
++	reedCfg, err := reedengine.LoadConfig(configDirs, "reed")
++	if err != nil {
++		return nil, err
++	}
++	shuttleCfg, err := shuttleengine.LoadConfig(configDirs, "shuttle")
++	if err != nil {
++		return nil, err
++	}
++	reedGeom, err := hubgeom.ReedGeometry(c.location)
++	if err != nil {
++		return nil, err
++	}
++	engines, err := shuttleengines.New(shuttleCfg, configDirs)
++	if err != nil {
++		return nil, err
++	}
++	runner := shuttleengine.NewRunner(reedengine.New(reedCfg, reedGeom, shuttleengines.EnvScrub()), engines, reedGeom.AnchorPath, reedGeom.WorktreeRoot, shuttleCfg)
++	runner.SetSessionEnd(shedadapters.UsageRecorder(c.location, shuttleengines.RecordReaders()))
++	return runner, nil
++}
++
+ // agentActivityFor returns the reading of the run's agent activity:
+ // the newest LastActivity over every live agent run of loc's worktree.
+ // A running run whose waiting process is gone is not live here.
+diff --git a/internal/loomcli/looparm_test.go b/internal/loomcli/looparm_test.go
+index 798d0470..2fb4dbf7 100644
+--- a/internal/loomcli/looparm_test.go
++++ b/internal/loomcli/looparm_test.go
+@@ -81,6 +81,11 @@ func TestStepRunsNote_StopsTheStepsRunsAndNamesTheRest(t *testing.T) {
+ 			return watchdogKillNote(stop, "/steps")(shedverbs.WatchdogKill{TraceID: "trace-9"})
+ 		}},
+ 		{"OrphanedStep", func(stop stopFunc) string { return orphanedStepNote(stop, "/steps")("trace-9") }},
++		{"OrphanedSteps", func(stop stopFunc) string {
++			return orphanedStepsNote(func(stepsDir string) (shuttleengine.StepStopReport, error) {
++				return stop(shuttleengine.StepTie{StepsDir: stepsDir, TraceID: "trace-9"})
++			}, "/steps")()
++		}},
+ 	}
+ 	tests := []struct {
+ 		name     string
+@@ -111,7 +116,7 @@ func TestStepRunsNote_StopsTheStepsRunsAndNamesTheRest(t *testing.T) {
+ 		{
+ 			name:     "a failing stop renders its error",
+ 			stopErr:  errors.New("probe reed: no server"),
+-			wantNote: "could not stop the step's runs: probe reed: no server",
++			wantNote: "could not stop the runs: probe reed: no server",
+ 		},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/shedverbs/doc.go b/internal/shedverbs/doc.go
+index da442589..2601a42c 100644
+--- a/internal/shedverbs/doc.go
++++ b/internal/shedverbs/doc.go
+@@ -200,10 +200,11 @@
+ // A child that exits on its own with a non-zero status and no record keeps cause exited with the exit status.
+ // Such a child, which the watchdog did not kill, goes to Spec.Loop.OnStepOrphaned with its trace id.
+ // The note the hook returns ends the cause.
+-// A loop that starts on a failed status naming an interrupted step first reconciles that step.
+-// It hands the trace id of the newest interrupted record in the steps directory to the same hook.
+-// It does so before its first child starts.
+-// A stop that failed at the interruption then does not leave its runs to the re-step.
++// Every loop calls Spec.Loop.ReconcileOrphanedSteps once before its first child starts, whatever the status file reads.
++// No step of the run is in flight then, so the hook settles what any earlier step whose process is gone left behind.
++// It reads what those steps left, not the status error, so a step that wrote no interrupted record is settled too.
++// A stop whose own hook call failed does not leave its runs to the next loop's first step.
++// Neither does a step that ended in an error.
+ // The note goes to the loop log.
+ // The watch kills only the loop's own in-flight child and its process group or job.
+ //
+diff --git a/internal/shedverbs/loop.go b/internal/shedverbs/loop.go
+index 26458621..91c05f12 100644
+--- a/internal/shedverbs/loop.go
++++ b/internal/shedverbs/loop.go
+@@ -87,12 +87,16 @@ type LoopSpec struct {
+ 	OnWatchdogKill func(kill WatchdogKill) string
+ 	// OnStepOrphaned runs for a step whose process is gone without an envelope and that the watchdog did not kill.
+ 	// It runs once per such child the loop reads back, and once for the step a panic or a dead loop leaves in flight.
+-	// A loop that starts on a failed status naming an interrupted step also runs it once, before its first child.
+-	// That call is for the step of the newest interrupted record in the steps directory.
+ 	// It gets the step's trace id.
+ 	// It returns a note the interrupted cause ends with, naming what it did with the runs the step left.
+ 	// A nil hook is skipped, and so is an empty note.
+ 	OnStepOrphaned func(traceID string) string
++	// ReconcileOrphanedSteps runs once in the loop before its first child, whatever the status file reads.
++	// No step of the run is in flight then.
++	// It settles what every earlier step whose process is gone left behind.
++	// It reads that from what those steps left, not from how the last stop was recorded.
++	// It returns a note for the loop log naming what it did; a nil hook is skipped, and an empty note writes nothing.
++	ReconcileOrphanedSteps func() string
+ 	// OnStart runs once in runLoop after the pid file is written and the start is logged, and before the first step; nil is skipped.
+ 	// A loop that refuses before its first step never runs it.
+ 	// The loop's keeper also runs it once after it has started the loop process, whether or not that loop then refuses;
+@@ -236,8 +240,10 @@ func runLoop(ctx context.Context, spec *Spec, loopID string, argv []string, out
+ 		loop.OnStart()
+ 	}
+ 	obj := loopObject{FirstProducer: first.CurrentProducer}
+-	if note := reconcileInterruptedStep(spec, first); note != "" {
+-		appendLoopLogMark(loop.LogPath, loopLogMark(loopID, note))
++	if loop.ReconcileOrphanedSteps != nil {
++		if note := loop.ReconcileOrphanedSteps(); note != "" {
++			appendLoopLogMark(loop.LogPath, loopLogMark(loopID, "reconciled the steps whose process is gone: "+note))
++		}
+ 	}
+ 	run := stepUntilStop(ctx, spec, loopID, argv, &pid, first, &obj)
+ 	if endedBySignal() {
+@@ -455,64 +461,6 @@ func stepUntilStop(ctx context.Context, spec *Spec, loopID string, argv []string
+ 	}
+ }
+ 
+-// reconcileInterruptedStep settles the step a failed run was last interrupted in, before the loop's first child starts.
+-// It hands that step's trace id to LoopSpec.OnStepOrphaned.
+-// It covers an interrupted stop whose own hook call failed or never ran.
+-// The leftover of that step then never meets the re-step.
+-// The status reads an interrupted stop when it is failed and its error carries the text interruptedError writes.
+-// The step is the newest kind-interrupted record in the steps directory.
+-// It returns the note to write to the loop log.
+-// The note is empty when the hook is nil or the status reads no interrupted stop.
+-// It is empty too when no record names an interrupted step or the hook returns no note.
+-func reconcileInterruptedStep(spec *Spec, first shedengine.Status) string {
+-	if spec.Loop.OnStepOrphaned == nil || first.State != shedengine.StateFailed || !strings.Contains(first.Error, " interrupted (") {
+-		return ""
+-	}
+-	traceID := newestInterruptedTraceID(spec.StepsDir)
+-	if traceID == "" {
+-		return ""
+-	}
+-	note := spec.Loop.OnStepOrphaned(traceID)
+-	if note == "" {
+-		return ""
+-	}
+-	return "reconciled the interrupted step " + traceID + ": " + note
+-}
+-
+-// newestInterruptedTraceID returns the trace id of the newest kind-interrupted record in stepsDir.
+-// It returns empty when there is none.
+-func newestInterruptedTraceID(stepsDir string) string {
+-	entries, err := os.ReadDir(stepsDir)
+-	if err != nil {
+-		return ""
+-	}
+-	newest, newestWritten := "", time.Time{}
+-	for _, entry := range entries {
+-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), envelopeSuffix) {
+-			continue
+-		}
+-		info, err := entry.Info()
+-		if err != nil {
+-			continue
+-		}
+-		data, err := os.ReadFile(filepath.Join(stepsDir, entry.Name()))
+-		if err != nil {
+-			continue
+-		}
+-		var record struct {
+-			Kind    string `json:"kind"`
+-			TraceID string `json:"trace_id"`
+-		}
+-		if json.Unmarshal(data, &record) != nil || record.Kind != KindInterrupted || record.TraceID == "" {
+-			continue
+-		}
+-		if newest == "" || info.ModTime().After(newestWritten) {
+-			newest, newestWritten = record.TraceID, info.ModTime()
+-		}
+-	}
+-	return newest
+-}
+-
+ // recordTerminatingSignals watches for a terminating signal until the function it returns first is called.
+ // A signal that arrives is written to the loop log as a mark of loopID, and then ends the process through LoopSpec.Raise.
+ // Such a signal comes from whatever ends the run's processes, as a cancel, a teardown or a reap does, and it reaches the step child too, so the loop writes no envelope and leaves the stop to the waiter's dead-loop stop, which reads the mark.
+diff --git a/internal/shedverbs/loop_test.go b/internal/shedverbs/loop_test.go
+index cf33e5cb..1d08d63a 100644
+--- a/internal/shedverbs/loop_test.go
++++ b/internal/shedverbs/loop_test.go
+@@ -356,25 +356,21 @@ func TestLoop_RunsUntilStopAndPrintsOneEnvelope(t *testing.T) {
+ 	}
+ }
+ 
+-// TestLoop_ReconcilesTheInterruptedStepBeforeTheFirstChild covers a loop that starts on a run whose status reads failed.
+-// It hands the newest interrupted record's trace id to OnStepOrphaned before its first child starts.
+-// It also writes the note to the loop log.
+-// A run that does not read an interrupted stop settles nothing first.
+-func TestLoop_ReconcilesTheInterruptedStepBeforeTheFirstChild(t *testing.T) {
++// TestLoop_ReconcilesOrphanedStepsBeforeTheFirstChild covers ReconcileOrphanedSteps.
++// Every loop calls it once before its first child, whatever its status reads.
++// The loop writes a non-empty note to the loop log.
++func TestLoop_ReconcilesOrphanedStepsBeforeTheFirstChild(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	tests := []struct {
+ 		name        string
+ 		state       shedengine.State
+ 		statusError string
+-		wantCalls   []string
++		note        string
+ 		wantMark    bool
+ 	}{
+-		{
+-			"a failed run that was interrupted settles the interrupted step first", shedengine.StateFailed,
+-			"shedverbs: step A interrupted (exited: exit status 3); way forward: re-run", []string{"stop trace-old", "run", "stop child"}, true,
+-		},
+-		{"a failed run with a producer error settles nothing first", shedengine.StateFailed, "producer failed", []string{"run", "stop child"}, false},
+-		{"a running run settles nothing first", shedengine.StateRunning, "", []string{"run", "stop child"}, false},
++		{"a failed run whose error names no interrupted stop is reconciled", shedengine.StateFailed, "producer failed", "stopped shuttle runs: a:1:plan", true},
++		{"a running run is reconciled", shedengine.StateRunning, "", "stopped shuttle runs: a:1:plan", true},
++		{"an empty note writes no mark", shedengine.StateRunning, "", "", false},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -387,33 +383,22 @@ func TestLoop_ReconcilesTheInterruptedStepBeforeTheFirstChild(t *testing.T) {
+ 			if err := state.WriteJSON(fx.paths.StatusPath, fx.paths.StatusLockPath, status); err != nil {
+ 				t.Fatalf("write status: %v", err)
+ 			}
+-			if err := os.MkdirAll(fx.stepsDir, 0o755); err != nil {
+-				t.Fatalf("create the steps directory: %v", err)
+-			}
+-			record := `{"ok":false,"kind":"interrupted","trace_id":"trace-old"}`
+-			if err := os.WriteFile(filepath.Join(fx.stepsDir, "trace-old.json"), []byte(record), 0o644); err != nil {
+-				t.Fatalf("write the interrupted record: %v", err)
+-			}
+-			fx.spec.Loop.OnStepOrphaned = func(traceID string) string {
+-				if traceID == "trace-old" {
+-					calls = append(calls, "stop trace-old")
+-				} else {
+-					calls = append(calls, "stop child")
+-				}
+-				return "stopped shuttle runs: a:1:plan"
++			fx.spec.Loop.ReconcileOrphanedSteps = func() string {
++				calls = append(calls, "reconcile")
++				return tt.note
+ 			}
+ 
+ 			fx.execute()
+ 
+-			if !reflect.DeepEqual(calls, tt.wantCalls) {
+-				t.Errorf("calls = %v; want %v", calls, tt.wantCalls)
++			if want := []string{"reconcile", "run"}; !reflect.DeepEqual(calls, want) {
++				t.Errorf("calls = %v; want %v", calls, want)
+ 			}
+ 			// A loop that wrote no mark and ran no child with output leaves no log file.
+ 			log, err := os.ReadFile(fx.spec.Loop.LogPath)
+ 			if err != nil && !errors.Is(err, os.ErrNotExist) {
+ 				t.Fatalf("read the loop log: %v", err)
+ 			}
+-			if got := strings.Contains(string(log), "reconciled the interrupted step trace-old: stopped shuttle runs: a:1:plan"); got != tt.wantMark {
++			if got := strings.Contains(string(log), "reconciled the steps whose process is gone: stopped shuttle runs: a:1:plan"); got != tt.wantMark {
+ 				t.Errorf("loop log holds the reconcile mark = %v; want %v; log: %s", got, tt.wantMark, log)
+ 			}
+ 		})
+diff --git a/internal/shedverbs/loopwait.go b/internal/shedverbs/loopwait.go
+index 2e39d423..cba1641e 100644
+--- a/internal/shedverbs/loopwait.go
++++ b/internal/shedverbs/loopwait.go
+@@ -677,7 +677,8 @@ func loopExitStop(ctx context.Context, spec *Spec, rec LoopPIDRecord, detail str
+ 	if rec.LoopID != TeardownLoopID && spec.Hooks.AfterInterrupt != nil {
+ 		friction = spec.Hooks.AfterInterrupt(ctx, producer, "loop-exited: "+detail, traceFile)
+ 	}
+-	// The record is what lets the re-step find the in-flight child to reconcile when this stop's own hook call failed.
++	// The in-flight child died before it wrote its record.
++	// The stop keeps one under its trace id, as an interrupted child in the loop gets.
+ 	if rec.LoopID != TeardownLoopID && rec.hasChild() && rec.TraceID != "" && spec.StepsDir != "" {
+ 		if _, statErr := os.Stat(filepath.Join(spec.StepsDir, rec.TraceID+envelopeSuffix)); os.IsNotExist(statErr) {
+ 			interruptedRecord(spec, rec.TraceID, message+"; way forward: "+wayForward, traceFile, friction)
+diff --git a/internal/shedverbs/loopwait_test.go b/internal/shedverbs/loopwait_test.go
+index 9e6cf767..db80aa10 100644
+--- a/internal/shedverbs/loopwait_test.go
++++ b/internal/shedverbs/loopwait_test.go
+@@ -478,7 +478,7 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("a dead loop's stop keeps an interrupted record the re-step reconciles when the stop's own hook call failed", func(t *testing.T) {
++	t.Run("a dead loop's stop hands its in-flight step to OnStepOrphaned and keeps that step's interrupted record", func(t *testing.T) {
+ 		w := newWaitWorld(t)
+ 		w.setStatus("A", shedengine.StateRunning, 0)
+ 		w.writePID(LoopPIDRecord{LoopID: "dead-1", Child: proc.TreeRecord{PID: 4242}, TraceID: "trace-dead", CurrentProducer: "A"})
+@@ -490,15 +490,19 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 
+ 		w.wait()
+ 
+-		if got := newestInterruptedTraceID(w.stepsDir); got != "trace-dead" {
+-			t.Fatalf("newest interrupted trace id = %q; want the dead loop's in-flight trace-dead", got)
++		if !slices.Equal(orphaned, []string{"trace-dead"}) {
++			t.Errorf("OnStepOrphaned trace ids = %v; want the dead loop's trace-dead", orphaned)
+ 		}
+-		orphaned = nil
+-		if note := reconcileInterruptedStep(w.spec, w.readStatus()); note != "reconciled the interrupted step trace-dead: a run stayed held" {
+-			t.Errorf("reconcile note = %q; want the dead loop's in-flight step reconciled", note)
++		data, err := os.ReadFile(filepath.Join(w.stepsDir, "trace-dead"+envelopeSuffix))
++		if err != nil {
++			t.Fatalf("read the in-flight step's record: %v", err)
+ 		}
+-		if !slices.Equal(orphaned, []string{"trace-dead"}) {
+-			t.Errorf("OnStepOrphaned trace ids on the re-step = %v; want the dead loop's trace-dead", orphaned)
++		var record struct {
++			Kind    string `json:"kind"`
++			TraceID string `json:"trace_id"`
++		}
++		if err := json.Unmarshal(data, &record); err != nil || record.Kind != KindInterrupted || record.TraceID != "trace-dead" {
++			t.Errorf("in-flight step record kind/trace_id = %q/%q (decode err %v); want %s/trace-dead", record.Kind, record.TraceID, err, KindInterrupted)
+ 		}
+ 	})
+ 
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 38a3c32a..5031c8eb 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -406,6 +406,11 @@
+ // That holds only when its strand is live or a not-live own-window one.
+ // A run of another step is left alone.
+ // A stop that fails is listed under Failed while the stop goes on.
++// Runner.StopOrphanedStepRuns stops the same way every running run that names a step under a given steps directory.
++// It does so when the process recorded as waiting on the run is gone or the record names none.
++// It reads the run records alone, so it finds a gone step's leftover whatever that step wrote on its way out.
++// A run whose waiting process lives is left alone.
++// Both stops probe reed only once a run qualifies.
+ // Attach's removal of a superseded run's strand goes through the same record-then-remove order.
+ // A Wait on a stopped handle finalizes with the stop mark and records "stopped" unless the files show the run done.
+ // Its liveness check reads the strand the stop removed as the run's end, OutcomeDied.
+diff --git a/internal/shuttleengine/stepstop.go b/internal/shuttleengine/stepstop.go
+index d9b6622b..30811336 100644
+--- a/internal/shuttleengine/stepstop.go
++++ b/internal/shuttleengine/stepstop.go
+@@ -1,5 +1,5 @@
+ // stepstop.go ties each shuttle run to the shed step that started it.
+-// It stops one step's live runs through the stop verb.
++// It stops one step's live runs, or the runs every gone step of a shed run left, through the stop verb.
+ 
+ package shuttleengine
+ 
+@@ -63,7 +63,35 @@ func (r *Runner) SetStepTie(tie StepTie) {
+ // A run of another step, a run with a terminal record and an untied run without a removable strand are left alone.
+ // A record that does not decode is skipped.
+ // A stop that fails is listed under Failed and the stop goes on with the next run.
++// Reed is probed only when a running run of the step or with no step is found.
+ func (r *Runner) StopStepRuns(tie StepTie) (StepStopReport, error) {
++	return r.stopStepRunsWhere(func(rs RunState) bool { return *rs.Step == tie }, true)
++}
++
++// StopOrphanedStepRuns stops the running runs that gone steps of one shed run left under the run-directory root.
++// A run qualifies when its record names a step under stepsDir and its waiting process is gone or never recorded.
++// It is for a caller that knows no step of the shed run is in flight.
++// Every such run is then a leftover, whatever the step left on record.
++// A run whose waiting process lives is left alone, and so is a run naming no step or a step of another steps directory.
++// Each qualifying run is stopped, held or listed as finished the way StopStepRuns treats a run of its step.
++// Untied stays empty.
++func (r *Runner) StopOrphanedStepRuns(stepsDir string) (StepStopReport, error) {
++	return r.stopStepRunsWhere(func(rs RunState) bool { return rs.Step.StepsDir == stepsDir && !runIsLive(rs) }, false)
++}
++
++// stepRunCandidate is a running run a step stop acts on or lists.
++type stepRunCandidate struct {
++	runDir string
++	rs     RunState
++}
++
++// stopStepRunsWhere stops the running runs whose record names a step that selects accepts.
++// Each is stopped, held or listed the way StopStepRuns describes.
++// selects is called only for a record that names a step.
++// A run whose record no longer reads running or no longer selected when its stop is reached is skipped and unlisted.
++// listUntied lists a running run naming no step under Untied when its strand is removable.
++// Reed is probed only when a run qualifies or may be listed.
++func (r *Runner) stopStepRunsWhere(selects func(RunState) bool, listUntied bool) (StepStopReport, error) {
+ 	var report StepStopReport
+ 	if r.toldErr != nil {
+ 		return report, r.toldErr
+@@ -76,10 +104,7 @@ func (r *Runner) StopStepRuns(tie StepTie) (StepStopReport, error) {
+ 	if err != nil {
+ 		return report, fmt.Errorf("shuttle: stop step runs: read run dir root: %w", err)
+ 	}
+-	status, err := r.reed.Status()
+-	if err != nil {
+-		return report, fmt.Errorf("shuttle: stop step runs: probe reed: %w", err)
+-	}
++	var candidates []stepRunCandidate
+ 	for _, entry := range entries {
+ 		if !entry.IsDir() {
+ 			continue
+@@ -89,31 +114,49 @@ func (r *Runner) StopStepRuns(tie StepTie) (StepStopReport, error) {
+ 		if err != nil || !found || rs.Outcome != runOutcomeRunning {
+ 			continue
+ 		}
++		if (rs.Step == nil && listUntied) || (rs.Step != nil && selects(rs)) {
++			candidates = append(candidates, stepRunCandidate{runDir: runDir, rs: rs})
++		}
++	}
++	if len(candidates) == 0 {
++		return report, nil
++	}
++	status, err := r.reed.Status()
++	if err != nil {
++		return report, fmt.Errorf("shuttle: stop step runs: probe reed: %w", err)
++	}
++	for _, candidate := range candidates {
++		rs := candidate.rs
+ 		name := rs.StrandName
+ 		if name == "" {
+ 			name = rs.StrandGUID
+ 		}
+ 		strand, tracked := strandStatusByGUID(status.Strands, rs.StrandGUID)
+-		switch {
+-		case rs.Step == nil:
++		if rs.Step == nil {
+ 			if tracked && strandRemovable(strand) {
+ 				report.Untied = append(report.Untied, name)
+ 			}
+-		case *rs.Step == tie:
+-			if (!tracked || (!strand.Live && strand.PaneID == "")) && r.sessionMayBeHeld(rs) {
+-				report.Held = append(report.Held, name)
+-				continue
+-			}
+-			if err := r.stopRecorded(runDir, rs.StrandGUID); err != nil {
+-				report.Failed = append(report.Failed, StepStopFailure{Strand: name, Error: err.Error()})
+-				continue
+-			}
+-			if after, found, err := loadRunState(runDir); err == nil && found && after.Outcome == runOutcomeRunning {
+-				report.Finished = append(report.Finished, name)
+-				continue
+-			}
+-			report.Stopped = append(report.Stopped, name)
++			continue
++		}
++		if (!tracked || (!strand.Live && strand.PaneID == "")) && r.sessionMayBeHeld(rs) {
++			report.Held = append(report.Held, name)
++			continue
++		}
++		// The scan's reading is stale by now.
++		// A process may have attached to the run since, and stopping it would end the live agent that process waits on.
++		current, found, err := loadRunState(candidate.runDir)
++		if err != nil || !found || current.Outcome != runOutcomeRunning || current.Step == nil || !selects(current) {
++			continue
++		}
++		if err := r.stopRecorded(candidate.runDir, rs.StrandGUID); err != nil {
++			report.Failed = append(report.Failed, StepStopFailure{Strand: name, Error: err.Error()})
++			continue
++		}
++		if after, found, err := loadRunState(candidate.runDir); err == nil && found && after.Outcome == runOutcomeRunning {
++			report.Finished = append(report.Finished, name)
++			continue
+ 		}
++		report.Stopped = append(report.Stopped, name)
+ 	}
+ 	return report, nil
+ }
+diff --git a/internal/shuttleengine/stop_test.go b/internal/shuttleengine/stop_test.go
+index e4f8ee26..b7e45046 100644
+--- a/internal/shuttleengine/stop_test.go
++++ b/internal/shuttleengine/stop_test.go
+@@ -4,6 +4,7 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -14,6 +15,22 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// statusHookReed wraps a fakeReed and runs onStatus, when set, at the start of every Status probe.
++type statusHookReed struct {
++	*fakeReed
++	onStatus func()
++}
++
++func (r *statusHookReed) Status() (reedengine.StatusResult, error) {
++	if r.onStatus != nil {
++		r.onStatus()
++	}
++	return r.fakeReed.Status()
++}
++
++// deadPID is above the kernel's pid_max (at most 2^22), so no process carries it.
++const deadPID = 1 << 30
++
+ // recordSeenReed wraps a fakeReed and notes the outcome run.json holds at the moment a strand is removed.
+ type recordSeenReed struct {
+ 	*fakeReed
+@@ -311,6 +328,94 @@ func TestRunner_StopStepRuns_StopsOnlyTheStepsRuns(t *testing.T) {
+ 	}
+ }
+ 
++// TestRunner_StopOrphanedStepRuns_StopsOnlyRunsWhoseWaiterIsGone covers the steps-directory form.
++// A running run naming any step under the steps directory is stopped when its waiting process is gone or never recorded.
++// A run whose waiter lives is left alone and unlisted.
++// So are a run of another steps directory, a run naming no step and a terminal run.
++// A run whose record gains a live waiter after the scan is left alone and unlisted.
++// A root with no qualifying run never probes reed.
++func TestRunner_StopOrphanedStepRuns_StopsOnlyRunsWhoseWaiterIsGone(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	oldTie := StepTie{StepsDir: "/steps", TraceID: "trace-old"}
++	otherTie := StepTie{StepsDir: "/steps", TraceID: "trace-other"}
++	foreignTie := StepTie{StepsDir: "/other-steps", TraceID: "trace-old"}
++	strands := []reedengine.StrandStatus{
++		{GUID: "guid-gone", PaneID: "%1", Live: true},
++		{GUID: "guid-unrecorded", PaneID: "%2", Live: true},
++		{GUID: "guid-live-waiter", PaneID: "%3", Live: true},
++		{GUID: "guid-foreign", PaneID: "%4", Live: true},
++		{GUID: "guid-untied", PaneID: "%5", Live: true},
++		{GUID: "guid-terminal", PaneID: "%6", Live: true},
++		{GUID: "guid-attached", PaneID: "%7", Live: true},
++	}
++	fake := &fakeReed{StatusQueue: []reedengine.StatusResult{{Strands: strands}}}
++	hooked := &statusHookReed{fakeReed: fake}
++	fx := newFixture(t, hooked, &fakeEngine{}, withConfig(fastConfig), withSeparateRunDir())
++	seed := func(id string, record RunState) string {
++		t.Helper()
++		runDir := filepath.Join(fx.RunRoot, id)
++		if err := os.MkdirAll(runDir, 0o755); err != nil {
++			t.Fatalf("mkdir run dir: %v", err)
++		}
++		record.RunID = id
++		// A run with no output file reads finished, which a stop never turns into a stopped record.
++		record.OutputFiles = []string{filepath.Join(fx.RunRoot, "never-written.md")}
++		if err := saveRunState(runDir, record); err != nil {
++			t.Fatalf("saveRunState: %v", err)
++		}
++		return runDir
++	}
++
++	report, err := fx.Runner.StopOrphanedStepRuns("/steps")
++	if err != nil || !reflect.DeepEqual(report, StepStopReport{}) || slices.Contains(fake.CallLog, "Status") {
++		t.Fatalf("StopOrphanedStepRuns() over an empty root = %+v, %v with reed calls %v; want an empty report, no error and no probe", report, err, fake.CallLog)
++	}
++
++	dirs := map[string]string{
++		"gone":        seed("run-1", RunState{StrandGUID: "guid-gone", StrandName: "name-gone", PID: deadPID, Outcome: runOutcomeRunning, Step: &oldTie}),
++		"unrecorded":  seed("run-2", RunState{StrandGUID: "guid-unrecorded", StrandName: "name-unrecorded", Outcome: runOutcomeRunning, Step: &otherTie}),
++		"live-waiter": seed("run-3", RunState{StrandGUID: "guid-live-waiter", StrandName: "name-live-waiter", PID: os.Getpid(), Outcome: runOutcomeRunning, Step: &oldTie}),
++		"foreign":     seed("run-4", RunState{StrandGUID: "guid-foreign", StrandName: "name-foreign", PID: -1, Outcome: runOutcomeRunning, Step: &foreignTie}),
++		"untied":      seed("run-5", RunState{StrandGUID: "guid-untied", StrandName: "name-untied", PID: -1, Outcome: runOutcomeRunning}),
++		"terminal":    seed("run-6", RunState{StrandGUID: "guid-terminal", StrandName: "name-terminal", PID: -1, Outcome: "died", Step: &oldTie}),
++		"attached":    seed("run-7", RunState{StrandGUID: "guid-attached", StrandName: "name-attached", PID: -1, Outcome: runOutcomeRunning, Step: &oldTie}),
++	}
++	// A process attaches to the run after the scan selected it as gone and before the stop.
++	hooked.onStatus = func() {
++		record, _, err := loadRunState(dirs["attached"])
++		if err != nil {
++			t.Errorf("loadRunState attached: %v", err)
++			return
++		}
++		record.PID = os.Getpid()
++		if err := saveRunState(dirs["attached"], record); err != nil {
++			t.Errorf("saveRunState attached: %v", err)
++		}
++	}
++
++	report, err = fx.Runner.StopOrphanedStepRuns("/steps")
++	if err != nil {
++		t.Fatalf("StopOrphanedStepRuns() error = %v", err)
++	}
++	if want := (StepStopReport{Stopped: []string{"name-gone", "name-unrecorded"}}); !reflect.DeepEqual(report, want) {
++		t.Errorf("StopOrphanedStepRuns() report = %+v; want %+v", report, want)
++	}
++	if len(fake.RemoveStrandCalls) != 2 || fake.RemoveStrandCalls[0].GUID != "guid-gone" || fake.RemoveStrandCalls[1].GUID != "guid-unrecorded" {
++		t.Errorf("RemoveStrand calls = %v; want the removals of guid-gone and guid-unrecorded", fake.RemoveStrandCalls)
++	}
++	for name, wantOutcome := range map[string]string{"gone": runOutcomeStopped, "unrecorded": runOutcomeStopped, "live-waiter": runOutcomeRunning, "foreign": runOutcomeRunning, "untied": runOutcomeRunning, "terminal": "died", "attached": runOutcomeRunning} {
++		record, _, err := loadRunState(dirs[name])
++		if err != nil {
++			t.Fatalf("loadRunState %s: %v", name, err)
++		}
++		if record.Outcome != wantOutcome {
++			t.Errorf("%s run outcome = %q; want %q", name, record.Outcome, wantOutcome)
++		}
++	}
++}
++
+ // TestStop_WaitThatSeesTheStoppedStrandGoEndsDied covers a Wait on a handle whose own Stop removed the strand:
+ // with the run's files missing, the strand's absence is the stop;
+ // the run ends died and records stopped, never the not-tracked mechanism failure;
