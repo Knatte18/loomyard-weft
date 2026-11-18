@@ -1,0 +1,63 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index 7478bcbd..16c6ca1b 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -449,6 +449,8 @@ An instruction outside a role's limits goes to the party in the right column, ne
+ ## Notes and orch rules
+ 
+ - `.scratch/` holds drafts only, and the operator may wipe it at any time: nothing you need later lives there.
++- Never build, restore or compile anything under `.scratch`, `.lym` or `_lym`, and never create a git worktree, clone or checkout there:
++  they hold scratch files and records, and a build under the `.scratch` link sees each project under two paths.
+ - `.scratch/handoff.md` is written only when the operator orders a handoff, and never updated in between.
+ - Machine-local records go under `.lym/`; durable rules go in git;
+   this repository's durable orch-only rules go in the orch rules.
+diff --git a/contracts/stencils/engine/claude/edit-directive.md b/contracts/stencils/engine/claude/edit-directive.md
+index 51534905..a1c78bea 100644
+--- a/contracts/stencils/engine/claude/edit-directive.md
++++ b/contracts/stencils/engine/claude/edit-directive.md
+@@ -15,8 +15,9 @@ A shell guard refuses a shell edit: never `sed -i`, never `perl -i`, and never a
+ A Go file's formatting is fixed with `lym loom fmt <file>`.
+ Scratch files go under `.scratch/` in the working directory, never a system temp directory, and are removed by their literal path.
+ `.scratch` is a link to a directory kept for your task alone, so a file under it stays in your own task.
+-A build under `.scratch/` resolves a relative reference from the link's target, not from the working directory;
+-a project built there names the working tree's files by absolute path.
++`.scratch`, `.lym` and `_lym` hold scratch files and records, never a build:
++never build, restore or compile anything under them, and never create a git worktree, clone or checkout there.
++A build under the `.scratch` link sees each project under two paths and fails.
+ A scratch file with a source extension such as `.md`, `.yaml` or `.sh` is written with Write, not by a redirect.
+ Work only in your own worktree: never edit, commit or push in another, and never create one, unless your parent or the operator says so for that case.
+ When work belongs in another worktree, say so to your parent instead.
+diff --git a/contracts/stencils/engine/codex/edit-directive.md b/contracts/stencils/engine/codex/edit-directive.md
+index 47d08d4b..e44bf10e 100644
+--- a/contracts/stencils/engine/codex/edit-directive.md
++++ b/contracts/stencils/engine/codex/edit-directive.md
+@@ -15,8 +15,9 @@ A shell guard refuses a shell edit: never `sed -i`, never `perl -i`, and never a
+ A Go file's formatting is fixed with `lym loom fmt <file>`.
+ Scratch files go under `.scratch/` in the working directory, never a system temp directory, and are removed by their literal path.
+ `.scratch` is a link to a directory kept for your task alone, so a file under it stays in your own task.
+-A build under `.scratch/` resolves a relative reference from the link's target, not from the working directory;
+-a project built there names the working tree's files by absolute path.
++`.scratch`, `.lym` and `_lym` hold scratch files and records, never a build:
++never build, restore or compile anything under them, and never create a git worktree, clone or checkout there.
++A build under the `.scratch` link sees each project under two paths and fails.
+ A scratch file with a source extension such as `.md`, `.yaml` or `.sh` is written with `apply_patch`, not by a redirect.
+ Work only in your own worktree: never edit, commit or push in another, and never create one, unless your parent or the operator says so for that case.
+ When work belongs in another worktree, say so to your parent instead.
+diff --git a/internal/editdirective/doc.go b/internal/editdirective/doc.go
+index 872a16ef..ed5e136d 100644
+--- a/internal/editdirective/doc.go
++++ b/internal/editdirective/doc.go
+@@ -13,9 +13,10 @@
+ // It states that in lym sessions it overrides any harness text that permits changing files by shell.
+ // A Go file's formatting goes through `lym loom fmt`.
+ // Scratch files go under `.scratch/`, and those with a source extension are written with Write.
+-// `.scratch` is a link to a directory kept for the task alone,
+-// so a build there resolves a relative reference from the link's target;
+-// the directive has a project built there name the working tree's files by absolute path.
++// `.scratch` is a link to a directory kept for the task alone.
++// Nothing is built, restored or compiled under `.scratch`, `.lym` or `_lym`.
++// No git worktree, clone or checkout is created there.
++// A build under the link sees each project under two paths.
+ // It also keeps a role in its own worktree:
+ // no edit, commit, push or new worktree elsewhere unless its parent or the operator says so for that case.
+ // It names the tools a role edits with and the worktree it edits in, never what the role may write.
