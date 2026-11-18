@@ -331,6 +331,12 @@ Decision: When the skill-load turn ends on a usage limit and the switch moves th
 
 Rationale: The limited load turn did no work, so repeating the launch as it was loses nothing and needs no special first turn.
 
+### Added after Discussion (arbiter, 2026-11-18): A stop-ended start-path relaunch returns OutcomeDied (plan review F17 ruling)
+
+Decision: Card 14 (14-in-run-relaunch) keeps the stop-ended return as the round-3 fix wrote it. The relaunch removes the strand through removeStrandIfPresent and returns based on how the stop was made. After the handle's Run.Stop it finalizes OutcomeDied once, and finalize keeps the record stopped through stopOutcome. After StopStrand it finalizes nothing and returns the run's identity with Outcome OutcomeDied: beside nil on the Wait path, and on the start path beside an error wrapping ErrNotStarted, with startupStrandRemoved left false so startRetryable never launches a stopped run again. The record-only stopped value is never returned as a Result.Outcome. The Start-driven row with an OnEndStrandProcess hook that runs StopStrand tests this branch. Card 16's loadRefusedResumeError path returns the same way.
+
+Rationale: Plan review round 3 escalated at the hard cap with F17 open. The fix in place answers each part of F17, checked against the code. stop.go:14-16 makes runOutcomeStopped record-only, and the card now returns OutcomeDied instead. run.go:645 retries only when Outcome is died and startupStrandRemoved is set, and the card leaves that flag false. StopStrand's stopRecorded reports the session end itself (stop.go:98), while Run.Stop reports none (stop.go:43-57), so finalize runs only after a handle stop. That matches the fixer's split. Run.identity (wait.go:1778), Run.markedStopped (stop.go:60) and removeStrandIfPresent (stop.go:142) exist as the Uses list names them.
+
 ## Constraints
 
 - `PATTERN-shuttle-provider-seam`: `CLAUDE_CONFIG_DIR`, the credentials file, the status line input, the account file, the pick and the copy live in `internal/shuttleengine/claudeengine`;
