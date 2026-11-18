@@ -1,6 +1,6 @@
-# Worktree .scratch is a symlink into .lym/scratch; tools given a path through it see each project under two paths
+# Agents must never build under .scratch, .lym or _lym
 
-`scratch-symlink-two-paths` · Note · bug, fabric, cwd
+`scratch-symlink-two-paths` · Note · bug, stencil
 
 Imported from [issue #140](https://github.com/Knatte18/loomyard/issues/140).
 

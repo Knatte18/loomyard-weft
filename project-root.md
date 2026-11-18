@@ -57,10 +57,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **drift judge halt blames the judge for a parent's lym loom decision add during Drift-Verify** | [`drift-judge-parent-decision`](design-drift-judge-parent-decision.md) | 17m<br>17m | drift, loom |
-| B2 |  | **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure** | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | 16m<br>16m | burler, lenses |
-| B3 |  | **Gate re-prompt fails: shuttle strand not tracked by reed, Plan-Write halts blocked** | [`gate-reprompt-strand-untracked`](design-gate-reprompt-strand-untracked.md) | 16m<br>16m | gate, shuttle, reed |
+| B2 |  | **Burler fix round: twill fixer fork attempts write/edit calls and halts the run as producer-hard-failure** | [`twill-fixer-fork-writes`](design-twill-fixer-fork-writes.md) | 17m<br>17m | burler, lenses |
+| B3 |  | **Gate re-prompt fails: shuttle strand not tracked by reed, Plan-Write halts blocked** | [`gate-reprompt-strand-untracked`](design-gate-reprompt-strand-untracked.md) | 17m<br>17m | gate, shuttle, reed |
 | B4 |  | **drift: line-range expectation entries never match in diff mode lines** | [`drift-line-range-never-matches`](design-drift-line-range-never-matches.md) | 16m<br>16m | drift |
-| B5 |  | **Worktree .scratch is a symlink into .lym/scratch; tools given a path through it see each project under two paths** | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | 16m<br>0m | fabric, cwd |
+| B5 |  | **Agents must never build under .scratch, .lym or _lym** | [`scratch-symlink-two-paths`](design-scratch-symlink-two-paths.md) | 16m<br>0m | stencil |
 | B6 |  | **shed step re-halts on the shuttle run left running by the earlier interrupted-stop** | [`restep-leftover-shuttle-run`](design-restep-leftover-shuttle-run.md) | 16m<br>16m | shed, shuttle |
 | B7 |  | **shuttle start fails with 'session is not idle' when the pane shows an idle input prompt after skill loading** | [`idle-check-after-skill-load`](design-idle-check-after-skill-load.md) | 16m<br>16m | shuttle |
 | B8 |  | **Review strand starts without the turn naming its prompt file, also after restart** | [`review-strand-no-prompt-turn`](design-review-strand-no-prompt-turn.md) | 16m<br>16m | shuttle, burler |
