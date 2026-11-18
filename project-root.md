@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-18 12:19 UTC; every age below is as of then.
+Rendered 2026-11-18 12:20 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -34,7 +34,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 18h<br>17h | board, ide, fabric |
-| T6 | `draft` **Where the Claude quota goes, and why it burns faster now than two weeks ago**<br>• Weekly Claude usage W44 to W47 by role, model, hub, recipe and session kind; name what drove the rise and the cuts<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`token-spend-weekly-rise`](design-token-spend-weekly-rise.md) | darn · docs |  | 17m<br>16m | claude, report |
+| T6 | `draft` **Where the Claude quota goes, and why it burns faster now than two weeks ago**<br>• Weekly Claude usage W44 to W47 by role, model, hub, recipe and session kind; name what drove the rise and the cuts<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`token-spend-weekly-rise`](design-token-spend-weekly-rise.md) | darn · docs |  | 18m<br>17m | claude, report |
 
 ## Notes (6)
 
@@ -51,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 21m<br>21m | landing |
+| E2 |  | **Clean-room rewrite of the most patched modules, landing first**<br>• Rewrite a module and its tests from a written spec alone, interfaces fixed; pilot on landingshed | [`clean-room-module-rewrite`](design-clean-room-module-rewrite.md) | 22m<br>22m | landing |
 
 ### Features (3)
 
