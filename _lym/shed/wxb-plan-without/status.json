@@ -1,13 +1,13 @@
 {
-  "current_producer": "Plan-Write",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Plan-Bouncer",
   "pause_before_by": "wxb-bench",
   "activity": {
-    "now": "Plan-Write",
-    "last": "Parts-Plan-Write → skipped",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Write → done",
     "wait": ""
   },
   "history": [
@@ -197,6 +197,22 @@
       "output": "",
       "at": "2026-11-18T18:49:43Z",
       "reason": "tapestry.plan_split = false"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/wxb-plan-without/_lym/plan/00-overview.md",
+      "at": "2026-11-18T19:00:36Z",
+      "started_at": "2026-11-18T18:49:50Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-18T19:00:25.94384614Z",
+          "end": "2026-11-18T19:00:35.231718142Z"
+        }
+      ]
     }
   ],
   "product": {
