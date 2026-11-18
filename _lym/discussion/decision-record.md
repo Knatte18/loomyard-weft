@@ -349,6 +349,14 @@ Rationale: Checked against the code: checkLivenessTick's doc (internal/shuttleen
 - The headroom view is per hub, and several hubs share the accounts; a hub can pick an account another hub has spent until its own sessions see the figures or hit the limit.
 - Claude Code may rename the status line fields; the verb then writes nothing and the pick falls back to weights and limit hits.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - d7-relaunch-prompt-startup (class design, severity BLOCKING, open in rounds 2, 3)
+  - d7-relaunch-record-after-reed (class design, severity BLOCKING, open in rounds 3)
+  - d7-running-readers-skip-relaunching (class design, severity BLOCKING, open in rounds 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: a machine-layer `claude.accounts` list loads; a duplicate name, a relative path, two entries naming one directory once links are resolved, a negative weight, an unknown window or a threshold outside 1 to 100 is refused.
