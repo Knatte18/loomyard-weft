@@ -1,6 +1,6 @@
 # List features nobody uses, for the operator to cut
 
-`drop-unused-features` · Task · enhancement, tools · starting · Seed-Child
+`drop-unused-features` · Task · enhancement, tools · starting · Open-Window
 
 ## What was seen
 
