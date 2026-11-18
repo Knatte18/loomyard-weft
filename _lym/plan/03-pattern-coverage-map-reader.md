@@ -1,4 +1,4 @@
-# Card 4 — pattern-coverage-map-reader
+# Card 3 — pattern-coverage-map-reader
 
 **Create:**
 - `pattern/PATTERN-coverage-map-reader.md`
@@ -9,7 +9,6 @@
 
 **Uses:**
 - `internal/testkit/scankit#`
-- `plan:internal/testreach#WriteIndex`
 - `internal/testcover#ReadMap`
 
 **Intent:**
@@ -31,11 +30,11 @@ Declare and guard `PATTERN-coverage-map-reader`, the entry the decision record's
 It walks the module's non-test Go files and fails, naming file and line, when:
 - a file outside `internal/testcover` and `internal/testreach` calls `testcover.ReadMap`, other than the files it pins by name:
   `internal/gatecli/redundancy.go`, `internal/gatecli/redundant.go` and `internal/gatecli/testmappackage.go`, the single-package readers;
-- a file other than `internal/gatecli/testmap.go` calls `testreach.WriteIndex`;
 - a pinned file no longer holds the call it is pinned for, so the list tracks the tree.
 
 Each failure names its way forward: read the maps through `internal/testreach` (`ReadPackageMap` for one package, `Open` across packages),
 or, for a new single-package reader that must call `testcover.ReadMap` itself, pin its file in the test's list with the reason.
-New readers of one package's map use `testreach.ReadPackageMap`, so no later card adds a pinned file.
+New readers of one package's map use `testreach.ReadPackageMap`, so no later card pins a new `testcover.ReadMap` reader.
+The guard's index clause comes with card 6, which pins `internal/gatecli/testmap.go` for the one `testreach.WriteIndex` call.
 
 **ImpactSummary:** One new overview line and its background file, plus one guard test over the module's sources; no production code changes.

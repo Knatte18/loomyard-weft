@@ -7,9 +7,7 @@
 - `plan:internal/testreach#FileSet` -> `type FileSet map[string][]byte`
 - `plan:internal/testreach#ChangedFunc` -> `type ChangedFunc struct`
 - `plan:internal/testreach#ChangedFuncs` -> `func ChangedFuncs(module Module, base, head FileSet) ([]ChangedFunc, error)`
-- `plan:internal/testreach#ChangedLines` -> `func ChangedLines(base, head []byte) []int`
 - `plan:internal/testreach#TestChangedFuncs` -> `func TestChangedFuncs(t *testing.T)`
-- `plan:internal/testreach#TestChangedLines` -> `func TestChangedLines(t *testing.T)`
 
 **Extends:**
 - `docs/overview.md`
@@ -20,7 +18,7 @@
 
 **Intent:**
 Open the new package `internal/testreach`, the one cross-package reader of the coverage maps (D1, D2).
-This card lands its D2 half: the finder of a diff's changed functions, and the changed lines the mutation planner of card 13 needs.
+This card lands its D2 half: the finder of a diff's changed functions.
 The package runs no git: every caller hands in the file contents of both sides.
 
 `Module` names the Go module the maps hold: `Dir`, the absolute module root; `Rel`, its worktree-relative slash path; `Path`, its import path.
@@ -37,9 +35,6 @@ A caller puts in each set every Go file of each package whose files it wants com
 - A function is changed when it is new or its text differs; a function only the base holds is no changed function.
 - A file that does not parse is an error naming the file.
 
-`ChangedLines(base, head)` returns the sorted 1-based line numbers of head that a line diff of the two texts marks added or changed.
-An empty base marks every line of head.
-
 `TestChangedFuncs` is one tier0 table over in-memory `FileSet`s, one row per D2 criterion:
 a new function and a body change are found (the new one marked `New`);
 a function whose lines moved with unchanged text, a function moved verbatim to another file of its package, a deleted function and a test file's function are not;
@@ -48,7 +43,6 @@ the second `init` of a file changed while the first did not is found alone;
 a method's key is `<Type>.<Method>`;
 a changed function in a file outside the module, under `testdata`, or under a directory opening with `.` or `_` is not found;
 a file that does not parse returns an error.
-`TestChangedLines` is one tier0 table: an inserted line, a changed line, a deletion (no head line marked), and an empty base.
 `internal/testreach/testmain_test.go` runs the package's tests under `tmuxkit.Main`, as every package does; it is `untagged`.
 
 `doc.go` documents the package: the reader to come and this card's finder, with the matching rules above.

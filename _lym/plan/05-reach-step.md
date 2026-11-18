@@ -1,10 +1,8 @@
-# Card 6 — reach-step
+# Card 5 — reach-step
 
 **Create:**
 - `plan:internal/gatecli#ReachReport` -> `type ReachReport struct`
 - `plan:internal/gatecli#ReachFunction` -> `type ReachFunction struct`
-- `plan:internal/gatecli#ReadReachReport` -> `func ReadReachReport(location *lymcwd.Location) (ReachReport, bool, error)`
-- `plan:internal/gatecli#ReachReportMatches` -> `func ReachReportMatches(location *lymcwd.Location, report ReachReport, rev string) (bool, error)`
 - `plan:internal/gatecli#ReachReport.NoteLines` -> `func (r ReachReport) NoteLines(path string) []string`
 - `plan:internal/gatecli#reachStep` -> `type reachStep struct`
 - `plan:internal/gatecli#execution.reachStep` -> `func (e *execution) reachStep() reachStep`
@@ -23,9 +21,12 @@
 - `docs/overview.md`
 - `internal/gatecli/doc.go`
 - `internal/gateslot/template.yaml`
+- `internal/gateslot/doc.go`
+- `pattern/PATTERN-gate-slot.md`
 
 **Uses:**
 - `plan:internal/testreach#Open`
+- `plan:internal/testreach#Reader.Maps`
 - `plan:internal/testreach#ChangedFuncs`
 - `plan:internal/testreach#Fresh`
 - `plan:internal/testreach#ReadPackageMap`
@@ -47,7 +48,8 @@
 - `internal/testcover#Toolchain.LinkedPackages`
 
 **Intent:**
-Add the `reach` report step of `lym gate test` (D3), its report `reach.json`, the note it prints (D4), and the match a review and the reach turn use (D5).
+Add the `reach` report step of `lym gate test` (D3), its report `reach.json` and the note it prints (D4).
+Card 7 adds the report's reader and its HEAD match (D5), with their first caller.
 
 Run order: in `runTest`, a key whose `reports` lists `gateslot.ReportReach` runs the step after its lints and before the redundancy step, under the same memory guard, in an uncancelled call.
 
@@ -81,6 +83,8 @@ then calls `testreach.ChangedFuncs`.
   `Package`, `File`, `Func`, `Hash`, `New`, its tests from `TestsReaching` (own package first, fewest functions first, at most five kept, with `MoreTests` counting the rest),
   and its caveats: for an unreached function whose package holds a tier2 test (by `testcover.ScanTestFuncs`) or a spawn-marked entry (`SpawnMarked`), that such a test may run it unseen;
   for an unreached function `New` since the base whose package `StaleLinkers` names packages for, that those packages' tests may reach it, naming them.
+- A reader that read no map at all (`Maps()` is empty), as in a hub whose `lym gate test --map` never ran, gives a report that judges nothing:
+  its `Note` says no coverage map exists and to build the maps with `lym gate test --map` from the prime, so no function reads as unreached for want of maps.
 - The report records `GateKey`, `Written`, `Base`, `Prime`, `ModuleDir`, the `Maps` it read (package, commit, build time, worktree or shared), the `Unrefreshed` lines,
   and `FileHashes`: the Go files, test files included, of each package holding a changed function and of each package whose tests it names, by `goFileHashes`.
   Report names, the file name and the caps (five tests per function, the note's line cap) are named constants.
@@ -89,11 +93,6 @@ then calls `testreach.ChangedFuncs`.
 then the changed functions no mapped test reaches, with their caveats; then the `Unrefreshed` lines.
 It is capped at the note's line cap, and a cut note ends with a line naming `path` for the rest.
 A report with a `Note` renders that note alone.
-
-`ReadReachReport` reads a worktree's report and tolerates unknown keys (`PATTERN-tolerant-records`).
-`ReachReportMatches(location, report, rev)` reports whether the report holds for the commit `rev` (D5): never for a report with `Note`, `RedGate` or `Prime`;
-otherwise only when `changedFuncsAt` over the commit's tree (changed paths by `Fabric.ChangedPathsBothSides` from the current merge base) gives the recorded functions with the recorded hashes,
-and every package of `FileHashes` hashes at `rev` as recorded.
 
 The card's guard clause: `TestCoverageMapReaderBoundary` also fails when a non-test file outside `internal/testreach` calls `testreach.ChangedFuncs`, other than the gatecli file holding `changedFuncsAt`, which it pins,
 so gatecli keeps one changed-function finder.
@@ -109,10 +108,9 @@ Tests:
     and each anchor map is written with hashes matching the worktree;
   - a package with an uncommitted file, and one whose linked package has one (named in its line), are answered from the existing maps with their lines and way forward;
   - a prime call with an uncommitted change refreshes nothing and answers from the shared maps with its line, and its report carries `Prime`;
+  - a prime call in a hub with no shared maps gives a report that judges nothing, whose note names `lym gate test --map`;
   - a package holding a tier2 test file gets the caveat on its unreached function;
   - no row's refresh writes the shared maps (their bytes are unchanged);
-  - `ReachReportMatches` holds for HEAD after the call, and fails after a commit that changes a test file of a named package, after one that changes a changed function's text,
-    after one that adds a changed function, and for the prime row's report.
   - The budget row drives a hand-built `reachStep`, as `stepAt` drives the redundancy step, with a `minuteUnit` so short the budget is spent at the hold:
     each package is answered from the existing maps with its budget line.
 
@@ -132,4 +130,12 @@ Its memory-guard sentence naming the runs the guard covers adds the reach step's
 `docs/overview.md`'s gate passage names the `reach` step beside the `redundancy` step, and its sentences "No dobby builds the coverage maps: the operator builds them on command" and "only on command" say the same of the shared maps and name the reach step's refresh of a worktree's own.
 `internal/gateslot/template.yaml`'s comments on `memory_quit_mb`, `redundancy_build_timeout_min`, `redundancy_test_timeout_sec` and `redundancy_test_memory_mb`, which name the runs they bound, add the reach step's refresh.
 
-**ImpactSummary:** The gate call gains one advisory step that never changes its exit; `testMapRun` gains a deadline whose zero value keeps `lym gate test --map` as it is; the PATTERN line, its background, the gatecli doc, the overview and the template comments that say no gate builds maps or list the bounded runs change in place.
+The refresh is a new place that holds gate slots (`PATTERN-gate-slot`):
+- `pattern/PATTERN-gate-slot.md`'s Gate slot section gains, beside the map run of `lym gate test --map`, a refresh of a task worktree's own anchor maps,
+  which runs the map run's measurement in the map run's slot ask; its lead bullet names the places without a count.
+- `internal/gateslot/doc.go`'s bounds paragraph names the refresh where it says a map call holds the larger of tier0's and tier1's slot asks.
+  Its sentences naming the runs that take the three `redundancy_*` bounds, and the runs that run fewer tests side by side when memory is short, add the reach step's refresh.
+- `docs/overview.md`'s `lym gate test --map` sentence says the reach step's refresh runs the same measurement under the same build and test bounds and memory cap,
+  and its memory-guard sentence names the refresh beside the redundancy report step.
+
+**ImpactSummary:** The gate call gains one advisory step that never changes its exit; `testMapRun` gains a deadline whose zero value keeps `lym gate test --map` as it is; the PATTERN line, its background, the gate-slot pattern, the gatecli and gateslot docs, the overview and the template comments that say no gate builds maps or list the bounded runs and slot holders change in place.

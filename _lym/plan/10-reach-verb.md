@@ -1,6 +1,7 @@
 # Card 10 — reach-verb
 
 **Create:**
+- `plan:internal/testreach#Reader.FuncsReachedBy` -> `func (r *Reader) FuncsReachedBy(pkg, test string, among []testcover.FuncKey) ([]testcover.FuncKey, MapSource, bool)`
 - `plan:internal/fabricengine#FirstParentCommit` -> `type FirstParentCommit struct`
 - `plan:internal/fabricengine#Fabric.FirstParentCommits` -> `func (f *Fabric) FirstParentCommits(branch, since string, limit int) ([]FirstParentCommit, bool, error)`
 - `plan:internal/gatecli#reachRequest` -> `type reachRequest struct`
@@ -11,15 +12,16 @@
 **Edit:**
 - `internal/gatecli#newCommand`
 - `docs/overview.md`
+- `plan:internal/testreach#TestReader`
 
 **Extends:**
 - `internal/gatecli/doc.go`
 - `internal/fabricengine/doc.go`
+- `internal/testreach/doc.go`
 
 **Uses:**
 - `plan:internal/testreach#Open`
 - `plan:internal/testreach#Reader.TestsReaching`
-- `plan:internal/testreach#Reader.FuncsReachedBy`
 - `plan:internal/gatecli#changedFuncsAt`
 - `plan:internal/gatecli#ReachReport.NoteLines`
 - `internal/fabricengine#ReadOrigin`
@@ -34,9 +36,15 @@
 **Intent:**
 Add the read verb `lym gate reach` (D6) and its `--test` form over landings (D8). It joins the `gate` subtree in `newCommand` (`PATTERN-cli-cobra`).
 
+`Reader.FuncsReachedBy(pkg, test, among)` joins card 2's reader here, with its first caller:
+it returns the functions of `among` the test reaches by card 2's reach rules, the `MapSource` of the map holding it, and false when no map holds a measured entry of that name.
+`internal/testreach/doc.go` gains it beside the other lookups.
+
+`reachRequest` carries the parsed call and `limit`, the walk's commit cap, which `reachCmd` sets to the named 200-commit constant and `runReach` passes to `Fabric.FirstParentCommits`.
+
 Forms:
 - `lym gate reach <file>#<Func>`: the worktree-relative file and the function name, `<Type>.<Method>` for a method.
-  It prints D4's note for that one function, built as card 6 builds a `ReachFunction` (tests, at most five plus the count, caveats, map commits and ages),
+  It prints D4's note for that one function, built as card 5 builds a `ReachFunction` (tests, at most five plus the count, caveats, map commits and ages),
   from the shared maps and, outside the prime, the worktree's anchor maps, through `testreach.Open`.
   It runs no build and takes no gate slot, and writes nothing, not even the index.
   A function the maps do not hold prints a line saying so with the commit of the package's map (or that no map holds the package), exit 0.
@@ -63,19 +71,21 @@ Refusals, each through `output.Err` with its way forward (`PATTERN-refusal-way-f
 - a `--test` value with no dot: names the form `<package>.<Test>`;
 - a `--branch` that names no branch: names the branch and says to pass a branch of the repository, or drop `--branch` to walk the parent branch;
 - a `--since` that resolves to no commit: says to pass a commit SHA or a ref that names a commit;
-- a range over 200 commits (the cap is a named constant; the walk returned `limit`+1 commits without meeting `since`): names the cap and the way forward, a later `--since`;
+- a range over the request's `limit`, 200 commits from `reachCmd` (the walk returned `limit`+1 commits without meeting `since`): names the cap and the way forward, a later `--since`;
 - a `--since` the walk never meets within the history (it ended before the cap): says the commit is not on the branch's first-parent history and to pass one that is;
 - a function argument with no `#`: names the form `<file>#<Func>`;
 - a call outside a hub: the maps live in a hub, run it from a worktree of one.
 
 `TestGateReach` (tier1) runs the verb's command over a `hubforge` hub seeded by the map tests' fixture with maps written by `testcover.WriteMap`, a parent branch and three landings on it:
-- one row per refusal above;
+- one row per refusal above; the range-cap row drives `runReach` with a `limit` of 2 over the three landings and asserts the refusal naming the cap and a later `--since`;
 - a function reached by tests of two packages prints them own package first with the map commit;
 - a function the maps lack prints its line with exit 0, and no file under the maps directory changes;
 - `--test --since` lists the one landing whose changed function the test reaches, says three commits were checked and names the map commit, and a `--since` given as a short SHA walks the same range;
 - `--branch` walks the named branch instead; a worktree with no parent branch walks its current branch;
 - `--test` naming a test no map holds says so with exit 0 and lists no commit;
 - a hub whose scoper is not `go` prints its note with exit 0.
+
+`TestReader` (tier0) gains a row: `FuncsReachedBy` returns the reached subset with the map's commit, and false for a test no map holds.
 
 `gatecli/doc.go` gains a `# Reach verb` section; `fabricengine/doc.go` gains the first-parent read; `docs/overview.md`'s `internal/gatecli/` line names `lym gate reach`.
 

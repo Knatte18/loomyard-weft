@@ -2,8 +2,6 @@
 
 **Create:**
 - `plan:internal/gateslot#TriageLinePrefix` -> `const TriageLinePrefix = "triage: "`
-- `plan:internal/gateslot#TriageLines` -> `func TriageLines(log string) map[string][]string`
-- `plan:internal/gateslot#TestTriageLines` -> `func TestTriageLines(t *testing.T)`
 - `plan:internal/gatecli#triageLookup` -> `type triageLookup struct`
 - `plan:internal/gatecli#newTriageLookup` -> `func newTriageLookup(open func() (*testreach.Reader, error), mergeBase func() (string, bool, error), changed func(base string) ([]testreach.ChangedFunc, error)) (triageLookup, bool)`
 - `plan:internal/gatecli#triageLookup.lines` -> `func (l triageLookup) lines(pkg, test string) []string`
@@ -37,8 +35,9 @@ Add D7's triage lines to the failure report of a failing `lym gate test` call.
 
 `execution.printReport` builds a `triageLookup` once per report, when the call is in a hub, its scoper is `go` and a run failed a test, through `newTriageLookup`:
 - `open` opens `testreach.Open` over the shared maps and, outside the prime, the anchor maps; an error from it builds no lookup, so the report gets no triage line anywhere (D7's failed lookup).
-- `mergeBase` reads the merge base with the parent branch (`parentMergeBase`); in the prime, which has no parent branch, it answers HEAD, as `touchedFiles` does.
-  A task worktree whose read finds no parent branch, and one whose read fails, give a lookup with no change set and that reason.
+- `mergeBase` reads the merge base with the parent branch (`parentMergeBase`).
+  The prime has no parent branch, so there it answers no parent branch, never HEAD, as D7 has it.
+  The prime, a task worktree whose read finds no parent branch, and one whose read fails give a lookup with no change set and that reason.
 - `changed` takes the run's change set, `changedFuncsAt` from the base to the working tree.
 It then fills each failed test's `runFailure.triage` from `triageLookup.lines(pkg, test)` before rendering.
 
@@ -54,9 +53,8 @@ Rendering: `failedRun.reportLines` puts a failure's triage lines first under its
 `renderFailureReport` counts the report's lines without triage first; it then adds each failure's triage lines, in report order, only while the line budget still holds them whole,
 so a triage line never causes a cut and triage lines are dropped before any test output line is cut.
 
-`gateslot.TriageLines(log)` is the failure report's reader of those lines (gateslot already parses the report for `FailedTests`):
-it returns, per failed test as `<package>.<Test>` (the two-space test line's identity), the four-space lines under it that open with `TriageLinePrefix`, with the prefix kept; a log holding no report returns an empty map.
-`FailedTests` needs no change: it already skips four-space lines.
+`gateslot.FailedTests` needs no change: it already skips four-space lines.
+Card 12 adds `gateslot.TriageLines`, the reader of these lines, with its first callers.
 
 The card fixer's report is the call's stderr copied verbatim (`detachRun.fixAndRerun`), which `TestRunWithFixer` pins;
 with `TestGateTest_Scenario` pinning the triage line in that stderr's failure report, the card fixer's report carries the lines.
@@ -68,11 +66,10 @@ Tests:
   Each line naming a mapped test asserts the map's commit in it.
 - `TestRenderFailureReport` (tier0) gains rows: a failed test with triage lines renders them first under its test line; a report at the line cap keeps every test output line and drops triage lines first.
 - `TestFailedTests` (tier0) gains one row: a report holding triage lines parses to the same failed tests as without them.
-- `TestTriageLines` (tier0) is one table: a report with triage lines under two tests, a report with none, and a log with no report.
 - `TestGateTest_Scenario` (tier1): its subtest whose go tier fails `TestFails` in a hub with scoper `go` asserts the failure report's first line under the failed test is the "not in the coverage maps" triage line, since no map holds it;
   this row reaches `printReport`'s wiring of the lookup.
 
-`gatecli/doc.go`'s `# Failure report` section gains the triage lines and their budget rule; `gateslot/doc.go` gains `TriageLinePrefix` and `TriageLines`.
+`gatecli/doc.go`'s `# Failure report` section gains the triage lines and their budget rule; `gateslot/doc.go` gains `TriageLinePrefix`.
 Bound: the lines are advisory; a stored map may lack a function the run added, and a stale entry can show a reach the test no longer has.
 
 **ImpactSummary:** The failure report gains advisory four-space lines under failed tests that the budget drops first; `FailedTests` and the reruns it drives parse the report unchanged, which the new row pins; `TestGateTest_Scenario`'s failure-report assertion gains the triage line, and the card fixer's report, the call's stderr, carries it.
