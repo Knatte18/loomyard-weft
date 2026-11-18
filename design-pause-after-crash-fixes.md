@@ -1,6 +1,6 @@
 # Pause holds no shared lock and works on a pair with no reed session
 
-`pause-after-crash-fixes` · Task · bug, tender, fabric, batten, reed · running · Code-Burler-Review
+`pause-after-crash-fixes` · Task · bug, tender, fabric, batten, reed · running · Code-Burler-Fix
 
 ## 1. A paused run keeps the fabric push lock
 
