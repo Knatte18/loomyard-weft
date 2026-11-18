@@ -1,8 +1,8 @@
 # Card 10 — Sessions on a listed account get the lym status line
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#statusLineCommand` -> `func statusLineCommand(lymPath, account string) string`
-- `plan:internal/shuttleengine/claudeengine#addStatusLine` -> `func addStatusLine(settings []byte, command string) ([]byte, error)`
+- `internal/shuttleengine/claudeengine#statusLineCommand`
+- `internal/shuttleengine/claudeengine#addStatusLine`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#Claude.Prepare`

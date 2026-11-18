@@ -1,11 +1,11 @@
 # Card 8 — A resume first brings the newest transcript into its account
 
 **Create:**
-- `plan:internal/shuttleengine#TranscriptCarrier` -> `type TranscriptCarrier interface`
-- `plan:internal/shuttleengine/claudeengine#Claude.CarryTranscript` -> `func (c *Claude) CarryTranscript(sessionID, workdir string) (bool, error)`
-- `plan:internal/shuttleengine/claudeengine#copyTranscript` -> `func copyTranscript(fromProject, toProject, sessionID string) error`
-- `plan:internal/shuttleengine/claudeengine#TestClaude_CarryTranscript` -> `func TestClaude_CarryTranscript(t *testing.T)`
-- `plan:internal/shuttleengine#TestRunnerStart_Resume_CarriesTheTranscriptFirst` -> `func TestRunnerStart_Resume_CarriesTheTranscriptFirst(t *testing.T)`
+- `internal/shuttleengine#TranscriptCarrier`
+- `internal/shuttleengine/claudeengine#Claude.CarryTranscript`
+- `internal/shuttleengine/claudeengine#copyTranscript`
+- `internal/shuttleengine/claudeengine#TestClaude_CarryTranscript`
+- `internal/shuttleengine#TestRunnerStart_Resume_CarriesTheTranscriptFirst`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#Claude.CheckResume`

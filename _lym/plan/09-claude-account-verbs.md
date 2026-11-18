@@ -3,15 +3,15 @@
 **Create:**
 - `internal/claudecli/doc.go`
 - `internal/claudecli/testmain_test.go`
-- `plan:internal/claudecli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/claudecli#accountKeeperHere` -> `func accountKeeperHere() (shuttleengine.AccountKeeper, error)`
-- `plan:internal/claudecli#TestCommand` -> `func TestCommand(t *testing.T)`
-- `plan:internal/shuttleengine/claudeengine#Claude.SetAccount` -> `func (c *Claude) SetAccount(name string) error`
-- `plan:internal/shuttleengine/claudeengine#Claude.ShowAccounts` -> `func (c *Claude) ShowAccounts() (string, error)`
-- `plan:internal/shuttleengine/claudeengine#Claude.RecordStatusLine` -> `func (c *Claude) RecordStatusLine(name string, input []byte) (string, error)`
-- `plan:internal/shuttleengine/claudeengine#parseStatusLine` -> `func parseStatusLine(input []byte, now time.Time) (usageRecord, bool)`
-- `plan:internal/shuttleengine/claudeengine#TestClaude_RecordStatusLine` -> `func TestClaude_RecordStatusLine(t *testing.T)`
-- `plan:internal/shuttleengine/claudeengine#TestClaude_SetAccount` -> `func TestClaude_SetAccount(t *testing.T)`
+- `internal/claudecli#Command`
+- `internal/claudecli#accountKeeperHere`
+- `internal/claudecli#TestCommand`
+- `internal/shuttleengine/claudeengine#Claude.SetAccount`
+- `internal/shuttleengine/claudeengine#Claude.ShowAccounts`
+- `internal/shuttleengine/claudeengine#Claude.RecordStatusLine`
+- `internal/shuttleengine/claudeengine#parseStatusLine`
+- `internal/shuttleengine/claudeengine#TestClaude_RecordStatusLine`
+- `internal/shuttleengine/claudeengine#TestClaude_SetAccount`
 
 **Extends:**
 - `internal/shuttleengine#AccountKeeper`
