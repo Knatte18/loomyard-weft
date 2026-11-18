@@ -1,60 +1,54 @@
-# Pause holds no push lock and skips pairs with no reed session
+# Pause holds no push lock and skips a pair with no reed session
 
-## A pause holds a pusher only before it takes a push lock
+A pause no longer leaves a process waiting while it holds a push lock, and `lym tender pause` and `lym tender status` no longer fail on a pair with no reed session.
 
-A push the pause gate held used to wait at its first git call while it already held `fabric.push.lock`.
-Every other pair's push then failed with `push lock busy ... held by pid <n>` until the held process was killed.
+## Why
 
-Every taker of a push lock now calls `pauserecord.Admit` before it takes its first lock and stays admitted until it releases the last.
-That covers the weft's `fabric.push.lock` and the board checkout's push lock.
-This is the scheme `gitrepo.HoldRemoteRefs` already uses for the remote-refs lock.
-A covered process waits at the gate with no lock held, and a pause that starts while a pusher holds the lock reads its operation in flight.
-The sites are:
+With a pair paused, a `lym batten run` took `fabric.push.lock`, then waited on the pause while still holding the lock.
+Every other pair's batten run then failed with `push lock busy`, until the holder was killed.
 
-- `coalesceFlagged`, admitted on each acquire of its loop: every pair push, detached or synchronous;
-- `coalescePush`: `Bolt.Sync`;
-- `lockWeftForReplay`, before the weft write lock;
-- `takeoverBranch.land`;
-- `Bolt.pullFirst`;
-- `retryBoltPush`, before the board write lock.
+After a hard power-off, `lym tender pause` and `lym tender status` failed on a pair whose reed session was gone, with `no reed session`.
+That pair has no running turn to interrupt, so the failure only blocked the pause.
 
-The new gate operation is named `push-lock`.
+## What changes
 
-A detached push child's gate defers instead of waiting, so it now defers at the gate before the lock, when no side has been pushed yet.
-Once admitted, no later call of the process meets the gate, so the deferral never fires mid-step.
-The `pushed` map that tracked which sides a step had reached was dead code after this change and is removed.
-`pushDeferral` now puts back the flag of every owed side.
+### Push lock (`internal/fabricengine`)
 
-## Pause, status and revive skip a pair with no reed session
+- Every taker of a push lock, `fabric.push.lock` or the board checkout's, now passes the process's pause gate before it takes its first lock.
+  It does so through `pauserecord.Admit` under the new operation name `push-lock`, and stays admitted until it releases the last lock.
+  A pause therefore holds a pusher only while it holds no lock, and another pair's push takes the lock meanwhile.
+- The gate sits ahead of the outermost lock each entry point takes:
+  `coalescePush`, `coalesceFlagged` (once per acquire), `PushPairAnchored`, `TakeOverRun`, `retryBoltPush`,
+  `Fabric.lockWeftForReplay`, `Bolt.Pull` and `Bolt.PullThenCommitWritten`.
+- A pause that starts while a pusher holds the lock reads its `push-lock` operation as in flight and lets it finish.
+- The detached push's deferral now fires at the gate before an acquire, never under the lock.
+  It puts back the pending flag of every owed side, since after an earlier step pushed, a flag may name a side with nothing left to push.
+  `pushDeferral` lost its `pushed` map and `coalescePushSides` its bookkeeping.
 
-After a hard power-off, a pair's run records can still read running while its reed session is gone.
-`lym tender pause` and `lym tender status` then failed on that pair's session listing with reed's `no reed session` refusal.
-A pair with no reed session has no running turn to interrupt.
-Pause, status and revive now match `reedengine.ErrNoSession` from `Pair.Sessions` and handle that pair as follows:
+### Pause and status (`internal/tenderengine`)
 
-- the pair goes under `skipped` with reed's refusal as the reason, and the other pairs are still read;
-- pause keeps the entry it already recorded;
-- `StatusReport` gains a `skipped` part for this, and the prime is handled the same way.
+- `coveredSessions` treats a `reedengine.ErrNoSession` from `Pair.Sessions()` as "no running turn".
+  `Pause` keeps the entry, reports that pair under `Skipped` with reed's refusal as the reason, and goes on.
+- `Status` gains a `Skipped` list, with the prime included, and still reads every other pair's sessions.
+- `Revive` reports such a pair under its `Skipped` the same way.
+  The task did not name this verb; it shares `coveredSessions`, so leaving it out would keep the same failure there.
+- `docs/overview.md`, the package docs and the `lym tender` help text describe the new reports.
 
-## Design decisions
+### Dobby
 
-- **Dobby needs no change to start no driver for a paused pair.**
-  `DobbyRuns` reads the pause record into the act rule's `PauseCovers`, and `runfsm.Act` waits a covered run.
-  `planPass` gives no pass to a run whose verdict does not act, on any trigger.
-  `TestPlanPass`'s `VerdictPauseCovers*GivesNone` rows pin that, so no new test was added for it.
-  In the incident, the pause of that pair was failing on the missing reed session, which the second change fixes.
-- **The teardown lock is still taken before the gate.**
-  `PushPairAnchored` takes the pair's teardown lock shared before the push-lock loop admits it.
-  A held push therefore still blocks that pair's own teardown, but never another pair's push.
+No dobby code changes.
+`dobbyengine` already gives a paused run no pass (see its package doc), and the batten driver is the process the lock fix above covers.
 
 ## Tests
 
-- `TestCoalescePushBothAt_HeldByAPauseWithoutThePushLock`:
-  while a pause holds a push, the push lock is free for another pusher; after the lift the push lands both sides.
-- `TestCoalescePushRequest_CoveredCallDefers`, renamed row `CoveredCallDefersBeforeThePushLock`:
-  a covered detached child exits at the gate with the lock free and both flags back.
-- `TestPushDeferral_PutsBackEveryOwedFlag` replaces the table that covered partly pushed steps.
-- `TestSync_DeferrableExitsUnderACoveringPause`, renamed row `PlainCoveredWaitsThenReachesTheBoard`:
-  a plain board sync under a pause now waits once at the gate before the board's push lock, then reaches the board.
-- `TestPause`, new row: a pair with no reed session is skipped, the pause keeps its entry, and the other pair is interrupted.
-- `TestStatus`, new subtest: a pair and a prime with no reed session are listed under `skipped`, and the other pair's session is still read.
+- `internal/fabricengine`: integration tests pin that a call held by a pause holds no push lock, per entry point (`pushdeferral`, `pull`, `boltpullfirst`, `takeoverrun`, `teardownlock`), and the deferral's flag restore.
+- `internal/tenderengine`: `pause_test.go` and `resume_test.go` cover pause, status and revive over a pair with no reed session, naming it as skipped.
+- `internal/boardcli/syncdeferral_test.go` is updated for the new deferral.
+
+## Check by hand
+
+Not run:
+
+- The scenario that started this fix, end to end: pause one pair, let dobby restart its batten run, and run `lym batten run` for another pair.
+- `lym tender pause` and `lym tender status` on a hub after a real hard power-off.
+- The "dobby starts no driver for a paused pair" item rests on the existing rule above; no new test pins it in this change.
