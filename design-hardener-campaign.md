@@ -1,6 +1,6 @@
 # Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired
 
-`hardener-campaign` · Task · feature, shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs · landing · Finalize
+`hardener-campaign` · Task · feature, shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs · halted · Finalize
 
 Decision record: [Sketch](decision-hardener-campaign.md)
 
