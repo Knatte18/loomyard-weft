@@ -1,10 +1,10 @@
 # Card 13 — records-only-replay
 
 **Create:**
-- `plan:internal/fabricengine#cherryPickReworded` -> `func cherryPickReworded(rec *Mutations, req pathRequest, repo *gitrepo.Repo, onto string, commits []string, reword func(message string) string) (dropped []string, err error)`
-- `plan:internal/fabricengine#unpushedCodeCommits` -> `func unpushedCodeCommits(worktree, upstream string) ([]string, error)`
-- `plan:internal/fabricengine#rewordWarpSHA` -> `func rewordWarpSHA(replayed map[string]bool, forkPoint string) func(message string) string`
-- `plan:internal/fabricengine_test#TestReplay_OneRepository` -> `func TestReplay_OneRepository(t *testing.T)`
+- `internal/fabricengine#cherryPickReworded`
+- `internal/fabricengine#unpushedCodeCommits`
+- `internal/fabricengine#rewordWarpSHA`
+- `internal/fabricengine_test#TestReplay_OneRepository`
 
 **Edit:**
 - `internal/fabricengine#replayWeft`

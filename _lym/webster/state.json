@@ -1,6 +1,6 @@
 {
   "runGuid": "8ba06dc3fe60ac386c8b73c02544c636",
-  "planFingerprint": "f2b71bfe308198f3593b1d64f3d91042112f3fb04b059a77203f2ee7dc15f646",
+  "planFingerprint": "b2a013e5c3dd58595588514caa6768333b8e77f573256ac860555a070e28e800",
   "planFileHashes": {
     "00-overview.md": "1f0de9d6070c260cc7330a68180a1abafced44dffcdb30c6a64b8618da42561a",
     "01-lymcwd-one-repository.md": "4129e3dc033151515eab5f0cc8f4919bd4d80c02b7196f191ad67532210fabc0",
@@ -14,8 +14,8 @@
     "09-merge-keeps-receiving-records.md": "002c0b65230fffaead01b555e2463830c05dcb07e76f0a1ec95bc40b63c189a8",
     "10-records-commit-during-merge.md": "e93c941fd04d49ec4fa5c0325db077f6da07af96f0db9afeff813590cbdf3daf",
     "11-transition-seam-waits.md": "b768ee84b5b50e1be2eb1f4c80ea990c317479373eb552f7b578f4174793b19e",
-    "12-one-branch-push-and-teardown.md": "881181b918a26f795b341549989cf7e49c81030deaf32d1ecf222cd5799af8b7",
-    "13-records-only-replay.md": "364da4b52f4b240be8013913b44fa4240c29766084dad08c3b9903cb190b13a1",
+    "12-one-branch-push-and-teardown.md": "e1d855a5f2dd26ba53c1f1adbb8c63833d5318e43ce3ef5c999c0cb085f560f2",
+    "13-records-only-replay.md": "30fe292a5e0beed58448e458a84fa70988cb8fe91b9c67730c72ab242e76c420",
     "14-prime-records-push-guard.md": "e29650ca074f9fc930618824eeb02335f910d12cf33a7f4102227ae5c5c26999",
     "15-one-repository-docs.md": "f44d2f496adf29562d5e3421f68ce382d33ba30e7abeb43fbe0b51f8e12a3a63",
     "16-pattern-single-repo-hub.md": "6c0287ba7f9429d09be278cc6281c5baaa0a53a726f488b2b0f850b8050f9b83"
@@ -634,16 +634,45 @@
         "13-records-only-replay"
       ],
       "cardHashes": {
-        "12-one-branch-push-and-teardown": "881181b918a26f795b341549989cf7e49c81030deaf32d1ecf222cd5799af8b7",
-        "13-records-only-replay": "364da4b52f4b240be8013913b44fa4240c29766084dad08c3b9903cb190b13a1"
+        "12-one-branch-push-and-teardown": "e1d855a5f2dd26ba53c1f1adbb8c63833d5318e43ce3ef5c999c0cb085f560f2",
+        "13-records-only-replay": "30fe292a5e0beed58448e458a84fa70988cb8fe91b9c67730c72ab242e76c420"
       },
       "startSha": "f811661d1db72c702634d86e076367a5c4b999d7",
       "kind": "fork",
       "spawnedAt": "2026-11-19T08:55:16Z",
       "sessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-one-branch-push-and-teardown",
+        "status": "done",
+        "head_sha": "13cf59313ac3ca02ce61bb89e6393fdb0113b06f",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/fabricengine/destroy.go",
+          "internal/fabricengine/failedpush.go",
+          "internal/fabricengine/merge.go",
+          "internal/fabricengine/mergeguards.go",
+          "internal/fabricengine/pairpush_onerepository_integration_test.go",
+          "internal/fabricengine/parenttips.go",
+          "internal/fabricengine/pull.go",
+          "internal/fabricengine/pushclassified.go",
+          "internal/fabricengine/remoteteardown.go",
+          "internal/fabricengine/replay.go",
+          "internal/fabricengine/replay_onerepository_integration_test.go",
+          "internal/fabricengine/takeover.go"
+        ]
+      },
+      "cardShas": [
+        "13cf59313ac3ca02ce61bb89e6393fdb0113b06f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a1e1417929878a4b7.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a1e1417929878a4b7.jsonl"
+      ]
     },
     "4": {
       "slug": "protected-push-class",
@@ -809,7 +838,7 @@
       ]
     }
   },
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "f1bb91399db09f3ff654539d3c5eecfd",
   "masterSessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
   "masterEngine": "claude",
@@ -820,6 +849,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a488ddd75d33042f1.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ab4c2140f06be183e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ad2439eafc6c9bbfa.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-af106d0fa478ae57a.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-af106d0fa478ae57a.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a1e1417929878a4b7.jsonl"
   ]
 }

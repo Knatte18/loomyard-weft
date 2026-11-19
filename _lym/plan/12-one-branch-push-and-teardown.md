@@ -1,10 +1,10 @@
 # Card 12 — one-branch-push-and-teardown
 
 **Create:**
-- `plan:internal/fabricengine#ViewRefPrefix` -> `const ViewRefPrefix = "lym-view/"`
-- `plan:internal/fabricengine#deleteViewRefOnOrigin` -> `func deleteViewRefOnOrigin(rec *Mutations, repoDir, slug string) error`
-- `plan:internal/fabricengine_test#TestPairPush_OneRepository` -> `func TestPairPush_OneRepository(t *testing.T)`
-- `plan:internal/fabricengine_test#TestRemove_OneRepository` -> `func TestRemove_OneRepository(t *testing.T)`
+- `internal/fabricengine#ViewRefPrefix`
+- `internal/fabricengine#deleteViewRefOnOrigin`
+- `internal/fabricengine_test#TestPairPush_OneRepository`
+- `internal/fabricengine_test#TestRemove_OneRepository`
 
 **Edit:**
 - `internal/fabricengine#PushPairAnchored`
