@@ -1,0 +1,9 @@
+_lym/plan/00-overview.md
+_lym/plan/01-board-view-projection.md
+_lym/plan/02-entry-revision-check.md
+_lym/plan/03-viewer-page-asset.md
+_lym/plan/04-board-server-routes.md
+_lym/plan/05-board-server-lifecycle.md
+_lym/plan/06-board-serve-open-verbs.md
+_lym/plan/07-vscode-tasks-and-keys.md
+_lym/plan/09-beam-start-workspace-task.md
