@@ -1,9 +1,9 @@
 # Card 8 — workspace-content-seam
 
 **Create:**
-- `plan:internal/fabricengine#WorkspaceContent` -> `type WorkspaceContent func(hubPath, beam, anchorPath string) map[string]json.RawMessage`
-- `plan:internal/fabricengine#InstallWorkspaceContent` -> `func InstallWorkspaceContent(content WorkspaceContent) (restore func())`
-- `plan:internal/fabricengine#workspaceMembers` -> `func workspaceMembers(hubPath, beam, anchorPath string) (map[string]json.RawMessage, error)`
+- `internal/fabricengine#WorkspaceContent`
+- `internal/fabricengine#InstallWorkspaceContent`
+- `internal/fabricengine#workspaceMembers`
 
 **Edit:**
 - `internal/vscode#BuildWorkspace` -> `func BuildWorkspace(folders []WorkspaceFolder, settings []byte, members map[string]json.RawMessage) ([]byte, error)`

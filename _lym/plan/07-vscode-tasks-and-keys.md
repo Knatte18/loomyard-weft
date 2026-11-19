@@ -1,10 +1,10 @@
 # Card 7 — vscode-tasks-and-keys
 
 **Create:**
-- `plan:internal/vscode#boardOpenTaskLabel` -> `const boardOpenTaskLabel = "board open"`
-- `plan:internal/vscode#beamStartTaskLabel` -> `const beamStartTaskLabel = "beam start"`
-- `plan:internal/vscode#writeWorktreeTasks` -> `func writeWorktreeTasks(tasksPath, lymPath string) error`
-- `plan:internal/ideengine#assertWorktreeTasks` -> `func assertWorktreeTasks(t *testing.T, anchorDir string)`
+- `internal/vscode#boardOpenTaskLabel`
+- `internal/vscode#beamStartTaskLabel`
+- `internal/vscode#writeWorktreeTasks`
+- `internal/ideengine#assertWorktreeTasks`
 
 **Delete:**
 - `internal/vscode#writeAttachTask`

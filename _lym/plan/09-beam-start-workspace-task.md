@@ -1,10 +1,10 @@
 # Card 9 — beam-start-workspace-task
 
 **Create:**
-- `plan:internal/vscode#WorkspaceTasks` -> `func WorkspaceTasks(lymPath, beam, cwd string) (string, json.RawMessage)`
-- `plan:internal/ideengine#WorkspaceContent` -> `func WorkspaceContent(hubPath, beam, anchorPath string) map[string]json.RawMessage`
-- `plan:internal/vscode#TestWorkspaceTasks` -> `func TestWorkspaceTasks(t *testing.T)`
-- `plan:internal/ideengine#TestWorkspaceContent` -> `func TestWorkspaceContent(t *testing.T)`
+- `internal/vscode#WorkspaceTasks`
+- `internal/ideengine#WorkspaceContent`
+- `internal/vscode#TestWorkspaceTasks`
+- `internal/ideengine#TestWorkspaceContent`
 
 **Edit:**
 - `cmd/lym#newRoot`
@@ -16,8 +16,8 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/vscode#beamStartTaskLabel`
-- `plan:internal/fabricengine#InstallWorkspaceContent`
+- `internal/vscode#beamStartTaskLabel`
+- `internal/fabricengine#InstallWorkspaceContent`
 - `internal/ideengine#LymBinary`
 - `internal/boardengine#RootSubject`
 
