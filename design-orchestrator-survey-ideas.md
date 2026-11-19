@@ -70,7 +70,7 @@ Each bullet names its source project and the lym module it would touch.
 ## Operator attention (orch, dobby, reed)
 
 - **Read-only web dashboard** (agent-of-empires, ralphex): a view over the board, runs and creel; Slack relay and wait marks exist.
-  The board part is in build as task `board-viewer-server` (a loopback board page, editable, opened by `lym board open`);
+  The board part has landed as task `board-viewer-server` (a loopback board page, editable, opened by `lym board open` or `alt+shift+9`);
   a view of runs and creel is still open.
 - **Attention feed with acknowledgement states** (ntm): dobby's wait reminders have no seen, snoozed or acknowledged states.
 
