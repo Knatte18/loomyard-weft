@@ -590,6 +590,22 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ad2439eafc6c9bbfa.jsonl"
       ]
     },
+    "11": {
+      "slug": "transition-seam-waits",
+      "cards": [
+        "11-transition-seam-waits"
+      ],
+      "cardHashes": {
+        "11-transition-seam-waits": "ab7e8a0b87b7e3e1b59d43d5bd47cd98b7732f34c662892dc72f81e46bf65695"
+      },
+      "startSha": "c4877cb5f0fa7b92e82f1f7e7d03287b11427e42",
+      "kind": "fork",
+      "spawnedAt": "2026-11-19T08:25:45Z",
+      "sessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "4": {
       "slug": "protected-push-class",
       "cards": [
@@ -754,7 +770,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "f1bb91399db09f3ff654539d3c5eecfd",
   "masterSessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
   "masterEngine": "claude",
