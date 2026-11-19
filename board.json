@@ -347,7 +347,7 @@
       "isolated": false,
       "brief": "Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research",
       "body": "## What was seen (2026-11-18)\n\n`comment-trim-second-pass` (darn, profile `docs`) measured comment shares and wrote the result only into its change description (`_lym/landing/summary.md`).\nIt committed nothing to the repository, so Land landed an empty diff and dobby reported \"landed as 64e58795\", which was main's tip.\nThe finding then lived only in the archived records tag (`archive/comment-trim-second-pass/...`), where no one looks.\n\n## Idea\n\n- The darn writer stencil for profile `docs` requires the report as a committed file under `docs/research/`.\n- Land refuses, or at least flags in dobby's line, a run whose code diff against its parent is empty.\n",
-      "status": "running · Drift-Baseline",
+      "status": "running · Drift-Await",
       "created": "2026-11-18T20:11:01Z",
       "revised": "2026-11-19T09:25:46Z",
       "run_settings": {
