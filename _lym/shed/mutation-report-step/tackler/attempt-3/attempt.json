@@ -1,0 +1,20 @@
+{
+  "number": 3,
+  "stop_key": {
+    "current_producer": "Seed-Child",
+    "history_length": 5,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-19T10:30:56.663675777+01:00",
+  "deadline": "2026-11-19T10:40:56.663675777+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/mutation-report-step/drive-reports/drive-envelope-20261119-103056-95d8.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/mutation-report-step/drive-reports/drive-report-20261119-103056-cc97.md",
+  "strand_guid": "3dc09e6d44e47dc5e7b969fddaa5a8bc"
+}

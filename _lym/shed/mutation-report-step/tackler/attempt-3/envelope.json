@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "This is a bootstrap stop at Seed-Child. The step refused because the code tip 5823c67e3bb8bc2e9aab7aed301ffcb08a3f424c, which the run's last transition names, was not on origin yet. The way forward it names is to run `lym batten run mutation-report-step` again once the code push lands.\nThat cause has cleared. Read-only at 10:31: `git ls-remote origin refs/heads/main` returns 5823c67e3bb8bc2e9aab7aed301ffcb08a3f424c, and `git ls-remote origin 5823c67e3bb8bc2e9aab7aed301ffcb08a3f424c` returns the same commit as an exact tip. `git merge-base --is-ancestor 5823c67e... origin/main` exits 0, so the commit is present on origin. Local HEAD and origin/main are both at 5823c67e.\nThe stop is not a resumed-and-unchanged stop: attempt 1 and attempt 2 concerned the Worktree-Create board lock, and this stop is a new bootstrap at Seed-Child. Nothing in the run's files points at a fix other than the re-launch, so no goto is given.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 3,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/mutation-report-step/tackler/attempt-3",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/mutation-report-step/tackler/attempt-3/verdict.yaml",
+  "case_brief_path": ""
+}
