@@ -1,6 +1,6 @@
 # Hardener: an autonomous behavior-review campaign that replaces crucible
 
-`hardener` · Task · sketch, burler · starting · Open-IDE
+`hardener` · Task · sketch, burler · running · Record-Write
 
 Decision record: [Sketch](decision-hardener.md)
 
