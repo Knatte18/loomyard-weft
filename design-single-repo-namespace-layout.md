@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-single-repo-namespace-layout.md)
 
-Depends on: [`single-repo-code-records-removal`](design-single-repo-code-records-removal.md)
-
 Filed from the Sketch `single-repo-records-branches`.
 
 Takes: single-repo-code-records-removal's two-repository-only fabric, with no --single-repo flag, no NewOneRepoHub and no one-repository symbol left; the two-repository clone path (CloneHub, CloneAndWire, cloneRepo, suffixWeftPrimaryBranch, bornWeftPrimaryBranch, ensureBoardWorktree, probeWeftBinding, PushRecorded); primaryWeftBranch and resolveManagedBranch; the records store's remote paths in gitrepo (push.go, pushdestination.go, pushretry.go, refreads.go, blobread.go) and fabricengine (archive.go, cleanupremotewarp.go, remoteleftover.go, recordsprobe.go, originreconcile.go, recordsreads.go, destroy.go, pushclassified.go, handover.go, pull.go, ownerarchive.go, weftbranch.go, checkout.go, add.go)
