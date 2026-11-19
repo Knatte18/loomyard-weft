@@ -685,9 +685,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ae6a7865aa04e06e3.jsonl"
       ]
+    },
+    "9": {
+      "slug": "round-row",
+      "cards": [
+        "09-round-row",
+        "10-bouncer-harden-seams",
+        "11-harden-rows",
+        "12-harden-rubric"
+      ],
+      "cardHashes": {
+        "09-round-row": "17050c6de70188b023bce038256cd4c5d81bb83c9151b2005f0c4306f7b8dca7",
+        "10-bouncer-harden-seams": "9a5959a50a7606627a077541e50a1659489f579f24a12ad648c3a79c1d58c7ca",
+        "11-harden-rows": "970ef9ad567108465a44ccec06ea98b208a6541b80a742372073fdbb81bf254e",
+        "12-harden-rubric": "68250cf755e5bd06baab4d78e713413864fa162160859476060d0595ab9c0445"
+      },
+      "startSha": "bcba7793bcfbfa317007c22504cdc904bc5c06ae",
+      "kind": "fork",
+      "spawnedAt": "2026-11-19T15:11:38Z",
+      "sessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "47a513d5f7504f6247066334a419941b",
   "masterSessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
   "masterEngine": "claude",
