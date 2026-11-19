@@ -641,9 +641,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a20ed03f6ab383083.jsonl"
       ]
+    },
+    "6": {
+      "slug": "live-gate",
+      "cards": [
+        "06-live-gate",
+        "07-sandbox-builder",
+        "08-sandbox-reaper"
+      ],
+      "cardHashes": {
+        "06-live-gate": "def88dfa33eafcf0d43123fb72cfd20bfba567e3ec06d68d74e31dae6f17ab2e",
+        "07-sandbox-builder": "b67687940a2563e0246ba13ec891a322cb46702885a31f629ef5f771c11dcd39",
+        "08-sandbox-reaper": "69de5639cd27ef0b93c3ee8c66efe38f429ca8c9d607d90b304098f1c3c8e2dc"
+      },
+      "startSha": "9a3a421dc00528dd6348f99a9cc55ca907ea05f3",
+      "kind": "fork",
+      "spawnedAt": "2026-11-19T14:50:18Z",
+      "sessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "47a513d5f7504f6247066334a419941b",
   "masterSessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
   "masterEngine": "claude",
