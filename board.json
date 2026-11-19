@@ -270,7 +270,6 @@
       "isolated": false,
       "brief": "tmuxkit fails every package running beside the writer; find the test that writes it and fix it",
       "body": "## What was seen\n\nOn 2026-11-18 the Finalize fixer of `board-view-not-refreshing` met a red verify: `shedverbs` (tier 0) and `shedcli` (tier 1) failed outside any test,\nonly on `tmuxkit`'s check for a `.git` that appeared directly in the shared temp directory (`/tmp/.git`); no test failed.\nThe task's diff touched only `internal/boardengine`, and a rerun passed clean.\nThe fixer reports the same `/tmp/.git` finding in `_bolt` gate runs of unrelated packages since 2026-11-08.\n\n## Why it matters\n\nThe check in `internal/testkit/tmuxkit/tmuxkit.go` is machine-wide: it cannot tell which test binary wrote the entry,\nso it fails every package that runs at the same time, and each run's fixer spends a round on a failure its task did not cause.\nThe writer itself is a real bug: a test or the code it drives writes outside its own `t.TempDir`, often through a path joined onto an empty directory.\n\n## Idea\n\n1. Find the writer: record which packages were running when the entry appeared (the gate slots know), or watch the temp root for the create and name the process,\n   and fix that test.\n2. Make the check blame only the package that wrote the entry, or report it as a machine finding that does not fail a package whose own run did not create it.\n",
-      "status": "draft",
       "created": "2026-11-18T19:25:39Z",
       "revised": "2026-11-19T09:25:46Z",
       "run_settings": {
@@ -402,7 +401,6 @@
       "isolated": false,
       "brief": "Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research",
       "body": "## What was seen (2026-11-18)\n\n`comment-trim-second-pass` (darn, profile `docs`) measured comment shares and wrote the result only into its change description (`_lym/landing/summary.md`).\nIt committed nothing to the repository, so Land landed an empty diff and dobby reported \"landed as 64e58795\", which was main's tip.\nThe finding then lived only in the archived records tag (`archive/comment-trim-second-pass/...`), where no one looks.\n\n## Idea\n\n- The darn writer stencil for profile `docs` requires the report as a committed file under `docs/research/`.\n- Land refuses, or at least flags in dobby's line, a run whose code diff against its parent is empty.\n",
-      "status": "draft",
       "created": "2026-11-18T20:11:01Z",
       "revised": "2026-11-19T09:25:46Z",
       "run_settings": {
@@ -475,7 +473,6 @@
       "isolated": false,
       "brief": "",
       "body": "## What was seen\n\n2026-11-19: `lym creel post ly:SLACK \"\u003ctext\u003e\"` answered `{\"ok\":true}` (message 2035) while the operator had disconnected Slack.\n`lym slack status` showed `relay_live: false`, `connected: false` and an empty `forwarding` list, so the post reached no channel, and the sender was not told.\nThe orch believed the result was on Slack.\n\n## Idea\n\nA post to SLACK while no relay runs, or while the sending orch has its slack button off, should say so:\nrefuse with the state and a way forward (`lym slack start`, or press the button), or answer ok with a `delivered: false` field and the reason.\nThe sender then reports the result in its pane instead.\n",
-      "status": "draft",
       "created": "2026-11-19T07:41:17Z",
       "revised": "2026-11-19T09:25:46Z",
       "run_settings": {
