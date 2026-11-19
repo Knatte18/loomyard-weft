@@ -285,7 +285,6 @@
       "created": "2026-11-18T19:52:44Z",
       "revised": "2026-11-18T19:52:44Z",
       "profile": "solid",
-      "notify_on_land": true,
       "project": "single-repo-hub",
       "discussed": true,
       "record_body_sha256": "5eb3845f2d2ef41025c477e36a11be9248369b7c98eec3b4e6ed58e19e9b5eed"
