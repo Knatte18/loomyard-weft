@@ -1,15 +1,15 @@
 # Card 5 — one-repository-clone
 
 **Create:**
-- `plan:internal/fabricengine#PrimeBranchConfigKey` -> `const PrimeBranchConfigKey = "lym.primeBranch"`
-- `plan:internal/fabricengine#cloneOneRepository` -> `func cloneOneRepository(rec *Mutations, cwd, hubPath string, opts CloneOptions, origin cloneOrigin) (CloneResult, error)`
-- `plan:internal/fabricengine#cloneOrigin` -> `type cloneOrigin struct`
-- `plan:internal/fabricengine#readCloneOrigin` -> `func readCloneOrigin(primePath string) (cloneOrigin, error)`
-- `plan:internal/fabricengine#PushOneRepositoryClone` -> `func PushOneRepositoryClone(res CloneResult) error`
-- `plan:internal/hubforge#NewOneRepoHub` -> `func NewOneRepoHub(tb testing.TB, anchor string) *Hub`
-- `plan:internal/fabriccli_test#TestCloneAndWire_OneRepository` -> `func TestCloneAndWire_OneRepository(t *testing.T)`
-- `plan:internal/hubforge#TestNewOneRepoHub` -> `func TestNewOneRepoHub(t *testing.T)`
-- `plan:internal/boardengine_test#TestBoardWrite_OneRepositoryHub` -> `func TestBoardWrite_OneRepositoryHub(t *testing.T)`
+- `internal/fabricengine#PrimeBranchConfigKey`
+- `internal/fabricengine#cloneOneRepository`
+- `internal/fabricengine#cloneOrigin`
+- `internal/fabricengine#readCloneOrigin`
+- `internal/fabricengine#PushOneRepositoryClone`
+- `internal/hubforge#NewOneRepoHub`
+- `internal/fabriccli_test#TestCloneAndWire_OneRepository`
+- `internal/hubforge#TestNewOneRepoHub`
+- `internal/boardengine_test#TestBoardWrite_OneRepositoryHub`
 
 **Edit:**
 - `internal/fabricengine#CloneOptions`

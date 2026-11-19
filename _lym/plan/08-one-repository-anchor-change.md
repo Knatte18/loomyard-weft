@@ -14,7 +14,7 @@
 - `internal/fabricengine#AnchorChangeTrailerKey`
 - `internal/fabricengine#oneRepositoryAt`
 - `internal/fabricengine#weftAnchorStop`
-- `plan:internal/hubforge#NewOneRepoHub`
+- `internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#AddPairWith`
 
 **Intent:** D5's anchor change in a one-repository hub: one records commit that moves `_lym` from the old anchor to the new one and rewrites `.lym-anchor`.

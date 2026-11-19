@@ -30,7 +30,7 @@
 - `internal/fabricengine#oneRepositoryAt`
 - `internal/fabricengine#mergeInProgressReason`
 - `internal/fabricengine#TestMergeVocabulary_ErrorsAreSideFree`
-- `plan:internal/hubforge#NewOneRepoHub`
+- `internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#AddPairWith`
 
 **Intent:** D5: every fabric merge in a one-repository hub keeps the receiving side's records.

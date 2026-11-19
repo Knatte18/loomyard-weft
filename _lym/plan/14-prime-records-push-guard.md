@@ -34,7 +34,7 @@
 - `internal/fabricengine#IsFabricMergeCommit`
 - `internal/fabricengine#PushFailureProtected`
 - `internal/fabricengine#oneRepositoryAt`
-- `plan:internal/hubforge#NewOneRepoHub`
+- `internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#AddPairWith`
 
 **Intent:** D7's guarded records push of the prime, whose branch is also the operator's code branch.

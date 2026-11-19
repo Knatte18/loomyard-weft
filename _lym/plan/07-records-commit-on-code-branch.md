@@ -22,9 +22,9 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#PrimeBranchConfigKey`
+- `internal/fabricengine#PrimeBranchConfigKey`
 - `internal/fabricengine#oneRepositoryAt`
-- `plan:internal/hubforge#NewOneRepoHub`
+- `internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#NewHub`
 - `internal/hubforge#AddPairWith`
 

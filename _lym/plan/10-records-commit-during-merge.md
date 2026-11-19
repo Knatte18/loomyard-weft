@@ -44,7 +44,7 @@
 - `internal/fabricengine#oneRepositoryAt`
 - `plan:internal/fabricengine#retryHeldIndexLock`
 - `plan:internal/fabricengine#Fabric.SetAfterMergeStartForTest`
-- `plan:internal/hubforge#NewOneRepoHub`
+- `internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#NewHub`
 - `internal/hubforge#AddPairWith`
 

@@ -23,7 +23,7 @@
 - `plan:internal/fabricengine#MergeStateOperation`
 - `internal/fabricengine#IsPushProtected`
 - `plan:internal/fabricengine#IsPrimeBranchRefusal`
-- `plan:internal/hubforge#NewOneRepoHub`
+- `internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#AddPairWith`
 - `internal/statuscommit#TestNew_MergeActiveSkips`
 - `internal/statuscommit#TestNew_CommitFailureExplainedByTheReProbeTakesTheSkip`

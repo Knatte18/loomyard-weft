@@ -27,7 +27,7 @@
 - `internal/fabricengine#IsRecordsOnlyCommit`
 - `internal/fabricengine#oneRepositoryAt`
 - `internal/fabricengine#parseWarpSHATrailer`
-- `plan:internal/hubforge#NewOneRepoHub`
+- `internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#CloneSecond`
 - `internal/hubforge#AddPairWith`
 

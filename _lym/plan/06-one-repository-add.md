@@ -20,7 +20,7 @@
 - `internal/fabricengine#WriteOrigin`
 - `internal/fabricengine#oneRepositoryAt`
 - `internal/fabricengine#AnchorChangeTrailerKey`
-- `plan:internal/hubforge#NewOneRepoHub`
+- `internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#AddPairWith`
 
 **Intent:** D3's Add and the paths that no longer run in a one-repository hub.
