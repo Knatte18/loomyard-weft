@@ -1,6 +1,6 @@
 # Finalize halts on a pull request whose mergeability GitHub has not computed yet
 
-`finalize-mergeable-unknown` · Note · bug, landing
+`finalize-mergeable-unknown` · Task · bug, landing
 
 Imported from [issue #161](https://github.com/Knatte18/loomyard/issues/161).
 
