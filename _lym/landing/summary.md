@@ -1,54 +1,53 @@
-# Remove the records-on-code-branch layout and its two-repo widenings
+# Remove the records-on-code-branch layout and its widenings
 
-f06acf39 let a hub run as one repository, with the run records under `<anchor>/_lym` on each code branch and the board on an orphan `lym-bolt` branch.
-That layout is being replaced by one that keeps records and board under origin's `refs/lym/` (`single-repo-namespace-layout`).
-This change removes the old layout and the widenings it made to two-repository behaviour.
-It also removes the cached layout probe that c83fec49 built on top of it.
+Removes everything f06acf39 added to keep a hub's records on a code branch, so fabric has only the two-repository layout.
+No records live on a code branch any more, so none of that code has a case to serve.
+The change is almost all deletion: about 7,800 lines out and 400 in across `internal/fabricengine`, `internal/fabriccli`,
+`internal/statuscommit`, `internal/lymcwd`, `internal/loomcli`, `internal/hubforge`, `internal/battencli`,
+`internal/landingshed`, `internal/gitrepo`, `docs` and `pattern`.
 
 ## What changes
 
-- **Removed layout.**
-  Fabric and `lymcwd` no longer read a root `.lym-anchor` as a layout marker.
-  `lymcwd.OneRepository` is gone, and `Resolve` and `ResolveWithin` keep only the two-repository rules.
-- **Removed fabric paths.**
-  The following are deleted with their tests:
-  - the one-repository clone (`PushOneRepositoryClone`, `CloneOptions.SingleRepo`, `BoltBranchName`, `lym fabric clone --single-repo`);
-  - the one-repository branches of add, merge, replay, push and teardown, and the `lym-view/` ref teardown;
-  - path-limited and mid-merge records commits, the records strip at every merge, the `Fabric-Merge` trailer and the no-fast-forward rule;
-  - `MidMergeRecordsUnsettled` and landingshed's abort-only way forward for it;
-  - the prime push guard, the `operator_unpushed` and `protected` failed-push classes, and the `lym.primeBranch` key.
-- **Other packages.**
-  - `gitrepo.MergeStartNoFastForward` is removed.
-  - `hubforge.NewOneRepoHub` and the one-repository seed are removed.
-  - `statuscommit` loses its operation wait and its protected and stalled seams, along with the copies of those seams in `battencli` and `loomcli`.
-- **Kept from f06acf39 (D6).**
-  - `fabricengine.ProtectedBranchRefusal` stays exported, and landingshed's parent push reads it.
-  - `rejectionRetryKind` treats a protected-branch refusal as a named failure that is not retried, on every branch.
-  - `gitrepo` still appends a push rejection's `remote:` lines to its error, which is how the hook's protected-branch text reaches fabric.
-  - `FailedPushWayForward` predates f06acf39 and stays with all its callers. Only its `operator_unpushed`, `protected` and commit-carrying deferred cases are gone.
-- **Reverted widenings (D7).**
-  - `MergeStateActive` again counts only a live `MERGE_HEAD` or a conflicted index, so a cherry-pick, revert or rebase in the records worktree makes no status commit skip. `MergeStateOperation` is removed.
-  - A deferred failed-push record is never mailed, whether or not it names commits.
-  - Fabric's commit refusal order is the pre-f06acf39 one.
-- **Docs and PATTERN.**
-  - `README.md`, `docs/getting-started.md`, `docs/overview.md` and `internal/fabricengine/doc.go` lose their one-repository text.
-  - The `PATTERN-run-fsm` and `PATTERN-cwd-resolution` entries take the record's wording.
-  - Their backgrounds, and those of `PATTERN-fabric-boundary`, `PATTERN-lym-files` and `PATTERN-pair-remote`, lose their one-repository text.
-  - `PATTERN-single-repo-hub` and its background are removed.
+- `lymcwd` and fabric no longer read a root-marker layout.
+  `lymcwd.OneRepository` is gone, and `.lym-anchor` at the records root resolves with no layout case.
+- The one-repository clone path (`PushOneRepositoryClone`, `CloneOptions.SingleRepo`, the `--single-repo` flag),
+  the `lym-bolt` orphan board branch (`BoltBranchName`) and `hubforge.NewOneRepoHub` are removed.
+- Merges no longer strip records, add the `Fabric-Merge` trailer or force no-fast-forward (`gitrepo.MergeStartNoFastForward`).
+  Path-limited and mid-merge records commits, the merge-stopped-before-records-step lifecycle
+  (`MidMergeRecordsUnsettled`, `landingshed`'s abort-only way forward) and records-only replay with its `Warp-SHA` rewrite are removed.
+- The prime push guard, the `operator_unpushed` and `protected` failed-push classes and their creel notice are removed
+  (`IsPrimeBranchRefusal`, `IsPushProtected`), along with the `lym.primeBranch` config key.
+- `statuscommit` loses its operation wait and its protected and stalled seams; the duplicated seams in `battencli` and `loomcli` go too
+  (`fabricengine.MergeStateOperation`).
+- The `lym-view/` ref teardown and the one-repository exclude seeding are removed.
+- One-repository fixtures and tests in `hubforge` and the `Fabric-Merge` trailer expectation in the landing test are removed.
+- `docs/overview.md`, `internal/fabricengine/doc.go`, `README.md`, `docs/getting-started.md` and the `PATTERN-*` entries lose their
+  records-on-code-branch text.
+  `PATTERN-single-repo-hub.md` is deleted.
+- The cached layout probe from c83fec49 and its tests go with `onerepository.go`.
+
+## Reverted two-repository widenings
+
+These apply to every hub, since a one-repository hub gets the two-repository local behaviour:
+
+- The merge-state probe reports a merge only; a cherry-pick, revert or rebase no longer makes a status commit skip.
+- A deferred failed-push record is not mailed, whether or not it names commits.
+- Fabric's commit refusal order is the one before f06acf39.
 
 ## Design decisions
 
-- `Fabric.ChangedCodePaths` and the `landingshed.Deps.ChangedCodePaths` seam are removed.
-  ffd2addb added them to keep a one-repository records commit out of the empty-landing check, and they called f06acf39's records-path reader.
-  The empty-landing check now reads `Deps.ChangedPaths`, since a code repository holds no records.
-- Later commits also touched `docs/overview.md` and `internal/fabricengine/doc.go`, and both keep those edits: the hardener recipe in `shedcli`'s line, and the `SeedLocalBares` paragraph.
+- `fabricengine.ProtectedBranchRefusal` stays, and `landingshed` still reads it for the parent push.
+  A protected-branch refusal stays a named failure the push retry does not retry, on every branch.
+- `gitrepo` keeps the `remote:` lines it appends to a push rejection.
+- c83fec49 landed on main before this change, so its probe cache is deleted here rather than ordered against a peer run.
 
-## Tests
+## To check by hand
 
-- `TestPushFailureClasses/AProtectedBranchRefusalRecordsTheRejectionClassAndIsNotRetried`: a code push refused by a GitHub-style protected-branch hook records the ordinary `other` class, carries the protected text, and makes no backoff sleep.
-- `TestMergeStateActive/weft cherry-pick in progress reports false`: a cherry-pick stopped in the weft is not a merge state.
-- `TestFailedPushRecord/DeferredWritesTheRecordAndNeverMails` now gives the deferred record commits, and it still sends no mail.
-- The prime's records commit no longer depends on its branch, since the `lym.primeBranch` refusal and its tests are gone.
+- Confirm no hub in use depends on the root-marker layout or `lym-bolt`; the change assumes none does and adds no conversion.
+- Confirm `fabricengine.FailedPushWayForward` and its callers in `pairteardown`, `loomcli` and `landingshed`
+  still make sense now that a deferred failed-push record is not mailed.
+- Check that a status commit during a cherry-pick in the records worktree commits instead of skipping,
+  and that a push refused as a protected branch records the ordinary rejection class and is not retried.
 
 ## Merge danger
 
