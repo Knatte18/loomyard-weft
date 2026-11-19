@@ -1,0 +1,537 @@
+{
+  "runGuid": "8ba06dc3fe60ac386c8b73c02544c636",
+  "planFingerprint": "f65547d2e20e8d01de8830749ddfa7c2306e4de02ecc98f22b0a1eb13e409b0b",
+  "planFileHashes": {
+    "00-overview.md": "1f0de9d6070c260cc7330a68180a1abafced44dffcdb30c6a64b8618da42561a",
+    "01-lymcwd-one-repository.md": "0e290048e9cf68411d0cc60499cd0672b421796e1f025a435b10b3e048656c6c",
+    "02-records-paths-and-commit-predicates.md": "8594162844ee87185f1c10dff70188a687f50a623b8551039f07ca19a512adf0",
+    "03-one-repository-geometry.md": "8e45f64a3fa1d7a28a3ef1c504c7c380491f1bd6bb5725fcdc65775be47df883",
+    "04-protected-push-class.md": "f07bc96722dda9912665cdd004007859bf114e4c9ea0c2ef1e78d708c9650836",
+    "05-one-repository-clone.md": "80cc9a7cdf3a7e9b994d048701634a8498bf84d171098f3e6d0ad28a21fb2d4b",
+    "06-one-repository-add.md": "8d4838aa4ed9a704df1b19bd9346b6bd5a4a97e1b914537ee568cba36ae70f9e",
+    "07-records-commit-on-code-branch.md": "fb99a045ed2c4eafdd2cbaf89b7499f37d42aa94b0c6bff59b1ac113ff63dc8f",
+    "08-one-repository-anchor-change.md": "1c203a1a4d8ec06c3bb000aca56ca01f1096a6ebbf5bbda560f59aa8c4ec36cc",
+    "09-merge-keeps-receiving-records.md": "62682afe85410d1ca3ede7ee45234bdb3049888022fd1e9440e72abced1004b9",
+    "10-records-commit-during-merge.md": "69a2017392625bcdc2dc812be47a67982116a49611d5ddd530ab364172e25118",
+    "11-transition-seam-waits.md": "48a94834cb4f67f62503c33558d91814d613092aa5505172322f50c3e1ff2ce0",
+    "12-one-branch-push-and-teardown.md": "05ebf2e469a9501dfee6212105e22529b1be0ad33d1ec1c7bab813505fddd26b",
+    "13-records-only-replay.md": "af8fe8307b7cc85f9275bdfda5b36dfda73ca83a6dbf27e18b32d189e30e6084",
+    "14-prime-records-push-guard.md": "da37e1c7663fbbdc97663bc55fa4c824d39f0376399d17e6a9aacd8793cfe1c8",
+    "15-one-repository-docs.md": "f44d2f496adf29562d5e3421f68ce382d33ba30e7abeb43fbe0b51f8e12a3a63",
+    "16-pattern-single-repo-hub.md": "6c0287ba7f9429d09be278cc6281c5baaa0a53a726f488b2b0f850b8050f9b83"
+  },
+  "planOverviewFrameHash": "099b9e5a18e1970cf933de9135703eab039dc5dcdc2949c3c322254fffcf971b",
+  "partition": [
+    {
+      "cards": [
+        "01-lymcwd-one-repository",
+        "02-records-paths-and-commit-predicates",
+        "03-one-repository-geometry"
+      ],
+      "profile": "wide",
+      "estimate": 259962,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54976,
+        "read_union": 39812,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 588,
+            "reads": {
+              "package:internal/lymcwd": 2000,
+              "tests:internal/lymcwd": 2000
+            },
+            "messages": 42.5,
+            "written": 13338
+          },
+          {
+            "card": 2,
+            "card_text": 540,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29688,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 166.5,
+            "written": 50490
+          },
+          {
+            "card": 3,
+            "card_text": 996,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29688,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 334.5,
+            "written": 101346
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-protected-push-class"
+      ],
+      "profile": "wide",
+      "estimate": 192584,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61976,
+        "read_union": 54264,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 744,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29688,
+              "file:internal/gitrepo/doc.go": 3696,
+              "file:internal/landingshed/doc.go": 8136,
+              "package:internal/fabricengine": 2000,
+              "package:internal/gitrepo": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/gitrepo": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 252,
+            "written": 76344
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-one-repository-clone"
+      ],
+      "profile": "wide",
+      "estimate": 222634,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68976,
+        "read_union": 50920,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 1188,
+            "reads": {
+              "file:internal/fabriccli/doc.go": 2724,
+              "file:internal/fabricengine/doc.go": 29688,
+              "file:internal/hubforge/doc.go": 1320,
+              "package:internal/boardengine": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/hubforge": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/hubforge": 2000
+            },
+            "messages": 338.5,
+            "written": 102738
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-one-repository-add",
+        "07-records-commit-on-code-branch"
+      ],
+      "profile": "wide",
+      "estimate": 230012,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75976,
+        "read_union": 35212,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 660,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29688,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 176.5,
+            "written": 53610
+          },
+          {
+            "card": 7,
+            "card_text": 864,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29688,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 214.5,
+            "written": 65214
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-one-repository-anchor-change",
+        "09-merge-keeps-receiving-records"
+      ],
+      "profile": "wide",
+      "estimate": 243124,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82976,
+        "read_union": 42716,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 384,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29688,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 148.5,
+            "written": 44934
+          },
+          {
+            "card": 9,
+            "card_text": 948,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29688,
+              "file:internal/gitrepo/doc.go": 3696,
+              "package:internal/fabricengine": 2000,
+              "package:internal/gitrepo": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/gitrepo": 2000
+            },
+            "messages": 238.5,
+            "written": 72498
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-records-commit-during-merge"
+      ],
+      "profile": "wide",
+      "estimate": 269178,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89976,
+        "read_union": 61404,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 1248,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29688,
+              "file:internal/landingshed/doc.go": 8136,
+              "file:internal/loomcli/doc.go": 10332,
+              "package:internal/fabricengine": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 388.5,
+            "written": 117798
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-transition-seam-waits"
+      ],
+      "profile": "wide",
+      "estimate": 177430,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96976,
+        "read_union": 23268,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 936,
+            "reads": {
+              "file:internal/loomcli/doc.go": 10332,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/statuscommit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/statuscommit": 2000
+            },
+            "messages": 187.5,
+            "written": 57186
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-one-branch-push-and-teardown",
+        "13-records-only-replay"
+      ],
+      "profile": "wide",
+      "estimate": 274236,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103976,
+        "read_union": 35224,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 744,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29688,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 220.5,
+            "written": 66894
+          },
+          {
+            "card": 13,
+            "card_text": 792,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29688,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 224.5,
+            "written": 68142
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-prime-records-push-guard"
+      ],
+      "profile": "wide",
+      "estimate": 240888,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 110976,
+        "read_union": 47388,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 924,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29688,
+              "file:internal/pairteardown/doc.go": 4632,
+              "file:internal/runfsm/doc.go": 144,
+              "package:internal/fabricengine": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/runfsm": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/runfsm": 2000
+            },
+            "messages": 272,
+            "written": 82524
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "15-one-repository-docs",
+        "16-pattern-single-repo-hub"
+      ],
+      "profile": "wide",
+      "estimate": 184360,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 10,
+        "startup": 117976,
+        "read_union": 47616,
+        "cards": [
+          {
+            "card": 15,
+            "card_text": 240,
+            "reads": {
+              "file:README.md": 2088,
+              "file:docs/getting-started.md": 540,
+              "file:docs/overview.md": 25188,
+              "package:.": 2000,
+              "package:docs": 2000,
+              "tests:.": 2000,
+              "tests:docs": 2000
+            },
+            "messages": 18,
+            "written": 5640
+          },
+          {
+            "card": 16,
+            "card_text": 528,
+            "reads": {
+              "file:PATTERN.md": 696,
+              "file:pattern/PATTERN-cwd-resolution.md": 660,
+              "file:pattern/PATTERN-fabric-boundary.md": 2028,
+              "file:pattern/PATTERN-lym-files.md": 1488,
+              "file:pattern/PATTERN-pair-remote.md": 1452,
+              "file:pattern/PATTERN-run-fsm.md": 708,
+              "package:.": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 42,
+            "written": 13128
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "lymcwd-one-repository",
+      "cards": [
+        "01-lymcwd-one-repository",
+        "02-records-paths-and-commit-predicates",
+        "03-one-repository-geometry"
+      ],
+      "cardHashes": {
+        "01-lymcwd-one-repository": "0e290048e9cf68411d0cc60499cd0672b421796e1f025a435b10b3e048656c6c",
+        "02-records-paths-and-commit-predicates": "8594162844ee87185f1c10dff70188a687f50a623b8551039f07ca19a512adf0",
+        "03-one-repository-geometry": "8e45f64a3fa1d7a28a3ef1c504c7c380491f1bd6bb5725fcdc65775be47df883"
+      },
+      "startSha": "64e587958feacd8940304401801c039f015c63af",
+      "kind": "fork",
+      "spawnedAt": "2026-11-19T06:39:50Z",
+      "sessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "f1bb91399db09f3ff654539d3c5eecfd",
+  "masterSessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
+  "masterEngine": "claude"
+}
