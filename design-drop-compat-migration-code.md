@@ -13,4 +13,9 @@ a scratch-to-records attempt migration, a key-rename migration).
 ## Idea
 
 A mechanical pass, module by module: classify each hit as a refusal (keep) or a migration or compatibility path
-whose data no hub still holds (delete), with the operator confirming the list of hubs and their state before deletion.
+whose data no hub still holds (delete).
+
+## Decided
+
+- All migration code goes: the operator confirmed no hub needs it (operator, 2026-11-19).
+- `lym board retire-legacy` is part of it: a one-off migration of `tasks.json` and `notes.json` into `board.json` that every hub has run.
