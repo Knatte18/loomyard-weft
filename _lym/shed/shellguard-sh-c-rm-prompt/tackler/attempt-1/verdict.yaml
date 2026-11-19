@@ -1,8 +1,0 @@
-verdict: resume
-reason: >-
-  The bootstrap stop (trace d13b2430ced69564, stderr line 3) refused because the code tip
-  b9316524c75e5870399f781f3080917facdcf5d7 was "not on origin yet". Reading the remote tip now
-  with `git ls-remote origin` shows refs/heads/shellguard-sh-c-rm-prompt at
-  b9316524c75e5870399f781f3080917facdcf5d7, equal to the named commit. The push has since
-  landed, so the stop's cause is cleared. The stop's own way forward is a plain re-launch:
-  run `lym batten run shellguard-sh-c-rm-prompt` again. No goto is needed; the stop is not blocked.
