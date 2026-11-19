@@ -133,7 +133,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (7)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (8)</strong></summary>
 
 Owner `neve`
 
@@ -155,7 +155,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (6)
+### Notes (7)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -166,12 +166,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 10d<br>10d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 2d<br>2d | shuttle |
 
-#### Bugs (2)
+#### Bugs (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **hardenshed reaper misses orphans whose cwd is under a _lym link** | [`harden-reap-lym-link-cwd`](design-harden-reap-lym-link-cwd.md) | 0m<br>0m | shed, process |
 | B2 |  | **lym gate test: unexplained test-host crash and false 'ran no test' verdict with a detailed console logger** | [`gate-verdict-from-trx`](design-gate-verdict-from-trx.md) | 0m<br>0m | gate, dotnet |
+| B3 |  | **Darn prompt tells agent to run lym gate test --gate darn-write, which the hub's gate config refuses** | [`darn-prompt-unknown-gate-key`](design-darn-prompt-unknown-gate-key.md) | 0m<br>0m | stencil, darn, gate |
 
 #### Features (2)
 
