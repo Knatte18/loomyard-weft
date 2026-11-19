@@ -1,0 +1,872 @@
+diff --git a/contracts/orchrole/role-beams.md b/contracts/orchrole/role-beams.md
+index 2a67bf24..a1915406 100644
+--- a/contracts/orchrole/role-beams.md
++++ b/contracts/orchrole/role-beams.md
+@@ -46,6 +46,8 @@ Write the description for a reader of the pull request:
+ - State the end result, what the beam ended up with, never the way there.
+ - List every member pull request, so a reader can follow each step to the result on its own.
+ - Never list the decisions made along the way, from the project record or elsewhere.
++- Close it with the `## Merge danger` section the final-summary spec, `loom-final-summary-spec.md`, defines,
++  its door and blast radius called for the beam's whole landing; the draft leaves both as placeholders.
+ 
+ Change any part of it whenever you or the operator want, then run `lym beam describe <slug>` again.
+ 
+diff --git a/contracts/specs/loom-final-summary-spec.md b/contracts/specs/loom-final-summary-spec.md
+index 4223329f..9a12b773 100644
+--- a/contracts/specs/loom-final-summary-spec.md
++++ b/contracts/specs/loom-final-summary-spec.md
+@@ -23,6 +23,31 @@ Each of the following is checked, and each violation is its own distinct error:
+ 
+ Everything after the heading line is the body, carried verbatim.
+ 
++## Merge danger
++
++A change description's body holds a `## Merge danger` section.
++It tells the reviewer, before the merge, what a mistake would cost:
++
++```markdown
++## Merge danger
++
++**Door:** two-way
++**Blast radius:** stencils
++```
++
++- **Door** is `one-way` when a revert of the landing commit does not undo the change's effect, and `two-way` otherwise.
++  The door is one-way for a record or board format another binary reads,
++  a config reinterpretation `hubreconcile` applies, data the change deletes,
++  and anything pushed outward, such as a release, a message or a remote branch.
++- **Blast radius** is one word naming what breaks if the change is wrong, such as a module, a role or `board`.
++
++The section runs to the next heading of level one or two.
++Either line may stand as a list item, and its value may be in backticks.
++Lines inside a fenced code block are not read: a fenced example is neither the section nor a heading that ends it.
++`lym loom validate-description` and every gate that checks a change description refuse one without the section,
++a door other than those two words, and a blast radius other than one word.
++`Publish` and `Finalize` do not check it: they carry the body as it stands.
++
+ ## Sole declarer, sole parser
+ 
+ `internal/summaryparser` is the sole declarer of the artifact's filename and the sole parser of its format.
+diff --git a/contracts/stencils/darn/darn-template-write.md b/contracts/stencils/darn/darn-template-write.md
+index 872953c2..3f1a89c1 100644
+--- a/contracts/stencils/darn/darn-template-write.md
++++ b/contracts/stencils/darn/darn-template-write.md
+@@ -70,6 +70,7 @@ Check whether landed work, another board entry or another run overtook or contra
+ Write the change description to `{{.description_path}}`, in the format the final-summary spec defines at `{{.specs_dir}}/loom/loom-final-summary-spec.md`.
+ Read that spec for the format; it is authoritative and this prompt does not restate it.
+ Write the description for a reviewer who knows the codebase but has not seen this session, and never describe the session's own process.
++Close it with the `## Merge danger` section the spec defines, its door and blast radius called from your diff.
+ A claim that a result agrees with a reference, or that the change improves one, carries before and after figures from the current code, taken from your commits or the drift verdict.
+ Leave out a claim that has none.
+ 
+diff --git a/contracts/stencils/landing/landing-template-describe.md b/contracts/stencils/landing/landing-template-describe.md
+index a8714969..9f622be5 100644
+--- a/contracts/stencils/landing/landing-template-describe.md
++++ b/contracts/stencils/landing/landing-template-describe.md
+@@ -52,7 +52,8 @@ Write exactly one file, `{{.description_path}}`, in the format of the final-summ
+    - what changes for the user or the code, and why;
+    - one `Closes #N` line per issue the task resolves;
+    - the design decisions a reviewer needs to know;
+-   - anything to check or run by hand that was not run.
++   - anything to check or run by hand that was not run;
++   - last, the `## Merge danger` section the spec defines, its door and blast radius called from the diff as it stands now.
+ 
+ Never describe the pipeline's process: no batches, cards, forks, the Master, verify gates, glyph deviations or review rounds.
+ Naming a module is fine when the change touches it.
+diff --git a/contracts/stencils/loom/loom-rubric-code-review.md b/contracts/stencils/loom/loom-rubric-code-review.md
+index 2a978f9f..1a09158d 100644
+--- a/contracts/stencils/loom/loom-rubric-code-review.md
++++ b/contracts/stencils/loom/loom-rubric-code-review.md
+@@ -96,6 +96,12 @@ Do not flag any of the following as a finding:
+   Raise nothing when every declared entry lands, or when your directive declares none.
+ - **The change description.**
+   A claim in `_lym/landing/summary.md` that the diff does not bear out is a finding.
++- **Merge danger.**
++  Check the door the change description's `## Merge danger` section calls against the diff;
++  a `two-way` call earns the most suspicion.
++  A `two-way` call is a finding when the diff changes a record or board format another binary reads,
++  changes what a config setting means, deletes data, or pushes anything outward; the finding names that change.
++  A blast radius that names less than the diff can break is a finding too.
+ - **An unrecorded parent correction, with a decision record alone.**
+   A deviation from the amended board entry that the change description names as an unrecorded parent correction is never fixed by revert.
+   File it as class `decision` at severity MEDIUM.
+@@ -119,6 +125,9 @@ Do not flag any of the following as a finding:
+   - a per-helper test the public surface's test already covers, naming that public-surface test;
+   - a review-fix test added for a finding that was not a coverage gap, naming that finding;
+   - a new assertion on the static prose of a stencil, spec, doc or other text, naming the assertion;
++  - a tautological test, whose expected value is computed the way the code computes it,
++    by calling the code under test, a helper it shares or the same formula,
++    naming the test and the independent value it should assert, from a literal, a worked example or the spec;
+   - a behavior the diff adds with no coverage, naming the uncovered behavior; the static prose of a stencil, spec, doc or other text is exempt.
+ 
+   A redundancy finding is raised only by naming the existing test that covers the behavior, so it cannot block on a vague suspicion.
+@@ -156,6 +165,7 @@ Each survivor is a changed line whose mutant every test covering it passed: a ca
+ Read each survivor's line and the tests that cover it.
+ When a test could assert what the mutant changes, and that is the diff's own behavior or a contract its doc comment states, file a finding naming the line and the check the tests lack.
+ A survivor no test can reasonably kill, such as a log field, a pure cache, a platform-only branch or a channel capacity, is no finding.
++A survivor whose covering test recomputes the expected value the way its line does is evidence for a tautological test.
+ When the note is `none`, or says no current report exists, raise no finding about its absence.
+ 
+ ## Amendment
+diff --git a/contracts/stencils/loom/loom-template-discussion.md b/contracts/stencils/loom/loom-template-discussion.md
+index bc0d7cce..ec20c672 100644
+--- a/contracts/stencils/loom/loom-template-discussion.md
++++ b/contracts/stencils/loom/loom-template-discussion.md
+@@ -17,6 +17,7 @@
+      twill_directive is an optional marker rendered by internal/twilldirective through internal/loomengine;
+      it sits on the line that would otherwise be blank, so an empty value leaves the prompt's bytes unchanged.
+      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
++     glossary is a required marker: lym's glossary, which internal/heddleengine holds and the orch's prompt carries too.
+      self_check is a required marker: the body of Step 6 up to its closing two lines.
+      DiscussionTable fills it with the fragment that has the writer run the validator or,
+      when the gate has a cold fixer, the one that has it run none.
+@@ -118,6 +119,15 @@ In interactive mode put it to the operator in the pane like any other question.
+ 
+ {{.mode_rules}}
+ {{.twill_directive}}
++## lym's words
++
++Hold the entry's words against the glossary below.
++A term the entry uses against its line is a question for the interview, asked through Step 4's channel:
++name the term and the line, and write the three files in the glossary's words.
++When the design settles what a lym term means, or adds one, record it as a decision that gives its glossary line,
++so the change adds the line to the glossary.
++
++{{.glossary}}
+ ## Step 5 — Write the three output files
+ 
+ Once the design is settled, write ALL THREE of the following files.
+diff --git a/docs/reference/weaving-glossary.md b/docs/reference/weaving-glossary.md
+index 3712aaeb..028d2f71 100644
+--- a/docs/reference/weaving-glossary.md
++++ b/docs/reference/weaving-glossary.md
+@@ -2,6 +2,7 @@
+ 
+ A glossary of weaving and textile terms that can serve as names in lym.
+ It lists and marks; it recommends no name for any open question.
++What lym's own terms mean, and the words never to use for them, is in `internal/heddleengine/glossary.md`.
+ 
+ ## How to read it
+ 
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index 13a7a162..f09b77e1 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -231,8 +231,9 @@ and running the verb again; nothing at or after landing rewrites it.
+ 
+ With --draft it writes a starting point to summary.md instead and records
+ nothing: the entry's title and brief, then every commit the beam adds, each member
+-pull request by its number, title and merge time. Edit the draft before recording.
+-It refuses when summary.md already stands; delete the file to get a fresh draft.
++pull request by its number, title and merge time. The draft ends with a Merge danger
++section whose door and blast radius are placeholders; call both before recording.
++Edit the draft before recording. It refuses when summary.md already stands; delete the file to get a fresh draft.
+ 
+ The description states what the beam ended up with, never the way there, and lists
+ every member pull request so a reader can follow each step to that result. It
+diff --git a/internal/beamcli/deps_integration_test.go b/internal/beamcli/deps_integration_test.go
+index f712563d..4fddb674 100644
+--- a/internal/beamcli/deps_integration_test.go
++++ b/internal/beamcli/deps_integration_test.go
+@@ -114,7 +114,7 @@ func TestHubLandDeps_ReadyReads(t *testing.T) {
+ 	if err != nil || len(findings) != 1 || !strings.Contains(findings[0], summaryparser.CheckEmptyBody) {
+ 		t.Errorf("DescriptionFindings(b) = %v, %v for an empty body; want the one %s finding", findings, err, summaryparser.CheckEmptyBody)
+ 	}
+-	if err := os.WriteFile(descriptionPath, []byte("# Ship the beam\n\nGroups the work.\n"), 0o644); err != nil {
++	if err := os.WriteFile(descriptionPath, []byte("# Ship the beam\n\nGroups the work.\n\n## Merge danger\n\n**Door:** two-way\n**Blast radius:** beam\n"), 0o644); err != nil {
+ 		t.Fatalf("write the description: %v", err)
+ 	}
+ 	if findings, err := deps.DescriptionFindings("b"); len(findings) != 0 || err != nil {
+@@ -233,6 +233,15 @@ func TestHubLandDeps_DraftThenRecordStampsAndCommits(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("DraftDescription() error = %v; want nil", err)
+ 	}
++	// The draft's Merge danger placeholders are refused on purpose; the orch replaces them with a call before recording.
++	draft, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatalf("read the draft: %v", err)
++	}
++	called := strings.NewReplacer("one-way or two-way", "two-way", "one word", "widgets").Replace(string(draft))
++	if err := os.WriteFile(path, []byte(called), 0o644); err != nil {
++		t.Fatalf("write the orch's merge danger call: %v", err)
++	}
+ 	if recorded, err := deps.RecordDescription("b", at); err != nil || recorded != path {
+ 		t.Fatalf("RecordDescription() = %q, %v; want %q, nil", recorded, err, path)
+ 	}
+diff --git a/internal/beamcli/describe.go b/internal/beamcli/describe.go
+index 48431d26..ee378b65 100644
+--- a/internal/beamcli/describe.go
++++ b/internal/beamcli/describe.go
+@@ -44,7 +44,7 @@ func describe(ctx context.Context, deps landDeps, slug string, draft bool) (map[
+ 			"slug":        slug,
+ 			"description": path,
+ 			"drafted":     true,
+-			"way_forward": fmt.Sprintf("edit the draft into the beam's end result and its member pull requests, then run `%s %s` to record it", verb, slug),
++			"way_forward": fmt.Sprintf("edit the draft into the beam's end result and its member pull requests, call the Merge danger door and blast radius, then run `%s %s` to record it", verb, slug),
+ 		}, nil
+ 	}
+ 
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 6e419379..4d3abfd7 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -139,6 +139,8 @@
+ // It refuses when `summary.md` already stands, so an edited or recorded description is never overwritten.
+ // The draft holds the entry's title and brief.
+ // It then lists the beam's line from `fabricengine.BeamLineCommits`, without its records-only commits.
++// The draft ends with a Merge danger section whose door and blast radius are placeholders for the orch to call;
++// recording refuses the description until it does.
+ // The project record's added decisions are never drawn on: the description states the end result, not the way there.
+ //
+ // # pr
+diff --git a/internal/heddleengine/doc.go b/internal/heddleengine/doc.go
+index 316b0754..7f175164 100644
+--- a/internal/heddleengine/doc.go
++++ b/internal/heddleengine/doc.go
+@@ -1,6 +1,9 @@
+ // Package heddleengine holds heddle's instruction layers and renders them.
+ // Two layers hold entries of instruction text, each aimed at targets of a table that is this package's code.
+ // The shipped layer is lym's own: shipped.json, embedded in the binary, read-only and changed only by a lym release.
++// One shipped entry, `lym-glossary`, comes from glossary.md instead, so its terms are edited as markdown:
++// lym's glossary, aimed at the orch-prompt target.
++// Glossary returns the same text for a prompt that carries it otherwise.
+ // The repository layer is heddle.json at the Bolt checkout's root, which the `lym heddle` verbs write.
+ // The file targets are the one place a per-worktree file lym seeds is declared, so a new such file is a new target.
+ // A file target is rendered into a git-excluded file at a worktree's anchor.
+diff --git a/internal/heddleengine/glossary.md b/internal/heddleengine/glossary.md
+new file mode 100644
+index 00000000..39274b71
+--- /dev/null
++++ b/internal/heddleengine/glossary.md
+@@ -0,0 +1,29 @@
++## lym's glossary
++
++Each line names a lym term, its meaning, and the words never to use for it.
++Use these terms with the operator, on the board and in records.
++When someone uses a word a line rules out, or a term in another sense than its line gives, name the term and its line.
++A term settled that this list lacks is added here, in lym's repository at `internal/heddleengine/glossary.md`.
++
++- **board**: the hub's list of entries. Never: backlog, tracker.
++- **entry**: one item on the board, a task, a note or a project. Never: card, kort, ticket, issue.
++- **task**: an entry a run works; only the operator makes or promotes one. Never: card, job.
++- **note**: an entry that is not work yet, such as an idea, a finding or a Sketch. Never: card, draft.
++- **project**: an entry that groups tasks under one aim. Never: epic.
++- **decision record**: what a run's change must do, from Discussion or the entry. Never: log, logg.
++- **support log**: Discussion's interview, rejected alternatives and review rounds, beside the decision record.
++- **Sketch**: a decision record kept on the board as a note, for an entry discussed before it runs.
++- **recipe**: the rows a run walks in order, such as tapestry, darn or sampler. Never: profile, profil, pipeline.
++- **row**: one step of a recipe, run by one producer and checked by its gates. Never: stage.
++- **run**: one recipe walked for one task in the task's worktree. Never: job, build.
++- **plan**: the cards the Plan row writes for Webster to implement.
++- **card**: one unit of a plan, which Webster implements in a batch. Never for an entry.
++- **gate**: a mechanical check a row's output passes before the run moves on. Never: review.
++- **change description**: the title and body a run lands under. Never: summary, log.
++- **landing**: the merge of a run's task branch into its parent branch, in Finalize. Never: deploy, release.
++- **hub**: one repository's worktrees, Bolt checkout, board and agents on a machine.
++- **orch**: the operator's delegate session, which talks with the operator, writes the board and parents runs.
++- **parent**: the session a run's agents ask and report to, the orch or a run above them.
++- **strand**: one agent's pane, holding one session. Never: tab, window.
++- **beam**: a long-lived branch that groups board work; its tasks fork from it and land back into it.
++- **pair**: a task's code worktree together with its records worktree.
+diff --git a/internal/heddleengine/render_test.go b/internal/heddleengine/render_test.go
+index 6ff8021d..02cf807a 100644
+--- a/internal/heddleengine/render_test.go
++++ b/internal/heddleengine/render_test.go
+@@ -822,7 +822,8 @@ func TestRender(t *testing.T) {
+ 			t.Errorf("Passages(claude) = %v, %v", claude, err)
+ 		}
+ 		claudeOrch, err := r.Passages(f.bolt, "claude", "orch")
+-		if err != nil || !slices.Equal(passageTexts(claudeOrch), []string{"prompt one", "prompt two", "shared text", "shared and orch text"}) {
++		glossary := strings.TrimRight(Glossary(), "\n")
++		if err != nil || !slices.Equal(passageTexts(claudeOrch), []string{glossary, "prompt one", "prompt two", "shared text", "shared and orch text"}) {
+ 			t.Errorf("Passages(claude, orch) = %v, %v; want each text once", claudeOrch, err)
+ 		}
+ 		codex, err := r.Passages(f.bolt, "codex", "")
+@@ -842,15 +843,16 @@ func TestRender(t *testing.T) {
+ 			entryFor("house", "house rule", 1, "claude-prompt"),
+ 		}})
+ 		r := Renderer{}
++		glossary := strings.TrimRight(Glossary(), "\n")
+ 		tests := []struct {
+ 			name   string
+ 			engine string
+ 			role   string
+ 			want   []string
+ 		}{
+-			{"ClaudeOrch", "claude", "orch", []string{"house rule", "orch rule", "shared rule"}},
+-			{"ClaudeNumberedOrch", "claude", "orch-2", []string{"house rule", "orch rule", "shared rule"}},
+-			{"CodexOrch", "codex", "orch", []string{"orch rule", "shared rule"}},
++			{"ClaudeOrch", "claude", "orch", []string{glossary, "house rule", "orch rule", "shared rule"}},
++			{"ClaudeNumberedOrch", "claude", "orch-2", []string{glossary, "house rule", "orch rule", "shared rule"}},
++			{"CodexOrch", "codex", "orch", []string{glossary, "orch rule", "shared rule"}},
+ 			{"ClaudeWriter", "claude", "writer", []string{"house rule", "shared rule"}},
+ 			{"ClaudeOrchLookalike", "claude", "orchard", []string{"house rule", "shared rule"}},
+ 			{"CodexWriter", "codex", "writer", nil},
+@@ -862,8 +864,8 @@ func TestRender(t *testing.T) {
+ 			}
+ 		}
+ 		shown, err := r.Show(f.bolt, "orch-prompt", f.anchor)
+-		if err != nil || shown != "orch rule\n\nshared rule" {
+-			t.Errorf("Show(orch-prompt) = %q, %v; want the two orch passages", shown, err)
++		if err != nil || shown != glossary+"\n\norch rule\n\nshared rule" {
++			t.Errorf("Show(orch-prompt) = %q, %v; want the glossary then the two orch passages", shown, err)
+ 		}
+ 	})
+ }
+diff --git a/internal/heddleengine/shipped.go b/internal/heddleengine/shipped.go
+index 0ba82254..c20ec030 100644
+--- a/internal/heddleengine/shipped.go
++++ b/internal/heddleengine/shipped.go
+@@ -33,8 +33,38 @@ const (
+ //go:embed shipped.json
+ var shippedJSON []byte
+ 
++//go:embed glossary.md
++var glossaryText string
++
++const (
++	// GlossarySlug is the slug of the shipped entry that carries lym's glossary to every orch session.
++	GlossarySlug = "lym-glossary"
++	// glossaryOrder places the glossary after every entry of shipped.json.
++	glossaryOrder = 300
++)
++
+ // shippedStore is the shipped layer, decoded and checked once at package load.
+-var shippedStore = decodeShipped(shippedJSON)
++var shippedStore = withGlossary(decodeShipped(shippedJSON))
++
++// Glossary returns lym's glossary: one line per lym term, with its meaning and the words never to use for it.
++// It is kept apart from shipped.json so a term is edited as markdown.
++func Glossary() string {
++	return glossaryText
++}
++
++// withGlossary returns store with the glossary entry added, aimed at the orch-prompt target.
++// It panics when the entry is invalid or its slug is taken, since either is a bug in the lym build itself.
++func withGlossary(store Store) Store {
++	entry := Entry{Slug: GlossarySlug, Text: strings.TrimRight(glossaryText, "\n"), Order: glossaryOrder, Targets: []string{OrchPromptTarget}}
++	if err := ValidateEntry(entry); err != nil {
++		panic(fmt.Sprintf("heddleengine: the glossary entry is invalid: %v", err))
++	}
++	if _, found := store.Get(GlossarySlug); found {
++		panic(fmt.Sprintf("heddleengine: shipped.json holds the glossary's slug %q", GlossarySlug))
++	}
++	store.Entries = append(store.Entries, entry)
++	return store
++}
+ 
+ // decodeShipped decodes the embedded shipped layer and panics on any defect.
+ // A malformed shipped layer means a bug in the lym build itself.
+diff --git a/internal/heddleengine/store_test.go b/internal/heddleengine/store_test.go
+index 362fe3ea..ebc086be 100644
+--- a/internal/heddleengine/store_test.go
++++ b/internal/heddleengine/store_test.go
+@@ -175,19 +175,22 @@ func TestStore(t *testing.T) {
+ 		t.Parallel()
+ 		// The rows are the shipped layer in render order.
+ 		// wantHeading is a text entry's first line: a level-two heading of its own, and empty for a JSON-object entry.
++		// A row with levelOnly checks that first line for the level-two marker alone, leaving its words free.
+ 		// Level two keeps the rendered file stepping from the shipped section's level-one heading with no skip.
+ 		tests := []struct {
+ 			slug        string
+ 			target      string
+ 			wantHeading string
++			levelOnly   bool
+ 		}{
+-			{"lym-batching", "agents-file", "## Batch your calls"},
+-			{"lym-plan-edits-before-gate", "agents-file", "## Make every round of edits in this order"},
+-			{"lym-no-attribution", "claude-settings", ""},
+-			{"lym-plugins", "claude-settings", ""},
+-			{"lym-tool-deny", "claude-settings", ""},
+-			{"lym-session-scope", "claude-settings", ""},
+-			{"lym-prompt-suggestion-off", "claude-settings", ""},
++			{"lym-batching", "agents-file", "## Batch your calls", false},
++			{"lym-plan-edits-before-gate", "agents-file", "## Make every round of edits in this order", false},
++			{"lym-no-attribution", "claude-settings", "", false},
++			{"lym-plugins", "claude-settings", "", false},
++			{"lym-tool-deny", "claude-settings", "", false},
++			{"lym-session-scope", "claude-settings", "", false},
++			{"lym-prompt-suggestion-off", "claude-settings", "", false},
++			{"lym-glossary", "orch-prompt", "## ", true},
+ 		}
+ 		ordered := shippedStore.Ordered()
+ 		if len(ordered) != len(tests) {
+@@ -201,7 +204,12 @@ func TestStore(t *testing.T) {
+ 			if tt.wantHeading == "" {
+ 				continue
+ 			}
+-			if heading, _, _ := strings.Cut(got.Text, "\n"); heading != tt.wantHeading {
++			heading, _, _ := strings.Cut(got.Text, "\n")
++			if tt.levelOnly {
++				if !strings.HasPrefix(heading, tt.wantHeading) {
++					t.Errorf("shipped entry %s opens with %q; want a heading starting %q", tt.slug, heading, tt.wantHeading)
++				}
++			} else if heading != tt.wantHeading {
+ 				t.Errorf("shipped entry %s opens with %q; want %q", tt.slug, heading, tt.wantHeading)
+ 			}
+ 		}
+diff --git a/internal/landingshed/beamdescribe.go b/internal/landingshed/beamdescribe.go
+index 4c716262..2524abec 100644
+--- a/internal/landingshed/beamdescribe.go
++++ b/internal/landingshed/beamdescribe.go
+@@ -27,6 +27,11 @@ const (
+ 	beamCommitSummaryMax = 200
+ 	// beamCommitTimeLayout formats the time an entry shows, in UTC.
+ 	beamCommitTimeLayout = "2006-01-02 15:04 UTC"
++	// beamMergeDangerDraft is the draft's Merge danger section, its two values left for the orch to call.
++	// The description's validation refuses both placeholders, so a draft recorded unedited is refused.
++	beamMergeDangerDraft = summaryparser.MergeDangerHeading + "\n\n" +
++		summaryparser.MergeDangerDoorLabel + " " + summaryparser.DoorOneWay + " or " + summaryparser.DoorTwoWay + "\n" +
++		summaryparser.MergeDangerRadiusLabel + " one word"
+ )
+ 
+ // pullRequestSubject matches the subject of a commit a pull request landed, `<title> (#<number>)`.
+@@ -87,6 +92,7 @@ func requireBeamDraftDeps(deps BeamDraftDeps) error {
+ // Any other commit, a merge from the parent included, is listed by its object name, subject and commit time.
+ // Either entry carries the first sentence of the commit's body as its summary, when the body has one.
+ // GitHub links the number and the object name in a pull request's body.
++// A Merge danger section closes the draft with its door and blast radius left as placeholders for the orch to call.
+ // The draft is neither validated nor committed: the orch edits it, and RecordBeamDescription records it.
+ // It refuses deps with an unset field, naming that field.
+ // A read or write failure is an error naming the step.
+@@ -152,7 +158,7 @@ func RecordBeamDescription(slug, path string, commit func() error) error {
+ }
+ 
+ // beamDraft renders the draft: the title cut to beamDescriptionTitleMax characters as a heading.
+-// Then come the brief and the list of commits, each set off by a blank line.
++// Then come the brief, the list of commits and the Merge danger placeholders, each set off by a blank line.
+ func beamDraft(title, brief string, commits []BeamCommit) string {
+ 	title = strings.TrimSpace(title)
+ 	if runes := []rune(title); len(runes) > beamDescriptionTitleMax {
+@@ -169,11 +175,8 @@ func beamDraft(title, brief string, commits []BeamCommit) string {
+ 		}
+ 		sections = append(sections, beamChangesHeading+"\n\n"+strings.Join(entries, "\n"))
+ 	}
+-	description := "# " + title
+-	if len(sections) > 0 {
+-		description += "\n\n" + strings.Join(sections, "\n\n")
+-	}
+-	return description + "\n"
++	sections = append(sections, beamMergeDangerDraft)
++	return "# " + title + "\n\n" + strings.Join(sections, "\n\n") + "\n"
+ }
+ 
+ // beamCommitEntry renders one commit as a list item.
+diff --git a/internal/landingshed/beamdescribe_test.go b/internal/landingshed/beamdescribe_test.go
+index 0c680846..1587f7d0 100644
+--- a/internal/landingshed/beamdescribe_test.go
++++ b/internal/landingshed/beamdescribe_test.go
+@@ -29,6 +29,7 @@ func TestDraftBeamDescription(t *testing.T) {
+ 		wantPullRequestEntry = "- #266 Tool-joint pressure loss, merged 2026-10-30 13:05 UTC\n  Adds the tool-joint loss to the hydraulics."
+ 		wantParentMergeEntry = "- 222222222222 Merge branch 'main' into my-beam, committed 2026-10-30 14:05 UTC"
+ 		wantDirectEntry      = "- 333333333333 Fix a typo, committed 2026-10-30 15:05 UTC"
++		wantMergeDanger      = "## Merge danger\n\n**Door:** one-way or two-way\n**Blast radius:** one word\n"
+ 	)
+ 	tests := []struct {
+ 		name    string
+@@ -49,20 +50,20 @@ func TestDraftBeamDescription(t *testing.T) {
+ 	}{
+ 		{
+ 			name: "PullRequestsAndDirectCommitsAreListedOldestFirst", title: "Ship the beam", brief: "Groups the work.", commits: []BeamCommit{pullRequest, parentMerge, direct},
+-			wantFile: "# Ship the beam\n\nGroups the work.\n\n## Changes\n\n" + wantPullRequestEntry + "\n" + wantParentMergeEntry + "\n" + wantDirectEntry + "\n",
++			wantFile: "# Ship the beam\n\nGroups the work.\n\n## Changes\n\n" + wantPullRequestEntry + "\n" + wantParentMergeEntry + "\n" + wantDirectEntry + "\n\n" + wantMergeDanger,
+ 		},
+ 		{
+ 			name: "ALongSummaryIsCutWithAnEllipsis", title: "Ship the beam",
+ 			commits:  []BeamCommit{{SHA: "4444", Message: "Long change\n\n" + strings.Repeat("word ", 50), Committed: at(12)}},
+-			wantFile: "# Ship the beam\n\n## Changes\n\n- 4444 Long change, committed 2026-10-30 11:05 UTC\n  " + strings.TrimSpace(strings.Repeat("word ", 40)) + "…\n",
++			wantFile: "# Ship the beam\n\n## Changes\n\n- 4444 Long change, committed 2026-10-30 11:05 UTC\n  " + strings.TrimSpace(strings.Repeat("word ", 40)) + "…\n\n" + wantMergeDanger,
+ 		},
+ 		{
+ 			name: "OverLongTitleIsCut", title: strings.Repeat("a", 80), brief: "Groups the work.",
+-			wantFile: "# " + strings.Repeat("a", 72) + "\n\nGroups the work.\n",
++			wantFile: "# " + strings.Repeat("a", 72) + "\n\nGroups the work.\n\n" + wantMergeDanger,
+ 		},
+ 		{
+-			name: "EmptyBriefAndNoCommitsWriteTheTitleAlone", title: "Ship the beam",
+-			wantFile: "# Ship the beam\n",
++			name: "EmptyBriefAndNoCommitsWriteTheTitleAndMergeDangerAlone", title: "Ship the beam",
++			wantFile: "# Ship the beam\n\n" + wantMergeDanger,
+ 		},
+ 		{
+ 			name: "AnExistingDescriptionIsRefusedAndLeftIntact", title: "Ship the beam", brief: "Groups the work.", existing: "# Old text\n\nThe orch's words.\n",
+@@ -141,7 +142,8 @@ func TestRecordBeamDescription(t *testing.T) {
+ 
+ 	const (
+ 		slug  = "my-beam"
+-		valid = "# Ship the beam\n\nThe beam adds the hydraulics model.\n\n## Member pull requests\n\n- #266 Tool-joint pressure loss\n"
++		valid = "# Ship the beam\n\nThe beam adds the hydraulics model.\n\n## Member pull requests\n\n- #266 Tool-joint pressure loss\n\n" +
++			"## Merge danger\n\n**Door:** two-way\n**Blast radius:** hydraulics\n"
+ 	)
+ 	commitErr := errors.New("index locked")
+ 	tests := []struct {
+@@ -155,6 +157,11 @@ func TestRecordBeamDescription(t *testing.T) {
+ 		wantCommits int
+ 	}{
+ 		{name: "ValidDescriptionIsCommitted", content: valid, wantCommits: 1},
++		{
++			name:    "UneditedDraftIsRefusedNamingTheMergeDangerFindings",
++			content: beamDraft("Ship the beam", "The beam adds the hydraulics model.", nil),
++			wantErr: []string{"merge-danger-door", "merge-danger-blast-radius"},
++		},
+ 		{
+ 			name:    "MissingDescriptionIsRefusedNamingTheDraft",
+ 			wantErr: []string{"no description is written at", `"lym beam describe my-beam --draft"`, `"lym beam describe my-beam" again`},
+diff --git a/internal/landingshed/describe_test.go b/internal/landingshed/describe_test.go
+index 7289da11..4b1e4f4c 100644
+--- a/internal/landingshed/describe_test.go
++++ b/internal/landingshed/describe_test.go
+@@ -330,7 +330,7 @@ func TestNewDescriptionGate(t *testing.T) {
+ 		wantPassed bool
+ 		wantInFind string
+ 	}{
+-		{"valid", write("ok.md", "# A title\n\nA body.\n"), true, ""},
++		{"valid", write("ok.md", "# A title\n\nA body.\n\n## Merge danger\n\n**Door:** two-way\n**Blast radius:** landing\n"), true, ""},
+ 		{"co-author trailer", write("trailer.md", "# A title\n\nBody.\n\nCo-Authored-By: X <x@y.z>\n"), false, "co-authored-by-trailer"},
+ 		{"missing file", filepath.Join(dir, "absent.md"), false, "missing-file"},
+ 	}
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 52cfd2f2..3f72fcda 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -669,6 +669,8 @@
+ // It names each pull request a member landed through by the ` (#<number>)` Finalize writes into the merge's subject.
+ // Each such entry gives the title, merge time and first sentence of the body.
+ // It names each other commit, a merge from the parent included, by its object name, subject and time.
++// It ends the draft with a Merge danger section whose door and blast radius are placeholders the orch calls,
++// so a draft recorded unedited is refused.
+ // It takes its told seams as BeamDraftDeps, which `lym beam describe --draft` fills.
+ // RecordBeamDescription validates the orch's text with the check the Describe gate runs, and it commits it.
+ // A finding is an error naming the finding and the way out:
+diff --git a/internal/loomcli/parity_test.go b/internal/loomcli/parity_test.go
+index 8f6a78ea..1fe7f941 100644
+--- a/internal/loomcli/parity_test.go
++++ b/internal/loomcli/parity_test.go
+@@ -767,7 +767,7 @@ func TestGateParity_DescriptionGate(t *testing.T) {
+ 		{
+ 			name: "Clean",
+ 			build: func(t *testing.T, dir string) *loomCLI {
+-				return descriptionFixture(t, dir, "# Title\n\nbody\n")
++				return descriptionFixture(t, dir, "# Title\n\nbody\n\n## Merge danger\n\n**Door:** two-way\n**Blast radius:** loom\n")
+ 			},
+ 			want: verdictDone,
+ 		},
+diff --git a/internal/loomcli/validate_test.go b/internal/loomcli/validate_test.go
+index e176129d..b002e532 100644
+--- a/internal/loomcli/validate_test.go
++++ b/internal/loomcli/validate_test.go
+@@ -724,7 +724,7 @@ func descriptionFixture(t *testing.T, dir, content string) *loomCLI {
+ func TestValidateDescriptionCmd(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Run("Clean", func(t *testing.T) {
+-		c := descriptionFixture(t, t.TempDir(), "# Title\n\nbody\n")
++		c := descriptionFixture(t, t.TempDir(), "# Title\n\nbody\n\n## Merge danger\n\n**Door:** two-way\n**Blast radius:** loom\n")
+ 
+ 		var out bytes.Buffer
+ 		exitCode := clihelp.Execute(c.validateDescriptionCmd(), &out, nil)
+diff --git a/internal/loomengine/discussiontable.go b/internal/loomengine/discussiontable.go
+index 6cbdd4c8..c9334277 100644
+--- a/internal/loomengine/discussiontable.go
++++ b/internal/loomengine/discussiontable.go
+@@ -13,6 +13,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
+ 	"github.com/Knatte18/loomyard/internal/friction"
++	"github.com/Knatte18/loomyard/internal/heddleengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+@@ -78,6 +79,7 @@ func resolveModelChoice(raw string, reg modelspec.Registry) (shuttleengine.Model
+ // cfg.SubagentModel names the model of the fresh subagents the lead's prompt tells it to hand lookups to.
+ // The table carries no gate; the producer entry sets it.
+ // A lead with no advisors decides each question itself, as its prompt says.
++// The lead's prompt carries lym's glossary, so the interview and the record keep lym's words.
+ // The PATTERN directive renders the PATTERN changes the decision record declares;
+ // a malformed section fails the table, naming the way forward.
+ // A PATTERN directive or Tier 2 friction directive that cannot be rendered is left empty;
+@@ -179,6 +181,7 @@ func DiscussionTable(layout *lymcwd.Location, dirs configengine.Dirs, stencilsDi
+ 			"mode_rules":           discussionModeRules(!cfg.DiscussionInteractive, len(cfg.DiscussionAdvisors) > 0),
+ 			"pattern_directive":    patternDirective,
+ 			friction.MarkerName:    frictionDirective,
++			"glossary":             heddleengine.Glossary(),
+ 		},
+ 		Optional: []string{"pattern_directive", ProjectDirectiveMarker, friction.MarkerName, twilldirective.MarkerName},
+ 		Seats:    append([]seatengine.Seat{lead}, seats...),
+diff --git a/internal/loomengine/discussiontable_test.go b/internal/loomengine/discussiontable_test.go
+index 545e6c93..77b84916 100644
+--- a/internal/loomengine/discussiontable_test.go
++++ b/internal/loomengine/discussiontable_test.go
+@@ -17,6 +17,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/agentconfig"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/friction"
++	"github.com/Knatte18/loomyard/internal/heddleengine"
+ 	"github.com/Knatte18/loomyard/internal/lenses"
+ 	"github.com/Knatte18/loomyard/internal/lensreport"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -207,7 +208,7 @@ func TestDiscussionTable(t *testing.T) {
+ 					t.Fatalf("seatengine.Prompts() = _, %v; want nil error", err)
+ 				}
+ 
+-				chairWants := []string{"`ly:orch`", discussionTableSlug, DiscussionDecisionRecord(layout), DiscussionSupportLog(layout), discussionTableSpecsDir, modeRules(!interactive), `model: "haiku"`}
++				chairWants := []string{strings.TrimSpace(heddleengine.Glossary()), "`ly:orch`", discussionTableSlug, DiscussionDecisionRecord(layout), DiscussionSupportLog(layout), discussionTableSpecsDir, modeRules(!interactive), `model: "haiku"`}
+ 				for n, notes := range wantNotes {
+ 					chairWants = append(chairWants, "ly:"+discussionTableSlug+":discussion-"+discussionTableAdvisors[n].Name, notes)
+ 				}
+diff --git a/internal/loomrecipe/fixture_test.go b/internal/loomrecipe/fixture_test.go
+index 0beb6bbb..620fcffd 100644
+--- a/internal/loomrecipe/fixture_test.go
++++ b/internal/loomrecipe/fixture_test.go
+@@ -307,13 +307,13 @@ func writeLoomOutputs(planDir string, writeOutputs bool, role string, outputs []
+ 		return nil
+ 
+ 	case "describe":
+-		// A valid change description has a "# title" heading and a non-empty body, and no trailer line.
++		// A valid change description has a "# title" heading, a body with a Merge danger section, and no trailer line.
+ 		// The description gate accepts it.
+ 		for _, path := range outputs {
+ 			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+ 				return fmt.Errorf("mkdir %s: %w", filepath.Dir(path), err)
+ 			}
+-			if err := os.WriteFile(path, []byte("# Fixture change\n\nFixture description body.\n"), 0o644); err != nil {
++			if err := os.WriteFile(path, []byte("# Fixture change\n\nFixture description body.\n\n## Merge danger\n\n**Door:** two-way\n**Blast radius:** fixture\n"), 0o644); err != nil {
+ 				return fmt.Errorf("write description %s: %w", path, err)
+ 			}
+ 		}
+diff --git a/internal/summaryparser/description.go b/internal/summaryparser/description.go
+index 954fcd21..ad07f7fd 100644
+--- a/internal/summaryparser/description.go
++++ b/internal/summaryparser/description.go
+@@ -1,5 +1,6 @@
+ // description.go validates the change-description artifact.
+ // ValidateDescription turns the failures of Parse, plus a few structural checks, into Findings.
++// Among them is the Merge danger section, which calls whether a revert undoes the change and what breaks if it is wrong.
+ 
+ package summaryparser
+ 
+@@ -16,13 +17,25 @@ const maxTitleLen = 72
+ 
+ // Finding check names, asserted exactly by callers and tests.
+ const (
+-	CheckMissing       = "missing-file"
+-	CheckEmpty         = "empty-file"
+-	CheckNoHeading     = "no-heading"
+-	CheckEmptyTitle    = "empty-title"
+-	CheckTitleTooLong  = "title-too-long"
+-	CheckEmptyBody     = "empty-body"
+-	CheckCoAuthorTrail = "co-authored-by-trailer"
++	CheckMissing                = "missing-file"
++	CheckEmpty                  = "empty-file"
++	CheckNoHeading              = "no-heading"
++	CheckEmptyTitle             = "empty-title"
++	CheckTitleTooLong           = "title-too-long"
++	CheckEmptyBody              = "empty-body"
++	CheckCoAuthorTrail          = "co-authored-by-trailer"
++	CheckNoMergeDanger          = "no-merge-danger"
++	CheckMergeDangerDoor        = "merge-danger-door"
++	CheckMergeDangerBlastRadius = "merge-danger-blast-radius"
++)
++
++// The Merge danger section's heading, its two labelled lines and the door's two legal values.
++const (
++	MergeDangerHeading     = "## Merge danger"
++	MergeDangerDoorLabel   = "**Door:**"
++	MergeDangerRadiusLabel = "**Blast radius:**"
++	DoorOneWay             = "one-way"
++	DoorTwoWay             = "two-way"
+ )
+ 
+ // Finding is one failed description check.
+@@ -39,6 +52,9 @@ func (f Finding) Error() string {
+ // ValidateDescription checks the change description at path.
+ // These conditions are reported as Findings:
+ // a missing or empty file, a bad heading, an empty or over-long title, an empty body, or a Co-Authored-By trailer line.
++// A non-empty body must also hold a "## Merge danger" section.
++// That section needs a "**Door:**" line reading one-way or two-way.
++// It also needs a "**Blast radius:**" line of one word.
+ // Only a read failure other than not-exist is an error.
+ func ValidateDescription(path string) ([]Finding, error) {
+ 	s, err := Parse(path)
+@@ -62,6 +78,8 @@ func ValidateDescription(path string) ([]Finding, error) {
+ 	}
+ 	if strings.TrimSpace(s.Body) == "" {
+ 		findings = append(findings, Finding{CheckEmptyBody, "body is empty"})
++	} else {
++		findings = append(findings, mergeDangerFindings(s.Body)...)
+ 	}
+ 	for _, line := range strings.Split(s.Body, "\n") {
+ 		if strings.HasPrefix(strings.ToLower(strings.TrimSpace(line)), "co-authored-by:") {
+@@ -71,3 +89,94 @@ func ValidateDescription(path string) ([]Finding, error) {
+ 	}
+ 	return findings, nil
+ }
++
++// mergeDangerFindings checks body's Merge danger section.
++// The section runs from its heading to the next heading of level one or two.
++// A labelled line may stand as a list item, and its value may be in backticks.
++func mergeDangerFindings(body string) []Finding {
++	section, found := mergeDangerSection(body)
++	if !found {
++		return []Finding{{CheckNoMergeDanger, fmt.Sprintf("body has no %q section; end it with one carrying a %s line and a %s line", MergeDangerHeading, MergeDangerDoorLabel, MergeDangerRadiusLabel)}}
++	}
++
++	var findings []Finding
++	door, hasDoor := labelledValue(section, MergeDangerDoorLabel)
++	switch {
++	case !hasDoor:
++		findings = append(findings, Finding{CheckMergeDangerDoor, fmt.Sprintf("the Merge danger section has no %s line", MergeDangerDoorLabel)})
++	case !strings.EqualFold(door, DoorOneWay) && !strings.EqualFold(door, DoorTwoWay):
++		findings = append(findings, Finding{CheckMergeDangerDoor, fmt.Sprintf("door is %q; want %s or %s", door, DoorOneWay, DoorTwoWay)})
++	}
++	radius, hasRadius := labelledValue(section, MergeDangerRadiusLabel)
++	switch {
++	case !hasRadius:
++		findings = append(findings, Finding{CheckMergeDangerBlastRadius, fmt.Sprintf("the Merge danger section has no %s line", MergeDangerRadiusLabel)})
++	case radius == "" || len(strings.Fields(radius)) != 1:
++		findings = append(findings, Finding{CheckMergeDangerBlastRadius, fmt.Sprintf("blast radius is %q; want one word", radius)})
++	}
++	return findings
++}
++
++// mergeDangerSection returns the lines under body's Merge danger heading, and whether the heading is there.
++// Lines inside a code fence, and the fence lines themselves, are neither the heading nor a heading that ends the section.
++func mergeDangerSection(body string) ([]string, bool) {
++	var section []string
++	openFence, found := "", false
++	for _, line := range strings.Split(body, "\n") {
++		if run := fenceRun(line); run != "" {
++			switch {
++			case openFence == "":
++				openFence = run
++			case run[0] == openFence[0] && len(run) >= len(openFence) && strings.TrimSpace(line) == run:
++				openFence = ""
++			}
++			continue
++		}
++		switch {
++		case openFence != "":
++		case !found:
++			found = strings.EqualFold(strings.TrimSpace(line), MergeDangerHeading)
++		case isSectionHeading(line):
++			return section, true
++		default:
++			section = append(section, line)
++		}
++	}
++	return section, found
++}
++
++// fenceRun returns the run of three or more backticks or tildes that opens line, or "" when line opens with no such run.
++// A fence closes only on a run of the same character, at least as long as the one that opened it, with no text after it.
++func fenceRun(line string) string {
++	trimmed := strings.TrimSpace(line)
++	if trimmed == "" || (trimmed[0] != '`' && trimmed[0] != '~') {
++		return ""
++	}
++	run := trimmed[:len(trimmed)-len(strings.TrimLeft(trimmed, trimmed[:1]))]
++	if len(run) < 3 {
++		return ""
++	}
++	return run
++}
++
++// isSectionHeading reports whether line opens a heading of level one or two.
++func isSectionHeading(line string) bool {
++	trimmed := strings.TrimSpace(line)
++	return strings.HasPrefix(trimmed, "# ") || strings.HasPrefix(trimmed, "## ")
++}
++
++// labelledValue returns the value after label on the first of lines that opens with it, and whether one does.
++// A leading list marker is skipped, and the value is trimmed of spaces, backticks and a final period.
++func labelledValue(lines []string, label string) (string, bool) {
++	for _, line := range lines {
++		trimmed := strings.TrimSpace(line)
++		trimmed = strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(trimmed, "- "), "* "))
++		if !strings.HasPrefix(trimmed, label) {
++			continue
++		}
++		value := strings.TrimSpace(strings.TrimPrefix(trimmed, label))
++		value = strings.TrimSuffix(value, ".")
++		return strings.TrimSpace(strings.Trim(value, "`")), true
++	}
++	return "", false
++}
+diff --git a/internal/summaryparser/description_test.go b/internal/summaryparser/description_test.go
+index 833da539..f3340bc1 100644
+--- a/internal/summaryparser/description_test.go
++++ b/internal/summaryparser/description_test.go
+@@ -15,6 +15,7 @@ import (
+ func TestValidateDescription_Table(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
++	const mergeDanger = "\n## Merge danger\n\n**Door:** two-way\n**Blast radius:** docs\n"
+ 	tests := []struct {
+ 		name    string
+ 		content *string
+@@ -24,11 +25,50 @@ func TestValidateDescription_Table(t *testing.T) {
+ 		{"empty", ptr(""), []string{summaryparser.CheckEmpty}},
+ 		{"no heading", ptr("plain text\n"), []string{summaryparser.CheckNoHeading}},
+ 		{"blank title", ptr("# \nbody\n"), []string{summaryparser.CheckNoHeading}},
+-		{"long title", ptr("# " + strings.Repeat("a", 73) + "\n\nbody\n"), []string{summaryparser.CheckTitleTooLong}},
++		{"long title", ptr("# " + strings.Repeat("a", 73) + "\n\nbody\n" + mergeDanger), []string{summaryparser.CheckTitleTooLong}},
+ 		{"empty body", ptr("# Title\n\n  \n"), []string{summaryparser.CheckEmptyBody}},
+-		{"trailer", ptr("# Title\n\nbody\n\nCo-Authored-By: X <x@y>\n"), []string{summaryparser.CheckCoAuthorTrail}},
+-		{"trailer lower", ptr("# Title\n\nbody\n  co-authored-by: X\n"), []string{summaryparser.CheckCoAuthorTrail}},
+-		{"ok", ptr("# Title\n\nbody\n"), nil},
++		{"trailer", ptr("# Title\n\nbody\n" + mergeDanger + "\nCo-Authored-By: X <x@y>\n"), []string{summaryparser.CheckCoAuthorTrail}},
++		{"trailer lower", ptr("# Title\n\nbody\n" + mergeDanger + "  co-authored-by: X\n"), []string{summaryparser.CheckCoAuthorTrail}},
++		{"ok", ptr("# Title\n\nbody\n" + mergeDanger), nil},
++		{"no merge danger", ptr("# Title\n\nbody\n"), []string{summaryparser.CheckNoMergeDanger}},
++		{"merge danger as list items in backticks", ptr("# Title\n\nbody\n\n## merge danger\n\n- **Door:** `One-way`.\n- **Blast radius:** `board`.\n"), nil},
++		{"labels directly under the heading", ptr("# Title\n\nbody\n\n## Merge danger\n**Door:** two-way\n**Blast radius:** docs\n"), nil},
++		{
++			"a level-one heading ends the section",
++			ptr("# Title\n\nbody\n\n## Merge danger\n\n# Other\n\n**Door:** two-way\n**Blast radius:** docs\n"),
++			[]string{summaryparser.CheckMergeDangerDoor, summaryparser.CheckMergeDangerBlastRadius},
++		},
++		{
++			"a section only inside a fence is no section",
++			ptr("# Title\n\nbody\n\n```\n## Merge danger\n\n**Door:** two-way\n**Blast radius:** docs\n```\n"),
++			[]string{summaryparser.CheckNoMergeDanger},
++		},
++		{
++			"a fenced example does not stand in for the real section",
++			ptr("# Title\n\nbody\n\n```\n## Merge danger\n\n**Door:** two-way\n**Blast radius:** docs\n```\n\n## Merge danger\n\n**Door:** revolving\n**Blast radius:** docs\n"),
++			[]string{summaryparser.CheckMergeDangerDoor},
++		},
++		{
++			"a shorter fence line inside a fence does not close it",
++			ptr("# Title\n\nbody\n\n````\n```\n## Merge danger\n\n**Door:** two-way\n**Blast radius:** docs\n```\n````\n"),
++			[]string{summaryparser.CheckNoMergeDanger},
++		},
++		{
++			"a comment line in a fenced block does not end the section",
++			ptr("# Title\n\nbody\n\n## Merge danger\n\n~~~sh\n# revert it\ngit revert HEAD\n~~~\n\n**Door:** two-way\n**Blast radius:** docs\n"),
++			nil,
++		},
++		{"door missing", ptr("# Title\n\nbody\n\n## Merge danger\n\n**Blast radius:** docs\n"), []string{summaryparser.CheckMergeDangerDoor}},
++		{"door neither way", ptr("# Title\n\nbody\n\n## Merge danger\n\n**Door:** revolving\n**Blast radius:** docs\n"), []string{summaryparser.CheckMergeDangerDoor}},
++		{"blast radius missing", ptr("# Title\n\nbody\n\n## Merge danger\n\n**Door:** one-way\n"), []string{summaryparser.CheckMergeDangerBlastRadius}},
++		{"blast radius two words", ptr("# Title\n\nbody\n\n## Merge danger\n\n**Door:** one-way\n**Blast radius:** the board\n"), []string{summaryparser.CheckMergeDangerBlastRadius}},
++		{"blast radius empty", ptr("# Title\n\nbody\n\n## Merge danger\n\n**Door:** one-way\n**Blast radius:**\n"), []string{summaryparser.CheckMergeDangerBlastRadius}},
++		{
++			"labels under the next heading are outside the section",
++			ptr("# Title\n\nbody\n\n## Merge danger\n\n## Notes\n\n**Door:** two-way\n**Blast radius:** docs\n"),
++			[]string{summaryparser.CheckMergeDangerDoor, summaryparser.CheckMergeDangerBlastRadius},
++		},
++		{"a level-three heading stays inside the section", ptr("# Title\n\nbody\n\n## Merge danger\n\n### Call\n\n**Door:** two-way\n**Blast radius:** docs\n"), nil},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/pattern/PATTERN-heddle-instructions.md b/pattern/PATTERN-heddle-instructions.md
+index 8cc53470..8fd8b6c4 100644
+--- a/pattern/PATTERN-heddle-instructions.md
++++ b/pattern/PATTERN-heddle-instructions.md
+@@ -10,6 +10,7 @@ Heddle's instruction text is stored once per layer and rendered from those store
+ 
+ - The shipped layer is `shipped.json`, embedded in `internal/heddleengine`.
+   It holds lym's own entries and changes only with a lym release.
++  Its glossary entry, `lym-glossary`, is embedded from `glossary.md` beside it, the one copy of lym's glossary.
+ - The repository layer is `heddle.json` at the Bolt checkout's root.
+ - A hub's lym overrides sit in `heddle-lym-override.json` beside it.
+   A render reads them only while the hub's `heddle.yaml` sets `lym_override`.
