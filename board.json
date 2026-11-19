@@ -417,6 +417,26 @@
       "body": "Imported from [issue #156](https://github.com/Knatte18/loomyard/issues/156).\n\nA darn agent was told to run a single test class through `lym gate test --gate darn-write \u003cproject\u003e -- \u003cargs\u003e`.\nThe hub's `gate.yaml` has no `darn-write` key and its tiers hold no `{targets}` placeholder, so both forms were refused.\nOnly `lym gate test --tier 1 -- --filter ...` worked, after the agent dropped the targets.\n\nThis is abnormal: the prompt instructs a command form the hub's own gate config cannot satisfy, and the agent spent calls discovering that.\nFix: make the darn prompt name only a form valid for the hub's gate config, or have the prompt builder check the key and `{targets}` against `gate.yaml` and fall back to the `--tier` form.\n\nProvenance: task cuttings-bed-decay-parity, note Darn-Write.md.\n\n## From issue #162\n\nImported from [issue #162](https://github.com/Knatte18/loomyard/issues/162).\n\nA Darn-Write agent's instructions said to run a needed test class through `lym gate test --gate darn-write`.\nThe hub's `gate.yaml` declares only `finalize` and `adopt`, so the named gate key does not exist.\nThe agent fell back to `lym gate test --tier 1 -- --filter ...`.\n\nThis is abnormal because a prompt should name only gate keys the hub declares.\nFix: either generate the Darn-Write prompt from the declared gate keys, or declare a `darn-write` key; also have `lym gate test` refuse an unknown `--gate` with a list of declared keys.\n\nProvenance: task bed-erosion-rate-gap, note Darn-Write.md.",
       "created": "2026-11-19T19:40:43Z",
       "revised": "2026-11-19T19:40:45Z"
+    },
+    {
+      "id": 1526,
+      "handle": "B4",
+      "slug": "finalize-mergeable-unknown",
+      "title": "Finalize halts on a pull request whose mergeability GitHub has not computed yet",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "landing"
+      ],
+      "issues": [
+        161
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #161](https://github.com/Knatte18/loomyard/issues/161).\n\n## What was seen\n\nA task run's Finalize halted with `landing stop: GitHub refused to merge pull request ...: Pull Request is not mergeable` and a way forward naming a second approval or a required check.\nRead a minute later, the pull request showed `mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`, no required checks and no reviews; GitHub had not yet computed mergeability (`UNKNOWN`) when Finalize asked.\n\n## Workaround\n\nThe parent re-reads the pull request with `gh pr view --json mergeable,mergeStateStatus` and runs `lym loom resume` once it reads `MERGEABLE`.\n\n## Expected\n\nFinalize treats `mergeable: UNKNOWN` as pending: it polls the pull request for a bounded time before merging, and halts only on a definite refusal, naming the actual cause.\n",
+      "created": "2026-11-19T19:40:48Z",
+      "revised": "2026-11-19T19:40:48Z"
     }
   ],
   "prime_owner": "neve",
