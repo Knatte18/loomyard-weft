@@ -469,7 +469,7 @@
       "isolated": false,
       "brief": "Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays",
       "body": "{\"error\":\"invalid json: invalid character 's' looking for beginning of value\",\"ok\":false}\n\n## Scope (operator, 2026-11-19)\n\nThe one-repository hub is for the operator's own use only.\nThe two-repository hub stays the standard and the one used with other people: every trace of LoomYard lives in its own repository there.\nExtra branches in a one-repository hub are clutter to anyone else reading the repository; Discussion weighs keeping records and the board under a custom ref namespace such as `refs/lym/...`, which no default clone fetches and GitHub lists as no branch, against plain branches.\n",
-      "status": "starting · Seed-Child",
+      "status": "starting · Open-Window",
       "created": "2026-11-19T12:08:48Z",
       "revised": "2026-11-19T12:18:49Z",
       "project": "single-repo-hub"
