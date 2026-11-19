@@ -1,6 +1,6 @@
 # A hardenshed test leaves .lock in the package directory
 
-`hardenshed-test-stray-lock` · Task · bug, gate · running · Drift-Expect
+`hardenshed-test-stray-lock` · Task · bug, gate · running · Darn-Write
 
 ## Seen
 
