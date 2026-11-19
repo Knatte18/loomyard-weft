@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-19 19:51 UTC; every age below is as of then.
+Rendered 2026-11-19 19:57 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -29,7 +29,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | T9 | 1d<br>30m | fabric, loom, board |
+| T1 | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | T9 | 1d<br>36m | fabric, loom, board |
 
 #### Layer B (1)
 
@@ -68,7 +68,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>47m | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>53m | burler, shed, orch, quarry, report |
 
 </details>
 
@@ -106,7 +106,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 <details open>
 <summary><strong><a href="project-single-repo-hub.md">P4 Single-repository hubs: records and board under refs/lym/, the layout known only to fabric</a> (1)</strong></summary>
 
-[`single-repo-hub`](design-single-repo-hub.md) · Age 23h · Owner `neve`
+[`single-repo-hub`](design-single-repo-hub.md) · Age 1d · Owner `neve`
 
 ### Tasks (1)
 
@@ -147,11 +147,11 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Raddle checks pass a part slug that Raddle-File then refuses as too long**<br>• The proposal checks do not test the board slug length limit, so an approved split stops at Raddle-File<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`raddle-slug-length-check`](design-raddle-slug-length-check.md) | darn · light | Code-Burler-Review | neve | 1h<br>17m | shed |
-| T3 | **Gate fixes: verdict from parsed results, only declared gate keys in prompts, env override warning**<br>• Three gate faults seen in .NET hubs: a console logger flips the verdict, prompts name an undeclared gate key, and tier env overrides go unreported<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gate-dotnet-fixes`](design-gate-dotnet-fixes.md) | darn · solid | Darn-Write | neve | 11m<br>9m | gate, dotnet, stencil, darn |
-| T4 | **Verify triage keeps first-run failure output and names real identities; fix the flaky reedcli test**<br>• Triage calls the verify step flaky and drops the failure output; the reedcli package fails the first verify run<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-flaky-triage`](design-verify-flaky-triage.md) | darn · light | Darn-Write | neve | 11m<br>9m | webster, gate, reed |
-| T6 | **Finalize halts on a pull request whose mergeability GitHub has not computed yet**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`finalize-mergeable-unknown`](design-finalize-mergeable-unknown.md) | darn · light | Darn-Write | neve | 11m<br>9m | landing |
-| T7 | **hardenshed reaper misses orphans whose cwd is under a _lym link**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-reap-lym-link-cwd`](design-harden-reap-lym-link-cwd.md) | darn · light | Darn-Write | neve | 11m<br>9m | shed, process |
+| T2 | **Raddle checks pass a part slug that Raddle-File then refuses as too long**<br>• The proposal checks do not test the board slug length limit, so an approved split stops at Raddle-File<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`raddle-slug-length-check`](design-raddle-slug-length-check.md) | darn · light | Code-Burler-Fix | neve | 1h<br>23m | shed |
+| T3 | **Gate fixes: verdict from parsed results, only declared gate keys in prompts, env override warning**<br>• Three gate faults seen in .NET hubs: a console logger flips the verdict, prompts name an undeclared gate key, and tier env overrides go unreported<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gate-dotnet-fixes`](design-gate-dotnet-fixes.md) | darn · solid | Darn-Write | neve | 17m<br>15m | gate, dotnet, stencil, darn |
+| T4 | **Verify triage keeps first-run failure output and names real identities; fix the flaky reedcli test**<br>• Triage calls the verify step flaky and drops the failure output; the reedcli package fails the first verify run<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-flaky-triage`](design-verify-flaky-triage.md) | darn · light | Darn-Write | neve | 17m<br>15m | webster, gate, reed |
+| T6 | **Finalize halts on a pull request whose mergeability GitHub has not computed yet**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`finalize-mergeable-unknown`](design-finalize-mergeable-unknown.md) | darn · light | Darn-Write | neve | 17m<br>15m | landing |
+| T7 | **hardenshed reaper misses orphans whose cwd is under a _lym link**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-reap-lym-link-cwd`](design-harden-reap-lym-link-cwd.md) | darn · light | Darn-Write | neve | 17m<br>15m | shed, process |
 
 #### Ready (0)
 
@@ -174,13 +174,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Red-first gate cannot judge a diff that also changes non-Go files**<br>• The base overlay of the red-first gate cannot put back a changed spec or doc file, so a bug fix with a Go seam is waived | [`red-first-overlay-non-go-files`](design-red-first-overlay-non-go-files.md) | 2m<br>2m | gate, testmap |
+| B1 |  | **Red-first gate cannot judge a diff that also changes non-Go files**<br>• The base overlay of the red-first gate cannot put back a changed spec or doc file, so a bug fix with a Go seam is waived | [`red-first-overlay-non-go-files`](design-red-first-overlay-non-go-files.md) | 9m<br>9m | gate, testmap |
 
 #### Enhancements (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam** | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | 10m<br>10m | burler, stencil |
+| E1 |  | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam** | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | 17m<br>17m | burler, stencil |
 
 #### Features (2)
 
