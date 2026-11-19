@@ -1,0 +1,258 @@
+diff --git a/contracts/orchrole/role-intake.md b/contracts/orchrole/role-intake.md
+index 22951444..de5c74b6 100644
+--- a/contracts/orchrole/role-intake.md
++++ b/contracts/orchrole/role-intake.md
+@@ -32,11 +32,19 @@ The fork follows `ly:board` for the commands and is bound to these outcomes:
+   Its reason names which.
+ - A duplicate that adds anything is folded;
+   a fold the board refuses because the entry is run-held becomes a new note.
++- The full list carries each issue's comments, and the import carries them into the entry's body.
++  A comment that is a finding apart from its issue also becomes a note of its own,
++  written with `lym board upsert` and `"kind":"note"`, its body quoting the comment and naming the issue.
++  The split happens only when the fork's own import of that issue wrote the board,
++  which is a success or an error carrying a `close` payload;
++  it is skipped when the import prints `recorded`.
+ - When an import writes the board but its close fails, it re-runs the error's `close` payload once.
+   A second pointer comment from the re-run is accepted.
+   A second failure gives the issue a `failed` line with the error and the `close` payload.
+ - It writes the board only through `lym board intake` and a `lym board upsert`.
+-  That upsert writes only the labels of an entry the fork just folded into, keeping every label the entry carries.
++  An upsert writes only a note split from a comment,
++  or the labels of an entry the fork just folded into, keeping every label the entry carries.
+ - It edits no file, sends no message, and merges, promotes, starts or re-scopes nothing.
+ - It returns one line per issue:
+-  the number, then the new slug, the entry folded into, `closed` or `failed`, then the labels, close reason or error.
++  the number, then the new slug, the entry folded into, `closed` or `failed`, then the labels, close reason or error,
++  then the slug of each note split from a comment.
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 3d53e451..8680b307 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -180,6 +180,8 @@
+ // `intake list` prints `{"issues":[{"number":…,"title":…}]}` for each open issue no entry records.
+ // Pull requests are excluded, and no open issue prints `{"issues":[]}`.
+ // `--full` prints number, title, body, labels, url, comments and created_at for the same set.
++// Its `comments` is the list of `{"body":…,"created_at":…}` that import carries into the entry's body:
++// oldest first, lym's own import pointers left out.
+ //
+ // `intake import` prints `{"slug":…,"issue":…,"labels":[…],"dropped":[…]}`.
+ // For a fold, `slug` is the entry folded into.
+diff --git a/internal/boardcli/intake.go b/internal/boardcli/intake.go
+index 90c9afa8..24407718 100644
+--- a/internal/boardcli/intake.go
++++ b/internal/boardcli/intake.go
+@@ -54,7 +54,9 @@ into an entry and closes it with a pointer, and close closes noise with a stated
+ Takes no payload.
+ 
+ Prints {"issues":[...]} with the number and title of each issue.
+-With --full, each issue also carries body, labels, url, comments (the comment count) and created_at.
++With --full, each issue also carries body, labels, url, comments and created_at.
++Its comments are each comment's body and created_at, oldest first and without lym's own import pointers:
++the comments import carries into the entry's body.
+ The filtering is the same in both modes.
+ 
+ Examples:
+@@ -69,7 +71,7 @@ Examples:
+ 			return intakeList(out, board(), repo, listFull)
+ 		}),
+ 	}
+-	listCmd.Flags().BoolVar(&listFull, "full", false, "print body, labels, url, comments and created_at too")
++	listCmd.Flags().BoolVar(&listFull, "full", false, "print body, labels, url, the comments and created_at too")
+ 
+ 	importCmd := &cobra.Command{
+ 		Use:         "import {issue, slug|into, title?, brief?, labels?}",
+@@ -166,16 +168,23 @@ type intakeIssueSummary struct {
+ 
+ // intakeIssueView is the view of an issue that list --full prints.
+ type intakeIssueView struct {
+-	Number    int       `json:"number"`
+-	Title     string    `json:"title"`
++	Number    int                 `json:"number"`
++	Title     string              `json:"title"`
++	Body      string              `json:"body"`
++	Labels    []string            `json:"labels"`
++	URL       string              `json:"url"`
++	Comments  []intakeCommentView `json:"comments"`
++	CreatedAt time.Time           `json:"created_at"`
++}
++
++// intakeCommentView is one comment of an issue as list --full prints it.
++type intakeCommentView struct {
+ 	Body      string    `json:"body"`
+-	Labels    []string  `json:"labels"`
+-	URL       string    `json:"url"`
+-	Comments  int       `json:"comments"`
+ 	CreatedAt time.Time `json:"created_at"`
+ }
+ 
+ // intakeList prints the open issues of repo that no board entry records, as number and title unless full is set.
++// With full set it also prints each issue's comments, fetching them only for an issue GitHub counts comments on.
+ func intakeList(out io.Writer, b *boardengine.Board, repo *hubissues.Repo, full bool) int {
+ 	issues, err := repo.ListOpenIssues()
+ 	if err != nil {
+@@ -195,13 +204,23 @@ func intakeList(out io.Writer, b *boardengine.Board, repo *hubissues.Repo, full
+ 			summaries = append(summaries, intakeIssueSummary{Number: issue.Number, Title: issue.Title})
+ 			continue
+ 		}
++		comments := []intakeCommentView{}
++		if issue.Comments > 0 {
++			fetched, err := repo.ListIssueComments(issue.Number)
++			if err != nil {
++				return outputError(out, fmt.Sprintf("issue #%d: %v", issue.Number, err))
++			}
++			for _, comment := range carriedComments(fetched) {
++				comments = append(comments, intakeCommentView{Body: comment.Body, CreatedAt: comment.CreatedAt})
++			}
++		}
+ 		views = append(views, intakeIssueView{
+ 			Number:    issue.Number,
+ 			Title:     issue.Title,
+ 			Body:      issue.Body,
+ 			Labels:    issue.Labels,
+ 			URL:       issue.URL,
+-			Comments:  issue.Comments,
++			Comments:  comments,
+ 			CreatedAt: issue.CreatedAt,
+ 		})
+ 	}
+@@ -247,14 +266,23 @@ func decodeIssueNumber(fields map[string]json.RawMessage) (int, error) {
+ 	return number, nil
+ }
+ 
++// carriedComments returns comments, in order, without the import pointers among them.
++// Lym posted those pointers, so they carry nothing.
++func carriedComments(comments []hubissues.IssueComment) []hubissues.IssueComment {
++	var carried []hubissues.IssueComment
++	for _, comment := range comments {
++		if !isImportPointer(comment.Body) {
++			carried = append(carried, comment)
++		}
++	}
++	return carried
++}
++
+ // inboxIssue converts a fetched issue and its comments, oldest first, to the boardengine view of it.
+-// A comment that is an import pointer is dropped, since lym posted it and it carries nothing.
++// Import pointers are dropped.
+ func inboxIssue(issue hubissues.Issue, comments []hubissues.IssueComment) boardengine.InboxIssue {
+ 	var carried []boardengine.IssueComment
+-	for _, comment := range comments {
+-		if isImportPointer(comment.Body) {
+-			continue
+-		}
++	for _, comment := range carriedComments(comments) {
+ 		carried = append(carried, boardengine.IssueComment{Body: comment.Body, CreatedAt: comment.CreatedAt})
+ 	}
+ 	return boardengine.InboxIssue{
+diff --git a/internal/boardcli/intake_test.go b/internal/boardcli/intake_test.go
+index 36895755..8730ae1f 100644
+--- a/internal/boardcli/intake_test.go
++++ b/internal/boardcli/intake_test.go
+@@ -255,7 +255,7 @@ func TestIntakeList_ExcludesPullRequestsRecordedAndClosedAcrossPages(t *testing.
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	fullInbox := []fakeIssue{
+-		{number: 1, state: "open", thread: []string{"one", "two"}},
++		{number: 1, state: "open", thread: threadWithPointer},
+ 		{number: 2, state: "open", pullRequest: true},
+ 		{number: 3, state: "closed"},
+ 		{number: 4, state: "open"},
+@@ -267,6 +267,7 @@ func TestIntakeList_ExcludesPullRequestsRecordedAndClosedAcrossPages(t *testing.
+ 		{number: 3, state: "closed"},
+ 		{number: 4, state: "open"},
+ 	}
++	failedThreadInbox := []fakeIssue{{number: 1, state: "open", thread: []string{"one"}, failThread: true}}
+ 	tests := []struct {
+ 		name         string
+ 		issues       []fakeIssue
+@@ -280,16 +281,19 @@ func TestIntakeList_ExcludesPullRequestsRecordedAndClosedAcrossPages(t *testing.
+ 		wantNumbers string
+ 		// wantFull is whether the issue objects carry the full view.
+ 		wantFull bool
++		// wantErr is a substring the error message must contain, empty when the row does not check it.
++		wantErr string
+ 	}{
+-		{"Compact", fullInbox, false, false, nil, []string{"list"}, 0, "[1 5 6]", false},
+-		{"Full", fullInbox, false, false, nil, []string{"list", "--full"}, 0, "[1 5 6]", true},
+-		{"EmptyCompact", emptyInbox, false, false, nil, []string{"list"}, 0, "[]", false},
+-		{"EmptyFull", emptyInbox, false, false, nil, []string{"list", "--full"}, 0, "[]", true},
+-		{"ListFailure", fullInbox, true, false, nil, []string{"list"}, 1, "", false},
+-		{"BoardLoadFailure", fullInbox, false, true, nil, []string{"list"}, 1, "", false},
+-		{"RepositoryUnresolved", fullInbox, false, false, errors.New("no hub repository"), []string{"list"}, 1, "", false},
+-		{"RepositoryUnresolvedImport", fullInbox, false, false, errors.New("no hub repository"), []string{"import", `{"issue":1,"slug":"x"}`}, 1, "", false},
+-		{"RepositoryUnresolvedClose", fullInbox, false, false, errors.New("no hub repository"), []string{"close", `{"issue":1,"reason":"Noise."}`}, 1, "", false},
++		{"Compact", fullInbox, false, false, nil, []string{"list"}, 0, "[1 5 6]", false, ""},
++		{"Full", fullInbox, false, false, nil, []string{"list", "--full"}, 0, "[1 5 6]", true, ""},
++		{"EmptyCompact", emptyInbox, false, false, nil, []string{"list"}, 0, "[]", false, ""},
++		{"EmptyFull", emptyInbox, false, false, nil, []string{"list", "--full"}, 0, "[]", true, ""},
++		{"ListFailure", fullInbox, true, false, nil, []string{"list"}, 1, "", false, ""},
++		{"CommentListFailure", failedThreadInbox, false, false, nil, []string{"list", "--full"}, 1, "", true, "issue #1: github issue comment list failed"},
++		{"BoardLoadFailure", fullInbox, false, true, nil, []string{"list"}, 1, "", false, ""},
++		{"RepositoryUnresolved", fullInbox, false, false, errors.New("no hub repository"), []string{"list"}, 1, "", false, ""},
++		{"RepositoryUnresolvedImport", fullInbox, false, false, errors.New("no hub repository"), []string{"import", `{"issue":1,"slug":"x"}`}, 1, "", false, ""},
++		{"RepositoryUnresolvedClose", fullInbox, false, false, errors.New("no hub repository"), []string{"close", `{"issue":1,"reason":"Noise."}`}, 1, "", false, ""},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -321,8 +325,16 @@ func TestIntakeList_ExcludesPullRequestsRecordedAndClosedAcrossPages(t *testing.
+ 			if code != tt.wantCode {
+ 				t.Fatalf("exit %d, want %d: %v", code, tt.wantCode, envelope)
+ 			}
+-			if len(inbox.perIssueGets) != 0 {
+-				t.Errorf("per-issue requests = %v, want none", inbox.perIssueGets)
++			// Only the full view fetches comments, and only of issue 1, the one issue that has some.
++			fetchesComments := tt.wantFull && len(tt.issues[0].thread) > 0
++			for _, get := range inbox.perIssueGets {
++				if !fetchesComments || get != "/1/comments" {
++					t.Errorf("per-issue requests = %v, want only /1/comments and only in the full view", inbox.perIssueGets)
++					break
++				}
++			}
++			if fetchesComments && len(inbox.perIssueGets) == 0 {
++				t.Error("per-issue requests = [], want issue 1's comments fetched")
+ 			}
+ 			if tt.wantCode != 0 {
+ 				if envelope["ok"] != false {
+@@ -330,6 +342,8 @@ func TestIntakeList_ExcludesPullRequestsRecordedAndClosedAcrossPages(t *testing.
+ 				}
+ 				if msg, _ := envelope["error"].(string); msg == "" {
+ 					t.Errorf("error = %v, want a message", envelope["error"])
++				} else if !strings.Contains(msg, tt.wantErr) {
++					t.Errorf("error = %q, want it to contain %q", msg, tt.wantErr)
+ 				}
+ 				if _, present := envelope["issues"]; present {
+ 					t.Errorf("issues = %v, want no issues key", envelope["issues"])
+@@ -369,8 +383,13 @@ func TestIntakeList_ExcludesPullRequestsRecordedAndClosedAcrossPages(t *testing.
+ 			if first["title"] != "Issue 1" || first["body"] != "Body 1." || first["url"] != "https://example.test/issues/1" || first["created_at"] != "2026-01-02T03:04:05Z" {
+ 				t.Errorf("first issue = %v, want its fields carried over", first)
+ 			}
+-			if first["comments"] != 2.0 || issues[1].(map[string]any)["comments"] != 0.0 {
+-				t.Errorf("comment counts = %v and %v, want 2 and 0", first["comments"], issues[1].(map[string]any)["comments"])
++			wantComments := "[map[body:First comment. created_at:2026-01-02T12:00:00Z] " +
++				"map[body:" + quotedPointerComment + " created_at:2026-01-04T12:00:00Z]]"
++			if got := fmt.Sprint(first["comments"]); got != wantComments {
++				t.Errorf("issue 1 comments = %s, want %s", got, wantComments)
++			}
++			if got := fmt.Sprint(issues[1].(map[string]any)["comments"]); got != "[]" {
++				t.Errorf("issue 5 comments = %s, want []", got)
+ 			}
+ 			if fmt.Sprint(issues[2].(map[string]any)["labels"]) != "[bug]" {
+ 				t.Errorf("issue 6 labels = %v, want [bug]", issues[2].(map[string]any)["labels"])
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index ea46ba98..a46fde19 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -230,9 +230,11 @@ lym board intake close '{"issue":14,"reason":"Duplicate of #12."}'
+ ```
+ 
+ - `list` prints the number and title of each open issue no entry records;
+-  `--full` adds body, labels, url, comment count and creation time.
++  `--full` adds body, labels, url, creation time and the comments, each with its body and creation time.
+ - `import` with `slug` records the issue as a new note; with `into` it folds the issue into an existing entry.
+-  Either way it comments on the issue with a pointer and closes it.
++  Either way the entry's body carries the issue's comments, each under a heading of its own,
++  and `import` comments on the issue with a pointer and closes it.
++  `list --full` and the body leave out lym's own pointer comments.
+   A new note gets its type and module labels through `import`'s `labels`.
+   `import` prints the slug, issue, labels and dropped labels, not the entry; `lym board get` shows the entry.
+   It adds `empty_body` for an issue with a blank body and `local_paths` for one that names files under `.lym/`;
