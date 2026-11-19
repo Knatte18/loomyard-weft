@@ -1,6 +1,6 @@
 # P3 Put the per-test coverage maps to use
 
-Rendered 2026-11-19 18:34 UTC; every age below is as of then.
+Rendered 2026-11-19 18:36 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`testmap-uses`](design-testmap-uses.md) · Age 1d · Owner `neve`
@@ -32,7 +32,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **Measure whether the reach and mutation reports change what runs land**<br>• Over 10 landed darn runs, count how often the reach note, reach turn and mutation survivors led to added tests or fixes<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-use-measure`](design-testmap-use-measure.md) | darn · docs |  | 5h<br>5h | testmap, gate |
+| T5 | `draft` **Measure whether the reach and mutation reports change what runs land**<br>• Over 10 landed darn runs, count how often the reach note, reach turn and mutation survivors led to added tests or fixes<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-use-measure`](design-testmap-use-measure.md) | darn · docs |  | 6h<br>6h | testmap, gate |
 
 ## Notes (0)
 

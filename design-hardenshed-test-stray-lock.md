@@ -1,6 +1,6 @@
 # A hardenshed test leaves .lock in the package directory
 
-`hardenshed-test-stray-lock` · Task · bug, gate · running · Code-Burler-Fix
+`hardenshed-test-stray-lock` · Task · bug, gate · running · Code-Bouncer
 
 ## Seen
 
