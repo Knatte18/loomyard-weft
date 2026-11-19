@@ -1,6 +1,6 @@
 # Board viewer rendered beside the README, opened by lym board open and a VS Code key
 
-`board-viewer-editor` · Task · sketch, board, ide, fabric · running · Record-Write
+`board-viewer-editor` · Task · sketch, board, ide, fabric · running · Raddle-Write
 
 Decision record: [Sketch](decision-board-viewer-editor.md)
 
