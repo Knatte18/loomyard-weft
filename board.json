@@ -169,6 +169,9 @@
       "created": "2026-11-18T17:23:24Z",
       "revised": "2026-11-19T12:08:49Z",
       "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
         "loom": {
           "code_assist_reviewer_fan": "review-code",
           "code_assist_reviewer_model": "astra[medium]"
