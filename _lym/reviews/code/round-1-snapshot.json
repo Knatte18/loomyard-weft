@@ -7,5 +7,6 @@
       "title": "No hardenshed test fix; stray-file gate check instead",
       "digest": "db672cc683f2b8a9674e1e1adb72ff0de733813742c81bdf5dfff3dc7908de61"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
