@@ -1,6 +1,6 @@
 # Merge danger in descriptions, tautological tests in review, and a shared vocabulary
 
-`merge-danger-tautology-glossary` · Task · enhancement, landing, stencil, burler, heddle, docs · running · Code-Bouncer
+`merge-danger-tautology-glossary` · Task · enhancement, landing, stencil, burler, heddle, docs · running · Code-Burler-Review
 
 Three small changes, mostly in stencils and review rubrics, bundled into one run.
 
