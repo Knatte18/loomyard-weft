@@ -571,6 +571,24 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a2bde2e5909a02ca4.jsonl"
       ]
     },
+    "11": {
+      "slug": "failure-triage",
+      "cards": [
+        "11-failure-triage",
+        "12-triage-in-fixer-reports"
+      ],
+      "cardHashes": {
+        "11-failure-triage": "b77ab09830cd6568d6aa8a7c4ee80d646b53e8f50d427c6c7a98ad9dbcd19d02",
+        "12-triage-in-fixer-reports": "96365b3338dd82126aced69db6ffe5ac22096f59312edf24be77c487f4af4513"
+      },
+      "startSha": "6b72be09a4c0174c3c3912ede3f5319cd61729f4",
+      "kind": "fork",
+      "spawnedAt": "2026-11-19T06:55:32Z",
+      "sessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "5": {
       "slug": "reach-step",
       "cards": [
@@ -720,7 +738,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "cc2115949b2e99f9e861afb1569b42c9",
   "masterSessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
   "masterEngine": "claude",
