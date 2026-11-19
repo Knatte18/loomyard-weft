@@ -111,7 +111,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Remove f06acf39's records-on-code-branch layout and revert its two-repository widenings**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`single-repo-code-records-removal`](design-single-repo-code-records-removal.md)<br>[Sketch](decision-single-repo-code-records-removal.md) | darn · solid | starting · Seed-Child | neve | 0m<br>0m | fabric, cwd, cli, batten, loom, landing, git, board, docs, pattern |
+| T8 | **Remove f06acf39's records-on-code-branch layout and revert its two-repository widenings**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`single-repo-code-records-removal`](design-single-repo-code-records-removal.md)<br>[Sketch](decision-single-repo-code-records-removal.md) | darn · solid | starting · Open-Window | neve | 0m<br>0m | fabric, cwd, cli, batten, loom, landing, git, board, docs, pattern |
 
 #### Ready (0)
 
@@ -137,7 +137,7 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T7 | **One-repository hubs redesigned: records on their own branches, the layout known only to fabric**<br>• Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays | [`single-repo-records-branches`](design-single-repo-records-branches.md)<br>[Sketch](decision-single-repo-records-branches.md) | 6h<br>30m | fabric |
+| T7 | **One-repository hubs redesigned: records on their own branches, the layout known only to fabric**<br>• Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays | [`single-repo-records-branches`](design-single-repo-records-branches.md)<br>[Sketch](decision-single-repo-records-branches.md) | 6h<br>31m | fabric |
 
 </details>
 
@@ -182,7 +182,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Raddle checks pass a part slug that Raddle-File then refuses as too long**<br>• The proposal checks do not test the board slug length limit, so an approved split stops at Raddle-File | [`raddle-slug-length-check`](design-raddle-slug-length-check.md) | 2m<br>2m | shed |
+| B1 |  | **Raddle checks pass a part slug that Raddle-File then refuses as too long**<br>• The proposal checks do not test the board slug length limit, so an approved split stops at Raddle-File | [`raddle-slug-length-check`](design-raddle-slug-length-check.md) | 3m<br>3m | shed |
 
 #### Features (2)
 
