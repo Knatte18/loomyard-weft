@@ -1,2 +1,4 @@
 {"stop_key":{"current_producer":"Raddle-File","history_length":2,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-11-19T19:27:33.85871465+01:00","target":"attempt-1"}
 {"stop_key":{"current_producer":"Raddle-File","history_length":2,"state":"failed"},"settler":"parent","action":"hand-back","outcome":"the tackler handed the stop back","at":"2026-11-19T19:27:33.965082732+01:00"}
+{"stop_key":{"current_producer":"Raddle-File","history_length":2,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-11-19T19:28:16.543373905+01:00","target":"attempt-2"}
+{"stop_key":{"current_producer":"Raddle-File","history_length":2,"state":"failed"},"settler":"parent","action":"hand-back","outcome":"the tackler handed the stop back","at":"2026-11-19T19:28:16.636696904+01:00"}

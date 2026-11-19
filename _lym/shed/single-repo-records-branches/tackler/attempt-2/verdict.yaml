@@ -1,0 +1,12 @@
+verdict: hand-back
+reason: >-
+  The stop is a producer error from the Raddle-File row (trace b44ced9fde8ea0c0, stderr log line 1 and step trace line 13):
+  "file entry \"single-repo-records-on-code-removal\": slug exceeds max length of 32 characters" (35 chars).
+  The envelope's way forward says the fault is transient and to re-step the Raddle-File row. It is not transient: the slug is
+  derived from the entry name, which is fixed in the run's data, so re-stepping the row repeats the same refusal. The cause is
+  named and no plain re-launch or goto settles it, because the fix is to change the entry's name or slug, which is a naming
+  choice for the run's parent. I did not run any lym verb that changes the run or any git command that changes anything.
+question: >-
+  Raddle-File refused to file the proposal because the entry "single-repo-records-on-code-removal" has a 35-character slug,
+  and the limit is 32. Which name should the entry take, one of 32 characters or fewer, and should the run be resumed from
+  Raddle-File with that name?
