@@ -15,5 +15,6 @@
       "title": "Triage in the prime follows D7 (plan F10)",
       "digest": "ca9912bc8b88c6e487d8fdae7d30a08d81b60c9305c75cac2d10a6a9ba05ebf5"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
