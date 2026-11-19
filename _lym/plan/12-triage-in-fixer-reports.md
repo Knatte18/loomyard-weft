@@ -1,10 +1,10 @@
 # Card 12 — triage-in-fixer-reports
 
 **Create:**
-- `plan:internal/gateslot#TriageLines` -> `func TriageLines(log string) map[string][]string`
-- `plan:internal/gateslot#TestTriageLines` -> `func TestTriageLines(t *testing.T)`
-- `plan:internal/weaverengine#TestFailureReport` -> `func TestFailureReport(t *testing.T)`
-- `plan:internal/websterengine#triagedPackageLog` -> `var triagedPackageLog string`
+- `internal/gateslot#TriageLines`
+- `internal/gateslot#TestTriageLines`
+- `internal/weaverengine_test#TestFailureReport`
+- `internal/websterengine#triagedPackageLog`
 
 **Edit:**
 - `internal/loomshed#verifyFailureFindings`
@@ -24,7 +24,7 @@
 - `internal/weaverengine/doc.go`
 
 **Uses:**
-- `plan:internal/gateslot#TriageLinePrefix`
+- `internal/gateslot#TriageLinePrefix`
 
 **Intent:**
 Make every fixer's report carry the triage lines of its failed tests (D7's last bullet).

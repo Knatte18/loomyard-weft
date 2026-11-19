@@ -1,11 +1,11 @@
 # Card 11 — failure-triage
 
 **Create:**
-- `plan:internal/gateslot#TriageLinePrefix` -> `const TriageLinePrefix = "triage: "`
-- `plan:internal/gatecli#triageLookup` -> `type triageLookup struct`
-- `plan:internal/gatecli#newTriageLookup` -> `func newTriageLookup(open func() (*testreach.Reader, error), mergeBase func() (string, bool, error), changed func(base string) ([]testreach.ChangedFunc, error)) (triageLookup, bool)`
-- `plan:internal/gatecli#triageLookup.lines` -> `func (l triageLookup) lines(pkg, test string) []string`
-- `plan:internal/gatecli#TestTriageLookup_Lines` -> `func TestTriageLookup_Lines(t *testing.T)`
+- `internal/gateslot#TriageLinePrefix`
+- `internal/gatecli#triageLookup`
+- `internal/gatecli#newTriageLookup`
+- `internal/gatecli#triageLookup.lines`
+- `internal/gatecli#TestTriageLookup_Lines`
 
 **Edit:**
 - `internal/gatecli#runFailure`

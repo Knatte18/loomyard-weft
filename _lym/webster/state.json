@@ -1,6 +1,6 @@
 {
   "runGuid": "55564e2c6983cfab5875811855cabccd",
-  "planFingerprint": "e953e314d2c0d16f5870ed985e36736c0b6906bbbbe8dddb8f9b1f62f6c1a2ce",
+  "planFingerprint": "99f591c4689613044df464effb3b11382ee4dc2b26cac295e29b8f9c4392829c",
   "planFileHashes": {
     "00-overview.md": "60f0149d2ad266e455907c0d1f6ac189a2c7b065f5e6c2572875fd14cc856a23",
     "01-testreach-changed-funcs.md": "9697c560dae0c978316d293e521026f00787cf923a8a5b4f9a0a5f8ae0c2eab5",
@@ -13,8 +13,8 @@
     "08-rerun-mark-writer-only.md": "991ee5ee1421147c9ba09bc9f0df163546b493d4a86165deb8bdfa2ea93e85d5",
     "09-reach-turn.md": "7d9dd3839a74c70906bee0503963b2e7bbc1942de7037fb07f8bacfb0cc38a5b",
     "10-reach-verb.md": "e48f83cd0480a65e7e3e47406a0d24eeb1f26d29266b5fd74a37e5e11f9affe4",
-    "11-failure-triage.md": "b77ab09830cd6568d6aa8a7c4ee80d646b53e8f50d427c6c7a98ad9dbcd19d02",
-    "12-triage-in-fixer-reports.md": "96365b3338dd82126aced69db6ffe5ac22096f59312edf24be77c487f4af4513",
+    "11-failure-triage.md": "ca8b57eedb99ac4c3618b06bb57f5cdc3b7daf87d0d4b1a3aeb30c4058cf3e9c",
+    "12-triage-in-fixer-reports.md": "e50cf92c5d66b0827f12f7a76b2f28638b4c291924b559abb41a4008ef4b4567",
     "13-gate-mutate.md": "03269c67270f4e849b327f6a6e9b8a057da5c08525f73994efdc2836655f498e"
   },
   "planOverviewFrameHash": "c7f3d161756dc46f9b59032e8822b7ca3356dfdbb327cc6bddc0e8719b17e974",
@@ -578,16 +578,38 @@
         "12-triage-in-fixer-reports"
       ],
       "cardHashes": {
-        "11-failure-triage": "b77ab09830cd6568d6aa8a7c4ee80d646b53e8f50d427c6c7a98ad9dbcd19d02",
-        "12-triage-in-fixer-reports": "96365b3338dd82126aced69db6ffe5ac22096f59312edf24be77c487f4af4513"
+        "11-failure-triage": "ca8b57eedb99ac4c3618b06bb57f5cdc3b7daf87d0d4b1a3aeb30c4058cf3e9c",
+        "12-triage-in-fixer-reports": "e50cf92c5d66b0827f12f7a76b2f28638b4c291924b559abb41a4008ef4b4567"
       },
       "startSha": "6b72be09a4c0174c3c3912ede3f5319cd61729f4",
       "kind": "fork",
       "spawnedAt": "2026-11-19T06:55:32Z",
       "sessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-failure-triage",
+        "status": "done",
+        "head_sha": "81d8670770019b8fec9089ef779b9f73a15c1d18",
+        "deviations": [
+          "internal/gatecli/counters.go",
+          "internal/gatecli/failurereport.go",
+          "internal/gatecli/triage.go",
+          "internal/gateslot/triage.go",
+          "internal/weaverengine/export_test.go",
+          "internal/weaverengine/failurereport_test.go"
+        ]
+      },
+      "cardShas": [
+        "81d8670770019b8fec9089ef779b9f73a15c1d18"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a00051edae0b544f0.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a00051edae0b544f0.jsonl"
+      ]
     },
     "5": {
       "slug": "reach-step",
@@ -738,7 +760,7 @@
       ]
     }
   },
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "cc2115949b2e99f9e861afb1569b42c9",
   "masterSessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
   "masterEngine": "claude",
@@ -749,6 +771,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a9ba657470da4d178.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a51925198c8cd7a2c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-ad8f245ec55d741ee.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a2bde2e5909a02ca4.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a2bde2e5909a02ca4.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a00051edae0b544f0.jsonl"
   ]
 }
