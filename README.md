@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-19 14:37 UTC; every age below is as of then.
+Rendered 2026-11-19 14:40 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -138,7 +138,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | Webster | neve | 4h<br>3h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
+| T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | Webster | neve | 5h<br>3h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
 #### Ready (0)
 
@@ -170,7 +170,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **A Merge danger section in every change description: one-way or two-way door, and blast radius** | [`merge-danger-in-description`](design-merge-danger-in-description.md) | 1h<br>1h | landing, stencil |
 | E2 |  | **Bug runs prove their test was red before the fix, and name the root cause in a trailer** | [`bug-red-first-gate`](design-bug-red-first-gate.md) | 1h<br>1h | gate, testmap |
 | E3 |  | **Code review flags tests whose expected value is computed the way the code computes it** | [`tautological-test-finding`](design-tautological-test-finding.md) | 1h<br>1h | burler, stencil |
-| E4 |  | **Shared vocabulary: one glossary, loaded only where needed, linted everywhere**<br>• One glossary of lym terms and banned synonyms; orch gets it via heddle orch-prompt, Discussion via its stencil, a lint checks stencils, skills and docs | [`shared-vocabulary`](design-shared-vocabulary.md) | 0m<br>0m | heddle, stencil, docs, lint |
+| E4 |  | **Shared vocabulary: one glossary, loaded only by the orch and Discussion**<br>• One glossary of lym terms and words never to use for them; the orch gets it via heddle orch-prompt, Discussion via its stencil | [`shared-vocabulary`](design-shared-vocabulary.md) | 3m<br>0m | heddle, stencil, docs |
 
 #### Features (4)
 

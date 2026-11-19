@@ -1,6 +1,6 @@
-# Shared vocabulary: one glossary, loaded only where needed, linted everywhere
+# Shared vocabulary: one glossary, loaded only by the orch and Discussion
 
-`shared-vocabulary` · Note · enhancement, heddle, stencil, docs, lint
+`shared-vocabulary` · Note · enhancement, heddle, stencil, docs
 
 ## Seen
 
@@ -21,8 +21,7 @@ There it is a skill steering a live chat; here it becomes structure.
   - Discussion, which writes decision records and settles new terms, gets it included in its stencil.
     Discussion calls out a term in the entry that conflicts with the glossary, and a term it settles goes into the glossary.
   - Writers, fixers and reviewers get nothing.
-- **A lint** flags a banned word in stencils, skills and docs, so agents that never read the glossary are still held to it.
-- The `nicknames` heddle entry stays for this hub's own nicknames; whether lym's general terms ship in the binary for every hub is for Discussion.
 - The glossary may also ship as a skill such as `ly:vocabulary`, loaded on demand by agents writing docs, stencils or skills.
   A skill alone is not enough: an agent does not know it is using a wrong word, so it would not load the skill when it needs it.
-  The orch and Discussion therefore get the glossary structurally, and the lint enforces it.
+- No lint (operator, 2026-11-19): the drift seen so far was in chat with the operator, which a lint never reads, and banned words such as "card" and "log" are right in other senses, so a lint would cost more than it catches.
+- The `nicknames` heddle entry stays for this hub's own nicknames; whether lym's general terms ship in the binary for every hub is for Discussion.
