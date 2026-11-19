@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "5be3170dd63f7d3389de490dff271dcf78ba5646",
+  "added_decisions": [
+    {
+      "title": "No test seam for the red-first overlay: the diff's spec change blocks it",
+      "digest": "23497335337af484bae3b38e80f3c58e9b48f430672f4cf177592f8c9a3e1079"
+    }
+  ]
+}
