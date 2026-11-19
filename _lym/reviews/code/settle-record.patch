@@ -1,0 +1,331 @@
+diff --git a/contracts/stencils/burler/burler-review-format.md b/contracts/stencils/burler/burler-review-format.md
+index 17275022..23ee549d 100644
+--- a/contracts/stencils/burler/burler-review-format.md
++++ b/contracts/stencils/burler/burler-review-format.md
+@@ -42,9 +42,14 @@ Frontmatter rules, all strict:
+ - Every `id` is unique within the file.
+ - A `BLOCKING` verdict requires at least one `BLOCKING`-severity finding.
+ - Never write `APPROVED` while any finding is `BLOCKING` — a self-contradictory review file must never happen and must never look approved.
+-- `summary` must be valid YAML.
+-  If it needs to contain a `"` character (e.g. quoting a misspelled word or an error message), the ENTIRE value must be one double-quoted string covering the whole line — never a quoted fragment followed by unquoted trailing prose. `summary: "capital" is misspelled as "captial"` is INVALID YAML (the value ends at the first closing quote, and everything after it breaks the parse).
+-  Either quote the whole line (`summary: "\"capital\" is misspelled as \"captial\""`) or, simpler, just don't use literal quote characters in the summary (`summary: capital is misspelled as captial`).
++- Every value must be valid YAML.
++  A value that holds `: ` (a colon followed by a space) must be ONE double-quoted string covering the whole value;
++  so must a value that opens with `"`, `'`, a backtick, `[`, `{`, `*`, `&`, `!`, `|`, `>`, `%`, `@` or `#`.
++  Inside it, escape each `"` and `\` with a backslash: `fix: "Print the \"creel: warning:\" line"`.
++  An unquoted `summary: the refusal prints a creel: warning: line` is INVALID YAML, and the round cannot read the review.
++- Never write a quoted fragment followed by unquoted trailing prose.
++  `summary: "capital" is misspelled as "captial"` is INVALID YAML (the value ends at the first closing quote, and everything after it breaks the parse).
++  Either quote the whole value (`summary: "\"capital\" is misspelled as \"captial\""`) or leave the quote characters out (`summary: capital is misspelled as captial`).
+ - Omit `findings` entirely when you found nothing.
+   Never invent a finding to pad the list.
+ - In a cluster round, each finding also carries an `origin:` key — `lens:<name>` for a finding kept from a named fork, or `handler` for one you found yourself.
+diff --git a/internal/burlerengine/verdict.go b/internal/burlerengine/verdict.go
+index 3dcfa34a..45e8f69b 100644
+--- a/internal/burlerengine/verdict.go
++++ b/internal/burlerengine/verdict.go
+@@ -116,7 +116,7 @@ func ParseReview(content []byte) (Verdict, []Finding, error) {
+ 
+ 	var parsed reviewHeader
+ 	if err := yaml.Unmarshal([]byte(header), &parsed); err != nil {
+-		return "", nil, fmt.Errorf("burler: review file frontmatter is not valid YAML: %w%s", err, quotedSummaryHint(header))
++		return "", nil, fmt.Errorf("burler: review file frontmatter is not valid YAML: %w%s", err, quotingHint(header, err))
+ 	}
+ 
+ 	verdict, err := parseVerdict(parsed.Verdict)
+@@ -263,14 +263,24 @@ func ReviewGateEntry(reviewPath string) shuttleengine.GateEntry {
+ // malformedQuotedSummary matches a `summary:` line whose value opens with a double-quoted fragment.
+ // The value then carries more, unquoted content on the same line: `summary: "capital" is misspelled as "captial"`.
+ // That is invalid YAML, since a quoted scalar must end the value.
+-var malformedQuotedSummary = regexp.MustCompile(`(?m)^\s*summary:\s*"[^"]*"\s*\S`)
++// The match stays on one line, so a fully quoted summary never matches, and the fragment skips backslash-escaped quotes.
++// A `#` after the closing quote opens a YAML comment,
++// so a fully quoted summary with a trailing comment never matches either.
++var malformedQuotedSummary = regexp.MustCompile(`(?m)^[ \t]*summary:[ \t]*"(?:[^"\\]|\\.)*"[ \t]*[^\s#]`)
+ 
+-// quotedSummaryHint returns a diagnostic suffix for a header with a quoted summary fragment and trailing prose.
++// unquotedColonError is the text the YAML parser's error carries when a plain value holds a colon followed by a space.
++const unquotedColonError = "mapping values are not allowed"
++
++// quotingHint returns a diagnostic suffix for a header that parseErr refused, or "" when no hint fits.
++// It covers a quoted summary fragment followed by trailing prose, and a plain value holding a colon followed by a space.
+ // The suffix points the reviewer or the operator at the fix instead of a bare YAML parser error.
+-func quotedSummaryHint(header string) string {
++func quotingHint(header string, parseErr error) string {
+ 	if malformedQuotedSummary.MatchString(header) {
+ 		return " (a summary containing a \" character must be ONE double-quoted string covering the whole value, not a quoted fragment followed by trailing prose)"
+ 	}
++	if strings.Contains(parseErr.Error(), unquotedColonError) {
++		return " (a value holding \": \" must be ONE double-quoted string covering the whole value, with each \" and \\ inside it escaped by a backslash)"
++	}
+ 	return ""
+ }
+ 
+diff --git a/internal/burlerengine/verdict_test.go b/internal/burlerengine/verdict_test.go
+index 6814fddf..9da43149 100644
+--- a/internal/burlerengine/verdict_test.go
++++ b/internal/burlerengine/verdict_test.go
+@@ -20,6 +20,7 @@ func TestParseReview(t *testing.T) {
+ 		content      string
+ 		wantErr      bool
+ 		errSubstr    string
++		errAbsent    string
+ 		wantVerdict  Verdict
+ 		wantFindings []Finding
+ 	}{
+@@ -211,6 +212,7 @@ verdict: [APPROVED
+ `,
+ 			wantErr:   true,
+ 			errSubstr: "not valid YAML",
++			errAbsent: "a value holding",
+ 		},
+ 		{
+ 			// A summary that opens with a quoted fragment and carries unquoted trailing prose on the same line is invalid YAML.
+@@ -229,6 +231,74 @@ findings:
+ 			wantErr:   true,
+ 			errSubstr: "must be ONE double-quoted string covering the whole value",
+ 		},
++		{
++			// An unquoted value holding a colon followed by a space reads to YAML as a nested mapping.
++			name: "unquoted colon in a value appends the quoting hint",
++			content: `---
++verdict: BLOCKING
++findings:
++  - id: b-1
++    severity: BLOCKING
++    class: design
++    location: file.go:1
++    summary: the refusal prints a creel: warning: line
++    fix: quote it
++---
++`,
++			wantErr:   true,
++			errSubstr: "a value holding \": \" must be ONE double-quoted string covering the whole value",
++		},
++		{
++			// A valid, fully quoted summary must not pre-empt the colon hint for a later field.
++			name: "fully quoted summary with an unquoted colon in fix gets the colon hint",
++			content: `---
++verdict: BLOCKING
++findings:
++  - id: b-1
++    severity: BLOCKING
++    class: design
++    location: file.go:1
++    summary: "\"capital\" is misspelled"
++    fix: quote it: now
++---
++`,
++			wantErr:   true,
++			errSubstr: "a value holding",
++		},
++		{
++			// A fully quoted summary with a trailing YAML comment is valid and must not pre-empt the colon hint.
++			name: "fully quoted summary with a trailing comment and an unquoted colon in fix gets the colon hint",
++			content: `---
++verdict: BLOCKING
++findings:
++  - id: b-1
++    severity: BLOCKING
++    class: design
++    location: file.go:1
++    summary: "the gate fails" # note
++    fix: quote it: now
++---
++`,
++			wantErr:   true,
++			errSubstr: "a value holding",
++		},
++		{
++			// A quoted fragment followed by prose holding a colon and a space gets the fragment hint.
++			name: "quoted summary fragment followed by prose holding a colon gets the fragment hint",
++			content: `---
++verdict: BLOCKING
++findings:
++  - id: b-1
++    severity: BLOCKING
++    class: design
++    location: file.go:1
++    summary: "capital" is misspelled: see line 1
++    fix: quote it
++---
++`,
++			wantErr:   true,
++			errSubstr: "not a quoted fragment followed by trailing prose",
++		},
+ 		{
+ 			name: "unknown verdict",
+ 			content: `---
+@@ -512,6 +582,9 @@ findings:
+ 				if !strings.Contains(err.Error(), tt.errSubstr) {
+ 					t.Errorf("ParseReview() error = %q; want substring %q", err.Error(), tt.errSubstr)
+ 				}
++				if tt.errAbsent != "" && strings.Contains(err.Error(), tt.errAbsent) {
++					t.Errorf("ParseReview() error = %q; want no substring %q", err.Error(), tt.errAbsent)
++				}
+ 				if !strings.HasPrefix(err.Error(), "burler: ") {
+ 					t.Errorf("ParseReview() error = %q; want burler: -prefixed message", err.Error())
+ 				}
+diff --git a/internal/haltnote/haltnote.go b/internal/haltnote/haltnote.go
+index 978ff14e..95e8f4d8 100644
+--- a/internal/haltnote/haltnote.go
++++ b/internal/haltnote/haltnote.go
+@@ -18,6 +18,9 @@ const (
+ 	fence         = "```"
+ 	historyHeader = "history:"
+ 	noHistoryLine = "no history entries"
++	// routedPrefix opens a history row's fourth field.
++	// The field names the producer the row's step routed the run on to, by a routed Stuck or a reroute.
++	routedPrefix = "routed to "
+ 	// parentHeader opens a section that older binaries wrote; Parse skips every line under it.
+ 	parentHeader    = "parent fabric status:"
+ 	rowSeparator    = " / "
+@@ -45,9 +48,13 @@ type Row struct {
+ 	Producer string
+ 	Outcome  string
+ 	At       string
++	// RoutedTo names the producer the row's step handed the run on to, empty when it handed it to none.
++	// It tells a step that routed the run on, by a routed Stuck or a reroute, from a step that stopped the run.
++	RoutedTo string
+ }
+ 
+ // Render returns the halt note file for n: a title, the reason in a fence, then the producer, state and history lines.
++// A history row whose step handed the run on ends with `routed to <producer>`.
+ func Render(n Note) []byte {
+ 	var b strings.Builder
+ 	b.WriteString(titlePrefix + n.State + " at " + n.Producer + "\n\n")
+@@ -64,7 +71,11 @@ func Render(n Note) []byte {
+ 		b.WriteString(noHistoryLine + "\n")
+ 	}
+ 	for _, r := range n.History {
+-		b.WriteString("- " + r.Producer + rowSeparator + r.Outcome + rowSeparator + r.At + "\n")
++		b.WriteString("- " + r.Producer + rowSeparator + r.Outcome + rowSeparator + r.At)
++		if r.RoutedTo != "" {
++			b.WriteString(rowSeparator + routedPrefix + r.RoutedTo)
++		}
++		b.WriteString("\n")
+ 	}
+ 	return []byte(b.String())
+ }
+@@ -131,11 +142,15 @@ func parseRow(line string) (Row, bool) {
+ 	if !ok {
+ 		return Row{}, false
+ 	}
+-	parts := strings.SplitN(body, rowSeparator, 3)
+-	if len(parts) != 3 {
++	parts := strings.SplitN(body, rowSeparator, 4)
++	if len(parts) < 3 {
+ 		return Row{}, false
+ 	}
+-	return Row{Producer: parts[0], Outcome: parts[1], At: parts[2]}, true
++	row := Row{Producer: parts[0], Outcome: parts[1], At: parts[2]}
++	if len(parts) == 4 {
++		row.RoutedTo = strings.TrimPrefix(parts[3], routedPrefix)
++	}
++	return row, true
+ }
+ 
+ // IsNoteName reports whether a friction directory file name is a halt note: `loom-halt.md` or `loom-halt-<N>.md`.
+diff --git a/internal/haltnote/haltnote_test.go b/internal/haltnote/haltnote_test.go
+index f45b67bd..c4a46bce 100644
+--- a/internal/haltnote/haltnote_test.go
++++ b/internal/haltnote/haltnote_test.go
+@@ -46,6 +46,18 @@ func TestRenderParse(t *testing.T) {
+ 	}{
+ 		{name: "blocked note with anomaly and history", note: blocked, golden: blockedGolden},
+ 		{name: "no history", note: Note{Producer: "P", State: "failed", Reason: "r", TraceFile: "t"}, wantContain: "history:\nno history entries\n"},
++		{
++			name: "a routine stuck row names the producer it handed the run on to",
++			note: Note{
++				Producer:       "Code-Burler-Review",
++				State:          "failed",
++				Reason:         "r",
++				HistoryEntries: 1,
++				TraceFile:      "t",
++				History:        []Row{{Producer: "Code-Bouncer", Outcome: "stuck", At: "2026-01-02T03:04:05Z", RoutedTo: "Code-Burler-Review"}},
++			},
++			wantContain: "history:\n- Code-Bouncer / stuck / 2026-01-02T03:04:05Z / routed to Code-Burler-Review\n",
++		},
+ 	}
+ 	for _, tc := range tests {
+ 		t.Run(tc.name, func(t *testing.T) {
+diff --git a/internal/loomcli/halt.go b/internal/loomcli/halt.go
+index 3a48adb1..b4a18533 100644
+--- a/internal/loomcli/halt.go
++++ b/internal/loomcli/halt.go
+@@ -70,7 +70,7 @@ func writeHaltNote(frictionDir string, n haltNote) error {
+ 		note.Anomaly = string(kind)
+ 	}
+ 	for _, h := range n.History {
+-		note.History = append(note.History, haltnote.Row{Producer: h.Producer, Outcome: string(h.Outcome), At: h.At})
++		note.History = append(note.History, haltnote.Row{Producer: h.Producer, Outcome: string(h.Outcome), At: h.At, RoutedTo: h.RoutedTo})
+ 	}
+ 
+ 	if err := os.WriteFile(path, haltnote.Render(note), 0o644); err != nil {
+diff --git a/internal/loomcli/halt_test.go b/internal/loomcli/halt_test.go
+index 06c291f4..731bbb4b 100644
+--- a/internal/loomcli/halt_test.go
++++ b/internal/loomcli/halt_test.go
+@@ -136,11 +136,11 @@ func TestWriteHaltNote_NamesAnomalyProducerReasonAndHistory(t *testing.T) {
+ 
+ 	history := []shedengine.HistoryEntry{
+ 		{Producer: "Preflight", Outcome: shedengine.Done, At: "2026-01-01T00:00:00Z"},
+-		{Producer: loomshed.NameWebster, Outcome: shedengine.Stuck, At: "2026-01-01T00:00:01Z"},
++		{Producer: loomshed.NameWebster, Outcome: shedengine.Stuck, At: "2026-01-01T00:00:01Z", RoutedTo: "Plan-Write"},
+ 	}
+ 	historyRows := []string{
+-		"- Preflight / " + string(shedengine.Done) + " / 2026-01-01T00:00:00Z",
+-		"- " + loomshed.NameWebster + " / " + string(shedengine.Stuck) + " / 2026-01-01T00:00:01Z",
++		"- Preflight / " + string(shedengine.Done) + " / 2026-01-01T00:00:00Z\n",
++		"- " + loomshed.NameWebster + " / " + string(shedengine.Stuck) + " / 2026-01-01T00:00:01Z / routed to Plan-Write\n",
+ 	}
+ 	tests := []struct {
+ 		name     string
+diff --git a/internal/shuttleengine/claudeengine/session.go b/internal/shuttleengine/claudeengine/session.go
+index d10ffa78..36af8175 100644
+--- a/internal/shuttleengine/claudeengine/session.go
++++ b/internal/shuttleengine/claudeengine/session.go
+@@ -328,9 +328,15 @@ func inputBoxInterior(capture string) (interior []string, ok bool) {
+ 	return lines[top+1 : bottom], true
+ }
+ 
++// cutLabelRuleEnd ends a top rule whose label is too long for the pane:
++// the label is cut with an ellipsis and only one rule glyph follows it.
++const cutLabelRuleEnd = "… ─"
++
+ // isTopBoxRule reports whether line is the input box's top rule: a plain rule, or a labelled one.
+ // A named session labels its top rule at the right (`──── tst:orch ─`).
+ // A line that starts with three rule glyphs and ends with one counts as a top rule, whatever its label says.
++// A label too long for the pane is cut with an ellipsis and leaves no rule glyph before it (` ly:run:code-burler… ─`),
++// so a line ending in a cut label and one rule glyph counts as a top rule too.
+ // Only the top rule carries a label, so the bottom rule must be a plain rule.
+ // A draft line shaped like a labelled rule below the caret therefore never closes the box.
+ func isTopBoxRule(line string) bool {
+@@ -338,6 +344,9 @@ func isTopBoxRule(line string) bool {
+ 	if strings.HasPrefix(trimmed, "───") && strings.HasSuffix(trimmed, "─") {
+ 		return true
+ 	}
++	if strings.HasSuffix(trimmed, cutLabelRuleEnd) {
++		return true
++	}
+ 	return isBoxRule(line)
+ }
+ 
+diff --git a/internal/shuttleengine/claudeengine/session_test.go b/internal/shuttleengine/claudeengine/session_test.go
+index 92ab487b..bcccd4a5 100644
+--- a/internal/shuttleengine/claudeengine/session_test.go
++++ b/internal/shuttleengine/claudeengine/session_test.go
+@@ -212,6 +212,13 @@ func TestInputBoxText(t *testing.T) {
+ 		{"styled typed text followed by faint text", plainBox(styledBox("❯ hello \x1b[2mworld\x1b[0m")), "hello world", true},
+ 		{"styled faint paste placeholder", plainBox(styledBox("❯ \x1b[2m[Pasted text #1 +4 lines]\x1b[0m")), "[Pasted text #1 +4 lines]", true},
+ 		{"styled faint placeholder beside a lone percent mark", plainBox(styledBox("❯ \x1b[2mTry this\x1b[0m %")), "", true},
++		{
++			"a label too long for the pane cuts the top rule to the label and one glyph",
++			"✻ Sautéed for 6m 33s · done 11:15\n ly:creel-slack-post-silent-when-off:code-burler… ─\n❯ \n" + rule + "\n  ⏵⏵ bypass permissions on (shift+tab to cycle) ·\n",
++			"",
++			true,
++		},
++		{"a cut label with no rule glyph after it is no top rule", " ly:creel-slack-post-silent-when-off:code-burler…\n❯ \n" + rule + "\n", "", false},
+ 	}
+ 	c := &Claude{}
+ 	for _, tt := range tests {
