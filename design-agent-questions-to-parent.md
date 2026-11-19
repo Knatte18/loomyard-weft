@@ -1,6 +1,6 @@
 # Run agents ask their parent orch, and the parent can subscribe to a run reaching a named row
 
-`agent-questions-to-parent` · Task · feature, loom, shuttle, shed · starting · Open-IDE
+`agent-questions-to-parent` · Task · feature, loom, shuttle, shed · running · Preflight
 
 ## Part 1: agent questions go to the parent
 

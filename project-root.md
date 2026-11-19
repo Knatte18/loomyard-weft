@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-19 14:41 UTC; every age below is as of then.
+Rendered 2026-11-19 14:42 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Run agents ask their parent orch, and the parent can subscribe to a run reaching a named row**<br>• Every run agent question for the operator goes to the run parent by creel; the parent can ask lym to mail it when a run reaches a named producer or state<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | darn · light | starting · Open-IDE | neve | 5h<br>0m | loom, shuttle, shed |
+| T2 | **Run agents ask their parent orch, and the parent can subscribe to a run reaching a named row**<br>• Every run agent question for the operator goes to the run parent by creel; the parent can ask lym to mail it when a run reaches a named producer or state<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | darn · light | Preflight | neve | 5h<br>1m | loom, shuttle, shed |
 | T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | Webster | neve | 5h<br>3h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
 ### Ready (0)
