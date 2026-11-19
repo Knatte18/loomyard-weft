@@ -1,6 +1,6 @@
 # Remove compatibility and migration code no hub needs any more
 
-`drop-compat-migration-code` · Note · enhancement, fabric, loom, board
+`drop-compat-migration-code` · Task · enhancement, fabric, loom, board · draft
 
 ## What was seen
 
