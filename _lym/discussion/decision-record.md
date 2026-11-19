@@ -17,6 +17,12 @@ A gate check that fails on any new untracked file in the source tree after a tes
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-19): No hardenshed test fix; stray-file gate check instead
+
+Decision: The hardenshed test fix is dropped: the stray .lock did not reproduce on 7346d6a8 (every hardenshed test builds its paths under t.TempDir). The run builds only the gate check that fails a tier run leaving new untracked, non-ignored files.
+
+Rationale: The file came from the campaign's pre-squash tree or another process; the gate check catches the whole class wherever it comes from.
+
 ## Constraints
 
 ## Auto-mode assumptions
