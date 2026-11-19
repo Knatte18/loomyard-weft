@@ -1,0 +1,15 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "8b94b54f63143220636193c737b68eabd1a9116d",
+  "added_decisions": [
+    {
+      "title": "Build the mode into the current fabricengine (F16)",
+      "digest": "d0e806c8d3ffbbe296c11136ae31a9c8f2cc0c0dac8c4f0790ab6177a2066ede"
+    },
+    {
+      "title": "The motif writes the design only",
+      "digest": "4378b8881eb5f9fab3eb78518ba20f6f487d2275fcd3c6394dc6345b472aff8f"
+    }
+  ]
+}
