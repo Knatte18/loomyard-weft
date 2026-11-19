@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "The Raddle-File producer row refused the proposal because the entry slug 'single-repo-records-on-code-removal' is 35 characters and the limit is 32 (drive-envelope-20261119-192715-1357.json, error field; trace 2e4eed9caec3a917 at .lym/logs/trace-20261119T182709Z-2e4eed9caec3a917-276648.log line 9). The error text calls the fault transient, but the length check is deterministic: the slug is fixed by the entry, so a plain re-step reproduces the same refusal. The cause is therefore not cleared by re-launch, and the fix is to choose a slug of 32 characters or fewer, which is a naming choice for the run's parent. Git state was not involved; the weft commits and push before the refusal (trace lines 4, 7, 8) completed normally.",
+  "question": "Raddle-File refused the proposal entry 'single-repo-records-on-code-removal' because its slug is 35 characters and the maximum is 32. Re-stepping will fail the same way. Which slug should the entry use (32 characters or fewer), and should the Raddle-File row be re-run after the entry is renamed?",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/single-repo-records-branches/_lym/shed/single-repo-records-branches/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/single-repo-records-branches/_lym/shed/single-repo-records-branches/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
