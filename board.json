@@ -476,7 +476,7 @@
       "isolated": false,
       "brief": "",
       "body": "## What was seen\n\n2026-11-19: `lym creel post ly:SLACK \"\u003ctext\u003e\"` answered `{\"ok\":true}` (message 2035) while the operator had disconnected Slack.\n`lym slack status` showed `relay_live: false`, `connected: false` and an empty `forwarding` list, so the post reached no channel, and the sender was not told.\nThe orch believed the result was on Slack.\n\n## Idea\n\nA post to SLACK while no relay runs, or while the sending orch has its slack button off, should say so:\nrefuse with the state and a way forward (`lym slack start`, or press the button), or answer ok with a `delivered: false` field and the reason.\nThe sender then reports the result in its pane instead.\n",
-      "status": "running · Preflight",
+      "status": "running · Record-Write",
       "created": "2026-11-19T07:41:17Z",
       "revised": "2026-11-19T09:25:46Z",
       "run_settings": {
@@ -578,6 +578,28 @@
       "body": "Imported from [issue #151](https://github.com/Knatte18/loomyard/issues/151).\n\n## What happened\n\nA `lym loom run` halted as `failed` at the `Code-Burler-Review` producer with anomaly `producer-hard-failure`.\nThe halt reason was:\n\n```\nshedadapters: Code-Burler-Review (burler-review): round 1 attempt 1: review: burler: round reached done but its review file is invalid: burler: review file frontmatter is not valid YAML: yaml: line 8: mapping values are not allowed in this context\n```\n\nThe round reached `done`, but the review file the reviewer wrote had frontmatter that does not parse as YAML.\nThe run failed on round 1, attempt 1, with no repair or re-prompt of the reviewer.\n\n## Why it is abnormal\n\nAn unquoted colon in a frontmatter value is a common slip for an agent writing a review file.\nTreating it as a hard failure ends the whole run over a formatting error the reviewer could fix in one turn.\nThe halt note also shows `Code-Bouncer` as `stuck` in history while the halt names `Code-Burler-Review`, which makes the cause harder to trace.\n\n## What to do\n\n- On an invalid review-file frontmatter, send the parse error back to the reviewer for a repair attempt before failing the run.\n- Have the review prompt state that frontmatter values containing `:` must be quoted.\n- Have the halt note say which producer's output was invalid and why the preceding `stuck` step did not stop the run first.\n\nProvenance: task `board-view-not-refreshing`; notes: `loom-halt.md`.\n\n\n## From issue #152\n\nImported from [issue #152](https://github.com/Knatte18/loomyard/issues/152).\n\n## What happened\n\n`lym loom run` halted as `failed` with anomaly `producer-hard-failure` at the `Code-Burler-Review` producer.\nThe failure text was:\n\n```\nshedadapters: Code-Burler-Review (burler-review): round 1 attempt 1: review: burler: round reached done but its review file is invalid: burler: review file frontmatter is not valid YAML: yaml: line 23: mapping values are not allowed in this context\n```\n\nThe review round itself had finished (`done`); only the review file's frontmatter failed to parse.\nThe halt came on round 1, attempt 1, so the run gave the reviewer no chance to correct the file.\n\n## Why it is abnormal\n\nA malformed review file is a recoverable, reviewer-side mistake (an unquoted value containing `: ` in a YAML frontmatter field is enough).\nTreating it as a hard producer failure ends the whole run, and the review's findings are lost with it.\nThe halt note also lists the last history entry as `Code-Bouncer / stuck`, while the halt names `Code-Burler-Review`, so the record does not make clear which segment failed.\n\n## What to do\n\n- On an invalid review-file frontmatter, send the reviewer a repair prompt quoting the YAML error and retry the same attempt, instead of halting.\n- Consider writing review-file frontmatter through a verb that serialises the YAML (quoting values) rather than having the agent hand-write it.\n- Name the failing segment consistently in the halt note's `producer` and `history` lines.\n\nProvenance: task `import-loses-issue-evidence`; note `loom-halt.md`.\n",
       "created": "2026-11-19T09:28:34Z",
       "revised": "2026-11-19T09:28:37Z"
+    },
+    {
+      "id": 1507,
+      "handle": "F1",
+      "slug": "parent-review-code-and-drift",
+      "title": "Settings to route code review and drift judge rulings to the run's parent",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "loom",
+        "drift",
+        "burler"
+      ],
+      "issues": [
+        153
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #153](https://github.com/Knatte18/loomyard/issues/153).\n\n## What was seen\n\nOnly two reviews can be routed to the run's parent by setting: `pr_review_ask_parent` and `discussion_review_ask_parent` in `loom.yaml` or a task's `run_settings`.\nThe code review perch (Code-Burler-Review and Code-Burler-Fix) and the drift judge (Drift-Verify, Drift-Recheck) have no such key.\nTheir rulings reach the parent only when a finding is escalated as a decision call, or when an agent was told by hand to ask.\nA parent that wants to see every ruling of a darn run, which has no Discussion, cannot get it by configuration.\n\n## Wish\n\nAdd parent-review keys for the code review perch and the drift judge, parallel to `discussion_review_ask_parent`:\n\n- `code_review_ask_parent`: each code review round mails the parent a `[code-review request]` naming the review and fixer report, and waits for `lym loom parent-review answer` (satisfied or a findings file) before the Bouncer judges the round, with a timeout key as `discussion_review_parent_timeout_min` has.\n- `drift_judge_ask_parent`: the drift judge mails the parent its proposed rulings, every cell or a summary by case with the flagged cells named, and waits for the parent's agreement or changed rulings before it writes the judgement, with a timeout.\n\nBoth settable in `loom.yaml` (or `drift.yaml`) and in a task's `run_settings`.\n\n## Workaround\n\nTell the run's agents by creel to ask the parent before they finish a round or write a judgement.\n\n\n## Issue comment, 2026-11-19\n\nA related need: a run's agents (drift judge, Drift-Expect, perch fixer) put their questions to the operator in their own pane. A setting that sends every question an agent would put to the operator to the run's parent by creel instead, with the parent's answer delivered back, would let the parent settle them without the operator relaying. Today the parent sees such a question only when the operator relays it or tells the agent to ask the parent.\n\n## Issue comment, 2026-11-19\n\nA second wish in the same direction: let the parent subscribe to a run's state, so lym mails it when the run reaches a named producer or state, for example `lym loom notify \u003cslug\u003e --on Drift-Verify,Drift-Expect,Code-Burler-Fix`, or a `run_settings` key such as `notify_parent_on: [Drift-Verify]`. The parent can then brief each agent of those rows as it starts, such as telling the drift judge to put its questions to the parent, without a polling watch on `lym loom status --watch`.",
+      "created": "2026-11-19T09:28:39Z",
+      "revised": "2026-11-19T09:28:39Z"
     }
   ],
   "prime_owner": "neve",
