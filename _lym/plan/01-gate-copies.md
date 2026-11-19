@@ -1,12 +1,12 @@
 # Card 1 — gate-copies
 
 **Create:**
-- `plan:internal/gateslot#BilledTier` -> `const BilledTier = 3`
-- `plan:internal/gateslot#FormatStartedLine` -> `func FormatStartedLine(run string, started int) string`
-- `plan:internal/gateslot#ParseStartedLines` -> `func ParseStartedLines(output string) []StartedRun`
-- `plan:internal/gateslot#StartedRun` -> `type StartedRun struct`
-- `plan:internal/gateslot#TestStartedLines` -> `func TestStartedLines(t *testing.T)`
-- `plan:internal/gatecli#TestRunTierCopies` -> `func TestRunTierCopies(t *testing.T)`
+- `internal/gateslot#BilledTier`
+- `internal/gateslot#FormatStartedLine`
+- `internal/gateslot#ParseStartedLines`
+- `internal/gateslot#StartedRun`
+- `internal/gateslot_test#TestStartedLines`
+- `internal/gatecli#TestRunTierCopies`
 
 **Edit:**
 - `internal/gatecli#newCommand`

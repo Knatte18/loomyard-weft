@@ -1,12 +1,12 @@
 # Card 5 — campaign-preflight
 
 **Create:**
-- `plan:internal/hardenshed#CampaignCheck` -> `type CampaignCheck struct`
-- `plan:internal/hardenshed#CheckCampaign` -> `func CheckCampaign(in CampaignCheck) error`
-- `plan:internal/hardenshed#Rotate` -> `func Rotate[T any](list []T, rounds int) []T`
-- `plan:internal/hardenshed#TestCheckCampaign` -> `func TestCheckCampaign(t *testing.T)`
-- `plan:internal/hardenshed#TestRotate` -> `func TestRotate(t *testing.T)`
-- `plan:internal/preflightshed#TestPreflight_HardenCheck` -> `func TestPreflight_HardenCheck(t *testing.T)`
+- `internal/hardenshed#CampaignCheck`
+- `internal/hardenshed#CheckCampaign`
+- `internal/hardenshed#Rotate`
+- `internal/hardenshed#TestCheckCampaign`
+- `internal/hardenshed#TestRotate`
+- `internal/preflightshed#TestPreflight_HardenCheck`
 
 **Edit:**
 - `internal/preflightshed#Checks`
@@ -22,8 +22,8 @@
 
 **Uses:**
 - `internal/impactset#HoldsTierTest`
-- `plan:internal/gateslot#HubSetsGate`
-- `plan:internal/gateslot#BilledTier`
+- `internal/gateslot#HubSetsGate`
+- `internal/gateslot#BilledTier`
 - `internal/battencli#TestWire_EverySeamFilled`
 - `internal/loomcli#TestWire_BeamRecipe`
 - `internal/loomcli#TestWire_DarnRecipe`

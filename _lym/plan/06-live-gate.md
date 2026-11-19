@@ -12,7 +12,7 @@
 - `internal/hardenshed/doc.go`
 
 **Uses:**
-- `plan:internal/gateslot#ParseStartedLines`
+- `internal/gateslot#ParseStartedLines`
 
 **Intent:**
 The `live` gate, Go's independent verification of each fix round (D4).

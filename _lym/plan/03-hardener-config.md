@@ -3,15 +3,15 @@
 **Create:**
 - `internal/hardenshed/doc.go`
 - `internal/hardenshed/template.yaml`
-- `plan:internal/hardenshed#Config` -> `type Config struct`
-- `plan:internal/hardenshed#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/hardenshed#ConfigOpenMaps` -> `func ConfigOpenMaps() []string`
-- `plan:internal/hardenshed#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/hardenshed#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs, module string) (Config, error)`
-- `plan:internal/hardenshed#CheckValues` -> `func CheckValues(document []byte) error`
-- `plan:internal/hardenshed#TestLoadConfig` -> `func TestLoadConfig(t *testing.T)`
-- `plan:internal/hardenshed#TestMain` -> `func TestMain(m *testing.M)`
-- `plan:internal/darnengine#NormalizeTrees` -> `func NormalizeTrees(trees map[string]string) (map[string]string, error)`
+- `internal/hardenshed#Config`
+- `internal/hardenshed#ConfigTemplate`
+- `internal/hardenshed#ConfigOpenMaps`
+- `internal/hardenshed#ConfigSpec`
+- `internal/hardenshed#LoadConfig`
+- `internal/hardenshed#CheckValues`
+- `internal/hardenshed#TestLoadConfig`
+- `internal/hardenshed#TestMain`
+- `internal/darnengine#NormalizeTrees`
 
 **Edit:**
 - `pattern/PATTERN-config-layers.md`

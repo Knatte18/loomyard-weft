@@ -1,8 +1,8 @@
 # Card 2 — gate-harden-keys
 
 **Create:**
-- `plan:internal/gateslot#HubSetsGate` -> `func HubSetsGate(dirs configengine.Dirs, key string) (bool, error)`
-- `plan:internal/gateslot#TestHubSetsGate` -> `func TestHubSetsGate(t *testing.T)`
+- `internal/gateslot#HubSetsGate`
+- `internal/gateslot#TestHubSetsGate`
 
 **Edit:**
 - `internal/gateslot#goReadGates`
