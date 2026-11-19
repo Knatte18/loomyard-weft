@@ -1,0 +1,22 @@
+verdict: hand-back
+reason: >-
+  Darn-Write stopped at blocked after its red-first gate failed on all three
+  re-prompts (verify-2.log through verify-5.log, driver.log 20:47:36 to 20:48:20).
+  The cause is named: the red-first gate cannot run the diff's tests on the merge
+  base, because the diff changes contracts/specs/raddle-proposal-spec.md, a non-Go
+  file the overlay cannot put back (verify-2.log, gate-findings/Darn-Write.md).
+  Checked: `git diff --name-only main...HEAD` lists that spec file among nine
+  changed files, so the finding holds. A plain re-launch or a goto to Darn-Write
+  would reproduce the same red-first failure, because the spec change stays in the
+  diff. Clearing it is a scope or design choice: either the run's parent records
+  that this bug has no test seam (the gate's stated way forward, under a title
+  opening "No test seam"), or the spec change is split out of this diff so the
+  red-first gate can judge the Go tests. Neither is a fix this tackler may make.
+question: >-
+  The Darn-Write red-first gate fails on every attempt because the branch changes
+  contracts/specs/raddle-proposal-spec.md, which the overlay cannot restore on the
+  base. Do you want (a) a decision recorded with `lym loom decision add` under a
+  title opening "No test seam", naming why the bug has no test a base run can
+  reach, so the red-first gate is waived for this task; or (b) the spec change
+  moved out of this task's diff, with the Go fix and its tests kept, so the
+  red-first gate can run? Once you choose, the run can be resumed.
