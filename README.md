@@ -29,7 +29,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | T9 | 1d<br>20m | fabric, loom, board |
+| T1 | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | T9 | 1d<br>21m | fabric, loom, board |
 
 #### Layer B (1)
 
@@ -133,11 +133,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (13)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (11)</strong></summary>
 
 Owner `neve`
 
-### Tasks (1)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -155,7 +155,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (12)
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | `draft` **Gate fixes: verdict from parsed results, only declared gate keys in prompts, env override warning**<br>• Three gate faults seen in .NET hubs: a console logger flips the verdict, prompts name an undeclared gate key, and tier env overrides go unreported<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gate-dotnet-fixes`](design-gate-dotnet-fixes.md) | darn · solid |  | 2m<br>0m | gate, dotnet, stencil, darn |
+
+### Notes (9)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -166,23 +174,20 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 10d<br>10d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 2d<br>2d | shuttle |
 
-#### Bugs (6)
+#### Bugs (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **hardenshed reaper misses orphans whose cwd is under a _lym link** | [`harden-reap-lym-link-cwd`](design-harden-reap-lym-link-cwd.md) | 1m<br>1m | shed, process |
-| B2 |  | **lym gate test: unexplained test-host crash and false 'ran no test' verdict with a detailed console logger** | [`gate-verdict-from-trx`](design-gate-verdict-from-trx.md) | 1m<br>1m | gate, dotnet |
-| B3 |  | **Darn prompt tells agent to run lym gate test --gate darn-write, which the hub's gate config refuses** | [`darn-prompt-unknown-gate-key`](design-darn-prompt-unknown-gate-key.md) | 1m<br>1m | stencil, darn, gate |
+| B1 |  | **hardenshed reaper misses orphans whose cwd is under a _lym link** | [`harden-reap-lym-link-cwd`](design-harden-reap-lym-link-cwd.md) | 2m<br>2m | shed, process |
 | B4 |  | **Finalize halts on a pull request whose mergeability GitHub has not computed yet** | [`finalize-mergeable-unknown`](design-finalize-mergeable-unknown.md) | 1m<br>1m | landing |
 | B5 |  | **Verify triage lists verify-command as a flaky identity with no failure output** | [`verify-triage-command-identity`](design-verify-triage-command-identity.md) | 1m<br>1m | webster, gate |
 | B6 |  | **Flaky verify failure in internal/reedcli on the first integration-suite run** | [`reedcli-flaky-verify`](design-reedcli-flaky-verify.md) | 1m<br>1m | reed |
 
-#### Enhancements (2)
+#### Enhancements (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam** | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | 1m<br>1m | burler, stencil |
-| E2 |  | **Slow gate tier's COMMONLIB_REPO differs from the session's, with no warning** | [`gate-env-override-warning`](design-gate-env-override-warning.md) | 0m<br>0m | gate, dotnet |
 
 #### Features (2)
 
