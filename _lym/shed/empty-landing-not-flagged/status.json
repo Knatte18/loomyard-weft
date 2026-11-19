@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -134,6 +134,90 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/empty-landing-not-flagged/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-19T12:43:37Z",
+      "started_at": "2026-11-19T12:11:34Z",
+      "gate_attempts": 3,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T12:19:02.608472024Z",
+          "end": "2026-11-19T12:19:02.61883885Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T12:19:15.390115786Z",
+          "end": "2026-11-19T12:19:15.399438749Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T12:25:53.351210528Z",
+          "end": "2026-11-19T12:25:53.374002641Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T12:34:28.417210368Z",
+          "end": "2026-11-19T12:34:28.449599397Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T12:19:02.675394963Z",
+          "end": "2026-11-19T12:19:02.905754111Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-19T12:19:03.32354805Z",
+          "end": "2026-11-19T12:19:15.360574336Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T12:19:15.448486224Z",
+          "end": "2026-11-19T12:25:32.67014108Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-19T12:25:33.188675437Z",
+          "end": "2026-11-19T12:25:53.271613447Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T12:25:53.476768931Z",
+          "end": "2026-11-19T12:33:02.029409571Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-19T12:33:02.572592345Z",
+          "end": "2026-11-19T12:34:28.302244307Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T12:34:28.630705723Z",
+          "end": "2026-11-19T12:43:36.371627421Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-19T12:43:36.433012686Z",
+          "end": "2026-11-19T12:43:36.43759729Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
