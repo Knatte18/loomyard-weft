@@ -1,6 +1,6 @@
 # One-repository hubs redesigned: records on their own branches, the layout known only to fabric
 
-`single-repo-records-branches` · Note · sketch, fabric
+`single-repo-records-branches` · Task · sketch, fabric
 
 Decision record: [Sketch](decision-single-repo-records-branches.md)
 
