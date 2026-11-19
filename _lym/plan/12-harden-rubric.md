@@ -2,7 +2,7 @@
 
 **Create:**
 - `contracts/stencils/harden/harden-rubric-review.md`
-- `plan:contracts/stencils#HardenRubricReview` -> `var HardenRubricReview []byte`
+- `contracts/stencils#HardenRubricReview`
 
 **Edit:**
 - `contracts/stencils#entries`

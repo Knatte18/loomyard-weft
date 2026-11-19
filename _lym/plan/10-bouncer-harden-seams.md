@@ -1,8 +1,8 @@
 # Card 10 — bouncer-harden-seams
 
 **Create:**
-- `plan:internal/shedadapters#TestWriteRoundFacts_HardenSection` -> `func TestWriteRoundFacts_HardenSection(t *testing.T)`
-- `plan:internal/shedadapters#TestBouncer_HaltRunsTheHaltSeam` -> `func TestBouncer_HaltRunsTheHaltSeam(t *testing.T)`
+- `internal/shedadapters#TestWriteRoundFacts_HardenSection`
+- `internal/shedadapters#TestBouncer_HaltRunsTheHaltSeam`
 
 **Edit:**
 - `internal/shedadapters#BouncerConfig`

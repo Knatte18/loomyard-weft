@@ -1,20 +1,20 @@
 # Card 9 — round-row
 
 **Create:**
-- `plan:internal/shedadapters#ReviewRound` -> `func ReviewRound(runDir string) (int, error)`
-- `plan:internal/shedadapters#FixedRound` -> `func FixedRound(runDir string) (int, error)`
-- `plan:internal/shedadapters#TestReviewRound` -> `func TestReviewRound(t *testing.T)`
-- `plan:internal/lymdirs#HardenDirName` -> `const HardenDirName = "harden"`
-- `plan:internal/hardenshed#RowKind` -> `type RowKind string`
-- `plan:internal/hardenshed#RowReview` -> `const RowReview RowKind = "review"`
-- `plan:internal/hardenshed#RowFix` -> `const RowFix RowKind = "fix"`
-- `plan:internal/hardenshed#RowDeps` -> `type RowDeps struct`
-- `plan:internal/hardenshed#WrapRow` -> `func WrapRow(inner shedengine.ShedProducer, deps RowDeps) shedengine.ShedProducer`
-- `plan:internal/hardenshed#ArchiveDeps` -> `type ArchiveDeps struct`
-- `plan:internal/hardenshed#ArchiveRound` -> `func ArchiveRound(deps ArchiveDeps, round int) error`
-- `plan:internal/hardenshed#ArchiveFinalLedger` -> `func ArchiveFinalLedger(deps ArchiveDeps) error`
-- `plan:internal/hardenshed#TestWrapRow` -> `func TestWrapRow(t *testing.T)`
-- `plan:internal/hardenshed#TestArchiveRound` -> `func TestArchiveRound(t *testing.T)`
+- `internal/shedadapters#ReviewRound`
+- `internal/shedadapters#FixedRound`
+- `internal/shedadapters#TestReviewRound`
+- `internal/lymdirs#HardenDirName`
+- `internal/hardenshed#RowKind`
+- `internal/hardenshed#RowReview`
+- `internal/hardenshed#RowFix`
+- `internal/hardenshed#RowDeps`
+- `internal/hardenshed#WrapRow`
+- `internal/hardenshed#ArchiveDeps`
+- `internal/hardenshed#ArchiveRound`
+- `internal/hardenshed#ArchiveFinalLedger`
+- `internal/hardenshed#TestWrapRow`
+- `internal/hardenshed#TestArchiveRound`
 
 **Extends:**
 - `internal/shedadapters/doc.go`

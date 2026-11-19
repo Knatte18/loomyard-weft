@@ -1,6 +1,6 @@
 {
   "runGuid": "6b7dece764a9513a79cfad773a871c49",
-  "planFingerprint": "1a688d3f3b370c4e768357b42558d2dcd4e101c98b9db10ce554dc2549a11ef2",
+  "planFingerprint": "37f1b2e0abdb549e4f51a181dfe783109c97bb5593ba112d7c985ca2d8be98cf",
   "planFileHashes": {
     "00-overview.md": "b3a010a1548e9e4d44d52cc5c3c76f8c8cc3a7bfb6afc030b4feef8fe007dfe1",
     "01-gate-copies.md": "c8f68da5a3900d94b745ec15c1d5851557697977caff551acfb5dd09fe537fbd",
@@ -11,10 +11,10 @@
     "06-live-gate.md": "bbac65862cfb9782a3e693c596c6bb47b71d711f1838487189e5dcd4f7251020",
     "07-sandbox-builder.md": "bb40bf7b8b15d79ad089aa143dc571afa179c0a92fe7fb3ca9ca783bccaab522",
     "08-sandbox-reaper.md": "0d5c5d10309e969cf787bb3ddbbbe157a13428ff174227e5036f166f70a7e1e7",
-    "09-round-row.md": "17050c6de70188b023bce038256cd4c5d81bb83c9151b2005f0c4306f7b8dca7",
-    "10-bouncer-harden-seams.md": "9a5959a50a7606627a077541e50a1659489f579f24a12ad648c3a79c1d58c7ca",
-    "11-harden-rows.md": "970ef9ad567108465a44ccec06ea98b208a6541b80a742372073fdbb81bf254e",
-    "12-harden-rubric.md": "68250cf755e5bd06baab4d78e713413864fa162160859476060d0595ab9c0445",
+    "09-round-row.md": "53c16fc30b68ad0b42a6d4e1971807cb9755cd4feab5581e0b9781e73a26bb19",
+    "10-bouncer-harden-seams.md": "dfbb01fc00296066f1cddccfcf3ac6e2022e6fe4298106d94758d51ef9d03501",
+    "11-harden-rows.md": "cd176130b29d7b2293ea81ae3c3c8d27bc0677f886ec14c6e69255b9deb81c5a",
+    "12-harden-rubric.md": "28540b5c2700ff2b46e97b269c68d787890410dea839ed46966e73ba7eb7e9cf",
     "13-hardener-recipe.md": "dc437c895336bda1254235234418e896787eb70cae0d7cf50ded9757bc2a4fe6",
     "14-loom-harden-wiring.md": "18336a6c8fcbe6c0f7b48da384643b2707fb65aa8dedcdf4dbe96c037956f576",
     "15-finalize-reap.md": "33e85c05c4ffa711b6e34b94935d88e8db14e3ea7bb095461a5ab7e226ca8b84",
@@ -695,26 +695,61 @@
         "12-harden-rubric"
       ],
       "cardHashes": {
-        "09-round-row": "17050c6de70188b023bce038256cd4c5d81bb83c9151b2005f0c4306f7b8dca7",
-        "10-bouncer-harden-seams": "9a5959a50a7606627a077541e50a1659489f579f24a12ad648c3a79c1d58c7ca",
-        "11-harden-rows": "970ef9ad567108465a44ccec06ea98b208a6541b80a742372073fdbb81bf254e",
-        "12-harden-rubric": "68250cf755e5bd06baab4d78e713413864fa162160859476060d0595ab9c0445"
+        "09-round-row": "53c16fc30b68ad0b42a6d4e1971807cb9755cd4feab5581e0b9781e73a26bb19",
+        "10-bouncer-harden-seams": "dfbb01fc00296066f1cddccfcf3ac6e2022e6fe4298106d94758d51ef9d03501",
+        "11-harden-rows": "cd176130b29d7b2293ea81ae3c3c8d27bc0677f886ec14c6e69255b9deb81c5a",
+        "12-harden-rubric": "28540b5c2700ff2b46e97b269c68d787890410dea839ed46966e73ba7eb7e9cf"
       },
       "startSha": "bcba7793bcfbfa317007c22504cdc904bc5c06ae",
       "kind": "fork",
       "spawnedAt": "2026-11-19T15:11:38Z",
       "sessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "09-round-row",
+        "status": "done",
+        "head_sha": "8ad607c6fc49e75afb965b9baf0bec51a1a26d78",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/hardenshed/archive.go",
+          "internal/hardenshed/campaign_rows.go",
+          "internal/hardenshed/campaign_rows_test.go",
+          "internal/hardenshed/round.go",
+          "internal/hardenshed/round_test.go",
+          "internal/shedadapters/bouncer.go",
+          "internal/shedadapters/bouncer_escalation_test.go",
+          "internal/shedadapters/bouncerfacts_test.go",
+          "internal/shedrecipe/conformance_test.go",
+          "internal/shedrecipe/entries_burler.go",
+          "internal/shedrecipe/entries_harden.go",
+          "internal/shedrecipe/entries_harden_integration_test.go",
+          "internal/shedrecipe/entries_harden_test.go",
+          "internal/shedrecipe/registry_test.go",
+          "internal/shedrecipe/seam_enforcement_test.go",
+          "internal/shedrecipe/testmain_test.go",
+          "internal/testkit/envkit/envkit.go"
+        ]
+      },
+      "cardShas": [
+        "8ad607c6fc49e75afb965b9baf0bec51a1a26d78"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a72f14634d0201c3d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a72f14634d0201c3d.jsonl"
+      ]
     }
   },
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "47a513d5f7504f6247066334a419941b",
   "masterSessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a20ed03f6ab383083.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ae6a7865aa04e06e3.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ae6a7865aa04e06e3.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a72f14634d0201c3d.jsonl"
   ]
 }

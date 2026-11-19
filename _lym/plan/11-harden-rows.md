@@ -1,18 +1,18 @@
 # Card 11 — harden-rows
 
 **Create:**
-- `plan:internal/hardenshed#Campaign` -> `type Campaign struct`
-- `plan:internal/hardenshed#Campaign.LiveGate` -> `func (c *Campaign) LiveGate(runDir string) shuttleengine.Gate`
-- `plan:internal/hardenshed#Campaign.WrapRow` -> `func (c *Campaign) WrapRow(inner shedengine.ShedProducer, row string, kind RowKind, runDir string) shedengine.ShedProducer`
-- `plan:internal/hardenshed#Campaign.RoundFacts` -> `func (c *Campaign) RoundFacts(runDir string, round int) (string, error)`
-- `plan:internal/hardenshed#Campaign.LiveRed` -> `func (c *Campaign) LiveRed(runDir string, round int) (bool, error)`
-- `plan:internal/hardenshed#Campaign.Halt` -> `func (c *Campaign) Halt(row string) error`
-- `plan:internal/hardenshed#Campaign.ArchiveFinal` -> `func (c *Campaign) ArchiveFinal(runDir string) error`
-- `plan:internal/hardenshed#TestCampaignRoundFacts` -> `func TestCampaignRoundFacts(t *testing.T)`
-- `plan:internal/hardenshed#TestCampaignLiveRed` -> `func TestCampaignLiveRed(t *testing.T)`
-- `plan:internal/shedrecipe#hardenFixEntry` -> `func hardenFixEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#TestHardenFixEntry` -> `func TestHardenFixEntry(t *testing.T)`
-- `plan:internal/shedrecipe#TestHardenRoundKey` -> `func TestHardenRoundKey(t *testing.T)`
+- `internal/hardenshed#Campaign`
+- `internal/hardenshed#Campaign.LiveGate`
+- `internal/hardenshed#Campaign.WrapRow`
+- `internal/hardenshed#Campaign.RoundFacts`
+- `internal/hardenshed#Campaign.LiveRed`
+- `internal/hardenshed#Campaign.Halt`
+- `internal/hardenshed#Campaign.ArchiveFinal`
+- `internal/hardenshed#TestCampaignRoundFacts`
+- `internal/hardenshed#TestCampaignLiveRed`
+- `internal/shedrecipe#hardenFixEntry`
+- `internal/shedrecipe#TestHardenFixEntry`
+- `internal/shedrecipe#TestHardenRoundKey`
 
 **Edit:**
 - `internal/shedrecipe#registry`
