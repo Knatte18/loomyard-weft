@@ -1,0 +1,14 @@
+{
+  "session_id": "737d5d8b-2622-463f-b9f0-1f441ee58988",
+  "row": "Code-Bouncer",
+  "role": "tackler",
+  "model": "claude-haiku-5-5",
+  "engine": "claude",
+  "input_tokens": 10,
+  "cache_write_tokens": 23947,
+  "cache_read_tokens": 76006,
+  "output_tokens": 2426,
+  "cost_usd": 0.004967435,
+  "started": "2026-11-19T18:15:23Z",
+  "ended": "2026-11-19T18:15:39Z"
+}
