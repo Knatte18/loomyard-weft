@@ -12,21 +12,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (1)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T3 | **Board viewer page with live editing through a loopback board server, opened by lym board open and a VS Code key** | [`board-viewer-server`](design-board-viewer-server.md)<br>[Sketch](decision-board-viewer-server.md) | tapestry · solid | starting · Worktree-Create | neve | 0m<br>0m | board, ide, fabric, process, cwd |
 | T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | Webster | neve | 6h<br>5h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Board viewer page with live editing through a loopback board server, opened by lym board open and a VS Code key** | [`board-viewer-server`](design-board-viewer-server.md)<br>[Sketch](decision-board-viewer-server.md) | tapestry · solid |  | 0m<br>0m | board, ide, fabric, process, cwd |
+_None._
 
 ### Layer A (1)
 
@@ -60,4 +59,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T2 | **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-editor`](design-board-viewer-editor.md)<br>[Sketch](decision-board-viewer-editor.md) | 1d<br>37m | board, ide, fabric |
+| T2 | **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-editor`](design-board-viewer-editor.md)<br>[Sketch](decision-board-viewer-editor.md) | 1d<br>38m | board, ide, fabric |
