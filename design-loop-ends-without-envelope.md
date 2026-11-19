@@ -1,6 +1,6 @@
 # Loop ends without envelope or recorded exit after repeated 'session state disagrees' warnings
 
-`loop-ends-without-envelope` · Task · bug, shuttle, shed · starting · Worktree-Create
+`loop-ends-without-envelope` · Task · bug, shuttle, shed · starting · Seed-Child
 
 Depends on: [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md)
 
