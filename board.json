@@ -448,6 +448,68 @@
       "body": "## Seen\n\n2026-11-19: raddle's proposal for `single-repo-records-branches` passed its checks and the operator approved it, but Raddle-File refused the part `single-repo-records-on-code-removal` because its slug is 35 characters and the board's limit is 32.\nThe run stopped with a question to the parent.\n\n## Idea\n\nThe proposal checks apply the board's slug rules, the length limit included, so a slug too long is caught before the operator approves.\n",
       "created": "2026-11-19T18:27:41Z",
       "revised": "2026-11-19T18:27:41Z"
+    },
+    {
+      "id": 1521,
+      "handle": "T8",
+      "slug": "single-repo-code-records-removal",
+      "title": "Remove f06acf39's records-on-code-branch layout and revert its two-repository widenings",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "cwd",
+        "cli",
+        "batten",
+        "loom",
+        "landing",
+        "git",
+        "board",
+        "docs",
+        "pattern"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `single-repo-records-branches`.\n\nTakes: f06acf39's own commit message and file list as the removal map, reverted against D6's keep list; c83fec49's cached layout probe and its tests, which go with onerepository.go; fabricengine.FailedPushWayForward and its callers in pairteardown, loomcli and landingshed, weighed against D7's failed-push mail revert before any of it is deleted\nDelivers: a fabric with only the two-repository layout: no root-marker layout read in lymcwd or fabric, no one-repository clone path, no lym-bolt, no --single-repo flag, no hubforge NewOneRepoHub, no path-limited or mid-merge records commits, no records strip, Fabric-Merge trailer or no-fast-forward rule, no records-only replay, no prime push guard or operator_unpushed and protected classes, no statuscommit operation wait or its battencli and loomcli seams, no lym-view ref teardown, no lym.primeBranch key; the merge-state probe reports a merge only, a deferred failed-push record is not mailed, and fabric's commit refusal order is the pre-f06acf39 one; docs/overview.md and internal/fabricengine/doc.go hold no records-on-code-branch text, and the PATTERN-run-fsm and PATTERN-cwd-resolution entries and backgrounds lose their one-repository text\nExports: nothing new; it removes lymcwd.OneRepository, fabricengine.MergeStateOperation, IsPrimeBranchRefusal, IsPushProtected, MidMergeRecordsUnsettled, PushOneRepositoryClone, CloneOptions.SingleRepo, BoltBranchName, gitrepo.MergeStartNoFastForward and hubforge.NewOneRepoHub, and keeps fabricengine.ProtectedBranchRefusal and gitrepo's remote: lines on a push rejection\n\nThe part changes these packages:\n\n- internal/fabricengine (about 6900 changed lines)\n- internal/fabriccli (about 375 changed lines)\n- internal/statuscommit (about 230 changed lines)\n- internal/lymcwd (about 145 changed lines)\n- internal/loomcli (about 140 changed lines)\n- internal/hubforge (about 140 changed lines)\n- internal/battencli (about 100 changed lines)\n- internal/landingshed (about 75 changed lines)\n- internal/boardengine (about 67 changed lines)\n- internal/runfsm (about 35 changed lines)\n- internal/gitrepo (about 30 changed lines)\n- cmd/lym (about 8 changed lines)\n- internal/pairteardown (about 6 changed lines)\n- docs (about 5 changed lines)\n- pattern (about 40 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-19T18:30:03Z",
+      "revised": "2026-11-19T18:30:03Z",
+      "profile": "solid",
+      "project": "single-repo-hub",
+      "discussed": true,
+      "record_body_sha256": "d4af3bd22e2a2ed9af453b78518b1e227a7a446fa3d77474725217bbb9ac8627"
+    },
+    {
+      "id": 1522,
+      "handle": "T9",
+      "slug": "single-repo-namespace-layout",
+      "title": "One-repository hubs with records and board under origin's refs/lym/, the layout read only by fabric",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "fabric",
+        "git",
+        "docs",
+        "pattern"
+      ],
+      "issues": [],
+      "recipe": "tapestry",
+      "depends_on": [
+        "single-repo-code-records-removal"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `single-repo-records-branches`.\n\nTakes: single-repo-code-records-removal's two-repository-only fabric, with no --single-repo flag, no NewOneRepoHub and no one-repository symbol left; the two-repository clone path (CloneHub, CloneAndWire, cloneRepo, suffixWeftPrimaryBranch, bornWeftPrimaryBranch, ensureBoardWorktree, probeWeftBinding, PushRecorded); primaryWeftBranch and resolveManagedBranch; the records store's remote paths in gitrepo (push.go, pushdestination.go, pushretry.go, refreads.go, blobread.go) and fabricengine (archive.go, cleanupremotewarp.go, remoteleftover.go, recordsprobe.go, originreconcile.go, recordsreads.go, destroy.go, pushclassified.go, handover.go, pull.go, ownerarchive.go, weftbranch.go, checkout.go, add.go)\nDelivers: the one-repository layout of D1 to D4: a records store of the code store's origin wired as a weft, its refs under refs/lym/heads/ and refs/lym/tags/ through its refspecs, the board on the fixed branch main, the prime's records branch in lym.primeRecordsBranch; the layout read from the records store's fetch refspec, cached per existing store; a ref namespace passed to every records-store remote operation in gitrepo and fabric; lym fabric clone with one URL and with --single-repo, its ls-remote refusals and its ordered, leased seed push with teardown; hubforge's one-repository builder and the layout's tests; README.md and docs/getting-started.md describing the layout and its hazards; PATTERN-single-repo-hub rewritten, and the one-repository paragraphs of PATTERN-fabric-boundary, PATTERN-lym-files and PATTERN-pair-remote dropped\nExports: fabric's namespace and layout constants (refs/lym/, heads/, tags/, the board branch main, the lym.primeRecordsBranch key); the namespace parameter on gitrepo's push, lease, push-result, upstream-write and remote-delete operations; lym fabric clone --single-repo; hubforge's one-repository builder\n\nThe part changes these packages:\n\n- internal/fabricengine (about 1700 changed lines)\n- internal/gitrepo (about 350 changed lines)\n- internal/fabriccli (about 120 changed lines)\n- internal/hubforge (about 110 changed lines)\n- README.md (about 60 changed lines)\n- docs (about 60 changed lines)\n- pattern (about 70 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-19T18:30:03Z",
+      "revised": "2026-11-19T18:30:03Z",
+      "profile": "solid",
+      "project": "single-repo-hub",
+      "discussed": true,
+      "record_body_sha256": "118d5a46dbea598a2214bb708b41ef025075f839be6c6f27441005bda1f3b29d"
     }
   ],
   "prime_owner": "neve",
