@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The producer stop is a malformed review file, not a code failure. Code-Burler-Review finished round 1 (reviewOutcome=done, chairOutcome=done), but the file it wrote, _lym/reviews/code/round-1-review-20261119T100745Z.md, has invalid frontmatter. The parser error \"yaml: line 22\" is frontmatter-relative: frontmatter line 1 is file line 2, so it points at file line 23, the F3 `fix:` value. That value contains an unquoted plain scalar with a colon-space (\"...; way forward: run lym slack status, then post again\"), which YAML reads as a nested mapping and rejects. The rest of the file's frontmatter has no other colon-space inside a value (grep ': ' shows only the key separators). The cause is named from what I read. A re-run of Code-Burler-Review regenerates the review file, so a re-launch should produce valid frontmatter. Caveat: if the burler reuses the existing timestamped file rather than rewriting it, the same parse error will recur and the next stop should be hand-back. Also note the bad file is named round-1-review-20261119T100745Z.md, while the round-1-review.md path the review was meant to write is absent from that directory; the re-run should confirm which path it validates.",
+  "question": "",
+  "goto": "Code-Burler-Review",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/creel-slack-post-silent-when-off/_lym/shed/creel-slack-post-silent-when-off/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/creel-slack-post-silent-when-off/_lym/shed/creel-slack-post-silent-when-off/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
