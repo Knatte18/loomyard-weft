@@ -25,9 +25,9 @@
 - `internal/boardengine#Board.UpsertTaskWithRecord`
 - `internal/boardcli#Command`
 - `internal/runproc#TestEndSubject_EndsTheRunsThenTheSubjectAndItsDobbyLast`
+- `internal/runproc/doc.go`
 
 **Extends:**
-- `internal/runproc/doc.go`
 - `internal/boardcli/doc.go`
 
 **Uses:**
@@ -114,6 +114,7 @@ no process starts.
 `TestBoardServeScenario`, tier1 in `internal/boardcli/serve_linux_integration_test.go`, runs a built `lym` (`lymbin.Build`) in a `hubforge` hub with a task pair, `BOARD_SKIP_GIT=1`, `LYM_STRAND_NAME=` in every call's extra environment, and a stub `xdg-open` first on `PATH` that records its argument:
 `lym board open` from the pair's worktree answers `started: true`, its address holds no token, the stub's argument is the launcher path, and the server's `/proc/<pid>/cwd` is the prime's anchored directory;
 a second `open` answers `started: false`;
+`lym board serve` run from the prime's anchor with the same extra environment exits 0 with `running: true` in its envelope, while the first server's state still answers `Probe`;
 cleanup ends the server by its state's pid.
 
 **ImpactSummary:** boardcli gains two verbs inside Command and rewords rerender's Short; boardengine's run-agent rule becomes exported with its two in-package callers; runproc gains one role constant outside subjectPassSpared, so EndSubject ends it.

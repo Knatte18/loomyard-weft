@@ -33,6 +33,9 @@ Write the `beam start` task into the workspace files' `tasks` key through the ca
 - The regeneration's callers (`ide seed` and `spawn`, the fabric verbs, beam and adopt paths) all write the task through the one seam.
 - `docs/overview.md`'s passage on the hub's and each beam's workspace file gains a line: each carries one `beam start` task, `lym beam start root` for the hub's and `lym beam start <beam>` for a beam's, which `alt+shift+0` runs.
 
+Bound: the hook adds one `process` task running the lym binary, or bare `lym`, with the fixed args `beam start <beam>` in that worktree's anchor.
+Fabric reads only the member names and refuses its own mark, and `vscode.BuildWorkspace` refuses `folders` and `settings` (card 8).
+
 Tests:
 - `TestWorkspaceTasks`, tier0 in `internal/vscode`, decodes the member: name `tasks`, one `process` task labelled `beam start` with the given command, `beam start <beam>` args, the given `cwd` and `reed attach`'s presentation; an empty `lymPath` gives the command `lym`.
 - `TestWorkspaceContent`, tier0 in `internal/ideengine`, not parallel since it swaps the package's `LymBinary` seam and restores it: an empty beam gives `beam start root` in the given anchor, a beam slug `beam start <beam>`, and a `LymBinary` that errors gives the command `lym`.

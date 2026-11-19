@@ -46,7 +46,6 @@ Bound: the check adds a refusal and lets nothing new through; a board without `e
 - an edit through `Expecting(slug, <revision Board.View gave>)` and `UpsertTaskReporting` is saved;
 - an edit carrying an older revision, including one older only by a status change made through `SetStatusReleasingProject`, is refused with a `*StaleEntryError` whose `Fresh` revision is the current one, and every file of the board directory, the render manifest included, keeps its bytes and no file is added, so the refusal leaves the Bolt's tree as the last commit's sync left it;
 - on a `board.json` with no `draft_status` key holding a task with an empty status, the revision `Board.View` gives that entry is accepted by an edit;
-- an edit carrying the revision a successful write's following `Board.View` returned is saved;
 - an edit of an entry removed by `RemoveTask` is refused as stale with a nil `Fresh`;
 - a create through `Expecting(slug, "")` of an existing slug is refused with the existing entry's projection, and of a new slug is saved.
 The existing CLI write tests, `TestUpsertTask` among them, keep pinning that a board without `Expecting` writes as today.

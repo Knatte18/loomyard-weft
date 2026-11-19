@@ -60,6 +60,9 @@ Ship the viewer page (D2, D4, the page half of D10, D11's retry) as an embedded 
 - `FabricReplay.Claims` claims `board-data.js` and `board.html` at the Bolt root, through `BoardDataFile` and `BoardPageFile`.
 - Every board write already runs `RenderToDisk` and then the sync, which stages the whole Bolt tree, as `TestSync_Scenario`'s dirty-board step pins, so both files land in the same `board sync` commit as `README.md` with no change to the sync.
 - `doc.go`'s `# Replay` list of claimed paths names the two files, and the `# README` section names `board.html` as a fixed render output.
+  That section's sentence on what every write renders also names `board-data.js` and `board.html`.
+- `render.go`'s file header also names `board.html` among Render's outputs,
+  and the comment over `replay.go`'s file-name constants names `board-data.js` and `board.html` among the files a replay recognises at the Bolt root.
 
 The page's in-browser behaviour is a review check, since the suite has no JavaScript runtime.
 

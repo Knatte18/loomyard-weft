@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -28,7 +28,10 @@ A per-hub loopback server, `lym board serve`, serves the page, the projection, i
 - `Render` keeps its signature; `renderFiles(stored, rendered, ...)` lets `RenderToDisk` take each entry's revision over the stored entry while file names follow the copy that clears a missing record's `Discussed` (D1), with no caller of `Render` re-signed.
 - The revision check is a `Board.Expecting(slug, revision)` copy of the board whose write section checks it after the load migrations; the CLI's board never carries one, so its verbs behave as today (D8).
 - The server checks a release's, draft's and undraft's kind and status rule against the entry of a `Board.View()` whose revision it then has the write section re-check, so the rule and the write see one entry state.
-  An edit and a promote carry their revision straight to the write section, and a create checks only that its slug is absent before the write section checks it again.
+  Every op but a create refuses an empty revision before any write.
+  An edit carries its revision straight to the write section;
+  a promote first refuses a task by its kind in the current `Board.View()`, then carries its revision to the write section.
+  A create checks only that its slug is absent before the write section checks it again.
 - Route paths are named constants in `internal/boardserve`; the static page spells them, and the server's test pins that the page holds each.
 - The server's lock file sits in its state directory, as D11 states and as creel's daemon lock does, and is taken only through `internal/lock`'s functions.
 - The opener is waited on by one goroutine whose `cmd.Wait` feeds the result channel, as creel's daemon spawn does, instead of `proc.Reap`, because a failed opener's error (D5) needs the exit status `proc.Reap` discards; `PATTERN-child-processes` admits either wait.

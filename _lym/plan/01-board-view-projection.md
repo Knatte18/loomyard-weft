@@ -69,6 +69,7 @@ Add the board's view projection (D1) and its first render output, `board-data.js
 - `Board.View` loads the store through `loadStore`, runs `migrateLoaded` on it without saving, and returns `buildView(store.Tasks(), withMissingRecordsUndiscussed(b.boardPath, store.Tasks()), store.primeOwner, b.out, b.now())`.
   It is the projection the server (card 4) serves.
 - `doc.go`'s `# README` section gains a paragraph naming `board-data.js`, its `window.BOARD` shape and the stored-entry revision.
+- `render.go`'s file header names `board-data.js` among Render's outputs.
 
 `TestRenderBoardData`, a new tier0 test in `internal/boardengine_test`, runs over one board of projects, a sub-project, a done project with an open sub-project and a task of its own, tasks in several layers, a draft, notes of two types, a done entry, a type and an area label, an entry with a body and a discussed entry, with a prime owner and a configured default recipe:
 - strips the `window.BOARD = ` prefix and the `;\n` suffix of `Render`'s `board-data.js` and decodes the JSON;

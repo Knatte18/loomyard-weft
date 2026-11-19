@@ -21,6 +21,9 @@
 - `internal/boardserve/server_test.go`
 - `plan:internal/boardserve#TestServer` -> `func TestServer(t *testing.T)`
 
+**Extends:**
+- `docs/overview.md`
+
 **Uses:**
 - `plan:internal/boardengine#Board.Expecting`
 - `plan:internal/boardengine#Board.View`
@@ -35,6 +38,7 @@
 **Intent:**
 Create `internal/boardserve`, the board server's HTTP handler (D9, D10, D13); its lifecycle follows in card 5.
 `doc.go` documents the package: the routes, the checks and that it writes the board only through `boardengine`'s exported board methods.
+`docs/overview.md`'s package tree gains an `internal/boardserve/` line beside `internal/boardcli/` and `internal/boardengine/`, describing the board's loopback server.
 `internal/boardserve/testmain_test.go` is untagged: a support-only file whose `TestMain` calls `gitkit.HermeticGitEnv()` and then `os.Exit(tmuxkit.Main(m))`, as every test package's does under `PATTERN-test-isolation`.
 
 - `ServerConfig` holds the `*boardengine.Board`, the board path, the token, the bound port, the long-poll bound (production: 50 seconds) and a `Now` clock.
@@ -56,11 +60,13 @@ Create `internal/boardserve`, the board server's HTTP handler (D9, D10, D13); it
     the bound and the drain answer `{"ok":true,"unchanged":true,"revision":..}`.
   - `GET /file/<name>` serves the file from the board path as `text/plain; charset=utf-8`, only when `name` equals a `design_file` or `decision_file` of the current `Board.View()`; any other name, one holding a separator included, is 404.
   - `POST /api/write` decodes a `writeRequest` (`op`, `slug`, `revision`, `fields`), refusing an unknown key, and runs `applyWrite`.
-- `applyWrite` runs the one `boardengine` write of the op on `board.Expecting(slug, revision)`, whose write section checks the revision under the write lock (card 2):
+- `applyWrite` runs the one `boardengine` write of the op on `board.Expecting(slug, revision)`, whose write section checks the revision under the write lock (card 2).
+  Every op but `create` first refuses an empty `revision`, before any write:
+  `<op> of entry "<slug>" carries no revision, so nothing was written: way forward: reload the board and act on what it holds now`.
   - `create`: `fields` may hold only `kind`, `title`, `labels`, `brief`, `body`, `project` and `depends_on`.
     A slug the current `Board.View()` already holds is refused as stale with that entry, as card 2's create refusal words it;
     otherwise `Expecting(slug, "")` and `UpsertTaskReporting`, whose write section refuses a slug another writer created in between.
-  - `edit`: `fields` may hold only `title`, `labels`, `brief`, `body`, `project` and `depends_on`; `Expecting(slug, revision)` and `UpsertTaskReporting`, with no pre-check, so the write section alone decides a stale edit.
+  - `edit`: `fields` may hold only `title`, `labels`, `brief`, `body`, `project` and `depends_on`; `Expecting(slug, revision)` and `UpsertTaskReporting`, with no view pre-check, so the write section alone decides a stale edit.
   - `promote`: `Expecting(slug, revision)` and `PromoteTo(slug, "", nil)`, the CLI's promote; the write section decides a stale promote, and `PromoteTo`'s own refusal answers a project.
     A task is refused before the write: `entry "<slug>" is a task already, and only a note is promoted: way forward: edit it, or promote a note`.
   - `release`, `draft` and `undraft` read the entry from the current `Board.View()` first, since their rule reads its kind and status;
@@ -82,6 +88,7 @@ Create `internal/boardserve`, the board server's HTTP handler (D9, D10, D13); it
 
 Bound: the page reaches only these six writes, each through the same `boardengine` method the CLI verb calls, so the run lock, the label rules and the task-creation rule all run;
 the server adds the revision check, the run-status release refusal and the task-only rule of release, draft and undraft, and drops no check.
+Only `create` reaches the write section's empty-revision path, so no other op creates an entry.
 The CLI's upsert also runs `refuseNoticeOnAbsentEntry` and `prepareRunSettings`, which act only on `notify_on_land`, `run_settings` and `profile`, fields no page op accepts.
 Holding the token lets a same-user process write as the operator, which the token and loopback bound to the user's own processes (D9).
 
@@ -92,12 +99,14 @@ Holding the token lets a same-user process write as the operator, which the toke
 - `GET /api/board` returns, render time aside, what `Board.View()` builds over the same board;
 - ops table: create, edit, release, promote, draft and undraft through `POST /api/write` each leave `board.json`, dates aside, as the boardengine call the matching CLI verb's RunE makes leaves a twin board, and answer the fresh entry;
 - an edit carrying the `revision` of the entry a successful write answered is saved;
-- refused and changing nothing: draft of a task with a status; undraft of a task with no status, of one in a run status and of one with another status, each with its message; draft and undraft of a note; release of a task in a run status (naming `lym board set-status`); release of a note; promote of a task; an unknown op; an unknown field;
+- refused and changing nothing: draft of a task with a status; undraft of a task with no status, of one in a run status and of one with another status, each with its message; draft and undraft of a note; release of a task in a run status (naming `lym board set-status`); release of a note; promote of a task; an edit with an empty `revision` of an absent slug; an unknown op; an unknown field;
 - a create of an existing slug answers 409 with the existing entry;
 - an edit of a running task's title is refused with the run lock's message, as the CLI refuses it;
 - an edit carrying an older revision answers 409 with the fresh entry, refused inside the write section; a release carrying an older revision answers 409 from the view, and one of a removed entry 409 with a null entry;
 - long poll: with the current revision and a short bound it answers "unchanged"; a `BoardChanged` during the wait returns the new projection; `beginDrain` answers a waiter "unchanged" at once;
 - `GET /file/<name>` serves a listed design file and answers 404 for an unlisted name and for `a/b.md`;
 - the page holds each route constant's path.
+
+**ImpactSummary:** a new package with no existing caller; docs/overview.md gains one package-tree line.
 
 **Commit:** 4: boardserve: serve the board page, its data and its writes

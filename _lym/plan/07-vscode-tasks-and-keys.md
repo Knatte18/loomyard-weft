@@ -43,6 +43,10 @@ Write the `board open` task into every worktree's `tasks.json` and the two keys 
 - `docs/overview.md`'s VS Code passage, which says the generated `tasks.json` holds one `reed attach` task and the `lym:begin` block binds only `ctrl+alt+a` to a task, names the `board open` task and its two keys: `alt+shift+9` runs `board open` and `alt+shift+0` runs `beam start`.
 - `assertWorktreeTasks` replaces `assertAttachTaskOnly`: the worktree's `tasks.json` holds exactly `reed attach` and `board open`, each with an absolute command and no `runOptions`, `board open`'s presentation has `reveal` `always` and `focus` false, and no task is labelled `beam start`.
 
+Bound: each key runs only `workbench.action.tasks.runTask` with a fixed label.
+VS Code runs the first task of that label it finds, so a window whose tracked `tasks.json` defines its own `board open` or `beam start` runs that task.
+A window lacking the label opens the task picker filtered by that label, as D6's bound states.
+
 Tests:
 - `TestWriteVSCodeConfigCreatesFilesWhenAbsent` and `TestWriteConfigRewritesOwnSettingsKeysAndOverwritesTasks` (tier0) assert the two tasks and `board open`'s presentation.
 - `TestKeybindingsBlock` (tier0) pins the block with the two new lines; `TestSeedKeybindings` asserts that a second seed leaves exactly one `alt+shift+0` and one `alt+shift+9` entry.

@@ -58,7 +58,11 @@ Give the board server its single-instance lifecycle, state file, launcher and wa
   3. calls `opts.Register` (the verb's `runproc` registration);
   4. binds `127.0.0.1:0`, draws a 128-bit token from `crypto/rand` as 32 hex characters, builds the card-4 `Server`, writes the state through `hardenFile`, and serves;
   5. runs `watchBoard` until it returns an exit reason, or `ctx` ends;
-  6. on exit: closes the listener so it takes no new request, releases the lock (the state file stays for the next server to remove), calls `beginDrain`, then waits for the requests in flight through `http.Server.Shutdown`, so a write inside the board's write section completes and spawns its sync; it returns nil.
+  6. on exit: calls `http.Server.SetKeepAlivesEnabled(false)` and closes the listener, so the server takes no new connection and each kept-alive connection closes after its current response;
+     a connection accepted just before may still carry one request, which the board's write lock keeps consistent;
+     releases the lock (the state file stays for the next server to remove) and calls `beginDrain`;
+     then waits for the requests in flight through `http.Server.Shutdown`, ignoring the error it reports for the already-closed listener, so a write inside the board's write section completes and spawns its sync;
+     it returns nil.
 - `watchBoard` is the one watch loop: it wakes on an `internal/fswatch` event on `board.json` in the board directory, or on its timer, which starts at one second and doubles to eight while the board's revision is unchanged and returns to one second on a change.
   When `opts.Watch` fails, the timer alone reads `board.json`.
   Each wake recomputes `BoardRevision`; a change calls `BoardChanged`, so a Bolt replay or a sync pull that rewrites `board.json` reaches the page like a local write.
