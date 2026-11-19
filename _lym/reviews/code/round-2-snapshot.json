@@ -1,0 +1,15 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "47ea1c24cf6f50a4b8de776cfd728ca3b5655018",
+  "added_decisions": [
+    {
+      "title": "Opt-in parent-ask keys stay outside Guard",
+      "digest": "765010a608839a632b89b8a28b7cd74f7e5a653bceca1a7e9f8796f48e20d3e5"
+    },
+    {
+      "title": "Drift key names stand",
+      "digest": "1c95f33606af78277c1166bf30eee8efb274e8fcee57d6abd7992a6e44ee5b03"
+    }
+  ]
+}
