@@ -1,6 +1,6 @@
 # Loop ends without envelope or recorded exit after repeated 'session state disagrees' warnings
 
-`loop-ends-without-envelope` · Task · bug, shuttle, shed · running · Preflight
+`loop-ends-without-envelope` · Task · bug, shuttle, shed · running · Record-Write
 
 Depends on: [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md)
 
