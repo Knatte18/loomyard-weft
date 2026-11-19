@@ -2,11 +2,11 @@
 
 **Create:**
 - `internal/hardencli/doc.go`
-- `plan:internal/hardencli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/hardencli#cliDeps` -> `type cliDeps struct`
-- `plan:internal/hardencli#newCommand` -> `func newCommand(deps cliDeps) *cobra.Command`
-- `plan:internal/hardencli#TestSandboxVerbs` -> `func TestSandboxVerbs(t *testing.T)`
-- `plan:internal/hardencli#TestMain` -> `func TestMain(m *testing.M)`
+- `internal/hardencli#Command`
+- `internal/hardencli#cliDeps`
+- `internal/hardencli#newCommand`
+- `internal/hardencli#TestSandboxVerbs`
+- `internal/hardencli#TestMain`
 
 **Edit:**
 - `cmd/lym#newRoot`
@@ -16,7 +16,7 @@
 - `internal/fabriccli#CloneAndWire`
 - `internal/selfexec#LymBinary`
 - `internal/buildvcs#OfFile`
-- `plan:internal/loomcli#HardenReapDeps`
+- `internal/loomcli#HardenReapDeps`
 
 **Intent:**
 `lym harden sandbox new|list|clear`, a cobra subtree under the one root (D5, D11, PATTERN-cli-cobra).

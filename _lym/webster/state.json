@@ -1,6 +1,6 @@
 {
   "runGuid": "6b7dece764a9513a79cfad773a871c49",
-  "planFingerprint": "bdbcaf979230ba27a26e4810d01b0d54b7934abd2fc68d4654aeb72af8a2608a",
+  "planFingerprint": "90cf779af22807e61af9542514578426064847d39c03e1a43fada44be6fee235",
   "planFileHashes": {
     "00-overview.md": "b3a010a1548e9e4d44d52cc5c3c76f8c8cc3a7bfb6afc030b4feef8fe007dfe1",
     "01-gate-copies.md": "c8f68da5a3900d94b745ec15c1d5851557697977caff551acfb5dd09fe537fbd",
@@ -16,9 +16,9 @@
     "11-harden-rows.md": "cd176130b29d7b2293ea81ae3c3c8d27bc0677f886ec14c6e69255b9deb81c5a",
     "12-harden-rubric.md": "28540b5c2700ff2b46e97b269c68d787890410dea839ed46966e73ba7eb7e9cf",
     "13-hardener-recipe.md": "c64c5574fc95dd39e7a62dd850f28f30cac7a7aaac72f4a6df378c8a47cc69a9",
-    "14-loom-harden-wiring.md": "18336a6c8fcbe6c0f7b48da384643b2707fb65aa8dedcdf4dbe96c037956f576",
-    "15-finalize-reap.md": "33e85c05c4ffa711b6e34b94935d88e8db14e3ea7bb095461a5ab7e226ca8b84",
-    "16-harden-cli.md": "ffc21ff48b63c0a2a0f66bacf070e391c8e207aadced64958a05862b4cd44ba1",
+    "14-loom-harden-wiring.md": "5720d3a80a5426169d772ff788776daa9ef160e0eba00b02f70c19ff1e7cb500",
+    "15-finalize-reap.md": "5f3b59cad75d79a9fc26d13aab35962be6778810227c5a0e9b8b21708d03ac97",
+    "16-harden-cli.md": "0b806ac49ee1489e4e0e238855d3eb6c5d4f9582f0d00ba6b5c61178d7f33b2f",
     "17-teardown-sandbox-clear.md": "e4d20226f8e9e82ce2f3b9acf13a4258844c2bf6d41d96b00c645fc9ccab970b",
     "18-treadle-callers.md": "416b9d5a73d71c169eb8a6cb1913773c24ea6ec77bf7a71060fdecce6b431c7a",
     "19-treadle-delete.md": "fd3fdb91a7abea19a4927facbbecc62a83ef6eaf55edf35dff6cff8b16a02df2",
@@ -687,17 +687,46 @@
         "16-harden-cli"
       ],
       "cardHashes": {
-        "14-loom-harden-wiring": "18336a6c8fcbe6c0f7b48da384643b2707fb65aa8dedcdf4dbe96c037956f576",
-        "15-finalize-reap": "33e85c05c4ffa711b6e34b94935d88e8db14e3ea7bb095461a5ab7e226ca8b84",
-        "16-harden-cli": "ffc21ff48b63c0a2a0f66bacf070e391c8e207aadced64958a05862b4cd44ba1"
+        "14-loom-harden-wiring": "5720d3a80a5426169d772ff788776daa9ef160e0eba00b02f70c19ff1e7cb500",
+        "15-finalize-reap": "5f3b59cad75d79a9fc26d13aab35962be6778810227c5a0e9b8b21708d03ac97",
+        "16-harden-cli": "0b806ac49ee1489e4e0e238855d3eb6c5d4f9582f0d00ba6b5c61178d7f33b2f"
       },
       "startSha": "f9abf62bef4fc8975c8f6c6b113bab116982a85c",
       "kind": "fork",
       "spawnedAt": "2026-11-19T15:48:38Z",
       "sessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "14-loom-harden-wiring",
+        "status": "done",
+        "head_sha": "8beee889e2e6260fe32491bea32cc656e3e93de9",
+        "deviations": [
+          "cmd/lym/sandbox_coverage_test.go",
+          "cmd/lym/testonlycode_linux_test.go",
+          "cmd/lym/treesitterlink_integration_test.go",
+          "internal/boardcli/cli.go",
+          "internal/configcli/configcli.go",
+          "internal/fabriccli/clone.go",
+          "internal/gatecli/cli.go",
+          "internal/hardencli/cli.go",
+          "internal/loomcli/arm.go",
+          "internal/loomcli/darnwiring.go",
+          "internal/loomcli/hardenwiring.go",
+          "internal/loomcli/hardenwiring_test.go",
+          "internal/testkit/envkit/envkit.go"
+        ]
+      },
+      "cardShas": [
+        "8beee889e2e6260fe32491bea32cc656e3e93de9"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ac7bf0cf9ac21fa91.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ac7bf0cf9ac21fa91.jsonl"
+      ]
     },
     "6": {
       "slug": "live-gate",
@@ -800,7 +829,7 @@
       ]
     }
   },
-  "currentBatch": 14,
+  "currentBatch": 0,
   "masterStrand": "47a513d5f7504f6247066334a419941b",
   "masterSessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
   "masterEngine": "claude",
@@ -808,6 +837,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a20ed03f6ab383083.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ae6a7865aa04e06e3.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a72f14634d0201c3d.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a4fd57710ad376e6b.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a4fd57710ad376e6b.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ac7bf0cf9ac21fa91.jsonl"
   ]
 }

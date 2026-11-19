@@ -7,7 +7,7 @@
 - `internal/landingshed#TestFinalize_MergeMarkPushOrderAndVerdict`
 - `internal/loomcli#landingDeps`
 - `internal/loomcli#TestLandingDeps_EveryFieldPopulated`
-- `plan:internal/loomcli#TestWire_HardenerRecipe`
+- `internal/loomcli#TestWire_HardenerRecipe`
 - `internal/testkit/envkit#nilLegal`
 - `internal/testkit/envkit#FullEnv`
 
@@ -16,7 +16,7 @@
 
 **Uses:**
 - `internal/loomcli/doc.go`
-- `plan:internal/loomcli#HardenReapDeps`
+- `internal/loomcli#HardenReapDeps`
 - `internal/battencli#TestWire_EverySeamFilled`
 - `internal/loomcli#TestWire_BeamRecipe`
 - `internal/loomcli#TestWire_DarnRecipe`

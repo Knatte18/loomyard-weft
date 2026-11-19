@@ -1,18 +1,18 @@
 # Card 14 — loom-harden-wiring
 
 **Create:**
-- `plan:internal/loomcli#hardenReviewSegment` -> `const hardenReviewSegment = "Harden-Review"`
-- `plan:internal/loomcli#hardenSegmentSettings` -> `func hardenSegmentSettings(cfg hardenshed.Config, loomCfg loomengine.Config, registry modelspec.Registry) (shedrecipe.SegmentSettings, error)`
-- `plan:internal/loomcli#hardenCampaign` -> `func hardenCampaign(location *lymcwd.Location, cfg hardenshed.Config, settings shedrecipe.SegmentSettings) *hardenshed.Campaign`
-- `plan:internal/loomcli#HardenReapDeps` -> `func HardenReapDeps(location *lymcwd.Location, row string, point hardenshed.ReapPoint) (hardenshed.ReapDeps, error)`
-- `plan:internal/loomcli#hardenLiveArgs` -> `func hardenLiveArgs(key string, copies int, packages []string) []string`
-- `plan:internal/loomcli#hardenLiveEnv` -> `func hardenLiveEnv(env []string) []string`
-- `plan:internal/loomcli#hardenLiveRun` -> `func hardenLiveRun(exitCode int, stdout, stderr []byte) hardenshed.LiveRun`
-- `plan:internal/loomcli#withHardenBudget` -> `func withHardenBudget(budgets map[string]int, recipe string, dirs configengine.Dirs) (map[string]int, error)`
-- `plan:internal/loomcli#recipeTrees` -> `func recipeTrees(l *lymcwd.Location, recipe string) func() (map[string]string, error)`
-- `plan:internal/loomcli#TestWire_HardenerRecipe` -> `func TestWire_HardenerRecipe(t *testing.T)`
-- `plan:internal/loomcli#TestReviewBudget_HardenReview` -> `func TestReviewBudget_HardenReview(t *testing.T)`
-- `plan:internal/loomcli#TestHardenLiveArgs` -> `func TestHardenLiveArgs(t *testing.T)`
+- `internal/loomcli#hardenReviewSegment`
+- `internal/loomcli#hardenSegmentSettings`
+- `internal/loomcli#hardenCampaign`
+- `internal/loomcli#HardenReapDeps`
+- `internal/loomcli#hardenLiveArgs`
+- `internal/loomcli#hardenLiveEnv`
+- `internal/loomcli#hardenLiveRun`
+- `internal/loomcli#withHardenBudget`
+- `internal/loomcli#recipeTrees`
+- `internal/loomcli#TestWire_HardenerRecipe`
+- `internal/loomcli#TestReviewBudget_HardenReview`
+- `internal/loomcli#TestHardenLiveArgs`
 
 **Edit:**
 - `internal/loomcli#loomCLI.wire`
