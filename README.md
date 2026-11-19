@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-19 14:27 UTC; every age below is as of then.
+Rendered 2026-11-19 14:37 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -88,7 +88,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **Measure whether the reach and mutation reports change what runs land**<br>• Over 10 landed darn runs, count how often the reach note, reach turn and mutation survivors led to added tests or fixes<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-use-measure`](design-testmap-use-measure.md) | darn · docs |  | 1h<br>1h | testmap, gate |
+| T5 | `draft` **Measure whether the reach and mutation reports change what runs land**<br>• Over 10 landed darn runs, count how often the reach note, reach turn and mutation survivors led to added tests or fixes<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-use-measure`](design-testmap-use-measure.md) | darn · docs |  | 2h<br>2h | testmap, gate |
 
 ### Notes (0)
 
@@ -124,7 +124,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (11)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (12)</strong></summary>
 
 Owner `neve`
 
@@ -146,7 +146,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (10)
+### Notes (11)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -163,21 +163,22 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 10d<br>10d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 1d<br>1d | shuttle |
 
-#### Enhancements (3)
+#### Enhancements (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **A Merge danger section in every change description: one-way or two-way door, and blast radius** | [`merge-danger-in-description`](design-merge-danger-in-description.md) | 1h<br>1h | landing, stencil |
 | E2 |  | **Bug runs prove their test was red before the fix, and name the root cause in a trailer** | [`bug-red-first-gate`](design-bug-red-first-gate.md) | 1h<br>1h | gate, testmap |
 | E3 |  | **Code review flags tests whose expected value is computed the way the code computes it** | [`tautological-test-finding`](design-tautological-test-finding.md) | 1h<br>1h | burler, stencil |
+| E4 |  | **Shared vocabulary: one glossary, loaded only where needed, linted everywhere**<br>• One glossary of lym terms and banned synonyms; orch gets it via heddle orch-prompt, Discussion via its stencil, a lint checks stencils, skills and docs | [`shared-vocabulary`](design-shared-vocabulary.md) | 0m<br>0m | heddle, stencil, docs, lint |
 
 #### Features (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F2 |  | **Every run agent question for the operator goes to the run parent**<br>• By default, a run agent puts its questions to its parent orch by creel; only orchs contact the operator | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | 4h<br>1h | loom, shuttle |
+| F2 |  | **Every run agent question for the operator goes to the run parent**<br>• By default, a run agent puts its questions to its parent orch by creel; only orchs contact the operator | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | 5h<br>1h | loom, shuttle |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 4d<br>1d | batten, loom, board |
-| F4 |  | **Mail the run parent when the run reaches a named row**<br>• A subscription verb or run_settings key so lym mails the parent when a run reaches a named producer, in place of polling | [`parent-notify-on-row`](design-parent-notify-on-row.md) | 4h<br>4h | loom, shed |
+| F4 |  | **Mail the run parent when the run reaches a named row**<br>• A subscription verb or run_settings key so lym mails the parent when a run reaches a named producer, in place of polling | [`parent-notify-on-row`](design-parent-notify-on-row.md) | 5h<br>5h | loom, shed |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>13d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
 </details>
