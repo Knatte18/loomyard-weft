@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-19 15:00 UTC; every age below is as of then.
+Rendered 2026-11-19 15:10 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -29,7 +29,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | T10 | 21h<br>2h | fabric, loom, board |
+| T1 | `draft` **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | T10 | 21h<br>3h | fabric, loom, board |
 | T11 | `draft` **Trim every package doc.go of what is superfluous**<br>• The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`doc-go-trim-pass`](design-doc-go-trim-pass.md) | darn · solid | T1<br>T10 | 18h<br>4h | docs |
 
 ### Notes (0)
@@ -68,7 +68,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 <details open>
 <summary><strong><a href="project-testmap-uses.md">P3 Put the per-test coverage maps to use</a> (1)</strong></summary>
 
-[`testmap-uses`](design-testmap-uses.md) · Age 20h · Owner `neve`
+[`testmap-uses`](design-testmap-uses.md) · Age 21h · Owner `neve`
 
 The reach note, the diff mutation check and failure triage, built on one reader of the maps
 
@@ -119,7 +119,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **One-repository hubs redesigned: records on their own branches, the layout known only to fabric**<br>• Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays | [`single-repo-records-branches`](design-single-repo-records-branches.md)<br>[Sketch](decision-single-repo-records-branches.md) | 2h<br>1h | fabric |
+| S1 |  | **One-repository hubs redesigned: records on their own branches, the layout known only to fabric**<br>• Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays | [`single-repo-records-branches`](design-single-repo-records-branches.md)<br>[Sketch](decision-single-repo-records-branches.md) | 3h<br>1h | fabric |
 
 </details>
 
@@ -138,8 +138,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Run agents ask their parent orch, and the parent can subscribe to a run reaching a named row**<br>• Every run agent question for the operator goes to the run parent by creel; the parent can ask lym to mail it when a run reaches a named producer or state<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | darn · light | Code-Burler-Review | neve | 5h<br>19m | loom, shuttle, shed |
-| T3 | **Merge danger in descriptions, tautological tests in review, and a shared vocabulary**<br>• A Merge danger section in every change description; Code-Review flags tautological tests; one glossary loaded by the orch and Discussion<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`merge-danger-tautology-glossary`](design-merge-danger-tautology-glossary.md) | darn · light | Darn-Write | neve | 1h<br>17m | landing, stencil, burler, heddle, docs |
+| T2 | **Run agents ask their parent orch, and the parent can subscribe to a run reaching a named row**<br>• Every run agent question for the operator goes to the run parent by creel; the parent can ask lym to mail it when a run reaches a named producer or state<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | darn · light | Code-Burler-Fix | neve | 5h<br>29m | loom, shuttle, shed |
+| T3 | **Merge danger in descriptions, tautological tests in review, and a shared vocabulary**<br>• A Merge danger section in every change description; Code-Review flags tautological tests; one glossary loaded by the orch and Discussion<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`merge-danger-tautology-glossary`](design-merge-danger-tautology-glossary.md) | darn · light | Darn-Write | neve | 1h<br>27m | landing, stencil, burler, heddle, docs |
 | T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | Webster | neve | 5h<br>3h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
 #### Ready (0)
@@ -154,7 +154,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Bug runs prove their test was red before the fix, and name the root cause in a trailer**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bug-red-first-gate`](design-bug-red-first-gate.md) | darn · light | T10 | 1h<br>17m | gate, testmap |
+| T4 | **Bug runs prove their test was red before the fix, and name the root cause in a trailer**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bug-red-first-gate`](design-bug-red-first-gate.md) | darn · light | T10 | 1h<br>27m | gate, testmap |
 
 ### Notes (5)
 
