@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-19 13:23 UTC; every age below is as of then.
+Rendered 2026-11-19 13:27 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -9,7 +9,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 <details open>
 <summary><strong><a href="project-code-cleanup.md">P1 Code cleanup: cut and simplify lym code and tests</a> (2)</strong></summary>
 
-[`code-cleanup`](design-code-cleanup.md) · Age 19h · Owner `neve`
+[`code-cleanup`](design-code-cleanup.md) · Age 20h · Owner `neve`
 
 Make lym smaller without changing behaviour: fewer tests, leaner design, no dead compatibility code, no unused features
 
@@ -29,7 +29,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | T10 | 19h<br>1h | fabric, loom, board |
+| T1 | `draft` **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | T10 | 20h<br>1h | fabric, loom, board |
 | T11 | `draft` **Trim every package doc.go of what is superfluous**<br>• The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`doc-go-trim-pass`](design-doc-go-trim-pass.md) | darn · solid | T1<br>T10 | 17h<br>2h | docs |
 
 ### Notes (0)
@@ -88,7 +88,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **Measure whether the reach and mutation reports change what runs land**<br>• Over 10 landed darn runs, count how often the reach note, reach turn and mutation survivors led to added tests or fixes<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-use-measure`](design-testmap-use-measure.md) | darn · docs |  | 48m<br>48m | testmap, gate |
+| T5 | `draft` **Measure whether the reach and mutation reports change what runs land**<br>• Over 10 landed darn runs, count how often the reach note, reach turn and mutation survivors led to added tests or fixes<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-use-measure`](design-testmap-use-measure.md) | darn · docs |  | 52m<br>52m | testmap, gate |
 
 ### Notes (0)
 
@@ -119,40 +119,26 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **One-repository hubs redesigned: records on their own branches, the layout known only to fabric**<br>• Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays | [`single-repo-records-branches`](design-single-repo-records-branches.md)<br>[Sketch](decision-single-repo-records-branches.md) | 1h<br>5m | fabric |
+| S1 |  | **One-repository hubs redesigned: records on their own branches, the layout known only to fabric**<br>• Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays | [`single-repo-records-branches`](design-single-repo-records-branches.md)<br>[Sketch](decision-single-repo-records-branches.md) | 1h<br>10m | fabric |
 
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (12)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (11)</strong></summary>
 
 Owner `neve`
 
-### Tasks (2)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T13 | **Settings to route code review and drift judge rulings to the run's parent**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md) | darn · solid | landing · Finalize | neve | 3h<br>2h | loom, drift, burler |
-
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Layer A (1)
-
-Waits only on Running, Ready or Draft entries.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | T13 | 3h<br>2h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
+| T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid |  | 3h<br>2h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
 ### Notes (10)
 
@@ -162,7 +148,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S2 |  | **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | 1d<br>8m | board, ide, fabric |
+| S2 |  | **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | 1d<br>13m | board, ide, fabric |
 
 #### Research (2)
 
@@ -175,17 +161,25 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **A Merge danger section in every change description: one-way or two-way door, and blast radius** | [`merge-danger-in-description`](design-merge-danger-in-description.md) | 4m<br>4m | landing, stencil |
-| E2 |  | **Bug runs prove their test was red before the fix, and name the root cause in a trailer** | [`bug-red-first-gate`](design-bug-red-first-gate.md) | 4m<br>4m | gate, testmap |
-| E3 |  | **Code review flags tests whose expected value is computed the way the code computes it** | [`tautological-test-finding`](design-tautological-test-finding.md) | 4m<br>4m | burler, stencil |
+| E1 |  | **A Merge danger section in every change description: one-way or two-way door, and blast radius** | [`merge-danger-in-description`](design-merge-danger-in-description.md) | 9m<br>9m | landing, stencil |
+| E2 |  | **Bug runs prove their test was red before the fix, and name the root cause in a trailer** | [`bug-red-first-gate`](design-bug-red-first-gate.md) | 9m<br>9m | gate, testmap |
+| E3 |  | **Code review flags tests whose expected value is computed the way the code computes it** | [`tautological-test-finding`](design-tautological-test-finding.md) | 9m<br>9m | burler, stencil |
 
 #### Features (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F2 |  | **Every run agent question for the operator goes to the run parent**<br>• By default, a run agent puts its questions to its parent orch by creel; only orchs contact the operator | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | 3h<br>2m | loom, shuttle |
+| F2 |  | **Every run agent question for the operator goes to the run parent**<br>• By default, a run agent puts its questions to its parent orch by creel; only orchs contact the operator | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | 3h<br>7m | loom, shuttle |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 3d<br>1d | batten, loom, board |
 | F4 |  | **Mail the run parent when the run reaches a named row**<br>• A subscription verb or run_settings key so lym mails the parent when a run reaches a named producer, in place of polling | [`parent-notify-on-row`](design-parent-notify-on-row.md) | 3h<br>3h | loom, shed |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>13d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T13 | **Settings to route code review and drift judge rulings to the run's parent**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md) | 3h<br>2h | loom, drift, burler |
 
 </details>
