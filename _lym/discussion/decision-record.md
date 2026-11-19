@@ -14,6 +14,12 @@ A bug with no seam for a test is a stop the record names, never a silent pass.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-19): Red-first gate on darn runs only
+
+Decision: Accepted: the red-first gate runs in Darn-Write only; tapestry and sampler runs of a bug entry are not checked in this run.
+
+Rationale: Bug fixes run as darn by default on this hub; tapestry gates per Webster batch, a different seam with its own design questions, so extending the gate there is a separate change if bug runs on tapestry show the need.
+
 ## Constraints
 
 ## Auto-mode assumptions
