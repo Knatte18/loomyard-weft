@@ -19,5 +19,6 @@
       "title": "Hub gate keys are operator writes after landing",
       "digest": "745162106d945088b24ce9743cb4086a351d08779a8081f7e9ea17917a8cb131"
     }
-  ]
+  ],
+  "decisions_routed": true
 }

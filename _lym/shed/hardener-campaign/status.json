@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -320,6 +320,90 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/hardener-campaign/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-19T17:39:24Z",
+      "started_at": "2026-11-19T17:10:53Z",
+      "gate_attempts": 3,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T17:27:01.456088079Z",
+          "end": "2026-11-19T17:27:01.467577806Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T17:27:19.16160913Z",
+          "end": "2026-11-19T17:27:19.173376005Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T17:27:28.372655332Z",
+          "end": "2026-11-19T17:27:28.380596054Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T17:31:32.251400503Z",
+          "end": "2026-11-19T17:31:32.264558177Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T17:27:01.524443849Z",
+          "end": "2026-11-19T17:27:02.562378429Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-19T17:27:03.058432645Z",
+          "end": "2026-11-19T17:27:19.093537041Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T17:27:19.221160342Z",
+          "end": "2026-11-19T17:27:19.887475818Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-19T17:27:20.303451843Z",
+          "end": "2026-11-19T17:27:28.336741632Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T17:27:28.422611589Z",
+          "end": "2026-11-19T17:30:50.680346997Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-19T17:30:51.091000073Z",
+          "end": "2026-11-19T17:31:32.2156187Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T17:31:32.315495358Z",
+          "end": "2026-11-19T17:39:23.080148407Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-19T17:39:23.130195624Z",
+          "end": "2026-11-19T17:39:23.131753506Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
