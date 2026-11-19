@@ -20,13 +20,14 @@ A clean-room rewrite was judged too large for the gain (2026-11-18); this projec
 Decided by the operator, 2026-11-19:
 
 1. `drop-compat-migration-code` first, once the single-repo tasks and `hardener-campaign` have landed, since they change the same packages.
-2. `design-simplify-callers` next, module by module, after the `landingshed-design-simplify` pilot shows whether the estimate holds.
-3. `doc-go-trim-pass` last, so it trims docs that describe the code after the two passes above.
+2. `doc-go-trim-pass` last, so it trims docs that describe the code after the pass above.
+
+`design-simplify-callers` was dropped (operator, 2026-11-19): its `landingshed-design-simplify` pilot saved 278 lines against an estimate of 600–800.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (3)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -36,14 +37,13 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Draft (3)
+### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | T5<br>T6<br>T10 | 17h<br>31m | fabric, loom, board |
-| T9 | `draft` **Design: simplify interfaces that make every caller handle too much**<br>• For example one result type instead of a four-value return handled at 60 call sites; find such spots per module and fix them one module at a time<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`design-simplify-callers`](design-design-simplify-callers.md) | darn · solid | T1<br>T6 | 17h<br>31m | fabric, landing |
 | T11 | `draft` **Trim every package doc.go of what is superfluous**<br>• The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`doc-go-trim-pass`](design-doc-go-trim-pass.md) | darn · solid | T10 | 14h<br>0m | docs |
 
 ## Notes (0)
