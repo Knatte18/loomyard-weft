@@ -29,7 +29,7 @@ No viewer code exists yet; `boardView` and `layerSection` are the README rendere
 - Editing and live refresh need a server, so the design adds a per-hub loopback server started on demand by `lym board open` (D9 to D11).
 - The revision is the hash of the stored entry, checked under the write lock (D8).
 - The server serves the embedded page and computes the projection itself, so the committed files stay a `file://` read-only view (D2, D3).
-- `open` and `serve` refuse in a run agent's session, so the server cannot become a way around the task-creation guard (D12).
+- `open` and `serve` refuse in a run agent's session, so a run agent cannot start a server or open the page (D12).
 - The Sketch's D1 to D6 are kept, with D1 gaining the revision and the area-label list, D2 the two page modes, D4 the `http` links, and D5 rewritten around the server.
 
 ### Turn 4 — lens review
@@ -42,7 +42,8 @@ Findings, merged across lenses:
 - interactions 3 (exit during a write): fixed; D11's exits drain in-flight requests.
 - interactions 4, walkthrough 4 (a decision-file-only change does not wake the page): fixed as a stated bound in D10.
 - interactions 5 (`serve` under `--board-path`): fixed; `serve` refuses it, with a criterion.
-- interactions 6, bound-breaker 3 (stale state hands the token to a foreign listener): fixed; liveness is read by the server's lock, which proves the recorded port, and `serve` waits briefly for the lock so the read never turns it away.
+- interactions 6, bound-breaker 3 (stale state hands the token to a foreign listener): fixed; liveness is read by the server's lock, and `serve` waits briefly for the lock so the read never turns it away;
+  review round 1 replaced the lock's proof of the recorded port with the state's answer to a token-carrying request (D5).
 - interactions 7 (`localhost` against the Host check): fixed; D9 pins `127.0.0.1` for every address lym builds.
 - interactions 8 (file modes held by accident): fixed; D9 states mode 0600 for the launcher, and the criterion tests both files.
 - interactions criteria note (date stamps): fixed; the D10 criterion sets the stamps aside.
@@ -87,7 +88,7 @@ Findings, merged across lenses:
 - **Shell out from the server to `lym board upsert` and friends.**
   It would keep one code path, but the revision check must sit inside the write lock, which only an in-process `boardengine` call can do.
 - **Let the server set or clear the strand name itself.**
-  Clearing it for a server an agent started would let the agent create tasks through the page; refusing the start is simpler and closes that path.
+  Clearing it for a server an agent started would let the agent create tasks through the page; refusing the start is simpler.
 
 ## Review rounds
 
@@ -101,7 +102,7 @@ _No rounds yet._
 - Q4 (auto-pick): how is the server protected? Answer: loopback bind, per-start token passed through a user-only launcher file, Host check, no CORS, JSON content type and Origin check on writes. Rationale: the standard local-tool defences, and the token stays off process listings.
 - Q5 (auto-pick): which fields does the page edit? Answer: title, labels, brief, body, project and a task's dependencies; slug, kind, run settings, profile and records stay CLI-only. Rationale: the entry asks for create and edit; the rest have their own verbs with their own rules.
 - Q6 (auto-pick): how long does the server live? Answer: until 30 minutes pass with no `/api` request, or its binary is replaced. Rationale: an open page keeps it alive; no stop verb is needed.
-- Q7 (auto-pick): may an agent open the viewer? Answer: no; `open` and `serve` refuse in a run agent's session, and the orch may run them. Rationale: closes a way around the task-creation guard.
+- Q7 (auto-pick): may an agent open the viewer? Answer: no; `open` and `serve` refuse in a run agent's session, and the orch may run them. Rationale: keeps a run agent from starting a server or opening the page; D9 and D12 state that the token still reaches a same-user process.
 - Q8 (auto-pick): keep `board-data.js` and `board.html` as committed render outputs? Answer: kept, as the entry's Delivers line names them; raised to the parent in Open risks. Rationale: dropping a named deliverable is the parent's call.
 - Q9 (auto-pick): keep D5's refusal naming `lym board rerender`? Answer: dropped, since the server serves the embedded page; raised to the parent in Open risks. Rationale: the refusal would guard a file the verb no longer reads.
 - Q10 (auto-pick): where does the server code live? Answer: a new `internal/boardserve`, with the verbs in `internal/boardcli` and the projection, page and revision in `internal/boardengine`. Rationale: keeps transport and lifecycle out of the engine and the CLI thin.
