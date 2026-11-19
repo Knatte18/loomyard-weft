@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=d9644a8d884806290f233a0d00d9d3dc61e264dea4141992cc33c9512310b301 build=dea07060083fe21d5186ac0f4f96a177f2eb2168 time=2026-11-11T08:46:52Z -->
+<!-- lym-stencil: sha256=033959a68c0c168048fa49260e73f6d3022eaa977b8a4fc87507e8ee4fedec43 build=6d3a916f455f00d6e662d3074e98ce13019247b3 time=2026-11-19T15:34:33Z -->
 
 # Final-summary spec — the producer-agnostic final-summary artifact
 
@@ -24,6 +24,31 @@ Each of the following is checked, and each violation is its own distinct error:
 - the title after that `# ` prefix must be non-empty.
 
 Everything after the heading line is the body, carried verbatim.
+
+## Merge danger
+
+A change description's body holds a `## Merge danger` section.
+It tells the reviewer, before the merge, what a mistake would cost:
+
+```markdown
+## Merge danger
+
+**Door:** two-way
+**Blast radius:** stencils
+```
+
+- **Door** is `one-way` when a revert of the landing commit does not undo the change's effect, and `two-way` otherwise.
+  The door is one-way for a record or board format another binary reads,
+  a config reinterpretation `hubreconcile` applies, data the change deletes,
+  and anything pushed outward, such as a release, a message or a remote branch.
+- **Blast radius** is one word naming what breaks if the change is wrong, such as a module, a role or `board`.
+
+The section runs to the next heading of level one or two.
+Either line may stand as a list item, and its value may be in backticks.
+Lines inside a fenced code block are not read: a fenced example is neither the section nor a heading that ends it.
+`lym loom validate-description` and every gate that checks a change description refuse one without the section,
+a door other than those two words, and a blast radius other than one word.
+`Publish` and `Finalize` do not check it: they carry the body as it stands.
 
 ## Sole declarer, sole parser
 
