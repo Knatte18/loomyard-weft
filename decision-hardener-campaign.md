@@ -310,6 +310,12 @@ Decision: The added entry "D8's rationale quotes the 2026-10-16 treadle note as 
 
 Rationale: The arbiter entry was written before the operator answered F10, and it says it applies "whatever the parent answers ... unless that answer removes D8 entirely". Its quoting fix is still carried out, since D8's rationale now quotes the 2026-10-16 note as written. But its wording about an open question is out of date: the operator's later entry settles that question, so no parent question is left open. The round-2 fixer deferred this conflict because only the parent or arbiter may rule on it (round-2-fixer-report.md, Deferred).
 
+### Added after Discussion (parent, 2026-11-19): Hub gate keys are operator writes after landing
+
+Decision: The three hub gate values (harden-burler-fix to [0, 1], harden-live and harden-live-copies to [2]) are operator writes to the hub's gate.yaml, made outside the plan after the task lands. No card writes them. The change description's landing section names the three exact 'lym config gate --set' commands for the operator to run, and the Shared Decision hub-gate-keys-are-a-hub-write cites this entry.
+
+Rationale: The hub's _bolt/_lym/config/gate.yaml lies outside the task worktree, and hub config is the operator's call: the hub orch relays any hub step a landing names rather than writing hub config itself.
+
 ## Constraints
 
 - PATTERN-lym-files: the sandbox root is a never-tracked directory under the worktree's `.lym`, and the archive lives under `_lym/harden/`, both named through `internal/lymdirs`.
