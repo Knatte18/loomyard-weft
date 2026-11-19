@@ -1,0 +1,1085 @@
+diff --git a/contracts/stencils/darn/darn-fragment-report.md b/contracts/stencils/darn/darn-fragment-report.md
+new file mode 100644
+index 00000000..6dfd5599
+--- /dev/null
++++ b/contracts/stencils/darn/darn-fragment-report.md
+@@ -0,0 +1,10 @@
++<!-- This is the darn writer's report passage, for a run whose darn.yaml report_dir is set.
++     internal/darnengine's DarnTable reads it for the writer's engine, fills report_dir and report_path,
++     and appends it to the writer prompt's Step 4 list; an empty report_dir leaves it out. -->
++
++## The report this run commits
++
++This run lands what the task finds as a committed report, because the change description stays in the run's records and never reaches the parent branch.
++Write the report the task asks for as a markdown file under `{{.report_dir}}/`, at the path the task names there, or else at `{{.report_path}}`.
++Commit it on the task branch like any other change; a run whose task asks for no other change commits the report alone.
++The change description summarizes the report and names its path.
+diff --git a/contracts/stencils/darn/darn-template-write.md b/contracts/stencils/darn/darn-template-write.md
+index 5c771eda..872953c2 100644
+--- a/contracts/stencils/darn/darn-template-write.md
++++ b/contracts/stencils/darn/darn-template-write.md
+@@ -4,7 +4,7 @@
+      seatengine fills it from the lead's value map that `darnengine.DarnTable` builds.
+      It then hands the result to shuttle as the writer's whole prompt.
+      Every marker below is a top-level {{.X}} substitution, and the file has no {{if}}/{{range}} conditionals.
+-     Every marker must be non-empty except pattern_directive, project_directive, friction_directive and parent_directive.
++     Every marker must be non-empty except pattern_directive, project_directive, friction_directive, parent_directive and report_directive.
+      project_directive is rendered by internal/loomengine.ProjectRecordDirective for a run under a beam.
+      It shares the pattern directive's line, so an empty value leaves the prompt's bytes unchanged.
+      decision_record_path names the decision record the writer reads as its scope.
+@@ -13,7 +13,9 @@
+      prior_work is never empty: `darnengine.DarnTable` fills it with (none) when it has nothing to tell.
+      edit_directive is rendered unconditionally by internal/editdirective.
+      make_change holds Step 4's list: `darnengine.DarnTable` fills it with darn-fragment-make-change,
+-     or with darn-fragment-make-change-gated when a cold fixer clears the row's verify gate. -->
++     or with darn-fragment-make-change-gated when a cold fixer clears the row's verify gate.
++     report_directive holds darn-fragment-report, led by a blank line, when darn.yaml's report_dir is set.
++     It shares make_change's line, so an empty value leaves the prompt's bytes unchanged. -->
+ 
+ # Darn — make the change a board entry asks for, in one session
+ 
+@@ -61,7 +63,7 @@ Check whether landed work, another board entry or another run overtook or contra
+ 
+ ## Step 4 — Make the change
+ 
+-{{.make_change}}
++{{.make_change}}{{.report_directive}}
+ 
+ ## Step 5 — Write the change description
+ 
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index 6ef910ea..ae00ce64 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -57,6 +57,12 @@ var DarnFragmentMakeChange []byte
+ //go:embed darn/darn-fragment-make-change-gated.md
+ var DarnFragmentMakeChangeGated []byte
+ 
++// DarnFragmentReport is the darn writer prompt's passage that has the writer commit the task's report as a file.
++// It is rendered only for a run whose darn.yaml names a report directory.
++//
++//go:embed darn/darn-fragment-report.md
++var DarnFragmentReport []byte
++
+ // SamplerTemplateAgent is the sampler agent's shipped-default prompt.
+ // It is the whole instruction set of the interactive session the operator works a change out with.
+ //
+@@ -897,6 +903,7 @@ var entries = []registryEntry{
+ 	{"darn-template-write", &DarnTemplateWrite},
+ 	{"darn-fragment-make-change", &DarnFragmentMakeChange},
+ 	{"darn-fragment-make-change-gated", &DarnFragmentMakeChangeGated},
++	{"darn-fragment-report", &DarnFragmentReport},
+ 	{"sampler-template-agent", &SamplerTemplateAgent},
+ 	{"raddle-template-agent", &RaddleTemplateAgent},
+ 	{"drift-template-expect", &DriftTemplateExpect},
+diff --git a/internal/battencli/dobbyreads.go b/internal/battencli/dobbyreads.go
+index 92f52bc8..cba05d0d 100644
+--- a/internal/battencli/dobbyreads.go
++++ b/internal/battencli/dobbyreads.go
+@@ -228,12 +228,12 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ 				if !view.Landed {
+ 					return nil
+ 				}
+-				commit, err := shedrun.ReadLandedCommit(prime, slug)
++				landed, err := shedrun.ReadLandedCommit(prime, slug)
+ 				if err != nil {
+ 					logger.Warn("battencli: a landed run's landing commit is unreadable and stays unknown", "slug", slug, "error", err)
+ 					return nil
+ 				}
+-				view.LandingCommit = commit
++				view.LandingCommit, view.EmptyLanding = landed.Commit, landed.EmptyDiff
+ 				return nil
+ 			},
+ 			func() error {
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 8ad8de7c..a04c256c 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -103,6 +103,7 @@ var intentionallyNil = map[string]string{
+ 	"Landing.ReadParentTips":                 "loom-only seam, batten lands no branch",
+ 	"Landing.HoldsWork":                      "loom-only seam, batten lands no branch",
+ 	"Landing.ChangedPaths":                   "loom-only seam, batten lands no branch",
++	"Landing.ChangedCodePaths":               "loom-only seam, batten lands no branch",
+ 	"Landing.MergeBase":                      "loom-only seam, batten lands no branch",
+ 	"Landing.FixerSeats":                     "loom-only seam, batten lands no branch",
+ 	"Landing.LineChange":                     "loom-only seam, batten lands no branch",
+diff --git a/internal/beamcli/dobbypairanchor_test.go b/internal/beamcli/dobbypairanchor_test.go
+index 9accd2a3..411f2ad7 100644
+--- a/internal/beamcli/dobbypairanchor_test.go
++++ b/internal/beamcli/dobbypairanchor_test.go
+@@ -280,7 +280,7 @@ func TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair(t
+ 	if err := os.WriteFile(filepath.Join(h.BoardDir(), "board.json"), []byte(board), 0o644); err != nil {
+ 		t.Fatalf("write board.json: %v", err)
+ 	}
+-	if err := shedrun.WriteLandedCommit(prime, "landed", "abc123"); err != nil {
++	if err := shedrun.WriteLandedCommit(prime, "landed", shedrun.LandedCommit{Commit: "abc123", EmptyDiff: true}); err != nil {
+ 		t.Fatalf("WriteLandedCommit() = %v; want nil", err)
+ 	}
+ 
+@@ -297,6 +297,7 @@ func TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair(t
+ 	type landing struct {
+ 		pastLand, landed        bool
+ 		commit                  string
++		emptyLanding            bool
+ 		entryEnded, pairPresent bool
+ 		cancelMarker            bool
+ 	}
+@@ -308,7 +309,7 @@ func TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair(t
+ 	got := map[string]landing{}
+ 	gotJudged := map[string]judged{}
+ 	for _, view := range views {
+-		got[view.Slug] = landing{view.PastLand, view.Landed, view.LandingCommit, view.EntryEnded, view.PairPresent, view.CancelMarker}
++		got[view.Slug] = landing{view.PastLand, view.Landed, view.LandingCommit, view.EmptyLanding, view.EntryEnded, view.PairPresent, view.CancelMarker}
+ 		gotJudged[view.Slug] = judged{view.Run, view.Verdict.Answer, view.Verdict.Reason}
+ 	}
+ 	wantJudged := map[string]judged{
+@@ -325,7 +326,7 @@ func TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair(t
+ 		"ahead":      {pairPresent: true},
+ 		"paused":     {pairPresent: true},
+ 		"cancelling": {pairPresent: true, cancelMarker: true},
+-		"landed":     {pastLand: true, landed: true, commit: "abc123", entryEnded: true, pairPresent: true},
++		"landed":     {pastLand: true, landed: true, commit: "abc123", emptyLanding: true, entryEnded: true, pairPresent: true},
+ 		"unlanded":   {pastLand: true, entryEnded: true, pairPresent: true},
+ 		"unreadable": {pastLand: true, landed: true, pairPresent: true},
+ 		"pairless":   {pastLand: true, entryEnded: true},
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index e0ce85eb..3d1c3b38 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -148,7 +148,7 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 	t.Parallel()
+ 	wantLocalKeys := map[string][]string{
+ 		"agents":  {"efforts"},
+-		"darn":    {"gate_fixer", "verify_attempts", "verify_budget_min", "writer", "writer_timeout_min"},
++		"darn":    {"gate_fixer", "report_dir", "verify_attempts", "verify_budget_min", "writer", "writer_timeout_min"},
+ 		"drift":   {"enabled", "expect_model", "judge_interactive", "judge_model", "scope"},
+ 		"ide":     {"open_files", "render_markdown"},
+ 		"landing": {"conflict", "conflict_timeout_min", "describe", "describe_timeout_min", "fixer", "fixer_timeout_min", "pr_reviewer"},
+diff --git a/internal/darnengine/config.go b/internal/darnengine/config.go
+index 391078d2..413a88a1 100644
+--- a/internal/darnengine/config.go
++++ b/internal/darnengine/config.go
+@@ -8,10 +8,13 @@ import (
+ 	_ "embed"
+ 	"errors"
+ 	"fmt"
++	"path"
++	"path/filepath"
+ 	"slices"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"gopkg.in/yaml.v3"
+ )
+@@ -43,6 +46,8 @@ type Config struct {
+ 	VerifyBudgetMin int `yaml:"verify_budget_min"`
+ 	// GateFixer is the model-spec of the cold fixer of Darn-Write's verify gate; empty turns the fixer off.
+ 	GateFixer string `yaml:"gate_fixer"`
++	// ReportDir is the worktree-relative directory the writer commits the task's report under; empty asks for no report file.
++	ReportDir string `yaml:"report_dir"`
+ 	// TreeScope maps each worktree-relative tree path, without a trailing slash, to its test target at a tree-scoped site.
+ 	// An empty target means the tree has no tests of its own.
+ 	// Tree scope is on exactly when it holds a tree.
+@@ -67,6 +72,7 @@ func ConfigSpec() configengine.Spec {
+ 		"verify_attempts":    configengine.CategoryNone,
+ 		"verify_budget_min":  configengine.CategoryNone,
+ 		"gate_fixer":         configengine.CategoryNone,
++		"report_dir":         configengine.CategoryNone,
+ 		"tree_scope":         configengine.CategoryGuard,
+ 	}
+ 	retired := map[string]configengine.Category{
+@@ -102,6 +108,8 @@ const shedOnlyKeyWayForward = "remove the key from the refused local file, profi
+ 
+ // LoadConfig loads and unmarshals the darn module's configuration strictly through the hub-wide layer stack under dirs.
+ // It validates the writer key's model-spec grammar at load time and leaves verify_attempts to its reader.
++// It refuses a report_dir that leaves the worktree or has a records directory in its path.
++// It returns a report_dir it keeps in clean slash form.
+ // It returns tree_scope keyed by trimmed tree path and refuses a malformed or repeated tree key wrapping ErrTreeScopeKey.
+ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 	spec := ConfigSpec()
+@@ -130,6 +138,19 @@ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 		}
+ 	}
+ 
++	if cfg.ReportDir != "" {
++		if !filepath.IsLocal(cfg.ReportDir) {
++			return Config{}, fmt.Errorf("darn config key %q: %q is not a worktree-relative directory; set one such as docs/research, or \"\" for no report file", "report_dir", cfg.ReportDir)
++		}
++		cfg.ReportDir = path.Clean(filepath.ToSlash(cfg.ReportDir))
++		// Any segment counts, as a hub anchored at a subpath keeps its records at <anchor>/_lym.
++		for _, root := range []string{lymdirs.LymDirName, lymdirs.DotLymDirName} {
++			if slices.Contains(strings.Split(cfg.ReportDir, "/"), root) {
++				return Config{}, fmt.Errorf("darn config key %q: %q lies under a records directory %q, so its report never reaches the parent branch; set one such as docs/research, or \"\" for no report file", "report_dir", cfg.ReportDir, root)
++			}
++		}
++	}
++
+ 	treeScope, err := normalizeTreeScope(cfg)
+ 	if err != nil {
+ 		return Config{}, err
+diff --git a/internal/darnengine/config_test.go b/internal/darnengine/config_test.go
+index ac2e83b5..2d8afb05 100644
+--- a/internal/darnengine/config_test.go
++++ b/internal/darnengine/config_test.go
+@@ -103,6 +103,26 @@ func TestLoadConfig(t *testing.T) {
+ 			contents: strings.Replace(ConfigTemplate(), "gate_fixer: sonnet[medium]", "gate_fixer: \"\"", 1),
+ 			want:     templateConfig(func(c *Config) { c.GateFixer = "" }),
+ 		},
++		{
++			name: "a report_dir loads in clean form", seed: true,
++			contents: strings.Replace(ConfigTemplate(), `report_dir: ""`, `report_dir: "docs/research/"`, 1),
++			want:     templateConfig(func(c *Config) { c.ReportDir = "docs/research" }),
++		},
++		{
++			name: "a report_dir outside the worktree is refused", seed: true,
++			contents: strings.Replace(ConfigTemplate(), `report_dir: ""`, `report_dir: "../research"`, 1),
++			wantErr:  []string{`"report_dir"`, `"../research"`, "docs/research"},
++		},
++		{
++			name: "a report_dir under a records directory is refused", seed: true,
++			contents: strings.Replace(ConfigTemplate(), `report_dir: ""`, `report_dir: "_lym/research"`, 1),
++			wantErr:  []string{`"report_dir"`, `"_lym/research"`, "docs/research"},
++		},
++		{
++			name: "a report_dir under a subpath anchor's records directory is refused", seed: true,
++			contents: strings.Replace(ConfigTemplate(), `report_dir: ""`, `report_dir: "backend/_lym/research"`, 1),
++			wantErr:  []string{`"report_dir"`, `"backend/_lym/research"`, "docs/research"},
++		},
+ 		{
+ 			name: "invalid gate_fixer spec", seed: true,
+ 			contents: strings.Replace(ConfigTemplate(), "gate_fixer: sonnet[medium]", "gate_fixer: \"opus[medium\"", 1),
+diff --git a/internal/darnengine/doc.go b/internal/darnengine/doc.go
+index 08201be3..3c4e67fb 100644
+--- a/internal/darnengine/doc.go
++++ b/internal/darnengine/doc.go
+@@ -9,6 +9,11 @@
+ // A verify gate is the writer's or a Code-Review fix round's.
+ // `verify_budget_min` is how long, in minutes, a verify gate runs before the run's parent gets one notice.
+ // The attempts go on, and 0 turns the notice off.
++// `report_dir` is a worktree-relative directory.
++// When it is set, the writer's prompt has it commit the task's report there.
++// The path is the one the task names, or else `<slug>.md`.
++// A finding then reaches the parent branch instead of the run's records alone.
++// LoadConfig refuses a `report_dir` that leaves the worktree or has a records directory in its path.
+ // The darn recipe's Code-Review perch takes its models, fans, budgets and auto-accept flag from `loom.yaml`.
+ // darn.yaml holds none of them.
+ // A `verify` key in the hub file is dropped at load and pruned by `lym config reconcile`;
+diff --git a/internal/darnengine/spec.go b/internal/darnengine/spec.go
+index d5c0eec0..91349258 100644
+--- a/internal/darnengine/spec.go
++++ b/internal/darnengine/spec.go
+@@ -6,6 +6,7 @@ package darnengine
+ 
+ import (
+ 	"fmt"
++	"path"
+ 	"strings"
+ 	"time"
+ 
+@@ -31,6 +32,9 @@ const (
+ 	makeChangeGatedStencil = "darn-fragment-make-change-gated"
+ )
+ 
++// reportStencil is the passage that has the writer commit the task's report under the configured directory.
++const reportStencil = "darn-fragment-report"
++
+ // darnRole is the agent-name role the darn writer's spawn carries.
+ const darnRole = "darn"
+ 
+@@ -83,6 +87,7 @@ type DarnInputs struct {
+ // They act only on what the verify gate's fixer leaves.
+ // The writer asks its parent for the single run of the test a task's reported failure names.
+ // Otherwise the step has them run the gate after each commit.
++// With cfg.ReportDir set, a passage after the step has the writer commit the task's report under that directory.
+ // A friction directive that fails to render is logged and left empty, because the note is optional bookkeeping.
+ func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error) {
+ 	required := []struct{ field, value string }{
+@@ -120,10 +125,15 @@ func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Ta
+ 		logger.Warn("darn: friction directive failed, continuing without one", "role", darnRole, "stencil", darnStencilName, "error", err)
+ 		frictionDirective = ""
+ 	}
+-	makeChange, err := makeChangeList(in.StencilsDir, shuttleengine.NewModelChoice(resolved).Engine, in.GateFixed, in.SubagentModel)
++	engine := shuttleengine.NewModelChoice(resolved).Engine
++	makeChange, err := makeChangeList(in.StencilsDir, engine, in.GateFixed, in.SubagentModel)
+ 	if err != nil {
+ 		return seatengine.Table{}, fmt.Errorf("darn: DarnTable: Step 4 list: %w", err)
+ 	}
++	reportDirective, err := reportPassage(in.StencilsDir, engine, cfg.ReportDir, in.Slug)
++	if err != nil {
++		return seatengine.Table{}, fmt.Errorf("darn: DarnTable: report passage: %w", err)
++	}
+ 
+ 	return seatengine.Table{
+ 		RolePrefix: darnRole,
+@@ -138,10 +148,11 @@ func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Ta
+ 			"specs_dir":                  in.SpecsDir,
+ 			"prior_work":                 orNone(in.PriorWork),
+ 			"make_change":                makeChange,
++			"report_directive":           reportDirective,
+ 			"pattern_directive":          patternDirective,
+ 			friction.MarkerName:          frictionDirective,
+ 		},
+-		Optional: []string{"pattern_directive", "project_directive", friction.MarkerName},
++		Optional: []string{"pattern_directive", "project_directive", "report_directive", friction.MarkerName},
+ 		Seats: []seatengine.Seat{{
+ 			Stencil:     darnStencilName,
+ 			ModelChoice: shuttleengine.NewModelChoice(resolved),
+@@ -172,6 +183,25 @@ func makeChangeList(stencilsDir, engine string, gateFixed bool, subagentModel st
+ 	return strings.TrimSpace(string(filled)), nil
+ }
+ 
++// reportPassage returns the passage that has the writer commit the task's report under reportDir, worded for engine.
++// The passage leads with a blank line, so it follows the Step 4 list on that list's line,
++// and it names `<reportDir>/<slug>.md` as the report's path when the task names none.
++// An empty reportDir returns "".
++func reportPassage(stencilsDir, engine, reportDir, slug string) (string, error) {
++	if reportDir == "" {
++		return "", nil
++	}
++	content, err := stencilstore.ReadForEngine(stencilsDir, engine, reportStencil)
++	if err != nil {
++		return "", err
++	}
++	filled, err := stencil.Fill(content, map[string]string{"report_dir": reportDir, "report_path": path.Join(reportDir, slug+".md")})
++	if err != nil {
++		return "", fmt.Errorf("fill stencil %s: %w", reportStencil, err)
++	}
++	return "\n\n" + strings.TrimSpace(string(filled)), nil
++}
++
+ // orNone returns value, or noneToken when value is empty.
+ func orNone(value string) string {
+ 	if value == "" {
+diff --git a/internal/darnengine/spec_test.go b/internal/darnengine/spec_test.go
+index 204265f6..0cc6b312 100644
+--- a/internal/darnengine/spec_test.go
++++ b/internal/darnengine/spec_test.go
+@@ -78,6 +78,13 @@ const (
+ 	gatedNoGateStep     = "3. Run no `lym gate test` yourself."
+ )
+ 
++// The values the report passage fills for a report_dir of reportDir, and the heading of the step the passage follows.
++const (
++	reportDir   = "docs/research"
++	reportPath  = reportDir + "/fix-the-thing.md"
++	step4Marker = "## Step 4"
++)
++
+ // TestDarnSpec covers the table's lead and settings.
+ // It checks the rendered tokens for a first spawn, where the optional prior-work token renders to none.
+ // It also checks a spawn that carries prior work, a parent and a friction directory.
+@@ -87,10 +94,14 @@ func TestDarnSpec(t *testing.T) {
+ 
+ 	cfg := Config{Writer: "opus[effort=high]", WriterTimeoutMin: 45}
+ 	tests := []struct {
+-		name            string
+-		configure       func(in *DarnInputs)
+-		parentName      string
+-		wantInPrompt    func(in DarnInputs) []string
++		name      string
++		configure func(in *DarnInputs)
++		// reportDir is the Config's report_dir for the row; empty asks for no report file.
++		reportDir    string
++		parentName   string
++		wantInPrompt func(in DarnInputs) []string
++		// wantAfterStep4 lists values the prompt must carry after the Step 4 heading.
++		wantAfterStep4  []string
+ 		wantNotInPrompt []string
+ 		wantNone        int
+ 		wantNoParent    bool
+@@ -102,10 +113,19 @@ func TestDarnSpec(t *testing.T) {
+ 			wantInPrompt: func(in DarnInputs) []string {
+ 				return []string{"fix-the-thing", in.DescriptionPath, filepath.ToSlash(in.SpecsDir), in.DecisionRecordPath, in.StopMarkerPath, in.ConditionStopMarkerPath, `model: "haiku"`, ungatedTestStep, ungatedSubagentGate}
+ 			},
+-			wantNotInPrompt: []string{gatedNoGateStep},
++			wantNotInPrompt: []string{gatedNoGateStep, reportPath},
+ 			wantNone:        1,
+ 			wantNoParent:    true,
+ 		},
++		{
++			name:           "a report directory has the writer commit the report there, named for the slug by default",
++			configure:      func(in *DarnInputs) {},
++			reportDir:      reportDir,
++			wantInPrompt:   func(in DarnInputs) []string { return nil },
++			wantAfterStep4: []string{reportPath},
++			wantNone:       1,
++			wantNoParent:   true,
++		},
+ 		{
+ 			name:      "a cold fixer on the verify gate has the writer and its subagents run no gate",
+ 			configure: func(in *DarnInputs) { in.GateFixed = true },
+@@ -145,6 +165,8 @@ func TestDarnSpec(t *testing.T) {
+ 			in := newSpecInputs(t)
+ 			tt.configure(&in)
+ 			reg := newTestRegistry(t)
++			cfg := cfg
++			cfg.ReportDir = tt.reportDir
+ 			table, err := DarnTable(in, cfg, reg)
+ 			if err != nil {
+ 				t.Fatalf("DarnTable() = _, %v; want nil error", err)
+@@ -196,6 +218,12 @@ func TestDarnSpec(t *testing.T) {
+ 					t.Errorf("lead prompt does not contain %q", want)
+ 				}
+ 			}
++			step4 := strings.Index(prompt, step4Marker)
++			for _, want := range tt.wantAfterStep4 {
++				if step4 < 0 || strings.LastIndex(prompt, want) < step4 {
++					t.Errorf("lead prompt does not carry %q after the Step 4 heading", want)
++				}
++			}
+ 			for _, unwanted := range tt.wantNotInPrompt {
+ 				if strings.Contains(prompt, unwanted) {
+ 					t.Errorf("lead prompt contains %q; want it absent", unwanted)
+@@ -263,6 +291,10 @@ func TestDarnSpec_Refusals(t *testing.T) {
+ 		{"missing Step 4 fragment", func(t *testing.T, in *DarnInputs, cfg *Config) {
+ 			stencilkit.Remove(t, in.StencilsDir, makeChangeStencil)
+ 		}, makeChangeStencil},
++		{"missing report fragment under a report directory", func(t *testing.T, in *DarnInputs, cfg *Config) {
++			cfg.ReportDir = reportDir
++			stencilkit.Remove(t, in.StencilsDir, reportStencil)
++		}, reportStencil},
+ 		{"missing gated Step 4 fragment", func(t *testing.T, in *DarnInputs, cfg *Config) {
+ 			in.GateFixed = true
+ 			stencilkit.Remove(t, in.StencilsDir, makeChangeGatedStencil)
+diff --git a/internal/darnengine/template.yaml b/internal/darnengine/template.yaml
+index 5faa3107..2ec6a2d9 100644
+--- a/internal/darnengine/template.yaml
++++ b/internal/darnengine/template.yaml
+@@ -3,4 +3,5 @@ writer_timeout_min: 180  # minutes the darn writer's shuttle run is allowed to r
+ verify_attempts: 3  # how many times a verify gate, the writer's or a Code-Review fix round's, re-prompts its session with the failing findings before it halts the run for the parent
+ verify_budget_min: 30  # minutes a verify gate, the writer's or a Code-Review fix round's, may run from its first check before the run's parent gets one notice naming its failures so far; the attempts go on, and 0 turns the notice off
+ gate_fixer: sonnet[medium]  # model-spec for the cold fixer of Darn-Write's verify gate, which clears a failing gate's mechanical findings before the writer hears of them; empty turns the fixer off
++report_dir: ""  # worktree-relative directory the darn writer commits the task's report under, at the path the task names there or else at <slug>.md, so a finding reaches the parent branch instead of staying in the change description; empty asks for no report file
+ tree_scope: {}  # maps a tree path to the target string the tree contributes, an empty target meaning the tree has no tests of its own; a diff wholly under these trees runs each darn verify site's own gate key over the touched trees' targets, and a docs-only or empty diff with no target runs nothing; tree scope is on exactly when a tree is listed; write it with lym config darn --set tree_scope.<tree>=<target>, remove a tree only in lym config darn's editor; a tree path holding ".", such as .github, is written in the editor
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 159f5ee5..829a26a8 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -437,6 +437,8 @@
+ //     It also owes it when `land_notice` is per-task and the entry's request, remembered or read that tick, asks for it.
+ //     Under off it owes none.
+ //     The line is `[dobby notice] <slug>: landed as <commit>`.
++//     When Finalize recorded the landed diff as empty, it reads `landed with an empty diff`,
++//     naming the commit as the one the parent branch stays at.
+ //     With no commit recorded it reads `landed, commit unknown`.
+ //     For a run that did not land it reads `ended without landing` with `lym batten status <slug>`.
+ //     A beam's batten run is driven by its parent's dobby, so a beam's landing gets its line the same way.
+diff --git a/internal/dobbyengine/landnotice.go b/internal/dobbyengine/landnotice.go
+index 1d9f0616..c09de7a5 100644
+--- a/internal/dobbyengine/landnotice.go
++++ b/internal/dobbyengine/landnotice.go
+@@ -305,6 +305,7 @@ func (d *daemon) updateLandNotice(slug string, mutate func(*LandNoticeState)) {
+ 
+ // landNoticeLine is the line a run's landing notice posts.
+ // It names the slug and the outcome, and for a landing the head of its landing commit followed by followUp.
++// A landing that changed no code path on the parent branch says so in place of naming its commit as the landing.
+ func landNoticeLine(run RunView, followUp string) string {
+ 	if !run.Landed {
+ 		return fmt.Sprintf("%s %s: %s; lym batten status %s shows the run", runNoticePrefix, run.Slug, landNoticeOutcome(run), run.Slug)
+@@ -312,7 +313,11 @@ func landNoticeLine(run RunView, followUp string) string {
+ 	if run.LandingCommit == "" {
+ 		return fmt.Sprintf("%s %s: landed, commit unknown%s", runNoticePrefix, run.Slug, followUp)
+ 	}
+-	return fmt.Sprintf("%s %s: landed as %s%s", runNoticePrefix, run.Slug, run.LandingCommit[:min(len(run.LandingCommit), landingCommitWidth)], followUp)
++	commit := run.LandingCommit[:min(len(run.LandingCommit), landingCommitWidth)]
++	if run.EmptyLanding {
++		return fmt.Sprintf("%s %s: landed with an empty diff: no file of its parent branch changed, which stays at %s%s", runNoticePrefix, run.Slug, commit, followUp)
++	}
++	return fmt.Sprintf("%s %s: landed as %s%s", runNoticePrefix, run.Slug, commit, followUp)
+ }
+ 
+ // landNoticeOutcome names how a run past its Land row ended.
+diff --git a/internal/dobbyengine/landnotice_test.go b/internal/dobbyengine/landnotice_test.go
+index f125380e..ba1868df 100644
+--- a/internal/dobbyengine/landnotice_test.go
++++ b/internal/dobbyengine/landnotice_test.go
+@@ -25,7 +25,9 @@ func TestLandNotices(t *testing.T) {
+ 	tearingDown := RunView{Slug: "task", State: runStateRunning, Producer: "Worktree-Teardown", PastLand: true, Landed: true, LandingCommit: commit}
+ 	unlanded := RunView{Slug: "task", State: runStateDone, Producer: "Worktree-Teardown", PastLand: true}
+ 	landedNoCommit := RunView{Slug: "task", State: runStateDone, Producer: "Worktree-Teardown", PastLand: true, Landed: true}
++	landedEmpty := RunView{Slug: "task", State: runStateDone, Producer: "Worktree-Teardown", PastLand: true, Landed: true, LandingCommit: commit, EmptyLanding: true}
+ 	const landedLine = "[dobby notice] task: landed as 0123456789ab"
++	const emptyLandingLine = "[dobby notice] task: landed with an empty diff: no file of its parent branch changed, which stays at 0123456789ab"
+ 	const unknownCommitLine = "[dobby notice] task: landed, commit unknown"
+ 	const memberFollowUp = "; add it to the change description, then run `lym beam describe b`, which updates the pull request"
+ 	const memberLandedLine = landedLine + memberFollowUp
+@@ -81,6 +83,7 @@ func TestLandNotices(t *testing.T) {
+ 		{name: "AllTeardownRowCountsAsPastLand", mode: LandNoticeAll, ticks: [][]RunView{{running}, {tearingDown}, {landed}}, want: []string{landedLine}},
+ 		{name: "AllUnlandedNamesTheOutcome", mode: LandNoticeAll, ticks: [][]RunView{{running}, {unlanded}}, want: []string{unlandedLine}},
+ 		{name: "AllLandedWithNoCommitRecorded", mode: LandNoticeAll, ticks: [][]RunView{{running}, {landedNoCommit}}, want: []string{unknownCommitLine}},
++		{name: "AllEmptyLandingIsFlagged", mode: LandNoticeAll, ticks: [][]RunView{{running}, {landedEmpty}}, want: []string{emptyLandingLine}},
+ 		{name: "AllFirstSeenPastLandSendsNothing", mode: LandNoticeAll, ticks: [][]RunView{{landed}, {landed}}},
+ 		{name: "PerTaskRequestedSendsAndClearsAfterThePrune", mode: LandNoticePerTask, requested: true, ticks: [][]RunView{{running}, {landed}}, want: []string{landedLine}, wantClears: []string{"task"}},
+ 		{name: "PerTaskUnrequestedSendsNothing", mode: LandNoticePerTask, ticks: [][]RunView{{running}, {landed}}},
+@@ -114,6 +117,7 @@ func TestLandNotices(t *testing.T) {
+ 		{name: "ADoneMemberEntryIsNotFlagged", mode: LandNoticePerTask, beam: true, pullRequest: true, entryDone: true, ticks: [][]RunView{{running}, {landed}}, want: []string{memberLandedLine}},
+ 		{name: "AFailedFlagWriteIsRetriedOnTheNextTick", mode: LandNoticePerTask, beam: true, pullRequest: true, failFlags: 1, ticks: [][]RunView{{running}, {running}, {landed}}, want: []string{memberLandedLine}, wantClears: []string{"task"}, wantFlags: []string{"task", "task"}},
+ 		{name: "AMemberLandedWithNoCommitCarriesTheFollowUp", mode: LandNoticePerTask, beam: true, pullRequest: true, ticks: [][]RunView{{running}, {landedNoCommit}}, want: []string{unknownCommitLine + memberFollowUp}, wantClears: []string{"task"}, wantFlags: []string{"task"}},
++		{name: "AMemberLandedWithAnEmptyDiffCarriesTheFollowUp", mode: LandNoticePerTask, beam: true, pullRequest: true, ticks: [][]RunView{{running}, {landedEmpty}}, want: []string{emptyLandingLine + memberFollowUp}, wantClears: []string{"task"}, wantFlags: []string{"task"}},
+ 		{name: "ADoneEntryTakenUpUnderAPullRequestCarriesTheFollowUp", mode: LandNoticePerTask, beam: true, pullRequest: true, doneEntryParent: "prime", ticks: [][]RunView{{}, {}}, want: []string{unknownCommitLine + memberFollowUp}, wantClears: []string{"task"}},
+ 		{name: "OffWithAPullRequestFlagsTheMemberAndSendsNoLine", mode: LandNoticeOff, beam: true, pullRequest: true, ticks: [][]RunView{{running}, {landed}}, wantClears: []string{"task"}, wantFlags: []string{"task"}},
+ 	}
+diff --git a/internal/dobbyengine/passes.go b/internal/dobbyengine/passes.go
+index a609215f..b6ddd5d4 100644
+--- a/internal/dobbyengine/passes.go
++++ b/internal/dobbyengine/passes.go
+@@ -74,6 +74,8 @@ type RunView struct {
+ 	Landed   bool
+ 	// LandingCommit is the commit the run's landing put on its parent branch, empty when none is recorded.
+ 	LandingCommit string
++	// EmptyLanding reports that the run's landing changed no code path on its parent branch, so none of its work reached it.
++	EmptyLanding bool
+ 	// ReachedParent reports whether the run's work already reached its parent branch.
+ 	// Then only its Land and Worktree-Teardown rows are left.
+ 	// It is read for a paused run only.
+diff --git a/internal/fabricengine/parenttips.go b/internal/fabricengine/parenttips.go
+index 80a17052..a87a6ae0 100644
+--- a/internal/fabricengine/parenttips.go
++++ b/internal/fabricengine/parenttips.go
+@@ -124,6 +124,21 @@ func (f *Fabric) ChangedPaths(from, to string) ([]string, error) {
+ 	return paths, nil
+ }
+ 
++// ChangedCodePaths returns the paths that differ between from and to in the pair's code repository, leaving out records.
++// A path is left out when it is a records path of to or lies under one, as a one-repository hub keeps its records there.
++// The paths are repository-relative and sorted.
++func (f *Fabric) ChangedCodePaths(from, to string) ([]string, error) {
++	paths, err := f.ChangedPaths(from, to)
++	if err != nil {
++		return nil, err
++	}
++	recordsPaths, err := RecordsPathsAt(f.warpPath, to)
++	if err != nil {
++		return nil, fmt.Errorf("fabricengine: changed code paths from %s to %s: %w", from, to, err)
++	}
++	return slices.DeleteFunc(paths, func(path string) bool { return underRecordsPath(path, recordsPaths) }), nil
++}
++
+ // ChangedPathsBothSides returns the paths that differ between from and to in the pair's code repository.
+ // The paths are repository-relative, sorted and deduplicated.
+ // A rename is reported by both its old and its new path, so a move out of a tree is seen by the tree it left.
+diff --git a/internal/fabricengine/parenttips_integration_test.go b/internal/fabricengine/parenttips_integration_test.go
+index c4f2223f..e000d4da 100644
+--- a/internal/fabricengine/parenttips_integration_test.go
++++ b/internal/fabricengine/parenttips_integration_test.go
+@@ -226,6 +226,34 @@ func TestChangedPaths_NamesExactlyTheCommittedFiles(t *testing.T) {
+ 	}
+ }
+ 
++// TestChangedCodePaths_LeavesOutTheRecordsPaths asserts that a records path never reads as a changed code path.
++// A range that changes records alone names nothing.
++func TestChangedCodePaths_LeavesOutTheRecordsPaths(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	f, warpPath, _, _, _, _, _ := buildReconcileFixture(t, t.TempDir(), 1)
++	before := fabricengine.CurrentSHAForTest(t, warpPath)
++	withCode := commitPaths(t, warpPath, "code and records", map[string]string{".lym-anchor": ".\n", "_lym/run/status.json": "1", "code/a.go": "a"})
++	recordsOnly := commitPaths(t, warpPath, "records only", map[string]string{"_lym/run/status.json": "2"})
++
++	got, err := f.ChangedCodePaths(before, withCode)
++	if err != nil {
++		t.Fatalf("ChangedCodePaths(before, withCode) error = %v", err)
++	}
++	if want := []string{"code/a.go"}; !slices.Equal(got, want) {
++		t.Errorf("ChangedCodePaths(before, withCode) = %v; want %v", got, want)
++	}
++
++	none, err := f.ChangedCodePaths(withCode, recordsOnly)
++	if err != nil {
++		t.Fatalf("ChangedCodePaths(withCode, recordsOnly) error = %v", err)
++	}
++	if len(none) != 0 {
++		t.Errorf("ChangedCodePaths(withCode, recordsOnly) = %v; want none", none)
++	}
++}
++
+ // TestChangedPathsBothSides_NamesRenamesAndRawPaths asserts that a rename is named by both paths.
+ // It also asserts that a non-ASCII path arrives raw and that an empty range names nothing.
+ // An unknown ref is an error naming it.
+diff --git a/internal/landingshed/deps.go b/internal/landingshed/deps.go
+index 734acedd..002233d5 100644
+--- a/internal/landingshed/deps.go
++++ b/internal/landingshed/deps.go
+@@ -240,9 +240,11 @@ type Deps struct {
+ 
+ 	// RecordLanding records commit as the run's landing commit, so the dobby driving the run can name it.
+ 	// The commit is the parent pair's head right after a parent-side merge that landed.
++	// emptyDiff reports that the landing changed no code path against the parent head merged into the task worktree.
++	// None of the run's work then reached the parent branch.
+ 	// The finalize step calls it after the parent-side merge and before the push.
+ 	// It only logs a failure, of the head read or of the record; nil records nothing.
+-	RecordLanding func(commit string) error
++	RecordLanding func(commit string, emptyDiff bool) error
+ 	// RecordLandedSize records the size of the diff the run landed.
+ 	// The diff runs from the parent head merged into the task worktree to the landing commit.
+ 	// The finalize step calls it after recording the landing and before the push.
+@@ -361,6 +363,9 @@ type Deps struct {
+ 	HoldsWork func(base, source string) (bool, error)
+ 	// ChangedPaths returns the sorted paths that differ between from and to, over the task pair.
+ 	ChangedPaths func(from, to string) ([]string, error)
++	// ChangedCodePaths returns ChangedPaths' paths less the records paths, over the task pair.
++	// A nil seam makes every landing record as not empty.
++	ChangedCodePaths func(from, to string) ([]string, error)
+ 	// MergeBase returns the best common ancestor of the task pair's HEAD and ref.
+ 	MergeBase func(ref string) (string, error)
+ 	// MergeRecordPath is the told merge record file, in the run's scratch directory.
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index a9489591..52cfd2f2 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -563,6 +563,12 @@
+ // The re-read and the landing are not atomic: a release between them is caught only by the parent push's rejection.
+ // After the parent-side merge and before the push, Finalize hands the landing commit to the told Deps.RecordLanding.
+ // The commit is the parent pair's head.
++// With it goes whether the landing changed no code path against the parent head Finalize merged into the task worktree.
++// Finalize reads that through Deps.ChangedCodePaths, which leaves out the records paths,
++// so the records commit Finalize makes on the parent branch never counts as the run's work.
++// A landing that changed no code path put none of the run's work on the parent branch.
++// A landing step run again over a parent that already holds the work leaves the first landing's flag in place.
++// No such head held, or a failed path read, records the landing as not empty.
+ // It then hands the parent head it merged into the task worktree and the landing commit to Deps.RecordLandedSize;
+ // a failure of either is only logged.
+ // A Finalize that read no such parent head in its process, as one resumed past the merge, records no landed size.
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index c6625de3..64ad4e3d 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -725,6 +725,7 @@ func (fz *Finalize) pushRecords(ctx context.Context) *ending {
+ }
+ 
+ // recordLanding hands the parent pair's head, the commit the landing put on the parent branch, to `Deps.RecordLanding`.
++// With it goes whether the landed diff is empty.
+ // It then hands the landed diff's size to `Deps.RecordLandedSize`.
+ // A failed head read or record is logged and never changes the verdict.
+ func (fz *Finalize) recordLanding(parentHandle parentMerger) {
+@@ -737,13 +738,33 @@ func (fz *Finalize) recordLanding(parentHandle parentMerger) {
+ 		return
+ 	}
+ 	if fz.deps.RecordLanding != nil {
+-		if err := fz.deps.RecordLanding(commit); err != nil {
++		if err := fz.deps.RecordLanding(commit, fz.landedDiffEmpty(commit)); err != nil {
+ 			logger.Warn("landingshed: record the landing commit failed", "producer", finalizeName, "cause", err)
+ 		}
+ 	}
+ 	fz.recordLandedSize(commit)
+ }
+ 
++// landedDiffEmpty reports whether the landing changed no code path against the parent head merged into the task worktree.
++// A records path never counts, so the parent pair's own records commit does not hide an empty landing.
++// Such a landing put none of the run's work on the parent branch, which is logged at Warn.
++// It reports false when no such head is held or the path read fails, which is logged too.
++func (fz *Finalize) landedDiffEmpty(landing string) bool {
++	if fz.parentHeadMerged == "" || fz.deps.ChangedCodePaths == nil {
++		return false
++	}
++	paths, err := fz.deps.ChangedCodePaths(fz.parentHeadMerged, landing)
++	if err != nil {
++		logger.Warn("landingshed: read the landed diff's paths failed, so the landing is recorded as not empty", "producer", finalizeName, "cause", err)
++		return false
++	}
++	if len(paths) > 0 {
++		return false
++	}
++	logger.Warn("landingshed: the landing changed no code path on the parent branch", "producer", finalizeName, "landing", landing)
++	return true
++}
++
+ // recordLandedSize hands `Deps.RecordLandedSize` the parent head merged into the task worktree and the landing commit.
+ // A Finalize that holds no such head records nothing, which is logged at Info;
+ // a failed record is logged at Warn and never changes the verdict.
+diff --git a/internal/landingshed/finalize_test.go b/internal/landingshed/finalize_test.go
+index f863b5f0..525db90a 100644
+--- a/internal/landingshed/finalize_test.go
++++ b/internal/landingshed/finalize_test.go
+@@ -331,7 +331,7 @@ func TestFinalize_MergeMarkPushOrderAndVerdict(t *testing.T) {
+ 		deps.ArchiveParentMerge = func() error { order = append(order, "archive"); merger.headSHA = "originTip"; return nil }
+ 		deps.CommitStatus = func() error { order = append(order, "commit"); return nil }
+ 		deps.PushRecords = func() error { order = append(order, "push-records"); return nil }
+-		deps.RecordLanding = func(commit string) error { order = append(order, "record "+commit); return nil }
++		deps.RecordLanding = func(commit string, _ bool) error { order = append(order, "record "+commit); return nil }
+ 		deps.MarkTaskDone = func() error { order = append(order, "mark"); return nil }
+ 		fz := &Finalize{deps: deps, resolver: &recordingResolver{result: mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved}}, parentOpener: func() (parentMerger, error) { return merger, nil }}
+ 
+@@ -508,7 +508,7 @@ func TestFinalize_MergeInRequiredRetry(t *testing.T) {
+ 			var order []string
+ 			deps := newTestDeps(t)
+ 			deps.MarkTaskDone = func() error { order = append(order, "mark"); return nil }
+-			deps.RecordLanding = func(commit string) error { order = append(order, "record "+commit); return nil }
++			deps.RecordLanding = func(commit string, _ bool) error { order = append(order, "record "+commit); return nil }
+ 			deps.CommitParentRecords = func() error { order = append(order, "records"); return nil }
+ 			summary, err := summaryparser.Parse(deps.DescriptionPath)
+ 			if err != nil {
+@@ -575,7 +575,7 @@ func TestFinalize_RecordsTheLandingCommitOnTheFirstTry(t *testing.T) {
+ 	var order []string
+ 	deps := newTestDeps(t)
+ 	deps.MarkTaskDone = func() error { order = append(order, "mark"); return nil }
+-	deps.RecordLanding = func(commit string) error { order = append(order, "record "+commit); return nil }
++	deps.RecordLanding = func(commit string, _ bool) error { order = append(order, "record "+commit); return nil }
+ 	deps.RecordLandedSize = func(from, to string) error { order = append(order, "size "+from+".."+to); return nil }
+ 	merger := &recordingParentMerger{results: []mergeCallResult{{result: fabricengine.MergeResult{Committed: true}}}, order: &order, headSHA: "landed1", preMergeHeadSHA: stringPointer("parent0")}
+ 	fz := &Finalize{deps: deps, resolver: &recordingResolver{result: mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved}}, guard: newParentGuard(deps), parentOpener: func() (parentMerger, error) { return merger, nil }}
+@@ -608,7 +608,7 @@ func TestFinalize_RecordLandingFailureKeepsDone(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			sizeCalls := 0
+ 			deps := newTestDeps(t)
+-			deps.RecordLanding = func(string) error { return tt.recordErr }
++			deps.RecordLanding = func(string, bool) error { return tt.recordErr }
+ 			deps.RecordLandedSize = func(string, string) error { sizeCalls++; return tt.sizeErr }
+ 			merger := &recordingParentMerger{results: []mergeCallResult{{result: fabricengine.MergeResult{Committed: true}}}, headSHA: "landed1", headErr: tt.headErr, preMergeHeadSHA: tt.preMergeHeadSHA}
+ 			fz := &Finalize{deps: deps, resolver: &recordingResolver{result: mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved}}, guard: newParentGuard(deps), parentOpener: func() (parentMerger, error) { return merger, nil }}
+@@ -624,6 +624,47 @@ func TestFinalize_RecordLandingFailureKeepsDone(t *testing.T) {
+ 	}
+ }
+ 
++// TestFinalize_RecordsWhetherTheLandedDiffIsEmpty pins the empty-diff flag handed to RecordLanding.
++// It is set only when the landing changed no code path against the parent head merged into the task worktree.
++// A failed path read, or no merged head held, records the landing as not empty.
++func TestFinalize_RecordsWhetherTheLandedDiffIsEmpty(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name            string
++		landedPaths     []string
++		pathsErr        error
++		preMergeHeadSHA string
++		want            bool
++	}{
++		{"NoPathChanged", nil, nil, "parent0", true},
++		{"APathChanged", []string{"docs/research/report.md"}, nil, "parent0", false},
++		{"ThePathReadFails", nil, errors.New("no diff"), "parent0", false},
++		{"NoMergedHeadHeld", nil, nil, "", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var recorded []bool
++			deps := newTestDeps(t)
++			deps.ChangedCodePaths = func(from, to string) ([]string, error) {
++				if from == "parent0" && to == "landed1" {
++					return tt.landedPaths, tt.pathsErr
++				}
++				return []string{"another.go"}, nil
++			}
++			deps.RecordLanding = func(_ string, emptyDiff bool) error { recorded = append(recorded, emptyDiff); return nil }
++			merger := &recordingParentMerger{results: []mergeCallResult{{result: fabricengine.MergeResult{Committed: true}}}, headSHA: "landed1", preMergeHeadSHA: stringPointer(tt.preMergeHeadSHA)}
++			fz := &Finalize{deps: deps, resolver: &recordingResolver{result: mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved}}, guard: newParentGuard(deps), parentOpener: func() (parentMerger, error) { return merger, nil }}
++
++			shedfake.RequireOutcome(t, fz, shedengine.Done)
++			if want := []bool{tt.want}; !slices.Equal(recorded, want) {
++				t.Errorf("RecordLanding empty-diff flags = %v; want %v", recorded, want)
++			}
++		})
++	}
++}
++
+ // TestFinalize_StuckReasons pins, for each way a landing stops Stuck, the reason it surfaces.
+ // In each case the board seam is never called, and no stuck-reason file is written.
+ func TestFinalize_StuckReasons(t *testing.T) {
+@@ -827,7 +868,7 @@ func TestFinalize_StuckReasons(t *testing.T) {
+ 			deps := newTestDeps(t)
+ 			markCalled := false
+ 			deps.MarkTaskDone = func() error { markCalled = true; return nil }
+-			deps.RecordLanding = func(string) error { markCalled = true; return nil }
++			deps.RecordLanding = func(string, bool) error { markCalled = true; return nil }
+ 			if tt.recordsErr != nil {
+ 				deps.CommitParentRecords = func() error { return tt.recordsErr }
+ 			}
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index 50273274..e429f6bb 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -233,12 +233,12 @@ func landingDeps(
+ 		},
+ 		// RecordLanding records the landing commit in the prime's scratch for the batten run of this worktree's slug.
+ 		// The run's dobby reads it there.
+-		RecordLanding: func(commit string) error {
++		RecordLanding: func(commit string, emptyDiff bool) error {
+ 			prime, err := primeOfHub(l)
+ 			if err != nil {
+ 				return err
+ 			}
+-			return shedrun.WriteLandedCommit(prime, seedSlug(l.WorktreeName), commit)
++			return shedrun.RecordLandedCommit(prime, seedSlug(l.WorktreeName), shedrun.LandedCommit{Commit: commit, EmptyDiff: emptyDiff})
+ 		},
+ 		// RecordLandedSize writes the size of the landed diff into the worktree's usage directory.
+ 		// The landed record rides the run's last status commit.
+@@ -295,6 +295,13 @@ func landingDeps(
+ 			}
+ 			return f.ChangedPaths(from, to)
+ 		},
++		ChangedCodePaths: func(from, to string) ([]string, error) {
++			f, err := fabricengine.Open(l)
++			if err != nil {
++				return nil, err
++			}
++			return f.ChangedCodePaths(from, to)
++		},
+ 		MergeBase: func(ref string) (string, error) {
+ 			f, err := fabricengine.Open(l)
+ 			if err != nil {
+diff --git a/internal/loomcli/landingdeps_integration_test.go b/internal/loomcli/landingdeps_integration_test.go
+index 7430aec3..f6353f2a 100644
+--- a/internal/loomcli/landingdeps_integration_test.go
++++ b/internal/loomcli/landingdeps_integration_test.go
+@@ -311,8 +311,9 @@ func TestLandingDeps_TaskHasCommitsReadsTheTaskHeadAgainstTheParent(t *testing.T
+ 	})
+ }
+ 
+-// TestLandingDeps_RecordLandingWritesWhereTheDobbyReads asserts the RecordLanding seam writes the commit.
+-// It writes it into the prime's scratch of the run named for the pair, where shedrun.ReadLandedCommit reads it.
++// TestLandingDeps_RecordLandingWritesWhereTheDobbyReads pins the RecordLanding seam's write.
++// It writes the commit and its empty-diff flag into the prime's scratch of the run named for the pair.
++// shedrun.ReadLandedCommit reads them there.
+ func TestLandingDeps_RecordLandingWritesWhereTheDobbyReads(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -326,13 +327,13 @@ func TestLandingDeps_RecordLandingWritesWhereTheDobbyReads(t *testing.T) {
+ 	deps := landingDeps(taskLocation, shedrun.RecipeTapestry, websterengine.Geometry{}, "task", "main",
+ 		true, modelspec.Registry{}, &shuttleengine.Runner{}, landingshed.Config{}, "", nil, nil, nil, planVerifySource(taskLocation), parentLockDeps(taskLocation, shedrun.SelfRunID, "", ""))
+ 
+-	if err := deps.RecordLanding("abc123"); err != nil {
++	if err := deps.RecordLanding("abc123", true); err != nil {
+ 		t.Fatalf("RecordLanding() error = %v; want nil", err)
+ 	}
+ 
+ 	got, err := shedrun.ReadLandedCommit(h.Location, "task")
+-	if err != nil || got != "abc123" {
+-		t.Errorf("ReadLandedCommit(prime, task) = %q, %v; want abc123, nil", got, err)
++	if want := (shedrun.LandedCommit{Commit: "abc123", EmptyDiff: true}); err != nil || got != want {
++		t.Errorf("ReadLandedCommit(prime, task) = %+v, %v; want %+v, nil", got, err, want)
+ 	}
+ }
+ 
+diff --git a/internal/loomcli/wiring_seams_test.go b/internal/loomcli/wiring_seams_test.go
+index e82086b9..7f99c309 100644
+--- a/internal/loomcli/wiring_seams_test.go
++++ b/internal/loomcli/wiring_seams_test.go
+@@ -27,6 +27,7 @@ var intentionallyNil = map[string]string{
+ 	"Landing.ReadParentTips":                 "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.HoldsWork":                      "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.ChangedPaths":                   "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.ChangedCodePaths":               "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.MergeBase":                      "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.FixerSeats":                     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.LineChange":                     "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+diff --git a/internal/runprofile/runprofile_test.go b/internal/runprofile/runprofile_test.go
+index 31bc55f5..39dce846 100644
+--- a/internal/runprofile/runprofile_test.go
++++ b/internal/runprofile/runprofile_test.go
+@@ -212,7 +212,8 @@ func TestTemplateLadder(t *testing.T) {
+ }
+ 
+ // TestTemplateDocsProfile pins the template's darn-only docs profile:
+-// a Sonnet medium writer, one solo Code round with its hard cap and an Opus medium reviewer, and drift scope off.
++// a Sonnet medium writer that commits its report under docs/research.
++// It has one solo Code round with its hard cap and an Opus medium reviewer, and drift scope off.
+ // Drift scope is off since a docs task changes no captured value.
+ //
+ //testtiming:keep pins the docs darn block's full settings map, including its code_reviewer_model, which the lookup tests over a fixture file cannot see
+@@ -228,7 +229,7 @@ func TestTemplateDocsProfile(t *testing.T) {
+ 		t.Fatal(err)
+ 	}
+ 	want := map[string]any{
+-		"darn":  map[string]any{"writer": "sonnet[medium]"},
++		"darn":  map[string]any{"writer": "sonnet[medium]", "report_dir": "docs/research"},
+ 		"drift": map[string]any{"scope": "off"},
+ 		"loom":  map[string]any{"code_max_bounces": 1, "code_hard_max_bounces": 2, "code_reviewer_fan": "", "code_reviewer_model": "opus[medium]"},
+ 	}
+diff --git a/internal/runprofile/template.yaml b/internal/runprofile/template.yaml
+index c45c91ce..6e7fbb30 100644
+--- a/internal/runprofile/template.yaml
++++ b/internal/runprofile/template.yaml
+@@ -89,6 +89,6 @@ wide:
+     loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4, split_max_bounces: 3, split_hard_max_bounces: 4}
+ docs:
+   darn:
+-    darn: {writer: "sonnet[medium]"}
++    darn: {writer: "sonnet[medium]", report_dir: "docs/research"}
+     drift: {scope: "off"}
+     loom: {code_max_bounces: 1, code_hard_max_bounces: 2, code_reviewer_fan: "", code_reviewer_model: "opus[medium]"}
+diff --git a/internal/shedrun/doc.go b/internal/shedrun/doc.go
+index 21e23f95..f30925fd 100644
+--- a/internal/shedrun/doc.go
++++ b/internal/shedrun/doc.go
+@@ -45,7 +45,10 @@
+ // The filing writes it once it turned the run's own board entry into the project of the family it filed.
+ // WriteFilingMark writes it and FilingMarked reads it; while it stands, the run's status writes leave that entry alone.
+ // LandedCommitFile is the ephemeral file under ScratchDir holding the commit a run's landing put on the parent branch.
+-// WriteLandedCommit writes it and ReadLandedCommit reads it, empty when none is recorded.
++// Its second line, when present, marks a landing that changed no code path on the parent branch.
++// WriteLandedCommit and RecordLandedCommit write it.
++// ReadLandedCommit reads it, the zero LandedCommit when none is recorded.
++// RecordLandedCommit keeps the flag of a landing already recorded for the same commit.
+ // ParentNoticeFile is an ephemeral file under ScratchDir.
+ // It holds the key of the parent-branch notice a run's pre-push check last posted.
+ // The intent writers own the batten record's `cancel` and `pause_intent` keys.
+diff --git a/internal/shedrun/landed.go b/internal/shedrun/landed.go
+index 895fa084..cb00c6e5 100644
+--- a/internal/shedrun/landed.go
++++ b/internal/shedrun/landed.go
+@@ -1,4 +1,5 @@
+-// landed.go declares the landed-commit file: the commit a run's landing put on its parent branch.
++// landed.go declares the landed-commit file.
++// It holds the commit a run's landing put on its parent branch and whether that landing's diff was empty.
+ // The landing writes it, and the dobby that drives the run reads it.
+ 
+ package shedrun
+@@ -13,28 +14,59 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ )
+ 
++// emptyDiffMark is the landed-commit file's second line when the landing's diff was empty.
++const emptyDiffMark = "empty-diff"
++
++// LandedCommit is a run's landing as its landing recorded it.
++type LandedCommit struct {
++	// Commit is the commit the landing put on the parent branch, empty when none is recorded.
++	Commit string
++	// EmptyDiff reports that the landing changed no code path on the parent branch, so none of the run's work reached it.
++	EmptyDiff bool
++}
++
+ // LandedCommitFile returns the path of the ephemeral file holding runID's landed commit, under ScratchDir(l, runID).
+ func LandedCommitFile(l *lymcwd.Location, runID string) string {
+ 	return filepath.Join(ScratchDir(l, runID), "landed-commit")
+ }
+ 
+-// WriteLandedCommit records commit as the landed commit of runID, replacing any recorded before.
+-func WriteLandedCommit(l *lymcwd.Location, runID, commit string) error {
++// WriteLandedCommit records landed as the landing of runID, replacing any recorded before.
++func WriteLandedCommit(l *lymcwd.Location, runID string, landed LandedCommit) error {
+ 	path := LandedCommitFile(l, runID)
+ 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+ 		return err
+ 	}
+-	return os.WriteFile(path, []byte(commit+"\n"), 0o644)
++	content := landed.Commit + "\n"
++	if landed.EmptyDiff {
++		content += emptyDiffMark + "\n"
++	}
++	return os.WriteFile(path, []byte(content), 0o644)
++}
++
++// RecordLandedCommit records landed as the landing of runID.
++// A landing already recorded for the same commit keeps its EmptyDiff,
++// so a landing step run again over a parent that already holds the work does not reclassify the first landing.
++func RecordLandedCommit(l *lymcwd.Location, runID string, landed LandedCommit) error {
++	recorded, err := ReadLandedCommit(l, runID)
++	if err != nil {
++		return err
++	}
++	if recorded.Commit != "" && recorded.Commit == landed.Commit {
++		landed.EmptyDiff = recorded.EmptyDiff
++	}
++	return WriteLandedCommit(l, runID, landed)
+ }
+ 
+-// ReadLandedCommit returns the commit recorded for runID's landing, empty when none is recorded.
+-func ReadLandedCommit(l *lymcwd.Location, runID string) (string, error) {
++// ReadLandedCommit returns the landing recorded for runID, the zero LandedCommit when none is recorded.
++// A file holding the commit alone reads as a landing whose diff was not empty.
++func ReadLandedCommit(l *lymcwd.Location, runID string) (LandedCommit, error) {
+ 	data, err := os.ReadFile(LandedCommitFile(l, runID))
+ 	if errors.Is(err, fs.ErrNotExist) {
+-		return "", nil
++		return LandedCommit{}, nil
+ 	}
+ 	if err != nil {
+-		return "", err
++		return LandedCommit{}, err
+ 	}
+-	return strings.TrimSpace(string(data)), nil
++	commit, rest, _ := strings.Cut(strings.TrimSpace(string(data)), "\n")
++	return LandedCommit{Commit: strings.TrimSpace(commit), EmptyDiff: strings.TrimSpace(rest) == emptyDiffMark}, nil
+ }
+diff --git a/internal/shedrun/landed_test.go b/internal/shedrun/landed_test.go
+index 08fdfef1..f9a44bc4 100644
+--- a/internal/shedrun/landed_test.go
++++ b/internal/shedrun/landed_test.go
+@@ -3,6 +3,7 @@
+ package shedrun
+ 
+ import (
++	"os"
+ 	"path/filepath"
+ 	"testing"
+ 
+@@ -18,15 +19,56 @@ func TestLandedCommit(t *testing.T) {
+ 	if want := filepath.Join(l.AnchorPath(), lymdirs.DotLymDirName, "shed", "slug", "landed-commit"); LandedCommitFile(l, "slug") != want {
+ 		t.Errorf("LandedCommitFile() = %q; want %q", LandedCommitFile(l, "slug"), want)
+ 	}
+-	if got, err := ReadLandedCommit(l, "slug"); err != nil || got != "" {
+-		t.Errorf("ReadLandedCommit() before a write = %q, %v; want empty and nil", got, err)
++	if got, err := ReadLandedCommit(l, "slug"); err != nil || got != (LandedCommit{}) {
++		t.Errorf("ReadLandedCommit() before a write = %+v, %v; want the zero LandedCommit and nil", got, err)
+ 	}
+-	for _, commit := range []string{"abc123", "def456"} {
+-		if err := WriteLandedCommit(l, "slug", commit); err != nil {
+-			t.Fatalf("WriteLandedCommit(%q) = %v; want nil", commit, err)
++	for _, landed := range []LandedCommit{{Commit: "abc123", EmptyDiff: true}, {Commit: "def456"}} {
++		if err := WriteLandedCommit(l, "slug", landed); err != nil {
++			t.Fatalf("WriteLandedCommit(%+v) = %v; want nil", landed, err)
+ 		}
+-		if got, err := ReadLandedCommit(l, "slug"); err != nil || got != commit {
+-			t.Errorf("ReadLandedCommit() = %q, %v; want %q and nil", got, err, commit)
++		if got, err := ReadLandedCommit(l, "slug"); err != nil || got != landed {
++			t.Errorf("ReadLandedCommit() = %+v, %v; want %+v and nil", got, err, landed)
+ 		}
+ 	}
++
++	// A file holding the commit alone reads as a landing whose diff was not empty.
++	if err := os.WriteFile(LandedCommitFile(l, "slug"), []byte("0a1b2c\n"), 0o644); err != nil {
++		t.Fatalf("write a commit-only landed-commit file: %v", err)
++	}
++	if got, err := ReadLandedCommit(l, "slug"); err != nil || got != (LandedCommit{Commit: "0a1b2c"}) {
++		t.Errorf("ReadLandedCommit() of a commit-only file = %+v, %v; want {Commit:0a1b2c} and nil", got, err)
++	}
++}
++
++// TestRecordLandedCommit pins that a landing recorded again for the same commit keeps the first record's flag.
++// A different commit takes its own flag.
++func TestRecordLandedCommit(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name   string
++		first  LandedCommit
++		second LandedCommit
++		want   LandedCommit
++	}{
++		{"SameCommitKeepsANotEmptyFlag", LandedCommit{Commit: "abc123"}, LandedCommit{Commit: "abc123", EmptyDiff: true}, LandedCommit{Commit: "abc123"}},
++		{"SameCommitKeepsAnEmptyFlag", LandedCommit{Commit: "abc123", EmptyDiff: true}, LandedCommit{Commit: "abc123"}, LandedCommit{Commit: "abc123", EmptyDiff: true}},
++		{"ANewCommitTakesItsOwnFlag", LandedCommit{Commit: "abc123"}, LandedCommit{Commit: "def456", EmptyDiff: true}, LandedCommit{Commit: "def456", EmptyDiff: true}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			l := syntheticLocation(t)
++
++			for _, landed := range []LandedCommit{tt.first, tt.second} {
++				if err := RecordLandedCommit(l, "slug", landed); err != nil {
++					t.Fatalf("RecordLandedCommit(%+v) = %v; want nil", landed, err)
++				}
++			}
++			if got, err := ReadLandedCommit(l, "slug"); err != nil || got != tt.want {
++				t.Errorf("ReadLandedCommit() = %+v, %v; want %+v and nil", got, err, tt.want)
++			}
++		})
++	}
+ }
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 02651cdf..295a69a4 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -230,6 +230,7 @@ func LandingDeps(dir string) landingshed.Deps {
+ 		},
+ 		HoldsWork:          func(string, string) (bool, error) { return false, nil },
+ 		ChangedPaths:       func(string, string) ([]string, error) { return nil, nil },
++		ChangedCodePaths:   func(string, string) ([]string, error) { return nil, nil },
+ 		MergeBase:          func(string) (string, error) { return "base", nil },
+ 		MergeRecordPath:    landingshed.MergeRecordPath(filepath.Join(dir, "landing-scratch")),
+ 		FixerSeats:         noopFixerSeats{},
