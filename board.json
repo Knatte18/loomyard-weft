@@ -372,7 +372,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #164](https://github.com/Knatte18/loomyard/issues/164).\n\n## What happened\n\nA reviewer-fix agent found that `namesRoot` (`internal/hardenshed/reap.go`) does not match an orphan process whose working directory sits under a worktree's `_lym` link.\n`/proc/\u003cpid\u003e/cwd` reports the link's target, so the comparison against the root path never matches.\n\n## Why it is abnormal\n\nA sandbox process started with such a working directory and no root on its command line escapes the reap.\nThe orphan-kill test failed for this reason until it was changed to name the root on the command line, which hides the gap instead of closing it.\n\n## What to do\n\nResolve symlinks on the root (or compare against both the link path and its target) in `namesRoot`, then add a test whose orphan has the `_lym`-link working directory and no root on its command line.\n\nProvenance: task `hardener-campaign`, from `burler-code-r1.md`.\n",
-      "status": "starting · Seed-IDE",
+      "status": "starting · Open-IDE",
       "created": "2026-11-19T19:40:37Z",
       "revised": "2026-11-19T19:42:45Z",
       "run_settings": {
