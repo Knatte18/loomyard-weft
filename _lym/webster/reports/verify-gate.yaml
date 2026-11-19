@@ -1,0 +1,28 @@
+attempt: 1
+cap: 2
+command: lym gate test --wait --gate webster
+exit_code: 1
+failures:
+    - id: github.com/Knatte18/loomyard/internal/gatecli
+      kind: package
+      package: github.com/Knatte18/loomyard/internal/gatecli
+      tail: |-
+        === RUN   TestOpen_RefusesNonGitHubURL
+        === PAUSE TestOpen_RefusesNonGitHubURL
+        === RUN   TestListOpenIssues_PaginatesAndExcludesPullRequests
+        === PAUSE TestListOpenIssues_PaginatesAndExcludesPullRequests
+        === RUN   TestListOpenIssues_PausedPageGetsItsOwnDeadline
+        --- PASS: TestRunMutantsRerunsACoveringTestThatTimedOutAsACandidate (2.07s)
+        FAIL
+        FAIL	github.com/Knatte18/loomyard/internal/gatecli	2.090s
+    - id: github.com/Knatte18/loomyard/internal/shedbuild.TestBuild_EveryRegisteredEngineBuilds/HardenFix
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/shedbuild
+      tail: ""
+triage:
+    github.com/Knatte18/loomyard/internal/gatecli.TestRunTierCopies/RedCopyMakesTheCallRed:
+        - 'triage: reaches changed functions: internal/gatecli.copiesClampLine, internal/gatecli.copyLabel, internal/gatecli.copyLease, internal/gatecli.execution.addFailedRuns, internal/gatecli.execution.printStartedLines and 8 more; map commit 66006462c7ed839cde7c96a15b2b6a52a8178cac'
+    github.com/Knatte18/loomyard/internal/shedbuild.TestBuild_EveryRegisteredEngineBuilds/HardenFix:
+        - 'triage: not in the coverage maps'
+log_path: /home/knatte/Code/loomyard-LYMHUB/hardener-campaign/.lym/verify/verify-2.log
+fixer: fork
