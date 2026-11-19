@@ -1,6 +1,6 @@
 # One-repository hubs redesigned: records on their own branches, the layout known only to fabric
 
-`single-repo-records-branches` · Task · sketch, fabric · starting · Open-IDE
+`single-repo-records-branches` · Task · sketch, fabric · running · Record-Write
 
 Decision record: [Sketch](decision-single-repo-records-branches.md)
 
