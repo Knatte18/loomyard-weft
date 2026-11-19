@@ -1,6 +1,6 @@
 # P3 Put the per-test coverage maps to use
 
-Rendered 2026-11-19 12:00 UTC; every age below is as of then.
+Rendered 2026-11-19 12:02 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`testmap-uses`](design-testmap-uses.md) · Age 17h · Owner `neve`
