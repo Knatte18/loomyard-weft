@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "4067f9fd6fe8c3b83cf455e7f28b05417dc2c78a",
+  "added_decisions": [
+    {
+      "title": "No hardenshed test fix; stray-file gate check instead",
+      "digest": "db672cc683f2b8a9674e1e1adb72ff0de733813742c81bdf5dfff3dc7908de61"
+    }
+  ]
+}
