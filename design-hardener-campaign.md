@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-hardener-campaign.md)
 
-Depends on: [`single-repo-fabric-mode`](design-single-repo-fabric-mode.md)
+Depends on: [`single-repo-fabric-mode`](design-single-repo-fabric-mode.md), [`gatefix-darn-missing-include`](design-gatefix-darn-missing-include.md), [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md)
 
 Filed from the Sketch `hardener`.
 

@@ -1,6 +1,6 @@
 # Intake import drops the issue comments
 
-`intake-drops-issue-comments` · Note · bug, board
+`intake-drops-issue-comments` · Task · bug, board · draft
 
 ## What was seen
 

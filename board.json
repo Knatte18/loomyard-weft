@@ -430,20 +430,28 @@
       "issues": [
         149
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #149](https://github.com/Knatte18/loomyard/issues/149).\n\n## What happened\n\nThe loom run halted `failed` at `Darn-Write` with anomaly `producer-hard-failure`.\nThe error chain ended in the gate fixer's prompt build:\n\n```\nshedadapters: Darn-Write (seats): seat run: seatengine: chair wait: shuttle: gate: gatefixer: build the fixer's launch: gatefixer: fill the gatefix-body-darn prompt: stencil: include \"loom-fragment-loosened-check\" has no entry in the includes\n```\n\n## Why it is abnormal\n\nThe `gatefix-body-darn` prompt references the include `loom-fragment-loosened-check`, but the gate fixer's launch supplies no entry for it.\nThe failure is deterministic prompt wiring, not a transient fault, and it kills the whole run at the point where the gate fixer is first needed.\n\n## What to do\n\nAdd the `loom-fragment-loosened-check` entry to the includes the gatefixer passes when it fills `gatefix-body-darn`, or drop the include from the prompt.\nAdd a test that fills every gatefix body prompt with the production includes map, so a missing include fails in CI rather than mid-run.\n\nProvenance: task `redundant-check-fixes`; note `loom-halt-2.md`.\n",
       "status": "draft",
       "created": "2026-11-19T09:28:29Z",
-      "revised": "2026-11-19T09:28:29Z"
+      "revised": "2026-11-19T10:51:11Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     },
     {
       "id": 1505,
-      "handle": "B2",
+      "handle": "T8",
       "slug": "loop-ends-without-envelope",
       "title": "Loop ends without envelope or recorded exit after repeated 'session state disagrees' warnings",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "shuttle",
@@ -452,19 +460,28 @@
       "issues": [
         150
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #150](https://github.com/Knatte18/loomyard/issues/150).\n\n## What happened\n\n`lym shed step ... --until-stop` halted as `failed` with anomaly `interrupted-stop` while step `Drift-Await` was in flight.\nThe note read: `loop-exited: loop ... ended without an envelope`, with `loop exit: not recorded, since no process marked the loop's exit`.\nThe status file already read `Webster`, so the step's result and the loop's state disagreed.\nThe history ended at `Drift-Expect / skipped`, after `Plan-Bouncer / done` and `Drift-Await / skipped`.\n\nBefore the loop ended, the step stderr carried the same warning three times, at roughly 7 to 8 minute intervals:\n`shuttle: session state disagrees ... loop=held state=busy cause=background stands=loop`.\nThe stopped shuttle run was the `webster` strand.\n\n## Why it is abnormal\n\nThe warning repeated for over 15 minutes without lym resolving the disagreement between the held loop and the session state `busy` caused by `background`.\nThe loop then ended with no envelope and no recorded exit, so the halt note cannot tell a kill, a machine stop or a lym defect apart.\nA session reported `busy` by a background cause while the loop holds it looks like a stuck or misclassified state, which may have led to the loop being stopped.\n\n## What to do\n\n- Find out why the shuttle state check reported `loop=held state=busy cause=background` repeatedly, and whether that state should count as a real disagreement.\n- Make the loop record its exit, or at least a reason, on every path that ends it without an envelope, so a halt note can name the cause.\n- Have the repeated warning escalate or self-resolve rather than recur silently until the loop dies.\n\nProvenance: task `claude-accounts-per-worktree`, from note `loom-halt.md`.\n",
+      "status": "draft",
       "created": "2026-11-19T09:28:32Z",
-      "revised": "2026-11-19T09:28:32Z"
+      "revised": "2026-11-19T10:51:11Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     },
     {
       "id": 1506,
-      "handle": "B3",
+      "handle": "T9",
       "slug": "review-frontmatter-hard-fail",
       "title": "Burler review round fails hard on invalid review-file YAML frontmatter",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "burler",
@@ -474,12 +491,21 @@
         151,
         152
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #151](https://github.com/Knatte18/loomyard/issues/151).\n\n## What happened\n\nA `lym loom run` halted as `failed` at the `Code-Burler-Review` producer with anomaly `producer-hard-failure`.\nThe halt reason was:\n\n```\nshedadapters: Code-Burler-Review (burler-review): round 1 attempt 1: review: burler: round reached done but its review file is invalid: burler: review file frontmatter is not valid YAML: yaml: line 8: mapping values are not allowed in this context\n```\n\nThe round reached `done`, but the review file the reviewer wrote had frontmatter that does not parse as YAML.\nThe run failed on round 1, attempt 1, with no repair or re-prompt of the reviewer.\n\n## Why it is abnormal\n\nAn unquoted colon in a frontmatter value is a common slip for an agent writing a review file.\nTreating it as a hard failure ends the whole run over a formatting error the reviewer could fix in one turn.\nThe halt note also shows `Code-Bouncer` as `stuck` in history while the halt names `Code-Burler-Review`, which makes the cause harder to trace.\n\n## What to do\n\n- On an invalid review-file frontmatter, send the parse error back to the reviewer for a repair attempt before failing the run.\n- Have the review prompt state that frontmatter values containing `:` must be quoted.\n- Have the halt note say which producer's output was invalid and why the preceding `stuck` step did not stop the run first.\n\nProvenance: task `board-view-not-refreshing`; notes: `loom-halt.md`.\n\n\n## From issue #152\n\nImported from [issue #152](https://github.com/Knatte18/loomyard/issues/152).\n\n## What happened\n\n`lym loom run` halted as `failed` with anomaly `producer-hard-failure` at the `Code-Burler-Review` producer.\nThe failure text was:\n\n```\nshedadapters: Code-Burler-Review (burler-review): round 1 attempt 1: review: burler: round reached done but its review file is invalid: burler: review file frontmatter is not valid YAML: yaml: line 23: mapping values are not allowed in this context\n```\n\nThe review round itself had finished (`done`); only the review file's frontmatter failed to parse.\nThe halt came on round 1, attempt 1, so the run gave the reviewer no chance to correct the file.\n\n## Why it is abnormal\n\nA malformed review file is a recoverable, reviewer-side mistake (an unquoted value containing `: ` in a YAML frontmatter field is enough).\nTreating it as a hard producer failure ends the whole run, and the review's findings are lost with it.\nThe halt note also lists the last history entry as `Code-Bouncer / stuck`, while the halt names `Code-Burler-Review`, so the record does not make clear which segment failed.\n\n## What to do\n\n- On an invalid review-file frontmatter, send the reviewer a repair prompt quoting the YAML error and retry the same attempt, instead of halting.\n- Consider writing review-file frontmatter through a verb that serialises the YAML (quoting values) rather than having the agent hand-write it.\n- Name the failing segment consistently in the halt note's `producer` and `history` lines.\n\nProvenance: task `import-loses-issue-evidence`; note `loom-halt.md`.\n",
+      "status": "draft",
       "created": "2026-11-19T09:28:34Z",
-      "revised": "2026-11-19T09:28:37Z"
+      "revised": "2026-11-19T10:51:12Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     },
     {
       "id": 1507,
@@ -543,21 +569,30 @@
     },
     {
       "id": 1510,
-      "handle": "B4",
+      "handle": "T12",
       "slug": "intake-drops-issue-comments",
       "title": "Intake import drops the issue comments",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "board"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "lym board intake import keeps only the issue body; comments with further findings are lost unless fetched by hand",
       "body": "## What was seen\n\n2026-11-19: `lym board intake import` of issue #153 recorded only its body; its two comments, each a further wish, were left on GitHub,\nand `intake list --full` shows only a comment count. The orch had to fetch them with `gh` by hand after the operator asked.\n\n## Idea\n\nImport carries the issue's comments, other than intake's own pointer comments, into the entry's body under a heading of their own,\nand `intake list --full` prints them, so the orch can split a comment that is a separate finding into its own note.\n",
+      "status": "draft",
       "created": "2026-11-19T09:29:20Z",
-      "revised": "2026-11-19T09:29:20Z"
+      "revised": "2026-11-19T10:51:12Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     },
     {
       "id": 1511,
@@ -584,13 +619,15 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "single-repo-fabric-mode"
+        "single-repo-fabric-mode",
+        "gatefix-darn-missing-include",
+        "review-frontmatter-hard-fail"
       ],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `hardener`.\n\nTakes: the Sketch's decision record whole; the darn recipe and loomcli/darnwiring.go as the shape to copy; the closed recipe lists in shedrun/seed.go, shedcli/table.go, battencli/wire.go childRecipeSupported, loomrecipe (names.go, finalizerow.go, bouncerrows.go), reportengine (runs.go, timingspans.go) and boardengine/task.go; shedrecipe's BurlerFix entry and row gates (entries_burler.go, entries_gate.go), shedadapters' NewBouncer, settleUndecided and bouncerfacts.go; loomcli's loomSegmentPerches and reviewBudget; gatecli/run.go acquireSlot and gateslot.Pool.AcquireSlots; fabriccli.CloneAndWire, runproc.End, reedengine.ServerName and selfexec.LymBinary; single-repo-fabric-mode's landed pairteardown and loomcli wiring\nDelivers: a board task with recipe hardener runs a Preflight, Record-Write and Harden-Review ring campaign of Harden-Bouncer, Harden-Burler-Review and Harden-Burler-Fix rounds with a Go-run live gate, sandbox hubs reaped around every round row and on every teardown route, a per-round archive under _lym/harden/, and lands through Finalize; lym gate test --copies; the hardener.yaml config unit and the harden-burler-fix, harden-live and harden-live-copies gate template keys; treadle, Tenter and crucible gone, their method in the internal/hardenshed package doc and the harden-rubric-review stencil\nExports: the hardener recipe value; the HardenFix engine; lym harden sandbox new, list and clear; lym gate test --copies \u003cn\u003e; the hardener.yaml unit; the harden commit seam; the agents reinterpretation that strips treadle-judge and treadle-targeting\n\nThe part changes these packages:\n\n- internal/hardenshed (about 3000 changed lines)\n- internal/hardencli (about 400 changed lines)\n- contracts/recipes (about 320 changed lines)\n- internal/shedrecipe (about 250 changed lines)\n- internal/shedbuild (about 200 changed lines)\n- internal/shedadapters (about 500 changed lines)\n- internal/shedrun (about 20 changed lines)\n- internal/shedcli (about 15 changed lines)\n- internal/battencli (about 15 changed lines)\n- internal/loomrecipe (about 40 changed lines)\n- internal/loomcli (about 700 changed lines)\n- internal/loomengine (about 150 changed lines)\n- internal/reportengine (about 30 changed lines)\n- internal/boardengine (about 15 changed lines)\n- internal/preflightshed (about 100 changed lines)\n- internal/configreg (about 20 changed lines)\n- internal/gatecli (about 500 changed lines)\n- internal/gateslot (about 20 changed lines)\n- internal/pairteardown (about 200 changed lines)\n- internal/landingshed (about 80 changed lines)\n- internal/agentconfig (about 200 changed lines)\n- internal/treadleengine (about 5523 changed lines)\n- contracts/stencils (about 700 changed lines)\n- internal/verifyrun (about 20 changed lines)\n- internal/webstercli (about 20 changed lines)\n- cmd/lym (about 40 changed lines)\n- crucible (about 1176 changed lines)\n- docs (about 150 changed lines)\n- pattern (about 20 changed lines)\n",
       "created": "2026-11-19T09:39:16Z",
-      "revised": "2026-11-19T09:39:16Z",
+      "revised": "2026-11-19T10:51:12Z",
       "profile": "solid",
       "discussed": true,
       "record_body_sha256": "ff2184f772a28ef04f8417134dd9202e7908a38156fd986ce4ffc442a2d8a440"
