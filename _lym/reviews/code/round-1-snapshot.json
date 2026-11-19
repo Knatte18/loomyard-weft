@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "06565cd0eb80357bc6e02bca46ea6add66c56bb6",
+  "added_decisions": [
+    {
+      "title": "Recast onto the version-skew cause",
+      "digest": "b491f4a01a87a889790388297003d2a29e74b26470286435f1367e04feab6ed1"
+    }
+  ]
+}
