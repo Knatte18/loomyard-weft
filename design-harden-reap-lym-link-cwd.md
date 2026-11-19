@@ -1,6 +1,6 @@
 # hardenshed reaper misses orphans whose cwd is under a _lym link
 
-`harden-reap-lym-link-cwd` · Task · bug, shed, process · starting · Worktree-Create
+`harden-reap-lym-link-cwd` · Task · bug, shed, process · starting · Seed-Child
 
 Imported from [issue #164](https://github.com/Knatte18/loomyard/issues/164).
 
