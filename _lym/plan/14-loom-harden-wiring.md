@@ -7,6 +7,7 @@
 - `plan:internal/loomcli#HardenReapDeps` -> `func HardenReapDeps(location *lymcwd.Location, row string, point hardenshed.ReapPoint) (hardenshed.ReapDeps, error)`
 - `plan:internal/loomcli#hardenLiveArgs` -> `func hardenLiveArgs(key string, copies int, packages []string) []string`
 - `plan:internal/loomcli#hardenLiveEnv` -> `func hardenLiveEnv(env []string) []string`
+- `plan:internal/loomcli#hardenLiveRun` -> `func hardenLiveRun(exitCode int, stdout, stderr []byte) hardenshed.LiveRun`
 - `plan:internal/loomcli#withHardenBudget` -> `func withHardenBudget(budgets map[string]int, recipe string, dirs configengine.Dirs) (map[string]int, error)`
 - `plan:internal/loomcli#recipeTrees` -> `func recipeTrees(l *lymcwd.Location, recipe string) func() (map[string]string, error)`
 - `plan:internal/loomcli#TestWire_HardenerRecipe` -> `func TestWire_HardenerRecipe(t *testing.T)`
@@ -40,6 +41,14 @@ For a run whose recipe holds a `HardenFix` row, `loomCLI.wire` loads the hub's `
 - Adds `Env.Segments[hardenReviewSegment]` from `hardenSegmentSettings`: the reviewer and fixer lists expanded by `hardenshed.Rotate` to `hard_max_bounces` and resolved through the registry, keys naming `hardener.yaml`; the Bouncer judge and seed from `hardener.yaml`'s `judge` and `seed`, falling back to loom.yaml's resolution when empty; `MaxBounces` and `HardMaxBounces` from `max_bounces` and `hard_max_bounces`, `ConfigFile` `hardener.yaml`. So round n takes entry n modulo the list's length up to the hard cap, a round a parent's continue adds included.
 - Fills `Env.Harden` with `hardenCampaign`, whose seams are:
   - the live `Run`: spawns `lym` with `hardenLiveArgs` in the worktree through `selfexec.LymBinary`, its environment `hardenLiveEnv`, logged at its spawn and waited on. `hardenLiveArgs` is `gate test --wait --gate <key>`, `--copies <n>` when n is above 0, then the packages, and names no tier. `hardenLiveEnv` drops `gateslot.InheritEnv`, so the call is top-level and acquires its own slots, never running inside a slot the row holds.
+    `hardenLiveRun` reads the finished call's exit code and its two streams into the `LiveRun`, since a run that reaches a verdict prints no JSON envelope.
+    Passed is exit code 0.
+    The output is stderr followed by stdout, kept whole, since the summary lines, the started lines and the failure report go to stderr.
+    `Refused` is the error of stdout's last non-empty line when that line parses as a JSON object with `ok` false and a non-empty `error` and `gateslot.ParseStartedLines` finds no started line on stderr.
+    Every tier run that reports prints a started line, so this matches only a call halted before any tier ran: a refusal, or a guard build or slot acquire failure ahead of the first tier.
+    A tier's own output, build and test output alike, also reaches stdout, and a call halted after a tier ran carries that tier's started line, so neither is read as `Refused`.
+    Every other nonzero exit is a failed run with no `Refused`.
+    The `Run` seam returns an error for a spawn or wait failure alone; a nonzero exit is the call's exit code, never an error.
   - the reap: `HardenReapDeps`, the one builder of the reap's production seams: the sandbox root of the location's worktree, `proc.ListProcesses` (nil off Linux), `runproc.Owners` and `runproc.End` over each sandbox hub's `fabricengine.RunProcDir`, `runproc.EndProcess`, `reedengine.StopServer` with reed's tmux path, and this process's pid. Cards 15 and 16 call it too.
   - `Head` and `Commits`: the fabric handle's `HeadSHA` and `CommitLog` from the row's start head to HEAD.
   - the archive `Commit`: `fabricengine.CommitAnchoredPaths`.
@@ -63,7 +72,12 @@ Tests:
   - `Env.Harden` and `Env.PreflightHarden` are set;
   - with `hardener.yaml`'s `tree_scope` naming a tree and a committed diff wholly under it, `Env.VerifyTreeScope("harden-burler-fix")` answers the key's call over that tree's target;
   - editing `darn.yaml`'s `tree_scope` and `verify_attempts` leaves the hardener verify tree scope and the Harden verify attempts unchanged.
-- `TestHardenLiveArgs` is tier0: the harden-live call carries `--wait --gate harden-live` and the packages with no `--copies` and no `--tier`; the copies call carries `--copies <n>`; `hardenLiveEnv` drops `LYM_GATE_SLOT` and keeps every other variable.
+- `TestHardenLiveArgs` is tier0: the harden-live call carries `--wait --gate harden-live` and the packages with no `--copies` and no `--tier`; the copies call carries `--copies <n>`; `hardenLiveEnv` drops `LYM_GATE_SLOT` and keeps every other variable;
+  `hardenLiveRun` reads exit 0 with a summary line on stderr and an empty stdout as passed;
+  exit 1 with a failure report on stderr as failed with no `Refused`;
+  exit 1 whose last stdout line is a refusal envelope and whose stderr holds no started line as `Refused` with its error;
+  exit 1 whose last stdout line is an `ok` false envelope after a started line on stderr as failed with no `Refused`;
+  and exit 1 whose stdout holds a JSON line without `ok` false and an `error` as failed with no `Refused`.
 - `TestReviewBudget_HardenReview` is tier0: the projected Harden-Review budget is `max_bounces`, and the template's when the file does not load.
 - `TestPerchHardCap` gains the Harden-Bouncer row.
 - `TestDarnTreeScope_ClassifiesAtEachCall` passes the darn reader.

@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -58,9 +58,15 @@ The cards add the gate machinery first (`--copies`, the gate keys), then the `ha
 ### Decision: hub-gate-keys-are-a-hub-write
 
 - **Decision:** No card writes lym's own hub's `harden-live`, `harden-live-copies` and `harden-burler-fix` values (D3, D4: `[2]`, `[2]` and `[0, 1]`).
-  The hub's `gate.yaml` lies under the hub's `_bolt`, outside the task worktree, so it is a hub write made from the prime.
-  Preflight's hub-key refusal (card 5) names each `lym config gate --set` write, so the first hardener run on a hub that has not made them halts with the writes to make.
-- **Rationale:** a card may change only the task worktree; the shipped template keys (card 2) carry the keys, and the hub's values are its own tuning.
+  They are operator writes to the hub's `gate.yaml`, made outside the plan after the task lands, as the record's Added after Discussion entry "Hub gate keys are operator writes after landing" decides.
+  The change description's landing section names the three writes for the operator to run from the prime:
+  `lym config gate --set 'gates.harden-burler-fix={tiers: [0, 1], scope: diff}'`,
+  `lym config gate --set 'gates.harden-live={tiers: [2], scope: diff}'` and
+  `lym config gate --set 'gates.harden-live-copies={tiers: [2], scope: diff}'`.
+  Preflight's hub-key refusal (card 5) names the two live keys' writes, so a hardener run on a hub that has not made them halts with the writes to make;
+  until the operator sets `harden-burler-fix`, the `verify` gate runs the template's tier 0 alone.
+- **Rationale:** the hub's `gate.yaml` lies under the hub's `_bolt`, outside the task worktree, and hub config is the operator's call;
+  the shipped template keys (card 2) carry the keys, and the hub's values are its own tuning.
 - **Applies to:** cards 2, 5
 
 ### Decision: harden-reap-seams

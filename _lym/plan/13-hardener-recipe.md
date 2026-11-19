@@ -34,16 +34,21 @@
 - `internal/reportengine#recipePhaseTables`
 - `internal/reportengine#TestCompute_SelectsRuns`
 - `internal/reportengine#TestComputeTiming`
+- `internal/boardengine#normalizeTask`
+- `internal/boardengine_test#TestNewTask`
+- `internal/boardcli#storeVerbs`
+- `internal/loomshed/doc.go`
 
 **Extends:**
 - `internal/shedrun/doc.go`
 - `internal/loomrecipe/doc.go`
-- `internal/loomshed/doc.go`
 - `internal/reportengine/doc.go`
 
 **Uses:**
 - `contracts/recipes#DarnRecipe`
 - `internal/shedcli/doc.go`
+- `internal/boardengine/doc.go`
+- `internal/boardcli/doc.go`
 
 **Intent:**
 The `hardener` loom recipe and its place in every closed recipe list (D1, D3).
@@ -65,7 +70,8 @@ Every closed list admits `hardener`:
 - `loomrecipe`: `embeddedRecipes`, the `RecipeEngines` recipe list, and the `BouncerRunSubdir` and `IsFinalizeRow` recipe lists, so a capped Harden-Bouncer's `lym loom circling` verb finds its run directory.
 - `reportengine`: `runRecipes`, and `recipePhaseTables` with `hardenerPhases`, which maps Preflight and Record-Write to setup, the three Harden rows to review, Describe to write, and PR-Review, Finalize and Friction-Reflect to publish-finalize.
 - `loomshed.InterruptPolicies` gains the three ring rows with the policies the Code-Review perch's rows carry, and the meta test `TestInterruptPolicies_MatchAssembledRows` walks the hardener recipe too; `wantProducerTable` gains the hardener rows' engines.
-`loomshed` names the three ring rows, as it names every pinned row.
+- The board's texts that list task recipes: `boardengine.normalizeTask`'s refusal of a project recipe on a task, and the `recipe` field help in `boardcli.storeVerbs`, each name `hardener` beside the other task recipes.
+`loomshed` names the three ring rows, as it names every pinned row, and its doc's sentence on each fix row's verify key names the `harden-burler-fix` key at Harden-Burler-Fix beside the two it names.
 `RecipeEngines` now reaches `HardenFix`, so `coverageGuardAllowedUnreachableEngines` drops the entry card 11 added.
 
 Tests, all tier0:
@@ -74,7 +80,8 @@ Tests, all tier0:
 `TestBouncerRunSubdir` gains Harden-Bouncer → `harden`; `TestIsFinalizeRow` gains the hardener Finalize row;
 `TestRowNames_FollowEachRecipesRowOrder` gains the hardener row order;
 `TestInterruptPolicies_MatchAssembledRows` gains the hardener recipe;
-`TestCompute_SelectsRuns` selects a hardener run and `TestComputeTiming` gains a hardener row's phases.
+`TestCompute_SelectsRuns` selects a hardener run and `TestComputeTiming` gains a hardener row's phases;
+`TestNewTask`'s task-pawl row asserts the refusal's recipe list with `hardener`.
 `TestHardenerRecipe` parses and expands the recipe and checks:
 - it passes the loom contract;
 - its on_done path from the entry is Preflight, Record-Write, Harden-Bouncer, Describe, PR-Review, Finalize and Friction-Reflect, and the ring's on_stuck edges run Harden-Bouncer → Harden-Burler-Review → Harden-Burler-Fix → Harden-Bouncer;

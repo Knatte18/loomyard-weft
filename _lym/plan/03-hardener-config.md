@@ -10,9 +10,11 @@
 - `plan:internal/hardenshed#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs, module string) (Config, error)`
 - `plan:internal/hardenshed#CheckValues` -> `func CheckValues(document []byte) error`
 - `plan:internal/hardenshed#TestLoadConfig` -> `func TestLoadConfig(t *testing.T)`
+- `plan:internal/hardenshed#TestMain` -> `func TestMain(m *testing.M)`
 - `plan:internal/darnengine#NormalizeTrees` -> `func NormalizeTrees(trees map[string]string) (map[string]string, error)`
 
 **Edit:**
+- `pattern/PATTERN-config-layers.md`
 - `internal/configreg#Modules`
 - `internal/configreg#TestModules_SeedOnlyAndHubWideFlags`
 - `internal/configreg#TestModules_EveryTemplateKeyClassified`
@@ -41,6 +43,11 @@ Its `HubOnlyWayForward` names, for each Guard key, the write `lym config hardene
 `configreg` runs it on a local document at seed (`checkLocalDocument`), so a task whose `run_settings` hold a bad value is refused at seed, naming the task's `run_settings` as the place to correct.
 `LoadConfig` loads strictly, runs `CheckValues` over the resolved document, and normalizes `tree_scope` through `darnengine.NormalizeTrees`; a refusal names the write for the layer the value comes from, through `reviewbudget.Route` over `ConfigSpec`, then `lym loom resume`.
 `NormalizeTrees` is a thin exported wrapper over `normalizeTreeScope`, so both units take one tree-key rule; its errors wrap `darnengine.ErrTreeScopeKey`.
+`PATTERN-config-layers.md`'s Strictness section adds `hardenshed` to its strict callers.
+
+`TestMain`, in the package's `testmain_test.go`, calls `tmuxkit.Main` (PATTERN-test-isolation).
+The package's tests run every git step through fake seams, so it spawns no git and needs no `gitkit.HermeticGitEnv`;
+a later card whose test spawns git in this package adds that call.
 
 `configreg.Modules` gains the `hardener` row in its alphabetical place, `HubWide: true`, with `CheckLoad` over `LoadConfig` and `CheckValues` as its value check.
 `TestModules_SeedOnlyAndHubWideFlags` and `TestModules_EveryTemplateKeyClassified` gain the module's rows: its local keys are the CategoryNone keys D9 lists as `run_settings` keys.

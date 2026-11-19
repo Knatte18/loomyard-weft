@@ -9,6 +9,7 @@
 - `plan:internal/hardenshed#Campaign.Halt` -> `func (c *Campaign) Halt(row string) error`
 - `plan:internal/hardenshed#Campaign.ArchiveFinal` -> `func (c *Campaign) ArchiveFinal(runDir string) error`
 - `plan:internal/hardenshed#TestCampaignRoundFacts` -> `func TestCampaignRoundFacts(t *testing.T)`
+- `plan:internal/hardenshed#TestCampaignLiveRed` -> `func TestCampaignLiveRed(t *testing.T)`
 - `plan:internal/shedrecipe#hardenFixEntry` -> `func hardenFixEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
 - `plan:internal/shedrecipe#TestHardenFixEntry` -> `func TestHardenFixEntry(t *testing.T)`
 - `plan:internal/shedrecipe#TestHardenRoundKey` -> `func TestHardenRoundKey(t *testing.T)`
@@ -24,6 +25,7 @@
 - `internal/testkit/envkit#nilLegal`
 - `internal/testkit/envkit#FullEnv`
 - `internal/shedrecipe/doc.go`
+- `pattern/PATTERN-gate-slot.md`
 
 **Extends:**
 - `internal/hardenshed/doc.go`
@@ -51,11 +53,14 @@ Build the Harden-Review ring's rows (D3, D6, D7).
 Its methods hand the rows what they need per run directory:
 - `LiveGate` is `NewLiveGate` over that directory.
 - `WrapRow` is `WrapRow` with the campaign's seams.
-- `RoundFacts` renders the Hardener section of the round's facts: the round's reviewer and fixer models, the live report's mark, runs and started counts, the stray report, the fix commits, and the deferred findings, those the round's fixer report defers, read through `burlerengine.ParseFixerReport`, and those a red live report lists. A file the round lacks is named as absent, never an error.
-- `LiveRed` reads the round's live report through `ReadLiveReport`; an absent report is not red.
+- `RoundFacts` renders the Hardener section of the round's facts: the round's reviewer and fixer models, the live report's mark, runs and started counts, a refused copies run with its refusal text, the stray report, the fix commits, and the deferred findings, those the round's fixer report defers, read through `burlerengine.ParseFixerReport`, and those a red live report lists. A file the round lacks is named as absent, never an error; an absent live report is also named red when `LiveRed` would read it red.
+- `LiveRed` reads the round's live report through `ReadLiveReport`.
+  An absent report is red once the round's fix row ran, which the round's `harden-commits-<round>.json` (card 9) shows, since a fix row whose `verify` gate ran out returns a counted Stuck before its `live` gate runs.
+  An absent report with no commits file is not red.
 - `Halt` reaps at `ReapHalt` and appends to the last round's stray report.
 - `ArchiveFinal` is `ArchiveFinalLedger`.
-`TestCampaignRoundFacts` is tier0 over a run directory holding each file, over one whose live report is red with deferred failures and whose fixer report defers a finding, both deferred sets rendered beside the red mark, and over one lacking the files.
+`TestCampaignRoundFacts` is tier0 over a run directory holding each file, over one whose live report is red with deferred failures and whose fixer report defers a finding, both deferred sets rendered beside the red mark, over one whose live report is absent beside its commits file, rendered red, over one whose copies run was refused, its refusal rendered, and over one lacking the files.
+`TestCampaignLiveRed` is tier0: a red report answers true, a green one false, an absent report beside the round's commits file true, and an absent report with no commits file false.
 
 `Env` gains `Harden *hardenshed.Campaign`, nil for every recipe but hardener; `envkit`'s `nilLegal` gains `Harden` and `FullEnv` fills it, so the seam tests keep passing.
 
@@ -82,5 +87,6 @@ Its `commit_seam` switch gains `harden`, which requires `Env.Harden` and commits
 - a Bouncer row with `harden_round` and a nil `Env.Harden` is refused, and with a campaign its rendered judge prompt's facts file holds the campaign's section.
 `TestBouncerEntry_CommitSeam` gains the `harden` row and the nil-campaign refusal; `TestBurlerHalfEntries_StrictUnknownKeys` admits `harden_round` on the review row.
 The shedrecipe package doc gains the `HardenFix` row and the `harden_round` keys.
+`PATTERN-gate-slot.md`'s sentence on the rows that run their own gate key through `Verify` names Harden-Burler-Fix and its `harden-burler-fix` key beside Code-Burler-Fix and Darn-Write.
 
 **ImpactSummary:** One new registry engine, two optional row keys and one Env field listed nil-legal in envkit; rows that set none of them build as before.

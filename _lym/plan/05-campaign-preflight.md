@@ -47,7 +47,7 @@ Copies run when `llm_driving` is false and `concurrency` is above 1.
 `CheckCampaign` returns the first refusal in this order, each naming its way forward and ending "then run `lym loom resume`":
 1. `packages` empty, or naming a directory the worktree lacks: names `Route("packages")`, which for a value from the pair's local layer is `lym config hardener --layer local --set packages=…` in the task worktree with the matching `run_settings` correction through `lym board upsert`.
 2. The hub sets no `harden-live` key, or no `harden-live-copies` key when copies run: names `lym config gate --set 'gates.<key>={tiers: [<live tier>], scope: diff}'` from the prime.
-3. The live key, or the copies key when copies run, names `gateslot.BilledTier`: names the same `lym config gate --set` write.
+3. The live key, or the copies key when copies run, names `gateslot.BilledTier`, or the copies key, when copies run, names more than one tier, which `--copies` refuses (card 1): names the same `lym config gate --set` write.
 4. A package holds no test of a tier the `harden-live` key's run tests, or, when copies run, of a tier the copies key's run tests: names the package, the key, `Route("packages")` and the `lym config gate --set` write of the key.
 5. A `reviewer` list of one entry, or one where two neighbours of its cyclic expansion are one model, its last and first entries included: names `Route("reviewer")` with a list without such a pair.
 6. `max_bounces` above `hard_max_bounces`: names `Route("max_bounces")`.
@@ -56,7 +56,8 @@ Copies run when `llm_driving` is false and `concurrency` is above 1.
 Card 14 fills `PreflightHarden` for a recipe holding a `HardenFix` row.
 `envkit`'s `nilLegal` gains `PreflightHarden`, as it holds `PreflightDrift`, and `FullEnv` fills it, so the seam tests over every other recipe's wiring and `NilSeams(FullEnv(t))` keep passing.
 
-`TestCheckCampaign` is tier0, one row per refusal above, its input the only defect, each asserting the way forward and the resume, plus a passing campaign; the tier rows run a fake `HoldsTierTest`, and one row passes a package whose only test tier the key reaches through `covers`; the route rows run a fake `Route`.
+`TestCheckCampaign` is tier0, one row per refusal above, its input the only defect, each asserting the way forward and the resume, plus a passing campaign;
+refusal 3 has a row for a copies key naming `[1, 2]` with copies running, and one for the same key with `llm_driving` true, which passes; the tier rows run a fake `HoldsTierTest`, and one row passes a package whose only test tier the key reaches through `covers`; the route rows run a fake `Route`.
 `TestRotate` is tier0: the nine-round row above, a one-entry list and an empty list.
 `TestPreflight_HardenCheck` is tier0: a failing `Harden` check halts Preflight Stuck with the check's text, a nil one is skipped, a passing one passes.
 
