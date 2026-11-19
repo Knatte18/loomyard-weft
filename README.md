@@ -111,7 +111,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **One-repository hubs redesigned: records on their own branches, the layout known only to fabric**<br>• Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays | [`single-repo-records-branches`](design-single-repo-records-branches.md) | motif | Discussion-Bouncer | neve | 53m<br>43m | fabric |
+| T2 | **One-repository hubs redesigned: records on their own branches, the layout known only to fabric**<br>• Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays | [`single-repo-records-branches`](design-single-repo-records-branches.md) | motif | Discussion-Burler-Review | neve | 53m<br>43m | fabric |
 
 #### Ready (0)
 
@@ -140,7 +140,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | motif | Discussion-Burler-Fix | neve | 1d<br>37m | board, ide, fabric |
+| T3 | **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | motif | Discussion-Burler-Fix | neve | 1d<br>38m | board, ide, fabric |
 | T4 | **Two-repository hubs: status commits skip during weft replay, and the layout probe spams and costs git calls**<br>• Undo the f06acf39 merge-state probe widening for two-repository hubs, and make the layout probe quiet and cached<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`two-repo-merge-probe-regression`](design-two-repo-merge-probe-regression.md) | darn · light | Code-Burler-Fix | neve | 47m<br>47m | fabric |
 | T13 | **Settings to route code review and drift judge rulings to the run's parent**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md) | darn · solid | Code-Burler-Review | neve | 3h<br>1h | loom, drift, burler |
 
