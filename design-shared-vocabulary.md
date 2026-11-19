@@ -23,3 +23,6 @@ There it is a skill steering a live chat; here it becomes structure.
   - Writers, fixers and reviewers get nothing.
 - **A lint** flags a banned word in stencils, skills and docs, so agents that never read the glossary are still held to it.
 - The `nicknames` heddle entry stays for this hub's own nicknames; whether lym's general terms ship in the binary for every hub is for Discussion.
+- The glossary may also ship as a skill such as `ly:vocabulary`, loaded on demand by agents writing docs, stencils or skills.
+  A skill alone is not enough: an agent does not know it is using a wrong word, so it would not load the skill when it needs it.
+  The orch and Discussion therefore get the glossary structurally, and the lint enforces it.
