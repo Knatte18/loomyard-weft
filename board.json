@@ -412,7 +412,9 @@
       "status": "running · Discussion-Bouncer",
       "created": "2026-11-19T12:08:48Z",
       "revised": "2026-11-19T12:18:49Z",
-      "project": "single-repo-hub"
+      "project": "single-repo-hub",
+      "discussed": true,
+      "record_body_sha256": "e8d39cc68b122c94798f6f8a632275aa09fdde0a6cf63d214c90c86cd2bf51e0"
     },
     {
       "id": 1513,
