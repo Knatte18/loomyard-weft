@@ -1,6 +1,6 @@
 # Loop ends without envelope or recorded exit after repeated 'session state disagrees' warnings
 
-`loop-ends-without-envelope` · Task · bug, shuttle, shed · running · Describe
+`loop-ends-without-envelope` · Task · bug, shuttle, shed · running · PR-Review
 
 Imported from [issue #150](https://github.com/Knatte18/loomyard/issues/150).
 
