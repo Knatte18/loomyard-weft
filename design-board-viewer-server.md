@@ -1,6 +1,6 @@
 # Board viewer page with live editing through a loopback board server, opened by lym board open and a VS Code key
 
-`board-viewer-server` · Task · feature, board, ide, fabric, process, cwd · starting · Seed-Child
+`board-viewer-server` · Task · feature, board, ide, fabric, process, cwd · starting · Open-Window
 
 Decision record: [Sketch](decision-board-viewer-server.md)
 
