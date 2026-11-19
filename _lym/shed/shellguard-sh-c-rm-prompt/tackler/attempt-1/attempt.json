@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Run-Shed",
+    "history_length": 5,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-19T19:47:29.783492929+01:00",
+  "deadline": "2026-11-19T19:57:29.783492929+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/shellguard-sh-c-rm-prompt/drive-reports/drive-envelope-20261119-194729-f59f.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/shellguard-sh-c-rm-prompt/drive-reports/drive-report-20261119-194729-45d4.md",
+  "strand_guid": "8019ea093a2384b995cd5ca9e124f362"
+}
