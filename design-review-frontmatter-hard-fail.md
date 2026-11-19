@@ -1,6 +1,6 @@
 # Burler review round fails hard on invalid review-file YAML frontmatter
 
-`review-frontmatter-hard-fail` · Task · bug, burler, shed · running · Code-Bouncer
+`review-frontmatter-hard-fail` · Task · bug, burler, shed · running · Drift-Recheck
 
 Imported from [issue #151](https://github.com/Knatte18/loomyard/issues/151).
 
