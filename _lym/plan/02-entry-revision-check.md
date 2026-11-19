@@ -1,11 +1,11 @@
 # Card 2 — entry-revision-check
 
 **Create:**
-- `plan:internal/boardengine#StaleEntryError` -> `type StaleEntryError struct`
-- `plan:internal/boardengine#StaleEntryError.Error` -> `func (e *StaleEntryError) Error() string`
-- `plan:internal/boardengine#Board.Expecting` -> `func (b *Board) Expecting(slug, revision string) *Board`
-- `plan:internal/boardengine#Board.checkExpected` -> `func (b *Board) checkExpected(loaded []Task, primeOwner string) error`
-- `plan:internal/boardengine_test#TestExpectingRevision` -> `func TestExpectingRevision(t *testing.T)`
+- `internal/boardengine#StaleEntryError`
+- `internal/boardengine#StaleEntryError.Error`
+- `internal/boardengine#Board.Expecting`
+- `internal/boardengine#Board.checkExpected`
+- `internal/boardengine_test#TestExpectingRevision`
 
 **Edit:**
 - `internal/boardengine#Board`
@@ -15,10 +15,10 @@
 - `internal/boardengine/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#buildView`
-- `plan:internal/boardengine#EntryRevision`
-- `plan:internal/boardengine#migrateLoaded`
-- `plan:internal/boardengine#Board.View`
+- `internal/boardengine#buildView`
+- `internal/boardengine#EntryRevision`
+- `internal/boardengine#migrateLoaded`
+- `internal/boardengine#Board.View`
 - `internal/boardengine#withMissingRecordsUndiscussed`
 - `internal/boardengine#Board.UpsertTaskReporting`
 - `internal/boardengine#Board.SetStatusReleasingProject`

@@ -2,20 +2,20 @@
 
 **Create:**
 - `internal/boardengine/board.html`
-- `plan:internal/boardengine#BoardPageFile` -> `const BoardPageFile = "board.html"`
-- `plan:internal/boardengine#viewerPage` -> `var viewerPage []byte`
-- `plan:internal/boardengine#ViewerPage` -> `func ViewerPage() []byte`
-- `plan:internal/boardengine_test#TestViewerPage` -> `func TestViewerPage(t *testing.T)`
+- `internal/boardengine#BoardPageFile`
+- `internal/boardengine#viewerPage`
+- `internal/boardengine#ViewerPage`
+- `internal/boardengine_test#TestViewerPage`
 
 **Edit:**
-- `plan:internal/boardengine#renderFiles`
+- `internal/boardengine#renderFiles`
 - `internal/boardengine#FabricReplay.Claims`
 - `internal/boardengine#TestFabricReplay_Ledger`
 - `internal/boardengine_test#TestRenderToDiskManifestCleanup`
 - `internal/boardengine/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#BoardDataFile`
+- `internal/boardengine#BoardDataFile`
 - `internal/boardengine#RenderToDisk`
 
 **Intent:**

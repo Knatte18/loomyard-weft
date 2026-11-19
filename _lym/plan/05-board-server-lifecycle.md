@@ -27,10 +27,10 @@
 
 **Uses:**
 - `internal/lymdirs/doc.go`
-- `plan:internal/boardserve#Server.BoardChanged`
-- `plan:internal/boardserve#Server.beginDrain`
-- `plan:internal/boardserve#Server.lastAPIRequest`
-- `plan:internal/boardengine#BoardRevision`
+- `internal/boardserve#Server.BoardChanged`
+- `internal/boardserve#Server.beginDrain`
+- `internal/boardserve#Server.lastAPIRequest`
+- `internal/boardengine#BoardRevision`
 - `internal/lock#AcquireWriteLockWithin`
 - `internal/lock#TryAcquireWriteLock`
 - `internal/state#WriteJSON`

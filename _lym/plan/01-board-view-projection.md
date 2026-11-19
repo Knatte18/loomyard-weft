@@ -1,19 +1,19 @@
 # Card 1 — board-view-projection
 
 **Create:**
-- `plan:internal/boardengine#BoardDataFile` -> `const BoardDataFile = "board-data.js"`
-- `plan:internal/boardengine#BoardView` -> `type BoardView struct`
-- `plan:internal/boardengine#ViewProject` -> `type ViewProject struct`
-- `plan:internal/boardengine#ViewEntry` -> `type ViewEntry struct`
-- `plan:internal/boardengine#EntryRevision` -> `func EntryRevision(t Task) string`
-- `plan:internal/boardengine#BoardRevision` -> `func BoardRevision(boardPath string) (string, error)`
-- `plan:internal/boardengine#buildView` -> `func buildView(stored, rendered []Task, primeOwner string, out Outputs, now time.Time) (BoardView, error)`
-- `plan:internal/boardengine#boardDataScript` -> `func boardDataScript(view BoardView) (string, error)`
-- `plan:internal/boardengine#renderFiles` -> `func renderFiles(stored, rendered []Task, primeOwner string, out Outputs, now time.Time) (map[string]string, error)`
-- `plan:internal/boardengine#boardView.unmetDependencies` -> `func (b boardView) unmetDependencies(t Task) []string`
-- `plan:internal/boardengine#migrateLoaded` -> `func migrateLoaded(store *Store)`
-- `plan:internal/boardengine#Board.View` -> `func (b *Board) View() (BoardView, error)`
-- `plan:internal/boardengine_test#TestRenderBoardData` -> `func TestRenderBoardData(t *testing.T)`
+- `internal/boardengine#BoardDataFile`
+- `internal/boardengine#BoardView`
+- `internal/boardengine#ViewProject`
+- `internal/boardengine#ViewEntry`
+- `internal/boardengine#EntryRevision`
+- `internal/boardengine#BoardRevision`
+- `internal/boardengine#buildView`
+- `internal/boardengine#boardDataScript`
+- `internal/boardengine#renderFiles`
+- `internal/boardengine#boardView.unmetDependencies`
+- `internal/boardengine#migrateLoaded`
+- `internal/boardengine#Board.View`
+- `internal/boardengine_test#TestRenderBoardData`
 
 **Edit:**
 - `internal/boardengine#Render`

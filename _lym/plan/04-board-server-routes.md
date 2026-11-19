@@ -2,34 +2,34 @@
 
 **Create:**
 - `internal/boardserve/doc.go`
-- `plan:internal/boardserve#Server` -> `type Server struct`
-- `plan:internal/boardserve#ServerConfig` -> `type ServerConfig struct`
-- `plan:internal/boardserve#NewServer` -> `func NewServer(cfg ServerConfig) *Server`
-- `plan:internal/boardserve#Server.ServeHTTP` -> `func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request)`
-- `plan:internal/boardserve#Server.BoardChanged` -> `func (s *Server) BoardChanged(revision string)`
-- `plan:internal/boardserve#Server.beginDrain` -> `func (s *Server) beginDrain()`
-- `plan:internal/boardserve#Server.lastAPIRequest` -> `func (s *Server) lastAPIRequest() time.Time`
-- `plan:internal/boardserve#Server.applyWrite` -> `func (s *Server) applyWrite(req writeRequest) (boardengine.ViewEntry, error)`
-- `plan:internal/boardserve#writeRequest` -> `type writeRequest struct`
-- `plan:internal/boardserve#contentSecurityPolicy` -> `func contentSecurityPolicy(page []byte) string`
-- `plan:internal/boardserve#routePage` -> `const routePage = "/"`
-- `plan:internal/boardserve#routeBoard` -> `const routeBoard = "/api/board"`
-- `plan:internal/boardserve#routeWrite` -> `const routeWrite = "/api/write"`
-- `plan:internal/boardserve#routeFile` -> `const routeFile = "/file/"`
-- `plan:internal/boardserve#maxBodyBytes` -> `const maxBodyBytes = 1 << 20`
+- `internal/boardserve#Server`
+- `internal/boardserve#ServerConfig`
+- `internal/boardserve#NewServer`
+- `internal/boardserve#Server.ServeHTTP`
+- `internal/boardserve#Server.BoardChanged`
+- `internal/boardserve#Server.beginDrain`
+- `internal/boardserve#Server.lastAPIRequest`
+- `internal/boardserve#Server.applyWrite`
+- `internal/boardserve#writeRequest`
+- `internal/boardserve#contentSecurityPolicy`
+- `internal/boardserve#routePage`
+- `internal/boardserve#routeBoard`
+- `internal/boardserve#routeWrite`
+- `internal/boardserve#routeFile`
+- `internal/boardserve#maxBodyBytes`
 - `internal/boardserve/testmain_test.go`
 - `internal/boardserve/server_test.go`
-- `plan:internal/boardserve#TestServer` -> `func TestServer(t *testing.T)`
+- `internal/boardserve#TestServer`
 
 **Extends:**
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/boardengine#Board.Expecting`
-- `plan:internal/boardengine#Board.View`
-- `plan:internal/boardengine#ViewerPage`
-- `plan:internal/boardengine#BoardRevision`
-- `plan:internal/boardengine#StaleEntryError`
+- `internal/boardengine#Board.Expecting`
+- `internal/boardengine#Board.View`
+- `internal/boardengine#ViewerPage`
+- `internal/boardengine#BoardRevision`
+- `internal/boardengine#StaleEntryError`
 - `internal/boardengine#Board.UpsertTaskReporting`
 - `internal/boardengine#Board.SetStatusReleasingProject`
 - `internal/boardengine#Board.PromoteTo`
