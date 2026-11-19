@@ -187,7 +187,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "single-repo-fabric-mode",
         "single-repo-code-identity",
         "hardener-campaign"
       ],
@@ -261,35 +260,6 @@
       "record_body_sha256": "575a6011931eb007845f91a517612780d622cf8ff511f6d8a1088a6bb7f946e8"
     },
     {
-      "id": 1497,
-      "handle": "T5",
-      "slug": "single-repo-fabric-mode",
-      "title": "One-repository layout in fabric: clone, worktrees, records commits, merges, pushes and replay",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "fabric",
-        "cwd",
-        "cli",
-        "landing",
-        "docs",
-        "pattern"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `fabric-single-repo-mode`.\n\nTakes: the decision record's D1 to D7, D11 and D12; fabricengine's CloneHub (clone.go), Add and createWeftWorktreeDroppingRuns (add.go, forkrecords.go), junction wiring and adoption (junction.go, weftwiring.go), the exclude mutator (gitexclude.go, recordsgit.go's seedWeftArtifactExcludes), scratchlink.go, hubworkspace.go, the records commit (commit.go, recordsgit.go, trailercommit.go), the merge (merge.go, mergelifecycle.go, mergestate.go, mergestateactive.go, parenttips.go's FastForwardPair), the push (pushanchored.go, pushclassified.go, failedpush.go, handover.go, codetipsettle.go, originreads.go), replay.go, pull.go, originreconcile.go, archive and teardown, bolt.go and anchorchange.go; lymcwd's readRecordedAnchor, Resolve and ResolveWithin; statuscommit's mid-merge skip and failureDisposition; landingshed's protectedBranchRefusal and Finalize's mid-merge way forward; hubforge's two-repository builder\nDelivers: the one-repository layout read from .lym-anchor at the worktree root; lym fabric clone by one URL over an origin holding lym-bolt and with --single-repo; Add, the path-limited records commit under the worktree write lock with its index.lock retry and mid-merge route, D5's records strip at every merge, the one-branch pair push, teardown, the records-only replay and the guarded prime push with the lym.primeBranch key in that layout; statuscommit's wait in place of its mid-merge skip and its completion on protected-only push failures; the Bolt on orphan lym-bolt; hubforge's one-repository hub with the D1 to D7, D11 and D12 scenarios; the docs D2 names; PATTERN-single-repo-hub, the PATTERN-run-fsm and PATTERN-cwd-resolution changes and the background paragraphs the record's Constraints list\nExports: lymcwd's one-repository predicate; fabricengine.RecordsPathsAt, a commit's records paths as D5 defines them; fabric's records-only-commit and fabric-written-merge-commit predicates as D7 defines them, and the merge trailer constant; the lym-view/ ref prefix constant, whose ref teardown deletes and the next part publishes; the operator_unpushed and protected failed-push class constants; the lym.primeBranch key constant; hubforge's one-repository hub builder\n\nThe part changes these packages:\n\n- internal/fabricengine (about 4500 changed lines)\n- internal/hubforge (about 600 changed lines)\n- internal/lymcwd (about 250 changed lines)\n- internal/statuscommit (about 200 changed lines)\n- internal/fabriccli (about 150 changed lines)\n- internal/landingshed (about 60 changed lines)\n- docs (about 90 changed lines)\n- README.md (about 60 changed lines)\n- pattern (about 80 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-18T19:52:44Z",
-      "revised": "2026-11-18T19:52:44Z",
-      "profile": "solid",
-      "project": "single-repo-hub",
-      "discussed": true,
-      "record_body_sha256": "5eb3845f2d2ef41025c477e36a11be9248369b7c98eec3b4e6ed58e19e9b5eed"
-    },
-    {
       "id": 1498,
       "handle": "T6",
       "slug": "single-repo-code-identity",
@@ -314,7 +284,6 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "single-repo-fabric-mode",
         "empty-landing-not-flagged"
       ],
       "isolated": false,
@@ -340,9 +309,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "single-repo-fabric-mode"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research",
       "body": "## What was seen (2026-11-18)\n\n`comment-trim-second-pass` (darn, profile `docs`) measured comment shares and wrote the result only into its change description (`_lym/landing/summary.md`).\nIt committed nothing to the repository, so Land landed an empty diff and dobby reported \"landed as 64e58795\", which was main's tip.\nThe finding then lived only in the archived records tag (`archive/comment-trim-second-pass/...`), where no one looks.\n\n## Idea\n\n- The darn writer stencil for profile `docs` requires the report as a committed file under `docs/research/`.\n- Land refuses, or at least flags in dobby's line, a run whose code diff against its parent is empty.\n",
@@ -433,46 +400,13 @@
         150
       ],
       "recipe": "darn",
-      "depends_on": [
-        "review-frontmatter-hard-fail"
-      ],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #150](https://github.com/Knatte18/loomyard/issues/150).\n\n## What happened\n\n`lym shed step ... --until-stop` halted as `failed` with anomaly `interrupted-stop` while step `Drift-Await` was in flight.\nThe note read: `loop-exited: loop ... ended without an envelope`, with `loop exit: not recorded, since no process marked the loop's exit`.\nThe status file already read `Webster`, so the step's result and the loop's state disagreed.\nThe history ended at `Drift-Expect / skipped`, after `Plan-Bouncer / done` and `Drift-Await / skipped`.\n\nBefore the loop ended, the step stderr carried the same warning three times, at roughly 7 to 8 minute intervals:\n`shuttle: session state disagrees ... loop=held state=busy cause=background stands=loop`.\nThe stopped shuttle run was the `webster` strand.\n\n## Why it is abnormal\n\nThe warning repeated for over 15 minutes without lym resolving the disagreement between the held loop and the session state `busy` caused by `background`.\nThe loop then ended with no envelope and no recorded exit, so the halt note cannot tell a kill, a machine stop or a lym defect apart.\nA session reported `busy` by a background cause while the loop holds it looks like a stuck or misclassified state, which may have led to the loop being stopped.\n\n## What to do\n\n- Find out why the shuttle state check reported `loop=held state=busy cause=background` repeatedly, and whether that state should count as a real disagreement.\n- Make the loop record its exit, or at least a reason, on every path that ends it without an envelope, so a halt note can name the cause.\n- Have the repeated warning escalate or self-resolve rather than recur silently until the loop dies.\n\nProvenance: task `claude-accounts-per-worktree`, from note `loom-halt.md`.\n",
-      "status": "running · Record-Write",
-      "created": "2026-11-19T09:28:32Z",
-      "revised": "2026-11-19T10:51:16Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
-      "id": 1506,
-      "handle": "T9",
-      "slug": "review-frontmatter-hard-fail",
-      "title": "Burler review round fails hard on invalid review-file YAML frontmatter",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "burler",
-        "shed"
-      ],
-      "issues": [
-        151,
-        152
-      ],
-      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #151](https://github.com/Knatte18/loomyard/issues/151).\n\n## What happened\n\nA `lym loom run` halted as `failed` at the `Code-Burler-Review` producer with anomaly `producer-hard-failure`.\nThe halt reason was:\n\n```\nshedadapters: Code-Burler-Review (burler-review): round 1 attempt 1: review: burler: round reached done but its review file is invalid: burler: review file frontmatter is not valid YAML: yaml: line 8: mapping values are not allowed in this context\n```\n\nThe round reached `done`, but the review file the reviewer wrote had frontmatter that does not parse as YAML.\nThe run failed on round 1, attempt 1, with no repair or re-prompt of the reviewer.\n\n## Why it is abnormal\n\nAn unquoted colon in a frontmatter value is a common slip for an agent writing a review file.\nTreating it as a hard failure ends the whole run over a formatting error the reviewer could fix in one turn.\nThe halt note also shows `Code-Bouncer` as `stuck` in history while the halt names `Code-Burler-Review`, which makes the cause harder to trace.\n\n## What to do\n\n- On an invalid review-file frontmatter, send the parse error back to the reviewer for a repair attempt before failing the run.\n- Have the review prompt state that frontmatter values containing `:` must be quoted.\n- Have the halt note say which producer's output was invalid and why the preceding `stuck` step did not stop the run first.\n\nProvenance: task `board-view-not-refreshing`; notes: `loom-halt.md`.\n\n\n## From issue #152\n\nImported from [issue #152](https://github.com/Knatte18/loomyard/issues/152).\n\n## What happened\n\n`lym loom run` halted as `failed` with anomaly `producer-hard-failure` at the `Code-Burler-Review` producer.\nThe failure text was:\n\n```\nshedadapters: Code-Burler-Review (burler-review): round 1 attempt 1: review: burler: round reached done but its review file is invalid: burler: review file frontmatter is not valid YAML: yaml: line 23: mapping values are not allowed in this context\n```\n\nThe review round itself had finished (`done`); only the review file's frontmatter failed to parse.\nThe halt came on round 1, attempt 1, so the run gave the reviewer no chance to correct the file.\n\n## Why it is abnormal\n\nA malformed review file is a recoverable, reviewer-side mistake (an unquoted value containing `: ` in a YAML frontmatter field is enough).\nTreating it as a hard producer failure ends the whole run, and the review's findings are lost with it.\nThe halt note also lists the last history entry as `Code-Bouncer / stuck`, while the halt names `Code-Burler-Review`, so the record does not make clear which segment failed.\n\n## What to do\n\n- On an invalid review-file frontmatter, send the reviewer a repair prompt quoting the YAML error and retry the same attempt, instead of halting.\n- Consider writing review-file frontmatter through a verb that serialises the YAML (quoting values) rather than having the agent hand-write it.\n- Name the failing segment consistently in the halt note's `producer` and `history` lines.\n\nProvenance: task `import-loses-issue-evidence`; note `loom-halt.md`.\n",
-      "status": "done",
-      "created": "2026-11-19T09:28:34Z",
-      "revised": "2026-11-19T10:51:12Z",
+      "body": "Imported from [issue #150](https://github.com/Knatte18/loomyard/issues/150).\n\n## What happened\n\n`lym shed step ... --until-stop` halted as `failed` with anomaly `interrupted-stop` while step `Drift-Await` was in flight.\nThe note read: `loop-exited: loop ... ended without an envelope`, with `loop exit: not recorded, since no process marked the loop's exit`.\nThe status file already read `Webster`, so the step's result and the loop's state disagreed.\nThe history ended at `Drift-Expect / skipped`, after `Plan-Bouncer / done` and `Drift-Await / skipped`.\n\nBefore the loop ended, the step stderr carried the same warning three times, at roughly 7 to 8 minute intervals:\n`shuttle: session state disagrees ... loop=held state=busy cause=background stands=loop`.\nThe stopped shuttle run was the `webster` strand.\n\n## Why it is abnormal\n\nThe warning repeated for over 15 minutes without lym resolving the disagreement between the held loop and the session state `busy` caused by `background`.\nThe loop then ended with no envelope and no recorded exit, so the halt note cannot tell a kill, a machine stop or a lym defect apart.\nA session reported `busy` by a background cause while the loop holds it looks like a stuck or misclassified state, which may have led to the loop being stopped.\n\n## What to do\n\n- Find out why the shuttle state check reported `loop=held state=busy cause=background` repeatedly, and whether that state should count as a real disagreement.\n- Make the loop record its exit, or at least a reason, on every path that ends it without an envelope, so a halt note can name the cause.\n- Have the repeated warning escalate or self-resolve rather than recur silently until the loop dies.\n\nProvenance: task `claude-accounts-per-worktree`, from note `loom-halt.md`.\n",
+      "status": "running · Drift-Baseline",
+      "created": "2026-11-19T09:28:32Z",
+      "revised": "2026-11-19T10:51:16Z",
       "run_settings": {
         "loom": {
           "code_assist_reviewer_fan": "review-code",
@@ -497,9 +431,7 @@
         153
       ],
       "recipe": "darn",
-      "depends_on": [
-        "review-frontmatter-hard-fail"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #153](https://github.com/Knatte18/loomyard/issues/153).\n\n## What was seen\n\nOnly two reviews can be routed to the run's parent by setting: `pr_review_ask_parent` and `discussion_review_ask_parent` in `loom.yaml` or a task's `run_settings`.\nThe code review perch (Code-Burler-Review and Code-Burler-Fix) and the drift judge (Drift-Verify, Drift-Recheck) have no such key.\nTheir rulings reach the parent only when a finding is escalated as a decision call, or when an agent was told by hand to ask.\nA parent that wants to see every ruling of a darn run, which has no Discussion, cannot get it by configuration.\n\n## Wish\n\nAdd parent-review keys for the code review perch and the drift judge, parallel to `discussion_review_ask_parent`:\n\n- `code_review_ask_parent`: each code review round mails the parent a `[code-review request]` naming the review and fixer report, and waits for `lym loom parent-review answer` (satisfied or a findings file) before the Bouncer judges the round, with a timeout key as `discussion_review_parent_timeout_min` has.\n- `drift_judge_ask_parent`: the drift judge mails the parent its proposed rulings, every cell or a summary by case with the flagged cells named, and waits for the parent's agreement or changed rulings before it writes the judgement, with a timeout.\n\nBoth settable in `loom.yaml` (or `drift.yaml`) and in a task's `run_settings`.\n\n## Workaround\n\nTell the run's agents by creel to ask the parent before they finish a round or write a judgement.\n\n\n\nOut of scope: routing agent questions to the parent and parent notification on named rows are the separate notes `agent-questions-to-parent` and `parent-notify-on-row`.\n",
@@ -577,9 +509,7 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "single-repo-fabric-mode",
         "gatefix-darn-missing-include",
-        "review-frontmatter-hard-fail",
         "loop-ends-without-envelope",
         "parent-review-code-and-drift"
       ],

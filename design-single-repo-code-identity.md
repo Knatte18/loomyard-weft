@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-single-repo-code-identity.md)
 
-Depends on: [`single-repo-fabric-mode`](design-single-repo-fabric-mode.md), [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md)
+Depends on: [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md)
 
 Filed from the Sketch `fabric-single-repo-mode`.
 

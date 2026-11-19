@@ -2,8 +2,6 @@
 
 `empty-landing-not-flagged` · Task · bug, landing, darn · running · Darn-Write
 
-Depends on: [`single-repo-fabric-mode`](design-single-repo-fabric-mode.md)
-
 ## What was seen (2026-11-18)
 
 `comment-trim-second-pass` (darn, profile `docs`) measured comment shares and wrote the result only into its change description (`_lym/landing/summary.md`).

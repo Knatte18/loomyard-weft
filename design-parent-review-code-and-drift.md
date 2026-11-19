@@ -2,8 +2,6 @@
 
 `parent-review-code-and-drift` · Task · feature, loom, drift, burler · running · Drift-Baseline
 
-Depends on: [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md)
-
 Imported from [issue #153](https://github.com/Knatte18/loomyard/issues/153).
 
 ## What was seen
