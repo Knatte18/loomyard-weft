@@ -1,6 +1,6 @@
 # Two-repository hubs: status commits skip during weft replay, and the layout probe spams and costs git calls
 
-`two-repo-merge-probe-regression` · Task · bug, fabric · running · PR-Review
+`two-repo-merge-probe-regression` · Task · bug, fabric · landing · Finalize
 
 ## What was seen (2026-11-19, reading f06acf39 against a live two-repository hub)
 
