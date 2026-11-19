@@ -1,0 +1,38 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/discussion/decision-record.md",
+    "_lym/discussion/support-log.md"
+  ],
+  "target_id": "58f72ee95839f2c5f27709cb22f3661fa8a48071a523805e9e316e56a4719f76",
+  "added_decisions": [
+    {
+      "title": "Per-body README folds are moot",
+      "digest": "369921843f508f38d16accd6b27ab6bb209e21717f65cd35b01a004a01ac1581"
+    },
+    {
+      "title": "No launch.json; the window title line's premise is stale",
+      "digest": "11fbbddeee88f470d2b92c908fb327cbd9f2595361c69bbcff1995c1edc92df4"
+    },
+    {
+      "title": "The phone goal is met by today's README",
+      "digest": "051089c3021d0fe450c2a568645688d79e1932b0a794c208ebe14811878c8ab0"
+    },
+    {
+      "title": "The prime's open chain and LY window title stay out",
+      "digest": "44195dc922630346fbe4143da8571c9ecb63bb5dcf89470a9d46c2124db86f69"
+    },
+    {
+      "title": "D6's workspace seam keeps the workspace schema in internal/vscode",
+      "digest": "6d1ef01395dd017b5874c822389bbf178ffab783ce8e247036cc6b7a2a554382"
+    },
+    {
+      "title": "board.html and board-data.js stay committed render outputs",
+      "digest": "ef8eaad2adc35f00a6855e2a4246afb66935295563316eff6160c9d663d9180d"
+    },
+    {
+      "title": "open's refusal naming lym board rerender is dropped; the rerender line lives in the file:// page",
+      "digest": "01a83af922bb864f063adfe79b878a21065e5e4e9c54cbfadd941a87f0af73c8"
+    }
+  ]
+}
