@@ -380,13 +380,23 @@
         "process"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "The shell guard does not look inside a shell -c script, so Claude Code asks for permission and the run stalls until someone answers",
       "body": "## Seen\n\n2026-11-19: in `hardener-campaign`, the verify fixer fork of Webster ran a loop inside a shell -c script that made a temp dir under the system temp root and removed a subdirectory of it by a variable path, to reproduce a mkdir race.\nClaude Code showed a dialog saying the shell -c script removes files and could not be checked, and the run stood still until the orch answered the dialog by hand.\nThe session rules already refuse a removal by a computed path and writes to the system temp root, but the guard does not look inside the shell -c script, so the command reached the dialog instead of a refusal with a way forward.\n\n## Idea\n\n`internal/shellguard` parses the script of a shell -c call like a top-level command and applies the same refusals, so the agent gets a refusal naming the way forward and no dialog stalls the run.\n",
-      "status": "draft",
       "created": "2026-11-19T16:41:50Z",
-      "revised": "2026-11-19T16:41:50Z"
+      "revised": "2026-11-19T17:59:20Z",
+      "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     },
     {
       "id": 1519,
@@ -399,12 +409,23 @@
         "gate"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "A record write in a hardenshed test takes its lock beside a relative or empty path, so internal/hardenshed/.lock appears in the worktree and blocks Finalize",
       "body": "## Seen\n\n2026-11-19: Finalize of `hardener-campaign` stopped on an untracked zero-byte `internal/hardenshed/.lock`, created 18:39 during the run's gate, held by no process.\n`internal/hardenshed`'s `round.go` and `live.go` take their lock through `lock.TrackedFileLockPath(path, \".lock\")`; a test that passes a relative or empty record path makes that lock land in the package directory, which is the test's working directory.\nThe orch removed the file by hand so Finalize could go on; the next gate run recreates it.\n\n## Idea\n\nFind the hardenshed test that writes a record outside `t.TempDir()` and point it there.\nA gate check that fails on any new untracked file in the source tree after a test run would catch the whole class.\n",
       "created": "2026-11-19T17:42:12Z",
-      "revised": "2026-11-19T17:42:12Z"
+      "revised": "2026-11-19T17:59:20Z",
+      "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
