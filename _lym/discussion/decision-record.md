@@ -32,6 +32,12 @@ Out of scope: routing agent questions to the parent and parent notification on n
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-19): Opt-in parent-ask keys stay outside Guard
+
+Decision: code_review_ask_parent, code_review_parent_timeout_min, judge_ask_parent and judge_parent_timeout_min stay settable in run_settings, as discussion_review_ask_parent and pr_review_ask_parent are. Amend PATTERN-config-layers with a written exception: a key that only adds an ask to the parent, and the timeout bounding that added wait, is not a Guard key, since unset or expired it leaves the run's own gates exactly as they are without it.
+
+Rationale: The Guard rule exists to stop a local layer switching a check off. These keys can only add a check; their timeout only ends the added wait and never bypasses a gate the run has without them. The existing discussion and PR-review keys already work this way; the exception writes the precedent down.
+
 ## Constraints
 
 ## Auto-mode assumptions
