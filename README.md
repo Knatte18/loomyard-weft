@@ -133,7 +133,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (11)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (12)</strong></summary>
 
 Owner `neve`
 
@@ -155,7 +155,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (10)
+### Notes (11)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -176,6 +176,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B4 |  | **Finalize halts on a pull request whose mergeability GitHub has not computed yet** | [`finalize-mergeable-unknown`](design-finalize-mergeable-unknown.md) | 0m<br>0m | landing |
 | B5 |  | **Verify triage lists verify-command as a flaky identity with no failure output** | [`verify-triage-command-identity`](design-verify-triage-command-identity.md) | 0m<br>0m | webster, gate |
 | B6 |  | **Flaky verify failure in internal/reedcli on the first integration-suite run** | [`reedcli-flaky-verify`](design-reedcli-flaky-verify.md) | 0m<br>0m | reed |
+
+#### Enhancements (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E1 |  | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam** | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | 0m<br>0m | burler, stencil |
 
 #### Features (2)
 
