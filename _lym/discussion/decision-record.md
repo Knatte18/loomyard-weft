@@ -4,7 +4,7 @@
 
 Redesign the one-repository hub so its records and its board never touch a code branch.
 A one-repository hub keeps one origin repository, and holds two local stores of it:
-the code store, as today's prime, and a records store wired exactly as a two-repository hub's weft.
+the code store, as today's prime, and a records store wired as a two-repository hub's weft but for its board's branch.
 On origin the records store's branches and tags live under the custom namespace `refs/lym/`,
 which no default clone fetches and GitHub lists as no branch.
 Only fabric knows which layout a hub has; every other module sees a two-repository hub.
@@ -32,14 +32,28 @@ Out:
 
 ### D1 — One origin, two local stores, records under `refs/lym/`
 
-A one-repository hub's local geometry is a two-repository hub's, unchanged:
+A one-repository hub's local geometry is a two-repository hub's in every part but the board's branch:
 the prime code worktree, the records store as the weft sibling `<name>-weft`, `_lym` junctions into it,
 `_bolt` as the records store's board worktree, and `.lym-anchor` at the records root.
 Both stores have the same origin URL, and the board's `.lym-warp` binding names that URL.
 On origin, the records store's branches live under `refs/lym/heads/` and its tags under `refs/lym/tags/`.
 The code store keeps git's default refspecs, so it never fetches or pushes a records ref.
 The records store never fetches or holds a code ref: it is configured with D1's refspecs before its first fetch.
-The namespace root `refs/lym/` and its `heads/` and `tags/` parts are named constants in fabric.
+The board branch has the fixed name `main`, at `refs/lym/heads/main` on origin,
+never derived from the code store's default branch, so a renamed code default branch cannot hide the board.
+The board worktree's local branch is that constant too, never the code store's branch, where a two-repository hub keeps it:
+over a code default branch `master`, the board is on `main`.
+The prime's records branch is `<prime-branch>-weft`, at `refs/lym/heads/<prime-branch>-weft`,
+named from the code store's checked-out branch at clone, as in a two-repository hub.
+The clone records that name once, in the records store's git config key `lym.primeRecordsBranch` (new).
+In a one-repository hub `primaryWeftBranch` reads that key instead of deriving the name from the board's branch,
+so the orphan sweep and `resolveManagedBranch` never treat the prime's records branch as an orphan.
+A later `lym fabric checkout` on the prime moves the code and records worktrees but never writes that key,
+so it cannot move the prime's records branch.
+A one-repository records store without the key fails closed, as an unreadable board branch does today,
+and the refusal names its way forward: set the key in the records store to `<prime-branch>-weft` with `git config`.
+In a two-repository hub `primaryWeftBranch` reads the board's branch, as today.
+The namespace root `refs/lym/`, its `heads/` and `tags/` parts, the board branch name and the config key are named constants in fabric.
 
 Rationale: records never sit on a code branch, so merges, pull requests, replay, the prime's push and code identity
 need nothing layout-specific; the operator's clutter concern is met because GitHub lists only `refs/heads/` and `refs/tags/`.
@@ -54,6 +68,11 @@ GitHub accepts pushes to refs outside `refs/heads/` and `refs/tags/` other than 
 a push of `refs/notes/commits` to GitHub is reported updated in a 2023 git mailing-list thread
 (lore.kernel.org/git, Brooke Kuhlmann), and GitHub's docs name `refs/pull/` as the hidden, read-only namespace.
 GitHub publishes no page that lists accepted namespaces; D3 makes the clone refuse on a host that rejects the push.
+Git's documentation pins the mechanics:
+git-fetch(1) and git-push(1) define the `<src>:<dst>` refspec mapping that `remote.<name>.fetch` and `remote.<name>.push` hold;
+git-push(1) applies `remote.<name>.push` only when the command line names no refspec, so an explicit refspec bypasses it;
+and git-push(1) documents `--force-with-lease=<refname>` taking its expected value from the remote-tracking ref.
+The D1 and D4 acceptance criteria pin the behaviour as tests over `hubforge`'s one-repository bare origin.
 
 ### D2 — The layout lives in the records store's remote config; one translation carries it
 
@@ -70,13 +89,15 @@ It covers, in both directions:
   remote deletes and `ls-remote` patterns;
 - `ls-remote` selection: a records-store listing selects by namespaced pattern, never by `--heads` or `--tags`;
 - every ref name read back: `ls-remote` output and push result lines map back to `refs/heads/` and `refs/tags/` names;
-- the upstream config fabric writes in the records store: `branch.<b>.merge` names the namespaced ref.
+- the upstream config fabric or `gitrepo` writes in the records store: `branch.<b>.merge` names the namespaced ref.
 
-`gitrepo` takes the namespace as a parameter of its push, lease and push-result matching, and learns no layout.
+`gitrepo` takes the namespace as a parameter of every operation that sends or writes an origin ref name:
+push, lease, push-result matching, the upstream `branch.<b>.merge` write after a push, and the remote deletes, plain and leased.
+It learns no layout.
 No records-store path reads origin's `refs/heads/` or `refs/tags/` in a one-repository hub,
 since those hold the code repository's branches and tags.
 Fabric never runs a bare `git push` in the records store.
-A remote `HEAD` read for the records store answers the board branch, never origin's `HEAD`.
+A remote `HEAD` read for the records store answers D1's board branch name `main`, never origin's `HEAD`.
 The translation never touches the code store.
 No module outside fabric and `gitrepo` reads the namespace, and none reads the layout:
 `lymcwd` keeps no layout predicate,
@@ -93,36 +114,78 @@ The cached, quiet read carries over the requirement `two-repo-merge-probe-regres
 
 ### D3 — Clone
 
-`lym fabric clone <url>` with one URL takes the one-repository layout when `git ls-remote` finds the board branch
-under the namespace on origin.
+`lym fabric clone <url>` with one URL takes the one-repository layout when `git ls-remote` finds D1's board ref
+`refs/lym/heads/main` on origin.
 It clones the code store as the prime, makes the records store by initialising it with D1's refspecs and then fetching,
-checks out the board and the prime's records branch, and wires the hub as a two-repository clone does.
+checks out the board on D1's board branch and the prime's records branch, records the prime's records branch as D1 states,
+and wires the hub as a two-repository clone does in every other step.
+`ensureBoardWorktree` is handed the board name, never the code store's branch,
+so the board adopts `origin/main`, which D1's fetch refspec maps from `refs/lym/heads/main`.
 One URL whose origin holds no namespaced board branch takes today's two-repository path, reading the URL as a weft.
 
-`lym fabric clone --single-repo <url>` clones the code store, then seeds the records store as a fresh two-repository bind seeds its weft,
-the board's `.lym-warp` naming the one URL.
+`lym fabric clone --single-repo <url>` clones the code store, then makes the records store by `git init` with D1's refspecs,
+never by the two-repository weft clone, and fetches nothing into it:
+a fetch would bring a leftover records branch that the fresh bind's seeding then adopts,
+and the seed's leases take the tips the precondition check observed.
+It seeds that store as a fresh two-repository bind seeds its weft,
+except that `ensureBoardWorktree` is handed the board name, so the board is orphan-created on D1's board branch,
+and the board's `.lym-warp` names the one URL.
+It records the prime's records branch as D1 states.
 It writes no commit to any code branch.
-Before `CloneAndWire` runs, it pushes the seed in this order: the prime's records branch, then the board branch,
-which is the layout's detection key.
-A seed push that origin refuses removes the hub directory the clone made and names origin's rejection;
-way forward: a host that accepts refs outside `refs/heads/`, or a two-repository hub.
-A records branch a refused earlier attempt left in the namespace without a board branch is replaced by the seed push.
+The records store adopts nothing from origin:
+it creates the prime's records branch fresh, never from `origin/<prime-branch>-weft`, and commits the anchor marker on it.
+A records branch an earlier failed attempt left in the namespace without a board branch is therefore replaced,
+whatever anchor it records and whatever `--subpath` the rerun names.
 
-Every one-URL clone refuses, before creating anything:
+The seed is pushed at the step of `CloneAndWire` where a two-repository clone pushes its board:
+after the Bolt commit of `.lym-warp`, `.lym-shortname` and the hub-wide config, and before the junction wiring.
+That push is one fabric verb, which in a two-repository hub is today's board push.
+`CloneHub` marks a `--single-repo` result, so `fabriccli` calls the verb without reading the layout,
+and the verb then pushes the seed in this order:
+
+1. the prime's records branch, holding the anchor-marker commit,
+   leased on the tip, or the absence, observed at the precondition check;
+2. the board branch, holding the board commit, leased on absence (`--force-with-lease=refs/lym/heads/main:`);
+   it is the layout's detection key.
+
+A seed push that fails, refused, unreachable or on a failed lease, removes the hub directory the clone made and names its cause.
+When the records push had landed, the teardown first returns the records branch to the state the precondition check observed,
+leased on the tip it pushed: it restores the observed tip, or deletes the branch when it was absent.
+Ways forward:
+
+- origin refused the push: a host that accepts refs outside `refs/heads/`, or a two-repository hub;
+- the board push lost its lease: origin now holds another hub's board;
+  a one-URL clone joins that hub, and another origin seeds a separate one;
+- any other cause: the same clone again.
+
+Every one-URL clone refuses, before creating anything.
+The check runs `git ls-remote` on origin once, reading origin's `HEAD`, the board ref, the prime's records ref
+`refs/lym/heads/<default-branch>-weft` and `lym-bolt`; the prime is cloned on origin's default branch, so that ref is its records branch.
+It refuses:
 
 - with `--single-repo`, an origin holding the namespaced board branch; way forward: the same clone without `--single-repo`;
 - an origin whose default branch holds `.lym-warp`, which is a records repository, when `--single-repo` is given;
   way forward: a two-URL clone;
 - with `--single-repo`, a second URL;
-- an origin holding the branch `lym-bolt`, or whose default branch tracks `.lym-anchor` at its root, which is f06acf39's layout;
+- an origin holding the branch `lym-bolt`, or, with `--single-repo`, whose default branch tracks a root `.lym-anchor` or `_lym`,
+  which is f06acf39's layout;
   way forward: delete `lym-bolt` on origin and remove `.lym-anchor` and `_lym` from the code branches, then clone again.
 
-Bound: `--single-repo` reaches only an origin with no namespaced board branch,
-writes only under `refs/lym/` there, and force-replaces only a namespaced records branch while no board branch exists.
+A two-repository weft whose board still tracks the legacy root `.lym-anchor` holds no `lym-bolt` and takes no `--single-repo`,
+so it clones as today.
 
-Rationale: seeding through the existing weft bind keeps one seeding path;
-pushing the detection key last and before `CloneAndWire` means a refused push leaves nothing on origin that reads as a hub,
-and nothing on disk.
+Bound: `--single-repo` reaches only an origin with no namespaced board branch and writes only under `refs/lym/` there.
+It replaces a namespaced records branch only through a push leased on the tip it observed,
+its board push lands only while origin still holds no board branch,
+and a clone whose board push fails leaves the records branch as it found it, unless another push moved it since.
+
+Rationale: seeding through the existing weft bind keeps one seeding path,
+its departures limited to the store's `git init`, the board's branch and the recorded prime's records branch,
+and the seed push takes the two-repository board push's own step, so `fabriccli` gains no layout step.
+Pushing the prime's records branch at clone is added behaviour, since a two-repository bind leaves it to the first push;
+the seed pushes it first so a hub that reads as one on origin always carries its anchor.
+The detection key goes last, so a failed push leaves nothing on origin that reads as a hub,
+and the teardown leaves nothing on disk.
 
 ### D4 — Pair lifecycle in the namespace
 
@@ -130,8 +193,15 @@ Add, push, pull, replay, hand-over, teardown, archive and remote cleanup run the
 in a one-repository hub, through D2's namespace.
 A pair's records branch `<branch>-weft` lives on origin at `refs/lym/heads/<branch>-weft`.
 Its archive tag `archive/<slug>/<tip>` lives at `refs/lym/tags/archive/<slug>/<tip>`.
-Teardown deletes the records branch by its full namespaced name;
-git refused `git push origin --delete <branch>` under a mapped push refspec and accepted the full ref name.
+Teardown deletes the records branch by its full namespaced name, since a short name cannot reach `refs/lym/heads/`.
+On the path `gitrepo` takes, a push to the origin URL,
+`git push <url> --delete refs/lym/heads/<missing>` exits 0 printing `remote: warning: deleting a non-existent ref` and `[deleted]`
+(git 2.53.0, bare local origin), so the delete's result cannot tell an absent branch from a removed one.
+A full `refs/heads/` name, the identity namespace of a two-repository hub, deletes a missing ref as silently.
+The plain delete therefore first runs `git ls-remote` on the full namespaced name, in both layouts,
+`refs/lym/heads/<branch>-weft` or `refs/heads/<branch>-weft`;
+an absent ref answers "not deleted" and pushes nothing, so the destruction gate records no removal.
+The leased delete names the observed tip, so an absent branch fails its lease, as in a two-repository hub.
 Remote cleanup and the leftover and archive-coverage checks read records branches and archive tags from the namespace.
 
 Rationale: one code path per operation, so the two layouts cannot drift apart.
@@ -143,7 +213,7 @@ Everything f06acf39 added only to keep records on a code branch is removed:
 - the root-marker layout read in `lymcwd` and fabric's per-worktree probe;
 - the one-repository clone path and the `lym-bolt` orphan board branch;
 - path-limited records commits on the code branch, the temporary-index commit during a merge,
-  and the git config key `lym.primeBranch` (removed);
+  and the git config key `lym.primeBranch` (removed), a separate key from D1's records-store key `lym.primeRecordsBranch` (new);
 - the records strip at every merge, the no-fast-forward rule, the `Fabric-Merge` trailer and the `.lym-anchor` change refusal;
 - the merge-stopped-before-records-step lifecycle, its unsettled-merge kind and `landingshed`'s abort-only way forward;
 - replay of records-only commits and its `Warp-SHA` rewrite;
@@ -177,7 +247,8 @@ Rationale: each widening served records on a code branch.
 
 ### D8 — Fixtures and tests
 
-`hubforge`'s one-repository builder makes one bare origin and drives the clone of D3 over it by one URL.
+`hubforge`'s one-repository builder makes one bare origin and seeds it with `lym fabric clone --single-repo <url>`;
+it builds a second machine's hub with a plain one-URL clone.
 The layout's tests run the two-repository suites' key flows over that builder, plus D3's refusals and D1's namespace placement.
 
 Rationale: a shared builder keeps both layouts on the same flows.
@@ -194,8 +265,13 @@ Rationale: a shared builder keeps both layouts on the same flows.
 
 `docs/overview.md` and `internal/fabricengine/doc.go` drop the records-on-code-branch text.
 The PATTERN entries change as `## PATTERN changes` lists;
-the backgrounds of `PATTERN-fabric-boundary`, `PATTERN-lym-files` and `PATTERN-pair-remote` lose their one-repository paragraphs,
-and `PATTERN-single-repo-hub`'s background is rewritten to D1 to D4.
+these backgrounds lose their one-repository text:
+
+- `PATTERN-fabric-boundary`, `PATTERN-lym-files` and `PATTERN-pair-remote`, their one-repository paragraphs;
+- `PATTERN-cwd-resolution`, the one-repository `ResolveWithin` line and the worktree-root anchor clause;
+- `PATTERN-run-fsm`, the `operator_unpushed` and `protected` paragraph and its `TestPrimePushGuard` pin.
+
+`PATTERN-single-repo-hub`'s background is rewritten to D1 to D4.
 
 Rationale: every f06acf39 doc statement about the old layout becomes false.
 
@@ -233,9 +309,6 @@ Rationale: the layout landed on 2026-11-19 for the operator's own use, and the o
   `mergestateactive.go`, `recordsduringmerge.go`, `clone_onerepository.go` and `anchormarker.go`, which D5 deletes or rewrites;
   the probe cache it builds is removed here.
   The parent may order the two runs or narrow the peer to its merge-probe revert.
-- This task's board body opens with an error object from a failed write in place of its original text;
-  the design rests on the title, brief and the operator's scope note.
-  The parent may confirm nothing else was lost.
 - The parent project `single-repo-hub` is titled for records on each code branch and the board on `lym-bolt`, which this design replaces;
   the parent may retitle it.
 
@@ -246,14 +319,23 @@ Rationale: the layout landed on 2026-11-19 for the operator's own use, and the o
   the records sibling, `_lym` junctions and `_bolt`.
 - D1: a default `git clone` of that origin fetches no ref under `refs/lym/`, and the hub's records store holds no code branch.
 - D3: a one-URL clone of an origin holding the namespace builds the same layout on a second machine, with the board's content.
+- D1, D3: a `--single-repo` clone of an origin whose code default branch is `master` puts the board at `refs/lym/heads/main`
+  and the prime's records branch at `refs/lym/heads/master-weft`;
+  a one-URL clone of that origin on a second machine checks out that board with its content;
+  and the orphan sweep in that hub keeps `master-weft`, also after `lym fabric checkout` moves the prime off `master`.
 - D3: a one-URL clone refuses an origin holding the namespaced board branch with `--single-repo`,
   an origin whose default branch holds `.lym-warp` with `--single-repo`, a second URL with `--single-repo`,
-  and an origin holding `lym-bolt` or a root `.lym-anchor`, each before creating anything and each naming its way forward.
-- D3: a seed push that origin refuses leaves no hub directory, names the rejection, and leaves no namespaced board branch on origin;
-  a rerun of `--single-repo` then succeeds.
+  an origin holding `lym-bolt`, and with `--single-repo` an origin whose default branch tracks a root `.lym-anchor` or `_lym`,
+  each before creating anything and each naming its way forward.
+- D3: a one-URL clone of a two-repository weft whose board tracks the legacy root `.lym-anchor` clones as today.
+- D3: a seed push that fails leaves no hub directory, names its cause, and leaves no namespaced board branch on origin;
+  a rerun of `--single-repo`, with the same or another `--subpath`, replaces the leftover records branch and succeeds.
+- D3: a `--single-repo` clone whose board push loses its lease returns the records branch to the tip it observed,
+  and names the one-URL clone of the other hub as its way forward.
 - D2, D4: in a one-repository hub, a pair add, push and teardown place its records branch at `refs/lym/heads/<branch>-weft`
   and its archive tag under `refs/lym/tags/archive/`, add no ref under `refs/heads/` or `refs/tags/` beyond the code branch,
   and teardown removes the namespaced records branch.
+- D4: in either layout, a teardown of a never-pushed records branch records no remote deletion.
 - D2, D4: in a one-repository hub, origin reconcile and remote cleanup in the records store see the namespaced records branches
   and archive tags, and no code branch.
 - D2: a records branch's upstream in a one-repository hub names its namespaced ref, and the branch reads as in sync after a push.
@@ -282,6 +364,7 @@ Rationale: the layout landed on 2026-11-19 for the operator's own use, and the o
 - f06acf39's own commit message lists its parts and files by concern; reverting its one-repository parts against D6's keep list
   may be cheaper than editing forward.
 - The clone CLI's argument order is `<weft-url> [<warp-url>]`; D3's one-URL probe runs before the existing weft-binding probe.
-- The lens review traced the records store's remote paths D2 must cover to `internal/gitrepo/push.go`, `pushretry.go`,
-  `pushdestination.go`, `originreconcile.go`, `cleanupremotewarp.go`, `remoteleftover.go`, `archive.go` and `recordsprobe.go`;
-  the list is a head start, not a completeness claim.
+- The lens review traced the records store's remote paths D2 must cover to these files;
+  the list is a head start, not a completeness claim:
+  - `internal/gitrepo/`: `push.go`, `pushretry.go`, `pushdestination.go`;
+  - `internal/fabricengine/`: `originreconcile.go`, `cleanupremotewarp.go`, `remoteleftover.go`, `archive.go`, `recordsprobe.go`.
