@@ -41,4 +41,13 @@ Rationale: Dropping the run leaves the cause that killed redundant-check-fixes i
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - edited-copy-from-newer-writer-bypasses-detection (class design, severity MEDIUM, open in rounds 1)
+  - embedded-bytes-fallback-against-stencil-ownership (class design, severity BLOCKING, open in rounds 1)
+  - skew-tested-only-through-unexported-helper (class design, severity BLOCKING, open in rounds 1)
+  - writer-ordering-disagrees-with-refresh-ordering (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
