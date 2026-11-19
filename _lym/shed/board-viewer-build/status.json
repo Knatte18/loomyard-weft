@@ -1,14 +1,31 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/board-viewer-build/_lym/discussion/decision-record.md",
+      "at": "2026-11-19T12:43:29Z",
+      "started_at": "2026-11-19T12:26:04Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-19T12:39:07.971670783Z",
+          "end": "2026-11-19T12:43:28.250502212Z"
+        }
+      ]
+    }
+  ],
   "product": {
     "slug": "board-viewer-build",
     "parent": "main",
