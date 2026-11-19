@@ -2,8 +2,6 @@
 
 `bug-red-first-gate` · Task · enhancement, gate, testmap · starting · Seed-IDE
 
-Depends on: [`hardener-campaign`](design-hardener-campaign.md)
-
 Source: `docs/research/survey/pocock-skills-2026-11-19/report.md` (survey of Matt Pocock's skills repository, 2026-11-19), candidate 2, which holds the design.
 
 ## Idea

@@ -2,8 +2,6 @@
 
 `drop-compat-migration-code` · Task · enhancement, fabric, loom, board · draft
 
-Depends on: [`hardener-campaign`](design-hardener-campaign.md)
-
 ## What was seen
 
 Outside tests, "retired" appears in 127 files, "migrat" in 57 and "legacy" in 65 (2026-11-18);

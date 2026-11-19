@@ -161,9 +161,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "hardener-campaign"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest",
       "body": "## What was seen\n\nOutside tests, \"retired\" appears in 127 files, \"migrat\" in 57 and \"legacy\" in 65 (2026-11-18);\n`fabricengine` leads with 18 files, then `loomcli` 11 and `boardengine` 10.\nSome of it is a deliberate refusal of an old name or key with a pointer to the new one, which is cheap and stays.\nSome is real migration code: `landingshed` alone carries about 100 lines (the retired `Merge-In` row name,\na scratch-to-records attempt migration, a key-rename migration).\n\n## Idea\n\nA mechanical pass, module by module: classify each hit as a refusal (keep) or a migration or compatibility path\nwhose data no hub still holds (delete).\n\n## Decided\n\n- All migration code goes: the operator confirmed no hub needs it (operator, 2026-11-19).\n- `lym board retire-legacy` is part of it: a one-off migration of `tasks.json` and `notes.json` into `board.json` that every hub has run.\n",
@@ -246,8 +244,7 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "drop-compat-migration-code",
-        "hardener-campaign"
+        "drop-compat-migration-code"
       ],
       "isolated": false,
       "brief": "The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents",
@@ -263,41 +260,6 @@
       },
       "profile": "solid",
       "project": "code-cleanup"
-    },
-    {
-      "id": 1511,
-      "handle": "T10",
-      "slug": "hardener-campaign",
-      "title": "Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "shed",
-        "loom",
-        "burler",
-        "gate",
-        "batten",
-        "report",
-        "board",
-        "config",
-        "landing",
-        "stencil",
-        "preflight",
-        "pattern",
-        "docs"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `hardener`.\n\nTakes: the Sketch's decision record whole; the darn recipe and loomcli/darnwiring.go as the shape to copy; the closed recipe lists in shedrun/seed.go, shedcli/table.go, battencli/wire.go childRecipeSupported, loomrecipe (names.go, finalizerow.go, bouncerrows.go), reportengine (runs.go, timingspans.go) and boardengine/task.go; shedrecipe's BurlerFix entry and row gates (entries_burler.go, entries_gate.go), shedadapters' NewBouncer, settleUndecided and bouncerfacts.go; loomcli's loomSegmentPerches and reviewBudget; gatecli/run.go acquireSlot and gateslot.Pool.AcquireSlots; fabriccli.CloneAndWire, runproc.End, reedengine.ServerName and selfexec.LymBinary; single-repo-fabric-mode's landed pairteardown and loomcli wiring\nDelivers: a board task with recipe hardener runs a Preflight, Record-Write and Harden-Review ring campaign of Harden-Bouncer, Harden-Burler-Review and Harden-Burler-Fix rounds with a Go-run live gate, sandbox hubs reaped around every round row and on every teardown route, a per-round archive under _lym/harden/, and lands through Finalize; lym gate test --copies; the hardener.yaml config unit and the harden-burler-fix, harden-live and harden-live-copies gate template keys; treadle, Tenter and crucible gone, their method in the internal/hardenshed package doc and the harden-rubric-review stencil\nExports: the hardener recipe value; the HardenFix engine; lym harden sandbox new, list and clear; lym gate test --copies \u003cn\u003e; the hardener.yaml unit; the harden commit seam; the agents reinterpretation that strips treadle-judge and treadle-targeting\n\nThe part changes these packages:\n\n- internal/hardenshed (about 3000 changed lines)\n- internal/hardencli (about 400 changed lines)\n- contracts/recipes (about 320 changed lines)\n- internal/shedrecipe (about 250 changed lines)\n- internal/shedbuild (about 200 changed lines)\n- internal/shedadapters (about 500 changed lines)\n- internal/shedrun (about 20 changed lines)\n- internal/shedcli (about 15 changed lines)\n- internal/battencli (about 15 changed lines)\n- internal/loomrecipe (about 40 changed lines)\n- internal/loomcli (about 700 changed lines)\n- internal/loomengine (about 150 changed lines)\n- internal/reportengine (about 30 changed lines)\n- internal/boardengine (about 15 changed lines)\n- internal/preflightshed (about 100 changed lines)\n- internal/configreg (about 20 changed lines)\n- internal/gatecli (about 500 changed lines)\n- internal/gateslot (about 20 changed lines)\n- internal/pairteardown (about 200 changed lines)\n- internal/landingshed (about 80 changed lines)\n- internal/agentconfig (about 200 changed lines)\n- internal/treadleengine (about 5523 changed lines)\n- contracts/stencils (about 700 changed lines)\n- internal/verifyrun (about 20 changed lines)\n- internal/webstercli (about 20 changed lines)\n- cmd/lym (about 40 changed lines)\n- crucible (about 1176 changed lines)\n- docs (about 150 changed lines)\n- pattern (about 20 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-19T09:39:16Z",
-      "revised": "2026-11-19T11:16:51Z",
-      "profile": "solid",
-      "discussed": true,
-      "record_body_sha256": "ff2184f772a28ef04f8417134dd9202e7908a38156fd986ce4ffc442a2d8a440"
     },
     {
       "id": 1512,
@@ -362,9 +324,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "hardener-campaign"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Source: `docs/research/survey/pocock-skills-2026-11-19/report.md` (survey of Matt Pocock's skills repository, 2026-11-19), candidate 2, which holds the design.\n\n## Idea\n\nFor an entry labelled `bug`, a gate step runs the tests the diff adds or changes (named by `testreach`) once on the merge-base tree and fails when every one passes there.\nThe fix commit carries a `Root-Cause:` trailer that Code-Review checks like `Loosened-Check:`.\nA bug with no seam for a test is a stop the record names, never a silent pass.",
