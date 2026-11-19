@@ -2,24 +2,13 @@
 
 `single-repo-records-branches` · Task · feature, fabric · draft
 
-## Why (operator, 2026-11-19)
+{"error":"invalid json: invalid character 's' looking for beginning of value","ok":false}
 
-`single-repo-fabric-mode` (f06acf39) put `_lym` records as tracked files on each code branch.
-Records commits then sit in the code history, so every module that reads git sees them,
-and `single-repo-code-identity` had to strip records paths in about 15 packages outside fabric.
-That breaks the hub's rule: only fabric knows the layout.
-Whether `_lym` and `.lym` live in a sibling weft repository or elsewhere is invisible to every module but fabric.
-`single-repo-code-identity` was dropped for this reason.
+## What f06acf39 left, read 2026-11-19
 
-## Direction
-
-A one-repository hub keeps records off the code branches, the way the board already sits on the orphan branch `lym-bolt` checked out as `_bolt`:
-records live on their own branches of the same repository, each checked out as a worktree that `_lym` joins as weft does today.
-Seen from outside it is one repository and one remote; the code history holds code only, so no module outside fabric changes.
-
-## To decide in Discussion
-
-- The records branch scheme: one per task, one shared, or another, and how merges, landings, replay and teardown treat them.
-- What of f06acf39 stays (clone, `lym-bolt` and `_bolt`, the guarded prime push, merge and replay parts) and what is removed,
-  including its `lymcwd.OneRepository` branches in `battencli/commitstatus.go` and `loomcli/wiring.go`.
-- The layout probe that since f06acf39 warns on every board read about entries with no worktree on disk.
+About 2,800 to 3,000 of its 3,765 added non-test Go lines exist only because records shared the code branch, and would go:
+`recordsduringmerge`, `mergerecords`, `recordspaths`, `primepushguard`, `recordscommit`, most of `clone_onerepository` and `onerepository`,
+the prime push guard with the `operator_unpushed` and `protected` classes, `lym.primeBranch`, the code-commit replay filter, the `Warp-SHA` rewording,
+the statuscommit wait and stall logic, `MidMergeRecordsUnsettled`, and the gated branches in about 40 files.
+Likely reusable: the `_bolt` worktree on orphan `lym-bolt` and `originHoldsBolt`; the `RecordsWorktree`, `RecordsRepoRoot` and `recordsBranchIn` seam with a new predicate behind it;
+the same-repo remote-refs lock skip in `judgeAgainstOrigin`; the `index.lock` retry; the protected-branch classifier; the archive-tag-then-delete teardown.
