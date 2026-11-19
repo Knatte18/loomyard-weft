@@ -1,6 +1,6 @@
 # A creel post to SLACK reports ok while Slack is disconnected
 
-`creel-slack-post-silent-when-off` · Task · bug, creel, slack · starting · Worktree-Create
+`creel-slack-post-silent-when-off` · Task · bug, creel, slack · starting · Seed-Child
 
 ## What was seen
 
