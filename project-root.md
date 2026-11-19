@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-19 17:48 UTC; every age below is as of then.
+Rendered 2026-11-19 17:59 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (2)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -27,7 +27,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (6)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **A shell -c script that removes files stalls a run on a permission dialog**<br>• The shell guard does not look inside a shell -c script, so Claude Code asks for permission and the run stalls until someone answers | [`shellguard-sh-c-rm-prompt`](design-shellguard-sh-c-rm-prompt.md) | darn |  | 1h<br>1h | process |
+
+## Notes (5)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -38,12 +46,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 10d<br>10d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 1d<br>1d | shuttle |
 
-### Bugs (2)
+### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A shell -c script that removes files stalls a run on a permission dialog**<br>• The shell guard does not look inside a shell -c script, so Claude Code asks for permission and the run stalls until someone answers | [`shellguard-sh-c-rm-prompt`](design-shellguard-sh-c-rm-prompt.md) | 1h<br>1h | process |
-| B2 |  | **A hardenshed test leaves .lock in the package directory**<br>• A record write in a hardenshed test takes its lock beside a relative or empty path, so internal/hardenshed/.lock appears in the worktree and blocks Finalize | [`hardenshed-test-stray-lock`](design-hardenshed-test-stray-lock.md) | 6m<br>6m | gate |
+| B2 |  | **A hardenshed test leaves .lock in the package directory**<br>• A record write in a hardenshed test takes its lock beside a relative or empty path, so internal/hardenshed/.lock appears in the worktree and blocks Finalize | [`hardenshed-test-stray-lock`](design-hardenshed-test-stray-lock.md) | 17m<br>17m | gate |
 
 ### Features (2)
 
