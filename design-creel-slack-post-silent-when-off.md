@@ -1,6 +1,6 @@
 # A creel post to SLACK reports ok while Slack is disconnected
 
-`creel-slack-post-silent-when-off` · Note · bug, creel, slack
+`creel-slack-post-silent-when-off` · Task · bug, creel, slack · draft
 
 ## What was seen
 
