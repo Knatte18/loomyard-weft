@@ -726,8 +726,22 @@
       "spawnedAt": "2026-11-19T09:31:32Z",
       "sessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "15-one-repository-docs",
+        "status": "done",
+        "head_sha": "a050224cc086cd917ce7130c4f13e09e3224338b"
+      },
+      "cardShas": [
+        "a050224cc086cd917ce7130c4f13e09e3224338b"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a8ce8e43ddef65fdd.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a8ce8e43ddef65fdd.jsonl"
+      ]
     },
     "4": {
       "slug": "protected-push-class",
@@ -893,7 +907,7 @@
       ]
     }
   },
-  "currentBatch": 15,
+  "currentBatch": 0,
   "masterStrand": "f1bb91399db09f3ff654539d3c5eecfd",
   "masterSessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
   "masterEngine": "claude",
@@ -906,6 +920,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ad2439eafc6c9bbfa.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-af106d0fa478ae57a.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a1e1417929878a4b7.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ada9c27193c418a30.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ada9c27193c418a30.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a8ce8e43ddef65fdd.jsonl"
   ]
 }
