@@ -1,0 +1,15 @@
+verdict: resume
+reason: |-
+  Decision escalation at round 1, refusal none. Its one decision finding, F9, asks two questions, and the board entry settles both.
+  (1) The committed board.html and board-data.js stay. The entry's Delivers line names them as render outputs of every board write.
+  The operator's "Wanted next (operator, 2026-11-19)" section adds editing and revokes no deliverable, so dropping them would narrow the task's scope.
+  (2) open's refusal naming lym board rerender is dropped. The Wanted next section needs writes, which a file:// page cannot send, so open now opens the server's page, built from the embedded asset and a live projection (D2, D5), and never reads the Bolt's board.html.
+  A refusal on that file would have no failure behind it. The rerender way forward stays in D4's file:// line, where a missing board-data.js still breaks a page.
+  Neither answer widens scope. Both are recorded as arbiter decisions that tell the next fixer to remove the Open risks bullet and update support-log Q8, Q9 and the matching Rejected alternatives bullet.
+  I chose continue over accept. The round-1 fixer reworked the record for 2 BLOCKING and 7 MEDIUM design-wrong findings (F1 to F8, F10), and no review has checked those fixes yet.
+  The answers above also need a fixer's edit to the record. Round 1 is below the hard cap.
+verbs:
+  - |-
+    lym loom decision add board-viewer-build --by arbiter --from .scratch/f9-decisions.json
+  - |-
+    lym loom circling continue board-viewer-build
