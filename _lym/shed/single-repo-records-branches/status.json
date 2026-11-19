@@ -1,13 +1,14 @@
 {
-  "current_producer": "Raddle-File",
-  "state": "failed",
-  "error": "loomshed: Raddle-File: file the proposal: file entry \"single-repo-records-on-code-removal\": slug exceeds max length of 32 characters: \"single-repo-records-on-code-removal\" (35 chars); way forward: the fault is transient, re-step the Raddle-File row",
-  "pending_by": "shed",
+  "current_producer": "Raddle-Write",
+  "state": "paused",
+  "error": "",
+  "entered_row": "Raddle-Write",
   "pause_requested": false,
+  "pause_reason": "goto to Raddle-Write by orch",
   "activity": {
-    "now": "Raddle-File",
-    "last": "Raddle-Write → done",
-    "wait": "loomshed: Raddle-File: file the proposal: file entry \"single-repo-records-on-code-removal\": slug exceeds max length of 32 characters: \"single-repo-records-on-code-removal\" (35 chars); way forward: the fault is transient, re-step the Raddle-File row"
+    "now": "Raddle-Write",
+    "last": "Raddle-Write → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -32,6 +33,13 @@
           "end": "2026-11-19T18:27:00.915348214Z"
         }
       ]
+    },
+    {
+      "producer": "Raddle-Write",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-11-19T18:29:06Z",
+      "by": "orch"
     }
   ],
   "product": {
