@@ -1,0 +1,503 @@
+diff --git a/internal/fabricengine/anchormarker.go b/internal/fabricengine/anchormarker.go
+index c20314db..6e323a4c 100644
+--- a/internal/fabricengine/anchormarker.go
++++ b/internal/fabricengine/anchormarker.go
+@@ -82,6 +82,7 @@ func commitAnchorMarker(rec *Mutations, weftPath, anchor, subject string) (strin
+ 	}
+ 	if committed {
+ 		rec.Append(KindCommitCreated, weftPath, sha)
++		forgetLayouts()
+ 	}
+ 	return sha, nil
+ }
+@@ -207,6 +208,7 @@ func retireBoltAnchorMarker(rec *Mutations, l *lymcwd.Location) (string, error)
+ 	if err != nil {
+ 		return "", err
+ 	}
++	forgetLayouts()
+ 	if res.Skipped != "" {
+ 		return fmt.Sprintf("%s%s: %s", boltAnchorKeptPrefix, res.Skipped, res.SkipDetail), nil
+ 	}
+diff --git a/internal/fabricengine/clone_onerepository.go b/internal/fabricengine/clone_onerepository.go
+index fde3b811..3458cd70 100644
+--- a/internal/fabricengine/clone_onerepository.go
++++ b/internal/fabricengine/clone_onerepository.go
+@@ -290,6 +290,7 @@ func seedOneRepositoryBoard(rec *Mutations, boardDir, anchor string) error {
+ 	}
+ 	if committed {
+ 		rec.Append(KindCommitCreated, boardDir, sha)
++		forgetLayouts()
+ 	}
+ 	return nil
+ }
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index c6a597e5..e6a4aaaa 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -1348,6 +1348,9 @@
+ // A squash landing's commit and a merge over hand-resolved code conflicts are not fabric merge commits,
+ // so each is owed until a landing's push of the parent or the operator's `git push` takes it to origin.
+ // `MergeStateActive` is the weft-only, git-level mid-merge probe a path-scoped commit must consult before landing.
++// In a two-repository hub it reads a merge alone.
++// A weft cherry-pick, revert or rebase does not count;
++// fabric's own replay cherry-picks under the write lock the commit waits on.
+ // It differs from `Fabric.MergeInProgress` and from the two-sided `foreignMergeStatePresent`.
+ // `PairComplete(l)` is the predicate over `Add`'s own post-condition.
+ // It lets a caller tell a finished pair creation from one a SIGKILL interrupted partway through.
+@@ -2485,6 +2488,11 @@
+ // A worktree belongs to a one-repository hub when `.lym-anchor` is committed at its HEAD.
+ // For the repository's main worktree and the Bolt checkout, the marker on the `BoltBranchName` branch counts too.
+ // The main worktree of a two-repository records repository is a records sibling and never reads as one repository.
++// A path with no worktree on disk reads as two repositories without running git or logging.
++// The answer for a worktree on disk is kept for the process, so a repeated read runs no git;
++// a fabric write that adds or retires a marker drops every kept answer.
++// The bound is the process:
++// a marker another process adds or retires is seen only by a later process.
+ // In a one-repository hub a worktree is its own records worktree.
+ // `RecordsRepoRoot` is the prime worktree, and a pair's records branch is its code branch.
+ // The records locks then sit in the worktree's git directory, so the repository's exclude never gets `.weft/`.
+diff --git a/internal/fabricengine/mergestateactive.go b/internal/fabricengine/mergestateactive.go
+index 425d573c..3c5431f7 100644
+--- a/internal/fabricengine/mergestateactive.go
++++ b/internal/fabricengine/mergestateactive.go
+@@ -8,10 +8,13 @@ import (
+ )
+ 
+ // MergeStateActive reports whether the weft worktree of l is in a git operation a records commit cannot pass.
+-// MergeStateOperation names that operation:
+-// a live MERGE_HEAD or a non-empty conflicted index, or a cherry-pick, revert or rebase.
++// MergeStateOperation names that operation.
++// In a two-repository worktree only a live MERGE_HEAD or a non-empty conflicted index counts.
++// A cherry-pick, revert or rebase there does not count.
++// Fabric's own weft replay cherry-picks under the write lock the commit waits on.
+ // It does not report whether fabric itself has a merge in progress.
+-// In a one-repository worktree a merge counts only when its index holds a records path unlike HEAD's.
++// In a one-repository worktree a cherry-pick, revert or rebase counts,
++// and a merge counts only when its index holds a records path unlike HEAD's.
+ //
+ // It is weft-only, because warp and weft are independent clones with independent .git directories.
+ // The status commit this probe guards runs in the weft worktree alone, so warp-side git state cannot block it.
+diff --git a/internal/fabricengine/mergestateactive_integration_test.go b/internal/fabricengine/mergestateactive_integration_test.go
+index dc1e66c0..ced4395e 100644
+--- a/internal/fabricengine/mergestateactive_integration_test.go
++++ b/internal/fabricengine/mergestateactive_integration_test.go
+@@ -52,6 +52,8 @@ func driveConflictedSquashMerge(t *testing.T, dir string) {
+ // The probe reads only the weft's own .git state.
+ // A live, non-conflicting merge staged in the weft (MERGE_HEAD only) reports true;
+ // it is then aborted, so the weft is clean again.
++// A cherry-pick stopped in the weft reports false and names no operation, since only a merge counts there;
++// it is then aborted.
+ // A conflicted `git merge --squash` in the weft writes no MERGE_HEAD and reports true;
+ // the MERGE_HEAD probe alone cannot reach it, so neither probe kind is redundant.
+ // The steps run serially on one pair.
+@@ -92,6 +94,23 @@ func TestMergeStateActive(t *testing.T) {
+ 		gitkit.MustRun(t, h.PrimeRecords(), "git", "merge", "--abort")
+ 	})
+ 
++	t.Run("weft cherry-pick in progress reports false", func(t *testing.T) {
++		weft := h.PrimeRecords()
++		current := gitkit.CurrentBranch(t, weft)
++		gitkit.MustRun(t, weft, "git", "checkout", "-q", "-b", "picked-branch")
++		gitkit.MustRun(t, weft, "git", "commit", "-q", "--allow-empty", "-m", "picked commit")
++		gitkit.MustRun(t, weft, "git", "checkout", "-q", current)
++		runGitAllowingFailure(t, weft, "cherry-pick", "picked-branch")
++		gitkit.MustRun(t, weft, "git", "rev-parse", "--verify", "-q", "CHERRY_PICK_HEAD")
++
++		requireMergeStateActive(t, false, "a weft cherry-pick in progress")
++		if operation, err := fabricengine.MergeStateOperation(h.Location); err != nil || operation != "" {
++			t.Errorf("MergeStateOperation() with a weft cherry-pick in progress = (%q, %v); want (\"\", nil)", operation, err)
++		}
++
++		gitkit.MustRun(t, weft, "git", "cherry-pick", "--abort")
++	})
++
+ 	t.Run("weft conflicted squash without MERGE_HEAD reports true", func(t *testing.T) {
+ 		driveConflictedSquashMerge(t, h.PrimeRecords())
+ 
+diff --git a/internal/fabricengine/onerepository.go b/internal/fabricengine/onerepository.go
+index 0980d2da..23806c94 100644
+--- a/internal/fabricengine/onerepository.go
++++ b/internal/fabricengine/onerepository.go
+@@ -1,4 +1,4 @@
+-// onerepository.go reads from git which layout a worktree belongs to.
++// onerepository.go reads from git which layout a worktree belongs to, once per worktree for the process.
+ // It also names the records geometry that layout implies.
+ // In a one-repository hub a worktree is its own records worktree.
+ // Its records branch is its code branch, and its records locks sit in its git directory.
+@@ -7,8 +7,12 @@ package fabricengine
+ 
+ import (
+ 	"errors"
++	"fmt"
++	"io/fs"
+ 	"os"
+ 	"path/filepath"
++	"sync"
++	"sync/atomic"
+ 
+ 	"github.com/Knatte18/loomyard/internal/dotgit"
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+@@ -23,23 +27,67 @@ const (
+ 	recordsLockDirName = "lym-locks"
+ )
+ 
++// layoutAnswers maps the cleaned path of a worktree on disk to whether it belongs to a one-repository hub.
++// An answer holds for the process.
++// Fabric's own writes in this process that add or retire a marker clear the map through forgetLayouts,
++// and a marker another process adds or retires is seen only by a later process.
++// A read that overlaps a clear is not kept.
++var layoutAnswers sync.Map
++
++// layoutClears counts the clears of layoutAnswers, so a read can tell that a clear overlapped it.
++var layoutClears atomic.Uint64
++
+ // oneRepositoryAt reports whether the worktree at path belongs to a one-repository hub, reading git alone.
++// A path with no `.git` entry is no worktree on disk and answers false without running git or logging.
++// That answer is not kept, so a worktree created there later is read then.
++// Any other answer is kept for the process, and a later call for the same path runs no git.
++// A failed read answers false, is logged at Warn and is not kept,
++// so a path that is no repository keeps the two-repository geometry.
++func oneRepositoryAt(path string) bool {
++	key := filepath.Clean(path)
++	if answer, ok := layoutAnswers.Load(key); ok {
++		return answer.(bool)
++	}
++	if _, err := os.Lstat(filepath.Join(key, ".git")); errors.Is(err, fs.ErrNotExist) {
++		return false
++	}
++
++	clearsBeforeRead := layoutClears.Load()
++	answer, err := readOneRepositoryLayout(key)
++	if err != nil {
++		logger.Warn("fabricengine: reading the layout of a worktree failed; reading it as two repositories", "path", key, "error", err)
++		return false
++	}
++	layoutAnswers.Store(key, answer)
++	if layoutClears.Load() != clearsBeforeRead {
++		layoutAnswers.Delete(key)
++	}
++	return answer
++}
++
++// forgetLayouts drops every kept layout answer.
++// A write that makes a `.lym-anchor` marker appear where none was committed, or removes one, calls it,
++// so the next read sees the new layout.
++func forgetLayouts() {
++	layoutClears.Add(1)
++	layoutAnswers.Clear()
++}
++
++// readOneRepositoryLayout reads from git whether the worktree at path belongs to a one-repository hub.
+ // A repository whose main worktree is a records sibling with its owner beside it is a two-repository records repository.
+ // For such a path the answer is false.
+ // Otherwise the answer is whether `.lym-anchor` is committed at HEAD of the worktree at path.
+ // The repository's main worktree and the Bolt checkout may have a checked-out branch that lacks the marker.
+ // For those, a marker committed on the `lym-bolt` branch answers true too.
+-// A failed read answers false and is logged at Warn, so a path that is no repository keeps the two-repository geometry.
+-func oneRepositoryAt(path string) bool {
++func readOneRepositoryLayout(path string) (bool, error) {
+ 	geometry, err := dotgit.Read(path)
+ 	if err != nil {
+-		logger.Warn("fabricengine: reading the layout of a worktree failed; reading it as two repositories", "path", path, "error", err)
+-		return false
++		return false, err
+ 	}
+ 
+ 	mainWorktree := filepath.Dir(geometry.CommonDir)
+ 	if owner, isSibling := WeftWarpSlug(filepath.Base(mainWorktree)); isSibling && isDirectory(filepath.Join(filepath.Dir(mainWorktree), owner)) {
+-		return false
++		return false, nil
+ 	}
+ 
+ 	repo := gitrepo.New(path)
+@@ -48,34 +96,27 @@ func oneRepositoryAt(path string) bool {
+ 	case headErr == nil:
+ 		_, found, err := committedMarker(path, "HEAD")
+ 		if err != nil {
+-			logger.Warn("fabricengine: reading the committed anchor marker failed; reading the layout as two repositories", "path", path, "error", err)
+-			return false
++			return false, err
+ 		}
+ 		if found {
+-			return true
++			return true, nil
+ 		}
+ 	case !errors.Is(headErr, gitrepo.ErrNoCommits):
+-		logger.Warn("fabricengine: reading HEAD failed; reading the layout as two repositories", "path", path, "error", headErr)
+-		return false
++		return false, fmt.Errorf("read HEAD: %w", headErr)
+ 	}
+ 
+ 	if filepath.Base(path) != BoltDirName && !sameDirectory(path, mainWorktree) {
+-		return false
++		return false, nil
+ 	}
+ 	exists, err := repo.BranchExists(BoltBranchName)
+ 	if err != nil {
+-		logger.Warn("fabricengine: looking for the Bolt branch failed; reading the layout as two repositories", "path", path, "error", err)
+-		return false
++		return false, fmt.Errorf("look for the %s branch: %w", BoltBranchName, err)
+ 	}
+ 	if !exists {
+-		return false
++		return false, nil
+ 	}
+ 	_, found, err := committedMarker(path, "refs/heads/"+BoltBranchName)
+-	if err != nil {
+-		logger.Warn("fabricengine: reading the Bolt branch's anchor marker failed; reading the layout as two repositories", "path", path, "error", err)
+-		return false
+-	}
+-	return found
++	return found, err
+ }
+ 
+ // recordsBranchAt returns the records branch of branch for the worktree at worktreePath:
+diff --git a/internal/fabricengine/onerepository_cache_test.go b/internal/fabricengine/onerepository_cache_test.go
+new file mode 100644
+index 00000000..96857a0d
+--- /dev/null
++++ b/internal/fabricengine/onerepository_cache_test.go
+@@ -0,0 +1,87 @@
++// onerepository_cache_test.go covers the per-worktree layout answers oneRepositoryAt keeps for the process.
++// It is an internal-package test because oneRepositoryAt and commitAnchorMarker are unexported.
++
++package fabricengine
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestOneRepositoryAt_KeepsAnswerPerWorktree pins what is kept, what drops it and what is never kept.
++// A kept answer survives a change made behind fabric's back, a marker commit through fabric drops it,
++// and a failed read is read again on the next call.
++// It reads the process-wide answer map that every marker commit clears, so it does not run in parallel.
++func TestOneRepositoryAt_KeepsAnswerPerWorktree(t *testing.T) {
++	tiergate.Require(t, 1)
++
++	tests := []struct {
++		name string
++		// run makes its repository under hub and checks the answers it reads.
++		run func(t *testing.T, hub string)
++	}{
++		{"KeptAcrossAnOutsideMarkerRemoval", func(t *testing.T, hub string) {
++			prime := geometryRepository(t, hub, "prime")
++			gitkit.CommitFile(t, prime, lymcwd.AnchorFileName, ".\n", "record the anchor")
++			gitkit.Git(t, prime, "branch", BoltBranchName)
++			if !oneRepositoryAt(prime) {
++				t.Fatalf("oneRepositoryAt(%s) = false; want true", prime)
++			}
++
++			gitkit.Git(t, prime, "rm", "-q", lymcwd.AnchorFileName)
++			gitkit.Git(t, prime, "commit", "-q", "-m", "remove the anchor")
++			gitkit.Git(t, prime, "branch", "-q", "-D", BoltBranchName)
++
++			if !oneRepositoryAt(prime) {
++				t.Errorf("oneRepositoryAt(%s) after an outside marker removal = false; want the kept true", prime)
++			}
++		}},
++		{"DroppedByAFabricMarkerCommit", func(t *testing.T, hub string) {
++			prime := geometryRepository(t, hub, "prime")
++			if oneRepositoryAt(prime) {
++				t.Fatalf("oneRepositoryAt(%s) = true; want false", prime)
++			}
++
++			if _, err := commitAnchorMarker(NewMutations(hub), prime, ".", "record the anchor"); err != nil {
++				t.Fatalf("commitAnchorMarker() error = %v; want nil", err)
++			}
++
++			if !oneRepositoryAt(prime) {
++				t.Errorf("oneRepositoryAt(%s) after a fabric marker commit = false; want true", prime)
++			}
++		}},
++		{"FailedReadNotKept", func(t *testing.T, hub string) {
++			path := filepath.Join(hub, "repo")
++			if err := os.MkdirAll(path, 0o755); err != nil {
++				t.Fatalf("mkdir %s: %v", path, err)
++			}
++			gitFile := filepath.Join(path, ".git")
++			if err := os.WriteFile(gitFile, nil, 0o644); err != nil {
++				t.Fatalf("write %s: %v", gitFile, err)
++			}
++			if oneRepositoryAt(path) {
++				t.Fatalf("oneRepositoryAt(%s) over an empty .git file = true; want false", path)
++			}
++
++			if err := os.Remove(gitFile); err != nil {
++				t.Fatalf("remove %s: %v", gitFile, err)
++			}
++			geometryRepository(t, hub, "repo")
++			gitkit.CommitFile(t, path, lymcwd.AnchorFileName, ".\n", "record the anchor")
++
++			if !oneRepositoryAt(path) {
++				t.Errorf("oneRepositoryAt(%s) after the failed read was repaired = false; want true", path)
++			}
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			tt.run(t, t.TempDir())
++		})
++	}
++}
+diff --git a/internal/fabricengine/onerepository_quiet_test.go b/internal/fabricengine/onerepository_quiet_test.go
+new file mode 100644
+index 00000000..241ec7f2
+--- /dev/null
++++ b/internal/fabricengine/onerepository_quiet_test.go
+@@ -0,0 +1,44 @@
++// onerepository_quiet_test.go covers the layout read of a path that holds no worktree, which spawns no git.
++// It is an internal-package test because oneRepositoryAt is unexported.
++
++package fabricengine
++
++import (
++	"bytes"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestOneRepositoryAt_NoWorktreeOnDiskReadsAsTwoRepositoriesQuietly pins the layout read of a path with no worktree.
++// Such a path, a project or a task not started, answers false and logs nothing.
++// It swaps the process-global log output, so it does not run in parallel.
++func TestOneRepositoryAt_NoWorktreeOnDiskReadsAsTwoRepositoriesQuietly(t *testing.T) {
++	tiergate.Require(t, 0)
++
++	tests := []struct {
++		name string
++		// path returns the path to read inside dir.
++		path func(t *testing.T, dir string) string
++	}{
++		{"MissingPath", func(t *testing.T, dir string) string { return filepath.Join(dir, "missing") }},
++		{"DirectoryWithoutGit", func(t *testing.T, dir string) string { return dir }},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			var logged bytes.Buffer
++			logger.SetOutput(&logged)
++			t.Cleanup(func() { logger.SetOutput(logger.DefaultOutput()) })
++			path := tt.path(t, t.TempDir())
++
++			if oneRepositoryAt(path) {
++				t.Errorf("oneRepositoryAt(%s) = true; want false", path)
++			}
++			if got := logged.String(); got != "" {
++				t.Errorf("oneRepositoryAt(%s) logged %q; want nothing", path, got)
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/recordsduringmerge.go b/internal/fabricengine/recordsduringmerge.go
+index 1ff956c9..768cfaed 100644
+--- a/internal/fabricengine/recordsduringmerge.go
++++ b/internal/fabricengine/recordsduringmerge.go
+@@ -139,15 +139,14 @@ func mergeRouteApplies(worktree string) (bool, error) {
+ 	return kind != recordsMergeNone, err
+ }
+ 
+-// MergeStateOperation names the git operation a records commit in l's worktree cannot pass.
+-// It answers "merge" for a live MERGE_HEAD or a conflicted index.
+-// It answers "cherry-pick", "revert" or "rebase" for those operations in progress.
+-// It answers "" when none blocks.
+-// In a one-repository worktree a merge blocks only when its index holds a records path unlike HEAD's.
+-// It also blocks when the index is conflicted on a records path.
+-// It does not block while a fabric merge record stands with its records unsettled.
+-// A cherry-pick, revert or rebase blocks there too.
+-// In a two-repository worktree any merge state of the records worktree blocks.
++// MergeStateOperation names the git operation a records commit in l's worktree cannot pass, "" when none blocks.
++// In a two-repository worktree only a merge blocks: it answers "merge" for a live MERGE_HEAD or a conflicted index.
++// A cherry-pick, revert or rebase there does not block.
++// Fabric's own weft replay cherry-picks under the write lock the records commit waits on.
++// In a one-repository worktree it answers "cherry-pick", "revert" or "rebase" for those operations in progress.
++// A merge there blocks only when its index holds a records path unlike HEAD's.
++// A merge conflicted on a records path blocks too.
++// A merge never blocks while a fabric merge record stands with its records unsettled.
+ func MergeStateOperation(l *lymcwd.Location) (string, error) {
+ 	worktree := RecordsWorktree(l)
+ 	if oneRepositoryAt(worktree) {
+@@ -158,10 +157,6 @@ func MergeStateOperation(l *lymcwd.Location) (string, error) {
+ 		return operation, nil
+ 	}
+ 
+-	operation, err := gitOperationAt(worktree)
+-	if err != nil || operation != "" {
+-		return operation, err
+-	}
+ 	repo := gitrepo.New(worktree)
+ 	mergeHead, err := repo.MergeHeadPresent()
+ 	if err != nil {
+diff --git a/internal/loomcli/wiring_commitstatus_integration_test.go b/internal/loomcli/wiring_commitstatus_integration_test.go
+index aa8f52e3..e34c6270 100644
+--- a/internal/loomcli/wiring_commitstatus_integration_test.go
++++ b/internal/loomcli/wiring_commitstatus_integration_test.go
+@@ -84,6 +84,25 @@ func startForeignMergeInRecords(t *testing.T, recordsSibling string) {
+ 	}
+ }
+ 
++// startStoppedCherryPickInRecords leaves a cherry-pick in progress in the records sibling, with a clean index.
++// It picks an empty commit, which git stops on with CHERRY_PICK_HEAD set, as a fabric replay mid-pick leaves it.
++func startStoppedCherryPickInRecords(t *testing.T, recordsSibling string) {
++	t.Helper()
++	current := gitkit.CurrentBranch(t, recordsSibling)
++	gitkit.Git(t, recordsSibling, "checkout", "-q", "-b", "replayed-side")
++	gitkit.Git(t, recordsSibling, "commit", "-q", "--allow-empty", "-m", "replayed side commit")
++	gitkit.Git(t, recordsSibling, "checkout", "-q", current)
++	runGitAllowingFailure(t, recordsSibling, "cherry-pick", "replayed-side")
++
++	path := gitkit.Git(t, recordsSibling, "rev-parse", "--git-path", "CHERRY_PICK_HEAD")
++	if !filepath.IsAbs(path) {
++		path = filepath.Join(recordsSibling, path)
++	}
++	if _, err := os.Stat(path); err != nil {
++		t.Fatalf("no CHERRY_PICK_HEAD in the records sibling after picking an empty commit: %v", err)
++	}
++}
++
+ // runGitAllowingFailure runs git in dir and ignores its exit status, for a command that stops on a conflict.
+ func runGitAllowingFailure(t *testing.T, dir string, args ...string) {
+ 	t.Helper()
+@@ -374,6 +393,36 @@ func TestCommitStatusSeam_Real(t *testing.T) {
+ 		}
+ 	})
+ 
++	// A records cherry-pick in a two-repository hub does not count.
++	// Fabric's own replay cherry-picks under the write lock the commit waits on.
++	// The real probe runs while the pick is in progress; the pick then ends, as the replay does, before the commit.
++	// Relies on the step above leaving no merge in progress.
++	t.Run("records cherry-pick in progress commits the transition", func(t *testing.T) {
++		changeStatus()
++		startStoppedCherryPickInRecords(t, recordsSibling)
++		before := gitkit.RevParse(t, recordsSibling, "HEAD")
++
++		deps := loomCommitStatusDeps(location, shedrun.SelfRunID)
++		realMergeActive := deps.MergeActive
++		probes := 0
++		deps.MergeActive = func() (bool, error) {
++			probes++
++			active, err := realMergeActive()
++			if probes == 1 {
++				gitkit.Git(t, recordsSibling, "cherry-pick", "--abort")
++			}
++			return active, err
++		}
++
++		if err := newCommitStatusSeam(deps)("Discussion-Write", "running"); err != nil {
++			t.Fatalf("seam(...) error = %v; want nil", err)
++		}
++		if got := gitkit.RevParse(t, recordsSibling, "HEAD"); got == before {
++			t.Errorf("records HEAD = %q; want a transition commit — a records cherry-pick must not skip it", got)
++		}
++		statusOnly(t)
++	})
++
+ 	// A one-repository hub: the transition waits for a plain-git operation instead of skipping, then commits.
+ 	// Each row's Sleep ends the operation on its first call, so the commit lands only after the wait.
+ 	oneRepositoryHub := hubforge.NewOneRepoHub(t, ".")
