@@ -174,22 +174,34 @@
     },
     {
       "id": 1478,
-      "handle": "E5",
+      "handle": "T9",
       "slug": "design-simplify-callers",
       "title": "Design: simplify interfaces that make every caller handle too much",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "fabric",
         "landing"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "drop-compat-migration-code",
+        "single-repo-code-identity"
+      ],
       "isolated": false,
       "brief": "For example one result type instead of a four-value return handled at 60 call sites; find such spots per module and fix them one module at a time",
       "body": "## What was seen\n\nReading `landingshed` for the shrink study found design that spreads code over every caller:\na four-value return handled at about 60 call sites where one result type would do,\nnear-identical helpers with different names and types (about 340 lines, of which a duplicate detector saw 36),\nsingle-caller or test-only seams and adapters, and a lock-release layer around the fixer that a different order would remove.\n\n## Idea\n\nPer module, a run lists such spots with a line estimate each, then simplifies them without changing behaviour,\nbehind the module's existing tests. Start with the largest modules; `fabricengine` (36,000 production lines, about 1,100 functions) first,\nsince the operator finds it disproportionately large for its job.\n\n## Built so far\n\n`landingshed` is done as the pilot (`landingshed-design-simplify`, 2026-11-18): one `*ending` return type for every landing step\nin place of the four-value return, and merged near-identical helpers shared by Finalize, PR-Review and Parent-Align.\nThe pilot's purpose was to measure whether its line estimates hold before the same pass is aimed at `fabricengine`;\nread that landing's commit message for the measured numbers.\nWhat remains is the other modules, `fabricengine` first.\n",
+      "status": "draft",
       "created": "2026-11-18T17:23:24Z",
-      "revised": "2026-11-19T08:09:38Z",
+      "revised": "2026-11-19T10:18:22Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "solid",
       "project": "code-cleanup"
     },
     {
@@ -205,13 +217,23 @@
         "board"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "single-repo-fabric-mode"
+      ],
       "isolated": false,
       "brief": "Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest",
       "body": "## What was seen\n\nOutside tests, \"retired\" appears in 127 files, \"migrat\" in 57 and \"legacy\" in 65 (2026-11-18);\n`fabricengine` leads with 18 files, then `loomcli` 11 and `boardengine` 10.\nSome of it is a deliberate refusal of an old name or key with a pointer to the new one, which is cheap and stays.\nSome is real migration code: `landingshed` alone carries about 100 lines (the retired `Merge-In` row name,\na scratch-to-records attempt migration, a key-rename migration).\n\n## Idea\n\nA mechanical pass, module by module: classify each hit as a refusal (keep) or a migration or compatibility path\nwhose data no hub still holds (delete).\n\n## Decided\n\n- All migration code goes: the operator confirmed no hub needs it (operator, 2026-11-19).\n- `lym board retire-legacy` is part of it: a one-off migration of `tasks.json` and `notes.json` into `board.json` that every hub has run.\n",
       "status": "draft",
       "created": "2026-11-18T17:23:24Z",
-      "revised": "2026-11-19T07:26:01Z",
+      "revised": "2026-11-19T10:18:21Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "solid",
       "project": "code-cleanup"
     },
     {
@@ -395,21 +417,33 @@
     },
     {
       "id": 1500,
-      "handle": "E1",
+      "handle": "T11",
       "slug": "doc-go-trim-pass",
       "title": "Trim every package doc.go of what is superfluous",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "docs"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "design-simplify-callers",
+        "hardener-campaign"
+      ],
       "isolated": false,
       "brief": "The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents",
       "body": "## What was measured (2026-11-18, `comment-trim-second-pass`)\n\nProduction code has 103,762 comment lines against 268,614 code lines, a 27.9 % share.\nThe package `doc.go` files hold 27,301 of those comment lines; the comment rewrite last week did not shrink them.\nLargest: `fabricengine` 2,474, `websterengine` 1,284, `gatecli` 1,273, `reedengine` 1,174, `shuttleengine` 1,075.\nThe full measurement is in the change description of that run, records commit `e1d2be8076` in `loomyard-weft`.\n\n## Operator decision (2026-11-18)\n\nCut everything superfluous in every `doc.go`, not in a chosen set of packages.\nSuperfluous: text that restates the function or type docs, narrates how the code works step by step, repeats itself, or records history.\nWhat stays: a short package overview, the package's contracts and invariants, and a \"why\" where the code alone does not show it.\n\n## How the work is done (operator, 2026-11-18)\n\nThe writer fans the work out over many Agent-tool subagents on Sonnet at medium effort, each given a fixed small number of `doc.go` files,\nso no subagent's context grows large.\nThe writer sets the batch size by file length, splits the largest files (`fabricengine`, `websterengine`, `gatecli`) into a batch of their own,\nand checks each subagent's diff before committing.\nNo code changes; comments in other files are out of scope.\n",
+      "status": "draft",
       "created": "2026-11-18T20:11:01Z",
-      "revised": "2026-11-18T20:13:20Z",
+      "revised": "2026-11-19T10:18:22Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "solid",
       "project": "code-cleanup"
     },
     {

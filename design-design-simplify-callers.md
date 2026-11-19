@@ -1,6 +1,8 @@
 # Design: simplify interfaces that make every caller handle too much
 
-`design-simplify-callers` · Note · enhancement, fabric, landing
+`design-simplify-callers` · Task · enhancement, fabric, landing · draft
+
+Depends on: [`drop-compat-migration-code`](design-drop-compat-migration-code.md), [`single-repo-code-identity`](design-single-repo-code-identity.md)
 
 ## What was seen
 

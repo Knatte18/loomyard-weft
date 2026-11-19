@@ -1,6 +1,8 @@
 # Trim every package doc.go of what is superfluous
 
-`doc-go-trim-pass` · Note · enhancement, docs
+`doc-go-trim-pass` · Task · enhancement, docs · draft
+
+Depends on: [`design-simplify-callers`](design-design-simplify-callers.md), [`hardener-campaign`](design-hardener-campaign.md)
 
 ## What was measured (2026-11-18, `comment-trim-second-pass`)
 
