@@ -25,7 +25,7 @@
 - `internal/gitrepo/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#oneRepositoryAt`
+- `internal/fabricengine#oneRepositoryAt`
 - `internal/landingshed/doc.go`
 - `internal/landingshed#TestFinalize_MergeMarkPushOrderAndVerdict`
 - `internal/landingshed#TestFinalize_PullRequest`

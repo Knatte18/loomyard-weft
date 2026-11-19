@@ -11,8 +11,8 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#AnchorChangeTrailerKey`
-- `plan:internal/fabricengine#oneRepositoryAt`
+- `internal/fabricengine#AnchorChangeTrailerKey`
+- `internal/fabricengine#oneRepositoryAt`
 - `internal/fabricengine#weftAnchorStop`
 - `plan:internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#AddPairWith`

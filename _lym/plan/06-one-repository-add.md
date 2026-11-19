@@ -18,8 +18,8 @@
 - `internal/fabricengine#createWeftWorktreeDroppingRuns`
 - `internal/fabricengine#CommitRecordsPaths`
 - `internal/fabricengine#WriteOrigin`
-- `plan:internal/fabricengine#oneRepositoryAt`
-- `plan:internal/fabricengine#AnchorChangeTrailerKey`
+- `internal/fabricengine#oneRepositoryAt`
+- `internal/fabricengine#AnchorChangeTrailerKey`
 - `plan:internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#AddPairWith`
 

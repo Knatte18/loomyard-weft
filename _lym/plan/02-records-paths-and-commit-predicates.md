@@ -1,13 +1,13 @@
 # Card 2 — records-paths-and-commit-predicates
 
 **Create:**
-- `plan:internal/fabricengine#MergeTrailerKey` -> `const MergeTrailerKey = "Fabric-Merge"`
-- `plan:internal/fabricengine#AnchorChangeTrailerKey` -> `const AnchorChangeTrailerKey = "Anchor-Change"`
-- `plan:internal/fabricengine#RecordsPathsAt` -> `func RecordsPathsAt(repoDir, rev string) ([]string, error)`
-- `plan:internal/fabricengine#IsRecordsOnlyCommit` -> `func IsRecordsOnlyCommit(repoDir, sha string) (bool, error)`
-- `plan:internal/fabricengine#IsFabricMergeCommit` -> `func IsFabricMergeCommit(repoDir, sha string) (bool, error)`
-- `plan:internal/fabricengine_test#TestRecordsPathsAt` -> `func TestRecordsPathsAt(t *testing.T)`
-- `plan:internal/fabricengine_test#TestCommitPredicates` -> `func TestCommitPredicates(t *testing.T)`
+- `internal/fabricengine#MergeTrailerKey`
+- `internal/fabricengine#AnchorChangeTrailerKey`
+- `internal/fabricengine#RecordsPathsAt`
+- `internal/fabricengine#IsRecordsOnlyCommit`
+- `internal/fabricengine#IsFabricMergeCommit`
+- `internal/fabricengine_test#TestRecordsPathsAt`
+- `internal/fabricengine_test#TestCommitPredicates`
 
 **Extends:**
 - `internal/fabricengine/doc.go`

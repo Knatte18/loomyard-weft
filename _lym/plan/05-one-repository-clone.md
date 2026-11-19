@@ -37,8 +37,8 @@
 
 **Uses:**
 - `plan:internal/fabricengine#ProtectedBranchRefusal`
-- `plan:internal/fabricengine#oneRepositoryAt`
-- `plan:internal/fabricengine#BoltBranchName`
+- `internal/fabricengine#oneRepositoryAt`
+- `internal/fabricengine#BoltBranchName`
 - `internal/fabricengine#teardownHub`
 - `internal/fabricengine#commitAnchorMarker`
 - `internal/fabricengine#WriteShortname`

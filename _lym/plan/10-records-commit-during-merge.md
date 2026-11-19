@@ -40,8 +40,8 @@
 - `internal/loomcli/doc.go`
 - `internal/fabricengine#mergeState`
 - `internal/fabricengine#Fabric.resetMergeSides`
-- `plan:internal/fabricengine#RecordsPathsAt`
-- `plan:internal/fabricengine#oneRepositoryAt`
+- `internal/fabricengine#RecordsPathsAt`
+- `internal/fabricengine#oneRepositoryAt`
 - `plan:internal/fabricengine#retryHeldIndexLock`
 - `plan:internal/fabricengine#Fabric.SetAfterMergeStartForTest`
 - `plan:internal/hubforge#NewOneRepoHub`

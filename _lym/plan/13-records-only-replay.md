@@ -24,8 +24,8 @@
 
 **Uses:**
 - `internal/fabricengine#cherryPickOnto`
-- `plan:internal/fabricengine#IsRecordsOnlyCommit`
-- `plan:internal/fabricengine#oneRepositoryAt`
+- `internal/fabricengine#IsRecordsOnlyCommit`
+- `internal/fabricengine#oneRepositoryAt`
 - `internal/fabricengine#parseWarpSHATrailer`
 - `plan:internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#CloneSecond`

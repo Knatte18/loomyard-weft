@@ -26,7 +26,7 @@
 - `internal/fabricengine#HandOverTips`
 - `internal/fabricengine#deleteRemoteBranch`
 - `internal/fabricengine#archiveWeftTip`
-- `plan:internal/fabricengine#oneRepositoryAt`
+- `internal/fabricengine#oneRepositoryAt`
 - `plan:internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#CloneSecond`
 - `internal/hubforge#AddPairWith`

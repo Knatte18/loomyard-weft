@@ -30,10 +30,10 @@
 **Uses:**
 - `internal/runfsm/doc.go`
 - `internal/pairteardown/doc.go`
-- `plan:internal/fabricengine#IsRecordsOnlyCommit`
-- `plan:internal/fabricengine#IsFabricMergeCommit`
+- `internal/fabricengine#IsRecordsOnlyCommit`
+- `internal/fabricengine#IsFabricMergeCommit`
 - `plan:internal/fabricengine#PushFailureProtected`
-- `plan:internal/fabricengine#oneRepositoryAt`
+- `internal/fabricengine#oneRepositoryAt`
 - `plan:internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#AddPairWith`
 

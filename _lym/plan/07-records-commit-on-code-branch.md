@@ -23,7 +23,7 @@
 
 **Uses:**
 - `plan:internal/fabricengine#PrimeBranchConfigKey`
-- `plan:internal/fabricengine#oneRepositoryAt`
+- `internal/fabricengine#oneRepositoryAt`
 - `plan:internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#NewHub`
 - `internal/hubforge#AddPairWith`

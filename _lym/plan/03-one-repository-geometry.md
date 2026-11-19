@@ -1,11 +1,11 @@
 # Card 3 — one-repository-geometry
 
 **Create:**
-- `plan:internal/fabricengine#BoltBranchName` -> `const BoltBranchName = "lym-bolt"`
-- `plan:internal/fabricengine#oneRepositoryAt` -> `func oneRepositoryAt(path string) bool`
-- `plan:internal/fabricengine#recordsBranchIn` -> `func recordsBranchIn(l *lymcwd.Location, branch string) string`
-- `plan:internal/fabricengine#recordsLockDirName` -> `const recordsLockDirName = "lym-locks"`
-- `plan:internal/fabricengine#TestRecordsGeometry_OneRepository` -> `func TestRecordsGeometry_OneRepository(t *testing.T)`
+- `internal/fabricengine#BoltBranchName`
+- `internal/fabricengine#oneRepositoryAt`
+- `internal/fabricengine#recordsBranchIn`
+- `internal/fabricengine#recordsLockDirName`
+- `internal/fabricengine#TestRecordsGeometry_OneRepository`
 
 **Edit:**
 - `internal/fabricengine#RecordsWorktree`

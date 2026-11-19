@@ -1,8 +1,8 @@
 # Card 1 — lymcwd-one-repository
 
 **Create:**
-- `plan:internal/lymcwd#OneRepository` -> `func OneRepository(worktreeRoot string) bool`
-- `plan:internal/lymcwd_test#TestResolveWithin_OneRepository` -> `func TestResolveWithin_OneRepository(t *testing.T)`
+- `internal/lymcwd#OneRepository`
+- `internal/lymcwd_test#TestResolveWithin_OneRepository`
 
 **Edit:**
 - `internal/lymcwd#readRecordedAnchor`

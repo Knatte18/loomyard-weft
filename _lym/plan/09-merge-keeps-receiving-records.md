@@ -23,11 +23,11 @@
 
 **Uses:**
 - `internal/gitrepo#Repo.MergeStart`
-- `plan:internal/fabricengine#RecordsPathsAt`
-- `plan:internal/fabricengine#MergeTrailerKey`
-- `plan:internal/fabricengine#IsFabricMergeCommit`
-- `plan:internal/fabricengine#AnchorChangeTrailerKey`
-- `plan:internal/fabricengine#oneRepositoryAt`
+- `internal/fabricengine#RecordsPathsAt`
+- `internal/fabricengine#MergeTrailerKey`
+- `internal/fabricengine#IsFabricMergeCommit`
+- `internal/fabricengine#AnchorChangeTrailerKey`
+- `internal/fabricengine#oneRepositoryAt`
 - `internal/fabricengine#mergeInProgressReason`
 - `internal/fabricengine#TestMergeVocabulary_ErrorsAreSideFree`
 - `plan:internal/hubforge#NewOneRepoHub`
