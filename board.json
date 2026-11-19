@@ -277,7 +277,7 @@
       "isolated": false,
       "brief": "Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays",
       "body": "## Scope (operator, 2026-11-19)\n\nThe one-repository hub is for the operator's own use only.\nThe two-repository hub stays the standard and the one used with other people: every trace of LoomYard lives in its own repository there.\nExtra branches in a one-repository hub are clutter to anyone else reading the repository; Discussion weighs keeping records and the board under a custom ref namespace such as `refs/lym/...`, which no default clone fetches and GitHub lists as no branch, against plain branches.\n",
-      "status": "starting · Seed-Child",
+      "status": "starting · Open-Window",
       "created": "2026-11-19T12:08:48Z",
       "revised": "2026-11-19T17:59:30Z",
       "project": "single-repo-hub",
@@ -387,7 +387,7 @@
       "isolated": false,
       "brief": "The shell guard does not look inside a shell -c script, so Claude Code asks for permission and the run stalls until someone answers",
       "body": "## Seen\n\n2026-11-19: in `hardener-campaign`, the verify fixer fork of Webster ran a loop inside a shell -c script that made a temp dir under the system temp root and removed a subdirectory of it by a variable path, to reproduce a mkdir race.\nClaude Code showed a dialog saying the shell -c script removes files and could not be checked, and the run stood still until the orch answered the dialog by hand.\nThe session rules already refuse a removal by a computed path and writes to the system temp root, but the guard does not look inside the shell -c script, so the command reached the dialog instead of a refusal with a way forward.\n\n## Idea\n\n`internal/shellguard` parses the script of a shell -c call like a top-level command and applies the same refusals, so the agent gets a refusal naming the way forward and no dialog stalls the run.\n",
-      "status": "starting · Worktree-Create",
+      "status": "starting · Seed-Child",
       "created": "2026-11-19T16:41:50Z",
       "revised": "2026-11-19T17:59:20Z",
       "run_settings": {
@@ -417,7 +417,7 @@
       "isolated": false,
       "brief": "A record write in a hardenshed test takes its lock beside a relative or empty path, so internal/hardenshed/.lock appears in the worktree and blocks Finalize",
       "body": "## Seen\n\n2026-11-19: Finalize of `hardener-campaign` stopped on an untracked zero-byte `internal/hardenshed/.lock`, created 18:39 during the run's gate, held by no process.\n`internal/hardenshed`'s `round.go` and `live.go` take their lock through `lock.TrackedFileLockPath(path, \".lock\")`; a test that passes a relative or empty record path makes that lock land in the package directory, which is the test's working directory.\nThe orch removed the file by hand so Finalize could go on; the next gate run recreates it.\n\n## Idea\n\nFind the hardenshed test that writes a record outside `t.TempDir()` and point it there.\nA gate check that fails on any new untracked file in the source tree after a test run would catch the whole class.\n",
-      "status": "starting · Seed-Child",
+      "status": "starting · Open-Window",
       "created": "2026-11-19T17:42:12Z",
       "revised": "2026-11-19T17:59:20Z",
       "run_settings": {
