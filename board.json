@@ -408,14 +408,15 @@
         "gate"
       ],
       "issues": [
-        156
+        156,
+        162
       ],
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #156](https://github.com/Knatte18/loomyard/issues/156).\n\nA darn agent was told to run a single test class through `lym gate test --gate darn-write \u003cproject\u003e -- \u003cargs\u003e`.\nThe hub's `gate.yaml` has no `darn-write` key and its tiers hold no `{targets}` placeholder, so both forms were refused.\nOnly `lym gate test --tier 1 -- --filter ...` worked, after the agent dropped the targets.\n\nThis is abnormal: the prompt instructs a command form the hub's own gate config cannot satisfy, and the agent spent calls discovering that.\nFix: make the darn prompt name only a form valid for the hub's gate config, or have the prompt builder check the key and `{targets}` against `gate.yaml` and fall back to the `--tier` form.\n\nProvenance: task cuttings-bed-decay-parity, note Darn-Write.md.",
+      "body": "Imported from [issue #156](https://github.com/Knatte18/loomyard/issues/156).\n\nA darn agent was told to run a single test class through `lym gate test --gate darn-write \u003cproject\u003e -- \u003cargs\u003e`.\nThe hub's `gate.yaml` has no `darn-write` key and its tiers hold no `{targets}` placeholder, so both forms were refused.\nOnly `lym gate test --tier 1 -- --filter ...` worked, after the agent dropped the targets.\n\nThis is abnormal: the prompt instructs a command form the hub's own gate config cannot satisfy, and the agent spent calls discovering that.\nFix: make the darn prompt name only a form valid for the hub's gate config, or have the prompt builder check the key and `{targets}` against `gate.yaml` and fall back to the `--tier` form.\n\nProvenance: task cuttings-bed-decay-parity, note Darn-Write.md.\n\n## From issue #162\n\nImported from [issue #162](https://github.com/Knatte18/loomyard/issues/162).\n\nA Darn-Write agent's instructions said to run a needed test class through `lym gate test --gate darn-write`.\nThe hub's `gate.yaml` declares only `finalize` and `adopt`, so the named gate key does not exist.\nThe agent fell back to `lym gate test --tier 1 -- --filter ...`.\n\nThis is abnormal because a prompt should name only gate keys the hub declares.\nFix: either generate the Darn-Write prompt from the declared gate keys, or declare a `darn-write` key; also have `lym gate test` refuse an unknown `--gate` with a list of declared keys.\n\nProvenance: task bed-erosion-rate-gap, note Darn-Write.md.",
       "created": "2026-11-19T19:40:43Z",
-      "revised": "2026-11-19T19:40:43Z"
+      "revised": "2026-11-19T19:40:45Z"
     }
   ],
   "prime_owner": "neve",
