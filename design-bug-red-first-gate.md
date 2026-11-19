@@ -1,6 +1,6 @@
 # Bug runs prove their test was red before the fix, and name the root cause in a trailer
 
-`bug-red-first-gate` · Task · enhancement, gate, testmap · starting · Open-Window
+`bug-red-first-gate` · Task · enhancement, gate, testmap · starting · Seed-IDE
 
 Depends on: [`hardener-campaign`](design-hardener-campaign.md)
 
