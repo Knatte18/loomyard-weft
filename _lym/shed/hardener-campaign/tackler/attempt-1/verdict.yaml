@@ -1,0 +1,18 @@
+verdict: hand-back
+reason: >-
+  The run is blocked at Finalize because the task worktree has an untracked file, internal/hardenshed/.lock,
+  that blocks the merge-in ("the task worktree has uncommitted changes before the merge-in"). Evidence:
+  drive-envelope-20261119-184131-f135.json (reason field); trace 3118160fff8e99b5.trace.log line 4 (landingshed: producer stuck).
+  git status in the worktree shows `?? internal/hardenshed/.lock` and nothing else dirty. The file is zero bytes,
+  mode 600, mtime 2026-11-19 18:39, and is not ignored by git. It is a stray lock artifact from the repo's
+  lock.TrackedFileLockPath mechanism (see internal/hardenshed/round.go:222 and live.go:103), not real work.
+  A plain re-launch does not settle this: the file remains and Finalize will refuse the merge-in again.
+  Clearing it means removing the file or committing it on the task branch, which is a change to the branch
+  I am not permitted to make, so the run's parent has to do it.
+  The earlier push refusal (remote rejected hardener-campaign-weft) was retried and succeeded (branch_pushed at 18:41:30),
+  so it is not the cause.
+question: >-
+  Finalize is blocked because the task worktree /home/knatte/Code/loomyard-LYMHUB/hardener-campaign has an untracked,
+  zero-byte file internal/hardenshed/.lock (created 18:39, not tracked, not ignored). It looks like a stale lock artifact
+  and not real work. Should the parent remove it on the task branch (confirming no lym process still holds it), or
+  decide to commit it, and then re-launch the run so Finalize can resume?
