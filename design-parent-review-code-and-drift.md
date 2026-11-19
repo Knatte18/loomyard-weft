@@ -27,10 +27,5 @@ Both settable in `loom.yaml` (or `drift.yaml`) and in a task's `run_settings`.
 Tell the run's agents by creel to ask the parent before they finish a round or write a judgement.
 
 
-## Issue comment, 2026-11-19
 
-A related need: a run's agents (drift judge, Drift-Expect, perch fixer) put their questions to the operator in their own pane. A setting that sends every question an agent would put to the operator to the run's parent by creel instead, with the parent's answer delivered back, would let the parent settle them without the operator relaying. Today the parent sees such a question only when the operator relays it or tells the agent to ask the parent.
-
-## Issue comment, 2026-11-19
-
-A second wish in the same direction: let the parent subscribe to a run's state, so lym mails it when the run reaches a named producer or state, for example `lym loom notify <slug> --on Drift-Verify,Drift-Expect,Code-Burler-Fix`, or a `run_settings` key such as `notify_parent_on: [Drift-Verify]`. The parent can then brief each agent of those rows as it starts, such as telling the drift judge to put its questions to the parent, without a polling watch on `lym loom status --watch`.
+Out of scope: routing agent questions to the parent and parent notification on named rows are the separate notes `agent-questions-to-parent` and `parent-notify-on-row`.
