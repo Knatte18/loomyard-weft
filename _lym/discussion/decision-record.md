@@ -39,6 +39,12 @@ Discussion chooses between the verb and the key.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-19): Row subscriptions only, no state subscriptions
+
+Decision: The parent subscribes to named rows (producers) only; subscribing to run states is not built.
+
+Rationale: The need behind the entry is briefing a row's agent as it starts, which rows cover. Halt and other states already reach the parent through batten and dobby notices, so a state subscription would duplicate them.
+
 ## Constraints
 
 ## Auto-mode assumptions
