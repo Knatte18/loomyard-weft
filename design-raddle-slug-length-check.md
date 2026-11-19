@@ -1,6 +1,6 @@
 # Raddle checks pass a part slug that Raddle-File then refuses as too long
 
-`raddle-slug-length-check` · Task · bug, shed · halted · Darn-Write
+`raddle-slug-length-check` · Task · bug, shed · running · Darn-Write
 
 ## Seen
 
