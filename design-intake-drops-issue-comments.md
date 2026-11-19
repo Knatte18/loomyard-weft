@@ -1,6 +1,6 @@
 # Intake import drops the issue comments
 
-`intake-drops-issue-comments` · Task · bug, board · running · Drift-Verify
+`intake-drops-issue-comments` · Task · bug, board · running · Code-Bouncer
 
 ## What was seen
 
