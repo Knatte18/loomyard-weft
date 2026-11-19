@@ -403,6 +403,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #161](https://github.com/Knatte18/loomyard/issues/161).\n\n## What was seen\n\nA task run's Finalize halted with `landing stop: GitHub refused to merge pull request ...: Pull Request is not mergeable` and a way forward naming a second approval or a required check.\nRead a minute later, the pull request showed `mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`, no required checks and no reviews; GitHub had not yet computed mergeability (`UNKNOWN`) when Finalize asked.\n\n## Workaround\n\nThe parent re-reads the pull request with `gh pr view --json mergeable,mergeStateStatus` and runs `lym loom resume` once it reads `MERGEABLE`.\n\n## Expected\n\nFinalize treats `mergeable: UNKNOWN` as pending: it polls the pull request for a bounded time before merging, and halts only on a definite refusal, naming the actual cause.\n",
+      "status": "starting · Worktree-Create",
       "created": "2026-11-19T19:40:48Z",
       "revised": "2026-11-19T19:42:45Z",
       "run_settings": {
