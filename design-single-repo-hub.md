@@ -1,4 +1,4 @@
-# Single-repository hubs: records on each code branch, the board on lym-bolt
+# Single-repository hubs: records and board under refs/lym/, the layout known only to fabric
 
 `single-repo-hub` · Project · feature, fabric, cwd, cli, landing, docs, pattern, gate, git, weaver, drift, webster, lint, loom, pawl, shed, arbiter
 

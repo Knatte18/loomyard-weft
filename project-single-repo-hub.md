@@ -1,4 +1,4 @@
-# P4 Single-repository hubs: records on each code branch, the board on lym-bolt
+# P4 Single-repository hubs: records and board under refs/lym/, the layout known only to fabric
 
 Rendered 2026-11-19 18:30 UTC; every age below is as of then.
 Under: [Board](README.md).
@@ -14,20 +14,21 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T8 | **Remove f06acf39's records-on-code-branch layout and revert its two-repository widenings**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`single-repo-code-records-removal`](design-single-repo-code-records-removal.md)<br>[Sketch](decision-single-repo-code-records-removal.md) | darn · solid |  | 0m<br>0m | fabric, cwd, cli, batten, loom, landing, git, board, docs, pattern |
 
-### Draft (2)
+### Layer A (1)
 
-Not released; nothing starts it until its status is cleared.
+Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Remove f06acf39's records-on-code-branch layout and revert its two-repository widenings** | [`single-repo-code-records-removal`](design-single-repo-code-records-removal.md)<br>[Sketch](decision-single-repo-code-records-removal.md) | darn · solid |  | 0m<br>0m | fabric, cwd, cli, batten, loom, landing, git, board, docs, pattern |
-| T9 | `draft` **One-repository hubs with records and board under origin's refs/lym/, the layout read only by fabric** | [`single-repo-namespace-layout`](design-single-repo-namespace-layout.md)<br>[Sketch](decision-single-repo-namespace-layout.md) | tapestry · solid | T8 | 0m<br>0m | fabric, git, docs, pattern |
+| T9 | **One-repository hubs with records and board under origin's refs/lym/, the layout read only by fabric** | [`single-repo-namespace-layout`](design-single-repo-namespace-layout.md)<br>[Sketch](decision-single-repo-namespace-layout.md) | tapestry · solid | T8 | 0m<br>0m | fabric, git, docs, pattern |
 
 ## Notes (0)
 
