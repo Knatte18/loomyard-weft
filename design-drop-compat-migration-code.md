@@ -1,6 +1,8 @@
 # Remove compatibility and migration code no hub needs any more
 
-`drop-compat-migration-code` · Task · enhancement, fabric, loom, board · draft
+`drop-compat-migration-code` · Task · enhancement, fabric, loom, board
+
+Depends on: [`single-repo-namespace-layout`](design-single-repo-namespace-layout.md)
 
 ## What was seen
 
