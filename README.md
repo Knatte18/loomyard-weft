@@ -7,13 +7,13 @@ Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
 <details open>
-<summary><strong><a href="project-code-cleanup.md">P1 Code cleanup: cut and simplify lym code and tests</a> (4)</strong></summary>
+<summary><strong><a href="project-code-cleanup.md">P1 Code cleanup: cut and simplify lym code and tests</a> (3)</strong></summary>
 
 [`code-cleanup`](design-code-cleanup.md) · Age 14h · Owner `neve`
 
 Make lym smaller without changing behaviour: fewer tests, leaner design, no dead compatibility code, no unused features
 
-### Tasks (1)
+### Tasks (0)
 
 Concrete and claimable; only a task can run.
 
@@ -22,14 +22,6 @@ Concrete and claimable; only a task can run.
 Waits on nothing open; can start now.
 
 _None._
-
-#### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Remove lym verbs and features nobody uses**<br>• Follow-up to the unused-features study: the operator picks from its candidate list, then this task removes those verbs with their docs and prompt text | [`remove-unused-verbs`](design-remove-unused-verbs.md) | darn |  | 11h<br>5m | cli |
 
 ### Notes (3)
 
