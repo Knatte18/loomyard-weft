@@ -119,7 +119,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **One-repository hubs redesigned: records on their own branches, the layout known only to fabric**<br>• Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays | [`single-repo-records-branches`](design-single-repo-records-branches.md)<br>[Sketch](decision-single-repo-records-branches.md) | 57m<br>1m | fabric |
+| S1 |  | **One-repository hubs redesigned: records on their own branches, the layout known only to fabric**<br>• Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays | [`single-repo-records-branches`](design-single-repo-records-branches.md)<br>[Sketch](decision-single-repo-records-branches.md) | 58m<br>1m | fabric |
 
 </details>
 
@@ -138,8 +138,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Survey Matt Pocock's skills repository for ideas that improve LoomYard**<br>• Read mattpocock/skills (main and the constrain-skill branch) and report what LoomYard could adopt<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pocock-skills-survey`](design-pocock-skills-survey.md) | darn · docs | starting · Open-IDE | neve | 0m<br>0m |  |
-| T3 | **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | motif | halted · Discussion-Bouncer | neve | 1d<br>42m | board, ide, fabric |
+| T2 | **Survey Matt Pocock's skills repository for ideas that improve LoomYard**<br>• Read mattpocock/skills (main and the constrain-skill branch) and report what LoomYard could adopt<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pocock-skills-survey`](design-pocock-skills-survey.md) | darn · docs | starting · Open-IDE | neve | 1m<br>1m |  |
+| T3 | **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | motif | Discussion-Bouncer | neve | 1d<br>42m | board, ide, fabric |
 | T4 | **Two-repository hubs: status commits skip during weft replay, and the layout probe spams and costs git calls**<br>• Undo the f06acf39 merge-state probe widening for two-repository hubs, and make the layout probe quiet and cached<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`two-repo-merge-probe-regression`](design-two-repo-merge-probe-regression.md) | darn · light | Code-Burler-Fix | neve | 51m<br>51m | fabric |
 | T13 | **Settings to route code review and drift judge rulings to the run's parent**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md) | darn · solid | Code-Burler-Review | neve | 3h<br>1h | loom, drift, burler |
 
